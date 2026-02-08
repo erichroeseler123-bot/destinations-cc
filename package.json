@@ -1,12 +1,27 @@
 {
   "name": "destinations-cc",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
+  "type": "module",
+
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+
+    "clean": "rm -rf .next out",
+
+    "deploy": "npm run clean && npm run build && wrangler pages deploy out",
+
+    "ingest:vegas": "node scripts/ingest-vegas.js",
+
+    "ingest:all": "npm run ingest:vegas",
+
+    "lint": "next lint",
+
+    "check": "tsc --noEmit"
   },
+
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "haversine": "^1.1.1",
@@ -15,10 +30,16 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
+
   "devDependencies": {
     "@types/papaparse": "^5.5.2",
-    "@types/react": "19.2.10",
+    "@types/react": "^18.2.61",
+    "@types/react-dom": "^18.2.19",
     "tsx": "^4.21.0",
-    "typescript": "5.9.3"
+    "typescript": "^5.3.3"
+  },
+
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
