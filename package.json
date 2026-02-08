@@ -14,21 +14,19 @@
     "deploy": "npm run clean && npm run build && wrangler pages deploy out",
 
     "ingest:vegas": "node scripts/ingest-vegas.js",
-
     "ingest:all": "npm run ingest:vegas",
 
     "lint": "next lint",
-
     "check": "tsc --noEmit"
   },
 
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "haversine": "^1.1.1",
-    "next": "^14.2.0",
+    "next": "14.2.35",
     "papaparse": "^5.5.3",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   },
 
   "devDependencies": {
@@ -40,6 +38,6 @@
   },
 
   "engines": {
-    "node": ">=20.0.0"
+    "node": "20.x"
   }
 }
