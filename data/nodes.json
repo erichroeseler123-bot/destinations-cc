@@ -6,6 +6,7 @@
     "type": "destination",
     "region": "nevada",
     "status": "active",
-    "description": "Tours, shows, transportation, and survival info for Las Vegas"
+    "hub": "las-vegas",
+    "description": "Tours, shows, transportation, and survival info for Las Vegas visitors."
   }
 ]

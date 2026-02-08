@@ -1,105 +1,40 @@
-import fs from "fs";
-import path from "path";
 import Link from "next/link";
 
-/* ================= TYPES ================= */
-
-type Port = {
-  slug: string;
-  name: string;
-  city: string;
-  region?: string;
-  country: string;
-  passenger_volume?: number;
-};
-
-/* ================= DATA ================= */
-
-function getPorts(): Port[] {
-  const filePath = path.join(
-    process.cwd(),
-    "data",
-    "ports.generated.json"
-  );
-
-  try {
-    const raw = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(raw);
-  } catch (err) {
-    console.error("Failed to load ports data:", err);
-    return [];
-  }
-}
+/* ============================================
+   Homepage — Destination Gateway
+   Optimized for Traffic → Cities → Monetization
+============================================ */
 
 export const dynamic = "force-static";
 
-/* ================= PAGE ================= */
-
 export default function HomePage() {
-  const ports = getPorts();
-
-  /* ---------- Group by Region ---------- */
-
-  const regions: Record<string, Port[]> = {};
-
-  for (const port of ports) {
-    const key = port.region?.trim() || "Other";
-
-    if (!regions[key]) {
-      regions[key] = [];
-    }
-
-    regions[key].push(port);
-  }
-
-  /* ---------- Major Hubs ---------- */
-
-  const majorPorts = [...ports]
-    .filter(p => typeof p.passenger_volume === "number")
-    .sort(
-      (a, b) =>
-        (b.passenger_volume ?? 0) -
-        (a.passenger_volume ?? 0)
-    )
-    .slice(0, 6);
-
-  const sortedRegions = Object.keys(regions).sort();
-
-  /* ================= RENDER ================= */
-
   return (
-    <main className="max-w-7xl mx-auto px-6 py-20 space-y-24">
+    <main className="max-w-7xl mx-auto px-6 py-24 space-y-28">
 
       {/* ==================================================
          HERO
       ================================================== */}
 
-      <section className="text-center space-y-6">
+      <section className="text-center space-y-8">
 
-        <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
+        <h1 className="text-5xl md:text-7xl font-black tracking-tight">
           Destination Command Center
         </h1>
 
-        <p className="max-w-2xl mx-auto text-lg text-gray-600">
-          An authority reference layer for cruise ports,
-          regional networks, and global travel logistics.
+        <p className="max-w-3xl mx-auto text-xl text-zinc-400 leading-relaxed">
+          Verified city guides, top-rated tours, and travel intelligence —
+          built to help you book better and travel smarter.
         </p>
 
-        <div className="flex justify-center gap-4 pt-4">
+        <div className="flex flex-col sm:flex-row justify-center gap-4 pt-6">
 
-          <Link
-            href="/regions/florida"
-            className="px-6 py-3 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-800 transition"
-          >
-            Explore Regions
-          </Link>
+          <PrimaryButton href="/las-vegas">
+            Explore Las Vegas →
+          </PrimaryButton>
 
-          <Link
-            href="/mighty-argo-shuttle"
-            className="px-6 py-3 rounded-lg border text-sm font-medium hover:bg-gray-50 transition"
-          >
-            View Nodes
-          </Link>
+          <SecondaryButton href="/authority">
+            Browse Authority Layer
+          </SecondaryButton>
 
         </div>
 
@@ -107,78 +42,44 @@ export default function HomePage() {
 
 
       {/* ==================================================
-         QUICK ACCESS
+         FEATURED DESTINATIONS
       ================================================== */}
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <section className="space-y-10">
 
-        <QuickCard
-          href="/regions/florida"
-          title="Browse Regions"
-          description="Explore ports by geography."
-        />
+        <header className="space-y-2 text-center">
 
-        <QuickCard
-          href="/ports/portmiami"
-          title="Major Hubs"
-          description="High-volume cruise terminals."
-        />
-
-        <QuickCard
-          href="/mighty-argo-shuttle"
-          title="Transport Nodes"
-          description="Connected logistics services."
-        />
-
-      </section>
-
-
-      {/* ==================================================
-         REGIONS
-      ================================================== */}
-
-      <section className="space-y-6">
-
-        <header className="space-y-1">
-
-          <h2 className="text-2xl font-semibold">
-            Cruise Regions
+          <h2 className="text-3xl font-bold">
+            Popular Destinations
           </h2>
 
-          <p className="text-sm text-gray-600">
-            Organized port networks by geography.
+          <p className="text-zinc-400">
+            Hand-curated guides with verified experiences
           </p>
 
         </header>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 
-          {sortedRegions.map(region => {
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-            const slug = region
-              .toLowerCase()
-              .replace(/\s+/g, "-");
+          <CityCard
+            href="/las-vegas"
+            name="Las Vegas"
+            tagline="Shows • Helicopters • Grand Canyon • Nightlife"
+            badge="🔥 Most Popular"
+          />
 
-            const count = regions[region]?.length ?? 0;
+          <CityCard
+            href="/alaska"
+            name="Alaska"
+            tagline="Cruise Ports • Glaciers • Wildlife"
+          />
 
-            return (
-
-              <Link
-                key={region}
-                href={`/regions/${slug}`}
-                className="p-4 rounded-lg border hover:bg-gray-50 transition text-sm"
-              >
-                <div className="font-medium">
-                  {region}
-                </div>
-
-                <div className="text-gray-500 mt-1">
-                  {count} ports
-                </div>
-              </Link>
-
-            );
-          })}
+          <CityCard
+            href="/miami"
+            name="Miami"
+            tagline="Beaches • Cruises • Nightlife"
+          />
 
         </div>
 
@@ -186,43 +87,63 @@ export default function HomePage() {
 
 
       {/* ==================================================
-         MAJOR HUBS
+         WHY DCC
       ================================================== */}
 
-      <section className="space-y-6">
+      <section className="grid md:grid-cols-3 gap-8 text-center">
 
-        <header className="space-y-1">
+        <Feature
+          title="Verified Data"
+          desc="Real reviews, real providers, real availability."
+        />
 
-          <h2 className="text-2xl font-semibold">
-            Major Global Hubs
+        <Feature
+          title="Smarter Rankings"
+          desc="We prioritize quality, reliability, and value."
+        />
+
+        <Feature
+          title="No Hype"
+          desc="Authority-layer intelligence — not paid placement."
+        />
+
+      </section>
+
+
+      {/* ==================================================
+         QUICK LINKS
+      ================================================== */}
+
+      <section className="space-y-8">
+
+        <header className="text-center">
+
+          <h2 className="text-2xl font-bold">
+            Explore the Network
           </h2>
-
-          <p className="text-sm text-gray-600">
-            Highest passenger volume terminals.
-          </p>
 
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          {majorPorts.map(port => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-            <Link
-              key={port.slug}
-              href={`/ports/${port.slug}`}
-              className="p-5 rounded-lg border hover:shadow-sm transition"
-            >
-              <div className="font-medium">
-                {port.name}
-              </div>
+          <QuickLink
+            href="/las-vegas/tours"
+            title="Top Tours"
+            desc="Best-rated activities"
+          />
 
-              <div className="text-sm text-gray-600 mt-1">
-                {port.city}, {port.country}
-              </div>
+          <QuickLink
+            href="/las-vegas/attractions"
+            title="Attractions"
+            desc="Must-see landmarks"
+          />
 
-            </Link>
-
-          ))}
+          <QuickLink
+            href="/authority"
+            title="Authority Layer"
+            desc="Ports & logistics"
+          />
 
         </div>
 
@@ -233,14 +154,14 @@ export default function HomePage() {
          FOOTER
       ================================================== */}
 
-      <footer className="pt-12 border-t text-center text-sm text-gray-500 space-y-1">
+      <footer className="pt-16 border-t border-zinc-800 text-center text-sm text-zinc-500 space-y-2">
 
         <p>
           © {new Date().getFullYear()} Destination Command Center
         </p>
 
         <p>
-          Authority Layer • Logistics Reference • Network Intelligence
+          Travel Intelligence • Verified Networks • Optimized Booking
         </p>
 
       </footer>
@@ -254,30 +175,128 @@ export default function HomePage() {
    COMPONENTS
 ====================================================== */
 
-type QuickCardProps = {
-  href: string;
-  title: string;
-  description: string;
-};
-
-function QuickCard({
+function PrimaryButton({
   href,
-  title,
-  description,
-}: QuickCardProps) {
-
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
   return (
     <Link
       href={href}
-      className="p-6 rounded-xl border hover:shadow-md transition group"
+      className="px-7 py-4 rounded-xl bg-cyan-600 text-white font-semibold hover:bg-cyan-500 transition shadow-lg shadow-cyan-600/25"
     >
-      <h3 className="font-semibold text-lg group-hover:text-black">
+      {children}
+    </Link>
+  );
+}
+
+
+function SecondaryButton({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="px-7 py-4 rounded-xl border border-zinc-700 text-zinc-300 hover:bg-zinc-900 transition"
+    >
+      {children}
+    </Link>
+  );
+}
+
+
+function CityCard({
+  href,
+  name,
+  tagline,
+  badge,
+}: {
+  href: string;
+  name: string;
+  tagline: string;
+  badge?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="relative p-7 rounded-2xl border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900/80 transition group"
+    >
+
+      {badge && (
+        <div className="absolute -top-3 right-4 bg-cyan-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
+          {badge}
+        </div>
+      )}
+
+      <h3 className="text-xl font-bold group-hover:text-cyan-400 transition">
+        {name}
+      </h3>
+
+      <p className="mt-2 text-sm text-zinc-400">
+        {tagline}
+      </p>
+
+      <span className="inline-block mt-4 text-sm text-cyan-400 font-medium">
+        View Guide →
+      </span>
+
+    </Link>
+  );
+}
+
+
+function Feature({
+  title,
+  desc,
+}: {
+  title: string;
+  desc: string;
+}) {
+  return (
+    <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-900/40">
+
+      <h3 className="font-semibold text-lg">
         {title}
       </h3>
 
-      <p className="text-sm text-gray-600 mt-2">
-        {description}
+      <p className="mt-2 text-sm text-zinc-400">
+        {desc}
       </p>
+
+    </div>
+  );
+}
+
+
+function QuickLink({
+  href,
+  title,
+  desc,
+}: {
+  href: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="p-6 rounded-xl border border-zinc-800 hover:bg-zinc-900 transition"
+    >
+
+      <h3 className="font-semibold">
+        {title}
+      </h3>
+
+      <p className="mt-2 text-sm text-zinc-400">
+        {desc}
+      </p>
+
     </Link>
   );
 }

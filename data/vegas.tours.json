@@ -1,0 +1,65 @@
+[
+  {
+    "id": "gc-west-rim",
+    "name": "Grand Canyon West Rim Day Trip",
+    "provider": "Viator",
+    "duration": "12 hours",
+    "price_from": 129,
+    "rating": 4.7,
+    "reviews": 18432,
+    "tags": [
+      "grand-canyon",
+      "hoover-dam",
+      "bus-tour"
+    ],
+    "booking_url": "https://www.viator.com/tours/Las-Vegas/Grand-Canyon-West-Rim-Day-Trip/d684-12345",
+    "dcc": {
+      "node": "las-vegas",
+      "category": "tours",
+      "ingested_at": "2026-02-08T07:41:10.241Z",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "strip-helicopter",
+    "name": "Las Vegas Strip Helicopter Night Flight",
+    "provider": "Viator",
+    "duration": "15 minutes",
+    "price_from": 99,
+    "rating": 4.9,
+    "reviews": 11209,
+    "tags": [
+      "helicopter",
+      "strip",
+      "night"
+    ],
+    "booking_url": "https://www.viator.com/tours/Las-Vegas/Las-Vegas-Strip-Helicopter-Flight/d684-54321",
+    "dcc": {
+      "node": "las-vegas",
+      "category": "tours",
+      "ingested_at": "2026-02-08T07:41:10.242Z",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "antelope-canyon",
+    "name": "Antelope Canyon & Horseshoe Bend Tour",
+    "provider": "Viator",
+    "duration": "14 hours",
+    "price_from": 149,
+    "rating": 4.8,
+    "reviews": 9821,
+    "tags": [
+      "antelope-canyon",
+      "horseshoe-bend",
+      "photography"
+    ],
+    "booking_url": "https://www.viator.com/tours/Las-Vegas/Antelope-Canyon-Tour/d684-99999",
+    "dcc": {
+      "node": "las-vegas",
+      "category": "tours",
+      "ingested_at": "2026-02-08T07:41:10.242Z",
+      "version": "1.0"
+    }
+  }
+]
