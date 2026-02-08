@@ -6,15 +6,17 @@
     "type": "destination",
     "region": "nevada",
     "status": "active",
-    "hub": "las-vegas",
-    "description": "Tours, shows, transportation, and survival info for Las Vegas visitors."
+    "description": "Tours, shows, transportation, day trips, and survival info for visiting Las Vegas.",
+    "hub": "las-vegas"
+  },
+  {
+    "id": "new-orleans-guide",
+    "slug": "new-orleans-guide",
+    "name": "New Orleans Guide",
+    "type": "destination",
+    "region": "louisiana",
+    "status": "active",
+    "description": "Music, food, swamp tours, history, and cultural experiences in New Orleans.",
+    "hub": "new-orleans"
   }
 ]
-{
-  "slug": "new-orleans-guide",
-  "name": "New Orleans Guide",
-  "status": "active",
-  "type": "city",
-  "country": "United States",
-  "region": "Louisiana"
-}
