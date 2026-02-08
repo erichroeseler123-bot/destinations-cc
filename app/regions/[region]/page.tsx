@@ -1,49 +1,81 @@
-import { notFound } from 'next/navigation';
+import fs from "fs";
+import path from "path";
+import Link from "next/link";
 
-export const revalidate = 300;
+type Port = {
+  slug: string;
+  name: string;
+  city: string;
+  region: string;
+  country: string;
+};
 
-async function getPorts() {
-  const res = await fetch(
-    'https://raw.githubusercontent.com/erichroeseler123-bot/dcc-brain/main/outputs/ports.generated.json',
-    { next: { revalidate: 300 } }
+function getPorts(): Port[] {
+  const filePath = path.join(
+    process.cwd(),
+    "data",
+    "ports.generated.json"
   );
 
-  if (!res.ok) throw new Error('Failed to load ports');
-  return res.json();
+  const raw = fs.readFileSync(filePath, "utf-8");
+  return JSON.parse(raw);
 }
 
-export default async function RegionPage({
+/* REQUIRED for static export */
+export async function generateStaticParams() {
+  const ports = getPorts();
+
+  const regions = new Set<string>();
+
+  for (const port of ports) {
+    if (port.region) {
+      regions.add(
+        port.region.toLowerCase().replace(/\s+/g, "-")
+      );
+    }
+  }
+
+  return Array.from(regions).map(region => ({
+    region,
+  }));
+}
+
+export const dynamic = "force-static";
+
+export default function RegionPage({
   params,
 }: {
   params: { region: string };
 }) {
-  const ports = await getPorts();
+  const ports = getPorts();
+
+  const regionName = params.region
+    .replace(/-/g, " ")
+    .toLowerCase();
 
   const regionPorts = ports.filter(
-    (p: any) =>
-      p.region.toLowerCase().replace(/\s+/g, '-') === params.region
+    p =>
+      p.region &&
+      p.region.toLowerCase().replace(/\s+/g, "-") ===
+        params.region
   );
 
-  if (regionPorts.length === 0) notFound();
-
   return (
-    <main className="p-8 max-w-5xl mx-auto">
-      <h1 className="text-4xl font-bold mb-6">
-        Cruise Ports in {regionPorts[0].region}
+    <main className="max-w-5xl mx-auto px-6 py-20 space-y-12">
+      <h1 className="text-3xl font-bold capitalize">
+        {regionName} Cruise Ports
       </h1>
 
-      <ul className="space-y-4">
-        {regionPorts.map((port: any) => (
+      <ul className="list-disc pl-6 space-y-2">
+        {regionPorts.map(port => (
           <li key={port.slug}>
-            <a
+            <Link
               href={`/ports/${port.slug}`}
-              className="text-blue-600 underline text-lg"
+              className="text-blue-600 hover:underline"
             >
               {port.name}
-            </a>
-            <div className="text-sm text-gray-600">
-              {port.city}, {port.country}
-            </div>
+            </Link>{" "}
+            — {port.city}, {port.country}
           </li>
         ))}
       </ul>

@@ -2,9 +2,7 @@ import fs from "fs";
 import path from "path";
 import Link from "next/link";
 
-/* ================================
-   Types
-================================ */
+/* ================= TYPES ================= */
 
 type Port = {
   slug: string;
@@ -15,9 +13,7 @@ type Port = {
   passenger_volume?: number;
 };
 
-/* ================================
-   Data Loader (Build-Safe)
-================================ */
+/* ================= DATA ================= */
 
 function getPorts(): Port[] {
   const filePath = path.join(
@@ -28,44 +24,38 @@ function getPorts(): Port[] {
 
   try {
     const raw = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(raw) as Port[];
+    return JSON.parse(raw);
   } catch (err) {
     console.error("Failed to load ports data:", err);
     return [];
   }
 }
 
-/* ================================
-   Static Generation
-================================ */
-
 export const dynamic = "force-static";
 
-/* ================================
-   Page
-================================ */
+/* ================= PAGE ================= */
 
 export default function HomePage() {
   const ports = getPorts();
 
-  /* ================================
-     Group Ports by Region (Safe)
-  ================================ */
+  /* ---------- Group by Region ---------- */
 
   const regions: Record<string, Port[]> = {};
 
   for (const port of ports) {
-    const region = port.region?.trim() || "Other";
+    const key = port.region?.trim() || "Other";
 
-    (regions[region] ??= []).push(port);
+    if (!regions[key]) {
+      regions[key] = [];
+    }
+
+    regions[key].push(port);
   }
 
-  /* ================================
-     Major Hubs (Top by Volume)
-  ================================ */
+  /* ---------- Major Hubs ---------- */
 
   const majorPorts = [...ports]
-    .filter((p) => typeof p.passenger_volume === "number")
+    .filter(p => typeof p.passenger_volume === "number")
     .sort(
       (a, b) =>
         (b.passenger_volume ?? 0) -
@@ -73,128 +63,221 @@ export default function HomePage() {
     )
     .slice(0, 6);
 
-  /* ================================
-     Render
-  ================================ */
+  const sortedRegions = Object.keys(regions).sort();
+
+  /* ================= RENDER ================= */
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-20 space-y-16">
+    <main className="max-w-7xl mx-auto px-6 py-20 space-y-24">
 
-      {/* ================= HERO ================= */}
-      <section className="space-y-4">
+      {/* ==================================================
+         HERO
+      ================================================== */}
 
-        <h1 className="text-4xl font-bold">
+      <section className="text-center space-y-6">
+
+        <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
           Destination Command Center
         </h1>
 
-        <p className="text-lg text-gray-700">
-          The Destination Command Center (DCC) is a structured reference
-          system for understanding cruise ports, regions, and how
-          travelers move between them.
+        <p className="max-w-2xl mx-auto text-lg text-gray-600">
+          An authority reference layer for cruise ports,
+          regional networks, and global travel logistics.
         </p>
 
-        <p className="text-gray-700">
-          It focuses on geography, access, and logistics — not
-          bookings or promotions.
-        </p>
+        <div className="flex justify-center gap-4 pt-4">
+
+          <Link
+            href="/regions/florida"
+            className="px-6 py-3 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-800 transition"
+          >
+            Explore Regions
+          </Link>
+
+          <Link
+            href="/mighty-argo-shuttle"
+            className="px-6 py-3 rounded-lg border text-sm font-medium hover:bg-gray-50 transition"
+          >
+            View Nodes
+          </Link>
+
+        </div>
 
       </section>
 
 
-      {/* ================= REGIONS ================= */}
-      <section className="space-y-4">
+      {/* ==================================================
+         QUICK ACCESS
+      ================================================== */}
 
-        <h2 className="text-2xl font-semibold">
-          Browse Cruise Ports by Region
-        </h2>
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        <ul className="list-disc pl-6 space-y-1">
+        <QuickCard
+          href="/regions/florida"
+          title="Browse Regions"
+          description="Explore ports by geography."
+        />
 
-          {Object.keys(regions)
-            .sort()
-            .map((region) => {
+        <QuickCard
+          href="/ports/portmiami"
+          title="Major Hubs"
+          description="High-volume cruise terminals."
+        />
 
-              const slug = region
-                .toLowerCase()
-                .replace(/\s+/g, "-");
-
-              return (
-                <li key={region}>
-
-                  <Link
-                    href={`/regions/${slug}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {region} Cruise Ports
-                  </Link>
-
-                </li>
-              );
-            })}
-
-        </ul>
+        <QuickCard
+          href="/mighty-argo-shuttle"
+          title="Transport Nodes"
+          description="Connected logistics services."
+        />
 
       </section>
 
 
-      {/* ================= MAJOR HUBS ================= */}
-      <section className="space-y-4">
+      {/* ==================================================
+         REGIONS
+      ================================================== */}
 
-        <h2 className="text-2xl font-semibold">
-          Major Global Cruise Hubs
-        </h2>
+      <section className="space-y-6">
 
-        <ul className="list-disc pl-6 space-y-1">
+        <header className="space-y-1">
 
-          {majorPorts.map((port) => (
-            <li key={port.slug}>
+          <h2 className="text-2xl font-semibold">
+            Cruise Regions
+          </h2>
+
+          <p className="text-sm text-gray-600">
+            Organized port networks by geography.
+          </p>
+
+        </header>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+          {sortedRegions.map(region => {
+
+            const slug = region
+              .toLowerCase()
+              .replace(/\s+/g, "-");
+
+            const count = regions[region]?.length ?? 0;
+
+            return (
 
               <Link
-                href={`/ports/${port.slug}`}
-                className="text-blue-600 hover:underline"
+                key={region}
+                href={`/regions/${slug}`}
+                className="p-4 rounded-lg border hover:bg-gray-50 transition text-sm"
               >
-                {port.name}
-              </Link>{" "}
-              — {port.city}, {port.country}
+                <div className="font-medium">
+                  {region}
+                </div>
 
-            </li>
+                <div className="text-gray-500 mt-1">
+                  {count} ports
+                </div>
+              </Link>
+
+            );
+          })}
+
+        </div>
+
+      </section>
+
+
+      {/* ==================================================
+         MAJOR HUBS
+      ================================================== */}
+
+      <section className="space-y-6">
+
+        <header className="space-y-1">
+
+          <h2 className="text-2xl font-semibold">
+            Major Global Hubs
+          </h2>
+
+          <p className="text-sm text-gray-600">
+            Highest passenger volume terminals.
+          </p>
+
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          {majorPorts.map(port => (
+
+            <Link
+              key={port.slug}
+              href={`/ports/${port.slug}`}
+              className="p-5 rounded-lg border hover:shadow-sm transition"
+            >
+              <div className="font-medium">
+                {port.name}
+              </div>
+
+              <div className="text-sm text-gray-600 mt-1">
+                {port.city}, {port.country}
+              </div>
+
+            </Link>
+
           ))}
 
-        </ul>
+        </div>
 
       </section>
 
 
-      {/* ================= EXPLANATION ================= */}
-      <section className="space-y-4">
+      {/* ==================================================
+         FOOTER
+      ================================================== */}
 
-        <h2 className="text-2xl font-semibold">
-          How Cruise Ports Work
-        </h2>
+      <footer className="pt-12 border-t text-center text-sm text-gray-500 space-y-1">
 
-        <p className="text-gray-700">
-          Cruise ports serve different roles.
-          Some are embarkation points (homeports),
-          where cruises begin and end.
+        <p>
+          © {new Date().getFullYear()} Destination Command Center
         </p>
 
-        <p className="text-gray-700">
-          Others are ports of call, visited briefly
-          during an itinerary. Dock access,
-          tendering rules, walkability, and
-          seasonal limits affect how passengers
-          experience each destination.
+        <p>
+          Authority Layer • Logistics Reference • Network Intelligence
         </p>
 
-        <p className="text-gray-700">
-          The DCC documents these differences so
-          travelers, operators, and planners can
-          understand how each port functions
-          within a wider cruise network.
-        </p>
-
-      </section>
+      </footer>
 
     </main>
+  );
+}
+
+
+/* ======================================================
+   COMPONENTS
+====================================================== */
+
+type QuickCardProps = {
+  href: string;
+  title: string;
+  description: string;
+};
+
+function QuickCard({
+  href,
+  title,
+  description,
+}: QuickCardProps) {
+
+  return (
+    <Link
+      href={href}
+      className="p-6 rounded-xl border hover:shadow-md transition group"
+    >
+      <h3 className="font-semibold text-lg group-hover:text-black">
+        {title}
+      </h3>
+
+      <p className="text-sm text-gray-600 mt-2">
+        {description}
+      </p>
+    </Link>
   );
 }

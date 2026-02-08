@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/mighty-argo-shuttle",
+      "destination": "https://dcc-argo.vercel.app/"
+    },
+    {
+      "source": "/mighty-argo-shuttle/:path*",
+      "destination": "https://dcc-argo.vercel.app/:path*"
+    }
+  ]
+}

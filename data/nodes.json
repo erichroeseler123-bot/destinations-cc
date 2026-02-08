@@ -1,0 +1,11 @@
+[
+  {
+    "id": "vegas-guide",
+    "slug": "vegas-guide",
+    "name": "Las Vegas Guide",
+    "type": "destination",
+    "region": "nevada",
+    "status": "active",
+    "description": "Tours, shows, transportation, and survival info for Las Vegas"
+  }
+]
