@@ -10,3 +10,11 @@
     "description": "Tours, shows, transportation, and survival info for Las Vegas visitors."
   }
 ]
+{
+  "slug": "new-orleans-guide",
+  "name": "New Orleans Guide",
+  "status": "active",
+  "type": "city",
+  "country": "United States",
+  "region": "Louisiana"
+}
