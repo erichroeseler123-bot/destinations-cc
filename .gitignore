@@ -10,3 +10,6 @@ out/
 .next/
 .vercel
 .env*.local
+# Build junk
+*.tsbuildinfo
+*.bak
