@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 import nodes from "@/data/nodes.json";
-import tours from "@/data/vegas.tours.json";
-
 import { getNodeSlugFromCity } from "@/src/data/city-aliases";
 
 /* ========================================
@@ -17,22 +15,8 @@ interface Node {
   status: string;
 }
 
-interface Tour {
-  id: string;
-  name: string;
-  rating?: number | null;
-  reviews?: number | null;
-  price_from?: number | null;
-  tags: string[];
-  booking_url: string;
-
-  dcc: {
-    node: string;
-  };
-}
-
 /* ========================================
-   Affiliate Config
+   Affiliate
 ======================================== */
 
 const VIATOR_PID = "P00281144";
@@ -42,11 +26,8 @@ const VIATOR_MCID = "42383";
    Helpers
 ======================================== */
 
-function buildViatorSearch(
-  city: string,
-  attraction: string
-) {
-  const q = encodeURIComponent(`${city} ${attraction}`);
+function viatorSearch(city: string, topic: string) {
+  const q = encodeURIComponent(`${city} ${topic}`);
 
   return `https://www.viator.com/search/${encodeURIComponent(
     city
@@ -54,21 +35,78 @@ function buildViatorSearch(
 }
 
 /* ========================================
-   Core Attractions (Extendable)
+   Attractions
 ======================================== */
 
-const ATTRACTIONS: Record<string, string[]> = {
+const ATTRACTIONS: Record<
+  string,
+  {
+    title: string;
+    description: string;
+    query: string;
+  }[]
+> = {
   "las-vegas": [
-    "Hoover Dam Tour",
-    "Sphere Experience",
-    "Stratosphere Tower",
-    "Fremont Street",
-    "Grand Canyon Day Trip",
-    "Antelope Canyon Tour",
-    "Las Vegas Strip Tour",
-    "Helicopter Night Flight",
-    "Red Rock Canyon",
-    "High Roller Observation Wheel",
+    {
+      title: "Hoover Dam",
+      description:
+        "Visit one of America’s greatest engineering landmarks just outside Las Vegas.",
+      query: "Hoover Dam Tour",
+    },
+    {
+      title: "Sphere Experience",
+      description:
+        "Immersive concerts and digital experiences inside the world’s largest spherical venue.",
+      query: "Las Vegas Sphere Experience",
+    },
+    {
+      title: "Stratosphere Tower",
+      description:
+        "Sky-high observation deck and thrill rides overlooking the Strip.",
+      query: "Stratosphere Tower SkyJump Observation Deck",
+    },
+    {
+      title: "Fremont Street",
+      description:
+        "Historic downtown Las Vegas with live music and LED canopy.",
+      query: "Fremont Street Experience Tour",
+    },
+    {
+      title: "Grand Canyon",
+      description:
+        "Full-day guided trips to the Grand Canyon from Las Vegas.",
+      query: "Grand Canyon Day Trip from Las Vegas",
+    },
+    {
+      title: "Antelope Canyon",
+      description:
+        "Guided tours through iconic slot canyons in Arizona.",
+      query: "Antelope Canyon Tour from Las Vegas",
+    },
+    {
+      title: "Las Vegas Strip",
+      description:
+        "Guided sightseeing tours along the Strip and downtown.",
+      query: "Las Vegas Strip Sightseeing Tour",
+    },
+    {
+      title: "Helicopter Night Flight",
+      description:
+        "Scenic night helicopter flights over the Las Vegas Strip.",
+      query: "Las Vegas Helicopter Night Flight",
+    },
+    {
+      title: "Red Rock Canyon",
+      description:
+        "Scenic desert landscapes and hiking minutes from Vegas.",
+      query: "Red Rock Canyon Tour",
+    },
+    {
+      title: "High Roller Wheel",
+      description:
+        "Giant observation wheel overlooking the Strip.",
+      query: "High Roller Observation Wheel",
+    },
   ],
 };
 
@@ -81,25 +119,11 @@ export async function generateMetadata({
 }: {
   params: { city: string };
 }): Promise<Metadata> {
-  const city = params.city;
-
-  const title = `${city
-    .replace(/-/g, " ")} Attractions Guide | Top Things To Do`;
-
-  const description = `Explore the best attractions, landmarks, and experiences in ${city.replace(
-    /-/g,
-    " "
-  )}. Compare tours, tickets, and guided experiences.`;
+  const city = params.city.replace(/-/g, " ");
 
   return {
-    title,
-    description,
-
-    openGraph: {
-      title,
-      description,
-      type: "website",
-    },
+    title: `${city} Attractions Guide | Best Things To Do`,
+    description: `Discover the top attractions, landmarks, and experiences in ${city}. Compare tours, tickets, and guided trips.`,
   };
 }
 
@@ -107,55 +131,26 @@ export async function generateMetadata({
    Page
 ======================================== */
 
-export default async function AttractionsPage({
+export default function AttractionsPage({
   params,
 }: {
   params: { city: string };
 }) {
   const { city } = params;
 
-  /* ---------- Resolve Node ---------- */
-
   const nodeSlug = getNodeSlugFromCity(city);
 
-  if (!nodeSlug) {
-    notFound();
-  }
+  if (!nodeSlug) notFound();
 
   const node = (nodes as Node[]).find(
     (n) => n.slug === nodeSlug
   );
 
-  if (!node || node.status !== "active") {
-    notFound();
-  }
+  if (!node || node.status !== "active") notFound();
 
   const cityName = node.name.replace(" Guide", "");
 
-  /* ---------- Get Attractions ---------- */
-
-  const attractions =
-    ATTRACTIONS[city] || [];
-
-  /* ---------- Fallback ---------- */
-
-  if (!attractions.length) {
-    return (
-      <main className="max-w-4xl mx-auto px-6 py-24">
-        <h1 className="text-3xl font-bold">
-          Attractions in {cityName}
-        </h1>
-
-        <p className="mt-6 text-zinc-500">
-          Attractions coming soon.
-        </p>
-      </main>
-    );
-  }
-
-  /* ====================================
-     Render
-  ==================================== */
+  const attractions = ATTRACTIONS[city] || [];
 
   return (
     <main className="max-w-7xl mx-auto px-6 py-24 space-y-20">
@@ -164,53 +159,49 @@ export default async function AttractionsPage({
 
       <header className="space-y-6 border-b border-zinc-800 pb-12">
 
-        <h1 className="text-4xl md:text-6xl font-black tracking-tight">
+        <h1 className="text-4xl md:text-6xl font-black">
           Top Attractions in {cityName}
         </h1>
 
-        <p className="max-w-3xl text-zinc-400 text-lg leading-relaxed">
-          Discover must-see landmarks, iconic experiences,
-          and top-rated tours in {cityName}. Compare verified
-          providers and book with confidence.
+        <p className="max-w-3xl text-zinc-400 text-lg">
+          Explore iconic landmarks, guided tours, and must-see
+          experiences in {cityName}. Compare verified providers
+          and book with confidence.
         </p>
 
       </header>
 
       {/* ================= GRID ================= */}
 
-      <section className="grid md:grid-cols-2 gap-8">
+      <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-        {attractions.map((item) => {
+        {attractions.map((a) => {
 
-          const affiliateUrl = buildViatorSearch(
+          const link = viatorSearch(
             cityName,
-            item
+            a.query
           );
 
           return (
 
             <div
-              key={item}
-              className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-5 hover:bg-zinc-900/80 transition"
+              key={a.title}
+              className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4 hover:bg-zinc-900/80 transition"
             >
 
               <h2 className="text-xl font-semibold">
-                {item}
+                {a.title}
               </h2>
 
               <p className="text-sm text-zinc-400 leading-relaxed">
-
-                Explore guided tours, ticketed experiences,
-                and local operators offering {item} in{" "}
-                {cityName}.
-
+                {a.description}
               </p>
 
               <a
-                href={affiliateUrl}
+                href={link}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
-                className="inline-block mt-2 text-sm font-semibold text-white bg-cyan-600 hover:bg-cyan-500 px-5 py-3 rounded-xl transition shadow-lg shadow-cyan-600/20"
+                className="inline-block mt-2 w-full text-center text-sm font-semibold text-white bg-cyan-600 hover:bg-cyan-500 px-4 py-3 rounded-xl transition shadow-cyan-600/20 shadow-lg"
               >
                 View Tours & Tickets →
               </a>
@@ -218,31 +209,33 @@ export default async function AttractionsPage({
             </div>
 
           );
+
         })}
 
       </section>
 
       {/* ================= TRUST ================= */}
 
-      <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-7 text-center space-y-3">
+      <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-8 text-center space-y-4">
 
-        <h3 className="font-semibold text-lg">
-          Why Book Through DCC?
+        <h3 className="text-xl font-semibold">
+          Why Book Through Destination Command Center?
         </h3>
 
-        <p className="text-sm text-zinc-400 max-w-xl mx-auto">
+        <p className="text-sm text-zinc-400 max-w-2xl mx-auto">
 
-          We analyze pricing, availability, reliability, and
-          reviews to surface the highest-performing attraction
-          experiences.
+          We analyze availability, pricing trends, provider
+          reliability, and verified reviews to surface the
+          highest-performing experiences.
 
         </p>
 
-        <div className="flex justify-center gap-4 text-sm text-cyan-400">
+        <div className="flex flex-wrap justify-center gap-4 text-sm text-cyan-400">
 
           <span>✔ Verified Providers</span>
           <span>✔ Free Cancellation</span>
           <span>✔ Secure Booking</span>
+          <span>✔ Real Reviews</span>
 
         </div>
 
