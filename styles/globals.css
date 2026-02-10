@@ -1,0 +1,142 @@
+/* globals.css */
+
+/* Root Variables for easy customization */
+:root {
+  --font-body: 'Roboto', var(--font-roboto, system-ui, sans-serif);
+  --font-heading: 'Montserrat', var(--font-montserrat, system-ui, sans-serif);
+  --color-primary: #0056b3; /* Primary Blue */
+  --color-primary-dark: #00408d; /* Darker Blue */
+  --color-accent: #ff9900; /* Accent Orange */
+  --color-accent-dark: #cc7a00; /* Darker Accent */
+  --background-color: #f9fafb; /* Light Background */
+  --text-color: #1f2937; /* Dark Text */
+  --hero-height: 85vh;
+}
+
+/* Body and Base Styles */
+body {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  margin: 0;
+  padding: 0;
+}
+
+/* Headings Styles */
+h1, h2, h3 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h1 { font-size: clamp(2.5rem, 6vw, 4rem); }
+h2 { font-size: clamp(2rem, 5vw, 3rem); }
+h3 { font-size: clamp(1.6rem, 4vw, 2.2rem); }
+
+p {
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+/* Card Styles */
+.card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 35px rgba(0,0,0,0.12);
+}
+
+.card-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 1.5rem;
+}
+
+.card-title {
+  margin: 0 0 0.75rem;
+}
+
+.card-button {
+  display: inline-block;
+  margin-top: 1rem;
+  background: var(--color-primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+.card-button:hover {
+  background: var(--color-primary-dark);
+}
+
+/* Hero Section */
+.hero {
+  position: relative;
+  height: var(--hero-height);
+  min-height: 600px;
+  background-image: url('/images/hero-travel.jpg'); /* Add a high-res image */
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.6));
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 900px;
+  padding: 2rem;
+}
+
+.cta-button {
+  background: var(--color-accent);
+  padding: 1rem 2.2rem;
+  font-size: 1.25rem;
+  border-radius: 50px;
+  transition: all 0.3s;
+}
+
+.cta-button:hover {
+  background: var(--color-accent-dark);
+  transform: scale(1.05);
+}
+
+/* Destination Grid */
+.destination-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  padding: 3rem 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .hero { height: 70vh; }
+  h1 { font-size: 2.8rem; }
+  .destination-grid { grid-template-columns: 1fr; padding: 1.5rem; }
+}

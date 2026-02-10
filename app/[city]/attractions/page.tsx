@@ -1,323 +1,116 @@
-import { notFound } from "next/navigation";
-import type { Metadata } from "next";
+export const dynamicParams = false;
 
-import nodes from "@/data/nodes.json";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+import tours from "@/data/tours.json";
+import aliases from "@/data/city-aliases.json";
 import { getNodeSlugFromCity } from "@/src/data/city-aliases";
 
-/* ========================================
-   Types
-======================================== */
-
-interface Node {
-  slug: string;
+type Tour = {
+  id: string | number;
   name: string;
-  description?: string;
-  status: string;
-}
-
-type Attraction = {
-  title: string;
-  description: string;
-  /** What we pass into Viator search */
-  query: string;
-  /** Optional badge for conversion (e.g. "Best Seller") */
-  badge?: string;
+  city?: string;
+  region?: string;
+  price_from?: number;
+  rating?: number;
+  review_count?: number;
 };
 
-/* ========================================
-   Affiliate
-======================================== */
+const allTours = tours as unknown as Tour[];
 
-const VIATOR_PID = "P00281144";
-const VIATOR_MCID = "42383";
-
-/* ========================================
-   Helpers
-======================================== */
-
-function normalizeCityKey(cityParam: string) {
-  return cityParam.trim().toLowerCase();
+export async function generateStaticParams() {
+  return Object.keys(aliases).map((city) => ({ city }));
 }
 
-/**
- * Viator search link (affiliate-safe)
- * We build:
- *   https://www.viator.com/search/<city>?pid=...&mcid=...&query=<city + topic>
- */
-function viatorSearch(cityLabel: string, topic: string) {
-  const q = encodeURIComponent(`${cityLabel} ${topic}`);
-  const place = encodeURIComponent(cityLabel);
-
-  return `https://www.viator.com/search/${place}?pid=${VIATOR_PID}&mcid=${VIATOR_MCID}&query=${q}`;
+function slugifyCity(s: string) {
+  return s.toLowerCase().trim().replace(/\s+/g, "-");
 }
 
-/* ========================================
-   Attractions Catalog
-   (keyed by city route param: "las-vegas", "new-orleans", etc.)
-======================================== */
-
-const ATTRACTIONS: Record<string, Attraction[]> = {
-  "las-vegas": [
-    {
-      title: "Hoover Dam",
-      description:
-        "Visit one of America’s greatest engineering landmarks just outside Las Vegas.",
-      query: "Hoover Dam Tour",
-      badge: "Iconic",
-    },
-    {
-      title: "Sphere Experience",
-      description:
-        "Immersive concerts and digital experiences inside the world’s largest spherical venue.",
-      query: "Las Vegas Sphere Experience",
-      badge: "New",
-    },
-    {
-      title: "Stratosphere Tower",
-      description:
-        "Sky-high observation deck and thrill rides overlooking the Strip.",
-      query: "Stratosphere Tower SkyJump Observation Deck",
-    },
-    {
-      title: "Fremont Street",
-      description:
-        "Historic downtown Las Vegas with live music and the LED canopy.",
-      query: "Fremont Street Experience Tour",
-    },
-    {
-      title: "Grand Canyon",
-      description:
-        "Full-day guided trips to the Grand Canyon from Las Vegas (multiple rim options).",
-      query: "Grand Canyon Day Trip from Las Vegas",
-      badge: "Best Seller",
-    },
-    {
-      title: "Antelope Canyon",
-      description:
-        "Guided tours through iconic slot canyons in Arizona — insanely photogenic.",
-      query: "Antelope Canyon Tour from Las Vegas",
-      badge: "Top Rated",
-    },
-    {
-      title: "Las Vegas Strip",
-      description:
-        "Guided sightseeing tours along the Strip — great for first-timers.",
-      query: "Las Vegas Strip Sightseeing Tour",
-    },
-    {
-      title: "Helicopter Night Flight",
-      description:
-        "Scenic night helicopter flights over the Las Vegas Strip.",
-      query: "Las Vegas Helicopter Night Flight",
-      badge: "Bestseller",
-    },
-    {
-      title: "Red Rock Canyon",
-      description:
-        "Scenic desert landscapes and hiking minutes from Vegas — the best local escape.",
-      query: "Red Rock Canyon Tour",
-    },
-    {
-      title: "High Roller Wheel",
-      description:
-        "Giant observation wheel with sweeping Strip views.",
-      query: "High Roller Observation Wheel",
-    },
-  ],
-
-  "new-orleans": [
-    {
-      title: "French Quarter Walking Tour",
-      description:
-        "Explore the historic heart of New Orleans with local guides.",
-      query: "French Quarter walking tour",
-      badge: "Most Popular",
-    },
-    {
-      title: "Garden District Tour",
-      description:
-        "Stroll past antebellum mansions and oak-lined streets.",
-      query: "Garden District tour",
-    },
-    {
-      title: "Swamp Airboat Tour",
-      description:
-        "See alligators and wetlands outside the city — classic Louisiana.",
-      query: "swamp tour airboat",
-      badge: "Top Rated",
-    },
-    {
-      title: "Jackson Square & St. Louis Cathedral",
-      description:
-        "The iconic heart of the French Quarter — history + architecture.",
-      query: "Jackson Square St Louis Cathedral tour",
-    },
-    {
-      title: "Steamboat Natchez Jazz Cruise",
-      description:
-        "Mississippi River paddlewheel cruise — the signature New Orleans vibe.",
-      query: "Steamboat Natchez jazz cruise",
-      badge: "Best Seller",
-    },
-    {
-      title: "Ghost / Voodoo / Vampire Tour",
-      description:
-        "Night tours through the Quarter’s haunted + voodoo legends.",
-      query: "ghost voodoo vampire walking tour",
-      badge: "Night Pick",
-    },
-    {
-      title: "Food & Cocktail Tour",
-      description:
-        "Taste the city — gumbo, beignets, pralines, and classic cocktails.",
-      query: "food and cocktail tour",
-      badge: "High Conversion",
-    },
-  ],
-};
-
-/* ========================================
-   Metadata
-======================================== */
-
-export async function generateMetadata({
+export default async function CityAttractionsPage({
   params,
 }: {
-  params: { city: string };
-}): Promise<Metadata> {
-  const cityKey = normalizeCityKey(params.city);
-  const pretty = cityKey.replace(/-/g, " ");
-
-  return {
-    title: `${pretty} Attractions | Best Things To Do`,
-    description: `Discover top attractions and experiences in ${pretty}. Compare tours and tickets with verified providers and real reviews.`,
-    openGraph: {
-      title: `${pretty} Attractions | Destination Command Center`,
-      description: `Top attractions, landmarks, and experiences in ${pretty}.`,
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${pretty} Attractions | Destination Command Center`,
-      description: `Top attractions and experiences in ${pretty}.`,
-    },
-  };
-}
-
-/* ========================================
-   Page
-======================================== */
-
-export default function AttractionsPage({
-  params,
-}: {
-  params: { city: string };
+  params: Promise<{ city: string }>;
 }) {
-  const cityKey = normalizeCityKey(params.city);
+  const { city } = await params;
 
-  const nodeSlug = getNodeSlugFromCity(cityKey);
-  if (!nodeSlug) notFound();
+  const nodeSlug = getNodeSlugFromCity(city);
+  if (!nodeSlug) return notFound();
 
-  const node = (nodes as Node[]).find((n) => n.slug === nodeSlug);
-  if (!node || node.status !== "active") notFound();
-
-  const cityName = node.name.replace(" Guide", "");
-  const attractions = ATTRACTIONS[cityKey] ?? [];
+  const displayCity = city.replace(/-/g, " ");
+  const cityTours = allTours
+    .filter((t) => t?.city && slugifyCity(t.city) === city)
+    .slice(0, 24);
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-24 space-y-20">
-      {/* ================= HERO ================= */}
-
-      <header className="space-y-6 border-b border-zinc-800 pb-12">
-        <div className="space-y-3">
-          <p className="text-xs uppercase tracking-wider text-cyan-400">
-            Attractions • Tickets • Tours
-          </p>
-
-          <h1 className="text-4xl md:text-6xl font-black">
-            Top Attractions in {cityName}
-          </h1>
+    <main className="max-w-5xl mx-auto px-6 py-16 space-y-10">
+      <header className="space-y-3">
+        <div className="flex items-center gap-3">
+          <span className="text-cyan-400 text-xs font-bold uppercase tracking-widest border border-cyan-400/30 px-2 py-1 rounded">
+            DCC City Guide
+          </span>
+          <span className="text-zinc-500 text-[11px] uppercase tracking-tighter">
+            Node: <span className="text-cyan-300 font-mono">{nodeSlug}</span>
+          </span>
         </div>
 
-        <p className="max-w-3xl text-zinc-400 text-lg leading-relaxed">
-          Hand-picked landmarks and “must-do” experiences in {cityName}. Each
-          card drops you into a pre-filtered Viator search (affiliate-safe) so
-          users land closer to checkout.
+        <h1 className="text-4xl font-black capitalize tracking-tight">
+          {displayCity} Attractions
+        </h1>
+
+        <p className="text-zinc-400 max-w-2xl">
+          Programmatic “Attractions” hub page (build-safe). Today it surfaces tours by matching tour.city → URL city slug.
+          Later, you can swap this to a real attractions catalog without changing the route structure.
         </p>
       </header>
 
-      {/* ================= GRID ================= */}
-
-      {attractions.length > 0 ? (
-        <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {attractions.map((a) => {
-            const link = viatorSearch(cityName, a.query);
-
-            return (
-              <div
-                key={a.title}
-                className="relative rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4 hover:bg-zinc-900/80 transition"
-              >
-                {a.badge && (
-                  <div className="absolute -top-3 right-4 bg-cyan-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
-                    {a.badge}
-                  </div>
-                )}
-
-                <h2 className="text-xl font-semibold">{a.title}</h2>
-
-                <p className="text-sm text-zinc-400 leading-relaxed">
-                  {a.description}
-                </p>
-
-                <a
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer sponsored"
-                  className="inline-block mt-2 w-full text-center text-sm font-semibold text-white bg-cyan-600 hover:bg-cyan-500 px-4 py-3 rounded-xl transition shadow-cyan-600/20 shadow-lg"
-                >
-                  View Tours & Tickets →
-                </a>
-              </div>
-            );
-          })}
-        </section>
-      ) : (
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-10 text-center space-y-3">
-          <h2 className="text-2xl font-bold">Attractions are loading</h2>
-          <p className="text-zinc-400">
-            We don’t have an attractions catalog for{" "}
-            <span className="text-cyan-400 font-semibold">{cityName}</span> yet.
+      {cityTours.length === 0 ? (
+        <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
+          <p className="text-zinc-300 font-semibold">No tours mapped to this city yet.</p>
+          <p className="text-zinc-500 mt-2 text-sm">
+            This is expected until Alaska ports (or your next ingest batch) populates tours with matching city fields.
           </p>
+          <div className="mt-6">
+            <Link className="text-cyan-400 hover:text-cyan-300 transition" href={`/${city}`}>
+              ← Back to {displayCity}
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <section className="space-y-4">
+          <h2 className="text-sm font-bold uppercase text-zinc-500 tracking-widest">
+            Top picks in {displayCity}
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {cityTours.map((t) => (
+              <Link
+                key={String(t.id)}
+                href={`/tours/${t.id}`}
+                className="p-5 bg-zinc-900/30 border border-zinc-800 rounded-2xl hover:border-cyan-500/50 transition"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-white font-bold leading-snug">{t.name}</div>
+                    <div className="text-zinc-500 text-sm mt-2">
+                      {t.rating ? `${t.rating}★` : "—"}{" "}
+                      {t.review_count ? `(${t.review_count} reviews)` : ""}
+                      {t.price_from ? ` • from $${t.price_from}` : ""}
+                    </div>
+                  </div>
+                  <div className="text-cyan-500 font-bold">→</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div className="pt-10 border-t border-zinc-800">
+            <Link className="text-zinc-400 hover:text-cyan-400 transition" href={`/${city}`}>
+              ← Back to {displayCity}
+            </Link>
+          </div>
         </section>
       )}
-
-      {/* ================= TRUST ================= */}
-
-      <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-8 text-center space-y-4">
-        <h3 className="text-xl font-semibold">
-          Why Book Through Destination Command Center?
-        </h3>
-
-        <p className="text-sm text-zinc-400 max-w-2xl mx-auto">
-          We optimize the click path: better search intent → better landing page
-          → higher conversion. Providers are ranked using availability, price
-          stability, and verified review density.
-        </p>
-
-        <div className="flex flex-wrap justify-center gap-4 text-sm text-cyan-400">
-          <span>✔ Verified Providers</span>
-          <span>✔ Free Cancellation</span>
-          <span>✔ Secure Booking</span>
-          <span>✔ Real Reviews</span>
-        </div>
-      </section>
-
-      {/* ================= FOOTER ================= */}
-
-      <footer className="pt-10 border-t border-zinc-800 text-sm text-zinc-500 text-center">
-        © {new Date().getFullYear()} Destination Command Center
-      </footer>
     </main>
   );
 }

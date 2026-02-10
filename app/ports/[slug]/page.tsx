@@ -1,7 +1,10 @@
-import fs from "fs";
-import path from "path";
+export const dynamicParams = false;
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
+
+// Import JSON directly (no fs/path) — safe for next-on-pages
+import portsData from "../../../data/ports.generated.json";
 
 type Port = {
   slug: string;
@@ -12,50 +15,32 @@ type Port = {
   passenger_volume?: number;
 };
 
-function getPorts(): Port[] {
-  const filePath = path.join(
-    process.cwd(),
-    "data",
-    "ports.generated.json"
-  );
-
-  const raw = fs.readFileSync(filePath, "utf-8");
-  return JSON.parse(raw);
-}
+const ports = portsData as Port[];
 
 /* REQUIRED for static export */
 export async function generateStaticParams() {
-  const ports = getPorts();
-
-  return ports.map(port => ({
+  return ports.map((port) => ({
     slug: port.slug,
   }));
 }
 
-export const dynamic = "force-static";
 
-export default function PortPage({
+export default async function PortPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const ports = getPorts();
+  const resolvedParams = await params;
 
-  const port = ports.find(p => p.slug === params.slug);
+  const port = ports.find((p) => p.slug === resolvedParams.slug);
 
-  if (!port) {
-    notFound();
-  }
+  if (!port) notFound();
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-20 space-y-10">
-
       {/* HEADER */}
       <section>
-        <h1 className="text-3xl font-bold">
-          {port.name}
-        </h1>
-
+        <h1 className="text-3xl font-bold">{port.name}</h1>
         <p className="text-gray-600">
           {port.city}, {port.country}
         </p>
@@ -63,16 +48,14 @@ export default function PortPage({
 
       {/* METADATA */}
       <section className="space-y-2">
-        <h2 className="text-xl font-semibold">
-          Port Overview
-        </h2>
+        <h2 className="text-xl font-semibold">Port Overview</h2>
 
         <ul className="list-disc pl-6 space-y-1 text-gray-700">
           <li>
             <strong>Region:</strong> {port.region}
           </li>
 
-          {port.passenger_volume && (
+          {typeof port.passenger_volume === "number" && (
             <li>
               <strong>Annual Passengers:</strong>{" "}
               {port.passenger_volume.toLocaleString()}
@@ -83,14 +66,10 @@ export default function PortPage({
 
       {/* NAVIGATION */}
       <section className="pt-6 border-t">
-        <Link
-          href="/"
-          className="text-blue-600 hover:underline"
-        >
+        <Link href="/" className="text-blue-600 hover:underline">
           ← Back to All Regions
         </Link>
       </section>
-
     </main>
   );
 }

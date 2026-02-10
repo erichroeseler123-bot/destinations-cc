@@ -1,18 +1,27 @@
-import type { Metadata } from 'next';
+// app/layout.tsx
+import { Roboto, Montserrat } from 'next/font/google'; // Built-in font import
+import './globals.css'; // your global styles
 
-export const metadata: Metadata = {
-  title: 'Destination Command Center',
-  description: 'Cruise port intelligence and information',
-};
+const roboto = Roboto({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  display: 'swap', // prevents invisible text
+  variable: '--font-roboto',
+});
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  weight: ['700'],
+  display: 'swap',
+  variable: '--font-montserrat',
+});
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={`${roboto.variable} ${montserrat.variable}`}>
+        {children}
+      </body>
     </html>
   );
 }

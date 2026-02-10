@@ -1,8 +1,20 @@
+export const dynamicParams = false;
+
+
+
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 import nodes from "@/data/nodes.json";
 import { getNodeSlugFromCity } from "@/src/data/city-aliases";
+
+import aliases from "@/data/city-aliases.json";
+
+
+export async function generateStaticParams() {
+  return Object.keys(aliases).map((city) => ({ city }));
+}
+
 
 /* ========================================
    Types
@@ -109,9 +121,11 @@ const SHOWS: Record<
 export async function generateMetadata({
   params,
 }: {
-  params: { city: string };
+  params: Promise<{ city: string }>;
 }): Promise<Metadata> {
-  const city = params.city.replace(/-/g, " ");
+  const resolvedParams = await params;
+
+  const city = resolvedParams.city.replace(/-/g, " ");
 
   return {
     title: `${city} Shows | Cirque du Soleil, Concerts & Tickets`,
@@ -123,12 +137,14 @@ export async function generateMetadata({
    Page
 ======================================== */
 
-export default function ShowsPage({
+export default async function ShowsPage({
   params,
 }: {
-  params: { city: string };
+  params: Promise<{ city: string }>;
 }) {
-  const { city } = params;
+  const resolvedParams = await params;
+
+  const { city } = resolvedParams;
 
   const nodeSlug = getNodeSlugFromCity(city);
   if (!nodeSlug) notFound();

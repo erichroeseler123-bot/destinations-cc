@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1",
+    "name": "Juneau Glacier Helicopter Tour",
+    "city": "Juneau",
+    "price_from": 200,
+    "rating": 4.8,
+    "review_count": 150,
+    "lat": 58.3019,
+    "lng": -134.4197,
+    "timezone": "America/Anchorage",
+    "duration": "2 hours"
+  },
+  {
+    "id": "2",
+    "name": "Mendenhall Glacier Tour",
+    "city": "Juneau",
+    "price_from": 150,
+    "rating": 4.7,
+    "review_count": 100,
+    "lat": 58.3019,
+    "lng": -134.4197,
+    "timezone": "America/Anchorage",
+    "duration": "1.5 hours"
+  }
+]

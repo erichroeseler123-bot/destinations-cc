@@ -1,70 +1,5 @@
 [
   {
-    "id": "vegas-guide",
-    "slug": "vegas-guide",
-    "name": "Las Vegas Guide",
-    "type": "destination",
-    "region": "nevada",
-    "status": "active",
-    "description": "Tours, shows, transportation, and survival info for Las Vegas."
-  },
-  {
-    "id": "new-orleans-guide",
-    "slug": "new-orleans-guide",
-    "name": "New Orleans Guide",
-    "type": "destination",
-    "region": "louisiana",
-    "status": "active",
-    "description": "Music, food, history, and cultural experiences in New Orleans."
-  },
-
-  {
-    "id": "miami-guide",
-    "slug": "miami-guide",
-    "name": "Miami Guide",
-    "type": "destination",
-    "region": "florida",
-    "status": "active",
-    "description": "Cruises, Everglades tours, and beach experiences."
-  },
-  {
-    "id": "orlando-guide",
-    "slug": "orlando-guide",
-    "name": "Orlando Guide",
-    "type": "destination",
-    "region": "florida",
-    "status": "active",
-    "description": "Theme parks and family attractions."
-  },
-  {
-    "id": "nashville-guide",
-    "slug": "nashville-guide",
-    "name": "Nashville Guide",
-    "type": "destination",
-    "region": "tennessee",
-    "status": "active",
-    "description": "Live music and cultural tourism."
-  },
-  {
-    "id": "austin-guide",
-    "slug": "austin-guide",
-    "name": "Austin Guide",
-    "type": "destination",
-    "region": "texas",
-    "status": "active",
-    "description": "Music, BBQ, and outdoor culture."
-  },
-  {
-    "id": "san-diego-guide",
-    "slug": "san-diego-guide",
-    "name": "San Diego Guide",
-    "type": "destination",
-    "region": "california",
-    "status": "active",
-    "description": "Coastal tours and harbor cruises."
-  },
-
-  {
     "id": "juneau-guide",
     "slug": "juneau-guide",
     "name": "Juneau Guide",
@@ -83,6 +18,15 @@
     "description": "Totem parks, fishing, and rainforest tours."
   },
   {
+    "id": "sitka-guide",
+    "slug": "sitka-guide",
+    "name": "Sitka Guide",
+    "type": "destination",
+    "region": "alaska",
+    "status": "active",
+    "description": "Wildlife, Russian history, and coastal hikes."
+  },
+  {
     "id": "skagway-guide",
     "slug": "skagway-guide",
     "name": "Skagway Guide",
@@ -92,12 +36,132 @@
     "description": "White Pass railway and Klondike history."
   },
   {
-    "id": "sitka-guide",
-    "slug": "sitka-guide",
-    "name": "Sitka Guide",
+    "id": "vegas-guide",
+    "slug": "vegas-guide",
+    "name": "Las Vegas Guide",
     "type": "destination",
-    "region": "alaska",
+    "region": "nevada",
     "status": "active",
-    "description": "Wildlife, Russian history, and coastal hikes."
+    "description": "Tours, shows, transportation, and survival info for Las Vegas.",
+    "lat": 36.1699,
+    "lng": -115.1398,
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "id": "chandler-guide",
+    "slug": "chandler-guide",
+    "name": "Chandler Guide",
+    "type": "destination",
+    "region": "arizona",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Chandler."
+  },
+  {
+    "id": "mesa-guide",
+    "slug": "mesa-guide",
+    "name": "Mesa Guide",
+    "type": "destination",
+    "region": "arizona",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Mesa."
+  },
+  {
+    "id": "phoenix-guide",
+    "slug": "phoenix-guide",
+    "name": "Phoenix Guide",
+    "type": "destination",
+    "region": "arizona",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Phoenix."
+  },
+  {
+    "id": "scottsdale-guide",
+    "slug": "scottsdale-guide",
+    "name": "Scottsdale Guide",
+    "type": "destination",
+    "region": "arizona",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Scottsdale."
+  },
+  {
+    "id": "tempe-guide",
+    "slug": "tempe-guide",
+    "name": "Tempe Guide",
+    "type": "destination",
+    "region": "arizona",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Tempe."
+  },
+  {
+    "id": "anaheim-guide",
+    "slug": "anaheim-guide",
+    "name": "Anaheim Guide",
+    "type": "destination",
+    "region": "california",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Anaheim."
+  },
+  {
+    "id": "burbank-guide",
+    "slug": "burbank-guide",
+    "name": "Burbank Guide",
+    "type": "destination",
+    "region": "california",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Burbank."
+  },
+  {
+    "id": "los-angeles-guide",
+    "slug": "los-angeles-guide",
+    "name": "Los Angeles Guide",
+    "type": "destination",
+    "region": "california",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Los Angeles."
+  },
+  {
+    "id": "pasadena-guide",
+    "slug": "pasadena-guide",
+    "name": "Pasadena Guide",
+    "type": "destination",
+    "region": "california",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Pasadena."
+  },
+  {
+    "id": "sacramento-guide",
+    "slug": "sacramento-guide",
+    "name": "Sacramento Guide",
+    "type": "destination",
+    "region": "california",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Sacramento."
+  },
+  {
+    "id": "san-diego-guide",
+    "slug": "san-diego-guide",
+    "name": "San Diego Guide",
+    "type": "destination",
+    "region": "california",
+    "status": "active",
+    "description": "Coastal tours and harbor cruises."
+  },
+  {
+    "id": "san-francisco-guide",
+    "slug": "san-francisco-guide",
+    "name": "San Francisco Guide",
+    "type": "destination",
+    "region": "california",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for San Francisco."
+  },
+  {
+    "id": "san-jose-guide",
+    "slug": "san-jose-guide",
+    "name": "San Jose Guide",
+    "type": "destination",
+    "region": "california",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for San Jose."
   }
 ]
