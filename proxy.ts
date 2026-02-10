@@ -13,7 +13,7 @@ const BLOCK = [
   /^\/\.git/i,
 ];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const p = req.nextUrl.pathname;
 
   if (BLOCK.some((re) => re.test(p))) {
