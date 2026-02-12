@@ -1,302 +1,126 @@
 import Link from "next/link";
-
-/* ============================================
-   Homepage — Destination Gateway
-   Optimized for Traffic → Cities → Monetization
-============================================ */
+import CityGrid from "@/app/components/CityGrid";
+import HomeCitySearch from "@/app/components/HomeCitySearch";
+import FeaturedIntel from "@/app/components/FeaturedIntel";
+import { getAllCities } from "@/lib/data/locations";
+import { pickCitySlugByName, topCities } from "@/lib/data/cityPick";
 
 export const dynamic = "force-static";
 
 export default function HomePage() {
+  const cities = getAllCities();
+
+  const vegas = pickCitySlugByName("Las Vegas") || "cities?q=las%20vegas";
+  const miami = pickCitySlugByName("Miami") || "cities?q=miami";
+
+  const topUS = topCities({ country: "US", limit: 18 });
+  const topGlobal = topCities({ limit: 18 });
+
   return (
-    <main className="max-w-7xl mx-auto px-6 py-24 space-y-28">
+    <main className="min-h-screen bg-zinc-950 text-white">
+      <div className="max-w-6xl mx-auto px-6 py-16 space-y-14">
 
-      {/* ==================================================
-         HERO
-      ================================================== */}
+        {/* HERO */}
+        <section className="rounded-3xl border border-white/10 bg-gradient-to-b from-white/5 to-transparent p-10 md:p-14 space-y-8">
+          <div className="space-y-3">
+            <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-tight">
+              Destination Command Center
+            </h1>
+            <p className="text-zinc-300 max-w-2xl">
+              Verified city guides, tours, and travel intelligence — built to help you book better and travel smarter.
+            </p>
+          </div>
 
-      <section className="text-center space-y-8">
+          <HomeCitySearch cities={cities as any} />
 
-        <h1 className="text-5xl md:text-7xl font-black tracking-tight">
-          Destination Command Center
-        </h1>
+          
+          <FeaturedIntel />
+<div className="flex flex-wrap gap-3 pt-2">
+            <Link
+              href="/cities"
+              className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm text-zinc-200 hover:bg-white/10 transition"
+            >
+              Browse All Cities →
+            </Link>
 
-        <p className="max-w-3xl mx-auto text-xl text-zinc-400 leading-relaxed">
-          Verified city guides, top-rated tours, and travel intelligence —
-          built to help you book better and travel smarter.
-        </p>
+            <Link
+              href="/usa"
+              className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm text-zinc-200 hover:bg-white/10 transition"
+            >
+              USA Tourist Cities →
+            </Link>
 
-        <div className="flex flex-col sm:flex-row justify-center gap-4 pt-6">
+            <Link
+              href="/authority"
+              className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm text-zinc-200 hover:bg-white/10 transition"
+            >
+              Authority Layer →
+            </Link>
 
-          <PrimaryButton href="/las-vegas">
-            Explore Las Vegas →
-          </PrimaryButton>
+            <Link
+              href={vegas.startsWith("cities?") ? `/${vegas}` : `/${vegas}`}
+              className="rounded-2xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white hover:bg-cyan-500 transition shadow-lg shadow-cyan-600/25"
+            >
+              Explore Las Vegas →
+            </Link>
 
-          <SecondaryButton href="/authority">
-            Browse Authority Layer
-          </SecondaryButton>
+            <Link
+              href={miami.startsWith("cities?") ? `/${miami}` : `/${miami}`}
+              className="rounded-2xl border border-cyan-500/30 bg-cyan-500/10 px-5 py-3 text-sm text-cyan-200 hover:bg-cyan-500/15 transition"
+            >
+              Explore Miami →
+            </Link>
+          </div>
+        </section>
 
-        </div>
-
-      </section>
-
-
-      {/* ==================================================
-         FEATURED DESTINATIONS
-      ================================================== */}
-
-      <section className="space-y-10">
-
-        <header className="space-y-2 text-center">
-
-          <h2 className="text-3xl font-bold">
-            Popular Destinations
-          </h2>
-
-          <p className="text-zinc-400">
-            Hand-curated guides with verified experiences
-          </p>
-
-        </header>
-
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-          <CityCard
-            href="/las-vegas"
-            name="Las Vegas"
-            tagline="Shows • Helicopters • Grand Canyon • Nightlife"
-            badge="🔥 Most Popular"
-          />
-
-          <CityCard
-            href="/alaska"
-            name="Alaska"
-            tagline="Cruise Ports • Glaciers • Wildlife"
-          />
-
-          <CityCard
-            href="/miami"
-            name="Miami"
-            tagline="Beaches • Cruises • Nightlife"
-          />
-
-        </div>
-
-      </section>
-
-
-      {/* ==================================================
-         WHY DCC
-      ================================================== */}
-
-      <section className="grid md:grid-cols-3 gap-8 text-center">
-
-        <Feature
-          title="Verified Data"
-          desc="Real reviews, real providers, real availability."
+        {/* TOP US */}
+        <CityGrid
+          title="Top USA Cities"
+          subtitle="Fast entry points to high-intent pages"
+          cities={topUS}
         />
 
-        <Feature
-          title="Smarter Rankings"
-          desc="We prioritize quality, reliability, and value."
+        {/* TOP GLOBAL */}
+        <CityGrid
+          title="Top Global Cities"
+          subtitle="Highest population hubs (good for search + authority growth)"
+          cities={topGlobal}
         />
 
-        <Feature
-          title="No Hype"
-          desc="Authority-layer intelligence — not paid placement."
-        />
-
-      </section>
-
-
-      {/* ==================================================
-         QUICK LINKS
-      ================================================== */}
-
-      <section className="space-y-8">
-
-        <header className="text-center">
-
-          <h2 className="text-2xl font-bold">
-            Explore the Network
-          </h2>
-
-        </header>
-
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-          <QuickLink
-            href="/las-vegas/tours"
-            title="Top Tours"
-            desc="Best-rated activities"
-          />
-
-          <QuickLink
-            href="/las-vegas/attractions"
-            title="Attractions"
-            desc="Must-see landmarks"
-          />
-
-          <QuickLink
+        {/* AUTHORITY + PORTS */}
+        <section className="grid md:grid-cols-3 gap-4">
+          <Link
             href="/authority"
-            title="Authority Layer"
-            desc="Ports & logistics"
-          />
+            className="rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition p-6"
+          >
+            <div className="text-lg font-semibold">Authority Layer</div>
+            <div className="text-sm text-zinc-400 mt-1">Ports, logistics, constraints, reality checks</div>
+            <div className="text-xs text-cyan-300 mt-3">Open →</div>
+          </Link>
 
-        </div>
+          <Link
+            href="/ports"
+            className="rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition p-6"
+          >
+            <div className="text-lg font-semibold">Ports Directory</div>
+            <div className="text-sm text-zinc-400 mt-1">Cruise ports + routing anchors</div>
+            <div className="text-xs text-cyan-300 mt-3">Open →</div>
+          </Link>
 
-      </section>
+          <Link
+            href="/tours"
+            className="rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition p-6"
+          >
+            <div className="text-lg font-semibold">Tours Hub</div>
+            <div className="text-sm text-zinc-400 mt-1">Browse tour catalog and city tour pages</div>
+            <div className="text-xs text-cyan-300 mt-3">Open →</div>
+          </Link>
+        </section>
 
-
-      {/* ==================================================
-         FOOTER
-      ================================================== */}
-
-      <footer className="pt-16 border-t border-zinc-800 text-center text-sm text-zinc-500 space-y-2">
-
-        <p>
+        <footer className="pt-10 border-t border-white/10 text-xs text-zinc-500">
           © {new Date().getFullYear()} Destination Command Center
-        </p>
-
-        <p>
-          Travel Intelligence • Verified Networks • Optimized Booking
-        </p>
-
-      </footer>
-
+        </footer>
+      </div>
     </main>
-  );
-}
-
-
-/* ======================================================
-   COMPONENTS
-====================================================== */
-
-function PrimaryButton({
-  href,
-  children,
-}: {
-  href: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className="px-7 py-4 rounded-xl bg-cyan-600 text-white font-semibold hover:bg-cyan-500 transition shadow-lg shadow-cyan-600/25"
-    >
-      {children}
-    </Link>
-  );
-}
-
-
-function SecondaryButton({
-  href,
-  children,
-}: {
-  href: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className="px-7 py-4 rounded-xl border border-zinc-700 text-zinc-300 hover:bg-zinc-900 transition"
-    >
-      {children}
-    </Link>
-  );
-}
-
-
-function CityCard({
-  href,
-  name,
-  tagline,
-  badge,
-}: {
-  href: string;
-  name: string;
-  tagline: string;
-  badge?: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="relative p-7 rounded-2xl border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900/80 transition group"
-    >
-
-      {badge && (
-        <div className="absolute -top-3 right-4 bg-cyan-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
-          {badge}
-        </div>
-      )}
-
-      <h3 className="text-xl font-bold group-hover:text-cyan-400 transition">
-        {name}
-      </h3>
-
-      <p className="mt-2 text-sm text-zinc-400">
-        {tagline}
-      </p>
-
-      <span className="inline-block mt-4 text-sm text-cyan-400 font-medium">
-        View Guide →
-      </span>
-
-    </Link>
-  );
-}
-
-
-function Feature({
-  title,
-  desc,
-}: {
-  title: string;
-  desc: string;
-}) {
-  return (
-    <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-900/40">
-
-      <h3 className="font-semibold text-lg">
-        {title}
-      </h3>
-
-      <p className="mt-2 text-sm text-zinc-400">
-        {desc}
-      </p>
-
-    </div>
-  );
-}
-
-
-function QuickLink({
-  href,
-  title,
-  desc,
-}: {
-  href: string;
-  title: string;
-  desc: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="p-6 rounded-xl border border-zinc-800 hover:bg-zinc-900 transition"
-    >
-
-      <h3 className="font-semibold">
-        {title}
-      </h3>
-
-      <p className="mt-2 text-sm text-zinc-400">
-        {desc}
-      </p>
-
-    </Link>
   );
 }

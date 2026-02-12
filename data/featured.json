@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Mighty Argo Shuttle",
+    "href": "/mighty-argo-shuttle",
+    "tag": "Route Intel",
+    "desc": "Pickups, buffers, and a clean Denver → Idaho Springs plan."
+  },
+  {
+    "title": "Mighty Argo Guide",
+    "href": "/mighty-argo",
+    "tag": "Attraction Intel",
+    "desc": "What it is, what to expect, and why it matters."
+  },
+  {
+    "title": "Colorado Region Hub",
+    "href": "/regions/colorado",
+    "tag": "Regional Hubs",
+    "desc": "Regional logistics and staging areas."
+  },
+  {
+    "title": "Authority Layer",
+    "href": "/authority",
+    "tag": "Constraints",
+    "desc": "Reality checks, routing anchors, and travel logic."
+  }
+]
