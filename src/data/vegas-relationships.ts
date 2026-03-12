@@ -145,6 +145,29 @@ export const VEGAS_RELATIONSHIP_PAGES: VegasRelationshipPage[] = [
     districtNote: "This is a center-Strip routing problem more than a generic Vegas hotel search.",
   },
   {
+    slug: "wynn-casino",
+    path: "hotels-near",
+    title: "Hotels near Wynn Casino",
+    summary:
+      "This page captures the hotel-first version of Wynn Casino planning: north-Strip luxury, nightlife pairing, and high-end restaurant routing without dropping into a generic citywide hotel list.",
+    anchorType: "casino",
+    anchorSlug: "wynn-casino",
+    resultType: "hotel",
+    resultSlugs: ["wynn", "encore", "venetian", "resorts-world", "treasure-island", "bellagio"],
+    guidance: [
+      { title: "Best for north-Strip luxury", body: "These stays fit buyers who want higher-end Vegas without defaulting to the center Strip cluster." },
+      { title: "Best for nightlife pairing", body: "This hotel set works well when clubs, premium dinners, and later-night routing all matter." },
+      { title: "Best for premium-first Vegas", body: "Useful when the stay decision is driven by luxury positioning before shows or day trips." },
+    ],
+    relatedLinks: [
+      { href: "/casino/wynn-casino", label: "Wynn Casino" },
+      { href: "/las-vegas-strip", label: "Las Vegas Strip" },
+      { href: "/las-vegas/hotels", label: "Las Vegas hotels" },
+    ],
+    overlayTags: ["luxury", "nightlife", "strip"],
+    districtNote: "This is a north-Strip hotel-routing problem with heavier luxury weighting than the center corridor.",
+  },
+  {
     slug: "bellagio",
     path: "attractions-near",
     title: "Attractions near Bellagio",
@@ -166,6 +189,52 @@ export const VEGAS_RELATIONSHIP_PAGES: VegasRelationshipPage[] = [
     ],
     overlayTags: ["romantic", "strip", "show-adjacent"],
     districtNote: "Bellagio sits inside the highest-density central Strip attraction zone.",
+  },
+  {
+    slug: "caesars-palace-casino",
+    path: "attractions-near",
+    title: "Attractions near Caesars Palace Casino",
+    summary:
+      "This page captures the attraction-first version of Caesars Palace Casino planning: center-Strip landmarks, show-night adjacency, and what to stack around a flagship casino base.",
+    anchorType: "casino",
+    anchorSlug: "caesars-palace-casino",
+    resultType: "attraction",
+    resultSlugs: ["fountains-of-bellagio", "high-roller", "sphere-las-vegas", "area15"],
+    guidance: [
+      { title: "Best for center-Strip stacks", body: "Useful when Caesars is the anchor and the rest of the plan should stay in the same core corridor." },
+      { title: "Best for show-night buyers", body: "This works when the trip combines casino time, residencies, and nearby visual landmarks." },
+      { title: "Best for first-timers", body: "These attraction choices make the surrounding itinerary easier for buyers who want obvious Vegas icons nearby." },
+    ],
+    relatedLinks: [
+      { href: "/casino/caesars-palace-casino", label: "Caesars Palace Casino" },
+      { href: "/las-vegas/things-to-do", label: "Las Vegas things to do" },
+      { href: "/las-vegas-strip", label: "Las Vegas Strip" },
+    ],
+    overlayTags: ["strip", "show-adjacent", "luxury"],
+    districtNote: "Caesars sits in the highest-density center-Strip attraction zone, so nearby activity matters more than citywide discovery.",
+  },
+  {
+    slug: "fountains-of-bellagio",
+    path: "hotels-near",
+    title: "Hotels near Fountains of Bellagio",
+    summary:
+      "This page captures the hotel-first version of Bellagio fountain planning: romantic central-Strip stays, fountain-night routing, and easier access to nearby flagship experiences.",
+    anchorType: "attraction",
+    anchorSlug: "fountains-of-bellagio",
+    resultType: "hotel",
+    resultSlugs: ["bellagio", "caesars-palace", "cosmopolitan", "aria", "paris-las-vegas", "planet-hollywood"],
+    guidance: [
+      { title: "Best for romantic stays", body: "These hotel nodes fit couples and fountain-first Vegas buyers who want the visual centerpiece near the room." },
+      { title: "Best for central Strip access", body: "Useful when the buyer wants flagship Strip access without drifting too far north or south." },
+      { title: "Best for show and dining stacks", body: "This cluster pairs well with central-Strip dinners, shows, and one-base evening routing." },
+    ],
+    relatedLinks: [
+      { href: "/hotel/bellagio", label: "Bellagio hotel node" },
+      { href: "/things-to-do-on-the-strip", label: "Things to do on the Strip" },
+      { href: "/las-vegas/hotels", label: "Las Vegas hotels" },
+    ],
+    overlayTags: ["romantic", "strip", "luxury"],
+    districtNote: "The fountains sit inside the densest central-Strip hotel corridor, so proximity is a real booking factor here.",
   },
   {
     slug: "bellagio",
