@@ -264,6 +264,19 @@ export default async function VegasPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-2">
+          <Link href="/las-vegas/pools" className="rounded-3xl border border-sky-400/20 bg-sky-500/10 p-6 hover:bg-sky-500/15">
+            <p className="text-xs uppercase tracking-[0.22em] text-sky-300">Category Hub</p>
+            <h2 className="mt-3 text-2xl font-bold">Las Vegas pools</h2>
+            <p className="mt-2 text-zinc-200">Pool-driven hotel routing for luxury decks, family pool complexes, and dayclub-adjacent planning.</p>
+          </Link>
+          <Link href="/luxury-hotels-las-vegas" className="rounded-3xl border border-sky-400/20 bg-sky-500/10 p-6 hover:bg-sky-500/15">
+            <p className="text-xs uppercase tracking-[0.22em] text-sky-300">Overlay</p>
+            <h2 className="mt-3 text-2xl font-bold">Luxury hotels in Las Vegas</h2>
+            <p className="mt-2 text-zinc-200">Premium-stay overlay for resort, spa, and romantic Vegas buyers.</p>
+          </Link>
+        </section>
+
+        <section className="grid gap-4 md:grid-cols-2">
           <Link href="/las-vegas/casinos" className="rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6 hover:bg-emerald-500/15">
             <p className="text-xs uppercase tracking-[0.22em] text-emerald-300">Entity Hub</p>
             <h2 className="mt-3 text-2xl font-bold">Las Vegas casinos</h2>

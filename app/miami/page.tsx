@@ -162,6 +162,20 @@ export default function MiamiPage() {
         </section>
 
         <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Beach-led discovery</h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <Link href="/miami/beaches" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
+              <h3 className="font-semibold">Miami beaches</h3>
+              <p className="mt-2 text-sm text-zinc-300">A real beach authority layer for South Beach, quieter family stretches, and beach-day planning.</p>
+            </Link>
+            <Link href="/miami/tours" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
+              <h3 className="font-semibold">Miami tours</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use the broader tours lane when the beach plan becomes Everglades, boats, or excursion routing.</p>
+            </Link>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">Miami FAQ</h2>
           <div className="mt-4 space-y-3">
             {FAQ.map((item) => (
