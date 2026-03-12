@@ -23,16 +23,28 @@ export default function CitySportsSection({ cityName, citySlug, teams }: CitySpo
 
       <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {teams.map((team) => (
-          <Link
-            key={team.slug}
-            href={`/sports/team/${team.slug}`}
-            className="rounded-2xl border border-white/10 bg-black/20 p-4 hover:bg-white/10"
-          >
-            <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">{team.leagueSlug.toUpperCase()}</p>
-            <h3 className="mt-2 text-lg font-semibold text-white">{team.name}</h3>
-            <p className="mt-2 text-sm text-zinc-300">{team.venueName}</p>
-            <p className="mt-3 text-sm text-zinc-400 line-clamp-3">{team.description}</p>
-          </Link>
+          <div key={team.slug} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <Link href={`/sports/team/${team.slug}`} className="block hover:text-cyan-200">
+              <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">{team.leagueSlug.toUpperCase()}</p>
+              <h3 className="mt-2 text-lg font-semibold text-white">{team.name}</h3>
+              <p className="mt-2 text-sm text-zinc-300">{team.venueName}</p>
+              <p className="mt-3 text-sm text-zinc-400 line-clamp-3">{team.description}</p>
+            </Link>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                href={`/sports/team/${team.slug}`}
+                className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-zinc-200 hover:bg-white/10"
+              >
+                Team page
+              </Link>
+              <Link
+                href={`/venues/${team.venueSlug}`}
+                className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-zinc-200 hover:bg-white/10"
+              >
+                Venue page
+              </Link>
+            </div>
+          </div>
         ))}
       </div>
 

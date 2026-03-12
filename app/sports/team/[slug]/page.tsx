@@ -161,6 +161,12 @@ export default async function SportsTeamPage({ params }: { params: Promise<Param
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">Related city and venue routes</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <Link
+              href={`/venues/${team.venueSlug}`}
+              className="rounded-2xl border border-white/10 bg-black/20 p-4 hover:bg-white/10"
+            >
+              {team.venueName}
+            </Link>
             {relatedLinks.map((page) => (
               <Link
                 key={page.href}
