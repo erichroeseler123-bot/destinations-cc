@@ -102,6 +102,94 @@ export const CITY_ADVENTURE_LANES: Record<string, CityAdventureLaneConfig> = {
       },
     ],
   },
+  miami: {
+    cityKey: "miami",
+    cityName: "Miami",
+    sectionTitle: "Water sports, rentals, and aerial adventure lanes",
+    sectionDescription:
+      "Miami is a natural fit for bookable adventure inventory: Biscayne water activities, jet skis, parasailing, boat-based action, and short-format thrill products.",
+    categories: [
+      {
+        title: "Jet ski rentals and tours",
+        description:
+          "One of Miami's clearest high-intent categories for short, energetic, bookable water activity inventory.",
+        query: "jet ski rental miami",
+        ctaLabel: "Browse jet skis",
+      },
+      {
+        title: "Water activities and parasailing",
+        description:
+          "Boat-led and water-led activity inventory for buyers who want speed, skyline views, or simple beach-day upgrades.",
+        query: "parasailing water activities miami",
+        ctaLabel: "Browse water activities",
+      },
+      {
+        title: "Kayak and paddle experiences",
+        description:
+          "Lower-friction active inventory for Biscayne, mangrove, and calmer water exploration.",
+        query: "kayak paddleboard tour miami",
+        ctaLabel: "Browse kayak and paddle",
+      },
+      {
+        title: "Helicopter and aerial sightseeing",
+        description:
+          "Premium-format activity inventory for skyline, coastline, and celebration-trip buyers.",
+        query: "helicopter tour miami",
+        ctaLabel: "Browse helicopter flights",
+      },
+      {
+        title: "Scooter and mobility rentals",
+        description:
+          "Short-distance exploration inventory for South Beach and city-near routing that sits outside the main excursion stack.",
+        query: "scooter moped rental miami",
+        ctaLabel: "Browse scooter rentals",
+      },
+    ],
+  },
+  orlando: {
+    cityKey: "orlando",
+    cityName: "Orlando",
+    sectionTitle: "Adventure activities beyond the theme-park core",
+    sectionDescription:
+      "Orlando converts first on parks and family attractions, but there is still a strong secondary lane for airboats, balloon flights, skydiving, water sports, and active rentals.",
+    categories: [
+      {
+        title: "Hot air balloon rides",
+        description:
+          "Sunrise balloon inventory is one of the clearest premium add-ons for Orlando travelers who want one non-park morning activity.",
+        query: "hot air balloon ride orlando",
+        ctaLabel: "Browse balloon rides",
+      },
+      {
+        title: "Skydiving and tandem jumps",
+        description:
+          "Bucket-list adventure inventory for visitors extending the trip beyond theme parks and resort time.",
+        query: "skydiving orlando",
+        ctaLabel: "Browse skydiving",
+      },
+      {
+        title: "Airboat and wildlife adventures",
+        description:
+          "Florida wetland and wildlife inventory that fits naturally as a contrast to theme-park days.",
+        query: "airboat tour orlando",
+        ctaLabel: "Browse airboat adventures",
+      },
+      {
+        title: "Jet skis and water activities",
+        description:
+          "Lake-based activity inventory for buyers who want active outdoor time instead of another full park day.",
+        query: "jet ski rental orlando",
+        ctaLabel: "Browse water activities",
+      },
+      {
+        title: "Scooter and mobility rentals",
+        description:
+          "Flexible rental inventory for shorter city movements, resort-adjacent exploration, and low-friction local travel.",
+        query: "scooter rental orlando",
+        ctaLabel: "Browse scooter rentals",
+      },
+    ],
+  },
 };
 
 export function getCityAdventureLane(cityKey: string): CityAdventureLaneConfig | null {
