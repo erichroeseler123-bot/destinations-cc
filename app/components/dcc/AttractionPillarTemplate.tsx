@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import AuthorityMediaStrip from "@/app/components/dcc/AuthorityMediaStrip";
 import ViatorTourGrid from "@/app/components/dcc/ViatorTourGrid";
+import type { NodeImageAsset } from "@/src/lib/media-resolver";
 
 export type AttractionPillarConfig = {
   slug: string;
@@ -13,8 +14,8 @@ export type AttractionPillarConfig = {
   gridTitle: string;
   gridDescription: string;
   schemaType: "TouristAttraction" | "LandmarksOrHistoricalBuildings" | "CollectionPage";
-  heroImage?: { src: string; alt: string };
-  gallery?: Array<{ src: string; alt: string }>;
+  heroImage?: NodeImageAsset;
+  gallery?: NodeImageAsset[];
   highlights: Array<{ title: string; body: string }>;
   tourFallbacks: Array<{ label: string; query: string }>;
   sections: Array<{ title: string; body: string }>;

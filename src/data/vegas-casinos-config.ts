@@ -1,3 +1,6 @@
+import type { NodeImageAsset } from "@/src/lib/media-resolver";
+import { buildLocalImageAsset } from "@/src/lib/media-resolver";
+
 export type VegasCasinoTag =
   | "strip"
   | "downtown"
@@ -13,7 +16,7 @@ export type VegasCasino = {
   district: "las-vegas-strip" | "fremont-street" | "summerlin";
   hotelSlug?: string;
   tags: VegasCasinoTag[];
-  image?: { src: string; alt: string };
+  image?: NodeImageAsset;
   summary: string;
   anchors: string[];
   nearbyLinks: Array<{ href: string; label: string }>;
@@ -23,32 +26,20 @@ function buildVegasCasinoImage(
   name: string,
   district: VegasCasino["district"],
   tags: VegasCasinoTag[],
-): { src: string; alt: string } {
+): NodeImageAsset {
   if (district === "fremont-street") {
-    return {
-      src: "/images/las-vegas/casinos/downtown-classic.svg",
-      alt: `${name} Fremont Street casino concept artwork`,
-    };
+    return buildLocalImageAsset("/images/las-vegas/casinos/downtown-classic.svg", `${name} Fremont Street casino concept artwork`);
   }
 
   if (district === "summerlin") {
-    return {
-      src: "/images/las-vegas/casinos/summerlin-resort.svg",
-      alt: `${name} Summerlin resort casino concept artwork`,
-    };
+    return buildLocalImageAsset("/images/las-vegas/casinos/summerlin-resort.svg", `${name} Summerlin resort casino concept artwork`);
   }
 
   if (tags.includes("nightlife")) {
-    return {
-      src: "/images/las-vegas/casinos/strip-nightlife.svg",
-      alt: `${name} Strip nightlife casino concept artwork`,
-    };
+    return buildLocalImageAsset("/images/las-vegas/casinos/strip-nightlife.svg", `${name} Strip nightlife casino concept artwork`);
   }
 
-  return {
-    src: "/images/las-vegas/casinos/strip-luxury.svg",
-    alt: `${name} luxury Strip casino concept artwork`,
-  };
+  return buildLocalImageAsset("/images/las-vegas/casinos/strip-luxury.svg", `${name} luxury Strip casino concept artwork`);
 }
 
 const VEGAS_CASINOS_BASE: VegasCasino[] = [

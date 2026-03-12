@@ -1,3 +1,6 @@
+import type { NodeImageAsset } from "@/src/lib/media-resolver";
+import { buildLocalImageAsset } from "@/src/lib/media-resolver";
+
 export type CityPoolNode = {
   slug: string;
   title: string;
@@ -10,8 +13,8 @@ export type CityPoolsConfig = {
   cityKey: string;
   cityName: string;
   heroSummary: string;
-  heroImage: { src: string; alt: string };
-  gallery: Array<{ src: string; alt: string }>;
+  heroImage: NodeImageAsset;
+  gallery: NodeImageAsset[];
   highlights: string[];
   poolNodes: CityPoolNode[];
   relatedLinks: Array<{ href: string; label: string }>;
@@ -24,27 +27,15 @@ export const CITY_POOLS_CONFIG: Record<string, CityPoolsConfig> = {
     cityName: "Las Vegas",
     heroSummary:
       "Vegas pools are their own search and booking lane: flagship resort pools, luxury pool decks, dayclub-adjacent scenes, and family-friendly hotel pool choices.",
-    heroImage: {
-      src: "/images/las-vegas/pools/hero.svg",
-      alt: "Las Vegas resort pool deck with palm trees and skyline styling",
-    },
+    heroImage: buildLocalImageAsset(
+      "/images/las-vegas/pools/hero.svg",
+      "Las Vegas resort pool deck with palm trees and skyline styling",
+    ),
     gallery: [
-      {
-        src: "/images/las-vegas/pools/luxury-deck.svg",
-        alt: "Luxury Las Vegas pool deck concept artwork",
-      },
-      {
-        src: "/images/las-vegas/pools/dayclub.svg",
-        alt: "Las Vegas dayclub pool concept artwork",
-      },
-      {
-        src: "/images/las-vegas/pools/family-pool.svg",
-        alt: "Family-friendly Las Vegas resort pool concept artwork",
-      },
-      {
-        src: "/images/las-vegas/pools/sunset-cabana.svg",
-        alt: "Las Vegas sunset pool cabana concept artwork",
-      },
+      buildLocalImageAsset("/images/las-vegas/pools/luxury-deck.svg", "Luxury Las Vegas pool deck concept artwork"),
+      buildLocalImageAsset("/images/las-vegas/pools/dayclub.svg", "Las Vegas dayclub pool concept artwork"),
+      buildLocalImageAsset("/images/las-vegas/pools/family-pool.svg", "Family-friendly Las Vegas resort pool concept artwork"),
+      buildLocalImageAsset("/images/las-vegas/pools/sunset-cabana.svg", "Las Vegas sunset pool cabana concept artwork"),
     ],
     highlights: [
       "Luxury-pool intent is different from family-pool intent, so the page should split those paths early.",

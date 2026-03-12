@@ -1,3 +1,6 @@
+import type { NodeImageAsset } from "@/src/lib/media-resolver";
+import { buildLocalImageAsset } from "@/src/lib/media-resolver";
+
 export type VegasHotelTag =
   | "pet-friendly"
   | "kid-friendly"
@@ -16,7 +19,7 @@ export type VegasHotel = {
   area: "mid-strip" | "south-strip" | "north-strip" | "downtown" | "off-strip";
   tier: "budget" | "upper-midscale" | "luxury";
   tags: VegasHotelTag[];
-  image?: { src: string; alt: string };
+  image?: NodeImageAsset;
   summary: string;
   famousFor: string[];
   nearbyHooks: string[];
@@ -26,46 +29,28 @@ function buildVegasHotelImage(
   name: string,
   area: VegasHotel["area"],
   tags: VegasHotelTag[],
-): { src: string; alt: string } {
+): NodeImageAsset {
   if (area === "downtown") {
-    return {
-      src: "/images/las-vegas/hotels/downtown-classic.svg",
-      alt: `${name} downtown Las Vegas hotel concept artwork`,
-    };
+    return buildLocalImageAsset("/images/las-vegas/hotels/downtown-classic.svg", `${name} downtown Las Vegas hotel concept artwork`);
   }
 
   if (area === "south-strip" && tags.includes("kid-friendly")) {
-    return {
-      src: "/images/las-vegas/hotels/south-strip-family.svg",
-      alt: `${name} South Strip family-friendly hotel concept artwork`,
-    };
+    return buildLocalImageAsset("/images/las-vegas/hotels/south-strip-family.svg", `${name} South Strip family-friendly hotel concept artwork`);
   }
 
   if (area === "north-strip" && tags.includes("luxury")) {
-    return {
-      src: "/images/las-vegas/hotels/north-strip-luxury.svg",
-      alt: `${name} north Strip luxury hotel concept artwork`,
-    };
+    return buildLocalImageAsset("/images/las-vegas/hotels/north-strip-luxury.svg", `${name} north Strip luxury hotel concept artwork`);
   }
 
   if (area === "mid-strip" && tags.includes("luxury")) {
-    return {
-      src: "/images/las-vegas/hotels/mid-strip-luxury.svg",
-      alt: `${name} mid-Strip luxury hotel concept artwork`,
-    };
+    return buildLocalImageAsset("/images/las-vegas/hotels/mid-strip-luxury.svg", `${name} mid-Strip luxury hotel concept artwork`);
   }
 
   if (area === "mid-strip") {
-    return {
-      src: "/images/las-vegas/hotels/mid-strip-social.svg",
-      alt: `${name} center Strip hotel concept artwork`,
-    };
+    return buildLocalImageAsset("/images/las-vegas/hotels/mid-strip-social.svg", `${name} center Strip hotel concept artwork`);
   }
 
-  return {
-    src: "/images/las-vegas/hotels/off-strip-resort.svg",
-    alt: `${name} Las Vegas resort hotel concept artwork`,
-  };
+  return buildLocalImageAsset("/images/las-vegas/hotels/off-strip-resort.svg", `${name} Las Vegas resort hotel concept artwork`);
 }
 
 const VEGAS_HOTELS_BASE: VegasHotel[] = [

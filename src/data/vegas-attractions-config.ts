@@ -1,3 +1,6 @@
+import type { NodeImageAsset } from "@/src/lib/media-resolver";
+import { buildLocalImageAsset } from "@/src/lib/media-resolver";
+
 export type VegasAttractionTag =
   | "strip"
   | "downtown"
@@ -13,7 +16,7 @@ export type VegasAttraction = {
   name: string;
   district: "las-vegas-strip" | "fremont-street" | "las-vegas-arts-district" | "summerlin" | "regional";
   tags: VegasAttractionTag[];
-  image?: { src: string; alt: string };
+  image?: NodeImageAsset;
   summary: string;
   primaryHref: string;
   nearbyLinks: Array<{ href: string; label: string }>;
@@ -23,39 +26,24 @@ function buildVegasAttractionImage(
   name: string,
   district: VegasAttraction["district"],
   tags: VegasAttractionTag[],
-): { src: string; alt: string } {
+): NodeImageAsset {
   if (district === "regional" && tags.includes("day-trip")) {
-    return {
-      src: "/images/las-vegas/attractions/day-trip.svg",
-      alt: `${name} Las Vegas day-trip attraction concept artwork`,
-    };
+    return buildLocalImageAsset("/images/las-vegas/attractions/day-trip.svg", `${name} Las Vegas day-trip attraction concept artwork`);
   }
 
   if (district === "summerlin" || tags.includes("outdoor")) {
-    return {
-      src: "/images/las-vegas/attractions/outdoor.svg",
-      alt: `${name} Las Vegas outdoor attraction concept artwork`,
-    };
+    return buildLocalImageAsset("/images/las-vegas/attractions/outdoor.svg", `${name} Las Vegas outdoor attraction concept artwork`);
   }
 
   if (district === "fremont-street") {
-    return {
-      src: "/images/las-vegas/attractions/downtown.svg",
-      alt: `${name} downtown Las Vegas attraction concept artwork`,
-    };
+    return buildLocalImageAsset("/images/las-vegas/attractions/downtown.svg", `${name} downtown Las Vegas attraction concept artwork`);
   }
 
   if (district === "las-vegas-arts-district" || tags.includes("immersive")) {
-    return {
-      src: "/images/las-vegas/attractions/immersive.svg",
-      alt: `${name} immersive Las Vegas attraction concept artwork`,
-    };
+    return buildLocalImageAsset("/images/las-vegas/attractions/immersive.svg", `${name} immersive Las Vegas attraction concept artwork`);
   }
 
-  return {
-    src: "/images/las-vegas/attractions/strip-landmark.svg",
-    alt: `${name} Las Vegas Strip attraction concept artwork`,
-  };
+  return buildLocalImageAsset("/images/las-vegas/attractions/strip-landmark.svg", `${name} Las Vegas Strip attraction concept artwork`);
 }
 
 const VEGAS_ATTRACTIONS_BASE: VegasAttraction[] = [
