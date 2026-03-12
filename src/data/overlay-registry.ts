@@ -76,8 +76,8 @@ export const OVERLAY_REGISTRY: DccOverlayRegistryNode[] = [
     slug: "pet-friendly-miami",
     citySlug: "miami",
     overlayType: "pet-friendly",
-    entityTypes: ["attraction", "beach"],
-    resultSlugs: ["bark-beach-miami-beach", "belle-isle-dog-park", "north-beach"],
+    entityTypes: ["hotel", "attraction", "beach"],
+    resultSlugs: ["loews-miami-beach", "1-hotel-south-beach", "bark-beach-miami-beach", "belle-isle-dog-park", "north-beach"],
     canonicalPath: "/pet-friendly/miami",
     summary: "Pet-friendly Miami overlay for dog-beach planning, easier outdoor routing, and stays that need more than a hotel pet-policy note.",
     relatedLinks: [
@@ -90,8 +90,15 @@ export const OVERLAY_REGISTRY: DccOverlayRegistryNode[] = [
     slug: "kid-friendly-orlando",
     citySlug: "orlando",
     overlayType: "kid-friendly",
-    entityTypes: ["attraction"],
-    resultSlugs: ["icon-park-orlando", "sea-life-orlando-aquarium", "airboat-adventures-orlando"],
+    entityTypes: ["hotel", "attraction"],
+    resultSlugs: [
+      "cabana-bay-beach-resort",
+      "signia-bonnet-creek",
+      "waldorf-astoria-orlando",
+      "icon-park-orlando",
+      "sea-life-orlando-aquarium",
+      "airboat-adventures-orlando",
+    ],
     canonicalPath: "/kid-friendly/orlando",
     summary: "Kid-friendly Orlando overlay for easier family routing across indoor attractions, ICON Park-style stops, and outdoor contrast days.",
     relatedLinks: [

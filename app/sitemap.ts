@@ -18,7 +18,7 @@ import { getRoadTripStopHref, ROAD_TRIP_STOPS_REGISTRY } from "@/src/data/road-t
 import { listRoadTripRouteSlugs } from "@/src/data/road-trips-registry";
 import { VEGAS_CASINOS_CONFIG } from "@/src/data/vegas-casinos-config";
 import { VEGAS_HOTELS_CONFIG } from "@/src/data/vegas-hotels-config";
-import { listAttractionsNearSlugs, listCasinosNearSlugs, listHotelsNearSlugs } from "@/src/data/vegas-relationships";
+import { listRelationshipSlugs } from "@/src/data/relationship-registry";
 import { evaluateCityPublishability } from "@/src/lib/sitemap/city-publishability";
 import { evaluatePortPublishability } from "@/src/lib/sitemap/port-publishability";
 
@@ -244,9 +244,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...listRoadTripRelationshipSlugs("stops-near").map((slug) => `/stops-near/${slug}`),
     ...listRoadTripRelationshipSlugs("diners-near").map((slug) => `/diners-near/${slug}`),
   ];
-  const hotelsNearUrls = listHotelsNearSlugs().map((slug) => `/hotels-near/${slug}`);
-  const attractionsNearUrls = listAttractionsNearSlugs().map((slug) => `/attractions-near/${slug}`);
-  const casinosNearUrls = listCasinosNearSlugs().map((slug) => `/casinos-near/${slug}`);
+  const hotelsNearUrls = listRelationshipSlugs("hotels-near").map((slug) => `/hotels-near/${slug}`);
+  const attractionsNearUrls = listRelationshipSlugs("attractions-near").map((slug) => `/attractions-near/${slug}`);
+  const casinosNearUrls = listRelationshipSlugs("casinos-near").map((slug) => `/casinos-near/${slug}`);
 
   const staticPaths = [
     "/",
