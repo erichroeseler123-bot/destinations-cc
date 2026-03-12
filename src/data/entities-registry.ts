@@ -61,7 +61,7 @@ const vegasHotelEntities: DccEntityRegistryNode[] = VEGAS_HOTELS_CONFIG.map((hot
   imageSet: { hero: hotel.heroImage, card: hotel.image, gallery: hotel.gallery },
   relatedEntitySlugs: [],
   accessibilityInfo:
-    hotel.slug === "bellagio" || hotel.slug === "vdara" || hotel.slug === "park-mgm"
+    hotel.slug === "bellagio" || hotel.slug === "vdara" || hotel.slug === "park-mgm" || hotel.slug === "caesars-palace"
       ? {
           wheelchairAccessible: true,
           accessibleEntrance: true,

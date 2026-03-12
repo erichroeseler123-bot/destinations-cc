@@ -245,6 +245,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...listRoadTripRelationshipSlugs("diners-near").map((slug) => `/diners-near/${slug}`),
   ];
   const hotelsNearUrls = listRelationshipSlugs("hotels-near").map((slug) => `/hotels-near/${slug}`);
+  const accessibleHotelsNearUrls = listRelationshipSlugs("accessible-hotels-near").map((slug) => `/accessible-hotels-near/${slug}`);
   const attractionsNearUrls = listRelationshipSlugs("attractions-near").map((slug) => `/attractions-near/${slug}`);
   const casinosNearUrls = listRelationshipSlugs("casinos-near").map((slug) => `/casinos-near/${slug}`);
 
@@ -310,6 +311,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...roadTripOverlayUrls,
     ...roadTripRelationshipUrls,
     ...hotelsNearUrls,
+    ...accessibleHotelsNearUrls,
     ...attractionsNearUrls,
     ...casinosNearUrls,
     "/data/sports-teams.json",

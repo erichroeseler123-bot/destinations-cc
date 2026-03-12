@@ -10,7 +10,8 @@ export type DccOverlayType =
   | "festival-pressure"
   | "music-first"
   | "family"
-  | "smoker-friendly";
+  | "smoker-friendly"
+  | "smoking";
 
 export type DccOverlayLink = {
   href: string;
@@ -87,6 +88,22 @@ export const OVERLAY_REGISTRY: DccOverlayRegistryNode[] = [
     ],
   },
   {
+    slug: "smoking-las-vegas",
+    citySlug: "las-vegas",
+    overlayType: "smoking",
+    entityTypes: ["hotel", "casino", "attraction"],
+    resultSlugs: ["park-mgm", "caesars-palace", "bellagio-casino", "caesars-palace-casino", "fremont-street-experience"],
+    canonicalPath: "/smoking/las-vegas",
+    summary:
+      "Smoking logistics overlay for Las Vegas travelers who need to compare casino-floor smoking culture, smoking-room availability, cigar-lounge adjacency, outdoor smoking escape options, and the policy friction between hotels, venues, and casino floors.",
+    relatedLinks: [
+      { href: "/vegas", label: "Vegas hub" },
+      { href: "/las-vegas/casinos", label: "Las Vegas casinos" },
+      { href: "/las-vegas/hotels", label: "Las Vegas hotels" },
+      { href: "/fremont-street", label: "Fremont Street" },
+    ],
+  },
+  {
     slug: "smoker-friendly-las-vegas",
     citySlug: "las-vegas",
     overlayType: "smoker-friendly",
@@ -141,6 +158,22 @@ export const OVERLAY_REGISTRY: DccOverlayRegistryNode[] = [
     resultSlugs: ["bellagio", "caesars-palace", "venetian", "wynn", "bellagio-casino", "wynn-casino"],
     canonicalPath: "/luxury-hotels-las-vegas",
     summary: "Luxury overlay layer for flagship Vegas hotel and casino routing.",
+  },
+  {
+    slug: "smoking-miami",
+    citySlug: "miami",
+    overlayType: "smoking",
+    entityTypes: ["hotel", "beach", "attraction"],
+    resultSlugs: ["loews-miami-beach", "1-hotel-south-beach", "south-beach", "north-beach", "hobie-beach"],
+    canonicalPath: "/smoking/miami",
+    summary:
+      "Smoking logistics overlay for Miami trips where outdoor patio culture, beach restrictions, hotel balcony assumptions, and district-by-district smoking norms matter more than generic nightlife advice.",
+    relatedLinks: [
+      { href: "/miami", label: "Miami hub" },
+      { href: "/miami/beaches", label: "Miami beaches" },
+      { href: "/pet-friendly/miami", label: "Pet-friendly Miami" },
+      { href: "https://www.miamidade.gov/global/environment/air/smoking-regulations.page", label: "Miami-Dade smoking regulations", kind: "external" },
+    ],
   },
   {
     slug: "kid-friendly-miami",

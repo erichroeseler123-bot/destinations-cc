@@ -29,6 +29,7 @@ import {
 
 export type DccRelationshipPath =
   | VegasRelationshipPath
+  | "accessible-hotels-near"
   | "venues-near"
   | "restaurants-near"
   | "pools-near"
@@ -84,6 +85,72 @@ const vegasRelationshipRegistryNodes: DccRelationshipRegistryNode[] = VEGAS_RELA
 
 export const RELATIONSHIP_REGISTRY: DccRelationshipRegistryNode[] = [
   ...vegasRelationshipRegistryNodes,
+  {
+    slug: "sphere-las-vegas",
+    path: "accessible-hotels-near",
+    citySlug: "las-vegas",
+    title: "Accessible hotels near Sphere Las Vegas",
+    summary:
+      "Where to stay when Sphere is the anchor and accessibility matters early: easier hotel movement, clearer arrival flow, lower-friction entrances, and better recovery options after high-stimulus show nights.",
+    anchorType: "attraction",
+    anchorSlug: "sphere-las-vegas",
+    resultType: "hotel",
+    resultSlugs: ["bellagio", "vdara", "park-mgm"],
+    guidance: [
+      {
+        title: "Best for lower-friction arrival",
+        body: "These stays fit travelers who want clearer resort layouts and fewer accessibility unknowns before locking in a Sphere night.",
+      },
+      {
+        title: "Best for event-night recovery",
+        body: "This cluster works well when the plan needs simpler re-entry, calmer hotel movement, or easier reset time after a major show.",
+      },
+      {
+        title: "Best for couples and small groups",
+        body: "Use this page when one accessibility requirement is driving the stay choice for the whole group, not just one guest.",
+      },
+    ],
+    relatedLinks: [
+      { href: "/accessibility/las-vegas", label: "Las Vegas accessibility guide" },
+      { href: "/las-vegas/shows", label: "Las Vegas shows" },
+      { href: "/vegas", label: "Vegas hub" },
+    ],
+    overlayTags: ["accessibility", "show-adjacent", "strip"],
+    districtNote: "This is a show-led accessibility routing problem centered on the Sphere and its surrounding resort cluster.",
+  },
+  {
+    slug: "caesars-palace-casino",
+    path: "accessible-hotels-near",
+    citySlug: "las-vegas",
+    title: "Accessible hotels near Caesars Palace Casino",
+    summary:
+      "Hotels near Caesars Palace for travelers who need strong central-Strip access without making the whole trip depend on one giant casino-floor routing decision.",
+    anchorType: "casino",
+    anchorSlug: "caesars-palace-casino",
+    resultType: "hotel",
+    resultSlugs: ["bellagio", "caesars-palace", "park-mgm"],
+    guidance: [
+      {
+        title: "Best for central Strip access",
+        body: "These hotel anchors keep the stay close to Caesars Palace while still giving easier alternatives to a single casino-centered movement pattern.",
+      },
+      {
+        title: "Best for mixed trip priorities",
+        body: "Use this when accessibility matters but the trip also includes shows, restaurants, and mid-Strip movement beyond the casino itself.",
+      },
+      {
+        title: "Best for lower-friction rerouting",
+        body: "This layer is useful when the hotel choice needs to absorb some of the strain that would otherwise fall on one busy casino property.",
+      },
+    ],
+    relatedLinks: [
+      { href: "/accessibility/las-vegas", label: "Las Vegas accessibility guide" },
+      { href: "/casino/caesars-palace-casino", label: "Caesars Palace Casino" },
+      { href: "/las-vegas/hotels", label: "Las Vegas hotels" },
+    ],
+    overlayTags: ["accessibility", "strip", "central-location"],
+    districtNote: "This is a center-Strip accessibility hotel-routing question, not just a casino-comparison page.",
+  },
   {
     slug: "south-beach",
     path: "hotels-near",
@@ -247,6 +314,19 @@ export function getResolvedHotelsNearPage(slug: string): {
   results: VegasHotel[];
 } | null {
   const resolved = getResolvedRelationshipPage("hotels-near", slug);
+  if (!resolved) return null;
+  return {
+    ...resolved,
+    results: resolved.results.filter((result): result is VegasHotel => "tier" in result),
+  };
+}
+
+export function getResolvedAccessibleHotelsNearPage(slug: string): {
+  page: DccRelationshipRegistryNode;
+  anchor: DccRelationshipAnchor;
+  results: VegasHotel[];
+} | null {
+  const resolved = getResolvedRelationshipPage("accessible-hotels-near", slug);
   if (!resolved) return null;
   return {
     ...resolved,
