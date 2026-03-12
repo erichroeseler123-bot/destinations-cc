@@ -69,6 +69,10 @@ export default async function SportsTeamPage({ params }: { params: Promise<Param
     venueCity: team.cityName,
     size: 8,
   });
+  const leagueHref = `/sports/${team.leagueSlug}`;
+  const relatedLinks = team.relatedCityPages.some((page) => page.href === leagueHref)
+    ? team.relatedCityPages
+    : [...team.relatedCityPages, { href: leagueHref, label: `${team.leagueSlug.toUpperCase()} league hub` }];
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -157,7 +161,7 @@ export default async function SportsTeamPage({ params }: { params: Promise<Param
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">Related city and venue routes</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
-            {team.relatedCityPages.map((page) => (
+            {relatedLinks.map((page) => (
               <Link
                 key={page.href}
                 href={page.href}
@@ -166,12 +170,6 @@ export default async function SportsTeamPage({ params }: { params: Promise<Param
                 {page.label}
               </Link>
             ))}
-            <Link
-              href={`/sports/${team.leagueSlug}`}
-              className="rounded-2xl border border-white/10 bg-black/20 p-4 hover:bg-white/10"
-            >
-              {team.leagueSlug.toUpperCase()} league hub
-            </Link>
           </div>
         </section>
       </div>
