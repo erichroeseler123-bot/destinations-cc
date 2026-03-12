@@ -1,0 +1,6 @@
+data/sources/geonames/
+.open-next/
+.wrangler/
+docs/
+legacy_vault/
+tests/
