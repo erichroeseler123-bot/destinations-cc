@@ -60,6 +60,15 @@ export default function VegasHotelGridSection({
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Connects to</p>
               <p className="mt-2 text-sm text-zinc-300">{hotel.nearbyHooks.join(" · ")}</p>
             </div>
+
+            <div className="mt-5">
+              <Link
+                href={`/hotel/${hotel.slug}`}
+                className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-100 hover:bg-white/10"
+              >
+                Open hotel node
+              </Link>
+            </div>
           </article>
         ))}
       </div>

@@ -9,6 +9,7 @@ import { NATIONAL_PARKS_AUTHORITY_CONFIG } from "@/src/data/national-parks-autho
 import { SPORTS_LEAGUES_CONFIG } from "@/src/data/sports-leagues-config";
 import { getSportsCitySlugs, SPORTS_TEAMS_CONFIG } from "@/src/data/sports-teams-config";
 import { SPORTS_VENUES_CONFIG } from "@/src/data/sports-venues-config";
+import { VEGAS_HOTELS_CONFIG } from "@/src/data/vegas-hotels-config";
 import { evaluateCityPublishability } from "@/src/lib/sitemap/city-publishability";
 import { evaluatePortPublishability } from "@/src/lib/sitemap/port-publishability";
 
@@ -200,6 +201,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const sportsTeamUrls = SPORTS_TEAMS_CONFIG.map((team) => `/sports/team/${team.slug}`);
   const nationalParkUrls = Object.keys(NATIONAL_PARKS_AUTHORITY_CONFIG).map((slug) => `/national-parks/${slug}`);
   const sportsVenueUrls = SPORTS_VENUES_CONFIG.map((venue) => `/venues/${venue.slug}`);
+  const hotelUrls = VEGAS_HOTELS_CONFIG.map((hotel) => `/hotel/${hotel.slug}`);
 
   const staticPaths = [
     "/",
@@ -244,6 +246,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...sportsCityUrls,
     ...sportsTeamUrls,
     ...sportsVenueUrls,
+    ...hotelUrls,
     "/data/sports-teams.json",
     "/data/sports-venues.json",
     "/data/sports-cities.json",

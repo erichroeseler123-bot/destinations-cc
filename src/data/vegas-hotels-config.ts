@@ -307,3 +307,7 @@ export const VEGAS_HOTELS_CONFIG: VegasHotel[] = [
 export function getVegasHotelsByTag(tag: VegasHotelTag) {
   return VEGAS_HOTELS_CONFIG.filter((hotel) => hotel.tags.includes(tag));
 }
+
+export function getVegasHotelBySlug(slug: string) {
+  return VEGAS_HOTELS_CONFIG.find((hotel) => hotel.slug === slug) || null;
+}
