@@ -1560,6 +1560,10 @@ export function getSportsTeam(slug: string) {
   return SPORTS_TEAMS_CONFIG.find((team) => team.slug === slug) || null;
 }
 
+export function getSportsTeamByPerformerSlug(performerSlug: string) {
+  return SPORTS_TEAMS_CONFIG.find((team) => team.seatGeekPerformerSlug === performerSlug) || null;
+}
+
 export function getTeamsByLeague(leagueSlug: string) {
   return SPORTS_TEAMS_CONFIG.filter((team) => team.leagueSlug === leagueSlug);
 }

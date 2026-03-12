@@ -176,6 +176,10 @@ function rankPath(
     return { priority: 0.6, changeFrequency: "monthly" };
   }
 
+  if (pathname.startsWith("/sports/game/")) {
+    return { priority: 0.65, changeFrequency: "daily" };
+  }
+
   return { priority: 0.5, changeFrequency: "monthly" };
 }
 

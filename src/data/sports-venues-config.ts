@@ -1237,3 +1237,9 @@ export function getSportsVenueSlugs() {
 export function getSportsVenuesByCity(citySlug: string) {
   return SPORTS_VENUES_CONFIG.filter((venue) => venue.citySlug === citySlug);
 }
+
+export function matchSportsVenueByName(name: string | null | undefined) {
+  if (!name) return null;
+  const normalized = name.trim().toLowerCase();
+  return SPORTS_VENUES_CONFIG.find((venue) => venue.name.trim().toLowerCase() === normalized) || null;
+}

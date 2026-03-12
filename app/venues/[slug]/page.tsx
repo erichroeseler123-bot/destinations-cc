@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { seatGeekAdapter } from "@/lib/dcc/providers/adapters/seatgeek";
+import { buildSeatGeekGameSlug, seatGeekAdapter } from "@/lib/dcc/providers/adapters/seatgeek";
 import { getSportsTeam, getTeamsByVenue } from "@/src/data/sports-teams-config";
 import { getSportsVenue, getSportsVenueSlugs } from "@/src/data/sports-venues-config";
 
@@ -170,7 +170,9 @@ export default async function VenuePage({ params }: { params: Promise<Params> })
                     </div>
                   ) : null}
                   <div className="space-y-3 p-4">
-                    <h3 className="font-semibold text-white">{event.title}</h3>
+                    <Link href={`/sports/game/${buildSeatGeekGameSlug(event)}`} className="block hover:text-cyan-200">
+                      <h3 className="font-semibold text-white">{event.title}</h3>
+                    </Link>
                     <p className="text-sm text-zinc-300">{formatDate(event.startDateTime)}</p>
                     <p className="text-sm text-zinc-400">
                       {[event.venueName, event.city].filter(Boolean).join(" • ") || "Live event"}
@@ -178,16 +180,24 @@ export default async function VenuePage({ params }: { params: Promise<Params> })
                     <p className="text-sm text-zinc-300">
                       {typeof event.lowestPrice === "number" ? `From USD ${event.lowestPrice}` : "See live price"}
                     </p>
-                    {event.url ? (
-                      <a
-                        href={event.url}
-                        target="_blank"
-                        rel="noopener noreferrer sponsored nofollow"
-                        className="inline-flex w-full items-center justify-center rounded-xl bg-cyan-600 px-4 py-3 font-semibold text-white hover:bg-cyan-500"
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        href={`/sports/game/${buildSeatGeekGameSlug(event)}`}
+                        className="inline-flex flex-1 items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-semibold text-white hover:bg-white/10"
                       >
-                        Buy on SeatGeek
-                      </a>
-                    ) : null}
+                        Game page
+                      </Link>
+                      {event.url ? (
+                        <a
+                          href={event.url}
+                          target="_blank"
+                          rel="noopener noreferrer sponsored nofollow"
+                          className="inline-flex flex-1 items-center justify-center rounded-xl bg-cyan-600 px-4 py-3 font-semibold text-white hover:bg-cyan-500"
+                        >
+                          Buy on SeatGeek
+                        </a>
+                      ) : null}
+                    </div>
                   </div>
                 </article>
               ))
