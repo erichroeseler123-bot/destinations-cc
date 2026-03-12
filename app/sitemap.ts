@@ -7,7 +7,7 @@ import { CRUISE_SPECIALTY_LANES } from "@/src/data/cruise-specialty-lanes";
 import { PORT_AUTHORITY_CONFIG } from "@/src/data/port-authority-config";
 import { NATIONAL_PARKS_AUTHORITY_CONFIG } from "@/src/data/national-parks-authority-config";
 import { SPORTS_LEAGUES_CONFIG } from "@/src/data/sports-leagues-config";
-import { SPORTS_TEAMS_CONFIG } from "@/src/data/sports-teams-config";
+import { getSportsCitySlugs, SPORTS_TEAMS_CONFIG } from "@/src/data/sports-teams-config";
 import { SPORTS_VENUES_CONFIG } from "@/src/data/sports-venues-config";
 import { evaluateCityPublishability } from "@/src/lib/sitemap/city-publishability";
 import { evaluatePortPublishability } from "@/src/lib/sitemap/port-publishability";
@@ -196,6 +196,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const cruiseShipUrls = listCruiseShipSlugs().map((slug) => `/cruises/ship/${slug}`);
   const cruiseSpecialtyUrls = CRUISE_SPECIALTY_LANES.map((lane) => `/cruises/themed/${lane.key}`);
   const sportsLeagueUrls = SPORTS_LEAGUES_CONFIG.map((league) => `/sports/${league.slug}`);
+  const sportsCityUrls = getSportsCitySlugs().map((city) => `/${city}/sports`);
   const sportsTeamUrls = SPORTS_TEAMS_CONFIG.map((team) => `/sports/team/${team.slug}`);
   const nationalParkUrls = Object.keys(NATIONAL_PARKS_AUTHORITY_CONFIG).map((slug) => `/national-parks/${slug}`);
   const sportsVenueUrls = SPORTS_VENUES_CONFIG.map((venue) => `/venues/${venue.slug}`);
@@ -230,8 +231,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...cruiseShipUrls,
     ...cruiseSpecialtyUrls,
     ...sportsLeagueUrls,
+    ...sportsCityUrls,
     ...sportsTeamUrls,
     ...sportsVenueUrls,
+    "/data/sports-teams.json",
+    "/data/sports-venues.json",
+    "/data/sports-cities.json",
   ];
 
   const seen = new Set<string>();

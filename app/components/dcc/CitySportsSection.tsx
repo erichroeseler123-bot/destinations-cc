@@ -50,6 +50,12 @@ export default function CitySportsSection({ cityName, citySlug, teams }: CitySpo
 
       <div className="mt-5 flex flex-wrap gap-3">
         <Link
+          href={`/${citySlug}/sports`}
+          className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-zinc-200 hover:bg-white/10"
+        >
+          Open {cityName} sports page
+        </Link>
+        <Link
           href="/sports"
           className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-zinc-200 hover:bg-white/10"
         >

@@ -83,6 +83,29 @@ export default function SportsHubPage() {
             ))}
           </div>
         </section>
+
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Public sports datasets</h2>
+          <p className="mt-2 max-w-3xl text-zinc-300">
+            These JSON routes expose the sports layer as machine-readable entity data for teams, venues, and city-level
+            sports coverage.
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {[
+              { href: "/data/sports-teams.json", label: "Sports teams JSON" },
+              { href: "/data/sports-venues.json", label: "Sports venues JSON" },
+              { href: "/data/sports-cities.json", label: "Sports cities JSON" },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-2xl border border-white/10 bg-black/20 p-4 hover:bg-white/10"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </section>
       </div>
     </main>
   );

@@ -1575,3 +1575,7 @@ export function getTeamsByCity(citySlug: string) {
 export function getTeamsByVenue(venueSlug: string) {
   return SPORTS_TEAMS_CONFIG.filter((team) => team.venueSlug === venueSlug);
 }
+
+export function getSportsCitySlugs() {
+  return Array.from(new Set(SPORTS_TEAMS_CONFIG.map((team) => team.citySlug))).sort();
+}
