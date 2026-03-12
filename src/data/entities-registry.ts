@@ -128,6 +128,63 @@ const miamiBeachEntities: DccEntityRegistryNode[] = (CITY_BEACHES_CONFIG.miami?.
   updatedAt: "2026-03-12",
 }));
 
+const miamiPetEntities: DccEntityRegistryNode[] = [
+  {
+    slug: "bark-beach-miami-beach",
+    entityType: "attraction",
+    citySlug: "miami",
+    districtSlug: "south-beach",
+    title: "Bark Beach",
+    summary: "Miami Beach's designated dog-beach surface, useful when the trip needs real pet-friendly outdoor time instead of only hotel-policy filtering.",
+    tags: ["pet-friendly", "beach", "outdoor", "miami-beach"],
+    canonicalPath: "/miami/beaches",
+    updatedAt: "2026-03-12",
+  },
+  {
+    slug: "belle-isle-dog-park",
+    entityType: "attraction",
+    citySlug: "miami",
+    title: "Belle Isle Dog Park",
+    summary: "A cleaner local pet-routing anchor for Miami stays that need dog-space access without treating the whole trip as South Beach only.",
+    tags: ["pet-friendly", "park", "walkable", "miami-beach"],
+    canonicalPath: "/miami",
+    updatedAt: "2026-03-12",
+  },
+];
+
+const orlandoKidEntities: DccEntityRegistryNode[] = [
+  {
+    slug: "icon-park-orlando",
+    entityType: "attraction",
+    citySlug: "orlando",
+    title: "ICON Park Orlando",
+    summary: "A family-flexible Orlando attraction cluster that works when the day needs easier walking, multiple kid-friendly stops, and shorter commitment windows.",
+    tags: ["kid-friendly", "family", "walkable", "indoor-outdoor"],
+    canonicalPath: "/orlando/attractions",
+    updatedAt: "2026-03-12",
+  },
+  {
+    slug: "sea-life-orlando-aquarium",
+    entityType: "attraction",
+    citySlug: "orlando",
+    title: "SEA LIFE Orlando Aquarium",
+    summary: "One of the clearer Orlando family-attraction answers for indoor time, younger kids, and lower-friction routing away from full park days.",
+    tags: ["kid-friendly", "family", "indoor", "aquarium"],
+    canonicalPath: "/orlando/attractions",
+    updatedAt: "2026-03-12",
+  },
+  {
+    slug: "airboat-adventures-orlando",
+    entityType: "attraction",
+    citySlug: "orlando",
+    title: "Airboat and wildlife adventures",
+    summary: "Family-friendly outdoor contrast for Orlando trips that want one nature-and-wildlife block instead of another full queue-heavy day.",
+    tags: ["kid-friendly", "family", "outdoor", "wildlife"],
+    canonicalPath: "/orlando/tours",
+    updatedAt: "2026-03-12",
+  },
+];
+
 export const ENTITIES_REGISTRY: DccEntityRegistryNode[] = [
   ...vegasHotelEntities,
   ...vegasCasinoEntities,
@@ -136,6 +193,8 @@ export const ENTITIES_REGISTRY: DccEntityRegistryNode[] = [
   ...sportsVenueEntities,
   ...vegasPoolEntities,
   ...miamiBeachEntities,
+  ...miamiPetEntities,
+  ...orlandoKidEntities,
 ];
 
 export function getEntityRegistryNode(slug: string, entityType?: DccEntityType) {
