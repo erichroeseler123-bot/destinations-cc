@@ -9,9 +9,10 @@ import { NEW_ORLEANS_FESTIVALS } from "@/src/data/new-orleans-festivals";
 import { getCityMoneyLane } from "@/src/data/city-money-lanes";
 
 const PAGE_URL = "https://destinationcommandcenter.com/new-orleans";
+const LAST_UPDATED = "2026-03-11";
 
 export const metadata: Metadata = {
-  title: "New Orleans Travel Guide 2026 | French Quarter, Music, Food, and Logistics",
+  title: "New Orleans Travel Guide 2026 | Festivals, Music, Food, and Tours",
   description:
     "Plan New Orleans with practical timing, French Quarter logistics, airport transfer flow, neighborhood food routes, and live music planning.",
   keywords: [
@@ -93,6 +94,7 @@ function JsonLd() {
         name: "New Orleans Travel Guide",
         description:
           "Logistics-first New Orleans travel guide with neighborhood planning, airport transfer flow, music routing, festival pressure windows, and FAQ.",
+        dateModified: LAST_UPDATED,
       },
       {
         "@type": "FAQPage",
@@ -144,6 +146,7 @@ export default function NewOrleansPage() {
             A practical New Orleans guide for French Quarter planning, airport-to-hotel logistics,
             live music routing, and food blocks that actually fit a real day.
           </p>
+          <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Last updated: March 2026</p>
         </header>
 
         <section className="grid gap-3 sm:grid-cols-2">
@@ -247,6 +250,7 @@ export default function NewOrleansPage() {
             <HubLink href="/alaska" label="Alaska" />
             <HubLink href="/cruises" label="Cruises" />
             <HubLink href="/national-parks" label="National Parks Map" />
+            <HubLink href="/miami" label="Miami" />
           </div>
         </section>
       </div>
