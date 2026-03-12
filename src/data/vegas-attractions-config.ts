@@ -212,3 +212,7 @@ export const VEGAS_ATTRACTIONS_CONFIG: VegasAttraction[] = VEGAS_ATTRACTIONS_BAS
 export function getVegasAttractionsByTag(tag: VegasAttractionTag) {
   return VEGAS_ATTRACTIONS_CONFIG.filter((attraction) => attraction.tags.includes(tag));
 }
+
+export function getVegasAttractionBySlug(slug: string) {
+  return VEGAS_ATTRACTIONS_CONFIG.find((attraction) => attraction.slug === slug) || null;
+}
