@@ -85,7 +85,7 @@ export default function LasVegasCasinosPage() {
             slug: casino.slug,
             name: casino.name,
             summary: casino.summary,
-            primaryHref: casino.nearbyLinks[0]?.href || "/vegas",
+            primaryHref: `/casino/${casino.slug}`,
             chips: casino.tags.map((tag) => tag.replace("-", " ")),
             image: casino.image,
             nearbyLinks: casino.nearbyLinks,
@@ -100,34 +100,34 @@ export default function LasVegasCasinosPage() {
 
         <div className="grid gap-4 lg:grid-cols-2">
           <VegasEntityGridSection
-            title="Strip casino anchors"
-            intro="These are the flagship properties that drive most first-time Vegas casino intent."
-            entities={stripCasinos.map((casino) => ({
-              slug: casino.slug,
-              name: casino.name,
-              summary: casino.summary,
-              primaryHref: casino.nearbyLinks[0]?.href || "/las-vegas-strip",
-              chips: casino.tags.map((tag) => tag.replace("-", " ")),
-              image: casino.image,
-              nearbyLinks: casino.nearbyLinks,
-            }))}
+          title="Strip casino anchors"
+          intro="These are the flagship properties that drive most first-time Vegas casino intent."
+          entities={stripCasinos.map((casino) => ({
+            slug: casino.slug,
+            name: casino.name,
+            summary: casino.summary,
+            primaryHref: `/casino/${casino.slug}`,
+            chips: casino.tags.map((tag) => tag.replace("-", " ")),
+            image: casino.image,
+            nearbyLinks: casino.nearbyLinks,
+          }))}
             backLinks={[
               { href: "/las-vegas-strip", label: "Las Vegas Strip" },
               { href: "/luxury-hotels-las-vegas", label: "Luxury hotels in Las Vegas" },
             ]}
           />
           <VegasEntityGridSection
-            title="Downtown and local contrast"
-            intro="These casino nodes fit lower-cost, sportsbook, and classic-Vegas routing that behaves differently from the Strip."
-            entities={downtownCasinos.map((casino) => ({
-              slug: casino.slug,
-              name: casino.name,
-              summary: casino.summary,
-              primaryHref: casino.nearbyLinks[0]?.href || "/fremont-street",
-              chips: casino.tags.map((tag) => tag.replace("-", " ")),
-              image: casino.image,
-              nearbyLinks: casino.nearbyLinks,
-            }))}
+          title="Downtown and local contrast"
+          intro="These casino nodes fit lower-cost, sportsbook, and classic-Vegas routing that behaves differently from the Strip."
+          entities={downtownCasinos.map((casino) => ({
+            slug: casino.slug,
+            name: casino.name,
+            summary: casino.summary,
+            primaryHref: `/casino/${casino.slug}`,
+            chips: casino.tags.map((tag) => tag.replace("-", " ")),
+            image: casino.image,
+            nearbyLinks: casino.nearbyLinks,
+          }))}
             backLinks={[
               { href: "/fremont-street", label: "Fremont Street" },
               { href: "/summerlin", label: "Summerlin" },

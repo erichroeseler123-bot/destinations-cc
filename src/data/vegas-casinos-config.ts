@@ -189,3 +189,7 @@ export const VEGAS_CASINOS_CONFIG: VegasCasino[] = VEGAS_CASINOS_BASE.map((casin
 export function getVegasCasinosByTag(tag: VegasCasinoTag) {
   return VEGAS_CASINOS_CONFIG.filter((casino) => casino.tags.includes(tag));
 }
+
+export function getVegasCasinoBySlug(slug: string) {
+  return VEGAS_CASINOS_CONFIG.find((casino) => casino.slug === slug);
+}

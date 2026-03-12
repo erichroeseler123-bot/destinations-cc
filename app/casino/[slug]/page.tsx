@@ -1,0 +1,224 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import {
+  getVegasCasinoBySlug,
+  VEGAS_CASINOS_CONFIG,
+  type VegasCasinoTag,
+} from "@/src/data/vegas-casinos-config";
+
+type Params = { slug: string };
+
+function formatTag(tag: VegasCasinoTag) {
+  return tag
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function districtLink(district: "las-vegas-strip" | "fremont-street" | "summerlin") {
+  switch (district) {
+    case "las-vegas-strip":
+      return { href: "/las-vegas-strip", label: "Las Vegas Strip" };
+    case "fremont-street":
+      return { href: "/fremont-street", label: "Fremont Street" };
+    case "summerlin":
+      return { href: "/summerlin", label: "Summerlin" };
+  }
+}
+
+function tagLink(tag: VegasCasinoTag) {
+  switch (tag) {
+    case "strip":
+      return { href: "/las-vegas-strip", label: "Strip casinos" };
+    case "downtown":
+      return { href: "/fremont-street", label: "Downtown casinos" };
+    case "luxury":
+      return { href: "/luxury-hotels-las-vegas", label: "Luxury Vegas" };
+    case "sportsbook":
+      return { href: "/sports", label: "Sports hub" };
+    case "nightlife":
+      return { href: "/vegas", label: "Vegas nightlife layer" };
+    case "show-adjacent":
+      return { href: "/las-vegas/shows", label: "Las Vegas shows" };
+    case "classic":
+      return { href: "/fremont-street", label: "Classic Vegas" };
+  }
+}
+
+export async function generateStaticParams() {
+  return VEGAS_CASINOS_CONFIG.map((casino) => ({ slug: casino.slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const { slug } = await params;
+  const casino = getVegasCasinoBySlug(slug);
+  if (!casino) return {};
+
+  return {
+    title: `${casino.name} Casino Guide | Destination Command Center`,
+    description: `${casino.name} in Las Vegas: district, hotel linkage, sportsbook and nightlife context, and DCC routing across shows, hotels, and city planning.`,
+    alternates: { canonical: `/casino/${casino.slug}` },
+    openGraph: {
+      title: `${casino.name} Casino Guide`,
+      description: `${casino.name} in Las Vegas with district routing, hotel context, and connections into shows, nightlife, and sportsbook intent.`,
+      url: `https://destinationcommandcenter.com/casino/${casino.slug}`,
+      type: "website",
+    },
+  };
+}
+
+function JsonLd({ slug }: { slug: string }) {
+  const casino = getVegasCasinoBySlug(slug);
+  if (!casino) return null;
+
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": ["WebPage", "Casino"],
+        "@id": `https://destinationcommandcenter.com/casino/${casino.slug}`,
+        url: `https://destinationcommandcenter.com/casino/${casino.slug}`,
+        name: casino.name,
+        description: casino.summary,
+        dateModified: "2026-03-12",
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Cities", item: "https://destinationcommandcenter.com/cities" },
+          { "@type": "ListItem", position: 2, name: "Las Vegas", item: "https://destinationcommandcenter.com/vegas" },
+          { "@type": "ListItem", position: 3, name: "Casinos", item: "https://destinationcommandcenter.com/las-vegas/casinos" },
+          { "@type": "ListItem", position: 4, name: casino.name, item: `https://destinationcommandcenter.com/casino/${casino.slug}` },
+        ],
+      },
+    ],
+  };
+
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
+}
+
+export default async function VegasCasinoNodePage({ params }: { params: Promise<Params> }) {
+  const { slug } = await params;
+  const casino = getVegasCasinoBySlug(slug);
+  if (!casino) notFound();
+
+  const districtTarget = districtLink(casino.district);
+  const siblingCasinos = VEGAS_CASINOS_CONFIG.filter(
+    (candidate) =>
+      candidate.slug !== casino.slug &&
+      (candidate.district === casino.district || candidate.tags.some((tag) => casino.tags.includes(tag)))
+  ).slice(0, 6);
+
+  return (
+    <main className="min-h-screen bg-zinc-950 text-white">
+      <JsonLd slug={slug} />
+      <div className="mx-auto max-w-5xl px-6 py-16 space-y-8">
+        <header className="space-y-4">
+          <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">DCC Casino Node</p>
+          <h1 className="text-4xl font-black tracking-tight md:text-6xl">{casino.name}</h1>
+          <p className="max-w-3xl text-zinc-300">{casino.summary}</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">
+            {casino.district.replace("-", " ")} · Last updated: March 2026
+          </p>
+        </header>
+
+        {casino.image ? (
+          <section className="overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+            <img src={casino.image.src} alt={casino.image.alt} className="h-72 w-full object-cover" />
+          </section>
+        ) : null}
+
+        <section className="grid gap-4 md:grid-cols-3">
+          <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <h2 className="text-lg font-semibold">District context</h2>
+            <p className="mt-2 text-sm text-zinc-300">
+              This node sits inside the {casino.district.replace("-", " ")} layer and should be read with district, hotel, and nearby-attraction routing in mind.
+            </p>
+          </article>
+          <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <h2 className="text-lg font-semibold">Anchors</h2>
+            <p className="mt-2 text-sm text-zinc-300">{casino.anchors.join(" · ")}</p>
+          </article>
+          <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <h2 className="text-lg font-semibold">Best fit</h2>
+            <p className="mt-2 text-sm text-zinc-300">
+              Use this page when the buyer starts from gaming, sportsbook, nightlife, or a specific resort casino rather than from general hotel search.
+            </p>
+          </article>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Tags and routing overlays</h2>
+          <div className="mt-4 flex flex-wrap gap-3">
+            {casino.tags.map((tag) => {
+              const target = tagLink(tag);
+              return (
+                <Link
+                  key={tag}
+                  href={target.href}
+                  className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-100 hover:bg-white/10"
+                >
+                  {formatTag(tag)}
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="grid gap-4 md:grid-cols-2">
+          <Link href="/las-vegas/casinos" className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
+            <h2 className="text-xl font-bold">Back to Las Vegas casinos</h2>
+            <p className="mt-2 text-zinc-300">Return to the casino mesh hub and compare this property against Strip, Fremont, sportsbook, and nightlife intent.</p>
+          </Link>
+          <Link href={districtTarget.href} className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
+            <h2 className="text-xl font-bold">{districtTarget.label}</h2>
+            <p className="mt-2 text-zinc-300">Jump back into the district hub when the gaming decision is really a location and neighborhood-routing choice.</p>
+          </Link>
+          {casino.hotelSlug ? (
+            <Link href={`/hotel/${casino.hotelSlug}`} className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
+              <h2 className="text-xl font-bold">Linked hotel node</h2>
+              <p className="mt-2 text-zinc-300">Open the hotel page when the trip starts shifting from casino choice into room, pool, dining, and stay-quality tradeoffs.</p>
+            </Link>
+          ) : (
+            <Link href="/vegas" className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
+              <h2 className="text-xl font-bold">Back to Vegas hub</h2>
+              <p className="mt-2 text-zinc-300">Return to the main city authority page for shows, sports, attractions, and broader trip planning.</p>
+            </Link>
+          )}
+          <Link href="/las-vegas/shows" className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
+            <h2 className="text-xl font-bold">Las Vegas shows</h2>
+            <p className="mt-2 text-zinc-300">Use the live-performance lane when the casino choice is tied to residencies, magic, comedy, or theater planning.</p>
+          </Link>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Connected nodes</h2>
+          <div className="mt-4 flex flex-wrap gap-3">
+            {casino.nearbyLinks.map((link) => (
+              <Link
+                key={`${casino.slug}-${link.href}`}
+                href={link.href}
+                className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-100 hover:bg-white/10"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Related casino nodes</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {siblingCasinos.map((candidate) => (
+              <Link key={candidate.slug} href={`/casino/${candidate.slug}`} className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
+                <h3 className="font-semibold">{candidate.name}</h3>
+                <p className="mt-2 text-sm text-zinc-300">{candidate.summary}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
