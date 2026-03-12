@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AttractionPillarTemplate from "@/app/components/dcc/AttractionPillarTemplate";
 import { GRAND_CANYON_PILLAR } from "@/src/data/attractions/grand-canyon";
+import { withLiveFeaturedProducts } from "@/src/lib/vegas-pillar-products";
 
 export const metadata: Metadata = {
   title: "Grand Canyon Tours, Rims, and Las Vegas Planning | Destination Command Center",
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function GrandCanyonPage() {
-  return <AttractionPillarTemplate config={GRAND_CANYON_PILLAR} />;
+export default async function GrandCanyonPage() {
+  const config = await withLiveFeaturedProducts(GRAND_CANYON_PILLAR);
+  return <AttractionPillarTemplate config={config} />;
 }

@@ -39,6 +39,20 @@ export const HELICOPTER_TOURS_PILLAR: AttractionPillarConfig = {
     },
   ],
   featuredProducts: getFeaturedTourProductsAsViatorProducts("las-vegas", "helicopter-tours"),
+  productGuidance: [
+    {
+      title: "Best city spectacle",
+      body: "Strip night flights are the cleanest first helicopter buy when the traveler wants maximum Vegas identity in a short block.",
+    },
+    {
+      title: "Best scenic premium",
+      body: "Grand Canyon helicopter routes are the strongest spend-up option when the buyer wants canyon scale without a full overland day.",
+    },
+    {
+      title: "Best celebration route",
+      body: "Sunset, VIP, and landing options work best for anniversary, proposal, and milestone-trip buyers.",
+    },
+  ],
   tourFallbacks: [
     { label: "Las Vegas Strip helicopter tours", query: "las vegas strip helicopter tour" },
     { label: "Grand Canyon helicopter tours", query: "grand canyon helicopter tour from las vegas" },

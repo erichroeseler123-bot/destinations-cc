@@ -123,3 +123,170 @@ export function getFeaturedTourProductsAsViatorProducts(cityKey: string, section
     url: product.url || "",
   }));
 }
+
+type ProductBucket = {
+  key: string;
+  title: string;
+  matchers: RegExp[];
+  fallbackSlug?: string;
+};
+
+const FEATURED_PRODUCT_BUCKETS: Record<string, ProductBucket[]> = {
+  "grand-canyon": [
+    {
+      key: "west-rim",
+      title: "Best for first-timers: West Rim day trip",
+      matchers: [/west rim/i],
+      fallbackSlug: "grand-canyon-west-rim-day-trip",
+    },
+    {
+      key: "south-rim",
+      title: "Best all-day scenic option: South Rim day trip",
+      matchers: [/south rim/i],
+    },
+    {
+      key: "helicopter",
+      title: "Best premium option: helicopter landing tour",
+      matchers: [/grand canyon/i, /helicopter|landing/i],
+    },
+    {
+      key: "skywalk",
+      title: "Best West Rim add-on: Skywalk combo",
+      matchers: [/skywalk/i],
+    },
+    {
+      key: "small-group",
+      title: "Best upgraded route: small-group or VIP canyon tour",
+      matchers: [/small group|small-group|vip|luxury/i, /grand canyon|west rim|south rim/i],
+    },
+  ],
+  "hoover-dam": [
+    {
+      key: "express",
+      title: "Best for short itineraries: Hoover express route",
+      matchers: [/hoover/i, /express|half day|half-day/i],
+    },
+    {
+      key: "lake-mead",
+      title: "Best water-and-engineering combo: Hoover + Lake Mead",
+      matchers: [/hoover/i, /lake mead/i],
+    },
+    {
+      key: "combo",
+      title: "Best full-day combo: Hoover + Grand Canyon corridor",
+      matchers: [/hoover|grand canyon/i],
+      fallbackSlug: "hoover-dam-grand-canyon-west-rim-combo",
+    },
+    {
+      key: "small-group",
+      title: "Best upgraded option: small-group Hoover tour",
+      matchers: [/hoover/i, /small group|small-group|vip|luxury/i],
+    },
+  ],
+  "helicopter-tours": [
+    {
+      key: "strip",
+      title: "Best city spectacle: Strip night flight",
+      matchers: [/strip/i, /helicopter|flight/i],
+      fallbackSlug: "las-vegas-strip-helicopter-night-flight",
+    },
+    {
+      key: "canyon",
+      title: "Best scenic premium: Grand Canyon helicopter",
+      matchers: [/grand canyon/i, /helicopter|landing/i],
+    },
+    {
+      key: "hoover",
+      title: "Best shorter aerial route: Hoover or Lake Mead flight",
+      matchers: [/hoover|lake mead/i, /helicopter|flight|aerial/i],
+    },
+    {
+      key: "sunset",
+      title: "Best celebration option: sunset or VIP flight",
+      matchers: [/sunset|vip|luxury|night/i, /helicopter|flight/i],
+    },
+  ],
+};
+
+function normalizeText(product: ViatorActionProduct): string {
+  return `${product.title} ${product.short_description || ""}`.toLowerCase();
+}
+
+function scoreProduct(product: ViatorActionProduct): number {
+  return (product.rating || 0) * 100000 + (product.review_count || 0);
+}
+
+function enrichFallbackProduct(
+  fallback: ViatorActionProduct,
+  live?: ViatorActionProduct | null,
+  titleOverride?: string,
+): ViatorActionProduct {
+  if (!live) {
+    return titleOverride ? { ...fallback, title: titleOverride } : fallback;
+  }
+
+  return {
+    ...fallback,
+    title: titleOverride || fallback.title,
+    short_description: live.short_description || fallback.short_description || null,
+    rating: live.rating ?? fallback.rating,
+    review_count: live.review_count ?? fallback.review_count,
+    price_from: live.price_from ?? fallback.price_from,
+    currency: live.currency || fallback.currency,
+    duration_minutes: live.duration_minutes ?? fallback.duration_minutes,
+    image_url: live.image_url || fallback.image_url,
+  };
+}
+
+export function buildFeaturedProductStack(
+  section: string,
+  curatedProducts: ViatorActionProduct[],
+  liveCandidates: ViatorActionProduct[],
+): ViatorActionProduct[] {
+  const buckets = FEATURED_PRODUCT_BUCKETS[section] || [];
+  const curatedBySlug = new Map(
+    FEATURED_TOUR_PRODUCTS.filter((product) => product.section === section).map((product) => [product.slug, product]),
+  );
+  const remaining = [...liveCandidates].sort((a, b) => scoreProduct(b) - scoreProduct(a));
+  const chosen: ViatorActionProduct[] = [];
+  const usedCodes = new Set<string>();
+
+  for (const bucket of buckets) {
+    const matchIndex = remaining.findIndex((product) =>
+      bucket.matchers.every((matcher) => matcher.test(normalizeText(product))),
+    );
+    const matched = matchIndex >= 0 ? remaining.splice(matchIndex, 1)[0] : null;
+
+    let product: ViatorActionProduct | null = matched;
+    if (!product && bucket.fallbackSlug) {
+      const fallbackMeta = curatedBySlug.get(bucket.fallbackSlug);
+      const fallbackProduct = fallbackMeta
+        ? curatedProducts.find((item) => item.url === fallbackMeta.url || item.product_code === (fallbackMeta.productCode || bucket.fallbackSlug))
+        : null;
+      if (fallbackProduct) {
+        product = enrichFallbackProduct(fallbackProduct, matched, bucket.title);
+      }
+    } else if (product) {
+      product = { ...product, title: bucket.title };
+    }
+
+    if (!product || usedCodes.has(product.product_code)) continue;
+    usedCodes.add(product.product_code);
+    chosen.push(product);
+  }
+
+  for (const product of curatedProducts) {
+    if (usedCodes.has(product.product_code)) continue;
+    usedCodes.add(product.product_code);
+    chosen.push(product);
+  }
+
+  for (const product of remaining) {
+    if (usedCodes.has(product.product_code)) continue;
+    usedCodes.add(product.product_code);
+    chosen.push(product);
+    if (chosen.length >= 6) break;
+  }
+
+  return chosen.slice(0, 6);
+}

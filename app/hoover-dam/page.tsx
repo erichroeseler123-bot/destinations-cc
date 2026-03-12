@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AttractionPillarTemplate from "@/app/components/dcc/AttractionPillarTemplate";
 import { HOOVER_DAM_PILLAR } from "@/src/data/attractions/hoover-dam";
+import { withLiveFeaturedProducts } from "@/src/lib/vegas-pillar-products";
 
 export const metadata: Metadata = {
   title: "Hoover Dam Tours, History, and Las Vegas Planning | Destination Command Center",
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HooverDamPage() {
-  return <AttractionPillarTemplate config={HOOVER_DAM_PILLAR} />;
+export default async function HooverDamPage() {
+  const config = await withLiveFeaturedProducts(HOOVER_DAM_PILLAR);
+  return <AttractionPillarTemplate config={config} />;
 }

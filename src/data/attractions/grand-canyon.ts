@@ -36,6 +36,20 @@ export const GRAND_CANYON_PILLAR: AttractionPillarConfig = {
     },
   ],
   featuredProducts: getFeaturedTourProductsAsViatorProducts("las-vegas", "grand-canyon"),
+  productGuidance: [
+    {
+      title: "Best for first-timers",
+      body: "Start with West Rim if you want the cleanest Las Vegas day-trip logic and the shortest learning curve.",
+    },
+    {
+      title: "Best for classic canyon scale",
+      body: "Choose South Rim when the itinerary can absorb a longer road day and the scenic payoff matters more than convenience.",
+    },
+    {
+      title: "Best premium option",
+      body: "Use helicopter products when time is tight, budget is higher, and the goal is spectacle over highway time.",
+    },
+  ],
   tourFallbacks: [
     { label: "Grand Canyon tours from Las Vegas", query: "grand canyon tour from las vegas" },
     { label: "Grand Canyon West Rim tours", query: "grand canyon west rim tour" },

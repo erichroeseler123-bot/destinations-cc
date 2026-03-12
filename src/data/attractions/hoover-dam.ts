@@ -36,6 +36,20 @@ export const HOOVER_DAM_PILLAR: AttractionPillarConfig = {
     },
   ],
   featuredProducts: getFeaturedTourProductsAsViatorProducts("las-vegas", "hoover-dam"),
+  productGuidance: [
+    {
+      title: "Best for short stays",
+      body: "Express Hoover routes fit buyers who want a real desert excursion without giving up the entire day.",
+    },
+    {
+      title: "Best combo option",
+      body: "Choose Hoover + Lake Mead or Hoover + Grand Canyon when the buyer wants more than one landmark in the same day block.",
+    },
+    {
+      title: "Best history-first route",
+      body: "Smaller-group and engineering-led itineraries usually work best for buyers who care about the structure, not just the photo stop.",
+    },
+  ],
   tourFallbacks: [
     { label: "Hoover Dam tours from Las Vegas", query: "hoover dam tour from las vegas" },
     { label: "Hoover Dam express half-day tours", query: "hoover dam express half day tour" },

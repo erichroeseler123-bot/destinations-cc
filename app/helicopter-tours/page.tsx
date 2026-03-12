@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AttractionPillarTemplate from "@/app/components/dcc/AttractionPillarTemplate";
 import { HELICOPTER_TOURS_PILLAR } from "@/src/data/attractions/helicopter-tours";
+import { withLiveFeaturedProducts } from "@/src/lib/vegas-pillar-products";
 
 export const metadata: Metadata = {
   title: "Helicopter Tours | Las Vegas, Grand Canyon, and Hoover Dam Flights",
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HelicopterToursPage() {
-  return <AttractionPillarTemplate config={HELICOPTER_TOURS_PILLAR} />;
+export default async function HelicopterToursPage() {
+  const config = await withLiveFeaturedProducts(HELICOPTER_TOURS_PILLAR);
+  return <AttractionPillarTemplate config={config} />;
 }

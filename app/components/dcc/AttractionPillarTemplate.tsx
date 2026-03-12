@@ -19,6 +19,7 @@ export type AttractionPillarConfig = {
   gallery?: NodeImageAsset[];
   highlights: Array<{ title: string; body: string }>;
   featuredProducts?: ViatorActionProduct[];
+  productGuidance?: Array<{ title: string; body: string }>;
   tourFallbacks: Array<{ label: string; query: string }>;
   sections: Array<{ title: string; body: string }>;
   faq: Array<{ q: string; a: string }>;
@@ -86,6 +87,17 @@ export default function AttractionPillarTemplate({ config }: { config: Attractio
             </article>
           ))}
         </section>
+
+        {config.productGuidance?.length ? (
+          <section className="grid gap-4 md:grid-cols-3">
+            {config.productGuidance.map((item) => (
+              <article key={item.title} className="rounded-2xl border border-white/10 bg-black/20 p-5">
+                <h2 className="text-base font-semibold">{item.title}</h2>
+                <p className="mt-2 text-sm text-zinc-300">{item.body}</p>
+              </article>
+            ))}
+          </section>
+        ) : null}
 
         <ViatorTourGrid
           placeName={config.placeName}
