@@ -119,6 +119,71 @@ const nextConfig = {
         permanent: false,
       },
       {
+        source: "/las-vegas-nv",
+        destination: "/vegas",
+        permanent: false,
+      },
+      {
+        source: "/las-vegas-nv/shows",
+        destination: "/las-vegas/shows",
+        permanent: false,
+      },
+      {
+        source: "/las-vegas-nv/shows/:path*",
+        destination: "/las-vegas/shows/:path*",
+        permanent: false,
+      },
+      {
+        source: "/las-vegas-nv/tours",
+        destination: "/las-vegas/tours",
+        permanent: false,
+      },
+      {
+        source: "/las-vegas-nv/tours/:path*",
+        destination: "/las-vegas/tours/:path*",
+        permanent: false,
+      },
+      {
+        source: "/las-vegas-nv/attractions",
+        destination: "/las-vegas/attractions",
+        permanent: false,
+      },
+      {
+        source: "/las-vegas-nv/attractions/:path*",
+        destination: "/las-vegas/attractions/:path*",
+        permanent: false,
+      },
+      {
+        source: "/las-vegas-nv/day-trips",
+        destination: "/las-vegas/day-trips",
+        permanent: false,
+      },
+      {
+        source: "/las-vegas-nv/day-trips/:path*",
+        destination: "/las-vegas/day-trips/:path*",
+        permanent: false,
+      },
+      {
+        source: "/las-vegas-nv/helicopter",
+        destination: "/las-vegas/helicopter",
+        permanent: false,
+      },
+      {
+        source: "/las-vegas-nv/helicopter/:path*",
+        destination: "/las-vegas/helicopter/:path*",
+        permanent: false,
+      },
+      {
+        source: "/las-vegas-nv/helicopter-tours",
+        destination: "/las-vegas/helicopter-tours",
+        permanent: false,
+      },
+      {
+        source: "/las-vegas-nv/helicopter-tours/:path*",
+        destination: "/las-vegas/helicopter-tours/:path*",
+        permanent: false,
+      },
+      {
         source: "/:city/:lane(tours|cruises|events|transport)",
         destination: "/nodes/:city?alive=:lane",
         permanent: false,
