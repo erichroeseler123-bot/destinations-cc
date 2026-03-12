@@ -69,11 +69,6 @@ const nextConfig = {
         permanent: false,
       },
       {
-        source: "/:city/:lane(tours|cruises|events|transport)",
-        destination: "/nodes/:city?alive=:lane",
-        permanent: false,
-      },
-      {
         source: "/vegas/shows",
         destination: "/las-vegas/shows",
         permanent: false,
@@ -121,6 +116,11 @@ const nextConfig = {
       {
         source: "/vegas/helicopter/:path*",
         destination: "/las-vegas/helicopter/:path*",
+        permanent: false,
+      },
+      {
+        source: "/:city/:lane(tours|cruises|events|transport)",
+        destination: "/nodes/:city?alive=:lane",
         permanent: false,
       },
     ];
