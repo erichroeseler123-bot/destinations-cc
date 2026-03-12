@@ -152,6 +152,45 @@ const miamiPetEntities: DccEntityRegistryNode[] = [
   },
 ];
 
+const miamiHotelEntities: DccEntityRegistryNode[] = [
+  {
+    slug: "loews-miami-beach",
+    entityType: "hotel",
+    citySlug: "miami",
+    districtSlug: "south-beach",
+    title: "Loews Miami Beach Hotel",
+    summary:
+      "A South Beach hotel node that fits travelers who want walkable beach access, easier family routing, and quick movement between the sand, Lincoln Road, and central Miami Beach dining.",
+    tags: ["hotel", "south-beach", "family", "walkable", "beachfront", "pet-friendly"],
+    canonicalPath: "/hotel/loews-miami-beach",
+    updatedAt: "2026-03-12",
+  },
+  {
+    slug: "1-hotel-south-beach",
+    entityType: "hotel",
+    citySlug: "miami",
+    districtSlug: "south-beach",
+    title: "1 Hotel South Beach",
+    summary:
+      "A premium South Beach base for buyers who want direct sand access, strong pool identity, and a more design-led beach stay without losing nightlife reach.",
+    tags: ["hotel", "south-beach", "luxury", "beachfront", "pool", "pet-friendly"],
+    canonicalPath: "/hotel/1-hotel-south-beach",
+    updatedAt: "2026-03-12",
+  },
+  {
+    slug: "fontainebleau-miami-beach",
+    entityType: "hotel",
+    citySlug: "miami",
+    districtSlug: "mid-beach",
+    title: "Fontainebleau Miami Beach",
+    summary:
+      "A larger Miami Beach resort node for travelers who want a full resort campus, bigger pool energy, and easier split routing between beach time and nightlife.",
+    tags: ["hotel", "mid-beach", "resort", "pool", "nightlife", "luxury"],
+    canonicalPath: "/hotel/fontainebleau-miami-beach",
+    updatedAt: "2026-03-12",
+  },
+];
+
 const orlandoKidEntities: DccEntityRegistryNode[] = [
   {
     slug: "icon-park-orlando",
@@ -185,6 +224,42 @@ const orlandoKidEntities: DccEntityRegistryNode[] = [
   },
 ];
 
+const orlandoHotelEntities: DccEntityRegistryNode[] = [
+  {
+    slug: "cabana-bay-beach-resort",
+    entityType: "hotel",
+    citySlug: "orlando",
+    title: "Universal Cabana Bay Beach Resort",
+    summary:
+      "A kid-friendly Orlando hotel node for families who want easier theme-park shuttles, big pool energy, and a less formal resort feel.",
+    tags: ["hotel", "kid-friendly", "family", "pool", "theme-park", "value"],
+    canonicalPath: "/hotel/cabana-bay-beach-resort",
+    updatedAt: "2026-03-12",
+  },
+  {
+    slug: "signia-bonnet-creek",
+    entityType: "hotel",
+    citySlug: "orlando",
+    title: "Signia by Hilton Orlando Bonnet Creek",
+    summary:
+      "A family-oriented Orlando resort node that works well for buyers who want a calmer full-service base, pool time, and easier routing into Disney-area days.",
+    tags: ["hotel", "kid-friendly", "family", "resort", "pool", "bonnet-creek"],
+    canonicalPath: "/hotel/signia-bonnet-creek",
+    updatedAt: "2026-03-12",
+  },
+  {
+    slug: "waldorf-astoria-orlando",
+    entityType: "hotel",
+    citySlug: "orlando",
+    title: "Waldorf Astoria Orlando",
+    summary:
+      "A premium Orlando family stay node for travelers who want a quieter luxury base, stronger dining, and easier split routing between resort time and park days.",
+    tags: ["hotel", "kid-friendly", "luxury", "family", "bonnet-creek", "resort"],
+    canonicalPath: "/hotel/waldorf-astoria-orlando",
+    updatedAt: "2026-03-12",
+  },
+];
+
 export const ENTITIES_REGISTRY: DccEntityRegistryNode[] = [
   ...vegasHotelEntities,
   ...vegasCasinoEntities,
@@ -194,7 +269,9 @@ export const ENTITIES_REGISTRY: DccEntityRegistryNode[] = [
   ...vegasPoolEntities,
   ...miamiBeachEntities,
   ...miamiPetEntities,
+  ...miamiHotelEntities,
   ...orlandoKidEntities,
+  ...orlandoHotelEntities,
 ];
 
 export function getEntityRegistryNode(slug: string, entityType?: DccEntityType) {
@@ -205,4 +282,8 @@ export function getEntityRegistryNode(slug: string, entityType?: DccEntityType) 
 
 export function getEntityRegistryNodesByCity(citySlug: string) {
   return ENTITIES_REGISTRY.filter((entity) => entity.citySlug === citySlug);
+}
+
+export function getEntityRegistryNodesByCityAndType(citySlug: string, entityType: DccEntityType) {
+  return ENTITIES_REGISTRY.filter((entity) => entity.citySlug === citySlug && entity.entityType === entityType);
 }

@@ -6,6 +6,7 @@ import { CITY_AUTHORITY_CONFIG } from "@/src/data/city-authority-config";
 import { CRUISE_SPECIALTY_LANES } from "@/src/data/cruise-specialty-lanes";
 import { PORT_AUTHORITY_CONFIG } from "@/src/data/port-authority-config";
 import { OVERLAY_REGISTRY } from "@/src/data/overlay-registry";
+import { ENTITIES_REGISTRY } from "@/src/data/entities-registry";
 import { NATIONAL_PARKS_AUTHORITY_CONFIG } from "@/src/data/national-parks-authority-config";
 import { SPORTS_LEAGUES_CONFIG } from "@/src/data/sports-leagues-config";
 import { getSportsCitySlugs, SPORTS_TEAMS_CONFIG } from "@/src/data/sports-teams-config";
@@ -209,9 +210,32 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const sportsTeamUrls = SPORTS_TEAMS_CONFIG.map((team) => `/sports/team/${team.slug}`);
   const nationalParkUrls = Object.keys(NATIONAL_PARKS_AUTHORITY_CONFIG).map((slug) => `/national-parks/${slug}`);
   const sportsVenueUrls = SPORTS_VENUES_CONFIG.map((venue) => `/venues/${venue.slug}`);
-  const hotelUrls = VEGAS_HOTELS_CONFIG.map((hotel) => `/hotel/${hotel.slug}`);
+  const hotelUrls = ENTITIES_REGISTRY.filter((entity) => entity.entityType === "hotel").map((hotel) => `/hotel/${hotel.slug}`);
   const casinoUrls = VEGAS_CASINOS_CONFIG.map((casino) => `/casino/${casino.slug}`);
   const overlayUrls = OVERLAY_REGISTRY.map((overlay) => overlay.canonicalPath);
+  const overlayChildUrls = OVERLAY_REGISTRY.flatMap((overlay) =>
+    overlay.entityTypes
+      .filter((entityType) =>
+        overlay.resultSlugs.some((slug) => ENTITIES_REGISTRY.some((entity) => entity.slug === slug && entity.entityType === entityType))
+      )
+      .map((entityType) => {
+        const categoryPath =
+          entityType === "hotel"
+            ? "hotels"
+            : entityType === "attraction"
+              ? "attractions"
+              : entityType === "beach"
+                ? "beaches"
+                : entityType === "pool"
+                  ? "pools"
+                  : entityType === "casino"
+                    ? "casinos"
+                    : entityType === "venue"
+                      ? "venues"
+                      : `${entityType}s`;
+        return `/${overlay.overlayType}/${categoryPath}/${overlay.citySlug}`;
+      })
+  );
   const roadTripHubUrls = ["/road-trips", ...listRoadTripRouteSlugs().map((slug) => `/road-trips/${slug}`)];
   const roadTripSegmentUrls = listRoadTripSegmentSlugs().map((slug) => `/route-segment/${slug}`);
   const roadTripStopUrls = ROAD_TRIP_STOPS_REGISTRY.map((stop) => getRoadTripStopHref(stop));
@@ -279,6 +303,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...hotelUrls,
     ...casinoUrls,
     ...overlayUrls,
+    ...overlayChildUrls,
     ...roadTripHubUrls,
     ...roadTripSegmentUrls,
     ...roadTripStopUrls,

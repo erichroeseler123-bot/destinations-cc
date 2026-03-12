@@ -3,6 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import AuthorityMediaStrip from "@/app/components/dcc/AuthorityMediaStrip";
 import PageActionBar from "@/app/components/dcc/PageActionBar";
+import { getCityRegistryNode } from "@/src/data/cities-registry";
+import {
+  getEntityRegistryNode,
+  getEntityRegistryNodesByCityAndType,
+} from "@/src/data/entities-registry";
 import { getVegasHotelBySlug, VEGAS_HOTELS_CONFIG, type VegasHotelTag } from "@/src/data/vegas-hotels-config";
 import { buildMapsSearchUrl, buildOfficialSearchUrl, type PageAction } from "@/src/lib/page-actions";
 
@@ -72,14 +77,31 @@ function getHotelRelationshipLinks(slug: string) {
 }
 
 export async function generateStaticParams() {
-  return VEGAS_HOTELS_CONFIG.map((hotel) => ({ slug: hotel.slug }));
+  const registryHotelSlugs = getEntityRegistryNodesByCityAndType("miami", "hotel")
+    .concat(getEntityRegistryNodesByCityAndType("orlando", "hotel"))
+    .map((hotel) => ({ slug: hotel.slug }));
+  return [...VEGAS_HOTELS_CONFIG.map((hotel) => ({ slug: hotel.slug })), ...registryHotelSlugs];
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
   const hotel = getVegasHotelBySlug(slug);
   if (!hotel) {
-    return {};
+    const genericHotel = getEntityRegistryNode(slug, "hotel");
+    const city = genericHotel ? getCityRegistryNode(genericHotel.citySlug) : null;
+    if (!genericHotel || !city) return {};
+
+    return {
+      title: `${genericHotel.title} Hotel Guide | Destination Command Center`,
+      description: `${genericHotel.title} in ${city.name}: trip fit, area context, tags, and DCC routing into nearby planning layers.`,
+      alternates: { canonical: `/hotel/${genericHotel.slug}` },
+      openGraph: {
+        title: `${genericHotel.title} Hotel Guide`,
+        description: `${genericHotel.title} in ${city.name} with DCC routing across nearby planning layers and category hubs.`,
+        url: `https://destinationcommandcenter.com/hotel/${genericHotel.slug}`,
+        type: "website",
+      },
+    };
   }
 
   return {
@@ -97,7 +119,36 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
 function JsonLd({ slug }: { slug: string }) {
   const hotel = getVegasHotelBySlug(slug);
-  if (!hotel) return null;
+  if (!hotel) {
+    const genericHotel = getEntityRegistryNode(slug, "hotel");
+    const city = genericHotel ? getCityRegistryNode(genericHotel.citySlug) : null;
+    if (!genericHotel || !city) return null;
+
+    const data = {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": ["WebPage", "LodgingBusiness"],
+          "@id": `https://destinationcommandcenter.com/hotel/${genericHotel.slug}`,
+          url: `https://destinationcommandcenter.com/hotel/${genericHotel.slug}`,
+          name: genericHotel.title,
+          description: genericHotel.summary,
+          dateModified: "2026-03-12",
+        },
+        {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Cities", item: "https://destinationcommandcenter.com/cities" },
+            { "@type": "ListItem", position: 2, name: city.name, item: `https://destinationcommandcenter.com${city.canonicalPath}` },
+            { "@type": "ListItem", position: 3, name: "Hotels", item: `https://destinationcommandcenter.com${city.canonicalPath}` },
+            { "@type": "ListItem", position: 4, name: genericHotel.title, item: `https://destinationcommandcenter.com/hotel/${genericHotel.slug}` },
+          ],
+        },
+      ],
+    };
+
+    return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
+  }
 
   const data = {
     "@context": "https://schema.org",
@@ -128,7 +179,100 @@ function JsonLd({ slug }: { slug: string }) {
 export default async function VegasHotelNodePage({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
   const hotel = getVegasHotelBySlug(slug);
-  if (!hotel) notFound();
+  if (!hotel) {
+    const genericHotel = getEntityRegistryNode(slug, "hotel");
+    const city = genericHotel ? getCityRegistryNode(genericHotel.citySlug) : null;
+    if (!genericHotel || !city) notFound();
+
+    const siblingHotels = getEntityRegistryNodesByCityAndType(genericHotel.citySlug, "hotel")
+      .filter((candidate) => candidate.slug !== genericHotel.slug)
+      .slice(0, 6);
+    const actionBarActions: PageAction[] = [
+      { href: buildMapsSearchUrl(`${genericHotel.title}, ${city.name}`), label: "Open in Maps", kind: "external" },
+      { href: buildOfficialSearchUrl(`${genericHotel.title} ${city.name}`), label: "Find official site", kind: "external" },
+      { href: city.canonicalPath, label: `${city.name} hub`, kind: "internal" },
+    ];
+
+    return (
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(217,119,6,0.16),_transparent_28%),radial-gradient(circle_at_85%_20%,_rgba(34,211,238,0.12),_transparent_22%),linear-gradient(180deg,_#111217_0%,_#0a0b0e_100%)] text-white">
+        <JsonLd slug={slug} />
+        <div className="mx-auto max-w-5xl px-6 py-16 space-y-8">
+          <header className="space-y-5">
+            <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">DCC Hotel Node</p>
+            <h1 className="text-4xl font-black tracking-tight md:text-6xl">{genericHotel.title}</h1>
+            <p className="max-w-3xl text-lg text-zinc-200">{genericHotel.summary}</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">
+              {city.name} · {genericHotel.tags.slice(0, 3).map((tag) => tag.replace(/-/g, " ")).join(" · ")} · Last updated: March 2026
+            </p>
+          </header>
+
+          {genericHotel.imageSet?.hero && genericHotel.imageSet.gallery?.length ? (
+            <AuthorityMediaStrip hero={genericHotel.imageSet.hero} gallery={genericHotel.imageSet.gallery} />
+          ) : null}
+
+          <PageActionBar title={`Useful actions for ${genericHotel.title}`} actions={actionBarActions} />
+
+          <section className="grid gap-4 md:grid-cols-3">
+            <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
+              <h2 className="text-lg font-semibold">Who it fits</h2>
+              <p className="mt-2 text-sm text-zinc-300">
+                {genericHotel.title} works best for travelers who want a {city.name} base aligned with {genericHotel.tags
+                  .slice(0, 2)
+                  .map((tag) => tag.replace(/-/g, " "))
+                  .join(" and ")} routing.
+              </p>
+            </article>
+            <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
+              <h2 className="text-lg font-semibold">Key tags</h2>
+              <p className="mt-2 text-sm text-zinc-300">{genericHotel.tags.map((tag) => tag.replace(/-/g, " ")).join(" · ")}</p>
+            </article>
+            <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
+              <h2 className="text-lg font-semibold">Use it for</h2>
+              <p className="mt-2 text-sm text-zinc-300">
+                Use this hotel node when the stay decision is the anchor and the rest of the city plan should branch outward from the property.
+              </p>
+            </article>
+          </section>
+
+          <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+            <h2 className="text-2xl font-bold">Tags and overlays</h2>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {genericHotel.tags.map((tag) => (
+                <span key={tag} className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-100">
+                  {tag.replace(/-/g, " ")}
+                </span>
+              ))}
+            </div>
+          </section>
+
+          <section className="grid gap-4 md:grid-cols-2">
+            <Link href={city.canonicalPath} className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
+              <h2 className="text-xl font-bold">Back to {city.name}</h2>
+              <p className="mt-2 text-zinc-300">Return to the city hub when the trip decision expands beyond one hotel and one stay style.</p>
+            </Link>
+            <Link href={city.canonicalPath} className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
+              <h2 className="text-xl font-bold">More {city.name} planning</h2>
+              <p className="mt-2 text-zinc-300">Use the main city authority page for beaches, attractions, tours, shows, and broader neighborhood routing.</p>
+            </Link>
+          </section>
+
+          {siblingHotels.length ? (
+            <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+              <h2 className="text-2xl font-bold">Related hotel nodes</h2>
+              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {siblingHotels.map((candidate) => (
+                  <Link key={candidate.slug} href={candidate.canonicalPath} className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
+                    <h3 className="font-semibold">{candidate.title}</h3>
+                    <p className="mt-2 text-sm text-zinc-300">{candidate.summary}</p>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ) : null}
+        </div>
+      </main>
+    );
+  }
 
   const relationshipLinks = getHotelRelationshipLinks(hotel.slug);
   const siblingHotels = VEGAS_HOTELS_CONFIG.filter(

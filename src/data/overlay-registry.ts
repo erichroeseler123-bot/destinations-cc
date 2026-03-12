@@ -149,3 +149,8 @@ export function getOverlayRegistryNodeByTypeAndCity(overlayType: DccOverlayType,
 export function listOverlayCitySlugsByType(overlayType: DccOverlayType) {
   return OVERLAY_REGISTRY.filter((overlay) => overlay.overlayType === overlayType).map((overlay) => overlay.citySlug);
 }
+
+export function listOverlayCategoriesByTypeAndCity(overlayType: DccOverlayType, citySlug: string) {
+  const overlay = getOverlayRegistryNodeByTypeAndCity(overlayType, citySlug);
+  return overlay ? overlay.entityTypes : [];
+}

@@ -86,6 +86,39 @@ export const RELATIONSHIP_REGISTRY: DccRelationshipRegistryNode[] = [
   ...vegasRelationshipRegistryNodes,
   {
     slug: "south-beach",
+    path: "hotels-near",
+    citySlug: "miami",
+    title: "Hotels near South Beach",
+    summary:
+      "Where to stay when South Beach is the anchor but the hotel decision is still open. This page compares walkable, beach-forward, and premium Miami Beach stays without dropping back into a generic city hotel list.",
+    anchorType: "beach",
+    anchorSlug: "south-beach",
+    resultType: "hotel",
+    resultSlugs: ["loews-miami-beach", "1-hotel-south-beach", "fontainebleau-miami-beach"],
+    guidance: [
+      {
+        title: "Best for first-time Miami stays",
+        body: "Use this when the trip is clearly beach-led and the next decision is whether to stay on South Beach itself or shift slightly north for more resort depth.",
+      },
+      {
+        title: "Best for walkability",
+        body: "These hotel nodes keep the stay close to the water, nightlife, and Miami Beach dining without turning the whole plan into a car-first itinerary.",
+      },
+      {
+        title: "Best for split beach and nightlife trips",
+        body: "This is the right layer when the buyer wants a South Beach anchor but still needs to compare quieter resort choices against nightlife-heavy options.",
+      },
+    ],
+    relatedLinks: [
+      { href: "/miami", label: "Miami hub" },
+      { href: "/miami/beaches", label: "Miami beaches" },
+      { href: "/pet-friendly/miami", label: "Pet-friendly Miami" },
+    ],
+    overlayTags: ["beachfront", "walkable", "nightlife"],
+    districtNote: "South Beach should behave like a Miami district anchor, not just a single beach label on the beach hub.",
+  },
+  {
+    slug: "south-beach",
     path: "attractions-near",
     citySlug: "miami",
     title: "Beaches and waterfront spots near South Beach",

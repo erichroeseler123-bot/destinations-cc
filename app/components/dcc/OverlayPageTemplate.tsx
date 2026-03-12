@@ -11,6 +11,25 @@ function formatOverlayLabel(overlayType: string) {
   return overlayType.replace(/-/g, " ");
 }
 
+function categoryPathForEntityType(entityType: string) {
+  switch (entityType) {
+    case "hotel":
+      return "hotels";
+    case "attraction":
+      return "attractions";
+    case "beach":
+      return "beaches";
+    case "pool":
+      return "pools";
+    case "casino":
+      return "casinos";
+    case "venue":
+      return "venues";
+    default:
+      return `${entityType}s`;
+  }
+}
+
 export function buildOverlayMetadata(city: DccCityRegistryNode, overlay: DccOverlayRegistryNode): Metadata {
   const overlayLabel = formatOverlayLabel(overlay.overlayType);
   const cityLabel = city.name;
@@ -38,6 +57,7 @@ type Props = {
 export default function OverlayPageTemplate({ city, overlay, entities }: Props) {
   const overlayLabel = formatOverlayLabel(overlay.overlayType);
   const title = `${overlayLabel.replace(/\b\w/g, (match) => match.toUpperCase())} ${city.name}`;
+  const availableEntityTypes = Array.from(new Set(entities.map((entity) => entity.entityType)));
   const actionBarActions: PageAction[] = [
     { href: city.canonicalPath, label: `${city.name} hub`, kind: "internal" },
     { href: buildMapsSearchUrl(`${city.name}, ${city.state ?? city.country}`), label: "Open city in Maps", kind: "external" },
@@ -85,6 +105,26 @@ export default function OverlayPageTemplate({ city, overlay, entities }: Props) 
           intro={`Use this ${overlayLabel} surface to compare the strongest matching ${city.name} entities without dropping back into a generic city list.`}
           entities={entities}
         />
+
+        {availableEntityTypes.length ? (
+          <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+            <h2 className="text-2xl font-bold">Browse this overlay by category</h2>
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {availableEntityTypes.map((entityType) => {
+                const categoryPath = categoryPathForEntityType(entityType);
+                return (
+                  <Link
+                    key={`${overlay.slug}-${categoryPath}`}
+                    href={`/${overlay.overlayType}/${categoryPath}/${city.slug}`}
+                    className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10"
+                  >
+                    {categoryPath.replace(/-/g, " ")}
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
 
         {overlay.relatedLinks?.length ? (
           <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
