@@ -16,18 +16,6 @@ const nextConfig = {
     const satelliteRedirects = buildSatelliteRedirects();
     const citySatelliteRedirects = buildCitySatelliteRedirects();
     return [
-      {
-        source: "/:path*",
-        has: [
-          {
-            type: "header",
-            key: "host",
-            value: "www.destinationcommandcenter.com",
-          },
-        ],
-        destination: "https://destinationcommandcenter.com/:path*",
-        permanent: true,
-      },
       ...satelliteRedirects,
       ...citySatelliteRedirects,
       {
