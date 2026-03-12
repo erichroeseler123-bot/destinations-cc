@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Las Vegas pools hero</title>
+  <desc id="desc">Stylized resort pool scene with palm trees, skyline shapes, and sunset tones.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#08121f"/>
+      <stop offset="50%" stop-color="#17497f"/>
+      <stop offset="100%" stop-color="#ff7b38"/>
+    </linearGradient>
+    <linearGradient id="pool" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#53e3ff"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1260" cy="190" r="110" fill="#ffd089" opacity=".8"/>
+  <rect x="0" y="640" width="1600" height="260" fill="#120b11" opacity=".65"/>
+  <rect x="140" y="500" width="1100" height="210" rx="38" fill="url(#pool)"/>
+  <rect x="140" y="500" width="1100" height="210" rx="38" fill="#fff" opacity=".08"/>
+  <rect x="250" y="275" width="110" height="365" fill="#1d2733"/>
+  <rect x="395" y="220" width="145" height="420" fill="#17202a"/>
+  <rect x="580" y="320" width="125" height="320" fill="#202b39"/>
+  <rect x="740" y="170" width="165" height="470" fill="#0f1720"/>
+  <rect x="950" y="255" width="120" height="385" fill="#1b2530"/>
+  <rect x="1110" y="340" width="95" height="300" fill="#243041"/>
+  <g fill="#2e7d32">
+    <rect x="95" y="345" width="16" height="210" rx="8"/>
+    <rect x="1320" y="360" width="16" height="220" rx="8"/>
+  </g>
+  <g fill="#43a047">
+    <path d="M103 355c-58-32-64-108 18-144-9 42 23 92 58 117-30 4-54 10-76 27Z"/>
+    <path d="M103 354c54-37 114-20 139 51-47-4-91 15-132 45 3-38-1-65-7-96Z"/>
+    <path d="M1328 375c-52-40-51-106 30-141-12 41 15 89 46 117-30 1-55 5-76 24Z"/>
+    <path d="M1328 375c51-26 109-5 129 64-43-9-89 6-132 31 7-34 8-60 3-95Z"/>
+  </g>
+  <text x="140" y="132" fill="#ffffff" font-size="74" font-family="Arial, sans-serif" font-weight="700">Las Vegas Pools</text>
+  <text x="140" y="188" fill="#d8efff" font-size="28" font-family="Arial, sans-serif">Luxury decks, family complexes, and dayclub-style pool routing</text>
+</svg>

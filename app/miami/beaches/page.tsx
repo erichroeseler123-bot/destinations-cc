@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import AuthorityMediaStrip from "@/app/components/dcc/AuthorityMediaStrip";
 import ViatorTourGrid from "@/app/components/dcc/ViatorTourGrid";
 import { getCityBeachesConfig } from "@/src/data/city-beaches-config";
 import { getFeaturedTourProducts } from "@/src/data/featured-tour-products";
@@ -70,6 +71,8 @@ export default function MiamiBeachesPage() {
           <p className="max-w-3xl text-zinc-300">{CONFIG.heroSummary}</p>
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Last updated: March 2026</p>
         </header>
+
+        <AuthorityMediaStrip hero={CONFIG.heroImage} gallery={CONFIG.gallery} />
 
         <section className="grid gap-3 md:grid-cols-3">
           {CONFIG.highlights.map((item) => (

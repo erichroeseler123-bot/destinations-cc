@@ -9,6 +9,8 @@ export type CityBeachesConfig = {
   cityKey: string;
   cityName: string;
   heroSummary: string;
+  heroImage: { src: string; alt: string };
+  gallery: Array<{ src: string; alt: string }>;
   highlights: string[];
   beaches: CityBeachNode[];
   relatedLinks: Array<{ href: string; label: string }>;
@@ -21,6 +23,28 @@ export const CITY_BEACHES_CONFIG: Record<string, CityBeachesConfig> = {
     cityName: "Miami",
     heroSummary:
       "Miami beaches are a real destination layer: South Beach, quieter family stretches, scenic sands, nightlife-adjacent waterfronts, and beach-led activity planning.",
+    heroImage: {
+      src: "/images/miami/beaches/hero.svg",
+      alt: "Miami beach skyline and shoreline concept artwork",
+    },
+    gallery: [
+      {
+        src: "/images/miami/beaches/south-beach.svg",
+        alt: "South Beach inspired shoreline concept artwork",
+      },
+      {
+        src: "/images/miami/beaches/family-shore.svg",
+        alt: "Family-friendly Miami beach concept artwork",
+      },
+      {
+        src: "/images/miami/beaches/palm-water.svg",
+        alt: "Palm-lined Miami beach concept artwork",
+      },
+      {
+        src: "/images/miami/beaches/biscayne.svg",
+        alt: "Biscayne and beach activity concept artwork",
+      },
+    ],
     highlights: [
       "Beach intent is not the same as general attractions or water-sports intent, so this page should split lounging, family beach time, and nightlife-adjacent sand zones.",
       "Many Miami buyers choose where to stay through the beach surface first, then branch into rentals, boat tours, and nightlife.",
