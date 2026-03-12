@@ -301,6 +301,42 @@ export default async function VegasPage() {
           </Link>
         </section>
 
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
+          <div className="max-w-3xl">
+            <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">District Hubs</p>
+            <h2 className="mt-2 text-3xl font-black tracking-tight">Vegas districts and sub-city discovery</h2>
+            <p className="mt-3 text-zinc-300">
+              These district hubs organize Vegas by area so hotels, casinos, restaurants, attractions, and future near-X pages can connect through something cleaner than one city root.
+            </p>
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <Link href="/las-vegas-strip" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
+              <h3 className="font-semibold">Las Vegas Strip</h3>
+              <p className="mt-2 text-sm text-zinc-300">Flagship district for resorts, attractions, nightlife, and show-adjacent planning.</p>
+            </Link>
+            <Link href="/fremont-street" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
+              <h3 className="font-semibold">Fremont Street</h3>
+              <p className="mt-2 text-sm text-zinc-300">Downtown district for casinos, bars, old-Vegas energy, and Fremont attractions.</p>
+            </Link>
+            <Link href="/las-vegas-arts-district" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
+              <h3 className="font-semibold">Arts District</h3>
+              <p className="mt-2 text-sm text-zinc-300">Local-night district for galleries, breweries, bars, and neighborhood dining.</p>
+            </Link>
+            <Link href="/las-vegas-chinatown" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
+              <h3 className="font-semibold">Chinatown</h3>
+              <p className="mt-2 text-sm text-zinc-300">Off-Strip food and late-night district for restaurants, karaoke, and nightlife-adjacent discovery.</p>
+            </Link>
+            <Link href="/summerlin" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
+              <h3 className="font-semibold">Summerlin</h3>
+              <p className="mt-2 text-sm text-zinc-300">West-side district for shopping, dining, and Red Rock crossover planning.</p>
+            </Link>
+            <Link href="/henderson-las-vegas" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
+              <h3 className="font-semibold">Henderson and Lake Las Vegas</h3>
+              <p className="mt-2 text-sm text-zinc-300">Southeast district for resort-recreation, lake stays, golf, and calmer Vegas alternatives.</p>
+            </Link>
+          </div>
+        </section>
+
         {adventureLane ? <AdventureLaneSection config={adventureLane} /> : null}
 
         <CitySportsSection cityName="Las Vegas" citySlug="las-vegas" teams={sportsTeams} />
