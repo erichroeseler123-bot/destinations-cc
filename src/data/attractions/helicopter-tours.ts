@@ -1,5 +1,6 @@
 import type { AttractionPillarConfig } from "@/app/components/dcc/AttractionPillarTemplate";
 import { buildLocalImageAsset } from "@/src/lib/media-resolver";
+import { getFeaturedTourProductsAsViatorProducts } from "@/src/data/featured-tour-products";
 
 export const HELICOPTER_TOURS_PILLAR: AttractionPillarConfig = {
   slug: "helicopter-tours",
@@ -37,6 +38,7 @@ export const HELICOPTER_TOURS_PILLAR: AttractionPillarConfig = {
       body: "The category naturally bridges Las Vegas, Grand Canyon, and Hoover Dam, which makes it a strong pillar for internal graph density.",
     },
   ],
+  featuredProducts: getFeaturedTourProductsAsViatorProducts("las-vegas", "helicopter-tours"),
   tourFallbacks: [
     { label: "Las Vegas Strip helicopter tours", query: "las vegas strip helicopter tour" },
     { label: "Grand Canyon helicopter tours", query: "grand canyon helicopter tour from las vegas" },

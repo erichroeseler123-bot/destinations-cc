@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import AuthorityMediaStrip from "@/app/components/dcc/AuthorityMediaStrip";
 import ViatorTourGrid from "@/app/components/dcc/ViatorTourGrid";
+import type { ViatorActionProduct } from "@/lib/dcc/action/viator";
 import type { NodeImageAsset } from "@/src/lib/media-resolver";
 
 export type AttractionPillarConfig = {
@@ -17,6 +18,7 @@ export type AttractionPillarConfig = {
   heroImage?: NodeImageAsset;
   gallery?: NodeImageAsset[];
   highlights: Array<{ title: string; body: string }>;
+  featuredProducts?: ViatorActionProduct[];
   tourFallbacks: Array<{ label: string; query: string }>;
   sections: Array<{ title: string; body: string }>;
   faq: Array<{ q: string; a: string }>;
@@ -89,7 +91,7 @@ export default function AttractionPillarTemplate({ config }: { config: Attractio
           placeName={config.placeName}
           title={config.gridTitle}
           description={config.gridDescription}
-          products={[]}
+          products={config.featuredProducts || []}
           fallbacks={config.tourFallbacks}
           ctaLabel="Browse with DCC via Viator"
         />

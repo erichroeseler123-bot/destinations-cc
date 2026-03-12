@@ -1,5 +1,6 @@
 import type { AttractionPillarConfig } from "@/app/components/dcc/AttractionPillarTemplate";
 import { buildLocalImageAsset } from "@/src/lib/media-resolver";
+import { getFeaturedTourProductsAsViatorProducts } from "@/src/data/featured-tour-products";
 
 export const GRAND_CANYON_PILLAR: AttractionPillarConfig = {
   slug: "grand-canyon",
@@ -34,6 +35,7 @@ export const GRAND_CANYON_PILLAR: AttractionPillarConfig = {
       body: "Grand Canyon supports separate subclusters around rims, Skywalk, helicopter products, rafting, and Vegas-origin day-trip planning.",
     },
   ],
+  featuredProducts: getFeaturedTourProductsAsViatorProducts("las-vegas", "grand-canyon"),
   tourFallbacks: [
     { label: "Grand Canyon tours from Las Vegas", query: "grand canyon tour from las vegas" },
     { label: "Grand Canyon West Rim tours", query: "grand canyon west rim tour" },

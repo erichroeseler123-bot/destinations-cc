@@ -1,5 +1,6 @@
 import type { AttractionPillarConfig } from "@/app/components/dcc/AttractionPillarTemplate";
 import { buildLocalImageAsset } from "@/src/lib/media-resolver";
+import { getFeaturedTourProductsAsViatorProducts } from "@/src/data/featured-tour-products";
 
 export const HOOVER_DAM_PILLAR: AttractionPillarConfig = {
   slug: "hoover-dam",
@@ -34,6 +35,7 @@ export const HOOVER_DAM_PILLAR: AttractionPillarConfig = {
       body: "Hoover Dam pairs naturally with Grand Canyon and Lake Mead inventory, which makes it a strong cross-linking node in the Vegas trip graph.",
     },
   ],
+  featuredProducts: getFeaturedTourProductsAsViatorProducts("las-vegas", "hoover-dam"),
   tourFallbacks: [
     { label: "Hoover Dam tours from Las Vegas", query: "hoover dam tour from las vegas" },
     { label: "Hoover Dam express half-day tours", query: "hoover dam express half day tour" },
