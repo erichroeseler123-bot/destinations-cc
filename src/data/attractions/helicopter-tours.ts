@@ -12,6 +12,28 @@ export const HELICOPTER_TOURS_PILLAR: AttractionPillarConfig = {
   gridDescription:
     "These routes isolate the highest-converting helicopter categories: Las Vegas Strip flights, Grand Canyon scenic products, Hoover Dam aerial tours, and premium celebration inventory.",
   schemaType: "CollectionPage",
+  heroImage: {
+    src: "/images/helicopter-tours/hero.svg",
+    alt: "Helicopter tours over Las Vegas and canyon country concept artwork",
+  },
+  gallery: [
+    {
+      src: "/images/helicopter-tours/strip-flight.svg",
+      alt: "Las Vegas Strip helicopter flight concept artwork",
+    },
+    {
+      src: "/images/helicopter-tours/canyon-landing.svg",
+      alt: "Grand Canyon helicopter landing concept artwork",
+    },
+    {
+      src: "/images/helicopter-tours/hoover-aerial.svg",
+      alt: "Hoover Dam helicopter tour concept artwork",
+    },
+    {
+      src: "/images/helicopter-tours/sunset-flight.svg",
+      alt: "Sunset helicopter flight concept artwork",
+    },
+  ],
   highlights: [
     {
       title: "Best for premium spend",

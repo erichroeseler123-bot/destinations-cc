@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="sunset" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a285d"/>
+      <stop offset="55%" stop-color="#d76d52"/>
+      <stop offset="100%" stop-color="#f8d49d"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#sunset)"/>
+  <circle cx="610" cy="155" r="58" fill="#fff1b2" opacity="0.88"/>
+  <path d="M0 430L170 400L350 470L520 395L690 455L800 425V600H0Z" fill="#2b244f"/>
+  <g transform="translate(320 180)">
+    <rect x="-86" y="16" width="184" height="10" rx="5" fill="#eff2f7"/>
+    <ellipse cx="0" cy="74" rx="64" ry="34" fill="#ff5b57"/>
+    <rect x="56" y="60" width="84" height="14" rx="7" fill="#ff5b57"/>
+    <rect x="-10" y="18" width="14" height="32" rx="7" fill="#eff2f7"/>
+  </g>
+</svg>

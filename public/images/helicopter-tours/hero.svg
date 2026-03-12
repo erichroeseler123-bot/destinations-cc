@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Helicopter tours over Las Vegas and canyon country concept artwork</title>
+  <desc id="desc">Stylized helicopter above neon city and desert landmarks representing Las Vegas helicopter tours.</desc>
+  <defs>
+    <linearGradient id="nightSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#12183c"/>
+      <stop offset="100%" stop-color="#3b2957"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#nightSky)"/>
+  <circle cx="1290" cy="145" r="78" fill="#f7e7a1" opacity="0.9"/>
+  <path d="M0 620L220 570L390 630L560 560L760 640L930 565L1130 640L1320 560L1490 615L1600 590V900H0Z" fill="#1a2044"/>
+  <rect x="150" y="520" width="42" height="130" fill="#ff4fd8"/>
+  <rect x="220" y="470" width="58" height="180" fill="#39d2ff"/>
+  <rect x="305" y="550" width="42" height="100" fill="#ffd248"/>
+  <rect x="370" y="440" width="70" height="210" fill="#ad7bff"/>
+  <rect x="470" y="500" width="50" height="150" fill="#20f0b0"/>
+  <g transform="translate(920 235)">
+    <rect x="-130" y="18" width="280" height="14" rx="7" fill="#dde4f0"/>
+    <ellipse cx="-5" cy="90" rx="108" ry="54" fill="#ff4d4d"/>
+    <rect x="90" y="72" width="130" height="22" rx="11" fill="#ff4d4d"/>
+    <rect x="-12" y="22" width="24" height="44" rx="12" fill="#dde4f0"/>
+    <rect x="-36" y="144" width="176" height="10" rx="5" fill="#dde4f0"/>
+    <rect x="-8" y="124" width="12" height="44" rx="6" fill="#dde4f0"/>
+    <rect x="88" y="124" width="12" height="44" rx="6" fill="#dde4f0"/>
+  </g>
+</svg>

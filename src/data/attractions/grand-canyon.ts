@@ -12,6 +12,28 @@ export const GRAND_CANYON_PILLAR: AttractionPillarConfig = {
   gridDescription:
     "These links focus on the highest-intent Grand Canyon categories: West Rim tours, South Rim day trips, Skywalk routes, and helicopter upgrades from Las Vegas.",
   schemaType: "TouristAttraction",
+  heroImage: {
+    src: "/images/grand-canyon/hero.svg",
+    alt: "Grand Canyon sunrise panorama concept artwork",
+  },
+  gallery: [
+    {
+      src: "/images/grand-canyon/west-rim.svg",
+      alt: "Grand Canyon West Rim concept artwork",
+    },
+    {
+      src: "/images/grand-canyon/south-rim.svg",
+      alt: "Grand Canyon South Rim concept artwork",
+    },
+    {
+      src: "/images/grand-canyon/skywalk.svg",
+      alt: "Grand Canyon Skywalk concept artwork",
+    },
+    {
+      src: "/images/grand-canyon/helicopter.svg",
+      alt: "Grand Canyon helicopter tour concept artwork",
+    },
+  ],
   highlights: [
     {
       title: "Best for first-timers",

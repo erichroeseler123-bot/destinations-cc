@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Hoover Dam and Black Canyon concept artwork</title>
+  <desc id="desc">Stylized Hoover Dam set between canyon walls with water below and a clear desert sky.</desc>
+  <rect width="1600" height="900" fill="#d8e8f1"/>
+  <path d="M0 250L220 210L360 320L500 250L650 360L800 260L940 340L1120 250L1320 330L1600 220V900H0Z" fill="#7d5d49"/>
+  <path d="M0 360L210 320L360 420L520 350L700 470L850 360L1020 450L1200 350L1380 430L1600 330V900H0Z" fill="#9f775d"/>
+  <path d="M640 210h320c-12 220-12 366 0 438H640c10-88 15-162 15-222 0-82-5-154-15-216Z" fill="#d5d3cf"/>
+  <rect x="720" y="214" width="160" height="28" rx="14" fill="#efece6"/>
+  <rect x="735" y="262" width="130" height="190" rx="14" fill="#c8c4be"/>
+  <path d="M0 640L220 620L440 670L640 635L860 680L1040 648L1240 690L1440 650L1600 670V900H0Z" fill="#4d8eb5"/>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#cfe0e7"/>
+  <path d="M0 220L170 185L350 255L530 180L680 245L800 205V600H0Z" fill="#8e644a"/>
+  <path d="M0 330L160 300L350 360L520 300L700 355L800 330V600H0Z" fill="#b87a56"/>
+  <path d="M240 390h320c-14 44-14 90 0 138H240c14-48 14-94 0-138Z" fill="#d7d4ce"/>
+  <path d="M300 430h200c-8 20-8 43 0 64H300c8-21 8-44 0-64Z" fill="#48a0c9"/>
+</svg>

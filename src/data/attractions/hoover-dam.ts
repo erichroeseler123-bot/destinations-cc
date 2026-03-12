@@ -12,6 +12,28 @@ export const HOOVER_DAM_PILLAR: AttractionPillarConfig = {
   gridDescription:
     "These links focus on Hoover Dam’s strongest commercial patterns: express half-day routes, combo day trips, engineering/history tours, and helicopter add-ons from Las Vegas.",
   schemaType: "LandmarksOrHistoricalBuildings",
+  heroImage: {
+    src: "/images/hoover-dam/hero.svg",
+    alt: "Hoover Dam and Black Canyon concept artwork",
+  },
+  gallery: [
+    {
+      src: "/images/hoover-dam/engineering.svg",
+      alt: "Hoover Dam engineering concept artwork",
+    },
+    {
+      src: "/images/hoover-dam/lake-mead.svg",
+      alt: "Lake Mead and Hoover Dam concept artwork",
+    },
+    {
+      src: "/images/hoover-dam/visitor-route.svg",
+      alt: "Hoover Dam visitor route concept artwork",
+    },
+    {
+      src: "/images/hoover-dam/aerial.svg",
+      alt: "Hoover Dam aerial tour concept artwork",
+    },
+  ],
   highlights: [
     {
       title: "Best for one-day efficiency",

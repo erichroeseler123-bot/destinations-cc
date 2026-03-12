@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import AuthorityMediaStrip from "@/app/components/dcc/AuthorityMediaStrip";
 import ViatorTourGrid from "@/app/components/dcc/ViatorTourGrid";
 
 export type AttractionPillarConfig = {
@@ -12,6 +13,8 @@ export type AttractionPillarConfig = {
   gridTitle: string;
   gridDescription: string;
   schemaType: "TouristAttraction" | "LandmarksOrHistoricalBuildings" | "CollectionPage";
+  heroImage?: { src: string; alt: string };
+  gallery?: Array<{ src: string; alt: string }>;
   highlights: Array<{ title: string; body: string }>;
   tourFallbacks: Array<{ label: string; query: string }>;
   sections: Array<{ title: string; body: string }>;
@@ -67,6 +70,10 @@ export default function AttractionPillarTemplate({ config }: { config: Attractio
           <p className="max-w-3xl text-zinc-300">{config.description}</p>
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Last updated: March 2026</p>
         </header>
+
+        {config.heroImage && config.gallery?.length ? (
+          <AuthorityMediaStrip hero={config.heroImage} gallery={config.gallery} />
+        ) : null}
 
         <section className="grid gap-4 md:grid-cols-3">
           {config.highlights.map((highlight) => (

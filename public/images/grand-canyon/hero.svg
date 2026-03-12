@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Grand Canyon sunrise panorama concept artwork</title>
+  <desc id="desc">Layered canyon walls with a warm sunrise sky representing Grand Canyon tours and viewpoints.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2d325a"/>
+      <stop offset="55%" stop-color="#ef8d52"/>
+      <stop offset="100%" stop-color="#f6d59e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <circle cx="1220" cy="180" r="96" fill="#fff0b5" opacity="0.85"/>
+  <path d="M0 420L180 360L360 410L520 330L700 390L860 320L1040 380L1220 300L1400 360L1600 310V900H0Z" fill="#7b4a35"/>
+  <path d="M0 530L140 480L320 540L520 450L700 530L900 455L1080 525L1280 430L1460 500L1600 470V900H0Z" fill="#9b5d42"/>
+  <path d="M0 650L180 590L330 640L520 580L700 650L880 560L1080 640L1260 575L1450 630L1600 600V900H0Z" fill="#c97d53"/>
+  <path d="M0 760L180 720L360 770L540 700L720 760L920 710L1120 770L1320 705L1500 760L1600 740V900H0Z" fill="#e3ad73"/>
+</svg>
