@@ -3,7 +3,7 @@ import PageActionBar from "@/app/components/dcc/PageActionBar";
 import OverlayEntityGridSection from "@/app/components/dcc/OverlayEntityGridSection";
 import type { DccCityRegistryNode } from "@/src/data/cities-registry";
 import type { DccEntityRegistryNode } from "@/src/data/entities-registry";
-import type { DccOverlayRegistryNode } from "@/src/data/overlay-registry";
+import type { DccOverlayRegistryNode, DccOverlayLink } from "@/src/data/overlay-registry";
 import { buildMapsSearchUrl, type PageAction } from "@/src/lib/page-actions";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -17,6 +17,11 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 function formatOverlayLabel(overlayType: string) {
   return overlayType.replace(/-/g, " ").replace(/\b\w/g, (match) => match.toUpperCase());
+}
+
+function linkKind(link: DccOverlayLink): "internal" | "external" {
+  if (link.kind) return link.kind;
+  return link.href.startsWith("http") ? "external" : "internal";
 }
 
 function getCategoryLabel(category: string) {
@@ -60,7 +65,7 @@ export default function OverlayCategoryPageTemplate({ city, overlay, category, e
     { href: overlay.canonicalPath, label: `${overlayLabel} ${city.name}`, kind: "internal" },
     { href: city.canonicalPath, label: `${city.name} hub`, kind: "internal" },
     { href: buildMapsSearchUrl(`${city.name}, ${city.state ?? city.country}`), label: "Open city in Maps", kind: "external" },
-    ...(overlay.relatedLinks?.slice(0, 2).map((link) => ({ href: link.href, label: link.label, kind: "internal" as const })) ?? []),
+    ...(overlay.relatedLinks?.slice(0, 2).map((link) => ({ href: link.href, label: link.label, kind: linkKind(link) })) ?? []),
   ];
 
   return (

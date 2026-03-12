@@ -4,11 +4,16 @@ import PageActionBar from "@/app/components/dcc/PageActionBar";
 import OverlayEntityGridSection from "@/app/components/dcc/OverlayEntityGridSection";
 import type { DccCityRegistryNode } from "@/src/data/cities-registry";
 import type { DccEntityRegistryNode } from "@/src/data/entities-registry";
-import type { DccOverlayRegistryNode } from "@/src/data/overlay-registry";
+import type { DccOverlayRegistryNode, DccOverlayLink } from "@/src/data/overlay-registry";
 import { buildMapsSearchUrl, type PageAction } from "@/src/lib/page-actions";
 
 function formatOverlayLabel(overlayType: string) {
   return overlayType.replace(/-/g, " ");
+}
+
+function linkKind(link: DccOverlayLink): "internal" | "external" {
+  if (link.kind) return link.kind;
+  return link.href.startsWith("http") ? "external" : "internal";
 }
 
 function categoryPathForEntityType(entityType: string) {
@@ -61,7 +66,7 @@ export default function OverlayPageTemplate({ city, overlay, entities }: Props) 
   const actionBarActions: PageAction[] = [
     { href: city.canonicalPath, label: `${city.name} hub`, kind: "internal" },
     { href: buildMapsSearchUrl(`${city.name}, ${city.state ?? city.country}`), label: "Open city in Maps", kind: "external" },
-    ...(overlay.relatedLinks?.slice(0, 3).map((link) => ({ href: link.href, label: link.label, kind: "internal" as const })) ?? []),
+    ...(overlay.relatedLinks?.slice(0, 4).map((link) => ({ href: link.href, label: link.label, kind: linkKind(link) })) ?? []),
   ];
 
   return (
@@ -131,13 +136,25 @@ export default function OverlayPageTemplate({ city, overlay, entities }: Props) 
             <h2 className="text-2xl font-bold">Related guides</h2>
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {overlay.relatedLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10"
-                >
-                  {link.label}
-                </Link>
+                linkKind(link) === "external" ? (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10"
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10"
+                  >
+                    {link.label}
+                  </Link>
+                )
               ))}
             </div>
           </section>

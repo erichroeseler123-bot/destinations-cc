@@ -1,5 +1,6 @@
 export type DccOverlayType =
   | "accessibility"
+  | "cannabis-rules"
   | "pet-friendly"
   | "kid-friendly"
   | "luxury"
@@ -8,7 +9,14 @@ export type DccOverlayType =
   | "scenic"
   | "festival-pressure"
   | "music-first"
-  | "family";
+  | "family"
+  | "smoker-friendly";
+
+export type DccOverlayLink = {
+  href: string;
+  label: string;
+  kind?: "internal" | "external";
+};
 
 export type DccOverlayRegistryNode = {
   slug: string;
@@ -18,7 +26,7 @@ export type DccOverlayRegistryNode = {
   resultSlugs: string[];
   canonicalPath: string;
   summary: string;
-  relatedLinks?: Array<{ href: string; label: string }>;
+  relatedLinks?: DccOverlayLink[];
 };
 
 export const OVERLAY_REGISTRY: DccOverlayRegistryNode[] = [
@@ -76,6 +84,39 @@ export const OVERLAY_REGISTRY: DccOverlayRegistryNode[] = [
       { href: "/las-vegas/hotels", label: "Las Vegas hotels" },
       { href: "/vegas", label: "Vegas hub" },
       { href: "/las-vegas-strip", label: "Las Vegas Strip" },
+    ],
+  },
+  {
+    slug: "smoker-friendly-las-vegas",
+    citySlug: "las-vegas",
+    overlayType: "smoker-friendly",
+    entityTypes: ["hotel", "casino", "attraction"],
+    resultSlugs: ["park-mgm", "caesars-palace", "bellagio-casino", "caesars-palace-casino", "fremont-street-experience"],
+    canonicalPath: "/smoker-friendly/las-vegas",
+    summary:
+      "Traveler-first Las Vegas smoking-policy overlay for comparing casino-floor smoking culture, cigar-lounge adjacency, outdoor-patio escape options, and hotel-policy friction before the stay is locked in.",
+    relatedLinks: [
+      { href: "/vegas", label: "Vegas hub" },
+      { href: "/las-vegas/casinos", label: "Las Vegas casinos" },
+      { href: "/fremont-street", label: "Fremont Street" },
+      { href: "https://www.vegasmeansbusiness.com/planning-tools/transportation-parking/", label: "Vegas transportation and parking", kind: "external" },
+    ],
+  },
+  {
+    slug: "cannabis-rules-las-vegas",
+    citySlug: "las-vegas",
+    overlayType: "cannabis-rules",
+    entityTypes: ["hotel", "casino", "attraction"],
+    resultSlugs: ["vdara", "park-mgm", "bellagio-casino", "sphere-las-vegas"],
+    canonicalPath: "/cannabis/las-vegas",
+    summary:
+      "Compliance-first Las Vegas cannabis rules overlay focused on what visitors need to avoid getting wrong: public-consumption bans, hotel and casino policy friction, airport and federal-property warnings, and safe trip-planning alternatives to guessing.",
+    relatedLinks: [
+      { href: "/vegas", label: "Vegas hub" },
+      { href: "/las-vegas/hotels", label: "Las Vegas hotels" },
+      { href: "/las-vegas/things-to-do", label: "Las Vegas things to do" },
+      { href: "https://ccb.nv.gov/", label: "Nevada Cannabis Compliance Board", kind: "external" },
+      { href: "https://www.harryreidairport.com/Traveler-Information/Know-Before-You-Go/Rules-and-Regulations", label: "Harry Reid Airport rules", kind: "external" },
     ],
   },
   {
