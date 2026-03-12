@@ -66,7 +66,8 @@ export default function SportsHubPage() {
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">Seed team nodes live now</h2>
           <p className="mt-2 max-w-3xl text-zinc-300">
-            The sports graph now spans the first DCC foundation cities: Las Vegas, Miami, Orlando, and New Orleans.
+            The sports graph now spans the Phase 1 foundation cities and the next expansion set: Las Vegas, Miami,
+            Orlando, New Orleans, Chicago, New York, Los Angeles, and Nashville.
           </p>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {SPORTS_TEAMS_CONFIG.map((team) => (
