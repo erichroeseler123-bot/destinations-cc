@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import AdventureLaneSection from "@/app/components/dcc/AdventureLaneSection";
+import CitySportsSection from "@/app/components/dcc/CitySportsSection";
 import CityLiveEventsSection from "@/app/components/dcc/CityLiveEventsSection";
 import CityMoneyLaneSection from "@/app/components/dcc/CityMoneyLaneSection";
 import NewOrleansFestivalSection from "@/app/components/dcc/NewOrleansFestivalSection";
 import { getCityAdventureLane } from "@/src/data/city-adventure-lanes";
 import { NEW_ORLEANS_FESTIVALS } from "@/src/data/new-orleans-festivals";
 import { getCityMoneyLane } from "@/src/data/city-money-lanes";
+import { getTeamsByCity } from "@/src/data/sports-teams-config";
 
 const PAGE_URL = "https://destinationcommandcenter.com/new-orleans";
 const LAST_UPDATED = "2026-03-11";
@@ -134,6 +136,7 @@ function JsonLd() {
 export default function NewOrleansPage() {
   const moneyLane = getCityMoneyLane("new-orleans");
   const adventureLane = getCityAdventureLane("new-orleans");
+  const sportsTeams = getTeamsByCity("new-orleans");
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -229,6 +232,8 @@ export default function NewOrleansPage() {
         />
 
         <NewOrleansFestivalSection festivals={NEW_ORLEANS_FESTIVALS} />
+
+        <CitySportsSection cityName="New Orleans" citySlug="new-orleans" teams={sportsTeams} />
 
         <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">New Orleans FAQ</h2>

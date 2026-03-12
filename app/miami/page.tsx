@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import AdventureLaneSection from "@/app/components/dcc/AdventureLaneSection";
+import CitySportsSection from "@/app/components/dcc/CitySportsSection";
 import { getCityAdventureLane } from "@/src/data/city-adventure-lanes";
+import { getTeamsByCity } from "@/src/data/sports-teams-config";
 
 const PAGE_URL = "https://destinationcommandcenter.com/miami";
 const ADVENTURE_LANE = getCityAdventureLane("miami");
+const LAST_UPDATED = "2026-03-11";
 
 const PILLARS = [
   "Biscayne and beach-day activity timing",
@@ -68,6 +71,7 @@ function JsonLd() {
         name: "Miami Travel Guide",
         description:
           "Miami planning guide for water activities, Biscayne adventure lanes, Everglades timing, and practical trip structure.",
+        dateModified: LAST_UPDATED,
       },
       {
         "@type": "TouristDestination",
@@ -86,6 +90,13 @@ function JsonLd() {
           },
         })),
       },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Cities", item: "https://destinationcommandcenter.com/cities" },
+          { "@type": "ListItem", position: 2, name: "Miami", item: PAGE_URL },
+        ],
+      },
     ],
   };
 
@@ -93,6 +104,7 @@ function JsonLd() {
 }
 
 export default function MiamiPage() {
+  const sportsTeams = getTeamsByCity("miami");
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <JsonLd />
@@ -104,6 +116,7 @@ export default function MiamiPage() {
             Miami works best when you separate beach time, water activities, and nightlife instead of treating them as one interchangeable day.
             This page focuses on the adventure categories that convert cleanly: jet skis, parasailing, paddling, helicopter views, and short-format rentals.
           </p>
+          <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Last updated: March 2026</p>
         </header>
 
         <section className="grid gap-3 sm:grid-cols-2">
@@ -127,6 +140,8 @@ export default function MiamiPage() {
         </section>
 
         {ADVENTURE_LANE ? <AdventureLaneSection config={ADVENTURE_LANE} /> : null}
+
+        <CitySportsSection cityName="Miami" citySlug="miami" teams={sportsTeams} />
 
         <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">Keep the lane split clean</h2>
@@ -155,6 +170,16 @@ export default function MiamiPage() {
                 <p className="mt-2 text-sm text-zinc-300">{item.a}</p>
               </article>
             ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Other popular city nodes</h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Link href="/orlando" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">Orlando</Link>
+            <Link href="/new-orleans" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">New Orleans</Link>
+            <Link href="/vegas" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">Las Vegas</Link>
+            <Link href="/cruises" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">Cruises</Link>
           </div>
         </section>
       </div>

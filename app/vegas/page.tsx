@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import AdventureLaneSection from "@/app/components/dcc/AdventureLaneSection";
+import CitySportsSection from "@/app/components/dcc/CitySportsSection";
 import CityLiveEventsSection from "@/app/components/dcc/CityLiveEventsSection";
 import CityMoneyLaneSection from "@/app/components/dcc/CityMoneyLaneSection";
 import PoweredByViator from "@/app/components/dcc/PoweredByViator";
@@ -11,6 +12,7 @@ import { ticketmasterAdapter } from "@/lib/dcc/providers/adapters/ticketmaster";
 import { getCityAdventureLane } from "@/src/data/city-adventure-lanes";
 import { CITY_AUTHORITY_CONFIG } from "@/src/data/city-authority-config";
 import { getCityMoneyLane } from "@/src/data/city-money-lanes";
+import { getTeamsByCity } from "@/src/data/sports-teams-config";
 
 const PAGE_URL = "https://destinationcommandcenter.com/vegas";
 const VEGAS = CITY_AUTHORITY_CONFIG["las-vegas"];
@@ -137,6 +139,7 @@ function JsonLd() {
 export default async function VegasPage() {
   const moneyLane = getCityMoneyLane("las-vegas");
   const adventureLane = getCityAdventureLane("las-vegas");
+  const sportsTeams = getTeamsByCity("las-vegas");
   const viatorAction = await getViatorActionForPlace({
     slug: "las-vegas",
     name: "Las Vegas",
@@ -261,6 +264,8 @@ export default async function VegasPage() {
         </section>
 
         {adventureLane ? <AdventureLaneSection config={adventureLane} /> : null}
+
+        <CitySportsSection cityName="Las Vegas" citySlug="las-vegas" teams={sportsTeams} />
 
         <section className="grid gap-4 md:grid-cols-3">
           <QuickCard

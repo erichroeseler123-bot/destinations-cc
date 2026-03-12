@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import AdventureLaneSection from "@/app/components/dcc/AdventureLaneSection";
+import CitySportsSection from "@/app/components/dcc/CitySportsSection";
 import { getCityAdventureLane } from "@/src/data/city-adventure-lanes";
+import { getTeamsByCity } from "@/src/data/sports-teams-config";
 
 const PAGE_URL = "https://destinationcommandcenter.com/orlando";
 const ADVENTURE_LANE = getCityAdventureLane("orlando");
+const LAST_UPDATED = "2026-03-11";
 
 const PILLARS = [
   "Theme-park versus outdoor-day tradeoffs",
@@ -68,6 +71,7 @@ function JsonLd() {
         name: "Orlando Travel Guide",
         description:
           "Orlando planning guide for airboats, balloon rides, skydiving, water activities, and better park-versus-outdoor day structure.",
+        dateModified: LAST_UPDATED,
       },
       {
         "@type": "TouristDestination",
@@ -86,6 +90,13 @@ function JsonLd() {
           },
         })),
       },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Cities", item: "https://destinationcommandcenter.com/cities" },
+          { "@type": "ListItem", position: 2, name: "Orlando", item: PAGE_URL },
+        ],
+      },
     ],
   };
 
@@ -93,6 +104,7 @@ function JsonLd() {
 }
 
 export default function OrlandoPage() {
+  const sportsTeams = getTeamsByCity("orlando");
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <JsonLd />
@@ -104,6 +116,7 @@ export default function OrlandoPage() {
             Orlando is more than park tickets. This page covers the secondary activity lane that still converts well:
             airboats, balloon flights, skydiving, lake activities, and outdoor resets that fit around the park core.
           </p>
+          <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Last updated: March 2026</p>
         </header>
 
         <section className="grid gap-3 sm:grid-cols-2">
@@ -127,6 +140,8 @@ export default function OrlandoPage() {
         </section>
 
         {ADVENTURE_LANE ? <AdventureLaneSection config={ADVENTURE_LANE} /> : null}
+
+        <CitySportsSection cityName="Orlando" citySlug="orlando" teams={sportsTeams} />
 
         <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">Keep Orlando lanes distinct</h2>
@@ -155,6 +170,16 @@ export default function OrlandoPage() {
                 <p className="mt-2 text-sm text-zinc-300">{item.a}</p>
               </article>
             ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Other popular city nodes</h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Link href="/miami" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">Miami</Link>
+            <Link href="/new-orleans" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">New Orleans</Link>
+            <Link href="/vegas" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">Las Vegas</Link>
+            <Link href="/national-parks" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">National Parks</Link>
           </div>
         </section>
       </div>

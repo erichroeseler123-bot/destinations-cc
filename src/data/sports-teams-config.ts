@@ -287,3 +287,7 @@ export function getSportsTeam(slug: string) {
 export function getTeamsByLeague(leagueSlug: string) {
   return SPORTS_TEAMS_CONFIG.filter((team) => team.leagueSlug === leagueSlug);
 }
+
+export function getTeamsByCity(citySlug: string) {
+  return SPORTS_TEAMS_CONFIG.filter((team) => team.citySlug === citySlug);
+}
