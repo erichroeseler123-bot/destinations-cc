@@ -274,6 +274,16 @@ export default async function VegasPage() {
             <h2 className="mt-3 text-2xl font-bold">Luxury hotels in Las Vegas</h2>
             <p className="mt-2 text-zinc-200">Premium-stay overlay for resort, spa, and romantic Vegas buyers.</p>
           </Link>
+          <Link href="/suites/las-vegas" className="rounded-3xl border border-sky-400/20 bg-sky-500/10 p-6 hover:bg-sky-500/15">
+            <p className="text-xs uppercase tracking-[0.22em] text-sky-300">Luxury Lodging</p>
+            <h2 className="mt-3 text-2xl font-bold">Las Vegas suites</h2>
+            <p className="mt-2 text-zinc-200">Use the suite lane when room category, group fit, and upgraded layouts matter more than broad hotel filtering.</p>
+          </Link>
+          <Link href="/penthouses/las-vegas" className="rounded-3xl border border-sky-400/20 bg-sky-500/10 p-6 hover:bg-sky-500/15">
+            <p className="text-xs uppercase tracking-[0.22em] text-sky-300">Luxury Lodging</p>
+            <h2 className="mt-3 text-2xl font-bold">Penthouse-style stays</h2>
+            <p className="mt-2 text-zinc-200">A planning surface for privacy, views, entertaining space, and the top-end Strip room stack.</p>
+          </Link>
         </section>
 
         <section className="grid gap-4 md:grid-cols-2">
@@ -375,6 +385,14 @@ export default async function VegasPage() {
             <Link href="/luxury-hotels-las-vegas" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
               <h3 className="font-semibold">Luxury hotels in Las Vegas</h3>
               <p className="mt-2 text-sm text-zinc-300">Premium Strip and romantic-stay overlay driven from the same hotel tag layer.</p>
+            </Link>
+            <Link href="/suites/las-vegas" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
+              <h3 className="font-semibold">Las Vegas suites</h3>
+              <p className="mt-2 text-sm text-zinc-300">Premium-room mini-site for buyers comparing larger layouts, upgraded room categories, and celebration-fit stays.</p>
+            </Link>
+            <Link href="/penthouses/las-vegas" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
+              <h3 className="font-semibold">Penthouse-style Vegas stays</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use the top-end room layer when the search is really about privacy, views, and prestige rather than generic hotel sorting.</p>
             </Link>
             <Link href="/things-to-do-on-the-strip" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
               <h3 className="font-semibold">Things to do on the Strip</h3>

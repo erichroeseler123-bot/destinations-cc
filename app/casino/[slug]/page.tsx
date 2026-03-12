@@ -61,6 +61,11 @@ function getCasinoRelationshipLinks(slug: string) {
     case "caesars-palace-casino":
       return [
         {
+          href: "/accessible-hotels-near/caesars-palace-casino",
+          title: "Accessible hotels near Caesars Palace Casino",
+          body: "Compare nearby hotels when Caesars is the anchor but entrance clarity, mobility flow, or lower-friction routing matters before the room is chosen.",
+        },
+        {
           href: "/hotels-near/caesars-palace-casino",
           title: "Hotels near Caesars Palace Casino",
           body: "See nearby hotel options when Caesars is the anchor and you want the best nearby stay, not just the flagship resort itself.",

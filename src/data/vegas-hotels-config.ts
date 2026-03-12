@@ -25,6 +25,17 @@ export type VegasHotel = {
   summary: string;
   famousFor: string[];
   nearbyHooks: string[];
+  premiumStayInfo?: {
+    suiteTypes?: Array<"suite" | "villa" | "penthouse" | "presidential-suite">;
+    multiBedroom?: boolean;
+    privatePool?: boolean;
+    butlerService?: boolean;
+    privateEntrance?: boolean;
+    eventFriendly?: boolean;
+    stripView?: boolean;
+    familyFriendlyLargeUnit?: boolean;
+    notes?: string;
+  };
 };
 
 function buildSpecificHotelNodeMedia(slug: string, name: string): {
@@ -125,6 +136,15 @@ const VEGAS_HOTELS_BASE: VegasHotel[] = [
     summary: "Classic flagship resort for fountain-driven Vegas, higher-end dining, and premium Strip positioning.",
     famousFor: ["Bellagio Fountains", "Conservatory", "O by Cirque du Soleil"],
     nearbyHooks: ["Mid-Strip walkability", "show nights", "romantic Vegas"],
+    premiumStayInfo: {
+      suiteTypes: ["suite", "penthouse", "villa"],
+      multiBedroom: true,
+      butlerService: true,
+      privateEntrance: true,
+      stripView: true,
+      eventFriendly: true,
+      notes: "One of the clearest Vegas premium-stay anchors for couples, milestone trips, and buyers chasing iconic central-Strip views.",
+    },
   },
   {
     slug: "caesars-palace",
@@ -135,6 +155,15 @@ const VEGAS_HOTELS_BASE: VegasHotel[] = [
     summary: "Iconic Roman-theme anchor for residencies, sportsbook energy, and center-Strip access.",
     famousFor: ["The Colosseum", "Forum Shops", "sportsbook and restaurant density"],
     nearbyHooks: ["shows", "sportsbook buyers", "restaurant-heavy trips"],
+    premiumStayInfo: {
+      suiteTypes: ["suite", "penthouse", "villa", "presidential-suite"],
+      multiBedroom: true,
+      butlerService: true,
+      privateEntrance: true,
+      stripView: true,
+      eventFriendly: true,
+      notes: "Strong premium-room candidate for group trips, VIP-style stays, and central Strip routing tied to restaurants and residencies.",
+    },
   },
   {
     slug: "mgm-grand",
@@ -145,6 +174,13 @@ const VEGAS_HOTELS_BASE: VegasHotel[] = [
     summary: "Large-scale South Strip base for entertainment-first trips with show, sports, and nightlife pull.",
     famousFor: ["David Copperfield", "MGM Grand Garden Arena", "Topgolf adjacency"],
     nearbyHooks: ["South Strip", "event nights", "sports crossover"],
+    premiumStayInfo: {
+      suiteTypes: ["suite", "penthouse"],
+      multiBedroom: true,
+      eventFriendly: true,
+      stripView: true,
+      notes: "Useful premium option when the buyer wants event-night access and larger entertaining space without only shopping north-Strip luxury.",
+    },
   },
   {
     slug: "venetian",
@@ -155,6 +191,14 @@ const VEGAS_HOTELS_BASE: VegasHotel[] = [
     summary: "Suite-heavy luxury base that fits longer Strip stays, upscale dining, and show nights.",
     famousFor: ["Grand Canal Shoppes", "gondolas", "Sphere adjacency"],
     nearbyHooks: ["Sphere", "luxury couples trips", "mid-Strip access"],
+    premiumStayInfo: {
+      suiteTypes: ["suite", "penthouse", "presidential-suite"],
+      multiBedroom: true,
+      butlerService: true,
+      privateEntrance: true,
+      stripView: true,
+      notes: "One of the most natural suite-first Vegas anchors because larger room categories are part of the Venetian identity, especially for groups and celebration stays.",
+    },
   },
   {
     slug: "wynn",
@@ -165,6 +209,15 @@ const VEGAS_HOTELS_BASE: VegasHotel[] = [
     summary: "High-end resort for luxury buyers who want cleaner aesthetics, restaurants, and club access.",
     famousFor: ["Lake of Dreams", "Encore Beach Club adjacency", "high-limit feel"],
     nearbyHooks: ["luxury Vegas", "nightlife", "north Strip"],
+    premiumStayInfo: {
+      suiteTypes: ["suite", "penthouse", "villa", "presidential-suite"],
+      multiBedroom: true,
+      butlerService: true,
+      privateEntrance: true,
+      stripView: true,
+      eventFriendly: true,
+      notes: "High-end premium-stay anchor for north-Strip buyers who care about privacy, polish, and nightlife-adjacent luxury.",
+    },
   },
   {
     slug: "encore",
@@ -175,6 +228,15 @@ const VEGAS_HOTELS_BASE: VegasHotel[] = [
     summary: "Encore functions as a high-end nightlife and luxury stay node inside the Wynn cluster.",
     famousFor: ["Encore Theater", "club access", "premium service"],
     nearbyHooks: ["luxury stays", "nightlife buyers", "show nights"],
+    premiumStayInfo: {
+      suiteTypes: ["suite", "penthouse", "villa"],
+      multiBedroom: true,
+      butlerService: true,
+      privateEntrance: true,
+      stripView: true,
+      eventFriendly: true,
+      notes: "A strong choice for buyers who want premium room categories with easier nightlife pairing than many calmer luxury resorts.",
+    },
   },
   {
     slug: "cosmopolitan",
@@ -185,6 +247,13 @@ const VEGAS_HOTELS_BASE: VegasHotel[] = [
     summary: "Style-forward resort for nightlife-heavy, dining-heavy, and couples-led Vegas trips.",
     famousFor: ["Chandelier Bar", "balcony rooms", "Marquee nightlife"],
     nearbyHooks: ["romantic Vegas", "nightlife", "mid-Strip dining"],
+    premiumStayInfo: {
+      suiteTypes: ["suite", "penthouse"],
+      multiBedroom: true,
+      stripView: true,
+      eventFriendly: true,
+      notes: "Strong for style-led premium stays, balcony/view buyers, and groups that want luxury without a purely formal resort tone.",
+    },
   },
   {
     slug: "aria",
@@ -195,6 +264,13 @@ const VEGAS_HOTELS_BASE: VegasHotel[] = [
     summary: "Modern luxury base for visitors who want upscale dining, central access, and cleaner design language.",
     famousFor: ["Crystals adjacency", "Jewel nightlife", "CityCenter location"],
     nearbyHooks: ["luxury stays", "mid-Strip", "dining-led trips"],
+    premiumStayInfo: {
+      suiteTypes: ["suite", "penthouse"],
+      multiBedroom: true,
+      butlerService: true,
+      stripView: true,
+      notes: "A useful penthouse-style and suite-style anchor for modern-luxury buyers who care more about polished design than old-school Vegas spectacle.",
+    },
   },
   {
     slug: "vdara",
@@ -205,6 +281,13 @@ const VEGAS_HOTELS_BASE: VegasHotel[] = [
     summary: "Non-casino luxury option for calmer Vegas stays with easy access to the Strip without full casino intensity.",
     famousFor: ["non-casino feel", "suite layout", "CityCenter access"],
     nearbyHooks: ["pet-friendly luxury", "spa stays", "quieter Vegas"],
+    premiumStayInfo: {
+      suiteTypes: ["suite", "villa"],
+      multiBedroom: true,
+      privateEntrance: true,
+      familyFriendlyLargeUnit: true,
+      notes: "Useful premium-room node when the trip needs larger units, calmer circulation, or a less casino-heavy luxury base.",
+    },
   },
   {
     slug: "mandalay-bay",
@@ -414,4 +497,8 @@ export function getVegasHotelsByTag(tag: VegasHotelTag) {
 
 export function getVegasHotelBySlug(slug: string) {
   return VEGAS_HOTELS_CONFIG.find((hotel) => hotel.slug === slug) || null;
+}
+
+export function getVegasHotelsByPremiumStayType(type: "suite" | "villa" | "penthouse" | "presidential-suite") {
+  return VEGAS_HOTELS_CONFIG.filter((hotel) => hotel.premiumStayInfo?.suiteTypes?.includes(type));
 }

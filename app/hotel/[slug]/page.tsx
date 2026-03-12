@@ -61,6 +61,11 @@ function getHotelRelationshipLinks(slug: string) {
     case "caesars-palace":
       return [
         {
+          href: "/accessible-hotels-near/caesars-palace-casino",
+          title: "Accessible hotels near Caesars Palace Casino",
+          body: "Compare easier-access nearby stays when central Strip positioning matters but you do not want the whole trip riding on one giant casino property.",
+        },
+        {
           href: "/hotels-near/caesars-palace-casino",
           title: "Hotels near Caesars Palace Casino",
           body: "Compare nearby mid-Strip hotel options when Caesars is the anchor but the stay decision is still flexible.",
@@ -339,6 +344,35 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
             })}
           </div>
         </section>
+
+        {hotel.premiumStayInfo?.suiteTypes?.length ? (
+          <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+            <h2 className="text-2xl font-bold">Suites and premium rooms</h2>
+            <p className="mt-2 max-w-3xl text-zinc-300">
+              Use this section as a planning guide for premium room categories, not a live inventory claim. Check the official hotel site for current availability and exact room names.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {hotel.premiumStayInfo.suiteTypes.map((type) => (
+                <span key={`${hotel.slug}-${type}`} className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-100">
+                  {type.replace(/-/g, " ")}
+                </span>
+              ))}
+              {hotel.premiumStayInfo.multiBedroom ? <span className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-100">multi bedroom options</span> : null}
+              {hotel.premiumStayInfo.stripView ? <span className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-100">strip view potential</span> : null}
+              {hotel.premiumStayInfo.eventFriendly ? <span className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-100">group celebration fit</span> : null}
+              {hotel.premiumStayInfo.butlerService ? <span className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-100">higher-touch service</span> : null}
+            </div>
+            {hotel.premiumStayInfo.notes ? <p className="mt-4 text-sm text-zinc-300">{hotel.premiumStayInfo.notes}</p> : null}
+            <div className="mt-5 grid gap-3 md:grid-cols-2">
+              <Link href="/suites/las-vegas" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
+                Compare Vegas suites
+              </Link>
+              <Link href="/penthouses/las-vegas" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
+                Explore penthouse-style stays
+              </Link>
+            </div>
+          </section>
+        ) : null}
 
         <section className="grid gap-4 md:grid-cols-2">
           <Link href="/las-vegas/hotels" className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">

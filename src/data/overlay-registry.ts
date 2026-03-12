@@ -43,6 +43,7 @@ export const OVERLAY_REGISTRY: DccOverlayRegistryNode[] = [
       { href: "/vegas", label: "Vegas hub" },
       { href: "/las-vegas/hotels", label: "Las Vegas hotels" },
       { href: "/las-vegas/things-to-do", label: "Las Vegas things to do" },
+      { href: "/accessible-hotels-near/sphere-las-vegas", label: "Accessible hotels near Sphere" },
     ],
   },
   {

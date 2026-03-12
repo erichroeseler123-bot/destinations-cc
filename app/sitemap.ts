@@ -256,6 +256,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/vegas",
     "/las-vegas/casinos",
     "/las-vegas/pools",
+    "/suites/las-vegas",
+    "/penthouses/las-vegas",
     "/las-vegas/things-to-do",
     "/las-vegas/hotels",
     "/fremont-street",
