@@ -10,6 +10,11 @@ import { NATIONAL_PARKS_AUTHORITY_CONFIG } from "@/src/data/national-parks-autho
 import { SPORTS_LEAGUES_CONFIG } from "@/src/data/sports-leagues-config";
 import { getSportsCitySlugs, SPORTS_TEAMS_CONFIG } from "@/src/data/sports-teams-config";
 import { SPORTS_VENUES_CONFIG } from "@/src/data/sports-venues-config";
+import { listRoadTripOverlayRouteSlugs } from "@/src/data/road-trip-overlays-registry";
+import { listRoadTripRelationshipSlugs } from "@/src/data/road-trip-relationships-registry";
+import { listRoadTripSegmentSlugs } from "@/src/data/road-trip-segments-registry";
+import { getRoadTripStopHref, ROAD_TRIP_STOPS_REGISTRY } from "@/src/data/road-trip-stops-registry";
+import { listRoadTripRouteSlugs } from "@/src/data/road-trips-registry";
 import { VEGAS_CASINOS_CONFIG } from "@/src/data/vegas-casinos-config";
 import { VEGAS_HOTELS_CONFIG } from "@/src/data/vegas-hotels-config";
 import { listAttractionsNearSlugs, listCasinosNearSlugs, listHotelsNearSlugs } from "@/src/data/vegas-relationships";
@@ -207,6 +212,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const hotelUrls = VEGAS_HOTELS_CONFIG.map((hotel) => `/hotel/${hotel.slug}`);
   const casinoUrls = VEGAS_CASINOS_CONFIG.map((casino) => `/casino/${casino.slug}`);
   const overlayUrls = OVERLAY_REGISTRY.map((overlay) => overlay.canonicalPath);
+  const roadTripHubUrls = ["/road-trips", ...listRoadTripRouteSlugs().map((slug) => `/road-trips/${slug}`)];
+  const roadTripSegmentUrls = listRoadTripSegmentSlugs().map((slug) => `/route-segment/${slug}`);
+  const roadTripStopUrls = ROAD_TRIP_STOPS_REGISTRY.map((stop) => getRoadTripStopHref(stop));
+  const roadTripOverlayUrls = listRoadTripOverlayRouteSlugs().map((slug) => `/scenic-drives/${slug}`);
+  const roadTripRelationshipUrls = [
+    ...listRoadTripRelationshipSlugs("stops-near").map((slug) => `/stops-near/${slug}`),
+    ...listRoadTripRelationshipSlugs("diners-near").map((slug) => `/diners-near/${slug}`),
+  ];
   const hotelsNearUrls = listHotelsNearSlugs().map((slug) => `/hotels-near/${slug}`);
   const attractionsNearUrls = listAttractionsNearSlugs().map((slug) => `/attractions-near/${slug}`);
   const casinosNearUrls = listCasinosNearSlugs().map((slug) => `/casinos-near/${slug}`);
@@ -242,6 +255,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/summerlin",
     "/tours",
     "/ports",
+    "/road-trips",
     "/authority",
     "/national-parks",
     "/snowmobiling",
@@ -265,6 +279,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...hotelUrls,
     ...casinoUrls,
     ...overlayUrls,
+    ...roadTripHubUrls,
+    ...roadTripSegmentUrls,
+    ...roadTripStopUrls,
+    ...roadTripOverlayUrls,
+    ...roadTripRelationshipUrls,
     ...hotelsNearUrls,
     ...attractionsNearUrls,
     ...casinosNearUrls,

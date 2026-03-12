@@ -2,6 +2,11 @@ export * from "@/src/data/cities-registry";
 export * from "@/src/data/entities-registry";
 export * from "@/src/data/relationship-registry";
 export * from "@/src/data/overlay-registry";
+export * from "@/src/data/road-trips-registry";
+export * from "@/src/data/road-trip-segments-registry";
+export * from "@/src/data/road-trip-stops-registry";
+export * from "@/src/data/road-trip-overlays-registry";
+export * from "@/src/data/road-trip-relationships-registry";
 
 import { CITIES_REGISTRY, getLiveCityRegistryNodes } from "@/src/data/cities-registry";
 import { ENTITIES_REGISTRY } from "@/src/data/entities-registry";
