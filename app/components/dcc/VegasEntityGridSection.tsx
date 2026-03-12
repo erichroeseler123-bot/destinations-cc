@@ -6,6 +6,7 @@ type EntityCard = {
   summary: string;
   primaryHref: string;
   chips: string[];
+  image?: { src: string; alt: string };
   nearbyLinks: Array<{ href: string; label: string }>;
 };
 
@@ -29,7 +30,13 @@ export default function VegasEntityGridSection({
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {entities.map((entity) => (
-          <article key={entity.slug} className="rounded-2xl border border-white/10 bg-black/20 p-5">
+          <article key={entity.slug} className="overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+            {entity.image ? (
+              <div className="overflow-hidden border-b border-white/10 bg-black/30">
+                <img src={entity.image.src} alt={entity.image.alt} className="h-44 w-full object-cover" loading="lazy" />
+              </div>
+            ) : null}
+            <div className="p-5">
             <h3 className="text-xl font-bold">{entity.name}</h3>
             <p className="mt-3 text-sm text-zinc-300">{entity.summary}</p>
 
@@ -63,6 +70,7 @@ export default function VegasEntityGridSection({
               >
                 Open linked node
               </Link>
+            </div>
             </div>
           </article>
         ))}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs><linearGradient id="ng" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#16203d"/><stop offset="100%" stop-color="#30485f"/></linearGradient></defs>
+  <rect width="800" height="600" fill="url(#ng)"/>
+  <rect x="110" y="145" width="125" height="330" fill="#d5d2c8"/>
+  <rect x="260" y="90" width="145" height="385" fill="#ebe7df"/>
+  <rect x="435" y="165" width="110" height="310" fill="#c9c4ba"/>
+  <rect x="575" y="120" width="125" height="355" fill="#f6f2ea"/>
+  <path d="M0 475L190 452L370 490L560 455L760 485L800 480V600H0Z" fill="#1b1a26"/>
+</svg>

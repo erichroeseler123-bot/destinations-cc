@@ -26,7 +26,13 @@ export default function VegasHotelGridSection({
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {hotels.map((hotel) => (
-          <article key={hotel.slug} className="rounded-2xl border border-white/10 bg-black/20 p-5">
+          <article key={hotel.slug} className="overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+            {hotel.image ? (
+              <div className="overflow-hidden border-b border-white/10 bg-black/30">
+                <img src={hotel.image.src} alt={hotel.image.alt} className="h-44 w-full object-cover" loading="lazy" />
+              </div>
+            ) : null}
+            <div className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-xl font-bold">{hotel.name}</h3>
@@ -68,6 +74,7 @@ export default function VegasHotelGridSection({
               >
                 Open hotel node
               </Link>
+            </div>
             </div>
           </article>
         ))}

@@ -16,12 +16,59 @@ export type VegasHotel = {
   area: "mid-strip" | "south-strip" | "north-strip" | "downtown" | "off-strip";
   tier: "budget" | "upper-midscale" | "luxury";
   tags: VegasHotelTag[];
+  image?: { src: string; alt: string };
   summary: string;
   famousFor: string[];
   nearbyHooks: string[];
 };
 
-export const VEGAS_HOTELS_CONFIG: VegasHotel[] = [
+function buildVegasHotelImage(
+  name: string,
+  area: VegasHotel["area"],
+  tags: VegasHotelTag[],
+): { src: string; alt: string } {
+  if (area === "downtown") {
+    return {
+      src: "/images/las-vegas/hotels/downtown-classic.svg",
+      alt: `${name} downtown Las Vegas hotel concept artwork`,
+    };
+  }
+
+  if (area === "south-strip" && tags.includes("kid-friendly")) {
+    return {
+      src: "/images/las-vegas/hotels/south-strip-family.svg",
+      alt: `${name} South Strip family-friendly hotel concept artwork`,
+    };
+  }
+
+  if (area === "north-strip" && tags.includes("luxury")) {
+    return {
+      src: "/images/las-vegas/hotels/north-strip-luxury.svg",
+      alt: `${name} north Strip luxury hotel concept artwork`,
+    };
+  }
+
+  if (area === "mid-strip" && tags.includes("luxury")) {
+    return {
+      src: "/images/las-vegas/hotels/mid-strip-luxury.svg",
+      alt: `${name} mid-Strip luxury hotel concept artwork`,
+    };
+  }
+
+  if (area === "mid-strip") {
+    return {
+      src: "/images/las-vegas/hotels/mid-strip-social.svg",
+      alt: `${name} center Strip hotel concept artwork`,
+    };
+  }
+
+  return {
+    src: "/images/las-vegas/hotels/off-strip-resort.svg",
+    alt: `${name} Las Vegas resort hotel concept artwork`,
+  };
+}
+
+const VEGAS_HOTELS_BASE: VegasHotel[] = [
   {
     slug: "bellagio",
     name: "Bellagio",
@@ -303,6 +350,11 @@ export const VEGAS_HOTELS_CONFIG: VegasHotel[] = [
     nearbyHooks: ["downtown stays", "Fremont", "quieter alternative"],
   },
 ];
+
+export const VEGAS_HOTELS_CONFIG: VegasHotel[] = VEGAS_HOTELS_BASE.map((hotel) => ({
+  ...hotel,
+  image: buildVegasHotelImage(hotel.name, hotel.area, hotel.tags),
+}));
 
 export function getVegasHotelsByTag(tag: VegasHotelTag) {
   return VEGAS_HOTELS_CONFIG.filter((hotel) => hotel.tags.includes(tag));

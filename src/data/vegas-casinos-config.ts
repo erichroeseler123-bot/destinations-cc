@@ -13,12 +13,45 @@ export type VegasCasino = {
   district: "las-vegas-strip" | "fremont-street" | "summerlin";
   hotelSlug?: string;
   tags: VegasCasinoTag[];
+  image?: { src: string; alt: string };
   summary: string;
   anchors: string[];
   nearbyLinks: Array<{ href: string; label: string }>;
 };
 
-export const VEGAS_CASINOS_CONFIG: VegasCasino[] = [
+function buildVegasCasinoImage(
+  name: string,
+  district: VegasCasino["district"],
+  tags: VegasCasinoTag[],
+): { src: string; alt: string } {
+  if (district === "fremont-street") {
+    return {
+      src: "/images/las-vegas/casinos/downtown-classic.svg",
+      alt: `${name} Fremont Street casino concept artwork`,
+    };
+  }
+
+  if (district === "summerlin") {
+    return {
+      src: "/images/las-vegas/casinos/summerlin-resort.svg",
+      alt: `${name} Summerlin resort casino concept artwork`,
+    };
+  }
+
+  if (tags.includes("nightlife")) {
+    return {
+      src: "/images/las-vegas/casinos/strip-nightlife.svg",
+      alt: `${name} Strip nightlife casino concept artwork`,
+    };
+  }
+
+  return {
+    src: "/images/las-vegas/casinos/strip-luxury.svg",
+    alt: `${name} luxury Strip casino concept artwork`,
+  };
+}
+
+const VEGAS_CASINOS_BASE: VegasCasino[] = [
   {
     slug: "bellagio-casino",
     name: "Bellagio Casino",
@@ -144,6 +177,11 @@ export const VEGAS_CASINOS_CONFIG: VegasCasino[] = [
     ],
   },
 ];
+
+export const VEGAS_CASINOS_CONFIG: VegasCasino[] = VEGAS_CASINOS_BASE.map((casino) => ({
+  ...casino,
+  image: buildVegasCasinoImage(casino.name, casino.district, casino.tags),
+}));
 
 export function getVegasCasinosByTag(tag: VegasCasinoTag) {
   return VEGAS_CASINOS_CONFIG.filter((casino) => casino.tags.includes(tag));
