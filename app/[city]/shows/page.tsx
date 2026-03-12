@@ -338,7 +338,7 @@ export default async function CityShowsPage({
               href={`/${cityKey}/tours`}
               className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-5 py-3 font-semibold text-zinc-100 hover:bg-white/10"
             >
-              Switch to Vegas tours
+              Switch to {cityName} tours
             </Link>
             <Link
               href={`/${cityKey}/attractions`}
@@ -368,17 +368,17 @@ export default async function CityShowsPage({
             <div>
               <h2 className="text-2xl font-bold">Live show inventory</h2>
               <p className="mt-2 max-w-3xl text-zinc-300">
-                This lane is fed by the Vegas-area ticket feed, then shaped by the city-specific
-                show taxonomy below. It is separate from tours and attractions because the buyer
+                This lane is fed by the local ticket feed, then shaped by the city-specific show
+                taxonomy below. It is separate from tours and attractions because the buyer
                 is shopping fixed-time entertainment inventory.
               </p>
             </div>
             <div className="text-sm text-cyan-300">
               {liveResult.ok
-                ? "Live ticket inventory loaded for Las Vegas."
+                ? `Live ticket inventory loaded for ${cityName}.`
                 : liveResult.diagnostics.fallback_reason === "missing_api_key"
-                  ? "Ticketmaster API key is missing, so this section is using curated Vegas show coverage."
-                  : "Live event inventory is temporarily unavailable, so this section is using curated Vegas show coverage."}
+                  ? `Ticketmaster API key is missing, so this section is using curated ${cityName} show coverage.`
+                  : `Live event inventory is temporarily unavailable, so this section is using curated ${cityName} show coverage.`}
             </div>
           </div>
 
@@ -434,14 +434,14 @@ export default async function CityShowsPage({
             </div>
           ) : (
             <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-5 text-zinc-300">
-              No live show listings matched this filter, so the page is falling back to curated Vegas
-              show coverage below.
+              No live show listings matched this filter, so the page is falling back to curated{" "}
+              {cityName} show coverage below.
             </div>
           )}
         </section>
 
         <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
-          <h2 className="text-2xl font-bold">Featured Vegas show lanes</h2>
+          <h2 className="text-2xl font-bold">Featured {cityName} show lanes</h2>
           <p className="mt-2 max-w-3xl text-zinc-300">
             This editorial layer keeps the page useful even when live inventory is thin. It also
             makes the intent split explicit: residencies, magic, comedy, concerts, and spectacle.
@@ -499,8 +499,9 @@ export default async function CityShowsPage({
           <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
             <h2 className="text-2xl font-bold">Browse by show category</h2>
             <p className="mt-2 text-zinc-300">
-              These categories map to real Vegas ticket intent, not general tourism. They should help
-              the page stay useful even before a deeper venue-level calendar layer exists.
+              These categories map to real city-level ticket intent, not general tourism. They
+              should help the page stay useful even before a deeper venue-level calendar layer
+              exists.
             </p>
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
