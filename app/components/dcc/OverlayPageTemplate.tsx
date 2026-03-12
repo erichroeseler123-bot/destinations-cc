@@ -63,6 +63,10 @@ export default function OverlayPageTemplate({ city, overlay, entities }: Props) 
   const overlayLabel = formatOverlayLabel(overlay.overlayType);
   const title = `${overlayLabel.replace(/\b\w/g, (match) => match.toUpperCase())} ${city.name}`;
   const availableEntityTypes = Array.from(new Set(entities.map((entity) => entity.entityType)));
+  const featuredRelationshipLinks =
+    overlay.overlayType === "accessibility"
+      ? (overlay.relatedLinks ?? []).filter((link) => link.href.includes("/accessible-hotels-near/"))
+      : [];
   const actionBarActions: PageAction[] = [
     { href: city.canonicalPath, label: `${city.name} hub`, kind: "internal" },
     { href: buildMapsSearchUrl(`${city.name}, ${city.state ?? city.country}`), label: "Open city in Maps", kind: "external" },
@@ -110,6 +114,26 @@ export default function OverlayPageTemplate({ city, overlay, entities }: Props) 
           intro={`Use this ${overlayLabel} surface to compare the strongest matching ${city.name} entities without dropping back into a generic city list.`}
           entities={entities}
         />
+
+        {featuredRelationshipLinks.length ? (
+          <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+            <h2 className="text-2xl font-bold">Accessible hotel planning near major anchors</h2>
+            <p className="mt-2 max-w-3xl text-zinc-300">
+              Use these relationship guides when the trip starts from a specific venue, attraction, or casino and the next decision is which nearby hotel reduces friction.
+            </p>
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {featuredRelationshipLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {availableEntityTypes.length ? (
           <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
