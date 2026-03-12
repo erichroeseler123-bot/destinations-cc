@@ -99,12 +99,23 @@ export async function getMediaForEntity(request: MediaRequest): Promise<NodeImag
     "ticketmaster",
     stringHint(request.sourceHints, "ticketmasterImageUrl"),
     alt,
+    stringHint(request.sourceHints, "ticketmasterAttributionLabel")
+      ? {
+          label: stringHint(request.sourceHints, "ticketmasterAttributionLabel") || "Ticketmaster",
+          href: stringHint(request.sourceHints, "ticketmasterAttributionUrl") || undefined,
+        }
+      : undefined,
   );
   const bandsintownImage = buildProviderImageAsset(
     "bandsintown",
     stringHint(request.sourceHints, "bandsintownArtistImageUrl"),
     stringHint(request.sourceHints, "artistName") || alt,
-    { label: "Bandsintown" },
+    stringHint(request.sourceHints, "bandsintownAttributionLabel") || stringHint(request.sourceHints, "bandsintownArtistUrl")
+      ? {
+          label: stringHint(request.sourceHints, "bandsintownAttributionLabel") || "Bandsintown",
+          href: stringHint(request.sourceHints, "bandsintownArtistUrl") || undefined,
+        }
+      : { label: "Bandsintown" },
   );
   const viatorImage = buildProviderImageAsset(
     "viator",

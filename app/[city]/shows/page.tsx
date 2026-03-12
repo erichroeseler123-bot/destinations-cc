@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import aliases from "@/data/city-aliases.json";
+import { bandsintownAdapter } from "@/lib/dcc/providers/adapters/bandsintown";
 import { ticketmasterAdapter } from "@/lib/dcc/providers/adapters/ticketmaster";
 import { getMediaForEntity } from "@/src/lib/media";
 import { getCityShowsConfig } from "@/src/data/city-shows-config";
@@ -85,6 +86,22 @@ function showFallbackImage(showType: string, venueType?: string) {
     return "/images/shows/performing-arts.svg";
   }
   return "/images/shows/concert.svg";
+}
+
+function artistLookupKey(value: string | null | undefined) {
+  return String(value || "").trim().toLowerCase();
+}
+
+async function getBandsintownArtistMap(names: string[]) {
+  const uniqueNames = Array.from(new Set(names.map((name) => String(name || "").trim()).filter(Boolean))).slice(0, 12);
+  const rows = await Promise.all(
+    uniqueNames.map(async (artist) => {
+      const result = await bandsintownAdapter.fetch({ artist });
+      return result.ok && result.data?.image_url ? [artistLookupKey(artist), result.data] : null;
+    }),
+  );
+
+  return new Map(rows.filter(Boolean) as Array<[string, NonNullable<Awaited<ReturnType<typeof bandsintownAdapter.fetch>>["data"]>]>);
 }
 
 function GenericIntentGrid({
@@ -265,8 +282,14 @@ export default async function CityShowsPage({
       ? Array.from(groupVegasVenuesByCluster().entries())
       : [];
 
+  const bandsintownArtistMap = await getBandsintownArtistMap([
+    ...liveShows.slice(0, 9).map((event) => event.name || ""),
+    ...(visibleCuratedShows.length > 0 ? visibleCuratedShows : config.featuredShows).map((show) => show.title),
+  ]);
+
   const visibleLiveCards = await Promise.all(
     liveShows.slice(0, 9).map(async (event) => {
+      const artistFallback = bandsintownArtistMap.get(artistLookupKey(event.name));
       const media = await getMediaForEntity({
         entityType: "show",
         slug: `${cityKey}-show-${event.id}`,
@@ -275,6 +298,10 @@ export default async function CityShowsPage({
           venueName: event.venue_name,
           cityName,
           ticketmasterImageUrl: event.image_url,
+          ticketmasterAttributionLabel: event.image_url ? "Ticketmaster" : undefined,
+          ticketmasterAttributionUrl: event.url,
+          bandsintownArtistImageUrl: artistFallback?.image_url || artistFallback?.thumb_url || undefined,
+          bandsintownArtistUrl: artistFallback?.url || undefined,
           localImageUrl: showFallbackImage(
             event.genre_name?.toLowerCase().includes("comedy")
               ? "comedy"
@@ -294,6 +321,7 @@ export default async function CityShowsPage({
 
   const visibleCuratedShowCards = await Promise.all(
     (visibleCuratedShows.length > 0 ? visibleCuratedShows : config.featuredShows).map(async (show) => {
+      const artistFallback = bandsintownArtistMap.get(artistLookupKey(show.title));
       const media = await getMediaForEntity({
         entityType: "show",
         slug: `${cityKey}-curated-${show.query}`,
@@ -301,6 +329,8 @@ export default async function CityShowsPage({
           artistName: show.title,
           venueName: show.venue,
           cityName,
+          bandsintownArtistImageUrl: artistFallback?.image_url || artistFallback?.thumb_url || undefined,
+          bandsintownArtistUrl: artistFallback?.url || undefined,
           localImageUrl: showFallbackImage(show.showType, show.venueType),
           localImageAlt: `${show.title} show artwork`,
         },
@@ -428,6 +458,23 @@ export default async function CityShowsPage({
                         </a>
                       ) : null}
                     </div>
+                    {media.card?.attribution ? (
+                      <p className="text-xs text-zinc-500">
+                        Image source:{" "}
+                        {media.card.attribution.href ? (
+                          <a
+                            href={media.card.attribution.href}
+                            target="_blank"
+                            rel="noopener noreferrer sponsored nofollow"
+                            className="text-zinc-400 hover:text-zinc-200"
+                          >
+                            {media.card.attribution.label}
+                          </a>
+                        ) : (
+                          <span className="text-zinc-400">{media.card.attribution.label}</span>
+                        )}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -489,6 +536,23 @@ export default async function CityShowsPage({
                       </span>
                     ) : null}
                   </div>
+                  {media.card?.attribution ? (
+                    <p className="mt-4 text-xs text-zinc-500">
+                      Image source:{" "}
+                      {media.card.attribution.href ? (
+                        <a
+                          href={media.card.attribution.href}
+                          target="_blank"
+                          rel="noopener noreferrer sponsored nofollow"
+                          className="text-zinc-400 hover:text-zinc-200"
+                        >
+                          {media.card.attribution.label}
+                        </a>
+                      ) : (
+                        <span className="text-zinc-400">{media.card.attribution.label}</span>
+                      )}
+                    </p>
+                  ) : null}
                 </div>
               </Link>
             ))}
