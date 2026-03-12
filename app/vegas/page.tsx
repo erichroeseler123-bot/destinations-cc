@@ -263,6 +263,19 @@ export default async function VegasPage() {
           </Link>
         </section>
 
+        <section className="grid gap-4 md:grid-cols-2">
+          <Link href="/las-vegas/casinos" className="rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6 hover:bg-emerald-500/15">
+            <p className="text-xs uppercase tracking-[0.22em] text-emerald-300">Entity Hub</p>
+            <h2 className="mt-3 text-2xl font-bold">Las Vegas casinos</h2>
+            <p className="mt-2 text-zinc-200">The casino mesh layer for Strip anchors, Fremont classics, and sportsbook-led resort discovery.</p>
+          </Link>
+          <Link href="/las-vegas/things-to-do" className="rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6 hover:bg-emerald-500/15">
+            <p className="text-xs uppercase tracking-[0.22em] text-emerald-300">Super Hub</p>
+            <h2 className="mt-3 text-2xl font-bold">Things to do in Las Vegas</h2>
+            <p className="mt-2 text-zinc-200">Broad attraction routing across Strip landmarks, immersive stops, family picks, and major day-trip pillars.</p>
+          </Link>
+        </section>
+
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Link href="/las-vegas/hotels" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
             <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Entity Hub</p>
@@ -333,6 +346,26 @@ export default async function VegasPage() {
             <Link href="/henderson-las-vegas" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
               <h3 className="font-semibold">Henderson and Lake Las Vegas</h3>
               <p className="mt-2 text-sm text-zinc-300">Southeast district for resort-recreation, lake stays, golf, and calmer Vegas alternatives.</p>
+            </Link>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
+          <div className="max-w-3xl">
+            <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Tag-Driven Discovery</p>
+            <h2 className="mt-2 text-3xl font-black tracking-tight">Overlay pages and search-intent routing</h2>
+            <p className="mt-3 text-zinc-300">
+              These overlay pages are the first proof that the Vegas mesh can branch by tag instead of only by entity type.
+            </p>
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <Link href="/luxury-hotels-las-vegas" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
+              <h3 className="font-semibold">Luxury hotels in Las Vegas</h3>
+              <p className="mt-2 text-sm text-zinc-300">Premium Strip and romantic-stay overlay driven from the same hotel tag layer.</p>
+            </Link>
+            <Link href="/things-to-do-on-the-strip" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
+              <h3 className="font-semibold">Things to do on the Strip</h3>
+              <p className="mt-2 text-sm text-zinc-300">Strip-specific attraction overlay driven from the attraction mesh instead of a generic city list.</p>
             </Link>
           </div>
         </section>
