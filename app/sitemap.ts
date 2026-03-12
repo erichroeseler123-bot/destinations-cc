@@ -11,7 +11,7 @@ import { getSportsCitySlugs, SPORTS_TEAMS_CONFIG } from "@/src/data/sports-teams
 import { SPORTS_VENUES_CONFIG } from "@/src/data/sports-venues-config";
 import { VEGAS_CASINOS_CONFIG } from "@/src/data/vegas-casinos-config";
 import { VEGAS_HOTELS_CONFIG } from "@/src/data/vegas-hotels-config";
-import { listAttractionsNearSlugs, listHotelsNearSlugs } from "@/src/data/vegas-relationships";
+import { listAttractionsNearSlugs, listCasinosNearSlugs, listHotelsNearSlugs } from "@/src/data/vegas-relationships";
 import { evaluateCityPublishability } from "@/src/lib/sitemap/city-publishability";
 import { evaluatePortPublishability } from "@/src/lib/sitemap/port-publishability";
 
@@ -207,6 +207,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const casinoUrls = VEGAS_CASINOS_CONFIG.map((casino) => `/casino/${casino.slug}`);
   const hotelsNearUrls = listHotelsNearSlugs().map((slug) => `/hotels-near/${slug}`);
   const attractionsNearUrls = listAttractionsNearSlugs().map((slug) => `/attractions-near/${slug}`);
+  const casinosNearUrls = listCasinosNearSlugs().map((slug) => `/casinos-near/${slug}`);
 
   const staticPaths = [
     "/",
@@ -266,6 +267,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...casinoUrls,
     ...hotelsNearUrls,
     ...attractionsNearUrls,
+    ...casinosNearUrls,
     "/data/sports-teams.json",
     "/data/sports-venues.json",
     "/data/sports-cities.json",

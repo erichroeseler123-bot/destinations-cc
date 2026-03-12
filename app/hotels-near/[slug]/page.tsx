@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import VegasHotelGridSection from "@/app/components/dcc/VegasHotelGridSection";
 import {
-  getHotelsNearAttraction,
+  getHotelsNearTarget,
   getVegasRelationshipFallbackHotels,
   listHotelsNearSlugs,
 } from "@/src/data/vegas-relationships";
@@ -16,7 +16,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
-  const data = getHotelsNearAttraction(slug);
+  const data = getHotelsNearTarget(slug);
   if (!data) return {};
 
   return {
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 function JsonLd({ slug }: { slug: string }) {
-  const data = getHotelsNearAttraction(slug);
+  const data = getHotelsNearTarget(slug);
   if (!data) return null;
 
   const pageUrl = `https://destinationcommandcenter.com/hotels-near/${slug}`;
@@ -70,7 +70,7 @@ function JsonLd({ slug }: { slug: string }) {
 
 export default async function HotelsNearPage({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
-  const data = getHotelsNearAttraction(slug);
+  const data = getHotelsNearTarget(slug);
   if (!data) notFound();
 
   const hotels = data.hotels.length ? data.hotels : getVegasRelationshipFallbackHotels();
@@ -104,7 +104,7 @@ export default async function HotelsNearPage({ params }: { params: Promise<Param
         <section className="grid gap-4 md:grid-cols-2">
           <Link href={data.target.primaryHref} className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
             <h2 className="text-xl font-bold">Open {data.target.name}</h2>
-            <p className="mt-2 text-zinc-300">Return to the anchor attraction when the stay decision shifts back toward entertainment, venue, or sightseeing planning.</p>
+            <p className="mt-2 text-zinc-300">Return to the anchor node when the stay decision shifts back toward entertainment, venue, or gaming-first planning.</p>
           </Link>
           <Link href="/las-vegas/hotels" className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
             <h2 className="text-xl font-bold">Back to Las Vegas hotels</h2>
