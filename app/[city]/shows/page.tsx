@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import aliases from "@/data/city-aliases.json";
 import { ticketmasterAdapter } from "@/lib/dcc/providers/adapters/ticketmaster";
+import { getMediaForEntity } from "@/src/lib/media";
 import { getCityShowsConfig } from "@/src/data/city-shows-config";
 import { getCityIntents, titleCase } from "@/src/data/city-intents";
 import {
@@ -71,6 +72,19 @@ function formatLabel(value: string) {
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function showFallbackImage(showType: string, venueType?: string) {
+  if (showType === "magic") return "/images/shows/magic.svg";
+  if (showType === "comedy" || showType === "cabaret") return "/images/shows/comedy.svg";
+  if (showType === "jazz") return "/images/shows/jazz.svg";
+  if (showType === "residency" || showType === "spectacle" || venueType === "casino-theater") {
+    return "/images/shows/residency.svg";
+  }
+  if (showType === "opera" || showType === "ballet" || showType === "theater" || showType === "musical" || venueType === "performing-arts-center") {
+    return "/images/shows/performing-arts.svg";
+  }
+  return "/images/shows/concert.svg";
 }
 
 function GenericIntentGrid({
@@ -251,6 +265,51 @@ export default async function CityShowsPage({
       ? Array.from(groupVegasVenuesByCluster().entries())
       : [];
 
+  const visibleLiveCards = await Promise.all(
+    liveShows.slice(0, 9).map(async (event) => {
+      const media = await getMediaForEntity({
+        entityType: "show",
+        slug: `${cityKey}-show-${event.id}`,
+        sourceHints: {
+          artistName: event.name,
+          venueName: event.venue_name,
+          cityName,
+          ticketmasterImageUrl: event.image_url,
+          localImageUrl: showFallbackImage(
+            event.genre_name?.toLowerCase().includes("comedy")
+              ? "comedy"
+              : event.genre_name?.toLowerCase().includes("magic")
+                ? "magic"
+                : event.genre_name?.toLowerCase().includes("jazz")
+                  ? "jazz"
+                  : "concert",
+          ),
+          localImageAlt: `${event.name} show artwork`,
+        },
+      });
+
+      return { event, media };
+    }),
+  );
+
+  const visibleCuratedShowCards = await Promise.all(
+    (visibleCuratedShows.length > 0 ? visibleCuratedShows : config.featuredShows).map(async (show) => {
+      const media = await getMediaForEntity({
+        entityType: "show",
+        slug: `${cityKey}-curated-${show.query}`,
+        sourceHints: {
+          artistName: show.title,
+          venueName: show.venue,
+          cityName,
+          localImageUrl: showFallbackImage(show.showType, show.venueType),
+          localImageAlt: `${show.title} show artwork`,
+        },
+      });
+
+      return { show, media };
+    }),
+  );
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <div className="mx-auto max-w-6xl px-6 py-12 md:py-16">
@@ -325,15 +384,15 @@ export default async function CityShowsPage({
 
           {liveShows.length > 0 ? (
             <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {liveShows.slice(0, 9).map((event) => (
+              {visibleLiveCards.map(({ event, media }) => (
                 <article
                   key={event.id}
                   className="overflow-hidden rounded-3xl border border-white/10 bg-black/25"
                 >
-                  {event.image_url ? (
+                  {media.card ? (
                     <div
                       className="h-40 bg-cover bg-center"
-                      style={{ backgroundImage: `linear-gradient(180deg,rgba(0,0,0,0.15),rgba(0,0,0,0.7)), url(${event.image_url})` }}
+                      style={{ backgroundImage: `linear-gradient(180deg,rgba(0,0,0,0.15),rgba(0,0,0,0.7)), url(${media.card.src})` }}
                     />
                   ) : (
                     <div className="h-40 bg-[linear-gradient(135deg,rgba(251,191,36,0.22),rgba(24,24,27,0.92))]" />
@@ -389,7 +448,7 @@ export default async function CityShowsPage({
           </p>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {(visibleCuratedShows.length > 0 ? visibleCuratedShows : config.featuredShows).map((show) => (
+            {visibleCuratedShowCards.map(({ show, media }) => (
               <Link
                 key={`${show.title}-${show.query}`}
                 href={buildCityTrackedHref({
@@ -399,29 +458,37 @@ export default async function CityShowsPage({
                   sourceSection: "city_events_intent",
                   intentQuery: show.query,
                 })}
-                className="rounded-3xl border border-white/10 bg-black/20 p-5 hover:bg-white/10"
+                className="overflow-hidden rounded-3xl border border-white/10 bg-black/20 hover:bg-white/10"
               >
-                <div className="text-xs uppercase tracking-[0.22em] text-amber-300">{show.category}</div>
-                <h3 className="mt-2 text-xl font-semibold text-white">{show.title}</h3>
-                <p className="mt-1 text-sm text-zinc-400">{show.venue}</p>
-                <p className="mt-3 text-zinc-300">{show.description}</p>
-                <div className="mt-4 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.16em] text-zinc-400">
-                  <span className="rounded-full border border-white/10 px-2 py-1">
-                    {formatLabel(show.showType)}
-                  </span>
-                  <span className="rounded-full border border-white/10 px-2 py-1">
-                    {formatLabel(show.venueType)}
-                  </span>
-                  {show.isPerformingArts ? (
-                    <span className="rounded-full border border-amber-400/30 px-2 py-1 text-amber-200">
-                      Performing Arts
+                {media.card ? (
+                  <div
+                    className="h-44 bg-cover bg-center"
+                    style={{ backgroundImage: `linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.68)), url(${media.card.src})` }}
+                  />
+                ) : null}
+                <div className="p-5">
+                  <div className="text-xs uppercase tracking-[0.22em] text-amber-300">{show.category}</div>
+                  <h3 className="mt-2 text-xl font-semibold text-white">{show.title}</h3>
+                  <p className="mt-1 text-sm text-zinc-400">{show.venue}</p>
+                  <p className="mt-3 text-zinc-300">{show.description}</p>
+                  <div className="mt-4 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.16em] text-zinc-400">
+                    <span className="rounded-full border border-white/10 px-2 py-1">
+                      {formatLabel(show.showType)}
                     </span>
-                  ) : null}
-                  {show.isJazzClub ? (
-                    <span className="rounded-full border border-amber-400/30 px-2 py-1 text-amber-200">
-                      Jazz Club
+                    <span className="rounded-full border border-white/10 px-2 py-1">
+                      {formatLabel(show.venueType)}
                     </span>
-                  ) : null}
+                    {show.isPerformingArts ? (
+                      <span className="rounded-full border border-amber-400/30 px-2 py-1 text-amber-200">
+                        Performing Arts
+                      </span>
+                    ) : null}
+                    {show.isJazzClub ? (
+                      <span className="rounded-full border border-amber-400/30 px-2 py-1 text-amber-200">
+                        Jazz Club
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
               </Link>
             ))}
