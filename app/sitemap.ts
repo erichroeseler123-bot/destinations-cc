@@ -208,6 +208,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/vegas",
     "/grand-canyon",
     "/hoover-dam",
+    "/red-rock-canyon",
+    "/valley-of-fire",
     "/helicopter-tours",
     "/new-orleans",
     "/miami",

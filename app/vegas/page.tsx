@@ -263,6 +263,29 @@ export default async function VegasPage() {
           </Link>
         </section>
 
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <Link href="/grand-canyon" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
+            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Attraction Pillar</p>
+            <h2 className="mt-3 text-2xl font-bold">Grand Canyon</h2>
+            <p className="mt-2 text-zinc-200">Standalone authority hub for rims, Skywalk, Vegas route choice, and booking lanes.</p>
+          </Link>
+          <Link href="/hoover-dam" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
+            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Attraction Pillar</p>
+            <h2 className="mt-3 text-2xl font-bold">Hoover Dam</h2>
+            <p className="mt-2 text-zinc-200">Standalone authority hub for history, engineering, Lake Mead context, and express tour fit.</p>
+          </Link>
+          <Link href="/red-rock-canyon" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
+            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Attraction Pillar</p>
+            <h2 className="mt-3 text-2xl font-bold">Red Rock Canyon</h2>
+            <p className="mt-2 text-zinc-200">Close-in outdoor hub for scenic loops, guided hikes, and half-day Vegas desert planning.</p>
+          </Link>
+          <Link href="/valley-of-fire" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
+            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Attraction Pillar</p>
+            <h2 className="mt-3 text-2xl font-bold">Valley of Fire</h2>
+            <p className="mt-2 text-zinc-200">Desert landscape hub for scenic drives, hikes, and stronger all-day route decisions from Vegas.</p>
+          </Link>
+        </section>
+
         {adventureLane ? <AdventureLaneSection config={adventureLane} /> : null}
 
         <CitySportsSection cityName="Las Vegas" citySlug="las-vegas" teams={sportsTeams} />

@@ -135,6 +135,28 @@ export default function LasVegasBestDayTripsPage() {
         </section>
 
         <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Day-trip pillar routes</h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Link href="/grand-canyon" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
+              <h3 className="font-semibold">Grand Canyon</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use the standalone canyon pillar for rim choice, Skywalk, and helicopter route decisions.</p>
+            </Link>
+            <Link href="/hoover-dam" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
+              <h3 className="font-semibold">Hoover Dam</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use the dam pillar for express tours, engineering context, and Lake Mead combos.</p>
+            </Link>
+            <Link href="/red-rock-canyon" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
+              <h3 className="font-semibold">Red Rock Canyon</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use the close-in outdoor pillar for half-day scenic loops, hikes, and easier desert routing.</p>
+            </Link>
+            <Link href="/valley-of-fire" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
+              <h3 className="font-semibold">Valley of Fire</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use the stronger desert-landscape pillar for scenic routes, hiking, and full daytime blocks.</p>
+            </Link>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">FAQ</h2>
           <div className="mt-4 space-y-3">
             {FAQ.map((item) => (
