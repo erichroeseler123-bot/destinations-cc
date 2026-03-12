@@ -68,7 +68,7 @@ export default function SportsHubPage() {
           <p className="mt-2 max-w-3xl text-zinc-300">
             The sports graph now spans the Phase 1 foundation cities and the next expansion set: Las Vegas, Miami,
             Orlando, New Orleans, Chicago, New York, Los Angeles, Nashville, Boston, Seattle, San Francisco, and
-            Washington, D.C.
+            Washington, D.C., plus Atlanta, Dallas, Houston, and Philadelphia.
           </p>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {SPORTS_TEAMS_CONFIG.map((team) => (

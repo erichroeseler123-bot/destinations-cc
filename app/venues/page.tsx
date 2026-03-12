@@ -18,6 +18,10 @@ const CITY_ORDER = [
   { slug: "seattle", label: "Seattle" },
   { slug: "san-francisco", label: "San Francisco" },
   { slug: "washington-dc", label: "Washington, D.C." },
+  { slug: "atlanta", label: "Atlanta" },
+  { slug: "dallas", label: "Dallas" },
+  { slug: "houston", label: "Houston" },
+  { slug: "philadelphia", label: "Philadelphia" },
 ];
 
 export const metadata: Metadata = {
