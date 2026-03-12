@@ -1,300 +1,448 @@
 export const dynamicParams = false;
 
-
-
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-
-import nodes from "@/data/nodes.json";
-import { getNodeSlugFromCity } from "@/src/data/city-aliases";
-
+import Link from "next/link";
+import { notFound } from "next/navigation";
 import aliases from "@/data/city-aliases.json";
+import { ticketmasterAdapter } from "@/lib/dcc/providers/adapters/ticketmaster";
+import { getCityShowsConfig } from "@/src/data/city-shows-config";
+import { getCityIntents, titleCase } from "@/src/data/city-intents";
+import { buildCityTrackedHref } from "@/src/lib/city-analytics";
 
+type Params = { city: string };
+type SearchParams = { q?: string };
 
 export async function generateStaticParams() {
   return Object.keys(aliases).map((city) => ({ city }));
 }
 
-
-/* ========================================
-   Types
-======================================== */
-
-interface Node {
-  slug: string;
-  name: string;
-  status: string;
-}
-
-/* ========================================
-   Affiliate
-======================================== */
-
-const VIATOR_PID = "P00281144";
-const VIATOR_MCID = "42383";
-
-/* ========================================
-   Helpers
-======================================== */
-
-function viatorLink(city: string, query: string) {
-  const q = encodeURIComponent(`${city} ${query}`);
-
-  return `https://www.viator.com/search/${encodeURIComponent(
-    city
-  )}?pid=${VIATOR_PID}&mcid=${VIATOR_MCID}&query=${q}`;
-}
-
-/* ========================================
-   Shows Catalog
-======================================== */
-
-const SHOWS: Record<
-  string,
-  {
-    title: string;
-    description: string;
-    query: string;
-    category: string;
-    badge?: string;
-  }[]
-> = {
-  "las-vegas": [
-    {
-      title: "Cirque du Soleil – O",
-      description:
-        "Iconic water-based acrobatics at the Bellagio. One of the most popular shows in Las Vegas.",
-      query: "Cirque du Soleil O Las Vegas tickets",
-      category: "Cirque du Soleil",
-      badge: "Best Seller",
-    },
-    {
-      title: "Cirque du Soleil – KA",
-      description:
-        "Epic martial-arts inspired production with massive rotating stage at MGM Grand.",
-      query: "Cirque du Soleil KA Las Vegas tickets",
-      category: "Cirque du Soleil",
-    },
-    {
-      title: "Cirque du Soleil – Michael Jackson ONE",
-      description:
-        "High-energy tribute show celebrating the music and legacy of Michael Jackson.",
-      query: "Michael Jackson ONE Las Vegas tickets",
-      category: "Cirque du Soleil",
-      badge: "Top Rated",
-    },
-    {
-      title: "Residency Headliner Shows",
-      description:
-        "See world-famous artists performing limited-run residencies on the Strip.",
-      query: "Las Vegas residency concert tickets",
-      category: "Concert Residencies",
-    },
-    {
-      title: "Magic Shows",
-      description:
-        "World-class illusionists and mind-bending magic performances.",
-      query: "Las Vegas magic show tickets",
-      category: "Magic",
-    },
-    {
-      title: "Comedy Shows",
-      description:
-        "Stand-up comedy and improv from top touring comedians.",
-      query: "Las Vegas comedy show tickets",
-      category: "Comedy",
-    },
-    {
-      title: "Adult & Variety Shows",
-      description:
-        "Classic Vegas-style variety, burlesque, and adult-themed productions.",
-      query: "Las Vegas adult variety shows tickets",
-      category: "Variety",
-    },
-  ],
-};
-
-/* ========================================
-   Metadata
-======================================== */
-
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ city: string }>;
+  params: Promise<Params>;
 }): Promise<Metadata> {
-  const resolvedParams = await params;
+  const { city } = await params;
+  const cityKey = (city || "").toLowerCase();
+  const cityName = titleCase(cityKey);
+  const config = getCityShowsConfig(cityKey);
 
-  const city = resolvedParams.city.replace(/-/g, " ");
+  if (config) {
+    return {
+      title: `${cityName} Shows | Residencies, Comedy, Magic, and Live Entertainment`,
+      description: config.heroSummary,
+      alternates: { canonical: `/${cityKey}/shows` },
+    };
+  }
 
   return {
-    title: `${city} Shows | Cirque du Soleil, Concerts & Tickets`,
-    description: `Discover the best shows in ${city}. Compare Cirque du Soleil, residencies, comedy, magic, and live performances.`,
+    title: `${cityName} Shows | Event Discovery`,
+    description: `High-intent event and performance queries for ${cityName}.`,
+    alternates: { canonical: `/${cityKey}/shows` },
   };
 }
 
-/* ========================================
-   Page
-======================================== */
+function matchesQuery(value: string | null | undefined, rawQuery: string) {
+  return String(value || "").toLowerCase().includes(rawQuery);
+}
 
-export default async function ShowsPage({
-  params,
+function formatEventDate(date: string | null, time: string | null) {
+  if (!date) return "Upcoming live event";
+  const iso = time ? `${date}T${time}` : `${date}T12:00:00`;
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) {
+    return [date, time].filter(Boolean).join(" • ");
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    ...(time ? { hour: "numeric", minute: "2-digit" } : {}),
+  }).format(parsed);
+}
+
+function GenericIntentGrid({
+  cityKey,
+  cityName,
+  rawQuery,
 }: {
-  params: Promise<{ city: string }>;
+  cityKey: string;
+  cityName: string;
+  rawQuery: string;
 }) {
-  const resolvedParams = await params;
+  const items = getCityIntents(cityKey);
+  if (!items) notFound();
 
-  const { city } = resolvedParams;
-
-  const nodeSlug = getNodeSlugFromCity(city);
-  if (!nodeSlug) notFound();
-
-  const node = (nodes as Node[]).find(
-    (n) => n.slug === nodeSlug
-  );
-
-  if (!node || node.status !== "active") notFound();
-
-  const cityName = node.name.replace(" Guide", "");
-  const shows = SHOWS[city] || [];
+  const filtered =
+    rawQuery.length > 0
+      ? items.filter((it) =>
+          [it.title, it.query, it.description].some((field) =>
+            String(field || "").toLowerCase().includes(rawQuery)
+          )
+        )
+      : items;
+  const visibleItems = filtered.length > 0 ? filtered : items;
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-24 space-y-20">
+    <main className="min-h-screen bg-zinc-950 text-white">
+      <div className="mx-auto max-w-6xl px-6 py-12">
+        <div className="text-xs tracking-[0.35em] uppercase text-zinc-500">
+          Destination Command Center • {cityName}
+        </div>
 
-      {/* ================= HERO ================= */}
-
-      <header className="space-y-8 border-b border-zinc-800 pb-14">
-
-        <h1 className="text-4xl md:text-6xl font-black leading-tight">
-          Best Shows in {cityName}
+        <h1 className="mt-4 text-4xl font-black leading-[0.95] md:text-6xl">
+          {cityName} Shows
         </h1>
 
-        <p className="max-w-3xl text-zinc-400 text-lg">
-          From Cirque du Soleil and concert residencies to
-          comedy, magic, and classic Vegas productions.
-          Compare top-rated shows and book verified tickets.
+        <p className="mt-4 max-w-2xl text-zinc-300">
+          High-intent categories for events and performances.
         </p>
+        {rawQuery ? (
+          <p className="mt-2 text-xs text-zinc-400">
+            Filter: <span className="text-zinc-200">{rawQuery}</span>
+            {filtered.length === 0 ? " (no direct matches, showing full set)" : ""}
+          </p>
+        ) : null}
 
-        <div className="flex flex-wrap gap-4 text-sm text-emerald-400 font-medium">
-          <span>✔ Official Tickets</span>
-          <span>✔ Instant Confirmation</span>
-          <span>✔ Seating Options</span>
-          <span>✔ Trusted Vendors</span>
+        <div className="mt-8 flex flex-wrap gap-2">
+          <Link
+            className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-sm text-zinc-200 hover:bg-white/10"
+            href={`/${cityKey}`}
+          >
+            City hub
+          </Link>
+          <Link
+            className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-sm text-zinc-200 hover:bg-white/10"
+            href={`/${cityKey}/attractions`}
+          >
+            Attractions
+          </Link>
+          <Link
+            className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-sm text-zinc-200 hover:bg-white/10"
+            href={`/${cityKey}/tours`}
+          >
+            Tours
+          </Link>
         </div>
 
-      </header>
-
-      {/* ================= SHOW GRID ================= */}
-
-      <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-        {shows.map((s) => {
-
-          const link = viatorLink(cityName, s.query);
-
-          return (
-
-            <div
-              key={s.title}
-              className="relative rounded-2xl border border-zinc-800 bg-zinc-900/60 p-7 space-y-4 hover:bg-zinc-900 transition"
+        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+          {visibleItems.map((it, idx) => (
+            <Link
+              key={`${cityKey}-shows-${idx}-${it.query}`}
+              href={buildCityTrackedHref({
+                href: `/${cityKey}/shows?q=${encodeURIComponent(it.query)}`,
+                city: cityKey,
+                lane: "events",
+                sourceSection: "city_events_intent",
+                intentQuery: it.query,
+              })}
+              className="group rounded-3xl border border-white/10 bg-white/[0.03] p-6 hover:border-cyan-400/30 hover:bg-white/[0.06] transition"
             >
-
-              {s.badge && (
-                <span className="absolute top-4 right-4 text-xs font-bold uppercase bg-emerald-500 text-black px-3 py-1 rounded-full">
-                  {s.badge}
-                </span>
-              )}
-
-              <div className="text-xs uppercase tracking-wide text-zinc-500">
-                {s.category}
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-lg font-semibold text-white">{it.title}</div>
+                  <div className="mt-1 text-sm text-zinc-400">
+                    {it.badge ? (
+                      <span className="mr-2 inline-flex rounded-full border border-white/10 bg-black/30 px-2 py-0.5 text-[11px] text-zinc-200">
+                        {it.badge}
+                      </span>
+                    ) : null}
+                    <span className="text-zinc-300">Intent:</span>{" "}
+                    <span className="text-zinc-400">{it.query}</span>
+                  </div>
+                </div>
+                <div className="font-bold text-cyan-300 opacity-70 transition group-hover:opacity-100">
+                  →
+                </div>
               </div>
 
-              <h2 className="text-xl font-semibold">
-                {s.title}
-              </h2>
+              <p className="mt-3 leading-relaxed text-zinc-300">{it.description}</p>
+            </Link>
+          ))}
+        </div>
 
-              <p className="text-sm text-zinc-400 leading-relaxed">
-                {s.description}
+        <div className="mt-10 border-t border-white/10 pt-6">
+          <Link className="text-zinc-300 transition hover:text-cyan-200" href={`/${cityKey}`}>
+            ← Back to {cityName}
+          </Link>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+export default async function CityShowsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<Params>;
+  searchParams: Promise<SearchParams>;
+}) {
+  const { city } = await params;
+  const resolvedSearchParams = await searchParams;
+  const cityKey = (city || "").toLowerCase();
+  const rawQuery = (resolvedSearchParams?.q || "").trim().toLowerCase();
+  const cityName = titleCase(cityKey);
+  const config = getCityShowsConfig(cityKey);
+
+  if (!config) {
+    return <GenericIntentGrid cityKey={cityKey} cityName={cityName} rawQuery={rawQuery} />;
+  }
+
+  const liveResult = await ticketmasterAdapter.fetch({
+    lat: config.liveFeed.lat,
+    lon: config.liveFeed.lon,
+    radius_km: config.liveFeed.radiusKm,
+    size: config.liveFeed.size,
+  });
+
+  const liveShows = liveResult.data.filter((event) => {
+    if (!rawQuery) return true;
+    return (
+      matchesQuery(event.name, rawQuery) ||
+      matchesQuery(event.venue_name, rawQuery) ||
+      matchesQuery(event.segment_name, rawQuery) ||
+      matchesQuery(event.genre_name, rawQuery) ||
+      matchesQuery(event.subgenre_name, rawQuery)
+    );
+  });
+
+  const visibleCuratedShows = config.featuredShows.filter((show) => {
+    if (!rawQuery) return true;
+    return (
+      matchesQuery(show.title, rawQuery) ||
+      matchesQuery(show.venue, rawQuery) ||
+      matchesQuery(show.category, rawQuery) ||
+      matchesQuery(show.query, rawQuery)
+    );
+  });
+
+  const visibleShowCategories = config.showCategories.filter((category) => {
+    if (!rawQuery) return true;
+    return (
+      matchesQuery(category.title, rawQuery) ||
+      matchesQuery(category.description, rawQuery) ||
+      matchesQuery(category.query, rawQuery)
+    );
+  });
+
+  return (
+    <main className="min-h-screen bg-zinc-950 text-white">
+      <div className="mx-auto max-w-6xl px-6 py-12 md:py-16">
+        <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.18),transparent_35%),linear-gradient(180deg,rgba(39,39,42,0.94),rgba(9,9,11,0.98))] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.45)] md:p-8">
+          <div className="text-xs uppercase tracking-[0.32em] text-amber-300">
+            Destination Command Center • {cityName} Shows
+          </div>
+          <h1 className="mt-4 max-w-4xl text-4xl font-black leading-[0.95] md:text-6xl">
+            {cityName} shows: residencies, comedy, magic, concerts, and showroom nights
+          </h1>
+          <p className="mt-4 max-w-3xl text-base text-zinc-300 md:text-lg">{config.heroSummary}</p>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href={buildCityTrackedHref({
+                href: `/${cityKey}/shows`,
+                city: cityKey,
+                lane: "events",
+                sourceSection: "city_events_primary",
+              })}
+              className="inline-flex items-center justify-center rounded-2xl bg-amber-500 px-5 py-3 font-semibold text-black hover:bg-amber-400"
+            >
+              Browse live show inventory
+            </Link>
+            <Link
+              href={`/${cityKey}/tours`}
+              className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-5 py-3 font-semibold text-zinc-100 hover:bg-white/10"
+            >
+              Switch to Vegas tours
+            </Link>
+            <Link
+              href={`/${cityKey}/attractions`}
+              className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-5 py-3 font-semibold text-zinc-100 hover:bg-white/10"
+            >
+              Switch to attractions
+            </Link>
+          </div>
+
+          {rawQuery ? (
+            <p className="mt-4 text-sm text-zinc-400">
+              Filtering this page for <span className="text-zinc-100">{rawQuery}</span>.
+            </p>
+          ) : null}
+
+          <div className="mt-6 grid gap-3 md:grid-cols-3">
+            {config.planningNotes.map((note) => (
+              <div key={note} className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-zinc-200">
+                {note}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+          <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-2xl font-bold">Live show inventory</h2>
+              <p className="mt-2 max-w-3xl text-zinc-300">
+                This lane is fed by the Vegas-area ticket feed, then shaped by the city-specific
+                show taxonomy below. It is separate from tours and attractions because the buyer
+                is shopping fixed-time entertainment inventory.
               </p>
-
-              <a
-                href={link}
-                target="_blank"
-                rel="noopener noreferrer sponsored"
-                className="block mt-3 w-full text-center text-sm font-semibold text-black bg-emerald-500 hover:bg-emerald-400 px-4 py-3 rounded-xl transition shadow-lg shadow-emerald-600/30"
-              >
-                View Tickets →
-              </a>
-
             </div>
+            <div className="text-sm text-cyan-300">
+              {liveResult.ok
+                ? "Live ticket inventory loaded for Las Vegas."
+                : liveResult.diagnostics.fallback_reason === "missing_api_key"
+                  ? "Ticketmaster API key is missing, so this section is using curated Vegas show coverage."
+                  : "Live event inventory is temporarily unavailable, so this section is using curated Vegas show coverage."}
+            </div>
+          </div>
 
-          );
+          {liveShows.length > 0 ? (
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {liveShows.slice(0, 9).map((event) => (
+                <article
+                  key={event.id}
+                  className="overflow-hidden rounded-3xl border border-white/10 bg-black/25"
+                >
+                  {event.image_url ? (
+                    <div
+                      className="h-40 bg-cover bg-center"
+                      style={{ backgroundImage: `linear-gradient(180deg,rgba(0,0,0,0.15),rgba(0,0,0,0.7)), url(${event.image_url})` }}
+                    />
+                  ) : (
+                    <div className="h-40 bg-[linear-gradient(135deg,rgba(251,191,36,0.22),rgba(24,24,27,0.92))]" />
+                  )}
+                  <div className="space-y-3 p-5">
+                    <div className="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.18em] text-zinc-400">
+                      {event.segment_name ? (
+                        <span className="rounded-full border border-white/10 px-2 py-1">{event.segment_name}</span>
+                      ) : null}
+                      {event.genre_name ? (
+                        <span className="rounded-full border border-white/10 px-2 py-1">{event.genre_name}</span>
+                      ) : null}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">{event.name}</h3>
+                      <p className="mt-1 text-sm text-zinc-400">
+                        {formatEventDate(event.start_date, event.start_time)}
+                        {event.venue_name ? ` • ${event.venue_name}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm text-zinc-300">
+                        {event.subgenre_name || "Live entertainment inventory"}
+                      </p>
+                      {event.url ? (
+                        <a
+                          href={event.url}
+                          target="_blank"
+                          rel="noopener noreferrer sponsored nofollow"
+                          className="inline-flex items-center rounded-full border border-amber-400/30 px-3 py-1.5 text-sm font-semibold text-amber-200 hover:bg-amber-400/10"
+                        >
+                          View tickets
+                        </a>
+                      ) : null}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-5 text-zinc-300">
+              No live show listings matched this filter, so the page is falling back to curated Vegas
+              show coverage below.
+            </div>
+          )}
+        </section>
 
-        })}
+        <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+          <h2 className="text-2xl font-bold">Featured Vegas show lanes</h2>
+          <p className="mt-2 max-w-3xl text-zinc-300">
+            This editorial layer keeps the page useful even when live inventory is thin. It also
+            makes the intent split explicit: residencies, magic, comedy, concerts, and spectacle.
+          </p>
 
-      </section>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            {(visibleCuratedShows.length > 0 ? visibleCuratedShows : config.featuredShows).map((show) => (
+              <Link
+                key={`${show.title}-${show.query}`}
+                href={buildCityTrackedHref({
+                  href: `/${cityKey}/shows?q=${encodeURIComponent(show.query)}`,
+                  city: cityKey,
+                  lane: "events",
+                  sourceSection: "city_events_intent",
+                  intentQuery: show.query,
+                })}
+                className="rounded-3xl border border-white/10 bg-black/20 p-5 hover:bg-white/10"
+              >
+                <div className="text-xs uppercase tracking-[0.22em] text-amber-300">{show.category}</div>
+                <h3 className="mt-2 text-xl font-semibold text-white">{show.title}</h3>
+                <p className="mt-1 text-sm text-zinc-400">{show.venue}</p>
+                <p className="mt-3 text-zinc-300">{show.description}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
 
-      {/* ================= TIPS ================= */}
+        <section className="mt-8 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+            <h2 className="text-2xl font-bold">Browse by show category</h2>
+            <p className="mt-2 text-zinc-300">
+              These categories map to real Vegas ticket intent, not general tourism. They should help
+              the page stay useful even before a deeper venue-level calendar layer exists.
+            </p>
 
-      <section className="grid md:grid-cols-2 gap-10">
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              {(visibleShowCategories.length > 0 ? visibleShowCategories : config.showCategories).map((category) => (
+                <Link
+                  key={category.query}
+                  href={buildCityTrackedHref({
+                    href: `/${cityKey}/shows?q=${encodeURIComponent(category.query)}`,
+                    city: cityKey,
+                    lane: "events",
+                    sourceSection: "city_events_intent",
+                    intentQuery: category.query,
+                  })}
+                  className="rounded-2xl border border-white/10 bg-black/20 p-4 hover:bg-white/10"
+                >
+                  <h3 className="text-lg font-semibold text-white">{category.title}</h3>
+                  <p className="mt-2 text-sm text-zinc-300">{category.description}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
 
-        <div className="space-y-4">
-          <h3 className="text-2xl font-semibold">
-            How to Choose the Right Show
-          </h3>
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+            <h2 className="text-2xl font-bold">Venue clusters</h2>
+            <div className="mt-6 space-y-4">
+              {config.venueClusters.map((cluster) => (
+                <div key={cluster.title} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-zinc-400">
+                    {cluster.title}
+                  </h3>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {cluster.venues.map((venue) => (
+                      <span
+                        key={`${cluster.title}-${venue}`}
+                        className="rounded-full border border-white/10 px-3 py-1 text-sm text-zinc-200"
+                      >
+                        {venue}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-          <ul className="text-sm text-zinc-400 space-y-3 list-disc list-inside">
-            <li>Cirque du Soleil = safe bet for first-timers</li>
-            <li>Residencies sell out quickly on weekends</li>
-            <li>Midweek shows often have better seating deals</li>
-            <li>Adult shows are 18+ only</li>
-          </ul>
+        <div className="mt-10 border-t border-white/10 pt-6">
+          <Link className="text-zinc-300 transition hover:text-amber-200" href={`/${cityKey}`}>
+            ← Back to {cityName}
+          </Link>
         </div>
-
-        <div className="space-y-4">
-          <h3 className="text-2xl font-semibold">
-            Seating & Timing Tips
-          </h3>
-
-          <ul className="text-sm text-zinc-400 space-y-3 list-disc list-inside">
-            <li>Center sections offer best sightlines</li>
-            <li>Arrive 30 minutes early</li>
-            <li>Early shows pair well with dinner plans</li>
-            <li>Late shows often cost less</li>
-          </ul>
-        </div>
-
-      </section>
-
-      {/* ================= TRUST ================= */}
-
-      <section className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-10 text-center space-y-5">
-
-        <h3 className="text-xl font-semibold">
-          Why Book Shows Through DCC?
-        </h3>
-
-        <p className="text-sm text-zinc-400 max-w-2xl mx-auto">
-          We surface the most reliable ticket providers,
-          compare pricing tiers, and eliminate low-quality
-          listings so you can book with confidence.
-        </p>
-
-        <div className="flex flex-wrap justify-center gap-4 text-sm text-emerald-400">
-          <span>✔ Verified Sellers</span>
-          <span>✔ No Hidden Fees</span>
-          <span>✔ Real Availability</span>
-          <span>✔ Secure Checkout</span>
-        </div>
-
-      </section>
-
-      {/* ================= FOOTER ================= */}
-
-      <footer className="pt-12 border-t border-zinc-800 text-center text-sm text-zinc-500">
-        © {new Date().getFullYear()} Destination Command Center
-      </footer>
-
+      </div>
     </main>
   );
 }
