@@ -46,6 +46,42 @@ function tagLink(tag: VegasCasinoTag) {
   }
 }
 
+function getCasinoRelationshipLinks(slug: string) {
+  switch (slug) {
+    case "bellagio-casino":
+      return [
+        {
+          href: "/casinos-near/bellagio",
+          title: "Casinos near Bellagio",
+          body: "Compare nearby Strip casino options when Bellagio is the starting point but the gaming plan is still open.",
+        },
+      ];
+    case "caesars-palace-casino":
+      return [
+        {
+          href: "/hotels-near/caesars-palace-casino",
+          title: "Hotels near Caesars Palace Casino",
+          body: "See nearby hotel options when Caesars is the anchor and you want the best nearby stay, not just the flagship resort itself.",
+        },
+        {
+          href: "/attractions-near/caesars-palace-casino",
+          title: "Attractions near Caesars Palace Casino",
+          body: "Branch into nearby Strip attractions when Caesars is the anchor for the trip and the rest of the night is still being planned.",
+        },
+      ];
+    case "wynn-casino":
+      return [
+        {
+          href: "/hotels-near/wynn-casino",
+          title: "Hotels near Wynn Casino",
+          body: "Compare nearby north Strip hotels when Wynn is the main reference point for luxury or nightlife-led Vegas planning.",
+        },
+      ];
+    default:
+      return [];
+  }
+}
+
 export async function generateStaticParams() {
   return VEGAS_CASINOS_CONFIG.map((casino) => ({ slug: casino.slug }));
 }
@@ -103,6 +139,7 @@ export default async function VegasCasinoNodePage({ params }: { params: Promise<
   const casino = getVegasCasinoBySlug(slug);
   if (!casino) notFound();
 
+  const relationshipLinks = getCasinoRelationshipLinks(casino.slug);
   const districtTarget = districtLink(casino.district);
   const siblingCasinos = VEGAS_CASINOS_CONFIG.filter(
     (candidate) =>
@@ -206,6 +243,20 @@ export default async function VegasCasinoNodePage({ params }: { params: Promise<
             ))}
           </div>
         </section>
+
+        {relationshipLinks.length ? (
+          <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <h2 className="text-2xl font-bold">Relationship pages from this casino</h2>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              {relationshipLinks.map((link) => (
+                <Link key={`${casino.slug}-${link.href}`} href={link.href} className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
+                  <h3 className="text-lg font-semibold">{link.title}</h3>
+                  <p className="mt-2 text-sm text-zinc-300">{link.body}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">Related casino nodes</h2>

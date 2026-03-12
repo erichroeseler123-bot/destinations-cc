@@ -41,6 +41,7 @@ export const FREMONT_STREET_PILLAR: AttractionPillarConfig = {
     { href: "/las-vegas/hotels", title: "Las Vegas hotels", body: "Compare downtown hotel nodes against Strip and overlay-based hotel discovery." },
     { href: "/las-vegas-strip", title: "Las Vegas Strip district hub", body: "Cross-link directly because many users compare Fremont and the Strip as rival district choices." },
     { href: "/hotel/golden-nugget", title: "Golden Nugget hotel node", body: "Jump into one of the strongest downtown hotel nodes already seeded in the Vegas hotel mesh." },
+    { href: "/hotels-near/fremont-street-experience", title: "Hotels near Fremont Street Experience", body: "Use the relationship page when the trip starts from Fremont itself and the main question becomes where to stay nearby." },
   ],
   lastModified: "2026-03-12",
 };

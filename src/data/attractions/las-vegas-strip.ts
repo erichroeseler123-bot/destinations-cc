@@ -87,6 +87,21 @@ export const LAS_VEGAS_STRIP_PILLAR: AttractionPillarConfig = {
       title: "Best day trips from Las Vegas",
       body: "Cross-link to the desert and canyon spoke so Strip-first planners can still break the trip up with one strong daytime escape.",
     },
+    {
+      href: "/hotels-near/fountains-of-bellagio",
+      title: "Hotels near Fountains of Bellagio",
+      body: "Use the relationship page when Bellagio fountains are the real anchor and the lodging decision is about walkability and central Strip access.",
+    },
+    {
+      href: "/hotels-near/caesars-palace-casino",
+      title: "Hotels near Caesars Palace Casino",
+      body: "Compare nearby mid-Strip stays when Caesars is the anchor and hotel choice is still open.",
+    },
+    {
+      href: "/hotels-near/wynn-casino",
+      title: "Hotels near Wynn Casino",
+      body: "Branch into north Strip stay planning when the trip is clustering around Wynn, Encore, and luxury-night routing.",
+    },
   ],
   lastModified: "2026-03-12",
 };

@@ -28,6 +28,47 @@ function tagLink(tag: VegasHotelTag) {
   }
 }
 
+function getHotelRelationshipLinks(slug: string) {
+  switch (slug) {
+    case "bellagio":
+      return [
+        {
+          href: "/attractions-near/bellagio",
+          title: "Attractions near Bellagio",
+          body: "Use the Bellagio relationship page when the trip starts from the hotel and branches into fountains, nearby attractions, and walkable Strip planning.",
+        },
+        {
+          href: "/casinos-near/bellagio",
+          title: "Casinos near Bellagio",
+          body: "Compare nearby casino options when Bellagio is the anchor but the gaming decision is still open.",
+        },
+      ];
+    case "wynn":
+      return [
+        {
+          href: "/hotels-near/wynn-casino",
+          title: "Hotels near Wynn Casino",
+          body: "See nearby hotel alternatives when the north Strip, nightlife, and Wynn-adjacent luxury zone are more important than one specific property.",
+        },
+      ];
+    case "caesars-palace":
+      return [
+        {
+          href: "/hotels-near/caesars-palace-casino",
+          title: "Hotels near Caesars Palace Casino",
+          body: "Compare nearby mid-Strip hotel options when Caesars is the anchor but the stay decision is still flexible.",
+        },
+        {
+          href: "/attractions-near/caesars-palace-casino",
+          title: "Attractions near Caesars Palace Casino",
+          body: "Jump into nearby attraction planning when the trip starts from Caesars and expands into the surrounding Strip cluster.",
+        },
+      ];
+    default:
+      return [];
+  }
+}
+
 export async function generateStaticParams() {
   return VEGAS_HOTELS_CONFIG.map((hotel) => ({ slug: hotel.slug }));
 }
@@ -87,6 +128,7 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
   const hotel = getVegasHotelBySlug(slug);
   if (!hotel) notFound();
 
+  const relationshipLinks = getHotelRelationshipLinks(hotel.slug);
   const siblingHotels = VEGAS_HOTELS_CONFIG.filter(
     (candidate) => candidate.slug !== hotel.slug && (candidate.area === hotel.area || candidate.tags.some((tag) => hotel.tags.includes(tag)))
   ).slice(0, 6);
@@ -161,6 +203,20 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
             <p className="mt-2 text-zinc-300">Jump into the live-performance lane for residencies, comedy, magic, and other show-night planning.</p>
           </Link>
         </section>
+
+        {relationshipLinks.length ? (
+          <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <h2 className="text-2xl font-bold">Relationship pages from this hotel</h2>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              {relationshipLinks.map((link) => (
+                <Link key={`${hotel.slug}-${link.href}`} href={link.href} className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
+                  <h3 className="text-lg font-semibold">{link.title}</h3>
+                  <p className="mt-2 text-sm text-zinc-300">{link.body}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">Related hotel nodes</h2>
