@@ -17,7 +17,7 @@ export default function PageActionBar({
           <p className="text-xs uppercase tracking-[0.24em] text-amber-200/80">Action stack</p>
           <h2 className="mt-2 text-xl font-bold text-white">{title}</h2>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <nav aria-label={title} className="flex flex-wrap gap-3">
           {actions.map((action) =>
             action.kind === "external" ? (
               <a
@@ -26,6 +26,7 @@ export default function PageActionBar({
                 target="_blank"
                 rel="noopener noreferrer nofollow"
                 className="inline-flex items-center rounded-full border border-white/12 bg-black/25 px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-white/12"
+                aria-label={action.label}
               >
                 {action.label}
               </a>
@@ -34,12 +35,13 @@ export default function PageActionBar({
                 key={`${action.label}-${action.href}`}
                 href={action.href}
                 className="inline-flex items-center rounded-full border border-white/12 bg-black/25 px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-white/12"
+                aria-label={action.label}
               >
                 {action.label}
               </Link>
             ),
           )}
-        </div>
+        </nav>
       </div>
     </section>
   );

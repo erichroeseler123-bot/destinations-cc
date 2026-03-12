@@ -56,6 +56,7 @@ export default function VegasEntityGridSection({
                     key={`${entity.slug}-${link.href}`}
                     href={link.href}
                     className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-zinc-200 hover:bg-white/10"
+                    aria-label={`${link.label} related to ${entity.name}`}
                   >
                     {link.label}
                   </Link>
@@ -67,6 +68,7 @@ export default function VegasEntityGridSection({
               <Link
                 href={entity.primaryHref}
                 className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-100 hover:bg-white/10"
+                aria-label={`View ${entity.name} details`}
               >
                 Open linked node
               </Link>
@@ -82,6 +84,7 @@ export default function VegasEntityGridSection({
             key={link.href}
             href={link.href}
             className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10"
+            aria-label={link.label}
           >
             {link.label}
           </Link>

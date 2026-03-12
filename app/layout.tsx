@@ -20,7 +20,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${roboto.variable} ${montserrat.variable}`}>
-        {children}
+        <a href="#main-content" className="dcc-skip-link">
+          Skip to main content
+        </a>
+        <div id="main-content">{children}</div>
       </body>
     </html>
   );

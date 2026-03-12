@@ -71,6 +71,7 @@ export default function VegasHotelGridSection({
               <Link
                 href={`/hotel/${hotel.slug}`}
                 className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-100 hover:bg-white/10"
+                aria-label={`View ${hotel.name} hotel details`}
               >
                 Open hotel node
               </Link>
@@ -81,13 +82,13 @@ export default function VegasHotelGridSection({
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <Link href="/vegas" className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10">
+        <Link href="/vegas" aria-label="Back to the Las Vegas city hub" className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10">
           Back to Vegas hub
         </Link>
-        <Link href="/las-vegas-strip" className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10">
+        <Link href="/las-vegas-strip" aria-label="Open the Las Vegas Strip guide" className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10">
           Las Vegas Strip pillar
         </Link>
-        <Link href="/las-vegas/shows" className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10">
+        <Link href="/las-vegas/shows" aria-label="Open Las Vegas shows guide" className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10">
           Las Vegas shows
         </Link>
       </div>

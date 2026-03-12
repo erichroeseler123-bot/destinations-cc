@@ -5,3 +5,188 @@
 html, body {
   height: 100%;
 }
+
+body {
+  background: #090a0d;
+  color: #f4f4f5;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.dcc-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 1rem;
+  z-index: 9999;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #09090b;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+}
+
+.dcc-skip-link:focus,
+.dcc-skip-link:focus-visible {
+  left: 1rem;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid #67e8f9;
+  outline-offset: 3px;
+}
+
+@keyframes dccFloatA {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(14px, -16px, 0) scale(1.06); }
+}
+
+@keyframes dccFloatB {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-18px, 14px, 0) scale(1.04); }
+}
+
+@keyframes dccGridShift {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(44px, 44px, 0); }
+}
+
+@keyframes dccHeroEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes dccMarkPulse {
+  0%, 100% { box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45), 0 0 0 rgba(34, 211, 238, 0.2); }
+  50% { box-shadow: 0 12px 36px rgba(0, 0, 0, 0.58), 0 0 24px rgba(34, 211, 238, 0.28); }
+}
+
+@keyframes dccBeamSweep {
+  0% { transform: translate3d(-12%, -8%, 0) rotate(-10deg); opacity: 0.12; }
+  50% { transform: translate3d(10%, 6%, 0) rotate(-8deg); opacity: 0.2; }
+  100% { transform: translate3d(-12%, -8%, 0) rotate(-10deg); opacity: 0.12; }
+}
+
+@keyframes dccRouteGlow {
+  0%, 100% { stroke-opacity: 0.22; }
+  50% { stroke-opacity: 0.78; }
+}
+
+@keyframes dccRouteDash {
+  0% { stroke-dashoffset: 150; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes dccNoiseShift {
+  0% { transform: translate3d(0, 0, 0); opacity: 0.05; }
+  50% { transform: translate3d(-1%, 1%, 0); opacity: 0.08; }
+  100% { transform: translate3d(0, 0, 0); opacity: 0.05; }
+}
+
+@keyframes dccCtaRise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dccSheen {
+  0% { background-position: -180% 0; }
+  100% { background-position: 180% 0; }
+}
+
+.dcc-float-a {
+  animation: dccFloatA 16s ease-in-out infinite;
+}
+
+.dcc-float-b {
+  animation: dccFloatB 18s ease-in-out infinite;
+}
+
+.dcc-grid-drift {
+  animation: dccGridShift 26s linear infinite;
+}
+
+.dcc-hero-enter {
+  animation: dccHeroEnter 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.dcc-hero-enter-2 {
+  animation-delay: 90ms;
+}
+
+.dcc-hero-enter-3 {
+  animation-delay: 170ms;
+}
+
+.dcc-hero-enter-4 {
+  animation-delay: 250ms;
+}
+
+.dcc-mark-pulse {
+  animation: dccMarkPulse 4.8s ease-in-out infinite;
+}
+
+.dcc-beam-sweep {
+  animation: dccBeamSweep 22s ease-in-out infinite;
+}
+
+.dcc-route-glow {
+  animation: dccRouteGlow 3.6s ease-in-out infinite;
+}
+
+.dcc-route-dash {
+  stroke-dasharray: 12 10;
+  animation: dccRouteDash 6s linear infinite;
+}
+
+.dcc-noise-shift {
+  animation: dccNoiseShift 1.3s steps(2) infinite;
+}
+
+.dcc-cta-enter {
+  animation: dccCtaRise 700ms cubic-bezier(0.22, 1, 0.36, 1) 140ms both;
+}
+
+.dcc-btn-sheen {
+  background-image: linear-gradient(
+    105deg,
+    rgba(255, 255, 255, 0) 38%,
+    rgba(255, 255, 255, 0.14) 50%,
+    rgba(255, 255, 255, 0) 62%
+  );
+  background-size: 220% 100%;
+  animation: dccSheen 3.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .dcc-float-a,
+  .dcc-float-b,
+  .dcc-grid-drift,
+  .dcc-hero-enter,
+  .dcc-mark-pulse,
+  .dcc-beam-sweep,
+  .dcc-route-glow,
+  .dcc-route-dash,
+  .dcc-noise-shift,
+  .dcc-cta-enter,
+  .dcc-btn-sheen {
+    animation: none !important;
+  }
+}

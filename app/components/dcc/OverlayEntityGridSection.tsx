@@ -22,6 +22,7 @@ export default function OverlayEntityGridSection({ eyebrow, title, intro, entiti
             key={`${entity.entityType}-${entity.slug}`}
             href={entity.canonicalPath}
             className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/25 hover:bg-white/10"
+            aria-label={`View ${entity.title}`}
           >
             {entity.imageSet?.card ? (
               <div className="aspect-[4/3] overflow-hidden border-b border-white/10">
