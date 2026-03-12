@@ -55,7 +55,7 @@ const CITY_CATEGORY_OVERRIDES: Record<string, string[]> = {
 
 const CITY_OVERLAY_OVERRIDES: Record<string, string[]> = {
   "las-vegas": ["pet-friendly", "kid-friendly", "luxury"],
-  miami: ["nightlife", "scenic", "family"],
+  miami: ["nightlife", "scenic", "family", "kid-friendly"],
   "new-orleans": ["festival-pressure", "music-first"],
 };
 

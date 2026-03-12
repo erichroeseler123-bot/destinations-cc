@@ -17,6 +17,7 @@ export type DccOverlayRegistryNode = {
   resultSlugs: string[];
   canonicalPath: string;
   summary: string;
+  relatedLinks?: Array<{ href: string; label: string }>;
 };
 
 export const OVERLAY_REGISTRY: DccOverlayRegistryNode[] = [
@@ -28,6 +29,11 @@ export const OVERLAY_REGISTRY: DccOverlayRegistryNode[] = [
     resultSlugs: ["vdara", "park-mgm", "mgm-grand", "caesars-palace"],
     canonicalPath: "/pet-friendly/las-vegas",
     summary: "Cross-city overlay pattern for pet-friendly hotel discovery, proven first in the Vegas hotel mesh.",
+    relatedLinks: [
+      { href: "/las-vegas/hotels", label: "Las Vegas hotels" },
+      { href: "/vegas", label: "Vegas hub" },
+      { href: "/las-vegas-strip", label: "Las Vegas Strip" },
+    ],
   },
   {
     slug: "kid-friendly-las-vegas",
@@ -37,6 +43,11 @@ export const OVERLAY_REGISTRY: DccOverlayRegistryNode[] = [
     resultSlugs: ["excalibur", "circus-circus", "adventuredome", "mandalay-bay-pools"],
     canonicalPath: "/kid-friendly/las-vegas",
     summary: "Family-first Vegas overlay that cuts across hotels, attractions, and pool nodes.",
+    relatedLinks: [
+      { href: "/las-vegas/hotels", label: "Las Vegas hotels" },
+      { href: "/las-vegas/pools", label: "Las Vegas pools" },
+      { href: "/vegas", label: "Vegas hub" },
+    ],
   },
   {
     slug: "luxury-las-vegas",
@@ -46,6 +57,20 @@ export const OVERLAY_REGISTRY: DccOverlayRegistryNode[] = [
     resultSlugs: ["bellagio", "caesars-palace", "venetian", "wynn", "bellagio-casino", "wynn-casino"],
     canonicalPath: "/luxury-hotels-las-vegas",
     summary: "Luxury overlay layer for flagship Vegas hotel and casino routing.",
+  },
+  {
+    slug: "kid-friendly-miami",
+    citySlug: "miami",
+    overlayType: "kid-friendly",
+    entityTypes: ["beach"],
+    resultSlugs: ["north-beach", "surfside", "hobie-beach"],
+    canonicalPath: "/kid-friendly/miami",
+    summary: "Kid-friendly Miami overlay focused on calmer beaches, easier family movement, and lighter beach-day logistics.",
+    relatedLinks: [
+      { href: "/miami", label: "Miami hub" },
+      { href: "/miami/beaches", label: "Miami beaches" },
+      { href: "/miami/tours", label: "Miami tours" },
+    ],
   },
   {
     slug: "miami-beach-family",
@@ -87,4 +112,12 @@ export const OVERLAY_REGISTRY: DccOverlayRegistryNode[] = [
 
 export function getOverlayRegistryNodesByCity(citySlug: string) {
   return OVERLAY_REGISTRY.filter((overlay) => overlay.citySlug === citySlug);
+}
+
+export function getOverlayRegistryNodeByTypeAndCity(overlayType: DccOverlayType, citySlug: string) {
+  return OVERLAY_REGISTRY.find((overlay) => overlay.overlayType === overlayType && overlay.citySlug === citySlug) ?? null;
+}
+
+export function listOverlayCitySlugsByType(overlayType: DccOverlayType) {
+  return OVERLAY_REGISTRY.filter((overlay) => overlay.overlayType === overlayType).map((overlay) => overlay.citySlug);
 }

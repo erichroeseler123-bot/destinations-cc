@@ -5,6 +5,7 @@ import { listCruiseCanonicalPortSlugs, listCruiseShipSlugs } from "@/lib/dcc/int
 import { CITY_AUTHORITY_CONFIG } from "@/src/data/city-authority-config";
 import { CRUISE_SPECIALTY_LANES } from "@/src/data/cruise-specialty-lanes";
 import { PORT_AUTHORITY_CONFIG } from "@/src/data/port-authority-config";
+import { OVERLAY_REGISTRY } from "@/src/data/overlay-registry";
 import { NATIONAL_PARKS_AUTHORITY_CONFIG } from "@/src/data/national-parks-authority-config";
 import { SPORTS_LEAGUES_CONFIG } from "@/src/data/sports-leagues-config";
 import { getSportsCitySlugs, SPORTS_TEAMS_CONFIG } from "@/src/data/sports-teams-config";
@@ -205,6 +206,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const sportsVenueUrls = SPORTS_VENUES_CONFIG.map((venue) => `/venues/${venue.slug}`);
   const hotelUrls = VEGAS_HOTELS_CONFIG.map((hotel) => `/hotel/${hotel.slug}`);
   const casinoUrls = VEGAS_CASINOS_CONFIG.map((casino) => `/casino/${casino.slug}`);
+  const overlayUrls = OVERLAY_REGISTRY.map((overlay) => overlay.canonicalPath);
   const hotelsNearUrls = listHotelsNearSlugs().map((slug) => `/hotels-near/${slug}`);
   const attractionsNearUrls = listAttractionsNearSlugs().map((slug) => `/attractions-near/${slug}`);
   const casinosNearUrls = listCasinosNearSlugs().map((slug) => `/casinos-near/${slug}`);
@@ -222,13 +224,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/grand-canyon",
     "/henderson-las-vegas",
     "/hoover-dam",
-    "/pet-friendly/las-vegas",
-    "/kid-friendly/las-vegas",
     "/lake-mead",
     "/las-vegas-arts-district",
     "/las-vegas-chinatown",
     "/las-vegas-strip",
-    "/luxury-hotels-las-vegas",
     "/red-rock-canyon",
     "/valley-of-fire",
     "/helicopter-tours",
@@ -265,6 +264,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...sportsVenueUrls,
     ...hotelUrls,
     ...casinoUrls,
+    ...overlayUrls,
     ...hotelsNearUrls,
     ...attractionsNearUrls,
     ...casinosNearUrls,
