@@ -87,6 +87,7 @@ export default function LasVegasThingsToDoPage() {
             summary: attraction.summary,
             primaryHref: attraction.primaryHref,
             chips: attraction.tags.map((tag) => tag.replace("-", " ")),
+            image: attraction.image,
             nearbyLinks: attraction.nearbyLinks,
           }))}
           backLinks={[
@@ -107,6 +108,7 @@ export default function LasVegasThingsToDoPage() {
               summary: attraction.summary,
               primaryHref: attraction.primaryHref,
               chips: attraction.tags.map((tag) => tag.replace("-", " ")),
+              image: attraction.image,
               nearbyLinks: attraction.nearbyLinks,
             }))}
             backLinks={[
@@ -123,6 +125,7 @@ export default function LasVegasThingsToDoPage() {
               summary: attraction.summary,
               primaryHref: attraction.primaryHref,
               chips: attraction.tags.map((tag) => tag.replace("-", " ")),
+              image: attraction.image,
               nearbyLinks: attraction.nearbyLinks,
             }))}
             backLinks={[

@@ -20,10 +20,72 @@ export type VegasHotel = {
   tier: "budget" | "upper-midscale" | "luxury";
   tags: VegasHotelTag[];
   image?: NodeImageAsset;
+  heroImage?: NodeImageAsset;
+  gallery?: NodeImageAsset[];
   summary: string;
   famousFor: string[];
   nearbyHooks: string[];
 };
+
+function buildSpecificHotelNodeMedia(slug: string, name: string): {
+  image?: NodeImageAsset;
+  heroImage?: NodeImageAsset;
+  gallery?: NodeImageAsset[];
+} {
+  const overrides: Record<string, { image: string; hero: string; gallery: string[] }> = {
+    bellagio: {
+      image: "/images/las-vegas/hotels/bellagio-card.svg",
+      hero: "/images/las-vegas/hotels/bellagio-hero.svg",
+      gallery: [
+        "/images/las-vegas/hotels/bellagio-card.svg",
+        "/images/las-vegas/hotels/mid-strip-luxury.svg",
+      ],
+    },
+    "caesars-palace": {
+      image: "/images/las-vegas/hotels/caesars-card.svg",
+      hero: "/images/las-vegas/hotels/caesars-hero.svg",
+      gallery: [
+        "/images/las-vegas/hotels/caesars-card.svg",
+        "/images/las-vegas/hotels/mid-strip-luxury.svg",
+      ],
+    },
+    "mgm-grand": {
+      image: "/images/las-vegas/hotels/mgm-grand-card.svg",
+      hero: "/images/las-vegas/hotels/mgm-grand-hero.svg",
+      gallery: [
+        "/images/las-vegas/hotels/mgm-grand-card.svg",
+        "/images/las-vegas/hotels/south-strip-family.svg",
+      ],
+    },
+    venetian: {
+      image: "/images/las-vegas/hotels/venetian-card.svg",
+      hero: "/images/las-vegas/hotels/venetian-hero.svg",
+      gallery: [
+        "/images/las-vegas/hotels/venetian-card.svg",
+        "/images/las-vegas/hotels/mid-strip-luxury.svg",
+      ],
+    },
+    wynn: {
+      image: "/images/las-vegas/hotels/wynn-card.svg",
+      hero: "/images/las-vegas/hotels/wynn-hero.svg",
+      gallery: [
+        "/images/las-vegas/hotels/wynn-card.svg",
+        "/images/las-vegas/hotels/north-strip-luxury.svg",
+      ],
+    },
+  };
+
+  const override = overrides[slug];
+  if (!override) return {};
+
+  return {
+    image: buildLocalImageAsset(override.image, `${name} hotel artwork`),
+    heroImage: buildLocalImageAsset(override.hero, `${name} hotel guide hero artwork`),
+    gallery: override.gallery.map((src, index) =>
+      buildLocalImageAsset(src, `${name} gallery image ${index + 1}`),
+    ),
+  };
+}
 
 function buildVegasHotelImage(
   name: string,
@@ -336,10 +398,15 @@ const VEGAS_HOTELS_BASE: VegasHotel[] = [
   },
 ];
 
-export const VEGAS_HOTELS_CONFIG: VegasHotel[] = VEGAS_HOTELS_BASE.map((hotel) => ({
-  ...hotel,
-  image: buildVegasHotelImage(hotel.name, hotel.area, hotel.tags),
-}));
+export const VEGAS_HOTELS_CONFIG: VegasHotel[] = VEGAS_HOTELS_BASE.map((hotel) => {
+  const media = buildSpecificHotelNodeMedia(hotel.slug, hotel.name);
+  return {
+    ...hotel,
+    image: media.image || buildVegasHotelImage(hotel.name, hotel.area, hotel.tags),
+    heroImage: media.heroImage,
+    gallery: media.gallery,
+  };
+});
 
 export function getVegasHotelsByTag(tag: VegasHotelTag) {
   return VEGAS_HOTELS_CONFIG.filter((hotel) => hotel.tags.includes(tag));

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0c2621"/><stop offset="1" stop-color="#c9a258"/></linearGradient></defs>
+  <rect width="1200" height="800" fill="url(#g)"/><rect x="260" y="220" width="680" height="320" rx="24" fill="#eef2d8"/><circle cx="920" cy="180" r="100" fill="#ffffff10"/>
+  <path d="M210 610c170-55 380-55 550 0" stroke="#b8ffd8" stroke-width="18" fill="none"/><text x="80" y="720" fill="#fff" font-size="64" font-family="Arial" font-weight="700">Wynn Las Vegas</text>
+</svg>

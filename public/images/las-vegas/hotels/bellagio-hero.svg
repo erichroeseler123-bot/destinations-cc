@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0e2234"/><stop offset="1" stop-color="#5ca5bf"/></linearGradient></defs>
+  <rect width="1600" height="900" fill="url(#g)"/><rect x="260" y="280" width="1080" height="260" rx="24" fill="#efe2bc"/>
+  <rect x="320" y="220" width="960" height="72" rx="18" fill="#d8b46d"/><path d="M180 700c170-85 360-128 620-128s430 43 620 128" stroke="#bcecff" stroke-width="22" fill="none"/>
+  <text x="120" y="820" fill="#fff" font-size="78" font-family="Arial" font-weight="700">Bellagio Hotel Guide</text>
+</svg>

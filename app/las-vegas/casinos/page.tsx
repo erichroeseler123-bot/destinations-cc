@@ -87,6 +87,7 @@ export default function LasVegasCasinosPage() {
             summary: casino.summary,
             primaryHref: casino.nearbyLinks[0]?.href || "/vegas",
             chips: casino.tags.map((tag) => tag.replace("-", " ")),
+            image: casino.image,
             nearbyLinks: casino.nearbyLinks,
           }))}
           backLinks={[
@@ -107,6 +108,7 @@ export default function LasVegasCasinosPage() {
               summary: casino.summary,
               primaryHref: casino.nearbyLinks[0]?.href || "/las-vegas-strip",
               chips: casino.tags.map((tag) => tag.replace("-", " ")),
+              image: casino.image,
               nearbyLinks: casino.nearbyLinks,
             }))}
             backLinks={[
@@ -123,6 +125,7 @@ export default function LasVegasCasinosPage() {
               summary: casino.summary,
               primaryHref: casino.nearbyLinks[0]?.href || "/fremont-street",
               chips: casino.tags.map((tag) => tag.replace("-", " ")),
+              image: casino.image,
               nearbyLinks: casino.nearbyLinks,
             }))}
             backLinks={[

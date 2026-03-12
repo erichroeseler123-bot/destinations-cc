@@ -23,10 +23,22 @@ export type VegasCasino = {
 };
 
 function buildVegasCasinoImage(
+  slug: string,
   name: string,
   district: VegasCasino["district"],
   tags: VegasCasinoTag[],
 ): NodeImageAsset {
+  const specific: Record<string, string> = {
+    "bellagio-casino": "/images/las-vegas/casinos/bellagio-casino.svg",
+    "caesars-palace-casino": "/images/las-vegas/casinos/caesars-casino.svg",
+    "mgm-grand-casino": "/images/las-vegas/casinos/mgm-casino.svg",
+    "venetian-casino": "/images/las-vegas/casinos/venetian-casino.svg",
+    "wynn-casino": "/images/las-vegas/casinos/wynn-casino.svg",
+  };
+  if (specific[slug]) {
+    return buildLocalImageAsset(specific[slug], `${name} casino artwork`);
+  }
+
   if (district === "fremont-street") {
     return buildLocalImageAsset("/images/las-vegas/casinos/downtown-classic.svg", `${name} Fremont Street casino concept artwork`);
   }
@@ -171,7 +183,7 @@ const VEGAS_CASINOS_BASE: VegasCasino[] = [
 
 export const VEGAS_CASINOS_CONFIG: VegasCasino[] = VEGAS_CASINOS_BASE.map((casino) => ({
   ...casino,
-  image: buildVegasCasinoImage(casino.name, casino.district, casino.tags),
+  image: buildVegasCasinoImage(casino.slug, casino.name, casino.district, casino.tags),
 }));
 
 export function getVegasCasinosByTag(tag: VegasCasinoTag) {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import AuthorityMediaStrip from "@/app/components/dcc/AuthorityMediaStrip";
 import { getVegasHotelBySlug, VEGAS_HOTELS_CONFIG, type VegasHotelTag } from "@/src/data/vegas-hotels-config";
 
 type Params = { slug: string };
@@ -102,6 +103,10 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
             {hotel.area.replace("-", " ")} · {hotel.tier.replace("-", " ")} · Last updated: March 2026
           </p>
         </header>
+
+        {hotel.heroImage && hotel.gallery?.length ? (
+          <AuthorityMediaStrip hero={hotel.heroImage} gallery={hotel.gallery} />
+        ) : null}
 
         <section className="grid gap-4 md:grid-cols-3">
           <article className="rounded-2xl border border-white/10 bg-white/5 p-5">

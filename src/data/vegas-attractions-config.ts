@@ -23,10 +23,22 @@ export type VegasAttraction = {
 };
 
 function buildVegasAttractionImage(
+  slug: string,
   name: string,
   district: VegasAttraction["district"],
   tags: VegasAttractionTag[],
 ): NodeImageAsset {
+  const specific: Record<string, string> = {
+    "fountains-of-bellagio": "/images/las-vegas/attractions/fountains-of-bellagio.svg",
+    "sphere-las-vegas": "/images/las-vegas/attractions/sphere-las-vegas.svg",
+    area15: "/images/las-vegas/attractions/area15.svg",
+    "fremont-street-experience": "/images/las-vegas/attractions/fremont-street-experience.svg",
+    adventuredome: "/images/las-vegas/attractions/adventuredome.svg",
+  };
+  if (specific[slug]) {
+    return buildLocalImageAsset(specific[slug], `${name} attraction artwork`);
+  }
+
   if (district === "regional" && tags.includes("day-trip")) {
     return buildLocalImageAsset("/images/las-vegas/attractions/day-trip.svg", `${name} Las Vegas day-trip attraction concept artwork`);
   }
@@ -194,7 +206,7 @@ const VEGAS_ATTRACTIONS_BASE: VegasAttraction[] = [
 
 export const VEGAS_ATTRACTIONS_CONFIG: VegasAttraction[] = VEGAS_ATTRACTIONS_BASE.map((attraction) => ({
   ...attraction,
-  image: buildVegasAttractionImage(attraction.name, attraction.district, attraction.tags),
+  image: buildVegasAttractionImage(attraction.slug, attraction.name, attraction.district, attraction.tags),
 }));
 
 export function getVegasAttractionsByTag(tag: VegasAttractionTag) {

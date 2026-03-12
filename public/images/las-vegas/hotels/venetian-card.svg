@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#15354d"/><stop offset="1" stop-color="#d09a63"/></linearGradient></defs>
+  <rect width="1200" height="800" fill="url(#g)"/><rect x="240" y="240" width="760" height="250" rx="18" fill="#f3e2c6"/><path d="M180 600c90-20 180-30 270-30 140 0 280 26 420 26 90 0 180-11 270-34" stroke="#80d9ff" stroke-width="18" fill="none"/>
+  <text x="80" y="720" fill="#fff" font-size="64" font-family="Arial" font-weight="700">The Venetian</text>
+</svg>
