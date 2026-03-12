@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getSportsLeague } from "@/src/data/sports-leagues-config";
+import { getSportsLeague, getSportsLeagueSlugs } from "@/src/data/sports-leagues-config";
 import { getTeamsByLeague } from "@/src/data/sports-teams-config";
 
 type Params = { league: string };
 
 export async function generateStaticParams() {
-  return ["nfl", "nhl", "wnba"].map((league) => ({ league }));
+  return getSportsLeagueSlugs().map((league) => ({ league }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {

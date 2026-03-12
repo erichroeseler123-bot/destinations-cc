@@ -6,7 +6,7 @@ import { SPORTS_TEAMS_CONFIG } from "@/src/data/sports-teams-config";
 export const metadata: Metadata = {
   title: "Sports Tickets and Team Hubs | Destination Command Center",
   description:
-    "Browse sports leagues, Vegas team nodes, and live game-ticket discovery powered by the DCC sports graph.",
+    "Browse sports leagues, foundation-city team nodes, and live game-ticket discovery powered by the DCC sports graph.",
   alternates: { canonical: "/sports" },
 };
 
@@ -65,6 +65,9 @@ export default function SportsHubPage() {
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">Seed team nodes live now</h2>
+          <p className="mt-2 max-w-3xl text-zinc-300">
+            The sports graph now spans the first DCC foundation cities: Las Vegas, Miami, Orlando, and New Orleans.
+          </p>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {SPORTS_TEAMS_CONFIG.map((team) => (
               <Link
