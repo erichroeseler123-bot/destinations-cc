@@ -7,6 +7,11 @@ import aliases from "@/data/city-aliases.json";
 import { ticketmasterAdapter } from "@/lib/dcc/providers/adapters/ticketmaster";
 import { getCityShowsConfig } from "@/src/data/city-shows-config";
 import { getCityIntents, titleCase } from "@/src/data/city-intents";
+import {
+  getVegasVenuesByCasinoSlug,
+  groupVegasVenuesByCluster,
+  VEGAS_CASINOS,
+} from "@/src/data/vegas-shows-registry";
 import { buildCityTrackedHref } from "@/src/lib/city-analytics";
 
 type Params = { city: string };
@@ -59,6 +64,13 @@ function formatEventDate(date: string | null, time: string | null) {
     year: "numeric",
     ...(time ? { hour: "numeric", minute: "2-digit" } : {}),
   }).format(parsed);
+}
+
+function formatLabel(value: string) {
+  return value
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 function GenericIntentGrid({
@@ -226,6 +238,19 @@ export default async function CityShowsPage({
     );
   });
 
+  const vegasCasinoCards =
+    cityKey === "las-vegas"
+      ? VEGAS_CASINOS.map((casino) => ({
+          ...casino,
+          venues: getVegasVenuesByCasinoSlug(casino.slug),
+        }))
+      : [];
+
+  const vegasVenueClusters =
+    cityKey === "las-vegas"
+      ? Array.from(groupVegasVenuesByCluster().entries())
+      : [];
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <div className="mx-auto max-w-6xl px-6 py-12 md:py-16">
@@ -380,6 +405,24 @@ export default async function CityShowsPage({
                 <h3 className="mt-2 text-xl font-semibold text-white">{show.title}</h3>
                 <p className="mt-1 text-sm text-zinc-400">{show.venue}</p>
                 <p className="mt-3 text-zinc-300">{show.description}</p>
+                <div className="mt-4 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.16em] text-zinc-400">
+                  <span className="rounded-full border border-white/10 px-2 py-1">
+                    {formatLabel(show.showType)}
+                  </span>
+                  <span className="rounded-full border border-white/10 px-2 py-1">
+                    {formatLabel(show.venueType)}
+                  </span>
+                  {show.isPerformingArts ? (
+                    <span className="rounded-full border border-amber-400/30 px-2 py-1 text-amber-200">
+                      Performing Arts
+                    </span>
+                  ) : null}
+                  {show.isJazzClub ? (
+                    <span className="rounded-full border border-amber-400/30 px-2 py-1 text-amber-200">
+                      Jazz Club
+                    </span>
+                  ) : null}
+                </div>
               </Link>
             ))}
           </div>
@@ -408,6 +451,26 @@ export default async function CityShowsPage({
                 >
                   <h3 className="text-lg font-semibold text-white">{category.title}</h3>
                   <p className="mt-2 text-sm text-zinc-300">{category.description}</p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.16em] text-zinc-400">
+                    <span className="rounded-full border border-white/10 px-2 py-1">
+                      {formatLabel(category.showType)}
+                    </span>
+                    {category.venueType ? (
+                      <span className="rounded-full border border-white/10 px-2 py-1">
+                        {formatLabel(category.venueType)}
+                      </span>
+                    ) : null}
+                    {category.isPerformingArts ? (
+                      <span className="rounded-full border border-amber-400/30 px-2 py-1 text-amber-200">
+                        Performing Arts
+                      </span>
+                    ) : null}
+                    {category.isJazzClub ? (
+                      <span className="rounded-full border border-amber-400/30 px-2 py-1 text-amber-200">
+                        Jazz Club
+                      </span>
+                    ) : null}
+                  </div>
                 </Link>
               ))}
             </div>
@@ -421,6 +484,9 @@ export default async function CityShowsPage({
                   <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-zinc-400">
                     {cluster.title}
                   </h3>
+                  <p className="mt-2 text-xs uppercase tracking-[0.18em] text-zinc-500">
+                    {formatLabel(cluster.venueType)}
+                  </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {cluster.venues.map((venue) => (
                       <span
@@ -434,6 +500,130 @@ export default async function CityShowsPage({
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {cityKey === "las-vegas" ? (
+          <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+            <h2 className="text-2xl font-bold">Browse shows by casino and resort</h2>
+            <p className="mt-2 max-w-3xl text-zinc-300">
+              In Vegas, the casino and resort layer is part of the meaning of the show. This
+              registry makes the page usable for intent like Caesars Palace shows, Bellagio shows,
+              MGM Grand shows, and Venetian theater inventory.
+            </p>
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {vegasCasinoCards.map((casino) => (
+                <Link
+                  key={casino.slug}
+                  href={buildCityTrackedHref({
+                    href: `/${cityKey}/shows?q=${encodeURIComponent(`${casino.name} shows`)}`,
+                    city: cityKey,
+                    lane: "events",
+                    sourceSection: "city_events_intent",
+                    intentQuery: `${casino.name} shows`,
+                  })}
+                  className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-lg font-semibold text-white">{casino.name}</h3>
+                    <span className="rounded-full border border-white/10 px-2 py-1 text-[11px] uppercase tracking-[0.16em] text-zinc-300">
+                      {formatLabel(casino.cluster)}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-zinc-400">{casino.address}</p>
+                  <p className="mt-4 text-sm text-zinc-300">
+                    {casino.venues.length > 0
+                      ? `${casino.venues.length} venue${casino.venues.length === 1 ? "" : "s"} in registry`
+                      : "Parent resort ready for venue attachment"}
+                  </p>
+                  {casino.venues.length > 0 ? (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {casino.venues.slice(0, 3).map((venue) => (
+                        <span
+                          key={`${casino.slug}-${venue.slug}`}
+                          className="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-200"
+                        >
+                          {venue.name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {cityKey === "las-vegas" ? (
+          <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+            <h2 className="text-2xl font-bold">Venue inventory clusters</h2>
+            <p className="mt-2 max-w-3xl text-zinc-300">
+              This is the first-pass Vegas venue registry behind the shows lane: casino theaters,
+              mega venues, magic and comedy rooms, performing-arts anchors, and downtown inventory.
+            </p>
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              {vegasVenueClusters.map(([cluster, venues]) => (
+                <div
+                  key={cluster}
+                  className="rounded-2xl border border-white/10 bg-black/20 p-5"
+                >
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-zinc-400">
+                    {formatLabel(cluster)}
+                  </h3>
+                  <div className="mt-4 space-y-3">
+                    {venues.map((venue) => (
+                      <div
+                        key={venue.slug}
+                        className="rounded-xl border border-white/10 bg-black/20 p-3"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="font-medium text-white">{venue.name}</div>
+                          <span className="text-xs uppercase tracking-[0.16em] text-zinc-400">
+                            {formatLabel(venue.venueType)}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-sm text-zinc-400">{venue.address}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+          <h2 className="text-2xl font-bold">Cultural and venue anchors</h2>
+          <p className="mt-2 max-w-3xl text-zinc-300">
+            These anchors make the shows lane broader than just headline entertainment. They cover
+            performing arts institutions, jazz heritage, listening rooms, and the cultural venues
+            that define each city’s real live-performance identity.
+          </p>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            {config.culturalAnchors.map((anchor) => (
+              <Link
+                key={`${anchor.title}-${anchor.query}`}
+                href={buildCityTrackedHref({
+                  href: `/${cityKey}/shows?q=${encodeURIComponent(anchor.query)}`,
+                  city: cityKey,
+                  lane: "events",
+                  sourceSection: "city_events_intent",
+                  intentQuery: anchor.query,
+                })}
+                className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10"
+              >
+                <h3 className="text-lg font-semibold text-white">{anchor.title}</h3>
+                <p className="mt-3 text-sm text-zinc-300">{anchor.description}</p>
+                <div className="mt-4 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.16em] text-zinc-400">
+                  <span className="rounded-full border border-white/10 px-2 py-1">
+                    {formatLabel(anchor.showType)}
+                  </span>
+                  <span className="rounded-full border border-white/10 px-2 py-1">
+                    {formatLabel(anchor.venueType)}
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
 
