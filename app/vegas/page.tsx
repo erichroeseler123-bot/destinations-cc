@@ -264,6 +264,16 @@ export default async function VegasPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <Link href="/las-vegas/hotels" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
+            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Entity Hub</p>
+            <h2 className="mt-3 text-2xl font-bold">Las Vegas hotels</h2>
+            <p className="mt-2 text-zinc-200">Seeded hotel mesh for Strip, downtown, luxury, pet-friendly, and kid-friendly search intent.</p>
+          </Link>
+          <Link href="/las-vegas-strip" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
+            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Attraction Pillar</p>
+            <h2 className="mt-3 text-2xl font-bold">Las Vegas Strip</h2>
+            <p className="mt-2 text-zinc-200">Standalone authority hub for hotels, attractions, nightlife routing, and resort-cluster planning.</p>
+          </Link>
           <Link href="/grand-canyon" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
             <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Attraction Pillar</p>
             <h2 className="mt-3 text-2xl font-bold">Grand Canyon</h2>
@@ -283,6 +293,11 @@ export default async function VegasPage() {
             <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Attraction Pillar</p>
             <h2 className="mt-3 text-2xl font-bold">Valley of Fire</h2>
             <p className="mt-2 text-zinc-200">Desert landscape hub for scenic drives, hikes, and stronger all-day route decisions from Vegas.</p>
+          </Link>
+          <Link href="/lake-mead" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
+            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Attraction Pillar</p>
+            <h2 className="mt-3 text-2xl font-bold">Lake Mead</h2>
+            <p className="mt-2 text-zinc-200">Water-recreation hub for boating, kayaking, scenic recreation, and Hoover Dam-adjacent outdoor planning.</p>
           </Link>
         </section>
 
