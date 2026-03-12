@@ -83,6 +83,46 @@ const nextConfig = {
         destination: "/las-vegas/shows/:path*",
         permanent: false,
       },
+      {
+        source: "/vegas/tours",
+        destination: "/las-vegas/tours",
+        permanent: false,
+      },
+      {
+        source: "/vegas/tours/:path*",
+        destination: "/las-vegas/tours/:path*",
+        permanent: false,
+      },
+      {
+        source: "/vegas/attractions",
+        destination: "/las-vegas/attractions",
+        permanent: false,
+      },
+      {
+        source: "/vegas/attractions/:path*",
+        destination: "/las-vegas/attractions/:path*",
+        permanent: false,
+      },
+      {
+        source: "/vegas/day-trips",
+        destination: "/las-vegas/day-trips",
+        permanent: false,
+      },
+      {
+        source: "/vegas/day-trips/:path*",
+        destination: "/las-vegas/day-trips/:path*",
+        permanent: false,
+      },
+      {
+        source: "/vegas/helicopter",
+        destination: "/las-vegas/helicopter",
+        permanent: false,
+      },
+      {
+        source: "/vegas/helicopter/:path*",
+        destination: "/las-vegas/helicopter/:path*",
+        permanent: false,
+      },
     ];
   },
 };
