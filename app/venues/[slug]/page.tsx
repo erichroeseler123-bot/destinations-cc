@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import PageActionBar from "@/app/components/dcc/PageActionBar";
 import { buildSeatGeekGameSlug, seatGeekAdapter } from "@/lib/dcc/providers/adapters/seatgeek";
 import { getSportsTeam, getTeamsByVenue } from "@/src/data/sports-teams-config";
 import { getSportsVenue, getSportsVenueSlugs } from "@/src/data/sports-venues-config";
+import { buildMapsSearchUrl, buildOfficialSearchUrl, type PageAction } from "@/src/lib/page-actions";
 
 type Params = { slug: string };
 
@@ -87,42 +89,51 @@ export default async function VenuePage({ params }: { params: Promise<Params> })
   const isMissingKey = eventResults.some(
     (result) => result.diagnostics.fallback_reason === "missing_client_id"
   );
+  const actionBarActions: PageAction[] = [
+    { href: buildMapsSearchUrl(`${venue.name}, ${venue.cityName}`), label: "Open in Maps", kind: "external" },
+    { href: buildOfficialSearchUrl(`${venue.name} ${venue.cityName}`), label: "Find official site", kind: "external" },
+    { href: "/venues", label: "Nearby venues", kind: "internal" },
+    ...(teams[0] ? [{ href: `/sports/team/${teams[0].slug}`, label: "Primary team", kind: "internal" as const }] : []),
+    { href: "/sports", label: "Sports calendar", kind: "internal" },
+  ];
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-white">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.14),_transparent_24%),radial-gradient(circle_at_90%_18%,_rgba(244,114,182,0.1),_transparent_18%),linear-gradient(180deg,_#111217_0%,_#090a0d_100%)] text-white">
       <JsonLd name={venue.name} slug={venue.slug} />
       <div className="mx-auto max-w-6xl px-6 py-16 space-y-8">
         <header className="space-y-4">
           <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">DCC Venue Node</p>
           <h1 className="text-4xl font-black tracking-tight md:text-6xl">{venue.name}</h1>
-          <p className="max-w-3xl text-zinc-300">{venue.description}</p>
+          <p className="max-w-3xl text-lg text-zinc-200">{venue.description}</p>
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Last updated: March 2026</p>
         </header>
 
+        <PageActionBar title={`Useful actions for ${venue.name}`} actions={actionBarActions} />
+
         <section className="grid gap-4 md:grid-cols-3">
           {venue.whyItMatters.map((item) => (
-            <article key={item} className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <article key={item} className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
               <p className="text-sm text-zinc-200">{item}</p>
             </article>
           ))}
         </section>
 
         <section className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
             <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">City</p>
             <p className="mt-2 text-lg font-semibold">{venue.cityName}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
             <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Sports Leagues</p>
             <p className="mt-2 text-lg font-semibold">{venue.sportsLeagues.map((item) => item.toUpperCase()).join(" • ")}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
             <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Area Note</p>
             <p className="mt-2 text-lg font-semibold">{venue.addressNote || "Check venue location"}</p>
           </div>
         </section>
 
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
+        <section className="rounded-[1.9rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
           <h2 className="text-2xl font-bold">Primary teams</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {teams.map((team) => (
@@ -139,7 +150,7 @@ export default async function VenuePage({ params }: { params: Promise<Params> })
           </div>
         </section>
 
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
+        <section className="rounded-[1.9rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">SeatGeek Venue Layer</p>
@@ -209,7 +220,7 @@ export default async function VenuePage({ params }: { params: Promise<Params> })
           </div>
         </section>
 
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
+        <section className="rounded-[1.9rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
           <h2 className="text-2xl font-bold">Related routes</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {venue.relatedPages.map((page) => (

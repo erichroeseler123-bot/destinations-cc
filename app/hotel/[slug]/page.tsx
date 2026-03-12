@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AuthorityMediaStrip from "@/app/components/dcc/AuthorityMediaStrip";
+import PageActionBar from "@/app/components/dcc/PageActionBar";
 import { getVegasHotelBySlug, VEGAS_HOTELS_CONFIG, type VegasHotelTag } from "@/src/data/vegas-hotels-config";
+import { buildMapsSearchUrl, buildOfficialSearchUrl, type PageAction } from "@/src/lib/page-actions";
 
 type Params = { slug: string };
 
@@ -132,15 +134,22 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
   const siblingHotels = VEGAS_HOTELS_CONFIG.filter(
     (candidate) => candidate.slug !== hotel.slug && (candidate.area === hotel.area || candidate.tags.some((tag) => hotel.tags.includes(tag)))
   ).slice(0, 6);
+  const actionBarActions: PageAction[] = [
+    { href: buildMapsSearchUrl(`${hotel.name}, Las Vegas`), label: "Open in Maps", kind: "external" },
+    { href: buildOfficialSearchUrl(`${hotel.name} Las Vegas`), label: "Find official site", kind: "external" },
+    { href: "/las-vegas/shows", label: "Nearby shows", kind: "internal" },
+    ...(relationshipLinks[0] ? [{ href: relationshipLinks[0].href, label: relationshipLinks[0].title, kind: "internal" as const }] : []),
+    { href: "/las-vegas/hotels", label: "Compare nearby hotels", kind: "internal" },
+  ];
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-white">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(217,119,6,0.16),_transparent_28%),radial-gradient(circle_at_85%_20%,_rgba(34,211,238,0.12),_transparent_22%),linear-gradient(180deg,_#111217_0%,_#0a0b0e_100%)] text-white">
       <JsonLd slug={slug} />
       <div className="mx-auto max-w-5xl px-6 py-16 space-y-8">
-        <header className="space-y-4">
+        <header className="space-y-5">
           <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">DCC Hotel Node</p>
           <h1 className="text-4xl font-black tracking-tight md:text-6xl">{hotel.name}</h1>
-          <p className="max-w-3xl text-zinc-300">{hotel.summary}</p>
+          <p className="max-w-3xl text-lg text-zinc-200">{hotel.summary}</p>
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">
             {hotel.area.replace("-", " ")} · {hotel.tier.replace("-", " ")} · Last updated: March 2026
           </p>
@@ -150,24 +159,26 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
           <AuthorityMediaStrip hero={hotel.heroImage} gallery={hotel.gallery} />
         ) : null}
 
+        <PageActionBar title={`Useful actions for ${hotel.name}`} actions={actionBarActions} />
+
         <section className="grid gap-4 md:grid-cols-3">
-          <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
             <h2 className="text-lg font-semibold">Who it fits</h2>
             <p className="mt-2 text-sm text-zinc-300">
-              This node is for buyers entering Vegas through hotel search first and then branching into Strip, shows, restaurants, or overlay intent.
+              {hotel.name} works best for travelers who want a {hotel.area.replace("-", " ")} base and then branch into shows, restaurants, and nearby planning from the room outward.
             </p>
           </article>
-          <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
             <h2 className="text-lg font-semibold">What it connects to</h2>
             <p className="mt-2 text-sm text-zinc-300">{hotel.nearbyHooks.join(" · ")}</p>
           </article>
-          <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
             <h2 className="text-lg font-semibold">Known for</h2>
             <p className="mt-2 text-sm text-zinc-300">{hotel.famousFor.join(" · ")}</p>
           </article>
         </section>
 
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
           <h2 className="text-2xl font-bold">Tags and overlays</h2>
           <div className="mt-4 flex flex-wrap gap-3">
             {hotel.tags.map((tag) => {
@@ -186,26 +197,26 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
         </section>
 
         <section className="grid gap-4 md:grid-cols-2">
-          <Link href="/las-vegas/hotels" className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
+          <Link href="/las-vegas/hotels" className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
             <h2 className="text-xl font-bold">Back to Las Vegas hotels</h2>
             <p className="mt-2 text-zinc-300">Return to the hotel mesh hub and compare this property against Strip, downtown, luxury, and family overlays.</p>
           </Link>
-          <Link href="/vegas" className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
+          <Link href="/vegas" className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
             <h2 className="text-xl font-bold">Back to Vegas hub</h2>
             <p className="mt-2 text-zinc-300">Return to the main city authority page for shows, sports, attractions, and day-trip routing.</p>
           </Link>
-          <Link href="/las-vegas-strip" className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
+          <Link href="/las-vegas-strip" className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
             <h2 className="text-xl font-bold">Las Vegas Strip pillar</h2>
             <p className="mt-2 text-zinc-300">Use the Strip authority page when the hotel choice is really a corridor and routing question.</p>
           </Link>
-          <Link href="/las-vegas/shows" className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
+          <Link href="/las-vegas/shows" className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
             <h2 className="text-xl font-bold">Las Vegas shows</h2>
             <p className="mt-2 text-zinc-300">Jump into the live-performance lane for residencies, comedy, magic, and other show-night planning.</p>
           </Link>
         </section>
 
         {relationshipLinks.length ? (
-          <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
             <h2 className="text-2xl font-bold">Relationship pages from this hotel</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               {relationshipLinks.map((link) => (
@@ -218,7 +229,7 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
           </section>
         ) : null}
 
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
           <h2 className="text-2xl font-bold">Related hotel nodes</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {siblingHotels.map((candidate) => (

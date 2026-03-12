@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import PageActionBar from "@/app/components/dcc/PageActionBar";
 import {
   getVegasCasinoBySlug,
   VEGAS_CASINOS_CONFIG,
   type VegasCasinoTag,
 } from "@/src/data/vegas-casinos-config";
+import { buildMapsSearchUrl, buildOfficialSearchUrl, type PageAction } from "@/src/lib/page-actions";
 
 type Params = { slug: string };
 
@@ -146,15 +148,22 @@ export default async function VegasCasinoNodePage({ params }: { params: Promise<
       candidate.slug !== casino.slug &&
       (candidate.district === casino.district || candidate.tags.some((tag) => casino.tags.includes(tag)))
   ).slice(0, 6);
+  const actionBarActions: PageAction[] = [
+    { href: buildMapsSearchUrl(`${casino.name}, Las Vegas`), label: "Open in Maps", kind: "external" },
+    { href: buildOfficialSearchUrl(`${casino.name} Las Vegas`), label: "Find official site", kind: "external" },
+    ...(casino.hotelSlug ? [{ href: `/hotel/${casino.hotelSlug}`, label: "Linked hotel", kind: "internal" as const }] : []),
+    { href: "/las-vegas/shows", label: "Nearby shows", kind: "internal" },
+    ...(relationshipLinks[0] ? [{ href: relationshipLinks[0].href, label: relationshipLinks[0].title, kind: "internal" as const }] : []),
+  ];
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-white">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(217,119,6,0.14),_transparent_24%),radial-gradient(circle_at_88%_18%,_rgba(34,211,238,0.12),_transparent_18%),linear-gradient(180deg,_#111217_0%,_#090a0d_100%)] text-white">
       <JsonLd slug={slug} />
       <div className="mx-auto max-w-5xl px-6 py-16 space-y-8">
         <header className="space-y-4">
           <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">DCC Casino Node</p>
           <h1 className="text-4xl font-black tracking-tight md:text-6xl">{casino.name}</h1>
-          <p className="max-w-3xl text-zinc-300">{casino.summary}</p>
+          <p className="max-w-3xl text-lg text-zinc-200">{casino.summary}</p>
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">
             {casino.district.replace("-", " ")} · Last updated: March 2026
           </p>
@@ -166,18 +175,20 @@ export default async function VegasCasinoNodePage({ params }: { params: Promise<
           </section>
         ) : null}
 
+        <PageActionBar title={`Useful actions for ${casino.name}`} actions={actionBarActions} />
+
         <section className="grid gap-4 md:grid-cols-3">
-          <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
             <h2 className="text-lg font-semibold">District context</h2>
             <p className="mt-2 text-sm text-zinc-300">
-              This node sits inside the {casino.district.replace("-", " ")} layer and should be read with district, hotel, and nearby-attraction routing in mind.
+              {casino.name} works best when you think in district terms first: where the casino sits, what it connects to, and what a night around it actually looks like.
             </p>
           </article>
-          <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
             <h2 className="text-lg font-semibold">Anchors</h2>
             <p className="mt-2 text-sm text-zinc-300">{casino.anchors.join(" · ")}</p>
           </article>
-          <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
             <h2 className="text-lg font-semibold">Best fit</h2>
             <p className="mt-2 text-sm text-zinc-300">
               Use this page when the buyer starts from gaming, sportsbook, nightlife, or a specific resort casino rather than from general hotel search.
@@ -185,7 +196,7 @@ export default async function VegasCasinoNodePage({ params }: { params: Promise<
           </article>
         </section>
 
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
           <h2 className="text-2xl font-bold">Tags and routing overlays</h2>
           <div className="mt-4 flex flex-wrap gap-3">
             {casino.tags.map((tag) => {
@@ -204,32 +215,32 @@ export default async function VegasCasinoNodePage({ params }: { params: Promise<
         </section>
 
         <section className="grid gap-4 md:grid-cols-2">
-          <Link href="/las-vegas/casinos" className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
+          <Link href="/las-vegas/casinos" className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
             <h2 className="text-xl font-bold">Back to Las Vegas casinos</h2>
             <p className="mt-2 text-zinc-300">Return to the casino mesh hub and compare this property against Strip, Fremont, sportsbook, and nightlife intent.</p>
           </Link>
-          <Link href={districtTarget.href} className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
+          <Link href={districtTarget.href} className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
             <h2 className="text-xl font-bold">{districtTarget.label}</h2>
             <p className="mt-2 text-zinc-300">Jump back into the district hub when the gaming decision is really a location and neighborhood-routing choice.</p>
           </Link>
           {casino.hotelSlug ? (
-            <Link href={`/hotel/${casino.hotelSlug}`} className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
+            <Link href={`/hotel/${casino.hotelSlug}`} className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
               <h2 className="text-xl font-bold">Linked hotel node</h2>
               <p className="mt-2 text-zinc-300">Open the hotel page when the trip starts shifting from casino choice into room, pool, dining, and stay-quality tradeoffs.</p>
             </Link>
           ) : (
-            <Link href="/vegas" className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
+            <Link href="/vegas" className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
               <h2 className="text-xl font-bold">Back to Vegas hub</h2>
               <p className="mt-2 text-zinc-300">Return to the main city authority page for shows, sports, attractions, and broader trip planning.</p>
             </Link>
           )}
-          <Link href="/las-vegas/shows" className="rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10">
+          <Link href="/las-vegas/shows" className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
             <h2 className="text-xl font-bold">Las Vegas shows</h2>
             <p className="mt-2 text-zinc-300">Use the live-performance lane when the casino choice is tied to residencies, magic, comedy, or theater planning.</p>
           </Link>
         </section>
 
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
           <h2 className="text-2xl font-bold">Connected nodes</h2>
           <div className="mt-4 flex flex-wrap gap-3">
             {casino.nearbyLinks.map((link) => (
@@ -245,7 +256,7 @@ export default async function VegasCasinoNodePage({ params }: { params: Promise<
         </section>
 
         {relationshipLinks.length ? (
-          <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
             <h2 className="text-2xl font-bold">Relationship pages from this casino</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               {relationshipLinks.map((link) => (
@@ -258,7 +269,7 @@ export default async function VegasCasinoNodePage({ params }: { params: Promise<
           </section>
         ) : null}
 
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
           <h2 className="text-2xl font-bold">Related casino nodes</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {siblingCasinos.map((candidate) => (
