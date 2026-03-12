@@ -106,6 +106,12 @@ export default async function SportsGamePage({ params }: { params: Promise<Param
     .filter((team): team is NonNullable<typeof team> => Boolean(team));
   const venue = matchSportsVenueByName(event.venueName);
   const canonicalSlug = buildSeatGeekGameSlug(event);
+  const citySlug = teams[0]?.citySlug || venue?.citySlug || null;
+  const cityLabel = teams[0]?.cityName || venue?.cityName || event.city || "City";
+  const leagueLinks = Array.from(new Set(teams.map((team) => team.leagueSlug))).map((leagueSlug) => ({
+    href: `/sports/${leagueSlug}`,
+    label: `More ${leagueSlug.toUpperCase()} games`,
+  }));
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -196,6 +202,27 @@ export default async function SportsGamePage({ params }: { params: Promise<Param
                 <p className="mt-2 text-sm text-zinc-300">{venue.cityName}</p>
               </Link>
             ) : null}
+            {citySlug ? (
+              <Link
+                href={`/${citySlug === "las-vegas" ? "vegas" : citySlug}`}
+                className="rounded-2xl border border-white/10 bg-black/20 p-4 hover:bg-white/10"
+              >
+                <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">City hub</p>
+                <h3 className="mt-2 text-lg font-semibold">Explore {cityLabel}</h3>
+                <p className="mt-2 text-sm text-zinc-300">Return to the city node for sports, tours, and venue context.</p>
+              </Link>
+            ) : null}
+            {leagueLinks.map((league) => (
+              <Link
+                key={league.href}
+                href={league.href}
+                className="rounded-2xl border border-white/10 bg-black/20 p-4 hover:bg-white/10"
+              >
+                <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">League hub</p>
+                <h3 className="mt-2 text-lg font-semibold">{league.label}</h3>
+                <p className="mt-2 text-sm text-zinc-300">Browse more team and game nodes in this league cluster.</p>
+              </Link>
+            ))}
           </div>
         </section>
       </div>
