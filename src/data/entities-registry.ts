@@ -18,6 +18,18 @@ export type DccEntityType =
   | "beach"
   | "pool";
 
+export type DccAccessibilityInfo = {
+  wheelchairAccessible?: boolean;
+  accessibleEntrance?: boolean;
+  accessibleRestroom?: boolean;
+  accessibleParking?: boolean;
+  hearingAssistance?: boolean;
+  visualAssistance?: boolean;
+  brailleAvailable?: boolean;
+  serviceAnimalsAllowed?: boolean;
+  accessibilitySummary?: string;
+};
+
 export type DccEntityRegistryNode = {
   slug: string;
   entityType: DccEntityType;
@@ -28,6 +40,7 @@ export type DccEntityRegistryNode = {
   tags: string[];
   imageSet?: NodeImageSet;
   relatedEntitySlugs?: string[];
+  accessibilityInfo?: DccAccessibilityInfo;
   canonicalPath: string;
   updatedAt: string;
 };
@@ -47,6 +60,17 @@ const vegasHotelEntities: DccEntityRegistryNode[] = VEGAS_HOTELS_CONFIG.map((hot
   tags: hotel.tags,
   imageSet: { hero: hotel.heroImage, card: hotel.image, gallery: hotel.gallery },
   relatedEntitySlugs: [],
+  accessibilityInfo:
+    hotel.slug === "bellagio" || hotel.slug === "vdara" || hotel.slug === "park-mgm"
+      ? {
+          wheelchairAccessible: true,
+          accessibleEntrance: true,
+          accessibleRestroom: true,
+          accessibleParking: true,
+          serviceAnimalsAllowed: true,
+          accessibilitySummary: "Accessible entrance routes, guest-room access, and lower-friction resort movement make this one of the clearer Vegas hotel accessibility anchors.",
+        }
+      : undefined,
   canonicalPath: `/hotel/${hotel.slug}`,
   updatedAt: "2026-03-12",
 }));
@@ -75,6 +99,17 @@ const vegasAttractionEntities: DccEntityRegistryNode[] = VEGAS_ATTRACTIONS_CONFI
   tags: attraction.tags,
   imageSet: singleCardImage(attraction.image),
   relatedEntitySlugs: [],
+  accessibilityInfo:
+    attraction.slug === "sphere-las-vegas" || attraction.slug === "fountains-of-bellagio" || attraction.slug === "adventuredome"
+      ? {
+          wheelchairAccessible: true,
+          accessibleEntrance: true,
+          accessibleRestroom: true,
+          hearingAssistance: attraction.slug === "sphere-las-vegas",
+          serviceAnimalsAllowed: true,
+          accessibilitySummary: "Useful accessibility anchor for Vegas visitors who need clearer entrance, restroom, and on-site movement expectations before committing to the attraction.",
+        }
+      : undefined,
   canonicalPath: attraction.primaryHref,
   updatedAt: "2026-03-12",
 }));
@@ -112,6 +147,15 @@ const vegasPoolEntities: DccEntityRegistryNode[] = (CITY_POOLS_CONFIG["las-vegas
   summary: pool.summary,
   tags: [pool.type, "pool"],
   relatedEntitySlugs: pool.hotelHref ? [pool.hotelHref.replace("/hotel/", "")] : [],
+  accessibilityInfo:
+    pool.slug === "mandalay-bay-pools"
+      ? {
+          wheelchairAccessible: true,
+          accessibleEntrance: true,
+          accessibleRestroom: true,
+          accessibilitySummary: "One of the clearer Vegas pool anchors for mobility-conscious planning because the access question can be evaluated before the pool-day decision.",
+        }
+      : undefined,
   canonicalPath: "/las-vegas/pools",
   updatedAt: "2026-03-12",
 }));
@@ -124,6 +168,15 @@ const miamiBeachEntities: DccEntityRegistryNode[] = (CITY_BEACHES_CONFIG.miami?.
   summary: beach.summary,
   tags: beach.tags,
   relatedEntitySlugs: [],
+  accessibilityInfo:
+    beach.slug === "north-beach" || beach.slug === "hobie-beach"
+      ? {
+          wheelchairAccessible: true,
+          accessibleParking: true,
+          serviceAnimalsAllowed: true,
+          accessibilitySummary: "A stronger Miami accessibility beach candidate when easier parking, calmer routing, or simpler shoreline access matters more than South Beach intensity.",
+        }
+      : undefined,
   canonicalPath: "/miami/beaches",
   updatedAt: "2026-03-12",
 }));
@@ -162,6 +215,14 @@ const miamiHotelEntities: DccEntityRegistryNode[] = [
     summary:
       "A South Beach hotel node that fits travelers who want walkable beach access, easier family routing, and quick movement between the sand, Lincoln Road, and central Miami Beach dining.",
     tags: ["hotel", "south-beach", "family", "walkable", "beachfront", "pet-friendly"],
+    accessibilityInfo: {
+      wheelchairAccessible: true,
+      accessibleEntrance: true,
+      accessibleRestroom: true,
+      accessibleParking: true,
+      serviceAnimalsAllowed: true,
+      accessibilitySummary: "Useful Miami Beach accessibility stay anchor because it pairs beach access with a more straightforward full-service resort layout.",
+    },
     canonicalPath: "/hotel/loews-miami-beach",
     updatedAt: "2026-03-12",
   },
@@ -174,6 +235,13 @@ const miamiHotelEntities: DccEntityRegistryNode[] = [
     summary:
       "A premium South Beach base for buyers who want direct sand access, strong pool identity, and a more design-led beach stay without losing nightlife reach.",
     tags: ["hotel", "south-beach", "luxury", "beachfront", "pool", "pet-friendly"],
+    accessibilityInfo: {
+      wheelchairAccessible: true,
+      accessibleEntrance: true,
+      accessibleRestroom: true,
+      serviceAnimalsAllowed: true,
+      accessibilitySummary: "A premium South Beach accessibility option when beach access and resort amenities matter more than the quietest routing.",
+    },
     canonicalPath: "/hotel/1-hotel-south-beach",
     updatedAt: "2026-03-12",
   },
@@ -233,6 +301,14 @@ const orlandoHotelEntities: DccEntityRegistryNode[] = [
     summary:
       "A kid-friendly Orlando hotel node for families who want easier theme-park shuttles, big pool energy, and a less formal resort feel.",
     tags: ["hotel", "kid-friendly", "family", "pool", "theme-park", "value"],
+    accessibilityInfo: {
+      wheelchairAccessible: true,
+      accessibleEntrance: true,
+      accessibleRestroom: true,
+      accessibleParking: true,
+      serviceAnimalsAllowed: true,
+      accessibilitySummary: "A strong family accessibility hotel anchor because resort movement is easier to understand before locking in the park plan.",
+    },
     canonicalPath: "/hotel/cabana-bay-beach-resort",
     updatedAt: "2026-03-12",
   },
@@ -244,6 +320,14 @@ const orlandoHotelEntities: DccEntityRegistryNode[] = [
     summary:
       "A family-oriented Orlando resort node that works well for buyers who want a calmer full-service base, pool time, and easier routing into Disney-area days.",
     tags: ["hotel", "kid-friendly", "family", "resort", "pool", "bonnet-creek"],
+    accessibilityInfo: {
+      wheelchairAccessible: true,
+      accessibleEntrance: true,
+      accessibleRestroom: true,
+      accessibleParking: true,
+      serviceAnimalsAllowed: true,
+      accessibilitySummary: "A calmer Orlando resort choice for accessibility-first families who want easier routing between hotel downtime and Disney-area movement.",
+    },
     canonicalPath: "/hotel/signia-bonnet-creek",
     updatedAt: "2026-03-12",
   },

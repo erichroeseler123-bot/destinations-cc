@@ -39,6 +39,9 @@ export default function OverlayEntityGridSection({ eyebrow, title, intro, entiti
               </p>
               <h3 className="text-lg font-semibold text-white">{entity.title}</h3>
               <p className="text-sm text-zinc-300">{entity.summary}</p>
+              {entity.accessibilityInfo?.accessibilitySummary ? (
+                <p className="text-sm text-cyan-100/85">{entity.accessibilityInfo.accessibilitySummary}</p>
+              ) : null}
               <div className="flex flex-wrap gap-2">
                 {entity.tags.slice(0, 3).map((tag) => (
                   <span
@@ -48,6 +51,16 @@ export default function OverlayEntityGridSection({ eyebrow, title, intro, entiti
                     {tag.replace(/-/g, " ")}
                   </span>
                 ))}
+                {entity.accessibilityInfo?.wheelchairAccessible ? (
+                  <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-cyan-100">
+                    wheelchair access
+                  </span>
+                ) : null}
+                {entity.accessibilityInfo?.serviceAnimalsAllowed ? (
+                  <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-cyan-100">
+                    service animals
+                  </span>
+                ) : null}
               </div>
             </div>
           </Link>

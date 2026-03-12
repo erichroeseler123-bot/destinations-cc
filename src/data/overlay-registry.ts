@@ -1,4 +1,5 @@
 export type DccOverlayType =
+  | "accessibility"
   | "pet-friendly"
   | "kid-friendly"
   | "luxury"
@@ -21,6 +22,48 @@ export type DccOverlayRegistryNode = {
 };
 
 export const OVERLAY_REGISTRY: DccOverlayRegistryNode[] = [
+  {
+    slug: "accessibility-las-vegas",
+    citySlug: "las-vegas",
+    overlayType: "accessibility",
+    entityTypes: ["hotel", "attraction", "pool"],
+    resultSlugs: ["bellagio", "vdara", "park-mgm", "sphere-las-vegas", "fountains-of-bellagio", "adventuredome", "mandalay-bay-pools"],
+    canonicalPath: "/accessibility/las-vegas",
+    summary: "Accessibility-first Las Vegas overlay for hotel, attraction, and pool routing where entrance access, restrooms, mobility flow, and service-animal logistics matter early in the planning process.",
+    relatedLinks: [
+      { href: "/vegas", label: "Vegas hub" },
+      { href: "/las-vegas/hotels", label: "Las Vegas hotels" },
+      { href: "/las-vegas/things-to-do", label: "Las Vegas things to do" },
+    ],
+  },
+  {
+    slug: "accessibility-miami",
+    citySlug: "miami",
+    overlayType: "accessibility",
+    entityTypes: ["hotel", "beach"],
+    resultSlugs: ["loews-miami-beach", "1-hotel-south-beach", "north-beach", "hobie-beach"],
+    canonicalPath: "/accessibility/miami",
+    summary: "Accessibility-first Miami overlay for stay and shoreline planning, with a bias toward easier routing, beach-day practicality, and lower-friction mobility choices.",
+    relatedLinks: [
+      { href: "/miami", label: "Miami hub" },
+      { href: "/miami/beaches", label: "Miami beaches" },
+      { href: "/pet-friendly/miami", label: "Pet-friendly Miami" },
+    ],
+  },
+  {
+    slug: "accessibility-orlando",
+    citySlug: "orlando",
+    overlayType: "accessibility",
+    entityTypes: ["hotel", "attraction"],
+    resultSlugs: ["cabana-bay-beach-resort", "signia-bonnet-creek", "icon-park-orlando", "sea-life-orlando-aquarium"],
+    canonicalPath: "/accessibility/orlando",
+    summary: "Accessibility-first Orlando overlay built for families and travelers who need easier movement, clearer attraction access, and less guesswork before choosing a base.",
+    relatedLinks: [
+      { href: "/orlando", label: "Orlando hub" },
+      { href: "/kid-friendly/orlando", label: "Kid-friendly Orlando" },
+      { href: "/orlando/attractions", label: "Orlando attractions" },
+    ],
+  },
   {
     slug: "pet-friendly-las-vegas",
     citySlug: "las-vegas",
