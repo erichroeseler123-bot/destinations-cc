@@ -1356,5 +1356,113 @@
       "description": "Perfect for first-timers: history, architecture, and the best streets.",
       "query": "walking tour"
     }
+  ],
+  "juneau": [
+    {
+      "title": "Juneau City Highlights Tour",
+      "description": "A quick way to see the best of Juneau with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "ketchikan": [
+    {
+      "title": "Ketchikan City Highlights Tour",
+      "description": "A quick way to see the best of Ketchikan with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "vegas": [
+    {
+      "title": "Vegas City Highlights Tour",
+      "description": "A quick way to see the best of Vegas with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "sitka": [
+    {
+      "title": "Sitka City Highlights Tour",
+      "description": "A quick way to see the best of Sitka with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "skagway": [
+    {
+      "title": "Skagway City Highlights Tour",
+      "description": "A quick way to see the best of Skagway with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "washington-dc": [
+    {
+      "title": "Washington, D.C. City Highlights Tour",
+      "description": "A fast way to cover the National Mall, monuments, and core city layout with a guide.",
+      "query": "washington dc city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Monuments and Memorials Night Tour",
+      "description": "A strong sightseeing lane for visitors who want the classic D.C. route after dark.",
+      "query": "washington dc monuments night tour"
+    },
+    {
+      "title": "Museum and Capitol Walking Tour",
+      "description": "Use this lane for museum-first and civic-core discovery with lower-friction routing.",
+      "query": "washington dc museum capitol walking tour"
+    }
   ]
 }

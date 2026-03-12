@@ -1,6 +1,5 @@
 {
   "anaheim": "anaheim-guide",
-  "ann-arbor": "ann-arbor-guide",
   "atlanta": "atlanta-guide",
   "augusta": "augusta-guide",
   "austin": "austin-guide",
@@ -77,5 +76,6 @@
   "tacoma": "tacoma-guide",
   "tampa": "tampa-guide",
   "tempe": "tempe-guide",
+  "washington-dc": "washington-dc-guide",
   "west-palm-beach": "west-palm-beach-guide"
 }
