@@ -4,6 +4,13 @@ import {
   type VegasRelationshipPath,
   type VegasRelationshipResultType,
 } from "@/src/data/vegas-relationships";
+import { getCityRegistryNode } from "@/src/data/cities-registry";
+import {
+  ENTITIES_REGISTRY,
+  getEntityRegistryNode,
+  type DccEntityRegistryNode,
+  type DccEntityType,
+} from "@/src/data/entities-registry";
 import {
   getVegasAttractionBySlug,
   VEGAS_ATTRACTIONS_CONFIG,
@@ -70,10 +77,38 @@ export type DccRelationshipAnchor = {
 
 type RelationshipEntity = VegasHotel | VegasCasino | VegasAttraction;
 
-export const RELATIONSHIP_REGISTRY: DccRelationshipRegistryNode[] = VEGAS_RELATIONSHIP_PAGES.map((page) => ({
+const vegasRelationshipRegistryNodes: DccRelationshipRegistryNode[] = VEGAS_RELATIONSHIP_PAGES.map((page) => ({
   citySlug: "las-vegas",
   ...page,
 }));
+
+export const RELATIONSHIP_REGISTRY: DccRelationshipRegistryNode[] = [
+  ...vegasRelationshipRegistryNodes,
+  {
+    slug: "south-beach",
+    path: "attractions-near",
+    citySlug: "miami",
+    title: "Beaches and waterfront spots near South Beach",
+    summary:
+      "This page captures the nearby-waterfront version of South Beach planning: adjacent beach zones, quieter stretches, and beach-day alternatives when the trip is already anchored on Miami’s best-known shoreline.",
+    anchorType: "beach",
+    anchorSlug: "south-beach",
+    resultType: "beach",
+    resultSlugs: ["mid-beach", "north-beach", "surfside", "hobie-beach", "haulover-beach"],
+    guidance: [
+      { title: "Best for first-time Miami trips", body: "Use this when South Beach is already the anchor and the next question is where else to go without losing the beach-led shape of the trip." },
+      { title: "Best for calmer alternatives", body: "These nearby nodes help when South Beach feels too nightlife-heavy and the buyer wants quieter family or scenic beach routing." },
+      { title: "Best for split beach days", body: "This works when the itinerary needs one iconic beach block plus one lighter, more local, or more activity-friendly waterfront block." },
+    ],
+    relatedLinks: [
+      { href: "/miami/beaches", label: "Miami beaches" },
+      { href: "/miami", label: "Miami hub" },
+      { href: "/miami/tours", label: "Miami tours" },
+    ],
+    overlayTags: ["nightlife", "scenic", "family"],
+    districtNote: "South Beach should behave like a district anchor inside the Miami graph, not just a single beach mention on the city page.",
+  },
+];
 
 export function getRelationshipRegistryNode(path: DccRelationshipPath, slug: string) {
   return RELATIONSHIP_REGISTRY.find((page) => page.path === path && page.slug === slug) ?? null;
@@ -81,6 +116,41 @@ export function getRelationshipRegistryNode(path: DccRelationshipPath, slug: str
 
 export function getRelationshipRegistryNodesByCity(citySlug: string) {
   return RELATIONSHIP_REGISTRY.filter((page) => page.citySlug === citySlug);
+}
+
+function mapRelationshipTypeToEntityType(resultType: DccRelationshipResultType): DccEntityType | null {
+  switch (resultType) {
+    case "hotel":
+    case "casino":
+    case "venue":
+    case "attraction":
+    case "restaurant":
+    case "pool":
+    case "beach":
+      return resultType;
+    default:
+      return null;
+  }
+}
+
+export function getResolvedEntityRelationshipPage(path: DccRelationshipPath, slug: string): {
+  page: DccRelationshipRegistryNode;
+  city: ReturnType<typeof getCityRegistryNode>;
+  anchor: DccEntityRegistryNode;
+  results: DccEntityRegistryNode[];
+} | null {
+  const page = getRelationshipRegistryNode(path, slug);
+  if (!page) return null;
+
+  const anchor = getEntityRegistryNode(page.anchorSlug, mapRelationshipTypeToEntityType(page.anchorType as DccRelationshipResultType) ?? undefined);
+  const city = getCityRegistryNode(page.citySlug);
+  if (!anchor || !city) return null;
+
+  const results = page.resultSlugs
+    .map((resultSlug) => getEntityRegistryNode(resultSlug, mapRelationshipTypeToEntityType(page.resultType) ?? undefined))
+    .filter((result): result is DccEntityRegistryNode => Boolean(result));
+
+  return { page, city, anchor, results };
 }
 
 function resolveVegasAnchor(anchorType: DccRelationshipAnchorType, slug: string): DccRelationshipAnchor | null {
@@ -187,4 +257,10 @@ export function getRelationshipFallbackAttractions(limit = 6) {
 
 export function getRelationshipFallbackCasinos(limit = 6) {
   return VEGAS_CASINOS_CONFIG.slice(0, limit);
+}
+
+export function getRelationshipFallbackEntities(citySlug: string, resultType: DccRelationshipResultType, limit = 6) {
+  const entityType = mapRelationshipTypeToEntityType(resultType);
+  if (!entityType) return [];
+  return ENTITIES_REGISTRY.filter((entity) => entity.citySlug === citySlug && entity.entityType === entityType).slice(0, limit);
 }
