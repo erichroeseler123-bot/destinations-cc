@@ -14,6 +14,7 @@ import { getCityMoneyLane } from "@/src/data/city-money-lanes";
 
 const PAGE_URL = "https://destinationcommandcenter.com/vegas";
 const VEGAS = CITY_AUTHORITY_CONFIG["las-vegas"];
+const LAST_UPDATED = "2026-03-11";
 
 const QUICK_NAV = [
   { href: "#top-tours", label: "Top Tours" },
@@ -96,6 +97,7 @@ function JsonLd() {
         name: "Las Vegas Travel Guide",
         description:
           "Las Vegas planning guide with bookable tours, show-night context, nightlife routing, and practical attraction sections.",
+        dateModified: LAST_UPDATED,
       },
       {
         "@type": "TouristDestination",
@@ -113,6 +115,13 @@ function JsonLd() {
             text: item.a,
           },
         })),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Cities", item: "https://destinationcommandcenter.com/cities" },
+          { "@type": "ListItem", position: 2, name: "Las Vegas", item: PAGE_URL },
+        ],
       },
     ],
   };
@@ -165,6 +174,7 @@ export default async function VegasPage() {
                   Use DCC to structure Vegas around what actually converts and what actually fits:
                   Strip nights, Fremont contrasts, Hoover Dam and canyon day trips, and bookable tour inventory.
                 </p>
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Last updated: March 2026</p>
               </div>
 
               <div className="flex flex-wrap gap-3">
@@ -226,6 +236,29 @@ export default async function VegasPage() {
             fallbacks={fallbackTours}
           />
         </div>
+
+        <section className="grid gap-4 md:grid-cols-2">
+          <Link
+            href="/las-vegas/best-day-trips"
+            className="rounded-3xl border border-cyan-400/20 bg-cyan-500/10 p-6 shadow-[0_16px_50px_rgba(0,0,0,0.35)] hover:bg-cyan-500/15"
+          >
+            <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Best Of Spoke</p>
+            <h2 className="mt-3 text-2xl font-bold">Best day trips from Las Vegas</h2>
+            <p className="mt-2 text-zinc-200">
+              A cleaner commercial page for Grand Canyon, Hoover Dam, Antelope Canyon, and desert route buyers.
+            </p>
+          </Link>
+          <Link
+            href="/las-vegas/helicopter-tours"
+            className="rounded-3xl border border-cyan-400/20 bg-cyan-500/10 p-6 shadow-[0_16px_50px_rgba(0,0,0,0.35)] hover:bg-cyan-500/15"
+          >
+            <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Activity Hub</p>
+            <h2 className="mt-3 text-2xl font-bold">Las Vegas helicopter tours</h2>
+            <p className="mt-2 text-zinc-200">
+              A dedicated landing page for Strip flights, Grand Canyon helicopter products, and premium aerial inventory.
+            </p>
+          </Link>
+        </section>
 
         {adventureLane ? <AdventureLaneSection config={adventureLane} /> : null}
 
@@ -405,6 +438,16 @@ export default async function VegasPage() {
                 <p className="mt-2 text-sm text-zinc-300">{item.a}</p>
               </article>
             ))}
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Other popular city nodes</h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Link href="/new-orleans" className="rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-zinc-200 hover:bg-white/10">New Orleans</Link>
+            <Link href="/miami" className="rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-zinc-200 hover:bg-white/10">Miami</Link>
+            <Link href="/orlando" className="rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-zinc-200 hover:bg-white/10">Orlando</Link>
+            <Link href="/alaska" className="rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-zinc-200 hover:bg-white/10">Alaska</Link>
           </div>
         </section>
 
