@@ -4,14 +4,14 @@ import { notFound } from "next/navigation";
 import VegasEntityGridSection from "@/app/components/dcc/VegasEntityGridSection";
 import {
   getResolvedAttractionsNearPage,
-  getVegasRelationshipFallbackAttractions,
-  listAttractionsNearSlugs,
-} from "@/src/data/vegas-relationships";
+  getRelationshipFallbackAttractions,
+  listRelationshipSlugs,
+} from "@/src/data/relationship-registry";
 
 type Params = { slug: string };
 
 export async function generateStaticParams() {
-  return listAttractionsNearSlugs().map((slug) => ({ slug }));
+  return listRelationshipSlugs("attractions-near").map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
@@ -72,7 +72,7 @@ export default async function AttractionsNearPage({ params }: { params: Promise<
   const data = getResolvedAttractionsNearPage(slug);
   if (!data) notFound();
 
-  const attractions = data.results.length ? data.results : getVegasRelationshipFallbackAttractions();
+  const attractions = data.results.length ? data.results : getRelationshipFallbackAttractions();
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">

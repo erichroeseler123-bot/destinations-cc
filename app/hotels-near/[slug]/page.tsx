@@ -4,14 +4,14 @@ import { notFound } from "next/navigation";
 import VegasHotelGridSection from "@/app/components/dcc/VegasHotelGridSection";
 import {
   getResolvedHotelsNearPage,
-  getVegasRelationshipFallbackHotels,
-  listHotelsNearSlugs,
-} from "@/src/data/vegas-relationships";
+  getRelationshipFallbackHotels,
+  listRelationshipSlugs,
+} from "@/src/data/relationship-registry";
 
 type Params = { slug: string };
 
 export async function generateStaticParams() {
-  return listHotelsNearSlugs().map((slug) => ({ slug }));
+  return listRelationshipSlugs("hotels-near").map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
@@ -73,7 +73,7 @@ export default async function HotelsNearPage({ params }: { params: Promise<Param
   const data = getResolvedHotelsNearPage(slug);
   if (!data) notFound();
 
-  const hotels = data.results.length ? data.results : getVegasRelationshipFallbackHotels();
+  const hotels = data.results.length ? data.results : getRelationshipFallbackHotels();
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
