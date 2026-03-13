@@ -23,7 +23,7 @@ const PRIMARY_NAV: NavItem[] = [
   { href: "/ports", label: "Ports & Hubs", description: "Cruise ports, logistics anchors, and regional authority pages." },
   { href: "/tours", label: "Tours & Activities", description: "Bookable tours, attractions, and experience lanes." },
   { href: "/authority", label: "Route Intel", description: "Routing, constraints, staging, and reality checks." },
-  { href: "/#trend-watch", label: "Trend Watch", description: "Live travel signals, graph pulse, and event monitoring." },
+  { href: "/alerts", label: "Trend Watch", description: "Live travel signals, graph pulse, and event monitoring." },
 ];
 
 export default function SiteHeader({ cities }: { cities: HeaderCity[] }) {
@@ -71,7 +71,6 @@ export default function SiteHeader({ cities }: { cities: HeaderCity[] }) {
           {PRIMARY_NAV.map((item) => {
             const isActive =
               item.href !== "/" &&
-              item.href !== "/#trend-watch" &&
               pathname?.startsWith(item.href);
             return (
               <Link

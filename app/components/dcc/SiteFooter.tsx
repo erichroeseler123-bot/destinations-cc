@@ -5,7 +5,7 @@ const FOOTER_LINKS = [
   { href: "/ports", label: "Ports & Hubs" },
   { href: "/tours", label: "Tours & Activities" },
   { href: "/authority", label: "Route Intel" },
-  { href: "/#trend-watch", label: "Trend Watch" },
+  { href: "/alerts", label: "Trend Watch" },
 ];
 
 export default function SiteFooter() {

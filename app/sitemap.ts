@@ -164,6 +164,7 @@ function rankPath(
     "/national-parks",
     "/alaska",
     "/authority",
+    "/alerts",
     "/tours",
     "/ports",
     "/cities",
