@@ -280,6 +280,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/nashville",
     "/alaska",
     "/cruises",
+    "/cruises/tendering",
     "/summerlin",
     "/tours",
     "/ports",
