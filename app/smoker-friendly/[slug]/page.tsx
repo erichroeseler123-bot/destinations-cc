@@ -2,22 +2,22 @@ import { notFound } from "next/navigation";
 import OverlayPageTemplate, { buildOverlayMetadata } from "@/app/components/dcc/OverlayPageTemplate";
 import { getOverlayPageData, getOverlayStaticParams } from "@/src/lib/overlay-pages";
 
-type Params = { city: string };
+type Params = { slug: string };
 
 export function generateStaticParams() {
-  return getOverlayStaticParams("kid-friendly");
+  return getOverlayStaticParams("smoker-friendly").map(({ city }) => ({ slug: city }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }) {
-  const { city } = await params;
-  const data = getOverlayPageData("kid-friendly", city);
+  const { slug } = await params;
+  const data = getOverlayPageData("smoker-friendly", slug);
   if (!data) return {};
   return buildOverlayMetadata(data.city, data.overlay);
 }
 
-export default async function KidFriendlyOverlayPage({ params }: { params: Promise<Params> }) {
-  const { city } = await params;
-  const data = getOverlayPageData("kid-friendly", city);
+export default async function SmokerFriendlyOverlayPage({ params }: { params: Promise<Params> }) {
+  const { slug } = await params;
+  const data = getOverlayPageData("smoker-friendly", slug);
   if (!data) notFound();
 
   return <OverlayPageTemplate city={data.city} overlay={data.overlay} entities={data.entities} />;
