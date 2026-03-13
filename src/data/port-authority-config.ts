@@ -4,6 +4,7 @@ export type PortAuthorityLink = {
 };
 
 import type { RealityEvidenceItem } from "@/app/components/dcc/RealityEvidenceSection";
+import type { TripPlanningSnapshotItem } from "@/app/components/dcc/TripPlanningSnapshot";
 
 export type PortExcursionCategory = {
   label: string;
@@ -17,6 +18,7 @@ export type PortAuthorityConfig = {
   heroTitle?: string;
   summary: string;
   cruiseRelevance: string;
+  tripPlanningSnapshot?: TripPlanningSnapshotItem[];
   tenderDock: string;
   excursionLength: string;
   nearbyTown: string;
@@ -190,6 +192,14 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
       "A high-volume Bahamas port where travelers split between resort passes, city sightseeing, beach time, boat trips, and short transfer-friendly excursions.",
     cruiseRelevance:
       "Nassau works as a short-call cruise port with broad excursion inventory and high independent traveler traffic.",
+    tripPlanningSnapshot: [
+      { label: "Best time to go ashore", value: "Earlier or mid-call, before downtown crowding and late return stacks up." },
+      { label: "Typical excursion window", value: "2 to 5 hours for beach, boat, or resort-pass plans." },
+      { label: "Good for", value: "First-time cruisers • Beach time • Short independent days" },
+      { label: "Popular ways to spend the call", value: "Beach break • Resort pass • Boat trip • Short city tour" },
+      { label: "Nearby highlights", value: "Paradise Island • Cable Beach • Junkanoo Beach" },
+      { label: "Main planning risk", value: "Multi-ship crowding and return-time compression." },
+    ],
     tenderDock: "Dock port with dense pedestrian and transfer activity near the cruise zone.",
     excursionLength: "2 to 5 hours is the common excursion band.",
     nearbyTown: "Downtown Nassau is the immediate cruise gateway.",
@@ -274,6 +284,14 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
       "One of the Caribbean's most established cruise ports, built around reef excursions, beach clubs, jeep outings, and ferry-linked mainland add-ons.",
     cruiseRelevance:
       "Cozumel is a shore excursion heavyweight with strong snorkeling, diving, beach, and private island touring demand.",
+    tripPlanningSnapshot: [
+      { label: "Best time to go ashore", value: "Early if you want reef or beach time before winds and taxi queues build." },
+      { label: "Typical excursion window", value: "3 to 6 hours for reef, beach club, or island-driving plans." },
+      { label: "Good for", value: "Snorkeling • Beach clubs • Independent touring • Jeep days" },
+      { label: "Popular ways to spend the call", value: "Reef snorkel • Beach club • Jeep tour • Private driver" },
+      { label: "Nearby highlights", value: "San Miguel • Chankanaab • Punta Sur" },
+      { label: "Main planning risk", value: "Pier location and marine conditions can change the feel of the day." },
+    ],
     tenderDock: "Dock port with multiple cruise piers and high excursion throughput.",
     excursionLength: "3 to 6 hours is the standard planning window.",
     nearbyTown: "San Miguel is the main urban anchor near the port zone.",
@@ -358,6 +376,14 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
       "A flagship Alaska cruise stop known for whale watching, glacier access, floatplane demand, and shore days that need weather and timing discipline.",
     cruiseRelevance:
       "Juneau is one of the highest-intent Alaska ports for premium wildlife, glacier, and flightseeing excursions.",
+    tripPlanningSnapshot: [
+      { label: "Best time to go ashore", value: "As early as your booked excursion requires, especially for wildlife or glacier inventory." },
+      { label: "Typical excursion window", value: "3 to 6 hours for whales, Mendenhall, or flightseeing." },
+      { label: "Good for", value: "Wildlife • Glacier access • Premium Alaska outings" },
+      { label: "Popular ways to spend the call", value: "Whale watch • Mendenhall combo • Flightseeing • Salmon/wildlife tour" },
+      { label: "Nearby highlights", value: "Downtown Juneau • Mendenhall • Auke Bay" },
+      { label: "Main planning risk", value: "Weather and sold-out premium inventory reshape the day quickly." },
+    ],
     tenderDock: "Primarily dockside cruise handling with organized transfer-heavy touring.",
     excursionLength: "3 to 6 hours is the core Alaska booking range.",
     nearbyTown: "Downtown Juneau is the immediate cruise gateway.",
@@ -439,6 +465,14 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
       "A major cruise embarkation hub where terminal choice, traffic timing, staging discipline, and same-day transfer planning matter more than sightseeing.",
     cruiseRelevance:
       "PortMiami is a logistics-heavy cruise gateway. Travelers use it for embarkation flow, transfer timing, airport routing, hotel staging, and pre-cruise buffer decisions.",
+    tripPlanningSnapshot: [
+      { label: "Best arrival strategy", value: "Stage the night before when possible and leave conservative morning buffer." },
+      { label: "Typical port use", value: "Embarkation, transfer routing, and pre-cruise staging rather than a sightseeing stop." },
+      { label: "Transportation options", value: "Rideshare • Taxi • Cruise shuttle • Hotel transfer" },
+      { label: "Distance from South Beach", value: "Roughly 15 minutes, traffic dependent." },
+      { label: "Nearby highlights", value: "Brickell • Bayside • Miami Beach" },
+      { label: "Main planning risk", value: "Terminal assignment plus traffic can create far more friction than expected." },
+    ],
     tenderDock: "Major dockside embarkation terminals with lane-specific traffic and staging pressure.",
     excursionLength: "PortMiami is usually about embarkation or disembarkation logistics, not a classic shore-excursion call.",
     nearbyTown: "Downtown Miami, Brickell, and Miami Beach are the main pre- and post-cruise anchors.",
@@ -523,6 +557,14 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
       "An Alaska port with strong wildlife and adventure demand, known for floatplanes, bears, salmon-season interest, and compact town access near the cruise zone.",
     cruiseRelevance:
       "Ketchikan is a high-conversion Alaska stop for travelers choosing between wildlife, flightseeing, lumberjack-style attractions, and fishing experiences.",
+    tripPlanningSnapshot: [
+      { label: "Best time to go ashore", value: "Early if you are on weather-sensitive premium inventory like Misty Fjords or flightseeing." },
+      { label: "Typical excursion window", value: "2.5 to 5 hours for wildlife, fishing, or scenic products." },
+      { label: "Good for", value: "Floatplanes • Wildlife • Fishing • Compact town wandering" },
+      { label: "Popular ways to spend the call", value: "Misty Fjords • Bear tour • Fishing • Creek Street walk" },
+      { label: "Nearby highlights", value: "Creek Street • Misty Fjords • Saxman" },
+      { label: "Main planning risk", value: "Berth pattern and weather can change how easy the day feels." },
+    ],
     tenderDock: "Primarily dockside cruise handling with efficient town access.",
     excursionLength: "2.5 to 5 hours is the most common range.",
     nearbyTown: "Downtown Ketchikan and Creek Street are the core visitor zones.",
@@ -601,6 +643,14 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
       "A classic Alaska cruise stop centered on White Pass route demand, Gold Rush history, rail and scenic touring, and structured half-day excursion planning.",
     cruiseRelevance:
       "Skagway is one of the clearest excursion-led Alaska ports, with rail and scenic corridor products driving much of the demand.",
+    tripPlanningSnapshot: [
+      { label: "Best time to go ashore", value: "Early if you are holding White Pass rail or combo inventory on a big ship day." },
+      { label: "Typical excursion window", value: "3 to 5 hours for rail, coach, or history-heavy routes." },
+      { label: "Good for", value: "Scenic rail • History • Light walking after tours" },
+      { label: "Popular ways to spend the call", value: "White Pass rail • Scenic coach • Gold Rush history • Light hiking" },
+      { label: "Nearby highlights", value: "Historic downtown • White Pass corridor • Klondike points" },
+      { label: "Main planning risk", value: "Rail sellout pressure and weather-sensitive visibility." },
+    ],
     tenderDock: "Dock port with easy access into the small historic core.",
     excursionLength: "3 to 5 hours covers most cruise-day bookings.",
     nearbyTown: "Historic downtown Skagway is the immediate port zone.",

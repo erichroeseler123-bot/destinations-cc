@@ -12,6 +12,14 @@ export const LAS_VEGAS_STRIP_PILLAR: AttractionPillarConfig = {
   gridDescription:
     "These links focus on the Strip’s strongest commercial categories: flagship attractions, resort experiences, nightlife, observation products, and short-format sightseeing.",
   schemaType: "TouristAttraction",
+  tripPlanningSnapshot: [
+    { label: "Best time to explore", value: "Late afternoon into evening when the corridor is active and heat eases." },
+    { label: "Typical visit style", value: "Cluster-based blocks, not one uninterrupted all-day walk." },
+    { label: "Main transportation modes", value: "Walking • Rideshare • Taxi • Monorail-style transfers" },
+    { label: "Popular ways to experience it", value: "Resort hopping • Attractions • Nightlife • Shows" },
+    { label: "Good for", value: "First-time Vegas • Couples • Celebration trips • Night routing" },
+    { label: "Nearby highlights", value: "Bellagio • Caesars Palace • Sphere • High Roller" },
+  ],
   highlights: [
     {
       title: "Best for first-time Vegas planning",

@@ -12,6 +12,14 @@ export const FREMONT_STREET_PILLAR: AttractionPillarConfig = {
   gridDescription:
     "These links focus on downtown Vegas booking behavior: Fremont nightlife, old-Vegas attractions, bar crawls, and nearby experience inventory.",
   schemaType: "CollectionPage",
+  tripPlanningSnapshot: [
+    { label: "Best time to go", value: "Evening into late night when canopy shows, bars, and casino energy are at full strength." },
+    { label: "Typical visit style", value: "Shorter walking loops with casino hopping, bars, and old-Vegas attractions." },
+    { label: "Good for", value: "Nightlife • Casual groups • Lower-cost casino energy • Old Vegas contrast" },
+    { label: "Popular ways to experience it", value: "Canopy walk • Bar crawl • Casino hop • Downtown hotel stay" },
+    { label: "Nearby highlights", value: "Golden Nugget • Circa • SlotZilla • Neon Museum" },
+    { label: "Main planning risk", value: "Crowding, noise, and nightlife spillover intensify quickly after dark." },
+  ],
   highlights: [
     { title: "Best for downtown energy", body: "Fremont works for buyers who want old-Vegas contrast, shorter walking loops, and lower-cost casino energy than the Strip." },
     { title: "Best for nightlife spillover", body: "Downtown supports bar crawls, canopy spectacle, casino hopping, and late-night routing without needing a full Strip commitment." },

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import PoweredByViator from "@/app/components/dcc/PoweredByViator";
 import RealityEvidenceSection from "@/app/components/dcc/RealityEvidenceSection";
+import TripPlanningSnapshot from "@/app/components/dcc/TripPlanningSnapshot";
 import type { ResolvedPortAuthorityConfig } from "@/src/data/port-authority-config";
 import { buildPortExcursionHref, buildPortTrackedHref } from "@/src/lib/port-analytics";
 
@@ -84,6 +85,14 @@ export default function PortAuthorityTemplate({
           </div>
         </div>
       </header>
+
+      {config.tripPlanningSnapshot?.length ? (
+        <TripPlanningSnapshot
+          title={`${plainPortName} planning snapshot`}
+          intro={`Quick context for how ${plainPortName} usually works on a real cruise day before you choose transportation or excursion lanes.`}
+          items={config.tripPlanningSnapshot}
+        />
+      ) : null}
 
       <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">

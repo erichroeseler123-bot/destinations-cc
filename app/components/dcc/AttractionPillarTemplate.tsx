@@ -3,6 +3,7 @@ import Link from "next/link";
 import AuthorityMediaStrip from "@/app/components/dcc/AuthorityMediaStrip";
 import PageActionBar from "@/app/components/dcc/PageActionBar";
 import RealityEvidenceSection, { type RealityEvidenceItem } from "@/app/components/dcc/RealityEvidenceSection";
+import TripPlanningSnapshot, { type TripPlanningSnapshotItem } from "@/app/components/dcc/TripPlanningSnapshot";
 import ViatorTourGrid from "@/app/components/dcc/ViatorTourGrid";
 import type { ViatorActionProduct } from "@/lib/dcc/action/viator";
 import type { NodeImageAsset } from "@/src/lib/media-resolver";
@@ -20,6 +21,7 @@ export type AttractionPillarConfig = {
   schemaType: "TouristAttraction" | "LandmarksOrHistoricalBuildings" | "CollectionPage";
   heroImage?: NodeImageAsset;
   gallery?: NodeImageAsset[];
+  tripPlanningSnapshot?: TripPlanningSnapshotItem[];
   highlights: Array<{ title: string; body: string }>;
   realityCheckSummary?: string[];
   realityCheckEvidence?: RealityEvidenceItem[];
@@ -92,6 +94,14 @@ export default function AttractionPillarTemplate({ config }: { config: Attractio
         ) : null}
 
         <PageActionBar title={`Useful actions for ${config.placeName}`} actions={actionBarActions} />
+
+        {config.tripPlanningSnapshot?.length ? (
+          <TripPlanningSnapshot
+            title={`${config.placeName} planning snapshot`}
+            intro={`Use this quick snapshot to judge timing, trip fit, and whether ${config.placeName} belongs in the plan before you compare products.`}
+            items={config.tripPlanningSnapshot}
+          />
+        ) : null}
 
         <section className="grid gap-4 md:grid-cols-3">
           {config.highlights.map((highlight) => (

@@ -21,6 +21,14 @@ export const HOOVER_DAM_PILLAR: AttractionPillarConfig = {
     buildLocalImageAsset("/images/hoover-dam/visitor-route.svg", "Hoover Dam visitor route concept artwork"),
     buildLocalImageAsset("/images/hoover-dam/aerial.svg", "Hoover Dam aerial tour concept artwork"),
   ],
+  tripPlanningSnapshot: [
+    { label: "Best time to go", value: "Earlier in the day, before parking and desert heat intensify." },
+    { label: "Typical visit time", value: "2 to 4 hours for focused Hoover-only routes." },
+    { label: "Distance from Las Vegas", value: "About 45 minutes to 1 hour depending on traffic and stop pattern." },
+    { label: "Popular ways to visit", value: "Express tour • Combo day trip • Self-drive • Helicopter add-on" },
+    { label: "Good for", value: "History • Engineering interest • Short desert day trips" },
+    { label: "Nearby highlights", value: "Lake Mead • Boulder City • Grand Canyon combo routes" },
+  ],
   highlights: [
     {
       title: "Best for one-day efficiency",

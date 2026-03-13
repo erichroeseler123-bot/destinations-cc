@@ -21,6 +21,14 @@ export const GRAND_CANYON_PILLAR: AttractionPillarConfig = {
     buildLocalImageAsset("/images/grand-canyon/skywalk.svg", "Grand Canyon Skywalk concept artwork"),
     buildLocalImageAsset("/images/grand-canyon/helicopter.svg", "Grand Canyon helicopter tour concept artwork"),
   ],
+  tripPlanningSnapshot: [
+    { label: "Best time to go", value: "Early morning or late afternoon for cooler temperatures and better light." },
+    { label: "Typical visit time", value: "3 to 5 hours for West Rim; full day for South Rim." },
+    { label: "Distance from Las Vegas", value: "Roughly 2 to 4 hours depending on the rim." },
+    { label: "Popular ways to visit", value: "Helicopter • Bus tour • Self-drive • Skywalk combo" },
+    { label: "Good for", value: "First-timers • Scenic photography • Bucket-list desert days" },
+    { label: "Nearby highlights", value: "Hoover Dam • Lake Mead • Route 66 towns" },
+  ],
   highlights: [
     {
       title: "Best for first-timers",
