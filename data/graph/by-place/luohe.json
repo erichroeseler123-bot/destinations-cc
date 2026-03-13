@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-09-luohe:0001",
+  "place_slug": "luohe",
+  "place_name": "Luohe",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-09-xuchang:0001",
+      "place_slug": "xuchang",
+      "place_name": "Xuchang",
+      "reason": "near_place_geo",
+      "distance_km": 54.6
+    },
+    {
+      "place_id": "dcc:place:cn-09-zhengzhou:0001",
+      "place_slug": "zhengzhou",
+      "place_name": "Zhengzhou",
+      "reason": "near_place_geo",
+      "distance_km": 137.6
+    },
+    {
+      "place_id": "dcc:place:cn-09-kaifeng:0001",
+      "place_slug": "kaifeng",
+      "place_name": "Kaifeng",
+      "reason": "near_place_geo",
+      "distance_km": 139.4
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-09-luohe:0001",
+      "to": "dcc:place:cn-09-xuchang:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-09-luohe:0001",
+      "to": "dcc:place:cn-09-zhengzhou:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-09-luohe:0001",
+      "to": "dcc:place:cn-09-kaifeng:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

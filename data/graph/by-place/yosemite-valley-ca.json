@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:us-ca-yosemite-valley-ca:0001",
+  "place_slug": "yosemite-valley-ca",
+  "place_name": "Yosemite Valley",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ca-fresno-ca:0001",
+      "place_slug": "fresno-ca",
+      "place_name": "Fresno",
+      "reason": "near_place_geo",
+      "distance_km": 111.8
+    },
+    {
+      "place_id": "dcc:place:us-ca-south-lake-tahoe-ca:0001",
+      "place_slug": "south-lake-tahoe-ca",
+      "place_name": "South Lake Tahoe",
+      "reason": "near_place_geo",
+      "distance_km": 137.3
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-yosemite-valley-ca:0001",
+      "to": "dcc:place:us-ca-fresno-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-yosemite-valley-ca:0001",
+      "to": "dcc:place:us-ca-south-lake-tahoe-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

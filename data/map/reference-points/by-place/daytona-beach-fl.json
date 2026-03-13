@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:us-fl-daytona-beach-fl:0001",
+  "place_slug": "daytona-beach-fl",
+  "place_name": "Daytona Beach",
+  "center": {
+    "coordinates": [
+      -81.02283,
+      29.21081
+    ],
+    "country_code": "US",
+    "admin1_code": "FL"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-fl-orlando-fl:0001",
+      "slug": "orlando-fl",
+      "name": "Orlando",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -81.37924,
+        28.53834
+      ]
+    },
+    {
+      "id": "dcc:place:us-fl-jacksonville-fl:0001",
+      "slug": "jacksonville-fl",
+      "name": "Jacksonville",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -81.65565,
+        30.33218
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.723Z"
+}

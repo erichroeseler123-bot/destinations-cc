@@ -1,0 +1,25 @@
+{
+  "place_id": "dcc:place:zm-09-lusaka:0001",
+  "place_slug": "lusaka",
+  "place_name": "Lusaka",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": []
+}

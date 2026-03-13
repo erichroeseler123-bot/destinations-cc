@@ -1,0 +1,80 @@
+{
+  "version": "dcc-network-v1",
+  "generatedAt": "2026-03-11T01:37:23.890Z",
+  "satellites": {
+    "partyatredrocks": {
+      "eligible_nodes": 7,
+      "rejected_nodes": 0,
+      "by_surface": {
+        "discovery": {
+          "eligible_nodes": 6,
+          "rejected_nodes": 0
+        },
+        "monetized": {
+          "eligible_nodes": 1,
+          "rejected_nodes": 0
+        }
+      },
+      "changes_since_last_export": {
+        "found": true,
+        "node_added": 7,
+        "node_removed": 0,
+        "edge_added": 9,
+        "edge_removed": 0,
+        "report": "/home/ewrewr12/destinations-cc/data/network/audit/satellite/partyatredrocks/2026-03-11T01-31-38-717Z.report.json"
+      }
+    },
+    "welcome-to-alaska": {
+      "eligible_nodes": 13,
+      "rejected_nodes": 0,
+      "by_surface": {
+        "authority": {
+          "eligible_nodes": 6,
+          "rejected_nodes": 0
+        },
+        "discovery": {
+          "eligible_nodes": 6,
+          "rejected_nodes": 0
+        },
+        "monetized": {
+          "eligible_nodes": 1,
+          "rejected_nodes": 0
+        }
+      },
+      "changes_since_last_export": {
+        "found": true,
+        "node_added": 13,
+        "node_removed": 0,
+        "edge_added": 17,
+        "edge_removed": 0,
+        "report": "/home/ewrewr12/destinations-cc/data/network/audit/satellite/welcome-to-alaska/2026-03-11T01-31-39-177Z.report.json"
+      }
+    },
+    "gosno": {
+      "eligible_nodes": 13,
+      "rejected_nodes": 0,
+      "by_surface": {
+        "authority": {
+          "eligible_nodes": 6,
+          "rejected_nodes": 0
+        },
+        "discovery": {
+          "eligible_nodes": 6,
+          "rejected_nodes": 0
+        },
+        "monetized": {
+          "eligible_nodes": 1,
+          "rejected_nodes": 0
+        }
+      },
+      "changes_since_last_export": {
+        "found": true,
+        "node_added": 13,
+        "node_removed": 0,
+        "edge_added": 17,
+        "edge_removed": 0,
+        "report": "/home/ewrewr12/destinations-cc/data/network/audit/satellite/gosno/2026-03-11T01-31-39-544Z.report.json"
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:et-44-addis-ababa:0001",
+  "place_slug": "addis-ababa",
+  "place_name": "Addis Ababa",
+  "center": {
+    "coordinates": [
+      38.74689,
+      9.02497
+    ],
+    "country_code": "ET",
+    "admin1_code": "44"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.709Z"
+}

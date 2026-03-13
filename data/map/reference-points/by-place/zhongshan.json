@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-30-zhongshan:0001",
+  "place_slug": "zhongshan",
+  "place_name": "Zhongshan",
+  "center": {
+    "coordinates": [
+      113.37912,
+      22.52306
+    ],
+    "country_code": "CN",
+    "admin1_code": "30"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-30-jiangmen:0001",
+      "slug": "jiangmen",
+      "name": "Jiangmen",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        113.08333,
+        22.58333
+      ]
+    },
+    {
+      "id": "dcc:place:cn-30-zhuhai:0001",
+      "slug": "zhuhai",
+      "name": "Zhuhai",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        113.56778,
+        22.27694
+      ]
+    },
+    {
+      "id": "dcc:place:cn-30-baoan:0001",
+      "slug": "baoan",
+      "name": "Bao'an",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        113.88288,
+        22.55213
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.768Z"
+}

@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-dc-washington-dc:0001",
+  "place_slug": "washington-dc",
+  "place_name": "Washington",
+  "center": {
+    "coordinates": [
+      -77.03637,
+      38.89511
+    ],
+    "country_code": "US",
+    "admin1_code": "DC"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-va-arlington-va:0001",
+      "slug": "arlington-va",
+      "name": "Arlington",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -77.10428,
+        38.88101
+      ]
+    },
+    {
+      "id": "dcc:place:us-va-alexandria-va:0001",
+      "slug": "alexandria-va",
+      "name": "Alexandria",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -77.04692,
+        38.80484
+      ]
+    },
+    {
+      "id": "dcc:place:us-md-annapolis-md:0001",
+      "slug": "annapolis-md",
+      "name": "Annapolis",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -76.49184,
+        38.97859
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.764Z"
+}

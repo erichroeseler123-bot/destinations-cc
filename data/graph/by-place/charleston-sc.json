@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-sc-charleston-sc:0001",
+  "place_slug": "charleston-sc",
+  "place_name": "Charleston",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-sc-hilton-head-island-sc:0001",
+      "place_slug": "hilton-head-island-sc",
+      "place_name": "Hilton Head Island",
+      "reason": "near_place_geo",
+      "distance_km": 99.5
+    },
+    {
+      "place_id": "dcc:place:us-ga-savannah-ga:0001",
+      "place_slug": "savannah-ga",
+      "place_name": "Savannah",
+      "reason": "near_place_geo",
+      "distance_km": 133.9
+    },
+    {
+      "place_id": "dcc:place:us-sc-myrtle-beach-sc:0001",
+      "place_slug": "myrtle-beach-sc",
+      "place_name": "Myrtle Beach",
+      "reason": "near_place_geo",
+      "distance_km": 140.6
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-sc-charleston-sc:0001",
+      "to": "dcc:place:us-sc-hilton-head-island-sc:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-sc-charleston-sc:0001",
+      "to": "dcc:place:us-ga-savannah-ga:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-sc-charleston-sc:0001",
+      "to": "dcc:place:us-sc-myrtle-beach-sc:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

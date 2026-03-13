@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:in-38-dhanbad:0001",
+  "place_slug": "dhanbad",
+  "place_name": "Dhanbad",
+  "center": {
+    "coordinates": [
+      86.42992,
+      23.79759
+    ],
+    "country_code": "IN",
+    "admin1_code": "38"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:in-38-jamshedpur:0001",
+      "slug": "jamshedpur",
+      "name": "Jamshedpur",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        86.18545,
+        22.80278
+      ]
+    },
+    {
+      "id": "dcc:place:in-38-ranchi:0001",
+      "slug": "ranchi",
+      "name": "Ranchi",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        85.3094,
+        23.34316
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.724Z"
+}

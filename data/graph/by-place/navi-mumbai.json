@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:in-16-navi-mumbai:0001",
+  "place_slug": "navi-mumbai",
+  "place_name": "Navi Mumbai",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:in-16-mumbai:0001",
+      "place_slug": "mumbai",
+      "place_name": "Mumbai",
+      "reason": "near_place_geo",
+      "distance_km": 14.6
+    },
+    {
+      "place_id": "dcc:place:in-16-thane:0001",
+      "place_slug": "thane",
+      "place_name": "Thane",
+      "reason": "near_place_geo",
+      "distance_km": 18.6
+    },
+    {
+      "place_id": "dcc:place:in-16-dombivali:0001",
+      "place_slug": "dombivali",
+      "place_name": "Dombivali",
+      "reason": "near_place_geo",
+      "distance_km": 21.2
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-16-navi-mumbai:0001",
+      "to": "dcc:place:in-16-mumbai:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-16-navi-mumbai:0001",
+      "to": "dcc:place:in-16-thane:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-16-navi-mumbai:0001",
+      "to": "dcc:place:in-16-dombivali:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

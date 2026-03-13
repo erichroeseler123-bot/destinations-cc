@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-32-neijiang:0001",
+  "place_slug": "neijiang",
+  "place_name": "Neijiang",
+  "center": {
+    "coordinates": [
+      105.06216,
+      29.58354
+    ],
+    "country_code": "CN",
+    "admin1_code": "32"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-32-zigong:0001",
+      "slug": "zigong",
+      "name": "Zigong",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        104.77689,
+        29.34162
+      ]
+    },
+    {
+      "id": "dcc:place:cn-32-meishan:0001",
+      "slug": "meishan",
+      "name": "Meishan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        103.83696,
+        30.04392
+      ]
+    },
+    {
+      "id": "dcc:place:cn-33-chongqing:0001",
+      "slug": "chongqing",
+      "name": "Chongqing",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        106.55771,
+        29.56026
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.747Z"
+}

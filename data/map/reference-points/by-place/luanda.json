@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:ao-20-luanda:0001",
+  "place_slug": "luanda",
+  "place_name": "Luanda",
+  "center": {
+    "coordinates": [
+      13.23432,
+      -8.83682
+    ],
+    "country_code": "AO",
+    "admin1_code": "20"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.739Z"
+}

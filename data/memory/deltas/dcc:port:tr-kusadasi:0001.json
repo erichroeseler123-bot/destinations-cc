@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:port:tr-kusadasi:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.0640000000000005,
+  "z_score": -0.2809179948882516,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:port:tr-kusadasi:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.0735714285714286,
+    "sample_count": 7
+  }
+}

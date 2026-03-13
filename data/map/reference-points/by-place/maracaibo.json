@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:ve-23-maracaibo:0001",
+  "place_slug": "maracaibo",
+  "place_name": "Maracaibo",
+  "center": {
+    "coordinates": [
+      -71.61089,
+      10.64232
+    ],
+    "country_code": "VE",
+    "admin1_code": "23"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.741Z"
+}

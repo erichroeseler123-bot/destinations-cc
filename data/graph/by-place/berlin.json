@@ -1,0 +1,25 @@
+{
+  "place_id": "dcc:place:de-16-berlin:0001",
+  "place_slug": "berlin",
+  "place_name": "Berlin",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "related_places": [],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": []
+}

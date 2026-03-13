@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:ph-14-budta:0001",
+  "place_slug": "budta",
+  "place_name": "Budta",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:ph-12-malingao:0001",
+      "place_slug": "malingao",
+      "place_name": "Malingao",
+      "reason": "near_place_geo",
+      "distance_km": 6.2
+    },
+    {
+      "place_id": "dcc:place:ph-11-davao:0001",
+      "place_slug": "davao",
+      "place_name": "Davao",
+      "reason": "near_place_geo",
+      "distance_km": 130.2
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:ph-14-budta:0001",
+      "to": "dcc:place:ph-12-malingao:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:ph-14-budta:0001",
+      "to": "dcc:place:ph-11-davao:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

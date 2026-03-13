@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-co-denver-co:0001",
+  "place_slug": "denver-co",
+  "place_name": "Denver",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-co-boulder-co:0001",
+      "place_slug": "boulder-co",
+      "place_name": "Boulder",
+      "reason": "near_place_geo",
+      "distance_km": 39.2
+    },
+    {
+      "place_id": "dcc:place:us-co-estes-park-co:0001",
+      "place_slug": "estes-park-co",
+      "place_name": "Estes Park",
+      "reason": "near_place_geo",
+      "distance_km": 84.4
+    },
+    {
+      "place_id": "dcc:place:us-co-breckenridge-co:0001",
+      "place_slug": "breckenridge-co",
+      "place_name": "Breckenridge",
+      "reason": "near_place_geo",
+      "distance_km": 94.7
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-co-denver-co:0001",
+      "to": "dcc:place:us-co-boulder-co:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-co-denver-co:0001",
+      "to": "dcc:place:us-co-estes-park-co:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-co-denver-co:0001",
+      "to": "dcc:place:us-co-breckenridge-co:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

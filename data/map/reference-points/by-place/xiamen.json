@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-07-xiamen:0001",
+  "place_slug": "xiamen",
+  "place_name": "Xiamen",
+  "center": {
+    "coordinates": [
+      118.08187,
+      24.47979
+    ],
+    "country_code": "CN",
+    "admin1_code": "07"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-07-jinjiang:0001",
+      "slug": "jinjiang",
+      "name": "Jinjiang",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        118.57415,
+        24.81978
+      ]
+    },
+    {
+      "id": "dcc:place:cn-07-quanzhou:0001",
+      "slug": "quanzhou",
+      "name": "Quanzhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        118.58583,
+        24.91389
+      ]
+    },
+    {
+      "id": "dcc:place:cn-07-putian:0001",
+      "slug": "putian",
+      "name": "Putian",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        119.01028,
+        25.43944
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.766Z"
+}

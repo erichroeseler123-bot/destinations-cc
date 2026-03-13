@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-or-eugene-or:0001",
+  "place_slug": "eugene-or",
+  "place_name": "Eugene",
+  "center": {
+    "coordinates": [
+      -123.08675,
+      44.05207
+    ],
+    "country_code": "US",
+    "admin1_code": "OR"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-or-salem-or:0001",
+      "slug": "salem-or",
+      "name": "Salem",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -123.0351,
+        44.9429
+      ]
+    },
+    {
+      "id": "dcc:place:us-or-newport-or:0001",
+      "slug": "newport-or",
+      "name": "Newport",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -124.05345,
+        44.63678
+      ]
+    },
+    {
+      "id": "dcc:place:us-or-bend-or:0001",
+      "slug": "bend-or",
+      "name": "Bend",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -121.31531,
+        44.05817
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.725Z"
+}

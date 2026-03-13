@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:br-05-salvador:0001",
+  "place_slug": "salvador",
+  "place_name": "Salvador",
+  "center": {
+    "coordinates": [
+      -38.49096,
+      -12.97563
+    ],
+    "country_code": "BR",
+    "admin1_code": "05"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.755Z"
+}

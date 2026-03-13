@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:mx-11-leon-de-los-aldama:0001",
+  "place_slug": "leon-de-los-aldama",
+  "place_name": "Leon de los Aldama",
+  "center": {
+    "coordinates": [
+      -101.67374,
+      21.12908
+    ],
+    "country_code": "MX",
+    "admin1_code": "11"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:mx-22-santiago-de-queretaro:0001",
+      "slug": "santiago-de-queretaro",
+      "name": "Santiago de Queretaro",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -100.38806,
+        20.58806
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.738Z"
+}

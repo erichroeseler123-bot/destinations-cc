@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:cd-23-kananga:0001",
+  "place_slug": "kananga",
+  "place_name": "Kananga",
+  "center": {
+    "coordinates": [
+      22.41659,
+      -5.89624
+    ],
+    "country_code": "CD",
+    "admin1_code": "23"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cd-04-mbuji-mayi:0001",
+      "slug": "mbuji-mayi",
+      "name": "Mbuji-Mayi",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        23.58979,
+        -6.13603
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.732Z"
+}

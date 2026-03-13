@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:cn-12-yichang:0001",
+  "place_slug": "yichang",
+  "place_name": "Yichang",
+  "center": {
+    "coordinates": [
+      111.28472,
+      30.71444
+    ],
+    "country_code": "CN",
+    "admin1_code": "12"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-12-jingzhou:0001",
+      "slug": "jingzhou",
+      "name": "Jingzhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        112.19028,
+        30.35028
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.767Z"
+}

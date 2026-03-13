@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-ca-carmel-by-the-sea-ca:0001",
+  "place_slug": "carmel-by-the-sea-ca",
+  "place_name": "Carmel-by-the-Sea",
+  "center": {
+    "coordinates": [
+      -121.92329,
+      36.55524
+    ],
+    "country_code": "US",
+    "admin1_code": "CA"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ca-monterey-ca:0001",
+      "slug": "monterey-ca",
+      "name": "Monterey",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -121.89468,
+        36.60024
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-santa-cruz-ca:0001",
+      "slug": "santa-cruz-ca",
+      "name": "Santa Cruz",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -122.0308,
+        36.97412
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-san-jose-ca:0001",
+      "slug": "san-jose-ca",
+      "name": "San Jose",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -121.89496,
+        37.33939
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.718Z"
+}

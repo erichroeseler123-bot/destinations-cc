@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:bo-08-santa-cruz-de-la-sierra:0001",
+  "place_slug": "santa-cruz-de-la-sierra",
+  "place_name": "Santa Cruz de la Sierra",
+  "center": {
+    "coordinates": [
+      -63.18117,
+      -17.78629
+    ],
+    "country_code": "BO",
+    "admin1_code": "08"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.756Z"
+}

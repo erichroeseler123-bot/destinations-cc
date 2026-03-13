@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:cg-12-brazzaville:0001",
+  "place_slug": "brazzaville",
+  "place_name": "Brazzaville",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cd-06-kinshasa:0001",
+      "place_slug": "kinshasa",
+      "place_name": "Kinshasa",
+      "reason": "near_place_geo",
+      "distance_km": 7.6
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cg-12-brazzaville:0001",
+      "to": "dcc:place:cd-06-kinshasa:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

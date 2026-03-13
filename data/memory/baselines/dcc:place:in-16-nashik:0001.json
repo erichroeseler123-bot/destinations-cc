@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:in-16-nashik:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.608Z",
+  "metrics": {
+    "risk_score_mean": 1.2533333333333334,
+    "risk_score_stddev": 0.3039883038685682,
+    "risk_score_p90": 1.52,
+    "degraded_transport_rate": 0,
+    "negative_human_signal_rate": 0
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

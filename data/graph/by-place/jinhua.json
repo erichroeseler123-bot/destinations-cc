@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-02-jinhua:0001",
+  "place_slug": "jinhua",
+  "place_name": "Jinhua",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-02-puyang:0001",
+      "place_slug": "puyang",
+      "place_name": "Puyang",
+      "reason": "near_place_geo",
+      "distance_km": 45.6
+    },
+    {
+      "place_id": "dcc:place:cn-02-yiwu:0001",
+      "place_slug": "yiwu",
+      "place_name": "Yiwu",
+      "reason": "near_place_geo",
+      "distance_km": 47.9
+    },
+    {
+      "place_id": "dcc:place:cn-02-shaoxing:0001",
+      "place_slug": "shaoxing",
+      "place_name": "Shaoxing",
+      "reason": "near_place_geo",
+      "distance_km": 134.5
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-02-jinhua:0001",
+      "to": "dcc:place:cn-02-puyang:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-02-jinhua:0001",
+      "to": "dcc:place:cn-02-yiwu:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-02-jinhua:0001",
+      "to": "dcc:place:cn-02-shaoxing:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

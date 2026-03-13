@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:us-tn-chattanooga-tn:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 1.9280000000000002,
+  "z_score": 0.6619914214095495,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:us-tn-chattanooga-tn:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": 0.019285714285714288,
+    "sample_count": 7
+  }
+}

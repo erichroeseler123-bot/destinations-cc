@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-25-heze:0001",
+  "place_slug": "heze",
+  "place_name": "Heze",
+  "center": {
+    "coordinates": [
+      115.47358,
+      35.23929
+    ],
+    "country_code": "CN",
+    "admin1_code": "25"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-09-shangqiu:0001",
+      "slug": "shangqiu",
+      "name": "Shangqiu",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        115.65,
+        34.45
+      ]
+    },
+    {
+      "id": "dcc:place:cn-25-jining:0001",
+      "slug": "jining",
+      "name": "Jining",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        116.58139,
+        35.405
+      ]
+    },
+    {
+      "id": "dcc:place:cn-09-kaifeng:0001",
+      "slug": "kaifeng",
+      "name": "Kaifeng",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        114.30742,
+        34.7986
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.728Z"
+}

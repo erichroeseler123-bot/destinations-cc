@@ -1,56 +1,27 @@
-import fs from "fs";
-import path from "path";
 import Link from "next/link";
+import { getEffectivePorts } from "@/lib/dcc/ports";
+import { areaSlug, groupPortsByArea } from "@/lib/dcc/regions";
 
 /* ================= TYPES ================= */
 
 type Port = {
   slug: string;
   name: string;
-  city: string;
+  city?: string;
+  area?: string;
   region?: string;
-  country: string;
+  country?: string;
   passenger_volume?: number;
 };
-
-/* ================= DATA ================= */
-
-function getPorts(): Port[] {
-  const filePath = path.join(
-    process.cwd(),
-    "data",
-    "ports.generated.json"
-  );
-
-  try {
-    const raw = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(raw);
-  } catch (err) {
-    console.error("Failed to load ports data:", err);
-    return [];
-  }
-}
 
 export const dynamic = "force-static";
 
 /* ================= PAGE ================= */
 
 export default function HomePage() {
-  const ports = getPorts();
-
-  /* ---------- Group by Region ---------- */
-
-  const regions: Record<string, Port[]> = {};
-
-  for (const port of ports) {
-    const key = port.region?.trim() || "Other";
-
-    if (!regions[key]) {
-      regions[key] = [];
-    }
-
-    regions[key].push(port);
-  }
+  const ports = getEffectivePorts() as Port[];
+  const regionsMap = groupPortsByArea(ports);
+  const regions: Record<string, Port[]> = Object.fromEntries(regionsMap.entries());
 
   /* ---------- Major Hubs ---------- */
 
@@ -156,8 +127,8 @@ export default function HomePage() {
           {sortedRegions.map(region => {
 
             const slug = region
-              .toLowerCase()
-              .replace(/\s+/g, "-");
+              ? areaSlug(region)
+              : "unknown";
 
             const count = regions[region]?.length ?? 0;
 
@@ -217,7 +188,7 @@ export default function HomePage() {
               </div>
 
               <div className="text-sm text-gray-600 mt-1">
-                {port.city}, {port.country}
+                {port.city || port.name}, {port.country || "Unknown"}
               </div>
 
             </Link>

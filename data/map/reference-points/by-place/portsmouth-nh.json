@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-nh-portsmouth-nh:0001",
+  "place_slug": "portsmouth-nh",
+  "place_name": "Portsmouth",
+  "center": {
+    "coordinates": [
+      -70.75766,
+      43.07704
+    ],
+    "country_code": "US",
+    "admin1_code": "NH"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-me-portland-me:0001",
+      "slug": "portland-me",
+      "name": "Portland",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -70.2589,
+        43.65737
+      ]
+    },
+    {
+      "id": "dcc:place:us-ma-boston-ma:0001",
+      "slug": "boston-ma",
+      "name": "Boston",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -71.05977,
+        42.35843
+      ]
+    },
+    {
+      "id": "dcc:place:us-ri-providence-ri:0001",
+      "slug": "providence-ri",
+      "name": "Providence",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -71.41283,
+        41.82399
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.751Z"
+}

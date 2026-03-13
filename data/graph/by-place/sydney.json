@@ -1,0 +1,25 @@
+{
+  "place_id": "dcc:place:au-02-sydney:0001",
+  "place_slug": "sydney",
+  "place_name": "Sydney",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "related_places": [],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": []
+}

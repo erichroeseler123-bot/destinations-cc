@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-co-vail-co:0001",
+  "place_slug": "vail-co",
+  "place_name": "Vail",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-co-breckenridge-co:0001",
+      "place_slug": "breckenridge-co",
+      "place_name": "Breckenridge",
+      "reason": "near_place_geo",
+      "distance_km": 33.8
+    },
+    {
+      "place_id": "dcc:place:us-co-aspen-co:0001",
+      "place_slug": "aspen-co",
+      "place_name": "Aspen",
+      "reason": "near_place_geo",
+      "distance_km": 62.8
+    },
+    {
+      "place_id": "dcc:place:us-co-steamboat-springs-co:0001",
+      "place_slug": "steamboat-springs-co",
+      "place_name": "Steamboat Springs",
+      "reason": "near_place_geo",
+      "distance_km": 101.7
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-co-vail-co:0001",
+      "to": "dcc:place:us-co-breckenridge-co:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-co-vail-co:0001",
+      "to": "dcc:place:us-co-aspen-co:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-co-vail-co:0001",
+      "to": "dcc:place:us-co-steamboat-springs-co:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

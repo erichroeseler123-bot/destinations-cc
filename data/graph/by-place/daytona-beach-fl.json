@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:us-fl-daytona-beach-fl:0001",
+  "place_slug": "daytona-beach-fl",
+  "place_name": "Daytona Beach",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-fl-orlando-fl:0001",
+      "place_slug": "orlando-fl",
+      "place_name": "Orlando",
+      "reason": "near_place_geo",
+      "distance_km": 82.4
+    },
+    {
+      "place_id": "dcc:place:us-fl-jacksonville-fl:0001",
+      "place_slug": "jacksonville-fl",
+      "place_name": "Jacksonville",
+      "reason": "near_place_geo",
+      "distance_km": 138.8
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-fl-daytona-beach-fl:0001",
+      "to": "dcc:place:us-fl-orlando-fl:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-fl-daytona-beach-fl:0001",
+      "to": "dcc:place:us-fl-jacksonville-fl:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

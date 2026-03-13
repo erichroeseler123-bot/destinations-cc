@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:tw-04-taipei:0001",
+  "place_slug": "taipei",
+  "place_name": "Taipei",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:tw-03-new-taipei-city:0001",
+      "place_slug": "new-taipei-city",
+      "place_name": "New Taipei City",
+      "reason": "near_place_geo",
+      "distance_km": 7.1
+    },
+    {
+      "place_id": "dcc:place:tw-04-taichung:0001",
+      "place_slug": "taichung",
+      "place_name": "Taichung",
+      "reason": "near_place_geo",
+      "distance_km": 131.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:tw-04-taipei:0001",
+      "to": "dcc:place:tw-03-new-taipei-city:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:tw-04-taipei:0001",
+      "to": "dcc:place:tw-04-taichung:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

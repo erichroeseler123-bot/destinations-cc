@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-ca-la-jolla-ca:0001",
+  "place_slug": "la-jolla-ca",
+  "place_name": "La Jolla",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ca-san-diego:0001",
+      "place_slug": "san-diego",
+      "place_name": "San Diego",
+      "reason": "near_place_geo",
+      "distance_km": 17.9
+    },
+    {
+      "place_id": "dcc:place:us-ca-oceanside-ca:0001",
+      "place_slug": "oceanside-ca",
+      "place_name": "Oceanside",
+      "reason": "near_place_geo",
+      "distance_km": 40
+    },
+    {
+      "place_id": "dcc:place:mx-02-tijuana:0001",
+      "place_slug": "tijuana",
+      "place_name": "Tijuana",
+      "reason": "near_place_geo",
+      "distance_km": 45.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-la-jolla-ca:0001",
+      "to": "dcc:place:us-ca-san-diego:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-la-jolla-ca:0001",
+      "to": "dcc:place:us-ca-oceanside-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-la-jolla-ca:0001",
+      "to": "dcc:place:mx-02-tijuana:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:cn-10-shijiazhuang:0001",
+  "place_slug": "shijiazhuang",
+  "place_name": "Shijiazhuang",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-10-baoding:0001",
+      "place_slug": "baoding",
+      "place_name": "Baoding",
+      "reason": "near_place_geo",
+      "distance_km": 126
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-10-shijiazhuang:0001",
+      "to": "dcc:place:cn-10-baoding:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

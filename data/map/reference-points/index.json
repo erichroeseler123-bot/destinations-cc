@@ -1,0 +1,8107 @@
+{
+  "generated_at": "2026-03-09T04:43:00.769Z",
+  "places": 675,
+  "total_reference_points": 987,
+  "summaries": [
+    {
+      "place_id": "dcc:place:ng-45-aba:0001",
+      "place_slug": "aba",
+      "place_name": "Aba",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ci-93-abidjan:0001",
+      "place_slug": "abidjan",
+      "place_name": "Abidjan",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ci-93-abobo:0001",
+      "place_slug": "abobo",
+      "place_name": "Abobo",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ae-01-abu-dhabi:0001",
+      "place_slug": "abu-dhabi",
+      "place_name": "Abu Dhabi",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ng-11-abuja:0001",
+      "place_slug": "abuja",
+      "place_name": "Abuja",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:gh-01-accra:0001",
+      "place_slug": "accra",
+      "place_name": "Accra",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tr-81-adana:0001",
+      "place_slug": "adana",
+      "place_name": "Adana",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:et-44-addis-ababa:0001",
+      "place_slug": "addis-ababa",
+      "place_name": "Addis Ababa",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:au-05-adelaide:0001",
+      "place_slug": "adelaide",
+      "place_name": "Adelaide",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ye-02-aden:0001",
+      "place_slug": "aden",
+      "place_name": "Aden",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-36-agra:0001",
+      "place_slug": "agra",
+      "place_name": "Agra",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-09-ahmedabad:0001",
+      "place_slug": "ahmedabad",
+      "place_name": "Ahmedabad",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-oh-akron-oh:0001",
+      "place_slug": "akron-oh",
+      "place_name": "Akron",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:iq-02-al-basrah-al-qadimah:0001",
+      "place_slug": "al-basrah-al-qadimah",
+      "place_name": "Al Basrah al Qadimah",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:iq-15-al-mawsil-al-jadidah:0001",
+      "place_slug": "al-mawsil-al-jadidah",
+      "place_name": "Al Mawsil al Jadidah",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ny-albany-ny:0001",
+      "place_slug": "albany-ny",
+      "place_name": "Albany",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-nm-albuquerque-nm:0001",
+      "place_slug": "albuquerque-nm",
+      "place_name": "Albuquerque",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:sy-09-aleppo:0001",
+      "place_slug": "aleppo",
+      "place_name": "Aleppo",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-va-alexandria-va:0001",
+      "place_slug": "alexandria-va",
+      "place_name": "Alexandria",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:eg-06-alexandria:0001",
+      "place_slug": "alexandria",
+      "place_name": "Alexandria",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:dz-01-algiers:0001",
+      "place_slug": "algiers",
+      "place_name": "Algiers",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:kz-02-almaty:0001",
+      "place_slug": "almaty",
+      "place_name": "Almaty",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:jo-16-amman:0001",
+      "place_slug": "amman",
+      "place_name": "Amman",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-23-amritsar:0001",
+      "place_slug": "amritsar",
+      "place_name": "Amritsar",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-anaheim-ca:0001",
+      "place_slug": "anaheim-ca",
+      "place_name": "Anaheim",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ak-anchorage-ak:0001",
+      "place_slug": "anchorage-ak",
+      "place_name": "Anchorage",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tr-68-ankara:0001",
+      "place_slug": "ankara",
+      "place_name": "Ankara",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-md-annapolis-md:0001",
+      "place_slug": "annapolis-md",
+      "place_name": "Annapolis",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-19-anshan:0001",
+      "place_slug": "anshan",
+      "place_name": "Anshan",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tr-07-antalya:0001",
+      "place_slug": "antalya",
+      "place_name": "Antalya",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mg-11-antananarivo:0001",
+      "place_slug": "antananarivo",
+      "place_name": "Antananarivo",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-09-anyang:0001",
+      "place_slug": "anyang",
+      "place_name": "Anyang",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-va-arlington-va:0001",
+      "place_slug": "arlington-va",
+      "place_name": "Arlington",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-nc-asheville-nc:0001",
+      "place_slug": "asheville-nc",
+      "place_name": "Asheville",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-co-aspen-co:0001",
+      "place_slug": "aspen-co",
+      "place_name": "Aspen",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-or-astoria-or:0001",
+      "place_slug": "astoria-or",
+      "place_name": "Astoria",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:py-22-asuncion:0001",
+      "place_slug": "asuncion",
+      "place_name": "Asuncion",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ga-atlanta-ga:0001",
+      "place_slug": "atlanta-ga",
+      "place_name": "Atlanta",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-nj-atlantic-city-nj:0001",
+      "place_slug": "atlantic-city-nj",
+      "place_name": "Atlantic City",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:nz-e7-auckland:0001",
+      "place_slug": "auckland",
+      "place_name": "Auckland",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-16-aurangabad:0001",
+      "place_slug": "aurangabad",
+      "place_name": "Aurangabad",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-tx-austin-tx:0001",
+      "place_slug": "austin-tx",
+      "place_name": "Austin",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:iq-07-baghdad:0001",
+      "place_slug": "baghdad",
+      "place_name": "Baghdad",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-bakersfield-ca:0001",
+      "place_slug": "bakersfield-ca",
+      "place_name": "Bakersfield",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:az-09-baku:0001",
+      "place_slug": "baku",
+      "place_name": "Baku",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-md-baltimore-md:0001",
+      "place_slug": "baltimore-md",
+      "place_name": "Baltimore",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ml-01-bamako:0001",
+      "place_slug": "bamako",
+      "place_name": "Bamako",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-15-bandar-lampung:0001",
+      "place_slug": "bandar-lampung",
+      "place_name": "Bandar Lampung",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-30-bandung:0001",
+      "place_slug": "bandung",
+      "place_name": "Bandung",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:th-40-bangkok:0001",
+      "place_slug": "bangkok",
+      "place_name": "Bangkok",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:pk-03-bannu:0001",
+      "place_slug": "bannu",
+      "place_name": "Bannu",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-baoan:0001",
+      "place_slug": "baoan",
+      "place_name": "Bao'an",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-10-baoding:0001",
+      "place_slug": "baoding",
+      "place_name": "Baoding",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-26-baoji:0001",
+      "place_slug": "baoji",
+      "place_name": "Baoji",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-20-baotou:0001",
+      "place_slug": "baotou",
+      "place_name": "Baotou",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-me-bar-harbor-me:0001",
+      "place_slug": "bar-harbor-me",
+      "place_name": "Bar Harbor",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:es-56-barcelona:0001",
+      "place_slug": "barcelona",
+      "place_name": "Barcelona",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ve-13-barquisimeto:0001",
+      "place_slug": "barquisimeto",
+      "place_name": "Barquisimeto",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:co-04-barranquilla:0001",
+      "place_slug": "barranquilla",
+      "place_name": "Barranquilla",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:iq-02-basrah:0001",
+      "place_slug": "basrah",
+      "place_name": "Basrah",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-37-batam:0001",
+      "place_slug": "batam",
+      "place_name": "Batam",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-la-baton-rouge-la:0001",
+      "place_slug": "baton-rouge-la",
+      "place_name": "Baton Rouge",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-20-bayan-nur:0001",
+      "place_slug": "bayan-nur",
+      "place_name": "Bayan Nur",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-22-beijing:0001",
+      "place_slug": "beijing",
+      "place_name": "Beijing",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:lb-04-beirut:0001",
+      "place_slug": "beirut",
+      "place_name": "Beirut",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-30-bekasi:0001",
+      "place_slug": "bekasi",
+      "place_name": "Bekasi",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:br-16-belem:0001",
+      "place_slug": "belem",
+      "place_name": "Belem",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:rs-se-belgrade:0001",
+      "place_slug": "belgrade",
+      "place_name": "Belgrade",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-wa-bellingham-wa:0001",
+      "place_slug": "bellingham-wa",
+      "place_name": "Bellingham",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:br-15-belo-horizonte:0001",
+      "place_slug": "belo-horizonte",
+      "place_name": "Belo Horizonte",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-or-bend-or:0001",
+      "place_slug": "bend-or",
+      "place_name": "Bend",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-19-bengaluru:0001",
+      "place_slug": "bengaluru",
+      "place_name": "Bengaluru",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ng-37-benin-city:0001",
+      "place_slug": "benin-city",
+      "place_name": "Benin City",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-berkeley-ca:0001",
+      "place_slug": "berkeley-ca",
+      "place_name": "Berkeley",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:de-16-berlin:0001",
+      "place_slug": "berlin",
+      "place_name": "Berlin",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-35-bhopal:0001",
+      "place_slug": "bhopal",
+      "place_name": "Bhopal",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:vn-75-bien-hoa:0001",
+      "place_slug": "bien-hoa",
+      "place_name": "Bien Hoa",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-18-bijie:0001",
+      "place_slug": "bijie",
+      "place_name": "Bijie",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:gb-eng-birmingham:0001",
+      "place_slug": "birmingham",
+      "place_name": "Birmingham",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-30-bogor:0001",
+      "place_slug": "bogor",
+      "place_name": "Bogor",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:co-34-bogota:0001",
+      "place_slug": "bogota",
+      "place_name": "Bogota",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ma-boston-ma:0001",
+      "place_slug": "boston-ma",
+      "place_name": "Boston",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-co-boulder-co:0001",
+      "place_slug": "boulder-co",
+      "place_name": "Boulder",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-mt-bozeman-mt:0001",
+      "place_slug": "bozeman-mt",
+      "place_name": "Bozeman",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-01-bozhou:0001",
+      "place_slug": "bozhou",
+      "place_name": "Bozhou",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-mo-branson-mo:0001",
+      "place_slug": "branson-mo",
+      "place_name": "Branson",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:br-07-brasilia:0001",
+      "place_slug": "brasilia",
+      "place_name": "Brasilia",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cg-12-brazzaville:0001",
+      "place_slug": "brazzaville",
+      "place_name": "Brazzaville",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-co-breckenridge-co:0001",
+      "place_slug": "breckenridge-co",
+      "place_name": "Breckenridge",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:au-04-brisbane:0001",
+      "place_slug": "brisbane",
+      "place_name": "Brisbane",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ny-brooklyn:0001",
+      "place_slug": "brooklyn",
+      "place_name": "Brooklyn",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ro-10-bucharest:0001",
+      "place_slug": "bucharest",
+      "place_name": "Bucharest",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:hu-05-budapest:0001",
+      "place_slug": "budapest",
+      "place_name": "Budapest",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ph-14-budta:0001",
+      "place_slug": "budta",
+      "place_name": "Budta",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ar-07-buenos-aires:0001",
+      "place_slug": "buenos-aires",
+      "place_name": "Buenos Aires",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ny-buffalo-ny:0001",
+      "place_slug": "buffalo-ny",
+      "place_name": "Buffalo",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-vt-burlington-vt:0001",
+      "place_slug": "burlington-vt",
+      "place_name": "Burlington",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tr-16-bursa:0001",
+      "place_slug": "bursa",
+      "place_name": "Bursa",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:kr-10-busan:0001",
+      "place_slug": "busan",
+      "place_name": "Busan",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:eg-11-cairo:0001",
+      "place_slug": "cairo",
+      "place_name": "Cairo",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ca-01-calgary:0001",
+      "place_slug": "calgary",
+      "place_name": "Calgary",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:co-29-cali:0001",
+      "place_slug": "cali",
+      "place_name": "Cali",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:pe-07-callao:0001",
+      "place_slug": "callao",
+      "place_name": "Callao",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ph-ncr-caloocan:0001",
+      "place_slug": "caloocan",
+      "place_name": "Caloocan",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:gn-04-camayenne:0001",
+      "place_slug": "camayenne",
+      "place_name": "Camayenne",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:vn-92-can-tho:0001",
+      "place_slug": "can-tho",
+      "place_name": "Can Tho",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-or-cannon-beach-or:0001",
+      "place_slug": "cannon-beach-or",
+      "place_name": "Cannon Beach",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:za-11-cape-town:0001",
+      "place_slug": "cape-town",
+      "place_name": "Cape Town",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ve-25-caracas:0001",
+      "place_slug": "caracas",
+      "place_name": "Caracas",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-carmel-by-the-sea-ca:0001",
+      "place_slug": "carmel-by-the-sea-ca",
+      "place_name": "Carmel-by-the-Sea",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ma-06-casablanca:0001",
+      "place_slug": "casablanca",
+      "place_name": "Casablanca",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-05-changchun:0001",
+      "place_slug": "changchun",
+      "place_name": "Changchun",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-11-changde:0001",
+      "place_slug": "changde",
+      "place_name": "Changde",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-11-changsha:0001",
+      "place_slug": "changsha",
+      "place_name": "Changsha",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-changshu:0001",
+      "place_slug": "changshu",
+      "place_name": "Changshu",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-24-changzhi:0001",
+      "place_slug": "changzhi",
+      "place_name": "Changzhi",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-changzhou:0001",
+      "place_slug": "changzhou",
+      "place_name": "Changzhou",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-chaozhou:0001",
+      "place_slug": "chaozhou",
+      "place_name": "Chaozhou",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-sc-charleston-sc:0001",
+      "place_slug": "charleston-sc",
+      "place_name": "Charleston",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-nc-charlotte-nc:0001",
+      "place_slug": "charlotte-nc",
+      "place_name": "Charlotte",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-tn-chattanooga-tn:0001",
+      "place_slug": "chattanooga-tn",
+      "place_name": "Chattanooga",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:bd-84-chattogram:0001",
+      "place_slug": "chattogram",
+      "place_name": "Chattogram",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ru-13-chelyabinsk:0001",
+      "place_slug": "chelyabinsk",
+      "place_name": "Chelyabinsk",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-32-chengdu:0001",
+      "place_slug": "chengdu",
+      "place_name": "Chengdu",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-25-chennai:0001",
+      "place_slug": "chennai",
+      "place_name": "Chennai",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-il-chicago:0001",
+      "place_slug": "chicago",
+      "place_name": "Chicago",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-33-chongqing:0001",
+      "place_slug": "chongqing",
+      "place_name": "Chongqing",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-oh-cincinnati-oh:0001",
+      "place_slug": "cincinnati-oh",
+      "place_name": "Cincinnati",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mx-06-ciudad-juarez:0001",
+      "place_slug": "ciudad-juarez",
+      "place_name": "Ciudad Juarez",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mx-15-ciudad-nezahualcoyotl:0001",
+      "place_slug": "ciudad-nezahualcoyotl",
+      "place_name": "Ciudad Nezahualcoyotl",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-02-cixi:0001",
+      "place_slug": "cixi",
+      "place_name": "Cixi",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-oh-cleveland-oh:0001",
+      "place_slug": "cleveland-oh",
+      "place_name": "Cleveland",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-25-coimbatore:0001",
+      "place_slug": "coimbatore",
+      "place_name": "Coimbatore",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-co-colorado-springs-co:0001",
+      "place_slug": "colorado-springs-co",
+      "place_name": "Colorado Springs",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-sc-columbia-sc:0001",
+      "place_slug": "columbia-sc",
+      "place_name": "Columbia",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-oh-columbus-oh:0001",
+      "place_slug": "columbus-oh",
+      "place_name": "Columbus",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 1,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:gn-04-conakry:0001",
+      "place_slug": "conakry",
+      "place_name": "Conakry",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:dk-17-copenhagen:0001",
+      "place_slug": "copenhagen",
+      "place_name": "Copenhagen",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ar-05-cordoba:0001",
+      "place_slug": "cordoba",
+      "place_name": "Cordoba",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-tx-corpus-christi-tx:0001",
+      "place_slug": "corpus-christi-tx",
+      "place_name": "Corpus Christi",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:br-18-curitiba:0001",
+      "place_slug": "curitiba",
+      "place_name": "Curitiba",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:vn-48-da-nang:0001",
+      "place_slug": "da-nang",
+      "place_name": "Da Nang",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:kr-15-daegu:0001",
+      "place_slug": "daegu",
+      "place_name": "Daegu",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:kr-19-daejeon:0001",
+      "place_slug": "daejeon",
+      "place_name": "Daejeon",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:sn-01-dakar:0001",
+      "place_slug": "dakar",
+      "place_name": "Dakar",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-19-dalian:0001",
+      "place_slug": "dalian",
+      "place_name": "Dalian",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-tx-dallas:0001",
+      "place_slug": "dallas",
+      "place_name": "Dallas",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:sy-13-damascus:0001",
+      "place_slug": "damascus",
+      "place_name": "Damascus",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:sa-06-dammam:0001",
+      "place_slug": "dammam",
+      "place_name": "Dammam",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-08-daqing:0001",
+      "place_slug": "daqing",
+      "place_name": "Daqing",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tz-23-dar-es-salaam:0001",
+      "place_slug": "dar-es-salaam",
+      "place_name": "Dar es Salaam",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-24-datong:0001",
+      "place_slug": "datong",
+      "place_name": "Datong",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ph-11-davao:0001",
+      "place_slug": "davao",
+      "place_name": "Davao",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-fl-daytona-beach-fl:0001",
+      "place_slug": "daytona-beach-fl",
+      "place_name": "Daytona Beach",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-32-dazhou:0001",
+      "place_slug": "dazhou",
+      "place_name": "Dazhou",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-07-delhi:0001",
+      "place_slug": "delhi",
+      "place_name": "Delhi",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-co-denver-co:0001",
+      "place_slug": "denver-co",
+      "place_name": "Denver",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-30-depok:0001",
+      "place_slug": "depok",
+      "place_name": "Depok",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ia-des-moines-ia:0001",
+      "place_slug": "des-moines-ia",
+      "place_name": "Des Moines",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-fl-destin-fl:0001",
+      "place_slug": "destin-fl",
+      "place_name": "Destin",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-mi-detroit-mi:0001",
+      "place_slug": "detroit-mi",
+      "place_name": "Detroit",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:bd-81-dhaka:0001",
+      "place_slug": "dhaka",
+      "place_name": "Dhaka",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-38-dhanbad:0001",
+      "place_slug": "dhanbad",
+      "place_name": "Dhanbad",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tr-21-diyarbakir:0001",
+      "place_slug": "diyarbakir",
+      "place_name": "Diyarbakir",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-16-dombivali:0001",
+      "place_slug": "dombivali",
+      "place_name": "Dombivali",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-dongguan:0001",
+      "place_slug": "dongguan",
+      "place_name": "Dongguan",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cm-05-douala:0001",
+      "place_slug": "douala",
+      "place_name": "Douala",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ae-03-dubai:0001",
+      "place_slug": "dubai",
+      "place_name": "Dubai",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-co-durango-co:0001",
+      "place_slug": "durango-co",
+      "place_name": "Durango",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:za-02-durban:0001",
+      "place_slug": "durban",
+      "place_name": "Durban",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-nc-durham-nc:0001",
+      "place_slug": "durham-nc",
+      "place_name": "Durham",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mx-15-ecatepec-de-morelos:0001",
+      "place_slug": "ecatepec-de-morelos",
+      "place_name": "Ecatepec de Morelos",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:iq-11-erbil:0001",
+      "place_slug": "erbil",
+      "place_name": "Erbil",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-co-estes-park-co:0001",
+      "place_slug": "estes-park-co",
+      "place_name": "Estes Park",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-or-eugene-or:0001",
+      "place_slug": "eugene-or",
+      "place_name": "Eugene",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ak-fairbanks-ak:0001",
+      "place_slug": "fairbanks-ak",
+      "place_name": "Fairbanks",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:pk-04-faisalabad:0001",
+      "place_slug": "faisalabad",
+      "place_name": "Faisalabad",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-nd-fargo-nd:0001",
+      "place_slug": "fargo-nd",
+      "place_name": "Fargo",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-10-faridabad:0001",
+      "place_slug": "faridabad",
+      "place_name": "Faridabad",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ma-03-fes:0001",
+      "place_slug": "fes",
+      "place_name": "Fes",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-az-flagstaff-az:0001",
+      "place_slug": "flagstaff-az",
+      "place_name": "Flagstaff",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-fl-fort-lauderdale-fl:0001",
+      "place_slug": "fort-lauderdale-fl",
+      "place_name": "Fort Lauderdale",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-tx-fort-worth-tx:0001",
+      "place_slug": "fort-worth-tx",
+      "place_name": "Fort Worth",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:br-06-fortaleza:0001",
+      "place_slug": "fortaleza",
+      "place_name": "Fortaleza",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-foshan:0001",
+      "place_slug": "foshan",
+      "place_name": "Foshan",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-tx-fredericksburg-tx:0001",
+      "place_slug": "fredericksburg-tx",
+      "place_name": "Fredericksburg",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-fresno-ca:0001",
+      "place_slug": "fresno-ca",
+      "place_name": "Fresno",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:jp-07-fukuoka:0001",
+      "place_slug": "fukuoka",
+      "place_name": "Fukuoka",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-19-fushun:0001",
+      "place_slug": "fushun",
+      "place_name": "Fushun",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-01-fuyang:0001",
+      "place_slug": "fuyang",
+      "place_name": "Fuyang",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-03-fuzhou-2:0001",
+      "place_slug": "fuzhou-2",
+      "place_name": "Fuzhou",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-07-fuzhou:0001",
+      "place_slug": "fuzhou",
+      "place_name": "Fuzhou",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-tx-galveston-tx:0001",
+      "place_slug": "galveston-tx",
+      "place_name": "Galveston",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 1,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-03-ganzhou:0001",
+      "place_slug": "ganzhou",
+      "place_name": "Ganzhou",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-tn-gatlinburg-tn:0001",
+      "place_slug": "gatlinburg-tn",
+      "place_name": "Gatlinburg",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tr-83-gaziantep:0001",
+      "place_slug": "gaziantep",
+      "place_name": "Gaziantep",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:bd-81-gazipur:0001",
+      "place_slug": "gazipur",
+      "place_name": "Gazipur",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-36-ghaziabad:0001",
+      "place_slug": "ghaziabad",
+      "place_name": "Ghaziabad",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:eg-08-giza:0001",
+      "place_slug": "giza",
+      "place_name": "Giza",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:br-29-goiania:0001",
+      "place_slug": "goiania",
+      "place_name": "Goiania",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-10-gorakhpur:0001",
+      "place_slug": "gorakhpur",
+      "place_name": "Gorakhpur",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:kr-13-goyang-si:0001",
+      "place_slug": "goyang-si",
+      "place_name": "Goyang-si",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-az-grand-canyon-village-az:0001",
+      "place_slug": "grand-canyon-village-az",
+      "place_name": "Grand Canyon Village",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-mi-grand-rapids-mi:0001",
+      "place_slug": "grand-rapids-mi",
+      "place_name": "Grand Rapids",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-wi-green-bay-wi:0001",
+      "place_slug": "green-bay-wi",
+      "place_name": "Green Bay",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-sc-greenville-sc:0001",
+      "place_slug": "greenville-sc",
+      "place_name": "Greenville",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mx-14-guadalajara:0001",
+      "place_slug": "guadalajara",
+      "place_name": "Guadalajara",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-guangzhou:0001",
+      "place_slug": "guangzhou",
+      "place_name": "Guangzhou",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-11-guankou:0001",
+      "place_slug": "guankou",
+      "place_name": "Guankou",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:br-27-guarulhos:0001",
+      "place_slug": "guarulhos",
+      "place_name": "Guarulhos",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ec-10-guayaquil:0001",
+      "place_slug": "guayaquil",
+      "place_name": "Guayaquil",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-16-guigang:0001",
+      "place_slug": "guigang",
+      "place_name": "Guigang",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-16-guilin:0001",
+      "place_slug": "guilin",
+      "place_name": "Guilin",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-18-guiyang:0001",
+      "place_slug": "guiyang",
+      "place_name": "Guiyang",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:pk-04-gujranwala:0001",
+      "place_slug": "gujranwala",
+      "place_name": "Gujranwala",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mx-09-gustavo-adolfo-madero:0001",
+      "place_slug": "gustavo-adolfo-madero",
+      "place_name": "Gustavo Adolfo Madero",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-35-gwalior:0001",
+      "place_slug": "gwalior",
+      "place_name": "Gwalior",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:kr-18-gwangju:0001",
+      "place_slug": "gwangju",
+      "place_name": "Gwangju",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-31-haikou:0001",
+      "place_slug": "haikou",
+      "place_name": "Haikou",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:vn-31-haiphong:0001",
+      "place_slug": "haiphong",
+      "place_name": "Haiphong",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:de-04-hamburg:0001",
+      "place_slug": "hamburg",
+      "place_name": "Hamburg",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-10-handan:0001",
+      "place_slug": "handan",
+      "place_name": "Handan",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-02-hangzhou:0001",
+      "place_slug": "hangzhou",
+      "place_name": "Hangzhou",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:vn-01-hanoi:0001",
+      "place_slug": "hanoi",
+      "place_name": "Hanoi",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:zw-10-harare:0001",
+      "place_slug": "harare",
+      "place_name": "Harare",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-08-harbin:0001",
+      "place_slug": "harbin",
+      "place_name": "Harbin",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ct-hartford-ct:0001",
+      "place_slug": "hartford-ct",
+      "place_name": "Hartford",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cu-02-havana:0001",
+      "place_slug": "havana",
+      "place_name": "Havana",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-01-hefei:0001",
+      "place_slug": "hefei",
+      "place_name": "Hefei",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-11-hengyang:0001",
+      "place_slug": "hengyang",
+      "place_name": "Hengyang",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-11-heshan:0001",
+      "place_slug": "heshan",
+      "place_name": "Heshan",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-25-heze:0001",
+      "place_slug": "heze",
+      "place_name": "Heze",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-sc-hilton-head-island-sc:0001",
+      "place_slug": "hilton-head-island-sc",
+      "place_name": "Hilton Head Island",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:jp-11-hiroshima:0001",
+      "place_slug": "hiroshima",
+      "place_name": "Hiroshima",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:vn-79-ho-chi-minh-city:0001",
+      "place_slug": "ho-chi-minh-city",
+      "place_name": "Ho Chi Minh City",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-20-hohhot:0001",
+      "place_slug": "hohhot",
+      "place_name": "Hohhot",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:hk-00-hong-kong-island:0001",
+      "place_slug": "hong-kong-island",
+      "place_name": "Hong Kong Island",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:hk-na-hong-kong:0001",
+      "place_slug": "hong-kong",
+      "place_name": "Hong Kong",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-hi-honolulu-hi:0001",
+      "place_slug": "honolulu-hi",
+      "place_name": "Honolulu",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-tx-houston:0001",
+      "place_slug": "houston",
+      "place_name": "Houston",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-huaian:0001",
+      "place_slug": "huaian",
+      "place_name": "Huai'an",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-01-huaibei:0001",
+      "place_slug": "huaibei",
+      "place_name": "Huaibei",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-01-huainan:0001",
+      "place_slug": "huainan",
+      "place_name": "Huainan",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:vn-46-hue:0001",
+      "place_slug": "hue",
+      "place_name": "Hue",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-huizhou:0001",
+      "place_slug": "huizhou",
+      "place_name": "Huizhou",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:pk-05-hyderabad-2:0001",
+      "place_slug": "hyderabad-2",
+      "place_name": "Hyderabad",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-40-hyderabad:0001",
+      "place_slug": "hyderabad",
+      "place_name": "Hyderabad",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ng-32-ibadan:0001",
+      "place_slug": "ibadan",
+      "place_name": "Ibadan",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ng-30-ilorin:0001",
+      "place_slug": "ilorin",
+      "place_name": "Ilorin",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:kr-12-incheon:0001",
+      "place_slug": "incheon",
+      "place_name": "Incheon",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-in-indianapolis-in:0001",
+      "place_slug": "indianapolis-in",
+      "place_name": "Indianapolis",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-35-indore:0001",
+      "place_slug": "indore",
+      "place_name": "Indore",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ir-28-isfahan:0001",
+      "place_slug": "isfahan",
+      "place_name": "Isfahan",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tr-34-istanbul:0001",
+      "place_slug": "istanbul",
+      "place_name": "Istanbul",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tr-35-izmir:0001",
+      "place_slug": "izmir",
+      "place_name": "Izmir",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mx-09-iztapalapa:0001",
+      "place_slug": "iztapalapa",
+      "place_name": "Iztapalapa",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-35-jabalpur:0001",
+      "place_slug": "jabalpur",
+      "place_name": "Jabalpur",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-wy-jackson-wy:0001",
+      "place_slug": "jackson-wy",
+      "place_name": "Jackson",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-fl-jacksonville-fl:0001",
+      "place_slug": "jacksonville-fl",
+      "place_name": "Jacksonville",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-24-jaipur:0001",
+      "place_slug": "jaipur",
+      "place_name": "Jaipur",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-04-jakarta:0001",
+      "place_slug": "jakarta",
+      "place_name": "Jakarta",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-38-jamshedpur:0001",
+      "place_slug": "jamshedpur",
+      "place_name": "Jamshedpur",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:sa-14-jeddah:0001",
+      "place_slug": "jeddah",
+      "place_name": "Jeddah",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-07-jepara:0001",
+      "place_slug": "jepara",
+      "place_name": "Jepara",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-nj-jersey-city-nj:0001",
+      "place_slug": "jersey-city-nj",
+      "place_name": "Jersey City",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-jiangmen:0001",
+      "place_slug": "jiangmen",
+      "place_name": "Jiangmen",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-jiangyin:0001",
+      "place_slug": "jiangyin",
+      "place_name": "Jiangyin",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-02-jiaxing:0001",
+      "place_slug": "jiaxing",
+      "place_name": "Jiaxing",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-jieyang:0001",
+      "place_slug": "jieyang",
+      "place_name": "Jieyang",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-05-jilin:0001",
+      "place_slug": "jilin",
+      "place_name": "Jilin",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-25-jinan:0001",
+      "place_slug": "jinan",
+      "place_name": "Jinan",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-12-jingzhou:0001",
+      "place_slug": "jingzhou",
+      "place_name": "Jingzhou",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-02-jinhua:0001",
+      "place_slug": "jinhua",
+      "place_name": "Jinhua",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-25-jining:0001",
+      "place_slug": "jining",
+      "place_name": "Jining",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-07-jinjiang:0001",
+      "place_slug": "jinjiang",
+      "place_name": "Jinjiang",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-24-jinzhong:0001",
+      "place_slug": "jinzhong",
+      "place_name": "Jinzhong",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-03-jiujiang:0001",
+      "place_slug": "jiujiang",
+      "place_name": "Jiujiang",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-24-jodhpur:0001",
+      "place_slug": "jodhpur",
+      "place_name": "Jodhpur",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:za-06-johannesburg:0001",
+      "place_slug": "johannesburg",
+      "place_name": "Johannesburg",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ak-juneau-ak:0001",
+      "place_slug": "juneau-ak",
+      "place_name": "Juneau",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 2,
+        "cruises": 1,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:af-13-kabul:0001",
+      "place_slug": "kabul",
+      "place_name": "Kabul",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ng-23-kaduna:0001",
+      "place_slug": "kaduna",
+      "place_name": "Kaduna",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-09-kaifeng:0001",
+      "place_slug": "kaifeng",
+      "place_name": "Kaifeng",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ke-20-kakamega:0001",
+      "place_slug": "kakamega",
+      "place_name": "Kakamega",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-mt-kalispell-mt:0001",
+      "place_slug": "kalispell-mt",
+      "place_name": "Kalispell",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-25-kallakurichi:0001",
+      "place_slug": "kallakurichi",
+      "place_name": "Kallakurichi",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-16-kalyan:0001",
+      "place_slug": "kalyan",
+      "place_name": "Kalyan",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ug-c-kampala:0001",
+      "place_slug": "kampala",
+      "place_name": "Kampala",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cd-23-kananga:0001",
+      "place_slug": "kananga",
+      "place_name": "Kananga",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ng-29-kano:0001",
+      "place_slug": "kano",
+      "place_name": "Kano",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-36-kanpur:0001",
+      "place_slug": "kanpur",
+      "place_name": "Kanpur",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-mo-kansas-city-mo:0001",
+      "place_slug": "kansas-city-mo",
+      "place_name": "Kansas City",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tw-02-kaohsiung:0001",
+      "place_slug": "kaohsiung",
+      "place_name": "Kaohsiung",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:pk-05-karachi:0001",
+      "place_slug": "karachi",
+      "place_name": "Karachi",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ir-44-karaj:0001",
+      "place_slug": "karaj",
+      "place_name": "Karaj",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:iq-12-karbala:0001",
+      "place_slug": "karbala",
+      "place_name": "Karbala",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:np-3-kathmandu:0001",
+      "place_slug": "kathmandu",
+      "place_name": "Kathmandu",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:jp-19-kawasaki:0001",
+      "place_slug": "kawasaki",
+      "place_name": "Kawasaki",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tr-38-kayseri:0001",
+      "place_slug": "kayseri",
+      "place_name": "Kayseri",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ru-73-kazan:0001",
+      "place_slug": "kazan",
+      "place_name": "Kazan",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ak-ketchikan-ak:0001",
+      "place_slug": "ketchikan-ak",
+      "place_name": "Ketchikan",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 1,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-fl-key-west-fl:0001",
+      "place_slug": "key-west-fl",
+      "place_name": "Key West",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ua-07-kharkiv:0001",
+      "place_slug": "kharkiv",
+      "place_name": "Kharkiv",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:sd-29-khartoum:0001",
+      "place_slug": "khartoum",
+      "place_name": "Khartoum",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:bd-82-khulna:0001",
+      "place_slug": "khulna",
+      "place_name": "Khulna",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:rw-12-kigali:0001",
+      "place_slug": "kigali",
+      "place_name": "Kigali",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cd-06-kinshasa:0001",
+      "place_slug": "kinshasa",
+      "place_name": "Kinshasa",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cd-30-kisangani:0001",
+      "place_slug": "kisangani",
+      "place_name": "Kisangani",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-tn-knoxville-tn:0001",
+      "place_slug": "knoxville-tn",
+      "place_name": "Knoxville",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:jp-13-kobe:0001",
+      "place_slug": "kobe",
+      "place_name": "Kobe",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-28-kolkata:0001",
+      "place_slug": "kolkata",
+      "place_name": "Kolkata",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tr-71-konya:0001",
+      "place_slug": "konya",
+      "place_name": "Konya",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:hk-00-kowloon:0001",
+      "place_slug": "kowloon",
+      "place_name": "Kowloon",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ru-91-krasnoyarsk:0001",
+      "place_slug": "krasnoyarsk",
+      "place_name": "Krasnoyarsk",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:my-14-kuala-lumpur:0001",
+      "place_slug": "kuala-lumpur",
+      "place_name": "Kuala Lumpur",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:gh-02-kumasi:0001",
+      "place_slug": "kumasi",
+      "place_name": "Kumasi",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-29-kunming:0001",
+      "place_slug": "kunming",
+      "place_name": "Kunming",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-kunshan:0001",
+      "place_slug": "kunshan",
+      "place_name": "Kunshan",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ua-12-kyiv:0001",
+      "place_slug": "kyiv",
+      "place_name": "Kyiv",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:jp-22-kyoto:0001",
+      "place_slug": "kyoto",
+      "place_name": "Kyoto",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-la-jolla-ca:0001",
+      "place_slug": "la-jolla-ca",
+      "place_name": "La Jolla",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:bo-04-la-paz:0001",
+      "place_slug": "la-paz",
+      "place_name": "La Paz",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ng-05-lagos:0001",
+      "place_slug": "lagos",
+      "place_name": "Lagos",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:pk-04-lahore:0001",
+      "place_slug": "lahore",
+      "place_name": "Lahore",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-az-lake-havasu-city-az:0001",
+      "place_slug": "lake-havasu-city-az",
+      "place_name": "Lake Havasu City",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-lake-tahoe-ca:0001",
+      "place_slug": "lake-tahoe-ca",
+      "place_name": "Lake Tahoe",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-15-lanzhou:0001",
+      "place_slug": "lanzhou",
+      "place_name": "Lanzhou",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-nv-las-vegas-nv:0001",
+      "place_slug": "las-vegas-nv",
+      "place_name": "Las Vegas",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 3,
+        "cruises": 0,
+        "transport": 0,
+        "events": 1
+      }
+    },
+    {
+      "place_id": "dcc:place:us-wa-leavenworth-wa:0001",
+      "place_slug": "leavenworth-wa",
+      "place_name": "Leavenworth",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mx-11-leon-de-los-aldama:0001",
+      "place_slug": "leon-de-los-aldama",
+      "place_name": "Leon de los Aldama",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ky-lexington-ky:0001",
+      "place_slug": "lexington-ky",
+      "place_name": "Lexington",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-lianyungang:0001",
+      "place_slug": "lianyungang",
+      "place_name": "Lianyungang",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-25-liaocheng:0001",
+      "place_slug": "liaocheng",
+      "place_name": "Liaocheng",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mw-c-lilongwe:0001",
+      "place_slug": "lilongwe",
+      "place_name": "Lilongwe",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:pe-lma-lima:0001",
+      "place_slug": "lima",
+      "place_name": "Lima",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-25-linyi:0001",
+      "place_slug": "linyi",
+      "place_name": "Linyi",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-18-liupanshui:0001",
+      "place_slug": "liupanshui",
+      "place_name": "Liupanshui",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-16-liuzhou:0001",
+      "place_slug": "liuzhou",
+      "place_name": "Liuzhou",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tg-24-lome:0001",
+      "place_slug": "lome",
+      "place_name": "Lome",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:gb-eng-london:0001",
+      "place_slug": "london",
+      "place_name": "London",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-long-beach-ca:0001",
+      "place_slug": "long-beach-ca",
+      "place_name": "Long Beach",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-los-angeles:0001",
+      "place_slug": "los-angeles",
+      "place_name": "Los Angeles",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ky-louisville-ky:0001",
+      "place_slug": "louisville-ky",
+      "place_name": "Louisville",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-01-luan:0001",
+      "place_slug": "luan",
+      "place_name": "Lu'an",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ao-20-luanda:0001",
+      "place_slug": "luanda",
+      "place_name": "Luanda",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cd-14-lubumbashi:0001",
+      "place_slug": "lubumbashi",
+      "place_name": "Lubumbashi",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-36-lucknow:0001",
+      "place_slug": "lucknow",
+      "place_name": "Lucknow",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-23-ludhiana:0001",
+      "place_slug": "ludhiana",
+      "place_name": "Ludhiana",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-24-lueliang:0001",
+      "place_slug": "lueliang",
+      "place_name": "Lueliang",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-09-luohe:0001",
+      "place_slug": "luohe",
+      "place_name": "Luohe",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-luohu-district:0001",
+      "place_slug": "luohu-district",
+      "place_name": "Luohu District",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-09-luoyang:0001",
+      "place_slug": "luoyang",
+      "place_name": "Luoyang",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:zm-09-lusaka:0001",
+      "place_slug": "lusaka",
+      "place_name": "Lusaka",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-mi-mackinaw-city-mi:0001",
+      "place_slug": "mackinaw-city-mi",
+      "place_name": "Mackinaw City",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:sa-05-madinah:0001",
+      "place_slug": "madinah",
+      "place_name": "Madinah",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-wi-madison-wi:0001",
+      "place_slug": "madison-wi",
+      "place_name": "Madison",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:es-29-madrid:0001",
+      "place_slug": "madrid",
+      "place_name": "Madrid",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-25-madurai:0001",
+      "place_slug": "madurai",
+      "place_name": "Madurai",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ng-27-maiduguri:0001",
+      "place_slug": "maiduguri",
+      "place_name": "Maiduguri",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-38-makassar:0001",
+      "place_slug": "makassar",
+      "place_name": "Makassar",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:sa-14-makkah:0001",
+      "place_slug": "makkah",
+      "place_name": "Makkah",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-malibu-ca:0001",
+      "place_slug": "malibu-ca",
+      "place_name": "Malibu",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ph-12-malingao:0001",
+      "place_slug": "malingao",
+      "place_name": "Malingao",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:br-04-manaus:0001",
+      "place_slug": "manaus",
+      "place_name": "Manaus",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mm-08-mandalay:0001",
+      "place_slug": "mandalay",
+      "place_name": "Mandalay",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ny-manhattan:0001",
+      "place_slug": "manhattan",
+      "place_name": "Manhattan",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ph-ncr-manila:0001",
+      "place_slug": "manila",
+      "place_name": "Manila",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-maoming:0001",
+      "place_slug": "maoming",
+      "place_name": "Maoming",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mz-11-maputo:0001",
+      "place_slug": "maputo",
+      "place_name": "Maputo",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ve-23-maracaibo:0001",
+      "place_slug": "maracaibo",
+      "place_name": "Maracaibo",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ir-42-mashhad:0001",
+      "place_slug": "mashhad",
+      "place_name": "Mashhad",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mz-04-matola:0001",
+      "place_slug": "matola",
+      "place_name": "Matola",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cd-04-mbuji-mayi:0001",
+      "place_slug": "mbuji-mayi",
+      "place_name": "Mbuji-Mayi",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-26-medan:0001",
+      "place_slug": "medan",
+      "place_name": "Medan",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:co-02-medellin:0001",
+      "place_slug": "medellin",
+      "place_name": "Medellin",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-36-meerut:0001",
+      "place_slug": "meerut",
+      "place_name": "Meerut",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-32-meishan:0001",
+      "place_slug": "meishan",
+      "place_name": "Meishan",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:au-07-melbourne:0001",
+      "place_slug": "melbourne",
+      "place_name": "Melbourne",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-tn-memphis-tn:0001",
+      "place_slug": "memphis-tn",
+      "place_name": "Memphis",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mx-31-merida:0001",
+      "place_slug": "merida",
+      "place_name": "Merida",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mx-09-mexico-city:0001",
+      "place_slug": "mexico-city",
+      "place_name": "Mexico City",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-fl-miami-fl:0001",
+      "place_slug": "miami-fl",
+      "place_name": "Miami",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 1,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-32-mianyang:0001",
+      "place_slug": "mianyang",
+      "place_name": "Mianyang",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:it-09-milan:0001",
+      "place_slug": "milan",
+      "place_name": "Milan",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-wi-milwaukee-wi:0001",
+      "place_slug": "milwaukee-wi",
+      "place_name": "Milwaukee",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-mn-minneapolis-mn:0001",
+      "place_slug": "minneapolis-mn",
+      "place_name": "Minneapolis",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:by-04-minsk:0001",
+      "place_slug": "minsk",
+      "place_name": "Minsk",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-mt-missoula-mt:0001",
+      "place_slug": "missoula-mt",
+      "place_name": "Missoula",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ut-moab-ut:0001",
+      "place_slug": "moab-ut",
+      "place_name": "Moab",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:so-02-mogadishu:0001",
+      "place_slug": "mogadishu",
+      "place_name": "Mogadishu",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ke-37-mombasa:0001",
+      "place_slug": "mombasa",
+      "place_name": "Mombasa",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:lr-14-monrovia:0001",
+      "place_slug": "monrovia",
+      "place_name": "Monrovia",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-monterey-ca:0001",
+      "place_slug": "monterey-ca",
+      "place_name": "Monterey",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mx-19-monterrey:0001",
+      "place_slug": "monterrey",
+      "place_name": "Monterrey",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:uy-10-montevideo:0001",
+      "place_slug": "montevideo",
+      "place_name": "Montevideo",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ca-10-montreal:0001",
+      "place_slug": "montreal",
+      "place_name": "Montreal",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ru-48-moscow:0001",
+      "place_slug": "moscow",
+      "place_name": "Moscow",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:iq-15-mosul:0001",
+      "place_slug": "mosul",
+      "place_name": "Mosul",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:pk-04-multan:0001",
+      "place_slug": "multan",
+      "place_name": "Multan",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-16-mumbai:0001",
+      "place_slug": "mumbai",
+      "place_name": "Mumbai",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:de-02-munich:0001",
+      "place_slug": "munich",
+      "place_name": "Munich",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tz-12-mwanza:0001",
+      "place_slug": "mwanza",
+      "place_name": "Mwanza",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-sc-myrtle-beach-sc:0001",
+      "place_slug": "myrtle-beach-sc",
+      "place_name": "Myrtle Beach",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:jp-01-nagoya:0001",
+      "place_slug": "nagoya",
+      "place_name": "Nagoya",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-16-nagpur:0001",
+      "place_slug": "nagpur",
+      "place_name": "Nagpur",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ke-05-nairobi:0001",
+      "place_slug": "nairobi",
+      "place_name": "Nairobi",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-07-najafgarh:0001",
+      "place_slug": "najafgarh",
+      "place_name": "Najafgarh",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-03-nanchang:0001",
+      "place_slug": "nanchang",
+      "place_name": "Nanchang",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-32-nanchong:0001",
+      "place_slug": "nanchong",
+      "place_name": "Nanchong",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-nanjing:0001",
+      "place_slug": "nanjing",
+      "place_name": "Nanjing",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-16-nanning:0001",
+      "place_slug": "nanning",
+      "place_name": "Nanning",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-nantong:0001",
+      "place_slug": "nantong",
+      "place_name": "Nantong",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-09-nanyang:0001",
+      "place_slug": "nanyang",
+      "place_name": "Nanyang",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-napa-ca:0001",
+      "place_slug": "napa-ca",
+      "place_name": "Napa",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-fl-naples-fl:0001",
+      "place_slug": "naples-fl",
+      "place_name": "Naples",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-16-nashik:0001",
+      "place_slug": "nashik",
+      "place_name": "Nashik",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-tn-nashville-tn:0001",
+      "place_slug": "nashville-tn",
+      "place_name": "Nashville",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 1
+      }
+    },
+    {
+      "place_id": "dcc:place:in-16-navi-mumbai:0001",
+      "place_slug": "navi-mumbai",
+      "place_name": "Navi Mumbai",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:td-21-ndjamena:0001",
+      "place_slug": "ndjamena",
+      "place_name": "N'Djamena",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-32-neijiang:0001",
+      "place_slug": "neijiang",
+      "place_name": "Neijiang",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ct-new-haven-ct:0001",
+      "place_slug": "new-haven-ct",
+      "place_name": "New Haven",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-la-new-orleans-la:0001",
+      "place_slug": "new-orleans-la",
+      "place_name": "New Orleans",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tw-03-new-taipei-city:0001",
+      "place_slug": "new-taipei-city",
+      "place_name": "New Taipei City",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:hk-00-new-territories:0001",
+      "place_slug": "new-territories",
+      "place_name": "New Territories",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ny-new-york-city:0001",
+      "place_slug": "new-york-city",
+      "place_name": "New York City",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-nj-newark-nj:0001",
+      "place_slug": "newark-nj",
+      "place_name": "Newark",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-or-newport-or:0001",
+      "place_slug": "newport-or",
+      "place_name": "Newport",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ri-newport-ri:0001",
+      "place_slug": "newport-ri",
+      "place_name": "Newport",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ny-niagara-falls-ny:0001",
+      "place_slug": "niagara-falls-ny",
+      "place_name": "Niagara Falls",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ne-08-niamey:0001",
+      "place_slug": "niamey",
+      "place_name": "Niamey",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-02-ningbo:0001",
+      "place_slug": "ningbo",
+      "place_name": "Ningbo",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ru-51-nizhniy-novgorod:0001",
+      "place_slug": "nizhniy-novgorod",
+      "place_name": "Nizhniy Novgorod",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-va-norfolk-va:0001",
+      "place_slug": "norfolk-va",
+      "place_name": "Norfolk",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mr-na-nouakchott:0001",
+      "place_slug": "nouakchott",
+      "place_name": "Nouakchott",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ru-53-novosibirsk:0001",
+      "place_slug": "novosibirsk",
+      "place_name": "Novosibirsk",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-21-nowrangapur:0001",
+      "place_slug": "nowrangapur",
+      "place_name": "Nowrangapur",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-oceanside-ca:0001",
+      "place_slug": "oceanside-ca",
+      "place_name": "Oceanside",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ok-oklahoma-city-ok:0001",
+      "place_slug": "oklahoma-city-ok",
+      "place_name": "Oklahoma City",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-wa-olympia-wa:0001",
+      "place_slug": "olympia-wa",
+      "place_name": "Olympia",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ne-omaha-ne:0001",
+      "place_slug": "omaha-ne",
+      "place_name": "Omaha",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:sd-29-omdurman:0001",
+      "place_slug": "omdurman",
+      "place_name": "Omdurman",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ru-54-omsk:0001",
+      "place_slug": "omsk",
+      "place_name": "Omsk",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ng-25-onitsha:0001",
+      "place_slug": "onitsha",
+      "place_name": "Onitsha",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-20-ordos:0001",
+      "place_slug": "ordos",
+      "place_name": "Ordos",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-fl-orlando-fl:0001",
+      "place_slug": "orlando-fl",
+      "place_name": "Orlando",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 1,
+        "events": 1
+      }
+    },
+    {
+      "place_id": "dcc:place:jp-32-osaka:0001",
+      "place_slug": "osaka",
+      "place_name": "Osaka",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:no-12-oslo:0001",
+      "place_slug": "oslo",
+      "place_name": "Oslo",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:bf-03-ouagadougou:0001",
+      "place_slug": "ouagadougou",
+      "place_name": "Ouagadougou",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-32-palembang:0001",
+      "place_slug": "palembang",
+      "place_name": "Palembang",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-fl-palm-beach-fl:0001",
+      "place_slug": "palm-beach-fl",
+      "place_name": "Palm Beach",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-palm-springs-ca:0001",
+      "place_slug": "palm-springs-ca",
+      "place_name": "Palm Springs",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-fl-panama-city-beach-fl:0001",
+      "place_slug": "panama-city-beach-fl",
+      "place_name": "Panama City Beach",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:fr-11-paris:0001",
+      "place_slug": "paris",
+      "place_name": "Paris",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ut-park-city-ut:0001",
+      "place_slug": "park-city-ut",
+      "place_name": "Park City",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-pasadena-ca:0001",
+      "place_slug": "pasadena-ca",
+      "place_name": "Pasadena",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-34-patna:0001",
+      "place_slug": "patna",
+      "place_name": "Patna",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-37-pekanbaru:0001",
+      "place_slug": "pekanbaru",
+      "place_name": "Pekanbaru",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-fl-pensacola-fl:0001",
+      "place_slug": "pensacola-fl",
+      "place_name": "Pensacola",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:au-08-perth:0001",
+      "place_slug": "perth",
+      "place_name": "Perth",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:pk-03-peshawar:0001",
+      "place_slug": "peshawar",
+      "place_name": "Peshawar",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-pa-philadelphia:0001",
+      "place_slug": "philadelphia",
+      "place_name": "Philadelphia",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:kh-22-phnom-penh:0001",
+      "place_slug": "phnom-penh",
+      "place_name": "Phnom Penh",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-az-phoenix:0001",
+      "place_slug": "phoenix",
+      "place_name": "Phoenix",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-tn-pigeon-forge-tn:0001",
+      "place_slug": "pigeon-forge-tn",
+      "place_name": "Pigeon Forge",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-16-pimpri-chinchwad:0001",
+      "place_slug": "pimpri-chinchwad",
+      "place_name": "Pimpri-Chinchwad",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-16-pimpri:0001",
+      "place_slug": "pimpri",
+      "place_name": "Pimpri",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-pa-pittsburgh-pa:0001",
+      "place_slug": "pittsburgh-pa",
+      "place_name": "Pittsburgh",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-wa-port-angeles-wa:0001",
+      "place_slug": "port-angeles-wa",
+      "place_name": "Port Angeles",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ht-11-port-au-prince:0001",
+      "place_slug": "port-au-prince",
+      "place_name": "Port-au-Prince",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ng-50-port-harcourt:0001",
+      "place_slug": "port-harcourt",
+      "place_name": "Port Harcourt",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-me-portland-me:0001",
+      "place_slug": "portland-me",
+      "place_name": "Portland",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-or-portland-or:0001",
+      "place_slug": "portland-or",
+      "place_name": "Portland",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:br-23-porto-alegre:0001",
+      "place_slug": "porto-alegre",
+      "place_name": "Porto Alegre",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-nh-portsmouth-nh:0001",
+      "place_slug": "portsmouth-nh",
+      "place_name": "Portsmouth",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cz-52-prague:0001",
+      "place_slug": "prague",
+      "place_name": "Prague",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-36-prayagraj:0001",
+      "place_slug": "prayagraj",
+      "place_name": "Prayagraj",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:za-06-pretoria:0001",
+      "place_slug": "pretoria",
+      "place_name": "Pretoria",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-nj-princeton-nj:0001",
+      "place_slug": "princeton-nj",
+      "place_name": "Princeton",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ri-providence-ri:0001",
+      "place_slug": "providence-ri",
+      "place_name": "Providence",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mx-21-puebla:0001",
+      "place_slug": "puebla",
+      "place_name": "Puebla",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-16-pune:0001",
+      "place_slug": "pune",
+      "place_name": "Pune",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-07-putian:0001",
+      "place_slug": "putian",
+      "place_name": "Putian",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-02-puyang:0001",
+      "place_slug": "puyang",
+      "place_name": "Puyang",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:kp-12-pyongyang:0001",
+      "place_slug": "pyongyang",
+      "place_name": "Pyongyang",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-25-qingdao:0001",
+      "place_slug": "qingdao",
+      "place_name": "Qingdao",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-15-qingyang:0001",
+      "place_slug": "qingyang",
+      "place_name": "Qingyang",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-qingyuan:0001",
+      "place_slug": "qingyuan",
+      "place_name": "Qingyuan",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-16-qinzhou:0001",
+      "place_slug": "qinzhou",
+      "place_name": "Qinzhou",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-07-quanzhou:0001",
+      "place_slug": "quanzhou",
+      "place_name": "Quanzhou",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ny-queens:0001",
+      "place_slug": "queens",
+      "place_name": "Queens",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:pk-02-quetta:0001",
+      "place_slug": "quetta",
+      "place_name": "Quetta",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ph-ncr-quezon-city:0001",
+      "place_slug": "quezon-city",
+      "place_name": "Quezon City",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ec-18-quito:0001",
+      "place_slug": "quito",
+      "place_name": "Quito",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-29-qujing:0001",
+      "place_slug": "qujing",
+      "place_name": "Qujing",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ma-04-rabat:0001",
+      "place_slug": "rabat",
+      "place_name": "Rabat",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-09-rajkot:0001",
+      "place_slug": "rajkot",
+      "place_name": "Rajkot",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-nc-raleigh-nc:0001",
+      "place_slug": "raleigh-nc",
+      "place_name": "Raleigh",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-38-ranchi:0001",
+      "place_slug": "ranchi",
+      "place_name": "Ranchi",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:lb-04-ras-bayrut:0001",
+      "place_slug": "ras-bayrut",
+      "place_name": "Ra's Bayrut",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-02-rasapudipalem:0001",
+      "place_slug": "rasapudipalem",
+      "place_name": "Rasapudipalem",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:pk-04-rawalpindi:0001",
+      "place_slug": "rawalpindi",
+      "place_name": "Rawalpindi",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:br-30-recife:0001",
+      "place_slug": "recife",
+      "place_name": "Recife",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-nv-reno-nv:0001",
+      "place_slug": "reno-nv",
+      "place_name": "Reno",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-va-richmond-va:0001",
+      "place_slug": "richmond-va",
+      "place_name": "Richmond",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:br-21-rio-de-janeiro:0001",
+      "place_slug": "rio-de-janeiro",
+      "place_name": "Rio de Janeiro",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-riverside-ca:0001",
+      "place_slug": "riverside-ca",
+      "place_name": "Riverside",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:sa-10-riyadh:0001",
+      "place_slug": "riyadh",
+      "place_name": "Riyadh",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ny-rochester-ny:0001",
+      "place_slug": "rochester-ny",
+      "place_name": "Rochester",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:it-07-rome:0001",
+      "place_slug": "rome",
+      "place_name": "Rome",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ru-61-rostov-na-donu:0001",
+      "place_slug": "rostov-na-donu",
+      "place_name": "Rostov-na-Donu",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-sacramento-ca:0001",
+      "place_slug": "sacramento-ca",
+      "place_name": "Sacramento",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ut-saint-george-ut:0001",
+      "place_slug": "saint-george-ut",
+      "place_name": "Saint George",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-mn-saint-paul-mn:0001",
+      "place_slug": "saint-paul-mn",
+      "place_name": "Saint Paul",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ru-66-saint-petersburg:0001",
+      "place_slug": "saint-petersburg",
+      "place_name": "Saint Petersburg",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:jp-34-saitama:0001",
+      "place_slug": "saitama",
+      "place_name": "Saitama",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-or-salem-or:0001",
+      "place_slug": "salem-or",
+      "place_name": "Salem",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ut-salt-lake-city-ut:0001",
+      "place_slug": "salt-lake-city-ut",
+      "place_name": "Salt Lake City",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:br-05-salvador:0001",
+      "place_slug": "salvador",
+      "place_name": "Salvador",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ru-65-samara:0001",
+      "place_slug": "samara",
+      "place_name": "Samara",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-tx-san-antonio:0001",
+      "place_slug": "san-antonio",
+      "place_name": "San Antonio",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-san-bernardino-ca:0001",
+      "place_slug": "san-bernardino-ca",
+      "place_name": "San Bernardino",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-san-clemente-ca:0001",
+      "place_slug": "san-clemente-ca",
+      "place_name": "San Clemente",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-san-diego:0001",
+      "place_slug": "san-diego",
+      "place_name": "San Diego",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 1
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-san-francisco-ca:0001",
+      "place_slug": "san-francisco-ca",
+      "place_name": "San Francisco",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-san-jose-ca:0001",
+      "place_slug": "san-jose-ca",
+      "place_name": "San Jose",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-san-luis-obispo-ca:0001",
+      "place_slug": "san-luis-obispo-ca",
+      "place_name": "San Luis Obispo",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-san-rafael-ca:0001",
+      "place_slug": "san-rafael-ca",
+      "place_name": "San Rafael",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ye-26-sanaa:0001",
+      "place_slug": "sanaa",
+      "place_name": "Sanaa",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-santa-barbara-ca:0001",
+      "place_slug": "santa-barbara-ca",
+      "place_name": "Santa Barbara",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-santa-cruz-ca:0001",
+      "place_slug": "santa-cruz-ca",
+      "place_name": "Santa Cruz",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:bo-08-santa-cruz-de-la-sierra:0001",
+      "place_slug": "santa-cruz-de-la-sierra",
+      "place_name": "Santa Cruz de la Sierra",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-nm-santa-fe-nm:0001",
+      "place_slug": "santa-fe-nm",
+      "place_name": "Santa Fe",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-santa-monica-ca:0001",
+      "place_slug": "santa-monica-ca",
+      "place_name": "Santa Monica",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-santa-rosa-ca:0001",
+      "place_slug": "santa-rosa-ca",
+      "place_name": "Santa Rosa",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:do-25-santiago-de-los-caballeros:0001",
+      "place_slug": "santiago-de-los-caballeros",
+      "place_name": "Santiago de los Caballeros",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mx-22-santiago-de-queretaro:0001",
+      "place_slug": "santiago-de-queretaro",
+      "place_name": "Santiago de Queretaro",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cl-12-santiago:0001",
+      "place_slug": "santiago",
+      "place_name": "Santiago",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:do-34-santo-domingo:0001",
+      "place_slug": "santo-domingo",
+      "place_name": "Santo Domingo",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:br-27-sao-paulo:0001",
+      "place_slug": "sao-paulo",
+      "place_name": "Sao Paulo",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:jp-12-sapporo:0001",
+      "place_slug": "sapporo",
+      "place_name": "Sapporo",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-fl-sarasota-fl:0001",
+      "place_slug": "sarasota-fl",
+      "place_name": "Sarasota",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ga-savannah-ga:0001",
+      "place_slug": "savannah-ga",
+      "place_name": "Savannah",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-az-scottsdale-az:0001",
+      "place_slug": "scottsdale-az",
+      "place_name": "Scottsdale",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-wa-seattle-wa:0001",
+      "place_slug": "seattle-wa",
+      "place_name": "Seattle",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 1,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-az-sedona-az:0001",
+      "place_slug": "sedona-az",
+      "place_name": "Sedona",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-07-semarang:0001",
+      "place_slug": "semarang",
+      "place_name": "Semarang",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:jp-24-sendai:0001",
+      "place_slug": "sendai",
+      "place_name": "Sendai",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:kr-11-seoul:0001",
+      "place_slug": "seoul",
+      "place_name": "Seoul",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-23-shanghai:0001",
+      "place_slug": "shanghai",
+      "place_name": "Shanghai",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-09-shangqiu:0001",
+      "place_slug": "shangqiu",
+      "place_name": "Shangqiu",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-03-shangrao:0001",
+      "place_slug": "shangrao",
+      "place_name": "Shangrao",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-shantou:0001",
+      "place_slug": "shantou",
+      "place_name": "Shantou",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-02-shaoxing:0001",
+      "place_slug": "shaoxing",
+      "place_name": "Shaoxing",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ae-06-sharjah:0001",
+      "place_slug": "sharjah",
+      "place_name": "Sharjah",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-19-shenyang:0001",
+      "place_slug": "shenyang",
+      "place_name": "Shenyang",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-shenzhen:0001",
+      "place_slug": "shenzhen",
+      "place_name": "Shenzhen",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-10-shijiazhuang:0001",
+      "place_slug": "shijiazhuang",
+      "place_name": "Shijiazhuang",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ir-07-shiraz:0001",
+      "place_slug": "shiraz",
+      "place_name": "Shiraz",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-12-shiyan:0001",
+      "place_slug": "shiyan",
+      "place_name": "Shiyan",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:eg-12-shubra-al-khaymah:0001",
+      "place_slug": "shubra-al-khaymah",
+      "place_name": "Shubra al Khaymah",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:kz-1537272-shymkent:0001",
+      "place_slug": "shymkent",
+      "place_name": "Shymkent",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:sg-na-singapore:0001",
+      "place_slug": "singapore",
+      "place_name": "Singapore",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ak-sitka-ak:0001",
+      "place_slug": "sitka-ak",
+      "place_name": "Sitka",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ak-skagway-ak:0001",
+      "place_slug": "skagway-ak",
+      "place_name": "Skagway",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 1,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:bg-42-sofia:0001",
+      "place_slug": "sofia",
+      "place_name": "Sofia",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-sonoma-ca:0001",
+      "place_slug": "sonoma-ca",
+      "place_name": "Sonoma",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-south-lake-tahoe-ca:0001",
+      "place_slug": "south-lake-tahoe-ca",
+      "place_name": "South Lake Tahoe",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-33-south-tangerang:0001",
+      "place_slug": "south-tangerang",
+      "place_name": "South Tangerang",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:za-06-soweto:0001",
+      "place_slug": "soweto",
+      "place_name": "Soweto",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-wa-spokane-wa:0001",
+      "place_slug": "spokane-wa",
+      "place_name": "Spokane",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ut-springdale-ut:0001",
+      "place_slug": "springdale-ut",
+      "place_name": "Springdale",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-il-springfield-il:0001",
+      "place_slug": "springfield-il",
+      "place_name": "Springfield",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-12-srinagar:0001",
+      "place_slug": "srinagar",
+      "place_name": "Srinagar",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-mo-st-louis-mo:0001",
+      "place_slug": "st-louis-mo",
+      "place_name": "St. Louis",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-fl-st-petersburg-fl:0001",
+      "place_slug": "st-petersburg-fl",
+      "place_name": "St. Petersburg",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-co-steamboat-springs-co:0001",
+      "place_slug": "steamboat-springs-co",
+      "place_name": "Steamboat Springs",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:se-26-stockholm:0001",
+      "place_slug": "stockholm",
+      "place_name": "Stockholm",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-suqian:0001",
+      "place_slug": "suqian",
+      "place_name": "Suqian",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-08-surabaya:0001",
+      "place_slug": "surabaya",
+      "place_name": "Surabaya",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-09-surat:0001",
+      "place_slug": "surat",
+      "place_name": "Surat",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:kr-13-suwon:0001",
+      "place_slug": "suwon",
+      "place_name": "Suwon",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-01-suzhou-2:0001",
+      "place_slug": "suzhou-2",
+      "place_name": "Suzhou",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-suzhou:0001",
+      "place_slug": "suzhou",
+      "place_name": "Suzhou",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:au-02-sydney:0001",
+      "place_slug": "sydney",
+      "place_name": "Sydney",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ny-syracuse-ny:0001",
+      "place_slug": "syracuse-ny",
+      "place_name": "Syracuse",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ir-33-tabriz:0001",
+      "place_slug": "tabriz",
+      "place_name": "Tabriz",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-wa-tacoma-wa:0001",
+      "place_slug": "tacoma-wa",
+      "place_name": "Tacoma",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ph-ncr-taguig:0001",
+      "place_slug": "taguig",
+      "place_name": "Taguig",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-25-taian:0001",
+      "place_slug": "taian",
+      "place_name": "Tai'an",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tw-04-taichung:0001",
+      "place_slug": "taichung",
+      "place_name": "Taichung",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tw-04-tainan:0001",
+      "place_slug": "tainan",
+      "place_name": "Tainan",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:tw-04-taipei:0001",
+      "place_slug": "taipei",
+      "place_name": "Taipei",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-24-taiyuan:0001",
+      "place_slug": "taiyuan",
+      "place_name": "Taiyuan",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-02-taizhou-2:0001",
+      "place_slug": "taizhou-2",
+      "place_name": "Taizhou",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-taizhou:0001",
+      "place_slug": "taizhou",
+      "place_name": "Taizhou",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-fl-tampa-fl:0001",
+      "place_slug": "tampa-fl",
+      "place_name": "Tampa",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:id-33-tangerang:0001",
+      "place_slug": "tangerang",
+      "place_name": "Tangerang",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-10-tangshan:0001",
+      "place_slug": "tangshan",
+      "place_name": "Tangshan",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:uz-13-tashkent:0001",
+      "place_slug": "tashkent",
+      "place_name": "Tashkent",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ir-26-tehran:0001",
+      "place_slug": "tehran",
+      "place_name": "Tehran",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-co-telluride-co:0001",
+      "place_slug": "telluride-co",
+      "place_name": "Telluride",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-temecula-ca:0001",
+      "place_slug": "temecula-ca",
+      "place_name": "Temecula",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-16-thane:0001",
+      "place_slug": "thane",
+      "place_name": "Thane",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ny-the-bronx:0001",
+      "place_slug": "the-bronx",
+      "place_name": "The Bronx",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-28-tianjin:0001",
+      "place_slug": "tianjin",
+      "place_name": "Tianjin",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-15-tianshui:0001",
+      "place_slug": "tianshui",
+      "place_name": "Tianshui",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mx-02-tijuana:0001",
+      "place_slug": "tijuana",
+      "place_name": "Tijuana",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-25-tirunelveli:0001",
+      "place_slug": "tirunelveli",
+      "place_name": "Tirunelveli",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:jp-40-tokyo:0001",
+      "place_slug": "tokyo",
+      "place_name": "Tokyo",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-oh-toledo-oh:0001",
+      "place_slug": "toledo-oh",
+      "place_name": "Toledo",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ca-08-toronto:0001",
+      "place_slug": "toronto",
+      "place_name": "Toronto",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:sn-03-touba:0001",
+      "place_slug": "touba",
+      "place_name": "Touba",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ly-77-tripoli:0001",
+      "place_slug": "tripoli",
+      "place_name": "Tripoli",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-az-tucson-az:0001",
+      "place_slug": "tucson-az",
+      "place_name": "Tucson",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ok-tulsa-ok:0001",
+      "place_slug": "tulsa-ok",
+      "place_name": "Tulsa",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-13-ueruemqi:0001",
+      "place_slug": "ueruemqi",
+      "place_name": "UEruemqi",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ru-08-ufa:0001",
+      "place_slug": "ufa",
+      "place_name": "Ufa",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:kr-21-ulsan:0001",
+      "place_slug": "ulsan",
+      "place_name": "Ulsan",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-09-vadodara:0001",
+      "place_slug": "vadodara",
+      "place_name": "Vadodara",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-co-vail-co:0001",
+      "place_slug": "vail-co",
+      "place_name": "Vail",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ve-07-valencia:0001",
+      "place_slug": "valencia",
+      "place_name": "Valencia",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-36-varanasi:0001",
+      "place_slug": "varanasi",
+      "place_name": "Varanasi",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:at-09-vienna:0001",
+      "place_slug": "vienna",
+      "place_name": "Vienna",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-02-vijayawada:0001",
+      "place_slug": "vijayawada",
+      "place_name": "Vijayawada",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-16-virar:0001",
+      "place_slug": "virar",
+      "place_name": "Virar",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-va-virginia-beach-va:0001",
+      "place_slug": "virginia-beach-va",
+      "place_name": "Virginia Beach",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:in-02-visakhapatnam:0001",
+      "place_slug": "visakhapatnam",
+      "place_name": "Visakhapatnam",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-33-wanzhou:0001",
+      "place_slug": "wanzhou",
+      "place_name": "Wanzhou",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:pl-78-warsaw:0001",
+      "place_slug": "warsaw",
+      "place_name": "Warsaw",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-dc-washington-dc:0001",
+      "place_slug": "washington-dc",
+      "place_name": "Washington",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-25-weifang:0001",
+      "place_slug": "weifang",
+      "place_name": "Weifang",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-26-weinan:0001",
+      "place_slug": "weinan",
+      "place_name": "Weinan",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-02-wenzhou:0001",
+      "place_slug": "wenzhou",
+      "place_name": "Wenzhou",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-fl-west-palm-beach-fl:0001",
+      "place_slug": "west-palm-beach-fl",
+      "place_name": "West Palm Beach",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-mt-west-yellowstone-mt:0001",
+      "place_slug": "west-yellowstone-mt",
+      "place_name": "West Yellowstone",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ny-white-plains-ny:0001",
+      "place_slug": "white-plains-ny",
+      "place_name": "White Plains",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-va-williamsburg-va:0001",
+      "place_slug": "williamsburg-va",
+      "place_name": "Williamsburg",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-nc-wilmington-nc:0001",
+      "place_slug": "wilmington-nc",
+      "place_name": "Wilmington",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-12-wuhan:0001",
+      "place_slug": "wuhan",
+      "place_name": "Wuhan",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-01-wuhu:0001",
+      "place_slug": "wuhu",
+      "place_name": "Wuhu",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-wuxi:0001",
+      "place_slug": "wuxi",
+      "place_name": "Wuxi",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-07-xiamen:0001",
+      "place_slug": "xiamen",
+      "place_name": "Xiamen",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-26-xian:0001",
+      "place_slug": "xian",
+      "place_name": "Xi'an",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-12-xiangyang:0001",
+      "place_slug": "xiangyang",
+      "place_name": "Xiangyang",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-06-xining:0001",
+      "place_slug": "xining",
+      "place_name": "Xining",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-09-xinyang:0001",
+      "place_slug": "xinyang",
+      "place_name": "Xinyang",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-09-xuchang:0001",
+      "place_slug": "xuchang",
+      "place_name": "Xuchang",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-xuzhou:0001",
+      "place_slug": "xuzhou",
+      "place_name": "Xuzhou",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-yancheng:0001",
+      "place_slug": "yancheng",
+      "place_name": "Yancheng",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-yangjiang:0001",
+      "place_slug": "yangjiang",
+      "place_name": "Yangjiang",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mm-17-yangon:0001",
+      "place_slug": "yangon",
+      "place_name": "Yangon",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-yangzhou:0001",
+      "place_slug": "yangzhou",
+      "place_name": "Yangzhou",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-25-yantai:0001",
+      "place_slug": "yantai",
+      "place_name": "Yantai",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cm-11-yaounde:0001",
+      "place_slug": "yaounde",
+      "place_name": "Yaounde",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:ru-71-yekaterinburg:0001",
+      "place_slug": "yekaterinburg",
+      "place_name": "Yekaterinburg",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:am-11-yerevan:0001",
+      "place_slug": "yerevan",
+      "place_name": "Yerevan",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-12-yichang:0001",
+      "place_slug": "yichang",
+      "place_name": "Yichang",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-21-yinchuan:0001",
+      "place_slug": "yinchuan",
+      "place_name": "Yinchuan",
+      "reference_points": 0,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-02-yiwu:0001",
+      "place_slug": "yiwu",
+      "place_name": "Yiwu",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-yixing:0001",
+      "place_slug": "yixing",
+      "place_name": "Yixing",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:jp-19-yokohama:0001",
+      "place_slug": "yokohama",
+      "place_name": "Yokohama",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:us-ca-yosemite-valley-ca:0001",
+      "place_slug": "yosemite-valley-ca",
+      "place_name": "Yosemite Valley",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-16-yulin:0001",
+      "place_slug": "yulin",
+      "place_name": "Yulin",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-yunfu:0001",
+      "place_slug": "yunfu",
+      "place_name": "Yunfu",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:mx-14-zapopan:0001",
+      "place_slug": "zapopan",
+      "place_name": "Zapopan",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-04-zhangjiagang:0001",
+      "place_slug": "zhangjiagang",
+      "place_name": "Zhangjiagang",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-zhanjiang:0001",
+      "place_slug": "zhanjiang",
+      "place_name": "Zhanjiang",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-zhaoqing:0001",
+      "place_slug": "zhaoqing",
+      "place_name": "Zhaoqing",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-09-zhengzhou:0001",
+      "place_slug": "zhengzhou",
+      "place_name": "Zhengzhou",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-zhongshan:0001",
+      "place_slug": "zhongshan",
+      "place_name": "Zhongshan",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-30-zhuhai:0001",
+      "place_slug": "zhuhai",
+      "place_name": "Zhuhai",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-11-zhuzhou:0001",
+      "place_slug": "zhuzhou",
+      "place_name": "Zhuzhou",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-25-zibo:0001",
+      "place_slug": "zibo",
+      "place_name": "Zibo",
+      "reference_points": 3,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-32-zigong:0001",
+      "place_slug": "zigong",
+      "place_name": "Zigong",
+      "reference_points": 2,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    },
+    {
+      "place_id": "dcc:place:cn-18-zunyi:0001",
+      "place_slug": "zunyi",
+      "place_name": "Zunyi",
+      "reference_points": 1,
+      "lane_counts": {
+        "tours": 0,
+        "cruises": 0,
+        "transport": 0,
+        "events": 0
+      }
+    }
+  ]
+}

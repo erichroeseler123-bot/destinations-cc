@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:ec-10-guayaquil:0001",
+  "place_slug": "guayaquil",
+  "place_name": "Guayaquil",
+  "center": {
+    "coordinates": [
+      -79.88621,
+      -2.19616
+    ],
+    "country_code": "EC",
+    "admin1_code": "10"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.727Z"
+}

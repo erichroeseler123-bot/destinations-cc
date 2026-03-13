@@ -1,63 +1,91 @@
 import Link from "next/link";
 import featured from "@/data/featured.json";
 
-type Item = {
+type FeaturedItem = {
   title: string;
   href: string;
+  description?: string;
   tag?: string;
-  desc?: string;
+  why?: string;
 };
 
 export default function FeaturedIntel() {
-  const items = featured as unknown as Item[];
+  const raw = featured as any;
+
+  // ✅ normalize: support either { items: [...] } OR top-level [...]
+  const items: FeaturedItem[] = Array.isArray(raw?.items)
+    ? raw.items
+    : Array.isArray(raw)
+      ? raw
+      : [];
+
+  const title: string = raw?.title || "DCC Picks";
+  const subtitle: string =
+    raw?.subtitle || "High-signal pages: route intel, staging hubs, and reality checks.";
+  const cta = raw?.cta?.href ? raw.cta : null;
 
   return (
-    <section className="mt-12">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <div className="text-xs tracking-[0.35em] uppercase text-zinc-500">
-            Featured Intelligence
-          </div>
-          <h2 className="mt-2 text-2xl md:text-3xl font-black bg-gradient-to-r from-cyan-200 to-emerald-200 bg-clip-text text-transparent">
-            DCC Picks
-          </h2>
-          <p className="mt-2 text-zinc-300 max-w-2xl">
-            High-signal pages: route intel, staging hubs, and reality checks.
-          </p>
+    <section className="mt-8 rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-black/40 p-6 md:p-8">
+      <div className="flex flex-col gap-3">
+        <div className="text-[11px] tracking-[0.35em] uppercase text-zinc-500">
+          FEATURED INTELLIGENCE
         </div>
 
-        <Link
-          href="/cities"
-          className="hidden md:inline-flex rounded-full border border-white/10 bg-black/30 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10 transition"
-        >
-          Browse Cities →
-        </Link>
+        <div className="text-2xl md:text-3xl font-black text-white">{title}</div>
+
+        <div className="text-zinc-300 max-w-2xl">{subtitle}</div>
+
+        {cta ? (
+          <div className="pt-2">
+            <Link
+              href={cta.href}
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/30 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10 transition"
+            >
+              {cta.label || "Browse Cities →"}
+              <span className="text-cyan-400">→</span>
+            </Link>
+          </div>
+        ) : null}
       </div>
 
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-        {items.map((it) => (
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+        {items.map((it, idx) => (
           <Link
-            key={it.href}
+            key={`${it.href}-${idx}`}
             href={it.href}
-            className="rounded-2xl border border-white/10 bg-white/[0.06] p-6 shadow-[0_10px_40px_rgba(0,0,0,0.55)] backdrop-blur-md hover:border-cyan-500/40 transition"
+            className="group rounded-3xl border border-white/10 bg-black/30 p-5 hover:border-cyan-500/40 hover:bg-white/[0.04] transition"
           >
             <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="text-white font-bold text-lg">{it.title}</div>
-                {it.desc ? (
-                  <div className="mt-2 text-sm text-zinc-300">{it.desc}</div>
+              <div className="min-w-0">
+                <div className="text-white font-bold text-lg truncate">{it.title}</div>
+
+                {it.why ? (
+                  <div className="mt-1 text-sm text-zinc-300">{it.why}</div>
+                ) : null}
+
+                {it.description ? (
+                  <div className="mt-2 text-sm text-zinc-400">{it.description}</div>
+                ) : null}
+
+                {it.tag ? (
+                  <div className="mt-4 inline-flex rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[11px] tracking-widest uppercase text-zinc-200">
+                    {it.tag}
+                  </div>
                 ) : null}
               </div>
-              <div className="text-cyan-400 font-bold">→</div>
-            </div>
 
-            {it.tag ? (
-              <div className="mt-4 inline-flex rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs uppercase tracking-widest text-zinc-200">
-                {it.tag}
+              <div className="text-cyan-400 font-bold opacity-70 group-hover:opacity-100 transition">
+                →
               </div>
-            ) : null}
+            </div>
           </Link>
         ))}
+
+        {items.length === 0 ? (
+          <div className="rounded-3xl border border-white/10 bg-black/30 p-5 text-zinc-400">
+            No featured items found. Check <code className="text-zinc-200">data/featured.json</code>.
+          </div>
+        ) : null}
       </div>
     </section>
   );

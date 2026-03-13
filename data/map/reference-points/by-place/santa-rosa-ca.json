@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-ca-santa-rosa-ca:0001",
+  "place_slug": "santa-rosa-ca",
+  "place_name": "Santa Rosa",
+  "center": {
+    "coordinates": [
+      -122.71443,
+      38.44047
+    ],
+    "country_code": "US",
+    "admin1_code": "CA"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ca-sonoma-ca:0001",
+      "slug": "sonoma-ca",
+      "name": "Sonoma",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -122.45804,
+        38.29186
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-napa-ca:0001",
+      "slug": "napa-ca",
+      "name": "Napa",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -122.28553,
+        38.29714
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-san-rafael-ca:0001",
+      "slug": "san-rafael-ca",
+      "name": "San Rafael",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -122.53109,
+        37.97353
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.756Z"
+}

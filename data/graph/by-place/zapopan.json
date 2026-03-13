@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:mx-14-zapopan:0001",
+  "place_slug": "zapopan",
+  "place_name": "Zapopan",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:mx-14-guadalajara:0001",
+      "place_slug": "guadalajara",
+      "place_name": "Guadalajara",
+      "reason": "near_place_geo",
+      "distance_km": 6.4
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:mx-14-zapopan:0001",
+      "to": "dcc:place:mx-14-guadalajara:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

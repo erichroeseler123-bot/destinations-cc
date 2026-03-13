@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-or-salem-or:0001",
+  "place_slug": "salem-or",
+  "place_name": "Salem",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-or-portland-or:0001",
+      "place_slug": "portland-or",
+      "place_name": "Portland",
+      "reason": "near_place_geo",
+      "distance_km": 70.4
+    },
+    {
+      "place_id": "dcc:place:us-or-newport-or:0001",
+      "place_slug": "newport-or",
+      "place_name": "Newport",
+      "reason": "near_place_geo",
+      "distance_km": 87.3
+    },
+    {
+      "place_id": "dcc:place:us-or-eugene-or:0001",
+      "place_slug": "eugene-or",
+      "place_name": "Eugene",
+      "reason": "near_place_geo",
+      "distance_km": 99.1
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-or-salem-or:0001",
+      "to": "dcc:place:us-or-portland-or:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-or-salem-or:0001",
+      "to": "dcc:place:us-or-newport-or:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-or-salem-or:0001",
+      "to": "dcc:place:us-or-eugene-or:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

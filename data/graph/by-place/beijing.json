@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:cn-22-beijing:0001",
+  "place_slug": "beijing",
+  "place_name": "Beijing",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-28-tianjin:0001",
+      "place_slug": "tianjin",
+      "place_name": "Tianjin",
+      "reason": "near_place_geo",
+      "distance_km": 108.2
+    },
+    {
+      "place_id": "dcc:place:cn-10-baoding:0001",
+      "place_slug": "baoding",
+      "place_name": "Baoding",
+      "reason": "near_place_geo",
+      "distance_km": 140.3
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-22-beijing:0001",
+      "to": "dcc:place:cn-28-tianjin:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-22-beijing:0001",
+      "to": "dcc:place:cn-10-baoding:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

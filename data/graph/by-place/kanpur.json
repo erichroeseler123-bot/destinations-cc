@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:in-36-kanpur:0001",
+  "place_slug": "kanpur",
+  "place_name": "Kanpur",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:in-36-lucknow:0001",
+      "place_slug": "lucknow",
+      "place_name": "Lucknow",
+      "reason": "near_place_geo",
+      "distance_km": 70.5
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-36-kanpur:0001",
+      "to": "dcc:place:in-36-lucknow:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

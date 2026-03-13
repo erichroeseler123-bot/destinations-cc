@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:mx-22-santiago-de-queretaro:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.613Z",
+  "metrics": {
+    "risk_score_mean": 1.4106666666666665,
+    "risk_score_stddev": 0.2127742674500112,
+    "risk_score_p90": 1.62,
+    "degraded_transport_rate": 0,
+    "negative_human_signal_rate": 0.13333333333333333
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

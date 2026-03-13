@@ -1,0 +1,86 @@
+[
+  {
+    "sailing_id": "RCL-ICON-20260705-MIA",
+    "line": "Royal Caribbean International",
+    "line_slug": "royal-caribbean",
+    "ship": "Icon of the Seas",
+    "ship_slug": "icon-of-the-seas",
+    "ship_image_url": "https://images.royalcaribbean.com/icon.jpg",
+    "departure_date": "2026-07-05",
+    "duration_days": 7,
+    "itinerary_type": "roundtrip",
+    "embark_port": {
+      "port_name": "Miami, USA",
+      "port_code": "USMIA",
+      "arrival": "2026-07-05T12:00:00Z",
+      "departure": "2026-07-05T20:00:00Z"
+    },
+    "disembark_port": {
+      "port_name": "Miami, USA",
+      "port_code": "USMIA",
+      "arrival": "2026-07-12T11:00:00Z",
+      "departure": "2026-07-12T13:00:00Z"
+    },
+    "ports": [
+      {"port_name":"Miami, USA","port_code":"USMIA","arrival":"2026-07-05T12:00:00Z","departure":"2026-07-05T20:00:00Z"},
+      {"port_name":"Nassau, Bahamas","port_code":"BSNAS","arrival":"2026-07-06T13:00:00Z","departure":"2026-07-06T21:00:00Z"},
+      {"port_name":"Perfect Day at CocoCay","arrival":"2026-07-07T14:00:00Z","departure":"2026-07-07T23:00:00Z","is_private_island":true},
+      {"port_name":"At Sea","arrival":"2026-07-08T00:00:00Z","departure":"2026-07-08T23:59:00Z"},
+      {"port_name":"St. Thomas","arrival":"2026-07-09T13:00:00Z","departure":"2026-07-09T22:00:00Z"},
+      {"port_name":"St. Maarten","arrival":"2026-07-10T12:00:00Z","departure":"2026-07-10T21:00:00Z"},
+      {"port_name":"At Sea","arrival":"2026-07-11T00:00:00Z","departure":"2026-07-11T23:59:00Z"},
+      {"port_name":"Miami, USA","port_code":"USMIA","arrival":"2026-07-12T11:00:00Z","departure":"2026-07-12T13:00:00Z"}
+    ],
+    "sea_days": 2,
+    "starting_price": {"amount": 999, "currency":"USD", "cabin_type":"inside"},
+    "availability_status": "limited",
+    "amenities": {
+      "dining": ["Main Dining Room", "Specialty Steakhouse"],
+      "entertainment": ["AquaTheater", "Broadway-style shows"],
+      "activities": ["Waterslides", "Surf simulator", "Kids Club"],
+      "wellness": ["Spa", "Fitness Center"],
+      "other": ["Pools"]
+    },
+    "events": [
+      {"date_offset_days":0, "name":"Captain's Welcome", "type":"party"},
+      {"date_offset_days":3, "name":"White Night", "type":"themed"}
+    ],
+    "sailing_context": {"demand_level":"high", "notes":["Summer Caribbean peak demand"]},
+    "source": "popular-2026.json",
+    "external_booking_url": "https://www.royalcaribbean.com/cruises?search=icon-of-the-seas",
+    "external_provider": "direct-line"
+  },
+  {
+    "sailing_id": "VIK-OCTANTIS-20260614-SEA",
+    "line": "Viking Expeditions",
+    "line_slug": "viking",
+    "ship": "Viking Octantis",
+    "ship_slug": "viking-octantis",
+    "departure_date": "2026-06-14",
+    "duration_days": 11,
+    "itinerary_type": "oneway",
+    "embark_port": {"port_name":"Seattle, USA", "port_code":"USSEA", "arrival":"2026-06-14T10:00:00Z", "departure":"2026-06-14T19:00:00Z"},
+    "disembark_port": {"port_name":"Seward, Alaska", "port_code":"USSWD", "arrival":"2026-06-25T12:00:00Z", "departure":"2026-06-25T15:00:00Z"},
+    "ports": [
+      {"port_name":"Seattle, USA","port_code":"USSEA","arrival":"2026-06-14T10:00:00Z","departure":"2026-06-14T19:00:00Z"},
+      {"port_name":"Ketchikan, Alaska","arrival":"2026-06-17T14:00:00Z","departure":"2026-06-17T22:00:00Z"},
+      {"port_name":"Juneau, Alaska","arrival":"2026-06-19T15:00:00Z","departure":"2026-06-19T23:30:00Z"},
+      {"port_name":"Skagway, Alaska","arrival":"2026-06-21T14:30:00Z","departure":"2026-06-21T23:00:00Z"},
+      {"port_name":"Seward, Alaska","port_code":"USSWD","arrival":"2026-06-25T12:00:00Z","departure":"2026-06-25T15:00:00Z"}
+    ],
+    "sea_days": 6,
+    "starting_price": {"amount": 5899, "currency":"USD", "cabin_type":"balcony"},
+    "availability_status": "good",
+    "amenities": {
+      "dining": ["Nordic-inspired dining"],
+      "entertainment": ["Exploration lectures"],
+      "activities": ["Zodiac landings", "Kayak excursions"],
+      "wellness": ["Nordic spa"],
+      "other": ["Science lab"]
+    },
+    "sailing_context": {"demand_level":"very-high", "notes":["Alaska shoulder-season demand climbing"]},
+    "source": "popular-2026.json",
+    "external_booking_url": "https://www.viking.com/expeditions",
+    "external_provider": "direct-line"
+  }
+]

@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:sd-29-khartoum:0001",
+  "place_slug": "khartoum",
+  "place_name": "Khartoum",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:sd-29-omdurman:0001",
+      "place_slug": "omdurman",
+      "place_name": "Omdurman",
+      "reason": "near_place_geo",
+      "distance_km": 11.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:sd-29-khartoum:0001",
+      "to": "dcc:place:sd-29-omdurman:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

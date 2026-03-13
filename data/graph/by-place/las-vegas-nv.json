@@ -1,0 +1,94 @@
+{
+  "place_id": "dcc:place:us-nv-las-vegas-nv:0001",
+  "place_slug": "las-vegas-nv",
+  "place_name": "Las Vegas",
+  "actions": {
+    "tours": [
+      {
+        "id": "viator:gc-west-rim",
+        "title": "Grand Canyon West Rim Day Trip",
+        "provider": "viator",
+        "price_from": 129,
+        "url": "https://www.viator.com/tours/Las-Vegas/Grand-Canyon-West-Rim-Day-Trip/d684-12345"
+      },
+      {
+        "id": "viator:strip-helicopter",
+        "title": "Las Vegas Strip Helicopter Night Flight",
+        "provider": "viator",
+        "price_from": 99,
+        "url": "https://www.viator.com/tours/Las-Vegas/Las-Vegas-Strip-Helicopter-Flight/d684-54321"
+      },
+      {
+        "id": "viator:antelope-canyon",
+        "title": "Antelope Canyon & Horseshoe Bend Tour",
+        "provider": "viator",
+        "price_from": 149,
+        "url": "https://www.viator.com/tours/Las-Vegas/Antelope-Canyon-Tour/d684-99999"
+      }
+    ],
+    "cruises": [],
+    "transport": [],
+    "events": [
+      {
+        "id": "intent:event:las-vegas-sphere-experience",
+        "title": "Sphere Experience",
+        "provider": "intent_catalog",
+        "url": "/tours?city=las-vegas-nv&q=Las%20Vegas%20Sphere%20Experience"
+      }
+    ]
+  },
+  "providers": [
+    "viator",
+    "intent_catalog"
+  ],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "related_places": [],
+  "counts": {
+    "tours": 3,
+    "cruises": 0,
+    "transport": 0,
+    "events": 1
+  },
+  "edges": [
+    {
+      "type": "available_in",
+      "from": "dcc:place:us-nv-las-vegas-nv:0001",
+      "to": "viator:gc-west-rim",
+      "meta": {
+        "vertical": "tours",
+        "provider": "viator"
+      }
+    },
+    {
+      "type": "available_in",
+      "from": "dcc:place:us-nv-las-vegas-nv:0001",
+      "to": "viator:strip-helicopter",
+      "meta": {
+        "vertical": "tours",
+        "provider": "viator"
+      }
+    },
+    {
+      "type": "available_in",
+      "from": "dcc:place:us-nv-las-vegas-nv:0001",
+      "to": "viator:antelope-canyon",
+      "meta": {
+        "vertical": "tours",
+        "provider": "viator"
+      }
+    },
+    {
+      "type": "available_in",
+      "from": "dcc:place:us-nv-las-vegas-nv:0001",
+      "to": "intent:event:las-vegas-sphere-experience",
+      "meta": {
+        "vertical": "events",
+        "provider": "intent_catalog"
+      }
+    }
+  ]
+}

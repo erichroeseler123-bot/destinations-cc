@@ -1,0 +1,91 @@
+{
+  "place_id": "dcc:place:us-fl-miami-fl:0001",
+  "place_slug": "miami-fl",
+  "place_name": "Miami",
+  "actions": {
+    "tours": [],
+    "cruises": [
+      {
+        "id": "cruise:RCL-ICON-20260705-MIA",
+        "title": "Royal Caribbean International • Icon of the Seas",
+        "provider": "direct-line",
+        "departure_date": "2026-07-05",
+        "url": "https://www.royalcaribbean.com/cruises?search=icon-of-the-seas"
+      }
+    ],
+    "transport": [],
+    "events": []
+  },
+  "providers": [
+    "direct-line"
+  ],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-fl-fort-lauderdale-fl:0001",
+      "place_slug": "fort-lauderdale-fl",
+      "place_name": "Fort Lauderdale",
+      "reason": "near_place_geo",
+      "distance_km": 39
+    },
+    {
+      "place_id": "dcc:place:us-fl-palm-beach-fl:0001",
+      "place_slug": "palm-beach-fl",
+      "place_name": "Palm Beach",
+      "reason": "near_place_geo",
+      "distance_km": 104.7
+    },
+    {
+      "place_id": "dcc:place:us-fl-west-palm-beach-fl:0001",
+      "place_slug": "west-palm-beach-fl",
+      "place_name": "West Palm Beach",
+      "reason": "near_place_geo",
+      "distance_km": 105.6
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 1,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "available_in",
+      "from": "dcc:place:us-fl-miami-fl:0001",
+      "to": "cruise:RCL-ICON-20260705-MIA",
+      "meta": {
+        "vertical": "cruises",
+        "provider": "direct-line"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-fl-miami-fl:0001",
+      "to": "dcc:place:us-fl-fort-lauderdale-fl:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-fl-miami-fl:0001",
+      "to": "dcc:place:us-fl-palm-beach-fl:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-fl-miami-fl:0001",
+      "to": "dcc:place:us-fl-west-palm-beach-fl:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:pk-05-karachi:0001",
+  "place_slug": "karachi",
+  "place_name": "Karachi",
+  "center": {
+    "coordinates": [
+      67.0104,
+      24.8608
+    ],
+    "country_code": "PK",
+    "admin1_code": "05"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:pk-05-hyderabad-2:0001",
+      "slug": "hyderabad-2",
+      "name": "Hyderabad",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        68.37718,
+        25.39689
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.732Z"
+}

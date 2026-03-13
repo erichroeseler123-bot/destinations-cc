@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:mm-17-yangon:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "improving",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 3.034666666666667,
+  "z_score": -1.78010682924398,
+  "reasons": [
+    "risk_below_baseline"
+  ],
+  "trend": {
+    "place_id": "dcc:place:mm-17-yangon:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.10642857142857144,
+    "sample_count": 7
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:co-29-cali:0001",
+  "place_slug": "cali",
+  "place_name": "Cali",
+  "center": {
+    "coordinates": [
+      -76.5199,
+      3.43054
+    ],
+    "country_code": "CO",
+    "admin1_code": "29"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.717Z"
+}

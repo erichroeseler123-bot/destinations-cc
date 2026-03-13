@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:it-09-milan:0001",
+  "place_slug": "milan",
+  "place_name": "Milan",
+  "center": {
+    "coordinates": [
+      9.18951,
+      45.46427
+    ],
+    "country_code": "IT",
+    "admin1_code": "09"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.742Z"
+}

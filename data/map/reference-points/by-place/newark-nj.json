@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-nj-newark-nj:0001",
+  "place_slug": "newark-nj",
+  "place_name": "Newark",
+  "center": {
+    "coordinates": [
+      -74.17237,
+      40.73566
+    ],
+    "country_code": "US",
+    "admin1_code": "NJ"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-nj-jersey-city-nj:0001",
+      "slug": "jersey-city-nj",
+      "name": "Jersey City",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -74.07764,
+        40.72816
+      ]
+    },
+    {
+      "id": "dcc:place:us-ny-new-york-city:0001",
+      "slug": "new-york-city",
+      "name": "New York City",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -74.00597,
+        40.71427
+      ]
+    },
+    {
+      "id": "dcc:place:us-ny-manhattan:0001",
+      "slug": "manhattan",
+      "name": "Manhattan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -73.96625,
+        40.78343
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.748Z"
+}

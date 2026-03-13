@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:tr-83-gaziantep:0001",
+  "place_slug": "gaziantep",
+  "place_name": "Gaziantep",
+  "center": {
+    "coordinates": [
+      37.3825,
+      37.05944
+    ],
+    "country_code": "TR",
+    "admin1_code": "83"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:sy-09-aleppo:0001",
+      "slug": "aleppo",
+      "name": "Aleppo",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        37.16117,
+        36.20124
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.726Z"
+}

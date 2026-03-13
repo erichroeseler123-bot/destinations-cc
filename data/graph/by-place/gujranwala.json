@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:pk-04-gujranwala:0001",
+  "place_slug": "gujranwala",
+  "place_name": "Gujranwala",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:pk-04-lahore:0001",
+      "place_slug": "lahore",
+      "place_name": "Lahore",
+      "reason": "near_place_geo",
+      "distance_km": 68.2
+    },
+    {
+      "place_id": "dcc:place:in-23-amritsar:0001",
+      "place_slug": "amritsar",
+      "place_name": "Amritsar",
+      "reason": "near_place_geo",
+      "distance_km": 88
+    },
+    {
+      "place_id": "dcc:place:pk-04-faisalabad:0001",
+      "place_slug": "faisalabad",
+      "place_name": "Faisalabad",
+      "reason": "near_place_geo",
+      "distance_km": 132.4
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:pk-04-gujranwala:0001",
+      "to": "dcc:place:pk-04-lahore:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:pk-04-gujranwala:0001",
+      "to": "dcc:place:in-23-amritsar:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:pk-04-gujranwala:0001",
+      "to": "dcc:place:pk-04-faisalabad:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

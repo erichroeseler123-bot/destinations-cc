@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:us-wa-olympia-wa:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "improving",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.7973333333333334,
+  "z_score": -1.522580106764974,
+  "reasons": [
+    "risk_below_baseline"
+  ],
+  "trend": {
+    "place_id": "dcc:place:us-wa-olympia-wa:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.06285714285714285,
+    "sample_count": 7
+  }
+}

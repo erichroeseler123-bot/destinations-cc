@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:us-nc-durham-nc:0001",
+  "place_slug": "durham-nc",
+  "place_name": "Durham",
+  "center": {
+    "coordinates": [
+      -78.89862,
+      35.99403
+    ],
+    "country_code": "US",
+    "admin1_code": "NC"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-nc-raleigh-nc:0001",
+      "slug": "raleigh-nc",
+      "name": "Raleigh",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -78.63861,
+        35.7721
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.724Z"
+}

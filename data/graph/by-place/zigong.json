@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:cn-32-zigong:0001",
+  "place_slug": "zigong",
+  "place_name": "Zigong",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-32-neijiang:0001",
+      "place_slug": "neijiang",
+      "place_name": "Neijiang",
+      "reason": "near_place_geo",
+      "distance_km": 38.6
+    },
+    {
+      "place_id": "dcc:place:cn-32-meishan:0001",
+      "place_slug": "meishan",
+      "place_name": "Meishan",
+      "reason": "near_place_geo",
+      "distance_km": 119.8
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-32-zigong:0001",
+      "to": "dcc:place:cn-32-neijiang:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-32-zigong:0001",
+      "to": "dcc:place:cn-32-meishan:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

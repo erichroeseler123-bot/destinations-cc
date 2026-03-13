@@ -1,0 +1,25 @@
+{
+  "place_id": "dcc:place:dk-17-copenhagen:0001",
+  "place_slug": "copenhagen",
+  "place_name": "Copenhagen",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "related_places": [],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": []
+}

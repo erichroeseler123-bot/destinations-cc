@@ -1,0 +1,44 @@
+{
+  "place_id": "dcc:place:us-tn-nashville-tn:0001",
+  "place_slug": "nashville-tn",
+  "place_name": "Nashville",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": [
+      {
+        "id": "intent:event:grand-ole-opry-tickets",
+        "title": "Grand Ole Opry",
+        "provider": "intent_catalog",
+        "url": "/tours?city=nashville-tn&q=Grand%20Ole%20Opry%20tickets"
+      }
+    ]
+  },
+  "providers": [
+    "intent_catalog"
+  ],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 1
+  },
+  "edges": [
+    {
+      "type": "available_in",
+      "from": "dcc:place:us-tn-nashville-tn:0001",
+      "to": "intent:event:grand-ole-opry-tickets",
+      "meta": {
+        "vertical": "events",
+        "provider": "intent_catalog"
+      }
+    }
+  ]
+}

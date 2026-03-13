@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:vn-01-hanoi:0001",
+  "place_slug": "hanoi",
+  "place_name": "Hanoi",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:vn-31-haiphong:0001",
+      "place_slug": "haiphong",
+      "place_name": "Haiphong",
+      "reason": "near_place_geo",
+      "distance_km": 89.3
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:vn-01-hanoi:0001",
+      "to": "dcc:place:vn-31-haiphong:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

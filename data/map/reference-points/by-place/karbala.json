@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:iq-12-karbala:0001",
+  "place_slug": "karbala",
+  "place_name": "Karbala",
+  "center": {
+    "coordinates": [
+      44.02488,
+      32.61603
+    ],
+    "country_code": "IQ",
+    "admin1_code": "12"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:iq-07-baghdad:0001",
+      "slug": "baghdad",
+      "name": "Baghdad",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        44.40088,
+        33.34058
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.736Z"
+}

@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:in-09-vadodara:0001",
+  "place_slug": "vadodara",
+  "place_name": "Vadodara",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:in-09-ahmedabad:0001",
+      "place_slug": "ahmedabad",
+      "place_name": "Ahmedabad",
+      "reason": "near_place_geo",
+      "distance_km": 102.9
+    },
+    {
+      "place_id": "dcc:place:in-09-surat:0001",
+      "place_slug": "surat",
+      "place_name": "Surat",
+      "reason": "near_place_geo",
+      "distance_km": 128.8
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-09-vadodara:0001",
+      "to": "dcc:place:in-09-ahmedabad:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-09-vadodara:0001",
+      "to": "dcc:place:in-09-surat:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

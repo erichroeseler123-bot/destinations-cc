@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-02-jinhua:0001",
+  "place_slug": "jinhua",
+  "place_name": "Jinhua",
+  "center": {
+    "coordinates": [
+      119.64421,
+      29.10678
+    ],
+    "country_code": "CN",
+    "admin1_code": "02"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-02-puyang:0001",
+      "slug": "puyang",
+      "name": "Puyang",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        119.88872,
+        29.45679
+      ]
+    },
+    {
+      "id": "dcc:place:cn-02-yiwu:0001",
+      "slug": "yiwu",
+      "name": "Yiwu",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        120.07676,
+        29.31506
+      ]
+    },
+    {
+      "id": "dcc:place:cn-02-shaoxing:0001",
+      "slug": "shaoxing",
+      "name": "Shaoxing",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        120.57864,
+        30.00237
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.731Z"
+}

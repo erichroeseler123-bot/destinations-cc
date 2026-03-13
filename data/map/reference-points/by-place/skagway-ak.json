@@ -1,0 +1,41 @@
+{
+  "place_id": "dcc:place:us-ak-skagway-ak:0001",
+  "place_slug": "skagway-ak",
+  "place_name": "Skagway",
+  "center": {
+    "coordinates": [
+      -135.31389,
+      59.45833
+    ],
+    "country_code": "US",
+    "admin1_code": "AK"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 1,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [
+    "direct-line"
+  ],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ak-juneau-ak:0001",
+      "slug": "juneau-ak",
+      "name": "Juneau",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -134.41972,
+        58.30194
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.757Z"
+}

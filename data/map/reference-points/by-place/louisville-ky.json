@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:us-ky-louisville-ky:0001",
+  "place_slug": "louisville-ky",
+  "place_name": "Louisville",
+  "center": {
+    "coordinates": [
+      -85.75941,
+      38.25424
+    ],
+    "country_code": "US",
+    "admin1_code": "KY"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ky-lexington-ky:0001",
+      "slug": "lexington-ky",
+      "name": "Lexington",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -84.47772,
+        37.98869
+      ]
+    },
+    {
+      "id": "dcc:place:us-oh-cincinnati-oh:0001",
+      "slug": "cincinnati-oh",
+      "name": "Cincinnati",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -84.51439,
+        39.12711
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.739Z"
+}

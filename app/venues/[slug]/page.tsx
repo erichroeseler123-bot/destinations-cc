@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageActionBar from "@/app/components/dcc/PageActionBar";
+import DecisionEngineTemplate from "@/app/components/dcc/DecisionEngineTemplate";
+import LivePulseBlock from "@/app/components/dcc/livePulse/LivePulseBlock";
+import LivePulseShareCard from "@/app/components/dcc/share/LivePulseShareCard";
 import { buildSeatGeekGameSlug, seatGeekAdapter } from "@/lib/dcc/providers/adapters/seatgeek";
+import { getSurface, hasSurfaceEntity } from "@/lib/dcc/surfaces/getSurface";
+import { getDecisionEnginePageByPath } from "@/src/data/decision-engine-pages";
 import { getSportsTeam, getTeamsByVenue } from "@/src/data/sports-teams-config";
 import { getSportsVenue, getSportsVenueSlugs } from "@/src/data/sports-venues-config";
 import { buildMapsSearchUrl, buildOfficialSearchUrl, type PageAction } from "@/src/lib/page-actions";
@@ -89,6 +94,16 @@ export default async function VenuePage({ params }: { params: Promise<Params> })
   const isMissingKey = eventResults.some(
     (result) => result.diagnostics.fallback_reason === "missing_client_id"
   );
+  const entityKey = `venue:${venue.slug}`;
+  const surface =
+    hasSurfaceEntity(entityKey) ?
+      await getSurface({
+        entityKey: entityKey as `venue:${string}`,
+        modules: ["decision", "livePulse", "share", "counts", "graph", "media"],
+        strict: false,
+      })
+    : null;
+  const decisionPage = surface?.modules.decision?.page || getDecisionEnginePageByPath(`/venues/${venue.slug}`);
   const actionBarActions: PageAction[] = [
     { href: buildMapsSearchUrl(`${venue.name}, ${venue.cityName}`), label: "Open in Maps", kind: "external" },
     { href: buildOfficialSearchUrl(`${venue.name} ${venue.cityName}`), label: "Find official site", kind: "external" },
@@ -109,6 +124,20 @@ export default async function VenuePage({ params }: { params: Promise<Params> })
         </header>
 
         <PageActionBar title={`Useful actions for ${venue.name}`} actions={actionBarActions} />
+
+        {slug === "red-rocks-amphitheatre" ? (
+          <section className="grid gap-6 lg:grid-cols-2">
+            <LivePulseBlock
+              entityType="venue"
+              entitySlug="red-rocks-amphitheatre"
+              title="Red Rocks Live Pulse"
+              target="entity"
+            />
+            <LivePulseShareCard />
+          </section>
+        ) : null}
+
+        {decisionPage ? <DecisionEngineTemplate page={decisionPage} /> : null}
 
         <section className="grid gap-4 md:grid-cols-3">
           {venue.whyItMatters.map((item) => (

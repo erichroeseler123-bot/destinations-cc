@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:kr-21-ulsan:0001",
+  "place_slug": "ulsan",
+  "place_name": "Ulsan",
+  "center": {
+    "coordinates": [
+      129.31667,
+      35.53722
+    ],
+    "country_code": "KR",
+    "admin1_code": "21"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:kr-10-busan:0001",
+      "slug": "busan",
+      "name": "Busan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        129.03004,
+        35.10168
+      ]
+    },
+    {
+      "id": "dcc:place:kr-15-daegu:0001",
+      "slug": "daegu",
+      "name": "Daegu",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        128.59111,
+        35.87028
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.762Z"
+}

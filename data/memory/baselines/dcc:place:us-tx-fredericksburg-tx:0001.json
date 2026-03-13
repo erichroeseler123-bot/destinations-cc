@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:us-tx-fredericksburg-tx:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.634Z",
+  "metrics": {
+    "risk_score_mean": 2.4080000000000004,
+    "risk_score_stddev": 0.5169036015867303,
+    "risk_score_p90": 2.38,
+    "degraded_transport_rate": 0.13333333333333333,
+    "negative_human_signal_rate": 0.13333333333333333
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

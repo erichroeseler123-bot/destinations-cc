@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-01-wuhu:0001",
+  "place_slug": "wuhu",
+  "place_name": "Wuhu",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-04-nanjing:0001",
+      "place_slug": "nanjing",
+      "place_name": "Nanjing",
+      "reason": "near_place_geo",
+      "distance_km": 85.5
+    },
+    {
+      "place_id": "dcc:place:cn-01-hefei:0001",
+      "place_slug": "hefei",
+      "place_name": "Hefei",
+      "reason": "near_place_geo",
+      "distance_km": 122.7
+    },
+    {
+      "place_id": "dcc:place:cn-04-yixing:0001",
+      "place_slug": "yixing",
+      "place_name": "Yixing",
+      "reason": "near_place_geo",
+      "distance_km": 132.1
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-01-wuhu:0001",
+      "to": "dcc:place:cn-04-nanjing:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-01-wuhu:0001",
+      "to": "dcc:place:cn-01-hefei:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-01-wuhu:0001",
+      "to": "dcc:place:cn-04-yixing:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

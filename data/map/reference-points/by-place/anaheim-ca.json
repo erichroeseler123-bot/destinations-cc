@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-ca-anaheim-ca:0001",
+  "place_slug": "anaheim-ca",
+  "place_name": "Anaheim",
+  "center": {
+    "coordinates": [
+      -117.9145,
+      33.83529
+    ],
+    "country_code": "US",
+    "admin1_code": "CA"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ca-long-beach-ca:0001",
+      "slug": "long-beach-ca",
+      "name": "Long Beach",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -118.18923,
+        33.76696
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-los-angeles:0001",
+      "slug": "los-angeles",
+      "name": "Los Angeles",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -118.24368,
+        34.05223
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-pasadena-ca:0001",
+      "slug": "pasadena-ca",
+      "name": "Pasadena",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -118.14452,
+        34.14778
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.710Z"
+}

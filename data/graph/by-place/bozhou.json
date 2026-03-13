@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-01-bozhou:0001",
+  "place_slug": "bozhou",
+  "place_name": "Bozhou",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-09-shangqiu:0001",
+      "place_slug": "shangqiu",
+      "place_name": "Shangqiu",
+      "reason": "near_place_geo",
+      "distance_km": 64.6
+    },
+    {
+      "place_id": "dcc:place:cn-01-huaibei:0001",
+      "place_slug": "huaibei",
+      "place_name": "Huaibei",
+      "reason": "near_place_geo",
+      "distance_km": 94.9
+    },
+    {
+      "place_id": "dcc:place:cn-01-fuyang:0001",
+      "place_slug": "fuyang",
+      "place_name": "Fuyang",
+      "reason": "near_place_geo",
+      "distance_km": 108.7
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-01-bozhou:0001",
+      "to": "dcc:place:cn-09-shangqiu:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-01-bozhou:0001",
+      "to": "dcc:place:cn-01-huaibei:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-01-bozhou:0001",
+      "to": "dcc:place:cn-01-fuyang:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

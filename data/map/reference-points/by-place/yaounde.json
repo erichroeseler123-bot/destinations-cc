@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:cm-11-yaounde:0001",
+  "place_slug": "yaounde",
+  "place_name": "Yaounde",
+  "center": {
+    "coordinates": [
+      11.51667,
+      3.86667
+    ],
+    "country_code": "CM",
+    "admin1_code": "11"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.767Z"
+}

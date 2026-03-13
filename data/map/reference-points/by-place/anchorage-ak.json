@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:us-ak-anchorage-ak:0001",
+  "place_slug": "anchorage-ak",
+  "place_name": "Anchorage",
+  "center": {
+    "coordinates": [
+      -149.90028,
+      61.21806
+    ],
+    "country_code": "US",
+    "admin1_code": "AK"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.710Z"
+}

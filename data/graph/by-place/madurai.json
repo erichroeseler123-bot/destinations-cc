@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:in-25-madurai:0001",
+  "place_slug": "madurai",
+  "place_name": "Madurai",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:in-25-tirunelveli:0001",
+      "place_slug": "tirunelveli",
+      "place_name": "Tirunelveli",
+      "reason": "near_place_geo",
+      "distance_km": 140.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-25-madurai:0001",
+      "to": "dcc:place:in-25-tirunelveli:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

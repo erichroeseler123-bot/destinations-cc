@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:jp-19-yokohama:0001",
+  "place_slug": "yokohama",
+  "place_name": "Yokohama",
+  "center": {
+    "coordinates": [
+      139.65,
+      35.43333
+    ],
+    "country_code": "JP",
+    "admin1_code": "19"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:jp-19-kawasaki:0001",
+      "slug": "kawasaki",
+      "name": "Kawasaki",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        139.71722,
+        35.52056
+      ]
+    },
+    {
+      "id": "dcc:place:jp-40-tokyo:0001",
+      "slug": "tokyo",
+      "name": "Tokyo",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        139.69171,
+        35.6895
+      ]
+    },
+    {
+      "id": "dcc:place:jp-34-saitama:0001",
+      "slug": "saitama",
+      "name": "Saitama",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        139.65657,
+        35.90807
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.768Z"
+}

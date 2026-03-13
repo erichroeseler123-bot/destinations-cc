@@ -136,7 +136,7 @@ export default function LasVegasBestDayTripsPage() {
 
         <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">Day-trip pillar routes</h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <Link href="/grand-canyon" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
               <h3 className="font-semibold">Grand Canyon</h3>
               <p className="mt-2 text-sm text-zinc-300">Use the standalone canyon pillar for rim choice, Skywalk, and helicopter route decisions.</p>
@@ -152,6 +152,10 @@ export default function LasVegasBestDayTripsPage() {
             <Link href="/valley-of-fire" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
               <h3 className="font-semibold">Valley of Fire</h3>
               <p className="mt-2 text-sm text-zinc-300">Use the stronger desert-landscape pillar for scenic routes, hiking, and full daytime blocks.</p>
+            </Link>
+            <Link href="/lake-mead" className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
+              <h3 className="font-semibold">Lake Mead</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use the water-recreation pillar for boating, kayaking, and Hoover Dam-adjacent outdoor routes.</p>
             </Link>
           </div>
         </section>

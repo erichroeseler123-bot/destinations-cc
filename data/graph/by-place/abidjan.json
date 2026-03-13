@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:ci-93-abidjan:0001",
+  "place_slug": "abidjan",
+  "place_name": "Abidjan",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:ci-93-abobo:0001",
+      "place_slug": "abobo",
+      "place_name": "Abobo",
+      "reason": "near_place_geo",
+      "distance_km": 7
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:ci-93-abidjan:0001",
+      "to": "dcc:place:ci-93-abobo:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

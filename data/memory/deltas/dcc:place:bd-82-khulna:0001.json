@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:bd-82-khulna:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.701333333333333,
+  "z_score": -1.4197354250007217,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:bd-82-khulna:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.09714285714285718,
+    "sample_count": 7
+  }
+}

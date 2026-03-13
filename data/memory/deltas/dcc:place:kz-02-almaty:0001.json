@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:kz-02-almaty:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.533333333333333,
+  "z_score": -1.2306236034563185,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:kz-02-almaty:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.032142857142857154,
+    "sample_count": 7
+  }
+}

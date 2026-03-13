@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:us-la-new-orleans-la:0001",
+  "place_slug": "new-orleans-la",
+  "place_name": "New Orleans",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-la-baton-rouge-la:0001",
+      "place_slug": "baton-rouge-la",
+      "place_name": "Baton Rouge",
+      "reason": "near_place_geo",
+      "distance_km": 119.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-la-new-orleans-la:0001",
+      "to": "dcc:place:us-la-baton-rouge-la:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:jp-24-sendai:0001",
+  "place_slug": "sendai",
+  "place_name": "Sendai",
+  "center": {
+    "coordinates": [
+      140.86667,
+      38.26667
+    ],
+    "country_code": "JP",
+    "admin1_code": "24"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.756Z"
+}

@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:vn-75-bien-hoa:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.3519999999999994,
+  "z_score": -0.638822694552944,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:vn-75-bien-hoa:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": 0.12285714285714286,
+    "sample_count": 7
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-nh-portsmouth-nh:0001",
+  "place_slug": "portsmouth-nh",
+  "place_name": "Portsmouth",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-me-portland-me:0001",
+      "place_slug": "portland-me",
+      "place_name": "Portland",
+      "reason": "near_place_geo",
+      "distance_km": 76.1
+    },
+    {
+      "place_id": "dcc:place:us-ma-boston-ma:0001",
+      "place_slug": "boston-ma",
+      "place_name": "Boston",
+      "reason": "near_place_geo",
+      "distance_km": 83.6
+    },
+    {
+      "place_id": "dcc:place:us-ri-providence-ri:0001",
+      "place_slug": "providence-ri",
+      "place_name": "Providence",
+      "reason": "near_place_geo",
+      "distance_km": 149.3
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-nh-portsmouth-nh:0001",
+      "to": "dcc:place:us-me-portland-me:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-nh-portsmouth-nh:0001",
+      "to": "dcc:place:us-ma-boston-ma:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-nh-portsmouth-nh:0001",
+      "to": "dcc:place:us-ri-providence-ri:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

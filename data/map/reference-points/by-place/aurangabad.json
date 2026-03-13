@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:in-16-aurangabad:0001",
+  "place_slug": "aurangabad",
+  "place_name": "Aurangabad",
+  "center": {
+    "coordinates": [
+      75.34226,
+      19.87757
+    ],
+    "country_code": "IN",
+    "admin1_code": "16"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.712Z"
+}

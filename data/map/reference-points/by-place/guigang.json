@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-16-guigang:0001",
+  "place_slug": "guigang",
+  "place_name": "Guigang",
+  "center": {
+    "coordinates": [
+      109.59472,
+      23.11603
+    ],
+    "country_code": "CN",
+    "admin1_code": "16"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-16-yulin:0001",
+      "slug": "yulin",
+      "name": "Yulin",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        110.14686,
+        22.6305
+      ]
+    },
+    {
+      "id": "dcc:place:cn-16-nanning:0001",
+      "slug": "nanning",
+      "name": "Nanning",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        108.31667,
+        22.81667
+      ]
+    },
+    {
+      "id": "dcc:place:cn-16-liuzhou:0001",
+      "slug": "liuzhou",
+      "name": "Liuzhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        109.40698,
+        24.32405
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.727Z"
+}

@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-01-bozhou:0001",
+  "place_slug": "bozhou",
+  "place_name": "Bozhou",
+  "center": {
+    "coordinates": [
+      115.77028,
+      33.87722
+    ],
+    "country_code": "CN",
+    "admin1_code": "01"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-09-shangqiu:0001",
+      "slug": "shangqiu",
+      "name": "Shangqiu",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        115.65,
+        34.45
+      ]
+    },
+    {
+      "id": "dcc:place:cn-01-huaibei:0001",
+      "slug": "huaibei",
+      "name": "Huaibei",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        116.79167,
+        33.97444
+      ]
+    },
+    {
+      "id": "dcc:place:cn-01-fuyang:0001",
+      "slug": "fuyang",
+      "name": "Fuyang",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        115.81667,
+        32.9
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.715Z"
+}

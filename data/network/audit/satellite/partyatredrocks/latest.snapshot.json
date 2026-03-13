@@ -1,0 +1,23 @@
+{
+  "generatedAt": "2026-03-11T01:31:38.717Z",
+  "nodeIds": [
+    "discovery:dcc:node:mighty-argo-shuttle",
+    "discovery:dcc:node:vegas",
+    "discovery:dcc:node:alaska",
+    "discovery:dcc:node:cruises",
+    "discovery:dcc:node:national-parks",
+    "discovery:dcc:node:new-orleans",
+    "monetized:dcc:node:mighty-argo-shuttle"
+  ],
+  "edgeIds": [
+    "discovery:dcc:edge:argo-to-national-parks-co-intent",
+    "discovery:dcc:edge:argo-to-vegas-fallback",
+    "discovery:dcc:edge:vegas-to-new-orleans-co-intent",
+    "discovery:dcc:edge:new-orleans-to-cruises-routes",
+    "discovery:dcc:edge:cruises-to-alaska-routes",
+    "discovery:dcc:edge:alaska-to-national-parks-nearby",
+    "discovery:dcc:edge:intel-feed-viator-to-cruises",
+    "discovery:dcc:edge:argo-operator-operates-in-colorado",
+    "monetized:dcc:edge:argo-operator-operates-in-colorado"
+  ]
+}

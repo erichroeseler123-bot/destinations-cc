@@ -1,0 +1,635 @@
+[
+  {
+    "name": "Hong Kong",
+    "area": "Asia • China",
+    "country": "HK",
+    "slug": "hong-kong",
+    "tags": []
+  },
+  {
+    "name": "Shanghai",
+    "area": "Asia • China",
+    "country": "CN",
+    "slug": "shanghai",
+    "tags": []
+  },
+  {
+    "name": "Yokohama (Tokyo)",
+    "area": "Asia • Japan",
+    "country": "JP",
+    "slug": "yokohama",
+    "tags": []
+  },
+  {
+    "name": "Singapore",
+    "area": "Asia • Southeast Asia",
+    "country": "SG",
+    "slug": "singapore",
+    "tags": []
+  },
+  {
+    "name": "Brisbane",
+    "area": "Australia & NZ • Australia",
+    "country": "AU",
+    "slug": "brisbane",
+    "tags": []
+  },
+  {
+    "name": "Melbourne",
+    "area": "Australia & NZ • Australia",
+    "country": "AU",
+    "slug": "melbourne",
+    "tags": []
+  },
+  {
+    "name": "Sydney",
+    "area": "Australia & NZ • Australia",
+    "country": "AU",
+    "slug": "sydney",
+    "tags": []
+  },
+  {
+    "name": "Auckland",
+    "area": "Australia & NZ • New Zealand",
+    "country": "NZ",
+    "slug": "auckland",
+    "tags": []
+  },
+  {
+    "name": "Great Stirrup Cay",
+    "area": "Bahamas",
+    "country": "BS",
+    "slug": "great-stirrup-cay",
+    "tags": [
+      "private"
+    ]
+  },
+  {
+    "name": "Perfect Day at CocoCay",
+    "area": "Bahamas",
+    "country": "BS",
+    "slug": "cococay",
+    "tags": [
+      "private"
+    ]
+  },
+  {
+    "name": "Port of Nassau",
+    "area": "Bahamas",
+    "country": "BS",
+    "slug": "nassau",
+    "tags": []
+  },
+  {
+    "name": "Oranjestad",
+    "area": "Caribbean • Aruba",
+    "country": "AW",
+    "slug": "oranjestad",
+    "tags": []
+  },
+  {
+    "name": "Bridgetown",
+    "area": "Caribbean • Barbados",
+    "country": "BB",
+    "slug": "bridgetown",
+    "tags": []
+  },
+  {
+    "name": "George Town (Grand Cayman)",
+    "area": "Caribbean • Cayman Islands",
+    "country": "KY",
+    "slug": "george-town-grand-cayman",
+    "tags": []
+  },
+  {
+    "name": "Willemstad",
+    "area": "Caribbean • Curaçao",
+    "country": "CW",
+    "slug": "willemstad",
+    "tags": []
+  },
+  {
+    "name": "Labadee",
+    "area": "Caribbean • Haiti",
+    "country": "HT",
+    "slug": "labadee",
+    "tags": [
+      "private"
+    ]
+  },
+  {
+    "name": "Falmouth (Jamaica)",
+    "area": "Caribbean • Jamaica",
+    "country": "JM",
+    "slug": "falmouth-jamaica",
+    "tags": []
+  },
+  {
+    "name": "Montego Bay",
+    "area": "Caribbean • Jamaica",
+    "country": "JM",
+    "slug": "montego-bay",
+    "tags": []
+  },
+  {
+    "name": "San Juan",
+    "area": "Caribbean • Puerto Rico",
+    "country": "PR",
+    "slug": "san-juan",
+    "tags": []
+  },
+  {
+    "name": "Philipsburg",
+    "area": "Caribbean • Sint Maarten",
+    "country": "SX",
+    "slug": "philipsburg",
+    "tags": []
+  },
+  {
+    "name": "Basseterre",
+    "area": "Caribbean • St. Kitts & Nevis",
+    "country": "KN",
+    "slug": "basseterre",
+    "tags": []
+  },
+  {
+    "name": "Castries",
+    "area": "Caribbean • St. Lucia",
+    "country": "LC",
+    "slug": "castries",
+    "tags": []
+  },
+  {
+    "name": "St. Thomas",
+    "area": "Caribbean • USVI",
+    "country": "VI",
+    "slug": "st-thomas",
+    "tags": []
+  },
+  {
+    "name": "Belize City",
+    "area": "Central America • Belize",
+    "country": "BZ",
+    "slug": "belize-city",
+    "tags": []
+  },
+  {
+    "name": "Roatán",
+    "area": "Central America • Honduras",
+    "country": "HN",
+    "slug": "roatan",
+    "tags": []
+  },
+  {
+    "name": "Lisbon",
+    "area": "Europe • Atlantic",
+    "country": "PT",
+    "slug": "lisbon",
+    "tags": []
+  },
+  {
+    "name": "Civitavecchia (Rome)",
+    "area": "Europe • Mediterranean",
+    "country": "IT",
+    "slug": "civitavecchia",
+    "tags": []
+  },
+  {
+    "name": "Dubrovnik",
+    "area": "Europe • Mediterranean",
+    "country": "HR",
+    "slug": "dubrovnik",
+    "tags": []
+  },
+  {
+    "name": "Livorno (Florence/Pisa)",
+    "area": "Europe • Mediterranean",
+    "country": "IT",
+    "slug": "livorno",
+    "tags": []
+  },
+  {
+    "name": "Marseille",
+    "area": "Europe • Mediterranean",
+    "country": "FR",
+    "slug": "marseille",
+    "tags": []
+  },
+  {
+    "name": "Messina (Sicily)",
+    "area": "Europe • Mediterranean",
+    "country": "IT",
+    "slug": "messina",
+    "tags": []
+  },
+  {
+    "name": "Mykonos",
+    "area": "Europe • Mediterranean",
+    "country": "GR",
+    "slug": "mykonos",
+    "tags": []
+  },
+  {
+    "name": "Naples",
+    "area": "Europe • Mediterranean",
+    "country": "IT",
+    "slug": "naples",
+    "tags": []
+  },
+  {
+    "name": "Palma de Mallorca",
+    "area": "Europe • Mediterranean",
+    "country": "ES",
+    "slug": "palma-de-mallorca",
+    "tags": []
+  },
+  {
+    "name": "Piraeus (Athens)",
+    "area": "Europe • Mediterranean",
+    "country": "GR",
+    "slug": "piraeus",
+    "tags": []
+  },
+  {
+    "name": "Port of Barcelona",
+    "area": "Europe • Mediterranean",
+    "country": "ES",
+    "slug": "barcelona",
+    "tags": []
+  },
+  {
+    "name": "Santorini",
+    "area": "Europe • Mediterranean",
+    "country": "GR",
+    "slug": "santorini",
+    "tags": []
+  },
+  {
+    "name": "Valencia",
+    "area": "Europe • Mediterranean",
+    "country": "ES",
+    "slug": "valencia",
+    "tags": []
+  },
+  {
+    "name": "Venice",
+    "area": "Europe • Mediterranean",
+    "country": "IT",
+    "slug": "venice",
+    "tags": []
+  },
+  {
+    "name": "Amsterdam",
+    "area": "Europe • Northern Europe",
+    "country": "NL",
+    "slug": "amsterdam",
+    "tags": []
+  },
+  {
+    "name": "Bergen",
+    "area": "Europe • Northern Europe",
+    "country": "NO",
+    "slug": "bergen",
+    "tags": []
+  },
+  {
+    "name": "Copenhagen",
+    "area": "Europe • Northern Europe",
+    "country": "DK",
+    "slug": "copenhagen",
+    "tags": []
+  },
+  {
+    "name": "Hamburg",
+    "area": "Europe • Northern Europe",
+    "country": "DE",
+    "slug": "hamburg",
+    "tags": []
+  },
+  {
+    "name": "Helsinki",
+    "area": "Europe • Northern Europe",
+    "country": "FI",
+    "slug": "helsinki",
+    "tags": []
+  },
+  {
+    "name": "Stockholm",
+    "area": "Europe • Northern Europe",
+    "country": "SE",
+    "slug": "stockholm",
+    "tags": []
+  },
+  {
+    "name": "Tallinn",
+    "area": "Europe • Northern Europe",
+    "country": "EE",
+    "slug": "tallinn",
+    "tags": []
+  },
+  {
+    "name": "Istanbul",
+    "area": "Europe • Turkey",
+    "country": "TR",
+    "slug": "istanbul",
+    "tags": []
+  },
+  {
+    "name": "Kuşadası (Ephesus)",
+    "area": "Europe • Turkey",
+    "country": "TR",
+    "slug": "kusadasi",
+    "tags": []
+  },
+  {
+    "name": "Southampton",
+    "area": "Europe • UK",
+    "country": "GB",
+    "slug": "southampton",
+    "tags": []
+  },
+  {
+    "name": "Costa Maya",
+    "area": "Mexico • Caribbean",
+    "country": "MX",
+    "slug": "costa-maya",
+    "tags": []
+  },
+  {
+    "name": "Port of Cozumel",
+    "area": "Mexico • Caribbean",
+    "country": "MX",
+    "slug": "cozumel",
+    "tags": []
+  },
+  {
+    "name": "Progreso (Mérida)",
+    "area": "Mexico • Gulf Coast",
+    "country": "MX",
+    "slug": "progreso",
+    "tags": []
+  },
+  {
+    "name": "Cabo San Lucas",
+    "area": "Mexico • Pacific Coast",
+    "country": "MX",
+    "slug": "cabo-san-lucas",
+    "tags": []
+  },
+  {
+    "name": "Mazatlán",
+    "area": "Mexico • Pacific Coast",
+    "country": "MX",
+    "slug": "mazatlan",
+    "tags": []
+  },
+  {
+    "name": "Puerto Vallarta",
+    "area": "Mexico • Pacific Coast",
+    "country": "MX",
+    "slug": "puerto-vallarta",
+    "tags": []
+  },
+  {
+    "name": "Abu Dhabi",
+    "area": "Middle East • UAE",
+    "country": "AE",
+    "slug": "abu-dhabi",
+    "tags": []
+  },
+  {
+    "name": "Dubai",
+    "area": "Middle East • UAE",
+    "country": "AE",
+    "slug": "dubai",
+    "tags": []
+  },
+  {
+    "name": "Vancouver",
+    "area": "North America • Canada",
+    "country": "CA",
+    "slug": "vancouver",
+    "tags": []
+  },
+  {
+    "name": "Cartagena",
+    "area": "South America • Colombia",
+    "country": "CO",
+    "slug": "cartagena",
+    "tags": []
+  },
+  {
+    "name": "Anchorage (via Whittier/Seward)",
+    "area": "USA • Alaska",
+    "country": "US",
+    "slug": "anchorage",
+    "tags": [
+      "alaska"
+    ]
+  },
+  {
+    "name": "College Fjord",
+    "area": "USA • Alaska",
+    "country": "US",
+    "slug": "college-fjord",
+    "tags": [
+      "scenic",
+      "alaska"
+    ]
+  },
+  {
+    "name": "Glacier Bay",
+    "area": "USA • Alaska",
+    "country": "US",
+    "slug": "glacier-bay",
+    "tags": [
+      "scenic",
+      "alaska"
+    ]
+  },
+  {
+    "name": "Haines",
+    "area": "USA • Alaska",
+    "country": "US",
+    "slug": "haines",
+    "tags": [
+      "alaska"
+    ]
+  },
+  {
+    "name": "Hubbard Glacier",
+    "area": "USA • Alaska",
+    "country": "US",
+    "slug": "hubbard-glacier",
+    "tags": [
+      "scenic",
+      "alaska"
+    ]
+  },
+  {
+    "name": "Icy Strait Point (Hoonah)",
+    "area": "USA • Alaska",
+    "country": "US",
+    "slug": "icy-strait-point",
+    "tags": [
+      "alaska"
+    ]
+  },
+  {
+    "name": "Juneau",
+    "area": "USA • Alaska",
+    "country": "US",
+    "slug": "juneau",
+    "tags": [
+      "alaska"
+    ]
+  },
+  {
+    "name": "Ketchikan",
+    "area": "USA • Alaska",
+    "country": "US",
+    "slug": "ketchikan",
+    "tags": [
+      "alaska"
+    ]
+  },
+  {
+    "name": "Seward",
+    "area": "USA • Alaska",
+    "country": "US",
+    "slug": "seward",
+    "tags": [
+      "alaska"
+    ]
+  },
+  {
+    "name": "Sitka",
+    "area": "USA • Alaska",
+    "country": "US",
+    "slug": "sitka",
+    "tags": [
+      "alaska"
+    ]
+  },
+  {
+    "name": "Skagway",
+    "area": "USA • Alaska",
+    "country": "US",
+    "slug": "skagway",
+    "tags": [
+      "alaska"
+    ]
+  },
+  {
+    "name": "Tracy Arm Fjord",
+    "area": "USA • Alaska",
+    "country": "US",
+    "slug": "tracy-arm-fjord",
+    "tags": [
+      "scenic",
+      "alaska"
+    ]
+  },
+  {
+    "name": "Valdez",
+    "area": "USA • Alaska",
+    "country": "US",
+    "slug": "valdez",
+    "tags": [
+      "alaska"
+    ]
+  },
+  {
+    "name": "Whittier",
+    "area": "USA • Alaska",
+    "country": "US",
+    "slug": "whittier",
+    "tags": [
+      "alaska"
+    ]
+  },
+  {
+    "name": "Los Angeles",
+    "area": "USA • California",
+    "country": "US",
+    "slug": "los-angeles",
+    "tags": []
+  },
+  {
+    "name": "San Diego",
+    "area": "USA • California",
+    "country": "US",
+    "slug": "san-diego",
+    "tags": []
+  },
+  {
+    "name": "San Francisco",
+    "area": "USA • California",
+    "country": "US",
+    "slug": "san-francisco",
+    "tags": []
+  },
+  {
+    "name": "Key West",
+    "area": "USA • Florida",
+    "country": "US",
+    "slug": "key-west",
+    "tags": []
+  },
+  {
+    "name": "Port Canaveral",
+    "area": "USA • Florida",
+    "country": "US",
+    "slug": "port-canaveral",
+    "tags": []
+  },
+  {
+    "name": "Port Everglades (Fort Lauderdale)",
+    "area": "USA • Florida",
+    "country": "US",
+    "slug": "port-everglades",
+    "tags": []
+  },
+  {
+    "name": "PortMiami",
+    "area": "USA • Florida",
+    "country": "US",
+    "slug": "portmiami",
+    "tags": []
+  },
+  {
+    "name": "Tampa",
+    "area": "USA • Florida",
+    "country": "US",
+    "slug": "tampa",
+    "tags": []
+  },
+  {
+    "name": "Honolulu",
+    "area": "USA • Hawaii",
+    "country": "US",
+    "slug": "honolulu",
+    "tags": []
+  },
+  {
+    "name": "New Orleans",
+    "area": "USA • Louisiana",
+    "country": "US",
+    "slug": "new-orleans",
+    "tags": []
+  },
+  {
+    "name": "Galveston",
+    "area": "USA • Texas",
+    "country": "US",
+    "slug": "galveston",
+    "tags": []
+  },
+  {
+    "name": "Seattle",
+    "area": "USA • Washington",
+    "country": "US",
+    "slug": "seattle",
+    "tags": []
+  }
+]

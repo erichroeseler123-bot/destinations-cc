@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:id-08-surabaya:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.606Z",
+  "metrics": {
+    "risk_score_mean": 2.288,
+    "risk_score_stddev": 0.19305266984254152,
+    "risk_score_p90": 2.46,
+    "degraded_transport_rate": 0,
+    "negative_human_signal_rate": 0.13333333333333333
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:us-ca-sonoma-ca:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.622Z",
+  "metrics": {
+    "risk_score_mean": 2.8160000000000007,
+    "risk_score_stddev": 0.5819599069809992,
+    "risk_score_p90": 3.58,
+    "degraded_transport_rate": 0.2,
+    "negative_human_signal_rate": 0.2
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

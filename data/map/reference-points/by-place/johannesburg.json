@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:za-06-johannesburg:0001",
+  "place_slug": "johannesburg",
+  "place_name": "Johannesburg",
+  "center": {
+    "coordinates": [
+      28.04363,
+      -26.20227
+    ],
+    "country_code": "ZA",
+    "admin1_code": "06"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:za-06-soweto:0001",
+      "slug": "soweto",
+      "name": "Soweto",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        27.85849,
+        -26.26781
+      ]
+    },
+    {
+      "id": "dcc:place:za-06-pretoria:0001",
+      "slug": "pretoria",
+      "name": "Pretoria",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        28.18783,
+        -25.74486
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.731Z"
+}

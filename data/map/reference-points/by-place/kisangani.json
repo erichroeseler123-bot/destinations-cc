@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:cd-30-kisangani:0001",
+  "place_slug": "kisangani",
+  "place_name": "Kisangani",
+  "center": {
+    "coordinates": [
+      25.19099,
+      0.51528
+    ],
+    "country_code": "CD",
+    "admin1_code": "30"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.737Z"
+}

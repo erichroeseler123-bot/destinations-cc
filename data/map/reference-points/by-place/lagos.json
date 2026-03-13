@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:ng-05-lagos:0001",
+  "place_slug": "lagos",
+  "place_name": "Lagos",
+  "center": {
+    "coordinates": [
+      3.39467,
+      6.45407
+    ],
+    "country_code": "NG",
+    "admin1_code": "05"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:ng-32-ibadan:0001",
+      "slug": "ibadan",
+      "name": "Ibadan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        3.90591,
+        7.37756
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.738Z"
+}

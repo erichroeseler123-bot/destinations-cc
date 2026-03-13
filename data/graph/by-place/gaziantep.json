@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:tr-83-gaziantep:0001",
+  "place_slug": "gaziantep",
+  "place_name": "Gaziantep",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:sy-09-aleppo:0001",
+      "place_slug": "aleppo",
+      "place_name": "Aleppo",
+      "reason": "near_place_geo",
+      "distance_km": 97.4
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:tr-83-gaziantep:0001",
+      "to": "dcc:place:sy-09-aleppo:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

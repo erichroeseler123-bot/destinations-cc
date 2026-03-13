@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:hu-05-budapest:0001",
+  "place_slug": "budapest",
+  "place_name": "Budapest",
+  "center": {
+    "coordinates": [
+      19.04045,
+      47.49835
+    ],
+    "country_code": "HU",
+    "admin1_code": "05"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.716Z"
+}

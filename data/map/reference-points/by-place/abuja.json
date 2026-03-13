@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:ng-11-abuja:0001",
+  "place_slug": "abuja",
+  "place_name": "Abuja",
+  "center": {
+    "coordinates": [
+      7.49508,
+      9.05785
+    ],
+    "country_code": "NG",
+    "admin1_code": "11"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.709Z"
+}

@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:iq-11-erbil:0001",
+  "place_slug": "erbil",
+  "place_name": "Erbil",
+  "center": {
+    "coordinates": [
+      44.00943,
+      36.19117
+    ],
+    "country_code": "IQ",
+    "admin1_code": "11"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:iq-15-mosul:0001",
+      "slug": "mosul",
+      "name": "Mosul",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        43.11889,
+        36.335
+      ]
+    },
+    {
+      "id": "dcc:place:iq-15-al-mawsil-al-jadidah:0001",
+      "slug": "al-mawsil-al-jadidah",
+      "name": "Al Mawsil al Jadidah",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        43.10555,
+        36.33271
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.724Z"
+}

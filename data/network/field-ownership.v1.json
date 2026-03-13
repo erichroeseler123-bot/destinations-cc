@@ -1,0 +1,73 @@
+{
+  "version": "dcc-network-v1",
+  "updatedAt": "2026-03-11T00:00:00Z",
+  "node_types": {
+    "city": {
+      "identity_fields": ["node_id", "node_type", "slug", "name"],
+      "structural_fields": ["geo", "authority_url", "related_nodes", "status"],
+      "enrichment_fields": ["tags", "source", "confidence", "provenance"]
+    },
+    "scene": {
+      "identity_fields": ["node_id", "node_type", "slug", "name"],
+      "structural_fields": ["authority_url", "related_nodes", "status"],
+      "enrichment_fields": ["tags", "source", "confidence", "provenance"]
+    },
+    "operator": {
+      "identity_fields": ["node_id", "node_type", "slug", "name"],
+      "structural_fields": ["authority_url", "related_nodes", "status", "monetized_targets"],
+      "enrichment_fields": ["tags", "source", "confidence", "provenance"]
+    }
+  },
+  "pipelines": [
+    {
+      "pipeline_id": "geo-backbone",
+      "can_write": {
+        "city": {
+          "identity_fields": true,
+          "structural_fields": true,
+          "enrichment_fields": false
+        }
+      }
+    },
+    {
+      "pipeline_id": "scene-clustering",
+      "can_write": {
+        "scene": {
+          "identity_fields": true,
+          "structural_fields": true,
+          "enrichment_fields": true
+        }
+      }
+    },
+    {
+      "pipeline_id": "operator-business",
+      "can_write": {
+        "operator": {
+          "identity_fields": true,
+          "structural_fields": true,
+          "enrichment_fields": true
+        }
+      }
+    },
+    {
+      "pipeline_id": "signal-enrichment",
+      "can_write": {
+        "city": {
+          "identity_fields": false,
+          "structural_fields": false,
+          "enrichment_fields": true
+        },
+        "scene": {
+          "identity_fields": false,
+          "structural_fields": false,
+          "enrichment_fields": true
+        },
+        "operator": {
+          "identity_fields": false,
+          "structural_fields": false,
+          "enrichment_fields": true
+        }
+      }
+    }
+  ]
+}

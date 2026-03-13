@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:cn-08-daqing:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.600Z",
+  "metrics": {
+    "risk_score_mean": 2.0959999999999996,
+    "risk_score_stddev": 0.44841647308426724,
+    "risk_score_p90": 2.66,
+    "degraded_transport_rate": 0.2,
+    "negative_human_signal_rate": 0.2
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

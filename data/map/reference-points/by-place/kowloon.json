@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:hk-00-kowloon:0001",
+  "place_slug": "kowloon",
+  "place_name": "Kowloon",
+  "center": {
+    "coordinates": [
+      114.18333,
+      22.31667
+    ],
+    "country_code": "HK",
+    "admin1_code": "00"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:hk-na-hong-kong:0001",
+      "slug": "hong-kong",
+      "name": "Hong Kong",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        114.17469,
+        22.27832
+      ]
+    },
+    {
+      "id": "dcc:place:hk-00-hong-kong-island:0001",
+      "slug": "hong-kong-island",
+      "name": "Hong Kong Island",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        114.18419,
+        22.26302
+      ]
+    },
+    {
+      "id": "dcc:place:hk-00-new-territories:0001",
+      "slug": "new-territories",
+      "name": "New Territories",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        114.11095,
+        22.42441
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.737Z"
+}

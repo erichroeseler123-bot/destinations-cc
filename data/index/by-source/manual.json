@@ -1,0 +1,436 @@
+{
+  "seed:us_tourist_150.txt": [
+    "dcc:place:us-ak-anchorage-ak:0001",
+    "dcc:place:us-ak-juneau-ak:0001",
+    "dcc:place:us-ak-fairbanks-ak:0001",
+    "dcc:place:us-az-lake-havasu-city-az:0001",
+    "dcc:place:us-az-sedona-az:0001",
+    "dcc:place:us-az-scottsdale-az:0001",
+    "dcc:place:us-az-tucson-az:0001",
+    "dcc:place:us-az-flagstaff-az:0001",
+    "dcc:place:us-az-grand-canyon-village-az:0001",
+    "dcc:place:us-ca-san-jose-ca:0001",
+    "dcc:place:us-ca-san-francisco-ca:0001",
+    "dcc:place:us-ca-sacramento-ca:0001",
+    "dcc:place:us-ca-palm-springs-ca:0001",
+    "dcc:place:us-ca-san-luis-obispo-ca:0001",
+    "dcc:place:us-ca-santa-barbara-ca:0001",
+    "dcc:place:us-ca-monterey-ca:0001",
+    "dcc:place:us-ca-carmel-by-the-sea-ca:0001",
+    "dcc:place:us-ca-santa-cruz-ca:0001",
+    "dcc:place:us-ca-lake-tahoe-ca:0001",
+    "dcc:place:us-ca-south-lake-tahoe-ca:0001",
+    "dcc:place:us-ca-yosemite-valley-ca:0001",
+    "dcc:place:us-ca-san-rafael-ca:0001",
+    "dcc:place:us-ca-napa-ca:0001",
+    "dcc:place:us-ca-sonoma-ca:0001",
+    "dcc:place:us-ca-santa-rosa-ca:0001",
+    "dcc:place:us-ca-berkeley-ca:0001",
+    "dcc:place:us-ca-pasadena-ca:0001",
+    "dcc:place:us-ca-anaheim-ca:0001",
+    "dcc:place:us-ca-santa-monica-ca:0001",
+    "dcc:place:us-ca-malibu-ca:0001",
+    "dcc:place:us-ca-long-beach-ca:0001",
+    "dcc:place:us-ca-san-bernardino-ca:0001",
+    "dcc:place:us-ca-riverside-ca:0001",
+    "dcc:place:us-ca-san-clemente-ca:0001",
+    "dcc:place:us-ca-oceanside-ca:0001",
+    "dcc:place:us-ca-temecula-ca:0001",
+    "dcc:place:us-ca-la-jolla-ca:0001",
+    "dcc:place:us-ca-fresno-ca:0001",
+    "dcc:place:us-ca-bakersfield-ca:0001",
+    "dcc:place:us-co-denver-co:0001",
+    "dcc:place:us-co-boulder-co:0001",
+    "dcc:place:us-co-colorado-springs-co:0001",
+    "dcc:place:us-co-aspen-co:0001",
+    "dcc:place:us-co-vail-co:0001",
+    "dcc:place:us-co-breckenridge-co:0001",
+    "dcc:place:us-co-steamboat-springs-co:0001",
+    "dcc:place:us-co-telluride-co:0001",
+    "dcc:place:us-co-durango-co:0001",
+    "dcc:place:us-co-estes-park-co:0001",
+    "dcc:place:us-ct-hartford-ct:0001",
+    "dcc:place:us-ct-new-haven-ct:0001",
+    "dcc:place:us-dc-washington-dc:0001",
+    "dcc:place:us-fl-jacksonville-fl:0001",
+    "dcc:place:us-fl-miami-fl:0001",
+    "dcc:place:us-fl-orlando-fl:0001",
+    "dcc:place:us-fl-tampa-fl:0001",
+    "dcc:place:us-fl-fort-lauderdale-fl:0001",
+    "dcc:place:us-fl-key-west-fl:0001",
+    "dcc:place:us-fl-naples-fl:0001",
+    "dcc:place:us-fl-sarasota-fl:0001",
+    "dcc:place:us-fl-st-petersburg-fl:0001",
+    "dcc:place:us-fl-pensacola-fl:0001",
+    "dcc:place:us-fl-destin-fl:0001",
+    "dcc:place:us-fl-panama-city-beach-fl:0001",
+    "dcc:place:us-fl-daytona-beach-fl:0001",
+    "dcc:place:us-fl-west-palm-beach-fl:0001",
+    "dcc:place:us-fl-palm-beach-fl:0001",
+    "dcc:place:us-ga-atlanta-ga:0001",
+    "dcc:place:us-ga-savannah-ga:0001",
+    "dcc:place:us-hi-honolulu-hi:0001",
+    "dcc:place:us-ia-des-moines-ia:0001",
+    "dcc:place:us-il-springfield-il:0001",
+    "dcc:place:us-in-indianapolis-in:0001",
+    "dcc:place:us-ky-louisville-ky:0001",
+    "dcc:place:us-ky-lexington-ky:0001",
+    "dcc:place:us-la-new-orleans-la:0001",
+    "dcc:place:us-la-baton-rouge-la:0001",
+    "dcc:place:us-ma-boston-ma:0001",
+    "dcc:place:us-md-baltimore-md:0001",
+    "dcc:place:us-md-annapolis-md:0001",
+    "dcc:place:us-me-portland-me:0001",
+    "dcc:place:us-me-bar-harbor-me:0001",
+    "dcc:place:us-mi-detroit-mi:0001",
+    "dcc:place:us-mi-grand-rapids-mi:0001",
+    "dcc:place:us-mi-mackinaw-city-mi:0001",
+    "dcc:place:us-mn-minneapolis-mn:0001",
+    "dcc:place:us-mn-saint-paul-mn:0001",
+    "dcc:place:us-mo-st-louis-mo:0001",
+    "dcc:place:us-mo-kansas-city-mo:0001",
+    "dcc:place:us-mo-branson-mo:0001",
+    "dcc:place:us-mt-west-yellowstone-mt:0001",
+    "dcc:place:us-mt-bozeman-mt:0001",
+    "dcc:place:us-mt-missoula-mt:0001",
+    "dcc:place:us-mt-kalispell-mt:0001",
+    "dcc:place:us-nc-charlotte-nc:0001",
+    "dcc:place:us-nc-raleigh-nc:0001",
+    "dcc:place:us-nc-durham-nc:0001",
+    "dcc:place:us-nc-asheville-nc:0001",
+    "dcc:place:us-nc-wilmington-nc:0001",
+    "dcc:place:us-nd-fargo-nd:0001",
+    "dcc:place:us-ne-omaha-ne:0001",
+    "dcc:place:us-nh-portsmouth-nh:0001",
+    "dcc:place:us-nj-jersey-city-nj:0001",
+    "dcc:place:us-nj-newark-nj:0001",
+    "dcc:place:us-nj-atlantic-city-nj:0001",
+    "dcc:place:us-nj-princeton-nj:0001",
+    "dcc:place:us-nm-santa-fe-nm:0001",
+    "dcc:place:us-nm-albuquerque-nm:0001",
+    "dcc:place:us-nv-las-vegas-nv:0001",
+    "dcc:place:us-nv-reno-nv:0001",
+    "dcc:place:us-ny-buffalo-ny:0001",
+    "dcc:place:us-ny-rochester-ny:0001",
+    "dcc:place:us-ny-albany-ny:0001",
+    "dcc:place:us-ny-syracuse-ny:0001",
+    "dcc:place:us-ny-niagara-falls-ny:0001",
+    "dcc:place:us-ny-white-plains-ny:0001",
+    "dcc:place:us-oh-columbus-oh:0001",
+    "dcc:place:us-oh-cleveland-oh:0001",
+    "dcc:place:us-oh-cincinnati-oh:0001",
+    "dcc:place:us-oh-toledo-oh:0001",
+    "dcc:place:us-oh-akron-oh:0001",
+    "dcc:place:us-ok-oklahoma-city-ok:0001",
+    "dcc:place:us-ok-tulsa-ok:0001",
+    "dcc:place:us-or-portland-or:0001",
+    "dcc:place:us-or-bend-or:0001",
+    "dcc:place:us-or-eugene-or:0001",
+    "dcc:place:us-or-salem-or:0001",
+    "dcc:place:us-or-cannon-beach-or:0001",
+    "dcc:place:us-or-astoria-or:0001",
+    "dcc:place:us-or-newport-or:0001",
+    "dcc:place:us-pa-pittsburgh-pa:0001",
+    "dcc:place:us-ri-providence-ri:0001",
+    "dcc:place:us-ri-newport-ri:0001",
+    "dcc:place:us-sc-charleston-sc:0001",
+    "dcc:place:us-sc-greenville-sc:0001",
+    "dcc:place:us-sc-myrtle-beach-sc:0001",
+    "dcc:place:us-sc-hilton-head-island-sc:0001",
+    "dcc:place:us-sc-columbia-sc:0001",
+    "dcc:place:us-tn-nashville-tn:0001",
+    "dcc:place:us-tn-chattanooga-tn:0001",
+    "dcc:place:us-tn-knoxville-tn:0001",
+    "dcc:place:us-tn-gatlinburg-tn:0001",
+    "dcc:place:us-tn-pigeon-forge-tn:0001",
+    "dcc:place:us-tn-memphis-tn:0001",
+    "dcc:place:us-tx-austin-tx:0001",
+    "dcc:place:us-tx-fort-worth-tx:0001",
+    "dcc:place:us-tx-galveston-tx:0001",
+    "dcc:place:us-tx-corpus-christi-tx:0001",
+    "dcc:place:us-tx-fredericksburg-tx:0001",
+    "dcc:place:us-ut-salt-lake-city-ut:0001",
+    "dcc:place:us-ut-park-city-ut:0001",
+    "dcc:place:us-ut-moab-ut:0001",
+    "dcc:place:us-ut-springdale-ut:0001",
+    "dcc:place:us-ut-saint-george-ut:0001",
+    "dcc:place:us-va-richmond-va:0001",
+    "dcc:place:us-va-norfolk-va:0001",
+    "dcc:place:us-va-virginia-beach-va:0001",
+    "dcc:place:us-va-alexandria-va:0001",
+    "dcc:place:us-va-arlington-va:0001",
+    "dcc:place:us-va-williamsburg-va:0001",
+    "dcc:place:us-vt-burlington-vt:0001",
+    "dcc:place:us-wa-seattle-wa:0001",
+    "dcc:place:us-wa-spokane-wa:0001",
+    "dcc:place:us-wa-tacoma-wa:0001",
+    "dcc:place:us-wa-olympia-wa:0001",
+    "dcc:place:us-wa-bellingham-wa:0001",
+    "dcc:place:us-wa-port-angeles-wa:0001",
+    "dcc:place:us-wa-leavenworth-wa:0001",
+    "dcc:place:us-wi-milwaukee-wi:0001",
+    "dcc:place:us-wi-madison-wi:0001",
+    "dcc:place:us-wi-green-bay-wi:0001",
+    "dcc:place:us-wy-jackson-wy:0001"
+  ],
+  "seed:alaska_seed_v1": [
+    "dcc:place:us-ak-ketchikan-ak:0001",
+    "dcc:place:us-ak-skagway-ak:0001",
+    "dcc:place:us-ak-sitka-ak:0001"
+  ],
+  "ports.generated:abu-dhabi": [
+    "dcc:port:ae-abu-dhabi:0001"
+  ],
+  "ports.generated:dubai": [
+    "dcc:port:ae-dubai:0001"
+  ],
+  "ports.generated:brisbane": [
+    "dcc:port:au-brisbane:0001"
+  ],
+  "ports.generated:melbourne": [
+    "dcc:port:au-melbourne:0001"
+  ],
+  "ports.generated:sydney": [
+    "dcc:port:au-sydney:0001"
+  ],
+  "ports.generated:oranjestad": [
+    "dcc:port:aw-oranjestad:0001"
+  ],
+  "ports.generated:bridgetown": [
+    "dcc:port:bb-bridgetown:0001"
+  ],
+  "ports.generated:great-stirrup-cay": [
+    "dcc:port:bs-great-stirrup-cay:0001"
+  ],
+  "ports.generated:cococay": [
+    "dcc:port:bs-cococay:0001"
+  ],
+  "ports.generated:nassau": [
+    "dcc:port:bs-nassau:0001"
+  ],
+  "ports.generated:belize-city": [
+    "dcc:port:bz-belize-city:0001"
+  ],
+  "ports.generated:vancouver": [
+    "dcc:port:ca-vancouver:0001"
+  ],
+  "ports.generated:shanghai": [
+    "dcc:port:cn-shanghai:0001"
+  ],
+  "ports.generated:cartagena": [
+    "dcc:port:co-cartagena:0001"
+  ],
+  "ports.generated:willemstad": [
+    "dcc:port:cw-willemstad:0001"
+  ],
+  "ports.generated:hamburg": [
+    "dcc:port:de-hamburg:0001"
+  ],
+  "ports.generated:copenhagen": [
+    "dcc:port:dk-copenhagen:0001"
+  ],
+  "ports.generated:tallinn": [
+    "dcc:port:ee-tallinn:0001"
+  ],
+  "ports.generated:palma-de-mallorca": [
+    "dcc:port:es-palma-de-mallorca:0001"
+  ],
+  "ports.generated:barcelona": [
+    "dcc:port:es-barcelona:0001"
+  ],
+  "ports.generated:valencia": [
+    "dcc:port:es-valencia:0001"
+  ],
+  "ports.generated:helsinki": [
+    "dcc:port:fi-helsinki:0001"
+  ],
+  "ports.generated:marseille": [
+    "dcc:port:fr-marseille:0001"
+  ],
+  "ports.generated:southampton": [
+    "dcc:port:gb-southampton:0001"
+  ],
+  "ports.generated:mykonos": [
+    "dcc:port:gr-mykonos:0001"
+  ],
+  "ports.generated:piraeus": [
+    "dcc:port:gr-piraeus:0001"
+  ],
+  "ports.generated:santorini": [
+    "dcc:port:gr-santorini:0001"
+  ],
+  "ports.generated:hong-kong": [
+    "dcc:port:hk-hong-kong:0001"
+  ],
+  "ports.generated:roatan": [
+    "dcc:port:hn-roatan:0001"
+  ],
+  "ports.generated:dubrovnik": [
+    "dcc:port:hr-dubrovnik:0001"
+  ],
+  "ports.generated:labadee": [
+    "dcc:port:ht-labadee:0001"
+  ],
+  "ports.generated:civitavecchia": [
+    "dcc:port:it-civitavecchia:0001"
+  ],
+  "ports.generated:livorno": [
+    "dcc:port:it-livorno:0001"
+  ],
+  "ports.generated:messina": [
+    "dcc:port:it-messina:0001"
+  ],
+  "ports.generated:naples": [
+    "dcc:port:it-naples:0001"
+  ],
+  "ports.generated:venice": [
+    "dcc:port:it-venice:0001"
+  ],
+  "ports.generated:falmouth-jamaica": [
+    "dcc:port:jm-falmouth-jamaica:0001"
+  ],
+  "ports.generated:montego-bay": [
+    "dcc:port:jm-montego-bay:0001"
+  ],
+  "ports.generated:yokohama": [
+    "dcc:port:jp-yokohama:0001"
+  ],
+  "ports.generated:basseterre": [
+    "dcc:port:kn-basseterre:0001"
+  ],
+  "ports.generated:george-town-grand-cayman": [
+    "dcc:port:ky-george-town-grand-cayman:0001"
+  ],
+  "ports.generated:castries": [
+    "dcc:port:lc-castries:0001"
+  ],
+  "ports.generated:costa-maya": [
+    "dcc:port:mx-costa-maya:0001"
+  ],
+  "ports.generated:cozumel": [
+    "dcc:port:mx-cozumel:0001"
+  ],
+  "ports.generated:progreso": [
+    "dcc:port:mx-progreso:0001"
+  ],
+  "ports.generated:cabo-san-lucas": [
+    "dcc:port:mx-cabo-san-lucas:0001"
+  ],
+  "ports.generated:mazatlan": [
+    "dcc:port:mx-mazatlan:0001"
+  ],
+  "ports.generated:puerto-vallarta": [
+    "dcc:port:mx-puerto-vallarta:0001"
+  ],
+  "ports.generated:amsterdam": [
+    "dcc:port:nl-amsterdam:0001"
+  ],
+  "ports.generated:bergen": [
+    "dcc:port:no-bergen:0001"
+  ],
+  "ports.generated:auckland": [
+    "dcc:port:nz-auckland:0001"
+  ],
+  "ports.generated:san-juan": [
+    "dcc:port:pr-san-juan:0001"
+  ],
+  "ports.generated:lisbon": [
+    "dcc:port:pt-lisbon:0001"
+  ],
+  "ports.generated:stockholm": [
+    "dcc:port:se-stockholm:0001"
+  ],
+  "ports.generated:singapore": [
+    "dcc:port:sg-singapore:0001"
+  ],
+  "ports.generated:philipsburg": [
+    "dcc:port:sx-philipsburg:0001"
+  ],
+  "ports.generated:istanbul": [
+    "dcc:port:tr-istanbul:0001"
+  ],
+  "ports.generated:kusadasi": [
+    "dcc:port:tr-kusadasi:0001"
+  ],
+  "ports.generated:anchorage": [
+    "dcc:port:us-anchorage:0001"
+  ],
+  "ports.generated:college-fjord": [
+    "dcc:port:us-college-fjord:0001"
+  ],
+  "ports.generated:glacier-bay": [
+    "dcc:port:us-glacier-bay:0001"
+  ],
+  "ports.generated:haines": [
+    "dcc:port:us-haines:0001"
+  ],
+  "ports.generated:hubbard-glacier": [
+    "dcc:port:us-hubbard-glacier:0001"
+  ],
+  "ports.generated:icy-strait-point": [
+    "dcc:port:us-icy-strait-point:0001"
+  ],
+  "ports.generated:juneau": [
+    "dcc:port:us-juneau:0001"
+  ],
+  "ports.generated:ketchikan": [
+    "dcc:port:us-ketchikan:0001"
+  ],
+  "ports.generated:seward": [
+    "dcc:port:us-seward:0001"
+  ],
+  "ports.generated:sitka": [
+    "dcc:port:us-sitka:0001"
+  ],
+  "ports.generated:skagway": [
+    "dcc:port:us-skagway:0001"
+  ],
+  "ports.generated:tracy-arm-fjord": [
+    "dcc:port:us-tracy-arm-fjord:0001"
+  ],
+  "ports.generated:valdez": [
+    "dcc:port:us-valdez:0001"
+  ],
+  "ports.generated:whittier": [
+    "dcc:port:us-whittier:0001"
+  ],
+  "ports.generated:los-angeles": [
+    "dcc:port:us-los-angeles:0001"
+  ],
+  "ports.generated:san-diego": [
+    "dcc:port:us-san-diego:0001"
+  ],
+  "ports.generated:san-francisco": [
+    "dcc:port:us-san-francisco:0001"
+  ],
+  "ports.generated:key-west": [
+    "dcc:port:us-key-west:0001"
+  ],
+  "ports.generated:port-canaveral": [
+    "dcc:port:us-port-canaveral:0001"
+  ],
+  "ports.generated:port-everglades": [
+    "dcc:port:us-port-everglades:0001"
+  ],
+  "ports.generated:portmiami": [
+    "dcc:port:us-portmiami:0001"
+  ],
+  "ports.generated:tampa": [
+    "dcc:port:us-tampa:0001"
+  ],
+  "ports.generated:honolulu": [
+    "dcc:port:us-honolulu:0001"
+  ],
+  "ports.generated:new-orleans": [
+    "dcc:port:us-new-orleans:0001"
+  ],
+  "ports.generated:galveston": [
+    "dcc:port:us-galveston:0001"
+  ],
+  "ports.generated:seattle": [
+    "dcc:port:us-seattle:0001"
+  ],
+  "ports.generated:st-thomas": [
+    "dcc:port:vi-st-thomas:0001"
+  ]
+}

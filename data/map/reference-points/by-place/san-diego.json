@@ -1,0 +1,63 @@
+{
+  "place_id": "dcc:place:us-ca-san-diego:0001",
+  "place_slug": "san-diego",
+  "place_name": "San Diego",
+  "center": {
+    "coordinates": [
+      -117.16472,
+      32.71571
+    ],
+    "country_code": "US",
+    "admin1_code": "CA"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 1
+  },
+  "providers": [
+    "intent_catalog"
+  ],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ca-la-jolla-ca:0001",
+      "slug": "la-jolla-ca",
+      "name": "La Jolla",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -117.2742,
+        32.84727
+      ]
+    },
+    {
+      "id": "dcc:place:mx-02-tijuana:0001",
+      "slug": "tijuana",
+      "name": "Tijuana",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -117.00371,
+        32.5027
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-oceanside-ca:0001",
+      "slug": "oceanside-ca",
+      "name": "Oceanside",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -117.37948,
+        33.19587
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.755Z"
+}

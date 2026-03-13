@@ -1,0 +1,110 @@
+{
+  "place_id": "dcc:place:us-ak-juneau-ak:0001",
+  "place_slug": "juneau-ak",
+  "place_name": "Juneau",
+  "actions": {
+    "tours": [
+      {
+        "id": "viator:1",
+        "title": "Juneau Glacier Helicopter Tour",
+        "provider": "viator",
+        "price_from": 200,
+        "url": null
+      },
+      {
+        "id": "viator:2",
+        "title": "Mendenhall Glacier Tour",
+        "provider": "viator",
+        "price_from": 150,
+        "url": null
+      }
+    ],
+    "cruises": [
+      {
+        "id": "cruise:VIK-OCTANTIS-20260614-SEA",
+        "title": "Viking Expeditions • Viking Octantis",
+        "provider": "direct-line",
+        "departure_date": "2026-06-14",
+        "url": "https://www.viking.com/expeditions"
+      }
+    ],
+    "transport": [],
+    "events": []
+  },
+  "providers": [
+    "viator",
+    "direct-line"
+  ],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ak-skagway-ak:0001",
+      "place_slug": "skagway-ak",
+      "place_name": "Skagway",
+      "reason": "near_place_geo",
+      "distance_km": 138.5
+    },
+    {
+      "place_id": "dcc:place:us-ak-sitka-ak:0001",
+      "place_slug": "sitka-ak",
+      "place_name": "Sitka",
+      "reason": "near_place_geo",
+      "distance_km": 149
+    }
+  ],
+  "counts": {
+    "tours": 2,
+    "cruises": 1,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "available_in",
+      "from": "dcc:place:us-ak-juneau-ak:0001",
+      "to": "viator:1",
+      "meta": {
+        "vertical": "tours",
+        "provider": "viator"
+      }
+    },
+    {
+      "type": "available_in",
+      "from": "dcc:place:us-ak-juneau-ak:0001",
+      "to": "viator:2",
+      "meta": {
+        "vertical": "tours",
+        "provider": "viator"
+      }
+    },
+    {
+      "type": "available_in",
+      "from": "dcc:place:us-ak-juneau-ak:0001",
+      "to": "cruise:VIK-OCTANTIS-20260614-SEA",
+      "meta": {
+        "vertical": "cruises",
+        "provider": "direct-line"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ak-juneau-ak:0001",
+      "to": "dcc:place:us-ak-skagway-ak:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ak-juneau-ak:0001",
+      "to": "dcc:place:us-ak-sitka-ak:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

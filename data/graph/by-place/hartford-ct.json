@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-ct-hartford-ct:0001",
+  "place_slug": "hartford-ct",
+  "place_name": "Hartford",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ct-new-haven-ct:0001",
+      "place_slug": "new-haven-ct",
+      "place_name": "New Haven",
+      "reason": "near_place_geo",
+      "distance_km": 54.5
+    },
+    {
+      "place_id": "dcc:place:us-ri-providence-ri:0001",
+      "place_slug": "providence-ri",
+      "place_name": "Providence",
+      "reason": "near_place_geo",
+      "distance_km": 105.7
+    },
+    {
+      "place_id": "dcc:place:us-ri-newport-ri:0001",
+      "place_slug": "newport-ri",
+      "place_name": "Newport",
+      "reason": "near_place_geo",
+      "distance_km": 118
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ct-hartford-ct:0001",
+      "to": "dcc:place:us-ct-new-haven-ct:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ct-hartford-ct:0001",
+      "to": "dcc:place:us-ri-providence-ri:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ct-hartford-ct:0001",
+      "to": "dcc:place:us-ri-newport-ri:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

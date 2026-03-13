@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:ci-93-abobo:0001",
+  "place_slug": "abobo",
+  "place_name": "Abobo",
+  "center": {
+    "coordinates": [
+      -4.0159,
+      5.41613
+    ],
+    "country_code": "CI",
+    "admin1_code": "93"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:ci-93-abidjan:0001",
+      "slug": "abidjan",
+      "name": "Abidjan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -4.00167,
+        5.35444
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.709Z"
+}

@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:br-05-salvador:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "improving",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 3.0799999999999996,
+  "z_score": -2.203561625321537,
+  "reasons": [
+    "risk_below_baseline"
+  ],
+  "trend": {
+    "place_id": "dcc:place:br-05-salvador:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.08857142857142859,
+    "sample_count": 7
+  }
+}

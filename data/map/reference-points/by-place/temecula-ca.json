@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-ca-temecula-ca:0001",
+  "place_slug": "temecula-ca",
+  "place_name": "Temecula",
+  "center": {
+    "coordinates": [
+      -117.14836,
+      33.49364
+    ],
+    "country_code": "US",
+    "admin1_code": "CA"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ca-oceanside-ca:0001",
+      "slug": "oceanside-ca",
+      "name": "Oceanside",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -117.37948,
+        33.19587
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-san-clemente-ca:0001",
+      "slug": "san-clemente-ca",
+      "name": "San Clemente",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -117.61199,
+        33.42697
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-riverside-ca:0001",
+      "slug": "riverside-ca",
+      "name": "Riverside",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -117.39616,
+        33.95335
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.760Z"
+}

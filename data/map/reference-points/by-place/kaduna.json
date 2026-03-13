@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:ng-23-kaduna:0001",
+  "place_slug": "kaduna",
+  "place_name": "Kaduna",
+  "center": {
+    "coordinates": [
+      7.43879,
+      10.52641
+    ],
+    "country_code": "NG",
+    "admin1_code": "23"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.731Z"
+}

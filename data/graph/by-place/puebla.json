@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:mx-21-puebla:0001",
+  "place_slug": "puebla",
+  "place_name": "Puebla",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:mx-15-ciudad-nezahualcoyotl:0001",
+      "place_slug": "ciudad-nezahualcoyotl",
+      "place_name": "Ciudad Nezahualcoyotl",
+      "reason": "near_place_geo",
+      "distance_km": 93.4
+    },
+    {
+      "place_id": "dcc:place:mx-09-iztapalapa:0001",
+      "place_slug": "iztapalapa",
+      "place_name": "Iztapalapa",
+      "reason": "near_place_geo",
+      "distance_km": 96.1
+    },
+    {
+      "place_id": "dcc:place:mx-09-mexico-city:0001",
+      "place_slug": "mexico-city",
+      "place_name": "Mexico City",
+      "reason": "near_place_geo",
+      "distance_km": 105.5
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:mx-21-puebla:0001",
+      "to": "dcc:place:mx-15-ciudad-nezahualcoyotl:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:mx-21-puebla:0001",
+      "to": "dcc:place:mx-09-iztapalapa:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:mx-21-puebla:0001",
+      "to": "dcc:place:mx-09-mexico-city:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

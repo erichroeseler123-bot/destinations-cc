@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:port:es-palma-de-mallorca:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.6213333333333333,
+  "z_score": -1.1937578267157134,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:port:es-palma-de-mallorca:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.0357142857142857,
+    "sample_count": 7
+  }
+}

@@ -4,28 +4,28 @@ export const dynamicParams = false;
 // app/nodes/[slug]/page.tsx
 import nodes from "@/data/nodes.json";
 
-// Primary catalog (currently `{}` in your repo, so we normalize it safely)
-import toursCatalog from "@/data/tours.json";
-
-// Fallback / seed catalog (your vegas tours)
-import vegasTours from "@/data/vegas.tours.json";
-
 import LocalTimeWeather from "@/components/LocalTimeWeather";
+import DiagnosticsBlock from "@/app/components/DiagnosticsBlock";
+import StatGrid from "@/app/components/StatGrid";
+import PlaceLiveSummaryRail from "@/app/components/dcc/PlaceLiveSummary";
+import WhatsNearby from "@/app/components/dcc/WhatsNearby";
+import EarthSignalsPanel from "@/app/components/dcc/EarthSignalsPanel";
+import PoweredByViator from "@/app/components/dcc/PoweredByViator";
 
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-
-/* ========================================
-   Affiliate Config (LOCKED)
-======================================== */
-
-const VIATOR_PID = "P00281144"; // Your Partner ID
-const VIATOR_MCID = "42383"; // Campaign ID
-
-/* ========================================
-   Types
-======================================== */
+import type { DccNode } from "@/lib/dcc/schema";
+import { buildInternalPlacePayload } from "@/lib/dcc/internal/placePayload";
+import { ACTION_LABELS } from "@/lib/dcc/actionLabels";
+import { getPlaceActionGraphBySlug } from "@/lib/dcc/graph/placeActionGraph";
+import { buildPlaceLiveSummaryFromData } from "@/lib/dcc/graph/placeLiveSummary";
+import { getGraphHealth } from "@/lib/dcc/graph/health";
+import { parseAliveFilter } from "@/lib/dcc/taxonomy/lanes";
+import {
+  getNodeBySlug as getCanonicalNodeBySlug,
+  loadBySlugIndex,
+} from "@/lib/dcc/registry";
 
 interface Node {
   id: string;
@@ -46,129 +46,54 @@ interface Node {
   timezone?: string; // IANA e.g. "America/Los_Angeles"
 }
 
-interface Tour {
-  id: string;
-  name: string;
-  provider?: string;
-  duration?: string | null;
-  price_from?: number | null;
-  rating?: number | null;
-  reviews?: number | null;
-  tags?: string[];
-  booking_url?: string;
-
-  dcc?: {
-    node?: string;
-    hub?: string;
-    category?: string;
-    destinationSlug?: string;
-    citySlug?: string;
-  };
-
-  // allow other ingestion shapes without crashing
-  hub?: string;
-  city?: string;
-  citySlug?: string;
-  destination?: string;
-  destinationSlug?: string;
-}
-
 /* ========================================
    Helpers
 ======================================== */
 
-function slugify(input: string) {
-  return (input || "")
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+function renderRegion(node: DccNode): string {
+  const a = node.admin;
+  return (
+    a?.admin1_name ||
+    a?.admin1_code ||
+    a?.country_name ||
+    a?.country_code ||
+    "Global"
+  );
 }
 
-function normalizeTours(raw: any): Tour[] {
-  if (Array.isArray(raw)) return raw as Tour[];
-  if (raw && typeof raw === "object") {
-    // common shapes: { tours: [...] } or { items: [...] }
-    if (Array.isArray(raw.tours)) return raw.tours as Tour[];
-    if (Array.isArray(raw.items)) return raw.items as Tour[];
-  }
-  return [];
+function renderType(node: DccNode): string {
+  return node.subclass ? `${node.class}/${node.subclass}` : node.class;
 }
 
-function getTourNodeKey(t: Tour): string {
-  const k =
-    t?.dcc?.node ||
-    t?.dcc?.hub ||
-    t?.dcc?.destinationSlug ||
-    t?.dcc?.citySlug ||
-    t?.hub ||
-    t?.citySlug ||
-    t?.destinationSlug ||
-    t?.destination ||
-    t?.city;
-
-  return slugify(String(k || ""));
+function toLegacyNodeShape(node: DccNode): Node {
+  return {
+    id: node.id,
+    slug: node.slug,
+    name: node.display_name || node.name,
+    type: renderType(node),
+    region: renderRegion(node),
+    status: node.status,
+    description:
+      node.content?.summary ||
+      node.content?.long_description_md ||
+      `${node.display_name || node.name} travel guide`,
+    hub: node.slug,
+    citySlug: node.slug,
+    lat: node.geo?.lat ?? undefined,
+    lng: node.geo?.lon ?? undefined,
+    timezone: undefined,
+  };
 }
 
-/**
- * Build optimized Viator search URL
- * - dedupes keywords
- * - removes junk words
- * - keeps phrase tight (better conversion + less spam)
- */
-function buildViatorLink(tour: Tour, cityName: string) {
-  const STOP = new Set([
-    "tour",
-    "tours",
-    "trip",
-    "experience",
-    "experiences",
-    "with",
-    "and",
-    "the",
-    "from",
-    "day",
-    "half",
-    "optional",
-    "best",
-    "top",
-    "tickets",
-    "ticket",
-    "las",
-    "vegas",
-  ]);
+function getLegacyNodeBySlug(slug: string): Node | null {
+  const legacy = (nodes as Node[]).find((n) => n.slug === slug);
+  return legacy || null;
+}
 
-  const cleanWords = (str: string) =>
-    (str || "")
-      .toLowerCase()
-      .replace(/[^\w\s]/g, " ")
-      .split(/\s+/)
-      .map((w) => w.trim())
-      .filter(Boolean)
-      .filter((w) => !STOP.has(w));
-
-  const words = new Set<string>();
-
-  // Tags first (often strong)
-  if (tour.tags?.length) {
-    for (const tag of tour.tags) {
-      cleanWords(tag.replace(/-/g, " ")).forEach((w) => words.add(w));
-    }
-  }
-
-  // Name next
-  cleanWords(tour.name).forEach((w) => words.add(w));
-
-  // keep it short
-  const core = Array.from(words).slice(0, 4).join(" ").trim();
-
-  // final phrase
-  const phrase = core ? `${cityName} ${core}` : `${cityName} tours`;
-
-  return `https://www.viator.com/searchResults/all?text=${encodeURIComponent(
-    phrase
-  )}&pid=${VIATOR_PID}&mcid=${VIATOR_MCID}`;
+function getNodeBySlug(slug: string): Node | null {
+  const canonical = getCanonicalNodeBySlug(slug);
+  if (canonical) return toLegacyNodeShape(canonical);
+  return getLegacyNodeBySlug(slug);
 }
 
 /* ========================================
@@ -176,9 +101,15 @@ function buildViatorLink(tour: Tour, cityName: string) {
 ======================================== */
 
 export function generateStaticParams() {
-  return (nodes as Node[]).map((node) => ({
-    slug: node.slug,
-  }));
+  const slugs = new Set<string>();
+  try {
+    const bySlug = loadBySlugIndex();
+    Object.keys(bySlug).forEach((s) => slugs.add(s));
+  } catch {
+    // index might not exist yet in early environments
+  }
+  (nodes as Node[]).forEach((n) => slugs.add(n.slug));
+  return Array.from(slugs).map((slug) => ({ slug }));
 }
 
 /* ========================================
@@ -191,8 +122,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const resolvedParams = await params;
-
-  const node = (nodes as Node[]).find((n) => n.slug === resolvedParams.slug);
+  const node = getNodeBySlug(resolvedParams.slug);
   if (!node) return {};
 
   const title = `${node.name} Travel Guide | Best Tours & Experiences`;
@@ -224,62 +154,173 @@ export async function generateMetadata({
    Page Component
 ======================================== */
 
-export default async function NodePage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function NodePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ alive?: string; alive_expand?: string }>;
+}) {
   const resolvedParams = await params;
+  const resolvedSearch = await searchParams;
 
   /* ---------- Resolve Node ---------- */
 
-  const node = (nodes as Node[]).find((n) => n.slug === resolvedParams.slug);
+  const node = getNodeBySlug(resolvedParams.slug);
 
   if (!node || node.status !== "active") {
     return notFound();
   }
 
   const cityName = node.name.replace(/\s*Guide\s*$/i, "").trim();
-
-  /* ---------- Resolve Hub + City Slug ---------- */
-
-  const hubId = slugify(node.hub || node.slug.replace(/-guide$/i, ""));
-
-  // canonical city slug — for Vegas we want "las-vegas" not "vegas"
-  const citySlug =
-    slugify(node.citySlug || hubId) === "vegas"
-      ? "las-vegas"
-      : slugify(node.citySlug || hubId);
-
-  const nodeSlug = slugify(node.slug);
-
-  // Acceptable keys for matching tours
-  const accepted = new Set<string>([
-    hubId,
-    citySlug,
-    nodeSlug,
-    slugify(cityName),
-    slugify(cityName.replace(/\s+/g, "-")),
-  ]);
-
-  /* ---------- Load Tours (robust) ---------- */
-
-  const primaryTours = normalizeTours(toursCatalog);
-  const fallbackTours = normalizeTours(vegasTours);
-
-  const allTours = primaryTours.length > 0 ? primaryTours : fallbackTours;
-
-  /* ---------- Filter + Rank Tours ---------- */
-
-  const nodeTours = allTours
-    .filter((t) => accepted.has(getTourNodeKey(t)))
-    .sort((a, b) => (b.rating || 0) - (a.rating || 0));
+  const placePayload = await buildInternalPlacePayload(resolvedParams.slug);
+  const placeGraph = getPlaceActionGraphBySlug(resolvedParams.slug);
+  const liveSummary = buildPlaceLiveSummaryFromData({
+    placePayload,
+    placeGraph,
+    graphStale: getGraphHealth().stale,
+  });
+  const aliveFilter = parseAliveFilter(resolvedSearch.alive);
+  const aliveExpanded =
+    resolvedSearch.alive_expand === "1" || resolvedSearch.alive_expand === "true";
+  const aliveSet = new Set(aliveFilter);
+  const focusTours = aliveSet.has("tours");
+  const focusCruises = aliveSet.has("cruises");
+  const focusEvents = aliveSet.has("events");
+  const focusTransport = aliveSet.has("transport");
+  const hasAliveFocus = aliveSet.size > 0;
+  const latestEvent = placePayload?.context.recent_observations?.[0] || null;
+  const placeEvents = placePayload?.context.recent_observations || [];
+  const viatorAction = placePayload?.action.viator;
+  const focusedCruises = placeGraph?.actions.cruises.slice(0, 3) || [];
+  const focusedRelated = (placeGraph?.related_places || [])
+    .filter((r) => /port|airport|route|served_by|near|related/i.test(r.reason))
+    .slice(0, 4);
 
   /* ---------- Dev Debug ---------- */
 
-  if (process.env.NODE_ENV === "development") {
-    console.log("NODE:", node.slug);
-    console.log("HUB:", hubId);
-    console.log("CITY:", citySlug);
-    console.log("TOURS:", nodeTours.length);
-    if (nodeTours[0]) console.log("TOUR_SAMPLE_KEY:", getTourNodeKey(nodeTours[0]));
-  }
+  const actionInventorySection = placePayload ? (
+    <section
+      id="section-action-inventory"
+      className={`rounded-xl border bg-zinc-900/50 p-7 space-y-4 ${
+        hasAliveFocus ? "border-cyan-500/40" : "border-zinc-800"
+      } scroll-mt-24`}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-semibold text-lg">Available Actions Near This Location</h3>
+        <span className="text-xs uppercase tracking-wider text-zinc-500">
+          Unified Action Index
+        </span>
+      </div>
+      {hasAliveFocus ? (
+        <p className="text-xs text-cyan-300 uppercase tracking-wider">
+          Focus mode active: {aliveFilter.join(", ")}
+        </p>
+      ) : null}
+      <StatGrid
+        items={[
+          { label: "Cruises", value: `${placePayload.action_inventory.counts.cruises} sailings` },
+          { label: "Tours", value: `${placePayload.action_inventory.counts.tours} experiences` },
+          { label: "Events", value: `${placePayload.action_inventory.counts.events} listings` },
+          { label: "Transport", value: `${placePayload.action_inventory.counts.transport} services` },
+          { label: "Trend", value: placeGraph?.observations.trend || placePayload.context.risk_summary.trend },
+          {
+            label: "Top providers",
+            value:
+              placeGraph?.providers?.length
+                ? placeGraph.providers.slice(0, 3).join(", ")
+                : "n/a",
+          },
+        ]}
+      />
+      <div className="flex flex-wrap gap-3 text-sm">
+        <Link href="/cruises" className={`hover:text-zinc-100 ${focusCruises ? "text-cyan-300" : "text-zinc-300"}`}>
+          Cruises →
+        </Link>
+        <Link href="/tours" className={`hover:text-zinc-100 ${focusTours ? "text-cyan-300" : "text-zinc-300"}`}>
+          Tours →
+        </Link>
+      </div>
+    </section>
+  ) : null;
+
+  const viatorSection = (
+    <section
+      id="section-external-listings"
+      className={`rounded-xl border bg-zinc-900/40 p-7 space-y-4 ${
+        focusTours ? "border-cyan-500/40" : "border-zinc-800"
+      } scroll-mt-24`}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-semibold text-lg">Optional External Listings</h3>
+        <span className="text-xs uppercase tracking-wider text-zinc-500">
+          Layer 2: Action
+        </span>
+      </div>
+      {focusTours ? (
+        <p className="text-xs text-cyan-300 uppercase tracking-wider">
+          Tours focus active: booking partner listings prioritized.
+        </p>
+      ) : null}
+      <PoweredByViator
+        compact
+        disclosure={Boolean(viatorAction?.enabled)}
+        body={`DCC helps you compare tours, activities, and excursions around ${cityName}. When you're ready to book, you can book with DCC via Viator.`}
+      />
+      {viatorAction ? (
+        <StatGrid
+          items={[
+            { label: "Policy", value: viatorAction.policy_applied },
+            { label: "Served source", value: viatorAction.served_source },
+          ]}
+        />
+      ) : null}
+
+      {viatorAction?.enabled && viatorAction.products.length > 0 ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          {viatorAction.products.map((product) => (
+            <div
+              key={product.product_code}
+              className="rounded-lg border border-zinc-800 bg-zinc-950/40 px-4 py-4 space-y-3"
+            >
+              <div className="text-zinc-100 font-medium">{product.title}</div>
+              <div className="text-xs text-zinc-400">
+                {product.rating ? `rating ${product.rating}` : "rating n/a"}
+                {typeof product.review_count === "number"
+                  ? ` • ${product.review_count.toLocaleString()} reviews`
+                  : ""}
+                {typeof product.price_from === "number"
+                  ? ` • from ${product.currency} ${product.price_from}`
+                  : ""}
+              </div>
+              <div className="flex flex-wrap gap-3 text-sm">
+                <a
+                  href={product.url}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored nofollow"
+                  className="text-cyan-300 hover:text-cyan-200"
+                >
+                  {ACTION_LABELS.viewDetails} →
+                </a>
+                <a
+                  href={product.url}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored nofollow"
+                  className="text-zinc-300 hover:text-zinc-100"
+                >
+                  {ACTION_LABELS.externalBooking} →
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-zinc-500">
+          No Viator booking listings are attached for this place yet.
+        </p>
+      )}
+    </section>
+  );
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-24 space-y-20">
@@ -296,6 +337,14 @@ export default async function NodePage({ params }: { params: Promise<{ slug: str
           <span>{node.region}</span>
           <span>•</span>
           <span>Verified Experiences</span>
+          {latestEvent ? (
+            <>
+              <span>•</span>
+              <span className="text-amber-300">
+                Latest Event: {latestEvent.event_type}
+              </span>
+            </>
+          ) : null}
         </div>
       </header>
 
@@ -303,15 +352,15 @@ export default async function NodePage({ params }: { params: Promise<{ slug: str
 
       <section className="grid md:grid-cols-3 gap-6 text-center">
         <div className="rounded-xl bg-zinc-900/50 border border-zinc-800 p-5">
-          ⭐ 300k+ Verified Reviews
+          DCC discovery-first routing
         </div>
 
         <div className="rounded-xl bg-zinc-900/50 border border-zinc-800 p-5">
-          🔒 Secure Checkout
+          Viator booking partner
         </div>
 
         <div className="rounded-xl bg-zinc-900/50 border border-zinc-800 p-5">
-          💰 Lowest Price Guarantee
+          Clear affiliate disclosure
         </div>
       </section>
 
@@ -324,14 +373,16 @@ export default async function NodePage({ params }: { params: Promise<{ slug: str
         lng={node.lng}
       />
 
+      <WhatsNearby placeSlug={resolvedParams.slug} lat={node.lat} lon={node.lng} />
+      <EarthSignalsPanel placeSlug={resolvedParams.slug} />
+
       {/* ================= OVERVIEW ================= */}
 
       <section className="space-y-4">
         <h2 className="text-2xl font-bold">Travel Overview</h2>
 
         <p className="text-zinc-300 leading-relaxed max-w-3xl">
-          {cityName} is a verified destination inside the Destination Command Center network. We analyze pricing,
-          reliability, demand, and user reviews to surface the best-performing tours and activities.
+          {cityName} is part of the Destination Command Center network. DCC is designed to help you evaluate tours, activities, and nearby travel options faster, then hand you off to trusted booking partners when you&apos;re ready.
         </p>
       </section>
 
@@ -350,101 +401,6 @@ export default async function NodePage({ params }: { params: Promise<{ slug: str
         </ul>
       </section>
 
-      {/* ================= TOURS ================= */}
-
-      <section className="space-y-12">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <h2 className="text-3xl font-black">Top Tours & Experiences</h2>
-
-          <span className="text-sm text-zinc-400">Ranked by Rating • Popularity • Trust</span>
-        </div>
-
-        {nodeTours.length > 0 ? (
-          <div className="grid gap-8 md:grid-cols-2">
-            {nodeTours.map((tour, index) => {
-              const affiliateUrl = buildViatorLink(tour, cityName);
-              const isTop = index === 0;
-
-              return (
-                <div
-                  key={tour.id}
-                  className="relative group rounded-2xl border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900/80 transition p-6 space-y-5"
-                >
-                  {isTop && (
-                    <div className="absolute -top-3 right-4 bg-cyan-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
-                      🔥 Bestseller
-                    </div>
-                  )}
-
-                  <h3 className="text-lg font-semibold group-hover:text-cyan-400 transition">{tour.name}</h3>
-
-                  <div className="grid grid-cols-2 gap-2 text-sm text-zinc-400">
-                    {tour.duration && <div>⏱ {tour.duration}</div>}
-
-                    {tour.price_from !== null && tour.price_from !== undefined && (
-                      <div>💵 From ${tour.price_from}</div>
-                    )}
-
-                    {tour.rating && (
-                      <div className="col-span-2">
-                        ⭐ {tour.rating}
-                        {tour.reviews ? <> ({tour.reviews.toLocaleString()} reviews)</> : null}
-                      </div>
-                    )}
-                  </div>
-
-                  {tour.tags?.length ? (
-                    <div className="flex flex-wrap gap-2">
-                      {tour.tags.map((tag) => (
-                        <span key={tag} className="text-xs px-3 py-1 rounded-full bg-zinc-800 text-zinc-300">
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-
-                  <a
-                    href={affiliateUrl}
-                    target="_blank"
-                    rel="noopener noreferrer sponsored"
-                    className="block text-center mt-4 font-semibold text-white bg-cyan-600 hover:bg-cyan-500 px-5 py-3 rounded-xl transition shadow-lg shadow-cyan-600/20"
-                  >
-                    Check Availability →
-                  </a>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 space-y-4">
-            <p className="text-zinc-300">
-              Tours for this node aren’t loaded yet — the page is live and ready. Once the Viator ingest finishes (or
-              you add a local catalog), this section will populate automatically.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <a
-                href={`https://www.viator.com/searchResults/all?text=${encodeURIComponent(
-                  `${cityName} tours`
-                )}&pid=${VIATOR_PID}&mcid=${VIATOR_MCID}`}
-                target="_blank"
-                rel="noopener noreferrer sponsored"
-                className="inline-block text-center font-semibold text-white bg-cyan-600 hover:bg-cyan-500 px-5 py-3 rounded-xl transition"
-              >
-                View {cityName} tours on Viator →
-              </a>
-
-              <Link
-                href="/"
-                className="inline-block text-center font-semibold text-zinc-200 border border-zinc-700 hover:border-zinc-500 px-5 py-3 rounded-xl transition"
-              >
-                Back to Home
-              </Link>
-            </div>
-          </div>
-        )}
-      </section>
-
       {/* ================= STATUS ================= */}
 
       <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-7 space-y-3">
@@ -455,6 +411,131 @@ export default async function NodePage({ params }: { params: Promise<{ slug: str
           <span className="text-cyan-400 font-medium">{node.status}</span> and synchronized with the authority layer.
         </p>
       </section>
+
+      {/* ================= TIMELINE ================= */}
+
+      {placeEvents.length > 0 || placePayload?.context.risk_summary ? (
+        <section
+          id="section-observations"
+          className={`rounded-xl border bg-zinc-900/50 p-7 space-y-4 ${
+            focusEvents || focusTransport ? "border-cyan-500/40" : "border-zinc-800"
+          } scroll-mt-24`}
+        >
+          <h3 className="font-semibold text-lg">Recent Observations</h3>
+
+          {placePayload?.context.risk_summary ? (
+            <p className="text-sm text-zinc-400">
+              Risk level:{" "}
+              <span className="text-cyan-300 font-medium">
+                {placePayload.context.risk_summary.risk_level}
+              </span>
+              {" • "}
+              Trend state:{" "}
+              <span className="text-cyan-300 font-medium">
+                {placePayload.context.risk_summary.trend}
+              </span>
+              {placePayload.context.risk_summary.sample_count
+                ? ` • baseline samples: ${placePayload.context.risk_summary.sample_count}`
+                : ""}
+            </p>
+          ) : null}
+
+          {placeEvents.length > 0 ? (
+            <div className="space-y-3">
+              {placeEvents.map((ev, idx) => {
+                const dt = new Date(ev.timestamp);
+                const ts = Number.isNaN(dt.getTime())
+                  ? ev.timestamp
+                  : dt.toISOString().replace("T", " ").slice(0, 16);
+                return (
+                  <div
+                    key={`${placePayload?.place_id || node.id}-${ev.timestamp}-${idx}`}
+                    className="rounded-lg border border-zinc-800 bg-zinc-950/40 px-4 py-3"
+                  >
+                    <div className="text-xs uppercase tracking-wider text-zinc-500">
+                      {ts}
+                    </div>
+                    <div className="text-zinc-200 font-medium mt-1">
+                      {ev.title}
+                    </div>
+                    <div className="text-xs text-zinc-400 mt-1">
+                      {ev.event_type} • severity {ev.severity} • confidence {ev.confidence}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-zinc-500">No recent observations yet.</p>
+          )}
+        </section>
+      ) : null}
+
+      <PlaceLiveSummaryRail
+        summary={liveSummary}
+        placeSlug={resolvedParams.slug}
+        aliveFilter={aliveFilter}
+        expanded={aliveExpanded}
+      />
+
+      {hasAliveFocus ? (
+        <section
+          id="section-lane-focus"
+          className="rounded-xl border border-cyan-500/30 bg-cyan-500/5 p-7 space-y-3 scroll-mt-24"
+        >
+          <h3 className="font-semibold text-lg text-cyan-200">Lane Focus Output</h3>
+          {focusCruises && focusedCruises.length > 0 ? (
+            <div className="text-sm text-zinc-300">
+              <p className="text-cyan-300 font-medium">Cruise-linked actions</p>
+              <ul className="mt-1 space-y-1">
+                {focusedCruises.map((c) => (
+                  <li key={c.id}>• {c.title}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {focusTransport && focusedRelated.length > 0 ? (
+            <div className="text-sm text-zinc-300">
+              <p className="text-cyan-300 font-medium">Transport-adjacent places</p>
+              <ul className="mt-1 space-y-1">
+                {focusedRelated.map((r) => (
+                  <li key={`${r.place_id}:${r.reason}`}>• {r.place_name || r.place_slug || r.place_id}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {focusEvents && placeEvents.length > 0 ? (
+            <p className="text-sm text-zinc-300">
+              Event-adjacent context: {placeEvents[0].event_type} (severity {placeEvents[0].severity})
+            </p>
+          ) : null}
+          {focusTours ? (
+            <p className="text-sm text-zinc-300">
+              Tours focus is active; Viator booking listings are lifted above broader inventory.
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
+      {/* ================= ACTION INVENTORY ================= */}
+
+      {focusTours ? viatorSection : actionInventorySection}
+      {focusTours ? actionInventorySection : viatorSection}
+
+      {/* ================= ACTION: VIATOR ================= */}
+      {placePayload ? (
+        <>
+          <DiagnosticsBlock
+            diagnostics={placePayload.diagnostics.memory}
+            title="Memory Diagnostics"
+          />
+          <DiagnosticsBlock
+            diagnostics={placePayload.diagnostics.viator}
+            title="Action Diagnostics"
+            extraLine={viatorAction?.reason ? `policy_reason=${viatorAction.reason}` : null}
+          />
+        </>
+      ) : null}
 
       {/* ================= FOOTER ================= */}
 

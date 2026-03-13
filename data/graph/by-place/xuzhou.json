@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-04-xuzhou:0001",
+  "place_slug": "xuzhou",
+  "place_name": "Xuzhou",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-01-huaibei:0001",
+      "place_slug": "huaibei",
+      "place_name": "Huaibei",
+      "reason": "near_place_geo",
+      "distance_km": 52
+    },
+    {
+      "place_id": "dcc:place:cn-01-suzhou-2:0001",
+      "place_slug": "suzhou-2",
+      "place_name": "Suzhou",
+      "reason": "near_place_geo",
+      "distance_km": 69.2
+    },
+    {
+      "place_id": "dcc:place:cn-04-suqian:0001",
+      "place_slug": "suqian",
+      "place_name": "Suqian",
+      "reason": "near_place_geo",
+      "distance_km": 97.4
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-04-xuzhou:0001",
+      "to": "dcc:place:cn-01-huaibei:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-04-xuzhou:0001",
+      "to": "dcc:place:cn-01-suzhou-2:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-04-xuzhou:0001",
+      "to": "dcc:place:cn-04-suqian:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

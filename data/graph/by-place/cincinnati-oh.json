@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:us-oh-cincinnati-oh:0001",
+  "place_slug": "cincinnati-oh",
+  "place_name": "Cincinnati",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ky-lexington-ky:0001",
+      "place_slug": "lexington-ky",
+      "place_name": "Lexington",
+      "reason": "near_place_geo",
+      "distance_km": 126.6
+    },
+    {
+      "place_id": "dcc:place:us-ky-louisville-ky:0001",
+      "place_slug": "louisville-ky",
+      "place_name": "Louisville",
+      "reason": "near_place_geo",
+      "distance_km": 145.2
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-oh-cincinnati-oh:0001",
+      "to": "dcc:place:us-ky-lexington-ky:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-oh-cincinnati-oh:0001",
+      "to": "dcc:place:us-ky-louisville-ky:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

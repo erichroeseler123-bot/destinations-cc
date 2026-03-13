@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:us-mn-minneapolis-mn:0001",
+  "place_slug": "minneapolis-mn",
+  "place_name": "Minneapolis",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-mn-saint-paul-mn:0001",
+      "place_slug": "saint-paul-mn",
+      "place_name": "Saint Paul",
+      "reason": "near_place_geo",
+      "distance_km": 14
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-mn-minneapolis-mn:0001",
+      "to": "dcc:place:us-mn-saint-paul-mn:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

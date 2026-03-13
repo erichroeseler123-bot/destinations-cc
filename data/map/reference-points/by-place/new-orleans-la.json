@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:us-la-new-orleans-la:0001",
+  "place_slug": "new-orleans-la",
+  "place_name": "New Orleans",
+  "center": {
+    "coordinates": [
+      -90.07507,
+      29.95465
+    ],
+    "country_code": "US",
+    "admin1_code": "LA"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-la-baton-rouge-la:0001",
+      "slug": "baton-rouge-la",
+      "name": "Baton Rouge",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -91.18747,
+        30.44332
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.748Z"
+}

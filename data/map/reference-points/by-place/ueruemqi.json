@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:cn-13-ueruemqi:0001",
+  "place_slug": "ueruemqi",
+  "place_name": "UEruemqi",
+  "center": {
+    "coordinates": [
+      87.60046,
+      43.80096
+    ],
+    "country_code": "CN",
+    "admin1_code": "13"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.762Z"
+}

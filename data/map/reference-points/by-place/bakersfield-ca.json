@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:us-ca-bakersfield-ca:0001",
+  "place_slug": "bakersfield-ca",
+  "place_name": "Bakersfield",
+  "center": {
+    "coordinates": [
+      -119.01871,
+      35.37329
+    ],
+    "country_code": "US",
+    "admin1_code": "CA"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ca-santa-barbara-ca:0001",
+      "slug": "santa-barbara-ca",
+      "name": "Santa Barbara",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -119.69819,
+        34.42083
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-san-luis-obispo-ca:0001",
+      "slug": "san-luis-obispo-ca",
+      "name": "San Luis Obispo",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -120.65962,
+        35.28275
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.712Z"
+}

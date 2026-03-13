@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:sn-03-touba:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.618Z",
+  "metrics": {
+    "risk_score_mean": 2.7066666666666666,
+    "risk_score_stddev": 0.4850108818939587,
+    "risk_score_p90": 3.2,
+    "degraded_transport_rate": 0.2,
+    "negative_human_signal_rate": 0.2
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

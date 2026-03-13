@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:ve-07-valencia:0001",
+  "place_slug": "valencia",
+  "place_name": "Valencia",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:ve-25-caracas:0001",
+      "place_slug": "caracas",
+      "place_name": "Caracas",
+      "reason": "near_place_geo",
+      "distance_km": 127.9
+    },
+    {
+      "place_id": "dcc:place:ve-13-barquisimeto:0001",
+      "place_slug": "barquisimeto",
+      "place_name": "Barquisimeto",
+      "reason": "near_place_geo",
+      "distance_km": 148.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:ve-07-valencia:0001",
+      "to": "dcc:place:ve-25-caracas:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:ve-07-valencia:0001",
+      "to": "dcc:place:ve-13-barquisimeto:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

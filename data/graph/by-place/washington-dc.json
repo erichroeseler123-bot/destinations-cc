@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-dc-washington-dc:0001",
+  "place_slug": "washington-dc",
+  "place_name": "Washington",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-va-arlington-va:0001",
+      "place_slug": "arlington-va",
+      "place_name": "Arlington",
+      "reason": "near_place_geo",
+      "distance_km": 6.1
+    },
+    {
+      "place_id": "dcc:place:us-va-alexandria-va:0001",
+      "place_slug": "alexandria-va",
+      "place_name": "Alexandria",
+      "reason": "near_place_geo",
+      "distance_km": 10.1
+    },
+    {
+      "place_id": "dcc:place:us-md-annapolis-md:0001",
+      "place_slug": "annapolis-md",
+      "place_name": "Annapolis",
+      "reason": "near_place_geo",
+      "distance_km": 48
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-dc-washington-dc:0001",
+      "to": "dcc:place:us-va-arlington-va:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-dc-washington-dc:0001",
+      "to": "dcc:place:us-va-alexandria-va:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-dc-washington-dc:0001",
+      "to": "dcc:place:us-md-annapolis-md:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

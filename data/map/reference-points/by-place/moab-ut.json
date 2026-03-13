@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:us-ut-moab-ut:0001",
+  "place_slug": "moab-ut",
+  "place_name": "Moab",
+  "center": {
+    "coordinates": [
+      -109.54984,
+      38.57332
+    ],
+    "country_code": "US",
+    "admin1_code": "UT"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.743Z"
+}

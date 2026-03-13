@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:us-nm-santa-fe-nm:0001",
+  "place_slug": "santa-fe-nm",
+  "place_name": "Santa Fe",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-nm-albuquerque-nm:0001",
+      "place_slug": "albuquerque-nm",
+      "place_name": "Albuquerque",
+      "reason": "near_place_geo",
+      "distance_km": 93.1
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-nm-santa-fe-nm:0001",
+      "to": "dcc:place:us-nm-albuquerque-nm:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,204 @@
+cat > data/sources/us_tourist_150.txt <<'EOF'
+New York, NY
+Los Angeles, CA
+Chicago, IL
+Houston, TX
+Phoenix, AZ
+Philadelphia, PA
+San Antonio, TX
+San Diego, CA
+Dallas, TX
+San Jose, CA
+Austin, TX
+Jacksonville, FL
+San Francisco, CA
+Columbus, OH
+Fort Worth, TX
+Indianapolis, IN
+Charlotte, NC
+Seattle, WA
+Denver, CO
+Washington, DC
+Boston, MA
+Nashville, TN
+New Orleans, LA
+Las Vegas, NV
+Miami, FL
+Orlando, FL
+Tampa, FL
+Fort Lauderdale, FL
+Honolulu, HI
+San Juan, PR
+Atlanta, GA
+Portland, OR
+Detroit, MI
+Minneapolis, MN
+St. Louis, MO
+Kansas City, MO
+Cleveland, OH
+Cincinnati, OH
+Pittsburgh, PA
+Baltimore, MD
+Milwaukee, WI
+Salt Lake City, UT
+Sacramento, CA
+Raleigh, NC
+Durham, NC
+Richmond, VA
+Norfolk, VA
+Virginia Beach, VA
+Charleston, SC
+Savannah, GA
+Asheville, NC
+Key West, FL
+Naples, FL
+Sarasota, FL
+St. Petersburg, FL
+Pensacola, FL
+Destin, FL
+Panama City Beach, FL
+Daytona Beach, FL
+West Palm Beach, FL
+Palm Beach, FL
+Palm Springs, CA
+San Luis Obispo, CA
+Santa Barbara, CA
+Monterey, CA
+Carmel-by-the-Sea, CA
+Santa Cruz, CA
+Lake Tahoe, CA
+South Lake Tahoe, CA
+Yosemite Valley, CA
+San Rafael, CA
+Napa, CA
+Sonoma, CA
+Santa Rosa, CA
+Berkeley, CA
+Pasadena, CA
+Anaheim, CA
+Santa Monica, CA
+Malibu, CA
+Long Beach, CA
+San Bernardino, CA
+Riverside, CA
+San Clemente, CA
+Oceanside, CA
+Temecula, CA
+San Diego, CA
+La Jolla, CA
+San Jose, CA
+Fresno, CA
+Bakersfield, CA
+San Bernardino, CA
+Las Vegas, NV
+Reno, NV
+Lake Havasu City, AZ
+Sedona, AZ
+Scottsdale, AZ
+Tucson, AZ
+Flagstaff, AZ
+Grand Canyon Village, AZ
+Park City, UT
+Moab, UT
+Springdale, UT
+St. George, UT
+Boulder, CO
+Colorado Springs, CO
+Aspen, CO
+Vail, CO
+Breckenridge, CO
+Steamboat Springs, CO
+Telluride, CO
+Durango, CO
+Estes Park, CO
+Jackson, WY
+West Yellowstone, MT
+Bozeman, MT
+Missoula, MT
+Kalispell, MT
+Spokane, WA
+Tacoma, WA
+Olympia, WA
+Bellingham, WA
+Port Angeles, WA
+Leavenworth, WA
+Bend, OR
+Eugene, OR
+Salem, OR
+Cannon Beach, OR
+Astoria, OR
+Newport, OR
+Portland, ME
+Bar Harbor, ME
+Burlington, VT
+Portsmouth, NH
+Providence, RI
+Newport, RI
+Hartford, CT
+New Haven, CT
+Buffalo, NY
+Rochester, NY
+Albany, NY
+Syracuse, NY
+Niagara Falls, NY
+White Plains, NY
+Jersey City, NJ
+Newark, NJ
+Atlantic City, NJ
+Princeton, NJ
+Annapolis, MD
+Alexandria, VA
+Arlington, VA
+Williamsburg, VA
+Virginia Beach, VA
+Outer Banks, NC
+Wilmington, NC
+Greenville, SC
+Myrtle Beach, SC
+Hilton Head Island, SC
+Columbia, SC
+Chattanooga, TN
+Knoxville, TN
+Gatlinburg, TN
+Pigeon Forge, TN
+Memphis, TN
+Louisville, KY
+Lexington, KY
+Indianapolis, IN
+Columbus, OH
+Cleveland, OH
+Toledo, OH
+Akron, OH
+Detroit, MI
+Grand Rapids, MI
+Mackinaw City, MI
+Milwaukee, WI
+Madison, WI
+Green Bay, WI
+Minneapolis, MN
+St. Paul, MN
+Fargo, ND
+Chicago, IL
+Springfield, IL
+St. Louis, MO
+Branson, MO
+Kansas City, MO
+Omaha, NE
+Des Moines, IA
+New Orleans, LA
+Baton Rouge, LA
+Austin, TX
+San Antonio, TX
+Houston, TX
+Dallas, TX
+Fort Worth, TX
+Galveston, TX
+Corpus Christi, TX
+Fredericksburg, TX
+Santa Fe, NM
+Albuquerque, NM
+Oklahoma City, OK
+Tulsa, OK
+Anchorage, AK
+Juneau, AK
+Fairbanks, AK

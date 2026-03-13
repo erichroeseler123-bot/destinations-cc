@@ -1,0 +1,19 @@
+{
+  "promote": {
+    "emit_improving": false,
+    "zscore_threshold": 0.75,
+    "min_samples": 3,
+    "dedupe_window_minutes": {
+      "risk_degradation": 120,
+      "risk_abnormal": 120,
+      "risk_improvement": 360,
+      "transport_disruption": 90,
+      "human_pressure": 90
+    },
+    "max_events_per_place_per_hour": 4
+  },
+  "planetary": {
+    "window_days": 30,
+    "max_events_per_hour_per_type": 200
+  }
+}

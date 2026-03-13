@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:us-nm-albuquerque-nm:0001",
+  "place_slug": "albuquerque-nm",
+  "place_name": "Albuquerque",
+  "center": {
+    "coordinates": [
+      -106.65114,
+      35.08449
+    ],
+    "country_code": "US",
+    "admin1_code": "NM"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-nm-santa-fe-nm:0001",
+      "slug": "santa-fe-nm",
+      "name": "Santa Fe",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -105.9378,
+        35.68698
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.710Z"
+}

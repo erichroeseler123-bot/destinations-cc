@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:cn-11-changde:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "degrading",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 1.525333333333333,
+  "z_score": 0.8609387622429271,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:cn-11-changde:0001",
+    "window": "7d",
+    "direction": "degrading",
+    "slope": 0.2471428571428571,
+    "sample_count": 7
+  }
+}

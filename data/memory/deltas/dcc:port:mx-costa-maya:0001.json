@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:port:mx-costa-maya:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 1.9306666666666668,
+  "z_score": 0.13153139066708905,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:port:mx-costa-maya:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": 0.19285714285714287,
+    "sample_count": 7
+  }
+}

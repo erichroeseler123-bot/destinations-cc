@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:mx-09-iztapalapa:0001",
+  "place_slug": "iztapalapa",
+  "place_name": "Iztapalapa",
+  "center": {
+    "coordinates": [
+      -99.06224,
+      19.35529
+    ],
+    "country_code": "MX",
+    "admin1_code": "09"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:mx-15-ciudad-nezahualcoyotl:0001",
+      "slug": "ciudad-nezahualcoyotl",
+      "name": "Ciudad Nezahualcoyotl",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -99.01483,
+        19.40061
+      ]
+    },
+    {
+      "id": "dcc:place:mx-09-mexico-city:0001",
+      "slug": "mexico-city",
+      "name": "Mexico City",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -99.12766,
+        19.42847
+      ]
+    },
+    {
+      "id": "dcc:place:mx-09-gustavo-adolfo-madero:0001",
+      "slug": "gustavo-adolfo-madero",
+      "name": "Gustavo Adolfo Madero",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -99.11075,
+        19.49392
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.730Z"
+}

@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-09-kaifeng:0001",
+  "place_slug": "kaifeng",
+  "place_name": "Kaifeng",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-09-zhengzhou:0001",
+      "place_slug": "zhengzhou",
+      "place_name": "Zhengzhou",
+      "reason": "near_place_geo",
+      "distance_km": 60.3
+    },
+    {
+      "place_id": "dcc:place:cn-09-xuchang:0001",
+      "place_slug": "xuchang",
+      "place_name": "Xuchang",
+      "reason": "near_place_geo",
+      "distance_km": 94.5
+    },
+    {
+      "place_id": "dcc:place:cn-25-heze:0001",
+      "place_slug": "heze",
+      "place_name": "Heze",
+      "reason": "near_place_geo",
+      "distance_km": 117
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-09-kaifeng:0001",
+      "to": "dcc:place:cn-09-zhengzhou:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-09-kaifeng:0001",
+      "to": "dcc:place:cn-09-xuchang:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-09-kaifeng:0001",
+      "to": "dcc:place:cn-25-heze:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

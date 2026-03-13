@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:in-07-najafgarh:0001",
+  "place_slug": "najafgarh",
+  "place_name": "Najafgarh",
+  "center": {
+    "coordinates": [
+      76.97982,
+      28.60922
+    ],
+    "country_code": "IN",
+    "admin1_code": "07"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:in-07-delhi:0001",
+      "slug": "delhi",
+      "name": "Delhi",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        77.23149,
+        28.65195
+      ]
+    },
+    {
+      "id": "dcc:place:in-10-faridabad:0001",
+      "slug": "faridabad",
+      "name": "Faridabad",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        77.31316,
+        28.41124
+      ]
+    },
+    {
+      "id": "dcc:place:in-36-ghaziabad:0001",
+      "slug": "ghaziabad",
+      "name": "Ghaziabad",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        77.43915,
+        28.66535
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.745Z"
+}

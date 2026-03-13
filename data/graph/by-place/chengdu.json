@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:cn-32-chengdu:0001",
+  "place_slug": "chengdu",
+  "place_name": "Chengdu",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-32-meishan:0001",
+      "place_slug": "meishan",
+      "place_name": "Meishan",
+      "reason": "near_place_geo",
+      "distance_km": 72.7
+    },
+    {
+      "place_id": "dcc:place:cn-32-mianyang:0001",
+      "place_slug": "mianyang",
+      "place_name": "Mianyang",
+      "reason": "near_place_geo",
+      "distance_km": 106.6
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-32-chengdu:0001",
+      "to": "dcc:place:cn-32-meishan:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-32-chengdu:0001",
+      "to": "dcc:place:cn-32-mianyang:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

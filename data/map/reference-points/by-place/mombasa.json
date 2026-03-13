@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:ke-37-mombasa:0001",
+  "place_slug": "mombasa",
+  "place_name": "Mombasa",
+  "center": {
+    "coordinates": [
+      39.66359,
+      -4.05466
+    ],
+    "country_code": "KE",
+    "admin1_code": "37"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.743Z"
+}

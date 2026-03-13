@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:co-04-barranquilla:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "improving",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.821333333333334,
+  "z_score": -1.5781699935387135,
+  "reasons": [
+    "risk_below_baseline"
+  ],
+  "trend": {
+    "place_id": "dcc:place:co-04-barranquilla:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.07071428571428572,
+    "sample_count": 7
+  }
+}

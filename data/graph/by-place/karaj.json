@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:ir-44-karaj:0001",
+  "place_slug": "karaj",
+  "place_name": "Karaj",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:ir-26-tehran:0001",
+      "place_slug": "tehran",
+      "place_name": "Tehran",
+      "reason": "near_place_geo",
+      "distance_km": 41.7
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:ir-44-karaj:0001",
+      "to": "dcc:place:ir-26-tehran:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

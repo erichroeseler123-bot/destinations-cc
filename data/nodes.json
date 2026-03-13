@@ -36,18 +36,6 @@
     "description": "White Pass railway and Klondike history."
   },
   {
-    "id": "vegas-guide",
-    "slug": "vegas-guide",
-    "name": "Las Vegas Guide",
-    "type": "destination",
-    "region": "nevada",
-    "status": "active",
-    "description": "Tours, shows, transportation, and survival info for Las Vegas.",
-    "lat": 36.1699,
-    "lng": -115.1398,
-    "timezone": "America/Los_Angeles"
-  },
-  {
     "id": "chandler-guide",
     "slug": "chandler-guide",
     "name": "Chandler Guide",
@@ -163,5 +151,557 @@
     "region": "california",
     "status": "active",
     "description": "Things to do, tours, and essential local knowledge for San Jose."
+  },
+  {
+    "id": "vegas-guide",
+    "slug": "vegas-guide",
+    "name": "Las Vegas Guide",
+    "type": "destination",
+    "region": "nevada",
+    "status": "active",
+    "description": "Tours, shows, transportation, and survival info for Las Vegas.",
+    "lat": 36.1699,
+    "lng": -115.1398,
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "id": "atlanta-guide",
+    "slug": "atlanta-guide",
+    "name": "Atlanta Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Atlanta."
+  },
+  {
+    "id": "augusta-guide",
+    "slug": "augusta-guide",
+    "name": "Augusta Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Augusta."
+  },
+  {
+    "id": "austin-guide",
+    "slug": "austin-guide",
+    "name": "Austin Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Austin."
+  },
+  {
+    "id": "bar-harbor-guide",
+    "slug": "bar-harbor-guide",
+    "name": "Bar Harbor Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Bar Harbor."
+  },
+  {
+    "id": "baton-rouge-guide",
+    "slug": "baton-rouge-guide",
+    "name": "Baton Rouge Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Baton Rouge."
+  },
+  {
+    "id": "beaverton-guide",
+    "slug": "beaverton-guide",
+    "name": "Beaverton Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Beaverton."
+  },
+  {
+    "id": "bellevue-guide",
+    "slug": "bellevue-guide",
+    "name": "Bellevue Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Bellevue."
+  },
+  {
+    "id": "boston-guide",
+    "slug": "boston-guide",
+    "name": "Boston Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Boston."
+  },
+  {
+    "id": "boulder-guide",
+    "slug": "boulder-guide",
+    "name": "Boulder Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Boulder."
+  },
+  {
+    "id": "burlington-guide",
+    "slug": "burlington-guide",
+    "name": "Burlington Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Burlington."
+  },
+  {
+    "id": "cambridge-guide",
+    "slug": "cambridge-guide",
+    "name": "Cambridge Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Cambridge."
+  },
+  {
+    "id": "charleston-guide",
+    "slug": "charleston-guide",
+    "name": "Charleston Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Charleston."
+  },
+  {
+    "id": "chicago-guide",
+    "slug": "chicago-guide",
+    "name": "Chicago Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Chicago."
+  },
+  {
+    "id": "cincinnati-guide",
+    "slug": "cincinnati-guide",
+    "name": "Cincinnati Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Cincinnati."
+  },
+  {
+    "id": "cleveland-guide",
+    "slug": "cleveland-guide",
+    "name": "Cleveland Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Cleveland."
+  },
+  {
+    "id": "colorado-springs-guide",
+    "slug": "colorado-springs-guide",
+    "name": "Colorado Springs Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Colorado Springs."
+  },
+  {
+    "id": "columbus-guide",
+    "slug": "columbus-guide",
+    "name": "Columbus Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Columbus."
+  },
+  {
+    "id": "concord-guide",
+    "slug": "concord-guide",
+    "name": "Concord Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Concord."
+  },
+  {
+    "id": "dallas-guide",
+    "slug": "dallas-guide",
+    "name": "Dallas Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Dallas."
+  },
+  {
+    "id": "denver-guide",
+    "slug": "denver-guide",
+    "name": "Denver Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Denver."
+  },
+  {
+    "id": "detroit-guide",
+    "slug": "detroit-guide",
+    "name": "Detroit Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Detroit."
+  },
+  {
+    "id": "everett-guide",
+    "slug": "everett-guide",
+    "name": "Everett Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Everett."
+  },
+  {
+    "id": "fort-collins-guide",
+    "slug": "fort-collins-guide",
+    "name": "Fort Collins Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Fort Collins."
+  },
+  {
+    "id": "fort-lauderdale-guide",
+    "slug": "fort-lauderdale-guide",
+    "name": "Fort Lauderdale Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Fort Lauderdale."
+  },
+  {
+    "id": "fort-worth-guide",
+    "slug": "fort-worth-guide",
+    "name": "Fort Worth Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Fort Worth."
+  },
+  {
+    "id": "hillsboro-guide",
+    "slug": "hillsboro-guide",
+    "name": "Hillsboro Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Hillsboro."
+  },
+  {
+    "id": "houston-guide",
+    "slug": "houston-guide",
+    "name": "Houston Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Houston."
+  },
+  {
+    "id": "key-west-guide",
+    "slug": "key-west-guide",
+    "name": "Key West Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Key West."
+  },
+  {
+    "id": "knoxville-guide",
+    "slug": "knoxville-guide",
+    "name": "Knoxville Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Knoxville."
+  },
+  {
+    "id": "lafayette-guide",
+    "slug": "lafayette-guide",
+    "name": "Lafayette Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Lafayette."
+  },
+  {
+    "id": "lancaster-guide",
+    "slug": "lancaster-guide",
+    "name": "Lancaster Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Lancaster."
+  },
+  {
+    "id": "madison-guide",
+    "slug": "madison-guide",
+    "name": "Madison Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Madison."
+  },
+  {
+    "id": "memphis-guide",
+    "slug": "memphis-guide",
+    "name": "Memphis Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Memphis."
+  },
+  {
+    "id": "miami-guide",
+    "slug": "miami-guide",
+    "name": "Miami Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Miami."
+  },
+  {
+    "id": "milwaukee-guide",
+    "slug": "milwaukee-guide",
+    "name": "Milwaukee Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Milwaukee."
+  },
+  {
+    "id": "minneapolis-guide",
+    "slug": "minneapolis-guide",
+    "name": "Minneapolis Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Minneapolis."
+  },
+  {
+    "id": "montpelier-guide",
+    "slug": "montpelier-guide",
+    "name": "Montpelier Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Montpelier."
+  },
+  {
+    "id": "myrtle-beach-guide",
+    "slug": "myrtle-beach-guide",
+    "name": "Myrtle Beach Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Myrtle Beach."
+  },
+  {
+    "id": "naples-guide",
+    "slug": "naples-guide",
+    "name": "Naples Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Naples."
+  },
+  {
+    "id": "nashville-guide",
+    "slug": "nashville-guide",
+    "name": "Nashville Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Nashville."
+  },
+  {
+    "id": "new-orleans-guide",
+    "slug": "new-orleans-guide",
+    "name": "New Orleans Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for New Orleans."
+  },
+  {
+    "id": "new-york-guide",
+    "slug": "new-york-guide",
+    "name": "New York Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for New York."
+  },
+  {
+    "id": "newport-guide",
+    "slug": "newport-guide",
+    "name": "Newport Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Newport."
+  },
+  {
+    "id": "orlando-guide",
+    "slug": "orlando-guide",
+    "name": "Orlando Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Orlando."
+  },
+  {
+    "id": "philadelphia-guide",
+    "slug": "philadelphia-guide",
+    "name": "Philadelphia Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Philadelphia."
+  },
+  {
+    "id": "pittsburgh-guide",
+    "slug": "pittsburgh-guide",
+    "name": "Pittsburgh Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Pittsburgh."
+  },
+  {
+    "id": "portland-guide",
+    "slug": "portland-guide",
+    "name": "Portland Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Portland."
+  },
+  {
+    "id": "portsmouth-guide",
+    "slug": "portsmouth-guide",
+    "name": "Portsmouth Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Portsmouth."
+  },
+  {
+    "id": "providence-guide",
+    "slug": "providence-guide",
+    "name": "Providence Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Providence."
+  },
+  {
+    "id": "redmond-guide",
+    "slug": "redmond-guide",
+    "name": "Redmond Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Redmond."
+  },
+  {
+    "id": "salem-guide",
+    "slug": "salem-guide",
+    "name": "Salem Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Salem."
+  },
+  {
+    "id": "san-antonio-guide",
+    "slug": "san-antonio-guide",
+    "name": "San Antonio Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for San Antonio."
+  },
+  {
+    "id": "santa-monica-guide",
+    "slug": "santa-monica-guide",
+    "name": "Santa Monica Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Santa Monica."
+  },
+  {
+    "id": "savannah-guide",
+    "slug": "savannah-guide",
+    "name": "Savannah Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Savannah."
+  },
+  {
+    "id": "seattle-guide",
+    "slug": "seattle-guide",
+    "name": "Seattle Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Seattle."
+  },
+  {
+    "id": "st-paul-guide",
+    "slug": "st-paul-guide",
+    "name": "St Paul Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for St Paul."
+  },
+  {
+    "id": "st-petersburg-guide",
+    "slug": "st-petersburg-guide",
+    "name": "St Petersburg Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for St Petersburg."
+  },
+  {
+    "id": "tacoma-guide",
+    "slug": "tacoma-guide",
+    "name": "Tacoma Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Tacoma."
+  },
+  {
+    "id": "tampa-guide",
+    "slug": "tampa-guide",
+    "name": "Tampa Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for Tampa."
+  },
+  {
+    "id": "west-palm-beach-guide",
+    "slug": "west-palm-beach-guide",
+    "name": "West Palm Beach Guide",
+    "type": "destination",
+    "region": "unknown",
+    "status": "active",
+    "description": "Things to do, tours, and essential local knowledge for West Palm Beach."
   }
 ]

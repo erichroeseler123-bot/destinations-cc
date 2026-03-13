@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:cn-24-lueliang:0001",
+  "place_slug": "lueliang",
+  "place_name": "Lueliang",
+  "center": {
+    "coordinates": [
+      111.14436,
+      37.5192
+    ],
+    "country_code": "CN",
+    "admin1_code": "24"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-24-taiyuan:0001",
+      "slug": "taiyuan",
+      "name": "Taiyuan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        112.56028,
+        37.86944
+      ]
+    },
+    {
+      "id": "dcc:place:cn-24-jinzhong:0001",
+      "slug": "jinzhong",
+      "name": "Jinzhong",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        112.75471,
+        37.68403
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.739Z"
+}

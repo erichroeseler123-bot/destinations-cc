@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:us-sc-columbia-sc:0001",
+  "place_slug": "columbia-sc",
+  "place_name": "Columbia",
+  "center": {
+    "coordinates": [
+      -81.03481,
+      34.00071
+    ],
+    "country_code": "US",
+    "admin1_code": "SC"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-nc-charlotte-nc:0001",
+      "slug": "charlotte-nc",
+      "name": "Charlotte",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -80.84313,
+        35.22709
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.720Z"
+}

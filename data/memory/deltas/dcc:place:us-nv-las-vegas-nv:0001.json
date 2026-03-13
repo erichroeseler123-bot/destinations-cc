@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:us-nv-las-vegas-nv:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "improving",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 3.024,
+  "z_score": -1.881437671856815,
+  "reasons": [
+    "risk_below_baseline"
+  ],
+  "trend": {
+    "place_id": "dcc:place:us-nv-las-vegas-nv:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.09499999999999997,
+    "sample_count": 7
+  }
+}

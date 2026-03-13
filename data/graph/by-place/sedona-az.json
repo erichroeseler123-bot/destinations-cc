@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:us-az-sedona-az:0001",
+  "place_slug": "sedona-az",
+  "place_name": "Sedona",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-az-flagstaff-az:0001",
+      "place_slug": "flagstaff-az",
+      "place_name": "Flagstaff",
+      "reason": "near_place_geo",
+      "distance_km": 37.9
+    },
+    {
+      "place_id": "dcc:place:us-az-grand-canyon-village-az:0001",
+      "place_slug": "grand-canyon-village-az",
+      "place_name": "Grand Canyon Village",
+      "reason": "near_place_geo",
+      "distance_km": 135.6
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-az-sedona-az:0001",
+      "to": "dcc:place:us-az-flagstaff-az:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-az-sedona-az:0001",
+      "to": "dcc:place:us-az-grand-canyon-village-az:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

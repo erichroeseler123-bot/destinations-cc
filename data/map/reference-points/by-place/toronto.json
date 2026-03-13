@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:ca-08-toronto:0001",
+  "place_slug": "toronto",
+  "place_name": "Toronto",
+  "center": {
+    "coordinates": [
+      -79.39864,
+      43.70643
+    ],
+    "country_code": "CA",
+    "admin1_code": "08"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ny-niagara-falls-ny:0001",
+      "slug": "niagara-falls-ny",
+      "name": "Niagara Falls",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -79.05671,
+        43.0945
+      ]
+    },
+    {
+      "id": "dcc:place:us-ny-buffalo-ny:0001",
+      "slug": "buffalo-ny",
+      "name": "Buffalo",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -78.87837,
+        42.88645
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.761Z"
+}

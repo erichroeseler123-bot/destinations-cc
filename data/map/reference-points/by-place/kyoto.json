@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:jp-22-kyoto:0001",
+  "place_slug": "kyoto",
+  "place_name": "Kyoto",
+  "center": {
+    "coordinates": [
+      135.75385,
+      35.02107
+    ],
+    "country_code": "JP",
+    "admin1_code": "22"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:jp-32-osaka:0001",
+      "slug": "osaka",
+      "name": "Osaka",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        135.50107,
+        34.69379
+      ]
+    },
+    {
+      "id": "dcc:place:jp-13-kobe:0001",
+      "slug": "kobe",
+      "name": "Kobe",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        135.183,
+        34.6913
+      ]
+    },
+    {
+      "id": "dcc:place:jp-01-nagoya:0001",
+      "slug": "nagoya",
+      "name": "Nagoya",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        136.90641,
+        35.18147
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.738Z"
+}

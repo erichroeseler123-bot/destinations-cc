@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:pk-05-karachi:0001",
+  "place_slug": "karachi",
+  "place_name": "Karachi",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:pk-05-hyderabad-2:0001",
+      "place_slug": "hyderabad-2",
+      "place_name": "Hyderabad",
+      "reason": "near_place_geo",
+      "distance_km": 150
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:pk-05-karachi:0001",
+      "to": "dcc:place:pk-05-hyderabad-2:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

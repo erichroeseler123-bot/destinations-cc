@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:cl-12-santiago:0001",
+  "place_slug": "santiago",
+  "place_name": "Santiago",
+  "center": {
+    "coordinates": [
+      -70.64827,
+      -33.45694
+    ],
+    "country_code": "CL",
+    "admin1_code": "12"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.756Z"
+}

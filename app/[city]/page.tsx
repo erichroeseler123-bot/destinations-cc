@@ -8,9 +8,11 @@ import CityToursSection from "@/app/components/dcc/CityToursSection";
 import CityMoneyLaneSection from "@/app/components/dcc/CityMoneyLaneSection";
 import CityLiveEventsSection from "@/app/components/dcc/CityLiveEventsSection";
 import CitySportsSection from "@/app/components/dcc/CitySportsSection";
+import DecisionEngineTemplate from "@/app/components/dcc/DecisionEngineTemplate";
 import { getCityAdventureLane } from "@/src/data/city-adventure-lanes";
 import { getCityMoneyLane } from "@/src/data/city-money-lanes";
 import { getCityAuthorityConfig } from "@/src/data/city-authority-config";
+import { getDecisionEnginePageByPath } from "@/src/data/decision-engine-pages";
 import { getTeamsByCity } from "@/src/data/sports-teams-config";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 
@@ -158,6 +160,7 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
         title: intent.label,
         query: decodeURIComponent(intent.href.split("&q=")[1] || intent.label),
       }));
+  const decisionPage = getDecisionEnginePageByPath(`/${cityKey}`);
 
   if (config) {
     const tone = cityKey === "las-vegas" || cityKey === "nashville" ? "amber" : "cyan";
@@ -179,6 +182,8 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
             <p className="dcc-hero-enter dcc-hero-enter-4 max-w-3xl text-zinc-300">{config.heroDescription}</p>
             <p className="dcc-hero-enter dcc-hero-enter-4 text-xs text-zinc-400">{config.trustLine}</p>
           </header>
+
+          {decisionPage ? <DecisionEngineTemplate page={decisionPage} /> : null}
 
           <CityToursSection
             cityKey={cityKey}
@@ -257,6 +262,12 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
           Your hub for tours, attractions, day trips, and high-signal logistics. This page is designed to route you to
           the right decision page fast.
         </p>
+
+        {decisionPage ? (
+          <div className="mt-8">
+            <DecisionEngineTemplate page={decisionPage} />
+          </div>
+        ) : null}
 
         <div className="mt-8">
           <CityToursSection

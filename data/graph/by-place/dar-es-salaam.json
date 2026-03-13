@@ -1,0 +1,25 @@
+{
+  "place_id": "dcc:place:tz-23-dar-es-salaam:0001",
+  "place_slug": "dar-es-salaam",
+  "place_name": "Dar es Salaam",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": []
+}

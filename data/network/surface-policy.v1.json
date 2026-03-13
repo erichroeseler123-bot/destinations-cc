@@ -1,0 +1,9 @@
+{
+  "version": "dcc-network-v1",
+  "updatedAt": "2026-03-11T00:00:00Z",
+  "surfaces": {
+    "authority": ["city", "venue", "attraction", "scene"],
+    "discovery": ["city", "venue", "attraction", "event", "artist", "scene"],
+    "monetized": ["operator", "attraction", "event", "venue"]
+  }
+}

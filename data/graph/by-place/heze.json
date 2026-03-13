@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-25-heze:0001",
+  "place_slug": "heze",
+  "place_name": "Heze",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-09-shangqiu:0001",
+      "place_slug": "shangqiu",
+      "place_name": "Shangqiu",
+      "reason": "near_place_geo",
+      "distance_km": 89.2
+    },
+    {
+      "place_id": "dcc:place:cn-25-jining:0001",
+      "place_slug": "jining",
+      "place_name": "Jining",
+      "reason": "near_place_geo",
+      "distance_km": 102.2
+    },
+    {
+      "place_id": "dcc:place:cn-09-kaifeng:0001",
+      "place_slug": "kaifeng",
+      "place_name": "Kaifeng",
+      "reason": "near_place_geo",
+      "distance_km": 117
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-25-heze:0001",
+      "to": "dcc:place:cn-09-shangqiu:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-25-heze:0001",
+      "to": "dcc:place:cn-25-jining:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-25-heze:0001",
+      "to": "dcc:place:cn-09-kaifeng:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:cn-11-hengyang:0001",
+  "place_slug": "hengyang",
+  "place_name": "Hengyang",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-11-zhuzhou:0001",
+      "place_slug": "zhuzhou",
+      "place_name": "Zhuzhou",
+      "reason": "near_place_geo",
+      "distance_km": 117.3
+    },
+    {
+      "place_id": "dcc:place:cn-11-changsha:0001",
+      "place_slug": "changsha",
+      "place_name": "Changsha",
+      "reason": "near_place_geo",
+      "distance_km": 149.7
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-11-hengyang:0001",
+      "to": "dcc:place:cn-11-zhuzhou:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-11-hengyang:0001",
+      "to": "dcc:place:cn-11-changsha:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

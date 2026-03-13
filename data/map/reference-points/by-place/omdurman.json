@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:sd-29-omdurman:0001",
+  "place_slug": "omdurman",
+  "place_name": "Omdurman",
+  "center": {
+    "coordinates": [
+      32.47773,
+      15.64453
+    ],
+    "country_code": "SD",
+    "admin1_code": "29"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:sd-29-khartoum:0001",
+      "slug": "khartoum",
+      "name": "Khartoum",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        32.53241,
+        15.55177
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.749Z"
+}

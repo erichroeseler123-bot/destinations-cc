@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-30-zhongshan:0001",
+  "place_slug": "zhongshan",
+  "place_name": "Zhongshan",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-30-jiangmen:0001",
+      "place_slug": "jiangmen",
+      "place_name": "Jiangmen",
+      "reason": "near_place_geo",
+      "distance_km": 31.1
+    },
+    {
+      "place_id": "dcc:place:cn-30-zhuhai:0001",
+      "place_slug": "zhuhai",
+      "place_name": "Zhuhai",
+      "reason": "near_place_geo",
+      "distance_km": 33.5
+    },
+    {
+      "place_id": "dcc:place:cn-30-baoan:0001",
+      "place_slug": "baoan",
+      "place_name": "Bao'an",
+      "reason": "near_place_geo",
+      "distance_km": 51.8
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-30-zhongshan:0001",
+      "to": "dcc:place:cn-30-jiangmen:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-30-zhongshan:0001",
+      "to": "dcc:place:cn-30-zhuhai:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-30-zhongshan:0001",
+      "to": "dcc:place:cn-30-baoan:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

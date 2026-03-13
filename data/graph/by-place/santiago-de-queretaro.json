@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:mx-22-santiago-de-queretaro:0001",
+  "place_slug": "santiago-de-queretaro",
+  "place_name": "Santiago de Queretaro",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:mx-11-leon-de-los-aldama:0001",
+      "place_slug": "leon-de-los-aldama",
+      "place_name": "Leon de los Aldama",
+      "reason": "near_place_geo",
+      "distance_km": 146.5
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:mx-22-santiago-de-queretaro:0001",
+      "to": "dcc:place:mx-11-leon-de-los-aldama:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:gh-02-kumasi:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 1.8186666666666664,
+  "z_score": 0.7550430459469814,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:gh-02-kumasi:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.02357142857142857,
+    "sample_count": 7
+  }
+}

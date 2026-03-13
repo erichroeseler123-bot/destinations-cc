@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:uz-13-tashkent:0001",
+  "place_slug": "tashkent",
+  "place_name": "Tashkent",
+  "center": {
+    "coordinates": [
+      69.21627,
+      41.26465
+    ],
+    "country_code": "UZ",
+    "admin1_code": "13"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:kz-1537272-shymkent:0001",
+      "slug": "shymkent",
+      "name": "Shymkent",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        69.60042,
+        42.30988
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.760Z"
+}

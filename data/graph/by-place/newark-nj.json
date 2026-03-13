@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-nj-newark-nj:0001",
+  "place_slug": "newark-nj",
+  "place_name": "Newark",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-nj-jersey-city-nj:0001",
+      "place_slug": "jersey-city-nj",
+      "place_name": "Jersey City",
+      "reason": "near_place_geo",
+      "distance_km": 8
+    },
+    {
+      "place_id": "dcc:place:us-ny-new-york-city:0001",
+      "place_slug": "new-york-city",
+      "place_name": "New York City",
+      "reason": "near_place_geo",
+      "distance_km": 14.2
+    },
+    {
+      "place_id": "dcc:place:us-ny-manhattan:0001",
+      "place_slug": "manhattan",
+      "place_name": "Manhattan",
+      "reason": "near_place_geo",
+      "distance_km": 18.2
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-nj-newark-nj:0001",
+      "to": "dcc:place:us-nj-jersey-city-nj:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-nj-newark-nj:0001",
+      "to": "dcc:place:us-ny-new-york-city:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-nj-newark-nj:0001",
+      "to": "dcc:place:us-ny-manhattan:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

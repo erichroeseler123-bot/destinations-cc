@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:ng-32-ibadan:0001",
+  "place_slug": "ibadan",
+  "place_name": "Ibadan",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:ng-05-lagos:0001",
+      "place_slug": "lagos",
+      "place_name": "Lagos",
+      "reason": "near_place_geo",
+      "distance_km": 117.2
+    },
+    {
+      "place_id": "dcc:place:ng-30-ilorin:0001",
+      "place_slug": "ilorin",
+      "place_name": "Ilorin",
+      "reason": "near_place_geo",
+      "distance_km": 142.8
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:ng-32-ibadan:0001",
+      "to": "dcc:place:ng-05-lagos:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:ng-32-ibadan:0001",
+      "to": "dcc:place:ng-30-ilorin:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

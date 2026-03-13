@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:iq-02-al-basrah-al-qadimah:0001",
+  "place_slug": "al-basrah-al-qadimah",
+  "place_name": "Al Basrah al Qadimah",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:iq-02-basrah:0001",
+      "place_slug": "basrah",
+      "place_name": "Basrah",
+      "reason": "near_place_geo",
+      "distance_km": 3.4
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:iq-02-al-basrah-al-qadimah:0001",
+      "to": "dcc:place:iq-02-basrah:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

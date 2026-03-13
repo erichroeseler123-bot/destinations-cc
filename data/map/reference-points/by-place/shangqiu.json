@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-09-shangqiu:0001",
+  "place_slug": "shangqiu",
+  "place_name": "Shangqiu",
+  "center": {
+    "coordinates": [
+      115.65,
+      34.45
+    ],
+    "country_code": "CN",
+    "admin1_code": "09"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-01-bozhou:0001",
+      "slug": "bozhou",
+      "name": "Bozhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        115.77028,
+        33.87722
+      ]
+    },
+    {
+      "id": "dcc:place:cn-25-heze:0001",
+      "slug": "heze",
+      "name": "Heze",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        115.47358,
+        35.23929
+      ]
+    },
+    {
+      "id": "dcc:place:cn-01-huaibei:0001",
+      "slug": "huaibei",
+      "name": "Huaibei",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        116.79167,
+        33.97444
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.757Z"
+}

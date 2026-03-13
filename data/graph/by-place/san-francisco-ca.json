@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-ca-san-francisco-ca:0001",
+  "place_slug": "san-francisco-ca",
+  "place_name": "San Francisco",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ca-berkeley-ca:0001",
+      "place_slug": "berkeley-ca",
+      "place_name": "Berkeley",
+      "reason": "near_place_geo",
+      "distance_km": 16.8
+    },
+    {
+      "place_id": "dcc:place:us-ca-san-rafael-ca:0001",
+      "place_slug": "san-rafael-ca",
+      "place_name": "San Rafael",
+      "reason": "near_place_geo",
+      "distance_km": 24.2
+    },
+    {
+      "place_id": "dcc:place:us-ca-sonoma-ca:0001",
+      "place_slug": "sonoma-ca",
+      "place_name": "Sonoma",
+      "reason": "near_place_geo",
+      "distance_km": 57.6
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-san-francisco-ca:0001",
+      "to": "dcc:place:us-ca-berkeley-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-san-francisco-ca:0001",
+      "to": "dcc:place:us-ca-san-rafael-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-san-francisco-ca:0001",
+      "to": "dcc:place:us-ca-sonoma-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

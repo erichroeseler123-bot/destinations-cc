@@ -1,0 +1,281 @@
+{
+  "version": 1,
+  "updated_at": "2026-03-13",
+  "tierPolicies": {
+    "gold": {
+      "hero": {
+        "allowCandidate": false,
+        "requireApproved": true,
+        "minApproved": 1,
+        "blockFallback": true
+      },
+      "gallery": {
+        "allowCandidate": true,
+        "requireApproved": false,
+        "minApproved": 2,
+        "blockFallback": false
+      },
+      "section": {
+        "allowCandidate": true,
+        "requireApproved": false,
+        "minApproved": 0,
+        "blockFallback": false
+      },
+      "social": {
+        "allowCandidate": true,
+        "requireApproved": false,
+        "minApproved": 0,
+        "blockFallback": false
+      }
+    },
+    "high": {
+      "hero": {
+        "allowCandidate": false,
+        "requireApproved": true,
+        "minApproved": 1,
+        "blockFallback": false
+      },
+      "gallery": {
+        "allowCandidate": true,
+        "requireApproved": false,
+        "minApproved": 2,
+        "blockFallback": false
+      },
+      "section": {
+        "allowCandidate": true,
+        "requireApproved": false,
+        "minApproved": 0,
+        "blockFallback": false
+      },
+      "social": {
+        "allowCandidate": true,
+        "requireApproved": false,
+        "minApproved": 0,
+        "blockFallback": false
+      }
+    },
+    "standard": {
+      "hero": {
+        "allowCandidate": true,
+        "requireApproved": false,
+        "minApproved": 0,
+        "blockFallback": false
+      },
+      "gallery": {
+        "allowCandidate": true,
+        "requireApproved": false,
+        "minApproved": 0,
+        "blockFallback": false
+      },
+      "section": {
+        "allowCandidate": true,
+        "requireApproved": false,
+        "minApproved": 0,
+        "blockFallback": false
+      },
+      "social": {
+        "allowCandidate": true,
+        "requireApproved": false,
+        "minApproved": 0,
+        "blockFallback": false
+      }
+    }
+  },
+  "entries": [
+    {
+      "canonicalPath": "/cities/denver",
+      "pageTier": "gold",
+      "scopeOverrides": [],
+      "assetReviews": [
+        {
+          "assetId": "city-denver-hero",
+          "scope": "hero",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        },
+        {
+          "assetId": "city-denver-section-1",
+          "scope": "section",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        },
+        {
+          "assetId": "city-denver-gallery-1",
+          "scope": "gallery",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        },
+        {
+          "assetId": "city-denver-gallery-2",
+          "scope": "gallery",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        }
+      ]
+    },
+    {
+      "canonicalPath": "/ports/juneau",
+      "pageTier": "gold",
+      "scopeOverrides": [],
+      "assetReviews": [
+        {
+          "assetId": "port-juneau-hero",
+          "scope": "hero",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        },
+        {
+          "assetId": "port-juneau-section-1",
+          "scope": "section",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        },
+        {
+          "assetId": "port-juneau-gallery-1",
+          "scope": "gallery",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        },
+        {
+          "assetId": "port-juneau-gallery-2",
+          "scope": "gallery",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        }
+      ]
+    },
+    {
+      "canonicalPath": "/venues/red-rocks-amphitheatre",
+      "pageTier": "gold",
+      "scopeOverrides": [],
+      "assetReviews": [
+        {
+          "assetId": "venue-red-rocks-hero",
+          "scope": "hero",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        },
+        {
+          "assetId": "venue-red-rocks-section-1",
+          "scope": "section",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        },
+        {
+          "assetId": "venue-red-rocks-gallery-1",
+          "scope": "gallery",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        },
+        {
+          "assetId": "venue-red-rocks-gallery-2",
+          "scope": "gallery",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        }
+      ]
+    },
+    {
+      "canonicalPath": "/attractions/mendenhall-glacier",
+      "pageTier": "gold",
+      "scopeOverrides": [],
+      "assetReviews": [
+        {
+          "assetId": "attraction-mendenhall-hero",
+          "scope": "hero",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        },
+        {
+          "assetId": "attraction-mendenhall-section-1",
+          "scope": "section",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        },
+        {
+          "assetId": "attraction-mendenhall-gallery-1",
+          "scope": "gallery",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        },
+        {
+          "assetId": "attraction-mendenhall-gallery-2",
+          "scope": "gallery",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        }
+      ]
+    },
+    {
+      "canonicalPath": "/routes/denver-red-rocks",
+      "pageTier": "gold",
+      "scopeOverrides": [],
+      "assetReviews": [
+        {
+          "assetId": "route-denver-red-rocks-hero",
+          "scope": "hero",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        },
+        {
+          "assetId": "route-denver-red-rocks-section-1",
+          "scope": "section",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        },
+        {
+          "assetId": "route-denver-red-rocks-gallery-1",
+          "scope": "gallery",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        },
+        {
+          "assetId": "route-denver-red-rocks-gallery-2",
+          "scope": "gallery",
+          "state": "approved",
+          "reviewer": "dcc-editorial",
+          "reviewedAt": "2026-03-13",
+          "notes": "Seed approval for canonical priority launch set."
+        }
+      ]
+    }
+  ]
+}

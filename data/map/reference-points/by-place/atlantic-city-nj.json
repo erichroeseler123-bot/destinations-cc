@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-nj-atlantic-city-nj:0001",
+  "place_slug": "atlantic-city-nj",
+  "place_name": "Atlantic City",
+  "center": {
+    "coordinates": [
+      -74.42306,
+      39.36415
+    ],
+    "country_code": "US",
+    "admin1_code": "NJ"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-pa-philadelphia:0001",
+      "slug": "philadelphia",
+      "name": "Philadelphia",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -75.16362,
+        39.95238
+      ]
+    },
+    {
+      "id": "dcc:place:us-nj-princeton-nj:0001",
+      "slug": "princeton-nj",
+      "name": "Princeton",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -74.65905,
+        40.34872
+      ]
+    },
+    {
+      "id": "dcc:place:us-ny-brooklyn:0001",
+      "slug": "brooklyn",
+      "name": "Brooklyn",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -73.94958,
+        40.6501
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.712Z"
+}

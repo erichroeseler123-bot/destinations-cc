@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:br-18-curitiba:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.597Z",
+  "metrics": {
+    "risk_score_mean": 1.384,
+    "risk_score_stddev": 0.36082867587448386,
+    "risk_score_p90": 1.74,
+    "degraded_transport_rate": 0,
+    "negative_human_signal_rate": 0
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

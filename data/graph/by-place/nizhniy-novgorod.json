@@ -1,0 +1,25 @@
+{
+  "place_id": "dcc:place:ru-51-nizhniy-novgorod:0001",
+  "place_slug": "nizhniy-novgorod",
+  "place_name": "Nizhniy Novgorod",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": []
+}

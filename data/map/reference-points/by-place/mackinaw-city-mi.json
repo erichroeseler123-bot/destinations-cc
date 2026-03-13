@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:us-mi-mackinaw-city-mi:0001",
+  "place_slug": "mackinaw-city-mi",
+  "place_name": "Mackinaw City",
+  "center": {
+    "coordinates": [
+      -84.72982,
+      45.7777
+    ],
+    "country_code": "US",
+    "admin1_code": "MI"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.740Z"
+}

@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:us-ut-park-city-ut:0001",
+  "place_slug": "park-city-ut",
+  "place_name": "Park City",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ut-salt-lake-city-ut:0001",
+      "place_slug": "salt-lake-city-ut",
+      "place_name": "Salt Lake City",
+      "reason": "near_place_geo",
+      "distance_km": 35.5
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ut-park-city-ut:0001",
+      "to": "dcc:place:us-ut-salt-lake-city-ut:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

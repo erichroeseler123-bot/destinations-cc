@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-30-guangzhou:0001",
+  "place_slug": "guangzhou",
+  "place_name": "Guangzhou",
+  "center": {
+    "coordinates": [
+      113.25,
+      23.11667
+    ],
+    "country_code": "CN",
+    "admin1_code": "30"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-30-foshan:0001",
+      "slug": "foshan",
+      "name": "Foshan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        113.13148,
+        23.02677
+      ]
+    },
+    {
+      "id": "dcc:place:cn-30-dongguan:0001",
+      "slug": "dongguan",
+      "name": "Dongguan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        113.74866,
+        23.01797
+      ]
+    },
+    {
+      "id": "dcc:place:cn-30-jiangmen:0001",
+      "slug": "jiangmen",
+      "name": "Jiangmen",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        113.08333,
+        22.58333
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.727Z"
+}

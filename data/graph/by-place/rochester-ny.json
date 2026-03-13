@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-ny-rochester-ny:0001",
+  "place_slug": "rochester-ny",
+  "place_name": "Rochester",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ny-buffalo-ny:0001",
+      "place_slug": "buffalo-ny",
+      "place_name": "Buffalo",
+      "reason": "near_place_geo",
+      "distance_km": 106.9
+    },
+    {
+      "place_id": "dcc:place:us-ny-niagara-falls-ny:0001",
+      "place_slug": "niagara-falls-ny",
+      "place_name": "Niagara Falls",
+      "reason": "near_place_geo",
+      "distance_km": 117.2
+    },
+    {
+      "place_id": "dcc:place:us-ny-syracuse-ny:0001",
+      "place_slug": "syracuse-ny",
+      "place_name": "Syracuse",
+      "reason": "near_place_geo",
+      "distance_km": 119.8
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ny-rochester-ny:0001",
+      "to": "dcc:place:us-ny-buffalo-ny:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ny-rochester-ny:0001",
+      "to": "dcc:place:us-ny-niagara-falls-ny:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ny-rochester-ny:0001",
+      "to": "dcc:place:us-ny-syracuse-ny:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

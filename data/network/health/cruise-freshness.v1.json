@@ -1,0 +1,197 @@
+{
+  "version": "cruise-freshness.v1",
+  "generated_at": "2026-03-11T02:41:52.850Z",
+  "summary": {
+    "total_entities": 18,
+    "total_ports": 15,
+    "total_ships": 3,
+    "fresh": 18,
+    "due_soon": 0,
+    "stale": 0,
+    "sailings_count": 3,
+    "source_generated_at": "2026-03-09T00:06:11.652Z",
+    "cache_age_days": 2
+  },
+  "entities": [
+    {
+      "entity_type": "port",
+      "slug": "at-sea",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 30,
+      "age_days": 2,
+      "due_at": "2026-04-08",
+      "days_until_due": 27,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "port",
+      "slug": "costa-maya-mexico",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 30,
+      "age_days": 2,
+      "due_at": "2026-04-08",
+      "days_until_due": 27,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "port",
+      "slug": "cozumel-mexico",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 30,
+      "age_days": 2,
+      "due_at": "2026-04-08",
+      "days_until_due": 27,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "port",
+      "slug": "galveston-usa",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 30,
+      "age_days": 2,
+      "due_at": "2026-04-08",
+      "days_until_due": 27,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "port",
+      "slug": "juneau-alaska",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 30,
+      "age_days": 2,
+      "due_at": "2026-04-08",
+      "days_until_due": 27,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "port",
+      "slug": "ketchikan-alaska",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 30,
+      "age_days": 2,
+      "due_at": "2026-04-08",
+      "days_until_due": 27,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "port",
+      "slug": "miami-usa",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 30,
+      "age_days": 2,
+      "due_at": "2026-04-08",
+      "days_until_due": 27,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "port",
+      "slug": "nassau-bahamas",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 30,
+      "age_days": 2,
+      "due_at": "2026-04-08",
+      "days_until_due": 27,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "port",
+      "slug": "perfect-day-at-cococay",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 30,
+      "age_days": 2,
+      "due_at": "2026-04-08",
+      "days_until_due": 27,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "port",
+      "slug": "roatan-honduras",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 30,
+      "age_days": 2,
+      "due_at": "2026-04-08",
+      "days_until_due": 27,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "port",
+      "slug": "seattle-usa",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 30,
+      "age_days": 2,
+      "due_at": "2026-04-08",
+      "days_until_due": 27,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "port",
+      "slug": "seward-alaska",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 30,
+      "age_days": 2,
+      "due_at": "2026-04-08",
+      "days_until_due": 27,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "port",
+      "slug": "skagway-alaska",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 30,
+      "age_days": 2,
+      "due_at": "2026-04-08",
+      "days_until_due": 27,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "port",
+      "slug": "st-maarten",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 30,
+      "age_days": 2,
+      "due_at": "2026-04-08",
+      "days_until_due": 27,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "port",
+      "slug": "st-thomas",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 30,
+      "age_days": 2,
+      "due_at": "2026-04-08",
+      "days_until_due": 27,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "ship",
+      "slug": "carnival-jubilee",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 45,
+      "age_days": 2,
+      "due_at": "2026-04-23",
+      "days_until_due": 42,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "ship",
+      "slug": "icon-of-the-seas",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 45,
+      "age_days": 2,
+      "due_at": "2026-04-23",
+      "days_until_due": 42,
+      "status": "fresh"
+    },
+    {
+      "entity_type": "ship",
+      "slug": "viking-octantis",
+      "updated_at": "2026-03-09T00:06:11.652Z",
+      "refresh_interval_days": 45,
+      "age_days": 2,
+      "due_at": "2026-04-23",
+      "days_until_due": 42,
+      "status": "fresh"
+    }
+  ]
+}

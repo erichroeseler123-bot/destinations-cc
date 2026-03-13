@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:tw-02-kaohsiung:0001",
+  "place_slug": "kaohsiung",
+  "place_name": "Kaohsiung",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:tw-04-tainan:0001",
+      "place_slug": "tainan",
+      "place_name": "Tainan",
+      "reason": "near_place_geo",
+      "distance_km": 42.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:tw-02-kaohsiung:0001",
+      "to": "dcc:place:tw-04-tainan:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

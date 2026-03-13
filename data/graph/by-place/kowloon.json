@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:hk-00-kowloon:0001",
+  "place_slug": "kowloon",
+  "place_name": "Kowloon",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:hk-na-hong-kong:0001",
+      "place_slug": "hong-kong",
+      "place_name": "Hong Kong",
+      "reason": "near_place_geo",
+      "distance_km": 4.4
+    },
+    {
+      "place_id": "dcc:place:hk-00-hong-kong-island:0001",
+      "place_slug": "hong-kong-island",
+      "place_name": "Hong Kong Island",
+      "reason": "near_place_geo",
+      "distance_km": 6
+    },
+    {
+      "place_id": "dcc:place:hk-00-new-territories:0001",
+      "place_slug": "new-territories",
+      "place_name": "New Territories",
+      "reason": "near_place_geo",
+      "distance_km": 14.1
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:hk-00-kowloon:0001",
+      "to": "dcc:place:hk-na-hong-kong:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:hk-00-kowloon:0001",
+      "to": "dcc:place:hk-00-hong-kong-island:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:hk-00-kowloon:0001",
+      "to": "dcc:place:hk-00-new-territories:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

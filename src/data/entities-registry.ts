@@ -497,10 +497,21 @@ export const ENTITIES_REGISTRY: DccEntityRegistryNode[] = [
   ...orlandoHotelEntities,
 ];
 
+const ENTITY_REGISTRY_BY_SLUG = new Map<string, DccEntityRegistryNode>();
+const ENTITY_REGISTRY_BY_TYPE_AND_SLUG = new Map<string, DccEntityRegistryNode>();
+
+for (const entity of ENTITIES_REGISTRY) {
+  if (!ENTITY_REGISTRY_BY_SLUG.has(entity.slug)) {
+    ENTITY_REGISTRY_BY_SLUG.set(entity.slug, entity);
+  }
+  ENTITY_REGISTRY_BY_TYPE_AND_SLUG.set(`${entity.entityType}:${entity.slug}`, entity);
+}
+
 export function getEntityRegistryNode(slug: string, entityType?: DccEntityType) {
-  return (
-    ENTITIES_REGISTRY.find((entity) => entity.slug === slug && (!entityType || entity.entityType === entityType)) ?? null
-  );
+  if (entityType) {
+    return ENTITY_REGISTRY_BY_TYPE_AND_SLUG.get(`${entityType}:${slug}`) ?? null;
+  }
+  return ENTITY_REGISTRY_BY_SLUG.get(slug) ?? null;
 }
 
 export function getEntityRegistryNodesByCity(citySlug: string) {
@@ -509,4 +520,16 @@ export function getEntityRegistryNodesByCity(citySlug: string) {
 
 export function getEntityRegistryNodesByCityAndType(citySlug: string, entityType: DccEntityType) {
   return ENTITIES_REGISTRY.filter((entity) => entity.citySlug === citySlug && entity.entityType === entityType);
+}
+
+export function getEntityRegistryNodesBySlugs(slugs: string[]) {
+  return slugs
+    .map((slug) => getEntityRegistryNode(slug))
+    .filter((entity): entity is DccEntityRegistryNode => Boolean(entity));
+}
+
+export function getEntityRegistryNodesBySlugsAndType(slugs: string[], entityType: DccEntityType) {
+  return slugs
+    .map((slug) => getEntityRegistryNode(slug, entityType))
+    .filter((entity): entity is DccEntityRegistryNode => Boolean(entity));
 }

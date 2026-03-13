@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:cn-02-taizhou-2:0001",
+  "place_slug": "taizhou-2",
+  "place_name": "Taizhou",
+  "center": {
+    "coordinates": [
+      121.43312,
+      28.66266
+    ],
+    "country_code": "CN",
+    "admin1_code": "02"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-02-wenzhou:0001",
+      "slug": "wenzhou",
+      "name": "Wenzhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        120.66682,
+        27.99942
+      ]
+    },
+    {
+      "id": "dcc:place:cn-02-ningbo:0001",
+      "slug": "ningbo",
+      "name": "Ningbo",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        121.54945,
+        29.87819
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.760Z"
+}

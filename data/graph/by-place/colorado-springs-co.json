@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-co-colorado-springs-co:0001",
+  "place_slug": "colorado-springs-co",
+  "place_name": "Colorado Springs",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-co-denver-co:0001",
+      "place_slug": "denver-co",
+      "place_name": "Denver",
+      "reason": "near_place_geo",
+      "distance_km": 101.6
+    },
+    {
+      "place_id": "dcc:place:us-co-breckenridge-co:0001",
+      "place_slug": "breckenridge-co",
+      "place_name": "Breckenridge",
+      "reason": "near_place_geo",
+      "distance_km": 127.3
+    },
+    {
+      "place_id": "dcc:place:us-co-boulder-co:0001",
+      "place_slug": "boulder-co",
+      "place_name": "Boulder",
+      "reason": "near_place_geo",
+      "distance_km": 136.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-co-colorado-springs-co:0001",
+      "to": "dcc:place:us-co-denver-co:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-co-colorado-springs-co:0001",
+      "to": "dcc:place:us-co-breckenridge-co:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-co-colorado-springs-co:0001",
+      "to": "dcc:place:us-co-boulder-co:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

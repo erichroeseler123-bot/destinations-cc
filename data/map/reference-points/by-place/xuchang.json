@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-09-xuchang:0001",
+  "place_slug": "xuchang",
+  "place_name": "Xuchang",
+  "center": {
+    "coordinates": [
+      113.86299,
+      34.03189
+    ],
+    "country_code": "CN",
+    "admin1_code": "09"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-09-luohe:0001",
+      "slug": "luohe",
+      "name": "Luohe",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        114.04272,
+        33.56394
+      ]
+    },
+    {
+      "id": "dcc:place:cn-09-zhengzhou:0001",
+      "slug": "zhengzhou",
+      "name": "Zhengzhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        113.64861,
+        34.75778
+      ]
+    },
+    {
+      "id": "dcc:place:cn-09-kaifeng:0001",
+      "slug": "kaifeng",
+      "name": "Kaifeng",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        114.30742,
+        34.7986
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.766Z"
+}

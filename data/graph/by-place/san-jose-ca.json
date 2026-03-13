@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-ca-san-jose-ca:0001",
+  "place_slug": "san-jose-ca",
+  "place_name": "San Jose",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ca-santa-cruz-ca:0001",
+      "place_slug": "santa-cruz-ca",
+      "place_name": "Santa Cruz",
+      "reason": "near_place_geo",
+      "distance_km": 42.4
+    },
+    {
+      "place_id": "dcc:place:us-ca-san-francisco-ca:0001",
+      "place_slug": "san-francisco-ca",
+      "place_name": "San Francisco",
+      "reason": "near_place_geo",
+      "distance_km": 67
+    },
+    {
+      "place_id": "dcc:place:us-ca-berkeley-ca:0001",
+      "place_slug": "berkeley-ca",
+      "place_name": "Berkeley",
+      "reason": "near_place_geo",
+      "distance_km": 67.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-san-jose-ca:0001",
+      "to": "dcc:place:us-ca-santa-cruz-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-san-jose-ca:0001",
+      "to": "dcc:place:us-ca-san-francisco-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-san-jose-ca:0001",
+      "to": "dcc:place:us-ca-berkeley-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

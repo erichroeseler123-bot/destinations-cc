@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:cn-11-changde:0001",
+  "place_slug": "changde",
+  "place_name": "Changde",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-11-heshan:0001",
+      "place_slug": "heshan",
+      "place_name": "Heshan",
+      "reason": "near_place_geo",
+      "distance_km": 81.5
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-11-changde:0001",
+      "to": "dcc:place:cn-11-heshan:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

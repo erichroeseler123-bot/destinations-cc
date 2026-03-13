@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:ir-42-mashhad:0001",
+  "place_slug": "mashhad",
+  "place_name": "Mashhad",
+  "center": {
+    "coordinates": [
+      59.60567,
+      36.29807
+    ],
+    "country_code": "IR",
+    "admin1_code": "42"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.741Z"
+}

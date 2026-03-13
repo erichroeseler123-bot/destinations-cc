@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:mx-02-tijuana:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 1.592,
+  "z_score": 2.9052087646963267,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:mx-02-tijuana:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": 0.07642857142857142,
+    "sample_count": 7
+  }
+}

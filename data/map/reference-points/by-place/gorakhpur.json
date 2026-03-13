@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:in-10-gorakhpur:0001",
+  "place_slug": "gorakhpur",
+  "place_name": "Gorakhpur",
+  "center": {
+    "coordinates": [
+      75.67206,
+      29.44768
+    ],
+    "country_code": "IN",
+    "admin1_code": "10"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.726Z"
+}

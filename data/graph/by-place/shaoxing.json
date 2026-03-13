@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-02-shaoxing:0001",
+  "place_slug": "shaoxing",
+  "place_name": "Shaoxing",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-02-hangzhou:0001",
+      "place_slug": "hangzhou",
+      "place_name": "Hangzhou",
+      "reason": "near_place_geo",
+      "distance_km": 51.6
+    },
+    {
+      "place_id": "dcc:place:cn-02-cixi:0001",
+      "place_slug": "cixi",
+      "place_name": "Cixi",
+      "reason": "near_place_geo",
+      "distance_km": 67
+    },
+    {
+      "place_id": "dcc:place:cn-02-jiaxing:0001",
+      "place_slug": "jiaxing",
+      "place_name": "Jiaxing",
+      "reason": "near_place_geo",
+      "distance_km": 85
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-02-shaoxing:0001",
+      "to": "dcc:place:cn-02-hangzhou:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-02-shaoxing:0001",
+      "to": "dcc:place:cn-02-cixi:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-02-shaoxing:0001",
+      "to": "dcc:place:cn-02-jiaxing:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

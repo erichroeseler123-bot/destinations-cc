@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-ca-pasadena-ca:0001",
+  "place_slug": "pasadena-ca",
+  "place_name": "Pasadena",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ca-los-angeles:0001",
+      "place_slug": "los-angeles",
+      "place_name": "Los Angeles",
+      "reason": "near_place_geo",
+      "distance_km": 14
+    },
+    {
+      "place_id": "dcc:place:us-ca-santa-monica-ca:0001",
+      "place_slug": "santa-monica-ca",
+      "place_name": "Santa Monica",
+      "reason": "near_place_geo",
+      "distance_km": 35
+    },
+    {
+      "place_id": "dcc:place:us-ca-anaheim-ca:0001",
+      "place_slug": "anaheim-ca",
+      "place_name": "Anaheim",
+      "reason": "near_place_geo",
+      "distance_km": 40.7
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-pasadena-ca:0001",
+      "to": "dcc:place:us-ca-los-angeles:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-pasadena-ca:0001",
+      "to": "dcc:place:us-ca-santa-monica-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-pasadena-ca:0001",
+      "to": "dcc:place:us-ca-anaheim-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

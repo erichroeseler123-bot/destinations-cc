@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-ca-riverside-ca:0001",
+  "place_slug": "riverside-ca",
+  "place_name": "Riverside",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ca-san-bernardino-ca:0001",
+      "place_slug": "san-bernardino-ca",
+      "place_name": "San Bernardino",
+      "reason": "near_place_geo",
+      "distance_km": 19.8
+    },
+    {
+      "place_id": "dcc:place:us-ca-anaheim-ca:0001",
+      "place_slug": "anaheim-ca",
+      "place_name": "Anaheim",
+      "reason": "near_place_geo",
+      "distance_km": 49.6
+    },
+    {
+      "place_id": "dcc:place:us-ca-temecula-ca:0001",
+      "place_slug": "temecula-ca",
+      "place_name": "Temecula",
+      "reason": "near_place_geo",
+      "distance_km": 56
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-riverside-ca:0001",
+      "to": "dcc:place:us-ca-san-bernardino-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-riverside-ca:0001",
+      "to": "dcc:place:us-ca-anaheim-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-riverside-ca:0001",
+      "to": "dcc:place:us-ca-temecula-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

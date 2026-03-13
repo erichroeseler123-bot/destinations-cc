@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:do-25-santiago-de-los-caballeros:0001",
+  "place_slug": "santiago-de-los-caballeros",
+  "place_name": "Santiago de los Caballeros",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:do-34-santo-domingo:0001",
+      "place_slug": "santo-domingo",
+      "place_name": "Santo Domingo",
+      "reason": "near_place_geo",
+      "distance_km": 137.4
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:do-25-santiago-de-los-caballeros:0001",
+      "to": "dcc:place:do-34-santo-domingo:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

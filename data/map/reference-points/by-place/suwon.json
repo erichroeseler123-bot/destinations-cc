@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:kr-13-suwon:0001",
+  "place_slug": "suwon",
+  "place_name": "Suwon",
+  "center": {
+    "coordinates": [
+      127.00889,
+      37.29111
+    ],
+    "country_code": "KR",
+    "admin1_code": "13"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:kr-11-seoul:0001",
+      "slug": "seoul",
+      "name": "Seoul",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        126.9784,
+        37.566
+      ]
+    },
+    {
+      "id": "dcc:place:kr-12-incheon:0001",
+      "slug": "incheon",
+      "name": "Incheon",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        126.70515,
+        37.45646
+      ]
+    },
+    {
+      "id": "dcc:place:kr-13-goyang-si:0001",
+      "slug": "goyang-si",
+      "name": "Goyang-si",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        126.835,
+        37.65639
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.758Z"
+}

@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:ph-ncr-caloocan:0001",
+  "place_slug": "caloocan",
+  "place_name": "Caloocan",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:ph-ncr-manila:0001",
+      "place_slug": "manila",
+      "place_name": "Manila",
+      "reason": "near_place_geo",
+      "distance_km": 5.3
+    },
+    {
+      "place_id": "dcc:place:ph-ncr-quezon-city:0001",
+      "place_slug": "quezon-city",
+      "place_name": "Quezon City",
+      "reason": "near_place_geo",
+      "distance_km": 8.9
+    },
+    {
+      "place_id": "dcc:place:ph-ncr-taguig:0001",
+      "place_slug": "taguig",
+      "place_name": "Taguig",
+      "reason": "near_place_geo",
+      "distance_km": 18.4
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:ph-ncr-caloocan:0001",
+      "to": "dcc:place:ph-ncr-manila:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:ph-ncr-caloocan:0001",
+      "to": "dcc:place:ph-ncr-quezon-city:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:ph-ncr-caloocan:0001",
+      "to": "dcc:place:ph-ncr-taguig:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

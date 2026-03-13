@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:sg-na-singapore:0001",
+  "place_slug": "singapore",
+  "place_name": "Singapore",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:id-37-batam:0001",
+      "place_slug": "batam",
+      "place_name": "Batam",
+      "reason": "near_place_geo",
+      "distance_km": 24.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:sg-na-singapore:0001",
+      "to": "dcc:place:id-37-batam:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

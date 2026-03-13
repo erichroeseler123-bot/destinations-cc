@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:ng-05-lagos:0001",
+  "place_slug": "lagos",
+  "place_name": "Lagos",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:ng-32-ibadan:0001",
+      "place_slug": "ibadan",
+      "place_name": "Ibadan",
+      "reason": "near_place_geo",
+      "distance_km": 117.2
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:ng-05-lagos:0001",
+      "to": "dcc:place:ng-32-ibadan:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

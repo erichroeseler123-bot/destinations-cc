@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:us-va-richmond-va:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.635Z",
+  "metrics": {
+    "risk_score_mean": 2.8506666666666667,
+    "risk_score_stddev": 0.5420881437142446,
+    "risk_score_p90": 3.4,
+    "degraded_transport_rate": 0.2,
+    "negative_human_signal_rate": 0.2
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

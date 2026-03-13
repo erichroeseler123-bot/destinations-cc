@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:ua-07-kharkiv:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 1.5866666666666667,
+  "z_score": 1.5615592829164124,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:ua-07-kharkiv:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -7.93016446160826e-18,
+    "sample_count": 7
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:us-ut-springdale-ut:0001",
+  "place_slug": "springdale-ut",
+  "place_name": "Springdale",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ut-saint-george-ut:0001",
+      "place_slug": "saint-george-ut",
+      "place_name": "Saint George",
+      "reason": "near_place_geo",
+      "distance_km": 52.7
+    },
+    {
+      "place_id": "dcc:place:us-az-grand-canyon-village-az:0001",
+      "place_slug": "grand-canyon-village-az",
+      "place_name": "Grand Canyon Village",
+      "reason": "near_place_geo",
+      "distance_km": 147.7
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ut-springdale-ut:0001",
+      "to": "dcc:place:us-ut-saint-george-ut:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ut-springdale-ut:0001",
+      "to": "dcc:place:us-az-grand-canyon-village-az:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

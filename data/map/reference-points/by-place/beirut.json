@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:lb-04-beirut:0001",
+  "place_slug": "beirut",
+  "place_name": "Beirut",
+  "center": {
+    "coordinates": [
+      35.50157,
+      33.89332
+    ],
+    "country_code": "LB",
+    "admin1_code": "04"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:lb-04-ras-bayrut:0001",
+      "slug": "ras-bayrut",
+      "name": "Ra's Bayrut",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        35.48333,
+        33.9
+      ]
+    },
+    {
+      "id": "dcc:place:sy-13-damascus:0001",
+      "slug": "damascus",
+      "name": "Damascus",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        36.29128,
+        33.5102
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.713Z"
+}

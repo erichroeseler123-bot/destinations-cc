@@ -1,0 +1,35 @@
+[
+  {
+    "sailing_id": "CCL-JUBILEE-20260809-GAL",
+    "line": "Carnival Cruise Line",
+    "line_slug": "carnival",
+    "ship": "Carnival Jubilee",
+    "ship_slug": "carnival-jubilee",
+    "departure_date": "2026-08-09",
+    "duration_days": 7,
+    "itinerary_type": "roundtrip",
+    "embark_port": {"port_name":"Galveston, USA", "port_code":"USGLS", "arrival":"2026-08-09T12:00:00Z", "departure":"2026-08-09T21:00:00Z"},
+    "disembark_port": {"port_name":"Galveston, USA", "port_code":"USGLS", "arrival":"2026-08-16T11:00:00Z", "departure":"2026-08-16T13:00:00Z"},
+    "ports": [
+      {"port_name":"Galveston, USA","port_code":"USGLS","arrival":"2026-08-09T12:00:00Z","departure":"2026-08-09T21:00:00Z"},
+      {"port_name":"Cozumel, Mexico","port_code":"MXCZM","arrival":"2026-08-11T14:00:00Z","departure":"2026-08-11T23:00:00Z"},
+      {"port_name":"Costa Maya, Mexico","port_code":"MXCMY","arrival":"2026-08-12T13:00:00Z","departure":"2026-08-12T22:00:00Z"},
+      {"port_name":"Roatan, Honduras","port_code":"HNRRT","arrival":"2026-08-13T13:00:00Z","departure":"2026-08-13T21:00:00Z"},
+      {"port_name":"Galveston, USA","port_code":"USGLS","arrival":"2026-08-16T11:00:00Z","departure":"2026-08-16T13:00:00Z"}
+    ],
+    "sea_days": 3,
+    "starting_price": {"amount": 799, "currency":"USD", "cabin_type":"inside"},
+    "availability_status": "good",
+    "amenities": {
+      "dining": ["Guy's Burger Joint", "Main Dining"],
+      "entertainment": ["Comedy Club", "Live Music"],
+      "activities": ["WaterWorks", "Family Zone"],
+      "wellness": ["Cloud 9 Spa"],
+      "other": ["Pools", "Casino"]
+    },
+    "sailing_context": {"demand_level":"medium", "notes":["Late summer Caribbean shoulder demand"]},
+    "source": "carnival-2026.json",
+    "external_booking_url": "https://www.carnival.com/",
+    "external_provider": "direct-line"
+  }
+]

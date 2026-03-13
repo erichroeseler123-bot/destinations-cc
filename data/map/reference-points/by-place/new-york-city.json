@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-ny-new-york-city:0001",
+  "place_slug": "new-york-city",
+  "place_name": "New York City",
+  "center": {
+    "coordinates": [
+      -74.00597,
+      40.71427
+    ],
+    "country_code": "US",
+    "admin1_code": "NY"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-nj-jersey-city-nj:0001",
+      "slug": "jersey-city-nj",
+      "name": "Jersey City",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -74.07764,
+        40.72816
+      ]
+    },
+    {
+      "id": "dcc:place:us-ny-manhattan:0001",
+      "slug": "manhattan",
+      "name": "Manhattan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -73.96625,
+        40.78343
+      ]
+    },
+    {
+      "id": "dcc:place:us-ny-brooklyn:0001",
+      "slug": "brooklyn",
+      "name": "Brooklyn",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -73.94958,
+        40.6501
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.748Z"
+}

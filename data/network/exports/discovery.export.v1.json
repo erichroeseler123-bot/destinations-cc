@@ -1,0 +1,370 @@
+{
+  "version": "dcc-network-v1",
+  "surface": "discovery",
+  "generatedAt": "2026-03-11T01:31:37.164Z",
+  "node_count": 6,
+  "edge_count": 8,
+  "staleness_filtered_nodes": 0,
+  "staleness_filtered_edges": 0,
+  "nodes": [
+    {
+      "node_id": "dcc:node:mighty-argo-shuttle",
+      "node_type": "operator",
+      "name": "Mighty Argo Cable Car Shuttle",
+      "slug": "mighty-argo-shuttle",
+      "geo": {
+        "lat": 39.742,
+        "lon": -105.513,
+        "country": "US",
+        "region": "Colorado",
+        "locality": "Idaho Springs"
+      },
+      "tags": [
+        "argo",
+        "shuttle",
+        "colorado",
+        "transport"
+      ],
+      "status": "active",
+      "authority_url": "https://destinationcommandcenter.com/mighty-argo-shuttle",
+      "monetized_targets": [
+        {
+          "site": "DCC",
+          "path": "/book?route=argo&product=argo-seat",
+          "operator_id": "dcc:operator:argo-seat",
+          "booking_mode": "internal",
+          "checkout_url": "https://destinationcommandcenter.com/book?route=argo&product=argo-seat"
+        },
+        {
+          "site": "DCC",
+          "path": "/book?route=argo&product=argo-suv",
+          "operator_id": "dcc:operator:argo-suv",
+          "booking_mode": "internal",
+          "checkout_url": "https://destinationcommandcenter.com/book?route=argo&product=argo-suv"
+        }
+      ],
+      "related_nodes": [
+        "dcc:node:vegas",
+        "dcc:node:alaska",
+        "dcc:node:cruises",
+        "dcc:node:national-parks",
+        "dcc:node:new-orleans"
+      ],
+      "source": "manual-seed",
+      "confidence": 0.94,
+      "provenance": "manual",
+      "owner_pipeline": "operator-business",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    },
+    {
+      "node_id": "dcc:node:vegas",
+      "node_type": "city",
+      "name": "Las Vegas",
+      "slug": "vegas",
+      "geo": {
+        "lat": 36.1699,
+        "lon": -115.1398,
+        "country": "US",
+        "region": "Nevada",
+        "locality": "Las Vegas"
+      },
+      "tags": [
+        "vegas",
+        "entertainment",
+        "city",
+        "discovery"
+      ],
+      "status": "active",
+      "authority_url": "https://destinationcommandcenter.com/vegas",
+      "monetized_targets": [],
+      "related_nodes": [
+        "dcc:node:mighty-argo-shuttle",
+        "dcc:node:national-parks",
+        "dcc:node:cruises",
+        "dcc:node:new-orleans"
+      ],
+      "source": "geonames",
+      "confidence": 0.97,
+      "provenance": "upstream",
+      "owner_pipeline": "geo-backbone",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    },
+    {
+      "node_id": "dcc:node:alaska",
+      "node_type": "city",
+      "name": "Alaska",
+      "slug": "alaska",
+      "geo": {
+        "lat": 64.2008,
+        "lon": -149.4937,
+        "country": "US",
+        "region": "Alaska",
+        "locality": "Anchorage"
+      },
+      "tags": [
+        "alaska",
+        "region",
+        "cruise",
+        "authority"
+      ],
+      "status": "active",
+      "authority_url": "https://destinationcommandcenter.com/alaska",
+      "monetized_targets": [],
+      "related_nodes": [
+        "dcc:node:cruises",
+        "dcc:node:national-parks",
+        "dcc:node:new-orleans"
+      ],
+      "source": "geonames",
+      "confidence": 0.97,
+      "provenance": "upstream",
+      "owner_pipeline": "geo-backbone",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    },
+    {
+      "node_id": "dcc:node:cruises",
+      "node_type": "scene",
+      "name": "Cruise Explorer",
+      "slug": "cruises",
+      "geo": {
+        "lat": 29.95,
+        "lon": -90.07,
+        "country": "US",
+        "region": "Louisiana",
+        "locality": "New Orleans"
+      },
+      "tags": [
+        "cruise",
+        "ports",
+        "discovery",
+        "operations"
+      ],
+      "status": "active",
+      "authority_url": "https://destinationcommandcenter.com/cruises",
+      "monetized_targets": [],
+      "related_nodes": [
+        "dcc:node:alaska",
+        "dcc:node:new-orleans",
+        "dcc:node:national-parks",
+        "dcc:node:vegas"
+      ],
+      "source": "taxonomy-clustering",
+      "confidence": 0.86,
+      "provenance": "derived",
+      "owner_pipeline": "scene-clustering",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    },
+    {
+      "node_id": "dcc:node:national-parks",
+      "node_type": "scene",
+      "name": "National Parks Layer",
+      "slug": "national-parks",
+      "geo": {
+        "lat": 39.8283,
+        "lon": -98.5795,
+        "country": "US",
+        "region": "United States",
+        "locality": "National"
+      },
+      "tags": [
+        "national-parks",
+        "map",
+        "authority",
+        "network-layer"
+      ],
+      "status": "active",
+      "authority_url": "https://destinationcommandcenter.com/national-parks",
+      "monetized_targets": [],
+      "related_nodes": [
+        "dcc:node:mighty-argo-shuttle",
+        "dcc:node:vegas",
+        "dcc:node:alaska",
+        "dcc:node:cruises",
+        "dcc:node:new-orleans"
+      ],
+      "source": "taxonomy-clustering",
+      "confidence": 0.88,
+      "provenance": "derived",
+      "owner_pipeline": "scene-clustering",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    },
+    {
+      "node_id": "dcc:node:new-orleans",
+      "node_type": "city",
+      "name": "New Orleans",
+      "slug": "new-orleans",
+      "geo": {
+        "lat": 29.9511,
+        "lon": -90.0715,
+        "country": "US",
+        "region": "Louisiana",
+        "locality": "New Orleans"
+      },
+      "tags": [
+        "new-orleans",
+        "music",
+        "food",
+        "discovery"
+      ],
+      "status": "active",
+      "authority_url": "https://destinationcommandcenter.com/new-orleans",
+      "monetized_targets": [],
+      "related_nodes": [
+        "dcc:node:cruises",
+        "dcc:node:vegas",
+        "dcc:node:national-parks",
+        "dcc:node:mighty-argo-shuttle"
+      ],
+      "source": "geonames",
+      "confidence": 0.96,
+      "provenance": "upstream",
+      "owner_pipeline": "geo-backbone",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "dcc:edge:argo-to-national-parks-co-intent",
+      "from_node": "dcc:node:mighty-argo-shuttle",
+      "to_node": "dcc:node:national-parks",
+      "edge_type": "co_intent",
+      "weight": 0.82,
+      "fresh_until": "2026-06-30T00:00:00Z",
+      "signals": [
+        "search-intent",
+        "internal-clicks"
+      ],
+      "rationale": "Argo shuttle users frequently continue planning scenic or park-adjacent routes.",
+      "source": "behavioral-signals",
+      "confidence": 0.82,
+      "provenance": "derived",
+      "owner_pipeline": "scene-clustering",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    },
+    {
+      "edge_id": "dcc:edge:argo-to-vegas-fallback",
+      "from_node": "dcc:node:mighty-argo-shuttle",
+      "to_node": "dcc:node:vegas",
+      "edge_type": "fallback_to",
+      "weight": 0.42,
+      "fresh_until": "2026-05-15T00:00:00Z",
+      "signals": [
+        "weather-risk",
+        "seasonality"
+      ],
+      "rationale": "Weather-affected Colorado plans can pivot toward city-focused alternatives.",
+      "source": "weather-enrichment",
+      "confidence": 0.65,
+      "provenance": "enriched",
+      "owner_pipeline": "signal-enrichment",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    },
+    {
+      "edge_id": "dcc:edge:vegas-to-new-orleans-co-intent",
+      "from_node": "dcc:node:vegas",
+      "to_node": "dcc:node:new-orleans",
+      "edge_type": "co_intent",
+      "weight": 0.68,
+      "fresh_until": "2026-09-01T00:00:00Z",
+      "signals": [
+        "music-interest",
+        "city-break-intent"
+      ],
+      "rationale": "Live-music and nightlife audiences overlap across both destination nodes.",
+      "source": "behavioral-signals",
+      "confidence": 0.74,
+      "provenance": "derived",
+      "owner_pipeline": "scene-clustering",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    },
+    {
+      "edge_id": "dcc:edge:new-orleans-to-cruises-routes",
+      "from_node": "dcc:node:new-orleans",
+      "to_node": "dcc:node:cruises",
+      "edge_type": "routes_to",
+      "weight": 0.9,
+      "fresh_until": "2026-12-31T00:00:00Z",
+      "signals": [
+        "port-proximity",
+        "operator-availability"
+      ],
+      "rationale": "New Orleans functions as a practical embarkation context for cruise planning.",
+      "source": "transport-routing",
+      "confidence": 0.91,
+      "provenance": "derived",
+      "owner_pipeline": "operator-business",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    },
+    {
+      "edge_id": "dcc:edge:cruises-to-alaska-routes",
+      "from_node": "dcc:node:cruises",
+      "to_node": "dcc:node:alaska",
+      "edge_type": "routes_to",
+      "weight": 0.88,
+      "fresh_until": "2026-10-01T00:00:00Z",
+      "signals": [
+        "seasonal-itineraries",
+        "demand-curves"
+      ],
+      "rationale": "Cruise exploration frequently resolves into Alaska itinerary research.",
+      "source": "event-feeds",
+      "confidence": 0.89,
+      "provenance": "upstream",
+      "owner_pipeline": "event-ingestion",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    },
+    {
+      "edge_id": "dcc:edge:alaska-to-national-parks-nearby",
+      "from_node": "dcc:node:alaska",
+      "to_node": "dcc:node:national-parks",
+      "edge_type": "nearby",
+      "weight": 0.61,
+      "fresh_until": "2026-08-01T00:00:00Z",
+      "signals": [
+        "park-interest",
+        "wildlife-intent"
+      ],
+      "rationale": "Alaska trip planning often expands into broader national park interest and map routes.",
+      "source": "geospatial-proximity",
+      "confidence": 0.77,
+      "provenance": "derived",
+      "owner_pipeline": "geo-backbone",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    },
+    {
+      "edge_id": "dcc:edge:intel-feed-viator-to-cruises",
+      "from_node": "dcc:node:cruises",
+      "to_node": "dcc:node:cruises",
+      "edge_type": "feeds",
+      "weight": 1,
+      "fresh_until": "2026-03-31T00:00:00Z",
+      "signals": [
+        "viator-cache",
+        "provider-health"
+      ],
+      "rationale": "Cruise catalog and health inputs feed the cruise planning layer continuously.",
+      "source": "viator-cache",
+      "confidence": 0.95,
+      "provenance": "upstream",
+      "owner_pipeline": "signal-enrichment",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    },
+    {
+      "edge_id": "dcc:edge:argo-operator-operates-in-colorado",
+      "from_node": "dcc:node:mighty-argo-shuttle",
+      "to_node": "dcc:node:mighty-argo-shuttle",
+      "edge_type": "operates_in",
+      "weight": 1,
+      "fresh_until": "2026-12-31T00:00:00Z",
+      "signals": [
+        "operator-registry"
+      ],
+      "rationale": "Argo shuttle operators are scoped to the Colorado route execution zone.",
+      "source": "operator-registry",
+      "confidence": 0.98,
+      "provenance": "upstream",
+      "owner_pipeline": "operator-business",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    }
+  ]
+}

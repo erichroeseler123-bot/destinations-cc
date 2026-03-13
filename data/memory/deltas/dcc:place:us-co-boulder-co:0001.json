@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:us-co-boulder-co:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.037333333333333,
+  "z_score": -0.08192319205190378,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:us-co-boulder-co:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": 0.1542857142857143,
+    "sample_count": 7
+  }
+}

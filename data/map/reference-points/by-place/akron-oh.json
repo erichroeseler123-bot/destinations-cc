@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:us-oh-akron-oh:0001",
+  "place_slug": "akron-oh",
+  "place_name": "Akron",
+  "center": {
+    "coordinates": [
+      -81.51901,
+      41.08144
+    ],
+    "country_code": "US",
+    "admin1_code": "OH"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-oh-cleveland-oh:0001",
+      "slug": "cleveland-oh",
+      "name": "Cleveland",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -81.69541,
+        41.4995
+      ]
+    },
+    {
+      "id": "dcc:place:us-pa-pittsburgh-pa:0001",
+      "slug": "pittsburgh-pa",
+      "name": "Pittsburgh",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -79.99589,
+        40.44062
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.709Z"
+}

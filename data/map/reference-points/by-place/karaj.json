@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:ir-44-karaj:0001",
+  "place_slug": "karaj",
+  "place_name": "Karaj",
+  "center": {
+    "coordinates": [
+      50.99155,
+      35.83266
+    ],
+    "country_code": "IR",
+    "admin1_code": "44"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:ir-26-tehran:0001",
+      "slug": "tehran",
+      "name": "Tehran",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        51.42151,
+        35.69439
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.736Z"
+}

@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-30-zhaoqing:0001",
+  "place_slug": "zhaoqing",
+  "place_name": "Zhaoqing",
+  "center": {
+    "coordinates": [
+      112.46091,
+      23.04893
+    ],
+    "country_code": "CN",
+    "admin1_code": "30"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-30-yunfu:0001",
+      "slug": "yunfu",
+      "name": "Yunfu",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        112.03809,
+        22.92787
+      ]
+    },
+    {
+      "id": "dcc:place:cn-30-foshan:0001",
+      "slug": "foshan",
+      "name": "Foshan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        113.13148,
+        23.02677
+      ]
+    },
+    {
+      "id": "dcc:place:cn-30-guangzhou:0001",
+      "slug": "guangzhou",
+      "name": "Guangzhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        113.25,
+        23.11667
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.768Z"
+}

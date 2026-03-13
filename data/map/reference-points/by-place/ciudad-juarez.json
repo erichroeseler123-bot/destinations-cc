@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:mx-06-ciudad-juarez:0001",
+  "place_slug": "ciudad-juarez",
+  "place_name": "Ciudad Juarez",
+  "center": {
+    "coordinates": [
+      -106.46084,
+      31.72024
+    ],
+    "country_code": "MX",
+    "admin1_code": "06"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.720Z"
+}

@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:cn-30-jieyang:0001",
+  "place_slug": "jieyang",
+  "place_name": "Jieyang",
+  "center": {
+    "coordinates": [
+      116.36581,
+      23.5418
+    ],
+    "country_code": "CN",
+    "admin1_code": "30"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-30-chaozhou:0001",
+      "slug": "chaozhou",
+      "name": "Chaozhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        116.62262,
+        23.65396
+      ]
+    },
+    {
+      "id": "dcc:place:cn-30-shantou:0001",
+      "slug": "shantou",
+      "name": "Shantou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        116.67876,
+        23.35489
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.731Z"
+}

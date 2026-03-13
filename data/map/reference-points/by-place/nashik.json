@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:in-16-nashik:0001",
+  "place_slug": "nashik",
+  "place_name": "Nashik",
+  "center": {
+    "coordinates": [
+      73.79096,
+      19.99727
+    ],
+    "country_code": "IN",
+    "admin1_code": "16"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:in-16-kalyan:0001",
+      "slug": "kalyan",
+      "name": "Kalyan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        73.13554,
+        19.2437
+      ]
+    },
+    {
+      "id": "dcc:place:in-16-dombivali:0001",
+      "slug": "dombivali",
+      "name": "Dombivali",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        73.08333,
+        19.21667
+      ]
+    },
+    {
+      "id": "dcc:place:in-16-virar:0001",
+      "slug": "virar",
+      "name": "Virar",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        72.81136,
+        19.45591
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.747Z"
+}

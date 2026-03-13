@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-tn-knoxville-tn:0001",
+  "place_slug": "knoxville-tn",
+  "place_name": "Knoxville",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-tn-pigeon-forge-tn:0001",
+      "place_slug": "pigeon-forge-tn",
+      "place_name": "Pigeon Forge",
+      "reason": "near_place_geo",
+      "distance_km": 38.2
+    },
+    {
+      "place_id": "dcc:place:us-tn-gatlinburg-tn:0001",
+      "place_slug": "gatlinburg-tn",
+      "place_name": "Gatlinburg",
+      "reason": "near_place_geo",
+      "distance_km": 45.9
+    },
+    {
+      "place_id": "dcc:place:us-nc-asheville-nc:0001",
+      "place_slug": "asheville-nc",
+      "place_name": "Asheville",
+      "reason": "near_place_geo",
+      "distance_km": 129.6
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-tn-knoxville-tn:0001",
+      "to": "dcc:place:us-tn-pigeon-forge-tn:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-tn-knoxville-tn:0001",
+      "to": "dcc:place:us-tn-gatlinburg-tn:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-tn-knoxville-tn:0001",
+      "to": "dcc:place:us-nc-asheville-nc:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

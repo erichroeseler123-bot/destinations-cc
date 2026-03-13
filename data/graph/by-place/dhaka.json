@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:bd-81-dhaka:0001",
+  "place_slug": "dhaka",
+  "place_name": "Dhaka",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:bd-81-gazipur:0001",
+      "place_slug": "gazipur",
+      "place_name": "Gazipur",
+      "reason": "near_place_geo",
+      "distance_km": 32.1
+    },
+    {
+      "place_id": "dcc:place:bd-82-khulna:0001",
+      "place_slug": "khulna",
+      "place_name": "Khulna",
+      "reason": "near_place_geo",
+      "distance_km": 132.1
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:bd-81-dhaka:0001",
+      "to": "dcc:place:bd-81-gazipur:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:bd-81-dhaka:0001",
+      "to": "dcc:place:bd-82-khulna:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-wa-olympia-wa:0001",
+  "place_slug": "olympia-wa",
+  "place_name": "Olympia",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-wa-tacoma-wa:0001",
+      "place_slug": "tacoma-wa",
+      "place_name": "Tacoma",
+      "reason": "near_place_geo",
+      "distance_km": 41.6
+    },
+    {
+      "place_id": "dcc:place:us-wa-seattle-wa:0001",
+      "place_slug": "seattle-wa",
+      "place_name": "Seattle",
+      "reason": "near_place_geo",
+      "distance_km": 75.8
+    },
+    {
+      "place_id": "dcc:place:us-or-astoria-or:0001",
+      "place_slug": "astoria-or",
+      "place_name": "Astoria",
+      "reason": "near_place_geo",
+      "distance_km": 118.8
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-wa-olympia-wa:0001",
+      "to": "dcc:place:us-wa-tacoma-wa:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-wa-olympia-wa:0001",
+      "to": "dcc:place:us-wa-seattle-wa:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-wa-olympia-wa:0001",
+      "to": "dcc:place:us-or-astoria-or:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

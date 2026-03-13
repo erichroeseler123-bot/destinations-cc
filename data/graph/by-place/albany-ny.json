@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:us-ny-albany-ny:0001",
+  "place_slug": "albany-ny",
+  "place_name": "Albany",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ct-hartford-ct:0001",
+      "place_slug": "hartford-ct",
+      "place_name": "Hartford",
+      "reason": "near_place_geo",
+      "distance_km": 132.5
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ny-albany-ny:0001",
+      "to": "dcc:place:us-ct-hartford-ct:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

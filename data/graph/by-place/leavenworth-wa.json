@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:us-wa-leavenworth-wa:0001",
+  "place_slug": "leavenworth-wa",
+  "place_name": "Leavenworth",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-wa-seattle-wa:0001",
+      "place_slug": "seattle-wa",
+      "place_name": "Seattle",
+      "reason": "near_place_geo",
+      "distance_km": 125.3
+    },
+    {
+      "place_id": "dcc:place:us-wa-tacoma-wa:0001",
+      "place_slug": "tacoma-wa",
+      "place_name": "Tacoma",
+      "reason": "near_place_geo",
+      "distance_km": 139.4
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-wa-leavenworth-wa:0001",
+      "to": "dcc:place:us-wa-seattle-wa:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-wa-leavenworth-wa:0001",
+      "to": "dcc:place:us-wa-tacoma-wa:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-fl-tampa-fl:0001",
+  "place_slug": "tampa-fl",
+  "place_name": "Tampa",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-fl-st-petersburg-fl:0001",
+      "place_slug": "st-petersburg-fl",
+      "place_name": "St. Petersburg",
+      "reason": "near_place_geo",
+      "distance_km": 29.3
+    },
+    {
+      "place_id": "dcc:place:us-fl-sarasota-fl:0001",
+      "place_slug": "sarasota-fl",
+      "place_name": "Sarasota",
+      "reason": "near_place_geo",
+      "distance_km": 68.3
+    },
+    {
+      "place_id": "dcc:place:us-fl-orlando-fl:0001",
+      "place_slug": "orlando-fl",
+      "place_name": "Orlando",
+      "reason": "near_place_geo",
+      "distance_km": 124.5
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-fl-tampa-fl:0001",
+      "to": "dcc:place:us-fl-st-petersburg-fl:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-fl-tampa-fl:0001",
+      "to": "dcc:place:us-fl-sarasota-fl:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-fl-tampa-fl:0001",
+      "to": "dcc:place:us-fl-orlando-fl:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "version": "dcc-network-v1",
+  "updatedAt": "2026-03-11T00:00:00Z",
+  "satellites": {
+    "partyatredrocks": {
+      "surfaces": {
+        "discovery": {
+          "min_nodes": 5,
+          "min_edges": 6,
+          "required_node_types": {
+            "city": 1,
+            "scene": 1,
+            "operator": 1
+          }
+        },
+        "monetized": {
+          "min_nodes": 1,
+          "min_edges": 1,
+          "required_node_types": {
+            "operator": 1
+          }
+        }
+      }
+    },
+    "welcome-to-alaska": {
+      "surfaces": {
+        "authority": {
+          "min_nodes": 5,
+          "min_edges": 6,
+          "required_node_types": {
+            "city": 1,
+            "scene": 1
+          }
+        },
+        "discovery": {
+          "min_nodes": 5,
+          "min_edges": 6,
+          "required_node_types": {
+            "city": 1,
+            "scene": 1,
+            "operator": 1
+          }
+        },
+        "monetized": {
+          "min_nodes": 1,
+          "min_edges": 1,
+          "required_node_types": {
+            "operator": 1
+          }
+        }
+      }
+    },
+    "gosno": {
+      "surfaces": {
+        "authority": {
+          "min_nodes": 5,
+          "min_edges": 6,
+          "required_node_types": {
+            "city": 1,
+            "scene": 1
+          }
+        },
+        "discovery": {
+          "min_nodes": 5,
+          "min_edges": 6,
+          "required_node_types": {
+            "city": 1,
+            "scene": 1,
+            "operator": 1
+          }
+        },
+        "monetized": {
+          "min_nodes": 1,
+          "min_edges": 1,
+          "required_node_types": {
+            "operator": 1
+          }
+        }
+      }
+    }
+  }
+}

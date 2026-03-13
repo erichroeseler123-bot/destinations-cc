@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-30-yangjiang:0001",
+  "place_slug": "yangjiang",
+  "place_name": "Yangjiang",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-30-maoming:0001",
+      "place_slug": "maoming",
+      "place_name": "Maoming",
+      "reason": "near_place_geo",
+      "distance_km": 110.4
+    },
+    {
+      "place_id": "dcc:place:cn-30-yunfu:0001",
+      "place_slug": "yunfu",
+      "place_name": "Yunfu",
+      "reason": "near_place_geo",
+      "distance_km": 119.5
+    },
+    {
+      "place_id": "dcc:place:cn-30-jiangmen:0001",
+      "place_slug": "jiangmen",
+      "place_name": "Jiangmen",
+      "reason": "near_place_geo",
+      "distance_km": 140.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-30-yangjiang:0001",
+      "to": "dcc:place:cn-30-maoming:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-30-yangjiang:0001",
+      "to": "dcc:place:cn-30-yunfu:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-30-yangjiang:0001",
+      "to": "dcc:place:cn-30-jiangmen:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

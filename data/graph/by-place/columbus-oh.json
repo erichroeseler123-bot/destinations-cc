@@ -1,0 +1,44 @@
+{
+  "place_id": "dcc:place:us-oh-columbus-oh:0001",
+  "place_slug": "columbus-oh",
+  "place_name": "Columbus",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [
+      {
+        "id": "intent:transport:city-highlights-tour",
+        "title": "Columbus City Highlights Tour",
+        "provider": "intent_catalog",
+        "url": "/tours?city=columbus-oh&q=city%20highlights%20tour"
+      }
+    ],
+    "events": []
+  },
+  "providers": [
+    "intent_catalog"
+  ],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 1,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "available_in",
+      "from": "dcc:place:us-oh-columbus-oh:0001",
+      "to": "intent:transport:city-highlights-tour",
+      "meta": {
+        "vertical": "transport",
+        "provider": "intent_catalog"
+      }
+    }
+  ]
+}

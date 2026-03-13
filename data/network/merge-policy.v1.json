@@ -1,0 +1,28 @@
+{
+  "version": "dcc-network-v1",
+  "updatedAt": "2026-03-11T00:00:00Z",
+  "field_precedence_by_class": {
+    "identity_fields": {
+      "provenance_order": ["upstream", "manual", "derived", "enriched"],
+      "pipeline_order": ["geo-backbone", "operator-business", "scene-clustering", "signal-enrichment"],
+      "tie_breakers": ["confidence", "updatedAt"]
+    },
+    "structural_fields": {
+      "provenance_order": ["upstream", "manual", "derived", "enriched"],
+      "pipeline_order": ["geo-backbone", "operator-business", "scene-clustering", "signal-enrichment"],
+      "tie_breakers": ["confidence", "updatedAt"]
+    },
+    "enrichment_fields": {
+      "provenance_order": ["enriched", "derived", "manual", "upstream"],
+      "pipeline_order": ["signal-enrichment", "scene-clustering", "operator-business", "geo-backbone"],
+      "tie_breakers": ["confidence", "updatedAt"]
+    }
+  },
+  "node_type_overrides": {
+    "operator": {
+      "provenance_order": ["manual", "upstream", "derived", "enriched"],
+      "pipeline_order": ["operator-business", "signal-enrichment", "geo-backbone", "scene-clustering"],
+      "tie_breakers": ["confidence", "updatedAt"]
+    }
+  }
+}

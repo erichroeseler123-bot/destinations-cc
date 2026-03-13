@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:ca-10-montreal:0001",
+  "place_slug": "montreal",
+  "place_name": "Montreal",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-vt-burlington-vt:0001",
+      "place_slug": "burlington-vt",
+      "place_name": "Burlington",
+      "reason": "near_place_geo",
+      "distance_km": 118.6
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:ca-10-montreal:0001",
+      "to": "dcc:place:us-vt-burlington-vt:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

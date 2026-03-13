@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:co-04-barranquilla:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.605Z",
+  "metrics": {
+    "risk_score_mean": 2.821333333333334,
+    "risk_score_stddev": 0.5204340069168766,
+    "risk_score_p90": 3.46,
+    "degraded_transport_rate": 0.2,
+    "negative_human_signal_rate": 0.2
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

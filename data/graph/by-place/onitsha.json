@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:ng-25-onitsha:0001",
+  "place_slug": "onitsha",
+  "place_name": "Onitsha",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:ng-37-benin-city:0001",
+      "place_slug": "benin-city",
+      "place_name": "Benin City",
+      "reason": "near_place_geo",
+      "distance_km": 129.9
+    },
+    {
+      "place_id": "dcc:place:ng-45-aba:0001",
+      "place_slug": "aba",
+      "place_name": "Aba",
+      "reason": "near_place_geo",
+      "distance_km": 132.6
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:ng-25-onitsha:0001",
+      "to": "dcc:place:ng-37-benin-city:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:ng-25-onitsha:0001",
+      "to": "dcc:place:ng-45-aba:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

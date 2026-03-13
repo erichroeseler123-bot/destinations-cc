@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:ng-50-port-harcourt:0001",
+  "place_slug": "port-harcourt",
+  "place_name": "Port Harcourt",
+  "center": {
+    "coordinates": [
+      7.0134,
+      4.77742
+    ],
+    "country_code": "NG",
+    "admin1_code": "50"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:ng-45-aba:0001",
+      "slug": "aba",
+      "name": "Aba",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        7.36667,
+        5.10658
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.751Z"
+}

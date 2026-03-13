@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:us-ak-anchorage-ak:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 1.4293333333333331,
+  "z_score": 1.5908032873527465,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:us-ak-anchorage-ak:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": 0.08285714285714285,
+    "sample_count": 7
+  }
+}

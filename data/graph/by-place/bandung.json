@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:id-30-bandung:0001",
+  "place_slug": "bandung",
+  "place_name": "Bandung",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:id-30-bogor:0001",
+      "place_slug": "bogor",
+      "place_name": "Bogor",
+      "reason": "near_place_geo",
+      "distance_km": 97.4
+    },
+    {
+      "place_id": "dcc:place:id-30-bekasi:0001",
+      "place_slug": "bekasi",
+      "place_name": "Bekasi",
+      "reason": "near_place_geo",
+      "distance_km": 102.4
+    },
+    {
+      "place_id": "dcc:place:id-30-depok:0001",
+      "place_slug": "depok",
+      "place_name": "Depok",
+      "reason": "near_place_geo",
+      "distance_km": 104.7
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:id-30-bandung:0001",
+      "to": "dcc:place:id-30-bogor:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:id-30-bandung:0001",
+      "to": "dcc:place:id-30-bekasi:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:id-30-bandung:0001",
+      "to": "dcc:place:id-30-depok:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

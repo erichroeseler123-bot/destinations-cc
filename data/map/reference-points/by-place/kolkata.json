@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:in-28-kolkata:0001",
+  "place_slug": "kolkata",
+  "place_name": "Kolkata",
+  "center": {
+    "coordinates": [
+      88.36304,
+      22.56263
+    ],
+    "country_code": "IN",
+    "admin1_code": "28"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:bd-82-khulna:0001",
+      "slug": "khulna",
+      "name": "Khulna",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        89.56439,
+        22.80979
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.737Z"
+}

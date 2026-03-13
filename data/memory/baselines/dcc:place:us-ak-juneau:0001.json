@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:us-ak-juneau:0001",
+  "window_days": 30,
+  "sample_count": 8,
+  "computed_at": "2026-03-08T23:44:48.620Z",
+  "metrics": {
+    "risk_score_mean": 3.025,
+    "risk_score_stddev": 0.5425633603552675,
+    "risk_score_p90": 3.5,
+    "degraded_transport_rate": 0.75,
+    "negative_human_signal_rate": 0.75
+  },
+  "latest_snapshot_at": "2026-03-08T23:41:10.460Z"
+}

@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-30-yangjiang:0001",
+  "place_slug": "yangjiang",
+  "place_name": "Yangjiang",
+  "center": {
+    "coordinates": [
+      111.96272,
+      21.85563
+    ],
+    "country_code": "CN",
+    "admin1_code": "30"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-30-maoming:0001",
+      "slug": "maoming",
+      "name": "Maoming",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        110.91364,
+        21.66625
+      ]
+    },
+    {
+      "id": "dcc:place:cn-30-yunfu:0001",
+      "slug": "yunfu",
+      "name": "Yunfu",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        112.03809,
+        22.92787
+      ]
+    },
+    {
+      "id": "dcc:place:cn-30-jiangmen:0001",
+      "slug": "jiangmen",
+      "name": "Jiangmen",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        113.08333,
+        22.58333
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.767Z"
+}

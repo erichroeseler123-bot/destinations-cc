@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:us-ut-saint-george-ut:0001",
+  "place_slug": "saint-george-ut",
+  "place_name": "Saint George",
+  "center": {
+    "coordinates": [
+      -113.58412,
+      37.10415
+    ],
+    "country_code": "US",
+    "admin1_code": "UT"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ut-springdale-ut:0001",
+      "slug": "springdale-ut",
+      "name": "Springdale",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -112.99855,
+        37.18887
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.754Z"
+}

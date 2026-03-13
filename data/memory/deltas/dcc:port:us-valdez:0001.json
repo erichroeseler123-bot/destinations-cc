@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:port:us-valdez:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.7359999999999998,
+  "z_score": -1.4494930700452557,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:port:us-valdez:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.047857142857142855,
+    "sample_count": 7
+  }
+}

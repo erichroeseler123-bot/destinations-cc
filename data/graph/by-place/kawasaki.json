@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:jp-19-kawasaki:0001",
+  "place_slug": "kawasaki",
+  "place_name": "Kawasaki",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:jp-19-yokohama:0001",
+      "place_slug": "yokohama",
+      "place_name": "Yokohama",
+      "reason": "near_place_geo",
+      "distance_km": 11.5
+    },
+    {
+      "place_id": "dcc:place:jp-40-tokyo:0001",
+      "place_slug": "tokyo",
+      "place_name": "Tokyo",
+      "reason": "near_place_geo",
+      "distance_km": 18.9
+    },
+    {
+      "place_id": "dcc:place:jp-34-saitama:0001",
+      "place_slug": "saitama",
+      "place_name": "Saitama",
+      "reason": "near_place_geo",
+      "distance_km": 43.4
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:jp-19-kawasaki:0001",
+      "to": "dcc:place:jp-19-yokohama:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:jp-19-kawasaki:0001",
+      "to": "dcc:place:jp-40-tokyo:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:jp-19-kawasaki:0001",
+      "to": "dcc:place:jp-34-saitama:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

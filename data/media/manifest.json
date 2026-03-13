@@ -1,0 +1,515 @@
+{
+  "version": 1,
+  "updated_at": "2026-03-13",
+  "allowlisted_sources": [
+    "commons.wikimedia.org",
+    "unsplash.com",
+    "images.unsplash.com",
+    "pexels.com",
+    "images.pexels.com",
+    "denver.org",
+    "travelalaska.com"
+  ],
+  "entries": [
+    {
+      "id": "city-denver",
+      "canonicalPath": "/cities/denver",
+      "entityType": "city",
+      "priority": "gold",
+      "assets": [
+        {
+          "id": "city-denver-hero",
+          "role": "hero",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Denver_skyline.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Denver skyline with mountain backdrop at dusk for route-first city planning",
+          "tags": [
+            "denver",
+            "skyline",
+            "city"
+          ],
+          "optimized_path": "/images/authority/cities/denver/hero.webp",
+          "width": 2200,
+          "height": 1300,
+          "raw_path": "assets/raw/cities/denver/original/hero.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        },
+        {
+          "id": "city-denver-section-1",
+          "role": "section",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Downtown_Denver.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Downtown Denver urban core showing walkable planning district",
+          "tags": [
+            "denver",
+            "downtown",
+            "district"
+          ],
+          "optimized_path": "/images/authority/cities/denver/section-1.webp",
+          "width": 1800,
+          "height": 1200,
+          "raw_path": "assets/raw/cities/denver/original/section-1.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        },
+        {
+          "id": "city-denver-gallery-1",
+          "role": "gallery",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Denver_Colorado.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Denver city and foothill transition useful for itinerary sequencing context",
+          "tags": [
+            "denver",
+            "foothills",
+            "travel"
+          ],
+          "optimized_path": "/images/authority/cities/denver/gallery-1.webp",
+          "width": 1800,
+          "height": 1200,
+          "raw_path": "assets/raw/cities/denver/original/gallery-1.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        },
+        {
+          "id": "city-denver-gallery-2",
+          "role": "gallery",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Denver_Urban_View.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Denver planning scene with skyline and urban grid context",
+          "tags": [
+            "denver",
+            "city-grid",
+            "planning"
+          ],
+          "optimized_path": "/images/authority/cities/denver/gallery-2.webp",
+          "width": 1800,
+          "height": 1200,
+          "raw_path": "assets/raw/cities/denver/original/gallery-2.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        }
+      ]
+    },
+    {
+      "id": "port-juneau",
+      "canonicalPath": "/ports/juneau",
+      "entityType": "port",
+      "priority": "gold",
+      "assets": [
+        {
+          "id": "port-juneau-hero",
+          "role": "hero",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Juneau_Alaska_Harbor.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Juneau harbor with cruise infrastructure and mountain backdrop",
+          "tags": [
+            "juneau",
+            "port",
+            "alaska"
+          ],
+          "optimized_path": "/images/authority/ports/juneau/hero.webp",
+          "width": 2200,
+          "height": 1300,
+          "raw_path": "assets/raw/ports/juneau/original/hero.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        },
+        {
+          "id": "port-juneau-section-1",
+          "role": "section",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Juneau_harbor.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Juneau waterfront transfer area relevant for cruise-call movement",
+          "tags": [
+            "juneau",
+            "waterfront",
+            "transfer"
+          ],
+          "optimized_path": "/images/authority/ports/juneau/section-1.webp",
+          "width": 1800,
+          "height": 1200,
+          "raw_path": "assets/raw/ports/juneau/original/section-1.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        },
+        {
+          "id": "port-juneau-gallery-1",
+          "role": "gallery",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Juneau_mountains.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Juneau mountain terrain showing excursion weather exposure",
+          "tags": [
+            "juneau",
+            "mountains",
+            "excursions"
+          ],
+          "optimized_path": "/images/authority/ports/juneau/gallery-1.webp",
+          "width": 1800,
+          "height": 1200,
+          "raw_path": "assets/raw/ports/juneau/original/gallery-1.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        },
+        {
+          "id": "port-juneau-gallery-2",
+          "role": "gallery",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Alaska_coastline.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Alaska coastline context used for Juneau port-day planning",
+          "tags": [
+            "alaska",
+            "coastline",
+            "port-day"
+          ],
+          "optimized_path": "/images/authority/ports/juneau/gallery-2.webp",
+          "width": 1800,
+          "height": 1200,
+          "raw_path": "assets/raw/ports/juneau/original/gallery-2.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        }
+      ]
+    },
+    {
+      "id": "venue-red-rocks",
+      "canonicalPath": "/venues/red-rocks-amphitheatre",
+      "entityType": "venue",
+      "priority": "gold",
+      "assets": [
+        {
+          "id": "venue-red-rocks-hero",
+          "role": "hero",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Red_Rocks_Amphitheatre.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Red Rocks Amphitheatre framed by sandstone formations at event hour",
+          "tags": [
+            "red-rocks",
+            "venue",
+            "concert"
+          ],
+          "optimized_path": "/images/authority/venues/red-rocks-amphitheatre/hero.webp",
+          "width": 2200,
+          "height": 1300,
+          "raw_path": "assets/raw/venues/red-rocks-amphitheatre/original/hero.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        },
+        {
+          "id": "venue-red-rocks-section-1",
+          "role": "section",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Red_Rocks_Seating.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Red Rocks seating bowl and elevation profile for route planning context",
+          "tags": [
+            "red-rocks",
+            "seating",
+            "ingress"
+          ],
+          "optimized_path": "/images/authority/venues/red-rocks-amphitheatre/section-1.webp",
+          "width": 1800,
+          "height": 1200,
+          "raw_path": "assets/raw/venues/red-rocks-amphitheatre/original/section-1.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        },
+        {
+          "id": "venue-red-rocks-gallery-1",
+          "role": "gallery",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Red_Rocks_Concert.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Red Rocks event atmosphere showing crowd density and stage layout",
+          "tags": [
+            "red-rocks",
+            "crowd",
+            "event"
+          ],
+          "optimized_path": "/images/authority/venues/red-rocks-amphitheatre/gallery-1.webp",
+          "width": 1800,
+          "height": 1200,
+          "raw_path": "assets/raw/venues/red-rocks-amphitheatre/original/gallery-1.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        },
+        {
+          "id": "venue-red-rocks-gallery-2",
+          "role": "gallery",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Red_Rocks_Park.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Red Rocks park terrain and approach area supporting transfer decisions",
+          "tags": [
+            "red-rocks",
+            "terrain",
+            "transport"
+          ],
+          "optimized_path": "/images/authority/venues/red-rocks-amphitheatre/gallery-2.webp",
+          "width": 1800,
+          "height": 1200,
+          "raw_path": "assets/raw/venues/red-rocks-amphitheatre/original/gallery-2.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        }
+      ]
+    },
+    {
+      "id": "attraction-mendenhall-glacier",
+      "canonicalPath": "/attractions/mendenhall-glacier",
+      "entityType": "attraction",
+      "priority": "gold",
+      "assets": [
+        {
+          "id": "attraction-mendenhall-hero",
+          "role": "hero",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Mendenhall_Glacier.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Mendenhall Glacier panoramic view with water and valley foreground",
+          "tags": [
+            "mendenhall",
+            "glacier",
+            "juneau"
+          ],
+          "optimized_path": "/images/authority/attractions/mendenhall-glacier/hero.webp",
+          "width": 2200,
+          "height": 1300,
+          "raw_path": "assets/raw/attractions/mendenhall-glacier/original/hero.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        },
+        {
+          "id": "attraction-mendenhall-section-1",
+          "role": "section",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Mendenhall_Glacier_View.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Mendenhall viewpoint area used for excursion timing decisions",
+          "tags": [
+            "mendenhall",
+            "viewpoint",
+            "excursion"
+          ],
+          "optimized_path": "/images/authority/attractions/mendenhall-glacier/section-1.webp",
+          "width": 1800,
+          "height": 1200,
+          "raw_path": "assets/raw/attractions/mendenhall-glacier/original/section-1.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        },
+        {
+          "id": "attraction-mendenhall-gallery-1",
+          "role": "gallery",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Mendenhall_Valley.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Juneau glacier valley conditions relevant for weather-aware planning",
+          "tags": [
+            "juneau",
+            "weather",
+            "glacier"
+          ],
+          "optimized_path": "/images/authority/attractions/mendenhall-glacier/gallery-1.webp",
+          "width": 1800,
+          "height": 1200,
+          "raw_path": "assets/raw/attractions/mendenhall-glacier/original/gallery-1.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        },
+        {
+          "id": "attraction-mendenhall-gallery-2",
+          "role": "gallery",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Alaska_Glacier_View.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Alaska glacier-region terrain adding local intel context",
+          "tags": [
+            "alaska",
+            "terrain",
+            "mendenhall"
+          ],
+          "optimized_path": "/images/authority/attractions/mendenhall-glacier/gallery-2.webp",
+          "width": 1800,
+          "height": 1200,
+          "raw_path": "assets/raw/attractions/mendenhall-glacier/original/gallery-2.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        }
+      ]
+    },
+    {
+      "id": "route-denver-red-rocks",
+      "canonicalPath": "/routes/denver-red-rocks",
+      "entityType": "route",
+      "priority": "gold",
+      "assets": [
+        {
+          "id": "route-denver-red-rocks-hero",
+          "role": "hero",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Denver_to_Red_Rocks.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Denver to Red Rocks corridor visual for event-night routing decisions",
+          "tags": [
+            "route",
+            "denver",
+            "red-rocks"
+          ],
+          "optimized_path": "/images/authority/routes/denver-red-rocks/hero.webp",
+          "width": 2200,
+          "height": 1300,
+          "raw_path": "assets/raw/routes/denver-red-rocks/original/hero.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        },
+        {
+          "id": "route-denver-red-rocks-section-1",
+          "role": "section",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Red_Rocks_Road.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Foothill roadway near Red Rocks showing transfer friction context",
+          "tags": [
+            "foothills",
+            "road",
+            "ingress"
+          ],
+          "optimized_path": "/images/authority/routes/denver-red-rocks/section-1.webp",
+          "width": 1800,
+          "height": 1200,
+          "raw_path": "assets/raw/routes/denver-red-rocks/original/section-1.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        },
+        {
+          "id": "route-denver-red-rocks-gallery-1",
+          "role": "gallery",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Colorado_Foothills_Road.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Colorado foothills route environment for post-show planning context",
+          "tags": [
+            "colorado",
+            "route",
+            "egress"
+          ],
+          "optimized_path": "/images/authority/routes/denver-red-rocks/gallery-1.webp",
+          "width": 1800,
+          "height": 1200,
+          "raw_path": "assets/raw/routes/denver-red-rocks/original/gallery-1.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        },
+        {
+          "id": "route-denver-red-rocks-gallery-2",
+          "role": "gallery",
+          "priority": "gold",
+          "src_url": "https://commons.wikimedia.org/wiki/File:Denver_Route_View.jpg",
+          "source": "Wikimedia Commons",
+          "author": "Wikimedia Commons contributor",
+          "attribution": "Photo via Wikimedia Commons (CC BY-SA 4.0)",
+          "license": "CC BY-SA 4.0",
+          "alt": "Denver corridor route context for city-to-venue sequence planning",
+          "tags": [
+            "denver",
+            "corridor",
+            "route"
+          ],
+          "optimized_path": "/images/authority/routes/denver-red-rocks/gallery-2.webp",
+          "width": 1800,
+          "height": 1200,
+          "raw_path": "assets/raw/routes/denver-red-rocks/original/gallery-2.jpg",
+          "sourceType": "cc",
+          "approvalStatus": "approved",
+          "focal": "center"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:cn-19-shenyang:0001",
+  "place_slug": "shenyang",
+  "place_name": "Shenyang",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-19-fushun:0001",
+      "place_slug": "fushun",
+      "place_name": "Fushun",
+      "reason": "near_place_geo",
+      "distance_km": 43.6
+    },
+    {
+      "place_id": "dcc:place:cn-19-anshan:0001",
+      "place_slug": "anshan",
+      "place_name": "Anshan",
+      "reason": "near_place_geo",
+      "distance_km": 83
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-19-shenyang:0001",
+      "to": "dcc:place:cn-19-fushun:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-19-shenyang:0001",
+      "to": "dcc:place:cn-19-anshan:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

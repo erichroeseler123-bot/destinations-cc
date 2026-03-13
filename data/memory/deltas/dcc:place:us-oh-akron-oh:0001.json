@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:us-oh-akron-oh:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "improving",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.8293333333333335,
+  "z_score": -1.7477427151277047,
+  "reasons": [
+    "risk_below_baseline"
+  ],
+  "trend": {
+    "place_id": "dcc:place:us-oh-akron-oh:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.06285714285714283,
+    "sample_count": 7
+  }
+}

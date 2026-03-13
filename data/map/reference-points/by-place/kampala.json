@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:ug-c-kampala:0001",
+  "place_slug": "kampala",
+  "place_name": "Kampala",
+  "center": {
+    "coordinates": [
+      32.58219,
+      0.31628
+    ],
+    "country_code": "UG",
+    "admin1_code": "C"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.732Z"
+}

@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:cn-21-yinchuan:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.1626666666666674,
+  "z_score": -0.7910412361453987,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:cn-21-yinchuan:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.058571428571428594,
+    "sample_count": 7
+  }
+}

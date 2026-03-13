@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:tz-23-dar-es-salaam:0001",
+  "place_slug": "dar-es-salaam",
+  "place_name": "Dar es Salaam",
+  "center": {
+    "coordinates": [
+      39.26951,
+      -6.82349
+    ],
+    "country_code": "TZ",
+    "admin1_code": "23"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.722Z"
+}

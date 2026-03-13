@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:eg-12-shubra-al-khaymah:0001",
+  "place_slug": "shubra-al-khaymah",
+  "place_name": "Shubra al Khaymah",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:eg-11-cairo:0001",
+      "place_slug": "cairo",
+      "place_name": "Cairo",
+      "reason": "near_place_geo",
+      "distance_km": 6.9
+    },
+    {
+      "place_id": "dcc:place:eg-08-giza:0001",
+      "place_slug": "giza",
+      "place_name": "Giza",
+      "reason": "near_place_geo",
+      "distance_km": 13.5
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:eg-12-shubra-al-khaymah:0001",
+      "to": "dcc:place:eg-11-cairo:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:eg-12-shubra-al-khaymah:0001",
+      "to": "dcc:place:eg-08-giza:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

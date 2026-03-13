@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:us-tn-chattanooga-tn:0001",
+  "place_slug": "chattanooga-tn",
+  "place_name": "Chattanooga",
+  "center": {
+    "coordinates": [
+      -85.30968,
+      35.04563
+    ],
+    "country_code": "US",
+    "admin1_code": "TN"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.719Z"
+}

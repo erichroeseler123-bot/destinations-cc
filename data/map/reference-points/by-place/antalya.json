@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:tr-07-antalya:0001",
+  "place_slug": "antalya",
+  "place_name": "Antalya",
+  "center": {
+    "coordinates": [
+      30.69556,
+      36.90812
+    ],
+    "country_code": "TR",
+    "admin1_code": "07"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.710Z"
+}

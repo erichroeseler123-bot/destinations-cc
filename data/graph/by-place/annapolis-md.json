@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-md-annapolis-md:0001",
+  "place_slug": "annapolis-md",
+  "place_name": "Annapolis",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-md-baltimore-md:0001",
+      "place_slug": "baltimore-md",
+      "place_name": "Baltimore",
+      "reason": "near_place_geo",
+      "distance_km": 36.2
+    },
+    {
+      "place_id": "dcc:place:us-dc-washington-dc:0001",
+      "place_slug": "washington-dc",
+      "place_name": "Washington",
+      "reason": "near_place_geo",
+      "distance_km": 48
+    },
+    {
+      "place_id": "dcc:place:us-va-alexandria-va:0001",
+      "place_slug": "alexandria-va",
+      "place_name": "Alexandria",
+      "reason": "near_place_geo",
+      "distance_km": 51.8
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-md-annapolis-md:0001",
+      "to": "dcc:place:us-md-baltimore-md:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-md-annapolis-md:0001",
+      "to": "dcc:place:us-dc-washington-dc:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-md-annapolis-md:0001",
+      "to": "dcc:place:us-va-alexandria-va:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

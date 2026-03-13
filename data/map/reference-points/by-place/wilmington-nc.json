@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:us-nc-wilmington-nc:0001",
+  "place_slug": "wilmington-nc",
+  "place_name": "Wilmington",
+  "center": {
+    "coordinates": [
+      -77.94604,
+      34.23556
+    ],
+    "country_code": "US",
+    "admin1_code": "NC"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-sc-myrtle-beach-sc:0001",
+      "slug": "myrtle-beach-sc",
+      "name": "Myrtle Beach",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -78.88669,
+        33.68906
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.765Z"
+}

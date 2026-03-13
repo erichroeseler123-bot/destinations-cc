@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:uz-13-tashkent:0001",
+  "place_slug": "tashkent",
+  "place_name": "Tashkent",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:kz-1537272-shymkent:0001",
+      "place_slug": "shymkent",
+      "place_name": "Shymkent",
+      "reason": "near_place_geo",
+      "distance_km": 120.5
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:uz-13-tashkent:0001",
+      "to": "dcc:place:kz-1537272-shymkent:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

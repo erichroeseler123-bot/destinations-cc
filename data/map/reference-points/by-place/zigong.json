@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:cn-32-zigong:0001",
+  "place_slug": "zigong",
+  "place_name": "Zigong",
+  "center": {
+    "coordinates": [
+      104.77689,
+      29.34162
+    ],
+    "country_code": "CN",
+    "admin1_code": "32"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-32-neijiang:0001",
+      "slug": "neijiang",
+      "name": "Neijiang",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        105.06216,
+        29.58354
+      ]
+    },
+    {
+      "id": "dcc:place:cn-32-meishan:0001",
+      "slug": "meishan",
+      "name": "Meishan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        103.83696,
+        30.04392
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.769Z"
+}

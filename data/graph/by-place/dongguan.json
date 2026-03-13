@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-30-dongguan:0001",
+  "place_slug": "dongguan",
+  "place_name": "Dongguan",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-30-guangzhou:0001",
+      "place_slug": "guangzhou",
+      "place_name": "Guangzhou",
+      "reason": "near_place_geo",
+      "distance_km": 52.2
+    },
+    {
+      "place_id": "dcc:place:cn-30-baoan:0001",
+      "place_slug": "baoan",
+      "place_name": "Bao'an",
+      "reason": "near_place_geo",
+      "distance_km": 53.6
+    },
+    {
+      "place_id": "dcc:place:cn-30-shenzhen:0001",
+      "place_slug": "shenzhen",
+      "place_name": "Shenzhen",
+      "reason": "near_place_geo",
+      "distance_km": 61.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-30-dongguan:0001",
+      "to": "dcc:place:cn-30-guangzhou:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-30-dongguan:0001",
+      "to": "dcc:place:cn-30-baoan:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-30-dongguan:0001",
+      "to": "dcc:place:cn-30-shenzhen:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

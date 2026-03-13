@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:lb-04-ras-bayrut:0001",
+  "place_slug": "ras-bayrut",
+  "place_name": "Ra's Bayrut",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:lb-04-beirut:0001",
+      "place_slug": "beirut",
+      "place_name": "Beirut",
+      "reason": "near_place_geo",
+      "distance_km": 1.8
+    },
+    {
+      "place_id": "dcc:place:sy-13-damascus:0001",
+      "place_slug": "damascus",
+      "place_name": "Damascus",
+      "reason": "near_place_geo",
+      "distance_km": 86.4
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:lb-04-ras-bayrut:0001",
+      "to": "dcc:place:lb-04-beirut:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:lb-04-ras-bayrut:0001",
+      "to": "dcc:place:sy-13-damascus:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-04-taizhou:0001",
+  "place_slug": "taizhou",
+  "place_name": "Taizhou",
+  "center": {
+    "coordinates": [
+      119.90812,
+      32.49069
+    ],
+    "country_code": "CN",
+    "admin1_code": "04"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-04-yangzhou:0001",
+      "slug": "yangzhou",
+      "name": "Yangzhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        119.43583,
+        32.39722
+      ]
+    },
+    {
+      "id": "dcc:place:cn-04-jiangyin:0001",
+      "slug": "jiangyin",
+      "name": "Jiangyin",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        120.26302,
+        31.91102
+      ]
+    },
+    {
+      "id": "dcc:place:cn-04-changzhou:0001",
+      "slug": "changzhou",
+      "name": "Changzhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        119.95401,
+        31.77359
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.760Z"
+}

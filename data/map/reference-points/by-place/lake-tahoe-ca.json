@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-ca-lake-tahoe-ca:0001",
+  "place_slug": "lake-tahoe-ca",
+  "place_name": "Lake Tahoe",
+  "center": {
+    "coordinates": [
+      -120.09572,
+      39.14525
+    ],
+    "country_code": "US",
+    "admin1_code": "CA"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ca-south-lake-tahoe-ca:0001",
+      "slug": "south-lake-tahoe-ca",
+      "name": "South Lake Tahoe",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -119.98435,
+        38.93324
+      ]
+    },
+    {
+      "id": "dcc:place:us-nv-reno-nv:0001",
+      "slug": "reno-nv",
+      "name": "Reno",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -119.8138,
+        39.52963
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-sacramento-ca:0001",
+      "slug": "sacramento-ca",
+      "name": "Sacramento",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -121.4944,
+        38.58157
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.738Z"
+}

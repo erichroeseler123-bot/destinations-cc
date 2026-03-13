@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:ve-07-valencia:0001",
+  "place_slug": "valencia",
+  "place_name": "Valencia",
+  "center": {
+    "coordinates": [
+      -68.00044,
+      10.16153
+    ],
+    "country_code": "VE",
+    "admin1_code": "07"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:ve-25-caracas:0001",
+      "slug": "caracas",
+      "name": "Caracas",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -66.87919,
+        10.48801
+      ]
+    },
+    {
+      "id": "dcc:place:ve-13-barquisimeto:0001",
+      "slug": "barquisimeto",
+      "name": "Barquisimeto",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -69.35703,
+        10.0647
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.764Z"
+}

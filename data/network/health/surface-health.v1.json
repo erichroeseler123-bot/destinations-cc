@@ -1,0 +1,59 @@
+{
+  "version": "dcc-network-v1",
+  "generatedAt": "2026-03-11T01:37:23.889Z",
+  "surfaces": {
+    "authority": {
+      "candidate_nodes": 5,
+      "promoted_nodes": 5,
+      "blocked_by_policy": 0,
+      "promoted_by_type": {
+        "city": 3,
+        "scene": 2
+      },
+      "blocked_by_type": {},
+      "changes_since_last_export": {
+        "found": true,
+        "node_added": 6,
+        "node_removed": 0,
+        "edge_added": 8,
+        "edge_removed": 0,
+        "report": "/home/ewrewr12/destinations-cc/data/network/audit/surface/authority/2026-03-11T01-31-37-350Z.report.json"
+      }
+    },
+    "discovery": {
+      "candidate_nodes": 5,
+      "promoted_nodes": 5,
+      "blocked_by_policy": 0,
+      "promoted_by_type": {
+        "city": 3,
+        "scene": 2
+      },
+      "blocked_by_type": {},
+      "changes_since_last_export": {
+        "found": true,
+        "node_added": 6,
+        "node_removed": 0,
+        "edge_added": 8,
+        "edge_removed": 0,
+        "report": "/home/ewrewr12/destinations-cc/data/network/audit/surface/discovery/2026-03-11T01-31-37-832Z.report.json"
+      }
+    },
+    "monetized": {
+      "candidate_nodes": 1,
+      "promoted_nodes": 1,
+      "blocked_by_policy": 0,
+      "promoted_by_type": {
+        "operator": 1
+      },
+      "blocked_by_type": {},
+      "changes_since_last_export": {
+        "found": true,
+        "node_added": 1,
+        "node_removed": 0,
+        "edge_added": 1,
+        "edge_removed": 0,
+        "report": "/home/ewrewr12/destinations-cc/data/network/audit/surface/monetized/2026-03-11T01-31-38-250Z.report.json"
+      }
+    }
+  }
+}

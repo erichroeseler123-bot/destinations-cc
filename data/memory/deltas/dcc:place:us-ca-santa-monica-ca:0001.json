@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:us-ca-santa-monica-ca:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.2426666666666666,
+  "z_score": -1.1070838153065992,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:us-ca-santa-monica-ca:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.06285714285714285,
+    "sample_count": 7
+  }
+}

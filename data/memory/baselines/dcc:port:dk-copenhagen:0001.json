@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:port:dk-copenhagen:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.640Z",
+  "metrics": {
+    "risk_score_mean": 1.7480000000000004,
+    "risk_score_stddev": 0.4198285364288616,
+    "risk_score_p90": 2.18,
+    "degraded_transport_rate": 0,
+    "negative_human_signal_rate": 0
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

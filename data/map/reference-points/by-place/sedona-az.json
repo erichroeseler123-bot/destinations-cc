@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:us-az-sedona-az:0001",
+  "place_slug": "sedona-az",
+  "place_name": "Sedona",
+  "center": {
+    "coordinates": [
+      -111.76099,
+      34.86974
+    ],
+    "country_code": "US",
+    "admin1_code": "AZ"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-az-flagstaff-az:0001",
+      "slug": "flagstaff-az",
+      "name": "Flagstaff",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -111.65127,
+        35.19807
+      ]
+    },
+    {
+      "id": "dcc:place:us-az-grand-canyon-village-az:0001",
+      "slug": "grand-canyon-village-az",
+      "name": "Grand Canyon Village",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -112.15406,
+        36.04637
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.756Z"
+}

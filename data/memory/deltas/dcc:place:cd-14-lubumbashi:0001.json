@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:cd-14-lubumbashi:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 1.8959999999999997,
+  "z_score": 0.8219182645358472,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:cd-14-lubumbashi:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": 0.03071428571428572,
+    "sample_count": 7
+  }
+}

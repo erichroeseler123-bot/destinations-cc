@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-01-huainan:0001",
+  "place_slug": "huainan",
+  "place_name": "Huainan",
+  "center": {
+    "coordinates": [
+      116.99694,
+      32.62639
+    ],
+    "country_code": "CN",
+    "admin1_code": "01"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-01-hefei:0001",
+      "slug": "hefei",
+      "name": "Hefei",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        117.28083,
+        31.86389
+      ]
+    },
+    {
+      "id": "dcc:place:cn-01-luan:0001",
+      "slug": "luan",
+      "name": "Lu'an",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        116.51688,
+        31.73561
+      ]
+    },
+    {
+      "id": "dcc:place:cn-01-suzhou-2:0001",
+      "slug": "suzhou-2",
+      "name": "Suzhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        116.97889,
+        33.63611
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.729Z"
+}

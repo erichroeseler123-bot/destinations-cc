@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:cn-09-nanyang:0001",
+  "place_slug": "nanyang",
+  "place_name": "Nanyang",
+  "center": {
+    "coordinates": [
+      112.53278,
+      32.99472
+    ],
+    "country_code": "CN",
+    "admin1_code": "09"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-12-xiangyang:0001",
+      "slug": "xiangyang",
+      "name": "Xiangyang",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        112.14479,
+        32.0422
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.746Z"
+}

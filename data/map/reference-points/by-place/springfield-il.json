@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:us-il-springfield-il:0001",
+  "place_slug": "springfield-il",
+  "place_name": "Springfield",
+  "center": {
+    "coordinates": [
+      -89.64371,
+      39.80172
+    ],
+    "country_code": "US",
+    "admin1_code": "IL"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-mo-st-louis-mo:0001",
+      "slug": "st-louis-mo",
+      "name": "St. Louis",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -90.19789,
+        38.62727
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.758Z"
+}

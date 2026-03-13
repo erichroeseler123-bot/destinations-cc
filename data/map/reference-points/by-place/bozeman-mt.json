@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:us-mt-bozeman-mt:0001",
+  "place_slug": "bozeman-mt",
+  "place_name": "Bozeman",
+  "center": {
+    "coordinates": [
+      -111.03856,
+      45.67965
+    ],
+    "country_code": "US",
+    "admin1_code": "MT"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-mt-west-yellowstone-mt:0001",
+      "slug": "west-yellowstone-mt",
+      "name": "West Yellowstone",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -111.10411,
+        44.66215
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.715Z"
+}

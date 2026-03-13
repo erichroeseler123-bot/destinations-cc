@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:us-tx-fort-worth-tx:0001",
+  "place_slug": "fort-worth-tx",
+  "place_name": "Fort Worth",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-tx-dallas:0001",
+      "place_slug": "dallas",
+      "place_name": "Dallas",
+      "reason": "near_place_geo",
+      "distance_km": 48.5
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-tx-fort-worth-tx:0001",
+      "to": "dcc:place:us-tx-dallas:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

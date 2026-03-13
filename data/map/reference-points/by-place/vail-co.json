@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-co-vail-co:0001",
+  "place_slug": "vail-co",
+  "place_name": "Vail",
+  "center": {
+    "coordinates": [
+      -106.3742,
+      39.64026
+    ],
+    "country_code": "US",
+    "admin1_code": "CO"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-co-breckenridge-co:0001",
+      "slug": "breckenridge-co",
+      "name": "Breckenridge",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -106.03835,
+        39.48165
+      ]
+    },
+    {
+      "id": "dcc:place:us-co-aspen-co:0001",
+      "slug": "aspen-co",
+      "name": "Aspen",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -106.81754,
+        39.1911
+      ]
+    },
+    {
+      "id": "dcc:place:us-co-steamboat-springs-co:0001",
+      "slug": "steamboat-springs-co",
+      "name": "Steamboat Springs",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -106.83172,
+        40.48498
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.763Z"
+}

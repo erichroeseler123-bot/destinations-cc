@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:ng-45-aba:0001",
+  "place_slug": "aba",
+  "place_name": "Aba",
+  "center": {
+    "coordinates": [
+      7.36667,
+      5.10658
+    ],
+    "country_code": "NG",
+    "admin1_code": "45"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:ng-50-port-harcourt:0001",
+      "slug": "port-harcourt",
+      "name": "Port Harcourt",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        7.0134,
+        4.77742
+      ]
+    },
+    {
+      "id": "dcc:place:ng-25-onitsha:0001",
+      "slug": "onitsha",
+      "name": "Onitsha",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        6.78569,
+        6.14978
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.708Z"
+}

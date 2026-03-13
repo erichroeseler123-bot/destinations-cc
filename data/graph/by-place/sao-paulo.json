@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:br-27-sao-paulo:0001",
+  "place_slug": "sao-paulo",
+  "place_name": "Sao Paulo",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:br-27-guarulhos:0001",
+      "place_slug": "guarulhos",
+      "place_name": "Guarulhos",
+      "reason": "near_place_geo",
+      "distance_km": 14.1
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:br-27-sao-paulo:0001",
+      "to": "dcc:place:br-27-guarulhos:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

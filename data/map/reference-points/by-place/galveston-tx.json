@@ -1,0 +1,41 @@
+{
+  "place_id": "dcc:place:us-tx-galveston-tx:0001",
+  "place_slug": "galveston-tx",
+  "place_name": "Galveston",
+  "center": {
+    "coordinates": [
+      -94.7977,
+      29.30135
+    ],
+    "country_code": "US",
+    "admin1_code": "TX"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 1,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [
+    "direct-line"
+  ],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-tx-houston:0001",
+      "slug": "houston",
+      "name": "Houston",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -95.36327,
+        29.76328
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.726Z"
+}

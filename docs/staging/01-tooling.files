@@ -1,0 +1,5 @@
+.gitignore
+docs/pr-staging-plan-2026-03-12.md
+eslint.config.mjs
+package-lock.json
+package.json

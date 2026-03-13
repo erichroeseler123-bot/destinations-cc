@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:us-tx-houston:0001",
+  "place_slug": "houston",
+  "place_name": "Houston",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-tx-galveston-tx:0001",
+      "place_slug": "galveston-tx",
+      "place_name": "Galveston",
+      "reason": "near_place_geo",
+      "distance_km": 75
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-tx-houston:0001",
+      "to": "dcc:place:us-tx-galveston-tx:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

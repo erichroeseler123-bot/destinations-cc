@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:vn-92-can-tho:0001",
+  "place_slug": "can-tho",
+  "place_name": "Can Tho",
+  "center": {
+    "coordinates": [
+      105.78825,
+      10.03711
+    ],
+    "country_code": "VN",
+    "admin1_code": "92"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:vn-79-ho-chi-minh-city:0001",
+      "slug": "ho-chi-minh-city",
+      "name": "Ho Chi Minh City",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        106.62965,
+        10.82302
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.717Z"
+}

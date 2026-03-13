@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:us-ca-anaheim-ca:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "improving",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.7866666666666666,
+  "z_score": -1.464421156904849,
+  "reasons": [
+    "risk_below_baseline"
+  ],
+  "trend": {
+    "place_id": "dcc:place:us-ca-anaheim-ca:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.05714285714285711,
+    "sample_count": 7
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-ca-san-clemente-ca:0001",
+  "place_slug": "san-clemente-ca",
+  "place_name": "San Clemente",
+  "center": {
+    "coordinates": [
+      -117.61199,
+      33.42697
+    ],
+    "country_code": "US",
+    "admin1_code": "CA"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ca-oceanside-ca:0001",
+      "slug": "oceanside-ca",
+      "name": "Oceanside",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -117.37948,
+        33.19587
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-temecula-ca:0001",
+      "slug": "temecula-ca",
+      "name": "Temecula",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -117.14836,
+        33.49364
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-anaheim-ca:0001",
+      "slug": "anaheim-ca",
+      "name": "Anaheim",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -117.9145,
+        33.83529
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.755Z"
+}

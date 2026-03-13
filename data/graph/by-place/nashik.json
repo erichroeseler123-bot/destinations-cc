@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:in-16-nashik:0001",
+  "place_slug": "nashik",
+  "place_name": "Nashik",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:in-16-kalyan:0001",
+      "place_slug": "kalyan",
+      "place_name": "Kalyan",
+      "reason": "near_place_geo",
+      "distance_km": 108.3
+    },
+    {
+      "place_id": "dcc:place:in-16-dombivali:0001",
+      "place_slug": "dombivali",
+      "place_name": "Dombivali",
+      "reason": "near_place_geo",
+      "distance_km": 114.1
+    },
+    {
+      "place_id": "dcc:place:in-16-virar:0001",
+      "place_slug": "virar",
+      "place_name": "Virar",
+      "reason": "near_place_geo",
+      "distance_km": 118.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-16-nashik:0001",
+      "to": "dcc:place:in-16-kalyan:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-16-nashik:0001",
+      "to": "dcc:place:in-16-dombivali:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-16-nashik:0001",
+      "to": "dcc:place:in-16-virar:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

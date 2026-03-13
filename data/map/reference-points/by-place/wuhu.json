@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-01-wuhu:0001",
+  "place_slug": "wuhu",
+  "place_name": "Wuhu",
+  "center": {
+    "coordinates": [
+      118.42947,
+      31.35259
+    ],
+    "country_code": "CN",
+    "admin1_code": "01"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-04-nanjing:0001",
+      "slug": "nanjing",
+      "name": "Nanjing",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        118.77778,
+        32.06167
+      ]
+    },
+    {
+      "id": "dcc:place:cn-01-hefei:0001",
+      "slug": "hefei",
+      "name": "Hefei",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        117.28083,
+        31.86389
+      ]
+    },
+    {
+      "id": "dcc:place:cn-04-yixing:0001",
+      "slug": "yixing",
+      "name": "Yixing",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        119.82016,
+        31.36059
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.766Z"
+}

@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:iq-07-baghdad:0001",
+  "place_slug": "baghdad",
+  "place_name": "Baghdad",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:iq-12-karbala:0001",
+      "place_slug": "karbala",
+      "place_name": "Karbala",
+      "reason": "near_place_geo",
+      "distance_km": 87.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:iq-07-baghdad:0001",
+      "to": "dcc:place:iq-12-karbala:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

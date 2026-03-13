@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:us-oh-cleveland-oh:0001",
+  "place_slug": "cleveland-oh",
+  "place_name": "Cleveland",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-oh-akron-oh:0001",
+      "place_slug": "akron-oh",
+      "place_name": "Akron",
+      "reason": "near_place_geo",
+      "distance_km": 48.8
+    },
+    {
+      "place_id": "dcc:place:us-mi-detroit-mi:0001",
+      "place_slug": "detroit-mi",
+      "place_name": "Detroit",
+      "reason": "near_place_geo",
+      "distance_km": 145.1
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-oh-cleveland-oh:0001",
+      "to": "dcc:place:us-oh-akron-oh:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-oh-cleveland-oh:0001",
+      "to": "dcc:place:us-mi-detroit-mi:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

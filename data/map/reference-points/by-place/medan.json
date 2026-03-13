@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:id-26-medan:0001",
+  "place_slug": "medan",
+  "place_name": "Medan",
+  "center": {
+    "coordinates": [
+      98.66667,
+      3.58333
+    ],
+    "country_code": "ID",
+    "admin1_code": "26"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.741Z"
+}

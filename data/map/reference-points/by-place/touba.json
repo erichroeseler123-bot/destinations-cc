@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:sn-03-touba:0001",
+  "place_slug": "touba",
+  "place_name": "Touba",
+  "center": {
+    "coordinates": [
+      -15.87532,
+      14.86229
+    ],
+    "country_code": "SN",
+    "admin1_code": "03"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.762Z"
+}

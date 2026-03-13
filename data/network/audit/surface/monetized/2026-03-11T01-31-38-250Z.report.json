@@ -1,0 +1,23 @@
+{
+  "target": "monetized",
+  "mode": "surface",
+  "generatedAt": "2026-03-11T01:31:38.250Z",
+  "previousSnapshotFound": false,
+  "nodes": {
+    "current": 1,
+    "previous": 0,
+    "added": [
+      "dcc:node:mighty-argo-shuttle"
+    ],
+    "removed": []
+  },
+  "edges": {
+    "current": 1,
+    "previous": 0,
+    "added": [
+      "dcc:edge:argo-operator-operates-in-colorado"
+    ],
+    "removed": []
+  },
+  "removal_reasons": {}
+}

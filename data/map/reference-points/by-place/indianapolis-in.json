@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:us-in-indianapolis-in:0001",
+  "place_slug": "indianapolis-in",
+  "place_name": "Indianapolis",
+  "center": {
+    "coordinates": [
+      -86.15804,
+      39.76838
+    ],
+    "country_code": "US",
+    "admin1_code": "IN"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.729Z"
+}

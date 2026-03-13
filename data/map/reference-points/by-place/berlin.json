@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:de-16-berlin:0001",
+  "place_slug": "berlin",
+  "place_name": "Berlin",
+  "center": {
+    "coordinates": [
+      13.41053,
+      52.52437
+    ],
+    "country_code": "DE",
+    "admin1_code": "16"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.714Z"
+}

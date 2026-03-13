@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:in-36-varanasi:0001",
+  "place_slug": "varanasi",
+  "place_name": "Varanasi",
+  "center": {
+    "coordinates": [
+      83.01041,
+      25.31668
+    ],
+    "country_code": "IN",
+    "admin1_code": "36"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:in-36-prayagraj:0001",
+      "slug": "prayagraj",
+      "name": "Prayagraj",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        81.84322,
+        25.44478
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.764Z"
+}

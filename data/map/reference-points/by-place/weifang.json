@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:cn-25-weifang:0001",
+  "place_slug": "weifang",
+  "place_name": "Weifang",
+  "center": {
+    "coordinates": [
+      119.10194,
+      36.71
+    ],
+    "country_code": "CN",
+    "admin1_code": "25"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-25-zibo:0001",
+      "slug": "zibo",
+      "name": "Zibo",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        118.06333,
+        36.79056
+      ]
+    },
+    {
+      "id": "dcc:place:cn-25-qingdao:0001",
+      "slug": "qingdao",
+      "name": "Qingdao",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        120.38042,
+        36.06488
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.765Z"
+}

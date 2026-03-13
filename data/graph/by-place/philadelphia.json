@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-pa-philadelphia:0001",
+  "place_slug": "philadelphia",
+  "place_name": "Philadelphia",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-nj-princeton-nj:0001",
+      "place_slug": "princeton-nj",
+      "place_name": "Princeton",
+      "reason": "near_place_geo",
+      "distance_km": 61.5
+    },
+    {
+      "place_id": "dcc:place:us-nj-atlantic-city-nj:0001",
+      "place_slug": "atlantic-city-nj",
+      "place_name": "Atlantic City",
+      "reason": "near_place_geo",
+      "distance_km": 91.1
+    },
+    {
+      "place_id": "dcc:place:us-nj-newark-nj:0001",
+      "place_slug": "newark-nj",
+      "place_name": "Newark",
+      "reason": "near_place_geo",
+      "distance_km": 121
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-pa-philadelphia:0001",
+      "to": "dcc:place:us-nj-princeton-nj:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-pa-philadelphia:0001",
+      "to": "dcc:place:us-nj-atlantic-city-nj:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-pa-philadelphia:0001",
+      "to": "dcc:place:us-nj-newark-nj:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

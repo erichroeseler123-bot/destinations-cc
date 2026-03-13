@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-ca-anaheim-ca:0001",
+  "place_slug": "anaheim-ca",
+  "place_name": "Anaheim",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ca-long-beach-ca:0001",
+      "place_slug": "long-beach-ca",
+      "place_name": "Long Beach",
+      "reason": "near_place_geo",
+      "distance_km": 26.5
+    },
+    {
+      "place_id": "dcc:place:us-ca-los-angeles:0001",
+      "place_slug": "los-angeles",
+      "place_name": "Los Angeles",
+      "reason": "near_place_geo",
+      "distance_km": 38.8
+    },
+    {
+      "place_id": "dcc:place:us-ca-pasadena-ca:0001",
+      "place_slug": "pasadena-ca",
+      "place_name": "Pasadena",
+      "reason": "near_place_geo",
+      "distance_km": 40.7
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-anaheim-ca:0001",
+      "to": "dcc:place:us-ca-long-beach-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-anaheim-ca:0001",
+      "to": "dcc:place:us-ca-los-angeles:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-anaheim-ca:0001",
+      "to": "dcc:place:us-ca-pasadena-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

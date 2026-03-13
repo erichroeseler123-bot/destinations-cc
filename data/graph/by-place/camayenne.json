@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:gn-04-camayenne:0001",
+  "place_slug": "camayenne",
+  "place_name": "Camayenne",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:gn-04-conakry:0001",
+      "place_slug": "conakry",
+      "place_name": "Conakry",
+      "reason": "near_place_geo",
+      "distance_km": 1.2
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:gn-04-camayenne:0001",
+      "to": "dcc:place:gn-04-conakry:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

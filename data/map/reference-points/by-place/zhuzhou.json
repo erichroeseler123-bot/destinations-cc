@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-11-zhuzhou:0001",
+  "place_slug": "zhuzhou",
+  "place_name": "Zhuzhou",
+  "center": {
+    "coordinates": [
+      113.15,
+      27.83333
+    ],
+    "country_code": "CN",
+    "admin1_code": "11"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-11-changsha:0001",
+      "slug": "changsha",
+      "name": "Changsha",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        112.97087,
+        28.19874
+      ]
+    },
+    {
+      "id": "dcc:place:cn-11-guankou:0001",
+      "slug": "guankou",
+      "name": "Guankou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        113.62709,
+        28.15861
+      ]
+    },
+    {
+      "id": "dcc:place:cn-11-heshan:0001",
+      "slug": "heshan",
+      "name": "Heshan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        112.34733,
+        28.56938
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.768Z"
+}

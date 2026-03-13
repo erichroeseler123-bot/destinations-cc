@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:in-07-najafgarh:0001",
+  "place_slug": "najafgarh",
+  "place_name": "Najafgarh",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:in-07-delhi:0001",
+      "place_slug": "delhi",
+      "place_name": "Delhi",
+      "reason": "near_place_geo",
+      "distance_km": 25
+    },
+    {
+      "place_id": "dcc:place:in-10-faridabad:0001",
+      "place_slug": "faridabad",
+      "place_name": "Faridabad",
+      "reason": "near_place_geo",
+      "distance_km": 39.3
+    },
+    {
+      "place_id": "dcc:place:in-36-ghaziabad:0001",
+      "place_slug": "ghaziabad",
+      "place_name": "Ghaziabad",
+      "reason": "near_place_geo",
+      "distance_km": 45.3
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-07-najafgarh:0001",
+      "to": "dcc:place:in-07-delhi:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-07-najafgarh:0001",
+      "to": "dcc:place:in-10-faridabad:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-07-najafgarh:0001",
+      "to": "dcc:place:in-36-ghaziabad:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

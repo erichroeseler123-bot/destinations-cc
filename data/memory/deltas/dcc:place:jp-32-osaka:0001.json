@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:jp-32-osaka:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.016,
+  "z_score": -0.08625284706479205,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:jp-32-osaka:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.03642857142857142,
+    "sample_count": 7
+  }
+}

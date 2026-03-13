@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-04-changzhou:0001",
+  "place_slug": "changzhou",
+  "place_name": "Changzhou",
+  "center": {
+    "coordinates": [
+      119.95401,
+      31.77359
+    ],
+    "country_code": "CN",
+    "admin1_code": "04"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-04-jiangyin:0001",
+      "slug": "jiangyin",
+      "name": "Jiangyin",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        120.26302,
+        31.91102
+      ]
+    },
+    {
+      "id": "dcc:place:cn-04-wuxi:0001",
+      "slug": "wuxi",
+      "name": "Wuxi",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        120.28857,
+        31.56887
+      ]
+    },
+    {
+      "id": "dcc:place:cn-04-yixing:0001",
+      "slug": "yixing",
+      "name": "Yixing",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        119.82016,
+        31.36059
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.718Z"
+}

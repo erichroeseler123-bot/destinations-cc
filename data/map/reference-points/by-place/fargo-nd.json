@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:us-nd-fargo-nd:0001",
+  "place_slug": "fargo-nd",
+  "place_name": "Fargo",
+  "center": {
+    "coordinates": [
+      -96.7898,
+      46.87719
+    ],
+    "country_code": "US",
+    "admin1_code": "ND"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.725Z"
+}

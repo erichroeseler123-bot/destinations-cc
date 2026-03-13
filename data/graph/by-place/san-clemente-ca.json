@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-ca-san-clemente-ca:0001",
+  "place_slug": "san-clemente-ca",
+  "place_name": "San Clemente",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ca-oceanside-ca:0001",
+      "place_slug": "oceanside-ca",
+      "place_name": "Oceanside",
+      "reason": "near_place_geo",
+      "distance_km": 33.6
+    },
+    {
+      "place_id": "dcc:place:us-ca-temecula-ca:0001",
+      "place_slug": "temecula-ca",
+      "place_name": "Temecula",
+      "reason": "near_place_geo",
+      "distance_km": 43.6
+    },
+    {
+      "place_id": "dcc:place:us-ca-anaheim-ca:0001",
+      "place_slug": "anaheim-ca",
+      "place_name": "Anaheim",
+      "reason": "near_place_geo",
+      "distance_km": 53.3
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-san-clemente-ca:0001",
+      "to": "dcc:place:us-ca-oceanside-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-san-clemente-ca:0001",
+      "to": "dcc:place:us-ca-temecula-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-san-clemente-ca:0001",
+      "to": "dcc:place:us-ca-anaheim-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

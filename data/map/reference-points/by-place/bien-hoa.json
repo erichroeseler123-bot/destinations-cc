@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:vn-75-bien-hoa:0001",
+  "place_slug": "bien-hoa",
+  "place_name": "Bien Hoa",
+  "center": {
+    "coordinates": [
+      106.82432,
+      10.94469
+    ],
+    "country_code": "VN",
+    "admin1_code": "75"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:vn-79-ho-chi-minh-city:0001",
+      "slug": "ho-chi-minh-city",
+      "name": "Ho Chi Minh City",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        106.62965,
+        10.82302
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.714Z"
+}

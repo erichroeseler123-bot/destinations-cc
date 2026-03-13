@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:kr-10-busan:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.498666666666667,
+  "z_score": -0.9361298885536066,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:kr-10-busan:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": 0.1321428571428571,
+    "sample_count": 7
+  }
+}

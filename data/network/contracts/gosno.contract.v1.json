@@ -1,0 +1,40 @@
+{
+  "version": "dcc-network-v1",
+  "updatedAt": "2026-03-11T00:00:00Z",
+  "satellite_id": "gosno",
+  "allowed_surfaces": ["authority", "discovery", "monetized"],
+  "surfaces": [
+    {
+      "surface": "authority",
+      "min_confidence": 0.72,
+      "allowed_node_types": ["city", "attraction", "scene", "operator"],
+      "required_fields": ["node_id", "slug", "name", "authority_url"],
+      "required_edge_types": [],
+      "allowed_provenance": ["upstream", "manual", "derived"],
+      "excluded_statuses": ["archived"]
+    },
+    {
+      "surface": "discovery",
+      "min_confidence": 0.68,
+      "allowed_node_types": ["city", "scene", "operator", "event", "attraction"],
+      "required_fields": ["node_id", "slug", "name", "tags"],
+      "required_edge_types": [],
+      "allowed_provenance": ["upstream", "manual", "derived", "enriched"],
+      "excluded_statuses": ["archived"]
+    },
+    {
+      "surface": "monetized",
+      "min_confidence": 0.87,
+      "allowed_node_types": ["operator", "attraction", "venue"],
+      "required_fields": ["node_id", "slug", "name", "status", "monetized_targets"],
+      "required_edge_types": ["operates_in"],
+      "allowed_provenance": ["manual", "upstream", "derived"],
+      "excluded_statuses": ["archived", "paused"]
+    }
+  ],
+  "local_overrides": {
+    "max_nodes": 25000,
+    "max_edges": 140000,
+    "notes": "Ski and mountain transfer network focus"
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-04-nantong:0001",
+  "place_slug": "nantong",
+  "place_name": "Nantong",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-04-zhangjiagang:0001",
+      "place_slug": "zhangjiagang",
+      "place_name": "Zhangjiagang",
+      "reason": "near_place_geo",
+      "distance_km": 36.6
+    },
+    {
+      "place_id": "dcc:place:cn-04-changshu:0001",
+      "place_slug": "changshu",
+      "place_name": "Changshu",
+      "reason": "near_place_geo",
+      "distance_km": 44.5
+    },
+    {
+      "place_id": "dcc:place:cn-04-jiangyin:0001",
+      "place_slug": "jiangyin",
+      "place_name": "Jiangyin",
+      "reason": "near_place_geo",
+      "distance_km": 59.2
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-04-nantong:0001",
+      "to": "dcc:place:cn-04-zhangjiagang:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-04-nantong:0001",
+      "to": "dcc:place:cn-04-changshu:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-04-nantong:0001",
+      "to": "dcc:place:cn-04-jiangyin:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:vn-01-hanoi:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.637Z",
+  "metrics": {
+    "risk_score_mean": 3.0746666666666664,
+    "risk_score_stddev": 0.583116531140122,
+    "risk_score_p90": 3.76,
+    "degraded_transport_rate": 0.2,
+    "negative_human_signal_rate": 0.2
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

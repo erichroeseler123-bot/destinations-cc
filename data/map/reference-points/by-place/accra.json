@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:gh-01-accra:0001",
+  "place_slug": "accra",
+  "place_name": "Accra",
+  "center": {
+    "coordinates": [
+      -0.1969,
+      5.55602
+    ],
+    "country_code": "GH",
+    "admin1_code": "01"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.709Z"
+}

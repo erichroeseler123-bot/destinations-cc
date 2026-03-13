@@ -1,0 +1,39 @@
+{
+  "version": "dcc-network-v1",
+  "surface": "monetized",
+  "updatedAt": "2026-03-11T00:00:00Z",
+  "node_types": {
+    "operator": {
+      "min_confidence": 0.85,
+      "required_fields": ["node_id", "slug", "name", "monetized_targets", "status"],
+      "required_edge_types": ["operates_in"],
+      "allowed_provenance": ["manual", "upstream", "derived"],
+      "disallowed_statuses": ["archived", "paused", "beta"],
+      "require_monetized_target": true
+    },
+    "attraction": {
+      "min_confidence": 0.8,
+      "required_fields": ["node_id", "slug", "name", "authority_url"],
+      "required_edge_types": ["routes_to"],
+      "allowed_provenance": ["upstream", "manual", "derived"],
+      "disallowed_statuses": ["archived", "paused"],
+      "require_monetized_target": false
+    },
+    "event": {
+      "min_confidence": 0.85,
+      "required_fields": ["node_id", "slug", "name", "status"],
+      "required_edge_types": ["routes_to"],
+      "allowed_provenance": ["upstream", "derived"],
+      "disallowed_statuses": ["archived", "paused"],
+      "require_monetized_target": false
+    },
+    "venue": {
+      "min_confidence": 0.8,
+      "required_fields": ["node_id", "slug", "name", "geo"],
+      "required_edge_types": ["nearby"],
+      "allowed_provenance": ["upstream", "manual", "derived"],
+      "disallowed_statuses": ["archived"],
+      "require_monetized_target": false
+    }
+  }
+}

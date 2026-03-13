@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:in-16-pimpri-chinchwad:0001",
+  "place_slug": "pimpri-chinchwad",
+  "place_name": "Pimpri-Chinchwad",
+  "center": {
+    "coordinates": [
+      73.80375,
+      18.61867
+    ],
+    "country_code": "IN",
+    "admin1_code": "16"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:in-16-pimpri:0001",
+      "slug": "pimpri",
+      "name": "Pimpri",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        73.80696,
+        18.62292
+      ]
+    },
+    {
+      "id": "dcc:place:in-16-pune:0001",
+      "slug": "pune",
+      "name": "Pune",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        73.85535,
+        18.51957
+      ]
+    },
+    {
+      "id": "dcc:place:in-16-navi-mumbai:0001",
+      "slug": "navi-mumbai",
+      "name": "Navi Mumbai",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        73.01582,
+        19.03681
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.751Z"
+}

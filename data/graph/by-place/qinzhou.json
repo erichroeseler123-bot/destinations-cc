@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:cn-16-qinzhou:0001",
+  "place_slug": "qinzhou",
+  "place_name": "Qinzhou",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-16-nanning:0001",
+      "place_slug": "nanning",
+      "place_name": "Nanning",
+      "reason": "near_place_geo",
+      "distance_km": 98.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-16-qinzhou:0001",
+      "to": "dcc:place:cn-16-nanning:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

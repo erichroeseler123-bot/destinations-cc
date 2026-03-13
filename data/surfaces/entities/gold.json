@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "updated_at": "2026-03-13",
+  "entities": [
+    {
+      "key": "city:denver",
+      "entityType": "city",
+      "slug": "denver",
+      "canonicalPath": "/cities/denver",
+      "priority": "gold",
+      "placeGraphSlug": "denver-co",
+      "enabledModules": ["counts", "graph", "media", "decision", "next48", "livePulse", "share"]
+    },
+    {
+      "key": "port:juneau",
+      "entityType": "port",
+      "slug": "juneau",
+      "canonicalPath": "/ports/juneau",
+      "priority": "gold",
+      "placeGraphSlug": "juneau-ak",
+      "enabledModules": ["counts", "graph", "media", "decision", "next48", "livePulse", "share"]
+    },
+    {
+      "key": "venue:red-rocks-amphitheatre",
+      "entityType": "venue",
+      "slug": "red-rocks-amphitheatre",
+      "canonicalPath": "/venues/red-rocks-amphitheatre",
+      "priority": "gold",
+      "enabledModules": ["counts", "graph", "media", "decision", "livePulse", "share"]
+    },
+    {
+      "key": "attraction:mendenhall-glacier",
+      "entityType": "attraction",
+      "slug": "mendenhall-glacier",
+      "canonicalPath": "/attractions/mendenhall-glacier",
+      "priority": "gold",
+      "enabledModules": ["counts", "graph", "media", "decision", "share"]
+    },
+    {
+      "key": "route:denver-red-rocks",
+      "entityType": "route",
+      "slug": "denver-red-rocks",
+      "canonicalPath": "/routes/denver-red-rocks",
+      "priority": "gold",
+      "enabledModules": ["counts", "graph", "media", "decision", "share"]
+    }
+  ]
+}

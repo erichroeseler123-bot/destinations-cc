@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:in-02-rasapudipalem:0001",
+  "place_slug": "rasapudipalem",
+  "place_name": "Rasapudipalem",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:in-02-visakhapatnam:0001",
+      "place_slug": "visakhapatnam",
+      "place_name": "Visakhapatnam",
+      "reason": "near_place_geo",
+      "distance_km": 13.5
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-02-rasapudipalem:0001",
+      "to": "dcc:place:in-02-visakhapatnam:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

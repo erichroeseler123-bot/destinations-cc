@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:jp-40-tokyo:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.611Z",
+  "metrics": {
+    "risk_score_mean": 2.506666666666667,
+    "risk_score_stddev": 0.4594876373624092,
+    "risk_score_p90": 2.48,
+    "degraded_transport_rate": 0.13333333333333333,
+    "negative_human_signal_rate": 0.13333333333333333
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

@@ -74,6 +74,8 @@ export default function LocalTimeWeather({ label, timezone, lat, lng }: Props) {
     if (typeof lat !== "number" || typeof lng !== "number") return;
 
     let cancelled = false;
+    // Keep loading state explicit while requesting fresh weather for the current location.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setWx({ status: "loading" });
 
     const url =

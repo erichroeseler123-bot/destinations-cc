@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:id-33-south-tangerang:0001",
+  "place_slug": "south-tangerang",
+  "place_name": "South Tangerang",
+  "center": {
+    "coordinates": [
+      106.71789,
+      -6.28862
+    ],
+    "country_code": "ID",
+    "admin1_code": "33"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:id-33-tangerang:0001",
+      "slug": "tangerang",
+      "name": "Tangerang",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        106.63,
+        -6.17806
+      ]
+    },
+    {
+      "id": "dcc:place:id-04-jakarta:0001",
+      "slug": "jakarta",
+      "name": "Jakarta",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        106.84513,
+        -6.21462
+      ]
+    },
+    {
+      "id": "dcc:place:id-30-depok:0001",
+      "slug": "depok",
+      "name": "Depok",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        106.81861,
+        -6.4
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.757Z"
+}

@@ -1,0 +1,91 @@
+{
+  "place_id": "dcc:place:us-fl-orlando-fl:0001",
+  "place_slug": "orlando-fl",
+  "place_name": "Orlando",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [
+      {
+        "id": "intent:transport:disney-world-transportation-orlando",
+        "title": "Disney World Transfers",
+        "provider": "intent_catalog",
+        "url": "/tours?city=orlando-fl&q=Disney%20World%20transportation%20Orlando"
+      }
+    ],
+    "events": [
+      {
+        "id": "intent:event:universal-studios-orlando-tickets",
+        "title": "Universal Studios",
+        "provider": "intent_catalog",
+        "url": "/tours?city=orlando-fl&q=Universal%20Studios%20Orlando%20tickets"
+      }
+    ]
+  },
+  "providers": [
+    "intent_catalog"
+  ],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-fl-daytona-beach-fl:0001",
+      "place_slug": "daytona-beach-fl",
+      "place_name": "Daytona Beach",
+      "reason": "near_place_geo",
+      "distance_km": 82.4
+    },
+    {
+      "place_id": "dcc:place:us-fl-tampa-fl:0001",
+      "place_slug": "tampa-fl",
+      "place_name": "Tampa",
+      "reason": "near_place_geo",
+      "distance_km": 124.5
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 1,
+    "events": 1
+  },
+  "edges": [
+    {
+      "type": "available_in",
+      "from": "dcc:place:us-fl-orlando-fl:0001",
+      "to": "intent:transport:disney-world-transportation-orlando",
+      "meta": {
+        "vertical": "transport",
+        "provider": "intent_catalog"
+      }
+    },
+    {
+      "type": "available_in",
+      "from": "dcc:place:us-fl-orlando-fl:0001",
+      "to": "intent:event:universal-studios-orlando-tickets",
+      "meta": {
+        "vertical": "events",
+        "provider": "intent_catalog"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-fl-orlando-fl:0001",
+      "to": "dcc:place:us-fl-daytona-beach-fl:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-fl-orlando-fl:0001",
+      "to": "dcc:place:us-fl-tampa-fl:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

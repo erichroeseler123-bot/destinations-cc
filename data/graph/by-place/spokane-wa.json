@@ -1,0 +1,25 @@
+{
+  "place_id": "dcc:place:us-wa-spokane-wa:0001",
+  "place_slug": "spokane-wa",
+  "place_name": "Spokane",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": []
+}

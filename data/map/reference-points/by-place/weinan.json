@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:cn-26-weinan:0001",
+  "place_slug": "weinan",
+  "place_name": "Weinan",
+  "center": {
+    "coordinates": [
+      109.50891,
+      34.50355
+    ],
+    "country_code": "CN",
+    "admin1_code": "26"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-26-xian:0001",
+      "slug": "xian",
+      "name": "Xi'an",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        108.92861,
+        34.25833
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.765Z"
+}

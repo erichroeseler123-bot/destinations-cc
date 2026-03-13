@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:ae-06-sharjah:0001",
+  "place_slug": "sharjah",
+  "place_name": "Sharjah",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:ae-03-dubai:0001",
+      "place_slug": "dubai",
+      "place_name": "Dubai",
+      "reason": "near_place_geo",
+      "distance_km": 30.4
+    },
+    {
+      "place_id": "dcc:place:ae-01-abu-dhabi:0001",
+      "place_slug": "abu-dhabi",
+      "place_name": "Abu Dhabi",
+      "reason": "near_place_geo",
+      "distance_km": 141.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:ae-06-sharjah:0001",
+      "to": "dcc:place:ae-03-dubai:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:ae-06-sharjah:0001",
+      "to": "dcc:place:ae-01-abu-dhabi:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

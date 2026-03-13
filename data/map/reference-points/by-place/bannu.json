@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:pk-03-bannu:0001",
+  "place_slug": "bannu",
+  "place_name": "Bannu",
+  "center": {
+    "coordinates": [
+      70.60403,
+      32.98527
+    ],
+    "country_code": "PK",
+    "admin1_code": "03"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:pk-03-peshawar:0001",
+      "slug": "peshawar",
+      "name": "Peshawar",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        71.57849,
+        34.008
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.712Z"
+}

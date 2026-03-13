@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:us-va-richmond-va:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "improving",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.8506666666666667,
+  "z_score": -1.569240494429787,
+  "reasons": [
+    "risk_below_baseline"
+  ],
+  "trend": {
+    "place_id": "dcc:place:us-va-richmond-va:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.09571428571428571,
+    "sample_count": 7
+  }
+}

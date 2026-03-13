@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:vn-01-hanoi:0001",
+  "place_slug": "hanoi",
+  "place_name": "Hanoi",
+  "center": {
+    "coordinates": [
+      105.84117,
+      21.0245
+    ],
+    "country_code": "VN",
+    "admin1_code": "01"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:vn-31-haiphong:0001",
+      "slug": "haiphong",
+      "name": "Haiphong",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        106.68345,
+        20.86481
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.728Z"
+}

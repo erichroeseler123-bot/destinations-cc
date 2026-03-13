@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-04-lianyungang:0001",
+  "place_slug": "lianyungang",
+  "place_name": "Lianyungang",
+  "center": {
+    "coordinates": [
+      119.21556,
+      34.59845
+    ],
+    "country_code": "CN",
+    "admin1_code": "04"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-25-linyi:0001",
+      "slug": "linyi",
+      "name": "Linyi",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        118.34278,
+        35.06306
+      ]
+    },
+    {
+      "id": "dcc:place:cn-04-suqian:0001",
+      "slug": "suqian",
+      "name": "Suqian",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        118.29583,
+        33.94917
+      ]
+    },
+    {
+      "id": "dcc:place:cn-04-huaian:0001",
+      "slug": "huaian",
+      "name": "Huai'an",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        119.01917,
+        33.58861
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.739Z"
+}

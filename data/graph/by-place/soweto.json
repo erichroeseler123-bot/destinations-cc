@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:za-06-soweto:0001",
+  "place_slug": "soweto",
+  "place_name": "Soweto",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:za-06-johannesburg:0001",
+      "place_slug": "johannesburg",
+      "place_name": "Johannesburg",
+      "reason": "near_place_geo",
+      "distance_km": 19.9
+    },
+    {
+      "place_id": "dcc:place:za-06-pretoria:0001",
+      "place_slug": "pretoria",
+      "place_name": "Pretoria",
+      "reason": "near_place_geo",
+      "distance_km": 66.8
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:za-06-soweto:0001",
+      "to": "dcc:place:za-06-johannesburg:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:za-06-soweto:0001",
+      "to": "dcc:place:za-06-pretoria:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

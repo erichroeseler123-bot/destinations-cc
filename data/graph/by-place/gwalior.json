@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:in-35-gwalior:0001",
+  "place_slug": "gwalior",
+  "place_name": "Gwalior",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:in-36-agra:0001",
+      "place_slug": "agra",
+      "place_name": "Agra",
+      "reason": "near_place_geo",
+      "distance_km": 107.2
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-35-gwalior:0001",
+      "to": "dcc:place:in-36-agra:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

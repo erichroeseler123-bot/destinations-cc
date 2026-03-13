@@ -1,0 +1,27 @@
+{
+  "version": "dcc-network-v1",
+  "updatedAt": "2026-03-11T00:00:00Z",
+  "surfaces": {
+    "authority": {
+      "min_confidence": 0.7,
+      "allowed_provenance": ["upstream", "manual", "derived"],
+      "required_status": ["active", "beta"],
+      "require_related_nodes_min": 1,
+      "require_monetized_target": false
+    },
+    "discovery": {
+      "min_confidence": 0.65,
+      "allowed_provenance": ["upstream", "manual", "derived", "enriched"],
+      "required_status": ["active", "beta"],
+      "require_related_nodes_min": 1,
+      "require_monetized_target": false
+    },
+    "monetized": {
+      "min_confidence": 0.85,
+      "allowed_provenance": ["upstream", "manual", "derived"],
+      "required_status": ["active"],
+      "require_related_nodes_min": 1,
+      "require_monetized_target": true
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:ru-61-rostov-na-donu:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 1.5706666666666669,
+  "z_score": 1.6964765050127206,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:ru-61-rostov-na-donu:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": 0.011428571428571423,
+    "sample_count": 7
+  }
+}

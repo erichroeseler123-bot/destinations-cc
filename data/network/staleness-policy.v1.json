@@ -1,0 +1,38 @@
+{
+  "version": "dcc-network-v1",
+  "updatedAt": "2026-03-11T00:00:00Z",
+  "node_type_windows": {
+    "city": { "warn_after_days": 365, "block_monetized_after_days": 730 },
+    "venue": { "warn_after_days": 180, "block_monetized_after_days": 365 },
+    "attraction": { "warn_after_days": 120, "block_monetized_after_days": 240 },
+    "event": { "warn_after_days": 14, "block_monetized_after_days": 30 },
+    "artist": { "warn_after_days": 180, "block_monetized_after_days": 365 },
+    "scene": { "warn_after_days": 90, "block_monetized_after_days": 180 },
+    "operator": { "warn_after_days": 30, "block_monetized_after_days": 60 }
+  },
+  "edge_type_windows": {
+    "nearby": { "warn_after_days": 180, "block_monetized_after_days": 365 },
+    "feeds": { "warn_after_days": 14, "block_monetized_after_days": 30 },
+    "routes_to": { "warn_after_days": 45, "block_monetized_after_days": 90 },
+    "operates_in": { "warn_after_days": 30, "block_monetized_after_days": 60 },
+    "co_intent": { "warn_after_days": 60, "block_monetized_after_days": 120 },
+    "fallback_to": { "warn_after_days": 21, "block_monetized_after_days": 45 }
+  },
+  "review_rules": {
+    "low_confidence_review_below": 0.7,
+    "provenance_status_pairs": [
+      {
+        "provenance": "manual",
+        "status": "beta",
+        "severity": "warning",
+        "reason": "manual_beta_requires_review"
+      },
+      {
+        "provenance": "enriched",
+        "status": "active",
+        "severity": "warning",
+        "reason": "active_enriched_requires_audit"
+      }
+    ]
+  }
+}

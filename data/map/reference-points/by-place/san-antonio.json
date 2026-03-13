@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:us-tx-san-antonio:0001",
+  "place_slug": "san-antonio",
+  "place_name": "San Antonio",
+  "center": {
+    "coordinates": [
+      -98.49363,
+      29.42412
+    ],
+    "country_code": "US",
+    "admin1_code": "TX"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-tx-fredericksburg-tx:0001",
+      "slug": "fredericksburg-tx",
+      "name": "Fredericksburg",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -98.87198,
+        30.2752
+      ]
+    },
+    {
+      "id": "dcc:place:us-tx-austin-tx:0001",
+      "slug": "austin-tx",
+      "name": "Austin",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -97.74306,
+        30.26715
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.755Z"
+}

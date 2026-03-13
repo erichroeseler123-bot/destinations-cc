@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:us-mt-kalispell-mt:0001",
+  "place_slug": "kalispell-mt",
+  "place_name": "Kalispell",
+  "center": {
+    "coordinates": [
+      -114.31291,
+      48.19579
+    ],
+    "country_code": "US",
+    "admin1_code": "MT"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-mt-missoula-mt:0001",
+      "slug": "missoula-mt",
+      "name": "Missoula",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -113.994,
+        46.87215
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.732Z"
+}

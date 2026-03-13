@@ -1,0 +1,67 @@
+{
+  "version": "dcc-network-v1",
+  "updatedAt": "2026-03-11T00:00:00Z",
+  "pipelines": [
+    {
+      "pipeline_id": "geo-backbone",
+      "owns_node_types": ["city"],
+      "owns_edge_types": ["nearby"],
+      "sources": ["geonames", "geospatial-proximity"]
+    },
+    {
+      "pipeline_id": "venue-ingestion",
+      "owns_node_types": ["venue"],
+      "owns_edge_types": ["operates_in", "nearby"],
+      "sources": ["venue-registry", "partner-feeds"]
+    },
+    {
+      "pipeline_id": "attraction-ingestion",
+      "owns_node_types": ["attraction"],
+      "owns_edge_types": ["nearby", "co_intent"],
+      "sources": ["manual-curation", "tourism-feeds"]
+    },
+    {
+      "pipeline_id": "event-ingestion",
+      "owns_node_types": ["event"],
+      "owns_edge_types": ["feeds", "routes_to"],
+      "sources": ["seatgeek", "venue-calendars", "event-feeds"]
+    },
+    {
+      "pipeline_id": "artist-ingestion",
+      "owns_node_types": ["artist"],
+      "owns_edge_types": ["co_intent", "routes_to"],
+      "sources": ["event-feeds", "artist-datasets"]
+    },
+    {
+      "pipeline_id": "scene-clustering",
+      "owns_node_types": ["scene"],
+      "owns_edge_types": ["co_intent", "fallback_to"],
+      "sources": ["taxonomy", "taxonomy-clustering", "behavioral-signals"]
+    },
+    {
+      "pipeline_id": "operator-business",
+      "owns_node_types": ["operator"],
+      "owns_edge_types": ["operates_in", "routes_to"],
+      "sources": [
+        "internal-ops",
+        "partner-onboarding",
+        "manual-seed",
+        "transport-routing",
+        "operator-registry"
+      ]
+    },
+    {
+      "pipeline_id": "signal-enrichment",
+      "owns_node_types": [],
+      "owns_edge_types": ["feeds", "fallback_to", "co_intent"],
+      "sources": [
+        "weather",
+        "pricing",
+        "clickstream",
+        "availability",
+        "weather-enrichment",
+        "viator-cache"
+      ]
+    }
+  ]
+}

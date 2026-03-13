@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:br-27-guarulhos:0001",
+  "place_slug": "guarulhos",
+  "place_name": "Guarulhos",
+  "center": {
+    "coordinates": [
+      -46.53333,
+      -23.46278
+    ],
+    "country_code": "BR",
+    "admin1_code": "27"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:br-27-sao-paulo:0001",
+      "slug": "sao-paulo",
+      "name": "Sao Paulo",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -46.63611,
+        -23.5475
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.727Z"
+}

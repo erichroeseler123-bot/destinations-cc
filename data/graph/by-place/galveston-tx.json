@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-tx-galveston-tx:0001",
+  "place_slug": "galveston-tx",
+  "place_name": "Galveston",
+  "actions": {
+    "tours": [],
+    "cruises": [
+      {
+        "id": "cruise:CCL-JUBILEE-20260809-GAL",
+        "title": "Carnival Cruise Line • Carnival Jubilee",
+        "provider": "direct-line",
+        "departure_date": "2026-08-09",
+        "url": "https://www.carnival.com/"
+      }
+    ],
+    "transport": [],
+    "events": []
+  },
+  "providers": [
+    "direct-line"
+  ],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-tx-houston:0001",
+      "place_slug": "houston",
+      "place_name": "Houston",
+      "reason": "near_place_geo",
+      "distance_km": 75
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 1,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "available_in",
+      "from": "dcc:place:us-tx-galveston-tx:0001",
+      "to": "cruise:CCL-JUBILEE-20260809-GAL",
+      "meta": {
+        "vertical": "cruises",
+        "provider": "direct-line"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-tx-galveston-tx:0001",
+      "to": "dcc:place:us-tx-houston:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:us-ca-los-angeles:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "improving",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.9946666666666664,
+  "z_score": -1.924727124056004,
+  "reasons": [
+    "risk_below_baseline"
+  ],
+  "trend": {
+    "place_id": "dcc:place:us-ca-los-angeles:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.10999999999999999,
+    "sample_count": 7
+  }
+}

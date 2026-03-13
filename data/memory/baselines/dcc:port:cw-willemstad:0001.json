@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:port:cw-willemstad:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.640Z",
+  "metrics": {
+    "risk_score_mean": 2.3786666666666663,
+    "risk_score_stddev": 0.1502826965717906,
+    "risk_score_p90": 2.56,
+    "degraded_transport_rate": 0,
+    "negative_human_signal_rate": 0
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

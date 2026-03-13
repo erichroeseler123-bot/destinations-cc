@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:port:us-seattle:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 1.4133333333333333,
+  "z_score": 1.790186421189746,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:port:us-seattle:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": 0.06571428571428573,
+    "sample_count": 7
+  }
+}

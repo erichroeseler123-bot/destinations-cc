@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:us-fl-st-petersburg-fl:0001",
+  "place_slug": "st-petersburg-fl",
+  "place_name": "St. Petersburg",
+  "center": {
+    "coordinates": [
+      -82.67927,
+      27.77086
+    ],
+    "country_code": "US",
+    "admin1_code": "FL"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-fl-tampa-fl:0001",
+      "slug": "tampa-fl",
+      "name": "Tampa",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -82.45843,
+        27.94752
+      ]
+    },
+    {
+      "id": "dcc:place:us-fl-sarasota-fl:0001",
+      "slug": "sarasota-fl",
+      "name": "Sarasota",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -82.53065,
+        27.33643
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.758Z"
+}

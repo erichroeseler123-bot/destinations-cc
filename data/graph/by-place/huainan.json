@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-01-huainan:0001",
+  "place_slug": "huainan",
+  "place_name": "Huainan",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-01-hefei:0001",
+      "place_slug": "hefei",
+      "place_name": "Hefei",
+      "reason": "near_place_geo",
+      "distance_km": 88.9
+    },
+    {
+      "place_id": "dcc:place:cn-01-luan:0001",
+      "place_slug": "luan",
+      "place_name": "Lu'an",
+      "reason": "near_place_geo",
+      "distance_km": 108.9
+    },
+    {
+      "place_id": "dcc:place:cn-01-suzhou-2:0001",
+      "place_slug": "suzhou-2",
+      "place_name": "Suzhou",
+      "reason": "near_place_geo",
+      "distance_km": 112.3
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-01-huainan:0001",
+      "to": "dcc:place:cn-01-hefei:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-01-huainan:0001",
+      "to": "dcc:place:cn-01-luan:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-01-huainan:0001",
+      "to": "dcc:place:cn-01-suzhou-2:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

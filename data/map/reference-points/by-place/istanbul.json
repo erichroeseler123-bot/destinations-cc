@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:tr-34-istanbul:0001",
+  "place_slug": "istanbul",
+  "place_name": "Istanbul",
+  "center": {
+    "coordinates": [
+      28.94966,
+      41.01384
+    ],
+    "country_code": "TR",
+    "admin1_code": "34"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:tr-16-bursa:0001",
+      "slug": "bursa",
+      "name": "Bursa",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        29.06013,
+        40.19559
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.729Z"
+}

@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:ir-42-mashhad:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.610Z",
+  "metrics": {
+    "risk_score_mean": 1.7706666666666668,
+    "risk_score_stddev": 0.11727271161224549,
+    "risk_score_p90": 1.88,
+    "degraded_transport_rate": 0,
+    "negative_human_signal_rate": 0
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

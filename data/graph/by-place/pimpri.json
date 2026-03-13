@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:in-16-pimpri:0001",
+  "place_slug": "pimpri",
+  "place_name": "Pimpri",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:in-16-pimpri-chinchwad:0001",
+      "place_slug": "pimpri-chinchwad",
+      "place_name": "Pimpri-Chinchwad",
+      "reason": "near_place_geo",
+      "distance_km": 0.6
+    },
+    {
+      "place_id": "dcc:place:in-16-pune:0001",
+      "place_slug": "pune",
+      "place_name": "Pune",
+      "reason": "near_place_geo",
+      "distance_km": 12.6
+    },
+    {
+      "place_id": "dcc:place:in-16-navi-mumbai:0001",
+      "place_slug": "navi-mumbai",
+      "place_name": "Navi Mumbai",
+      "reason": "near_place_geo",
+      "distance_km": 95.1
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-16-pimpri:0001",
+      "to": "dcc:place:in-16-pimpri-chinchwad:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-16-pimpri:0001",
+      "to": "dcc:place:in-16-pune:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-16-pimpri:0001",
+      "to": "dcc:place:in-16-navi-mumbai:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:kr-18-gwangju:0001",
+  "place_slug": "gwangju",
+  "place_name": "Gwangju",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:kr-19-daejeon:0001",
+      "place_slug": "daejeon",
+      "place_name": "Daejeon",
+      "reason": "near_place_geo",
+      "distance_km": 139.4
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:kr-18-gwangju:0001",
+      "to": "dcc:place:kr-19-daejeon:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "place_id": "dcc:place:in-10-gorakhpur:0001",
+  "place_slug": "gorakhpur",
+  "place_name": "Gorakhpur",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": []
+}

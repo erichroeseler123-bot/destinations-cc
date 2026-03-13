@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-ri-providence-ri:0001",
+  "place_slug": "providence-ri",
+  "place_name": "Providence",
+  "center": {
+    "coordinates": [
+      -71.41283,
+      41.82399
+    ],
+    "country_code": "US",
+    "admin1_code": "RI"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ri-newport-ri:0001",
+      "slug": "newport-ri",
+      "name": "Newport",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -71.31283,
+        41.4901
+      ]
+    },
+    {
+      "id": "dcc:place:us-ma-boston-ma:0001",
+      "slug": "boston-ma",
+      "name": "Boston",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -71.05977,
+        42.35843
+      ]
+    },
+    {
+      "id": "dcc:place:us-ct-hartford-ct:0001",
+      "slug": "hartford-ct",
+      "name": "Hartford",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -72.68509,
+        41.76371
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.752Z"
+}

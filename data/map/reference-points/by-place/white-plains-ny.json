@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-ny-white-plains-ny:0001",
+  "place_slug": "white-plains-ny",
+  "place_name": "White Plains",
+  "center": {
+    "coordinates": [
+      -73.76291,
+      41.03399
+    ],
+    "country_code": "US",
+    "admin1_code": "NY"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ny-the-bronx:0001",
+      "slug": "the-bronx",
+      "name": "The Bronx",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -73.86641,
+        40.84985
+      ]
+    },
+    {
+      "id": "dcc:place:us-ny-manhattan:0001",
+      "slug": "manhattan",
+      "name": "Manhattan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -73.96625,
+        40.78343
+      ]
+    },
+    {
+      "id": "dcc:place:us-ny-queens:0001",
+      "slug": "queens",
+      "name": "Queens",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -73.83652,
+        40.68149
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.765Z"
+}

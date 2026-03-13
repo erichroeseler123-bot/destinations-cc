@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-07-jinjiang:0001",
+  "place_slug": "jinjiang",
+  "place_name": "Jinjiang",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-07-quanzhou:0001",
+      "place_slug": "quanzhou",
+      "place_name": "Quanzhou",
+      "reason": "near_place_geo",
+      "distance_km": 10.5
+    },
+    {
+      "place_id": "dcc:place:cn-07-xiamen:0001",
+      "place_slug": "xiamen",
+      "place_name": "Xiamen",
+      "reason": "near_place_geo",
+      "distance_km": 62.5
+    },
+    {
+      "place_id": "dcc:place:cn-07-putian:0001",
+      "place_slug": "putian",
+      "place_name": "Putian",
+      "reason": "near_place_geo",
+      "distance_km": 81.7
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-07-jinjiang:0001",
+      "to": "dcc:place:cn-07-quanzhou:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-07-jinjiang:0001",
+      "to": "dcc:place:cn-07-xiamen:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-07-jinjiang:0001",
+      "to": "dcc:place:cn-07-putian:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

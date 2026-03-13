@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:us-wi-madison-wi:0001",
+  "place_slug": "madison-wi",
+  "place_name": "Madison",
+  "center": {
+    "coordinates": [
+      -89.40123,
+      43.07305
+    ],
+    "country_code": "US",
+    "admin1_code": "WI"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-wi-milwaukee-wi:0001",
+      "slug": "milwaukee-wi",
+      "name": "Milwaukee",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -87.90647,
+        43.0389
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.740Z"
+}

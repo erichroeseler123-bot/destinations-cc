@@ -1,0 +1,61 @@
+{
+  "version": "city-freshness.v1",
+  "generated_at": "2026-03-11T02:34:33.355Z",
+  "summary": {
+    "total_cities": 4,
+    "fresh": 4,
+    "due_soon": 0,
+    "stale": 0,
+    "missing_money_lane": 0
+  },
+  "cities": [
+    {
+      "city_key": "las-vegas",
+      "city_name": "Las Vegas",
+      "canonical_path": "/las-vegas",
+      "updated_at": "2026-03-11",
+      "refresh_interval_days": 45,
+      "age_days": 0,
+      "due_at": "2026-04-25",
+      "days_until_due": 44,
+      "status": "fresh",
+      "has_money_lane": true
+    },
+    {
+      "city_key": "miami",
+      "city_name": "Miami",
+      "canonical_path": "/miami",
+      "updated_at": "2026-03-11",
+      "refresh_interval_days": 45,
+      "age_days": 0,
+      "due_at": "2026-04-25",
+      "days_until_due": 44,
+      "status": "fresh",
+      "has_money_lane": true
+    },
+    {
+      "city_key": "nashville",
+      "city_name": "Nashville",
+      "canonical_path": "/nashville",
+      "updated_at": "2026-03-11",
+      "refresh_interval_days": 45,
+      "age_days": 0,
+      "due_at": "2026-04-25",
+      "days_until_due": 44,
+      "status": "fresh",
+      "has_money_lane": true
+    },
+    {
+      "city_key": "new-orleans",
+      "city_name": "New Orleans",
+      "canonical_path": "/new-orleans",
+      "updated_at": "2026-03-11",
+      "refresh_interval_days": 45,
+      "age_days": 0,
+      "due_at": "2026-04-25",
+      "days_until_due": 44,
+      "status": "fresh",
+      "has_money_lane": true
+    }
+  ]
+}

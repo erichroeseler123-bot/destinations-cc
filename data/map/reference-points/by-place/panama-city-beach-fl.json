@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:us-fl-panama-city-beach-fl:0001",
+  "place_slug": "panama-city-beach-fl",
+  "place_name": "Panama City Beach",
+  "center": {
+    "coordinates": [
+      -85.80549,
+      30.17659
+    ],
+    "country_code": "US",
+    "admin1_code": "FL"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-fl-destin-fl:0001",
+      "slug": "destin-fl",
+      "name": "Destin",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -86.49578,
+        30.39353
+      ]
+    },
+    {
+      "id": "dcc:place:us-fl-pensacola-fl:0001",
+      "slug": "pensacola-fl",
+      "name": "Pensacola",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -87.21691,
+        30.42131
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.750Z"
+}

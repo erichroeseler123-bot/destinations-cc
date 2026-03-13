@@ -1,0 +1,25 @@
+{
+  "place_id": "dcc:place:ec-10-guayaquil:0001",
+  "place_slug": "guayaquil",
+  "place_name": "Guayaquil",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": []
+}

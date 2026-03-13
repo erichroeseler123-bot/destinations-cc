@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:cn-19-shenyang:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "degrading",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 1.2426666666666668,
+  "z_score": 2.642689562153549,
+  "reasons": [
+    "risk_above_baseline"
+  ],
+  "trend": {
+    "place_id": "dcc:place:cn-19-shenyang:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": 0.10714285714285714,
+    "sample_count": 7
+  }
+}

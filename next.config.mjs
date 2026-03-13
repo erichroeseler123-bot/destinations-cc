@@ -184,7 +184,7 @@ const nextConfig = {
         permanent: false,
       },
       {
-        source: "/:city/:lane(tours|cruises|events|transport)",
+        source: "/:city/:lane(cruises|events|transport)",
         destination: "/nodes/:city?alive=:lane",
         permanent: false,
       },

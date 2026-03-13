@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:tr-38-kayseri:0001",
+  "place_slug": "kayseri",
+  "place_name": "Kayseri",
+  "center": {
+    "coordinates": [
+      35.48528,
+      38.73222
+    ],
+    "country_code": "TR",
+    "admin1_code": "38"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.736Z"
+}

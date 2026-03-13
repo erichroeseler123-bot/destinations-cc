@@ -5,7 +5,7 @@ export default function HeroSection() {
       <div className="hero-overlay" />
       <div className="hero-content">
         <h1>Discover Epic Adventures</h1>
-        <p>Curated tours, verified experiences & insider guides to the world's best destinations.</p>
+        <p>Curated tours, verified experiences & insider guides to the world&apos;s best destinations.</p>
         <a href="#destinations" className="cta-button">Explore Destinations</a>
       </div>
     </section>

@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:fr-11-paris:0001",
+  "place_slug": "paris",
+  "place_name": "Paris",
+  "center": {
+    "coordinates": [
+      2.3488,
+      48.85341
+    ],
+    "country_code": "FR",
+    "admin1_code": "11"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.751Z"
+}

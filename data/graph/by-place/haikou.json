@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:cn-31-haikou:0001",
+  "place_slug": "haikou",
+  "place_name": "Haikou",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-30-zhanjiang:0001",
+      "place_slug": "zhanjiang",
+      "place_name": "Zhanjiang",
+      "reason": "near_place_geo",
+      "distance_km": 133.5
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-31-haikou:0001",
+      "to": "dcc:place:cn-30-zhanjiang:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:cd-06-kinshasa:0001",
+  "place_slug": "kinshasa",
+  "place_name": "Kinshasa",
+  "center": {
+    "coordinates": [
+      15.31357,
+      -4.32758
+    ],
+    "country_code": "CD",
+    "admin1_code": "06"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cg-12-brazzaville:0001",
+      "slug": "brazzaville",
+      "name": "Brazzaville",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        15.28318,
+        -4.26613
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.737Z"
+}

@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:in-28-kolkata:0001",
+  "place_slug": "kolkata",
+  "place_name": "Kolkata",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:bd-82-khulna:0001",
+      "place_slug": "khulna",
+      "place_name": "Khulna",
+      "reason": "near_place_geo",
+      "distance_km": 126.3
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-28-kolkata:0001",
+      "to": "dcc:place:bd-82-khulna:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

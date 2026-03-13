@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:us-mo-kansas-city-mo:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.628Z",
+  "metrics": {
+    "risk_score_mean": 1.152,
+    "risk_score_stddev": 0.2773012801989923,
+    "risk_score_p90": 1.4,
+    "degraded_transport_rate": 0,
+    "negative_human_signal_rate": 0
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:pe-07-callao:0001",
+  "place_slug": "callao",
+  "place_name": "Callao",
+  "center": {
+    "coordinates": [
+      -77.13452,
+      -12.05162
+    ],
+    "country_code": "PE",
+    "admin1_code": "07"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:pe-lma-lima:0001",
+      "slug": "lima",
+      "name": "Lima",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -77.02824,
+        -12.04318
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.717Z"
+}

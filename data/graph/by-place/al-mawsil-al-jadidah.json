@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:iq-15-al-mawsil-al-jadidah:0001",
+  "place_slug": "al-mawsil-al-jadidah",
+  "place_name": "Al Mawsil al Jadidah",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:iq-15-mosul:0001",
+      "place_slug": "mosul",
+      "place_name": "Mosul",
+      "reason": "near_place_geo",
+      "distance_km": 1.2
+    },
+    {
+      "place_id": "dcc:place:iq-11-erbil:0001",
+      "place_slug": "erbil",
+      "place_name": "Erbil",
+      "reason": "near_place_geo",
+      "distance_km": 82.6
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:iq-15-al-mawsil-al-jadidah:0001",
+      "to": "dcc:place:iq-15-mosul:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:iq-15-al-mawsil-al-jadidah:0001",
+      "to": "dcc:place:iq-11-erbil:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

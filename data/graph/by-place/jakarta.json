@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:id-04-jakarta:0001",
+  "place_slug": "jakarta",
+  "place_name": "Jakarta",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:id-30-bekasi:0001",
+      "place_slug": "bekasi",
+      "place_name": "Bekasi",
+      "reason": "near_place_geo",
+      "distance_km": 16.1
+    },
+    {
+      "place_id": "dcc:place:id-33-south-tangerang:0001",
+      "place_slug": "south-tangerang",
+      "place_name": "South Tangerang",
+      "reason": "near_place_geo",
+      "distance_km": 16.3
+    },
+    {
+      "place_id": "dcc:place:id-30-depok:0001",
+      "place_slug": "depok",
+      "place_name": "Depok",
+      "reason": "near_place_geo",
+      "distance_km": 20.8
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:id-04-jakarta:0001",
+      "to": "dcc:place:id-30-bekasi:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:id-04-jakarta:0001",
+      "to": "dcc:place:id-33-south-tangerang:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:id-04-jakarta:0001",
+      "to": "dcc:place:id-30-depok:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

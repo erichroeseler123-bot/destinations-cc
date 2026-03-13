@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-25-jining:0001",
+  "place_slug": "jining",
+  "place_name": "Jining",
+  "center": {
+    "coordinates": [
+      116.58139,
+      35.405
+    ],
+    "country_code": "CN",
+    "admin1_code": "25"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-25-taian:0001",
+      "slug": "taian",
+      "name": "Tai'an",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        117.12,
+        36.18528
+      ]
+    },
+    {
+      "id": "dcc:place:cn-25-heze:0001",
+      "slug": "heze",
+      "name": "Heze",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        115.47358,
+        35.23929
+      ]
+    },
+    {
+      "id": "dcc:place:cn-25-liaocheng:0001",
+      "slug": "liaocheng",
+      "name": "Liaocheng",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        116.00247,
+        36.45064
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.731Z"
+}

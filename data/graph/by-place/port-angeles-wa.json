@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-wa-port-angeles-wa:0001",
+  "place_slug": "port-angeles-wa",
+  "place_name": "Port Angeles",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-wa-bellingham-wa:0001",
+      "place_slug": "bellingham-wa",
+      "place_name": "Bellingham",
+      "reason": "near_place_geo",
+      "distance_km": 99.6
+    },
+    {
+      "place_id": "dcc:place:us-wa-seattle-wa:0001",
+      "place_slug": "seattle-wa",
+      "place_name": "Seattle",
+      "reason": "near_place_geo",
+      "distance_km": 99.8
+    },
+    {
+      "place_id": "dcc:place:us-wa-tacoma-wa:0001",
+      "place_slug": "tacoma-wa",
+      "place_name": "Tacoma",
+      "reason": "near_place_geo",
+      "distance_km": 121.3
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-wa-port-angeles-wa:0001",
+      "to": "dcc:place:us-wa-bellingham-wa:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-wa-port-angeles-wa:0001",
+      "to": "dcc:place:us-wa-seattle-wa:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-wa-port-angeles-wa:0001",
+      "to": "dcc:place:us-wa-tacoma-wa:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

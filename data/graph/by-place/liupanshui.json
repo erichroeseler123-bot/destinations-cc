@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:cn-18-liupanshui:0001",
+  "place_slug": "liupanshui",
+  "place_name": "Liupanshui",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-18-bijie:0001",
+      "place_slug": "bijie",
+      "place_name": "Bijie",
+      "reason": "near_place_geo",
+      "distance_km": 90.6
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-18-liupanshui:0001",
+      "to": "dcc:place:cn-18-bijie:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

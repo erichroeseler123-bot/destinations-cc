@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-ca-san-francisco-ca:0001",
+  "place_slug": "san-francisco-ca",
+  "place_name": "San Francisco",
+  "center": {
+    "coordinates": [
+      -122.41942,
+      37.77493
+    ],
+    "country_code": "US",
+    "admin1_code": "CA"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ca-berkeley-ca:0001",
+      "slug": "berkeley-ca",
+      "name": "Berkeley",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -122.27275,
+        37.87159
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-san-rafael-ca:0001",
+      "slug": "san-rafael-ca",
+      "name": "San Rafael",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -122.53109,
+        37.97353
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-sonoma-ca:0001",
+      "slug": "sonoma-ca",
+      "name": "Sonoma",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -122.45804,
+        38.29186
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.755Z"
+}

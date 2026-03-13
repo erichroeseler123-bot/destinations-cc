@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:gn-04-camayenne:0001",
+  "place_slug": "camayenne",
+  "place_name": "Camayenne",
+  "center": {
+    "coordinates": [
+      -13.68778,
+      9.535
+    ],
+    "country_code": "GN",
+    "admin1_code": "04"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:gn-04-conakry:0001",
+      "slug": "conakry",
+      "name": "Conakry",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -13.67729,
+        9.53795
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.717Z"
+}

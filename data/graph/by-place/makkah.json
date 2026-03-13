@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:sa-14-makkah:0001",
+  "place_slug": "makkah",
+  "place_name": "Makkah",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:sa-14-jeddah:0001",
+      "place_slug": "jeddah",
+      "place_name": "Jeddah",
+      "reason": "near_place_geo",
+      "distance_km": 66.5
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:sa-14-makkah:0001",
+      "to": "dcc:place:sa-14-jeddah:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-25-zibo:0001",
+  "place_slug": "zibo",
+  "place_name": "Zibo",
+  "center": {
+    "coordinates": [
+      118.06333,
+      36.79056
+    ],
+    "country_code": "CN",
+    "admin1_code": "25"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-25-weifang:0001",
+      "slug": "weifang",
+      "name": "Weifang",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        119.10194,
+        36.71
+      ]
+    },
+    {
+      "id": "dcc:place:cn-25-jinan:0001",
+      "slug": "jinan",
+      "name": "Jinan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        116.99722,
+        36.66833
+      ]
+    },
+    {
+      "id": "dcc:place:cn-25-taian:0001",
+      "slug": "taian",
+      "name": "Tai'an",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        117.12,
+        36.18528
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.769Z"
+}

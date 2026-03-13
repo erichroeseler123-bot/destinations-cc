@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:cn-11-zhuzhou:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.112,
+  "z_score": -0.23309604148008828,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:cn-11-zhuzhou:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": 0.15285714285714283,
+    "sample_count": 7
+  }
+}

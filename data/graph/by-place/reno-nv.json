@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:us-nv-reno-nv:0001",
+  "place_slug": "reno-nv",
+  "place_name": "Reno",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ca-lake-tahoe-ca:0001",
+      "place_slug": "lake-tahoe-ca",
+      "place_name": "Lake Tahoe",
+      "reason": "near_place_geo",
+      "distance_km": 49.1
+    },
+    {
+      "place_id": "dcc:place:us-ca-south-lake-tahoe-ca:0001",
+      "place_slug": "south-lake-tahoe-ca",
+      "place_name": "South Lake Tahoe",
+      "reason": "near_place_geo",
+      "distance_km": 67.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-nv-reno-nv:0001",
+      "to": "dcc:place:us-ca-lake-tahoe-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-nv-reno-nv:0001",
+      "to": "dcc:place:us-ca-south-lake-tahoe-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

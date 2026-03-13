@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:ae-01-abu-dhabi:0001",
+  "place_slug": "abu-dhabi",
+  "place_name": "Abu Dhabi",
+  "center": {
+    "coordinates": [
+      54.39696,
+      24.45118
+    ],
+    "country_code": "AE",
+    "admin1_code": "01"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:ae-03-dubai:0001",
+      "slug": "dubai",
+      "name": "Dubai",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        55.30927,
+        25.07725
+      ]
+    },
+    {
+      "id": "dcc:place:ae-06-sharjah:0001",
+      "slug": "sharjah",
+      "name": "Sharjah",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        55.41221,
+        25.3342
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.709Z"
+}

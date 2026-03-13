@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:cn-18-liupanshui:0001",
+  "place_slug": "liupanshui",
+  "place_name": "Liupanshui",
+  "center": {
+    "coordinates": [
+      104.83333,
+      26.59444
+    ],
+    "country_code": "CN",
+    "admin1_code": "18"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-18-bijie:0001",
+      "slug": "bijie",
+      "name": "Bijie",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        105.28627,
+        27.30193
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.739Z"
+}

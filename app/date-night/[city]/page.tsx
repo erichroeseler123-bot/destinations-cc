@@ -1,32 +1,24 @@
 import { notFound } from "next/navigation";
 import OverlayPageTemplate, { buildOverlayMetadata } from "@/app/components/dcc/OverlayPageTemplate";
-import { getCityRegistryNode } from "@/src/data/cities-registry";
-import { ENTITIES_REGISTRY } from "@/src/data/entities-registry";
-import { getOverlayRegistryNodeByTypeAndCity, listOverlayCitySlugsByType } from "@/src/data/overlay-registry";
+import { getOverlayPageData, getOverlayStaticParams } from "@/src/lib/overlay-pages";
 
 type Params = { city: string };
 
 export function generateStaticParams() {
-  return listOverlayCitySlugsByType("date-night").map((city) => ({ city }));
+  return getOverlayStaticParams("date-night");
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }) {
   const { city } = await params;
-  const overlay = getOverlayRegistryNodeByTypeAndCity("date-night", city);
-  const cityNode = getCityRegistryNode(city);
-  if (!overlay || !cityNode) return {};
-  return buildOverlayMetadata(cityNode, overlay);
+  const data = getOverlayPageData("date-night", city);
+  if (!data) return {};
+  return buildOverlayMetadata(data.city, data.overlay);
 }
 
 export default async function DateNightOverlayPage({ params }: { params: Promise<Params> }) {
   const { city } = await params;
-  const overlay = getOverlayRegistryNodeByTypeAndCity("date-night", city);
-  const cityNode = getCityRegistryNode(city);
-  if (!overlay || !cityNode) notFound();
+  const data = getOverlayPageData("date-night", city);
+  if (!data) notFound();
 
-  const entities = overlay.resultSlugs
-    .map((slug) => ENTITIES_REGISTRY.find((entity) => entity.slug === slug))
-    .filter((entity): entity is NonNullable<typeof entity> => Boolean(entity));
-
-  return <OverlayPageTemplate city={cityNode} overlay={overlay} entities={entities} />;
+  return <OverlayPageTemplate city={data.city} overlay={data.overlay} entities={data.entities} />;
 }

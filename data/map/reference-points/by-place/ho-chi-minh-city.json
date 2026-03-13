@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:vn-79-ho-chi-minh-city:0001",
+  "place_slug": "ho-chi-minh-city",
+  "place_name": "Ho Chi Minh City",
+  "center": {
+    "coordinates": [
+      106.62965,
+      10.82302
+    ],
+    "country_code": "VN",
+    "admin1_code": "79"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:vn-75-bien-hoa:0001",
+      "slug": "bien-hoa",
+      "name": "Bien Hoa",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        106.82432,
+        10.94469
+      ]
+    },
+    {
+      "id": "dcc:place:vn-92-can-tho:0001",
+      "slug": "can-tho",
+      "name": "Can Tho",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        105.78825,
+        10.03711
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.729Z"
+}

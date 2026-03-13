@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:cn-32-nanchong:0001",
+  "place_slug": "nanchong",
+  "place_name": "Nanchong",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-32-dazhou:0001",
+      "place_slug": "dazhou",
+      "place_name": "Dazhou",
+      "reason": "near_place_geo",
+      "distance_km": 139.3
+    },
+    {
+      "place_id": "dcc:place:cn-33-chongqing:0001",
+      "place_slug": "chongqing",
+      "place_name": "Chongqing",
+      "reason": "near_place_geo",
+      "distance_km": 144.6
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-32-nanchong:0001",
+      "to": "dcc:place:cn-32-dazhou:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-32-nanchong:0001",
+      "to": "dcc:place:cn-33-chongqing:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

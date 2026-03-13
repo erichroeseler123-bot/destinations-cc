@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-11-guankou:0001",
+  "place_slug": "guankou",
+  "place_name": "Guankou",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-11-zhuzhou:0001",
+      "place_slug": "zhuzhou",
+      "place_name": "Zhuzhou",
+      "reason": "near_place_geo",
+      "distance_km": 59.2
+    },
+    {
+      "place_id": "dcc:place:cn-11-changsha:0001",
+      "place_slug": "changsha",
+      "place_name": "Changsha",
+      "reason": "near_place_geo",
+      "distance_km": 64.5
+    },
+    {
+      "place_id": "dcc:place:cn-11-heshan:0001",
+      "place_slug": "heshan",
+      "place_name": "Heshan",
+      "reason": "near_place_geo",
+      "distance_km": 133.3
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-11-guankou:0001",
+      "to": "dcc:place:cn-11-zhuzhou:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-11-guankou:0001",
+      "to": "dcc:place:cn-11-changsha:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-11-guankou:0001",
+      "to": "dcc:place:cn-11-heshan:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

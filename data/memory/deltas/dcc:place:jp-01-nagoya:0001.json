@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:jp-01-nagoya:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 1.4973333333333334,
+  "z_score": 1.2683756756733044,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:jp-01-nagoya:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": 0.06142857142857141,
+    "sample_count": 7
+  }
+}

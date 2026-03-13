@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:hk-00-new-territories:0001",
+  "place_slug": "new-territories",
+  "place_name": "New Territories",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-30-luohu-district:0001",
+      "place_slug": "luohu-district",
+      "place_name": "Luohu District",
+      "reason": "near_place_geo",
+      "distance_km": 13.8
+    },
+    {
+      "place_id": "dcc:place:hk-00-kowloon:0001",
+      "place_slug": "kowloon",
+      "place_name": "Kowloon",
+      "reason": "near_place_geo",
+      "distance_km": 14.1
+    },
+    {
+      "place_id": "dcc:place:cn-30-shenzhen:0001",
+      "place_slug": "shenzhen",
+      "place_name": "Shenzhen",
+      "reason": "near_place_geo",
+      "distance_km": 14.2
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:hk-00-new-territories:0001",
+      "to": "dcc:place:cn-30-luohu-district:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:hk-00-new-territories:0001",
+      "to": "dcc:place:hk-00-kowloon:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:hk-00-new-territories:0001",
+      "to": "dcc:place:cn-30-shenzhen:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

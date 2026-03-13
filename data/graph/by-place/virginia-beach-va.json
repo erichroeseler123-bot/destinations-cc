@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:us-va-virginia-beach-va:0001",
+  "place_slug": "virginia-beach-va",
+  "place_name": "Virginia Beach",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-va-norfolk-va:0001",
+      "place_slug": "norfolk-va",
+      "place_name": "Norfolk",
+      "reason": "near_place_geo",
+      "distance_km": 27.3
+    },
+    {
+      "place_id": "dcc:place:us-va-williamsburg-va:0001",
+      "place_slug": "williamsburg-va",
+      "place_name": "Williamsburg",
+      "reason": "near_place_geo",
+      "distance_km": 79.7
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-va-virginia-beach-va:0001",
+      "to": "dcc:place:us-va-norfolk-va:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-va-virginia-beach-va:0001",
+      "to": "dcc:place:us-va-williamsburg-va:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

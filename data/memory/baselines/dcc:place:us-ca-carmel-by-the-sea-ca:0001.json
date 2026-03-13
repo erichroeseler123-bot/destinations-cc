@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:us-ca-carmel-by-the-sea-ca:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.621Z",
+  "metrics": {
+    "risk_score_mean": 1.3026666666666666,
+    "risk_score_stddev": 0.3027753108971881,
+    "risk_score_p90": 1.64,
+    "degraded_transport_rate": 0,
+    "negative_human_signal_rate": 0
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

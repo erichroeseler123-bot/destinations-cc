@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:ng-32-ibadan:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.614Z",
+  "metrics": {
+    "risk_score_mean": 2.170666666666667,
+    "risk_score_stddev": 0.10779404230084119,
+    "risk_score_p90": 2.28,
+    "degraded_transport_rate": 0,
+    "negative_human_signal_rate": 0
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

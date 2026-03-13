@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-01-suzhou-2:0001",
+  "place_slug": "suzhou-2",
+  "place_name": "Suzhou",
+  "center": {
+    "coordinates": [
+      116.97889,
+      33.63611
+    ],
+    "country_code": "CN",
+    "admin1_code": "01"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-01-huaibei:0001",
+      "slug": "huaibei",
+      "name": "Huaibei",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        116.79167,
+        33.97444
+      ]
+    },
+    {
+      "id": "dcc:place:cn-04-xuzhou:0001",
+      "slug": "xuzhou",
+      "name": "Xuzhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        117.28386,
+        34.20442
+      ]
+    },
+    {
+      "id": "dcc:place:cn-01-huainan:0001",
+      "slug": "huainan",
+      "name": "Huainan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        116.99694,
+        32.62639
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.758Z"
+}

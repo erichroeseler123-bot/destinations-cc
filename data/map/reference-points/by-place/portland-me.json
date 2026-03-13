@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:us-me-portland-me:0001",
+  "place_slug": "portland-me",
+  "place_name": "Portland",
+  "center": {
+    "coordinates": [
+      -70.2589,
+      43.65737
+    ],
+    "country_code": "US",
+    "admin1_code": "ME"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-nh-portsmouth-nh:0001",
+      "slug": "portsmouth-nh",
+      "name": "Portsmouth",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -70.75766,
+        43.07704
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.751Z"
+}

@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:bd-81-gazipur:0001",
+  "place_slug": "gazipur",
+  "place_name": "Gazipur",
+  "center": {
+    "coordinates": [
+      90.42234,
+      23.99844
+    ],
+    "country_code": "BD",
+    "admin1_code": "81"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:bd-81-dhaka:0001",
+      "slug": "dhaka",
+      "name": "Dhaka",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        90.40744,
+        23.7104
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.726Z"
+}

@@ -1,0 +1,25 @@
+{
+  "place_id": "dcc:place:cn-03-ganzhou:0001",
+  "place_slug": "ganzhou",
+  "place_name": "Ganzhou",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": []
+}

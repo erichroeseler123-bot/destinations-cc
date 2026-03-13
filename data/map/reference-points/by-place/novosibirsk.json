@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:ru-53-novosibirsk:0001",
+  "place_slug": "novosibirsk",
+  "place_name": "Novosibirsk",
+  "center": {
+    "coordinates": [
+      82.93175,
+      55.02259
+    ],
+    "country_code": "RU",
+    "admin1_code": "53"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.749Z"
+}

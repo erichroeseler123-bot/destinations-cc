@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:lb-04-ras-bayrut:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.612Z",
+  "metrics": {
+    "risk_score_mean": 2.098666666666667,
+    "risk_score_stddev": 0.10236318782756926,
+    "risk_score_p90": 2.18,
+    "degraded_transport_rate": 0,
+    "negative_human_signal_rate": 0
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

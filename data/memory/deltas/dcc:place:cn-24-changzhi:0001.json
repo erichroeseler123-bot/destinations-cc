@@ -1,0 +1,20 @@
+{
+  "place_id": "dcc:place:cn-24-changzhi:0001",
+  "at": "2026-03-08T23:32:51.609Z",
+  "classification": "normal",
+  "baseline_window_days": 30,
+  "sample_count": 15,
+  "risk_score_now": 2,
+  "risk_score_baseline": 2.3520000000000008,
+  "z_score": -0.8232572467407882,
+  "reasons": [
+    "within_expected_range"
+  ],
+  "trend": {
+    "place_id": "dcc:place:cn-24-changzhi:0001",
+    "window": "7d",
+    "direction": "stable",
+    "slope": -0.0035714285714285587,
+    "sample_count": 7
+  }
+}

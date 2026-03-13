@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:vn-48-da-nang:0001",
+  "place_slug": "da-nang",
+  "place_name": "Da Nang",
+  "center": {
+    "coordinates": [
+      108.22083,
+      16.06778
+    ],
+    "country_code": "VN",
+    "admin1_code": "48"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:vn-46-hue:0001",
+      "slug": "hue",
+      "name": "Hue",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        107.59546,
+        16.4619
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.721Z"
+}

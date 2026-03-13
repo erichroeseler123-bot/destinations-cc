@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-az-grand-canyon-village-az:0001",
+  "place_slug": "grand-canyon-village-az",
+  "place_name": "Grand Canyon Village",
+  "center": {
+    "coordinates": [
+      -112.15406,
+      36.04637
+    ],
+    "country_code": "US",
+    "admin1_code": "AZ"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-az-flagstaff-az:0001",
+      "slug": "flagstaff-az",
+      "name": "Flagstaff",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -111.65127,
+        35.19807
+      ]
+    },
+    {
+      "id": "dcc:place:us-az-sedona-az:0001",
+      "slug": "sedona-az",
+      "name": "Sedona",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -111.76099,
+        34.86974
+      ]
+    },
+    {
+      "id": "dcc:place:us-ut-springdale-ut:0001",
+      "slug": "springdale-ut",
+      "name": "Springdale",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -112.99855,
+        37.18887
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.727Z"
+}

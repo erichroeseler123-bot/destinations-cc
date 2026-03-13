@@ -1,0 +1,36 @@
+{
+  "version": "dcc-network-v1",
+  "generatedAt": "2026-03-11T01:37:23.889Z",
+  "totals": {
+    "nodes": 6,
+    "edges": 8
+  },
+  "stale_counts": {
+    "nodes": 0,
+    "edges": 0,
+    "monetized_block_nodes": 0,
+    "monetized_block_edges": 0
+  },
+  "review_queue_counts": {
+    "total": 0,
+    "errors": 0,
+    "warnings": 0
+  },
+  "counts_by_provenance": {
+    "manual": 1,
+    "upstream": 3,
+    "derived": 2
+  },
+  "counts_by_owner_pipeline": {
+    "operator-business": 1,
+    "geo-backbone": 3,
+    "scene-clustering": 2
+  },
+  "edge_counts_by_owner_pipeline": {
+    "scene-clustering": 2,
+    "signal-enrichment": 2,
+    "operator-business": 2,
+    "event-ingestion": 1,
+    "geo-backbone": 1
+  }
+}

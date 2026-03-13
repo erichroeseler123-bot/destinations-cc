@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-wa-tacoma-wa:0001",
+  "place_slug": "tacoma-wa",
+  "place_name": "Tacoma",
+  "center": {
+    "coordinates": [
+      -122.44429,
+      47.25288
+    ],
+    "country_code": "US",
+    "admin1_code": "WA"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-wa-seattle-wa:0001",
+      "slug": "seattle-wa",
+      "name": "Seattle",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -122.33207,
+        47.60621
+      ]
+    },
+    {
+      "id": "dcc:place:us-wa-olympia-wa:0001",
+      "slug": "olympia-wa",
+      "name": "Olympia",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -122.90169,
+        47.04491
+      ]
+    },
+    {
+      "id": "dcc:place:us-wa-port-angeles-wa:0001",
+      "slug": "port-angeles-wa",
+      "name": "Port Angeles",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -123.43074,
+        48.11815
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.758Z"
+}

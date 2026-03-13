@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:in-36-agra:0001",
+  "place_slug": "agra",
+  "place_name": "Agra",
+  "center": {
+    "coordinates": [
+      78.01667,
+      27.18333
+    ],
+    "country_code": "IN",
+    "admin1_code": "36"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:in-35-gwalior:0001",
+      "slug": "gwalior",
+      "name": "Gwalior",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        78.17337,
+        26.22983
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.709Z"
+}

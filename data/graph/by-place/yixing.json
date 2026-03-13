@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-04-yixing:0001",
+  "place_slug": "yixing",
+  "place_name": "Yixing",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-04-changzhou:0001",
+      "place_slug": "changzhou",
+      "place_name": "Changzhou",
+      "reason": "near_place_geo",
+      "distance_km": 47.6
+    },
+    {
+      "place_id": "dcc:place:cn-04-wuxi:0001",
+      "place_slug": "wuxi",
+      "place_name": "Wuxi",
+      "reason": "near_place_geo",
+      "distance_km": 50.1
+    },
+    {
+      "place_id": "dcc:place:cn-04-suzhou:0001",
+      "place_slug": "suzhou",
+      "place_name": "Suzhou",
+      "reason": "near_place_geo",
+      "distance_km": 73.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-04-yixing:0001",
+      "to": "dcc:place:cn-04-changzhou:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-04-yixing:0001",
+      "to": "dcc:place:cn-04-wuxi:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-04-yixing:0001",
+      "to": "dcc:place:cn-04-suzhou:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

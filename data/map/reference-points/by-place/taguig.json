@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:ph-ncr-taguig:0001",
+  "place_slug": "taguig",
+  "place_name": "Taguig",
+  "center": {
+    "coordinates": [
+      121.0792,
+      14.5243
+    ],
+    "country_code": "PH",
+    "admin1_code": "NCR"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:ph-ncr-manila:0001",
+      "slug": "manila",
+      "name": "Manila",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        120.9822,
+        14.6042
+      ]
+    },
+    {
+      "id": "dcc:place:ph-ncr-quezon-city:0001",
+      "slug": "quezon-city",
+      "name": "Quezon City",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        121.0509,
+        14.6488
+      ]
+    },
+    {
+      "id": "dcc:place:ph-ncr-caloocan:0001",
+      "slug": "caloocan",
+      "name": "Caloocan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        120.96788,
+        14.64953
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.758Z"
+}

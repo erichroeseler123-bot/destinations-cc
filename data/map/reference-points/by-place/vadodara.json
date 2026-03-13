@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:in-09-vadodara:0001",
+  "place_slug": "vadodara",
+  "place_name": "Vadodara",
+  "center": {
+    "coordinates": [
+      73.20812,
+      22.29941
+    ],
+    "country_code": "IN",
+    "admin1_code": "09"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:in-09-ahmedabad:0001",
+      "slug": "ahmedabad",
+      "name": "Ahmedabad",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        72.58727,
+        23.02579
+      ]
+    },
+    {
+      "id": "dcc:place:in-09-surat:0001",
+      "slug": "surat",
+      "name": "Surat",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        72.83023,
+        21.19594
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.762Z"
+}

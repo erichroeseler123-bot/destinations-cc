@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:us-fl-naples-fl:0001",
+  "place_slug": "naples-fl",
+  "place_name": "Naples",
+  "center": {
+    "coordinates": [
+      -81.79596,
+      26.14234
+    ],
+    "country_code": "US",
+    "admin1_code": "FL"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.747Z"
+}

@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:ru-48-moscow:0001",
+  "place_slug": "moscow",
+  "place_name": "Moscow",
+  "center": {
+    "coordinates": [
+      37.61781,
+      55.75204
+    ],
+    "country_code": "RU",
+    "admin1_code": "48"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.744Z"
+}

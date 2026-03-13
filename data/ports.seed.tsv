@@ -1,0 +1,93 @@
+# name	area	country	slug(optional)	tags(optional,comma)
+Port Canaveral	USA • Florida	US	port-canaveral
+PortMiami	USA • Florida	US	portmiami
+Port Everglades (Fort Lauderdale)	USA • Florida	US	port-everglades
+Port of Nassau	Bahamas	BS	nassau
+Port of Cozumel	Mexico • Caribbean	MX	cozumel
+Port of Barcelona	Europe • Mediterranean	ES	barcelona
+Civitavecchia (Rome)	Europe • Mediterranean	IT	civitavecchia
+Southampton	Europe • UK	GB	southampton
+Marseille	Europe • Mediterranean	FR	marseille
+Galveston	USA • Texas	US	galveston
+
+Juneau	USA • Alaska	US	juneau	alaska
+Ketchikan	USA • Alaska	US	ketchikan	alaska
+Skagway	USA • Alaska	US	skagway	alaska
+Sitka	USA • Alaska	US	sitka	alaska
+Icy Strait Point (Hoonah)	USA • Alaska	US	icy-strait-point	alaska
+Haines	USA • Alaska	US	haines	alaska
+Seward	USA • Alaska	US	seward	alaska
+Whittier	USA • Alaska	US	whittier	alaska
+Valdez	USA • Alaska	US	valdez	alaska
+Anchorage (via Whittier/Seward)	USA • Alaska	US	anchorage	alaska
+
+Hubbard Glacier	USA • Alaska	US	hubbard-glacier	scenic,alaska
+Glacier Bay	USA • Alaska	US	glacier-bay	scenic,alaska
+Tracy Arm Fjord	USA • Alaska	US	tracy-arm-fjord	scenic,alaska
+College Fjord	USA • Alaska	US	college-fjord	scenic,alaska
+
+St. Thomas	Caribbean • USVI	VI	st-thomas
+Philipsburg	Caribbean • Sint Maarten	SX	philipsburg
+George Town (Grand Cayman)	Caribbean • Cayman Islands	KY	george-town-grand-cayman
+Montego Bay	Caribbean • Jamaica	JM	montego-bay
+Falmouth (Jamaica)	Caribbean • Jamaica	JM	falmouth-jamaica
+Labadee	Caribbean • Haiti	HT	labadee	private
+Great Stirrup Cay	Bahamas	BS	great-stirrup-cay	private
+Perfect Day at CocoCay	Bahamas	BS	cococay	private
+Roatán	Central America • Honduras	HN	roatan
+Belize City	Central America • Belize	BZ	belize-city
+Costa Maya	Mexico • Caribbean	MX	costa-maya
+Progreso (Mérida)	Mexico • Gulf Coast	MX	progreso
+Puerto Vallarta	Mexico • Pacific Coast	MX	puerto-vallarta
+Mazatlán	Mexico • Pacific Coast	MX	mazatlan
+Cabo San Lucas	Mexico • Pacific Coast	MX	cabo-san-lucas
+Cartagena	South America • Colombia	CO	cartagena
+San Juan	Caribbean • Puerto Rico	PR	san-juan
+Key West	USA • Florida	US	key-west
+Tampa	USA • Florida	US	tampa
+New Orleans	USA • Louisiana	US	new-orleans
+Bridgetown	Caribbean • Barbados	BB	bridgetown
+Castries	Caribbean • St. Lucia	LC	castries
+Basseterre	Caribbean • St. Kitts & Nevis	KN	basseterre
+Oranjestad	Caribbean • Aruba	AW	oranjestad
+Willemstad	Caribbean • Curaçao	CW	willemstad
+
+Piraeus (Athens)	Europe • Mediterranean	GR	piraeus
+Palma de Mallorca	Europe • Mediterranean	ES	palma-de-mallorca
+Venice	Europe • Mediterranean	IT	venice
+Naples	Europe • Mediterranean	IT	naples
+Livorno (Florence/Pisa)	Europe • Mediterranean	IT	livorno
+Messina (Sicily)	Europe • Mediterranean	IT	messina
+Valencia	Europe • Mediterranean	ES	valencia
+Lisbon	Europe • Atlantic	PT	lisbon
+Dubrovnik	Europe • Mediterranean	HR	dubrovnik
+Santorini	Europe • Mediterranean	GR	santorini
+Mykonos	Europe • Mediterranean	GR	mykonos
+Istanbul	Europe • Turkey	TR	istanbul
+Kuşadası (Ephesus)	Europe • Turkey	TR	kusadasi
+Amsterdam	Europe • Northern Europe	NL	amsterdam
+Copenhagen	Europe • Northern Europe	DK	copenhagen
+Bergen	Europe • Northern Europe	NO	bergen
+Hamburg	Europe • Northern Europe	DE	hamburg
+Stockholm	Europe • Northern Europe	SE	stockholm
+Helsinki	Europe • Northern Europe	FI	helsinki
+Tallinn	Europe • Northern Europe	EE	tallinn
+
+Vancouver	North America • Canada	CA	vancouver
+Seattle	USA • Washington	US	seattle
+San Francisco	USA • California	US	san-francisco
+Los Angeles	USA • California	US	los-angeles
+San Diego	USA • California	US	san-diego
+Honolulu	USA • Hawaii	US	honolulu
+
+Sydney	Australia & NZ • Australia	AU	sydney
+Melbourne	Australia & NZ • Australia	AU	melbourne
+Brisbane	Australia & NZ • Australia	AU	brisbane
+Auckland	Australia & NZ • New Zealand	NZ	auckland
+
+Singapore	Asia • Southeast Asia	SG	singapore
+Shanghai	Asia • China	CN	shanghai
+Hong Kong	Asia • China	HK	hong-kong
+Yokohama (Tokyo)	Asia • Japan	JP	yokohama
+Dubai	Middle East • UAE	AE	dubai
+Abu Dhabi	Middle East • UAE	AE	abu-dhabi

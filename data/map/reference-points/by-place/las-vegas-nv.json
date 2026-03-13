@@ -1,0 +1,30 @@
+{
+  "place_id": "dcc:place:us-nv-las-vegas-nv:0001",
+  "place_slug": "las-vegas-nv",
+  "place_name": "Las Vegas",
+  "center": {
+    "coordinates": [
+      -115.13722,
+      36.17497
+    ],
+    "country_code": "US",
+    "admin1_code": "NV"
+  },
+  "lane_counts": {
+    "tours": 3,
+    "cruises": 0,
+    "transport": 0,
+    "events": 1
+  },
+  "providers": [
+    "viator",
+    "intent_catalog"
+  ],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.738Z"
+}

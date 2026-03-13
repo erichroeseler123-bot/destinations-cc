@@ -1,0 +1,157 @@
+{
+  "version": "sitemap-coverage.v1",
+  "generated_at": "2026-03-11T03:17:43.700Z",
+  "summary": {
+    "cities_total": 4,
+    "cities_publishable": 4,
+    "cities_excluded": 0,
+    "routes": {
+      "tours": {
+        "included": 4,
+        "excluded": 0
+      },
+      "shows": {
+        "included": 4,
+        "excluded": 0
+      },
+      "attractions": {
+        "included": 4,
+        "excluded": 0
+      },
+      "day-trips": {
+        "included": 2,
+        "excluded": 2
+      },
+      "helicopter": {
+        "included": 2,
+        "excluded": 2
+      }
+    }
+  },
+  "cities": [
+    {
+      "city_key": "las-vegas",
+      "root": {
+        "included": true,
+        "reasons": []
+      },
+      "routes": {
+        "tours": {
+          "included": true,
+          "reasons": []
+        },
+        "shows": {
+          "included": true,
+          "reasons": []
+        },
+        "attractions": {
+          "included": true,
+          "reasons": []
+        },
+        "day-trips": {
+          "included": true,
+          "reasons": []
+        },
+        "helicopter": {
+          "included": true,
+          "reasons": []
+        }
+      }
+    },
+    {
+      "city_key": "miami",
+      "root": {
+        "included": true,
+        "reasons": []
+      },
+      "routes": {
+        "tours": {
+          "included": true,
+          "reasons": []
+        },
+        "shows": {
+          "included": true,
+          "reasons": []
+        },
+        "attractions": {
+          "included": true,
+          "reasons": []
+        },
+        "day-trips": {
+          "included": true,
+          "reasons": []
+        },
+        "helicopter": {
+          "included": true,
+          "reasons": []
+        }
+      }
+    },
+    {
+      "city_key": "nashville",
+      "root": {
+        "included": true,
+        "reasons": []
+      },
+      "routes": {
+        "tours": {
+          "included": true,
+          "reasons": []
+        },
+        "shows": {
+          "included": true,
+          "reasons": []
+        },
+        "attractions": {
+          "included": true,
+          "reasons": []
+        },
+        "day-trips": {
+          "included": false,
+          "reasons": [
+            "missing_day_trip_signal"
+          ]
+        },
+        "helicopter": {
+          "included": false,
+          "reasons": [
+            "missing_helicopter_signal"
+          ]
+        }
+      }
+    },
+    {
+      "city_key": "new-orleans",
+      "root": {
+        "included": true,
+        "reasons": []
+      },
+      "routes": {
+        "tours": {
+          "included": true,
+          "reasons": []
+        },
+        "shows": {
+          "included": true,
+          "reasons": []
+        },
+        "attractions": {
+          "included": true,
+          "reasons": []
+        },
+        "day-trips": {
+          "included": false,
+          "reasons": [
+            "missing_day_trip_signal"
+          ]
+        },
+        "helicopter": {
+          "included": false,
+          "reasons": [
+            "missing_helicopter_signal"
+          ]
+        }
+      }
+    }
+  ]
+}

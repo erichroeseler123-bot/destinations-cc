@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:us-ri-newport-ri:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.631Z",
+  "metrics": {
+    "risk_score_mean": 1.144,
+    "risk_score_stddev": 0.26854670605563813,
+    "risk_score_p90": 1.32,
+    "degraded_transport_rate": 0,
+    "negative_human_signal_rate": 0
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

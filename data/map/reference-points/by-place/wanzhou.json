@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:cn-33-wanzhou:0001",
+  "place_slug": "wanzhou",
+  "place_name": "Wanzhou",
+  "center": {
+    "coordinates": [
+      108.39586,
+      30.76451
+    ],
+    "country_code": "CN",
+    "admin1_code": "33"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-32-dazhou:0001",
+      "slug": "dazhou",
+      "name": "Dazhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        107.46308,
+        31.2106
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.764Z"
+}

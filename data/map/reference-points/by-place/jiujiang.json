@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:cn-03-jiujiang:0001",
+  "place_slug": "jiujiang",
+  "place_name": "Jiujiang",
+  "center": {
+    "coordinates": [
+      116.00206,
+      29.70475
+    ],
+    "country_code": "CN",
+    "admin1_code": "03"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-03-nanchang:0001",
+      "slug": "nanchang",
+      "name": "Nanchang",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        115.85306,
+        28.68396
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.731Z"
+}

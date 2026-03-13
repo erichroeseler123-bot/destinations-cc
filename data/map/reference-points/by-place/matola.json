@@ -1,0 +1,39 @@
+{
+  "place_id": "dcc:place:mz-04-matola:0001",
+  "place_slug": "matola",
+  "place_name": "Matola",
+  "center": {
+    "coordinates": [
+      32.45889,
+      -25.96222
+    ],
+    "country_code": "MZ",
+    "admin1_code": "04"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:mz-11-maputo:0001",
+      "slug": "maputo",
+      "name": "Maputo",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        32.58322,
+        -25.96553
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.741Z"
+}

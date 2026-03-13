@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-ca-monterey-ca:0001",
+  "place_slug": "monterey-ca",
+  "place_name": "Monterey",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-ca-carmel-by-the-sea-ca:0001",
+      "place_slug": "carmel-by-the-sea-ca",
+      "place_name": "Carmel-by-the-Sea",
+      "reason": "near_place_geo",
+      "distance_km": 5.6
+    },
+    {
+      "place_id": "dcc:place:us-ca-santa-cruz-ca:0001",
+      "place_slug": "santa-cruz-ca",
+      "place_name": "Santa Cruz",
+      "reason": "near_place_geo",
+      "distance_km": 43.3
+    },
+    {
+      "place_id": "dcc:place:us-ca-san-jose-ca:0001",
+      "place_slug": "san-jose-ca",
+      "place_name": "San Jose",
+      "reason": "near_place_geo",
+      "distance_km": 82.2
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-monterey-ca:0001",
+      "to": "dcc:place:us-ca-carmel-by-the-sea-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-monterey-ca:0001",
+      "to": "dcc:place:us-ca-santa-cruz-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-monterey-ca:0001",
+      "to": "dcc:place:us-ca-san-jose-ca:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

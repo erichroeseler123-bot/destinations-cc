@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:in-23-amritsar:0001",
+  "place_slug": "amritsar",
+  "place_name": "Amritsar",
+  "center": {
+    "coordinates": [
+      74.87534,
+      31.62234
+    ],
+    "country_code": "IN",
+    "admin1_code": "23"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:pk-04-lahore:0001",
+      "slug": "lahore",
+      "name": "Lahore",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        74.35071,
+        31.558
+      ]
+    },
+    {
+      "id": "dcc:place:pk-04-gujranwala:0001",
+      "slug": "gujranwala",
+      "name": "Gujranwala",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        74.18705,
+        32.15567
+      ]
+    },
+    {
+      "id": "dcc:place:in-23-ludhiana:0001",
+      "slug": "ludhiana",
+      "name": "Ludhiana",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        75.85379,
+        30.91204
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.710Z"
+}

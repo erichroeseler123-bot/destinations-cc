@@ -1,26 +1,63 @@
-[
-  {
-    "title": "Mighty Argo Shuttle",
-    "href": "/mighty-argo-shuttle",
-    "tag": "Route Intel",
-    "desc": "Pickups, buffers, and a clean Denver → Idaho Springs plan."
-  },
-  {
-    "title": "Mighty Argo Guide",
-    "href": "/mighty-argo",
-    "tag": "Attraction Intel",
-    "desc": "What it is, what to expect, and why it matters."
-  },
-  {
-    "title": "Colorado Region Hub",
-    "href": "/regions/colorado",
-    "tag": "Regional Hubs",
-    "desc": "Regional logistics and staging areas."
-  },
-  {
-    "title": "Authority Layer",
-    "href": "/authority",
-    "tag": "Constraints",
-    "desc": "Reality checks, routing anchors, and travel logic."
-  }
-]
+{
+  "title": "DCC Picks",
+  "subtitle": "High-signal pages: route intel, staging hubs, and reality checks.",
+  "cta": { "label": "Browse Cities →", "href": "/cities" },
+  "items": [
+    {
+      "title": "Mighty Argo Shuttle",
+      "href": "/mighty-argo-shuttle",
+      "tag": "ROUTE INTEL",
+      "why": "Route intel + pickup flow",
+      "description": "Pickups, buffers, and a clean Denver → Idaho Springs plan."
+    },
+    {
+      "title": "Mighty Argo Guide",
+      "href": "/mighty-argo",
+      "tag": "ATTRACTION INTEL",
+      "why": "What to expect + failure modes",
+      "description": "What it is, what to expect, and why it matters."
+    },
+    {
+      "title": "Ports Directory",
+      "href": "/ports",
+      "tag": "ROUTING ANCHORS",
+      "why": "Cruise ports + routing anchors",
+      "description": "High-volume ports, patterns, and decision pages."
+    },
+    {
+      "title": "PortMiami Hub",
+      "href": "/ports/portmiami",
+      "tag": "PORT HUB",
+      "why": "Embarkation logistics + nearby intel",
+      "description": "One of the busiest cruise hubs—build your port cluster."
+    },
+    {
+      "title": "Nassau Hub",
+      "href": "/ports/nassau",
+      "tag": "PORT HUB",
+      "why": "Tender timing + shore-day constraints",
+      "description": "Fast decisions for the most common Bahamas stop."
+    },
+    {
+      "title": "Mexico Region",
+      "href": "/regions/mexico",
+      "tag": "REGIONAL HUBS",
+      "why": "Staging hubs + corridor logic",
+      "description": "Clustered routing for Mexico ports and day plans."
+    },
+    {
+      "title": "Tours Hub",
+      "href": "/tours",
+      "tag": "CATALOG",
+      "why": "Browse inventory by intent",
+      "description": "Entry point to the catalog and city tour pages."
+    },
+    {
+      "title": "Search Cities: Miami",
+      "href": "/cities?q=miami",
+      "tag": "FAST ENTRY",
+      "why": "Jump to a city node",
+      "description": "Skip scrolling—go straight to a target city."
+    }
+  ]
+}

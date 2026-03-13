@@ -4,10 +4,10 @@ import StatGrid from "@/app/components/StatGrid";
 import StaleWarning from "@/app/components/StaleWarning";
 import CinematicBackdrop from "@/app/components/dcc/CinematicBackdrop";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
+import AlertsSignalPanels from "@/app/components/dcc/AlertsSignalPanels";
 import { getGraphHealth } from "@/lib/dcc/graph/health";
 import { listPlaceGraphSummaries } from "@/lib/dcc/graph/placeActionGraph";
 import { getPlanetaryEvents, getPlanetarySummary } from "@/lib/dcc/memory/resolve";
-import { serializeAliveFilter } from "@/lib/dcc/taxonomy/lanes";
 
 const PAGE_URL = "https://destinationcommandcenter.com/alerts";
 
@@ -38,10 +38,6 @@ export default function AlertsPage() {
   const allPulse = listPlaceGraphSummaries(200);
   const planetarySummary = getPlanetarySummary();
   const planetaryRecent = getPlanetaryEvents(14);
-
-  const degrading = allPulse.filter((row) => row.trend === "degrading").slice(0, 8);
-  const improving = allPulse.filter((row) => row.trend === "improving").slice(0, 6);
-  const normal = allPulse.filter((row) => row.trend === "normal").slice(0, 6);
 
   const counts = {
     degrading: allPulse.filter((row) => row.trend === "degrading").length,
@@ -120,62 +116,7 @@ export default function AlertsPage() {
           />
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-2">
-          <section className="rounded-2xl border border-rose-400/20 bg-rose-500/10 p-6 space-y-4">
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.22em] text-rose-200">Degrading Now</p>
-              <h2 className="text-2xl font-bold">Signals worth checking before you commit</h2>
-            </div>
-            <div className="space-y-3">
-              {degrading.length > 0 ? (
-                degrading.map((row) => (
-                  <Link
-                    key={row.place_id}
-                    href={`/nodes/${row.place_slug}?alive=${encodeURIComponent(
-                      serializeAliveFilter(["tours", "cruises", "transport", "events"])
-                    )}`}
-                    className="block rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-black/30"
-                  >
-                    <div className="font-semibold text-zinc-100">{row.title}</div>
-                    <div className="mt-1 text-sm text-zinc-300">
-                      trend {row.trend} • tours {row.action_counts.tours} • cruises {row.action_counts.cruises} • transport {row.action_counts.transport}
-                    </div>
-                    {row.latest_event ? (
-                      <div className="mt-2 text-xs uppercase tracking-wider text-rose-200">
-                        latest event: {row.latest_event}
-                      </div>
-                    ) : null}
-                  </Link>
-                ))
-              ) : (
-                <p className="text-sm text-zinc-400">No degrading rows surfaced in the current graph window.</p>
-              )}
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-6 space-y-4">
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.22em] text-emerald-200">Stable / Improving</p>
-              <h2 className="text-2xl font-bold">Cleaner planning surfaces right now</h2>
-            </div>
-            <div className="space-y-3">
-              {[...improving, ...normal].slice(0, 8).map((row) => (
-                <Link
-                  key={`${row.place_id}:${row.trend}`}
-                  href={`/nodes/${row.place_slug}?alive=${encodeURIComponent(
-                    serializeAliveFilter(["tours", "cruises"])
-                  )}`}
-                  className="block rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-black/30"
-                >
-                  <div className="font-semibold text-zinc-100">{row.title}</div>
-                  <div className="mt-1 text-sm text-zinc-300">
-                    trend {row.trend} • tours {row.action_counts.tours} • cruises {row.action_counts.cruises}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        </section>
+        <AlertsSignalPanels allPulse={allPulse} />
 
         <section className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
           <div className="space-y-1">

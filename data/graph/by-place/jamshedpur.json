@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:in-38-jamshedpur:0001",
+  "place_slug": "jamshedpur",
+  "place_name": "Jamshedpur",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:in-38-ranchi:0001",
+      "place_slug": "ranchi",
+      "place_name": "Ranchi",
+      "reason": "near_place_geo",
+      "distance_km": 107.9
+    },
+    {
+      "place_id": "dcc:place:in-38-dhanbad:0001",
+      "place_slug": "dhanbad",
+      "place_name": "Dhanbad",
+      "reason": "near_place_geo",
+      "distance_km": 113.4
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-38-jamshedpur:0001",
+      "to": "dcc:place:in-38-ranchi:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:in-38-jamshedpur:0001",
+      "to": "dcc:place:in-38-dhanbad:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

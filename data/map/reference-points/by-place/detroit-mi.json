@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:us-mi-detroit-mi:0001",
+  "place_slug": "detroit-mi",
+  "place_name": "Detroit",
+  "center": {
+    "coordinates": [
+      -83.04575,
+      42.33143
+    ],
+    "country_code": "US",
+    "admin1_code": "MI"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-oh-toledo-oh:0001",
+      "slug": "toledo-oh",
+      "name": "Toledo",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -83.55521,
+        41.66394
+      ]
+    },
+    {
+      "id": "dcc:place:us-oh-cleveland-oh:0001",
+      "slug": "cleveland-oh",
+      "name": "Cleveland",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -81.69541,
+        41.4995
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.724Z"
+}

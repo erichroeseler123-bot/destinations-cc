@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:us-sc-hilton-head-island-sc:0001",
+  "place_slug": "hilton-head-island-sc",
+  "place_name": "Hilton Head Island",
+  "center": {
+    "coordinates": [
+      -80.73816,
+      32.19382
+    ],
+    "country_code": "US",
+    "admin1_code": "SC"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ga-savannah-ga:0001",
+      "slug": "savannah-ga",
+      "name": "Savannah",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -81.09983,
+        32.08354
+      ]
+    },
+    {
+      "id": "dcc:place:us-sc-charleston-sc:0001",
+      "slug": "charleston-sc",
+      "name": "Charleston",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -79.93275,
+        32.77632
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.728Z"
+}

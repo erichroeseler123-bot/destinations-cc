@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:us-nc-charlotte-nc:0001",
+  "place_slug": "charlotte-nc",
+  "place_name": "Charlotte",
+  "center": {
+    "coordinates": [
+      -80.84313,
+      35.22709
+    ],
+    "country_code": "US",
+    "admin1_code": "NC"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-sc-columbia-sc:0001",
+      "slug": "columbia-sc",
+      "name": "Columbia",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -81.03481,
+        34.00071
+      ]
+    },
+    {
+      "id": "dcc:place:us-sc-greenville-sc:0001",
+      "slug": "greenville-sc",
+      "name": "Greenville",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -82.39401,
+        34.85262
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.719Z"
+}

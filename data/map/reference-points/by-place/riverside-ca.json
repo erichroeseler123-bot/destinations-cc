@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-ca-riverside-ca:0001",
+  "place_slug": "riverside-ca",
+  "place_name": "Riverside",
+  "center": {
+    "coordinates": [
+      -117.39616,
+      33.95335
+    ],
+    "country_code": "US",
+    "admin1_code": "CA"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ca-san-bernardino-ca:0001",
+      "slug": "san-bernardino-ca",
+      "name": "San Bernardino",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -117.28977,
+        34.10834
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-anaheim-ca:0001",
+      "slug": "anaheim-ca",
+      "name": "Anaheim",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -117.9145,
+        33.83529
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-temecula-ca:0001",
+      "slug": "temecula-ca",
+      "name": "Temecula",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -117.14836,
+        33.49364
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.754Z"
+}

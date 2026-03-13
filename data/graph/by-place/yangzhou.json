@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:cn-04-yangzhou:0001",
+  "place_slug": "yangzhou",
+  "place_name": "Yangzhou",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-04-taizhou:0001",
+      "place_slug": "taizhou",
+      "place_name": "Taizhou",
+      "reason": "near_place_geo",
+      "distance_km": 45.5
+    },
+    {
+      "place_id": "dcc:place:cn-04-nanjing:0001",
+      "place_slug": "nanjing",
+      "place_name": "Nanjing",
+      "reason": "near_place_geo",
+      "distance_km": 72.3
+    },
+    {
+      "place_id": "dcc:place:cn-04-changzhou:0001",
+      "place_slug": "changzhou",
+      "place_name": "Changzhou",
+      "reason": "near_place_geo",
+      "distance_km": 84.8
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-04-yangzhou:0001",
+      "to": "dcc:place:cn-04-taizhou:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-04-yangzhou:0001",
+      "to": "dcc:place:cn-04-nanjing:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-04-yangzhou:0001",
+      "to": "dcc:place:cn-04-changzhou:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

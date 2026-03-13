@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:cn-03-nanchang:0001",
+  "place_slug": "nanchang",
+  "place_name": "Nanchang",
+  "center": {
+    "coordinates": [
+      115.85306,
+      28.68396
+    ],
+    "country_code": "CN",
+    "admin1_code": "03"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-03-fuzhou-2:0001",
+      "slug": "fuzhou-2",
+      "name": "Fuzhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        116.33333,
+        27.95999
+      ]
+    },
+    {
+      "id": "dcc:place:cn-03-jiujiang:0001",
+      "slug": "jiujiang",
+      "name": "Jiujiang",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        116.00206,
+        29.70475
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.746Z"
+}

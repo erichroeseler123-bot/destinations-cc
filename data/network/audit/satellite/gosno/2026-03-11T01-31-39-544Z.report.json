@@ -1,0 +1,51 @@
+{
+  "target": "gosno",
+  "mode": "satellite",
+  "generatedAt": "2026-03-11T01:31:39.543Z",
+  "previousSnapshotFound": false,
+  "nodes": {
+    "current": 13,
+    "previous": 0,
+    "added": [
+      "authority:dcc:node:alaska",
+      "authority:dcc:node:cruises",
+      "authority:dcc:node:mighty-argo-shuttle",
+      "authority:dcc:node:national-parks",
+      "authority:dcc:node:new-orleans",
+      "authority:dcc:node:vegas",
+      "discovery:dcc:node:alaska",
+      "discovery:dcc:node:cruises",
+      "discovery:dcc:node:mighty-argo-shuttle",
+      "discovery:dcc:node:national-parks",
+      "discovery:dcc:node:new-orleans",
+      "discovery:dcc:node:vegas",
+      "monetized:dcc:node:mighty-argo-shuttle"
+    ],
+    "removed": []
+  },
+  "edges": {
+    "current": 17,
+    "previous": 0,
+    "added": [
+      "authority:dcc:edge:alaska-to-national-parks-nearby",
+      "authority:dcc:edge:argo-operator-operates-in-colorado",
+      "authority:dcc:edge:argo-to-national-parks-co-intent",
+      "authority:dcc:edge:argo-to-vegas-fallback",
+      "authority:dcc:edge:cruises-to-alaska-routes",
+      "authority:dcc:edge:intel-feed-viator-to-cruises",
+      "authority:dcc:edge:new-orleans-to-cruises-routes",
+      "authority:dcc:edge:vegas-to-new-orleans-co-intent",
+      "discovery:dcc:edge:alaska-to-national-parks-nearby",
+      "discovery:dcc:edge:argo-operator-operates-in-colorado",
+      "discovery:dcc:edge:argo-to-national-parks-co-intent",
+      "discovery:dcc:edge:argo-to-vegas-fallback",
+      "discovery:dcc:edge:cruises-to-alaska-routes",
+      "discovery:dcc:edge:intel-feed-viator-to-cruises",
+      "discovery:dcc:edge:new-orleans-to-cruises-routes",
+      "discovery:dcc:edge:vegas-to-new-orleans-co-intent",
+      "monetized:dcc:edge:argo-operator-operates-in-colorado"
+    ],
+    "removed": []
+  },
+  "removal_reasons": {}
+}

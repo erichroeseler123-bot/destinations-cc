@@ -7,6 +7,7 @@ import TrustBadges from "@/components/TrustBadges";
 import { notFound } from "next/navigation";
 import { buildViatorLink } from "@/utils/affiliateLinks";
 import Link from "next/link";
+import PoweredByViator from "@/app/components/dcc/PoweredByViator";
 
 type Tour = {
   id: string | number;
@@ -128,6 +129,13 @@ export default async function TourDetailPage({
         </p>
       </section>
 
+      <PoweredByViator
+        compact
+        disclosure
+        body={`Use DCC to evaluate this experience quickly, then book with DCC via Viator when you're ready to check availability and complete checkout.`}
+        className="mb-16"
+      />
+
       {/* CHANGE #3: Regional Retention Block */}
       <section className="mb-20 border-t border-zinc-800 pt-10">
         <h4 className="text-sm font-bold uppercase text-zinc-500 mb-6 tracking-widest">
@@ -159,11 +167,14 @@ export default async function TourDetailPage({
         <a
           href={affiliateUrl}
           target="_blank"
-          rel="noopener noreferrer sponsored"
+          rel="noopener noreferrer sponsored nofollow"
           className="text-center bg-cyan-600 hover:bg-cyan-500 text-white px-10 py-4 rounded-xl font-bold transition-all shadow-lg shadow-cyan-600/20 active:scale-95"
         >
-          {isBusinessHours ? "🔥 Book for Tomorrow" : "⚡ Check Real-Time Availability"}
+          {isBusinessHours ? "Book with DCC via Viator" : "Check Availability via Viator"}
         </a>
+        <p className="text-[11px] text-zinc-500 sm:max-w-sm">
+          Powered by Viator. DCC may earn a commission if you book through this partner link, at no extra cost to you.
+        </p>
       </div>
     </main>
   );

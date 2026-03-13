@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-02-jiaxing:0001",
+  "place_slug": "jiaxing",
+  "place_name": "Jiaxing",
+  "center": {
+    "coordinates": [
+      120.75,
+      30.7522
+    ],
+    "country_code": "CN",
+    "admin1_code": "02"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-04-suzhou:0001",
+      "slug": "suzhou",
+      "name": "Suzhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        120.59538,
+        31.30408
+      ]
+    },
+    {
+      "id": "dcc:place:cn-04-kunshan:0001",
+      "slug": "kunshan",
+      "name": "Kunshan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        120.95431,
+        31.37762
+      ]
+    },
+    {
+      "id": "dcc:place:cn-02-hangzhou:0001",
+      "slug": "hangzhou",
+      "name": "Hangzhou",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        120.16142,
+        30.29365
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.731Z"
+}

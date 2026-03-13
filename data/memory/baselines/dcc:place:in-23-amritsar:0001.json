@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:in-23-amritsar:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.608Z",
+  "metrics": {
+    "risk_score_mean": 2.698666666666667,
+    "risk_score_stddev": 0.50482824361911,
+    "risk_score_p90": 3.26,
+    "degraded_transport_rate": 0.2,
+    "negative_human_signal_rate": 0.2
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

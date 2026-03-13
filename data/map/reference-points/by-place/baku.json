@@ -1,0 +1,27 @@
+{
+  "place_id": "dcc:place:az-09-baku:0001",
+  "place_slug": "baku",
+  "place_name": "Baku",
+  "center": {
+    "coordinates": [
+      49.89201,
+      40.37767
+    ],
+    "country_code": "AZ",
+    "admin1_code": "09"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "reference_points": [],
+  "generated_at": "2026-03-09T04:43:00.712Z"
+}

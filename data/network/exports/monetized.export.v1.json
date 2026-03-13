@@ -1,0 +1,79 @@
+{
+  "version": "dcc-network-v1",
+  "surface": "monetized",
+  "generatedAt": "2026-03-11T01:31:37.643Z",
+  "node_count": 1,
+  "edge_count": 1,
+  "staleness_filtered_nodes": 0,
+  "staleness_filtered_edges": 0,
+  "nodes": [
+    {
+      "node_id": "dcc:node:mighty-argo-shuttle",
+      "node_type": "operator",
+      "name": "Mighty Argo Cable Car Shuttle",
+      "slug": "mighty-argo-shuttle",
+      "geo": {
+        "lat": 39.742,
+        "lon": -105.513,
+        "country": "US",
+        "region": "Colorado",
+        "locality": "Idaho Springs"
+      },
+      "tags": [
+        "argo",
+        "shuttle",
+        "colorado",
+        "transport"
+      ],
+      "status": "active",
+      "authority_url": "https://destinationcommandcenter.com/mighty-argo-shuttle",
+      "monetized_targets": [
+        {
+          "site": "DCC",
+          "path": "/book?route=argo&product=argo-seat",
+          "operator_id": "dcc:operator:argo-seat",
+          "booking_mode": "internal",
+          "checkout_url": "https://destinationcommandcenter.com/book?route=argo&product=argo-seat"
+        },
+        {
+          "site": "DCC",
+          "path": "/book?route=argo&product=argo-suv",
+          "operator_id": "dcc:operator:argo-suv",
+          "booking_mode": "internal",
+          "checkout_url": "https://destinationcommandcenter.com/book?route=argo&product=argo-suv"
+        }
+      ],
+      "related_nodes": [
+        "dcc:node:vegas",
+        "dcc:node:alaska",
+        "dcc:node:cruises",
+        "dcc:node:national-parks",
+        "dcc:node:new-orleans"
+      ],
+      "source": "manual-seed",
+      "confidence": 0.94,
+      "provenance": "manual",
+      "owner_pipeline": "operator-business",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "dcc:edge:argo-operator-operates-in-colorado",
+      "from_node": "dcc:node:mighty-argo-shuttle",
+      "to_node": "dcc:node:mighty-argo-shuttle",
+      "edge_type": "operates_in",
+      "weight": 1,
+      "fresh_until": "2026-12-31T00:00:00Z",
+      "signals": [
+        "operator-registry"
+      ],
+      "rationale": "Argo shuttle operators are scoped to the Colorado route execution zone.",
+      "source": "operator-registry",
+      "confidence": 0.98,
+      "provenance": "upstream",
+      "owner_pipeline": "operator-business",
+      "updatedAt": "2026-03-11T00:00:00Z"
+    }
+  ]
+}

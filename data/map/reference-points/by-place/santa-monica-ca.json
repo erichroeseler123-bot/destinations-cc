@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:us-ca-santa-monica-ca:0001",
+  "place_slug": "santa-monica-ca",
+  "place_name": "Santa Monica",
+  "center": {
+    "coordinates": [
+      -118.49138,
+      34.01949
+    ],
+    "country_code": "US",
+    "admin1_code": "CA"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:us-ca-los-angeles:0001",
+      "slug": "los-angeles",
+      "name": "Los Angeles",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -118.24368,
+        34.05223
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-malibu-ca:0001",
+      "slug": "malibu-ca",
+      "name": "Malibu",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -118.7804,
+        34.02577
+      ]
+    },
+    {
+      "id": "dcc:place:us-ca-pasadena-ca:0001",
+      "slug": "pasadena-ca",
+      "name": "Pasadena",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        -118.14452,
+        34.14778
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.756Z"
+}

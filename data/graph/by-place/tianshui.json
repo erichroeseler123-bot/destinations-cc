@@ -1,0 +1,42 @@
+{
+  "place_id": "dcc:place:cn-15-tianshui:0001",
+  "place_slug": "tianshui",
+  "place_name": "Tianshui",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "degrading"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:cn-26-baoji:0001",
+      "place_slug": "baoji",
+      "place_name": "Baoji",
+      "reason": "near_place_geo",
+      "distance_km": 139
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-15-tianshui:0001",
+      "to": "dcc:place:cn-26-baoji:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

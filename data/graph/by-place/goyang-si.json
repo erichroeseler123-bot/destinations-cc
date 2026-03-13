@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:kr-13-goyang-si:0001",
+  "place_slug": "goyang-si",
+  "place_name": "Goyang-si",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:kr-11-seoul:0001",
+      "place_slug": "seoul",
+      "place_name": "Seoul",
+      "reason": "near_place_geo",
+      "distance_km": 16.1
+    },
+    {
+      "place_id": "dcc:place:kr-12-incheon:0001",
+      "place_slug": "incheon",
+      "place_name": "Incheon",
+      "reason": "near_place_geo",
+      "distance_km": 25
+    },
+    {
+      "place_id": "dcc:place:kr-13-suwon:0001",
+      "place_slug": "suwon",
+      "place_name": "Suwon",
+      "reason": "near_place_geo",
+      "distance_km": 43.4
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:kr-13-goyang-si:0001",
+      "to": "dcc:place:kr-11-seoul:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:kr-13-goyang-si:0001",
+      "to": "dcc:place:kr-12-incheon:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:kr-13-goyang-si:0001",
+      "to": "dcc:place:kr-13-suwon:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

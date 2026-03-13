@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:kr-15-daegu:0001",
+  "place_slug": "daegu",
+  "place_name": "Daegu",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:kr-21-ulsan:0001",
+      "place_slug": "ulsan",
+      "place_name": "Ulsan",
+      "reason": "near_place_geo",
+      "distance_km": 75.3
+    },
+    {
+      "place_id": "dcc:place:kr-10-busan:0001",
+      "place_slug": "busan",
+      "place_name": "Busan",
+      "reason": "near_place_geo",
+      "distance_km": 94.3
+    },
+    {
+      "place_id": "dcc:place:kr-19-daejeon:0001",
+      "place_slug": "daejeon",
+      "place_name": "Daejeon",
+      "reason": "near_place_geo",
+      "distance_km": 120.7
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:kr-15-daegu:0001",
+      "to": "dcc:place:kr-21-ulsan:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:kr-15-daegu:0001",
+      "to": "dcc:place:kr-10-busan:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:kr-15-daegu:0001",
+      "to": "dcc:place:kr-19-daejeon:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

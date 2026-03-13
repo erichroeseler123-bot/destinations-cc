@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:us-wi-milwaukee-wi:0001",
+  "place_slug": "milwaukee-wi",
+  "place_name": "Milwaukee",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-wi-madison-wi:0001",
+      "place_slug": "madison-wi",
+      "place_name": "Madison",
+      "reason": "near_place_geo",
+      "distance_km": 121.5
+    },
+    {
+      "place_id": "dcc:place:us-il-chicago:0001",
+      "place_slug": "chicago",
+      "place_name": "Chicago",
+      "reason": "near_place_geo",
+      "distance_km": 133.9
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-wi-milwaukee-wi:0001",
+      "to": "dcc:place:us-wi-madison-wi:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-wi-milwaukee-wi:0001",
+      "to": "dcc:place:us-il-chicago:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

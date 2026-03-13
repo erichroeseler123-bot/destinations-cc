@@ -1,0 +1,57 @@
+{
+  "place_id": "dcc:place:us-tx-fredericksburg-tx:0001",
+  "place_slug": "fredericksburg-tx",
+  "place_name": "Fredericksburg",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-tx-san-antonio:0001",
+      "place_slug": "san-antonio",
+      "place_name": "San Antonio",
+      "reason": "near_place_geo",
+      "distance_km": 101.4
+    },
+    {
+      "place_id": "dcc:place:us-tx-austin-tx:0001",
+      "place_slug": "austin-tx",
+      "place_name": "Austin",
+      "reason": "near_place_geo",
+      "distance_km": 108.4
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-tx-fredericksburg-tx:0001",
+      "to": "dcc:place:us-tx-san-antonio:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-tx-fredericksburg-tx:0001",
+      "to": "dcc:place:us-tx-austin-tx:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

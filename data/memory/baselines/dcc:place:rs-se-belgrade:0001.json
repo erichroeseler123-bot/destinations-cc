@@ -1,0 +1,14 @@
+{
+  "place_id": "dcc:place:rs-se-belgrade:0001",
+  "window_days": 30,
+  "sample_count": 15,
+  "computed_at": "2026-03-08T23:44:48.616Z",
+  "metrics": {
+    "risk_score_mean": 2.0959999999999996,
+    "risk_score_stddev": 0.10613199329137289,
+    "risk_score_p90": 2.24,
+    "degraded_transport_rate": 0,
+    "negative_human_signal_rate": 0
+  },
+  "latest_snapshot_at": "2026-03-08T23:32:51.609Z"
+}

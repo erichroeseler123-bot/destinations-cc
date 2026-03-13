@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:jp-32-osaka:0001",
+  "place_slug": "osaka",
+  "place_name": "Osaka",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:jp-13-kobe:0001",
+      "place_slug": "kobe",
+      "place_name": "Kobe",
+      "reason": "near_place_geo",
+      "distance_km": 29.1
+    },
+    {
+      "place_id": "dcc:place:jp-22-kyoto:0001",
+      "place_slug": "kyoto",
+      "place_name": "Kyoto",
+      "reason": "near_place_geo",
+      "distance_km": 43.1
+    },
+    {
+      "place_id": "dcc:place:jp-01-nagoya:0001",
+      "place_slug": "nagoya",
+      "place_name": "Nagoya",
+      "reason": "near_place_geo",
+      "distance_km": 139.1
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:jp-32-osaka:0001",
+      "to": "dcc:place:jp-13-kobe:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:jp-32-osaka:0001",
+      "to": "dcc:place:jp-22-kyoto:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:jp-32-osaka:0001",
+      "to": "dcc:place:jp-01-nagoya:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

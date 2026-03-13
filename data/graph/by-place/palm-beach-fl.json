@@ -1,0 +1,72 @@
+{
+  "place_id": "dcc:place:us-fl-palm-beach-fl:0001",
+  "place_slug": "palm-beach-fl",
+  "place_name": "Palm Beach",
+  "actions": {
+    "tours": [],
+    "cruises": [],
+    "transport": [],
+    "events": []
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "related_places": [
+    {
+      "place_id": "dcc:place:us-fl-west-palm-beach-fl:0001",
+      "place_slug": "west-palm-beach-fl",
+      "place_name": "West Palm Beach",
+      "reason": "near_place_geo",
+      "distance_km": 2
+    },
+    {
+      "place_id": "dcc:place:us-fl-fort-lauderdale-fl:0001",
+      "place_slug": "fort-lauderdale-fl",
+      "place_name": "Fort Lauderdale",
+      "reason": "near_place_geo",
+      "distance_km": 65.7
+    },
+    {
+      "place_id": "dcc:place:us-fl-miami-fl:0001",
+      "place_slug": "miami-fl",
+      "place_name": "Miami",
+      "reason": "near_place_geo",
+      "distance_km": 104.7
+    }
+  ],
+  "counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-fl-palm-beach-fl:0001",
+      "to": "dcc:place:us-fl-west-palm-beach-fl:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-fl-palm-beach-fl:0001",
+      "to": "dcc:place:us-fl-fort-lauderdale-fl:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-fl-palm-beach-fl:0001",
+      "to": "dcc:place:us-fl-miami-fl:0001",
+      "meta": {
+        "reason": "near_place_geo"
+      }
+    }
+  ]
+}

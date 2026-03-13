@@ -1,0 +1,61 @@
+{
+  "place_id": "dcc:place:cn-09-anyang:0001",
+  "place_slug": "anyang",
+  "place_name": "Anyang",
+  "center": {
+    "coordinates": [
+      114.38278,
+      36.096
+    ],
+    "country_code": "CN",
+    "admin1_code": "09"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "normal"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:cn-10-handan:0001",
+      "slug": "handan",
+      "name": "Handan",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        114.48764,
+        36.60999
+      ]
+    },
+    {
+      "id": "dcc:place:cn-24-changzhi:0001",
+      "slug": "changzhi",
+      "name": "Changzhi",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        113.10528,
+        36.18389
+      ]
+    },
+    {
+      "id": "dcc:place:cn-25-heze:0001",
+      "slug": "heze",
+      "name": "Heze",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        115.47358,
+        35.23929
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.710Z"
+}

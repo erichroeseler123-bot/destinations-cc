@@ -1,0 +1,50 @@
+{
+  "place_id": "dcc:place:ph-14-budta:0001",
+  "place_slug": "budta",
+  "place_name": "Budta",
+  "center": {
+    "coordinates": [
+      124.43972,
+      7.20417
+    ],
+    "country_code": "PH",
+    "admin1_code": "14"
+  },
+  "lane_counts": {
+    "tours": 0,
+    "cruises": 0,
+    "transport": 0,
+    "events": 0
+  },
+  "providers": [],
+  "observations": {
+    "latest_event_type": null,
+    "latest_event_severity": null,
+    "trend": "improving"
+  },
+  "reference_points": [
+    {
+      "id": "dcc:place:ph-12-malingao:0001",
+      "slug": "malingao",
+      "name": "Malingao",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        124.475,
+        7.16083
+      ]
+    },
+    {
+      "id": "dcc:place:ph-11-davao:0001",
+      "slug": "davao",
+      "name": "Davao",
+      "reason": "near_place_geo",
+      "class": "place",
+      "coordinates": [
+        125.61278,
+        7.07306
+      ]
+    }
+  ],
+  "generated_at": "2026-03-09T04:43:00.716Z"
+}

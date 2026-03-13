@@ -1,11 +1,12 @@
-export const dynamicParams = false;
-
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import tours from "@/data/tours.json";
 import aliases from "@/data/city-aliases.json";
+import attractionsMap from "@/data/attractions.json";
 import { getNodeSlugFromCity } from "@/src/data/city-aliases";
+
+export const dynamicParams = false;
 
 type Tour = {
   id: string | number;
@@ -17,10 +18,25 @@ type Tour = {
   review_count?: number;
 };
 
+type AttractionLite = {
+  title: string;
+  description: string;
+  query: string;
+  badge?: string;
+};
+
 const allTours = tours as unknown as Tour[];
 
 export async function generateStaticParams() {
   return Object.keys(aliases).map((city) => ({ city }));
+}
+
+function titleCase(s: string) {
+  return s
+    .split(/[\s-]+/g)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 }
 
 function slugifyCity(s: string) {
@@ -37,7 +53,11 @@ export default async function CityAttractionsPage({
   const nodeSlug = getNodeSlugFromCity(city);
   if (!nodeSlug) return notFound();
 
-  const displayCity = city.replace(/-/g, " ");
+  const displayCity = titleCase(city);
+  const cityKey = city; // city param is already a slug key like "juneau", "denver", etc.
+
+  const curated = (attractionsMap as any)[cityKey] as AttractionLite[] | undefined;
+
   const cityTours = allTours
     .filter((t) => t?.city && slugifyCity(t.city) === city)
     .slice(0, 24);
@@ -59,22 +79,71 @@ export default async function CityAttractionsPage({
         </h1>
 
         <p className="text-zinc-400 max-w-2xl">
-          Programmatic “Attractions” hub page (build-safe). Today it surfaces tours by matching tour.city → URL city slug.
-          Later, you can swap this to a real attractions catalog without changing the route structure.
+          Curated categories first (fast intent routing). Tours appear automatically once your ingest pipeline maps
+          real products to this city.
         </p>
+
+        <div className="flex flex-wrap gap-2 pt-2">
+          <Link className="text-cyan-400 hover:text-cyan-300 transition" href={`/${city}`}>
+            ← Back to {displayCity}
+          </Link>
+          <Link className="text-zinc-400 hover:text-cyan-400 transition" href={`/${city}/tours`}>
+            Tours →
+          </Link>
+        </div>
       </header>
 
+      {/* ---- Curated attractions.json cards (always show if present) ---- */}
+      {curated?.length ? (
+        <section className="space-y-4">
+          <h2 className="text-sm font-bold uppercase text-zinc-500 tracking-widest">
+            Curated categories
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {curated.map((x, idx) => (
+              <Link
+                key={`${x.title}-${idx}`}
+                href={`/${city}/tours?q=${encodeURIComponent(x.query)}`}
+                className="p-5 bg-zinc-900/30 border border-zinc-800 rounded-2xl hover:border-cyan-500/50 transition"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-white font-bold leading-snug">
+                      {x.title}
+                      {x.badge ? (
+                        <span className="ml-2 text-[11px] uppercase tracking-widest text-cyan-300 border border-cyan-400/20 px-2 py-0.5 rounded-full">
+                          {x.badge}
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="text-zinc-500 text-sm mt-2">{x.description}</div>
+                    <div className="text-zinc-600 text-xs mt-3">
+                      Query: <span className="text-zinc-400">{x.query}</span>
+                    </div>
+                  </div>
+                  <div className="text-cyan-500 font-bold">→</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : (
+        <div className="p-6 bg-zinc-900/30 border border-zinc-800 rounded-2xl">
+          <p className="text-zinc-300 font-semibold">No curated attractions yet.</p>
+          <p className="text-zinc-500 mt-2 text-sm">
+            Add entries in <span className="font-mono text-zinc-300">data/attractions.json</span> for &quot;{cityKey}&quot;.
+          </p>
+        </div>
+      )}
+
+      {/* ---- Existing tours surface (kept, lights up when ingest is real) ---- */}
       {cityTours.length === 0 ? (
         <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
           <p className="text-zinc-300 font-semibold">No tours mapped to this city yet.</p>
           <p className="text-zinc-500 mt-2 text-sm">
-            This is expected until Alaska ports (or your next ingest batch) populates tours with matching city fields.
+            This is expected until your ingest batch populates tours with matching <span className="font-mono">tour.city</span>.
           </p>
-          <div className="mt-6">
-            <Link className="text-cyan-400 hover:text-cyan-300 transition" href={`/${city}`}>
-              ← Back to {displayCity}
-            </Link>
-          </div>
         </div>
       ) : (
         <section className="space-y-4">
@@ -102,12 +171,6 @@ export default async function CityAttractionsPage({
                 </div>
               </Link>
             ))}
-          </div>
-
-          <div className="pt-10 border-t border-zinc-800">
-            <Link className="text-zinc-400 hover:text-cyan-400 transition" href={`/${city}`}>
-              ← Back to {displayCity}
-            </Link>
           </div>
         </section>
       )}
