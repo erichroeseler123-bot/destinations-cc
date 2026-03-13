@@ -1,0 +1,32 @@
+{
+  "city": "new-york-city",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-04:00",
+  "schema": { "entity": "district", "description": "Durable district layer used to group venues, places, and signals." },
+  "districts": [
+    {
+      "slug": "lower-manhattan",
+      "name": "Lower Manhattan",
+      "district_type": "downtown-core",
+      "center": { "lat": 40.7098, "lng": -74.009 },
+      "radius_m": 1700,
+      "vibe_tags": ["finance", "seaport", "riverfront", "restaurants"],
+      "venue_slugs": ["pier-17"],
+      "place_slugs": ["manhatta", "dante-seaport", "the-dead-rabbit"],
+      "impact_profile": "medium"
+    },
+    {
+      "slug": "midtown-event-core",
+      "name": "Midtown Event Core",
+      "district_type": "entertainment-district",
+      "center": { "lat": 40.7505, "lng": -73.9934 },
+      "radius_m": 1800,
+      "vibe_tags": ["arenas", "theater", "crowds"],
+      "venue_slugs": ["madison-square-garden", "the-bowery-ballroom"],
+      "place_slugs": ["manhatta"],
+      "impact_profile": "high"
+    }
+  ]
+}

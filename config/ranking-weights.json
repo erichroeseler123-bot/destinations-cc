@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "weights": {
+    "impact_level": 0.45,
+    "proximity_to_anchor": 0.2,
+    "time_to_start": 0.15,
+    "venue_gravity": 0.1,
+    "editorial_boost": 0.1
+  }
+}

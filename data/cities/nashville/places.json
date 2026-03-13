@@ -1,0 +1,46 @@
+{
+  "city": "nashville",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-05:00",
+  "schema": { "entity": "place", "description": "Durable social and discovery inventory." },
+  "places": [
+    {
+      "slug": "skulls-rainbow-room",
+      "name": "Skull's Rainbow Room",
+      "place_type": "bar",
+      "category": "jazz-cocktail-bar",
+      "address": "222 Printers Alley, Nashville, TN 37201",
+      "lat": 36.163,
+      "lng": -86.7804,
+      "district_slugs": ["broadway-core"],
+      "tags": ["cocktails", "live-jazz", "late-night"],
+      "quick_actions": ["menu", "reserve", "directions"]
+    },
+    {
+      "slug": "assembly-food-hall",
+      "name": "Assembly Food Hall",
+      "place_type": "food-hall",
+      "category": "food-hall-social",
+      "address": "5055 Broadway Pl, Nashville, TN 37203",
+      "lat": 36.1605,
+      "lng": -86.7828,
+      "district_slugs": ["broadway-core"],
+      "tags": ["group-spot", "casual", "walkable"],
+      "quick_actions": ["directions"]
+    },
+    {
+      "slug": "the-patterson-house",
+      "name": "The Patterson House",
+      "place_type": "bar",
+      "category": "cocktail-bar",
+      "address": "1711 Division St, Nashville, TN 37203",
+      "lat": 36.1519,
+      "lng": -86.7908,
+      "district_slugs": ["the-gulch"],
+      "tags": ["cocktails", "date-night", "nightlife"],
+      "quick_actions": ["menu", "directions"]
+    }
+  ]
+}

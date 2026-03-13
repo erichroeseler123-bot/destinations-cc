@@ -1,0 +1,22 @@
+{
+  "city": "austin",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-05:00",
+  "schema": { "entity": "anchor", "description": "Resident origin nodes used for personalization, distance calculations, and local context." },
+  "anchors": [
+    {
+      "slug": "the-independent",
+      "name": "The Independent",
+      "anchor_type": "residential-tower",
+      "address": "301 West Ave, Austin, TX 78701",
+      "lat": 30.2668,
+      "lng": -97.7492,
+      "default_walk_radius_m": 1400,
+      "district_slugs": ["warehouse-district", "rainey-street"],
+      "nearby_venue_slugs": ["moody-center", "acl-live", "rainey-street-district"],
+      "nearby_place_slugs": ["comedor", "small-victory", "fareground"]
+    }
+  ]
+}

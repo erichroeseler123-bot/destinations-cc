@@ -1,0 +1,26 @@
+{
+  "city": "new-york-city",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-04:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-13T12:05:00-04:00",
+  "schema": { "entity": "signal", "description": "Ephemeral NOW-layer output.", "provenance_types": ["derived", "source_backed", "manual_editorial"] },
+  "signals": [
+    {
+      "id": "sig-nyc-msg-tonight",
+      "signal_type": "high_impact",
+      "provenance": "derived",
+      "title": "Penn area crowd surge tonight",
+      "description": "Madison Square Garden will pull heavy rail arrivals and slower pickups across Midtown tonight.",
+      "impact_level": "high",
+      "rank_weight": 0.94,
+      "status": "scheduled",
+      "starts_at": "2026-03-13T18:30:00-04:00",
+      "expires_at": "2026-03-13T23:30:00-04:00",
+      "linked_event_id": "evt-nyc-msg-headliner",
+      "linked_venue_slug": "madison-square-garden",
+      "affected_district_slugs": ["midtown-event-core"],
+      "near_anchor_slugs": ["one-manhattan-square"]
+    }
+  ]
+}

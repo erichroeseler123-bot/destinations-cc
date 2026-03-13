@@ -1,0 +1,46 @@
+{
+  "city": "new-york-city",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-04:00",
+  "schema": { "entity": "place", "description": "Durable social and discovery inventory." },
+  "places": [
+    {
+      "slug": "manhatta",
+      "name": "Manhatta",
+      "place_type": "restaurant",
+      "category": "fine-dining",
+      "address": "28 Liberty St 60th Floor, New York, NY 10005",
+      "lat": 40.7092,
+      "lng": -74.009,
+      "district_slugs": ["lower-manhattan"],
+      "tags": ["views", "dinner", "date-night"],
+      "quick_actions": ["menu", "reserve", "directions"]
+    },
+    {
+      "slug": "dante-seaport",
+      "name": "Dante Seaport",
+      "place_type": "restaurant-bar",
+      "category": "cocktail-bar",
+      "address": "89 South St, New York, NY 10038",
+      "lat": 40.7065,
+      "lng": -74.0021,
+      "district_slugs": ["lower-manhattan"],
+      "tags": ["cocktails", "waterfront", "nightlife"],
+      "quick_actions": ["menu", "reserve", "directions"]
+    },
+    {
+      "slug": "the-dead-rabbit",
+      "name": "The Dead Rabbit",
+      "place_type": "bar",
+      "category": "cocktail-bar",
+      "address": "30 Water St, New York, NY 10004",
+      "lat": 40.7033,
+      "lng": -74.0111,
+      "district_slugs": ["lower-manhattan"],
+      "tags": ["cocktails", "historic", "late-night"],
+      "quick_actions": ["menu", "directions"]
+    }
+  ]
+}

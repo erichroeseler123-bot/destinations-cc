@@ -1,0 +1,32 @@
+{
+  "city": "chicago",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-05:00",
+  "schema": { "entity": "district", "description": "Durable district layer used to group venues, places, and signals." },
+  "districts": [
+    {
+      "slug": "loop-core",
+      "name": "Loop Core",
+      "district_type": "downtown-core",
+      "center": { "lat": 41.8837, "lng": -87.6325 },
+      "radius_m": 1400,
+      "vibe_tags": ["theater", "civic", "tourism"],
+      "venue_slugs": ["chicago-theatre", "millennium-park-campus"],
+      "place_slugs": ["the-gage", "cindy-s"],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "river-north",
+      "name": "River North",
+      "district_type": "nightlife-corridor",
+      "center": { "lat": 41.8922, "lng": -87.6347 },
+      "radius_m": 1200,
+      "vibe_tags": ["bars", "restaurants", "gallery"],
+      "venue_slugs": ["merchandise-mart"],
+      "place_slugs": ["beatnik-on-the-river"],
+      "impact_profile": "medium"
+    }
+  ]
+}

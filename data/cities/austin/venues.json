@@ -1,0 +1,55 @@
+{
+  "city": "austin",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-05:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable city activity nodes.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large complex or district-scale activity center."
+    }
+  },
+  "venues": [
+    {
+      "slug": "moody-center",
+      "name": "Moody Center",
+      "venue_type": "event-venue",
+      "category": "sports-concerts",
+      "address": "2001 Robert Dedman Dr, Austin, TX 78712",
+      "lat": 30.2809,
+      "lng": -97.7321,
+      "impact_potential": "high",
+      "district_slugs": ["rainey-street"],
+      "near_anchor_slugs": ["the-independent"]
+    },
+    {
+      "slug": "acl-live",
+      "name": "ACL Live at The Moody Theater",
+      "venue_type": "event-venue",
+      "category": "live-music",
+      "address": "310 W Willie Nelson Blvd, Austin, TX 78701",
+      "lat": 30.2652,
+      "lng": -97.747,
+      "impact_potential": "medium",
+      "district_slugs": ["warehouse-district"],
+      "near_anchor_slugs": ["the-independent"]
+    },
+    {
+      "slug": "rainey-street-district",
+      "name": "Rainey Street District",
+      "venue_type": "district-hub",
+      "category": "bars-nightlife",
+      "address": "Rainey St, Austin, TX 78701",
+      "lat": 30.2588,
+      "lng": -97.7381,
+      "impact_potential": "medium",
+      "district_slugs": ["rainey-street"],
+      "near_anchor_slugs": ["the-independent"]
+    }
+  ]
+}

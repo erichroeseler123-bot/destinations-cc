@@ -1,0 +1,24 @@
+{
+  "city": "chicago",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-05:00",
+  "ttl_seconds": 900,
+  "stale_after": "2026-03-13T12:15:00-05:00",
+  "schema": { "entity": "event", "description": "Ingested timed facts." },
+  "events": [
+    {
+      "id": "evt-chicago-theatre-comedy",
+      "slug": "the-chicago-theatre-headliner-2026-03-13",
+      "title": "Comedy Headliner at The Chicago Theatre",
+      "venue_slug": "chicago-theatre",
+      "category": "comedy",
+      "start_time": "2026-03-13T19:30:00-05:00",
+      "end_time": "2026-03-13T21:45:00-05:00",
+      "status": "starting_soon",
+      "impact_level": "medium",
+      "attendance_band": "moderate",
+      "source": { "kind": "ticketing-feed", "external_id": "chicago-theatre-comedy-2026-03-13" },
+      "description": "Evening theater crowd building around State Street and nearby dinner spots."
+    }
+  ]
+}

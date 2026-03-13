@@ -1,0 +1,55 @@
+{
+  "city": "chicago",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-05:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable city activity nodes.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large complex or district-scale activity center."
+    }
+  },
+  "venues": [
+    {
+      "slug": "chicago-theatre",
+      "name": "The Chicago Theatre",
+      "venue_type": "event-venue",
+      "category": "theater-comedy-live",
+      "address": "175 N State St, Chicago, IL 60601",
+      "lat": 41.8855,
+      "lng": -87.6272,
+      "impact_potential": "medium",
+      "district_slugs": ["loop-core"],
+      "near_anchor_slugs": ["aqua"]
+    },
+    {
+      "slug": "millennium-park-campus",
+      "name": "Millennium Park Campus",
+      "venue_type": "major-event-campus",
+      "category": "civic-events",
+      "address": "201 E Randolph St, Chicago, IL 60602",
+      "lat": 41.8826,
+      "lng": -87.6226,
+      "impact_potential": "high",
+      "district_slugs": ["loop-core"],
+      "near_anchor_slugs": ["aqua"]
+    },
+    {
+      "slug": "merchandise-mart",
+      "name": "Merchandise Mart",
+      "venue_type": "mobility-hub",
+      "category": "dining-social",
+      "address": "222 W Merchandise Mart Plaza, Chicago, IL 60654",
+      "lat": 41.8889,
+      "lng": -87.6359,
+      "impact_potential": "medium",
+      "district_slugs": ["river-north"],
+      "near_anchor_slugs": ["aqua"]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "city": "denver",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-06:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-06:00",
+  "schema": { "entity": "anchor", "description": "Resident origin nodes used for personalization, distance calculations, and local context." },
+  "anchors": [
+    {
+      "slug": "spire",
+      "name": "The Spire Denver",
+      "anchor_type": "residential-tower",
+      "address": "891 14th St, Denver, CO 80202",
+      "lat": 39.7439,
+      "lng": -104.9922,
+      "default_walk_radius_m": 1600,
+      "district_slugs": ["downtown-core", "theater-district"],
+      "nearby_venue_slugs": ["denver-performing-arts-complex", "paramount-theatre", "comedy-works-downtown", "larimer-square", "ball-arena", "union-station", "colorado-convention-center"],
+      "nearby_place_slugs": ["guard-and-grace", "union-lodge-no-1", "the-corner-office", "rioja", "tavernetta"]
+    },
+    {
+      "slug": "coloradan",
+      "name": "The Coloradan",
+      "anchor_type": "residential-tower",
+      "address": "1750 Wewatta St, Denver, CO 80202",
+      "lat": 39.7558,
+      "lng": -105.0011,
+      "default_walk_radius_m": 1600,
+      "district_slugs": ["union-station", "lodo"],
+      "nearby_venue_slugs": ["union-station", "larimer-square", "ball-arena", "mission-ballroom", "summit-music-hall"],
+      "nearby_place_slugs": ["mercantile-dining-and-provision", "ultreia", "milk-market", "wynkoop-brewing-company", "tavernetta"]
+    }
+  ]
+}

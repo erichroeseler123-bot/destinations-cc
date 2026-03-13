@@ -1,0 +1,22 @@
+{
+  "city": "nashville",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-05:00",
+  "schema": { "entity": "anchor", "description": "Resident origin nodes used for personalization, distance calculations, and local context." },
+  "anchors": [
+    {
+      "slug": "505-nashville",
+      "name": "505 Nashville",
+      "anchor_type": "residential-tower",
+      "address": "515 Church St, Nashville, TN 37219",
+      "lat": 36.1629,
+      "lng": -86.7824,
+      "default_walk_radius_m": 1400,
+      "district_slugs": ["broadway-core", "the-gulch"],
+      "nearby_venue_slugs": ["bridgestone-arena", "ryman-auditorium", "fifth-and-broad"],
+      "nearby_place_slugs": ["skulls-rainbow-room", "assembly-food-hall", "the-patterson-house"]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "city": "miami",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-04:00",
+  "ttl_seconds": 900,
+  "stale_after": "2026-03-13T12:15:00-04:00",
+  "schema": { "entity": "event", "description": "Ingested timed facts." },
+  "events": [
+    {
+      "id": "evt-miami-heat-home",
+      "slug": "miami-heat-home-game-2026-03-13",
+      "title": "Miami Heat Home Game",
+      "venue_slug": "kaseya-center",
+      "category": "sports",
+      "start_time": "2026-03-13T19:30:00-04:00",
+      "end_time": "2026-03-13T22:00:00-04:00",
+      "status": "starting_soon",
+      "impact_level": "high",
+      "attendance_band": "large",
+      "source": { "kind": "ticketing-feed", "external_id": "heat-home-2026-03-13" },
+      "description": "Arena traffic and Bayfront area crowding expected before and after tip-off."
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "city": "nashville",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-05:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable city activity nodes.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large complex or district-scale activity center."
+    }
+  },
+  "venues": [
+    {
+      "slug": "bridgestone-arena",
+      "name": "Bridgestone Arena",
+      "venue_type": "event-venue",
+      "category": "sports-concerts",
+      "address": "501 Broadway, Nashville, TN 37203",
+      "lat": 36.1591,
+      "lng": -86.7785,
+      "impact_potential": "high",
+      "district_slugs": ["broadway-core"],
+      "near_anchor_slugs": ["505-nashville"]
+    },
+    {
+      "slug": "ryman-auditorium",
+      "name": "Ryman Auditorium",
+      "venue_type": "event-venue",
+      "category": "live-music",
+      "address": "116 Rep. John Lewis Way N, Nashville, TN 37219",
+      "lat": 36.1612,
+      "lng": -86.7785,
+      "impact_potential": "medium",
+      "district_slugs": ["broadway-core"],
+      "near_anchor_slugs": ["505-nashville"]
+    },
+    {
+      "slug": "fifth-and-broad",
+      "name": "Fifth + Broadway",
+      "venue_type": "district-hub",
+      "category": "dining-retail-nightlife",
+      "address": "5036 Broadway Pl, Nashville, TN 37203",
+      "lat": 36.1604,
+      "lng": -86.7824,
+      "impact_potential": "medium",
+      "district_slugs": ["the-gulch"],
+      "near_anchor_slugs": ["505-nashville"]
+    }
+  ]
+}

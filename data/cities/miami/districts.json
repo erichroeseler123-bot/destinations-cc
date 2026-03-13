@@ -1,0 +1,32 @@
+{
+  "city": "miami",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-04:00",
+  "schema": { "entity": "district", "description": "Durable district layer used to group venues, places, and signals." },
+  "districts": [
+    {
+      "slug": "downtown-miami",
+      "name": "Downtown Miami",
+      "district_type": "downtown-core",
+      "center": { "lat": 25.7743, "lng": -80.1937 },
+      "radius_m": 1400,
+      "vibe_tags": ["arena", "bayfront", "business", "tourism"],
+      "venue_slugs": ["kaseya-center", "adrienne-arsht-center"],
+      "place_slugs": ["zuma-miami", "julia-and-henrys"],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "brickell-core",
+      "name": "Brickell Core",
+      "district_type": "nightlife-corridor",
+      "center": { "lat": 25.7652, "lng": -80.1937 },
+      "radius_m": 1200,
+      "vibe_tags": ["rooftops", "cocktails", "after-work"],
+      "venue_slugs": ["brickell-city-centre"],
+      "place_slugs": ["sugar"],
+      "impact_profile": "medium"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "city": "austin",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-05:00",
+  "schema": { "entity": "district", "description": "Durable district layer used to group venues, places, and signals." },
+  "districts": [
+    {
+      "slug": "warehouse-district",
+      "name": "Warehouse District",
+      "district_type": "nightlife-corridor",
+      "center": { "lat": 30.2674, "lng": -97.7479 },
+      "radius_m": 1100,
+      "vibe_tags": ["cocktails", "music", "downtown"],
+      "venue_slugs": ["acl-live"],
+      "place_slugs": ["small-victory", "fareground"],
+      "impact_profile": "medium"
+    },
+    {
+      "slug": "rainey-street",
+      "name": "Rainey Street",
+      "district_type": "nightlife-corridor",
+      "center": { "lat": 30.2593, "lng": -97.7383 },
+      "radius_m": 900,
+      "vibe_tags": ["bars", "late-night", "music"],
+      "venue_slugs": ["rainey-street-district", "moody-center"],
+      "place_slugs": ["comedor"],
+      "impact_profile": "high"
+    }
+  ]
+}

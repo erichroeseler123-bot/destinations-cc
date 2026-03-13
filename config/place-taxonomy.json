@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "place_types": ["restaurant", "bar", "food-hall", "brewery", "restaurant-bar", "rooftop-bar", "coffeehouse"],
+  "quick_actions": ["menu", "reserve", "directions"],
+  "notes": "Durable discovery inventory only. Live state must come from signals."
+}

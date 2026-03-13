@@ -1,0 +1,22 @@
+{
+  "city": "chicago",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-05:00",
+  "schema": { "entity": "anchor", "description": "Resident origin nodes used for personalization, distance calculations, and local context." },
+  "anchors": [
+    {
+      "slug": "aqua",
+      "name": "Aqua at Lakeshore East",
+      "anchor_type": "residential-tower",
+      "address": "225 N Columbus Dr, Chicago, IL 60601",
+      "lat": 41.886,
+      "lng": -87.6209,
+      "default_walk_radius_m": 1600,
+      "district_slugs": ["loop-core", "river-north"],
+      "nearby_venue_slugs": ["chicago-theatre", "millennium-park-campus", "merchandise-mart"],
+      "nearby_place_slugs": ["cindy-s", "the-gage", "beatnik-on-the-river"]
+    }
+  ]
+}

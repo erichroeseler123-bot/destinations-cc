@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "signal_types": ["high_impact", "event_awareness", "district_activity", "micro_post"],
+  "provenance_types": ["derived", "source_backed", "manual_editorial"],
+  "rules": {
+    "source_backed_requires_source_ref": true,
+    "signals_must_expire": true,
+    "signals_may_reference_event_venue_place": true
+  }
+}

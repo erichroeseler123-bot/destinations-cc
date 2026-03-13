@@ -1,0 +1,22 @@
+{
+  "city": "miami",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-04:00",
+  "schema": { "entity": "anchor", "description": "Resident origin nodes used for personalization, distance calculations, and local context." },
+  "anchors": [
+    {
+      "slug": "ten-museum-park",
+      "name": "Ten Museum Park",
+      "anchor_type": "residential-tower",
+      "address": "1040 Biscayne Blvd, Miami, FL 33132",
+      "lat": 25.7852,
+      "lng": -80.1881,
+      "default_walk_radius_m": 1400,
+      "district_slugs": ["downtown-miami", "brickell-core"],
+      "nearby_venue_slugs": ["kaseya-center", "adrienne-arsht-center", "brickell-city-centre"],
+      "nearby_place_slugs": ["zuma-miami", "sugar", "julia-and-henrys"]
+    }
+  ]
+}

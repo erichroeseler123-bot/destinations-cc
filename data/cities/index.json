@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "updated_at": "2026-03-13T12:00:00-06:00",
+  "cities": [
+    {
+      "slug": "denver",
+      "name": "Denver",
+      "state": "CO",
+      "timezone": "America/Denver",
+      "centroid": { "lat": 39.7392, "lng": -104.9903 },
+      "default_walk_radius_m": 1500,
+      "launch_status": "beta",
+      "density_profile": "mixed",
+      "modes": ["event-heavy", "convention-heavy", "nightlife-heavy"]
+    },
+    {
+      "slug": "chicago",
+      "name": "Chicago",
+      "state": "IL",
+      "timezone": "America/Chicago",
+      "centroid": { "lat": 41.8781, "lng": -87.6298 },
+      "default_walk_radius_m": 1600,
+      "launch_status": "seed",
+      "density_profile": "compact",
+      "modes": ["event-heavy", "tourism-heavy", "nightlife-heavy"]
+    },
+    {
+      "slug": "miami",
+      "name": "Miami",
+      "state": "FL",
+      "timezone": "America/New_York",
+      "centroid": { "lat": 25.7617, "lng": -80.1918 },
+      "default_walk_radius_m": 1400,
+      "launch_status": "seed",
+      "density_profile": "mixed",
+      "modes": ["tourism-heavy", "nightlife-heavy", "convention-heavy"]
+    },
+    {
+      "slug": "nashville",
+      "name": "Nashville",
+      "state": "TN",
+      "timezone": "America/Chicago",
+      "centroid": { "lat": 36.1627, "lng": -86.7816 },
+      "default_walk_radius_m": 1400,
+      "launch_status": "seed",
+      "density_profile": "mixed",
+      "modes": ["nightlife-heavy", "event-heavy", "tourism-heavy"]
+    },
+    {
+      "slug": "austin",
+      "name": "Austin",
+      "state": "TX",
+      "timezone": "America/Chicago",
+      "centroid": { "lat": 30.2672, "lng": -97.7431 },
+      "default_walk_radius_m": 1400,
+      "launch_status": "seed",
+      "density_profile": "mixed",
+      "modes": ["nightlife-heavy", "event-heavy", "tourism-heavy"]
+    },
+    {
+      "slug": "new-york-city",
+      "name": "New York City",
+      "state": "NY",
+      "timezone": "America/New_York",
+      "centroid": { "lat": 40.7128, "lng": -74.006 },
+      "default_walk_radius_m": 1700,
+      "launch_status": "seed",
+      "density_profile": "compact",
+      "modes": ["event-heavy", "tourism-heavy", "nightlife-heavy"]
+    }
+  ]
+}

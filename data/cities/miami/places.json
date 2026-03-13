@@ -1,0 +1,46 @@
+{
+  "city": "miami",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-04:00",
+  "schema": { "entity": "place", "description": "Durable social and discovery inventory." },
+  "places": [
+    {
+      "slug": "zuma-miami",
+      "name": "Zuma Miami",
+      "place_type": "restaurant",
+      "category": "japanese-riverfront",
+      "address": "270 Biscayne Blvd Way, Miami, FL 33131",
+      "lat": 25.7713,
+      "lng": -80.1892,
+      "district_slugs": ["downtown-miami"],
+      "tags": ["dinner", "waterfront", "date-night"],
+      "quick_actions": ["menu", "reserve", "directions"]
+    },
+    {
+      "slug": "sugar",
+      "name": "Sugar",
+      "place_type": "rooftop-bar",
+      "category": "rooftop-bar",
+      "address": "788 Brickell Plaza, Miami, FL 33131",
+      "lat": 25.7671,
+      "lng": -80.1925,
+      "district_slugs": ["brickell-core"],
+      "tags": ["cocktails", "views", "nightlife"],
+      "quick_actions": ["menu", "directions"]
+    },
+    {
+      "slug": "julia-and-henrys",
+      "name": "Julia & Henry's",
+      "place_type": "food-hall",
+      "category": "food-hall-social",
+      "address": "200 E Flagler St, Miami, FL 33131",
+      "lat": 25.7742,
+      "lng": -80.1898,
+      "district_slugs": ["downtown-miami"],
+      "tags": ["casual", "group-spot", "walkable"],
+      "quick_actions": ["directions"]
+    }
+  ]
+}

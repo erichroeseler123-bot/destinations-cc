@@ -1,0 +1,32 @@
+{
+  "city": "nashville",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-05:00",
+  "schema": { "entity": "district", "description": "Durable district layer used to group venues, places, and signals." },
+  "districts": [
+    {
+      "slug": "broadway-core",
+      "name": "Broadway Core",
+      "district_type": "nightlife-corridor",
+      "center": { "lat": 36.1617, "lng": -86.7789 },
+      "radius_m": 1200,
+      "vibe_tags": ["honky-tonks", "concerts", "tourism"],
+      "venue_slugs": ["bridgestone-arena", "ryman-auditorium"],
+      "place_slugs": ["assembly-food-hall", "skulls-rainbow-room"],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "the-gulch",
+      "name": "The Gulch",
+      "district_type": "mixed-use-core",
+      "center": { "lat": 36.1562, "lng": -86.7868 },
+      "radius_m": 1000,
+      "vibe_tags": ["cocktails", "restaurants", "hotel-bars"],
+      "venue_slugs": ["fifth-and-broad"],
+      "place_slugs": ["the-patterson-house"],
+      "impact_profile": "medium"
+    }
+  ]
+}

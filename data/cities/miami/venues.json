@@ -1,0 +1,55 @@
+{
+  "city": "miami",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-04:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable city activity nodes.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large complex or district-scale activity center."
+    }
+  },
+  "venues": [
+    {
+      "slug": "kaseya-center",
+      "name": "Kaseya Center",
+      "venue_type": "event-venue",
+      "category": "sports-concerts",
+      "address": "601 Biscayne Blvd, Miami, FL 33132",
+      "lat": 25.7814,
+      "lng": -80.187,
+      "impact_potential": "high",
+      "district_slugs": ["downtown-miami"],
+      "near_anchor_slugs": ["ten-museum-park"]
+    },
+    {
+      "slug": "adrienne-arsht-center",
+      "name": "Adrienne Arsht Center",
+      "venue_type": "major-event-campus",
+      "category": "theater-arts",
+      "address": "1300 Biscayne Blvd, Miami, FL 33132",
+      "lat": 25.7872,
+      "lng": -80.1883,
+      "impact_potential": "medium",
+      "district_slugs": ["downtown-miami"],
+      "near_anchor_slugs": ["ten-museum-park"]
+    },
+    {
+      "slug": "brickell-city-centre",
+      "name": "Brickell City Centre",
+      "venue_type": "district-hub",
+      "category": "shopping-dining-nightlife",
+      "address": "701 S Miami Ave, Miami, FL 33131",
+      "lat": 25.7673,
+      "lng": -80.1931,
+      "impact_potential": "medium",
+      "district_slugs": ["brickell-core"],
+      "near_anchor_slugs": ["ten-museum-park"]
+    }
+  ]
+}

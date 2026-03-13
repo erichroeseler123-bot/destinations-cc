@@ -1,0 +1,26 @@
+{
+  "city": "austin",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-05:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-13T12:05:00-05:00",
+  "schema": { "entity": "signal", "description": "Ephemeral NOW-layer output.", "provenance_types": ["derived", "source_backed", "manual_editorial"] },
+  "signals": [
+    {
+      "id": "sig-austin-acl-live-tonight",
+      "signal_type": "event_awareness",
+      "provenance": "derived",
+      "title": "Warehouse District music traffic tonight",
+      "description": "ACL Live will pull a dense pre-show cocktail crowd across downtown tonight.",
+      "impact_level": "medium",
+      "rank_weight": 0.7,
+      "status": "scheduled",
+      "starts_at": "2026-03-13T18:30:00-05:00",
+      "expires_at": "2026-03-13T22:30:00-05:00",
+      "linked_event_id": "evt-austin-acl-live",
+      "linked_venue_slug": "acl-live",
+      "affected_district_slugs": ["warehouse-district"],
+      "near_anchor_slugs": ["the-independent"]
+    }
+  ]
+}

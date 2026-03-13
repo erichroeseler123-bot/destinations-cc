@@ -1,0 +1,54 @@
+{
+  "city": "denver",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-06:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-06:00",
+  "schema": { "entity": "district", "description": "Durable district layer used to group venues, places, and signals." },
+  "districts": [
+    {
+      "slug": "downtown-core",
+      "name": "Downtown Core",
+      "district_type": "downtown-core",
+      "center": { "lat": 39.7445, "lng": -104.9948 },
+      "radius_m": 1200,
+      "vibe_tags": ["civic", "business", "theater", "convention"],
+      "venue_slugs": ["paramount-theatre", "denver-performing-arts-complex", "colorado-convention-center", "comedy-works-downtown", "larimer-square"],
+      "place_slugs": ["guard-and-grace", "the-corner-office", "union-lodge-no-1", "rioja"],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "theater-district",
+      "name": "Theater District",
+      "district_type": "arts-district",
+      "center": { "lat": 39.7457, "lng": -104.9979 },
+      "radius_m": 850,
+      "vibe_tags": ["theater", "pre-show", "arts"],
+      "venue_slugs": ["denver-performing-arts-complex", "paramount-theatre", "comedy-works-downtown"],
+      "place_slugs": ["the-corner-office", "union-lodge-no-1"],
+      "impact_profile": "medium"
+    },
+    {
+      "slug": "lodo",
+      "name": "LoDo",
+      "district_type": "nightlife-corridor",
+      "center": { "lat": 39.7514, "lng": -104.9983 },
+      "radius_m": 1100,
+      "vibe_tags": ["nightlife", "restaurants", "pre-game"],
+      "venue_slugs": ["larimer-square", "union-station", "summit-music-hall", "ball-arena"],
+      "place_slugs": ["rioja", "tavernetta", "milk-market", "wynkoop-brewing-company"],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "union-station",
+      "name": "Union Station",
+      "district_type": "mixed-use-core",
+      "center": { "lat": 39.7528, "lng": -105.0008 },
+      "radius_m": 900,
+      "vibe_tags": ["dining", "rail", "hotel-bars", "walkable"],
+      "venue_slugs": ["union-station", "larimer-square", "summit-music-hall"],
+      "place_slugs": ["tavernetta", "mercantile-dining-and-provision", "ultreia", "milk-market", "wynkoop-brewing-company"],
+      "impact_profile": "medium"
+    }
+  ]
+}

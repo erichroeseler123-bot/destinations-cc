@@ -1,0 +1,24 @@
+{
+  "city": "new-york-city",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-04:00",
+  "ttl_seconds": 900,
+  "stale_after": "2026-03-13T12:15:00-04:00",
+  "schema": { "entity": "event", "description": "Ingested timed facts." },
+  "events": [
+    {
+      "id": "evt-nyc-msg-headliner",
+      "slug": "msg-headliner-2026-03-13",
+      "title": "Headliner at Madison Square Garden",
+      "venue_slug": "madison-square-garden",
+      "category": "concert",
+      "start_time": "2026-03-13T20:00:00-04:00",
+      "end_time": "2026-03-13T23:00:00-04:00",
+      "status": "starting_soon",
+      "impact_level": "high",
+      "attendance_band": "large",
+      "source": { "kind": "ticketing-feed", "external_id": "msg-headliner-2026-03-13" },
+      "description": "Penn area traffic and pre-show restaurant demand expected to spike tonight."
+    }
+  ]
+}

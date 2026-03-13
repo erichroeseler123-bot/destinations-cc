@@ -1,0 +1,46 @@
+{
+  "city": "austin",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-05:00",
+  "schema": { "entity": "place", "description": "Durable social and discovery inventory." },
+  "places": [
+    {
+      "slug": "comedor",
+      "name": "Comedor",
+      "place_type": "restaurant",
+      "category": "mexican",
+      "address": "501 Colorado St, Austin, TX 78701",
+      "lat": 30.2674,
+      "lng": -97.7465,
+      "district_slugs": ["warehouse-district"],
+      "tags": ["dinner", "design-forward", "date-night"],
+      "quick_actions": ["menu", "reserve", "directions"]
+    },
+    {
+      "slug": "small-victory",
+      "name": "Small Victory",
+      "place_type": "bar",
+      "category": "cocktail-bar",
+      "address": "108 E 7th St, Austin, TX 78701",
+      "lat": 30.2687,
+      "lng": -97.7426,
+      "district_slugs": ["warehouse-district"],
+      "tags": ["cocktails", "nightlife", "date-night"],
+      "quick_actions": ["menu", "directions"]
+    },
+    {
+      "slug": "fareground",
+      "name": "Fareground",
+      "place_type": "food-hall",
+      "category": "food-hall-social",
+      "address": "111 Congress Ave, Austin, TX 78701",
+      "lat": 30.2647,
+      "lng": -97.7442,
+      "district_slugs": ["warehouse-district"],
+      "tags": ["casual", "group-spot", "walkable"],
+      "quick_actions": ["directions"]
+    }
+  ]
+}

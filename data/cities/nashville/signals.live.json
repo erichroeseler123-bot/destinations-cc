@@ -1,0 +1,26 @@
+{
+  "city": "nashville",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-05:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-13T12:05:00-05:00",
+  "schema": { "entity": "signal", "description": "Ephemeral NOW-layer output.", "provenance_types": ["derived", "source_backed", "manual_editorial"] },
+  "signals": [
+    {
+      "id": "sig-nashville-bridgestone-tonight",
+      "signal_type": "high_impact",
+      "provenance": "derived",
+      "title": "Broadway will be packed before the arena show",
+      "description": "Expect heavier than normal Broadway bar traffic and slower pickups before the headliner at Bridgestone.",
+      "impact_level": "high",
+      "rank_weight": 0.88,
+      "status": "scheduled",
+      "starts_at": "2026-03-13T18:00:00-05:00",
+      "expires_at": "2026-03-13T23:00:00-05:00",
+      "linked_event_id": "evt-nashville-bridgestone-show",
+      "linked_venue_slug": "bridgestone-arena",
+      "affected_district_slugs": ["broadway-core"],
+      "near_anchor_slugs": ["505-nashville"]
+    }
+  ]
+}

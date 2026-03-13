@@ -1,0 +1,47 @@
+{
+  "city": "denver",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-06:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-13T12:05:00-06:00",
+  "schema": {
+    "entity": "signal",
+    "description": "Ephemeral NOW-layer output.",
+    "provenance_types": ["derived", "source_backed", "manual_editorial"]
+  },
+  "signals": [
+    {
+      "id": "sig-denver-rv-show-impact",
+      "signal_type": "high_impact",
+      "provenance": "derived",
+      "title": "Convention crowds active downtown today",
+      "description": "The Great American RV Show is driving heavier pedestrian traffic and tighter parking near the Convention Center corridor.",
+      "impact_level": "high",
+      "rank_weight": 0.96,
+      "status": "active",
+      "starts_at": "2026-03-13T10:00:00-06:00",
+      "expires_at": "2026-03-14T20:00:00-06:00",
+      "linked_event_id": "evt-denver-rv-show",
+      "linked_venue_slug": "colorado-convention-center",
+      "affected_district_slugs": ["downtown-core"],
+      "near_anchor_slugs": ["spire", "coloradan"],
+      "pro_tip": "Leave earlier than usual if you are crossing downtown westbound in late afternoon."
+    },
+    {
+      "id": "sig-denver-tavernetta-happy-hour",
+      "signal_type": "micro_post",
+      "provenance": "source_backed",
+      "title": "Happy hour moving now at Tavernetta",
+      "description": "Strong early-evening energy near Union Station with drinks and dinner traffic building now.",
+      "impact_level": "low",
+      "rank_weight": 0.41,
+      "status": "active",
+      "starts_at": "2026-03-13T16:00:00-06:00",
+      "expires_at": "2026-03-13T18:00:00-06:00",
+      "linked_place_slug": "tavernetta",
+      "source_ref": { "kind": "venue-partner", "external_id": "tavernetta-hh-2026-03-13-1600" },
+      "affected_district_slugs": ["union-station"],
+      "near_anchor_slugs": ["spire", "coloradan"]
+    }
+  ]
+}

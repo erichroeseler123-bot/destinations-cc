@@ -1,0 +1,118 @@
+{
+  "city": "denver",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-06:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-06:00",
+  "schema": { "entity": "place", "description": "Durable social and discovery inventory." },
+  "places": [
+    {
+      "slug": "tavernetta",
+      "name": "Tavernetta",
+      "place_type": "restaurant",
+      "category": "italian-cocktails",
+      "address": "1889 16th St, Denver, CO 80202",
+      "lat": 39.752,
+      "lng": -105,
+      "district_slugs": ["union-station"],
+      "tags": ["date-night", "pre-show", "walkable", "dinner"],
+      "quick_actions": ["menu", "reserve", "directions"]
+    },
+    {
+      "slug": "guard-and-grace",
+      "name": "Guard and Grace",
+      "place_type": "restaurant",
+      "category": "steakhouse",
+      "address": "1801 California St, Denver, CO 80202",
+      "lat": 39.7468,
+      "lng": -104.9907,
+      "district_slugs": ["downtown-core"],
+      "tags": ["dinner", "upscale", "date-night"],
+      "quick_actions": ["menu", "reserve", "directions"]
+    },
+    {
+      "slug": "rioja",
+      "name": "Rioja",
+      "place_type": "restaurant",
+      "category": "dining",
+      "address": "1431 Larimer St, Denver, CO 80202",
+      "lat": 39.7475,
+      "lng": -104.9992,
+      "district_slugs": ["downtown-core"],
+      "tags": ["date-night", "dinner", "walkable"],
+      "quick_actions": ["menu", "reserve", "directions"]
+    },
+    {
+      "slug": "union-lodge-no-1",
+      "name": "Union Lodge No. 1",
+      "place_type": "bar",
+      "category": "cocktail-bar",
+      "address": "1543 Champa St, Denver, CO 80202",
+      "lat": 39.7482,
+      "lng": -104.9945,
+      "district_slugs": ["downtown-core"],
+      "tags": ["cocktails", "nightlife", "late-night"],
+      "quick_actions": ["directions"]
+    },
+    {
+      "slug": "the-corner-office",
+      "name": "The Corner Office",
+      "place_type": "restaurant-bar",
+      "category": "restaurant-nightlife",
+      "address": "1401 Curtis St, Denver, CO 80202",
+      "lat": 39.7461,
+      "lng": -104.9977,
+      "district_slugs": ["downtown-core"],
+      "tags": ["pre-show", "cocktails", "walkable"],
+      "quick_actions": ["menu", "reserve", "directions"]
+    },
+    {
+      "slug": "mercantile-dining-and-provision",
+      "name": "Mercantile Dining & Provision",
+      "place_type": "restaurant",
+      "category": "restaurant-cafe",
+      "address": "1701 Wynkoop St #155, Denver, CO 80202",
+      "lat": 39.7531,
+      "lng": -105.0006,
+      "district_slugs": ["union-station"],
+      "tags": ["brunch", "dinner", "walkable"],
+      "quick_actions": ["menu", "reserve", "directions"]
+    },
+    {
+      "slug": "ultreia",
+      "name": "Ultreia",
+      "place_type": "restaurant",
+      "category": "spanish-tapas",
+      "address": "1701 Wynkoop St #125, Denver, CO 80202",
+      "lat": 39.7529,
+      "lng": -105.0008,
+      "district_slugs": ["union-station"],
+      "tags": ["tapas", "drinks", "date-night"],
+      "quick_actions": ["menu", "reserve", "directions"]
+    },
+    {
+      "slug": "milk-market",
+      "name": "Denver Milk Market",
+      "place_type": "food-hall",
+      "category": "food-hall-social",
+      "address": "1800 Wazee St, Denver, CO 80202",
+      "lat": 39.7545,
+      "lng": -104.9976,
+      "district_slugs": ["union-station"],
+      "tags": ["group-spot", "casual", "food-and-drink"],
+      "quick_actions": ["directions"]
+    },
+    {
+      "slug": "wynkoop-brewing-company",
+      "name": "Wynkoop Brewing Company",
+      "place_type": "brewery",
+      "category": "brewery-bar",
+      "address": "1634 18th St, Denver, CO 80202",
+      "lat": 39.7539,
+      "lng": -104.9984,
+      "district_slugs": ["union-station"],
+      "tags": ["beer", "group-spot", "casual"],
+      "quick_actions": ["directions"]
+    }
+  ]
+}

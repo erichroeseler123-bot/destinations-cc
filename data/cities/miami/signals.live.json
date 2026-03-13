@@ -1,0 +1,26 @@
+{
+  "city": "miami",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-04:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-13T12:05:00-04:00",
+  "schema": { "entity": "signal", "description": "Ephemeral NOW-layer output.", "provenance_types": ["derived", "source_backed", "manual_editorial"] },
+  "signals": [
+    {
+      "id": "sig-miami-heat-tonight",
+      "signal_type": "high_impact",
+      "provenance": "derived",
+      "title": "Kaseya Center crowd tonight",
+      "description": "Expect heavier ride-share demand and dinner crowding near the arena before the Heat game.",
+      "impact_level": "high",
+      "rank_weight": 0.91,
+      "status": "scheduled",
+      "starts_at": "2026-03-13T18:00:00-04:00",
+      "expires_at": "2026-03-13T22:30:00-04:00",
+      "linked_event_id": "evt-miami-heat-home",
+      "linked_venue_slug": "kaseya-center",
+      "affected_district_slugs": ["downtown-miami"],
+      "near_anchor_slugs": ["ten-museum-park"]
+    }
+  ]
+}

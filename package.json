@@ -76,6 +76,7 @@
     "dcc:build": "npm run dcc:migrate:locations && npm run dcc:migrate:ports && npm run dcc:index && npm run dcc:validate && npm run dcc:graph:place",
     "dcc:env:check": "node scripts/dcc/env-check.mjs",
     "dcc:env:check:ci": "node scripts/dcc/env-check.mjs --structure-only",
+    "dcc:live-city:validate": "tsx scripts/dcc/validate-live-city.ts",
     "dcc:city:validate": "tsx scripts/dcc/validate-city-config.ts",
     "dcc:decision:validate": "tsx scripts/dcc/validate-decision-pages.ts",
     "dcc:live-pulse:sweep": "node --import tsx scripts/dcc/sweep-live-pulse.ts",

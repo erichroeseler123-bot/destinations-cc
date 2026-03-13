@@ -1,0 +1,26 @@
+{
+  "city": "chicago",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-05:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-13T12:05:00-05:00",
+  "schema": { "entity": "signal", "description": "Ephemeral NOW-layer output.", "provenance_types": ["derived", "source_backed", "manual_editorial"] },
+  "signals": [
+    {
+      "id": "sig-chicago-theatre-tonight",
+      "signal_type": "event_awareness",
+      "provenance": "derived",
+      "title": "Chicago Theatre crowd tonight",
+      "description": "State Street will pick up dinner and theater traffic before the evening headliner.",
+      "impact_level": "medium",
+      "rank_weight": 0.73,
+      "status": "scheduled",
+      "starts_at": "2026-03-13T18:00:00-05:00",
+      "expires_at": "2026-03-13T22:00:00-05:00",
+      "linked_event_id": "evt-chicago-theatre-comedy",
+      "linked_venue_slug": "chicago-theatre",
+      "affected_district_slugs": ["loop-core"],
+      "near_anchor_slugs": ["aqua"]
+    }
+  ]
+}

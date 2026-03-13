@@ -1,0 +1,22 @@
+{
+  "city": "new-york-city",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-04:00",
+  "schema": { "entity": "anchor", "description": "Resident origin nodes used for personalization, distance calculations, and local context." },
+  "anchors": [
+    {
+      "slug": "one-manhattan-square",
+      "name": "One Manhattan Square",
+      "anchor_type": "residential-tower",
+      "address": "252 South St, New York, NY 10002",
+      "lat": 40.7126,
+      "lng": -73.9867,
+      "default_walk_radius_m": 1700,
+      "district_slugs": ["lower-manhattan", "midtown-event-core"],
+      "nearby_venue_slugs": ["madison-square-garden", "pier-17", "the-bowery-ballroom"],
+      "nearby_place_slugs": ["manhatta", "dante-seaport", "the-dead-rabbit"]
+    }
+  ]
+}

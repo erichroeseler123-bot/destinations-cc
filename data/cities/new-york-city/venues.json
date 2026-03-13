@@ -1,0 +1,55 @@
+{
+  "city": "new-york-city",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-04:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable city activity nodes.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large complex or district-scale activity center."
+    }
+  },
+  "venues": [
+    {
+      "slug": "madison-square-garden",
+      "name": "Madison Square Garden",
+      "venue_type": "event-venue",
+      "category": "sports-concerts",
+      "address": "4 Pennsylvania Plaza, New York, NY 10001",
+      "lat": 40.7505,
+      "lng": -73.9934,
+      "impact_potential": "high",
+      "district_slugs": ["midtown-event-core"],
+      "near_anchor_slugs": ["one-manhattan-square"]
+    },
+    {
+      "slug": "pier-17",
+      "name": "Pier 17",
+      "venue_type": "district-hub",
+      "category": "riverfront-dining-live",
+      "address": "89 South St, New York, NY 10038",
+      "lat": 40.7061,
+      "lng": -74.0016,
+      "impact_potential": "medium",
+      "district_slugs": ["lower-manhattan"],
+      "near_anchor_slugs": ["one-manhattan-square"]
+    },
+    {
+      "slug": "the-bowery-ballroom",
+      "name": "The Bowery Ballroom",
+      "venue_type": "event-venue",
+      "category": "live-music",
+      "address": "6 Delancey St, New York, NY 10002",
+      "lat": 40.7207,
+      "lng": -73.9939,
+      "impact_potential": "medium",
+      "district_slugs": ["midtown-event-core"],
+      "near_anchor_slugs": ["one-manhattan-square"]
+    }
+  ]
+}

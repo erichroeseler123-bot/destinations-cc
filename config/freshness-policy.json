@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "durable_inventory_ttl_seconds": 2592000,
+  "events_current_ttl_seconds": 900,
+  "signals_live_ttl_seconds": 300,
+  "notes": "Cities, anchors, districts, venues, and places are durable. Events.current is refreshable fact inventory. Signals.live is ephemeral NOW-layer output."
+}
