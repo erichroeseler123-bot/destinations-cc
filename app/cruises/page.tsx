@@ -5,7 +5,10 @@ import StatGrid from "@/app/components/StatGrid";
 import StaleWarning from "@/app/components/StaleWarning";
 import CinematicBackdrop from "@/app/components/dcc/CinematicBackdrop";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
-import { listCruiseCanonicalPortSlugs } from "@/lib/dcc/internal/cruisePayload";
+import {
+  listCruiseCanonicalPortSlugs,
+  listCruiseEmbarkCanonicalPortSlugs,
+} from "@/lib/dcc/internal/cruisePayload";
 import { getCruiseHealthSummary } from "@/lib/dcc/internal/cruiseHealthSummary";
 import { getGraphHealth } from "@/lib/dcc/graph/health";
 import { listPlaceGraphSummaries } from "@/lib/dcc/graph/placeActionGraph";
@@ -30,6 +33,7 @@ export const metadata: Metadata = {
 
 export default async function CruisesPage() {
   const samplePorts = listCruiseCanonicalPortSlugs().slice(0, 8);
+  const departurePorts = listCruiseEmbarkCanonicalPortSlugs().slice(0, 6);
   const health = getCruiseHealthSummary();
   const graphHealth = getGraphHealth();
   const pulse = listPlaceGraphSummaries(6);
@@ -102,6 +106,21 @@ export default async function CruisesPage() {
             /cruises/port/{port}
           </Link>
         ))}
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-lg font-semibold">Cruises From Popular Ports</h2>
+        <div className="grid sm:grid-cols-2 gap-3">
+          {departurePorts.map((port) => (
+            <Link
+              key={port}
+              href={`/cruises/from/${port}`}
+              className="rounded-xl border border-cyan-400/20 bg-cyan-500/10 hover:bg-cyan-500/20 px-4 py-3 text-cyan-100"
+            >
+              /cruises/from/{port}
+            </Link>
+          ))}
+        </div>
       </section>
 
       <section className="space-y-2">

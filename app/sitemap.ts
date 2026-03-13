@@ -1,7 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { MetadataRoute } from "next";
-import { listCruiseCanonicalPortSlugs, listCruiseShipSlugs } from "@/lib/dcc/internal/cruisePayload";
+import {
+  listCruiseCanonicalPortSlugs,
+  listCruiseEmbarkCanonicalPortSlugs,
+  listCruiseShipSlugs,
+} from "@/lib/dcc/internal/cruisePayload";
 import { CITY_AUTHORITY_CONFIG } from "@/src/data/city-authority-config";
 import { CRUISE_SPECIALTY_LANES } from "@/src/data/cruise-specialty-lanes";
 import { PORT_AUTHORITY_CONFIG } from "@/src/data/port-authority-config";
@@ -177,7 +181,11 @@ function rankPath(
     return { priority: 0.8, changeFrequency: "weekly" };
   }
 
-  if (pathname.startsWith("/cruises/port/") || pathname.startsWith("/cruises/ship/")) {
+  if (
+    pathname.startsWith("/cruises/port/") ||
+    pathname.startsWith("/cruises/ship/") ||
+    pathname.startsWith("/cruises/from/")
+  ) {
     return { priority: 0.7, changeFrequency: "monthly" };
   }
 
@@ -206,6 +214,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const { portLastModified, cruisePortLastModified } = buildPortLastModifiedMaps();
   const cruiseLastModified = readCruiseLastModified();
   const regionUrls = REGIONS.map((r) => `/regions/${r.slug}`);
+  const cruiseDepartureUrls = listCruiseEmbarkCanonicalPortSlugs().map((slug) => `/cruises/from/${slug}`);
   const cruiseShipUrls = listCruiseShipSlugs().map((slug) => `/cruises/ship/${slug}`);
   const cruiseSpecialtyUrls = CRUISE_SPECIALTY_LANES.map((lane) => `/cruises/themed/${lane.key}`);
   const sportsLeagueUrls = SPORTS_LEAGUES_CONFIG.map((league) => `/sports/${league.slug}`);
@@ -300,6 +309,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...buildPublishableCityUrls(),
     ...buildPublishablePortUrls(),
     ...buildPublishableCruisePortUrls(),
+    ...cruiseDepartureUrls,
     ...nationalParkUrls,
     ...regionUrls,
     ...cruiseShipUrls,
