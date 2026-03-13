@@ -143,6 +143,12 @@ export default function PortAuthorityTemplate({
           </div>
 
           <div className="mt-5 flex flex-col gap-3">
+            <Link
+              href="/cruises/shore-excursions"
+              className="inline-flex items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-5 py-3 font-semibold text-emerald-100 hover:bg-emerald-500/20"
+            >
+              Open shore excursions guide
+            </Link>
             {config.tenderDock.toLowerCase().includes("tender") ? (
               <Link
                 href="/cruises/tendering"

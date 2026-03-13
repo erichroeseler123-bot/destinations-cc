@@ -84,6 +84,12 @@ export default async function CruisesPage() {
         >
           Tendering Guide
         </Link>
+        <Link
+          href="/cruises/shore-excursions"
+          className="rounded-xl border border-emerald-400/20 bg-emerald-500/10 hover:bg-emerald-500/20 px-4 py-3 text-emerald-100"
+        >
+          Shore Excursions Guide
+        </Link>
       </section>
 
       <section className="grid sm:grid-cols-2 gap-3">

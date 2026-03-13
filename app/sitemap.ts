@@ -160,6 +160,7 @@ function rankPath(
   const highPriorityRoots = new Set([
     "/cruises",
     "/cruises/tendering",
+    "/cruises/shore-excursions",
     "/national-parks",
     "/alaska",
     "/authority",
@@ -281,6 +282,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/alaska",
     "/cruises",
     "/cruises/tendering",
+    "/cruises/shore-excursions",
     "/summerlin",
     "/tours",
     "/ports",
