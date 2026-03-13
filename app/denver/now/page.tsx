@@ -37,8 +37,39 @@ function titleize(value: string) {
   return value.replaceAll("_", " ").replaceAll("-", " ");
 }
 
+const LABEL_OVERRIDES: Record<string, string> = {
+  "arts-district": "Arts district",
+  "cocktail-bar": "Cocktail bar",
+  "convention-heavy": "Convention-heavy",
+  "date-night": "Date night",
+  "downtown-core": "Downtown Core",
+  "event-heavy": "Event-heavy",
+  "food-and-drink": "Food and drink",
+  "group-spot": "Group spot",
+  "high_impact": "High impact",
+  "hotel-bars": "Hotel bars",
+  "italian-cocktails": "Italian • cocktails",
+  "major-event-campus": "Major event campus",
+  "mixed-use-core": "Mixed-use core",
+  "nightlife-corridor": "Nightlife corridor",
+  "nightlife-heavy": "Nightlife-heavy",
+  "pre-game": "Pre-game",
+  "pre-show": "Pre-show",
+  "restaurant-bar": "Restaurant bar",
+  "restaurant-cafe": "Restaurant • cafe",
+  "restaurant-nightlife": "Restaurant • nightlife",
+  "source_backed": "Source-backed",
+  "spanish-tapas": "Spanish • tapas",
+  "theater-comedy-live": "Theater • comedy • live",
+};
+
 function beautifyCategory(value: string) {
+  if (LABEL_OVERRIDES[value]) {
+    return LABEL_OVERRIDES[value];
+  }
+
   return value
+    .replaceAll("_", "-")
     .split("-")
     .map((part) => {
       if (part === "lodo") {
@@ -47,6 +78,12 @@ function beautifyCategory(value: string) {
       return part.charAt(0).toUpperCase() + part.slice(1);
     })
     .join(" • ");
+}
+
+function getAnchorLabel(name: string) {
+  return name
+    .replace(/^The\s+/i, "")
+    .replace(/\s+(Denver|Chicago|Miami|Nashville|Austin|New York City)$/i, "");
 }
 
 function SignalCard({
@@ -80,8 +117,8 @@ function SignalCard({
     <article className="rounded-[1.6rem] border border-white/10 bg-black/25 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.28)]">
       <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.22em]">
         <span className={`rounded-full border px-2.5 py-1 ${impactClass}`}>{signal.impact_level}</span>
-        <span className="rounded-full border border-white/10 px-2.5 py-1 text-zinc-300">{titleize(signal.signal_type)}</span>
-        <span className="rounded-full border border-white/10 px-2.5 py-1 text-zinc-400">{titleize(signal.provenance)}</span>
+        <span className="rounded-full border border-white/10 px-2.5 py-1 text-zinc-300">{beautifyCategory(signal.signal_type)}</span>
+        <span className="rounded-full border border-white/10 px-2.5 py-1 text-zinc-400">{beautifyCategory(signal.provenance)}</span>
       </div>
       <h3 className="mt-4 text-xl font-semibold text-white">{signal.title}</h3>
       <p className="mt-2 text-sm leading-6 text-zinc-300">{signal.description}</p>
@@ -160,7 +197,13 @@ export default async function DenverNowPage({
   const anchorDistricts = bundle.districts.districts.filter((district) => anchor.district_slugs.includes(district.slug));
   const anchorVenues = bundle.venues.venues.filter((venue) => anchor.nearby_venue_slugs.includes(venue.slug));
   const anchorPlaces = bundle.places.places.filter((place) => anchor.nearby_place_slugs.includes(place.slug));
-  const distinctAnchorSignals = anchorSignals.filter((signal) => signal.id !== topSignal?.id);
+  const distinctAnchorSignals = anchorSignals.filter((signal) => {
+    if (signal.id === topSignal?.id) {
+      return false;
+    }
+
+    return (signal.affected_district_slugs ?? []).some((district) => anchor.district_slugs.includes(district));
+  });
   const placeRail = Array.from(
     new Map(
       [...anchorPlaces, ...bundle.places.places].map((place) => [place.slug, place])
@@ -190,7 +233,7 @@ export default async function DenverNowPage({
                   key={mode}
                   className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.18em] text-zinc-200"
                 >
-                  {titleize(mode)}
+                  {beautifyCategory(mode)}
                 </span>
               ))}
             </div>
@@ -275,7 +318,7 @@ export default async function DenverNowPage({
 
           <section id="anchor-selector" className="space-y-4">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.22em] text-amber-200">Near {anchor.name.split(" ")[0]}</p>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-amber-200">Near {getAnchorLabel(anchor.name)}</p>
               <h2 className="mt-2 text-2xl font-bold">What is around your building</h2>
             </div>
             <div className="rounded-[1.8rem] border border-white/10 bg-white/5 p-5">
