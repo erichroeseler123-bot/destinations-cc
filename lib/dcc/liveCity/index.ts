@@ -51,6 +51,7 @@ import {
   type LiveCitySignal,
   type LiveCityVenue,
 } from "@/lib/dcc/liveCity/schema";
+import { scoreSignalForAnchor } from "@/lib/dcc/liveCity/relevance";
 
 export const LIVE_CITY_REGISTRY = LiveCityRegistrySchema.parse(cityRegistryJson);
 
@@ -146,6 +147,29 @@ export function getLiveCityEvent(city: LiveCityKey, id: string): LiveCityEvent |
 
 export function getSignalsNearAnchor(city: LiveCityKey, anchorSlug: string): LiveCitySignal[] {
   return LIVE_CITY_DATA[city].signals.signals.filter((signal) => signal.near_anchor_slugs.includes(anchorSlug));
+}
+
+export function getScoredSignalsNearAnchor(city: LiveCityKey, anchorSlug: string) {
+  const anchor = getLiveCityAnchor(city, anchorSlug);
+  if (!anchor) {
+    return [];
+  }
+
+  const venuesBySlug = new Map(LIVE_CITY_DATA[city].venues.venues.map((venue) => [venue.slug, venue]));
+  const placesBySlug = new Map(LIVE_CITY_DATA[city].places.places.map((place) => [place.slug, place]));
+  const districtsBySlug = new Map(LIVE_CITY_DATA[city].districts.districts.map((district) => [district.slug, district]));
+
+  return LIVE_CITY_DATA[city].signals.signals
+    .map((signal) =>
+      scoreSignalForAnchor({
+        anchor,
+        signal,
+        venuesBySlug,
+        placesBySlug,
+        districtsBySlug,
+      })
+    )
+    .sort((a, b) => b.score - a.score);
 }
 
 export function getSignalsForDistrict(city: LiveCityKey, districtSlug: string): LiveCitySignal[] {
