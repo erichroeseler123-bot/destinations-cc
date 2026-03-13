@@ -10,6 +10,21 @@ export default function CityMoneyLaneSection({
   config: CityMoneyLaneConfig;
   tone?: "cyan" | "amber";
 }) {
+  const cityToursHref = `/${config.cityKey}/tours`;
+  const buildMoneyLaneHref = (
+    href: string,
+    sourceSection: "city_money_lane_primary" | "city_money_lane_secondary" | "city_money_lane_intent",
+    intentQuery?: string,
+  ) =>
+    href === cityToursHref
+      ? cityToursHref
+      : buildCityTrackedHref({
+          href,
+          city: config.cityKey,
+          lane: "money",
+          sourceSection,
+          intentQuery,
+        });
   const shellClass =
     tone === "amber"
       ? "rounded-2xl border border-amber-400/20 bg-amber-500/5 p-6"
@@ -35,12 +50,7 @@ export default function CityMoneyLaneSection({
 
       <div className="mt-4 flex flex-col gap-3 sm:flex-row">
         <Link
-          href={buildCityTrackedHref({
-            href: config.primaryCtaHref,
-            city: config.cityKey,
-            lane: "money",
-            sourceSection: "city_money_lane_primary",
-          })}
+          href={buildMoneyLaneHref(config.primaryCtaHref, "city_money_lane_primary")}
           data-dcc-city={config.cityKey}
           data-dcc-lane="money"
           data-dcc-source-section="city_money_lane_primary"
@@ -49,12 +59,7 @@ export default function CityMoneyLaneSection({
           {config.primaryCtaLabel}
         </Link>
         <Link
-          href={buildCityTrackedHref({
-            href: config.secondaryCtaHref,
-            city: config.cityKey,
-            lane: "money",
-            sourceSection: "city_money_lane_secondary",
-          })}
+          href={buildMoneyLaneHref(config.secondaryCtaHref, "city_money_lane_secondary")}
           data-dcc-city={config.cityKey}
           data-dcc-lane="money"
           data-dcc-source-section="city_money_lane_secondary"
@@ -68,13 +73,13 @@ export default function CityMoneyLaneSection({
         {config.intents.map((intent) => (
           <Link
             key={intent.query}
-            href={buildCityTrackedHref({
-              href: `/tours?city=${encodeURIComponent(config.cityKey)}&q=${encodeURIComponent(intent.query)}`,
-              city: config.cityKey,
-              lane: "money",
-              sourceSection: "city_money_lane_intent",
-              intentQuery: intent.query,
-            })}
+            href={buildMoneyLaneHref(
+              config.cityKey === "las-vegas"
+                ? cityToursHref
+                : `/tours?city=${encodeURIComponent(config.cityKey)}&q=${encodeURIComponent(intent.query)}`,
+              "city_money_lane_intent",
+              intent.query,
+            )}
             data-dcc-city={config.cityKey}
             data-dcc-lane="money"
             data-dcc-source-section="city_money_lane_intent"

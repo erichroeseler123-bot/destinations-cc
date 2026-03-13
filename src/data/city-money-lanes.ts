@@ -49,7 +49,7 @@ export const CITY_MONEY_LANES: Record<string, CityMoneyLaneConfig> = {
     primaryCtaLabel: "Browse Vegas Tours",
     primaryCtaHref: "/las-vegas/tours",
     secondaryCtaLabel: "View City Tour Inventory",
-    secondaryCtaHref: "/tours?city=las-vegas",
+    secondaryCtaHref: "/las-vegas/tours",
     intents: [
       { label: "Grand Canyon bus tours", query: "grand canyon tour from las vegas" },
       { label: "Grand Canyon helicopter tours", query: "grand canyon helicopter tour las vegas" },
