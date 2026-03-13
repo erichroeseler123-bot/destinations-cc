@@ -35,6 +35,40 @@ export const GRAND_CANYON_PILLAR: AttractionPillarConfig = {
       body: "Grand Canyon supports separate subclusters around rims, Skywalk, helicopter products, rafting, and Vegas-origin day-trip planning.",
     },
   ],
+  realityCheckSummary: [
+    "West Rim and South Rim are not interchangeable day-trip commitments.",
+    "Bus and coach products can add more waiting and transfer time than buyers expect.",
+    "Weather, visibility, and seasonal heat matter more than the brochure makes it seem.",
+  ],
+  realityCheckEvidence: [
+    {
+      title: "Grand Canyon West Rim day-trip walkthrough from Las Vegas",
+      url: "https://www.youtube.com/watch?v=Y0K4r-8QKxw",
+      source: "Recent traveler vlog",
+      type: "video",
+      whyItMatters:
+        "Shows what the West Rim version actually feels like as a day trip, including coach flow, viewpoints, and how much of the day is really transit.",
+      tags: ["crowds", "bus tours", "timing"],
+    },
+    {
+      title: "Grand Canyon helicopter landing experience",
+      url: "https://www.youtube.com/watch?v=8W0cXn4f2fY",
+      source: "Traveler footage",
+      type: "video",
+      whyItMatters:
+        "Useful for buyers who need to understand the difference between premium helicopter spectacle and the longer overland canyon day.",
+      tags: ["helicopter", "premium", "timing"],
+    },
+    {
+      title: "NPS Grand Canyon alerts and conditions",
+      url: "https://www.nps.gov/grca/planyourvisit/conditions.htm",
+      source: "National Park Service",
+      type: "official-notice",
+      whyItMatters:
+        "The most useful official conditions source when weather, closures, visibility, or seasonal operational issues can change the whole day.",
+      tags: ["weather", "official", "conditions"],
+    },
+  ],
   featuredProducts: getFeaturedTourProductsAsViatorProducts("las-vegas", "grand-canyon"),
   productGuidance: [
     {

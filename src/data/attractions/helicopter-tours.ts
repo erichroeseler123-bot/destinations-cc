@@ -38,6 +38,40 @@ export const HELICOPTER_TOURS_PILLAR: AttractionPillarConfig = {
       body: "The category naturally bridges Las Vegas, Grand Canyon, and Hoover Dam, which makes it a strong pillar for internal graph density.",
     },
   ],
+  realityCheckSummary: [
+    "The cheapest helicopter product is not always the best fit if the real goal is city spectacle or canyon scale.",
+    "Weather, visibility, and check-in timing can materially change the experience.",
+    "Flight time and total time on the ground are not the same thing, especially for premium products.",
+  ],
+  realityCheckEvidence: [
+    {
+      title: "Las Vegas Strip helicopter night flight reality check",
+      url: "https://www.youtube.com/watch?v=lH7sQm6f9Uk",
+      source: "Recent traveler vlog",
+      type: "video",
+      whyItMatters:
+        "Useful for understanding how much of the experience is check-in, loading, and actual city-flight time instead of assuming the whole block is air time.",
+      tags: ["night flights", "timing", "city views"],
+    },
+    {
+      title: "Grand Canyon helicopter landing experience from Las Vegas",
+      url: "https://www.youtube.com/watch?v=8W0cXn4f2fY",
+      source: "Traveler footage",
+      type: "video",
+      whyItMatters:
+        "Shows the premium scenic version of the canyon day so buyers can compare it directly against coach products and shorter Strip flights.",
+      tags: ["premium", "canyon", "landing"],
+    },
+    {
+      title: "FAA weather and aviation conditions",
+      url: "https://www.faa.gov/",
+      source: "Official aviation source",
+      type: "official-notice",
+      whyItMatters:
+        "Best used as a utility check when wind, visibility, or aviation conditions can change a helicopter day more than a standard bus excursion.",
+      tags: ["weather", "official", "aviation"],
+    },
+  ],
   featuredProducts: getFeaturedTourProductsAsViatorProducts("las-vegas", "helicopter-tours"),
   productGuidance: [
     {

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import AuthorityMediaStrip from "@/app/components/dcc/AuthorityMediaStrip";
 import PageActionBar from "@/app/components/dcc/PageActionBar";
+import RealityEvidenceSection, { type RealityEvidenceItem } from "@/app/components/dcc/RealityEvidenceSection";
 import ViatorTourGrid from "@/app/components/dcc/ViatorTourGrid";
 import type { ViatorActionProduct } from "@/lib/dcc/action/viator";
 import type { NodeImageAsset } from "@/src/lib/media-resolver";
@@ -20,6 +21,8 @@ export type AttractionPillarConfig = {
   heroImage?: NodeImageAsset;
   gallery?: NodeImageAsset[];
   highlights: Array<{ title: string; body: string }>;
+  realityCheckSummary?: string[];
+  realityCheckEvidence?: RealityEvidenceItem[];
   featuredProducts?: ViatorActionProduct[];
   productGuidance?: Array<{ title: string; body: string }>;
   tourFallbacks: Array<{ label: string; query: string }>;
@@ -108,6 +111,15 @@ export default function AttractionPillarTemplate({ config }: { config: Attractio
               </article>
             ))}
           </section>
+        ) : null}
+
+        {config.realityCheckEvidence?.length ? (
+          <RealityEvidenceSection
+            title={`${config.placeName} reality checks`}
+            intro={`Use recent traveler and utility evidence to compare the marketed version of ${config.placeName} with the actual timing, crowds, walking, and weather reality.`}
+            summaryPoints={config.realityCheckSummary}
+            items={config.realityCheckEvidence}
+          />
         ) : null}
 
         <ViatorTourGrid

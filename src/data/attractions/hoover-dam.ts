@@ -35,6 +35,40 @@ export const HOOVER_DAM_PILLAR: AttractionPillarConfig = {
       body: "Hoover Dam pairs naturally with Grand Canyon and Lake Mead inventory, which makes it a strong cross-linking node in the Vegas trip graph.",
     },
   ],
+  realityCheckSummary: [
+    "Parking, security, and walking exposure matter more than many first-timers expect.",
+    "Summer heat changes the experience materially because shade is limited.",
+    "The best value often comes from shorter focused routes, not oversized combo days.",
+  ],
+  realityCheckEvidence: [
+    {
+      title: "Hoover Dam visitor walk-through and parking reality",
+      url: "https://www.youtube.com/watch?v=E8S9L1M2D1I",
+      source: "Recent traveler vlog",
+      type: "video",
+      whyItMatters:
+        "Useful for seeing how parking, security, walking distances, and the overlook rhythm affect the real visitor experience.",
+      tags: ["parking", "walking", "heat"],
+    },
+    {
+      title: "Hoover Dam from Las Vegas day-trip flow",
+      url: "https://www.youtube.com/watch?v=4Y6K3nP0mVA",
+      source: "Traveler footage",
+      type: "video",
+      whyItMatters:
+        "Shows the shorter desert-excursion pattern that makes Hoover Dam appealing for buyers who still want the evening open in Vegas.",
+      tags: ["day trips", "timing", "logistics"],
+    },
+    {
+      title: "Bureau of Reclamation Hoover Dam visitor information",
+      url: "https://www.usbr.gov/lc/hooverdam/",
+      source: "Official visitor info",
+      type: "official-notice",
+      whyItMatters:
+        "Strong official source for closures, visitor-center operations, parking rules, and other practical constraints that can alter the day.",
+      tags: ["official", "visitor info", "operations"],
+    },
+  ],
   featuredProducts: getFeaturedTourProductsAsViatorProducts("las-vegas", "hoover-dam"),
   productGuidance: [
     {
