@@ -26,6 +26,31 @@ export const RED_ROCK_CANYON_PILLAR: AttractionPillarConfig = {
       body: "Red Rock works because it is close enough to pair with dinner, a show, or a lighter evening plan instead of forcing an all-day commitment.",
     },
   ],
+  realityCheckSummary: [
+    "Red Rock is close to Las Vegas, but trail exposure and heat still make midday plans feel harsher than the drive time suggests.",
+    "A scenic loop day and a real hiking day are not the same product, even if both get marketed as easy desert outings.",
+    "Parking, timed entry pressure, and limited shade matter more than first-time visitors expect.",
+  ],
+  realityCheckEvidence: [
+    {
+      title: "Red Rock Canyon scenic drive and overlook reality",
+      url: "https://www.youtube.com/watch?v=J4SJb6a1d3A",
+      source: "Recent visitor drive-through",
+      type: "video",
+      whyItMatters:
+        "Useful for showing what the scenic loop actually looks like, how exposed the stops are, and why this product fits some buyers better than longer canyon trips.",
+      tags: ["scenic drive", "weather", "walking"],
+    },
+    {
+      title: "Red Rock Canyon timed entry and visitor planning",
+      url: "https://www.recreation.gov/timed-entry/10075177",
+      source: "Recreation.gov",
+      type: "official-notice",
+      whyItMatters:
+        "Shows the real timed-entry rule and why self-drive buyers need to think about reservation timing instead of assuming open all-day access.",
+      tags: ["timed entry", "logistics"],
+    },
+  ],
   tourFallbacks: [
     { label: "Red Rock Canyon tours from Las Vegas", query: "red rock canyon tour from las vegas" },
     { label: "Red Rock Canyon scenic loop tours", query: "red rock canyon scenic drive tour" },

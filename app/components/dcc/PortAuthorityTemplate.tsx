@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PoweredByViator from "@/app/components/dcc/PoweredByViator";
+import RealityEvidenceSection from "@/app/components/dcc/RealityEvidenceSection";
 import type { ResolvedPortAuthorityConfig } from "@/src/data/port-authority-config";
 import { buildPortExcursionHref, buildPortTrackedHref } from "@/src/lib/port-analytics";
 
@@ -230,33 +231,14 @@ export default function PortAuthorityTemplate({
         </div>
       </section>
 
-      {config.realityCheckVideos?.length ? (
-        <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-          <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Reality Check Videos</p>
-          <h2 className="mt-2 text-2xl font-bold">Recent traveler footage worth using as evidence</h2>
-          <p className="mt-3 max-w-3xl text-sm text-zinc-400">
-            These are illustrative references from recent traveler footage, not official port guidance. Conditions vary by ship, line, weather, and sailing date.
-          </p>
-          <div className="mt-5 grid gap-4 lg:grid-cols-3">
-            {config.realityCheckVideos.map((item) => (
-              <a
-                key={`${item.href}:${item.title}`}
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-                className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10"
-              >
-                <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">{item.source}</p>
-                <h3 className="mt-2 text-lg font-semibold text-zinc-100">{item.title}</h3>
-                <p className="mt-3 text-sm text-zinc-300">{item.whyItMatters}</p>
-                {item.timestampNote ? (
-                  <p className="mt-3 text-xs text-amber-200">{item.timestampNote}</p>
-                ) : null}
-                <p className="mt-4 text-sm font-semibold text-cyan-200">Open video evidence →</p>
-              </a>
-            ))}
-          </div>
-        </section>
+      {config.realityCheckEvidence?.length ? (
+        <RealityEvidenceSection
+          title={`${plainPortName} reality checks`}
+          intro={`Use recent traveler footage, route references, maps, and official notices to compare the marketed version of ${plainPortName} with the actual crowd, timing, transfer, and excursion reality.`}
+          summaryPoints={config.realityCheckSummary}
+          items={config.realityCheckEvidence}
+          disclaimer="Illustrative reference only. Conditions vary by ship, berth, operator, weather, crowd level, and sailing date."
+        />
       ) : null}
 
       <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">

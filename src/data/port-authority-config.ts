@@ -3,13 +3,7 @@ export type PortAuthorityLink = {
   href: string;
 };
 
-export type PortRealityCheckVideo = {
-  title: string;
-  href: string;
-  source: string;
-  whyItMatters: string;
-  timestampNote?: string;
-};
+import type { RealityEvidenceItem } from "@/app/components/dcc/RealityEvidenceSection";
 
 export type PortExcursionCategory = {
   label: string;
@@ -35,7 +29,8 @@ export type PortAuthorityConfig = {
   knownFor: string[];
   nearbyZones: string[];
   logistics: string[];
-  realityCheckVideos?: PortRealityCheckVideo[];
+  realityCheckSummary?: string[];
+  realityCheckEvidence?: RealityEvidenceItem[];
   faq: Array<{ question: string; answer: string }>;
   relatedLinks: PortAuthorityLink[];
   cruisePortHref?: string;
@@ -62,14 +57,26 @@ function baseLinks(portName: string): PortAuthorityLink[] {
   ];
 }
 
-function video(
+function evidence(
   title: string,
-  href: string,
+  url: string,
   source: string,
   whyItMatters: string,
-  timestampNote?: string
-): PortRealityCheckVideo {
-  return { title, href, source, whyItMatters, timestampNote };
+  options?: {
+    type?: RealityEvidenceItem["type"];
+    timestamp?: string;
+    tags?: string[];
+  }
+): RealityEvidenceItem {
+  return {
+    title,
+    url,
+    source,
+    type: options?.type || "video",
+    whyItMatters,
+    timestamp: options?.timestamp,
+    tags: options?.tags,
+  };
 }
 
 export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
@@ -207,26 +214,32 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
       "Boat trips and snorkeling departures are efficient, but weather can shift day-of availability.",
       "Short port calls favor excursions with simple transportation and fixed re-entry timing.",
     ],
-    realityCheckVideos: [
-      video(
+    realityCheckSummary: [
+      "Downtown can feel saturated fast when several ships are in at once.",
+      "Short calls reward simple transportation and fixed return timing more than over-ambitious beach hopping.",
+      "Boat and snorkeling inventory looks easy on paper, but weather can still erase options on the day.",
+    ],
+    realityCheckEvidence: [
+      evidence(
         "What I Wish I Knew Before Visiting Nassau on a Cruise",
         "https://www.youtube.com/watch?v=hOqmc0r-Kyg",
         "Independent cruiser footage",
         "Useful for setting expectations around port-area crowds, noise, and how quickly Nassau can feel saturated on heavy ship days.",
-        "Starts around 0:34 for the busy port-area walkthrough."
+        { timestamp: "Starts around 0:34 for the busy port-area walkthrough.", tags: ["crowds", "logistics"] }
       ),
-      video(
+      evidence(
         "Nassau Ship Spotting & Port Thoughts (Carnival Liberty vlog, 2025)",
         "https://www.youtube.com/watch?v=Q13KVBEDK6Q",
         "Carnival Liberty traveler vlog",
         "Good visual proof for multi-ship crowding and why Nassau can feel compressed when several large ships land at once.",
-        "Use around 5:50 for ship volume and 9:41 for the traveler take on Nassau."
+        { timestamp: "Use around 5:50 for ship volume and 9:41 for the traveler take on Nassau.", tags: ["crowds", "port flow"] }
       ),
-      video(
+      evidence(
         "Princess Cays Tender Boat Ride Back (recent experience)",
         "https://www.youtube.com/watch?v=rfODaDntvFM",
         "Recent cruiser clip",
-        "Not Nassau itself, but a strong nearby Bahamas tender reference when you want a visual example of tender return timing and boarding friction."
+        "Not Nassau itself, but a strong nearby Bahamas tender reference when you want a visual example of tender return timing and boarding friction.",
+        { tags: ["tendering", "timing"] }
       ),
     ],
     faq: [
@@ -285,6 +298,34 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
       "Private drivers are useful if you want beach plus local sightseeing in one day.",
       "Leave real buffer because pier security re-entry and taxi queues can slow late returns.",
     ],
+    realityCheckSummary: [
+      "Pier choice changes how easy the day feels, even when the island itself looks simple on a map.",
+      "Beach clubs and reef trips can look interchangeable online, but wind and marine conditions change the quality fast.",
+      "Late-day taxi and pier re-entry friction can compress independent plans more than first-timers expect.",
+    ],
+    realityCheckEvidence: [
+      evidence(
+        "Cozumel, Mexico Port Day - Star of the Seas Day 4",
+        "https://www.youtube.com/watch?v=cGZVBRR4z0g",
+        "Recent cruise vlog",
+        "Shows what a typical independent Cozumel port day actually feels like, including arrival, movement off the pier, and how the day flows once you leave the cruise zone.",
+        { tags: ["port flow", "independent day"] }
+      ),
+      evidence(
+        "Cruise Shore Excursions: Are They Worth It?",
+        "https://www.youtube.com/watch?v=E7HscEJwJRA",
+        "Cruise planning video",
+        "Useful when comparing cruise-line beach and snorkeling products against independent operators in a port where DIY planning is common.",
+        { tags: ["excursions", "planning"] }
+      ),
+      evidence(
+        "Cozumel cruise port map and visitor planning",
+        "https://www.cozumelcruisetours.com/cozumel-cruise-port-map/",
+        "Port planning reference",
+        "Helps users understand how pier location affects taxi time and whether a beach club or downtown plan is actually close enough for a short call.",
+        { type: "map", tags: ["map", "logistics"] }
+      ),
+    ],
     faq: [
       {
         question: "What is Cozumel best known for on cruise stops?",
@@ -341,19 +382,28 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
       "Independent plans work, but transfer timing to Auke Bay or glacier areas needs attention.",
       "Alaska ports reward earlier booking and conservative all-aboard buffers.",
     ],
-    realityCheckVideos: [
-      video(
+    realityCheckSummary: [
+      "Wildlife and glacier operators can still miss the perfect day because Alaska weather changes fast.",
+      "Premium excursion days often matter more than casual wandering, so sold-out inventory is a real risk.",
+      "Transfer-heavy Juneau plans break down when people underestimate weather and buffer time.",
+    ],
+    realityCheckEvidence: [
+      evidence(
         "Our Favorite Inside Passage Shore Excursions for 2025",
         "https://www.youtube.com/watch?v=SpapGwBn5kM",
         "Alaska cruise excursion roundup",
         "Strong cross-port visual reference for whale watching, Mendenhall, and flightseeing expectations when weather and excursion timing matter.",
-        "Jump to 1:15 for whale watching, 2:06 for helicopter/dogsled, and 3:40 for White Pass rail context."
+        {
+          timestamp: "Jump to 1:15 for whale watching, 2:06 for helicopter/dogsled, and 3:40 for White Pass rail context.",
+          tags: ["weather", "wildlife", "excursions"],
+        }
       ),
-      video(
+      evidence(
         "Must-Do Alaska Shore Excursions for 2025 Cruises",
         "https://www.youtube.com/watch?v=eeHUWn0AWcQ",
         "Recent Alaska cruise planning video",
-        "Useful for comparing how much excursion variety Alaska ports actually offer and why early-booked wildlife or glacier products matter."
+        "Useful for comparing how much excursion variety Alaska ports actually offer and why early-booked wildlife or glacier products matter.",
+        { tags: ["planning", "shore excursions"] }
       ),
     ],
     faq: [
@@ -413,26 +463,32 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
       "Same-day airport to ship plans carry real risk if flight timing drifts.",
       "Hotel staging the night before is often the cleaner move when sailing volume is high.",
     ],
-    realityCheckVideos: [
-      video(
+    realityCheckSummary: [
+      "PortMiami is more about terminal logic and traffic than sightseeing glamor.",
+      "Cruise-day traffic and terminal assignment create more friction than first-time visitors expect.",
+      "Same-day airport arrivals still carry real failure risk even when the port itself looks close on a map.",
+    ],
+    realityCheckEvidence: [
+      evidence(
         "Princess Cays Tender Process Walkthrough (Carnival Magic, recent sailing)",
         "https://www.youtube.com/watch?v=5n5nfWTXTJs",
         "TAP (Tonya, Alexis, & Pete)",
         "Useful cross-reference when PortMiami pages talk about tender-dependent itineraries and excursion boarding discipline in the Bahamas.",
-        "Boarding starts around 1:41."
+        { timestamp: "Boarding starts around 1:41.", tags: ["tendering", "bahamas"] }
       ),
-      video(
+      evidence(
         "Demystifying Royal Caribbean Check-In & Tender Ports",
         "https://www.youtube.com/watch?v=K8ACq2Tx-0E",
         "Royal Caribbean traveler planning video",
         "Helpful for staging and pre-boarding expectations when travelers are trying to understand embarkation friction and tender-port sequencing.",
-        "Use around 6:24 for the tender-port process discussion."
+        { timestamp: "Use around 6:24 for the tender-port process discussion.", tags: ["embarkation", "staging"] }
       ),
-      video(
+      evidence(
         "The SHOCKING Truth About Cruise Excursions (Save Hundreds!)",
         "https://www.youtube.com/watch?v=iY-ejGBeajU",
         "Cruise excursion strategy video",
-        "Good reality-check companion for DCC transfer and pre-booking advice when users are weighing ship excursions against independent planning."
+        "Good reality-check companion for DCC transfer and pre-booking advice when users are weighing ship excursions against independent planning.",
+        { tags: ["planning", "independent"] }
       ),
     ],
     faq: [
@@ -491,6 +547,27 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
       "Shorter calls make sequencing important if you want both town time and a premium excursion.",
       "Book early for Misty Fjords and other limited-capacity tours.",
     ],
+    realityCheckSummary: [
+      "Ward Cove and alternate berth patterns can change what looks like a simple walkable day.",
+      "Flightseeing and wildlife value can vanish fast when visibility or weather turns.",
+      "Short calls make it harder to combine premium excursions with much downtown wandering.",
+    ],
+    realityCheckEvidence: [
+      evidence(
+        "Our Favorite Inside Passage Shore Excursions for 2025",
+        "https://www.youtube.com/watch?v=SpapGwBn5kM",
+        "Alaska cruise excursion roundup",
+        "Useful Ketchikan planning reference for Misty Fjords and flightseeing expectations when deciding whether premium scenic inventory is worth the cost.",
+        { timestamp: "Jump to 5:46 for Misty Fjords flightseeing context.", tags: ["weather", "flightseeing"] }
+      ),
+      evidence(
+        "Ketchikan cruise port guide and berth context",
+        "https://www.ketchikan.info/cruise-ships",
+        "Local port planning reference",
+        "Helps show how berth location can change transfer assumptions, especially when Ward Cove enters the route equation.",
+        { type: "map", tags: ["berths", "logistics"] }
+      ),
+    ],
     faq: [
       {
         question: "What is Ketchikan best known for on cruise itineraries?",
@@ -547,6 +624,34 @@ export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = {
       "Weather and visibility affect scenic value even when operations run on time.",
       "Town access is simple, but premium excursion slots can tighten quickly on big ship days.",
       "Keep buffer if you mix structured touring with separate shopping or hiking plans.",
+    ],
+    realityCheckSummary: [
+      "Skagway is easy to walk, but the high-value day still usually revolves around a structured rail or corridor excursion.",
+      "Weather and visibility can flatten scenic value even when the train or coach runs on time.",
+      "Big ship days can tighten the premium rail inventory faster than casual downtown time suggests.",
+    ],
+    realityCheckEvidence: [
+      evidence(
+        "Best Skagway Shore Excursions for Your Alaska Cruise (2025 Guide)",
+        "https://www.youtube.com/watch?v=FrOkBjn2H5U",
+        "Recent Skagway excursion guide",
+        "Good visual reference for White Pass rail demand, Gold Rush framing, and how scenic products actually compare.",
+        { tags: ["rail", "scenic", "planning"] }
+      ),
+      evidence(
+        "Our Favorite Inside Passage Shore Excursions for 2025",
+        "https://www.youtube.com/watch?v=SpapGwBn5kM",
+        "Alaska cruise excursion roundup",
+        "Useful cross-port proof for how often White Pass rail ends up as the default premium pick in Skagway.",
+        { timestamp: "Jump to 3:40 for White Pass rail.", tags: ["rail", "excursions"] }
+      ),
+      evidence(
+        "Klondike Highway and White Pass road conditions",
+        "https://www.dot.state.ak.us/apps/wintermessage/",
+        "Alaska DOT",
+        "Road and weather context matters if travelers are comparing rail products with coach or private-driver alternatives.",
+        { type: "official-notice", tags: ["weather", "conditions"] }
+      ),
     ],
     faq: [
       {

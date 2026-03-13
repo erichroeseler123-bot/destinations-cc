@@ -17,6 +17,31 @@ export const FREMONT_STREET_PILLAR: AttractionPillarConfig = {
     { title: "Best for nightlife spillover", body: "Downtown supports bar crawls, canopy spectacle, casino hopping, and late-night routing without needing a full Strip commitment." },
     { title: "Best for mesh depth", body: "This hub naturally connects downtown hotels, casinos, attractions, bars, and future restaurant nodes." },
   ],
+  realityCheckSummary: [
+    "Fremont is denser and easier to cover than the Strip, but that also means noise, crowding, and late-night spillover hit faster.",
+    "People treat it like a simple cheap alternative to the Strip when it is really a different nightlife and casino mode.",
+    "Hotel choice matters because the feel changes quickly once you are a few blocks off the canopy core.",
+  ],
+  realityCheckEvidence: [
+    {
+      title: "Fremont Street Experience crowd flow at night",
+      url: "https://www.youtube.com/watch?v=9dz1Jm4xv8I",
+      source: "Recent downtown Las Vegas walk-through",
+      type: "video",
+      whyItMatters:
+        "Shows the actual canopy crowd density, noise level, and why Fremont works well for some nightlife buyers and badly for others.",
+      tags: ["crowds", "nightlife", "downtown"],
+    },
+    {
+      title: "Hotels near Fremont Street Experience",
+      url: "https://destinationcommandcenter.com/hotels-near/fremont-street-experience",
+      source: "DCC relationship guide",
+      type: "traveler-tip",
+      whyItMatters:
+        "Useful route-planning evidence when the real question is not whether to visit Fremont, but where to stay to make downtown easier.",
+      tags: ["hotels", "relationship", "planning"],
+    },
+  ],
   tourFallbacks: [
     { label: "Fremont Street tours", query: "fremont street tour las vegas" },
     { label: "Downtown Las Vegas nightlife experiences", query: "downtown las vegas nightlife experience" },

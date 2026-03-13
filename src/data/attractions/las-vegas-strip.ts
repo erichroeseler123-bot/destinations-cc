@@ -26,6 +26,31 @@ export const LAS_VEGAS_STRIP_PILLAR: AttractionPillarConfig = {
       body: "The Strip supports a dense mix of monetizable inventory: observation products, resort experiences, night tours, helicopter flights, attractions, and nightlife.",
     },
   ],
+  realityCheckSummary: [
+    "The Strip is technically walkable, but resort-to-resort movement is slower, hotter, and more fragmented than first-timers expect.",
+    "A central hotel choice does more to reduce friction than trying to over-plan every attraction in one day.",
+    "Night routing, rideshare congestion, and indoor resort mazes are part of the real Strip experience.",
+  ],
+  realityCheckEvidence: [
+    {
+      title: "Walking the Las Vegas Strip end to end",
+      url: "https://www.youtube.com/watch?v=6Ta4X9w1x5s",
+      source: "Recent Strip walk-through",
+      type: "video",
+      whyItMatters:
+        "Shows how long resort-to-resort walking really feels and why Strip geography is more tiring than map distance suggests.",
+      tags: ["walking", "crowds", "distance"],
+    },
+    {
+      title: "Las Vegas Strip rideshare and traffic reality",
+      url: "https://www.youtube.com/watch?v=6J8I5W0mtKQ",
+      source: "Recent Vegas trip vlog",
+      type: "video",
+      whyItMatters:
+        "Useful for showing pickup friction, traffic bunching, and why changing hotels or districts in the middle of an evening can cost more time than buyers expect.",
+      tags: ["traffic", "rideshare", "nightlife"],
+    },
+  ],
   tourFallbacks: [
     { label: "Las Vegas Strip tours", query: "las vegas strip tour" },
     { label: "Las Vegas Strip attractions", query: "las vegas strip attractions" },
