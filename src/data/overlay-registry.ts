@@ -10,6 +10,8 @@ export type DccOverlayType =
   | "festival-pressure"
   | "music-first"
   | "family"
+  | "group-friendly"
+  | "date-night"
   | "smoker-friendly"
   | "smoking";
 
@@ -159,6 +161,54 @@ export const OVERLAY_REGISTRY: DccOverlayRegistryNode[] = [
     resultSlugs: ["bellagio", "caesars-palace", "venetian", "wynn", "bellagio-casino", "wynn-casino"],
     canonicalPath: "/luxury-hotels-las-vegas",
     summary: "Luxury overlay layer for flagship Vegas hotel and casino routing.",
+  },
+  {
+    slug: "group-friendly-las-vegas",
+    citySlug: "las-vegas",
+    overlayType: "group-friendly",
+    entityTypes: ["hotel", "casino", "attraction"],
+    resultSlugs: [
+      "caesars-palace",
+      "mgm-grand",
+      "venetian",
+      "caesars-palace-casino",
+      "mgm-grand-casino",
+      "sphere-las-vegas",
+      "area15",
+    ],
+    canonicalPath: "/group-friendly/las-vegas",
+    summary:
+      "Group-friendly Las Vegas overlay for buyers planning birthday weekends, guys trips, mixed-friend trips, or larger celebration routing where room scale, pregame flow, and group-night anchors matter early.",
+    relatedLinks: [
+      { href: "/vegas", label: "Vegas hub" },
+      { href: "/las-vegas/hotels", label: "Las Vegas hotels" },
+      { href: "/las-vegas/casinos", label: "Las Vegas casinos" },
+      { href: "/las-vegas/shows", label: "Las Vegas shows" },
+    ],
+  },
+  {
+    slug: "date-night-las-vegas",
+    citySlug: "las-vegas",
+    overlayType: "date-night",
+    entityTypes: ["hotel", "casino", "attraction"],
+    resultSlugs: [
+      "bellagio",
+      "wynn",
+      "venetian",
+      "bellagio-casino",
+      "wynn-casino",
+      "fountains-of-bellagio",
+      "sphere-las-vegas",
+    ],
+    canonicalPath: "/date-night/las-vegas",
+    summary:
+      "Date-night Las Vegas overlay for couples and milestone travelers who care more about polished dining, romantic walks, show-night pairing, and strong evening atmosphere than pure party volume.",
+    relatedLinks: [
+      { href: "/vegas", label: "Vegas hub" },
+      { href: "/las-vegas-strip", label: "Las Vegas Strip" },
+      { href: "/las-vegas/shows", label: "Las Vegas shows" },
+      { href: "/luxury-hotels-las-vegas", label: "Luxury Las Vegas" },
+    ],
   },
   {
     slug: "smoking-miami",

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageActionBar from "@/app/components/dcc/PageActionBar";
+import SocialProfileSection from "@/app/components/dcc/SocialProfileSection";
+import { getEntityRegistryNode } from "@/src/data/entities-registry";
 import {
   getVegasCasinoBySlug,
   VEGAS_CASINOS_CONFIG,
@@ -145,6 +147,7 @@ export default async function VegasCasinoNodePage({ params }: { params: Promise<
   const { slug } = await params;
   const casino = getVegasCasinoBySlug(slug);
   if (!casino) notFound();
+  const casinoSocialProfile = getEntityRegistryNode(slug, "casino")?.socialProfile;
 
   const relationshipLinks = getCasinoRelationshipLinks(casino.slug);
   const districtTarget = districtLink(casino.district);
@@ -218,6 +221,8 @@ export default async function VegasCasinoNodePage({ params }: { params: Promise<
             })}
           </div>
         </section>
+
+        {casinoSocialProfile ? <SocialProfileSection profile={casinoSocialProfile} /> : null}
 
         <section className="grid gap-4 md:grid-cols-2">
           <Link href="/las-vegas/casinos" className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">

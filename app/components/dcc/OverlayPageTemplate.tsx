@@ -67,6 +67,8 @@ export default function OverlayPageTemplate({ city, overlay, entities }: Props) 
     overlay.overlayType === "accessibility"
       ? (overlay.relatedLinks ?? []).filter((link) => link.href.includes("/accessible-hotels-near/"))
       : [];
+  const socialPlanning =
+    overlay.overlayType === "group-friendly" || overlay.overlayType === "date-night";
   const actionBarActions: PageAction[] = [
     { href: city.canonicalPath, label: `${city.name} hub`, kind: "internal" },
     { href: buildMapsSearchUrl(`${city.name}, ${city.state ?? city.country}`), label: "Open city in Maps", kind: "external" },
@@ -103,10 +105,38 @@ export default function OverlayPageTemplate({ city, overlay, entities }: Props) 
           <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.22)]">
             <h2 className="text-lg font-semibold">Why this matters</h2>
             <p className="mt-2 text-sm text-zinc-300">
-              Overlay pages make the DCC graph easier to browse, easier to crawl, and closer to how real trip planning decisions get made.
+              {socialPlanning
+                ? "This social-intent overlay turns vague trip energy into actual planning choices: where to stay, what to do, and which areas fit the trip best."
+                : "Overlay pages make the DCC graph easier to browse, easier to crawl, and closer to how real trip planning decisions get made."}
             </p>
           </article>
         </section>
+
+        {socialPlanning ? (
+          <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+            <h2 className="text-2xl font-bold">How to use this overlay</h2>
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
+              <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <h3 className="text-lg font-semibold">Choose the base first</h3>
+                <p className="mt-2 text-sm text-zinc-300">
+                  Start with the hotel or casino that matches the trip energy, then branch into shows, dining, and district decisions from there.
+                </p>
+              </article>
+              <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <h3 className="text-lg font-semibold">Use vibe over generic ratings</h3>
+                <p className="mt-2 text-sm text-zinc-300">
+                  These pages are for trip-fit questions like couples, groups, pregame flow, and photo moments, not only generic review averages.
+                </p>
+              </article>
+              <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <h3 className="text-lg font-semibold">Branch into nearby planning</h3>
+                <p className="mt-2 text-sm text-zinc-300">
+                  Once the anchor is right, use DCC relationship pages and district hubs to tighten the rest of the night or weekend plan.
+                </p>
+              </article>
+            </div>
+          </section>
+        ) : null}
 
         <OverlayEntityGridSection
           eyebrow={`${city.name} overlay`}

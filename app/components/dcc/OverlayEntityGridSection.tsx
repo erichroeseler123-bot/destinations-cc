@@ -40,6 +40,9 @@ export default function OverlayEntityGridSection({ eyebrow, title, intro, entiti
               </p>
               <h3 className="text-lg font-semibold text-white">{entity.title}</h3>
               <p className="text-sm text-zinc-300">{entity.summary}</p>
+              {entity.socialProfile?.notes ? (
+                <p className="text-sm text-amber-100/85">{entity.socialProfile.notes}</p>
+              ) : null}
               {entity.accessibilityInfo?.accessibilitySummary ? (
                 <p className="text-sm text-cyan-100/85">{entity.accessibilityInfo.accessibilitySummary}</p>
               ) : null}
@@ -60,6 +63,21 @@ export default function OverlayEntityGridSection({ eyebrow, title, intro, entiti
                 {entity.accessibilityInfo?.serviceAnimalsAllowed ? (
                   <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-cyan-100">
                     service animals
+                  </span>
+                ) : null}
+                {entity.socialProfile?.groupFriendly ? (
+                  <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-emerald-100">
+                    group-friendly
+                  </span>
+                ) : null}
+                {entity.socialProfile?.dateNightFriendly ? (
+                  <span className="rounded-full border border-rose-400/20 bg-rose-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-rose-100">
+                    date-night
+                  </span>
+                ) : null}
+                {entity.socialProfile?.photoMoment ? (
+                  <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-cyan-100">
+                    photo spot
                   </span>
                 ) : null}
               </div>

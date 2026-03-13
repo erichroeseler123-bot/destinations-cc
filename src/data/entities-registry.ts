@@ -30,6 +30,18 @@ export type DccAccessibilityInfo = {
   accessibilitySummary?: string;
 };
 
+export type DccSocialProfile = {
+  vibe?: string[];
+  bestFor?: string[];
+  crowdType?: string[];
+  photoMoment?: boolean;
+  pregameFriendly?: boolean;
+  dateNightFriendly?: boolean;
+  groupFriendly?: boolean;
+  familyFriendly?: boolean;
+  notes?: string;
+};
+
 export type DccEntityRegistryNode = {
   slug: string;
   entityType: DccEntityType;
@@ -41,6 +53,7 @@ export type DccEntityRegistryNode = {
   imageSet?: NodeImageSet;
   relatedEntitySlugs?: string[];
   accessibilityInfo?: DccAccessibilityInfo;
+  socialProfile?: DccSocialProfile;
   canonicalPath: string;
   updatedAt: string;
 };
@@ -71,6 +84,54 @@ const vegasHotelEntities: DccEntityRegistryNode[] = VEGAS_HOTELS_CONFIG.map((hot
           accessibilitySummary: "Accessible entrance routes, guest-room access, and lower-friction resort movement make this one of the clearer Vegas hotel accessibility anchors.",
         }
       : undefined,
+  socialProfile:
+    hotel.slug === "bellagio"
+      ? {
+          vibe: ["polished luxury", "central Strip", "fountain-side classic"],
+          bestFor: ["couples", "celebration trips", "first-timer luxury", "date night routing"],
+          crowdType: ["couples", "luxury travelers", "show-night mix"],
+          photoMoment: true,
+          dateNightFriendly: true,
+          notes: "Best when the trip needs a polished central Strip base with stronger dining and fountain-adjacent evening energy.",
+        }
+      : hotel.slug === "caesars-palace"
+        ? {
+            vibe: ["big-resort energy", "central Strip", "show-adjacent"],
+            bestFor: ["groups", "birthday weekends", "central-location buyers"],
+            crowdType: ["mixed groups", "casino-first travelers", "show-night crowd"],
+            pregameFriendly: true,
+            groupFriendly: true,
+            notes: "Best for travelers who want one central Strip property that can branch into casino time, dinners, nightlife, and shows.",
+          }
+        : hotel.slug === "wynn"
+          ? {
+              vibe: ["quiet luxury", "north Strip polish", "high-end nightlife"],
+              bestFor: ["couples", "luxury stays", "date-night trips"],
+              crowdType: ["luxury travelers", "nightlife-adjacent couples"],
+              dateNightFriendly: true,
+              photoMoment: true,
+              notes: "Stronger for polished luxury and upscale nightlife adjacency than for budget or chaotic group-trip routing.",
+            }
+          : hotel.slug === "mgm-grand"
+            ? {
+                vibe: ["high-energy resort", "sports-and-shows base", "big-group scale"],
+                bestFor: ["groups", "guys trips", "event weekends"],
+                crowdType: ["sports crowd", "groups", "show-night spillover"],
+                pregameFriendly: true,
+                groupFriendly: true,
+                notes: "Best when room count, event access, and big-resort energy matter more than a quiet luxury feel.",
+              }
+            : hotel.slug === "venetian"
+              ? {
+                  vibe: ["suite-heavy luxury", "romantic interiors", "restaurant-forward"],
+                  bestFor: ["couples", "group luxury", "milestone weekends"],
+                  crowdType: ["couples", "upscale groups", "dining-led travelers"],
+                  dateNightFriendly: true,
+                  groupFriendly: true,
+                  photoMoment: true,
+                  notes: "A strong fit for larger-room buyers who still want a polished Strip base and better dining density.",
+                }
+              : undefined,
   canonicalPath: `/hotel/${hotel.slug}`,
   updatedAt: "2026-03-12",
 }));
@@ -85,6 +146,54 @@ const vegasCasinoEntities: DccEntityRegistryNode[] = VEGAS_CASINOS_CONFIG.map((c
   tags: casino.tags,
   imageSet: singleCardImage(casino.image),
   relatedEntitySlugs: casino.hotelSlug ? [casino.hotelSlug] : [],
+  socialProfile:
+    casino.slug === "bellagio-casino"
+      ? {
+          vibe: ["upscale gaming", "fountain-adjacent", "date-night luxury"],
+          bestFor: ["couples", "luxury casino hopping", "pre-dinner gaming"],
+          crowdType: ["couples", "luxury travelers", "central Strip visitors"],
+          dateNightFriendly: true,
+          photoMoment: true,
+          notes: "Works best when gaming is part of a larger polished Strip evening rather than the whole trip identity.",
+        }
+      : casino.slug === "caesars-palace-casino"
+        ? {
+            vibe: ["big classic resort casino", "high-traffic central Strip", "show-night crossover"],
+            bestFor: ["groups", "birthday weekends", "first-time Vegas gamblers"],
+            crowdType: ["mixed groups", "tourist-heavy", "show-night spillover"],
+            pregameFriendly: true,
+            groupFriendly: true,
+            notes: "One of the clearest group-trip casino anchors because it sits in the middle of so many dinner, show, and nightlife routes.",
+          }
+        : casino.slug === "mgm-grand-casino"
+          ? {
+              vibe: ["high-energy sportsbook-adjacent", "event weekend", "late-night volume"],
+              bestFor: ["groups", "sports weekends", "guys trips"],
+              crowdType: ["sports crowd", "event-night crowd", "large groups"],
+              pregameFriendly: true,
+              groupFriendly: true,
+              notes: "Best when sports, arena adjacency, and larger-group movement matter more than a boutique casino feel.",
+            }
+          : casino.slug === "venetian-casino"
+            ? {
+                vibe: ["upscale indoor resort energy", "restaurant-forward", "romantic luxury"],
+                bestFor: ["couples", "luxury groups", "dinner-led nights"],
+                crowdType: ["couples", "upscale dining crowd", "group celebrators"],
+                dateNightFriendly: true,
+                groupFriendly: true,
+                photoMoment: true,
+                notes: "A stronger fit for travelers who want upscale dining and larger-room resort context around casino time.",
+              }
+            : casino.slug === "wynn-casino"
+              ? {
+                  vibe: ["quiet luxury gaming", "high-end nightlife adjacency", "polished north Strip"],
+                  bestFor: ["couples", "luxury travelers", "date-night gaming"],
+                  crowdType: ["luxury travelers", "nightlife-adjacent crowd"],
+                  dateNightFriendly: true,
+                  photoMoment: true,
+                  notes: "Best when the trip wants a more polished north Strip rhythm with upscale nightlife nearby.",
+                }
+              : undefined,
   canonicalPath: `/casino/${casino.slug}`,
   updatedAt: "2026-03-12",
 }));
@@ -108,6 +217,36 @@ const vegasAttractionEntities: DccEntityRegistryNode[] = VEGAS_ATTRACTIONS_CONFI
           hearingAssistance: attraction.slug === "sphere-las-vegas",
           serviceAnimalsAllowed: true,
           accessibilitySummary: "Useful accessibility anchor for Vegas visitors who need clearer entrance, restroom, and on-site movement expectations before committing to the attraction.",
+        }
+      : undefined,
+  socialProfile:
+    attraction.slug === "sphere-las-vegas"
+      ? {
+          vibe: ["big-night spectacle", "concert-night surge", "high-photo-value"],
+          bestFor: ["groups", "concert trips", "birthday weekends"],
+          crowdType: ["concert crowd", "group travelers", "nightlife-adjacent visitors"],
+          photoMoment: true,
+          pregameFriendly: true,
+          groupFriendly: true,
+          notes: "Strong when the night is built around one marquee visual anchor and the nearby hotel choice matters as much as the ticket.",
+        }
+      : attraction.slug === "fountains-of-bellagio"
+        ? {
+            vibe: ["free classic Vegas", "romantic stop", "high-photo-value"],
+            bestFor: ["couples", "first-timers", "date-night walks"],
+            crowdType: ["mixed visitors", "couples", "first-time Vegas travelers"],
+            photoMoment: true,
+            dateNightFriendly: true,
+            notes: "Still one of the easiest social/photo moments in Vegas, especially when paired with dinner or nearby casino hopping.",
+        }
+      : attraction.slug === "area15"
+        ? {
+            vibe: ["immersive social stop", "group-night flex", "photo-heavy"],
+            bestFor: ["groups", "friends trips", "birthday nights"],
+            crowdType: ["groups", "night-out crowd", "experience seekers"],
+            photoMoment: true,
+            groupFriendly: true,
+            notes: "Best when the night needs an interactive social anchor rather than a pure luxury or fine-dining plan.",
         }
       : undefined,
   canonicalPath: attraction.primaryHref,

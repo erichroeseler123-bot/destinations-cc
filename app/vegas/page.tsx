@@ -386,6 +386,14 @@ export default async function VegasPage() {
               <h3 className="font-semibold">Luxury hotels in Las Vegas</h3>
               <p className="mt-2 text-sm text-zinc-300">Premium Strip and romantic-stay overlay driven from the same hotel tag layer.</p>
             </Link>
+            <Link href="/group-friendly/las-vegas" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
+              <h3 className="font-semibold">Group-friendly Las Vegas</h3>
+              <p className="mt-2 text-sm text-zinc-300">Birthday-weekend, pregame, and bigger-group routing across hotels, casinos, and social anchors.</p>
+            </Link>
+            <Link href="/date-night/las-vegas" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
+              <h3 className="font-semibold">Date-night Las Vegas</h3>
+              <p className="mt-2 text-sm text-zinc-300">Couples and milestone overlay for polished hotels, fountain walks, romantic casino paths, and show-night pairing.</p>
+            </Link>
             <Link href="/suites/las-vegas" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
               <h3 className="font-semibold">Las Vegas suites</h3>
               <p className="mt-2 text-sm text-zinc-300">Premium-room mini-site for buyers comparing larger layouts, upgraded room categories, and celebration-fit stays.</p>

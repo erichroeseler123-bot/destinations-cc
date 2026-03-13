@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import AuthorityMediaStrip from "@/app/components/dcc/AuthorityMediaStrip";
 import PageActionBar from "@/app/components/dcc/PageActionBar";
+import SocialProfileSection from "@/app/components/dcc/SocialProfileSection";
 import { getCityRegistryNode } from "@/src/data/cities-registry";
 import {
   getEntityRegistryNode,
@@ -184,6 +185,7 @@ function JsonLd({ slug }: { slug: string }) {
 export default async function VegasHotelNodePage({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
   const hotel = getVegasHotelBySlug(slug);
+  const hotelSocialProfile = getEntityRegistryNode(slug, "hotel")?.socialProfile;
   if (!hotel) {
     const genericHotel = getEntityRegistryNode(slug, "hotel");
     const city = genericHotel ? getCityRegistryNode(genericHotel.citySlug) : null;
@@ -249,6 +251,8 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
               ))}
             </div>
           </section>
+
+          {genericHotel.socialProfile ? <SocialProfileSection profile={genericHotel.socialProfile} /> : null}
 
           <section className="grid gap-4 md:grid-cols-2">
             <Link href={city.canonicalPath} className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
@@ -344,6 +348,8 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
             })}
           </div>
         </section>
+
+        {hotelSocialProfile ? <SocialProfileSection profile={hotelSocialProfile} /> : null}
 
         {hotel.premiumStayInfo?.suiteTypes?.length ? (
           <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
