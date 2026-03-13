@@ -143,6 +143,14 @@ export default function PortAuthorityTemplate({
           </div>
 
           <div className="mt-5 flex flex-col gap-3">
+            {config.tenderDock.toLowerCase().includes("tender") ? (
+              <Link
+                href="/cruises/tendering"
+                className="inline-flex items-center justify-center rounded-2xl border border-cyan-400/20 bg-cyan-500/10 px-5 py-3 font-semibold text-cyan-100 hover:bg-cyan-500/20"
+              >
+                Open tendering guide
+              </Link>
+            ) : null}
             <Link
               href={buildPortTrackedHref({
                 href: excursionBrowseHref,

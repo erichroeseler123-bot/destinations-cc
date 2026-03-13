@@ -159,6 +159,7 @@ function rankPath(
 
   const highPriorityRoots = new Set([
     "/cruises",
+    "/cruises/tendering",
     "/national-parks",
     "/alaska",
     "/authority",
