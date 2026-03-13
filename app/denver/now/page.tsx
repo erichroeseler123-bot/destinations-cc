@@ -37,6 +37,18 @@ function titleize(value: string) {
   return value.replaceAll("_", " ").replaceAll("-", " ");
 }
 
+function beautifyCategory(value: string) {
+  return value
+    .split("-")
+    .map((part) => {
+      if (part === "lodo") {
+        return "LoDo";
+      }
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    })
+    .join(" • ");
+}
+
 function SignalCard({
   signal,
   timeZone,
@@ -139,10 +151,21 @@ export default async function DenverNowPage({
     .sort(signalSort);
   const topSignal = highImpactSignals[0] ?? activeSignals[0] ?? bundle.signals.signals[0] ?? null;
   const upcomingSignals = tonightSignals.slice(0, 3);
+  const rightNowFooter = [
+    topSignal?.status ? titleize(topSignal.status) : null,
+    topSignal?.affected_district_slugs?.[0] ? titleize(topSignal.affected_district_slugs[0]) : null,
+    topSignal?.linked_venue_slug ? titleize(topSignal.linked_venue_slug) : null,
+  ].filter(Boolean);
 
   const anchorDistricts = bundle.districts.districts.filter((district) => anchor.district_slugs.includes(district.slug));
   const anchorVenues = bundle.venues.venues.filter((venue) => anchor.nearby_venue_slugs.includes(venue.slug));
   const anchorPlaces = bundle.places.places.filter((place) => anchor.nearby_place_slugs.includes(place.slug));
+  const distinctAnchorSignals = anchorSignals.filter((signal) => signal.id !== topSignal?.id);
+  const placeRail = Array.from(
+    new Map(
+      [...anchorPlaces, ...bundle.places.places].map((place) => [place.slug, place])
+    ).values()
+  ).slice(0, 7);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.16),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(34,197,94,0.12),transparent_28%),linear-gradient(180deg,#0a0f1b,#04070d)] text-white">
@@ -151,32 +174,25 @@ export default async function DenverNowPage({
           <div className="space-y-5">
             <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.26em] text-amber-200">
               <span>Denver Now</span>
-              <span className="text-zinc-500">City Pulse Right Now</span>
             </div>
             <div className="space-y-3">
               <h1 className="max-w-3xl text-4xl font-black tracking-tight sm:text-5xl">
-                What is happening in Denver right now
+                What matters right now and what is building tonight
               </h1>
               <p className="max-w-3xl text-base leading-7 text-zinc-300">
-                This is the real-time awareness layer. It answers what is active now, what is building tonight,
-                and what is happening around your anchor without dropping you into trip planning.
+                Real-time city awareness with a point of view. See the main thing affecting Denver now,
+                what is building later today, and what matters around your anchor.
               </p>
             </div>
-            <div className="grid gap-3 rounded-[1.5rem] border border-white/10 bg-white/5 p-4 sm:grid-cols-3">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Anchor</p>
-                <p className="mt-2 text-lg font-semibold">{anchor.name}</p>
-              </div>
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Freshness</p>
-                <p className="mt-2 text-sm text-zinc-200">Signals as of {formatClock(bundle.signals.as_of, registry.timezone)}</p>
-              </div>
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Live Density</p>
-                <p className="mt-2 text-sm text-zinc-200">
-                  {activeSignals.length} active signal{activeSignals.length === 1 ? "" : "s"} · {bundle.events.events.length} tracked event{bundle.events.events.length === 1 ? "" : "s"}
-                </p>
-              </div>
+            <div className="flex flex-wrap gap-2">
+              {registry.modes.map((mode) => (
+                <span
+                  key={mode}
+                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.18em] text-zinc-200"
+                >
+                  {titleize(mode)}
+                </span>
+              ))}
             </div>
             <div className="flex flex-wrap gap-2">
               {bundle.anchors.anchors.map((candidate) => {
@@ -196,37 +212,42 @@ export default async function DenverNowPage({
                 );
               })}
             </div>
+            <p className="text-sm text-zinc-400">Updated {formatClock(bundle.signals.as_of, registry.timezone)}</p>
           </div>
         </header>
 
-        <section className="mt-8 grid gap-4 md:grid-cols-3">
-          <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-5">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Top Signal</p>
-            <p className="mt-3 text-2xl font-bold">{topSignal ? titleize(topSignal.impact_level) : "None"}</p>
-            <p className="mt-2 text-sm text-zinc-300">
-              {topSignal ? topSignal.title : "No live signal available yet."}
-            </p>
-          </div>
-          <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-5">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Later Today</p>
-            <p className="mt-3 text-2xl font-bold">{upcomingSignals.length}</p>
-            <p className="mt-2 text-sm text-zinc-300">scheduled signal{upcomingSignals.length === 1 ? "" : "s"} still building tonight</p>
-          </div>
-          <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-5">
-            <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Anchor Orbit</p>
-            <p className="mt-3 text-2xl font-bold">{anchorDistricts.length + anchorVenues.length + anchorPlaces.length}</p>
-            <p className="mt-2 text-sm text-zinc-300">districts, venues, and places connected to {anchor.slug}</p>
-          </div>
-        </section>
-
         <div className="mt-8 space-y-10">
-          <section id="top-signal" className="space-y-4">
+          <section id="right-now" className="space-y-4">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.22em] text-rose-200">What Matters Most Right Now</p>
-              <h2 className="mt-2 text-2xl font-bold">Top signal</h2>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-rose-200">Right Now</p>
             </div>
             {topSignal ? (
-              <SignalCard signal={topSignal} timeZone={registry.timezone} />
+              <article className="rounded-[2rem] border border-rose-300/20 bg-[linear-gradient(180deg,rgba(127,29,29,0.24),rgba(10,15,27,0.95))] p-6 shadow-[0_22px_60px_rgba(0,0,0,0.32)]">
+                <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.22em]">
+                  <span className="rounded-full border border-rose-300/30 bg-rose-500/10 px-2.5 py-1 text-rose-100">
+                    {titleize(topSignal.impact_level)}
+                  </span>
+                  <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-zinc-300">
+                    {topSignal.affected_district_slugs?.[0] ? titleize(topSignal.affected_district_slugs[0]) : "Citywide"}
+                  </span>
+                </div>
+                <h2 className="mt-4 max-w-3xl text-3xl font-black tracking-tight text-white sm:text-4xl">
+                  {topSignal.title}
+                </h2>
+                <p className="mt-3 max-w-3xl text-base leading-7 text-zinc-200">{topSignal.description}</p>
+                {topSignal.pro_tip ? (
+                  <p className="mt-5 rounded-[1.4rem] border border-cyan-400/20 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-50">
+                    <span className="font-semibold text-cyan-100">Pro tip:</span> {topSignal.pro_tip}
+                  </p>
+                ) : null}
+                <div className="mt-5 flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-zinc-300">
+                  {rightNowFooter.map((item) => (
+                    <span key={item} className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </article>
             ) : (
               <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-5 text-zinc-300">
                 No ranked top signal is available yet.
@@ -236,8 +257,8 @@ export default async function DenverNowPage({
 
           <section id="later-today" className="space-y-4">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-200">What&apos;s Happening Later Today</p>
-              <h2 className="mt-2 text-2xl font-bold">Upcoming tonight rail</h2>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-200">Later Today</p>
+              <h2 className="mt-2 text-2xl font-bold">What is building later today</h2>
             </div>
             <div className="grid gap-4 lg:grid-cols-3">
               {upcomingSignals.length > 0 ? (
@@ -254,48 +275,60 @@ export default async function DenverNowPage({
 
           <section id="anchor-selector" className="space-y-4">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.22em] text-amber-200">What&apos;s Around Your Building</p>
-              <h2 className="mt-2 text-2xl font-bold">Anchor selector</h2>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-amber-200">Near {anchor.name.split(" ")[0]}</p>
+              <h2 className="mt-2 text-2xl font-bold">What is around your building</h2>
             </div>
             <div className="rounded-[1.8rem] border border-white/10 bg-white/5 p-5">
-              <div className="flex flex-wrap gap-2">
-                {bundle.anchors.anchors.map((candidate) => {
-                  const isActive = candidate.slug === anchor.slug;
-                  return (
-                    <Link
-                      key={candidate.slug}
-                      href={`/denver/now?anchor=${encodeURIComponent(candidate.slug)}`}
-                      className={
-                        isActive ?
-                          "rounded-full border border-amber-300/40 bg-amber-400/15 px-4 py-2 text-sm font-semibold text-amber-50"
-                        : "rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10"
-                      }
-                    >
-                      {candidate.name}
-                    </Link>
-                  );
-                })}
-              </div>
-              <div className="mt-5 grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-                <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Near Your Anchor</p>
-                  <div className="mt-4 space-y-4">
-                    {anchorSignals.map((signal) => (
-                      <SignalCard key={signal.id} signal={signal} timeZone={registry.timezone} />
-                    ))}
+              <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+                <div className="space-y-4">
+                  <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Districts near you</p>
+                    <div className="mt-4 grid gap-3">
+                      {anchorDistricts.map((district) => (
+                        <div key={district.slug} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                          <p className="font-semibold text-white">{district.name}</p>
+                          <p className="mt-1 text-sm text-zinc-300">
+                            {district.vibe_tags.slice(0, 3).map(beautifyCategory).join(" • ")}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
+                  {distinctAnchorSignals.length > 0 ? (
+                    <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
+                      <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Also affecting your area</p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {distinctAnchorSignals.map((signal) => (
+                          <span
+                            key={signal.id}
+                            className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-200"
+                          >
+                            {signal.title}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
-                <div className="grid gap-4">
-                  <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
-                    <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Anchor</p>
-                    <p className="mt-3 text-xl font-semibold text-white">{anchor.name}</p>
-                    <p className="mt-2 text-sm text-zinc-300">{anchor.address}</p>
-                  </div>
-                  <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
-                    <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Anchor Scope</p>
-                    <p className="mt-3 text-sm text-zinc-300">
-                      {anchor.default_walk_radius_m}m walk radius · {anchorDistricts.length} districts · {anchorVenues.length} venues
-                    </p>
+                <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Places near you</p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {anchorPlaces.map((place) => (
+                      <article key={place.slug} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                        <h3 className="font-semibold text-white">{place.name}</h3>
+                        <p className="mt-2 text-sm text-zinc-300">{beautifyCategory(place.category)}</p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {place.tags.slice(0, 2).map((tag) => (
+                            <span
+                              key={`${place.slug}:${tag}`}
+                              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-200"
+                            >
+                              {beautifyCategory(tag)}
+                            </span>
+                          ))}
+                        </div>
+                      </article>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -304,31 +337,28 @@ export default async function DenverNowPage({
 
           <section id="districts" className="space-y-4">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.22em] text-emerald-200">Which Parts Of Downtown Are Active</p>
-              <h2 className="mt-2 text-2xl font-bold">District cards</h2>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-emerald-200">Where Downtown Is Active</p>
+              <h2 className="mt-2 text-2xl font-bold">Active districts</h2>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-              {anchorDistricts.map((district) => (
+              {bundle.districts.districts.map((district) => (
                 <article key={district.slug} className="rounded-[1.8rem] border border-white/10 bg-white/5 p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">{titleize(district.district_type)}</p>
+                      <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">{beautifyCategory(district.district_type)}</p>
                       <h3 className="mt-2 text-xl font-semibold text-white">{district.name}</h3>
                     </div>
                     <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-zinc-300">
-                      {district.impact_profile}
+                      {titleize(district.impact_profile)}
                     </span>
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">
                     {district.vibe_tags.map((tag) => (
                       <span key={`${district.slug}:${tag}`} className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-zinc-200">
-                        {titleize(tag)}
+                        {beautifyCategory(tag)}
                       </span>
                     ))}
                   </div>
-                  <p className="mt-4 text-sm text-zinc-300">
-                    {district.venue_slugs.length} venues · {district.place_slugs.length} places · {district.radius_m}m radius
-                  </p>
                 </article>
               ))}
             </div>
@@ -336,8 +366,8 @@ export default async function DenverNowPage({
 
           <section id="places" className="space-y-4">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.22em] text-fuchsia-200">Where You Could Go</p>
-              <h2 className="mt-2 text-2xl font-bold">Places rail</h2>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-fuchsia-200">Where To Go Next</p>
+              <h2 className="mt-2 text-2xl font-bold">Places and venues</h2>
             </div>
             <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
               <div className="rounded-[1.8rem] border border-white/10 bg-white/5 p-5">
@@ -346,21 +376,21 @@ export default async function DenverNowPage({
                   {anchorVenues.slice(0, 4).map((venue) => (
                     <div key={venue.slug} className="rounded-2xl border border-white/10 bg-black/20 p-4">
                       <p className="font-semibold text-white">{venue.name}</p>
-                      <p className="mt-1 text-sm text-zinc-300">{titleize(venue.category)}</p>
+                      <p className="mt-1 text-sm text-zinc-300">{beautifyCategory(venue.category)}</p>
                     </div>
                   ))}
                 </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                {anchorPlaces.map((place) => (
+                {placeRail.map((place) => (
                   <article key={place.slug} className="rounded-[1.6rem] border border-white/10 bg-white/5 p-4">
-                    <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">{titleize(place.place_type)}</p>
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">{beautifyCategory(place.place_type)}</p>
                     <h3 className="mt-2 text-lg font-semibold text-white">{place.name}</h3>
-                    <p className="mt-2 text-sm text-zinc-300">{titleize(place.category)}</p>
+                    <p className="mt-2 text-sm text-zinc-300">{beautifyCategory(place.category)}</p>
                     <div className="mt-4 flex flex-wrap gap-2">
-                      {place.tags.slice(0, 3).map((tag) => (
-                        <span key={`${place.slug}:${tag}`} className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-zinc-200">
-                          {titleize(tag)}
+                      {place.quick_actions.map((action) => (
+                        <span key={`${place.slug}:${action}`} className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-zinc-200">
+                          {beautifyCategory(action)}
                         </span>
                       ))}
                     </div>
