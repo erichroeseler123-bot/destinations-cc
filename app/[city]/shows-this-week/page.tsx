@@ -10,6 +10,7 @@ import {
   resolveCityShowVenueSlug,
   resolveCrossSiteVenueSlug,
 } from "@/lib/dcc/shows/cityShows";
+import { resolveCanonicalCityKey } from "@/src/data/city-aliases";
 import { getCityShowsConfig } from "@/src/data/city-shows-config";
 import { titleCase } from "@/src/data/city-intents";
 
@@ -26,7 +27,7 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { city } = await params;
-  const cityKey = (city || "").toLowerCase();
+  const cityKey = resolveCanonicalCityKey(city);
   const cityName = titleCase(cityKey);
 
   return {
@@ -57,7 +58,7 @@ export default async function CityShowsThisWeekPage({
 }) {
   const { city } = await params;
   const resolvedSearchParams = await searchParams;
-  const cityKey = (city || "").toLowerCase();
+  const cityKey = resolveCanonicalCityKey(city);
   const cityName = titleCase(cityKey);
   const config = getCityShowsConfig(cityKey);
 

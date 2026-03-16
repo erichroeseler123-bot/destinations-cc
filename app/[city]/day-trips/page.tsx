@@ -3,6 +3,7 @@ export const dynamicParams = false;
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import aliases from "@/data/city-aliases.json";
+import { resolveCanonicalCityKey } from "@/src/data/city-aliases";
 import { getCityIntents, titleCase } from "@/src/data/city-intents";
 
 type Params = { city: string };
@@ -13,7 +14,7 @@ export async function generateStaticParams() {
 
 export default async function CityDayTripsPage({ params }: { params: Promise<Params> }) {
   const { city } = await params;
-  const cityKey = (city || "").toLowerCase();
+  const cityKey = resolveCanonicalCityKey(city);
 
   const items = getCityIntents(cityKey);
   if (!items) notFound();

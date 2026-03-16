@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import tours from "@/data/tours.json";
 import aliases from "@/data/city-aliases.json";
 import attractionsMap from "@/data/attractions.json";
-import { getNodeSlugFromCity } from "@/src/data/city-aliases";
+import { getNodeSlugFromCity, resolveCanonicalCityKey } from "@/src/data/city-aliases";
 import { getCityManifest, getAttractionsManifest } from "@/lib/dcc/manifests/cityExpansion";
 
 export const dynamicParams = false;
@@ -57,12 +57,12 @@ export default async function CityAttractionsPage({
   params: Promise<{ city: string }>;
 }) {
   const { city } = await params;
+  const cityKey = resolveCanonicalCityKey(city);
 
   const nodeSlug = getNodeSlugFromCity(city);
   if (!nodeSlug) return notFound();
 
-  const displayCity = titleCase(city);
-  const cityKey = city; // city param is already a slug key like "juneau", "denver", etc.
+  const displayCity = titleCase(cityKey);
   const cityManifest = getCityManifest(cityKey);
   const attractionsManifest = getAttractionsManifest(cityKey);
 

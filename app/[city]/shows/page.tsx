@@ -12,6 +12,7 @@ import {
   resolveCityShowVenueSlug,
   resolveCrossSiteVenueSlug,
 } from "@/lib/dcc/shows/cityShows";
+import { resolveCanonicalCityKey } from "@/src/data/city-aliases";
 import { getMediaForEntity } from "@/src/lib/media";
 import { getCityShowsConfig } from "@/src/data/city-shows-config";
 import { getCityIntents, titleCase } from "@/src/data/city-intents";
@@ -35,7 +36,7 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { city } = await params;
-  const cityKey = (city || "").toLowerCase();
+  const cityKey = resolveCanonicalCityKey(city);
   const cityName = titleCase(cityKey);
   const config = getCityShowsConfig(cityKey);
 
@@ -229,7 +230,7 @@ export default async function CityShowsPage({
 }) {
   const { city } = await params;
   const resolvedSearchParams = await searchParams;
-  const cityKey = (city || "").toLowerCase();
+  const cityKey = resolveCanonicalCityKey(city);
   const rawQuery = (resolvedSearchParams?.q || "").trim().toLowerCase();
   const qty = (resolvedSearchParams?.qty || "").trim();
   const cityName = titleCase(cityKey);

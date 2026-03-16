@@ -15,6 +15,7 @@ import {
   resolveCrossSiteVenueSlug,
 } from "@/lib/dcc/shows/cityShows";
 import { getLiveCityVenue, isLiveCityKey } from "@/lib/dcc/liveCity";
+import { resolveCanonicalCityKey } from "@/src/data/city-aliases";
 import { getCityShowsConfig } from "@/src/data/city-shows-config";
 import { getTransportDirectoryEntry } from "@/src/data/transport-directory";
 import { titleCase } from "@/src/data/city-intents";
@@ -73,7 +74,7 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { city, eventSlug } = await params;
-  const cityKey = (city || "").toLowerCase();
+  const cityKey = resolveCanonicalCityKey(city);
   const payload = await getSupportedCityEvent(cityKey, eventSlug);
 
   if (!payload) {
@@ -112,7 +113,7 @@ export default async function CityShowEventPage({
 }) {
   const { city, eventSlug } = await params;
   const resolvedSearchParams = await searchParams;
-  const cityKey = (city || "").toLowerCase();
+  const cityKey = resolveCanonicalCityKey(city);
   const cityName = titleCase(cityKey);
   const payload = await getSupportedCityEvent(cityKey, eventSlug);
 

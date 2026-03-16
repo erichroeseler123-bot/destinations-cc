@@ -25,6 +25,7 @@ import {
   buildBreadcrumbJsonLd,
   buildCityJsonLd,
 } from "@/lib/dcc/jsonld";
+import { resolveCanonicalCityKey } from "@/src/data/city-aliases";
 
 type Params = { city: string };
 
@@ -70,7 +71,7 @@ function SectionCard({
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { city } = await params;
-  const cityKey = (city || "").toLowerCase();
+  const cityKey = resolveCanonicalCityKey(city);
   const manifest = getCityManifest(cityKey);
   if (manifest) {
     return {
@@ -119,7 +120,7 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
 
   if (!city || city.length < 2) notFound();
 
-  const cityKey = city.toLowerCase();
+  const cityKey = resolveCanonicalCityKey(city);
   const cityName = prettyCity(cityKey);
   const manifest = getCityManifest(cityKey);
   const cityNode = getCityBySlug(cityKey);
