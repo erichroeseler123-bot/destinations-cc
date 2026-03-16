@@ -41,6 +41,15 @@ export function getViatorReviewPageMetadata(): Pick<Metadata, "robots"> {
   return getViatorNonIndexedMetadata();
 }
 
+export function getViatorIndexablePdpMetadata(): Pick<Metadata, "robots"> {
+  return {
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
+
 export function getReviewFreshnessLabel(updatedAt: string | null | undefined): string {
   if (!updatedAt) return "Review cache not synced yet";
   const date = new Date(updatedAt);

@@ -76,6 +76,10 @@ async function request(endpoint: string, options: ViatorRequestOptions = {}): Pr
   return response.json();
 }
 
+function getDestinationsEndpoint(): string {
+  return "/v1/taxonomy/destinations";
+}
+
 function readDestinationsCache(): unknown {
   const cached = readJsonFile<unknown>(DESTINATIONS_CACHE_PATH);
   if (cached) return cached;
@@ -117,7 +121,7 @@ export function getViatorClient(): ViatorClient {
   return {
     async listDestinations() {
       if (!getViatorServerConfig().apiKey) return normalizeDestinationCatalogResponse(readDestinationsCache());
-      return normalizeDestinationCatalogResponse(await request("/destinations"));
+      return normalizeDestinationCatalogResponse(await request(getDestinationsEndpoint()));
     },
 
     async listTags() {
@@ -180,7 +184,7 @@ export function getViatorClient(): ViatorClient {
       if (!config.apiKey) return snapshot;
 
       const probes: Array<[string, () => Promise<unknown>]> = [
-        ["destinations", () => request("/destinations")],
+        ["destinations", () => request(getDestinationsEndpoint())],
         ["tags", () => request("/products/tags")],
         ["search", () => request("/products/search", { method: "POST", body: { pagination: { start: 1, count: 1 } } })],
       ];

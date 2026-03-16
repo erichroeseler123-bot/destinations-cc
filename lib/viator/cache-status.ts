@@ -1,6 +1,8 @@
 import fs from "fs";
 import path from "path";
 import { VIATOR_CACHE_FILES, getViatorReviewsDir, readViatorTaxonomyMeta } from "@/lib/viator/cache";
+import { getViatorDestinationCatalogSource } from "@/lib/viator/destinations";
+import { getViatorTagCatalogSource } from "@/lib/viator/tags";
 
 function statPath(filePath: string) {
   try {
@@ -22,10 +24,16 @@ function statPath(filePath: string) {
 }
 
 export function getTaxonomyCacheStatus() {
+  const meta = readViatorTaxonomyMeta();
   return {
     destinations: statPath(VIATOR_CACHE_FILES.destinations),
     tags: statPath(VIATOR_CACHE_FILES.tags),
-    meta: readViatorTaxonomyMeta(),
+    meta,
+    effectiveSource: {
+      destinations: getViatorDestinationCatalogSource(),
+      tags: getViatorTagCatalogSource(),
+      taxonomyMetaSource: meta?.source || "fallback",
+    },
   };
 }
 

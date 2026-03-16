@@ -16,9 +16,10 @@ import { getOperatorManifest, mergeOperatorRef, type TourOperatorRef } from "@/l
 import JsonLd from "@/app/components/dcc/JsonLd";
 import { buildBreadcrumbJsonLd, buildTourJsonLd } from "@/lib/dcc/jsonld";
 import { getViatorProductDetailForTour } from "@/lib/viator/detail";
+import { getProductCacheStatus } from "@/lib/viator/cache-status";
 import {
   getReviewFreshnessLabel,
-  getViatorNonIndexedMetadata,
+  getViatorIndexablePdpMetadata,
   getViatorReviewContentNotice,
   getViatorTravelerPhotoNotice,
 } from "@/lib/viator/reviews";
@@ -43,7 +44,7 @@ type Tour = {
 
 const allTours = tours as unknown as Tour[];
 
-export const metadata: Metadata = getViatorNonIndexedMetadata();
+export const metadata: Metadata = getViatorIndexablePdpMetadata();
 
 export function generateStaticParams() {
   return allTours
@@ -66,6 +67,7 @@ export default async function TourDetailPage({
     id: String(tour.id),
     productCode: tour.product_code || null,
   });
+  const reviewCacheStatus = getProductCacheStatus(productDetail?.product_code || tour.product_code || null);
 
   // --- 1. DATA CALCULATIONS ---
   const rating = Number(tour.rating ?? 4.8);
@@ -263,7 +265,7 @@ export default async function TourDetailPage({
         <p className="mt-2 text-sm text-zinc-400">{getViatorTravelerPhotoNotice()}</p>
         {productDetail?.reviews?.length ? (
           <p className="mt-3 text-sm text-zinc-300">
-            {productDetail.reviews.length} cached reviews. {getReviewFreshnessLabel(null)}
+            {productDetail.reviews.length} cached reviews. {getReviewFreshnessLabel(reviewCacheStatus.updatedAt)}
           </p>
         ) : (
           <p className="mt-3 text-sm text-zinc-300">No cached review payload is attached to this product yet.</p>

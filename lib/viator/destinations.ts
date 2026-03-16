@@ -84,6 +84,19 @@ export function getViatorDestinationCatalogMeta() {
   return readViatorTaxonomyMeta();
 }
 
+export function getViatorDestinationCatalogSource():
+  | "live_cache"
+  | "legacy_cache"
+  | "empty" {
+  const live = readNormalizedLiveRows();
+  if (live.length > 0) return "live_cache";
+
+  const legacy = readLegacyRows();
+  if (legacy.length > 0) return "legacy_cache";
+
+  return "empty";
+}
+
 function titleCaseSlug(slug: string): string {
   return slug
     .split("-")

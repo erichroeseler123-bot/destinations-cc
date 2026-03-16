@@ -70,6 +70,16 @@ function readTagCatalog(): ViatorTagCatalogItem[] {
   }
 }
 
+export function getViatorTagCatalogSource():
+  | "live_cache"
+  | "policy_overlay"
+  | "empty" {
+  const cached = readTagCatalog();
+  if (cached.length > 0) return "live_cache";
+  if (VIATOR_TAG_DEFINITIONS.length > 0) return "policy_overlay";
+  return "empty";
+}
+
 export function getViatorTagDefinition(tagId: number): ViatorTagDefinition | null {
   return TAGS_BY_ID.get(tagId) || null;
 }
