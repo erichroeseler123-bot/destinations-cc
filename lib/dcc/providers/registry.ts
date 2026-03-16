@@ -334,6 +334,41 @@ export const DCC_PROVIDER_REGISTRY: ProviderContract[] = [
       default_behavior: "disabled when key missing",
     },
   },
+  {
+    id: "rapidapi_airbnb",
+    name: "RapidAPI Airbnb",
+    env_vars_required: ["RAPIDAPI_KEY"],
+    layer: "layer2_action",
+    primary_lanes: ["lodging", "stays"],
+    live_cache_support: {
+      live: true,
+      cache: true,
+      cache_source: "next fetch revalidation via lib/rapidapi/airbnb.ts",
+    },
+    refresh_strategy: {
+      mode: "hybrid",
+      cadence: "request-time fetch with route-level revalidation",
+      commands: [],
+    },
+    diagnostics_surface: {
+      runtime_fields: ["source", "configured", "count", "error"],
+      endpoints: [
+        "/api/internal/lodging/airbnb/search",
+        "/api/internal/lodging/airbnb/details",
+        "/api/internal/providers/capability-matrix",
+      ],
+    },
+    rollout_policy: {
+      strategy: "policy_switch",
+      env_controls: [
+        "RAPIDAPI_KEY",
+        "RAPIDAPI_AIRBNB_HOST",
+        "RAPIDAPI_AIRBNB_BASE_URL",
+        "RAPIDAPI_AIRBNB_REVALIDATE_SECONDS",
+      ],
+      default_behavior: "supplemental cached lodging source only; never canonical truth",
+    },
+  },
 ];
 
 export function getProviderContract(providerId: string): ProviderContract | null {
