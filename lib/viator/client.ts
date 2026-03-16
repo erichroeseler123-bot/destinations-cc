@@ -120,7 +120,7 @@ export function normalizeDestinationCatalogResponse(value: unknown): ViatorDesti
       ? Object.entries(value as Record<string, unknown>)
           .map(([slug, destinationId]) => {
             if (typeof destinationId !== "number") return null;
-            return {
+            const row: ViatorDestinationCatalogRow = {
               destinationId,
               parentDestinationId: null,
               name: slug
@@ -132,7 +132,8 @@ export function normalizeDestinationCatalogResponse(value: unknown): ViatorDesti
               timeZone: null,
               defaultCurrencyCode: "USD",
               countryCode: "US",
-            } satisfies ViatorDestinationCatalogRow;
+            };
+            return row;
           })
           .filter((row): row is ViatorDestinationCatalogRow => Boolean(row))
       : [];
