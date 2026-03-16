@@ -1,6 +1,6 @@
 import fs from "fs";
-import path from "path";
-import { ViatorTagCatalogItemSchema, type ViatorTagCatalogItem } from "@/lib/viator/schema";
+import { VIATOR_CACHE_FILES } from "@/lib/viator/cache";
+import { ViatorTagCatalogSchema, type ViatorTagCatalogItem } from "@/lib/viator/schema";
 
 export type ViatorTagDisplayPolicy = "frontend" | "backend_only" | "unsupported";
 
@@ -59,17 +59,12 @@ const VIATOR_TAG_DEFINITIONS: ViatorTagDefinition[] = [
 ];
 
 const TAGS_BY_ID = new Map(VIATOR_TAG_DEFINITIONS.map((tag) => [tag.tagId, tag]));
-const ROOT = process.cwd();
-const VIATOR_TAGS_CACHE_PATH = path.join(ROOT, "data", "viator-tags.json");
 
 function readTagCatalog(): ViatorTagCatalogItem[] {
   try {
-    const cached = JSON.parse(fs.readFileSync(VIATOR_TAGS_CACHE_PATH, "utf8")) as unknown;
-    if (!Array.isArray(cached)) return [];
-    return cached
-      .map((row) => ViatorTagCatalogItemSchema.safeParse(row))
-      .filter((row): row is { success: true; data: ViatorTagCatalogItem } => row.success)
-      .map((row) => row.data);
+    const cached = JSON.parse(fs.readFileSync(VIATOR_CACHE_FILES.tags, "utf8")) as unknown;
+    const parsed = ViatorTagCatalogSchema.safeParse(Array.isArray(cached) ? { tags: cached } : cached);
+    return parsed.success ? parsed.data.tags : [];
   } catch {
     return [];
   }
@@ -117,4 +112,8 @@ export function scoreViatorMerchandisingSignals(tagIds: Array<number | string | 
 
 export function getCachedViatorTagCatalog(): ViatorTagCatalogItem[] {
   return readTagCatalog();
+}
+
+export function getViatorPolicyTagDefinitions(): ViatorTagDefinition[] {
+  return VIATOR_TAG_DEFINITIONS;
 }

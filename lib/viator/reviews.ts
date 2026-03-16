@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { extractTravelerPhotosFromReviews as extractPhotos } from "@/lib/viator/media";
 import type { ViatorMediaAsset, ViatorReview } from "@/lib/viator/schema";
 
 export const VIATOR_REVIEW_CACHE_TTL_HOURS = 24 * 7;
@@ -29,7 +30,26 @@ export function getViatorNonIndexedMetadata(): Pick<Metadata, "robots"> {
 }
 
 export function extractTravelerPhotosFromReviews(reviews: ViatorReview[]): ViatorMediaAsset[] {
-  return reviews.flatMap((review) => review.travelerPhotos || []);
+  return extractPhotos(reviews);
+}
+
+export function shouldNoIndexViatorReviewSurface(): boolean {
+  return VIATOR_REVIEW_INDEXING.index === false;
+}
+
+export function getViatorReviewPageMetadata(): Pick<Metadata, "robots"> {
+  return getViatorNonIndexedMetadata();
+}
+
+export function getReviewFreshnessLabel(updatedAt: string | null | undefined): string {
+  if (!updatedAt) return "Review cache not synced yet";
+  const date = new Date(updatedAt);
+  if (Number.isNaN(date.getTime())) return "Review cache timestamp unavailable";
+  const ageHours = Math.max(0, Math.round((Date.now() - date.getTime()) / (1000 * 60 * 60)));
+  if (ageHours < 1) return "Refreshed within the last hour";
+  if (ageHours < 24) return `Refreshed ${ageHours}h ago`;
+  const ageDays = Math.round(ageHours / 24);
+  return `Refreshed ${ageDays}d ago`;
 }
 
 export function withViatorReviewPayload<T extends { reviews?: ViatorReview[]; travelerImages?: ViatorMediaAsset[] }>(

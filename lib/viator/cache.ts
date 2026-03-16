@@ -1,6 +1,12 @@
 import fs from "fs";
 import path from "path";
-import type { ViatorReview, ViatorTagCatalogItem } from "@/lib/viator/schema";
+import {
+  ViatorDestinationCatalogSchema,
+  ViatorTagCatalogSchema,
+  type ViatorDestinationCatalog,
+  type ViatorReview,
+  type ViatorTagCatalog,
+} from "@/lib/viator/schema";
 
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "data");
@@ -9,7 +15,16 @@ const REVIEWS_DIR = path.join(DATA_DIR, "viator-reviews");
 export const VIATOR_CACHE_FILES = {
   destinations: path.join(DATA_DIR, "viator-destinations.json"),
   tags: path.join(DATA_DIR, "viator-tags.json"),
+  taxonomyMeta: path.join(DATA_DIR, "viator-taxonomy.meta.json"),
 } as const;
+
+export type ViatorTaxonomyMeta = {
+  updatedAt: string;
+  destinationsCount: number;
+  tagsCount: number;
+  source: "live" | "cache" | "fallback";
+  accessTier: string;
+};
 
 function statFile(filePath: string) {
   try {
@@ -30,10 +45,23 @@ function statFile(filePath: string) {
   }
 }
 
+function readJsonFile<T>(filePath: string): T | null {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8")) as T;
+  } catch {
+    return null;
+  }
+}
+
+function ensureDataDir(filePath: string) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+}
+
 export function getViatorCacheFileStats() {
   return {
     destinations: statFile(VIATOR_CACHE_FILES.destinations),
     tags: statFile(VIATOR_CACHE_FILES.tags),
+    taxonomyMeta: statFile(VIATOR_CACHE_FILES.taxonomyMeta),
     reviewsDir: statFile(REVIEWS_DIR),
   };
 }
@@ -57,12 +85,38 @@ export function writeViatorReviewCache(productCode: string, reviews: ViatorRevie
   return filePath;
 }
 
-export function writeViatorDestinationsCache(payload: unknown): string {
-  fs.writeFileSync(VIATOR_CACHE_FILES.destinations, `${JSON.stringify(payload, null, 2)}\n`);
+export function writeViatorDestinationsCache(payload: ViatorDestinationCatalog): string {
+  ensureDataDir(VIATOR_CACHE_FILES.destinations);
+  const normalized = ViatorDestinationCatalogSchema.parse(payload);
+  fs.writeFileSync(VIATOR_CACHE_FILES.destinations, `${JSON.stringify(normalized, null, 2)}\n`);
   return VIATOR_CACHE_FILES.destinations;
 }
 
-export function writeViatorTagsCache(payload: ViatorTagCatalogItem[]): string {
-  fs.writeFileSync(VIATOR_CACHE_FILES.tags, `${JSON.stringify(payload, null, 2)}\n`);
+export function writeViatorTagsCache(payload: ViatorTagCatalog): string {
+  ensureDataDir(VIATOR_CACHE_FILES.tags);
+  const normalized = ViatorTagCatalogSchema.parse(payload);
+  fs.writeFileSync(VIATOR_CACHE_FILES.tags, `${JSON.stringify(normalized, null, 2)}\n`);
   return VIATOR_CACHE_FILES.tags;
+}
+
+export function readViatorTaxonomyMeta(): ViatorTaxonomyMeta | null {
+  const raw = readJsonFile<Partial<ViatorTaxonomyMeta>>(VIATOR_CACHE_FILES.taxonomyMeta);
+  if (!raw || typeof raw.updatedAt !== "string") return null;
+  return {
+    updatedAt: raw.updatedAt,
+    destinationsCount: Number(raw.destinationsCount || 0),
+    tagsCount: Number(raw.tagsCount || 0),
+    source: raw.source === "live" || raw.source === "cache" || raw.source === "fallback" ? raw.source : "fallback",
+    accessTier: typeof raw.accessTier === "string" && raw.accessTier ? raw.accessTier : "basic_access",
+  };
+}
+
+export function writeViatorTaxonomyMeta(payload: ViatorTaxonomyMeta): string {
+  ensureDataDir(VIATOR_CACHE_FILES.taxonomyMeta);
+  fs.writeFileSync(VIATOR_CACHE_FILES.taxonomyMeta, `${JSON.stringify(payload, null, 2)}\n`);
+  return VIATOR_CACHE_FILES.taxonomyMeta;
+}
+
+export function getViatorReviewsDir(): string {
+  return REVIEWS_DIR;
 }

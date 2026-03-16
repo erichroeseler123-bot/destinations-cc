@@ -3,9 +3,15 @@ import path from "path";
 import { getViatorCapabilities } from "@/lib/viator/access";
 import { getViatorServerConfig } from "@/lib/viator/config";
 import {
+  ViatorDestinationCatalogSchema,
+  ViatorDestinationCatalogRowSchema,
   ViatorReviewSchema,
+  ViatorTagCatalogSchema,
   ViatorTagCatalogItemSchema,
   type ViatorReview,
+  type ViatorDestinationCatalog,
+  type ViatorDestinationCatalogRow,
+  type ViatorTagCatalog,
   type ViatorTagCatalogItem,
 } from "@/lib/viator/schema";
 
@@ -16,8 +22,8 @@ type ViatorRequestOptions = {
 };
 
 type ViatorClient = {
-  listDestinations(): Promise<unknown>;
-  listTags(): Promise<ViatorTagCatalogItem[]>;
+  listDestinations(): Promise<ViatorDestinationCatalog>;
+  listTags(): Promise<ViatorTagCatalog>;
   searchProducts(input: Record<string, unknown>): Promise<unknown>;
   getProductDetail(productCode: string): Promise<unknown>;
   getProductsModifiedSince(cursor?: string): Promise<unknown>;
@@ -76,31 +82,48 @@ function readDestinationsCache(): unknown {
   return readJsonFile<unknown>(LEGACY_DESTINATIONS_PATH) || { destinations: [] };
 }
 
-function readTagsCache(): ViatorTagCatalogItem[] {
-  const cached = readJsonFile<unknown>(TAGS_CACHE_PATH);
-  if (!Array.isArray(cached)) return [];
-  return cached
+export function normalizeDestinationCatalogResponse(value: unknown): ViatorDestinationCatalog {
+  const rawRows = Array.isArray(value)
+    ? value
+    : value && typeof value === "object" && Array.isArray((value as { destinations?: unknown[] }).destinations)
+      ? (value as { destinations?: unknown[] }).destinations || []
+      : [];
+  const destinations = rawRows
+    .map((row) => ViatorDestinationCatalogRowSchema.safeParse(row))
+    .filter((row): row is { success: true; data: ViatorDestinationCatalogRow } => row.success)
+    .map((row) => row.data);
+  return ViatorDestinationCatalogSchema.parse({ destinations });
+}
+
+export function normalizeTagCatalogResponse(value: unknown): ViatorTagCatalog {
+  const rawRows = Array.isArray(value)
+    ? value
+    : value && typeof value === "object" && Array.isArray((value as { tags?: unknown[] }).tags)
+      ? (value as { tags?: unknown[] }).tags || []
+      : [];
+  const tags = rawRows
     .map((row) => ViatorTagCatalogItemSchema.safeParse(row))
     .filter((row): row is { success: true; data: ViatorTagCatalogItem } => row.success)
     .map((row) => row.data);
+  return ViatorTagCatalogSchema.parse({ tags });
+}
+
+function readTagsCache(): ViatorTagCatalog {
+  const cached = readJsonFile<unknown>(TAGS_CACHE_PATH);
+  return normalizeTagCatalogResponse(cached);
 }
 
 export function getViatorClient(): ViatorClient {
   return {
     async listDestinations() {
-      if (!getViatorServerConfig().apiKey) return readDestinationsCache();
-      return request("/destinations");
+      if (!getViatorServerConfig().apiKey) return normalizeDestinationCatalogResponse(readDestinationsCache());
+      return normalizeDestinationCatalogResponse(await request("/destinations"));
     },
 
     async listTags() {
       if (!getViatorCapabilities().canUseTags) return readTagsCache();
       if (!getViatorServerConfig().apiKey) return readTagsCache();
-      const data = (await request("/products/tags")) as { tags?: unknown[] } | unknown[];
-      const rows = Array.isArray(data) ? data : Array.isArray((data as { tags?: unknown[] }).tags) ? (data as { tags?: unknown[] }).tags || [] : [];
-      return rows
-        .map((row) => ViatorTagCatalogItemSchema.safeParse(row))
-        .filter((row): row is { success: true; data: ViatorTagCatalogItem } => row.success)
-        .map((row) => row.data);
+      return normalizeTagCatalogResponse(await request("/products/tags"));
     },
 
     async searchProducts(input: Record<string, unknown>) {

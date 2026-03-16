@@ -5,12 +5,18 @@ import cityIndex from "@/data/cities/index.json";
 import destinationsData from "@/data/destinations.json";
 import usTopTourism from "@/data/cities/us-top-tourism.json";
 import { slugify } from "@/lib/dcc/slug";
-import { ViatorDestinationOptionSchema, type ViatorDestinationOption } from "@/lib/viator/schema";
+import { readViatorTaxonomyMeta, VIATOR_CACHE_FILES } from "@/lib/viator/cache";
+import {
+  ViatorDestinationCatalogSchema,
+  ViatorDestinationOptionSchema,
+  type ViatorDestinationCatalogRow,
+  type ViatorDestinationOption,
+} from "@/lib/viator/schema";
 
 const ROOT = process.cwd();
-const VIATOR_DESTINATIONS_CACHE_PATH = path.join(ROOT, "data", "viator-destinations.json");
+const LEGACY_DESTINATIONS_PATH = path.join(ROOT, "data", "destinations.json");
 
-type ViatorDestinationRow = {
+type LegacyDestinationRow = {
   destinationId?: number;
   name?: string;
   type?: string;
@@ -18,22 +24,64 @@ type ViatorDestinationRow = {
   defaultCurrencyCode?: string;
 };
 
-function readDestinationRows(): ViatorDestinationRow[] {
+function readJsonFile<T>(filePath: string): T | null {
   try {
-    const cached = JSON.parse(fs.readFileSync(VIATOR_DESTINATIONS_CACHE_PATH, "utf8")) as unknown;
-    if (cached && typeof cached === "object" && Array.isArray((cached as { destinations?: unknown[] }).destinations)) {
-      return (cached as { destinations?: ViatorDestinationRow[] }).destinations || [];
-    }
-    if (Array.isArray(cached)) {
-      return cached as ViatorDestinationRow[];
-    }
-  } catch {}
-
-  return ((destinationsData as { destinations?: ViatorDestinationRow[] }).destinations || []);
+    return JSON.parse(fs.readFileSync(filePath, "utf8")) as T;
+  } catch {
+    return null;
+  }
 }
 
-export function getCachedViatorDestinationRows(): ViatorDestinationRow[] {
+function normalizeLegacyRows(rows: LegacyDestinationRow[]): ViatorDestinationCatalogRow[] {
+  const output: ViatorDestinationCatalogRow[] = [];
+  for (const row of rows) {
+    if (typeof row.destinationId !== "number" || typeof row.name !== "string" || row.name.trim().length === 0) {
+      continue;
+    }
+    output.push({
+      destinationId: row.destinationId,
+      name: row.name,
+      type: row.type || null,
+      timeZone: row.timeZone || null,
+      defaultCurrencyCode: row.defaultCurrencyCode || null,
+      parentDestinationId: null,
+      countryCode: null,
+    });
+  }
+  return output;
+}
+
+function readNormalizedLiveRows(): ViatorDestinationCatalogRow[] {
+  const raw = readJsonFile<unknown>(VIATOR_CACHE_FILES.destinations);
+  if (!raw) return [];
+  const parsed = ViatorDestinationCatalogSchema.safeParse(raw);
+  return parsed.success ? parsed.data.destinations : [];
+}
+
+function readLegacyRows(): ViatorDestinationCatalogRow[] {
+  const cached = readJsonFile<unknown>(LEGACY_DESTINATIONS_PATH);
+  if (cached && typeof cached === "object" && Array.isArray((cached as { destinations?: unknown[] }).destinations)) {
+    return normalizeLegacyRows((cached as { destinations?: LegacyDestinationRow[] }).destinations || []);
+  }
+  return normalizeLegacyRows((destinationsData as { destinations?: LegacyDestinationRow[] }).destinations || []);
+}
+
+function readDestinationRows(): ViatorDestinationCatalogRow[] {
+  const live = readNormalizedLiveRows();
+  if (live.length > 0) return live;
+
+  const legacy = readLegacyRows();
+  if (legacy.length > 0) return legacy;
+
+  return [];
+}
+
+export function getCachedViatorDestinationRows(): ViatorDestinationCatalogRow[] {
   return readDestinationRows();
+}
+
+export function getViatorDestinationCatalogMeta() {
+  return readViatorTaxonomyMeta();
 }
 
 function titleCaseSlug(slug: string): string {
@@ -45,11 +93,10 @@ function titleCaseSlug(slug: string): string {
 }
 
 export function getViatorDestinationOptions(): ViatorDestinationOption[] {
-  const destinationRows = readDestinationRows()
-    .filter((row) => row.type === "CITY" && typeof row.name === "string");
-  const destinationBySlug = new Map(
-    destinationRows.map((row) => [slugify(String(row.name || "")), row])
+  const destinationRows = readDestinationRows().filter(
+    (row) => row.type === "CITY" && typeof row.name === "string"
   );
+  const destinationBySlug = new Map(destinationRows.map((row) => [slugify(String(row.name || "")), row]));
   const cityIndexBySlug = new Map((cityIndex.cities || []).map((city) => [city.slug, city]));
   const tourismBySlug = new Map(usTopTourism.map((city) => [city.slug, city]));
 
@@ -57,8 +104,7 @@ export function getViatorDestinationOptions(): ViatorDestinationOption[] {
     .map((routeSlug) => {
       const cityIndexEntry = cityIndexBySlug.get(routeSlug);
       const tourismEntry = tourismBySlug.get(routeSlug);
-      const cityName =
-        cityIndexEntry?.name || tourismEntry?.name || titleCaseSlug(routeSlug);
+      const cityName = cityIndexEntry?.name || tourismEntry?.name || titleCaseSlug(routeSlug);
       const destinationRow = destinationBySlug.get(slugify(cityName));
       const searchTerms = Array.from(
         new Set(
@@ -82,8 +128,8 @@ export function getViatorDestinationOptions(): ViatorDestinationOption[] {
         state: cityIndexEntry?.state || tourismEntry?.state,
         country: tourismEntry?.country || "US",
         destinationId: destinationRow?.destinationId,
-        timeZone: destinationRow?.timeZone,
-        defaultCurrencyCode: destinationRow?.defaultCurrencyCode,
+        timeZone: destinationRow?.timeZone || undefined,
+        defaultCurrencyCode: destinationRow?.defaultCurrencyCode || undefined,
         searchTerms,
       });
     })

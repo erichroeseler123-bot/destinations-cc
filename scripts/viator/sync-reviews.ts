@@ -1,5 +1,5 @@
 import { getViatorClient } from "@/lib/viator/client";
-import { writeViatorReviewCache } from "@/lib/viator/cache";
+import { writeViatorReviewCache } from "@/lib/viator/review-cache";
 import { getViatorServerConfig } from "@/lib/viator/config";
 
 async function main() {

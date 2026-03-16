@@ -16,7 +16,12 @@ import { getOperatorManifest, mergeOperatorRef, type TourOperatorRef } from "@/l
 import JsonLd from "@/app/components/dcc/JsonLd";
 import { buildBreadcrumbJsonLd, buildTourJsonLd } from "@/lib/dcc/jsonld";
 import { getViatorProductDetailForTour } from "@/lib/viator/detail";
-import { getViatorNonIndexedMetadata, getViatorReviewContentNotice, getViatorTravelerPhotoNotice } from "@/lib/viator/reviews";
+import {
+  getReviewFreshnessLabel,
+  getViatorNonIndexedMetadata,
+  getViatorReviewContentNotice,
+  getViatorTravelerPhotoNotice,
+} from "@/lib/viator/reviews";
 
 type Tour = {
   id: string | number;
@@ -168,15 +173,31 @@ export default async function TourDetailPage({
       </section>
 
       {productDetail ? (
-        <section className="mb-16 grid gap-6 md:grid-cols-2">
+        <section className="mb-16 space-y-6">
+          <article className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
+            <h3 className="text-cyan-400">Overview</h3>
+            <div className="mt-4 space-y-3 text-sm text-zinc-300">
+              {productDetail.overview ? <p>{productDetail.overview}</p> : null}
+              {productDetail.highlights.length > 0 ? (
+                <p>Highlights: {productDetail.highlights.slice(0, 4).join(" • ")}</p>
+              ) : null}
+              {productDetail.durationText ? <p>Duration: {productDetail.durationText}</p> : null}
+              {productDetail.operatedBy ? <p>Operated by: {productDetail.operatedBy}</p> : null}
+              <p className="text-zinc-500">Detail source: {productDetailSource}</p>
+            </div>
+          </article>
+          <div className="grid gap-6 md:grid-cols-2">
           <article className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
             <h3 className="text-cyan-400">Trip details</h3>
             <div className="mt-4 space-y-3 text-sm text-zinc-300">
-              <p className="text-zinc-500">Detail source: {productDetailSource}</p>
               {productDetail.languages.length > 0 ? <p>Languages: {productDetail.languages.join(", ")}</p> : null}
               {productDetail.ticketType ? <p>Ticket type: {productDetail.ticketType}</p> : null}
+              {productDetail.confirmationType ? <p>Confirmation: {productDetail.confirmationType}</p> : null}
               {productDetail.cancellationPolicy?.description ? (
                 <p>Cancellation: {productDetail.cancellationPolicy.description}</p>
+              ) : null}
+              {productDetail.redemptionInstructions.length > 0 ? (
+                <p>Redemption: {productDetail.redemptionInstructions.slice(0, 3).join(" • ")}</p>
               ) : null}
               {productDetail.pickup.length > 0 ? <p>Pickup: {productDetail.pickup.join(" • ")}</p> : null}
               {productDetail.departure.length > 0 ? <p>Departure: {productDetail.departure.join(" • ")}</p> : null}
@@ -199,6 +220,33 @@ export default async function TourDetailPage({
               ) : null}
             </div>
           </article>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            <article className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
+              <h3 className="text-cyan-400">Additional info</h3>
+              <div className="mt-4 space-y-3 text-sm text-zinc-300">
+                {productDetail.additionalInfo.length > 0 ? (
+                  <p>{productDetail.additionalInfo.slice(0, 5).join(" • ")}</p>
+                ) : (
+                  <p>Live Viator detail can add operational notes, restrictions, and logistical details here.</p>
+                )}
+                {productDetail.importantNotes.length > 0 ? (
+                  <p>Important: {productDetail.importantNotes.slice(0, 4).join(" • ")}</p>
+                ) : null}
+              </div>
+            </article>
+            <article className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
+              <h3 className="text-cyan-400">Supplier photos</h3>
+              <div className="mt-4 space-y-3 text-sm text-zinc-300">
+                <p>Supplier images available: {productDetail.supplierImages.length}</p>
+                {productDetail.supplierImages.length > 0 ? (
+                  <p className="text-zinc-400">Live supplier media stays separate from traveler-submitted media.</p>
+                ) : (
+                  <p>No supplier photo set is cached for this product yet.</p>
+                )}
+              </div>
+            </article>
+          </div>
         </section>
       ) : null}
 
@@ -213,11 +261,24 @@ export default async function TourDetailPage({
         <h3 className="text-cyan-400">Reviews and traveler photos</h3>
         <p className="mt-3 text-sm text-zinc-300">{getViatorReviewContentNotice()}</p>
         <p className="mt-2 text-sm text-zinc-400">{getViatorTravelerPhotoNotice()}</p>
+        {productDetail?.reviews?.length ? (
+          <p className="mt-3 text-sm text-zinc-300">
+            {productDetail.reviews.length} cached reviews. {getReviewFreshnessLabel(null)}
+          </p>
+        ) : (
+          <p className="mt-3 text-sm text-zinc-300">No cached review payload is attached to this product yet.</p>
+        )}
         {productDetail?.travelerImages?.length ? (
           <p className="mt-3 text-sm text-zinc-300">
             Cached traveler photos available: {productDetail.travelerImages.length}
           </p>
         ) : null}
+        {productDetail?.reviews?.slice(0, 2).map((review) => (
+          <div key={review.reviewId} className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/40 p-4 text-sm text-zinc-300">
+            <p className="font-semibold text-white">{review.title || review.userName || "Traveler review"}</p>
+            {review.text ? <p className="mt-2">{review.text}</p> : null}
+          </div>
+        ))}
       </section>
 
       {operator ? (
