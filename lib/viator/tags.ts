@@ -1,3 +1,7 @@
+import fs from "fs";
+import path from "path";
+import { ViatorTagCatalogItemSchema, type ViatorTagCatalogItem } from "@/lib/viator/schema";
+
 export type ViatorTagDisplayPolicy = "frontend" | "backend_only" | "unsupported";
 
 export type ViatorTagDefinition = {
@@ -55,6 +59,21 @@ const VIATOR_TAG_DEFINITIONS: ViatorTagDefinition[] = [
 ];
 
 const TAGS_BY_ID = new Map(VIATOR_TAG_DEFINITIONS.map((tag) => [tag.tagId, tag]));
+const ROOT = process.cwd();
+const VIATOR_TAGS_CACHE_PATH = path.join(ROOT, "data", "viator-tags.json");
+
+function readTagCatalog(): ViatorTagCatalogItem[] {
+  try {
+    const cached = JSON.parse(fs.readFileSync(VIATOR_TAGS_CACHE_PATH, "utf8")) as unknown;
+    if (!Array.isArray(cached)) return [];
+    return cached
+      .map((row) => ViatorTagCatalogItemSchema.safeParse(row))
+      .filter((row): row is { success: true; data: ViatorTagCatalogItem } => row.success)
+      .map((row) => row.data);
+  } catch {
+    return [];
+  }
+}
 
 export function getViatorTagDefinition(tagId: number): ViatorTagDefinition | null {
   return TAGS_BY_ID.get(tagId) || null;
@@ -94,4 +113,8 @@ export function scoreViatorMerchandisingSignals(tagIds: Array<number | string | 
     if (tagId === 22083) score += 1;
   }
   return score;
+}
+
+export function getCachedViatorTagCatalog(): ViatorTagCatalogItem[] {
+  return readTagCatalog();
 }

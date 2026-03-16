@@ -46,6 +46,12 @@ export type ViatorPublicConfig = {
   accessTier: ViatorAccessTier;
 };
 
+export type ViatorServerConfig = ViatorPublicConfig & {
+  apiKey: string;
+  apiBase: string;
+  sourcePolicy: string;
+};
+
 const DEFAULT_CONFIG: ViatorPublicConfig = {
   pid: "P00281144",
   mcid: "42383",
@@ -200,6 +206,16 @@ export function getViatorPublicConfig(): ViatorPublicConfig {
     accessTier: normalizeAccessTier(
       pickString(process.env.NEXT_PUBLIC_VIATOR_ACCESS_TIER, process.env.VIATOR_ACCESS_TIER, DEFAULT_CONFIG.accessTier)
     ),
+  };
+}
+
+export function getViatorServerConfig(): ViatorServerConfig {
+  const publicConfig = getViatorPublicConfig();
+  return {
+    ...publicConfig,
+    apiKey: pickString(process.env.VIATOR_API_KEY),
+    apiBase: pickString(process.env.VIATOR_API_BASE, "https://api.viator.com/partner"),
+    sourcePolicy: pickString(process.env.VIATOR_SOURCE_POLICY, "auto"),
   };
 }
 

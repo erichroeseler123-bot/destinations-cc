@@ -1,9 +1,14 @@
+import fs from "fs";
+import path from "path";
 import cityAliases from "@/data/city-aliases.json";
 import cityIndex from "@/data/cities/index.json";
 import destinationsData from "@/data/destinations.json";
 import usTopTourism from "@/data/cities/us-top-tourism.json";
 import { slugify } from "@/lib/dcc/slug";
 import { ViatorDestinationOptionSchema, type ViatorDestinationOption } from "@/lib/viator/schema";
+
+const ROOT = process.cwd();
+const VIATOR_DESTINATIONS_CACHE_PATH = path.join(ROOT, "data", "viator-destinations.json");
 
 type ViatorDestinationRow = {
   destinationId?: number;
@@ -12,6 +17,24 @@ type ViatorDestinationRow = {
   timeZone?: string;
   defaultCurrencyCode?: string;
 };
+
+function readDestinationRows(): ViatorDestinationRow[] {
+  try {
+    const cached = JSON.parse(fs.readFileSync(VIATOR_DESTINATIONS_CACHE_PATH, "utf8")) as unknown;
+    if (cached && typeof cached === "object" && Array.isArray((cached as { destinations?: unknown[] }).destinations)) {
+      return (cached as { destinations?: ViatorDestinationRow[] }).destinations || [];
+    }
+    if (Array.isArray(cached)) {
+      return cached as ViatorDestinationRow[];
+    }
+  } catch {}
+
+  return ((destinationsData as { destinations?: ViatorDestinationRow[] }).destinations || []);
+}
+
+export function getCachedViatorDestinationRows(): ViatorDestinationRow[] {
+  return readDestinationRows();
+}
 
 function titleCaseSlug(slug: string): string {
   return slug
@@ -22,7 +45,7 @@ function titleCaseSlug(slug: string): string {
 }
 
 export function getViatorDestinationOptions(): ViatorDestinationOption[] {
-  const destinationRows = ((destinationsData as { destinations?: ViatorDestinationRow[] }).destinations || [])
+  const destinationRows = readDestinationRows()
     .filter((row) => row.type === "CITY" && typeof row.name === "string");
   const destinationBySlug = new Map(
     destinationRows.map((row) => [slugify(String(row.name || "")), row])

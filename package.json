@@ -19,6 +19,8 @@
     "add-city": "node scripts/add-city.mjs",
     "add-cities": "node scripts/add-cities.mjs",
     "ingest:viator": "node scripts/viator-ingest.mjs",
+    "viator:sync-taxonomy": "tsx scripts/viator/sync-taxonomy.ts",
+    "viator:probe-access": "tsx scripts/viator/probe-access.ts",
     "ingest:daytrips": "node scripts/viator-ingest-daytrips.mjs",
     "ingest:all": "npm run ingest:viator && npm run ingest:daytrips",
     "data:check": "node scripts/validate-data.mjs",

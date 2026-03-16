@@ -1,6 +1,7 @@
 // app/tours/[id]/page.tsx
 export const dynamicParams = false;
 
+import type { Metadata } from "next";
 import tours from "@/data/tours.json";
 import LocalTimeWeather from "@/components/LocalTimeWeather";
 import TrustBadges from "@/components/TrustBadges";
@@ -14,6 +15,8 @@ import OperatorAboutCard from "@/app/components/dcc/OperatorAboutCard";
 import { getOperatorManifest, mergeOperatorRef, type TourOperatorRef } from "@/lib/dcc/operators";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import { buildBreadcrumbJsonLd, buildTourJsonLd } from "@/lib/dcc/jsonld";
+import { getLocalViatorProductDetail } from "@/lib/viator/product";
+import { getViatorNonIndexedMetadata, getViatorReviewContentNotice, getViatorTravelerPhotoNotice } from "@/lib/viator/reviews";
 
 type Tour = {
   id: string | number;
@@ -34,6 +37,8 @@ type Tour = {
 
 const allTours = tours as unknown as Tour[];
 
+export const metadata: Metadata = getViatorNonIndexedMetadata();
+
 export function generateStaticParams() {
   return allTours
     .filter((t) => t?.id !== undefined && t?.id !== null)
@@ -51,6 +56,7 @@ export default async function TourDetailPage({
   const tour = allTours.find((t) => String(t.id) === resolvedParams.id);
 
   if (!tour) return notFound();
+  const productDetail = getLocalViatorProductDetail(String(tour.id));
 
   // --- 1. DATA CALCULATIONS ---
   const rating = Number(tour.rating ?? 4.8);
@@ -157,12 +163,52 @@ export default async function TourDetailPage({
         {takeaways ? <TravelerTakeaways summary={takeaways} /> : null}
       </section>
 
+      {productDetail ? (
+        <section className="mb-16 grid gap-6 md:grid-cols-2">
+          <article className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
+            <h3 className="text-cyan-400">Trip details</h3>
+            <div className="mt-4 space-y-3 text-sm text-zinc-300">
+              {productDetail.languages.length > 0 ? <p>Languages: {productDetail.languages.join(", ")}</p> : null}
+              {productDetail.ticketType ? <p>Ticket type: {productDetail.ticketType}</p> : null}
+              {productDetail.cancellationPolicy?.description ? (
+                <p>Cancellation: {productDetail.cancellationPolicy.description}</p>
+              ) : null}
+              {productDetail.pickup.length > 0 ? <p>Pickup: {productDetail.pickup.join(" • ")}</p> : null}
+              {productDetail.departure.length > 0 ? <p>Departure: {productDetail.departure.join(" • ")}</p> : null}
+              {productDetail.returnDetails.length > 0 ? <p>Return: {productDetail.returnDetails.join(" • ")}</p> : null}
+            </div>
+          </article>
+          <article className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
+            <h3 className="text-cyan-400">What is included</h3>
+            <div className="mt-4 space-y-4 text-sm text-zinc-300">
+              {productDetail.inclusions.length > 0 ? (
+                <p>Included: {productDetail.inclusions.join(" • ")}</p>
+              ) : (
+                <p>Check the live Viator page for the latest inclusions and exclusions.</p>
+              )}
+              {productDetail.exclusions.length > 0 ? (
+                <p>Not included: {productDetail.exclusions.join(" • ")}</p>
+              ) : null}
+              {productDetail.itinerary.length > 0 ? (
+                <p>Itinerary: {productDetail.itinerary.slice(0, 3).join(" • ")}</p>
+              ) : null}
+            </div>
+          </article>
+        </section>
+      ) : null}
+
       <PoweredByViator
         compact
         disclosure
         body={`Use DCC to evaluate this experience quickly, then book with DCC via Viator when you're ready to check availability and complete checkout.`}
         className="mb-16"
       />
+
+      <section className="mb-16 rounded-2xl border border-zinc-800 bg-zinc-900/30 p-5">
+        <h3 className="text-cyan-400">Reviews and traveler photos</h3>
+        <p className="mt-3 text-sm text-zinc-300">{getViatorReviewContentNotice()}</p>
+        <p className="mt-2 text-sm text-zinc-400">{getViatorTravelerPhotoNotice()}</p>
+      </section>
 
       {operator ? (
         <div className="mb-16">

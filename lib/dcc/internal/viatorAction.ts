@@ -1,4 +1,3 @@
-import destinationsData from "@/data/destinations.json";
 import {
   resolveViatorAction,
   resolveViatorActionFromCache,
@@ -14,6 +13,8 @@ import { getDisplayableViatorTags, normalizeViatorTagIds, scoreViatorMerchandisi
 import { getViatorCapabilities } from "@/lib/viator/access";
 import { getViatorPolicy as getViatorIntegrationPolicy } from "@/lib/viator/policy";
 import { normalizeViatorActionProduct } from "@/lib/viator/schema";
+import { getViatorClient } from "@/lib/viator/client";
+import { getCachedViatorDestinationRows } from "@/lib/viator/destinations";
 
 export type ViatorPlaceInput = {
   slug: string;
@@ -142,10 +143,6 @@ function getViatorApiKey(): string {
   return getEnvOptional("VIATOR_API_KEY") || "";
 }
 
-function getViatorBase(): string {
-  return getEnvOptional("VIATOR_API_BASE") || "https://api.viator.com/partner";
-}
-
 function getRequestedCurrency(value: string | undefined): string {
   return normalizeViatorCurrency(value);
 }
@@ -171,7 +168,7 @@ function hashPercent(input: string): number {
 }
 
 function lookupDestinationId(place: ViatorPlaceInput): number | null {
-  const rows = ((destinationsData as { destinations?: ViatorDestination[] }).destinations || [])
+  const rows = (getCachedViatorDestinationRows() as ViatorDestination[])
     .filter((d) => typeof d.destinationId === "number" && typeof d.name === "string");
 
   const placeSlug = slugify(place.slug);
@@ -313,27 +310,16 @@ async function fetchLiveViatorAction(place: ViatorPlaceInput): Promise<ViatorAct
     };
   }
 
-  const response = await fetch(`${getViatorBase()}/products/search`, {
-    method: "POST",
-    headers: {
-      Accept: "application/json;version=2.0",
-      "Accept-Language": "en-US",
-      "Content-Type": "application/json;charset=UTF-8",
-      "exp-api-key": VIATOR_API_KEY,
-    },
-    body: JSON.stringify({
+  let json: unknown;
+  try {
+    json = await getViatorClient().searchProducts({
       filtering: { destination: destinationId },
       currency: getRequestedCurrency(place.currency),
       pagination: { start: 1, count: 8 },
-    }),
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    const responseText = (await response.text()).trim();
-    const summary = responseText
-      ? responseText.slice(0, 160).replace(/\s+/g, "_")
-      : "unknown";
+    });
+  } catch (error) {
+    const summary =
+      error instanceof Error ? error.message.slice(0, 160).replace(/\s+/g, "_") : "unknown";
     return {
       enabled: false,
       products: [],
@@ -343,11 +329,10 @@ async function fetchLiveViatorAction(place: ViatorPlaceInput): Promise<ViatorAct
       last_updated: new Date().toISOString(),
       stale_after: null,
       max_age_hours: 0,
-      fallback_reason: `http_${response.status}_${summary}`,
+      fallback_reason: summary,
     };
   }
 
-  const json = (await response.json()) as unknown;
   const products = normalizeLiveProducts(json, place.name).filter((product) =>
     liveProductMatchesPlace(product, place)
   );

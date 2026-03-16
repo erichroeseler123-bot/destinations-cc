@@ -38,6 +38,55 @@ export const ViatorActionProductSchema = z.object({
   url: z.string().min(1),
 });
 
+export const ViatorMediaAssetSchema = z.object({
+  url: z.string().min(1),
+  width: z.number().int().nullable().optional(),
+  height: z.number().int().nullable().optional(),
+  source: z.enum(["supplier", "traveler"]),
+  provider: z.string().nullable().optional(),
+});
+
+export const ViatorReviewSchema = z.object({
+  reviewId: z.string().min(1),
+  provider: z.string().nullable().optional(),
+  userName: z.string().nullable().optional(),
+  avatarUrl: z.string().nullable().optional(),
+  publishedDate: z.string().nullable().optional(),
+  rating: z.number().nullable().optional(),
+  title: z.string().nullable().optional(),
+  text: z.string().nullable().optional(),
+  travelerPhotos: z.array(ViatorMediaAssetSchema).default([]),
+});
+
+export const ViatorCancellationPolicySchema = z.object({
+  policyType: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  freeCancellation: z.boolean().optional(),
+});
+
+export const ViatorProductDetailSchema = ViatorActionProductSchema.extend({
+  overview: z.string().nullable().optional(),
+  itinerary: z.array(z.string()).default([]),
+  inclusions: z.array(z.string()).default([]),
+  exclusions: z.array(z.string()).default([]),
+  pickup: z.array(z.string()).default([]),
+  departure: z.array(z.string()).default([]),
+  returnDetails: z.array(z.string()).default([]),
+  languages: z.array(z.string()).default([]),
+  ticketType: z.string().nullable().optional(),
+  bookingQuestionRefs: z.array(z.string()).default([]),
+  cancellationPolicy: ViatorCancellationPolicySchema.nullable().optional(),
+  supplierImages: z.array(ViatorMediaAssetSchema).default([]),
+  travelerImages: z.array(ViatorMediaAssetSchema).default([]),
+  reviews: z.array(ViatorReviewSchema).default([]),
+});
+
+export const ViatorTagCatalogItemSchema = z.object({
+  tagId: z.number().int(),
+  parentTagIds: z.array(z.number().int()).default([]),
+  allNamesByLocale: z.record(z.string(), z.string()).default({}),
+});
+
 export const ViatorDestinationOptionSchema = z.object({
   routeSlug: z.string().min(1),
   cityName: z.string().min(1),
@@ -62,11 +111,21 @@ export const ViatorSearchControlsSchema = z.object({
 
 export type ViatorDisplayTag = z.infer<typeof ViatorDisplayTagSchema>;
 export type ViatorActionProduct = z.infer<typeof ViatorActionProductSchema>;
+export type ViatorProductDetail = z.infer<typeof ViatorProductDetailSchema>;
+export type ViatorReview = z.infer<typeof ViatorReviewSchema>;
+export type ViatorMediaAsset = z.infer<typeof ViatorMediaAssetSchema>;
 export type ViatorDestinationOption = z.infer<typeof ViatorDestinationOptionSchema>;
 export type ViatorSearchControls = z.infer<typeof ViatorSearchControlsSchema>;
+export type ViatorTagCatalogItem = z.infer<typeof ViatorTagCatalogItemSchema>;
 
 export function normalizeViatorActionProduct(
   value: z.input<typeof ViatorActionProductSchema>
 ): ViatorActionProduct {
   return ViatorActionProductSchema.parse(value);
+}
+
+export function normalizeViatorProductDetail(
+  value: z.input<typeof ViatorProductDetailSchema>
+): ViatorProductDetail {
+  return ViatorProductDetailSchema.parse(value);
 }
