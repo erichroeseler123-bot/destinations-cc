@@ -19,7 +19,7 @@ export async function GET() {
   const publicConfig = getViatorPublicConfig();
   const serverConfig = getViatorServerConfig();
   const probe = await getViatorRuntimeCapabilityProbe();
-  const snapshot = await getViatorRuntimeSnapshot();
+  const snapshot = await getViatorRuntimeSnapshot(probe);
   const sampleProductCode = getSampleProductCode();
 
   return NextResponse.json(

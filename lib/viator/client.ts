@@ -94,6 +94,12 @@ function readDestinationsCache(): unknown {
   return readJsonFile<unknown>(LEGACY_DESTINATIONS_PATH) || { destinations: [] };
 }
 
+function getProbeDestinationId(): number | null {
+  const destinations = normalizeDestinationCatalogResponse(readDestinationsCache()).destinations;
+  const city = destinations.find((row) => row.type === "CITY");
+  return city?.destinationId || destinations[0]?.destinationId || null;
+}
+
 export function normalizeDestinationCatalogResponse(value: unknown): ViatorDestinationCatalog {
   const rawRows = Array.isArray(value)
     ? value
@@ -191,6 +197,7 @@ export function getViatorClient(): ViatorClient {
 
       if (!config.apiKey) return snapshot;
 
+      const probeDestinationId = getProbeDestinationId();
       const probes: Array<[string, () => Promise<unknown>]> = [
         ["destinations", () => request(getDestinationsEndpoint())],
         ["tags", () => request("/products/tags")],
@@ -199,7 +206,10 @@ export function getViatorClient(): ViatorClient {
           () =>
             request("/products/search", {
               method: "POST",
-              body: withDefaultSearchCurrency({ pagination: { start: 1, count: 1 } }),
+              body: withDefaultSearchCurrency({
+                filtering: probeDestinationId ? { destination: probeDestinationId } : undefined,
+                pagination: { start: 1, count: 1 },
+              }),
             }),
         ],
       ];

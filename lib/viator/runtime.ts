@@ -9,11 +9,11 @@ export async function getViatorRuntimeCapabilityProbe(): Promise<Record<string, 
   return getViatorClient().probeCapabilities();
 }
 
-export async function getViatorRuntimeSnapshot() {
+export async function getViatorRuntimeSnapshot(probe: Record<string, string> | null = null) {
   const publicConfig = getViatorPublicConfig();
   const serverConfig = getViatorServerConfig();
   const capabilities = getViatorCapabilities(publicConfig.accessTier);
-  const probe = await getViatorRuntimeCapabilityProbe();
+  const resolvedProbe = probe || (await getViatorRuntimeCapabilityProbe());
   const taxonomy = getTaxonomyCacheStatus();
   const reviews = getReviewCacheStatus();
   const apiConfigured = Boolean(serverConfig.apiKey);
@@ -25,7 +25,7 @@ export async function getViatorRuntimeSnapshot() {
     sourcePolicy: serverConfig.sourcePolicy,
     apiConfigured,
     capabilities,
-    probe,
+    probe: resolvedProbe,
     effectiveDataPath: {
       destinations: apiConfigured ? "live_or_cache" : getViatorDestinationCatalogSource(),
       tags: apiConfigured ? "live_or_policy_overlay" : getViatorTagCatalogSource(),
