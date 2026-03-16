@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import JsonLd from "@/app/components/dcc/JsonLd";
 import PageActionBar from "@/app/components/dcc/PageActionBar";
 import {
   CRUISE_TENDERING_FAQ,
@@ -7,6 +8,7 @@ import {
   CRUISE_TENDERING_VIDEOS,
 } from "@/src/data/cruise-tendering-guide";
 import { buildMapsSearchUrl, type PageAction } from "@/src/lib/page-actions";
+import { buildArticleJsonLd, buildBreadcrumbJsonLd, buildFaqJsonLd } from "@/lib/dcc/jsonld";
 
 const PAGE_URL = "https://destinationcommandcenter.com/cruises/tendering";
 
@@ -24,40 +26,6 @@ export const metadata: Metadata = {
   },
 };
 
-function JsonLd() {
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": ["WebPage", "HowTo"],
-        "@id": PAGE_URL,
-        url: PAGE_URL,
-        name: "Cruise Tendering Guide",
-        description:
-          "Practical cruise tendering guidance covering priority groups, ticket systems, motion, accessibility, and return buffer.",
-        dateModified: "2026-03-12",
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Cruises", item: "https://destinationcommandcenter.com/cruises" },
-          { "@type": "ListItem", position: 2, name: "Tendering Guide", item: PAGE_URL },
-        ],
-      },
-      {
-        "@type": "FAQPage",
-        mainEntity: CRUISE_TENDERING_FAQ.map((item) => ({
-          "@type": "Question",
-          name: item.question,
-          acceptedAnswer: { "@type": "Answer", text: item.answer },
-        })),
-      },
-    ],
-  };
-
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
-}
-
 export default function CruiseTenderingPage() {
   const actions: PageAction[] = [
     { href: "/cruises", label: "Back to Cruise Explorer", kind: "internal" },
@@ -67,7 +35,25 @@ export default function CruiseTenderingPage() {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.16),_transparent_24%),linear-gradient(180deg,_#111318_0%,_#090a0d_100%)] text-white">
-      <JsonLd />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            buildArticleJsonLd({
+              path: "/cruises/tendering",
+              headline: "Cruise Tendering Guide",
+              description:
+                "Practical cruise tendering guidance covering priority groups, ticket systems, motion, accessibility, and return buffer.",
+              dateModified: "2026-03-12",
+            }),
+            buildBreadcrumbJsonLd([
+              { name: "Cruises", item: "/cruises" },
+              { name: "Tendering Guide", item: "/cruises/tendering" },
+            ]),
+            buildFaqJsonLd(CRUISE_TENDERING_FAQ),
+          ],
+        }}
+      />
       <div className="mx-auto max-w-5xl px-6 py-16 space-y-8">
         <header className="space-y-5">
           <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">DCC Cruise Logistics Guide</p>

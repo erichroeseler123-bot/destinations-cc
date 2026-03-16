@@ -1,0 +1,27 @@
+{
+  "slug": "southampton",
+  "display_name": "Southampton",
+  "aliases": [
+    "southampton-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Southampton City Highlights Tour",
+      "description": "A quick way to see the best of Southampton with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor Cruise",
+      "description": "Short scenic sailings and waterfront views near the port and harbor.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for the old walls, waterfront history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

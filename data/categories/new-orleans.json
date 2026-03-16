@@ -1,0 +1,78 @@
+{
+  "citySlug": "new-orleans",
+  "cityName": "New Orleans",
+  "categories": [
+    {
+      "slug": "swamp-tours",
+      "title": "New Orleans Swamp Tours",
+      "description": "Compare swamp tours, airboat rides, and bayou experiences that pair well with a New Orleans city trip.",
+      "intro": "Swamp tours are one of the most popular ways visitors add Louisiana landscape and wildlife to a New Orleans stay. They work best as a half-day or day-trip experience, especially if you want a strong contrast to the French Quarter, food, and music parts of the trip.",
+      "bullets": [
+        "Best for first-time visitors who want a classic Louisiana experience beyond the city center",
+        "Often easiest to do in the morning or as a dedicated half-day block",
+        "Works well alongside food, music, and neighborhood-focused city days",
+        "Good fit for families, mixed-age groups, and visitors who want scenery and wildlife"
+      ],
+      "intents": [
+        { "label": "Airboat swamp tours", "query": "new orleans airboat swamp tour", "description": "Faster-paced rides for visitors who want more action on the water." },
+        { "label": "Bayou tours", "query": "new orleans bayou tour", "description": "A slower way to see marsh scenery, wildlife, and surrounding wetlands." },
+        { "label": "Family-friendly swamp tours", "query": "family friendly swamp tour new orleans", "description": "Useful for visitors balancing city highlights with easy outdoor time." },
+        { "label": "Half-day swamp tours", "query": "new orleans half day swamp tour", "description": "The easiest option for fitting a swamp experience into a short trip." }
+      ]
+    },
+    {
+      "slug": "ghost-tours",
+      "title": "New Orleans Ghost Tours",
+      "description": "Find ghost tours, haunted history walks, and evening experiences that fit naturally with French Quarter and nighttime plans.",
+      "intro": "Ghost tours are one of the easiest evening experiences to add to a New Orleans trip. They work especially well for first-time visitors who want history, atmosphere, and a more structured night in the French Quarter.",
+      "bullets": [
+        "Best fit for first-timers planning a French Quarter evening",
+        "Useful for visitors who want history and storytelling without building a full nightlife itinerary",
+        "Easy to pair with dinner, cocktails, or late-night music nearby",
+        "Strong option for short stays because the tours fit naturally into a single evening block"
+      ],
+      "intents": [
+        { "label": "French Quarter ghost tours", "query": "french quarter ghost tour new orleans", "description": "The most common starting point for a haunted-history night." },
+        { "label": "Haunted history tours", "query": "new orleans haunted history tour", "description": "A better fit if you want local storytelling with more historical context." },
+        { "label": "Cemetery ghost tours", "query": "new orleans cemetery ghost tour", "description": "Useful for visitors who want a darker, more lore-driven angle." },
+        { "label": "Night walking tours", "query": "new orleans night walking ghost tour", "description": "Good when you want one guided experience instead of improvising your evening." }
+      ]
+    },
+    {
+      "slug": "food-tours",
+      "title": "New Orleans Food Tours",
+      "description": "Discover food tours, tasting walks, and culinary experiences that help visitors go beyond one famous meal stop.",
+      "intro": "Food tours are one of the easiest ways to understand New Orleans quickly. They combine neighborhoods, local dishes, and cultural context in a format that works well for first-time visits and short trips.",
+      "bullets": [
+        "Best for travelers who want structure instead of guessing where to eat",
+        "Easy to pair with the French Quarter, Garden District, or a weekend itinerary",
+        "Strong option for first-day orientation because food tours also teach the city",
+        "Useful for visitors who want to combine history, walking, and meals in one block"
+      ],
+      "intents": [
+        { "label": "French Quarter food tours", "query": "french quarter food tour new orleans", "description": "A natural first booking for visitors staying near the Quarter." },
+        { "label": "Creole and Cajun food tours", "query": "new orleans creole cajun food tour", "description": "Useful when the dishes themselves are the reason for the trip." },
+        { "label": "Cocktail and food tours", "query": "new orleans cocktail food tour", "description": "A good fit for adults building a food-and-nightlife itinerary." },
+        { "label": "Neighborhood tasting tours", "query": "new orleans neighborhood food tour", "description": "Helpful for seeing more than one tourist-heavy corridor." }
+      ]
+    },
+    {
+      "slug": "jazz-tours",
+      "title": "New Orleans Jazz and Music Tours",
+      "description": "Find music-focused tours, jazz walks, and local experiences that help visitors plan around live performance and neighborhood energy.",
+      "intro": "Music tours help visitors connect New Orleans history with the city's live sound. They work best for travelers who want more than a random night out and want context before choosing where to go after dark.",
+      "bullets": [
+        "Best fit for music-first trips or visitors planning around Frenchmen Street",
+        "Good for travelers who want history, neighborhoods, and live-music context together",
+        "Easy to pair with city shows, nightlife, and weekend planning pages",
+        "Useful when you want a stronger start to an evening instead of wandering blind"
+      ],
+      "intents": [
+        { "label": "Jazz history tours", "query": "new orleans jazz history tour", "description": "A strong entry point for visitors who want background before live music." },
+        { "label": "Frenchmen Street music tours", "query": "frenchmen street music tour new orleans", "description": "Helpful for building a dedicated music-first night." },
+        { "label": "Live music walking tours", "query": "new orleans live music walking tour", "description": "Useful when you want local context and venue guidance together." },
+        { "label": "Jazz and nightlife experiences", "query": "new orleans jazz nightlife tour", "description": "Good for visitors pairing music with an evening social plan." }
+      ]
+    }
+  ]
+}

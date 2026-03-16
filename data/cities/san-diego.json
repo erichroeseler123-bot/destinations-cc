@@ -1,0 +1,126 @@
+{
+  "slug": "san-diego",
+  "name": "San Diego",
+  "metadata": {
+    "title": "San Diego Tours, Things to Do, and Attractions | Destination Command Center",
+    "description": "Discover San Diego tours, things to do, attractions, food, neighborhoods, and trip ideas. Browse guided experiences and plan around the city's most useful travel highlights.",
+    "keywords": [
+      "san diego tours",
+      "things to do in san diego",
+      "san diego attractions",
+      "san diego sightseeing"
+    ]
+  },
+  "hero": {
+    "eyebrow": "San Diego travel guide",
+    "title": "San Diego tours, things to do, and local travel planning",
+    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger San Diego trip.",
+    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in San Diego.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/san-diego/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/san-diego/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly."
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+    }
+  ],
+  "topAttractions": [
+    {
+      "slug": "balboa-park",
+      "title": "Balboa Park",
+      "description": ""
+    },
+    {
+      "slug": "san-diego-zoo",
+      "title": "San Diego Zoo",
+      "description": ""
+    },
+    {
+      "slug": "la-jolla-cove",
+      "title": "La Jolla Cove",
+      "description": ""
+    },
+    {
+      "slug": "old-town-san-diego",
+      "title": "Old Town San Diego",
+      "description": ""
+    },
+    {
+      "slug": "gaslamp-quarter",
+      "title": "Gaslamp Quarter",
+      "description": ""
+    },
+    {
+      "slug": "coronado-beach",
+      "title": "Coronado Beach",
+      "description": ""
+    }
+  ],
+  "featuredTours": {
+    "title": "Popular San Diego experiences",
+    "description": "Guided experiences and bookable activities that help visitors plan around San Diego's most useful highlights.",
+    "fallbackQueries": [
+      "san diego walking tour",
+      "san diego food tour",
+      "san diego sightseeing tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Things to do in San Diego",
+      "description": "A broader planning surface for attractions, neighborhoods, and trip ideas.",
+      "href": "/san-diego/things-to-do"
+    },
+    {
+      "title": "San Diego tours",
+      "description": "A cleaner starting point for guided experiences, day trips, and visitor favorites.",
+      "href": "/san-diego/tours"
+    },
+    {
+      "title": "San Diego food guide",
+      "description": "Restaurants, food neighborhoods, and tasting-focused experiences.",
+      "href": "/san-diego/food"
+    },
+    {
+      "title": "San Diego day trips",
+      "description": "Half-day and full-day options that fit naturally with a city stay.",
+      "href": "/san-diego/day-trips"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in San Diego for first-time visitors?",
+      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+    },
+    {
+      "q": "How many days should you spend in San Diego?",
+      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+    }
+  ],
+  "coordinates": {
+    "lat": 32.7157,
+    "lng": -117.1611
+  },
+  "timezone": "America/Los_Angeles",
+  "lat": 32.7157,
+  "lng": -117.1611
+}

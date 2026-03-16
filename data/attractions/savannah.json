@@ -1,0 +1,226 @@
+{
+  "citySlug": "savannah",
+  "cityName": "Savannah",
+  "attractions": [
+    {
+      "slug": "historic-district",
+      "name": "Historic District",
+      "type": "historic-district",
+      "summary": "Historic District is one of the more recognizable history-focused stops in Savannah for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "history",
+        "walks"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Historic District guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Historic District in Savannah, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Historic District as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Historic District as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Historic District more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Historic District history tours",
+          "query": "savannah historic district history tour",
+          "description": "A simple starting point for visitors who want more context around Historic District."
+        },
+        {
+          "label": "Historic District guided experiences",
+          "query": "savannah historic district tours",
+          "description": "A general search path for tours and guided experiences connected to Historic District in Savannah."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "River Street",
+          "href": "/savannah/river-street"
+        },
+        {
+          "label": "Forsyth Park",
+          "href": "/savannah/forsyth-park"
+        },
+        {
+          "label": "Bonaventure Cemetery",
+          "href": "/savannah/bonaventure-cemetery"
+        }
+      ],
+      "primaryToursHref": "/savannah/historic-district/tours",
+      "thingsToDoHref": "/savannah/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "River Street",
+        "Forsyth Park"
+      ]
+    },
+    {
+      "slug": "river-street",
+      "name": "River Street",
+      "type": "district",
+      "summary": "River Street is a useful Savannah stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "waterfront",
+        "food",
+        "shopping"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "River Street guide, things to do, and local tours",
+      "heroSummary": "Planning guide for River Street in Savannah, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair River Street with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan River Street as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "River Street food experiences",
+          "query": "savannah river street food tour",
+          "description": "Helpful when River Street fits naturally into a food-first city plan."
+        },
+        {
+          "label": "River Street guided experiences",
+          "query": "savannah river street tours",
+          "description": "A general search path for tours and guided experiences connected to River Street in Savannah."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Historic District",
+          "href": "/savannah/historic-district"
+        },
+        {
+          "label": "Forsyth Park",
+          "href": "/savannah/forsyth-park"
+        },
+        {
+          "label": "Bonaventure Cemetery",
+          "href": "/savannah/bonaventure-cemetery"
+        }
+      ],
+      "primaryToursHref": "/savannah/river-street/tours",
+      "thingsToDoHref": "/savannah/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Historic District",
+        "Forsyth Park"
+      ]
+    },
+    {
+      "slug": "forsyth-park",
+      "name": "Forsyth Park",
+      "type": "park",
+      "summary": "Forsyth Park gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader Savannah day plan.",
+      "categories": [
+        "park",
+        "walks"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "Forsyth Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Forsyth Park in Savannah, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Forsyth Park as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Forsyth Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Forsyth Park outdoor experiences",
+          "query": "savannah forsyth park outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Forsyth Park guided experiences",
+          "query": "savannah forsyth park tours",
+          "description": "A general search path for tours and guided experiences connected to Forsyth Park in Savannah."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Historic District",
+          "href": "/savannah/historic-district"
+        },
+        {
+          "label": "River Street",
+          "href": "/savannah/river-street"
+        },
+        {
+          "label": "Bonaventure Cemetery",
+          "href": "/savannah/bonaventure-cemetery"
+        }
+      ],
+      "primaryToursHref": "/savannah/forsyth-park/tours",
+      "thingsToDoHref": "/savannah/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Historic District",
+        "River Street"
+      ]
+    },
+    {
+      "slug": "bonaventure-cemetery",
+      "name": "Bonaventure Cemetery",
+      "type": "historic-site",
+      "summary": "Bonaventure Cemetery is one of the more recognizable history-focused stops in Savannah for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "history",
+        "ghost-tours"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Bonaventure Cemetery guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Bonaventure Cemetery in Savannah, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Bonaventure Cemetery as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Bonaventure Cemetery as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Bonaventure Cemetery more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Bonaventure Cemetery history tours",
+          "query": "savannah bonaventure cemetery history tour",
+          "description": "A simple starting point for visitors who want more context around Bonaventure Cemetery."
+        },
+        {
+          "label": "Bonaventure Cemetery guided experiences",
+          "query": "savannah bonaventure cemetery tours",
+          "description": "A general search path for tours and guided experiences connected to Bonaventure Cemetery in Savannah."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Historic District",
+          "href": "/savannah/historic-district"
+        },
+        {
+          "label": "River Street",
+          "href": "/savannah/river-street"
+        },
+        {
+          "label": "Forsyth Park",
+          "href": "/savannah/forsyth-park"
+        }
+      ],
+      "primaryToursHref": "/savannah/bonaventure-cemetery/tours",
+      "thingsToDoHref": "/savannah/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Historic District",
+        "River Street"
+      ]
+    }
+  ]
+}

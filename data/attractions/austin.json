@@ -1,0 +1,355 @@
+{
+  "citySlug": "austin",
+  "cityName": "Austin",
+  "attractions": [
+    {
+      "slug": "south-congress",
+      "name": "South Congress",
+      "type": "district",
+      "summary": "South Congress is a useful Austin stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "shopping",
+        "food",
+        "nightlife"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "South Congress guide, things to do, and local tours",
+      "heroSummary": "Planning guide for South Congress in Austin, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair South Congress with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "Treat South Congress as an evening block if nightlife is a major part of the trip."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan South Congress as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If South Congress matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "South Congress food experiences",
+          "query": "austin south congress food tour",
+          "description": "Helpful when South Congress fits naturally into a food-first city plan."
+        },
+        {
+          "label": "South Congress guided experiences",
+          "query": "austin south congress tours",
+          "description": "A general search path for tours and guided experiences connected to South Congress in Austin."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Zilker Park",
+          "href": "/austin/zilker-park"
+        },
+        {
+          "label": "Lady Bird Lake",
+          "href": "/austin/lady-bird-lake"
+        },
+        {
+          "label": "Sixth Street",
+          "href": "/austin/sixth-street"
+        }
+      ],
+      "primaryToursHref": "/austin/south-congress/tours",
+      "thingsToDoHref": "/austin/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Zilker Park",
+        "Lady Bird Lake"
+      ]
+    },
+    {
+      "slug": "zilker-park",
+      "name": "Zilker Park",
+      "type": "park",
+      "summary": "Zilker Park gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader Austin day plan.",
+      "categories": [
+        "park",
+        "outdoor",
+        "family"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Zilker Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Zilker Park in Austin, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Zilker Park as a slower outdoor break between denser city attractions or tours.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Zilker Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Zilker Park outdoor experiences",
+          "query": "austin zilker park outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Zilker Park guided experiences",
+          "query": "austin zilker park tours",
+          "description": "A general search path for tours and guided experiences connected to Zilker Park in Austin."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "South Congress",
+          "href": "/austin/south-congress"
+        },
+        {
+          "label": "Lady Bird Lake",
+          "href": "/austin/lady-bird-lake"
+        },
+        {
+          "label": "Sixth Street",
+          "href": "/austin/sixth-street"
+        }
+      ],
+      "primaryToursHref": "/austin/zilker-park/tours",
+      "thingsToDoHref": "/austin/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "South Congress",
+        "Lady Bird Lake"
+      ]
+    },
+    {
+      "slug": "lady-bird-lake",
+      "name": "Lady Bird Lake",
+      "type": "waterfront",
+      "summary": "Lady Bird Lake gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader Austin day plan.",
+      "categories": [
+        "outdoor",
+        "kayaking",
+        "walks"
+      ],
+      "priority": 90,
+      "featured": true,
+      "heroTitle": "Lady Bird Lake guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Lady Bird Lake in Austin, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Lady Bird Lake as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Lady Bird Lake as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Lady Bird Lake outdoor experiences",
+          "query": "austin lady bird lake outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Lady Bird Lake guided experiences",
+          "query": "austin lady bird lake tours",
+          "description": "A general search path for tours and guided experiences connected to Lady Bird Lake in Austin."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "South Congress",
+          "href": "/austin/south-congress"
+        },
+        {
+          "label": "Zilker Park",
+          "href": "/austin/zilker-park"
+        },
+        {
+          "label": "Sixth Street",
+          "href": "/austin/sixth-street"
+        }
+      ],
+      "primaryToursHref": "/austin/lady-bird-lake/tours",
+      "thingsToDoHref": "/austin/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "South Congress",
+        "Zilker Park"
+      ]
+    },
+    {
+      "slug": "sixth-street",
+      "name": "Sixth Street",
+      "type": "district",
+      "summary": "Sixth Street is a strong Austin stop for visitors planning around live music, nightlife, or a more culture-forward trip.",
+      "categories": [
+        "music",
+        "nightlife"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "Sixth Street guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Sixth Street in Austin, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Sixth Street as part of a music-first evening or culture-focused route through the city.",
+        "Treat Sixth Street as an evening block if nightlife is a major part of the trip."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Sixth Street as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Sixth Street matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Sixth Street music experiences",
+          "query": "austin sixth street music tour",
+          "description": "Useful when you want a more structured music or nightlife plan around Sixth Street."
+        },
+        {
+          "label": "Sixth Street guided experiences",
+          "query": "austin sixth street tours",
+          "description": "A general search path for tours and guided experiences connected to Sixth Street in Austin."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "South Congress",
+          "href": "/austin/south-congress"
+        },
+        {
+          "label": "Zilker Park",
+          "href": "/austin/zilker-park"
+        },
+        {
+          "label": "Lady Bird Lake",
+          "href": "/austin/lady-bird-lake"
+        }
+      ],
+      "primaryToursHref": "/austin/sixth-street/tours",
+      "thingsToDoHref": "/austin/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "South Congress",
+        "Zilker Park"
+      ]
+    },
+    {
+      "slug": "barton-springs-pool",
+      "name": "Barton Springs Pool",
+      "type": "park",
+      "summary": "Barton Springs Pool gives visitors a practical outdoor break from denser city blocks and usually fits best into a slower part of the day in Austin.",
+      "categories": [
+        "outdoor",
+        "family",
+        "swimming"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Barton Springs Pool guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Barton Springs Pool in Austin, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Barton Springs Pool for a slower outdoor block, especially if the rest of the day is built around denser city stops.",
+        "Pair Barton Springs Pool with one nearby indoor attraction, meal, or sightseeing route instead of overloading the day.",
+        "Use Barton Springs Pool as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Barton Springs Pool as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops tend to be easier to pace when you keep the rest of the day light and avoid too many cross-city jumps.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Barton Springs Pool outdoor experiences",
+          "query": "austin barton springs pool outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery, fresh air, or a slower pace."
+        },
+        {
+          "label": "Barton Springs Pool guided experiences",
+          "query": "austin barton springs pool tours",
+          "description": "A general search path for tours and guided experiences connected to Barton Springs Pool in Austin."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "South Congress",
+          "href": "/austin/south-congress"
+        },
+        {
+          "label": "Zilker Park",
+          "href": "/austin/zilker-park"
+        },
+        {
+          "label": "Lady Bird Lake",
+          "href": "/austin/lady-bird-lake"
+        }
+      ],
+      "primaryToursHref": "/austin/barton-springs-pool/tours",
+      "thingsToDoHref": "/austin/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "South Congress",
+        "Zilker Park"
+      ]
+    },
+    {
+      "slug": "rainey-street",
+      "name": "Rainey Street",
+      "type": "district",
+      "summary": "Rainey Street is a useful district to understand early if you want a clearer feel for how visitors actually spend time in Austin.",
+      "categories": [
+        "nightlife",
+        "food",
+        "music"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Rainey Street guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Rainey Street in Austin, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Walk Rainey Street with one clear purpose, such as food, music, shopping, or evening atmosphere.",
+        "Treat Rainey Street as a time block rather than a quick pass-through if it is one of the main reasons for the trip.",
+        "Pair Rainey Street with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Rainey Street as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Districts usually feel stronger when you decide whether the point is food, shopping, nightlife, or a general walk before you arrive.",
+        "If Rainey Street matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Rainey Street neighborhood tours",
+          "query": "austin rainey street neighborhood tour",
+          "description": "Helpful when Rainey Street is better experienced as part of a larger district walk or evening plan."
+        },
+        {
+          "label": "Rainey Street food experiences",
+          "query": "austin rainey street food tour",
+          "description": "Helpful when Rainey Street fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Rainey Street music experiences",
+          "query": "austin rainey street music tour",
+          "description": "Useful when you want a more structured music or nightlife plan around Rainey Street."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "South Congress",
+          "href": "/austin/south-congress"
+        },
+        {
+          "label": "Zilker Park",
+          "href": "/austin/zilker-park"
+        },
+        {
+          "label": "Lady Bird Lake",
+          "href": "/austin/lady-bird-lake"
+        }
+      ],
+      "primaryToursHref": "/austin/rainey-street/tours",
+      "thingsToDoHref": "/austin/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "South Congress",
+        "Zilker Park"
+      ]
+    }
+  ]
+}

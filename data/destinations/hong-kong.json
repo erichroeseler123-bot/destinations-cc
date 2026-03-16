@@ -1,0 +1,27 @@
+{
+  "slug": "hong-kong",
+  "display_name": "Hong Kong",
+  "aliases": [
+    "hong-kong-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Hong Kong City Highlights Tour",
+      "description": "A quick way to see the best of Hong Kong with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Victoria Harbour Cruise",
+      "description": "Short scenic sailings and skyline views across Victoria Harbour.",
+      "query": "harbour cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront districts, markets, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

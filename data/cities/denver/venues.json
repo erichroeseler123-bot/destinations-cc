@@ -122,6 +122,126 @@
       "impact_potential": "medium-high",
       "district_slugs": ["union-station"],
       "near_anchor_slugs": ["coloradan"]
+    },
+    {
+      "slug": "red-rocks-amphitheatre",
+      "name": "Red Rocks Amphitheatre",
+      "venue_type": "major-event-campus",
+      "category": "destination-concerts",
+      "address": "18300 W Alameda Pkwy, Morrison, CO 80465",
+      "lat": 39.6654,
+      "lng": -105.2057,
+      "impact_potential": "high",
+      "district_slugs": ["downtown-core"],
+      "near_anchor_slugs": ["spire", "coloradan"]
+    },
+    {
+      "slug": "fiddlers-green-amphitheatre",
+      "name": "Fiddler's Green Amphitheatre",
+      "venue_type": "event-venue",
+      "category": "amphitheatre-live-music",
+      "address": "6350 Greenwood Plaza Blvd, Greenwood Village, CO 80111",
+      "lat": 39.6033,
+      "lng": -104.8958,
+      "impact_potential": "medium-high",
+      "district_slugs": ["downtown-core"],
+      "near_anchor_slugs": ["spire", "coloradan"]
+    },
+    {
+      "slug": "ogden-theatre",
+      "name": "Ogden Theatre",
+      "venue_type": "event-venue",
+      "category": "live-music",
+      "address": "935 E Colfax Ave, Denver, CO 80218",
+      "lat": 39.7406,
+      "lng": -104.9757,
+      "impact_potential": "medium",
+      "district_slugs": ["downtown-core"],
+      "near_anchor_slugs": ["spire"]
+    },
+    {
+      "slug": "gothic-theatre",
+      "name": "Gothic Theatre",
+      "venue_type": "event-venue",
+      "category": "live-music",
+      "address": "3263 S Broadway, Englewood, CO 80113",
+      "lat": 39.6577,
+      "lng": -104.9876,
+      "impact_potential": "medium",
+      "district_slugs": ["downtown-core"],
+      "near_anchor_slugs": ["spire"]
+    },
+    {
+      "slug": "cervantes-masterpiece",
+      "name": "Cervantes' Masterpiece Ballroom",
+      "venue_type": "event-venue",
+      "category": "live-music-club",
+      "address": "2637 Welton St, Denver, CO 80205",
+      "lat": 39.7549,
+      "lng": -104.9789,
+      "impact_potential": "medium",
+      "district_slugs": ["downtown-core"],
+      "near_anchor_slugs": ["spire"]
+    },
+    {
+      "slug": "bluebird-theater",
+      "name": "Bluebird Theater",
+      "venue_type": "event-venue",
+      "category": "live-music",
+      "address": "3317 E Colfax Ave, Denver, CO 80206",
+      "lat": 39.7403,
+      "lng": -104.9478,
+      "impact_potential": "medium",
+      "district_slugs": ["downtown-core"],
+      "near_anchor_slugs": ["spire"]
+    },
+    {
+      "slug": "marquis-theater",
+      "name": "Marquis Theater",
+      "venue_type": "event-venue",
+      "category": "live-music-club",
+      "address": "2009 Larimer St, Denver, CO 80205",
+      "lat": 39.7538,
+      "lng": -104.9927,
+      "impact_potential": "medium",
+      "district_slugs": ["union-station"],
+      "near_anchor_slugs": ["spire", "coloradan"]
+    },
+    {
+      "slug": "boulder-theater",
+      "name": "Boulder Theater",
+      "venue_type": "event-venue",
+      "category": "live-music",
+      "address": "2032 14th St, Boulder, CO 80302",
+      "lat": 40.0196,
+      "lng": -105.2776,
+      "impact_potential": "medium",
+      "district_slugs": ["downtown-core"],
+      "near_anchor_slugs": ["coloradan"]
+    },
+    {
+      "slug": "fox-theatre",
+      "name": "Fox Theatre",
+      "venue_type": "event-venue",
+      "category": "live-music-club",
+      "address": "1135 13th St, Boulder, CO 80302",
+      "lat": 40.0081,
+      "lng": -105.2754,
+      "impact_potential": "medium",
+      "district_slugs": ["downtown-core"],
+      "near_anchor_slugs": ["coloradan"]
+    },
+    {
+      "slug": "mishawaka-amphitheatre",
+      "name": "Mishawaka Amphitheatre",
+      "venue_type": "major-event-campus",
+      "category": "destination-live-music",
+      "address": "13714 Poudre Canyon Rd, Bellvue, CO 80512",
+      "lat": 40.7027,
+      "lng": -105.3395,
+      "impact_potential": "medium-high",
+      "district_slugs": ["downtown-core"],
+      "near_anchor_slugs": ["coloradan"]
     }
   ]
 }

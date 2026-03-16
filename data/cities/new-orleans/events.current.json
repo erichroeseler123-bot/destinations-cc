@@ -1,0 +1,52 @@
+{
+  "city": "new-orleans",
+  "version": 1,
+  "as_of": "2026-03-15T18:00:00-05:00",
+  "ttl_seconds": 900,
+  "stale_after": "2026-03-15T18:15:00-05:00",
+  "schema": { "entity": "event", "description": "Ingested timed facts for the New Orleans NOW layer." },
+  "events": [
+    {
+      "id": "evt-nola-tipitinas-funk",
+      "slug": "tipitinas-funk-night-2026-03-15",
+      "title": "Funk Night at Tipitina's",
+      "venue_slug": "tipitinas",
+      "category": "live-music",
+      "start_time": "2026-03-15T21:00:00-05:00",
+      "end_time": "2026-03-16T00:30:00-05:00",
+      "status": "upcoming",
+      "impact_level": "medium",
+      "attendance_band": "moderate",
+      "source": { "kind": "venue-calendar", "external_id": "tipitinas-funk-2026-03-15" },
+      "description": "Music-first neighborhood show with later start times and a slower ride home than a typical theater night."
+    },
+    {
+      "id": "evt-nola-saenger-comedy",
+      "slug": "saenger-comedy-night-2026-03-15",
+      "title": "Comedy Night at Saenger Theatre",
+      "venue_slug": "saenger-theatre",
+      "category": "comedy",
+      "start_time": "2026-03-15T19:30:00-05:00",
+      "end_time": "2026-03-15T21:45:00-05:00",
+      "status": "starting_soon",
+      "impact_level": "medium",
+      "attendance_band": "moderate",
+      "source": { "kind": "ticketing-feed", "external_id": "saenger-comedy-2026-03-15" },
+      "description": "Canal Street theater inventory with a cleaner start time but stronger hotel-district congestion before curtain."
+    },
+    {
+      "id": "evt-nola-maple-leaf-jam",
+      "slug": "maple-leaf-jam-2026-03-15",
+      "title": "Late Jam at Maple Leaf",
+      "venue_slug": "maple-leaf-bar",
+      "category": "jazz",
+      "start_time": "2026-03-15T23:00:00-05:00",
+      "end_time": "2026-03-16T01:30:00-05:00",
+      "status": "upcoming",
+      "impact_level": "low",
+      "attendance_band": "small",
+      "source": { "kind": "venue-calendar", "external_id": "maple-leaf-jam-2026-03-15" },
+      "description": "Late-night neighborhood live music where the scene matters as much as the headline."
+    }
+  ]
+}

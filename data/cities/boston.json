@@ -1,0 +1,126 @@
+{
+  "slug": "boston",
+  "name": "Boston",
+  "metadata": {
+    "title": "Boston Tours, Things to Do, and Attractions | Destination Command Center",
+    "description": "Discover Boston tours, things to do, attractions, food, neighborhoods, and trip ideas. Browse guided experiences and plan around the city's most useful travel highlights.",
+    "keywords": [
+      "boston tours",
+      "things to do in boston",
+      "boston attractions",
+      "boston sightseeing"
+    ]
+  },
+  "hero": {
+    "eyebrow": "Boston travel guide",
+    "title": "Boston tours, things to do, and local travel planning",
+    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Boston trip.",
+    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Boston.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/boston/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/boston/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly."
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+    }
+  ],
+  "topAttractions": [
+    {
+      "slug": "freedom-trail",
+      "title": "Freedom Trail",
+      "description": ""
+    },
+    {
+      "slug": "faneuil-hall",
+      "title": "Faneuil Hall",
+      "description": ""
+    },
+    {
+      "slug": "fenway-park",
+      "title": "Fenway Park",
+      "description": ""
+    },
+    {
+      "slug": "boston-common",
+      "title": "Boston Common",
+      "description": ""
+    },
+    {
+      "slug": "north-end",
+      "title": "North End",
+      "description": ""
+    },
+    {
+      "slug": "museum-of-fine-arts-boston",
+      "title": "Museum of Fine Arts, Boston",
+      "description": ""
+    }
+  ],
+  "featuredTours": {
+    "title": "Popular Boston experiences",
+    "description": "Guided experiences and bookable activities that help visitors plan around Boston's most useful highlights.",
+    "fallbackQueries": [
+      "boston walking tour",
+      "boston food tour",
+      "boston sightseeing tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Things to do in Boston",
+      "description": "A broader planning surface for attractions, neighborhoods, and trip ideas.",
+      "href": "/boston/things-to-do"
+    },
+    {
+      "title": "Boston tours",
+      "description": "A cleaner starting point for guided experiences, day trips, and visitor favorites.",
+      "href": "/boston/tours"
+    },
+    {
+      "title": "Boston food guide",
+      "description": "Restaurants, food neighborhoods, and tasting-focused experiences.",
+      "href": "/boston/food"
+    },
+    {
+      "title": "Boston day trips",
+      "description": "Half-day and full-day options that fit naturally with a city stay.",
+      "href": "/boston/day-trips"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in Boston for first-time visitors?",
+      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+    },
+    {
+      "q": "How many days should you spend in Boston?",
+      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+    }
+  ],
+  "coordinates": {
+    "lat": 42.3601,
+    "lng": -71.0589
+  },
+  "timezone": "America/New_York",
+  "lat": 42.3601,
+  "lng": -71.0589
+}

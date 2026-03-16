@@ -1,0 +1,354 @@
+{
+  "citySlug": "washington-dc",
+  "cityName": "Washington DC",
+  "attractions": [
+    {
+      "slug": "national-mall",
+      "name": "National Mall",
+      "type": "landmark",
+      "summary": "National Mall is one of the more recognizable history-focused stops in Washington DC for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "landmark",
+        "history",
+        "sightseeing"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "National Mall guide, things to do, and local tours",
+      "heroSummary": "Planning guide for National Mall in Washington DC, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use National Mall as a stop for a more history-focused city walk or half-day plan.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan National Mall as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives National Mall more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "National Mall history tours",
+          "query": "washington dc national mall history tour",
+          "description": "A simple starting point for visitors who want more context around National Mall."
+        },
+        {
+          "label": "National Mall guided experiences",
+          "query": "washington dc national mall tours",
+          "description": "A general search path for tours and guided experiences connected to National Mall in Washington DC."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Smithsonian Museums",
+          "href": "/washington-dc/smithsonian-museums"
+        },
+        {
+          "label": "Georgetown",
+          "href": "/washington-dc/georgetown"
+        },
+        {
+          "label": "Capitol Hill",
+          "href": "/washington-dc/capitol-hill"
+        }
+      ],
+      "primaryToursHref": "/washington-dc/national-mall/tours",
+      "thingsToDoHref": "/washington-dc/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Smithsonian Museums",
+        "Georgetown"
+      ]
+    },
+    {
+      "slug": "smithsonian-museums",
+      "name": "Smithsonian Museums",
+      "type": "museum-cluster",
+      "summary": "Smithsonian Museums is one of the more recognizable history-focused stops in Washington DC for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "museum",
+        "history",
+        "family"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Smithsonian Museums guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Smithsonian Museums in Washington DC, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Smithsonian Museums as a stop for a more history-focused city walk or half-day plan.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Smithsonian Museums as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Smithsonian Museums more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Smithsonian Museums history tours",
+          "query": "washington dc smithsonian museums history tour",
+          "description": "A simple starting point for visitors who want more context around Smithsonian Museums."
+        },
+        {
+          "label": "Smithsonian Museums guided experiences",
+          "query": "washington dc smithsonian museums tours",
+          "description": "A general search path for tours and guided experiences connected to Smithsonian Museums in Washington DC."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "National Mall",
+          "href": "/washington-dc/national-mall"
+        },
+        {
+          "label": "Georgetown",
+          "href": "/washington-dc/georgetown"
+        },
+        {
+          "label": "Capitol Hill",
+          "href": "/washington-dc/capitol-hill"
+        }
+      ],
+      "primaryToursHref": "/washington-dc/smithsonian-museums/tours",
+      "thingsToDoHref": "/washington-dc/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "National Mall",
+        "Georgetown"
+      ]
+    },
+    {
+      "slug": "georgetown",
+      "name": "Georgetown",
+      "type": "district",
+      "summary": "Georgetown is a useful Washington DC stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "shopping",
+        "food",
+        "walks"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "Georgetown guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Georgetown in Washington DC, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair Georgetown with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Georgetown as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Georgetown food experiences",
+          "query": "washington dc georgetown food tour",
+          "description": "Helpful when Georgetown fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Georgetown guided experiences",
+          "query": "washington dc georgetown tours",
+          "description": "A general search path for tours and guided experiences connected to Georgetown in Washington DC."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "National Mall",
+          "href": "/washington-dc/national-mall"
+        },
+        {
+          "label": "Smithsonian Museums",
+          "href": "/washington-dc/smithsonian-museums"
+        },
+        {
+          "label": "Capitol Hill",
+          "href": "/washington-dc/capitol-hill"
+        }
+      ],
+      "primaryToursHref": "/washington-dc/georgetown/tours",
+      "thingsToDoHref": "/washington-dc/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "National Mall",
+        "Smithsonian Museums"
+      ]
+    },
+    {
+      "slug": "capitol-hill",
+      "name": "Capitol Hill",
+      "type": "district",
+      "summary": "Capitol Hill is one of the more recognizable history-focused stops in Washington DC for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "history",
+        "government",
+        "walks"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Capitol Hill guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Capitol Hill in Washington DC, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Capitol Hill as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Capitol Hill as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Capitol Hill more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Capitol Hill history tours",
+          "query": "washington dc capitol hill history tour",
+          "description": "A simple starting point for visitors who want more context around Capitol Hill."
+        },
+        {
+          "label": "Capitol Hill guided experiences",
+          "query": "washington dc capitol hill tours",
+          "description": "A general search path for tours and guided experiences connected to Capitol Hill in Washington DC."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "National Mall",
+          "href": "/washington-dc/national-mall"
+        },
+        {
+          "label": "Smithsonian Museums",
+          "href": "/washington-dc/smithsonian-museums"
+        },
+        {
+          "label": "Georgetown",
+          "href": "/washington-dc/georgetown"
+        }
+      ],
+      "primaryToursHref": "/washington-dc/capitol-hill/tours",
+      "thingsToDoHref": "/washington-dc/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "National Mall",
+        "Smithsonian Museums"
+      ]
+    },
+    {
+      "slug": "white-house",
+      "name": "White House",
+      "type": "historic-site",
+      "summary": "White House is one of the more recognizable historic sites in Washington DC and usually adds the most value when visitors want stronger context, not just a quick pass-through.",
+      "categories": [
+        "history",
+        "government",
+        "landmark"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "White House guide, things to do, and local tours",
+      "heroSummary": "Planning guide for White House in Washington DC, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use White House as part of a more history-focused block instead of treating it as a standalone stop.",
+        "Pair White House with a guided walk, museum, or nearby landmark if you want a fuller sense of place.",
+        "Use White House as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan White House as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Historic sites usually feel more useful when they are part of a broader city story instead of a quick photo stop.",
+        "A guided walk or city tour often gives White House more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "White House history tours",
+          "query": "washington dc white house history tour",
+          "description": "A useful starting point for visitors who want more context around White House."
+        },
+        {
+          "label": "White House guided experiences",
+          "query": "washington dc white house tours",
+          "description": "A general search path for tours and guided experiences connected to White House in Washington DC."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "National Mall",
+          "href": "/washington-dc/national-mall"
+        },
+        {
+          "label": "Smithsonian Museums",
+          "href": "/washington-dc/smithsonian-museums"
+        },
+        {
+          "label": "Georgetown",
+          "href": "/washington-dc/georgetown"
+        }
+      ],
+      "primaryToursHref": "/washington-dc/white-house/tours",
+      "thingsToDoHref": "/washington-dc/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "National Mall",
+        "Smithsonian Museums"
+      ]
+    },
+    {
+      "slug": "lincoln-memorial",
+      "name": "Lincoln Memorial",
+      "type": "landmark",
+      "summary": "Lincoln Memorial is one of the better-known landmarks in Washington DC and usually works best as part of a broader sightseeing block instead of a standalone stop.",
+      "categories": [
+        "history",
+        "landmark",
+        "sightseeing"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Lincoln Memorial guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Lincoln Memorial in Washington DC, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Lincoln Memorial as part of a broader sightseeing block instead of making it the only stop in that part of the day.",
+        "Pair Lincoln Memorial with one nearby walk, museum, or neighborhood stop for a more complete visit.",
+        "Use Lincoln Memorial as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Lincoln Memorial as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Landmark stops usually work better when they are tied to a broader city route instead of treated as a one-stop plan.",
+        "A guided walk or city tour often gives Lincoln Memorial more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Lincoln Memorial sightseeing tours",
+          "query": "washington dc lincoln memorial sightseeing tour",
+          "description": "A simple starting point for visitors who want to see Lincoln Memorial in a broader city context."
+        },
+        {
+          "label": "Lincoln Memorial history tours",
+          "query": "washington dc lincoln memorial history tour",
+          "description": "A simple starting point for visitors who want more context around Lincoln Memorial."
+        },
+        {
+          "label": "Lincoln Memorial guided experiences",
+          "query": "washington dc lincoln memorial tours",
+          "description": "A general search path for tours and guided experiences connected to Lincoln Memorial in Washington DC."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "National Mall",
+          "href": "/washington-dc/national-mall"
+        },
+        {
+          "label": "Smithsonian Museums",
+          "href": "/washington-dc/smithsonian-museums"
+        },
+        {
+          "label": "Georgetown",
+          "href": "/washington-dc/georgetown"
+        }
+      ],
+      "primaryToursHref": "/washington-dc/lincoln-memorial/tours",
+      "thingsToDoHref": "/washington-dc/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "National Mall",
+        "Smithsonian Museums"
+      ]
+    }
+  ]
+}

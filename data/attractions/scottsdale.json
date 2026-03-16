@@ -1,0 +1,349 @@
+{
+  "citySlug": "scottsdale",
+  "cityName": "Scottsdale",
+  "attractions": [
+    {
+      "slug": "old-town-scottsdale",
+      "name": "Old Town Scottsdale",
+      "type": "district",
+      "summary": "Old Town Scottsdale is a useful Scottsdale stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "shopping",
+        "food",
+        "nightlife"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Old Town Scottsdale guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Old Town Scottsdale in Scottsdale, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair Old Town Scottsdale with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "Treat Old Town Scottsdale as an evening block if nightlife is a major part of the trip."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Old Town Scottsdale as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Old Town Scottsdale matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Old Town Scottsdale food experiences",
+          "query": "scottsdale old town scottsdale food tour",
+          "description": "Helpful when Old Town Scottsdale fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Old Town Scottsdale guided experiences",
+          "query": "scottsdale old town scottsdale tours",
+          "description": "A general search path for tours and guided experiences connected to Old Town Scottsdale in Scottsdale."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Taliesin West",
+          "href": "/scottsdale/taliesin-west"
+        },
+        {
+          "label": "McDowell Sonoran Preserve",
+          "href": "/scottsdale/mcdowell-sonoran-preserve"
+        },
+        {
+          "label": "Scottsdale Fashion Square",
+          "href": "/scottsdale/scottsdale-fashion-square"
+        }
+      ],
+      "primaryToursHref": "/scottsdale/old-town-scottsdale/tours",
+      "thingsToDoHref": "/scottsdale/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Taliesin West",
+        "McDowell Sonoran Preserve"
+      ]
+    },
+    {
+      "slug": "taliesin-west",
+      "name": "Taliesin West",
+      "type": "historic-site",
+      "summary": "Taliesin West is one of the more recognizable history-focused stops in Scottsdale for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "architecture",
+        "history"
+      ],
+      "priority": 90,
+      "featured": true,
+      "heroTitle": "Taliesin West guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Taliesin West in Scottsdale, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Taliesin West as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Taliesin West as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Taliesin West more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Taliesin West history tours",
+          "query": "scottsdale taliesin west history tour",
+          "description": "A simple starting point for visitors who want more context around Taliesin West."
+        },
+        {
+          "label": "Taliesin West guided experiences",
+          "query": "scottsdale taliesin west tours",
+          "description": "A general search path for tours and guided experiences connected to Taliesin West in Scottsdale."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Old Town Scottsdale",
+          "href": "/scottsdale/old-town-scottsdale"
+        },
+        {
+          "label": "McDowell Sonoran Preserve",
+          "href": "/scottsdale/mcdowell-sonoran-preserve"
+        },
+        {
+          "label": "Scottsdale Fashion Square",
+          "href": "/scottsdale/scottsdale-fashion-square"
+        }
+      ],
+      "primaryToursHref": "/scottsdale/taliesin-west/tours",
+      "thingsToDoHref": "/scottsdale/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Old Town Scottsdale",
+        "McDowell Sonoran Preserve"
+      ]
+    },
+    {
+      "slug": "mcdowell-sonoran-preserve",
+      "name": "McDowell Sonoran Preserve",
+      "type": "nature-area",
+      "summary": "McDowell Sonoran Preserve gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader Scottsdale day plan.",
+      "categories": [
+        "hiking",
+        "outdoor"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "McDowell Sonoran Preserve guide, things to do, and local tours",
+      "heroSummary": "Planning guide for McDowell Sonoran Preserve in Scottsdale, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use McDowell Sonoran Preserve as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan McDowell Sonoran Preserve as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "McDowell Sonoran Preserve outdoor experiences",
+          "query": "scottsdale mcdowell sonoran preserve outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "McDowell Sonoran Preserve guided experiences",
+          "query": "scottsdale mcdowell sonoran preserve tours",
+          "description": "A general search path for tours and guided experiences connected to McDowell Sonoran Preserve in Scottsdale."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Old Town Scottsdale",
+          "href": "/scottsdale/old-town-scottsdale"
+        },
+        {
+          "label": "Taliesin West",
+          "href": "/scottsdale/taliesin-west"
+        },
+        {
+          "label": "Scottsdale Fashion Square",
+          "href": "/scottsdale/scottsdale-fashion-square"
+        }
+      ],
+      "primaryToursHref": "/scottsdale/mcdowell-sonoran-preserve/tours",
+      "thingsToDoHref": "/scottsdale/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Old Town Scottsdale",
+        "Taliesin West"
+      ]
+    },
+    {
+      "slug": "scottsdale-fashion-square",
+      "name": "Scottsdale Fashion Square",
+      "type": "shopping-district",
+      "summary": "Scottsdale Fashion Square is one of the more recognizable visitor stops in Scottsdale and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "shopping",
+        "luxury"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Scottsdale Fashion Square guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Scottsdale Fashion Square in Scottsdale, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Scottsdale Fashion Square as one clear stop within a broader city day instead of overbuilding your itinerary around it."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Scottsdale Fashion Square as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Scottsdale Fashion Square guided experiences",
+          "query": "scottsdale scottsdale fashion square tours",
+          "description": "A general search path for tours and guided experiences connected to Scottsdale Fashion Square in Scottsdale."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Old Town Scottsdale",
+          "href": "/scottsdale/old-town-scottsdale"
+        },
+        {
+          "label": "Taliesin West",
+          "href": "/scottsdale/taliesin-west"
+        },
+        {
+          "label": "McDowell Sonoran Preserve",
+          "href": "/scottsdale/mcdowell-sonoran-preserve"
+        }
+      ],
+      "primaryToursHref": "/scottsdale/scottsdale-fashion-square/tours",
+      "thingsToDoHref": "/scottsdale/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Old Town Scottsdale",
+        "Taliesin West"
+      ]
+    },
+    {
+      "slug": "western-spirit-museum",
+      "name": "Western Spirit: Scottsdale's Museum of the West",
+      "type": "museum",
+      "summary": "Western Spirit: Scottsdale's Museum of the West is a useful museum stop in Scottsdale for visitors who want more structure, context, or indoor time built into the trip.",
+      "categories": [
+        "museum",
+        "history",
+        "culture"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Western Spirit: Scottsdale's Museum of the West guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Western Spirit: Scottsdale's Museum of the West in Scottsdale, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Western Spirit: Scottsdale's Museum of the West as an anchor for a more structured indoor block, especially on hotter, colder, or wetter days.",
+        "Pair Western Spirit: Scottsdale's Museum of the West with one nearby neighborhood, food, or walking stop instead of stacking too many museums at once.",
+        "Use Western Spirit: Scottsdale's Museum of the West as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Western Spirit: Scottsdale's Museum of the West as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Museum stops usually add the most value when you pair them with one nearby walk, meal, or neighborhood block instead of stacking too much indoor time.",
+        "A guided walk or city tour often gives Western Spirit: Scottsdale's Museum of the West more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Western Spirit: Scottsdale's Museum of the West museum experiences",
+          "query": "scottsdale western spirit museum museum tour",
+          "description": "Useful when visitors want more context than a quick self-guided pass-through."
+        },
+        {
+          "label": "Western Spirit: Scottsdale's Museum of the West history tours",
+          "query": "scottsdale western spirit museum history tour",
+          "description": "A simple starting point for visitors who want more context around Western Spirit: Scottsdale's Museum of the West."
+        },
+        {
+          "label": "Western Spirit: Scottsdale's Museum of the West guided experiences",
+          "query": "scottsdale western spirit museum tours",
+          "description": "A general search path for tours and guided experiences connected to Western Spirit: Scottsdale's Museum of the West in Scottsdale."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Old Town Scottsdale",
+          "href": "/scottsdale/old-town-scottsdale"
+        },
+        {
+          "label": "Taliesin West",
+          "href": "/scottsdale/taliesin-west"
+        },
+        {
+          "label": "McDowell Sonoran Preserve",
+          "href": "/scottsdale/mcdowell-sonoran-preserve"
+        }
+      ],
+      "primaryToursHref": "/scottsdale/western-spirit-museum/tours",
+      "thingsToDoHref": "/scottsdale/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Old Town Scottsdale",
+        "Taliesin West"
+      ]
+    },
+    {
+      "slug": "scottsdale-quarter",
+      "name": "Scottsdale Quarter",
+      "type": "shopping-district",
+      "summary": "Scottsdale Quarter is a useful district to understand early if you want a clearer feel for how visitors actually spend time in Scottsdale.",
+      "categories": [
+        "shopping",
+        "food",
+        "walks"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Scottsdale Quarter guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Scottsdale Quarter in Scottsdale, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Walk Scottsdale Quarter with one clear purpose, such as food, music, shopping, or evening atmosphere.",
+        "Treat Scottsdale Quarter as a time block rather than a quick pass-through if it is one of the main reasons for the trip.",
+        "Pair Scottsdale Quarter with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Scottsdale Quarter as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Districts usually feel stronger when you decide whether the point is food, shopping, nightlife, or a general walk before you arrive."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Scottsdale Quarter neighborhood tours",
+          "query": "scottsdale scottsdale quarter neighborhood tour",
+          "description": "Helpful when Scottsdale Quarter is better experienced as part of a larger district walk or evening plan."
+        },
+        {
+          "label": "Scottsdale Quarter food experiences",
+          "query": "scottsdale scottsdale quarter food tour",
+          "description": "Helpful when Scottsdale Quarter fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Scottsdale Quarter guided experiences",
+          "query": "scottsdale scottsdale quarter tours",
+          "description": "A general search path for tours and guided experiences connected to Scottsdale Quarter in Scottsdale."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Old Town Scottsdale",
+          "href": "/scottsdale/old-town-scottsdale"
+        },
+        {
+          "label": "Taliesin West",
+          "href": "/scottsdale/taliesin-west"
+        },
+        {
+          "label": "McDowell Sonoran Preserve",
+          "href": "/scottsdale/mcdowell-sonoran-preserve"
+        }
+      ],
+      "primaryToursHref": "/scottsdale/scottsdale-quarter/tours",
+      "thingsToDoHref": "/scottsdale/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Old Town Scottsdale",
+        "Taliesin West"
+      ]
+    }
+  ]
+}

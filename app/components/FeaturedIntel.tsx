@@ -21,28 +21,26 @@ export default function FeaturedIntel() {
 
   const title: string = raw?.title || "DCC Picks";
   const subtitle: string =
-    raw?.subtitle || "High-signal pages: route intel, staging hubs, and reality checks.";
+    raw?.subtitle || "Featured guides, attractions, and destination planning pages.";
   const cta = raw?.cta?.href ? raw.cta : null;
 
   return (
-    <section className="mt-8 rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-black/40 p-6 md:p-8">
+    <section className="mt-8 rounded-[1.9rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(0,0,0,0.34))] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.32)] md:p-8">
       <div className="flex flex-col gap-3">
-        <div className="text-[11px] tracking-[0.35em] uppercase text-zinc-500">
-          FEATURED INTELLIGENCE
-        </div>
+        <div className="text-[11px] font-black tracking-[0.35em] uppercase text-[#f5c66c]">Featured Guides</div>
 
-        <div className="text-2xl md:text-3xl font-black text-white">{title}</div>
+        <div className="text-2xl md:text-3xl font-black uppercase text-white">{title}</div>
 
-        <div className="text-zinc-300 max-w-2xl">{subtitle}</div>
+        <div className="max-w-2xl text-[#f8f4ed]/72">{subtitle}</div>
 
         {cta ? (
           <div className="pt-2">
             <Link
               href={cta.href}
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/30 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10 transition"
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-[#f8f4ed] transition hover:bg-white/10"
             >
-              {cta.label || "Browse Cities →"}
-              <span className="text-cyan-400">→</span>
+              {cta.label || "Browse Cities"}
+              <span className="text-[#f5c66c]">→</span>
             </Link>
           </div>
         ) : null}
@@ -53,28 +51,28 @@ export default function FeaturedIntel() {
           <Link
             key={`${it.href}-${idx}`}
             href={it.href}
-            className="group rounded-3xl border border-white/10 bg-black/30 p-5 hover:border-cyan-500/40 hover:bg-white/[0.04] transition"
+            className="group rounded-[1.7rem] border border-white/10 bg-black/30 p-5 transition hover:border-[#f5c66c]/30 hover:bg-white/[0.04]"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <div className="text-white font-bold text-lg truncate">{it.title}</div>
+                <div className="truncate text-lg font-black uppercase text-white">{it.title}</div>
 
                 {it.why ? (
-                  <div className="mt-1 text-sm text-zinc-300">{it.why}</div>
+                  <div className="mt-1 text-sm text-[#f8f4ed]/76">{it.why}</div>
                 ) : null}
 
                 {it.description ? (
-                  <div className="mt-2 text-sm text-zinc-400">{it.description}</div>
+                  <div className="mt-2 text-sm text-[#f8f4ed]/58">{it.description}</div>
                 ) : null}
 
                 {it.tag ? (
-                  <div className="mt-4 inline-flex rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[11px] tracking-widest uppercase text-zinc-200">
+                  <div className="mt-4 inline-flex rounded-full border border-[#f5c66c]/18 bg-[#f5c66c]/10 px-3 py-1 text-[11px] font-black tracking-widest uppercase text-[#efe5d3]">
                     {it.tag}
                   </div>
                 ) : null}
               </div>
 
-              <div className="text-cyan-400 font-bold opacity-70 group-hover:opacity-100 transition">
+              <div className="font-bold text-[#f5c66c] opacity-70 transition group-hover:opacity-100">
                 →
               </div>
             </div>
@@ -82,7 +80,7 @@ export default function FeaturedIntel() {
         ))}
 
         {items.length === 0 ? (
-          <div className="rounded-3xl border border-white/10 bg-black/30 p-5 text-zinc-400">
+          <div className="rounded-[1.7rem] border border-white/10 bg-black/30 p-5 text-[#f8f4ed]/58">
             No featured items found. Check <code className="text-zinc-200">data/featured.json</code>.
           </div>
         ) : null}

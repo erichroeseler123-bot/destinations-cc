@@ -1,0 +1,126 @@
+{
+  "slug": "salt-lake-city",
+  "name": "Salt Lake City",
+  "metadata": {
+    "title": "Salt Lake City Tours, Things to Do, and Attractions | Destination Command Center",
+    "description": "Discover Salt Lake City tours, things to do, attractions, food, neighborhoods, and trip ideas. Browse guided experiences and plan around the city's most useful travel highlights.",
+    "keywords": [
+      "salt lake city tours",
+      "things to do in salt lake city",
+      "salt lake city attractions",
+      "salt lake city sightseeing"
+    ]
+  },
+  "hero": {
+    "eyebrow": "Salt Lake City travel guide",
+    "title": "Salt Lake City tours, things to do, and local travel planning",
+    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Salt Lake City trip.",
+    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Salt Lake City.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/salt-lake-city/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/salt-lake-city/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly."
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+    }
+  ],
+  "topAttractions": [
+    {
+      "slug": "temple-square",
+      "title": "Temple Square",
+      "description": ""
+    },
+    {
+      "slug": "park-city-day-trip",
+      "title": "Park City",
+      "description": ""
+    },
+    {
+      "slug": "big-cottonwood-canyon",
+      "title": "Big Cottonwood Canyon",
+      "description": ""
+    },
+    {
+      "slug": "red-butte-garden",
+      "title": "Red Butte Garden",
+      "description": ""
+    },
+    {
+      "slug": "utah-state-capitol",
+      "title": "Utah State Capitol",
+      "description": ""
+    },
+    {
+      "slug": "great-salt-lake",
+      "title": "Great Salt Lake",
+      "description": ""
+    }
+  ],
+  "featuredTours": {
+    "title": "Popular Salt Lake City experiences",
+    "description": "Guided experiences and bookable activities that help visitors plan around Salt Lake City's most useful highlights.",
+    "fallbackQueries": [
+      "salt lake city walking tour",
+      "salt lake city food tour",
+      "salt lake city sightseeing tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Things to do in Salt Lake City",
+      "description": "A broader planning surface for attractions, neighborhoods, and trip ideas.",
+      "href": "/salt-lake-city/things-to-do"
+    },
+    {
+      "title": "Salt Lake City tours",
+      "description": "A cleaner starting point for guided experiences, day trips, and visitor favorites.",
+      "href": "/salt-lake-city/tours"
+    },
+    {
+      "title": "Salt Lake City food guide",
+      "description": "Restaurants, food neighborhoods, and tasting-focused experiences.",
+      "href": "/salt-lake-city/food"
+    },
+    {
+      "title": "Salt Lake City day trips",
+      "description": "Half-day and full-day options that fit naturally with a city stay.",
+      "href": "/salt-lake-city/day-trips"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in Salt Lake City for first-time visitors?",
+      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+    },
+    {
+      "q": "How many days should you spend in Salt Lake City?",
+      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+    }
+  ],
+  "coordinates": {
+    "lat": 40.7608,
+    "lng": -111.891
+  },
+  "timezone": "America/Denver",
+  "lat": 40.7608,
+  "lng": -111.891
+}

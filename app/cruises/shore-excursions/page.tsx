@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import JsonLd from "@/app/components/dcc/JsonLd";
 import PageActionBar from "@/app/components/dcc/PageActionBar";
 import {
   CRUISE_SHORE_EXCURSION_DECISIONS,
@@ -8,6 +9,7 @@ import {
   CRUISE_SHORE_EXCURSION_VIDEOS,
 } from "@/src/data/cruise-shore-excursions-guide";
 import { buildMapsSearchUrl, type PageAction } from "@/src/lib/page-actions";
+import { buildArticleJsonLd, buildBreadcrumbJsonLd, buildFaqJsonLd } from "@/lib/dcc/jsonld";
 
 const PAGE_URL = "https://destinationcommandcenter.com/cruises/shore-excursions";
 
@@ -25,40 +27,6 @@ export const metadata: Metadata = {
   },
 };
 
-function JsonLd() {
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": ["WebPage", "Guide"],
-        "@id": PAGE_URL,
-        url: PAGE_URL,
-        name: "Cruise Shore Excursions Guide",
-        description:
-          "Practical cruise shore excursion guidance across Alaska, Caribbean, Europe, and long-haul ports, with booking strategy and recent traveler reality checks.",
-        dateModified: "2026-03-12",
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Cruises", item: "https://destinationcommandcenter.com/cruises" },
-          { "@type": "ListItem", position: 2, name: "Shore Excursions Guide", item: PAGE_URL },
-        ],
-      },
-      {
-        "@type": "FAQPage",
-        mainEntity: CRUISE_SHORE_EXCURSION_FAQ.map((item) => ({
-          "@type": "Question",
-          name: item.question,
-          acceptedAnswer: { "@type": "Answer", text: item.answer },
-        })),
-      },
-    ],
-  };
-
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
-}
-
 export default function CruiseShoreExcursionsPage() {
   const actions: PageAction[] = [
     { href: "/cruises", label: "Back to Cruise Explorer", kind: "internal" },
@@ -68,7 +36,25 @@ export default function CruiseShoreExcursionsPage() {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.14),_transparent_24%),linear-gradient(180deg,_#111318_0%,_#090a0d_100%)] text-white">
-      <JsonLd />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            buildArticleJsonLd({
+              path: "/cruises/shore-excursions",
+              headline: "Cruise Shore Excursions Guide",
+              description:
+                "Practical cruise shore excursion guidance across Alaska, Caribbean, Europe, and long-haul ports, with booking strategy and recent traveler reality checks.",
+              dateModified: "2026-03-12",
+            }),
+            buildBreadcrumbJsonLd([
+              { name: "Cruises", item: "/cruises" },
+              { name: "Shore Excursions Guide", item: "/cruises/shore-excursions" },
+            ]),
+            buildFaqJsonLd(CRUISE_SHORE_EXCURSION_FAQ),
+          ],
+        }}
+      />
       <div className="mx-auto max-w-5xl space-y-8 px-6 py-16">
         <header className="space-y-5">
           <p className="text-xs uppercase tracking-[0.22em] text-emerald-300">DCC Cruise Excursions Guide</p>

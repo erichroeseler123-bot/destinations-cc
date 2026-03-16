@@ -1,0 +1,27 @@
+{
+  "slug": "stockholm",
+  "display_name": "Stockholm",
+  "aliases": [
+    "stockholm-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Stockholm City Highlights Tour",
+      "description": "A quick way to see the best of Stockholm with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor Cruise",
+      "description": "Short scenic sailings and waterfront views across the archipelago gateway.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for Gamla Stan, waterfront history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

@@ -1,0 +1,353 @@
+{
+  "citySlug": "miami",
+  "cityName": "Miami",
+  "attractions": [
+    {
+      "slug": "south-beach",
+      "name": "South Beach",
+      "type": "beach",
+      "summary": "South Beach is one of the more recognizable visitor stops in Miami and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "beach",
+        "nightlife",
+        "sightseeing"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "South Beach guide, things to do, and local tours",
+      "heroSummary": "Planning guide for South Beach in Miami, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Treat South Beach as an evening block if nightlife is a major part of the trip.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan South Beach as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If South Beach matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "South Beach guided experiences",
+          "query": "miami south beach tours",
+          "description": "A general search path for tours and guided experiences connected to South Beach in Miami."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Wynwood",
+          "href": "/miami/wynwood"
+        },
+        {
+          "label": "Little Havana",
+          "href": "/miami/little-havana"
+        },
+        {
+          "label": "Vizcaya Museum & Gardens",
+          "href": "/miami/vizcaya-museum-gardens"
+        }
+      ],
+      "primaryToursHref": "/miami/south-beach/tours",
+      "thingsToDoHref": "/miami/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Wynwood",
+        "Little Havana"
+      ]
+    },
+    {
+      "slug": "wynwood",
+      "name": "Wynwood",
+      "type": "district",
+      "summary": "Wynwood is a useful Miami stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "art",
+        "food",
+        "nightlife"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Wynwood guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Wynwood in Miami, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair Wynwood with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "Treat Wynwood as an evening block if nightlife is a major part of the trip."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Wynwood as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Wynwood matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Wynwood food experiences",
+          "query": "miami wynwood food tour",
+          "description": "Helpful when Wynwood fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Wynwood guided experiences",
+          "query": "miami wynwood tours",
+          "description": "A general search path for tours and guided experiences connected to Wynwood in Miami."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "South Beach",
+          "href": "/miami/south-beach"
+        },
+        {
+          "label": "Little Havana",
+          "href": "/miami/little-havana"
+        },
+        {
+          "label": "Vizcaya Museum & Gardens",
+          "href": "/miami/vizcaya-museum-gardens"
+        }
+      ],
+      "primaryToursHref": "/miami/wynwood/tours",
+      "thingsToDoHref": "/miami/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "South Beach",
+        "Little Havana"
+      ]
+    },
+    {
+      "slug": "little-havana",
+      "name": "Little Havana",
+      "type": "district",
+      "summary": "Little Havana is a useful Miami stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "food",
+        "culture",
+        "music"
+      ],
+      "priority": 90,
+      "featured": true,
+      "heroTitle": "Little Havana guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Little Havana in Miami, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair Little Havana with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "Use Little Havana as part of a music-first evening or culture-focused route through the city."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Little Havana as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Little Havana matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Little Havana food experiences",
+          "query": "miami little havana food tour",
+          "description": "Helpful when Little Havana fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Little Havana music experiences",
+          "query": "miami little havana music tour",
+          "description": "Useful when you want a more structured music or nightlife plan around Little Havana."
+        },
+        {
+          "label": "Little Havana guided experiences",
+          "query": "miami little havana tours",
+          "description": "A general search path for tours and guided experiences connected to Little Havana in Miami."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "South Beach",
+          "href": "/miami/south-beach"
+        },
+        {
+          "label": "Wynwood",
+          "href": "/miami/wynwood"
+        },
+        {
+          "label": "Vizcaya Museum & Gardens",
+          "href": "/miami/vizcaya-museum-gardens"
+        }
+      ],
+      "primaryToursHref": "/miami/little-havana/tours",
+      "thingsToDoHref": "/miami/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "South Beach",
+        "Wynwood"
+      ]
+    },
+    {
+      "slug": "vizcaya-museum-gardens",
+      "name": "Vizcaya Museum & Gardens",
+      "type": "museum",
+      "summary": "Vizcaya Museum & Gardens is one of the more recognizable history-focused stops in Miami for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "history",
+        "culture",
+        "gardens"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Vizcaya Museum & Gardens guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Vizcaya Museum & Gardens in Miami, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Vizcaya Museum & Gardens as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Vizcaya Museum & Gardens as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Vizcaya Museum & Gardens more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Vizcaya Museum & Gardens history tours",
+          "query": "miami vizcaya museum gardens history tour",
+          "description": "A simple starting point for visitors who want more context around Vizcaya Museum & Gardens."
+        },
+        {
+          "label": "Vizcaya Museum & Gardens guided experiences",
+          "query": "miami vizcaya museum gardens tours",
+          "description": "A general search path for tours and guided experiences connected to Vizcaya Museum & Gardens in Miami."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "South Beach",
+          "href": "/miami/south-beach"
+        },
+        {
+          "label": "Wynwood",
+          "href": "/miami/wynwood"
+        },
+        {
+          "label": "Little Havana",
+          "href": "/miami/little-havana"
+        }
+      ],
+      "primaryToursHref": "/miami/vizcaya-museum-gardens/tours",
+      "thingsToDoHref": "/miami/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "South Beach",
+        "Wynwood"
+      ]
+    },
+    {
+      "slug": "bayside-marketplace",
+      "name": "Bayside Marketplace",
+      "type": "market",
+      "summary": "Bayside Marketplace is a practical market stop in Miami for visitors who want food, browsing, and a more casual neighborhood block built into the day.",
+      "categories": [
+        "shopping",
+        "food",
+        "waterfront"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Bayside Marketplace guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Bayside Marketplace in Miami, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Bayside Marketplace as part of a slower food, shopping, or neighborhood block instead of rushing through it.",
+        "Pair Bayside Marketplace with one nearby district walk or meal instead of overpacking the rest of the day.",
+        "Pair Bayside Marketplace with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Bayside Marketplace as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Markets usually work best when you leave room to browse and eat instead of forcing them into a tightly timed schedule."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Bayside Marketplace market tours",
+          "query": "miami bayside marketplace market tour",
+          "description": "Helpful when visitors want a more structured way to pair the market with local food or neighborhood context."
+        },
+        {
+          "label": "Bayside Marketplace food experiences",
+          "query": "miami bayside marketplace food tour",
+          "description": "Helpful when Bayside Marketplace fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Bayside Marketplace guided experiences",
+          "query": "miami bayside marketplace tours",
+          "description": "A general search path for tours and guided experiences connected to Bayside Marketplace in Miami."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "South Beach",
+          "href": "/miami/south-beach"
+        },
+        {
+          "label": "Wynwood",
+          "href": "/miami/wynwood"
+        },
+        {
+          "label": "Little Havana",
+          "href": "/miami/little-havana"
+        }
+      ],
+      "primaryToursHref": "/miami/bayside-marketplace/tours",
+      "thingsToDoHref": "/miami/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "South Beach",
+        "Wynwood"
+      ]
+    },
+    {
+      "slug": "perez-art-museum-miami",
+      "name": "Perez Art Museum Miami",
+      "type": "museum",
+      "summary": "Perez Art Museum Miami is a useful museum stop in Miami for visitors who want more structure, context, or indoor time built into the trip.",
+      "categories": [
+        "museum",
+        "culture",
+        "waterfront"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Perez Art Museum Miami guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Perez Art Museum Miami in Miami, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Perez Art Museum Miami as an anchor for a more structured indoor block, especially on hotter, colder, or wetter days.",
+        "Pair Perez Art Museum Miami with one nearby neighborhood, food, or walking stop instead of stacking too many museums at once."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Perez Art Museum Miami as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Museum stops usually add the most value when you pair them with one nearby walk, meal, or neighborhood block instead of stacking too much indoor time."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Perez Art Museum Miami museum experiences",
+          "query": "miami perez art museum miami museum tour",
+          "description": "Useful when visitors want more context than a quick self-guided pass-through."
+        },
+        {
+          "label": "Perez Art Museum Miami guided experiences",
+          "query": "miami perez art museum miami tours",
+          "description": "A general search path for tours and guided experiences connected to Perez Art Museum Miami in Miami."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "South Beach",
+          "href": "/miami/south-beach"
+        },
+        {
+          "label": "Wynwood",
+          "href": "/miami/wynwood"
+        },
+        {
+          "label": "Little Havana",
+          "href": "/miami/little-havana"
+        }
+      ],
+      "primaryToursHref": "/miami/perez-art-museum-miami/tours",
+      "thingsToDoHref": "/miami/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "South Beach",
+        "Wynwood"
+      ]
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import DiagnosticsBlock from "@/app/components/DiagnosticsBlock";
 import StatGrid from "@/app/components/StatGrid";
+import JsonLd from "@/app/components/dcc/JsonLd";
 import CruiseSpecialtyLaneSection from "@/app/components/dcc/CruiseSpecialtyLaneSection";
 import ShipAuthoritySection from "@/app/components/dcc/ShipAuthoritySection";
 import {
@@ -12,6 +13,7 @@ import {
 import { ACTION_LABELS } from "@/lib/dcc/actionLabels";
 import { getCruiseSpecialtyLanesForShip } from "@/src/data/cruise-specialty-lanes";
 import { getShipAuthorityConfig } from "@/src/data/ship-authority-config";
+import { buildArticleJsonLd, buildBreadcrumbJsonLd, buildFaqJsonLd } from "@/lib/dcc/jsonld";
 
 const BASE_URL = "https://destinationcommandcenter.com";
 
@@ -35,103 +37,6 @@ function fmtDate(value: string): string {
   return dt.toISOString().slice(0, 10);
 }
 
-function JsonLd({
-  shipTitle,
-  shipSlug,
-  sailings,
-}: {
-  shipTitle: string;
-  shipSlug: string;
-  sailings: Awaited<ReturnType<typeof buildCruisePayload>>["cruises"];
-}) {
-  const pageUrl = `${BASE_URL}/cruises/ship/${shipSlug}`;
-  const faq = [
-    {
-      q: `How do I compare upcoming sailings for ${shipTitle}?`,
-      a: `Use departure date, duration, and embark port together. Then compare price and availability before booking.`,
-    },
-    {
-      q: `Where can I find embark port details for ${shipTitle}?`,
-      a: `Each sailing links to embark-port pages with schedule context and excursion planning.`,
-    },
-    {
-      q: `Should I book ${shipTitle} sailings early?`,
-      a: `For high-demand dates and cabin classes, earlier booking usually improves inventory options and pricing stability.`,
-    },
-  ];
-
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": pageUrl,
-        url: pageUrl,
-        name: `${shipTitle} Cruise Sailings`,
-        description:
-          "Cruise ship profile with upcoming sailings, route context, and booking links.",
-      },
-      {
-        "@type": "Product",
-        name: shipTitle,
-        category: "Cruise Ship",
-        url: pageUrl,
-        offers:
-          typeof sailings[0]?.starting_price?.amount === "number"
-            ? {
-                "@type": "Offer",
-                price: sailings[0].starting_price.amount,
-                priceCurrency: sailings[0].starting_price.currency || "USD",
-              }
-            : undefined,
-      },
-      {
-        "@type": "ItemList",
-        name: `${shipTitle} upcoming sailings`,
-        itemListElement: sailings.slice(0, 24).map((sailing, idx) => ({
-          "@type": "ListItem",
-          position: idx + 1,
-          item: {
-            "@type": "Trip",
-            name: `${shipTitle} • ${fmtDate(sailing.departure_date)}`,
-            departureTime: sailing.departure_date,
-            provider: {
-              "@type": "Organization",
-              name: sailing.line,
-            },
-            offers:
-              typeof sailing.starting_price?.amount === "number"
-                ? {
-                    "@type": "Offer",
-                    price: sailing.starting_price.amount,
-                    priceCurrency: sailing.starting_price.currency || "USD",
-                  }
-                : undefined,
-          },
-        })),
-      },
-      {
-        "@type": "FAQPage",
-        mainEntity: faq.map((item) => ({
-          "@type": "Question",
-          name: item.q,
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: item.a,
-          },
-        })),
-      },
-    ],
-  };
-
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-    />
-  );
-}
-
 export default async function CruiseShipPage({
   params,
 }: {
@@ -152,13 +57,79 @@ export default async function CruiseShipPage({
   const shipSlug = slugifyCruiseRoute(shipTitle);
   const shipConfig = getShipAuthorityConfig(shipSlug);
   const specialtyLanes = getCruiseSpecialtyLanesForShip(shipSlug);
+  const faq = [
+    {
+      question: `How do I compare upcoming sailings for ${shipTitle}?`,
+      answer: `Use departure date, duration, and embark port together. Then compare price and availability before booking.`,
+    },
+    {
+      question: `Where can I find embark port details for ${shipTitle}?`,
+      answer: `Each sailing links to embark-port pages with schedule context and excursion planning.`,
+    },
+    {
+      question: `Should I book ${shipTitle} sailings early?`,
+      answer: `For high-demand dates and cabin classes, earlier booking usually improves inventory options and pricing stability.`,
+    },
+  ];
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-16 space-y-10">
       <JsonLd
-        shipTitle={shipTitle}
-        shipSlug={shipSlug}
-        sailings={payload.cruises}
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            buildArticleJsonLd({
+              path: `/cruises/ship/${shipSlug}`,
+              headline: `${shipTitle} Cruise Sailings`,
+              description:
+                "Cruise ship profile with upcoming sailings, route context, and booking links.",
+            }),
+            {
+              "@type": "Product",
+              name: shipTitle,
+              category: "Cruise Ship",
+              url: `${BASE_URL}/cruises/ship/${shipSlug}`,
+              offers:
+                typeof payload.cruises[0]?.starting_price?.amount === "number"
+                  ? {
+                      "@type": "Offer",
+                      price: payload.cruises[0].starting_price.amount,
+                      priceCurrency: payload.cruises[0].starting_price.currency || "USD",
+                    }
+                  : undefined,
+            },
+            {
+              "@type": "ItemList",
+              name: `${shipTitle} upcoming sailings`,
+              itemListElement: payload.cruises.slice(0, 24).map((sailing, idx) => ({
+                "@type": "ListItem",
+                position: idx + 1,
+                item: {
+                  "@type": "Trip",
+                  name: `${shipTitle} • ${fmtDate(sailing.departure_date)}`,
+                  departureTime: sailing.departure_date,
+                  provider: {
+                    "@type": "Organization",
+                    name: sailing.line,
+                  },
+                  offers:
+                    typeof sailing.starting_price?.amount === "number"
+                      ? {
+                          "@type": "Offer",
+                          price: sailing.starting_price.amount,
+                          priceCurrency: sailing.starting_price.currency || "USD",
+                        }
+                      : undefined,
+                },
+              })),
+            },
+            buildBreadcrumbJsonLd([
+              { name: "Cruises", item: "/cruises" },
+              { name: shipTitle, item: `/cruises/ship/${shipSlug}` },
+            ]),
+            buildFaqJsonLd(faq),
+          ],
+        }}
       />
       <header className="space-y-3 border-b border-white/10 pb-8">
         <p className="text-xs uppercase tracking-wider text-zinc-500">Cruise Ship View</p>

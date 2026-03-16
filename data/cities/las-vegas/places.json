@@ -1,0 +1,82 @@
+{
+  "city": "las-vegas",
+  "version": 1,
+  "as_of": "2026-03-15T18:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-14T18:00:00-07:00",
+  "schema": { "entity": "place", "description": "Durable social and discovery nodes for Las Vegas NOW." },
+  "places": [
+    {
+      "slug": "easy-donuts-and-coffee",
+      "name": "Easy Donuts and Coffee",
+      "place_type": "coffeehouse",
+      "category": "coffee-and-grab-go",
+      "address": "Aria campus, Las Vegas, NV 89158",
+      "lat": 36.1074,
+      "lng": -115.1762,
+      "district_slugs": ["resort-corridor"],
+      "tags": ["coffee", "quick-stop", "late-open"],
+      "quick_actions": ["directions"]
+    },
+    {
+      "slug": "brewdog-las-vegas",
+      "name": "BrewDog Las Vegas",
+      "place_type": "bar",
+      "category": "beer-rooftop-bar",
+      "address": "3767 S Las Vegas Blvd, Las Vegas, NV 89109",
+      "lat": 36.1088,
+      "lng": -115.1748,
+      "district_slugs": ["resort-corridor", "las-vegas-strip"],
+      "tags": ["beer", "rooftop", "pre-show"],
+      "quick_actions": ["menu", "directions"]
+    },
+    {
+      "slug": "bar-centra",
+      "name": "Bar Centro",
+      "place_type": "restaurant-bar",
+      "category": "cocktails-small-plates",
+      "address": "3730 S Las Vegas Blvd, Las Vegas, NV 89158",
+      "lat": 36.1071,
+      "lng": -115.1766,
+      "district_slugs": ["resort-corridor"],
+      "tags": ["cocktails", "pre-show", "walkable"],
+      "quick_actions": ["menu", "directions"]
+    },
+    {
+      "slug": "peppermill-restaurant",
+      "name": "Peppermill Restaurant",
+      "place_type": "restaurant-bar",
+      "category": "late-night-dining",
+      "address": "2985 S Las Vegas Blvd, Las Vegas, NV 89109",
+      "lat": 36.1323,
+      "lng": -115.1638,
+      "district_slugs": ["north-strip", "las-vegas-strip"],
+      "tags": ["late-night", "classic", "group-spot"],
+      "quick_actions": ["menu", "directions"]
+    },
+    {
+      "slug": "caspians-cocktails",
+      "name": "Caspian's Cocktails & Caviar",
+      "place_type": "bar",
+      "category": "cocktail-bar",
+      "address": "3000 S Las Vegas Blvd, Las Vegas, NV 89109",
+      "lat": 36.133,
+      "lng": -115.1639,
+      "district_slugs": ["north-strip"],
+      "tags": ["cocktails", "nightlife", "luxury"],
+      "quick_actions": ["directions"]
+    },
+    {
+      "slug": "resorts-world-dining-promenade",
+      "name": "Resorts World Dining Promenade",
+      "place_type": "food-hall",
+      "category": "food-hall-social",
+      "address": "3000 S Las Vegas Blvd, Las Vegas, NV 89109",
+      "lat": 36.1328,
+      "lng": -115.1637,
+      "district_slugs": ["north-strip", "las-vegas-strip"],
+      "tags": ["casual", "group-spot", "walkable"],
+      "quick_actions": ["directions"]
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "city": "new-orleans",
+  "version": 1,
+  "as_of": "2026-03-15T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-14T12:00:00-05:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable New Orleans live music and theater venues for city show discovery.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large format venue or event complex."
+    }
+  },
+  "venues": [
+    {
+      "slug": "smoothie-king-center",
+      "name": "Smoothie King Center",
+      "venue_type": "major-event-campus",
+      "category": "arena-concerts",
+      "address": "1501 Dave Dixon Dr, New Orleans, LA 70113",
+      "lat": 29.949,
+      "lng": -90.0821,
+      "impact_potential": "high",
+      "district_slugs": ["warehouse-district"],
+      "near_anchor_slugs": ["warehouse-arts-district"]
+    },
+    {
+      "slug": "saenger-theatre",
+      "name": "Saenger Theatre",
+      "venue_type": "event-venue",
+      "category": "historic-theater",
+      "address": "1111 Canal St, New Orleans, LA 70112",
+      "lat": 29.9565,
+      "lng": -90.0738,
+      "impact_potential": "high",
+      "district_slugs": ["canal-street"],
+      "near_anchor_slugs": ["french-quarter-stay"]
+    },
+    {
+      "slug": "fillmore-new-orleans",
+      "name": "The Fillmore New Orleans",
+      "venue_type": "event-venue",
+      "category": "live-music",
+      "address": "6 Canal St, New Orleans, LA 70130",
+      "lat": 29.951,
+      "lng": -90.0636,
+      "impact_potential": "medium",
+      "district_slugs": ["canal-street"],
+      "near_anchor_slugs": ["french-quarter-stay"]
+    },
+    {
+      "slug": "tipitinas",
+      "name": "Tipitina's",
+      "venue_type": "event-venue",
+      "category": "live-music-club",
+      "address": "501 Napoleon Ave, New Orleans, LA 70115",
+      "lat": 29.9213,
+      "lng": -90.1218,
+      "impact_potential": "medium",
+      "district_slugs": ["uptown-riverbend"],
+      "near_anchor_slugs": ["warehouse-arts-district"]
+    },
+    {
+      "slug": "howlin-wolf",
+      "name": "Howlin' Wolf",
+      "venue_type": "event-venue",
+      "category": "live-music-club",
+      "address": "907 S Peters St, New Orleans, LA 70130",
+      "lat": 29.9397,
+      "lng": -90.0661,
+      "impact_potential": "medium",
+      "district_slugs": ["warehouse-district"],
+      "near_anchor_slugs": ["warehouse-arts-district"]
+    },
+    {
+      "slug": "maple-leaf-bar",
+      "name": "Maple Leaf Bar",
+      "venue_type": "event-venue",
+      "category": "jazz-club",
+      "address": "8316 Oak St, New Orleans, LA 70118",
+      "lat": 29.9487,
+      "lng": -90.1305,
+      "impact_potential": "medium",
+      "district_slugs": ["uptown-riverbend"],
+      "near_anchor_slugs": ["warehouse-arts-district"]
+    }
+  ]
+}

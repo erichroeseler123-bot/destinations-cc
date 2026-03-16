@@ -1,0 +1,52 @@
+{
+  "city": "las-vegas",
+  "version": 1,
+  "as_of": "2026-03-15T18:00:00-07:00",
+  "ttl_seconds": 900,
+  "stale_after": "2026-03-15T18:15:00-07:00",
+  "schema": { "entity": "event", "description": "Ingested timed facts for the Las Vegas NOW layer." },
+  "events": [
+    {
+      "id": "evt-vegas-sphere-u2",
+      "slug": "u2-sphere-2026-03-15",
+      "title": "U2 at Sphere",
+      "venue_slug": "sphere",
+      "category": "concert",
+      "start_time": "2026-03-15T20:00:00-07:00",
+      "end_time": "2026-03-15T22:30:00-07:00",
+      "status": "starting_soon",
+      "impact_level": "high",
+      "attendance_band": "large",
+      "source": { "kind": "ticketing-feed", "external_id": "u2-sphere-2026-03-15" },
+      "description": "Large-format headline night drawing heavy rideshare pressure and late exits around the Sphere corridor."
+    },
+    {
+      "id": "evt-vegas-brooklyn-bowl-dj",
+      "slug": "late-night-dj-brooklyn-bowl-2026-03-15",
+      "title": "Late-Night DJ Set",
+      "venue_slug": "brooklyn-bowl-las-vegas",
+      "category": "live-music",
+      "start_time": "2026-03-15T22:00:00-07:00",
+      "end_time": "2026-03-16T01:00:00-07:00",
+      "status": "upcoming",
+      "impact_level": "medium",
+      "attendance_band": "moderate",
+      "source": { "kind": "venue-calendar", "external_id": "brooklyn-bowl-dj-2026-03-15" },
+      "description": "Nightlife-driven live music inventory on the north Strip with slower late-night pickup patterns."
+    },
+    {
+      "id": "evt-vegas-hob-show",
+      "slug": "house-of-blues-headline-2026-03-15",
+      "title": "House of Blues Headline Show",
+      "venue_slug": "house-of-blues-las-vegas",
+      "category": "concert",
+      "start_time": "2026-03-15T19:30:00-07:00",
+      "end_time": "2026-03-15T22:00:00-07:00",
+      "status": "starting_soon",
+      "impact_level": "medium",
+      "attendance_band": "moderate",
+      "source": { "kind": "venue-calendar", "external_id": "hob-headline-2026-03-15" },
+      "description": "Indoor concert inventory at Mandalay Bay where arrival timing matters more than distance."
+    }
+  ]
+}

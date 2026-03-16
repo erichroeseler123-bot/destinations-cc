@@ -1,0 +1,46 @@
+{
+  "slug": "new-orleans",
+  "display_name": "New Orleans",
+  "aliases": [
+    "new-orleans-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "French Quarter Walking Tour",
+      "description": "Explore the historic heart of New Orleans with local guides.",
+      "query": "French Quarter walking tour",
+      "badge": "Most Popular"
+    },
+    {
+      "title": "Garden District Tour",
+      "description": "Stroll past antebellum mansions and oak-lined streets.",
+      "query": "Garden District tour"
+    },
+    {
+      "title": "Swamp Airboat Tour",
+      "description": "See alligators and wetlands outside the city.",
+      "query": "swamp tour airboat",
+      "badge": "Top Rated"
+    },
+    {
+      "title": "Steamboat Natchez Jazz Cruise",
+      "description": "Mississippi River paddlewheel cruise.",
+      "query": "Steamboat Natchez jazz cruise",
+      "badge": "Best Seller"
+    },
+    {
+      "title": "Ghost / Voodoo / Vampire Tour",
+      "description": "Night tours through haunted French Quarter legends.",
+      "query": "ghost voodoo vampire walking tour",
+      "badge": "Night Pick"
+    },
+    {
+      "title": "Food & Cocktail Tour",
+      "description": "Taste gumbo, beignets, pralines, and cocktails.",
+      "query": "food and cocktail tour",
+      "badge": "High Conversion"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

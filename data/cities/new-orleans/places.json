@@ -1,0 +1,82 @@
+{
+  "city": "new-orleans",
+  "version": 1,
+  "as_of": "2026-03-15T18:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-14T18:00:00-05:00",
+  "schema": { "entity": "place", "description": "Durable social and discovery nodes for New Orleans NOW." },
+  "places": [
+    {
+      "slug": "cane-and-table",
+      "name": "Cane and Table",
+      "place_type": "restaurant-bar",
+      "category": "caribbean-cocktails",
+      "address": "1113 Decatur St, New Orleans, LA 70116",
+      "lat": 29.9583,
+      "lng": -90.0603,
+      "district_slugs": ["french-quarter"],
+      "tags": ["cocktails", "date-night", "pre-show"],
+      "quick_actions": ["menu", "directions"]
+    },
+    {
+      "slug": "jewel-of-the-south",
+      "name": "Jewel of the South",
+      "place_type": "bar",
+      "category": "cocktail-bar",
+      "address": "1026 St Louis St, New Orleans, LA 70112",
+      "lat": 29.9596,
+      "lng": -90.0687,
+      "district_slugs": ["french-quarter", "canal-street"],
+      "tags": ["cocktails", "late-night", "walkable"],
+      "quick_actions": ["directions"]
+    },
+    {
+      "slug": "frenchmen-food-window",
+      "name": "Frenchmen Food Window",
+      "place_type": "restaurant",
+      "category": "casual-bites",
+      "address": "Frenchmen St, New Orleans, LA 70116",
+      "lat": 29.964,
+      "lng": -90.0564,
+      "district_slugs": ["french-quarter"],
+      "tags": ["casual", "late-night", "walkable"],
+      "quick_actions": ["directions"]
+    },
+    {
+      "slug": "cochon-butcher",
+      "name": "Cochon Butcher",
+      "place_type": "restaurant",
+      "category": "sandwiches-and-beer",
+      "address": "930 Tchoupitoulas St, New Orleans, LA 70130",
+      "lat": 29.9436,
+      "lng": -90.0684,
+      "district_slugs": ["warehouse-district"],
+      "tags": ["casual", "pre-show", "group-spot"],
+      "quick_actions": ["menu", "directions"]
+    },
+    {
+      "slug": "bacchanal-wine",
+      "name": "Bacchanal Wine",
+      "place_type": "bar",
+      "category": "wine-and-live-music",
+      "address": "600 Poland Ave, New Orleans, LA 70117",
+      "lat": 29.9668,
+      "lng": -90.0438,
+      "district_slugs": ["warehouse-district", "uptown-riverbend"],
+      "tags": ["wine", "live-music", "nightlife"],
+      "quick_actions": ["directions"]
+    },
+    {
+      "slug": "maple-leaf-patio",
+      "name": "Maple Leaf Patio",
+      "place_type": "bar",
+      "category": "patio-bar",
+      "address": "8316 Oak St, New Orleans, LA 70118",
+      "lat": 29.9486,
+      "lng": -90.1304,
+      "district_slugs": ["uptown-riverbend"],
+      "tags": ["late-night", "music-first", "casual"],
+      "quick_actions": ["directions"]
+    }
+  ]
+}

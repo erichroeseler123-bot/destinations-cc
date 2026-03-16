@@ -1,0 +1,27 @@
+{
+  "slug": "lisbon",
+  "display_name": "Lisbon",
+  "aliases": [
+    "lisbon-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Lisbon City Highlights Tour",
+      "description": "A quick way to see the best of Lisbon with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "River Cruise",
+      "description": "Short scenic sailings and waterfront views along the Tagus.",
+      "query": "river cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for historic hills, plazas, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

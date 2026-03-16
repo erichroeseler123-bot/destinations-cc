@@ -1,0 +1,151 @@
+{
+  "slug": "new-orleans",
+  "name": "New Orleans",
+  "heroImage": "/images/new-orleans/hero.svg",
+  "heroImageAlt": "Warm evening street scene and balcony-lined architecture in New Orleans",
+  "heroImagePosition": "center center",
+  "heroTint": "warm",
+  "metadata": {
+    "title": "New Orleans Tours, Things to Do, Food, and Music Guide | Destination Command Center",
+    "description": "Discover New Orleans tours, things to do, food experiences, live music, neighborhoods, and trip ideas. Browse swamp tours, ghost tours, food tours, sightseeing, and more.",
+    "keywords": [
+      "new orleans tours",
+      "things to do in new orleans",
+      "new orleans attractions",
+      "new orleans food tours",
+      "new orleans music",
+      "new orleans sightseeing"
+    ]
+  },
+  "hero": {
+    "eyebrow": "New Orleans travel guide",
+    "title": "New Orleans tours, things to do, food, music, and neighborhood guides",
+    "summary": "Browse bookable New Orleans tours, discover neighborhoods worth your time, and plan around the city's live music, food, and cultural highlights.",
+    "trustLine": "Find tours, attractions, neighborhoods, live experiences, and trip ideas in New Orleans.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/new-orleans/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/new-orleans/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "swamp-tours",
+      "title": "Swamp Tours",
+      "description": "Airboat and bayou outings for wildlife, marsh scenery, and an easy half-day escape from the city.",
+      "icon": "🐊"
+    },
+    {
+      "slug": "ghost-tours",
+      "title": "Ghost Tours",
+      "description": "Night walks through haunted streets, historic buildings, and the city's darker legends.",
+      "icon": "👻"
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Creole classics, neighborhood bites, and local food stories beyond the obvious checklist stops.",
+      "icon": "🍤"
+    },
+    {
+      "slug": "jazz-tours",
+      "title": "Jazz & Music Experiences",
+      "description": "Live music walks, jazz history, and experiences built around the city's signature sound.",
+      "icon": "🎺"
+    }
+  ],
+  "topAttractions": [
+    {
+      "slug": "french-quarter",
+      "title": "French Quarter",
+      "description": "Historic streets, classic architecture, and the city's best-known walking district."
+    },
+    {
+      "slug": "garden-district",
+      "title": "Garden District",
+      "description": "Tree-lined blocks, historic homes, and a slower daytime pace."
+    },
+    {
+      "slug": "frenchmen-street",
+      "title": "Frenchmen Street",
+      "description": "Music-first nights, jazz clubs, and a more local-feeling nightlife corridor."
+    },
+    {
+      "slug": "jackson-square",
+      "title": "Jackson Square",
+      "description": "An iconic public square that anchors many first French Quarter walks."
+    },
+    {
+      "slug": "bourbon-street",
+      "title": "Bourbon Street",
+      "description": ""
+    },
+    {
+      "slug": "national-wwii-museum",
+      "title": "The National WWII Museum",
+      "description": ""
+    }
+  ],
+  "featuredTours": {
+    "title": "Popular New Orleans experiences",
+    "description": "Popular guided experiences and bookable activities for visitors planning around the city's food, music, neighborhoods, and day trips.",
+    "fallbackQueries": [
+      "new orleans swamp tour",
+      "new orleans ghost tour",
+      "new orleans food tour",
+      "new orleans jazz tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Best time to visit",
+      "description": "Weather, festivals, and peak-demand seasons that affect pricing and planning.",
+      "href": "/new-orleans/weekend-guide"
+    },
+    {
+      "title": "First-time visitor guide",
+      "description": "How to structure a first New Orleans trip without wasting your best time blocks.",
+      "href": "/new-orleans/things-to-do"
+    },
+    {
+      "title": "What to do this weekend",
+      "description": "A practical starting point for music, tours, and event-driven weekends.",
+      "href": "/new-orleans/weekend-guide"
+    },
+    {
+      "title": "Family-friendly New Orleans",
+      "description": "Low-stress attractions, daytime activities, and tours that work for mixed-age groups.",
+      "href": "/new-orleans/family-friendly"
+    },
+    {
+      "title": "Food and drink guide",
+      "description": "Neighborhood eating, classic dishes, cocktail stops, and food-tour angles.",
+      "href": "/new-orleans/food"
+    },
+    {
+      "title": "Music and nightlife guide",
+      "description": "Frenchmen Street, clubs, jazz rooms, and how to plan a music-first night.",
+      "href": "/new-orleans/music"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in New Orleans for first-time visitors?",
+      "a": "Many first-time visitors start with a French Quarter walk, a food tour, a jazz or music experience, and one swamp or bayou tour to balance city culture with Louisiana landscapes."
+    },
+    {
+      "q": "How many days do you need in New Orleans?",
+      "a": "A strong first trip is 3 to 4 days. That gives you time for the French Quarter, at least one neighborhood beyond downtown, a food or music experience, and one day tour or swamp excursion."
+    },
+    {
+      "q": "What area should first-time visitors stay in?",
+      "a": "Many first-time visitors stay near the French Quarter, Warehouse District, or CBD so they can walk to major sights and keep late-night music, dining, and tour departures simple."
+    }
+  ],
+  "coordinates": {
+    "lat": 29.9511,
+    "lng": -90.0715
+  },
+  "timezone": "America/Chicago",
+  "lat": 29.9511,
+  "lng": -90.0715
+}

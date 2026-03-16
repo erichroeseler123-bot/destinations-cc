@@ -1,0 +1,51 @@
+{
+  "slug": "las-vegas",
+  "display_name": "Las Vegas",
+  "aliases": [
+    "vegas-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Hoover Dam",
+      "description": "Visit one of America’s greatest engineering landmarks just outside Las Vegas.",
+      "query": "Hoover Dam Tour",
+      "badge": "Iconic"
+    },
+    {
+      "title": "Sphere Experience",
+      "description": "Immersive concerts and digital experiences inside the world’s largest spherical venue.",
+      "query": "Las Vegas Sphere Experience",
+      "badge": "New"
+    },
+    {
+      "title": "Stratosphere Tower",
+      "description": "Sky-high observation deck and thrill rides overlooking the Strip.",
+      "query": "Stratosphere Tower SkyJump Observation Deck"
+    },
+    {
+      "title": "Fremont Street",
+      "description": "Historic downtown Las Vegas with live music and the LED canopy.",
+      "query": "Fremont Street Experience Tour"
+    },
+    {
+      "title": "Grand Canyon",
+      "description": "Full-day guided trips to the Grand Canyon from Las Vegas.",
+      "query": "Grand Canyon Day Trip from Las Vegas",
+      "badge": "Best Seller"
+    },
+    {
+      "title": "Antelope Canyon",
+      "description": "Guided tours through iconic slot canyons in Arizona.",
+      "query": "Antelope Canyon Tour from Las Vegas",
+      "badge": "Top Rated"
+    },
+    {
+      "title": "Helicopter Night Flight",
+      "description": "Scenic night helicopter flights over the Las Vegas Strip.",
+      "query": "Las Vegas Helicopter Night Flight",
+      "badge": "Bestseller"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

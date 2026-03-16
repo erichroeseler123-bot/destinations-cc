@@ -1,0 +1,323 @@
+{
+  "citySlug": "los-angeles",
+  "cityName": "Los Angeles",
+  "attractions": [
+    {
+      "slug": "hollywood-sign",
+      "name": "Hollywood Sign",
+      "type": "landmark",
+      "summary": "Hollywood Sign is one of the more recognizable visitor stops in Los Angeles and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "landmark",
+        "sightseeing"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Hollywood Sign guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Hollywood Sign in Los Angeles, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Hollywood Sign as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Hollywood Sign guided experiences",
+          "query": "los angeles hollywood sign tours",
+          "description": "A general search path for tours and guided experiences connected to Hollywood Sign in Los Angeles."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Griffith Observatory",
+          "href": "/los-angeles/griffith-observatory"
+        },
+        {
+          "label": "Santa Monica Pier",
+          "href": "/los-angeles/santa-monica-pier"
+        },
+        {
+          "label": "The Getty Center",
+          "href": "/los-angeles/the-getty-center"
+        }
+      ],
+      "primaryToursHref": "/los-angeles/hollywood-sign/tours",
+      "thingsToDoHref": "/los-angeles/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Griffith Observatory",
+        "Santa Monica Pier"
+      ]
+    },
+    {
+      "slug": "griffith-observatory",
+      "name": "Griffith Observatory",
+      "type": "landmark",
+      "summary": "Griffith Observatory is one of the more recognizable visitor stops in Los Angeles and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "landmark",
+        "views",
+        "family"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Griffith Observatory guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Griffith Observatory in Los Angeles, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "This area works well for visitors trying to keep a mixed-age itinerary simple.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Griffith Observatory as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Griffith Observatory guided experiences",
+          "query": "los angeles griffith observatory tours",
+          "description": "A general search path for tours and guided experiences connected to Griffith Observatory in Los Angeles."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Hollywood Sign",
+          "href": "/los-angeles/hollywood-sign"
+        },
+        {
+          "label": "Santa Monica Pier",
+          "href": "/los-angeles/santa-monica-pier"
+        },
+        {
+          "label": "The Getty Center",
+          "href": "/los-angeles/the-getty-center"
+        }
+      ],
+      "primaryToursHref": "/los-angeles/griffith-observatory/tours",
+      "thingsToDoHref": "/los-angeles/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Hollywood Sign",
+        "Santa Monica Pier"
+      ]
+    },
+    {
+      "slug": "santa-monica-pier",
+      "name": "Santa Monica Pier",
+      "type": "pier",
+      "summary": "Santa Monica Pier is one of the more recognizable visitor stops in Los Angeles and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "beach",
+        "family",
+        "sightseeing"
+      ],
+      "priority": 90,
+      "featured": true,
+      "heroTitle": "Santa Monica Pier guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Santa Monica Pier in Los Angeles, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "This area works well for visitors trying to keep a mixed-age itinerary simple.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Santa Monica Pier as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Santa Monica Pier guided experiences",
+          "query": "los angeles santa monica pier tours",
+          "description": "A general search path for tours and guided experiences connected to Santa Monica Pier in Los Angeles."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Hollywood Sign",
+          "href": "/los-angeles/hollywood-sign"
+        },
+        {
+          "label": "Griffith Observatory",
+          "href": "/los-angeles/griffith-observatory"
+        },
+        {
+          "label": "The Getty Center",
+          "href": "/los-angeles/the-getty-center"
+        }
+      ],
+      "primaryToursHref": "/los-angeles/santa-monica-pier/tours",
+      "thingsToDoHref": "/los-angeles/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Hollywood Sign",
+        "Griffith Observatory"
+      ]
+    },
+    {
+      "slug": "the-getty-center",
+      "name": "The Getty Center",
+      "type": "museum",
+      "summary": "The Getty Center is one of the more recognizable visitor stops in Los Angeles and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "museum",
+        "culture",
+        "views"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "The Getty Center guide, things to do, and local tours",
+      "heroSummary": "Planning guide for The Getty Center in Los Angeles, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use The Getty Center as one clear stop within a broader city day instead of overbuilding your itinerary around it."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan The Getty Center as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "The Getty Center guided experiences",
+          "query": "los angeles the getty center tours",
+          "description": "A general search path for tours and guided experiences connected to The Getty Center in Los Angeles."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Hollywood Sign",
+          "href": "/los-angeles/hollywood-sign"
+        },
+        {
+          "label": "Griffith Observatory",
+          "href": "/los-angeles/griffith-observatory"
+        },
+        {
+          "label": "Santa Monica Pier",
+          "href": "/los-angeles/santa-monica-pier"
+        }
+      ],
+      "primaryToursHref": "/los-angeles/the-getty-center/tours",
+      "thingsToDoHref": "/los-angeles/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Hollywood Sign",
+        "Griffith Observatory"
+      ]
+    },
+    {
+      "slug": "venice-beach",
+      "name": "Venice Beach",
+      "type": "waterfront",
+      "summary": "Venice Beach is one of the more useful waterfront areas in Los Angeles for visitors planning around walking, views, and a lighter sightseeing pace.",
+      "categories": [
+        "beach",
+        "walks",
+        "sightseeing"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Venice Beach guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Venice Beach in Los Angeles, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Venice Beach for a walkable waterfront block with time for views, food, or an easier sightseeing pace.",
+        "Pair Venice Beach with one nearby district or attraction instead of treating the waterfront as the whole day.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Venice Beach as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Waterfront areas usually work best as part of a slower sightseeing window instead of a tightly scheduled day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Venice Beach waterfront tours",
+          "query": "los angeles venice beach waterfront tour",
+          "description": "Helpful when the waterfront fits naturally into a sightseeing or walking-focused city plan."
+        },
+        {
+          "label": "Venice Beach guided experiences",
+          "query": "los angeles venice beach tours",
+          "description": "A general search path for tours and guided experiences connected to Venice Beach in Los Angeles."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Hollywood Sign",
+          "href": "/los-angeles/hollywood-sign"
+        },
+        {
+          "label": "Griffith Observatory",
+          "href": "/los-angeles/griffith-observatory"
+        },
+        {
+          "label": "Santa Monica Pier",
+          "href": "/los-angeles/santa-monica-pier"
+        }
+      ],
+      "primaryToursHref": "/los-angeles/venice-beach/tours",
+      "thingsToDoHref": "/los-angeles/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Hollywood Sign",
+        "Griffith Observatory"
+      ]
+    },
+    {
+      "slug": "rodeo-drive",
+      "name": "Rodeo Drive",
+      "type": "shopping-district",
+      "summary": "Rodeo Drive is a useful district to understand early if you want a clearer feel for how visitors actually spend time in Los Angeles.",
+      "categories": [
+        "shopping",
+        "luxury",
+        "sightseeing"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Rodeo Drive guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Rodeo Drive in Los Angeles, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Walk Rodeo Drive with one clear purpose, such as food, music, shopping, or evening atmosphere.",
+        "Treat Rodeo Drive as a time block rather than a quick pass-through if it is one of the main reasons for the trip.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Rodeo Drive as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Districts usually feel stronger when you decide whether the point is food, shopping, nightlife, or a general walk before you arrive."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Rodeo Drive neighborhood tours",
+          "query": "los angeles rodeo drive neighborhood tour",
+          "description": "Helpful when Rodeo Drive is better experienced as part of a larger district walk or evening plan."
+        },
+        {
+          "label": "Rodeo Drive guided experiences",
+          "query": "los angeles rodeo drive tours",
+          "description": "A general search path for tours and guided experiences connected to Rodeo Drive in Los Angeles."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Hollywood Sign",
+          "href": "/los-angeles/hollywood-sign"
+        },
+        {
+          "label": "Griffith Observatory",
+          "href": "/los-angeles/griffith-observatory"
+        },
+        {
+          "label": "Santa Monica Pier",
+          "href": "/los-angeles/santa-monica-pier"
+        }
+      ],
+      "primaryToursHref": "/los-angeles/rodeo-drive/tours",
+      "thingsToDoHref": "/los-angeles/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Hollywood Sign",
+        "Griffith Observatory"
+      ]
+    }
+  ]
+}

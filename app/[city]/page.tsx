@@ -3,18 +3,28 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import AdventureLaneSection from "@/app/components/dcc/AdventureLaneSection";
 import CinematicBackdrop from "@/app/components/dcc/CinematicBackdrop";
-import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
 import CityToursSection from "@/app/components/dcc/CityToursSection";
 import CityMoneyLaneSection from "@/app/components/dcc/CityMoneyLaneSection";
 import CityLiveEventsSection from "@/app/components/dcc/CityLiveEventsSection";
 import CitySportsSection from "@/app/components/dcc/CitySportsSection";
 import DecisionEngineTemplate from "@/app/components/dcc/DecisionEngineTemplate";
+import ManifestCityHubPage from "@/app/components/dcc/ManifestCityHubPage";
+import CityHero from "@/app/components/dcc/CityHero";
+import CityTimePanel from "@/app/components/dcc/CityTimePanel";
+import WeatherPanel from "@/app/components/dcc/WeatherPanel";
+import { getCityBySlug } from "@/lib/data/locations";
 import { getCityAdventureLane } from "@/src/data/city-adventure-lanes";
 import { getCityMoneyLane } from "@/src/data/city-money-lanes";
 import { getCityAuthorityConfig } from "@/src/data/city-authority-config";
 import { getDecisionEnginePageByPath } from "@/src/data/decision-engine-pages";
 import { getTeamsByCity } from "@/src/data/sports-teams-config";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
+import { getCityManifest } from "@/lib/dcc/manifests/cityExpansion";
+import JsonLd from "@/app/components/dcc/JsonLd";
+import {
+  buildBreadcrumbJsonLd,
+  buildCityJsonLd,
+} from "@/lib/dcc/jsonld";
 
 type Params = { city: string };
 
@@ -48,67 +58,36 @@ function SectionCard({
   return (
     <Link
       href={href}
-      className="rounded-2xl border border-white/10 bg-white/[0.06] p-6 shadow-[0_10px_40px_rgba(0,0,0,0.55)] backdrop-blur-md hover:bg-white/[0.09] transition"
+      className="rounded-[26px] border border-white/10 bg-[#0b1224] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.35)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_80px_rgba(0,0,0,0.42)]"
     >
-      <div className="text-lg font-bold bg-gradient-to-r from-cyan-200 to-emerald-200 bg-clip-text text-transparent">
-        {title}
-      </div>
-      <p className="mt-2 text-sm text-zinc-300">{desc}</p>
-      <div className="mt-4 text-sm text-zinc-200">Explore →</div>
+      <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#ffb07c]">Destination lane</div>
+      <div className="mt-3 text-xl font-black uppercase tracking-[-0.03em] text-white">{title}</div>
+      <p className="mt-3 text-sm leading-6 text-white/70">{desc}</p>
+      <div className="mt-5 text-sm font-bold text-[#3df3ff]">Explore →</div>
     </Link>
   );
-}
-
-function CityJsonLd({
-  city,
-  cityName,
-  description,
-  faq,
-  touristType,
-}: {
-  city: string;
-  cityName: string;
-  description: string;
-  faq: Array<{ q: string; a: string }>;
-  touristType: string[];
-}) {
-  const pageUrl = `https://destinationcommandcenter.com/${city}`;
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": pageUrl,
-        url: pageUrl,
-        name: `${cityName} Travel Guide`,
-        description,
-      },
-      {
-        "@type": "TouristDestination",
-        name: cityName,
-        url: pageUrl,
-        touristType,
-      },
-      {
-        "@type": "FAQPage",
-        mainEntity: faq.map((item) => ({
-          "@type": "Question",
-          name: item.q,
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: item.a,
-          },
-        })),
-      },
-    ],
-  };
-
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { city } = await params;
   const cityKey = (city || "").toLowerCase();
+  const manifest = getCityManifest(cityKey);
+  if (manifest) {
+    return {
+      title: manifest.metadata?.title || `${manifest.name} Travel Guide | Destination Command Center`,
+      description:
+        manifest.metadata?.description || `Discover tours, attractions, and trip-planning ideas in ${manifest.name}.`,
+      keywords: manifest.metadata?.keywords,
+      alternates: { canonical: `/${cityKey}` },
+      openGraph: {
+        title: manifest.metadata?.title || `${manifest.name} Travel Guide`,
+        description:
+          manifest.metadata?.description || `Discover tours, attractions, and trip-planning ideas in ${manifest.name}.`,
+        url: `https://destinationcommandcenter.com/${cityKey}`,
+        type: "website",
+      },
+    };
+  }
   const config = getCityAuthorityConfig(cityKey);
   const cityName = prettyCity(cityKey);
 
@@ -142,6 +121,67 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
 
   const cityKey = city.toLowerCase();
   const cityName = prettyCity(cityKey);
+  const manifest = getCityManifest(cityKey);
+  const cityNode = getCityBySlug(cityKey);
+  const fallbackTimezone = cityNode?.tz;
+  const fallbackLat = cityNode?.geo?.lat;
+  const fallbackLng = cityNode?.geo?.lon;
+  if (manifest) {
+    const viatorAction = await getViatorActionForPlace({
+      slug: cityKey,
+      name: manifest.name,
+      citySlug: cityKey,
+    });
+
+    return (
+      <>
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@graph": [
+              buildCityJsonLd({
+                path: `/${cityKey}`,
+                name: manifest.name,
+                description:
+                  manifest.metadata?.description ||
+                  `Discover tours, attractions, and trip-planning ideas in ${manifest.name}.`,
+                address: {
+                  locality: manifest.name,
+                  country: "US",
+                },
+                geo: {
+                  lat: manifest.lat ?? manifest.coordinates?.lat,
+                  lng: manifest.lng ?? manifest.coordinates?.lng,
+                },
+                touristTypes: ["City-break travelers", "Experience-focused travelers"],
+              }),
+              buildBreadcrumbJsonLd([
+                { name: "Home", item: "/" },
+                { name: manifest.name, item: `/${cityKey}` },
+              ]),
+              ...(manifest.faq?.length
+                ? [
+                    {
+                      "@context": "https://schema.org",
+                      "@type": "FAQPage",
+                      mainEntity: manifest.faq.map((item) => ({
+                        "@type": "Question",
+                        name: item.q,
+                        acceptedAnswer: {
+                          "@type": "Answer",
+                          text: item.a,
+                        },
+                      })),
+                    },
+                  ]
+                : []),
+            ],
+          }}
+        />
+        <ManifestCityHubPage manifest={manifest} products={viatorAction.products} />
+      </>
+    );
+  }
   const config = getCityAuthorityConfig(cityKey);
   const moneyLane = getCityMoneyLane(cityKey);
   const adventureLane = getCityAdventureLane(cityKey);
@@ -167,21 +207,75 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
     return (
       <main className="relative min-h-screen overflow-hidden bg-zinc-950 text-white">
         <CinematicBackdrop />
-        <CityJsonLd
-          city={cityKey}
-          cityName={config.cityName}
-          description={config.seoDescription}
-          faq={config.faq}
-          touristType={config.structuredDataHints || ["City travelers"]}
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@graph": [
+              buildCityJsonLd({
+                path: config.canonicalPath,
+                name: config.cityName,
+                description: config.seoDescription,
+                address: {
+                  locality: config.cityName,
+                  country: "US",
+                },
+                touristTypes: config.structuredDataHints || ["City travelers"],
+              }),
+              buildBreadcrumbJsonLd([
+                { name: "Home", item: "/" },
+                { name: config.cityName, item: config.canonicalPath },
+              ]),
+              {
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                mainEntity: config.faq.map((item) => ({
+                  "@type": "Question",
+                  name: item.q,
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: item.a,
+                  },
+                })),
+              },
+            ],
+          }}
         />
-        <div className="relative mx-auto max-w-5xl px-6 py-16 space-y-8">
-          <header className="space-y-3">
-            <RouteHeroMark eyebrow="Destination Command Center" title={`${config.cityName.toUpperCase()} ROUTE NODE`} tone={tone} />
-            <p className="dcc-hero-enter dcc-hero-enter-2 text-xs uppercase tracking-[0.22em] text-zinc-400">DCC Destination Layer</p>
-            <h1 className="dcc-hero-enter dcc-hero-enter-3 text-4xl font-black tracking-tight md:text-6xl">{config.heroTitle}</h1>
-            <p className="dcc-hero-enter dcc-hero-enter-4 max-w-3xl text-zinc-300">{config.heroDescription}</p>
-            <p className="dcc-hero-enter dcc-hero-enter-4 text-xs text-zinc-400">{config.trustLine}</p>
-          </header>
+        <div className="relative mx-auto flex max-w-[1440px] flex-col gap-8 px-4 pb-14 pt-10 sm:px-6 lg:px-8">
+          <CityHero
+            cityName={config.cityName}
+            eyebrow={`${config.cityName} travel guide`}
+            title={config.heroTitle}
+            summary={config.heroDescription}
+            trustLine={config.trustLine}
+            primaryCtaLabel="Browse Tours"
+            primaryCtaHref={`/${cityKey}/tours`}
+            secondaryCtaLabel="Explore Things to Do"
+            secondaryCtaHref={`/${cityKey}/things-to-do`}
+            heroTint={tone === "amber" ? "warm" : "cool"}
+            timezone={fallbackTimezone}
+            weatherLat={fallbackLat}
+            weatherLng={fallbackLng}
+          />
+
+          {(fallbackTimezone || (typeof fallbackLat === "number" && typeof fallbackLng === "number")) ? (
+            <section className="rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,13,26,0.96),rgba(6,9,18,0.96))] p-6 sm:p-8">
+              <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#8fd0ff]">
+                Local Intel
+              </div>
+              <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] sm:text-3xl">
+                Local time, timezone, and current conditions
+              </h2>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-white/70">
+                Start with the local clock and weather before locking in tours, shows, or same-day logistics around {config.cityName}.
+              </p>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                {fallbackTimezone ? <CityTimePanel cityName={config.cityName} timezone={fallbackTimezone} showWeekday /> : null}
+                {typeof fallbackLat === "number" && typeof fallbackLng === "number" ? (
+                  <WeatherPanel locationLabel={config.cityName} lat={fallbackLat} lng={fallbackLng} />
+                ) : null}
+              </div>
+            </section>
+          ) : null}
 
           {decisionPage ? <DecisionEngineTemplate page={decisionPage} /> : null}
 
@@ -192,12 +286,20 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
             fallbacks={cityTourFallbacks}
           />
 
-          <section className="grid gap-3 sm:grid-cols-2">
-            {config.pillars.map((item) => (
-              <div key={item} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-zinc-200">
-                {item}
-              </div>
-            ))}
+          <section className="rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(17,11,18,0.96),rgba(10,9,20,0.96))] p-6 sm:p-8">
+            <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#ffb07c]">
+              City fundamentals
+            </div>
+            <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] sm:text-3xl">
+              Build the day around the real trip shape
+            </h2>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {config.pillars.map((item) => (
+                <div key={item} className="rounded-[24px] border border-white/10 bg-[#0b1224] p-5 text-white/82">
+                  {item}
+                </div>
+              ))}
+            </div>
           </section>
 
           {moneyLane ? <CityMoneyLaneSection config={moneyLane} tone={cityKey === "nashville" ? "amber" : "cyan"} /> : null}
@@ -214,28 +316,31 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
             festivals={config.festivals}
           />
 
-          <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
-            <h2 className="text-2xl font-bold">{config.cityName} FAQ</h2>
+          <section className="rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,13,24,0.98),rgba(6,9,18,0.98))] p-6 sm:p-8">
+            <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#8fd0ff]">FAQ</div>
+            <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em]">{config.cityName} FAQ</h2>
             <div className="mt-4 space-y-3">
               {config.faq.map((item) => (
-                <article key={item.q} className="rounded-xl border border-white/10 bg-black/20 p-4">
-                  <h3 className="font-semibold">{item.q}</h3>
-                  <p className="mt-2 text-sm text-zinc-300">{item.a}</p>
+                <article key={item.q} className="rounded-[24px] border border-white/10 bg-[#0b1224] p-5">
+                  <h3 className="font-black uppercase tracking-[-0.02em] text-white">{item.q}</h3>
+                  <p className="mt-3 text-sm leading-6 text-white/70">{item.a}</p>
                 </article>
               ))}
             </div>
           </section>
 
-          <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
-            <h2 className="text-2xl font-bold">Linked Authority Pages</h2>
+          <section className="rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(9,15,31,0.96),rgba(7,11,25,0.96))] p-6 sm:p-8">
+            <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#8fd0ff]">Linked Pages</div>
+            <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em]">Linked Authority Pages</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {config.linkedPages.map((item) => (
                 <Link
                   key={`${item.href}-${item.label}`}
                   href={item.href}
-                  className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-zinc-200 hover:bg-white/10"
+                  className="rounded-[24px] border border-white/10 bg-[#0b1224] px-5 py-4 text-white/82 transition hover:bg-white/10"
                 >
-                  {item.label} Link
+                  <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#ffb07c]">Authority link</div>
+                  <div className="mt-2 font-black uppercase tracking-[-0.02em]">{item.label}</div>
                 </Link>
               ))}
             </div>
@@ -248,49 +353,73 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
   return (
     <main className="relative min-h-screen overflow-hidden bg-zinc-950 text-white">
       <CinematicBackdrop />
-      <div className="relative max-w-6xl mx-auto px-6 py-12">
-        <RouteHeroMark eyebrow="Destination Command Center" title={`${cityName.toUpperCase()} CITY NODE`} tone="emerald" />
-        <div className="dcc-hero-enter dcc-hero-enter-2 text-xs tracking-[0.35em] uppercase text-zinc-500">
-          Destination Command Center • City node
-        </div>
+      <div className="relative mx-auto flex max-w-[1440px] flex-col gap-8 px-4 pb-14 pt-10 sm:px-6 lg:px-8">
+        <CityHero
+          cityName={cityName}
+          eyebrow={`${cityName} travel guide`}
+          title={`${cityName} tours, attractions, and trip planning`}
+          summary={`Use this city hub to move into tours, attractions, day trips, and practical travel planning for ${cityName}.`}
+          primaryCtaLabel="Browse Tours"
+          primaryCtaHref={`/${cityKey}/tours`}
+          secondaryCtaLabel="Explore Attractions"
+          secondaryCtaHref={`/${cityKey}/attractions`}
+          heroTint="emerald"
+          timezone={fallbackTimezone}
+          weatherLat={fallbackLat}
+          weatherLng={fallbackLng}
+        />
 
-        <h1 className="dcc-hero-enter dcc-hero-enter-3 mt-4 text-4xl md:text-6xl font-black leading-[0.95] bg-gradient-to-r from-white via-cyan-100 to-emerald-100 bg-clip-text text-transparent">
-          {cityName}
-        </h1>
-
-        <p className="dcc-hero-enter dcc-hero-enter-4 mt-4 max-w-2xl text-zinc-300">
-          Your hub for tours, attractions, day trips, and high-signal logistics. This page is designed to route you to
-          the right decision page fast.
-        </p>
-
-        {decisionPage ? (
-          <div className="mt-8">
-            <DecisionEngineTemplate page={decisionPage} />
-          </div>
+        {(fallbackTimezone || (typeof fallbackLat === "number" && typeof fallbackLng === "number")) ? (
+          <section className="rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,13,26,0.96),rgba(6,9,18,0.96))] p-6 sm:p-8">
+            <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#8fd0ff]">
+              Local Intel
+            </div>
+            <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] sm:text-3xl">
+              Local time, timezone, and current conditions
+            </h2>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {fallbackTimezone ? <CityTimePanel cityName={cityName} timezone={fallbackTimezone} showWeekday /> : null}
+              {typeof fallbackLat === "number" && typeof fallbackLng === "number" ? (
+                <WeatherPanel locationLabel={cityName} lat={fallbackLat} lng={fallbackLng} />
+              ) : null}
+            </div>
+          </section>
         ) : null}
 
-        <div className="mt-8">
-          <CityToursSection
-            cityKey={cityKey}
-            cityName={cityName}
-            products={viatorAction.products}
-            fallbacks={cityTourFallbacks}
-          />
-        </div>
+        {decisionPage ? <DecisionEngineTemplate page={decisionPage} /> : null}
 
-        <div className="mt-8 flex flex-wrap gap-2">
+        <CityToursSection
+          cityKey={cityKey}
+          cityName={cityName}
+          products={viatorAction.products}
+          fallbacks={cityTourFallbacks}
+        />
+
+        <section className="rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(17,11,18,0.96),rgba(10,9,20,0.96))] p-6 sm:p-8">
+        <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#ffb07c]">
+          Quick routes
+        </div>
+        <div className="mt-5 flex flex-wrap gap-2">
           <Link
-            className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-sm text-zinc-200 hover:bg-white/10"
+            className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-zinc-200 hover:bg-white/10"
             href={`/cities?q=${encodeURIComponent(cityKey)}`}
           >
             Search cities
           </Link>
-          <Link className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-sm text-zinc-200 hover:bg-white/10" href="/authority">
+          <Link className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-zinc-200 hover:bg-white/10" href="/authority">
             Authority hub
           </Link>
         </div>
+        </section>
 
-        <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <section className="rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(9,15,31,0.96),rgba(7,11,25,0.96))] p-6 sm:p-8">
+        <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#8fd0ff]">
+          Destination lanes
+        </div>
+        <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] sm:text-3xl">
+          Move into the right part of the trip
+        </h2>
+        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           <SectionCard href={`/${cityKey}/tours`} title="Tours" desc="High-demand tours by category with clear intent and booking paths." />
           <SectionCard href={`/${cityKey}/attractions`} title="Attractions" desc="Landmarks, must-dos, and quick-hit experiences — curated for time." />
           <SectionCard href={`/${cityKey}/day-trips`} title="Day trips" desc="Best escapes within a practical radius — with timing buffers." />
@@ -298,28 +427,25 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
           <SectionCard href={`/${cityKey}/helicopter`} title="Helicopter" desc="Aerial experiences and scenic flights (when available)." />
           <SectionCard href="/authority" title="Decision + logistics" desc="Weather, timing, pickup patterns, and failure modes that ruin trips." />
         </div>
+        </section>
 
-        {sportsTeams.length ? (
-          <div className="mt-10">
-            <CitySportsSection cityName={cityName} citySlug={cityKey} teams={sportsTeams} />
-          </div>
-        ) : null}
+        {sportsTeams.length ? <CitySportsSection cityName={cityName} citySlug={cityKey} teams={sportsTeams} /> : null}
 
         {(cityKey === "denver" || cityKey === "idaho-springs" || cityKey === "morrison") && (
-          <div className="mt-12 rounded-2xl border border-white/10 bg-black/30 p-6">
-            <div className="text-xs uppercase tracking-widest text-zinc-400">Colorado micro-routes</div>
+          <section className="rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,13,24,0.98),rgba(6,9,18,0.98))] p-6 sm:p-8">
+            <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#8fd0ff]">Colorado micro-routes</div>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Link className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-sm text-zinc-200 hover:bg-white/10" href="/mighty-argo-shuttle">
+              <Link className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-zinc-200 hover:bg-white/10" href="/mighty-argo-shuttle">
                 Argo mine tour shuttle from Denver
               </Link>
-              <Link className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-sm text-zinc-200 hover:bg-white/10" href="/mighty-argo">
+              <Link className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-zinc-200 hover:bg-white/10" href="/mighty-argo">
                 Mighty Argo Guide
               </Link>
-              <Link className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-sm text-zinc-200 hover:bg-white/10" href="/regions/colorado">
+              <Link className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-zinc-200 hover:bg-white/10" href="/regions/colorado">
                 Colorado region
               </Link>
             </div>
-          </div>
+          </section>
         )}
       </div>
     </main>

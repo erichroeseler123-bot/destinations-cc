@@ -1,0 +1,85 @@
+{
+  "city": "denver",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-06:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-06:00",
+  "schema": {
+    "entity": "anchor",
+    "description": "Resident origin nodes used for personalization, distance calculations, and local context. Anchors are durable inventory, not live state."
+  },
+  "anchors": [
+    {
+      "slug": "spire",
+      "name": "The Spire Denver",
+      "anchor_type": "residential-tower",
+      "address": "891 14th St, Denver, CO 80202",
+      "lat": 39.7439,
+      "lng": -104.9922,
+      "default_walk_radius_m": 1600,
+      "district_slugs": ["downtown-core", "theater-district"],
+      "nearby_venue_slugs": ["denver-performing-arts-complex", "paramount-theatre", "comedy-works-downtown", "larimer-square", "ball-arena", "union-station", "colorado-convention-center"],
+      "nearby_place_slugs": ["guard-and-grace", "union-lodge-no-1", "the-corner-office", "rioja", "tavernetta"]
+    },
+    {
+      "slug": "brooks-tower",
+      "name": "Brooks Tower",
+      "anchor_type": "residential-tower",
+      "address": "1020 15th St, Denver, CO 80202",
+      "lat": 39.7428,
+      "lng": -104.996,
+      "default_walk_radius_m": 1400,
+      "district_slugs": ["downtown-core", "theater-district"],
+      "nearby_venue_slugs": ["denver-performing-arts-complex", "paramount-theatre", "comedy-works-downtown", "larimer-square", "ball-arena", "colorado-convention-center"],
+      "nearby_place_slugs": ["guard-and-grace", "union-lodge-no-1", "the-corner-office", "rioja", "tavernetta"]
+    },
+    {
+      "slug": "four-seasons-denver",
+      "name": "Four Seasons Hotel & Residences Denver",
+      "anchor_type": "hotel-residential",
+      "address": "1111 14th St, Denver, CO 80202",
+      "lat": 39.7445,
+      "lng": -104.995,
+      "default_walk_radius_m": 1400,
+      "district_slugs": ["downtown-core", "theater-district"],
+      "nearby_venue_slugs": ["denver-performing-arts-complex", "paramount-theatre", "comedy-works-downtown", "larimer-square", "ball-arena", "colorado-convention-center"],
+      "nearby_place_slugs": ["guard-and-grace", "the-corner-office", "rioja", "tavernetta", "union-lodge-no-1"]
+    },
+    {
+      "slug": "ritz-carlton-denver",
+      "name": "The Ritz-Carlton Residences Denver",
+      "anchor_type": "hotel-residential",
+      "address": "1891 Curtis St, Denver, CO 80202",
+      "lat": 39.747,
+      "lng": -104.9885,
+      "default_walk_radius_m": 1600,
+      "district_slugs": ["downtown-core"],
+      "nearby_venue_slugs": ["paramount-theatre", "denver-performing-arts-complex", "comedy-works-downtown", "larimer-square", "union-station", "colorado-convention-center"],
+      "nearby_place_slugs": ["guard-and-grace", "union-lodge-no-1", "rioja", "tavernetta"]
+    },
+    {
+      "slug": "coloradan",
+      "name": "The Coloradan",
+      "anchor_type": "residential-tower",
+      "address": "1750 Wewatta St, Denver, CO 80202",
+      "lat": 39.7558,
+      "lng": -105.0011,
+      "default_walk_radius_m": 1600,
+      "district_slugs": ["union-station", "lodo"],
+      "nearby_venue_slugs": ["union-station", "larimer-square", "ball-arena", "mission-ballroom", "summit-music-hall"],
+      "nearby_place_slugs": ["mercantile-dining-and-provision", "ultreia", "milk-market", "wynkoop-brewing-company", "tavernetta"]
+    },
+    {
+      "slug": "windsor-denver",
+      "name": "The Windsor Denver",
+      "anchor_type": "residential-tower",
+      "address": "1777 Larimer St, Denver, CO 80202",
+      "lat": 39.7509,
+      "lng": -104.9967,
+      "default_walk_radius_m": 1500,
+      "district_slugs": ["lodo", "downtown-core"],
+      "nearby_venue_slugs": ["larimer-square", "union-station", "comedy-works-downtown", "ball-arena", "summit-music-hall"],
+      "nearby_place_slugs": ["rioja", "milk-market", "wynkoop-brewing-company", "mercantile-dining-and-provision", "tavernetta"]
+    }
+  ]
+}

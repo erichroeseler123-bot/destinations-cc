@@ -1,0 +1,193 @@
+{
+  "citySlug": "las-vegas",
+  "cityName": "Las Vegas",
+  "categories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly.",
+      "intro": "Walking Tours are one of the more useful ways to add structure and local context to a Las Vegas trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Walking Tours",
+          "query": "las vegas walking tours",
+          "description": "A straightforward starting query for walking tours in Las Vegas."
+        }
+      ]
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip.",
+      "intro": "Food Tours are one of the more useful ways to add structure and local context to a Las Vegas trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Food Tours",
+          "query": "las vegas food tours",
+          "description": "A straightforward starting query for food tours in Las Vegas."
+        }
+      ]
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights.",
+      "intro": "Sightseeing Tours are one of the more useful ways to add structure and local context to a Las Vegas trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Sightseeing Tours",
+          "query": "las vegas sightseeing tours",
+          "description": "A straightforward starting query for sightseeing tours in Las Vegas."
+        }
+      ]
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay.",
+      "intro": "Day Trips are one of the more useful ways to add structure and local context to a Las Vegas trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Day Trips",
+          "query": "las vegas day trips",
+          "description": "A straightforward starting query for day trips in Las Vegas."
+        }
+      ]
+    },
+    {
+      "slug": "private-tours",
+      "title": "Private Tours",
+      "description": "More tailored guided experiences for travelers who want flexibility or a slower pace.",
+      "intro": "Private Tours are one of the more useful ways to add structure and local context to a Las Vegas trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Private Tours",
+          "query": "las vegas private tours",
+          "description": "A straightforward starting query for private tours in Las Vegas."
+        }
+      ]
+    },
+    {
+      "slug": "night-tours",
+      "title": "Night Tours",
+      "description": "Evening experiences built around nightlife, views, or after-dark city energy.",
+      "intro": "Night Tours are one of the more useful ways to add structure and local context to a Las Vegas trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Night Tours",
+          "query": "las vegas night tours",
+          "description": "A straightforward starting query for night tours in Las Vegas."
+        }
+      ]
+    },
+    {
+      "slug": "history-tours",
+      "title": "History Tours",
+      "description": "Guided experiences that add cultural and historical context to major sights.",
+      "intro": "History Tours are one of the more useful ways to add structure and local context to a Las Vegas trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "History Tours",
+          "query": "las vegas history tours",
+          "description": "A straightforward starting query for history tours in Las Vegas."
+        }
+      ]
+    },
+    {
+      "slug": "family-activities",
+      "title": "Family Activities",
+      "description": "Low-friction experiences that work well for mixed-age travel groups.",
+      "intro": "Family Activities are one of the more useful ways to add structure and local context to a Las Vegas trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Family Activities",
+          "query": "las vegas family activities",
+          "description": "A straightforward starting query for family activities in Las Vegas."
+        }
+      ]
+    },
+    {
+      "slug": "helicopter-tours",
+      "title": "Helicopter Tours",
+      "description": "Flights over the Strip, nearby canyons, and high-impact desert scenery.",
+      "intro": "Helicopter Tours are one of the more useful ways to add structure and local context to a Las Vegas trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Helicopter Tours",
+          "query": "las vegas helicopter tours",
+          "description": "A straightforward starting query for helicopter tours in Las Vegas."
+        }
+      ]
+    },
+    {
+      "slug": "grand-canyon-tours",
+      "title": "Grand Canyon Tours",
+      "description": "Day-trip experiences from Vegas to the canyon by air, coach, or private tour.",
+      "intro": "Grand Canyon Tours are one of the more useful ways to add structure and local context to a Las Vegas trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Grand Canyon Tours",
+          "query": "las vegas grand canyon tours",
+          "description": "A straightforward starting query for grand canyon tours in Las Vegas."
+        }
+      ]
+    },
+    {
+      "slug": "nightlife-tours",
+      "title": "Nightlife Tours",
+      "description": "After-dark experiences for visitors planning a more structured Vegas night.",
+      "intro": "Nightlife Tours are one of the more useful ways to add structure and local context to a Las Vegas trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Nightlife Tours",
+          "query": "las vegas nightlife tours",
+          "description": "A straightforward starting query for nightlife tours in Las Vegas."
+        }
+      ]
+    }
+  ]
+}

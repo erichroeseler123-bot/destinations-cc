@@ -7,12 +7,12 @@ const PAGE_URL = "https://destinationcommandcenter.com/las-vegas/things-to-do";
 export const metadata: Metadata = {
   title: "Things To Do in Las Vegas | Attractions, Day Trips, and Strip Experiences",
   description:
-    "Browse things to do in Las Vegas across Strip landmarks, Fremont attractions, immersive entertainment, and major day-trip pillars like Grand Canyon and Hoover Dam.",
+    "Browse things to do in Las Vegas across Strip landmarks, Fremont attractions, immersive entertainment, and major day trips like the Grand Canyon and Hoover Dam.",
   alternates: { canonical: "/las-vegas/things-to-do" },
   openGraph: {
     title: "Things To Do in Las Vegas",
     description:
-      "A DCC attraction hub for Las Vegas across Strip experiences, immersive attractions, Fremont highlights, and evergreen day-trip pillars.",
+      "A Las Vegas guide to Strip experiences, immersive attractions, Fremont highlights, and classic day trips.",
     url: PAGE_URL,
     type: "website",
   },
@@ -28,7 +28,7 @@ function JsonLd() {
         url: PAGE_URL,
         name: "Things to do in Las Vegas",
         description:
-          "A Las Vegas attraction and activity hub spanning Strip landmarks, downtown discoveries, immersive attractions, and day-trip pillars.",
+          "A Las Vegas attraction and activity guide spanning Strip landmarks, downtown discoveries, immersive attractions, and classic day trips.",
         dateModified: "2026-03-12",
       },
       {
@@ -54,33 +54,33 @@ export default function LasVegasThingsToDoPage() {
       <JsonLd />
       <div className="mx-auto max-w-6xl px-6 py-16 space-y-8">
         <header className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">DCC Vegas Super Hub</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Las Vegas Guide</p>
           <h1 className="text-4xl font-black tracking-tight md:text-6xl">Things to do in Las Vegas</h1>
           <p className="max-w-3xl text-zinc-300">
-            This is the broad attraction-and-activity layer for Vegas: Strip icons, Fremont discoveries, immersive
-            entertainment, kid-friendly indoor stops, and the day-trip pillars that convert hardest.
+            Start here for a broad look at Las Vegas attractions: Strip icons, Fremont discoveries,
+            immersive entertainment, family-friendly indoor stops, and the day trips people book most often.
           </p>
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Last updated: March 2026</p>
         </header>
 
         <section className="grid gap-4 md:grid-cols-3">
           <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
-            <h2 className="text-lg font-semibold">Super-hub role</h2>
-            <p className="mt-2 text-sm text-zinc-300">This page catches broad Vegas attraction intent before routing users into districts, hotels, shows, or day trips.</p>
+            <h2 className="text-lg font-semibold">Start here</h2>
+            <p className="mt-2 text-sm text-zinc-300">This page is the best starting point when you want a broad view of Las Vegas attractions before narrowing into hotels, shows, or day trips.</p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
-            <h2 className="text-lg font-semibold">Spiderweb logic</h2>
-            <p className="mt-2 text-sm text-zinc-300">Every attraction connects to at least one district, one adjacent planning layer, and one pillar or node deeper in the graph.</p>
+            <h2 className="text-lg font-semibold">How to use it</h2>
+            <p className="mt-2 text-sm text-zinc-300">Use these guides to compare major areas, nearby attractions, and the most popular next steps for your trip.</p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
-            <h2 className="text-lg font-semibold">Search behavior covered</h2>
-            <p className="mt-2 text-sm text-zinc-300">This hub supports things-to-do, best attractions, family attractions, and near-the-Strip queries from one structured layer.</p>
+            <h2 className="text-lg font-semibold">What you’ll find</h2>
+            <p className="mt-2 text-sm text-zinc-300">This page covers broad Las Vegas attraction searches, family-friendly picks, near-Strip ideas, and classic first-time stops.</p>
           </article>
         </section>
 
         <VegasEntityGridSection
-          title="Core Vegas attraction mesh"
-          intro="These seeded attractions give the Vegas graph immediate density across landmarks, immersive entertainment, family picks, and regional day trips."
+          title="Core Las Vegas attractions"
+          intro="These attractions cover landmarks, immersive entertainment, family-friendly stops, and the regional day trips most visitors consider."
           entities={VEGAS_ATTRACTIONS_CONFIG.map((attraction) => ({
             slug: attraction.slug,
             name: attraction.name,
@@ -90,8 +90,8 @@ export default function LasVegasThingsToDoPage() {
             image: attraction.image,
             nearbyLinks: attraction.nearbyLinks,
           }))}
-          backLinks={[
-            { href: "/vegas", label: "Back to Vegas hub" },
+            backLinks={[
+            { href: "/vegas", label: "Back to Vegas guide" },
             { href: "/las-vegas-strip", label: "Las Vegas Strip" },
             { href: "/las-vegas/day-trips", label: "Las Vegas day trips" },
             { href: "/helicopter-tours", label: "Helicopter tours" },
@@ -101,7 +101,7 @@ export default function LasVegasThingsToDoPage() {
         <div className="grid gap-4 lg:grid-cols-2">
           <VegasEntityGridSection
             title="Things to do on the Strip"
-            intro="The Strip cluster is the highest-volume Vegas attraction layer and the cleanest bridge into hotels, shows, and nightlife."
+            intro="The Strip is where many first-time visitors start, especially for hotels, shows, attractions, and nightlife."
             entities={stripAttractions.map((attraction) => ({
               slug: attraction.slug,
               name: attraction.name,
@@ -117,8 +117,8 @@ export default function LasVegasThingsToDoPage() {
             ]}
           />
           <VegasEntityGridSection
-            title="Day trips and outdoor pillars"
-            intro="These are the evergreen high-intent attraction clusters that drive many of the strongest Vegas tour bookings."
+            title="Day trips and outdoor stops"
+            intro="These are the classic Las Vegas day trips and outdoor stops that fit well into a longer stay."
             entities={dayTrips.map((attraction) => ({
               slug: attraction.slug,
               name: attraction.name,

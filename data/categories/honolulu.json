@@ -1,0 +1,193 @@
+{
+  "citySlug": "honolulu",
+  "cityName": "Honolulu",
+  "categories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly.",
+      "intro": "Walking Tours are one of the more useful ways to add structure and local context to a Honolulu trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Walking Tours",
+          "query": "honolulu walking tours",
+          "description": "A straightforward starting query for walking tours in Honolulu."
+        }
+      ]
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip.",
+      "intro": "Food Tours are one of the more useful ways to add structure and local context to a Honolulu trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Food Tours",
+          "query": "honolulu food tours",
+          "description": "A straightforward starting query for food tours in Honolulu."
+        }
+      ]
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights.",
+      "intro": "Sightseeing Tours are one of the more useful ways to add structure and local context to a Honolulu trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Sightseeing Tours",
+          "query": "honolulu sightseeing tours",
+          "description": "A straightforward starting query for sightseeing tours in Honolulu."
+        }
+      ]
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay.",
+      "intro": "Day Trips are one of the more useful ways to add structure and local context to a Honolulu trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Day Trips",
+          "query": "honolulu day trips",
+          "description": "A straightforward starting query for day trips in Honolulu."
+        }
+      ]
+    },
+    {
+      "slug": "private-tours",
+      "title": "Private Tours",
+      "description": "More tailored guided experiences for travelers who want flexibility or a slower pace.",
+      "intro": "Private Tours are one of the more useful ways to add structure and local context to a Honolulu trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Private Tours",
+          "query": "honolulu private tours",
+          "description": "A straightforward starting query for private tours in Honolulu."
+        }
+      ]
+    },
+    {
+      "slug": "night-tours",
+      "title": "Night Tours",
+      "description": "Evening experiences built around nightlife, views, or after-dark city energy.",
+      "intro": "Night Tours are one of the more useful ways to add structure and local context to a Honolulu trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Night Tours",
+          "query": "honolulu night tours",
+          "description": "A straightforward starting query for night tours in Honolulu."
+        }
+      ]
+    },
+    {
+      "slug": "history-tours",
+      "title": "History Tours",
+      "description": "Guided experiences that add cultural and historical context to major sights.",
+      "intro": "History Tours are one of the more useful ways to add structure and local context to a Honolulu trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "History Tours",
+          "query": "honolulu history tours",
+          "description": "A straightforward starting query for history tours in Honolulu."
+        }
+      ]
+    },
+    {
+      "slug": "family-activities",
+      "title": "Family Activities",
+      "description": "Low-friction experiences that work well for mixed-age travel groups.",
+      "intro": "Family Activities are one of the more useful ways to add structure and local context to a Honolulu trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Family Activities",
+          "query": "honolulu family activities",
+          "description": "A straightforward starting query for family activities in Honolulu."
+        }
+      ]
+    },
+    {
+      "slug": "snorkeling-tours",
+      "title": "Snorkeling Tours",
+      "description": "Water-focused experiences that work well for first-time Hawaii trips.",
+      "intro": "Snorkeling Tours are one of the more useful ways to add structure and local context to a Honolulu trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Snorkeling Tours",
+          "query": "honolulu snorkeling tours",
+          "description": "A straightforward starting query for snorkeling tours in Honolulu."
+        }
+      ]
+    },
+    {
+      "slug": "surf-lessons",
+      "title": "Surf Lessons",
+      "description": "Beginner-friendly lessons and classic Honolulu beach experiences.",
+      "intro": "Surf Lessons are one of the more useful ways to add structure and local context to a Honolulu trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Surf Lessons",
+          "query": "honolulu surf lessons",
+          "description": "A straightforward starting query for surf lessons in Honolulu."
+        }
+      ]
+    },
+    {
+      "slug": "island-tours",
+      "title": "Island Tours",
+      "description": "Circle-island and scenic day tours that help visitors cover more ground.",
+      "intro": "Island Tours are one of the more useful ways to add structure and local context to a Honolulu trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a clearer starting point.",
+        "Works well when you want a guided option instead of piecing the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Island Tours",
+          "query": "honolulu island tours",
+          "description": "A straightforward starting query for island tours in Honolulu."
+        }
+      ]
+    }
+  ]
+}

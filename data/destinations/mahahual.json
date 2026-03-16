@@ -1,0 +1,33 @@
+{
+  "slug": "mahahual",
+  "display_name": "Mahahual",
+  "aliases": [
+    "mahahual-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Mahahual Highlights Tour",
+      "description": "A quick way to see the best of Mahahual with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Coast Cruise",
+      "description": "Short scenic sailings and waterfront views near the Caribbean cruise coast.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for the waterfront promenade, beaches, and town streets.",
+      "query": "walking tour"
+    }
+  ],
+  "gateway_mappings": [
+    {
+      "kind": "port_tours_handoff",
+      "source_slug": "costa-maya"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

@@ -1,0 +1,330 @@
+{
+  "citySlug": "portland",
+  "cityName": "Portland",
+  "attractions": [
+    {
+      "slug": "powells-city-of-books",
+      "name": "Powell's City of Books",
+      "type": "landmark",
+      "summary": "Powell's City of Books is one of the more recognizable visitor stops in Portland and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "shopping",
+        "culture"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Powell's City of Books guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Powell's City of Books in Portland, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Powell's City of Books as one clear stop within a broader city day instead of overbuilding your itinerary around it."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Powell's City of Books as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Powell's City of Books guided experiences",
+          "query": "portland powells city of books tours",
+          "description": "A general search path for tours and guided experiences connected to Powell's City of Books in Portland."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Washington Park",
+          "href": "/portland/washington-park"
+        },
+        {
+          "label": "Pearl District",
+          "href": "/portland/pearl-district"
+        },
+        {
+          "label": "Lan Su Chinese Garden",
+          "href": "/portland/lan-su-chinese-garden"
+        }
+      ],
+      "primaryToursHref": "/portland/powells-city-of-books/tours",
+      "thingsToDoHref": "/portland/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Washington Park",
+        "Pearl District"
+      ]
+    },
+    {
+      "slug": "washington-park",
+      "name": "Washington Park",
+      "type": "park",
+      "summary": "Washington Park gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader Portland day plan.",
+      "categories": [
+        "park",
+        "family"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Washington Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Washington Park in Portland, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Washington Park as a slower outdoor break between denser city attractions or tours.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Washington Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Washington Park outdoor experiences",
+          "query": "portland washington park outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Washington Park guided experiences",
+          "query": "portland washington park tours",
+          "description": "A general search path for tours and guided experiences connected to Washington Park in Portland."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Powell's City of Books",
+          "href": "/portland/powells-city-of-books"
+        },
+        {
+          "label": "Pearl District",
+          "href": "/portland/pearl-district"
+        },
+        {
+          "label": "Lan Su Chinese Garden",
+          "href": "/portland/lan-su-chinese-garden"
+        }
+      ],
+      "primaryToursHref": "/portland/washington-park/tours",
+      "thingsToDoHref": "/portland/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Powell's City of Books",
+        "Pearl District"
+      ]
+    },
+    {
+      "slug": "pearl-district",
+      "name": "Pearl District",
+      "type": "district",
+      "summary": "Pearl District is a useful Portland stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "food",
+        "shopping",
+        "walks"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "Pearl District guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Pearl District in Portland, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair Pearl District with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Pearl District as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Pearl District food experiences",
+          "query": "portland pearl district food tour",
+          "description": "Helpful when Pearl District fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Pearl District guided experiences",
+          "query": "portland pearl district tours",
+          "description": "A general search path for tours and guided experiences connected to Pearl District in Portland."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Powell's City of Books",
+          "href": "/portland/powells-city-of-books"
+        },
+        {
+          "label": "Washington Park",
+          "href": "/portland/washington-park"
+        },
+        {
+          "label": "Lan Su Chinese Garden",
+          "href": "/portland/lan-su-chinese-garden"
+        }
+      ],
+      "primaryToursHref": "/portland/pearl-district/tours",
+      "thingsToDoHref": "/portland/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Powell's City of Books",
+        "Washington Park"
+      ]
+    },
+    {
+      "slug": "lan-su-chinese-garden",
+      "name": "Lan Su Chinese Garden",
+      "type": "garden",
+      "summary": "Lan Su Chinese Garden is one of the more recognizable visitor stops in Portland and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "culture",
+        "walks"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Lan Su Chinese Garden guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Lan Su Chinese Garden in Portland, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Lan Su Chinese Garden as one clear stop within a broader city day instead of overbuilding your itinerary around it."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Lan Su Chinese Garden as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Lan Su Chinese Garden guided experiences",
+          "query": "portland lan su chinese garden tours",
+          "description": "A general search path for tours and guided experiences connected to Lan Su Chinese Garden in Portland."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Powell's City of Books",
+          "href": "/portland/powells-city-of-books"
+        },
+        {
+          "label": "Washington Park",
+          "href": "/portland/washington-park"
+        },
+        {
+          "label": "Pearl District",
+          "href": "/portland/pearl-district"
+        }
+      ],
+      "primaryToursHref": "/portland/lan-su-chinese-garden/tours",
+      "thingsToDoHref": "/portland/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Powell's City of Books",
+        "Washington Park"
+      ]
+    },
+    {
+      "slug": "portland-japanese-garden",
+      "name": "Portland Japanese Garden",
+      "type": "garden",
+      "summary": "Portland Japanese Garden is a calmer garden stop in Portland for visitors looking to add a quieter outdoor block to a busier trip.",
+      "categories": [
+        "gardens",
+        "walks",
+        "culture"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Portland Japanese Garden guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Portland Japanese Garden in Portland, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Portland Japanese Garden for a slower walkable block, especially if the rest of the trip is more urban or schedule-heavy.",
+        "Pair Portland Japanese Garden with one nearby museum, neighborhood, or meal instead of overloading the rest of the day."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Portland Japanese Garden as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Garden stops usually work best as part of a lighter daytime schedule instead of a rushed cross-city route."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Portland Japanese Garden garden experiences",
+          "query": "portland portland japanese garden garden tour",
+          "description": "Helpful when visitors want a more structured outdoor visit or a quieter sightseeing option."
+        },
+        {
+          "label": "Portland Japanese Garden guided experiences",
+          "query": "portland portland japanese garden tours",
+          "description": "A general search path for tours and guided experiences connected to Portland Japanese Garden in Portland."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Powell's City of Books",
+          "href": "/portland/powells-city-of-books"
+        },
+        {
+          "label": "Washington Park",
+          "href": "/portland/washington-park"
+        },
+        {
+          "label": "Pearl District",
+          "href": "/portland/pearl-district"
+        }
+      ],
+      "primaryToursHref": "/portland/portland-japanese-garden/tours",
+      "thingsToDoHref": "/portland/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Powell's City of Books",
+        "Washington Park"
+      ]
+    },
+    {
+      "slug": "tom-mccall-waterfront-park",
+      "name": "Tom McCall Waterfront Park",
+      "type": "waterfront",
+      "summary": "Tom McCall Waterfront Park is one of the more useful waterfront areas in Portland for visitors planning around walking, views, and a lighter sightseeing pace.",
+      "categories": [
+        "walks",
+        "park",
+        "sightseeing"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Tom McCall Waterfront Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Tom McCall Waterfront Park in Portland, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Tom McCall Waterfront Park for a walkable waterfront block with time for views, food, or an easier sightseeing pace.",
+        "Pair Tom McCall Waterfront Park with one nearby district or attraction instead of treating the waterfront as the whole day.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Tom McCall Waterfront Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Waterfront areas usually work best as part of a slower sightseeing window instead of a tightly scheduled day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Tom McCall Waterfront Park waterfront tours",
+          "query": "portland tom mccall waterfront park waterfront tour",
+          "description": "Helpful when the waterfront fits naturally into a sightseeing or walking-focused city plan."
+        },
+        {
+          "label": "Tom McCall Waterfront Park guided experiences",
+          "query": "portland tom mccall waterfront park tours",
+          "description": "A general search path for tours and guided experiences connected to Tom McCall Waterfront Park in Portland."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Powell's City of Books",
+          "href": "/portland/powells-city-of-books"
+        },
+        {
+          "label": "Washington Park",
+          "href": "/portland/washington-park"
+        },
+        {
+          "label": "Pearl District",
+          "href": "/portland/pearl-district"
+        }
+      ],
+      "primaryToursHref": "/portland/tom-mccall-waterfront-park/tours",
+      "thingsToDoHref": "/portland/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Powell's City of Books",
+        "Washington Park"
+      ]
+    }
+  ]
+}

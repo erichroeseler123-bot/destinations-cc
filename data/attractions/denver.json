@@ -1,0 +1,361 @@
+{
+  "citySlug": "denver",
+  "cityName": "Denver",
+  "attractions": [
+    {
+      "slug": "red-rocks-amphitheatre",
+      "name": "Red Rocks Amphitheatre",
+      "type": "venue",
+      "summary": "Red Rocks Amphitheatre is a strong Denver stop for visitors planning around live music, nightlife, or a more culture-forward trip.",
+      "categories": [
+        "music",
+        "outdoor"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Red Rocks Amphitheatre guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Red Rocks Amphitheatre in Denver, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Red Rocks Amphitheatre as part of a music-first evening or culture-focused route through the city.",
+        "Use Red Rocks Amphitheatre as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Red Rocks Amphitheatre as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Red Rocks Amphitheatre matters most after dark, keep the rest of the day lighter so the evening does not feel rushed.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Red Rocks Amphitheatre music experiences",
+          "query": "denver red rocks amphitheatre music tour",
+          "description": "Useful when you want a more structured music or nightlife plan around Red Rocks Amphitheatre."
+        },
+        {
+          "label": "Red Rocks Amphitheatre outdoor experiences",
+          "query": "denver red rocks amphitheatre outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Red Rocks Amphitheatre guided experiences",
+          "query": "denver red rocks amphitheatre tours",
+          "description": "A general search path for tours and guided experiences connected to Red Rocks Amphitheatre in Denver."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Union Station",
+          "href": "/denver/union-station"
+        },
+        {
+          "label": "RiNo Art District",
+          "href": "/denver/ri-no"
+        },
+        {
+          "label": "Meow Wolf Denver",
+          "href": "/denver/meow-wolf-denver"
+        }
+      ],
+      "primaryToursHref": "/denver/red-rocks-amphitheatre/tours",
+      "thingsToDoHref": "/denver/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Union Station",
+        "RiNo Art District"
+      ]
+    },
+    {
+      "slug": "union-station",
+      "name": "Union Station",
+      "type": "landmark",
+      "summary": "Union Station is one of the more recognizable history-focused stops in Denver for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "food",
+        "history",
+        "shopping"
+      ],
+      "priority": 90,
+      "featured": true,
+      "heroTitle": "Union Station guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Union Station in Denver, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Union Station as a stop for a more history-focused city walk or half-day plan.",
+        "Pair Union Station with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Union Station as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Union Station more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Union Station history tours",
+          "query": "denver union station history tour",
+          "description": "A simple starting point for visitors who want more context around Union Station."
+        },
+        {
+          "label": "Union Station food experiences",
+          "query": "denver union station food tour",
+          "description": "Helpful when Union Station fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Union Station guided experiences",
+          "query": "denver union station tours",
+          "description": "A general search path for tours and guided experiences connected to Union Station in Denver."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Red Rocks Amphitheatre",
+          "href": "/denver/red-rocks-amphitheatre"
+        },
+        {
+          "label": "RiNo Art District",
+          "href": "/denver/ri-no"
+        },
+        {
+          "label": "Meow Wolf Denver",
+          "href": "/denver/meow-wolf-denver"
+        }
+      ],
+      "primaryToursHref": "/denver/union-station/tours",
+      "thingsToDoHref": "/denver/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Red Rocks Amphitheatre",
+        "RiNo Art District"
+      ]
+    },
+    {
+      "slug": "ri-no",
+      "name": "RiNo Art District",
+      "type": "district",
+      "summary": "RiNo Art District is a useful Denver stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "art",
+        "food",
+        "nightlife"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "RiNo Art District guide, things to do, and local tours",
+      "heroSummary": "Planning guide for RiNo Art District in Denver, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair RiNo Art District with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "Treat RiNo Art District as an evening block if nightlife is a major part of the trip."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan RiNo Art District as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If RiNo Art District matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "RiNo Art District food experiences",
+          "query": "denver ri no food tour",
+          "description": "Helpful when RiNo Art District fits naturally into a food-first city plan."
+        },
+        {
+          "label": "RiNo Art District guided experiences",
+          "query": "denver ri no tours",
+          "description": "A general search path for tours and guided experiences connected to RiNo Art District in Denver."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Red Rocks Amphitheatre",
+          "href": "/denver/red-rocks-amphitheatre"
+        },
+        {
+          "label": "Union Station",
+          "href": "/denver/union-station"
+        },
+        {
+          "label": "Meow Wolf Denver",
+          "href": "/denver/meow-wolf-denver"
+        }
+      ],
+      "primaryToursHref": "/denver/ri-no/tours",
+      "thingsToDoHref": "/denver/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Red Rocks Amphitheatre",
+        "Union Station"
+      ]
+    },
+    {
+      "slug": "meow-wolf-denver",
+      "name": "Meow Wolf Denver",
+      "type": "attraction",
+      "summary": "Meow Wolf Denver is one of the more recognizable visitor stops in Denver and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "art",
+        "family",
+        "nightlife"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Meow Wolf Denver guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Meow Wolf Denver in Denver, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Treat Meow Wolf Denver as an evening block if nightlife is a major part of the trip.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Meow Wolf Denver as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Meow Wolf Denver matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Meow Wolf Denver guided experiences",
+          "query": "denver meow wolf denver tours",
+          "description": "A general search path for tours and guided experiences connected to Meow Wolf Denver in Denver."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Red Rocks Amphitheatre",
+          "href": "/denver/red-rocks-amphitheatre"
+        },
+        {
+          "label": "Union Station",
+          "href": "/denver/union-station"
+        },
+        {
+          "label": "RiNo Art District",
+          "href": "/denver/ri-no"
+        }
+      ],
+      "primaryToursHref": "/denver/meow-wolf-denver/tours",
+      "thingsToDoHref": "/denver/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Red Rocks Amphitheatre",
+        "Union Station"
+      ]
+    },
+    {
+      "slug": "denver-art-museum",
+      "name": "Denver Art Museum",
+      "type": "museum",
+      "summary": "Denver Art Museum is a useful museum stop in Denver for visitors who want more structure, context, or indoor time built into the trip.",
+      "categories": [
+        "museum",
+        "culture",
+        "family"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Denver Art Museum guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Denver Art Museum in Denver, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Denver Art Museum as an anchor for a more structured indoor block, especially on hotter, colder, or wetter days.",
+        "Pair Denver Art Museum with one nearby neighborhood, food, or walking stop instead of stacking too many museums at once.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Denver Art Museum as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Museum stops usually add the most value when you pair them with one nearby walk, meal, or neighborhood block instead of stacking too much indoor time."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Denver Art Museum museum experiences",
+          "query": "denver denver art museum museum tour",
+          "description": "Useful when visitors want more context than a quick self-guided pass-through."
+        },
+        {
+          "label": "Denver Art Museum guided experiences",
+          "query": "denver denver art museum tours",
+          "description": "A general search path for tours and guided experiences connected to Denver Art Museum in Denver."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Red Rocks Amphitheatre",
+          "href": "/denver/red-rocks-amphitheatre"
+        },
+        {
+          "label": "Union Station",
+          "href": "/denver/union-station"
+        },
+        {
+          "label": "RiNo Art District",
+          "href": "/denver/ri-no"
+        }
+      ],
+      "primaryToursHref": "/denver/denver-art-museum/tours",
+      "thingsToDoHref": "/denver/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Red Rocks Amphitheatre",
+        "Union Station"
+      ]
+    },
+    {
+      "slug": "larimer-square",
+      "name": "Larimer Square",
+      "type": "district",
+      "summary": "Larimer Square is a useful district to understand early if you want a clearer feel for how visitors actually spend time in Denver.",
+      "categories": [
+        "food",
+        "nightlife",
+        "shopping"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Larimer Square guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Larimer Square in Denver, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Walk Larimer Square with one clear purpose, such as food, music, shopping, or evening atmosphere.",
+        "Treat Larimer Square as a time block rather than a quick pass-through if it is one of the main reasons for the trip.",
+        "Pair Larimer Square with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Larimer Square as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Districts usually feel stronger when you decide whether the point is food, shopping, nightlife, or a general walk before you arrive.",
+        "If Larimer Square matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Larimer Square neighborhood tours",
+          "query": "denver larimer square neighborhood tour",
+          "description": "Helpful when Larimer Square is better experienced as part of a larger district walk or evening plan."
+        },
+        {
+          "label": "Larimer Square food experiences",
+          "query": "denver larimer square food tour",
+          "description": "Helpful when Larimer Square fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Larimer Square guided experiences",
+          "query": "denver larimer square tours",
+          "description": "A general search path for tours and guided experiences connected to Larimer Square in Denver."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Red Rocks Amphitheatre",
+          "href": "/denver/red-rocks-amphitheatre"
+        },
+        {
+          "label": "Union Station",
+          "href": "/denver/union-station"
+        },
+        {
+          "label": "RiNo Art District",
+          "href": "/denver/ri-no"
+        }
+      ],
+      "primaryToursHref": "/denver/larimer-square/tours",
+      "thingsToDoHref": "/denver/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Red Rocks Amphitheatre",
+        "Union Station"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "slug": "athens",
+  "display_name": "Athens",
+  "aliases": [
+    "athens-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Athens City Highlights Tour",
+      "description": "A quick way to see the best of Athens with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Riviera Cruise",
+      "description": "Short scenic sailings and waterfront views tied to the Athens coast.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for ancient landmarks, neighborhoods, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "gateway_mappings": [
+    {
+      "kind": "port_tours_handoff",
+      "source_slug": "piraeus"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

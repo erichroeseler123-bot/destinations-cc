@@ -1,0 +1,33 @@
+{
+  "slug": "ephesus",
+  "display_name": "Ephesus",
+  "aliases": [
+    "ephesus-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Ephesus Highlights Tour",
+      "description": "A quick way to see the best of Ephesus with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Coastal Excursion",
+      "description": "Short scenic outings connecting the cruise coast with major archaeological highlights.",
+      "query": "coastal excursion"
+    },
+    {
+      "title": "Ancient City Walking Tour",
+      "description": "A simple first-timer lane for ruins, history, and the main archaeological corridor.",
+      "query": "walking tour"
+    }
+  ],
+  "gateway_mappings": [
+    {
+      "kind": "port_tours_handoff",
+      "source_slug": "kusadasi"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

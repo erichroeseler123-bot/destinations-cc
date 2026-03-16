@@ -1,0 +1,126 @@
+{
+  "slug": "phoenix",
+  "name": "Phoenix",
+  "metadata": {
+    "title": "Phoenix Tours, Things to Do, and Attractions | Destination Command Center",
+    "description": "Discover Phoenix tours, things to do, attractions, food, neighborhoods, and trip ideas. Browse guided experiences and plan around the city's most useful travel highlights.",
+    "keywords": [
+      "phoenix tours",
+      "things to do in phoenix",
+      "phoenix attractions",
+      "phoenix sightseeing"
+    ]
+  },
+  "hero": {
+    "eyebrow": "Phoenix travel guide",
+    "title": "Phoenix tours, things to do, and local travel planning",
+    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Phoenix trip.",
+    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Phoenix.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/phoenix/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/phoenix/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly."
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+    }
+  ],
+  "topAttractions": [
+    {
+      "slug": "desert-botanical-garden",
+      "title": "Desert Botanical Garden",
+      "description": ""
+    },
+    {
+      "slug": "camelback-mountain",
+      "title": "Camelback Mountain",
+      "description": ""
+    },
+    {
+      "slug": "old-town-scottsdale",
+      "title": "Old Town Scottsdale",
+      "description": ""
+    },
+    {
+      "slug": "papago-park",
+      "title": "Papago Park",
+      "description": ""
+    },
+    {
+      "slug": "heard-museum",
+      "title": "Heard Museum",
+      "description": ""
+    },
+    {
+      "slug": "south-mountain-park",
+      "title": "South Mountain Park",
+      "description": ""
+    }
+  ],
+  "featuredTours": {
+    "title": "Popular Phoenix experiences",
+    "description": "Guided experiences and bookable activities that help visitors plan around Phoenix's most useful highlights.",
+    "fallbackQueries": [
+      "phoenix walking tour",
+      "phoenix food tour",
+      "phoenix sightseeing tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Things to do in Phoenix",
+      "description": "A broader planning surface for attractions, neighborhoods, and trip ideas.",
+      "href": "/phoenix/things-to-do"
+    },
+    {
+      "title": "Phoenix tours",
+      "description": "A cleaner starting point for guided experiences, day trips, and visitor favorites.",
+      "href": "/phoenix/tours"
+    },
+    {
+      "title": "Phoenix food guide",
+      "description": "Restaurants, food neighborhoods, and tasting-focused experiences.",
+      "href": "/phoenix/food"
+    },
+    {
+      "title": "Phoenix day trips",
+      "description": "Half-day and full-day options that fit naturally with a city stay.",
+      "href": "/phoenix/day-trips"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in Phoenix for first-time visitors?",
+      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+    },
+    {
+      "q": "How many days should you spend in Phoenix?",
+      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+    }
+  ],
+  "coordinates": {
+    "lat": 33.4484,
+    "lng": -112.074
+  },
+  "timezone": "America/Phoenix",
+  "lat": 33.4484,
+  "lng": -112.074
+}

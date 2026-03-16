@@ -7,6 +7,7 @@ import {
   listCruiseShipSlugs,
 } from "@/lib/dcc/internal/cruisePayload";
 import { CITY_AUTHORITY_CONFIG } from "@/src/data/city-authority-config";
+import { TRANSPORT_DIRECTORY } from "@/src/data/transport-directory";
 import { CRUISE_SPECIALTY_LANES } from "@/src/data/cruise-specialty-lanes";
 import { PORT_AUTHORITY_CONFIG } from "@/src/data/port-authority-config";
 import { OVERLAY_REGISTRY } from "@/src/data/overlay-registry";
@@ -25,6 +26,12 @@ import { VEGAS_HOTELS_CONFIG } from "@/src/data/vegas-hotels-config";
 import { listRelationshipSlugs } from "@/src/data/relationship-registry";
 import { evaluateCityPublishability } from "@/src/lib/sitemap/city-publishability";
 import { evaluatePortPublishability } from "@/src/lib/sitemap/port-publishability";
+import {
+  getAttractionsManifest,
+  getCategoriesManifest,
+  listManifestCitySlugs,
+} from "@/lib/dcc/manifests/cityExpansion";
+import { listOperatorSlugs } from "@/lib/dcc/operators";
 
 type Region = { slug: string };
 
@@ -222,6 +229,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const sportsTeamUrls = SPORTS_TEAMS_CONFIG.map((team) => `/sports/team/${team.slug}`);
   const nationalParkUrls = Object.keys(NATIONAL_PARKS_AUTHORITY_CONFIG).map((slug) => `/national-parks/${slug}`);
   const sportsVenueUrls = SPORTS_VENUES_CONFIG.map((venue) => `/venues/${venue.slug}`);
+  const transportVenueUrls = TRANSPORT_DIRECTORY.map((entry) => entry.dccUrl);
   const hotelUrls = ENTITIES_REGISTRY.filter((entity) => entity.entityType === "hotel").map((hotel) => `/hotel/${hotel.slug}`);
   const casinoUrls = VEGAS_CASINOS_CONFIG.map((casino) => `/casino/${casino.slug}`);
   const overlayUrls = OVERLAY_REGISTRY.map((overlay) => overlay.canonicalPath);
@@ -256,15 +264,40 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...listRoadTripRelationshipSlugs("stops-near").map((slug) => `/stops-near/${slug}`),
     ...listRoadTripRelationshipSlugs("diners-near").map((slug) => `/diners-near/${slug}`),
   ];
+  const manifestCitySlugs = listManifestCitySlugs();
+  const attractionGuideUrls = manifestCitySlugs.flatMap((city) =>
+    (getAttractionsManifest(city)?.attractions || []).flatMap((entry) => [
+      `/${city}/${entry.slug}`,
+      `/${city}/${entry.slug}/tours`,
+    ])
+  );
+  const categoryGuideUrls = manifestCitySlugs.flatMap((city) =>
+    (getCategoriesManifest(city)?.categories || []).map((entry) => `/${city}/${entry.slug}`)
+  );
   const hotelsNearUrls = listRelationshipSlugs("hotels-near").map((slug) => `/hotels-near/${slug}`);
   const accessibleHotelsNearUrls = listRelationshipSlugs("accessible-hotels-near").map((slug) => `/accessible-hotels-near/${slug}`);
   const attractionsNearUrls = listRelationshipSlugs("attractions-near").map((slug) => `/attractions-near/${slug}`);
   const casinosNearUrls = listRelationshipSlugs("casinos-near").map((slug) => `/casinos-near/${slug}`);
+  const operatorUrls = listOperatorSlugs().map((slug) => `/operators/${slug}`);
 
   const staticPaths = [
     "/",
+    "/about",
+    "/ai",
+    "/llms.txt",
     "/mighty-argo-shuttle",
     "/mighty-argo",
+    "/transportation",
+    "/transportation/colorado",
+    "/red-rocks",
+    "/red-rocks-concert-guide",
+    "/red-rocks-transportation",
+    "/red-rocks-parking",
+    "/red-rocks-events",
+    "/red-rocks-shuttle",
+    "/red-rocks-complete-guide",
+    "/denver-concert-shuttle",
+    "/denver/concert-transportation",
     "/vegas",
     "/las-vegas/casinos",
     "/las-vegas/pools",
@@ -285,6 +318,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/helicopter-tours",
     "/things-to-do-on-the-strip",
     "/new-orleans",
+    "/new-orleans/tours",
+    "/new-orleans/attractions",
+    "/new-orleans/things-to-do",
+    "/new-orleans/food",
+    "/new-orleans/music",
+    "/new-orleans/neighborhoods",
+    "/new-orleans/family-friendly",
+    "/new-orleans/weekend-guide",
+    "/new-orleans/swamp-tours",
+    "/new-orleans/ghost-tours",
+    "/new-orleans/food-tours",
+    "/new-orleans/jazz-tours",
     "/miami",
     "/miami/beaches",
     "/orlando",
@@ -318,6 +363,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...sportsCityUrls,
     ...sportsTeamUrls,
     ...sportsVenueUrls,
+    ...transportVenueUrls,
     ...hotelUrls,
     ...casinoUrls,
     ...overlayUrls,
@@ -327,10 +373,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...roadTripStopUrls,
     ...roadTripOverlayUrls,
     ...roadTripRelationshipUrls,
+    ...attractionGuideUrls,
+    ...categoryGuideUrls,
     ...hotelsNearUrls,
     ...accessibleHotelsNearUrls,
     ...attractionsNearUrls,
     ...casinosNearUrls,
+    ...operatorUrls,
     "/data/sports-teams.json",
     "/data/sports-venues.json",
     "/data/sports-cities.json",

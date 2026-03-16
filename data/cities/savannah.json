@@ -1,0 +1,116 @@
+{
+  "slug": "savannah",
+  "name": "Savannah",
+  "metadata": {
+    "title": "Savannah Tours, Things to Do, and Attractions | Destination Command Center",
+    "description": "Discover Savannah tours, things to do, attractions, food, neighborhoods, and trip ideas. Browse guided experiences and plan around the city's most useful travel highlights.",
+    "keywords": [
+      "savannah tours",
+      "things to do in savannah",
+      "savannah attractions",
+      "savannah sightseeing"
+    ]
+  },
+  "hero": {
+    "eyebrow": "Savannah travel guide",
+    "title": "Savannah tours, things to do, and local travel planning",
+    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Savannah trip.",
+    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Savannah.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/savannah/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/savannah/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly."
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+    }
+  ],
+  "topAttractions": [
+    {
+      "slug": "historic-district",
+      "title": "Historic District",
+      "description": ""
+    },
+    {
+      "slug": "river-street",
+      "title": "River Street",
+      "description": ""
+    },
+    {
+      "slug": "forsyth-park",
+      "title": "Forsyth Park",
+      "description": ""
+    },
+    {
+      "slug": "bonaventure-cemetery",
+      "title": "Bonaventure Cemetery",
+      "description": ""
+    }
+  ],
+  "featuredTours": {
+    "title": "Popular Savannah experiences",
+    "description": "Guided experiences and bookable activities that help visitors plan around Savannah's most useful highlights.",
+    "fallbackQueries": [
+      "savannah walking tour",
+      "savannah food tour",
+      "savannah sightseeing tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Things to do in Savannah",
+      "description": "A broader planning surface for attractions, neighborhoods, and trip ideas.",
+      "href": "/savannah/things-to-do"
+    },
+    {
+      "title": "Savannah tours",
+      "description": "A cleaner starting point for guided experiences, day trips, and visitor favorites.",
+      "href": "/savannah/tours"
+    },
+    {
+      "title": "Savannah food guide",
+      "description": "Restaurants, food neighborhoods, and tasting-focused experiences.",
+      "href": "/savannah/food"
+    },
+    {
+      "title": "Savannah day trips",
+      "description": "Half-day and full-day options that fit naturally with a city stay.",
+      "href": "/savannah/day-trips"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in Savannah for first-time visitors?",
+      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+    },
+    {
+      "q": "How many days should you spend in Savannah?",
+      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+    }
+  ],
+  "coordinates": {
+    "lat": 32.0809,
+    "lng": -81.0912
+  },
+  "timezone": "America/New_York",
+  "lat": 32.0809,
+  "lng": -81.0912
+}

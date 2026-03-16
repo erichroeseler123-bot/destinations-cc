@@ -8,6 +8,12 @@ import { notFound } from "next/navigation";
 import { buildViatorLink } from "@/utils/affiliateLinks";
 import Link from "next/link";
 import PoweredByViator from "@/app/components/dcc/PoweredByViator";
+import TravelerTakeaways from "@/app/components/dcc/TravelerTakeaways";
+import { summarizeGuestFeedback } from "@/lib/dcc/guestFeedback";
+import OperatorAboutCard from "@/app/components/dcc/OperatorAboutCard";
+import { getOperatorManifest, mergeOperatorRef, type TourOperatorRef } from "@/lib/dcc/operators";
+import JsonLd from "@/app/components/dcc/JsonLd";
+import { buildBreadcrumbJsonLd, buildTourJsonLd } from "@/lib/dcc/jsonld";
 
 type Tour = {
   id: string | number;
@@ -23,6 +29,7 @@ type Tour = {
   lng?: number;
   timezone?: string;
   duration?: string;
+  operator?: TourOperatorRef;
 };
 
 const allTours = tours as unknown as Tour[];
@@ -50,6 +57,19 @@ export default async function TourDetailPage({
   const reviews = Number(tour.review_count ?? 120);
   const price = tour.price_from ?? null;
   const affiliateUrl = buildViatorLink(tour);
+  const takeaways = summarizeGuestFeedback({
+    title: tour.name,
+    description: tour.description,
+    durationText: tour.duration,
+    rating,
+    reviewCount: reviews,
+  });
+  const operatorRef = mergeOperatorRef(tour.operator);
+  const operator = operatorRef?.slug ? getOperatorManifest(operatorRef.slug) : null;
+  const operatorTourCount =
+    operatorRef?.slug
+      ? allTours.filter((candidate) => candidate.operator?.slug === operatorRef.slug).length
+      : undefined;
 
   // --- CHANGE #4: DCC Trust Score Logic ---
   const trustScore = Math.round((rating * 15) + (Math.min(reviews, 500) / 20));
@@ -70,31 +90,35 @@ export default async function TourDetailPage({
   }
 
   // --- CHANGE #1: JSON-LD Schema Object ---
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": tour.name,
-    "description": tour.description || `Verified travel experience in ${tour.city}`,
-    "image": tour.image_url || "https://destinationcommandcenter.com/og-image.jpg",
-    "offers": {
-      "@type": "Offer",
-      "price": price,
-      "priceCurrency": "USD",
-      "availability": "https://schema.org/InStock",
-      "url": `https://destinationcommandcenter.com/tours/${tour.id}`
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": rating,
-      "reviewCount": reviews
-    }
-  };
-
   return (
     <main className="max-w-4xl mx-auto px-6 py-12">
-      <script 
-        type="application/ld+json" 
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} 
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            buildTourJsonLd({
+              path: `/tours/${tour.id}`,
+              name: tour.name,
+              description: tour.description || `Travel experience in ${tour.city}`,
+              image: tour.image_url || undefined,
+              price,
+              currency: "USD",
+              rating,
+              reviewCount: reviews,
+              touristTypes: ["First-time visitors", "Experience-focused travelers"],
+              provider: operator
+                ? {
+                    name: operator.name,
+                    url: operator.website,
+                  }
+                : null,
+            }),
+            buildBreadcrumbJsonLd([
+              { name: "Tours", item: "/tours" },
+              { name: tour.name, item: `/tours/${tour.id}` },
+            ]),
+          ],
+        }}
       />
 
       {/* HEADER SECTION */}
@@ -122,11 +146,15 @@ export default async function TourDetailPage({
       <TrustBadges reviews={reviews} rating={rating} />
 
       {/* DECISION SUPPORT */}
-      <section className="prose prose-invert max-w-none mb-16 mt-12">
-        <h3 className="text-cyan-400">Why this made the cut</h3>
-        <p className="text-zinc-300 leading-relaxed">
-          {tour.description || "This tour is selected for strong guest feedback and consistent performance. We prioritize clear logistics and reliable operators."}
-        </p>
+      <section className="mb-16 mt-12 space-y-6">
+        <article className="prose prose-invert max-w-none">
+          <h3 className="text-cyan-400">About this experience</h3>
+          <p className="text-zinc-300 leading-relaxed">
+            {tour.description ||
+              `This experience is listed on DCC to help travelers compare timing, fit, and booking options in ${tour.city}.`}
+          </p>
+        </article>
+        {takeaways ? <TravelerTakeaways summary={takeaways} /> : null}
       </section>
 
       <PoweredByViator
@@ -135,6 +163,12 @@ export default async function TourDetailPage({
         body={`Use DCC to evaluate this experience quickly, then book with DCC via Viator when you're ready to check availability and complete checkout.`}
         className="mb-16"
       />
+
+      {operator ? (
+        <div className="mb-16">
+          <OperatorAboutCard operator={operator} tourCount={operatorTourCount} />
+        </div>
+      ) : null}
 
       {/* CHANGE #3: Regional Retention Block */}
       <section className="mb-20 border-t border-zinc-800 pt-10">

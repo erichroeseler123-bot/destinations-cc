@@ -1,0 +1,27 @@
+{
+  "slug": "singapore",
+  "display_name": "Singapore",
+  "aliases": [
+    "singapore-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Singapore City Highlights Tour",
+      "description": "A quick way to see the best of Singapore with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Marina Bay Cruise",
+      "description": "Short scenic sailings and skyline views across the bay and waterfront.",
+      "query": "marina bay cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront districts, markets, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

@@ -1,0 +1,337 @@
+{
+  "citySlug": "chicago",
+  "cityName": "Chicago",
+  "attractions": [
+    {
+      "slug": "millennium-park",
+      "name": "Millennium Park",
+      "type": "park",
+      "summary": "Millennium Park gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader Chicago day plan.",
+      "categories": [
+        "park",
+        "landmark",
+        "family"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Millennium Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Millennium Park in Chicago, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Millennium Park as a slower outdoor break between denser city attractions or tours.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Millennium Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Millennium Park outdoor experiences",
+          "query": "chicago millennium park outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Millennium Park guided experiences",
+          "query": "chicago millennium park tours",
+          "description": "A general search path for tours and guided experiences connected to Millennium Park in Chicago."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Navy Pier",
+          "href": "/chicago/navy-pier"
+        },
+        {
+          "label": "Art Institute of Chicago",
+          "href": "/chicago/art-institute-of-chicago"
+        },
+        {
+          "label": "Chicago Riverwalk",
+          "href": "/chicago/chicago-riverwalk"
+        }
+      ],
+      "primaryToursHref": "/chicago/millennium-park/tours",
+      "thingsToDoHref": "/chicago/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Navy Pier",
+        "Art Institute of Chicago"
+      ]
+    },
+    {
+      "slug": "navy-pier",
+      "name": "Navy Pier",
+      "type": "waterfront",
+      "summary": "Navy Pier is one of the more recognizable visitor stops in Chicago and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "family",
+        "waterfront",
+        "sightseeing"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Navy Pier guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Navy Pier in Chicago, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "This area works well for visitors trying to keep a mixed-age itinerary simple.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Navy Pier as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Navy Pier guided experiences",
+          "query": "chicago navy pier tours",
+          "description": "A general search path for tours and guided experiences connected to Navy Pier in Chicago."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Millennium Park",
+          "href": "/chicago/millennium-park"
+        },
+        {
+          "label": "Art Institute of Chicago",
+          "href": "/chicago/art-institute-of-chicago"
+        },
+        {
+          "label": "Chicago Riverwalk",
+          "href": "/chicago/chicago-riverwalk"
+        }
+      ],
+      "primaryToursHref": "/chicago/navy-pier/tours",
+      "thingsToDoHref": "/chicago/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Millennium Park",
+        "Art Institute of Chicago"
+      ]
+    },
+    {
+      "slug": "art-institute-of-chicago",
+      "name": "Art Institute of Chicago",
+      "type": "museum",
+      "summary": "Art Institute of Chicago is one of the more recognizable visitor stops in Chicago and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "museum",
+        "culture"
+      ],
+      "priority": 90,
+      "featured": true,
+      "heroTitle": "Art Institute of Chicago guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Art Institute of Chicago in Chicago, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Art Institute of Chicago as one clear stop within a broader city day instead of overbuilding your itinerary around it."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Art Institute of Chicago as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Art Institute of Chicago guided experiences",
+          "query": "chicago art institute of chicago tours",
+          "description": "A general search path for tours and guided experiences connected to Art Institute of Chicago in Chicago."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Millennium Park",
+          "href": "/chicago/millennium-park"
+        },
+        {
+          "label": "Navy Pier",
+          "href": "/chicago/navy-pier"
+        },
+        {
+          "label": "Chicago Riverwalk",
+          "href": "/chicago/chicago-riverwalk"
+        }
+      ],
+      "primaryToursHref": "/chicago/art-institute-of-chicago/tours",
+      "thingsToDoHref": "/chicago/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Millennium Park",
+        "Navy Pier"
+      ]
+    },
+    {
+      "slug": "chicago-riverwalk",
+      "name": "Chicago Riverwalk",
+      "type": "waterfront",
+      "summary": "Chicago Riverwalk is a useful Chicago stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "walks",
+        "food",
+        "sightseeing"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Chicago Riverwalk guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Chicago Riverwalk in Chicago, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair Chicago Riverwalk with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Chicago Riverwalk as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Chicago Riverwalk food experiences",
+          "query": "chicago chicago riverwalk food tour",
+          "description": "Helpful when Chicago Riverwalk fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Chicago Riverwalk guided experiences",
+          "query": "chicago chicago riverwalk tours",
+          "description": "A general search path for tours and guided experiences connected to Chicago Riverwalk in Chicago."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Millennium Park",
+          "href": "/chicago/millennium-park"
+        },
+        {
+          "label": "Navy Pier",
+          "href": "/chicago/navy-pier"
+        },
+        {
+          "label": "Art Institute of Chicago",
+          "href": "/chicago/art-institute-of-chicago"
+        }
+      ],
+      "primaryToursHref": "/chicago/chicago-riverwalk/tours",
+      "thingsToDoHref": "/chicago/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Millennium Park",
+        "Navy Pier"
+      ]
+    },
+    {
+      "slug": "willis-tower",
+      "name": "Willis Tower",
+      "type": "landmark",
+      "summary": "Willis Tower is one of the better-known landmarks in Chicago and usually works best as part of a broader sightseeing block instead of a standalone stop.",
+      "categories": [
+        "views",
+        "landmark",
+        "sightseeing"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Willis Tower guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Willis Tower in Chicago, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Willis Tower as part of a broader sightseeing block instead of making it the only stop in that part of the day.",
+        "Pair Willis Tower with one nearby walk, museum, or neighborhood stop for a more complete visit.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Willis Tower as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Landmark stops usually work better when they are tied to a broader city route instead of treated as a one-stop plan."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Willis Tower sightseeing tours",
+          "query": "chicago willis tower sightseeing tour",
+          "description": "A simple starting point for visitors who want to see Willis Tower in a broader city context."
+        },
+        {
+          "label": "Willis Tower guided experiences",
+          "query": "chicago willis tower tours",
+          "description": "A general search path for tours and guided experiences connected to Willis Tower in Chicago."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Millennium Park",
+          "href": "/chicago/millennium-park"
+        },
+        {
+          "label": "Navy Pier",
+          "href": "/chicago/navy-pier"
+        },
+        {
+          "label": "Art Institute of Chicago",
+          "href": "/chicago/art-institute-of-chicago"
+        }
+      ],
+      "primaryToursHref": "/chicago/willis-tower/tours",
+      "thingsToDoHref": "/chicago/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Millennium Park",
+        "Navy Pier"
+      ]
+    },
+    {
+      "slug": "lincoln-park",
+      "name": "Lincoln Park",
+      "type": "park",
+      "summary": "Lincoln Park gives visitors a practical outdoor break from denser city blocks and usually fits best into a slower part of the day in Chicago.",
+      "categories": [
+        "park",
+        "walks",
+        "family"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Lincoln Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Lincoln Park in Chicago, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Lincoln Park for a slower outdoor block, especially if the rest of the day is built around denser city stops.",
+        "Pair Lincoln Park with one nearby indoor attraction, meal, or sightseeing route instead of overloading the day.",
+        "Use Lincoln Park as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Lincoln Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops tend to be easier to pace when you keep the rest of the day light and avoid too many cross-city jumps.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Lincoln Park outdoor experiences",
+          "query": "chicago lincoln park outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery, fresh air, or a slower pace."
+        },
+        {
+          "label": "Lincoln Park guided experiences",
+          "query": "chicago lincoln park tours",
+          "description": "A general search path for tours and guided experiences connected to Lincoln Park in Chicago."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Millennium Park",
+          "href": "/chicago/millennium-park"
+        },
+        {
+          "label": "Navy Pier",
+          "href": "/chicago/navy-pier"
+        },
+        {
+          "label": "Art Institute of Chicago",
+          "href": "/chicago/art-institute-of-chicago"
+        }
+      ],
+      "primaryToursHref": "/chicago/lincoln-park/tours",
+      "thingsToDoHref": "/chicago/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Millennium Park",
+        "Navy Pier"
+      ]
+    }
+  ]
+}

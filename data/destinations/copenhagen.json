@@ -1,0 +1,27 @@
+{
+  "slug": "copenhagen",
+  "display_name": "Copenhagen",
+  "aliases": [
+    "copenhagen-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Copenhagen City Highlights Tour",
+      "description": "A quick way to see the best of Copenhagen with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Canal Cruise",
+      "description": "Short scenic canal sailings and harbor views near the city center.",
+      "query": "canal cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront districts, palaces, and historic streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

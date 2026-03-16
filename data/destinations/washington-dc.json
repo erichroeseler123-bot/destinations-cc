@@ -1,0 +1,27 @@
+{
+  "slug": "washington-dc",
+  "display_name": "Washington DC",
+  "aliases": [
+    "washington-dc-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Washington, D.C. City Highlights Tour",
+      "description": "A fast way to cover the National Mall, monuments, and core city layout with a guide.",
+      "query": "washington dc city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Monuments and Memorials Night Tour",
+      "description": "A strong sightseeing lane for visitors who want the classic D.C. route after dark.",
+      "query": "washington dc monuments night tour"
+    },
+    {
+      "title": "Museum and Capitol Walking Tour",
+      "description": "Use this lane for museum-first and civic-core discovery with lower-friction routing.",
+      "query": "washington dc museum capitol walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

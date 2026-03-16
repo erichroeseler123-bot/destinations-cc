@@ -1,0 +1,61 @@
+{
+  "city": "new-orleans",
+  "version": 1,
+  "as_of": "2026-03-15T18:00:00-05:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-15T18:05:00-05:00",
+  "schema": {
+    "entity": "signal",
+    "description": "Ephemeral NOW-layer output for New Orleans.",
+    "provenance_types": ["derived", "source_backed", "manual_editorial"]
+  },
+  "signals": [
+    {
+      "id": "sig-nola-quarter-packed",
+      "signal_type": "district_activity",
+      "provenance": "derived",
+      "title": "French Quarter foot traffic is dense tonight",
+      "description": "The Quarter is running hot into the evening, with slower vehicle movement and stronger spillover into nearby bars and theater corridors.",
+      "impact_level": "high",
+      "rank_weight": 0.92,
+      "status": "active",
+      "starts_at": "2026-03-15T17:30:00-05:00",
+      "expires_at": "2026-03-15T23:30:00-05:00",
+      "affected_district_slugs": ["french-quarter", "canal-street"],
+      "near_anchor_slugs": ["french-quarter-stay"],
+      "pro_tip": "Walking beats short vehicle hops once Canal Street and the Quarter stack at the same time."
+    },
+    {
+      "id": "sig-nola-saenger-flow",
+      "signal_type": "event_awareness",
+      "provenance": "derived",
+      "title": "Saenger crowd will tighten Canal Street before showtime",
+      "description": "Theater arrivals and hotel traffic are likely to overlap ahead of tonight's Saenger show.",
+      "impact_level": "medium",
+      "rank_weight": 0.7,
+      "status": "scheduled",
+      "starts_at": "2026-03-15T18:45:00-05:00",
+      "expires_at": "2026-03-15T21:45:00-05:00",
+      "linked_event_id": "evt-nola-saenger-comedy",
+      "linked_venue_slug": "saenger-theatre",
+      "affected_district_slugs": ["canal-street"],
+      "near_anchor_slugs": ["french-quarter-stay"]
+    },
+    {
+      "id": "sig-nola-jam-post",
+      "signal_type": "micro_post",
+      "provenance": "source_backed",
+      "title": "Small jazz crowd building near Maple Leaf",
+      "description": "Neighborhood regulars are already gathering for the later jam and the patio is starting to fill.",
+      "impact_level": "low",
+      "rank_weight": 0.43,
+      "status": "active",
+      "starts_at": "2026-03-15T18:00:00-05:00",
+      "expires_at": "2026-03-15T20:00:00-05:00",
+      "linked_place_slug": "maple-leaf-patio",
+      "affected_district_slugs": ["uptown-riverbend"],
+      "near_anchor_slugs": ["warehouse-arts-district"],
+      "source_ref": { "kind": "venue-partner", "external_id": "maple-leaf-patio-2026-03-15-1800" }
+    }
+  ]
+}

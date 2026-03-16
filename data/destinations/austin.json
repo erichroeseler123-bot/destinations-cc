@@ -1,0 +1,21 @@
+{
+  "slug": "austin",
+  "display_name": "Austin",
+  "aliases": [
+    "austin-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "BBQ Food Tour",
+      "description": "Taste legendary Texas barbecue.",
+      "query": "Austin BBQ food tour"
+    },
+    {
+      "title": "Live Music Crawl",
+      "description": "Downtown music venues.",
+      "query": "Austin live music tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

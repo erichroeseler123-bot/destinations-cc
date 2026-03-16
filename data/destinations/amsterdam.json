@@ -1,0 +1,27 @@
+{
+  "slug": "amsterdam",
+  "display_name": "Amsterdam",
+  "aliases": [
+    "amsterdam-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Amsterdam City Highlights Tour",
+      "description": "A quick way to see the best of Amsterdam with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Canal Cruise",
+      "description": "Short scenic canal sailings and iconic waterfront views across the city.",
+      "query": "canal cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for canals, neighborhoods, and historic streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

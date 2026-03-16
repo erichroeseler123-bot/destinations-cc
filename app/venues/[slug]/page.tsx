@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageActionBar from "@/app/components/dcc/PageActionBar";
+import JsonLd from "@/app/components/dcc/JsonLd";
+import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
 import DecisionEngineTemplate from "@/app/components/dcc/DecisionEngineTemplate";
 import LivePulseBlock from "@/app/components/dcc/livePulse/LivePulseBlock";
 import LivePulseShareCard from "@/app/components/dcc/share/LivePulseShareCard";
@@ -11,6 +13,7 @@ import { getDecisionEnginePageByPath } from "@/src/data/decision-engine-pages";
 import { getSportsTeam, getTeamsByVenue } from "@/src/data/sports-teams-config";
 import { getSportsVenue, getSportsVenueSlugs } from "@/src/data/sports-venues-config";
 import { buildMapsSearchUrl, buildOfficialSearchUrl, type PageAction } from "@/src/lib/page-actions";
+import { buildBreadcrumbJsonLd, buildPlaceJsonLd } from "@/lib/dcc/jsonld";
 
 type Params = { slug: string };
 
@@ -42,31 +45,6 @@ function formatDate(value: string | null): string {
     hour: "numeric",
     minute: "2-digit",
   });
-}
-
-function JsonLd({ name, slug }: { name: string; slug: string }) {
-  const url = `https://destinationcommandcenter.com/venues/${slug}`;
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": url,
-        url,
-        name: `${name} Venue Guide and Tickets`,
-        description: `${name} venue context, primary teams, and ticket discovery.`,
-        dateModified: "2026-03-12",
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Venues", item: "https://destinationcommandcenter.com/venues" },
-          { "@type": "ListItem", position: 2, name: name, item: url },
-        ],
-      },
-    ],
-  };
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
 export default async function VenuePage({ params }: { params: Promise<Params> }) {
@@ -114,7 +92,26 @@ export default async function VenuePage({ params }: { params: Promise<Params> })
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.14),_transparent_24%),radial-gradient(circle_at_90%_18%,_rgba(244,114,182,0.1),_transparent_18%),linear-gradient(180deg,_#111217_0%,_#090a0d_100%)] text-white">
-      <JsonLd name={venue.name} slug={venue.slug} />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            buildPlaceJsonLd({
+              path: `/venues/${venue.slug}`,
+              name: venue.name,
+              description: venue.description,
+              address: {
+                locality: venue.cityName,
+                country: "US",
+              },
+            }),
+            buildBreadcrumbJsonLd([
+              { name: "Venues", item: "/venues" },
+              { name: venue.name, item: `/venues/${venue.slug}` },
+            ]),
+          ],
+        }}
+      />
       <div className="mx-auto max-w-6xl px-6 py-16 space-y-8">
         <header className="space-y-4">
           <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">DCC Venue Node</p>
@@ -138,6 +135,8 @@ export default async function VenuePage({ params }: { params: Promise<Params> })
         ) : null}
 
         {decisionPage ? <DecisionEngineTemplate page={decisionPage} /> : null}
+
+        <RideOptionsCard venueSlug={slug} sourcePage={`/venues/${slug}`} />
 
         <section className="grid gap-4 md:grid-cols-3">
           {venue.whyItMatters.map((item) => (

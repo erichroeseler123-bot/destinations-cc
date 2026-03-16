@@ -62,14 +62,17 @@ export default function HomeCitySearch({ cities }: { cities: CityLite[] }) {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full max-w-3xl">
+      <div className="mb-3 text-[11px] font-black uppercase tracking-[0.24em] text-[#efe5d3]/76">
+        Search the command network
+      </div>
       <div className="relative">
         <div className="flex gap-3">
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder='Search cities: "denver", "miami", "new-orleans", "CA", "tokyo"...'
-            className="flex-1 rounded-2xl bg-white/5 border border-white/10 px-5 py-4 text-white placeholder:text-zinc-500 outline-none focus:ring-2 focus:ring-cyan-500/60"
+            className="flex-1 rounded-full border border-[#f5c66c]/20 bg-white/[0.06] px-5 py-4 text-white outline-none placeholder:text-[#f8f4ed]/38 focus:ring-2 focus:ring-[#f5c66c]/60"
             onKeyDown={(e) => {
               if (e.key === "Enter") go();
               if (e.key === "Escape") setQ("");
@@ -79,36 +82,36 @@ export default function HomeCitySearch({ cities }: { cities: CityLite[] }) {
           <button
             type="button"
             onClick={go}
-            className="rounded-2xl bg-cyan-600 px-6 py-4 font-semibold text-white hover:bg-cyan-500 transition shadow-lg shadow-cyan-600/25"
+            className="rounded-full border border-[#f5c66c]/20 bg-[linear-gradient(180deg,#f5c66c,#21c6da)] px-6 py-4 text-xs font-black uppercase tracking-[0.18em] text-[#120f0b] shadow-[0_18px_38px_rgba(245,198,108,0.12)] transition hover:scale-[1.02]"
           >
             Search
           </button>
         </div>
 
         {query && results.length > 0 && (
-          <div className="absolute z-50 mt-3 w-full rounded-2xl border border-white/10 bg-zinc-950/95 backdrop-blur p-2 shadow-2xl">
+          <div className="absolute z-50 mt-3 w-full rounded-[1.6rem] border border-[#f5c66c]/14 bg-[#100d0b]/95 p-2 shadow-2xl backdrop-blur">
             {results.map((c) => (
               <Link
                 key={c.slug}
                 href={`/${c.slug}`}
-                className="flex items-center justify-between gap-3 rounded-xl px-3 py-2 hover:bg-white/5 transition"
+                className="flex items-center justify-between gap-3 rounded-[1rem] px-3 py-3 transition hover:bg-white/5"
                 onClick={() => setQ("")}
               >
                 <div className="min-w-0">
-                  <div className="font-semibold truncate">{c.name}</div>
-                  <div className="text-xs text-zinc-500 truncate">
+                  <div className="truncate font-black uppercase">{c.name}</div>
+                  <div className="truncate text-xs text-[#f8f4ed]/46">
                     {c.admin?.country || "—"}
                     {c.admin?.region_code ? ` • ${c.admin.region_code}` : ""} • /{c.slug}
                   </div>
                 </div>
-                <div className="text-xs text-cyan-300 shrink-0">Open →</div>
+                <div className="shrink-0 text-xs font-black uppercase tracking-[0.16em] text-[#f5c66c]">Open</div>
               </Link>
             ))}
           </div>
         )}
       </div>
 
-      <div className="mt-2 text-xs text-zinc-600">
+      <div className="mt-2 text-xs uppercase tracking-[0.12em] text-[#f8f4ed]/40">
         Enter opens the top match • Search button opens best match (or All Cities results)
       </div>
     </div>

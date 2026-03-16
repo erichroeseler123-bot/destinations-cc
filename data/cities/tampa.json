@@ -1,0 +1,126 @@
+{
+  "slug": "tampa",
+  "name": "Tampa",
+  "metadata": {
+    "title": "Tampa Tours, Things to Do, and Attractions | Destination Command Center",
+    "description": "Discover Tampa tours, things to do, attractions, food, neighborhoods, and trip ideas. Browse guided experiences and plan around the city's most useful travel highlights.",
+    "keywords": [
+      "tampa tours",
+      "things to do in tampa",
+      "tampa attractions",
+      "tampa sightseeing"
+    ]
+  },
+  "hero": {
+    "eyebrow": "Tampa travel guide",
+    "title": "Tampa tours, things to do, and local travel planning",
+    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Tampa trip.",
+    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Tampa.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/tampa/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/tampa/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly."
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+    }
+  ],
+  "topAttractions": [
+    {
+      "slug": "ybor-city",
+      "title": "Ybor City",
+      "description": ""
+    },
+    {
+      "slug": "tampa-riverwalk",
+      "title": "Tampa Riverwalk",
+      "description": ""
+    },
+    {
+      "slug": "busch-gardens-tampa-bay",
+      "title": "Busch Gardens Tampa Bay",
+      "description": ""
+    },
+    {
+      "slug": "sparkman-wharf",
+      "title": "Sparkman Wharf",
+      "description": ""
+    },
+    {
+      "slug": "tampa-theatre",
+      "title": "Tampa Theatre",
+      "description": ""
+    },
+    {
+      "slug": "florida-aquarium",
+      "title": "The Florida Aquarium",
+      "description": ""
+    }
+  ],
+  "featuredTours": {
+    "title": "Popular Tampa experiences",
+    "description": "Guided experiences and bookable activities that help visitors plan around Tampa's most useful highlights.",
+    "fallbackQueries": [
+      "tampa walking tour",
+      "tampa food tour",
+      "tampa sightseeing tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Things to do in Tampa",
+      "description": "A broader planning surface for attractions, neighborhoods, and trip ideas.",
+      "href": "/tampa/things-to-do"
+    },
+    {
+      "title": "Tampa tours",
+      "description": "A cleaner starting point for guided experiences, day trips, and visitor favorites.",
+      "href": "/tampa/tours"
+    },
+    {
+      "title": "Tampa food guide",
+      "description": "Restaurants, food neighborhoods, and tasting-focused experiences.",
+      "href": "/tampa/food"
+    },
+    {
+      "title": "Tampa day trips",
+      "description": "Half-day and full-day options that fit naturally with a city stay.",
+      "href": "/tampa/day-trips"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in Tampa for first-time visitors?",
+      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+    },
+    {
+      "q": "How many days should you spend in Tampa?",
+      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+    }
+  ],
+  "coordinates": {
+    "lat": 27.9506,
+    "lng": -82.4572
+  },
+  "timezone": "America/New_York",
+  "lat": 27.9506,
+  "lng": -82.4572
+}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import DecisionEngineTemplate from "@/app/components/dcc/DecisionEngineTemplate";
+import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
 import { getSurface, hasSurfaceEntity } from "@/lib/dcc/surfaces/getSurface";
 import {
   getDecisionEnginePageByPath,
@@ -59,6 +60,7 @@ export default async function RouteDecisionPage({
     <main className="min-h-screen bg-zinc-950 text-white">
       <div className="mx-auto max-w-6xl px-6 py-14 space-y-8">
         <DecisionEngineTemplate page={page} />
+        {slug === "denver-red-rocks" ? <RideOptionsCard venueSlug="red-rocks-amphitheatre" sourcePage="/routes/denver-red-rocks" /> : null}
         <footer className="text-sm text-zinc-400">
           <Link href="/cities/denver" className="hover:text-zinc-200">
             Open Denver decision engine →

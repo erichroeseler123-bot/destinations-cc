@@ -1,0 +1,27 @@
+{
+  "slug": "key-west",
+  "display_name": "Key West",
+  "aliases": [
+    "key-west-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Key West City Highlights Tour",
+      "description": "A quick way to see the best of Key West with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

@@ -1,0 +1,333 @@
+{
+  "citySlug": "seattle",
+  "cityName": "Seattle",
+  "attractions": [
+    {
+      "slug": "pike-place-market",
+      "name": "Pike Place Market",
+      "type": "market",
+      "summary": "Pike Place Market is a useful Seattle stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "food",
+        "shopping",
+        "sightseeing"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Pike Place Market guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Pike Place Market in Seattle, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair Pike Place Market with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Pike Place Market as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Pike Place Market food experiences",
+          "query": "seattle pike place market food tour",
+          "description": "Helpful when Pike Place Market fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Pike Place Market guided experiences",
+          "query": "seattle pike place market tours",
+          "description": "A general search path for tours and guided experiences connected to Pike Place Market in Seattle."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Space Needle",
+          "href": "/seattle/space-needle"
+        },
+        {
+          "label": "Chihuly Garden and Glass",
+          "href": "/seattle/chihuly-garden-and-glass"
+        },
+        {
+          "label": "Seattle Waterfront",
+          "href": "/seattle/waterfront-park"
+        }
+      ],
+      "primaryToursHref": "/seattle/pike-place-market/tours",
+      "thingsToDoHref": "/seattle/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Space Needle",
+        "Chihuly Garden and Glass"
+      ]
+    },
+    {
+      "slug": "space-needle",
+      "name": "Space Needle",
+      "type": "landmark",
+      "summary": "Space Needle is one of the more recognizable visitor stops in Seattle and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "landmark",
+        "views"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Space Needle guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Space Needle in Seattle, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Space Needle as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Space Needle guided experiences",
+          "query": "seattle space needle tours",
+          "description": "A general search path for tours and guided experiences connected to Space Needle in Seattle."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Pike Place Market",
+          "href": "/seattle/pike-place-market"
+        },
+        {
+          "label": "Chihuly Garden and Glass",
+          "href": "/seattle/chihuly-garden-and-glass"
+        },
+        {
+          "label": "Seattle Waterfront",
+          "href": "/seattle/waterfront-park"
+        }
+      ],
+      "primaryToursHref": "/seattle/space-needle/tours",
+      "thingsToDoHref": "/seattle/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Pike Place Market",
+        "Chihuly Garden and Glass"
+      ]
+    },
+    {
+      "slug": "chihuly-garden-and-glass",
+      "name": "Chihuly Garden and Glass",
+      "type": "museum",
+      "summary": "Chihuly Garden and Glass is one of the more recognizable visitor stops in Seattle and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "art",
+        "museum"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "Chihuly Garden and Glass guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Chihuly Garden and Glass in Seattle, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Chihuly Garden and Glass as one clear stop within a broader city day instead of overbuilding your itinerary around it."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Chihuly Garden and Glass as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Chihuly Garden and Glass guided experiences",
+          "query": "seattle chihuly garden and glass tours",
+          "description": "A general search path for tours and guided experiences connected to Chihuly Garden and Glass in Seattle."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Pike Place Market",
+          "href": "/seattle/pike-place-market"
+        },
+        {
+          "label": "Space Needle",
+          "href": "/seattle/space-needle"
+        },
+        {
+          "label": "Seattle Waterfront",
+          "href": "/seattle/waterfront-park"
+        }
+      ],
+      "primaryToursHref": "/seattle/chihuly-garden-and-glass/tours",
+      "thingsToDoHref": "/seattle/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Pike Place Market",
+        "Space Needle"
+      ]
+    },
+    {
+      "slug": "waterfront-park",
+      "name": "Seattle Waterfront",
+      "type": "waterfront",
+      "summary": "Seattle Waterfront is one of the more recognizable visitor stops in Seattle and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "waterfront",
+        "walks",
+        "sightseeing"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Seattle Waterfront guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Seattle Waterfront in Seattle, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Seattle Waterfront as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Seattle Waterfront guided experiences",
+          "query": "seattle waterfront park tours",
+          "description": "A general search path for tours and guided experiences connected to Seattle Waterfront in Seattle."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Pike Place Market",
+          "href": "/seattle/pike-place-market"
+        },
+        {
+          "label": "Space Needle",
+          "href": "/seattle/space-needle"
+        },
+        {
+          "label": "Chihuly Garden and Glass",
+          "href": "/seattle/chihuly-garden-and-glass"
+        }
+      ],
+      "primaryToursHref": "/seattle/waterfront-park/tours",
+      "thingsToDoHref": "/seattle/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Pike Place Market",
+        "Space Needle"
+      ]
+    },
+    {
+      "slug": "kerry-park",
+      "name": "Kerry Park",
+      "type": "park",
+      "summary": "Kerry Park gives visitors a practical outdoor break from denser city blocks and usually fits best into a slower part of the day in Seattle.",
+      "categories": [
+        "views",
+        "park",
+        "sightseeing"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Kerry Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Kerry Park in Seattle, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Kerry Park for a slower outdoor block, especially if the rest of the day is built around denser city stops.",
+        "Pair Kerry Park with one nearby indoor attraction, meal, or sightseeing route instead of overloading the day.",
+        "Use Kerry Park as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Kerry Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops tend to be easier to pace when you keep the rest of the day light and avoid too many cross-city jumps.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Kerry Park outdoor experiences",
+          "query": "seattle kerry park outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery, fresh air, or a slower pace."
+        },
+        {
+          "label": "Kerry Park guided experiences",
+          "query": "seattle kerry park tours",
+          "description": "A general search path for tours and guided experiences connected to Kerry Park in Seattle."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Pike Place Market",
+          "href": "/seattle/pike-place-market"
+        },
+        {
+          "label": "Space Needle",
+          "href": "/seattle/space-needle"
+        },
+        {
+          "label": "Chihuly Garden and Glass",
+          "href": "/seattle/chihuly-garden-and-glass"
+        }
+      ],
+      "primaryToursHref": "/seattle/kerry-park/tours",
+      "thingsToDoHref": "/seattle/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Pike Place Market",
+        "Space Needle"
+      ]
+    },
+    {
+      "slug": "pioneer-square",
+      "name": "Pioneer Square",
+      "type": "historic-district",
+      "summary": "Pioneer Square is a useful district to understand early if you want a clearer feel for how visitors actually spend time in Seattle.",
+      "categories": [
+        "history",
+        "walks",
+        "food"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Pioneer Square guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Pioneer Square in Seattle, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Walk Pioneer Square with one clear purpose, such as food, music, shopping, or evening atmosphere.",
+        "Treat Pioneer Square as a time block rather than a quick pass-through if it is one of the main reasons for the trip.",
+        "Use Pioneer Square as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Pioneer Square as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Districts usually feel stronger when you decide whether the point is food, shopping, nightlife, or a general walk before you arrive.",
+        "A guided walk or city tour often gives Pioneer Square more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Pioneer Square neighborhood tours",
+          "query": "seattle pioneer square neighborhood tour",
+          "description": "Helpful when Pioneer Square is better experienced as part of a larger district walk or evening plan."
+        },
+        {
+          "label": "Pioneer Square history tours",
+          "query": "seattle pioneer square history tour",
+          "description": "A simple starting point for visitors who want more context around Pioneer Square."
+        },
+        {
+          "label": "Pioneer Square food experiences",
+          "query": "seattle pioneer square food tour",
+          "description": "Helpful when Pioneer Square fits naturally into a food-first city plan."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Pike Place Market",
+          "href": "/seattle/pike-place-market"
+        },
+        {
+          "label": "Space Needle",
+          "href": "/seattle/space-needle"
+        },
+        {
+          "label": "Chihuly Garden and Glass",
+          "href": "/seattle/chihuly-garden-and-glass"
+        }
+      ],
+      "primaryToursHref": "/seattle/pioneer-square/tours",
+      "thingsToDoHref": "/seattle/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Pike Place Market",
+        "Space Needle"
+      ]
+    }
+  ]
+}

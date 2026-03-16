@@ -1,0 +1,27 @@
+{
+  "slug": "nassau",
+  "display_name": "Nassau",
+  "aliases": [
+    "nassau-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Nassau City Highlights Tour",
+      "description": "A quick way to see the best of Nassau with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Bay Cruise",
+      "description": "Short scenic sailings and waterfront views near Nassau Harbor.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront streets, forts, and city highlights.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

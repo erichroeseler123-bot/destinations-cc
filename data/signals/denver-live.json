@@ -1,0 +1,112 @@
+{
+  "city": "denver",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-06:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-13T12:05:00-06:00",
+  "schema": {
+    "entity": "signal",
+    "description": "Ephemeral NOW-layer output. Signals are expiring, ranked awareness objects derived from events, places, source feeds, or editorial input.",
+    "provenance_types": ["derived", "source_backed", "manual_editorial"]
+  },
+  "signals": [
+    {
+      "id": "sig-2026-03-13-rv-show-impact",
+      "signal_type": "high_impact",
+      "provenance": "derived",
+      "title": "Convention crowds active downtown today",
+      "description": "The Great American RV Show is driving heavier pedestrian traffic and tighter parking near the Convention Center and 14th Street corridor.",
+      "impact_level": "high",
+      "rank_weight": 0.96,
+      "status": "active",
+      "starts_at": "2026-03-13T10:00:00-06:00",
+      "expires_at": "2026-03-14T20:00:00-06:00",
+      "linked_event_id": "evt-2026-03-13-rv-show",
+      "linked_venue_slug": "colorado-convention-center",
+      "affected_district_slugs": ["downtown-core", "theater-district"],
+      "near_anchor_slugs": ["spire", "brooks-tower", "four-seasons-denver"],
+      "pro_tip": "Leave earlier than usual if you're crossing downtown westbound in late afternoon."
+    },
+    {
+      "id": "sig-2026-03-13-ali-siddiq-tonight",
+      "signal_type": "event_awareness",
+      "provenance": "derived",
+      "title": "Ali Siddiq at Paramount tonight",
+      "description": "Comedy crowd building tonight in the Paramount and 16th Street area with likely post-show spillover into nearby bars and restaurants.",
+      "impact_level": "medium",
+      "rank_weight": 0.72,
+      "status": "scheduled",
+      "starts_at": "2026-03-13T17:30:00-06:00",
+      "expires_at": "2026-03-13T22:30:00-06:00",
+      "linked_event_id": "evt-2026-03-13-ali-siddiq",
+      "linked_venue_slug": "paramount-theatre",
+      "affected_district_slugs": ["downtown-core"],
+      "near_anchor_slugs": ["spire", "brooks-tower", "ritz-carlton-denver"]
+    },
+    {
+      "id": "sig-2026-03-13-theater-district-flow",
+      "signal_type": "district_activity",
+      "provenance": "derived",
+      "title": "Theater District busy tonight",
+      "description": "Performing arts arrivals and exits will keep the Theater District active through the evening, especially around Curtis and 14th.",
+      "impact_level": "medium",
+      "rank_weight": 0.68,
+      "status": "scheduled",
+      "starts_at": "2026-03-13T18:00:00-06:00",
+      "expires_at": "2026-03-13T22:45:00-06:00",
+      "linked_event_id": "evt-2026-03-13-dcpa-show-block",
+      "linked_venue_slug": "denver-performing-arts-complex",
+      "affected_district_slugs": ["theater-district", "downtown-core"],
+      "near_anchor_slugs": ["spire", "brooks-tower", "four-seasons-denver"]
+    },
+    {
+      "id": "sig-2026-03-13-larimer-buzz",
+      "signal_type": "district_activity",
+      "provenance": "manual_editorial",
+      "title": "Larimer Square has strong dinner-and-drinks energy tonight",
+      "description": "Bars and restaurants around Larimer Square look strong for spontaneous walk-ins, pre-show drinks, and post-dinner movement.",
+      "impact_level": "medium",
+      "rank_weight": 0.63,
+      "status": "scheduled",
+      "starts_at": "2026-03-13T17:00:00-06:00",
+      "expires_at": "2026-03-14T01:30:00-06:00",
+      "linked_venue_slug": "larimer-square",
+      "affected_district_slugs": ["lodo", "downtown-core"],
+      "near_anchor_slugs": ["spire", "brooks-tower", "windsor-denver", "coloradan"]
+    },
+    {
+      "id": "sig-2026-03-13-tavernetta-happy-hour",
+      "signal_type": "micro_post",
+      "provenance": "source_backed",
+      "title": "Happy hour moving now at Tavernetta",
+      "description": "Strong early-evening energy near Union Station with drinks and dinner traffic building now.",
+      "impact_level": "low",
+      "rank_weight": 0.41,
+      "status": "active",
+      "starts_at": "2026-03-13T16:00:00-06:00",
+      "expires_at": "2026-03-13T18:00:00-06:00",
+      "linked_place_slug": "tavernetta",
+      "source_ref": {
+        "kind": "venue-partner",
+        "external_id": "tavernetta-hh-2026-03-13-1600"
+      },
+      "near_anchor_slugs": ["coloradan", "windsor-denver", "four-seasons-denver"]
+    },
+    {
+      "id": "sig-2026-03-13-ballpark-music-flow",
+      "signal_type": "event_awareness",
+      "provenance": "derived",
+      "title": "Summit Music Hall crowd tonight",
+      "description": "Expect a moderate Ballpark and LoDo music crowd tonight around Blake Street and nearby bars.",
+      "impact_level": "medium",
+      "rank_weight": 0.58,
+      "status": "scheduled",
+      "starts_at": "2026-03-13T18:00:00-06:00",
+      "expires_at": "2026-03-13T23:30:00-06:00",
+      "linked_event_id": "evt-2026-03-13-two-feet",
+      "linked_venue_slug": "summit-music-hall",
+      "affected_district_slugs": ["ballpark", "lodo"],
+      "near_anchor_slugs": ["windsor-denver", "coloradan", "ritz-carlton-denver"]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "city": "las-vegas",
+  "version": 1,
+  "as_of": "2026-03-15T18:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-14T18:00:00-07:00",
+  "schema": { "entity": "anchor", "description": "Resident and visitor origin nodes for the Las Vegas NOW layer." },
+  "anchors": [
+    {
+      "slug": "aria",
+      "name": "ARIA Campus",
+      "anchor_type": "hotel-residential",
+      "address": "3730 S Las Vegas Blvd, Las Vegas, NV 89158",
+      "lat": 36.1072,
+      "lng": -115.1767,
+      "default_walk_radius_m": 1500,
+      "district_slugs": ["las-vegas-strip", "resort-corridor"],
+      "nearby_venue_slugs": ["t-mobile-arena", "mgm-grand-garden-arena", "house-of-blues-las-vegas"],
+      "nearby_place_slugs": ["easy-donuts-and-coffee", "brewdog-las-vegas", "bar-centra"]
+    },
+    {
+      "slug": "fontainebleau",
+      "name": "Fontainebleau North Strip",
+      "anchor_type": "hotel-residential",
+      "address": "2777 S Las Vegas Blvd, Las Vegas, NV 89109",
+      "lat": 36.1365,
+      "lng": -115.1632,
+      "default_walk_radius_m": 1500,
+      "district_slugs": ["las-vegas-strip", "north-strip"],
+      "nearby_venue_slugs": ["sphere", "brooklyn-bowl-las-vegas", "virgin-theater"],
+      "nearby_place_slugs": ["peppermill-restaurant", "caspians-cocktails", "resorts-world-dining-promenade"]
+    }
+  ]
+}

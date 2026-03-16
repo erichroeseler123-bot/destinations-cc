@@ -1,0 +1,27 @@
+{
+  "slug": "san-juan",
+  "display_name": "San Juan",
+  "aliases": [
+    "san-juan-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "San Juan City Highlights Tour",
+      "description": "A quick way to see the best of San Juan with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Bay Cruise",
+      "description": "Short scenic sailings and waterfront views near Old San Juan.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for forts, waterfront history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

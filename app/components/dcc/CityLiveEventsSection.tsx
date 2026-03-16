@@ -32,13 +32,28 @@ export default function CityLiveEventsSection({
   liveStatus = null,
 }: CityLiveEventsSectionProps) {
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
-      <h2 className="text-2xl font-bold">Live Shows, Festivals, and Venue Intelligence</h2>
-      <p className="mt-2 text-zinc-300">
-        This layer is built for high-volume event coverage across casinos, venues, concerts, and festivals.
-        As SeatGeek and Ticketmaster inventories expand, these routes stay stable for both SEO and conversion.
-      </p>
+    <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+      <div className="max-w-3xl">
+        <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Live Shows</p>
+        <h2 className="mt-2 text-2xl font-bold md:text-3xl">What to watch for across {cityName}</h2>
+        <p className="mt-3 text-zinc-300">
+          Track headline shows, venue clusters, and seasonal event patterns in {cityName}, then jump into the live event pages that matter most for your plans.
+        </p>
+      </div>
       {liveStatus ? <p className="mt-2 text-sm text-cyan-300">{liveStatus}</p> : null}
+
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm">
+        <div className="flex flex-wrap items-center gap-3 text-zinc-300">
+          <span className="font-medium text-white">{featuredEvents.length || ticketQueries.length} current browse paths</span>
+          <span className="text-zinc-500">•</span>
+          <span>{venues.length} venues in this surface</span>
+        </div>
+        <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.16em] text-zinc-400">
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Shows</span>
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Festivals</span>
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Venue guides</span>
+        </div>
+      </div>
 
       <div className="mt-4 flex flex-col gap-3 sm:flex-row">
         <Link
@@ -69,7 +84,7 @@ export default function CityLiveEventsSection({
           data-dcc-intent-query={`${cityName} events`}
           className="inline-flex items-center justify-center rounded-xl border border-white/15 px-5 py-3 font-semibold text-zinc-200 hover:bg-white/10"
         >
-          Open Event Discovery Lane
+          Explore Event Options
         </Link>
       </div>
 
@@ -82,9 +97,10 @@ export default function CityLiveEventsSection({
             {featuredEvents.map((event) => (
               <article
                 key={event.id}
-                className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-zinc-200"
+                className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-zinc-200 transition-colors hover:bg-white/[0.08]"
               >
                 <div className="space-y-2">
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Featured event</p>
                   <h4 className="font-semibold text-white">{event.name}</h4>
                   <p className="text-zinc-400">
                     {[event.startDate, event.venueName].filter(Boolean).join(" • ") || "Live event"}
@@ -110,8 +126,9 @@ export default function CityLiveEventsSection({
         <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-zinc-400">Venue Clusters</h3>
         <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {venues.map((venue) => (
-            <div key={venue} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-zinc-200">
-              {venue}
+            <div key={venue} className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-zinc-200">
+              <p className="font-medium text-white">{venue}</p>
+              <p className="mt-1 text-xs uppercase tracking-[0.16em] text-zinc-500">Browse venue context</p>
             </div>
           ))}
         </div>
@@ -134,9 +151,10 @@ export default function CityLiveEventsSection({
               data-dcc-lane="events"
               data-dcc-source-section="city_events_intent"
               data-dcc-intent-query={item.query}
-              className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-zinc-200 hover:bg-white/10"
+              className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-zinc-200 transition-colors hover:bg-white/[0.08]"
             >
-              {item.label}
+              <p className="font-medium text-white">{item.label}</p>
+              <p className="mt-1 text-xs uppercase tracking-[0.16em] text-zinc-500">Open show search</p>
             </Link>
           ))}
         </div>
@@ -146,8 +164,9 @@ export default function CityLiveEventsSection({
         <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-zinc-400">Festival and Seasonal Anchors</h3>
         <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {festivals.map((fest) => (
-            <div key={fest} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-zinc-200">
-              {fest}
+            <div key={fest} className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-zinc-200">
+              <p className="font-medium text-white">{fest}</p>
+              <p className="mt-1 text-xs uppercase tracking-[0.16em] text-zinc-500">Seasonal planning anchor</p>
             </div>
           ))}
         </div>

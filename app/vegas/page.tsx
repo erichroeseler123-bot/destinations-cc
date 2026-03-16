@@ -168,14 +168,14 @@ export default async function VegasPage() {
         <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(249,115,22,0.22),transparent_35%),linear-gradient(180deg,rgba(24,24,27,0.92),rgba(9,9,11,0.96))] p-6 md:p-8 shadow-[0_28px_80px_rgba(0,0,0,0.45)]">
           <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
             <div className="space-y-5">
-              <p className="text-xs uppercase tracking-[0.26em] text-amber-300">DCC Vegas Layer</p>
+              <p className="text-xs uppercase tracking-[0.26em] text-amber-300">Las Vegas Guide</p>
               <div className="space-y-3">
                 <h1 className="max-w-3xl text-4xl font-black tracking-tight md:text-6xl">
                   Las Vegas 2026: shows, day trips, nightlife, and high-intent tours
                 </h1>
                 <p className="max-w-3xl text-base text-zinc-300 md:text-lg">
-                  Use DCC to structure Vegas around what actually converts and what actually fits:
-                  Strip nights, Fremont contrasts, Hoover Dam and canyon day trips, and bookable tour inventory.
+                  Plan Las Vegas around what fits a real trip: Strip nights, Fremont contrasts,
+                  Hoover Dam and canyon day trips, and popular tours worth booking ahead.
                 </p>
                 <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Last updated: March 2026</p>
               </div>
@@ -218,10 +218,10 @@ export default async function VegasPage() {
                 </div>
               ))}
               <div className="rounded-2xl border border-orange-400/20 bg-orange-500/10 p-4">
-                <p className="text-xs uppercase tracking-[0.22em] text-orange-300">Why this page makes money</p>
+                <p className="text-xs uppercase tracking-[0.22em] text-orange-300">Why this page helps</p>
                 <p className="mt-2 text-sm text-zinc-200">
-                  Vegas buyers usually choose between one big desert day trip, one premium night activity,
-                  and one flexible sightseeing block. That is exactly where tour handoffs convert.
+                  Most Vegas trips work best with one big desert day trip, one standout night plan,
+                  and one lighter sightseeing block instead of trying to do everything at once.
                 </p>
               </div>
             </div>
@@ -234,7 +234,7 @@ export default async function VegasPage() {
           <ViatorTourGrid
             placeName="Las Vegas"
             title="Top Las Vegas tours and bookable experiences"
-            description="This block uses the existing DCC Viator action layer to surface high-intent Vegas inventory first: canyon routes, helicopter products, dam trips, desert experiences, and nightlife-adjacent bookings."
+            description="Start here for popular Las Vegas tours: canyon routes, helicopter flights, Hoover Dam trips, desert experiences, and easy add-ons for a shorter stay."
             products={viatorAction.products}
             fallbacks={fallbackTours}
           />
@@ -245,7 +245,7 @@ export default async function VegasPage() {
             href="/las-vegas/best-day-trips"
             className="rounded-3xl border border-cyan-400/20 bg-cyan-500/10 p-6 shadow-[0_16px_50px_rgba(0,0,0,0.35)] hover:bg-cyan-500/15"
           >
-            <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Best Of Spoke</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Best Day Trips</p>
             <h2 className="mt-3 text-2xl font-bold">Best day trips from Las Vegas</h2>
             <p className="mt-2 text-zinc-200">
               A cleaner commercial page for Grand Canyon, Hoover Dam, Antelope Canyon, and desert route buyers.
@@ -255,7 +255,7 @@ export default async function VegasPage() {
             href="/las-vegas/helicopter-tours"
             className="rounded-3xl border border-cyan-400/20 bg-cyan-500/10 p-6 shadow-[0_16px_50px_rgba(0,0,0,0.35)] hover:bg-cyan-500/15"
           >
-            <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Activity Hub</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Flights and Views</p>
             <h2 className="mt-3 text-2xl font-bold">Las Vegas helicopter tours</h2>
             <p className="mt-2 text-zinc-200">
               A dedicated landing page for Strip flights, Grand Canyon helicopter products, and premium aerial inventory.
@@ -265,84 +265,84 @@ export default async function VegasPage() {
 
         <section className="grid gap-4 md:grid-cols-2">
           <Link href="/las-vegas/pools" className="rounded-3xl border border-sky-400/20 bg-sky-500/10 p-6 hover:bg-sky-500/15">
-            <p className="text-xs uppercase tracking-[0.22em] text-sky-300">Category Hub</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-sky-300">Pools and Resorts</p>
             <h2 className="mt-3 text-2xl font-bold">Las Vegas pools</h2>
-            <p className="mt-2 text-zinc-200">Pool-driven hotel routing for luxury decks, family pool complexes, and dayclub-adjacent planning.</p>
+            <p className="mt-2 text-zinc-200">Pool picks for luxury decks, family-friendly complexes, and dayclub-heavy hotel stays.</p>
           </Link>
           <Link href="/luxury-hotels-las-vegas" className="rounded-3xl border border-sky-400/20 bg-sky-500/10 p-6 hover:bg-sky-500/15">
-            <p className="text-xs uppercase tracking-[0.22em] text-sky-300">Overlay</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-sky-300">Luxury Stays</p>
             <h2 className="mt-3 text-2xl font-bold">Luxury hotels in Las Vegas</h2>
-            <p className="mt-2 text-zinc-200">Premium-stay overlay for resort, spa, and romantic Vegas buyers.</p>
+            <p className="mt-2 text-zinc-200">A cleaner guide to resort stays, spa hotels, and romantic Vegas picks.</p>
           </Link>
           <Link href="/suites/las-vegas" className="rounded-3xl border border-sky-400/20 bg-sky-500/10 p-6 hover:bg-sky-500/15">
             <p className="text-xs uppercase tracking-[0.22em] text-sky-300">Luxury Lodging</p>
             <h2 className="mt-3 text-2xl font-bold">Las Vegas suites</h2>
-            <p className="mt-2 text-zinc-200">Use the suite lane when room category, group fit, and upgraded layouts matter more than broad hotel filtering.</p>
+            <p className="mt-2 text-zinc-200">A useful starting point when larger layouts, upgraded rooms, or group-friendly stays matter most.</p>
           </Link>
           <Link href="/penthouses/las-vegas" className="rounded-3xl border border-sky-400/20 bg-sky-500/10 p-6 hover:bg-sky-500/15">
             <p className="text-xs uppercase tracking-[0.22em] text-sky-300">Luxury Lodging</p>
             <h2 className="mt-3 text-2xl font-bold">Penthouse-style stays</h2>
-            <p className="mt-2 text-zinc-200">A planning surface for privacy, views, entertaining space, and the top-end Strip room stack.</p>
+            <p className="mt-2 text-zinc-200">For privacy, views, entertaining space, and the most upscale room options on or near the Strip.</p>
           </Link>
         </section>
 
         <section className="grid gap-4 md:grid-cols-2">
           <Link href="/las-vegas/casinos" className="rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6 hover:bg-emerald-500/15">
-            <p className="text-xs uppercase tracking-[0.22em] text-emerald-300">Entity Hub</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-emerald-300">Casinos</p>
             <h2 className="mt-3 text-2xl font-bold">Las Vegas casinos</h2>
-            <p className="mt-2 text-zinc-200">The casino mesh layer for Strip anchors, Fremont classics, and sportsbook-led resort discovery.</p>
+            <p className="mt-2 text-zinc-200">Compare Strip anchors, downtown classics, and major resort-casino areas.</p>
           </Link>
           <Link href="/las-vegas/things-to-do" className="rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6 hover:bg-emerald-500/15">
-            <p className="text-xs uppercase tracking-[0.22em] text-emerald-300">Super Hub</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-emerald-300">Things to Do</p>
             <h2 className="mt-3 text-2xl font-bold">Things to do in Las Vegas</h2>
-            <p className="mt-2 text-zinc-200">Broad attraction routing across Strip landmarks, immersive stops, family picks, and major day-trip pillars.</p>
+            <p className="mt-2 text-zinc-200">A broader guide to Strip landmarks, immersive attractions, family picks, and classic day trips.</p>
           </Link>
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Link href="/las-vegas/hotels" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
-            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Entity Hub</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Hotels</p>
             <h2 className="mt-3 text-2xl font-bold">Las Vegas hotels</h2>
-            <p className="mt-2 text-zinc-200">Seeded hotel mesh for Strip, downtown, luxury, pet-friendly, and kid-friendly search intent.</p>
+            <p className="mt-2 text-zinc-200">Browse hotels across the Strip, downtown, luxury stays, pet-friendly picks, and family-friendly options.</p>
           </Link>
           <Link href="/las-vegas-strip" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
-            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Attraction Pillar</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Area Guide</p>
             <h2 className="mt-3 text-2xl font-bold">Las Vegas Strip</h2>
-            <p className="mt-2 text-zinc-200">Standalone authority hub for hotels, attractions, nightlife routing, and resort-cluster planning.</p>
+            <p className="mt-2 text-zinc-200">A practical guide to hotels, attractions, nightlife, and resort clusters along the Strip.</p>
           </Link>
           <Link href="/grand-canyon" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
-            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Attraction Pillar</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Day Trip Guide</p>
             <h2 className="mt-3 text-2xl font-bold">Grand Canyon</h2>
-            <p className="mt-2 text-zinc-200">Standalone authority hub for rims, Skywalk, Vegas route choice, and booking lanes.</p>
+            <p className="mt-2 text-zinc-200">Plan canyon viewpoints, Skywalk options, and the route that best fits your Vegas trip.</p>
           </Link>
           <Link href="/hoover-dam" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
-            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Attraction Pillar</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Day Trip Guide</p>
             <h2 className="mt-3 text-2xl font-bold">Hoover Dam</h2>
-            <p className="mt-2 text-zinc-200">Standalone authority hub for history, engineering, Lake Mead context, and express tour fit.</p>
+            <p className="mt-2 text-zinc-200">A practical guide to Hoover Dam visits, quick tours, and pairing it with nearby stops.</p>
           </Link>
           <Link href="/red-rock-canyon" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
-            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Attraction Pillar</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Outdoor Guide</p>
             <h2 className="mt-3 text-2xl font-bold">Red Rock Canyon</h2>
-            <p className="mt-2 text-zinc-200">Close-in outdoor hub for scenic loops, guided hikes, and half-day Vegas desert planning.</p>
+            <p className="mt-2 text-zinc-200">Good for scenic drives, guided hikes, and half-day desert plans close to the city.</p>
           </Link>
           <Link href="/valley-of-fire" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
-            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Attraction Pillar</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Outdoor Guide</p>
             <h2 className="mt-3 text-2xl font-bold">Valley of Fire</h2>
-            <p className="mt-2 text-zinc-200">Desert landscape hub for scenic drives, hikes, and stronger all-day route decisions from Vegas.</p>
+            <p className="mt-2 text-zinc-200">A stronger full-day desert option for scenic drives, hikes, and red-rock landscapes.</p>
           </Link>
           <Link href="/lake-mead" className="rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6 hover:bg-amber-500/15">
-            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Attraction Pillar</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-amber-300">Outdoor Guide</p>
             <h2 className="mt-3 text-2xl font-bold">Lake Mead</h2>
-            <p className="mt-2 text-zinc-200">Water-recreation hub for boating, kayaking, scenic recreation, and Hoover Dam-adjacent outdoor planning.</p>
+            <p className="mt-2 text-zinc-200">Useful for boating, kayaking, scenic stops, and outdoor time near Hoover Dam.</p>
           </Link>
         </section>
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
           <div className="max-w-3xl">
-            <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">District Hubs</p>
-            <h2 className="mt-2 text-3xl font-black tracking-tight">Vegas districts and sub-city discovery</h2>
+            <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Neighborhood Guides</p>
+            <h2 className="mt-2 text-3xl font-black tracking-tight">Vegas neighborhoods and nearby areas</h2>
             <p className="mt-3 text-zinc-300">
-              These district hubs organize Vegas by area so hotels, casinos, restaurants, attractions, and future near-X pages can connect through something cleaner than one city root.
+              These guides help you break Las Vegas into more manageable areas instead of treating the whole city like one giant map.
             </p>
           </div>
           <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -375,36 +375,36 @@ export default async function VegasPage() {
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
           <div className="max-w-3xl">
-            <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Tag-Driven Discovery</p>
-            <h2 className="mt-2 text-3xl font-black tracking-tight">Overlay pages and search-intent routing</h2>
+            <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Specialty Guides</p>
+            <h2 className="mt-2 text-3xl font-black tracking-tight">Specialty Vegas guides</h2>
             <p className="mt-3 text-zinc-300">
-              These overlay pages are the first proof that the Vegas mesh can branch by tag instead of only by entity type.
+              Use these guides when you already know the kind of trip you want, like luxury stays, group weekends, or a couples-focused plan.
             </p>
           </div>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <Link href="/luxury-hotels-las-vegas" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
               <h3 className="font-semibold">Luxury hotels in Las Vegas</h3>
-              <p className="mt-2 text-sm text-zinc-300">Premium Strip and romantic-stay overlay driven from the same hotel tag layer.</p>
+              <p className="mt-2 text-sm text-zinc-300">A cleaner list for upscale Strip stays, resort hotels, and romantic trip planning.</p>
             </Link>
             <Link href="/group-friendly/las-vegas" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
               <h3 className="font-semibold">Group-friendly Las Vegas</h3>
-              <p className="mt-2 text-sm text-zinc-300">Birthday-weekend, pregame, and bigger-group routing across hotels, casinos, and social anchors.</p>
+              <p className="mt-2 text-sm text-zinc-300">Helpful for birthday weekends, bigger groups, and hotel areas that work better for shared plans.</p>
             </Link>
             <Link href="/date-night/las-vegas" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
               <h3 className="font-semibold">Date-night Las Vegas</h3>
-              <p className="mt-2 text-sm text-zinc-300">Couples and milestone overlay for polished hotels, fountain walks, romantic casino paths, and show-night pairing.</p>
+              <p className="mt-2 text-sm text-zinc-300">For couples, milestone trips, fountain walks, romantic hotels, and a smoother show-night plan.</p>
             </Link>
             <Link href="/suites/las-vegas" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
               <h3 className="font-semibold">Las Vegas suites</h3>
-              <p className="mt-2 text-sm text-zinc-300">Premium-room mini-site for buyers comparing larger layouts, upgraded room categories, and celebration-fit stays.</p>
+              <p className="mt-2 text-sm text-zinc-300">Useful when you are comparing larger layouts, upgraded rooms, and celebration-friendly stays.</p>
             </Link>
             <Link href="/penthouses/las-vegas" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
               <h3 className="font-semibold">Penthouse-style Vegas stays</h3>
-              <p className="mt-2 text-sm text-zinc-300">Use the top-end room layer when the search is really about privacy, views, and prestige rather than generic hotel sorting.</p>
+              <p className="mt-2 text-sm text-zinc-300">For privacy, views, and the most upscale room choices instead of a general hotel search.</p>
             </Link>
             <Link href="/things-to-do-on-the-strip" className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:bg-white/10">
               <h3 className="font-semibold">Things to do on the Strip</h3>
-              <p className="mt-2 text-sm text-zinc-300">Strip-specific attraction overlay driven from the attraction mesh instead of a generic city list.</p>
+              <p className="mt-2 text-sm text-zinc-300">A Strip-focused guide for attractions, quick stops, and planning a day without leaving the corridor.</p>
             </Link>
           </div>
         </section>
@@ -492,7 +492,7 @@ export default async function VegasPage() {
           id="nightlife"
           eyebrow="Night Planning"
           title="Nightlife works better when it is treated like routing, not chaos"
-          intro="The strongest nightlife pages do not just list clubs. They help visitors choose the right night shape: one show plus one bar, one club plus transport, or one hosted package instead of fragmented decision-making."
+          intro="The best nightlife plans do not try to do everything. They usually work better as one show plus one bar, one club night, or one hosted package."
           bullets={NIGHTLIFE_HIGHLIGHTS}
         >
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -501,7 +501,7 @@ export default async function VegasPage() {
                 <IntentCard
                   key={item}
                   title={item}
-                  body="High-intent Vegas buyer lane that pairs well with prebooked entry, premium tours, or reduced-friction group planning."
+                  body="A useful starting point when you want prebooked entry, a cleaner group plan, or less waiting around at the door."
                 />
               )
             )}

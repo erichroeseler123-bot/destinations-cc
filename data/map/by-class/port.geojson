@@ -1,0 +1,447 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "dcc:port:ae-abu-dhabi:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          54.39696,
+          24.45118
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:ae-abu-dhabi:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "abu-dhabi",
+        "name": "Abu Dhabi",
+        "display_name": "Abu Dhabi",
+        "reference_code": "PRT-AE-ABU-DHABI-0001",
+        "country_code": "AE",
+        "admin1_code": null,
+        "tags": [
+          "area:middle-east-uae"
+        ],
+        "canonical_path": "/nodes/abu-dhabi"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:nz-auckland:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          174.76349,
+          -36.84853
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:nz-auckland:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "auckland",
+        "name": "Auckland",
+        "display_name": "Auckland",
+        "reference_code": "PRT-NZ-AUCKLAND-0001",
+        "country_code": "NZ",
+        "admin1_code": null,
+        "tags": [
+          "area:australia-and-nz-new-zealand"
+        ],
+        "canonical_path": "/nodes/auckland"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:es-barcelona:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.15899,
+          41.38879
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:es-barcelona:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "barcelona",
+        "name": "Port of Barcelona",
+        "display_name": "Port of Barcelona",
+        "reference_code": "PRT-ES-BARCELONA-0001",
+        "country_code": "ES",
+        "admin1_code": null,
+        "tags": [
+          "area:europe-mediterranean"
+        ],
+        "canonical_path": "/nodes/barcelona"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:au-brisbane:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          153.02809,
+          -27.46794
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:au-brisbane:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "brisbane",
+        "name": "Brisbane",
+        "display_name": "Brisbane",
+        "reference_code": "PRT-AU-BRISBANE-0001",
+        "country_code": "AU",
+        "admin1_code": null,
+        "tags": [
+          "area:australia-and-nz-australia"
+        ],
+        "canonical_path": "/nodes/brisbane"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:dk-copenhagen:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.56553,
+          55.67594
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:dk-copenhagen:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "copenhagen",
+        "name": "Copenhagen",
+        "display_name": "Copenhagen",
+        "reference_code": "PRT-DK-COPENHAGEN-0001",
+        "country_code": "DK",
+        "admin1_code": null,
+        "tags": [
+          "area:europe-northern-europe"
+        ],
+        "canonical_path": "/nodes/copenhagen"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:ae-dubai:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          55.30927,
+          25.07725
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:ae-dubai:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "dubai",
+        "name": "Dubai",
+        "display_name": "Dubai",
+        "reference_code": "PRT-AE-DUBAI-0001",
+        "country_code": "AE",
+        "admin1_code": null,
+        "tags": [
+          "area:middle-east-uae"
+        ],
+        "canonical_path": "/nodes/dubai"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:de-hamburg:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.99302,
+          53.55073
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:de-hamburg:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "hamburg",
+        "name": "Hamburg",
+        "display_name": "Hamburg",
+        "reference_code": "PRT-DE-HAMBURG-0001",
+        "country_code": "DE",
+        "admin1_code": null,
+        "tags": [
+          "area:europe-northern-europe"
+        ],
+        "canonical_path": "/nodes/hamburg"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:hk-hong-kong:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.17469,
+          22.27832
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:hk-hong-kong:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "hong-kong",
+        "name": "Hong Kong",
+        "display_name": "Hong Kong",
+        "reference_code": "PRT-HK-HONG-KONG-0001",
+        "country_code": "HK",
+        "admin1_code": null,
+        "tags": [
+          "area:asia-china"
+        ],
+        "canonical_path": "/nodes/hong-kong"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:tr-istanbul:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.94966,
+          41.01384
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:tr-istanbul:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "istanbul",
+        "name": "Istanbul",
+        "display_name": "Istanbul",
+        "reference_code": "PRT-TR-ISTANBUL-0001",
+        "country_code": "TR",
+        "admin1_code": null,
+        "tags": [
+          "area:europe-turkey"
+        ],
+        "canonical_path": "/nodes/istanbul"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:us-los-angeles:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.24368,
+          34.05223
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:us-los-angeles:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "los-angeles",
+        "name": "Los Angeles",
+        "display_name": "Los Angeles",
+        "reference_code": "PRT-US-LOS-ANGELES-0001",
+        "country_code": "US",
+        "admin1_code": null,
+        "tags": [
+          "area:usa-california"
+        ],
+        "canonical_path": "/nodes/los-angeles"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:au-melbourne:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          144.96332,
+          -37.814
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:au-melbourne:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "melbourne",
+        "name": "Melbourne",
+        "display_name": "Melbourne",
+        "reference_code": "PRT-AU-MELBOURNE-0001",
+        "country_code": "AU",
+        "admin1_code": null,
+        "tags": [
+          "area:australia-and-nz-australia"
+        ],
+        "canonical_path": "/nodes/melbourne"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:us-san-diego:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.16472,
+          32.71571
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:us-san-diego:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "san-diego",
+        "name": "San Diego",
+        "display_name": "San Diego",
+        "reference_code": "PRT-US-SAN-DIEGO-0001",
+        "country_code": "US",
+        "admin1_code": null,
+        "tags": [
+          "area:usa-california"
+        ],
+        "canonical_path": "/nodes/san-diego"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:cn-shanghai:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.45806,
+          31.22222
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:cn-shanghai:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "shanghai",
+        "name": "Shanghai",
+        "display_name": "Shanghai",
+        "reference_code": "PRT-CN-SHANGHAI-0001",
+        "country_code": "CN",
+        "admin1_code": null,
+        "tags": [
+          "area:asia-china"
+        ],
+        "canonical_path": "/nodes/shanghai"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:sg-singapore:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.85007,
+          1.28967
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:sg-singapore:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "singapore",
+        "name": "Singapore",
+        "display_name": "Singapore",
+        "reference_code": "PRT-SG-SINGAPORE-0001",
+        "country_code": "SG",
+        "admin1_code": null,
+        "tags": [
+          "area:asia-southeast-asia"
+        ],
+        "canonical_path": "/nodes/singapore"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:se-stockholm:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.06871,
+          59.32938
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:se-stockholm:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "stockholm",
+        "name": "Stockholm",
+        "display_name": "Stockholm",
+        "reference_code": "PRT-SE-STOCKHOLM-0001",
+        "country_code": "SE",
+        "admin1_code": null,
+        "tags": [
+          "area:europe-northern-europe"
+        ],
+        "canonical_path": "/nodes/stockholm"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:au-sydney:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.20732,
+          -33.86785
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:au-sydney:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "sydney",
+        "name": "Sydney",
+        "display_name": "Sydney",
+        "reference_code": "PRT-AU-SYDNEY-0001",
+        "country_code": "AU",
+        "admin1_code": null,
+        "tags": [
+          "area:australia-and-nz-australia"
+        ],
+        "canonical_path": "/nodes/sydney"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:port:jp-yokohama:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.65,
+          35.43333
+        ]
+      },
+      "properties": {
+        "id": "dcc:port:jp-yokohama:0001",
+        "class": "port",
+        "subclass": "cruise_port",
+        "slug": "yokohama",
+        "name": "Yokohama (Tokyo)",
+        "display_name": "Yokohama (Tokyo)",
+        "reference_code": "PRT-JP-YOKOHAMA-0001",
+        "country_code": "JP",
+        "admin1_code": null,
+        "tags": [
+          "area:asia-japan"
+        ],
+        "canonical_path": "/nodes/yokohama"
+      }
+    }
+  ]
+}

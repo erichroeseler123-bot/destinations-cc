@@ -1,0 +1,352 @@
+{
+  "citySlug": "san-diego",
+  "cityName": "San Diego",
+  "attractions": [
+    {
+      "slug": "balboa-park",
+      "name": "Balboa Park",
+      "type": "park",
+      "summary": "Balboa Park gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader San Diego day plan.",
+      "categories": [
+        "park",
+        "museum",
+        "family"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Balboa Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Balboa Park in San Diego, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Balboa Park as a slower outdoor break between denser city attractions or tours.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Balboa Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Balboa Park outdoor experiences",
+          "query": "san diego balboa park outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Balboa Park guided experiences",
+          "query": "san diego balboa park tours",
+          "description": "A general search path for tours and guided experiences connected to Balboa Park in San Diego."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "San Diego Zoo",
+          "href": "/san-diego/san-diego-zoo"
+        },
+        {
+          "label": "La Jolla Cove",
+          "href": "/san-diego/la-jolla-cove"
+        },
+        {
+          "label": "Old Town San Diego",
+          "href": "/san-diego/old-town-san-diego"
+        }
+      ],
+      "primaryToursHref": "/san-diego/balboa-park/tours",
+      "thingsToDoHref": "/san-diego/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "San Diego Zoo",
+        "La Jolla Cove"
+      ]
+    },
+    {
+      "slug": "san-diego-zoo",
+      "name": "San Diego Zoo",
+      "type": "zoo",
+      "summary": "San Diego Zoo is one of the more recognizable visitor stops in San Diego and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "family",
+        "wildlife"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "San Diego Zoo guide, things to do, and local tours",
+      "heroSummary": "Planning guide for San Diego Zoo in San Diego, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan San Diego Zoo as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "San Diego Zoo guided experiences",
+          "query": "san diego san diego zoo tours",
+          "description": "A general search path for tours and guided experiences connected to San Diego Zoo in San Diego."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Balboa Park",
+          "href": "/san-diego/balboa-park"
+        },
+        {
+          "label": "La Jolla Cove",
+          "href": "/san-diego/la-jolla-cove"
+        },
+        {
+          "label": "Old Town San Diego",
+          "href": "/san-diego/old-town-san-diego"
+        }
+      ],
+      "primaryToursHref": "/san-diego/san-diego-zoo/tours",
+      "thingsToDoHref": "/san-diego/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Balboa Park",
+        "La Jolla Cove"
+      ]
+    },
+    {
+      "slug": "la-jolla-cove",
+      "name": "La Jolla Cove",
+      "type": "coastline",
+      "summary": "La Jolla Cove gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader San Diego day plan.",
+      "categories": [
+        "beach",
+        "outdoor",
+        "wildlife"
+      ],
+      "priority": 90,
+      "featured": true,
+      "heroTitle": "La Jolla Cove guide, things to do, and local tours",
+      "heroSummary": "Planning guide for La Jolla Cove in San Diego, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use La Jolla Cove as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan La Jolla Cove as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "La Jolla Cove outdoor experiences",
+          "query": "san diego la jolla cove outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "La Jolla Cove guided experiences",
+          "query": "san diego la jolla cove tours",
+          "description": "A general search path for tours and guided experiences connected to La Jolla Cove in San Diego."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Balboa Park",
+          "href": "/san-diego/balboa-park"
+        },
+        {
+          "label": "San Diego Zoo",
+          "href": "/san-diego/san-diego-zoo"
+        },
+        {
+          "label": "Old Town San Diego",
+          "href": "/san-diego/old-town-san-diego"
+        }
+      ],
+      "primaryToursHref": "/san-diego/la-jolla-cove/tours",
+      "thingsToDoHref": "/san-diego/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Balboa Park",
+        "San Diego Zoo"
+      ]
+    },
+    {
+      "slug": "old-town-san-diego",
+      "name": "Old Town San Diego",
+      "type": "historic-district",
+      "summary": "Old Town San Diego is one of the more recognizable history-focused stops in San Diego for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "history",
+        "food",
+        "culture"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Old Town San Diego guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Old Town San Diego in San Diego, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Old Town San Diego as a stop for a more history-focused city walk or half-day plan.",
+        "Pair Old Town San Diego with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Old Town San Diego as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Old Town San Diego more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Old Town San Diego history tours",
+          "query": "san diego old town san diego history tour",
+          "description": "A simple starting point for visitors who want more context around Old Town San Diego."
+        },
+        {
+          "label": "Old Town San Diego food experiences",
+          "query": "san diego old town san diego food tour",
+          "description": "Helpful when Old Town San Diego fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Old Town San Diego guided experiences",
+          "query": "san diego old town san diego tours",
+          "description": "A general search path for tours and guided experiences connected to Old Town San Diego in San Diego."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Balboa Park",
+          "href": "/san-diego/balboa-park"
+        },
+        {
+          "label": "San Diego Zoo",
+          "href": "/san-diego/san-diego-zoo"
+        },
+        {
+          "label": "La Jolla Cove",
+          "href": "/san-diego/la-jolla-cove"
+        }
+      ],
+      "primaryToursHref": "/san-diego/old-town-san-diego/tours",
+      "thingsToDoHref": "/san-diego/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Balboa Park",
+        "San Diego Zoo"
+      ]
+    },
+    {
+      "slug": "gaslamp-quarter",
+      "name": "Gaslamp Quarter",
+      "type": "district",
+      "summary": "Gaslamp Quarter is a useful district to understand early if you want a clearer feel for how visitors actually spend time in San Diego.",
+      "categories": [
+        "nightlife",
+        "food",
+        "walks"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Gaslamp Quarter guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Gaslamp Quarter in San Diego, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Walk Gaslamp Quarter with one clear purpose, such as food, music, shopping, or evening atmosphere.",
+        "Treat Gaslamp Quarter as a time block rather than a quick pass-through if it is one of the main reasons for the trip.",
+        "Pair Gaslamp Quarter with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Gaslamp Quarter as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Districts usually feel stronger when you decide whether the point is food, shopping, nightlife, or a general walk before you arrive.",
+        "If Gaslamp Quarter matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Gaslamp Quarter neighborhood tours",
+          "query": "san diego gaslamp quarter neighborhood tour",
+          "description": "Helpful when Gaslamp Quarter is better experienced as part of a larger district walk or evening plan."
+        },
+        {
+          "label": "Gaslamp Quarter food experiences",
+          "query": "san diego gaslamp quarter food tour",
+          "description": "Helpful when Gaslamp Quarter fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Gaslamp Quarter guided experiences",
+          "query": "san diego gaslamp quarter tours",
+          "description": "A general search path for tours and guided experiences connected to Gaslamp Quarter in San Diego."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Balboa Park",
+          "href": "/san-diego/balboa-park"
+        },
+        {
+          "label": "San Diego Zoo",
+          "href": "/san-diego/san-diego-zoo"
+        },
+        {
+          "label": "La Jolla Cove",
+          "href": "/san-diego/la-jolla-cove"
+        }
+      ],
+      "primaryToursHref": "/san-diego/gaslamp-quarter/tours",
+      "thingsToDoHref": "/san-diego/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Balboa Park",
+        "San Diego Zoo"
+      ]
+    },
+    {
+      "slug": "coronado-beach",
+      "name": "Coronado Beach",
+      "type": "waterfront",
+      "summary": "Coronado Beach is one of the more useful waterfront areas in San Diego for visitors planning around walking, views, and a lighter sightseeing pace.",
+      "categories": [
+        "beach",
+        "family",
+        "sightseeing"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Coronado Beach guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Coronado Beach in San Diego, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Coronado Beach for a walkable waterfront block with time for views, food, or an easier sightseeing pace.",
+        "Pair Coronado Beach with one nearby district or attraction instead of treating the waterfront as the whole day.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Coronado Beach as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Waterfront areas usually work best as part of a slower sightseeing window instead of a tightly scheduled day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Coronado Beach waterfront tours",
+          "query": "san diego coronado beach waterfront tour",
+          "description": "Helpful when the waterfront fits naturally into a sightseeing or walking-focused city plan."
+        },
+        {
+          "label": "Coronado Beach guided experiences",
+          "query": "san diego coronado beach tours",
+          "description": "A general search path for tours and guided experiences connected to Coronado Beach in San Diego."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Balboa Park",
+          "href": "/san-diego/balboa-park"
+        },
+        {
+          "label": "San Diego Zoo",
+          "href": "/san-diego/san-diego-zoo"
+        },
+        {
+          "label": "La Jolla Cove",
+          "href": "/san-diego/la-jolla-cove"
+        }
+      ],
+      "primaryToursHref": "/san-diego/coronado-beach/tours",
+      "thingsToDoHref": "/san-diego/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Balboa Park",
+        "San Diego Zoo"
+      ]
+    }
+  ]
+}

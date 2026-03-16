@@ -19,6 +19,8 @@ for (const p of seed) {
     country: String(p.country || ""),
     tags: Array.isArray(p.tags) ? p.tags : [],
     passenger_volume: typeof p.passenger_volume === "number" ? p.passenger_volume : undefined,
+    lat: typeof p.lat === "number" ? p.lat : undefined,
+    lon: typeof p.lon === "number" ? p.lon : undefined,
   });
 }
 

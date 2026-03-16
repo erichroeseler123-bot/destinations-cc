@@ -1,0 +1,130 @@
+{
+  "slug": "denver",
+  "name": "Denver",
+  "heroImage": "/images/authority/cities/denver/hero.webp",
+  "heroImageAlt": "Downtown Denver skyline with mountain light behind the city",
+  "heroImagePosition": "center center",
+  "heroTint": "cool",
+  "metadata": {
+    "title": "Denver Tours, Things to Do, and Attractions | Destination Command Center",
+    "description": "Discover Denver tours, things to do, attractions, food, neighborhoods, and trip ideas. Browse guided experiences and plan around the city's most useful travel highlights.",
+    "keywords": [
+      "denver tours",
+      "things to do in denver",
+      "denver attractions",
+      "denver sightseeing"
+    ]
+  },
+  "hero": {
+    "eyebrow": "Denver travel guide",
+    "title": "Denver tours, things to do, and local travel planning",
+    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Denver trip.",
+    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Denver.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/denver/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/denver/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly."
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+    }
+  ],
+  "topAttractions": [
+    {
+      "slug": "red-rocks-amphitheatre",
+      "title": "Red Rocks Amphitheatre",
+      "description": ""
+    },
+    {
+      "slug": "union-station",
+      "title": "Union Station",
+      "description": ""
+    },
+    {
+      "slug": "ri-no",
+      "title": "RiNo Art District",
+      "description": ""
+    },
+    {
+      "slug": "meow-wolf-denver",
+      "title": "Meow Wolf Denver",
+      "description": ""
+    },
+    {
+      "slug": "denver-art-museum",
+      "title": "Denver Art Museum",
+      "description": ""
+    },
+    {
+      "slug": "larimer-square",
+      "title": "Larimer Square",
+      "description": ""
+    }
+  ],
+  "featuredTours": {
+    "title": "Popular Denver experiences",
+    "description": "Guided experiences and bookable activities that help visitors plan around Denver's most useful highlights.",
+    "fallbackQueries": [
+      "denver walking tour",
+      "denver food tour",
+      "denver sightseeing tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Things to do in Denver",
+      "description": "A broader planning surface for attractions, neighborhoods, and trip ideas.",
+      "href": "/denver/things-to-do"
+    },
+    {
+      "title": "Denver tours",
+      "description": "A cleaner starting point for guided experiences, day trips, and visitor favorites.",
+      "href": "/denver/tours"
+    },
+    {
+      "title": "Denver food guide",
+      "description": "Restaurants, food neighborhoods, and tasting-focused experiences.",
+      "href": "/denver/food"
+    },
+    {
+      "title": "Denver day trips",
+      "description": "Half-day and full-day options that fit naturally with a city stay.",
+      "href": "/denver/day-trips"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in Denver for first-time visitors?",
+      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+    },
+    {
+      "q": "How many days should you spend in Denver?",
+      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+    }
+  ],
+  "coordinates": {
+    "lat": 39.7392,
+    "lng": -104.9903
+  },
+  "timezone": "America/Denver",
+  "lat": 39.7392,
+  "lng": -104.9903
+}

@@ -25,15 +25,21 @@ for (const line of lines) {
   const country = (cols[2]||"").trim();
   const slug = (cols[3]||"").trim();
   const tagsRaw = (cols[4]||"").trim();
+  const latRaw = (cols[5]||"").trim();
+  const lonRaw = (cols[6]||"").trim();
 
   if (!name) continue;
+
+  const lat = latRaw === "" ? undefined : Number(latRaw);
+  const lon = lonRaw === "" ? undefined : Number(lonRaw);
 
   items.push({
     name,
     area,
     country,
     slug: slug ? slugify(slug) : slugify(name),
-    tags: tagsRaw ? tagsRaw.split(",").map(s=>s.trim()).filter(Boolean) : []
+    tags: tagsRaw ? tagsRaw.split(",").map(s=>s.trim()).filter(Boolean) : [],
+    ...(Number.isFinite(lat) && Number.isFinite(lon) ? { lat, lon } : {})
   });
 }
 

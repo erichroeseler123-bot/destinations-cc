@@ -1,0 +1,27 @@
+{
+  "slug": "honolulu",
+  "display_name": "Honolulu",
+  "aliases": [
+    "honolulu-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Honolulu City Highlights Tour",
+      "description": "A quick way to see the best of Honolulu with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Coast Cruise",
+      "description": "Short scenic sailings and waterfront views near Honolulu Harbor and the coast.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront districts, landmarks, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

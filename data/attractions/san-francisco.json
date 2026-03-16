@@ -1,0 +1,347 @@
+{
+  "citySlug": "san-francisco",
+  "cityName": "San Francisco",
+  "attractions": [
+    {
+      "slug": "golden-gate-bridge",
+      "name": "Golden Gate Bridge",
+      "type": "landmark",
+      "summary": "Golden Gate Bridge is one of the more recognizable visitor stops in San Francisco and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "landmark",
+        "sightseeing",
+        "views"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Golden Gate Bridge guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Golden Gate Bridge in San Francisco, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Golden Gate Bridge as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Golden Gate Bridge guided experiences",
+          "query": "san francisco golden gate bridge tours",
+          "description": "A general search path for tours and guided experiences connected to Golden Gate Bridge in San Francisco."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Alcatraz Island",
+          "href": "/san-francisco/alcatraz"
+        },
+        {
+          "label": "Fisherman's Wharf",
+          "href": "/san-francisco/fishermans-wharf"
+        },
+        {
+          "label": "Golden Gate Park",
+          "href": "/san-francisco/golden-gate-park"
+        }
+      ],
+      "primaryToursHref": "/san-francisco/golden-gate-bridge/tours",
+      "thingsToDoHref": "/san-francisco/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Alcatraz Island",
+        "Fisherman's Wharf"
+      ]
+    },
+    {
+      "slug": "alcatraz",
+      "name": "Alcatraz Island",
+      "type": "historic-site",
+      "summary": "Alcatraz Island is one of the more recognizable history-focused stops in San Francisco for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "history",
+        "landmark",
+        "tour"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Alcatraz Island guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Alcatraz Island in San Francisco, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Alcatraz Island as a stop for a more history-focused city walk or half-day plan.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Alcatraz Island as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Alcatraz Island more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Alcatraz Island history tours",
+          "query": "san francisco alcatraz history tour",
+          "description": "A simple starting point for visitors who want more context around Alcatraz Island."
+        },
+        {
+          "label": "Alcatraz Island guided experiences",
+          "query": "san francisco alcatraz tours",
+          "description": "A general search path for tours and guided experiences connected to Alcatraz Island in San Francisco."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Golden Gate Bridge",
+          "href": "/san-francisco/golden-gate-bridge"
+        },
+        {
+          "label": "Fisherman's Wharf",
+          "href": "/san-francisco/fishermans-wharf"
+        },
+        {
+          "label": "Golden Gate Park",
+          "href": "/san-francisco/golden-gate-park"
+        }
+      ],
+      "primaryToursHref": "/san-francisco/alcatraz/tours",
+      "thingsToDoHref": "/san-francisco/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Golden Gate Bridge",
+        "Fisherman's Wharf"
+      ]
+    },
+    {
+      "slug": "fishermans-wharf",
+      "name": "Fisherman's Wharf",
+      "type": "district",
+      "summary": "Fisherman's Wharf is a useful San Francisco stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "food",
+        "waterfront",
+        "family"
+      ],
+      "priority": 90,
+      "featured": true,
+      "heroTitle": "Fisherman's Wharf guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Fisherman's Wharf in San Francisco, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair Fisherman's Wharf with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Fisherman's Wharf as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Fisherman's Wharf food experiences",
+          "query": "san francisco fishermans wharf food tour",
+          "description": "Helpful when Fisherman's Wharf fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Fisherman's Wharf guided experiences",
+          "query": "san francisco fishermans wharf tours",
+          "description": "A general search path for tours and guided experiences connected to Fisherman's Wharf in San Francisco."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Golden Gate Bridge",
+          "href": "/san-francisco/golden-gate-bridge"
+        },
+        {
+          "label": "Alcatraz Island",
+          "href": "/san-francisco/alcatraz"
+        },
+        {
+          "label": "Golden Gate Park",
+          "href": "/san-francisco/golden-gate-park"
+        }
+      ],
+      "primaryToursHref": "/san-francisco/fishermans-wharf/tours",
+      "thingsToDoHref": "/san-francisco/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Golden Gate Bridge",
+        "Alcatraz Island"
+      ]
+    },
+    {
+      "slug": "golden-gate-park",
+      "name": "Golden Gate Park",
+      "type": "park",
+      "summary": "Golden Gate Park gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader San Francisco day plan.",
+      "categories": [
+        "park",
+        "family",
+        "outdoor"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Golden Gate Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Golden Gate Park in San Francisco, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Golden Gate Park as a slower outdoor break between denser city attractions or tours.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Golden Gate Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Golden Gate Park outdoor experiences",
+          "query": "san francisco golden gate park outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Golden Gate Park guided experiences",
+          "query": "san francisco golden gate park tours",
+          "description": "A general search path for tours and guided experiences connected to Golden Gate Park in San Francisco."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Golden Gate Bridge",
+          "href": "/san-francisco/golden-gate-bridge"
+        },
+        {
+          "label": "Alcatraz Island",
+          "href": "/san-francisco/alcatraz"
+        },
+        {
+          "label": "Fisherman's Wharf",
+          "href": "/san-francisco/fishermans-wharf"
+        }
+      ],
+      "primaryToursHref": "/san-francisco/golden-gate-park/tours",
+      "thingsToDoHref": "/san-francisco/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Golden Gate Bridge",
+        "Alcatraz Island"
+      ]
+    },
+    {
+      "slug": "chinatown",
+      "name": "Chinatown",
+      "type": "district",
+      "summary": "Chinatown is a useful district to understand early if you want a clearer feel for how visitors actually spend time in San Francisco.",
+      "categories": [
+        "food",
+        "culture",
+        "walks"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Chinatown guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Chinatown in San Francisco, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Walk Chinatown with one clear purpose, such as food, music, shopping, or evening atmosphere.",
+        "Treat Chinatown as a time block rather than a quick pass-through if it is one of the main reasons for the trip.",
+        "Pair Chinatown with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Chinatown as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Districts usually feel stronger when you decide whether the point is food, shopping, nightlife, or a general walk before you arrive."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Chinatown neighborhood tours",
+          "query": "san francisco chinatown neighborhood tour",
+          "description": "Helpful when Chinatown is better experienced as part of a larger district walk or evening plan."
+        },
+        {
+          "label": "Chinatown food experiences",
+          "query": "san francisco chinatown food tour",
+          "description": "Helpful when Chinatown fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Chinatown guided experiences",
+          "query": "san francisco chinatown tours",
+          "description": "A general search path for tours and guided experiences connected to Chinatown in San Francisco."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Golden Gate Bridge",
+          "href": "/san-francisco/golden-gate-bridge"
+        },
+        {
+          "label": "Alcatraz Island",
+          "href": "/san-francisco/alcatraz"
+        },
+        {
+          "label": "Fisherman's Wharf",
+          "href": "/san-francisco/fishermans-wharf"
+        }
+      ],
+      "primaryToursHref": "/san-francisco/chinatown/tours",
+      "thingsToDoHref": "/san-francisco/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Golden Gate Bridge",
+        "Alcatraz Island"
+      ]
+    },
+    {
+      "slug": "lombard-street",
+      "name": "Lombard Street",
+      "type": "landmark",
+      "summary": "Lombard Street is one of the better-known landmarks in San Francisco and usually works best as part of a broader sightseeing block instead of a standalone stop.",
+      "categories": [
+        "landmark",
+        "views",
+        "sightseeing"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Lombard Street guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Lombard Street in San Francisco, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Lombard Street as part of a broader sightseeing block instead of making it the only stop in that part of the day.",
+        "Pair Lombard Street with one nearby walk, museum, or neighborhood stop for a more complete visit.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Lombard Street as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Landmark stops usually work better when they are tied to a broader city route instead of treated as a one-stop plan."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Lombard Street sightseeing tours",
+          "query": "san francisco lombard street sightseeing tour",
+          "description": "A simple starting point for visitors who want to see Lombard Street in a broader city context."
+        },
+        {
+          "label": "Lombard Street guided experiences",
+          "query": "san francisco lombard street tours",
+          "description": "A general search path for tours and guided experiences connected to Lombard Street in San Francisco."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Golden Gate Bridge",
+          "href": "/san-francisco/golden-gate-bridge"
+        },
+        {
+          "label": "Alcatraz Island",
+          "href": "/san-francisco/alcatraz"
+        },
+        {
+          "label": "Fisherman's Wharf",
+          "href": "/san-francisco/fishermans-wharf"
+        }
+      ],
+      "primaryToursHref": "/san-francisco/lombard-street/tours",
+      "thingsToDoHref": "/san-francisco/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Golden Gate Bridge",
+        "Alcatraz Island"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "slug": "vancouver",
+  "display_name": "Vancouver",
+  "aliases": [
+    "vancouver-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Vancouver City Highlights Tour",
+      "description": "A quick way to see the best of Vancouver with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor Cruise",
+      "description": "Short scenic sailings and waterfront views near the city and mountains.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront districts, markets, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

@@ -4,6 +4,7 @@ import DiagnosticsBlock from "@/app/components/DiagnosticsBlock";
 import StatGrid from "@/app/components/StatGrid";
 import StaleWarning from "@/app/components/StaleWarning";
 import CinematicBackdrop from "@/app/components/dcc/CinematicBackdrop";
+import JsonLd from "@/app/components/dcc/JsonLd";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
 import {
   listCruiseCanonicalPortSlugs,
@@ -13,6 +14,7 @@ import { getCruiseHealthSummary } from "@/lib/dcc/internal/cruiseHealthSummary";
 import { getGraphHealth } from "@/lib/dcc/graph/health";
 import { listPlaceGraphSummaries } from "@/lib/dcc/graph/placeActionGraph";
 import { CRUISE_SPECIALTY_LANES } from "@/src/data/cruise-specialty-lanes";
+import { buildArticleJsonLd, buildBreadcrumbJsonLd } from "@/lib/dcc/jsonld";
 
 const SAMPLE_SHIPS = ["icon-of-the-seas", "viking-octantis", "carnival-jubilee"];
 const PAGE_URL = "https://destinationcommandcenter.com/cruises";
@@ -40,6 +42,23 @@ export default async function CruisesPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-zinc-950 text-white">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            buildArticleJsonLd({
+              path: "/cruises",
+              headline: "Cruise Explorer",
+              description:
+                "Explore cruise ports and ship profiles with practical route context and connected destination planning pages.",
+            }),
+            buildBreadcrumbJsonLd([
+              { name: "Home", item: "/" },
+              { name: "Cruises", item: "/cruises" },
+            ]),
+          ],
+        }}
+      />
       <CinematicBackdrop />
       <div className="relative max-w-4xl mx-auto px-6 py-16 space-y-8">
       <header className="space-y-2">

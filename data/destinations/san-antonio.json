@@ -1,0 +1,27 @@
+{
+  "slug": "san-antonio",
+  "display_name": "San Antonio",
+  "aliases": [
+    "san-antonio-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "San Antonio City Highlights Tour",
+      "description": "A quick way to see the best of San Antonio with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

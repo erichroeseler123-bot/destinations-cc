@@ -1,10 +1,10 @@
-# name	area	country	slug(optional)	tags(optional,comma)
+# name	area	country	slug(optional)	tags(optional,comma)	lat(optional)	lon(optional)
 Port Canaveral	USA • Florida	US	port-canaveral
 PortMiami	USA • Florida	US	portmiami
 Port Everglades (Fort Lauderdale)	USA • Florida	US	port-everglades
 Port of Nassau	Bahamas	BS	nassau
 Port of Cozumel	Mexico • Caribbean	MX	cozumel
-Port of Barcelona	Europe • Mediterranean	ES	barcelona
+Port of Barcelona	Europe • Mediterranean	ES	barcelona		41.38879	2.15899
 Civitavecchia (Rome)	Europe • Mediterranean	IT	civitavecchia
 Southampton	Europe • UK	GB	southampton
 Marseille	Europe • Mediterranean	FR	marseille
@@ -63,31 +63,31 @@ Lisbon	Europe • Atlantic	PT	lisbon
 Dubrovnik	Europe • Mediterranean	HR	dubrovnik
 Santorini	Europe • Mediterranean	GR	santorini
 Mykonos	Europe • Mediterranean	GR	mykonos
-Istanbul	Europe • Turkey	TR	istanbul
+Istanbul	Europe • Turkey	TR	istanbul		41.01384	28.94966
 Kuşadası (Ephesus)	Europe • Turkey	TR	kusadasi
 Amsterdam	Europe • Northern Europe	NL	amsterdam
-Copenhagen	Europe • Northern Europe	DK	copenhagen
+Copenhagen	Europe • Northern Europe	DK	copenhagen		55.67594	12.56553
 Bergen	Europe • Northern Europe	NO	bergen
-Hamburg	Europe • Northern Europe	DE	hamburg
-Stockholm	Europe • Northern Europe	SE	stockholm
+Hamburg	Europe • Northern Europe	DE	hamburg		53.55073	9.99302
+Stockholm	Europe • Northern Europe	SE	stockholm		59.32938	18.06871
 Helsinki	Europe • Northern Europe	FI	helsinki
 Tallinn	Europe • Northern Europe	EE	tallinn
 
 Vancouver	North America • Canada	CA	vancouver
 Seattle	USA • Washington	US	seattle
 San Francisco	USA • California	US	san-francisco
-Los Angeles	USA • California	US	los-angeles
-San Diego	USA • California	US	san-diego
+Los Angeles	USA • California	US	los-angeles		34.05223	-118.24368
+San Diego	USA • California	US	san-diego		32.71571	-117.16472
 Honolulu	USA • Hawaii	US	honolulu
 
-Sydney	Australia & NZ • Australia	AU	sydney
-Melbourne	Australia & NZ • Australia	AU	melbourne
-Brisbane	Australia & NZ • Australia	AU	brisbane
-Auckland	Australia & NZ • New Zealand	NZ	auckland
+Sydney	Australia & NZ • Australia	AU	sydney		-33.86785	151.20732
+Melbourne	Australia & NZ • Australia	AU	melbourne		-37.814	144.96332
+Brisbane	Australia & NZ • Australia	AU	brisbane		-27.46794	153.02809
+Auckland	Australia & NZ • New Zealand	NZ	auckland		-36.84853	174.76349
 
-Singapore	Asia • Southeast Asia	SG	singapore
-Shanghai	Asia • China	CN	shanghai
-Hong Kong	Asia • China	HK	hong-kong
-Yokohama (Tokyo)	Asia • Japan	JP	yokohama
-Dubai	Middle East • UAE	AE	dubai
-Abu Dhabi	Middle East • UAE	AE	abu-dhabi
+Singapore	Asia • Southeast Asia	SG	singapore		1.28967	103.85007
+Shanghai	Asia • China	CN	shanghai		31.22222	121.45806
+Hong Kong	Asia • China	HK	hong-kong		22.27832	114.17469
+Yokohama (Tokyo)	Asia • Japan	JP	yokohama		35.43333	139.65
+Dubai	Middle East • UAE	AE	dubai		25.07725	55.30927
+Abu Dhabi	Middle East • UAE	AE	abu-dhabi		24.45118	54.39696

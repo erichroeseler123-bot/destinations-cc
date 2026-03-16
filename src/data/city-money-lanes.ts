@@ -20,10 +20,10 @@ export const CITY_MONEY_LANES: Record<string, CityMoneyLaneConfig> = {
   "new-orleans": {
     cityKey: "new-orleans",
     cityName: "New Orleans",
-    sectionTitle: "Priority monetization lane: Airboat + Swamp Tours",
+    sectionTitle: "Popular New Orleans Tours",
     sectionDescription:
-      "Lead with airboat and swamp inventory first. These are typically high-intent, high-conversion categories for New Orleans day-trip buyers.",
-    trustLine: "Top-reviewed New Orleans airboat and swamp experiences, prioritized for conversion intent.",
+      "Start with airboat and swamp tours. They are some of the most popular day-trip choices for New Orleans visitors.",
+    trustLine: "Top-reviewed New Orleans airboat and swamp experiences for visitors planning ahead.",
     primaryCtaLabel: "See Airboat Tours",
     primaryCtaHref: "/tours?city=new-orleans&q=new%20orleans%20airboat%20swamp%20tour",
     secondaryCtaLabel: "See Swamp Tours",
@@ -42,10 +42,10 @@ export const CITY_MONEY_LANES: Record<string, CityMoneyLaneConfig> = {
   "las-vegas": {
     cityKey: "las-vegas",
     cityName: "Las Vegas",
-    sectionTitle: "Priority Monetization Lane",
+    sectionTitle: "Popular Las Vegas Tours",
     sectionDescription:
-      "Lead with high-intent Vegas day-tour categories where booking behavior is strongest: Grand Canyon, Hoover Dam, Antelope Canyon, and helicopter experiences.",
-    trustLine: "Top-reviewed Las Vegas day tours prioritized for conversion and repeatable commission flow.",
+      "Start with the Las Vegas day trips people book most often: Grand Canyon, Hoover Dam, Antelope Canyon, and helicopter experiences.",
+    trustLine: "Top-reviewed Las Vegas day tours for visitors who want the strongest options first.",
     primaryCtaLabel: "Browse Vegas Tours",
     primaryCtaHref: "/las-vegas/tours",
     secondaryCtaLabel: "View City Tour Inventory",
@@ -62,10 +62,10 @@ export const CITY_MONEY_LANES: Record<string, CityMoneyLaneConfig> = {
   miami: {
     cityKey: "miami",
     cityName: "Miami",
-    sectionTitle: "Priority Monetization Lane",
+    sectionTitle: "Popular Miami Tours",
     sectionDescription:
-      "Lead with Miami's highest-intent excursion categories: Everglades airboat, Biscayne boat tours, Key West day trips, and skyline/night cruise inventory.",
-    trustLine: "Top-reviewed Miami excursions prioritized for high booking intent and repeatable commission flow.",
+      "Start with Miami’s most popular excursion categories: Everglades airboat rides, Biscayne boat tours, Key West day trips, and skyline or night cruises.",
+    trustLine: "Top-reviewed Miami excursions for travelers planning ahead.",
     primaryCtaLabel: "Browse Miami Tours",
     primaryCtaHref: "/miami/tours",
     secondaryCtaLabel: "View City Tour Inventory",
@@ -82,10 +82,10 @@ export const CITY_MONEY_LANES: Record<string, CityMoneyLaneConfig> = {
   nashville: {
     cityKey: "nashville",
     cityName: "Nashville",
-    sectionTitle: "Priority Monetization Lane",
+    sectionTitle: "Popular Nashville Experiences",
     sectionDescription:
-      "Lead with Nashville's strongest buyer intent lanes: Broadway nightlife experiences, music history, party transport, and whiskey/distillery tours.",
-    trustLine: "Top-reviewed Nashville experiences prioritized for music-driven traveler intent and conversion.",
+      "Start with some of Nashville’s most popular experiences: Broadway nightlife, music history, party transport, and whiskey or distillery tours.",
+    trustLine: "Top-reviewed Nashville experiences for music-focused travelers.",
     primaryCtaLabel: "Browse Nashville Tours",
     primaryCtaHref: "/nashville/tours",
     secondaryCtaLabel: "View City Tour Inventory",

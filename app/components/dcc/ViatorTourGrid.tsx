@@ -1,5 +1,7 @@
 import { buildViatorSearchLink } from "@/utils/affiliateLinks";
 import type { ViatorActionProduct } from "@/lib/dcc/action/viator";
+import TravelerTakeaways from "@/app/components/dcc/TravelerTakeaways";
+import { summarizeGuestFeedback } from "@/lib/dcc/guestFeedback";
 
 type FallbackIntent = {
   label: string;
@@ -35,6 +37,12 @@ function formatPrice(price: number | null, currency: string): string {
   return `From ${currency} ${price}`;
 }
 
+function formatConfirmationType(value: string | null | undefined): string | null {
+  if (!value) return null;
+  if (value === "Instant Then Manual") return "Mixed confirmation";
+  return value;
+}
+
 export default function ViatorTourGrid({
   placeName,
   title,
@@ -57,9 +65,21 @@ export default function ViatorTourGrid({
               : "Reviews on partner page",
           duration: formatDuration(product.duration_minutes),
           price: formatPrice(product.price_from, product.currency || "USD"),
+          supplierName: product.supplier_name || null,
+          itineraryType: product.itinerary_type || null,
+          confirmationType: formatConfirmationType(product.booking_confirmation_type),
+          productOptionCount: product.product_option_count ?? null,
+          productOptionTitles: product.product_option_titles || null,
           href: product.url,
           intentQuery: `${placeName} ${product.title}`.trim(),
           categoryLabel: product.title,
+          takeaways: summarizeGuestFeedback({
+            title: product.title,
+            description: product.short_description,
+            durationMinutes: product.duration_minutes,
+            rating: product.rating,
+            reviewCount: product.review_count,
+          }),
         }))
       : fallbacks.slice(0, 6).map((item) => ({
           key: item.query,
@@ -69,9 +89,15 @@ export default function ViatorTourGrid({
           rating: "Live ratings on partner page",
           duration: "Check live duration",
           price: "See live price",
+          supplierName: null,
+          itineraryType: null,
+          confirmationType: null,
+          productOptionCount: null,
+          productOptionTitles: null,
           href: buildViatorSearchLink(item.query),
           intentQuery: item.query,
           categoryLabel: item.label,
+          takeaways: null,
         }));
 
   return (
@@ -121,6 +147,40 @@ export default function ViatorTourGrid({
                     <span>{card.duration}</span>
                     <span>{card.price}</span>
                   </div>
+
+                  {card.supplierName || card.itineraryType || card.confirmationType || card.productOptionCount ? (
+                    <div className="flex flex-wrap gap-2 text-xs text-zinc-300">
+                      {card.supplierName ? (
+                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1">
+                          {card.supplierName}
+                        </span>
+                      ) : null}
+                      {card.itineraryType ? (
+                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1">
+                          {card.itineraryType}
+                        </span>
+                      ) : null}
+                      {card.confirmationType ? (
+                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1">
+                          {card.confirmationType}
+                        </span>
+                      ) : null}
+                      {card.productOptionCount && card.productOptionCount > 1 ? (
+                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1">
+                          {card.productOptionCount} options
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
+
+                  {card.productOptionTitles && card.productOptionTitles.length > 0 ? (
+                    <p className="text-xs leading-6 text-zinc-400">
+                      Options: {card.productOptionTitles.slice(0, 2).join(" • ")}
+                      {card.productOptionTitles.length > 2 ? " • more" : ""}
+                    </p>
+                  ) : null}
+
+                  {card.takeaways ? <TravelerTakeaways summary={card.takeaways} compact /> : null}
 
                   <a
                     href={href}

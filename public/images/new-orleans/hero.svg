@@ -1,0 +1,115 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="800" y1="0" x2="800" y2="900" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2B0F16"/>
+      <stop offset="0.38" stop-color="#6B1F2E"/>
+      <stop offset="0.72" stop-color="#D56B3E"/>
+      <stop offset="1" stop-color="#F2B36A"/>
+    </linearGradient>
+    <linearGradient id="street" x1="800" y1="530" x2="800" y2="900" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#29171A"/>
+      <stop offset="1" stop-color="#090A10"/>
+    </linearGradient>
+    <linearGradient id="buildingFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4F1F26"/>
+      <stop offset="1" stop-color="#1C1015"/>
+    </linearGradient>
+    <linearGradient id="buildingSide" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2A141A"/>
+      <stop offset="1" stop-color="#130A0E"/>
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1048 246) rotate(90) scale(224 224)">
+      <stop offset="0" stop-color="#FFD38C" stop-opacity="0.95"/>
+      <stop offset="0.42" stop-color="#FFC168" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#FFC168" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <rect width="1600" height="900" fill="url(#sunGlow)"/>
+
+  <g opacity="0.32">
+    <path d="M0 462C156 420 270 404 398 416C552 430 679 480 827 492C1001 507 1150 466 1299 439C1413 419 1507 420 1600 437V560H0V462Z" fill="#D98157"/>
+    <path d="M0 520C164 490 288 485 415 503C584 526 672 582 850 594C1035 606 1184 564 1337 530C1444 506 1529 506 1600 520V636H0V520Z" fill="#9F4D42"/>
+  </g>
+
+  <rect y="530" width="1600" height="370" fill="url(#street)"/>
+
+  <g opacity="0.98">
+    <rect x="128" y="298" width="252" height="292" rx="6" fill="url(#buildingFront)"/>
+    <polygon points="380,298 460,344 460,590 380,590" fill="url(#buildingSide)"/>
+    <rect x="164" y="234" width="178" height="84" rx="6" fill="#5D2730"/>
+    <rect x="194" y="188" width="118" height="54" rx="4" fill="#E4B06C"/>
+    <rect x="188" y="364" width="134" height="18" rx="4" fill="#0F0C11" opacity="0.76"/>
+    <rect x="176" y="398" width="34" height="66" rx="3" fill="#F1D8A4"/>
+    <rect x="236" y="398" width="34" height="66" rx="3" fill="#F1D8A4"/>
+    <rect x="296" y="398" width="34" height="66" rx="3" fill="#F1D8A4"/>
+    <rect x="176" y="488" width="34" height="66" rx="3" fill="#F1D8A4"/>
+    <rect x="236" y="488" width="34" height="66" rx="3" fill="#F1D8A4"/>
+    <rect x="296" y="488" width="34" height="66" rx="3" fill="#F1D8A4"/>
+    <rect x="168" y="386" width="170" height="8" fill="#1A1217"/>
+    <rect x="168" y="476" width="170" height="8" fill="#1A1217"/>
+    <path d="M162 386H344L334 404H172L162 386Z" fill="#161015"/>
+    <path d="M162 476H344L334 494H172L162 476Z" fill="#161015"/>
+  </g>
+
+  <g opacity="0.96">
+    <rect x="518" y="268" width="276" height="326" rx="6" fill="url(#buildingFront)"/>
+    <polygon points="794,268 876,322 876,594 794,594" fill="url(#buildingSide)"/>
+    <rect x="560" y="208" width="194" height="72" rx="5" fill="#6D2A31"/>
+    <rect x="594" y="162" width="126" height="52" rx="4" fill="#F0BF78"/>
+    <path d="M552 330H760L744 360H568L552 330Z" fill="#171116"/>
+    <rect x="566" y="336" width="40" height="74" rx="3" fill="#F2D9A2"/>
+    <rect x="636" y="336" width="40" height="74" rx="3" fill="#F2D9A2"/>
+    <rect x="706" y="336" width="40" height="74" rx="3" fill="#F2D9A2"/>
+    <rect x="566" y="440" width="40" height="74" rx="3" fill="#F2D9A2"/>
+    <rect x="636" y="440" width="40" height="74" rx="3" fill="#F2D9A2"/>
+    <rect x="706" y="440" width="40" height="74" rx="3" fill="#F2D9A2"/>
+    <rect x="548" y="318" width="210" height="10" fill="#24171C"/>
+    <rect x="548" y="422" width="210" height="10" fill="#24171C"/>
+  </g>
+
+  <g opacity="0.95">
+    <rect x="930" y="314" width="248" height="278" rx="6" fill="url(#buildingFront)"/>
+    <polygon points="1178,314 1250,360 1250,592 1178,592" fill="url(#buildingSide)"/>
+    <rect x="968" y="260" width="170" height="66" rx="5" fill="#5B232B"/>
+    <rect x="1000" y="220" width="104" height="42" rx="4" fill="#EAB26E"/>
+    <path d="M964 382H1146L1134 402H976L964 382Z" fill="#161015"/>
+    <rect x="980" y="388" width="34" height="62" rx="3" fill="#F0D39B"/>
+    <rect x="1038" y="388" width="34" height="62" rx="3" fill="#F0D39B"/>
+    <rect x="1096" y="388" width="34" height="62" rx="3" fill="#F0D39B"/>
+    <rect x="980" y="470" width="34" height="62" rx="3" fill="#F0D39B"/>
+    <rect x="1038" y="470" width="34" height="62" rx="3" fill="#F0D39B"/>
+    <rect x="1096" y="470" width="34" height="62" rx="3" fill="#F0D39B"/>
+    <rect x="972" y="370" width="168" height="8" fill="#24171C"/>
+    <rect x="972" y="456" width="168" height="8" fill="#24171C"/>
+  </g>
+
+  <g opacity="0.9">
+    <rect x="1228" y="362" width="162" height="230" rx="6" fill="url(#buildingFront)"/>
+    <polygon points="1390,362 1448,400 1448,592 1390,592" fill="url(#buildingSide)"/>
+    <rect x="1254" y="330" width="112" height="44" rx="4" fill="#532029"/>
+    <rect x="1260" y="408" width="24" height="52" rx="3" fill="#F0D39B"/>
+    <rect x="1298" y="408" width="24" height="52" rx="3" fill="#F0D39B"/>
+    <rect x="1336" y="408" width="24" height="52" rx="3" fill="#F0D39B"/>
+    <rect x="1260" y="482" width="24" height="52" rx="3" fill="#F0D39B"/>
+    <rect x="1298" y="482" width="24" height="52" rx="3" fill="#F0D39B"/>
+    <rect x="1336" y="482" width="24" height="52" rx="3" fill="#F0D39B"/>
+  </g>
+
+  <g opacity="0.88">
+    <path d="M0 646C156 612 356 606 540 632C742 660 928 732 1156 726C1323 722 1450 682 1600 648V900H0V646Z" fill="#130F16"/>
+    <path d="M0 700C146 676 304 676 488 704C660 730 798 778 994 782C1236 788 1388 732 1600 694V900H0V700Z" fill="#090A10"/>
+  </g>
+
+  <g opacity="0.78">
+    <circle cx="150" cy="760" r="7" fill="#FFD58A"/>
+    <circle cx="182" cy="776" r="5" fill="#FFD58A"/>
+    <circle cx="1020" cy="738" r="6" fill="#FFD58A"/>
+    <circle cx="1074" cy="764" r="4" fill="#FFD58A"/>
+    <circle cx="1350" cy="742" r="6" fill="#FFD58A"/>
+  </g>
+
+  <path d="M732 640C760 618 794 606 838 604C900 602 950 626 976 666" stroke="#F3C47E" stroke-width="9" stroke-linecap="round" opacity="0.82"/>
+  <path d="M726 674C770 650 814 640 864 642C924 644 966 666 996 698" stroke="#3EDBFF" stroke-width="5" stroke-linecap="round" opacity="0.52"/>
+</svg>

@@ -3,24 +3,36 @@
     "id": "1",
     "name": "Juneau Glacier Helicopter Tour",
     "city": "Juneau",
+    "description": "A scenic helicopter outing built around glacier views and an icefield landing near Juneau.",
     "price_from": 200,
     "rating": 4.8,
     "review_count": 150,
     "lat": 58.3019,
     "lng": -134.4197,
     "timezone": "America/Anchorage",
-    "duration": "2 hours"
+    "duration": "2 hours",
+    "operator": {
+      "slug": "northstar-heli-adventures",
+      "name": "NorthStar Heli Adventures",
+      "city": "Juneau, Alaska"
+    }
   },
   {
     "id": "2",
     "name": "Mendenhall Glacier Tour",
     "city": "Juneau",
+    "description": "A guided glacier-focused sightseeing experience designed for visitors who want a simpler Juneau outing.",
     "price_from": 150,
     "rating": 4.7,
     "review_count": 100,
     "lat": 58.3019,
     "lng": -134.4197,
     "timezone": "America/Anchorage",
-    "duration": "1.5 hours"
+    "duration": "1.5 hours",
+    "operator": {
+      "slug": "mendenhall-tours-co",
+      "name": "Mendenhall Tours Co.",
+      "city": "Juneau, Alaska"
+    }
   }
 ]

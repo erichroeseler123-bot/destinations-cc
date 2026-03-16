@@ -25,6 +25,17 @@
       "modes": ["event-heavy", "tourism-heavy", "nightlife-heavy"]
     },
     {
+      "slug": "las-vegas",
+      "name": "Las Vegas",
+      "state": "NV",
+      "timezone": "America/Los_Angeles",
+      "centroid": { "lat": 36.1147, "lng": -115.1728 },
+      "default_walk_radius_m": 1500,
+      "launch_status": "seed",
+      "density_profile": "mixed",
+      "modes": ["nightlife-heavy", "event-heavy", "tourism-heavy"]
+    },
+    {
       "slug": "miami",
       "name": "Miami",
       "state": "FL",
@@ -55,6 +66,17 @@
       "default_walk_radius_m": 1400,
       "launch_status": "seed",
       "density_profile": "mixed",
+      "modes": ["nightlife-heavy", "event-heavy", "tourism-heavy"]
+    },
+    {
+      "slug": "new-orleans",
+      "name": "New Orleans",
+      "state": "LA",
+      "timezone": "America/Chicago",
+      "centroid": { "lat": 29.9511, "lng": -90.0715 },
+      "default_walk_radius_m": 1400,
+      "launch_status": "seed",
+      "density_profile": "compact",
       "modes": ["nightlife-heavy", "event-heavy", "tourism-heavy"]
     },
     {

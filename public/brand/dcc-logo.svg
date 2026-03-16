@@ -1,0 +1,22 @@
+<svg width="360" height="88" viewBox="0 0 360 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="dccLogoRing" x1="14" y1="12" x2="74" y2="76" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE"/>
+      <stop offset="0.52" stop-color="#34D399"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="88" rx="24" fill="#090A0D"/>
+  <g>
+    <circle cx="44" cy="44" r="26" stroke="url(#dccLogoRing)" stroke-width="4"/>
+    <circle cx="44" cy="44" r="7" fill="#F8FAFC"/>
+    <path d="M44 18V27" stroke="#22D3EE" stroke-width="3" stroke-linecap="round"/>
+    <path d="M44 61V70" stroke="#34D399" stroke-width="3" stroke-linecap="round"/>
+    <path d="M18 44H27" stroke="#38BDF8" stroke-width="3" stroke-linecap="round"/>
+    <path d="M61 44H70" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+    <path d="M29 54L41 41L49 47L58 29" stroke="#F8FAFC" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="58" cy="29" r="3.5" fill="#F59E0B"/>
+  </g>
+  <text x="94" y="31" fill="#7DD3FC" font-size="10" font-family="Arial, sans-serif" letter-spacing="2.6">DESTINATION COMMAND CENTER</text>
+  <text x="94" y="57" fill="#F8FAFC" font-size="26" font-weight="700" font-family="Arial, sans-serif">Travel guides, shows, tours, and transportation</text>
+</svg>

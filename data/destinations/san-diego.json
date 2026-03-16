@@ -1,0 +1,21 @@
+{
+  "slug": "san-diego",
+  "display_name": "San Diego",
+  "aliases": [
+    "san-diego-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "San Diego Zoo",
+      "description": "World famous wildlife park.",
+      "query": "San Diego Zoo tickets"
+    },
+    {
+      "title": "Harbor Cruise",
+      "description": "Bay sightseeing cruise.",
+      "query": "San Diego harbor cruise"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

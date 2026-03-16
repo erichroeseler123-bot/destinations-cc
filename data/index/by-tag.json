@@ -2639,5 +2639,203 @@
   ],
   "area:caribbean-usvi": [
     "dcc:port:vi-st-thomas:0001"
+  ],
+  "category:theater-comedy-live": [
+    "dcc:venue:us-co-denver-paramount-theatre:0001",
+    "dcc:venue:us-il-chicago-chicago-theatre:0001"
+  ],
+  "city:denver": [
+    "dcc:venue:us-co-denver-paramount-theatre:0001",
+    "dcc:venue:us-co-denver-colorado-convention-center:0001",
+    "dcc:venue:us-co-denver-union-station:0001",
+    "dcc:venue:us-co-denver-larimer-square:0001",
+    "dcc:venue:us-co-denver-denver-performing-arts-complex:0001",
+    "dcc:venue:us-co-denver-comedy-works-downtown:0001",
+    "dcc:venue:us-co-denver-ball-arena:0001",
+    "dcc:venue:us-co-denver-summit-music-hall:0001",
+    "dcc:venue:us-co-denver-mission-ballroom:0001"
+  ],
+  "district:downtown-core": [
+    "dcc:venue:us-co-denver-paramount-theatre:0001",
+    "dcc:venue:us-co-denver-colorado-convention-center:0001",
+    "dcc:venue:us-co-denver-larimer-square:0001",
+    "dcc:venue:us-co-denver-denver-performing-arts-complex:0001",
+    "dcc:venue:us-co-denver-comedy-works-downtown:0001",
+    "dcc:venue:us-co-denver-ball-arena:0001"
+  ],
+  "impact:medium": [
+    "dcc:venue:us-co-denver-paramount-theatre:0001",
+    "dcc:venue:us-co-denver-union-station:0001",
+    "dcc:venue:us-co-denver-larimer-square:0001",
+    "dcc:venue:us-co-denver-denver-performing-arts-complex:0001",
+    "dcc:venue:us-co-denver-comedy-works-downtown:0001",
+    "dcc:venue:us-co-denver-summit-music-hall:0001",
+    "dcc:venue:us-fl-miami-adrienne-arsht-center:0001",
+    "dcc:venue:us-fl-miami-brickell-city-centre:0001",
+    "dcc:venue:us-il-chicago-chicago-theatre:0001",
+    "dcc:venue:us-il-chicago-merchandise-mart:0001",
+    "dcc:venue:us-ny-new-york-city-pier-17:0001",
+    "dcc:venue:us-ny-new-york-city-the-bowery-ballroom:0001",
+    "dcc:venue:us-tn-nashville-ryman-auditorium:0001",
+    "dcc:venue:us-tn-nashville-fifth-and-broad:0001",
+    "dcc:venue:us-tx-austin-acl-live:0001",
+    "dcc:venue:us-tx-austin-rainey-street-district:0001"
+  ],
+  "venue-type:event-venue": [
+    "dcc:venue:us-co-denver-paramount-theatre:0001",
+    "dcc:venue:us-co-denver-comedy-works-downtown:0001",
+    "dcc:venue:us-co-denver-ball-arena:0001",
+    "dcc:venue:us-co-denver-summit-music-hall:0001",
+    "dcc:venue:us-co-denver-mission-ballroom:0001",
+    "dcc:venue:us-fl-miami-kaseya-center:0001",
+    "dcc:venue:us-il-chicago-chicago-theatre:0001",
+    "dcc:venue:us-ny-new-york-city-madison-square-garden:0001",
+    "dcc:venue:us-ny-new-york-city-the-bowery-ballroom:0001",
+    "dcc:venue:us-tn-nashville-bridgestone-arena:0001",
+    "dcc:venue:us-tn-nashville-ryman-auditorium:0001",
+    "dcc:venue:us-tx-austin-moody-center:0001",
+    "dcc:venue:us-tx-austin-acl-live:0001"
+  ],
+  "category:conventions-major-events": [
+    "dcc:venue:us-co-denver-colorado-convention-center:0001"
+  ],
+  "impact:high": [
+    "dcc:venue:us-co-denver-colorado-convention-center:0001",
+    "dcc:venue:us-co-denver-ball-arena:0001",
+    "dcc:venue:us-fl-miami-kaseya-center:0001",
+    "dcc:venue:us-il-chicago-millennium-park-campus:0001",
+    "dcc:venue:us-ny-new-york-city-madison-square-garden:0001",
+    "dcc:venue:us-tn-nashville-bridgestone-arena:0001",
+    "dcc:venue:us-tx-austin-moody-center:0001"
+  ],
+  "venue-type:major-event-campus": [
+    "dcc:venue:us-co-denver-colorado-convention-center:0001",
+    "dcc:venue:us-co-denver-denver-performing-arts-complex:0001",
+    "dcc:venue:us-fl-miami-adrienne-arsht-center:0001",
+    "dcc:venue:us-il-chicago-millennium-park-campus:0001"
+  ],
+  "category:dining-social": [
+    "dcc:venue:us-co-denver-union-station:0001",
+    "dcc:venue:us-il-chicago-merchandise-mart:0001"
+  ],
+  "district:union-station": [
+    "dcc:venue:us-co-denver-union-station:0001",
+    "dcc:venue:us-co-denver-larimer-square:0001",
+    "dcc:venue:us-co-denver-ball-arena:0001",
+    "dcc:venue:us-co-denver-summit-music-hall:0001",
+    "dcc:venue:us-co-denver-mission-ballroom:0001"
+  ],
+  "venue-type:mobility-hub": [
+    "dcc:venue:us-co-denver-union-station:0001",
+    "dcc:venue:us-il-chicago-merchandise-mart:0001"
+  ],
+  "category:dining-nightlife": [
+    "dcc:venue:us-co-denver-larimer-square:0001"
+  ],
+  "venue-type:district-hub": [
+    "dcc:venue:us-co-denver-larimer-square:0001",
+    "dcc:venue:us-fl-miami-brickell-city-centre:0001",
+    "dcc:venue:us-ny-new-york-city-pier-17:0001",
+    "dcc:venue:us-tn-nashville-fifth-and-broad:0001",
+    "dcc:venue:us-tx-austin-rainey-street-district:0001"
+  ],
+  "category:theater-arts": [
+    "dcc:venue:us-co-denver-denver-performing-arts-complex:0001",
+    "dcc:venue:us-fl-miami-adrienne-arsht-center:0001"
+  ],
+  "category:comedy-nightlife": [
+    "dcc:venue:us-co-denver-comedy-works-downtown:0001"
+  ],
+  "category:sports-concerts": [
+    "dcc:venue:us-co-denver-ball-arena:0001",
+    "dcc:venue:us-fl-miami-kaseya-center:0001",
+    "dcc:venue:us-ny-new-york-city-madison-square-garden:0001",
+    "dcc:venue:us-tn-nashville-bridgestone-arena:0001",
+    "dcc:venue:us-tx-austin-moody-center:0001"
+  ],
+  "category:live-music": [
+    "dcc:venue:us-co-denver-summit-music-hall:0001",
+    "dcc:venue:us-co-denver-mission-ballroom:0001",
+    "dcc:venue:us-ny-new-york-city-the-bowery-ballroom:0001",
+    "dcc:venue:us-tn-nashville-ryman-auditorium:0001",
+    "dcc:venue:us-tx-austin-acl-live:0001"
+  ],
+  "impact:medium-high": [
+    "dcc:venue:us-co-denver-mission-ballroom:0001"
+  ],
+  "city:miami": [
+    "dcc:venue:us-fl-miami-kaseya-center:0001",
+    "dcc:venue:us-fl-miami-adrienne-arsht-center:0001",
+    "dcc:venue:us-fl-miami-brickell-city-centre:0001"
+  ],
+  "district:downtown-miami": [
+    "dcc:venue:us-fl-miami-kaseya-center:0001",
+    "dcc:venue:us-fl-miami-adrienne-arsht-center:0001"
+  ],
+  "category:shopping-dining-nightlife": [
+    "dcc:venue:us-fl-miami-brickell-city-centre:0001"
+  ],
+  "district:brickell-core": [
+    "dcc:venue:us-fl-miami-brickell-city-centre:0001"
+  ],
+  "city:chicago": [
+    "dcc:venue:us-il-chicago-chicago-theatre:0001",
+    "dcc:venue:us-il-chicago-millennium-park-campus:0001",
+    "dcc:venue:us-il-chicago-merchandise-mart:0001"
+  ],
+  "district:loop-core": [
+    "dcc:venue:us-il-chicago-chicago-theatre:0001",
+    "dcc:venue:us-il-chicago-millennium-park-campus:0001"
+  ],
+  "category:civic-events": [
+    "dcc:venue:us-il-chicago-millennium-park-campus:0001"
+  ],
+  "district:river-north": [
+    "dcc:venue:us-il-chicago-merchandise-mart:0001"
+  ],
+  "city:new-york-city": [
+    "dcc:venue:us-ny-new-york-city-madison-square-garden:0001",
+    "dcc:venue:us-ny-new-york-city-pier-17:0001",
+    "dcc:venue:us-ny-new-york-city-the-bowery-ballroom:0001"
+  ],
+  "district:midtown-event-core": [
+    "dcc:venue:us-ny-new-york-city-madison-square-garden:0001",
+    "dcc:venue:us-ny-new-york-city-the-bowery-ballroom:0001"
+  ],
+  "category:riverfront-dining-live": [
+    "dcc:venue:us-ny-new-york-city-pier-17:0001"
+  ],
+  "district:lower-manhattan": [
+    "dcc:venue:us-ny-new-york-city-pier-17:0001"
+  ],
+  "city:nashville": [
+    "dcc:venue:us-tn-nashville-bridgestone-arena:0001",
+    "dcc:venue:us-tn-nashville-ryman-auditorium:0001",
+    "dcc:venue:us-tn-nashville-fifth-and-broad:0001"
+  ],
+  "district:broadway-core": [
+    "dcc:venue:us-tn-nashville-bridgestone-arena:0001",
+    "dcc:venue:us-tn-nashville-ryman-auditorium:0001"
+  ],
+  "category:dining-retail-nightlife": [
+    "dcc:venue:us-tn-nashville-fifth-and-broad:0001"
+  ],
+  "district:the-gulch": [
+    "dcc:venue:us-tn-nashville-fifth-and-broad:0001"
+  ],
+  "city:austin": [
+    "dcc:venue:us-tx-austin-moody-center:0001",
+    "dcc:venue:us-tx-austin-acl-live:0001",
+    "dcc:venue:us-tx-austin-rainey-street-district:0001"
+  ],
+  "district:rainey-street": [
+    "dcc:venue:us-tx-austin-moody-center:0001",
+    "dcc:venue:us-tx-austin-rainey-street-district:0001"
+  ],
+  "district:warehouse-district": [
+    "dcc:venue:us-tx-austin-acl-live:0001"
+  ],
+  "category:bars-nightlife": [
+    "dcc:venue:us-tx-austin-rainey-street-district:0001"
   ]
 }

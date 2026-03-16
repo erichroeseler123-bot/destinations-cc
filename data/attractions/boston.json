@@ -1,0 +1,371 @@
+{
+  "citySlug": "boston",
+  "cityName": "Boston",
+  "attractions": [
+    {
+      "slug": "freedom-trail",
+      "name": "Freedom Trail",
+      "type": "historic-route",
+      "summary": "Freedom Trail is one of the more recognizable history-focused stops in Boston for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "history",
+        "walks",
+        "sightseeing"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Freedom Trail guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Freedom Trail in Boston, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Freedom Trail as a stop for a more history-focused city walk or half-day plan.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Freedom Trail as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Freedom Trail more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Freedom Trail history tours",
+          "query": "boston freedom trail history tour",
+          "description": "A simple starting point for visitors who want more context around Freedom Trail."
+        },
+        {
+          "label": "Freedom Trail guided experiences",
+          "query": "boston freedom trail tours",
+          "description": "A general search path for tours and guided experiences connected to Freedom Trail in Boston."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Faneuil Hall",
+          "href": "/boston/faneuil-hall"
+        },
+        {
+          "label": "Fenway Park",
+          "href": "/boston/fenway-park"
+        },
+        {
+          "label": "Boston Common",
+          "href": "/boston/boston-common"
+        }
+      ],
+      "primaryToursHref": "/boston/freedom-trail/tours",
+      "thingsToDoHref": "/boston/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Faneuil Hall",
+        "Fenway Park"
+      ]
+    },
+    {
+      "slug": "faneuil-hall",
+      "name": "Faneuil Hall",
+      "type": "historic-market",
+      "summary": "Faneuil Hall is one of the more recognizable history-focused stops in Boston for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "history",
+        "food",
+        "shopping"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Faneuil Hall guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Faneuil Hall in Boston, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Faneuil Hall as a stop for a more history-focused city walk or half-day plan.",
+        "Pair Faneuil Hall with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Faneuil Hall as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Faneuil Hall more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Faneuil Hall history tours",
+          "query": "boston faneuil hall history tour",
+          "description": "A simple starting point for visitors who want more context around Faneuil Hall."
+        },
+        {
+          "label": "Faneuil Hall food experiences",
+          "query": "boston faneuil hall food tour",
+          "description": "Helpful when Faneuil Hall fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Faneuil Hall guided experiences",
+          "query": "boston faneuil hall tours",
+          "description": "A general search path for tours and guided experiences connected to Faneuil Hall in Boston."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Freedom Trail",
+          "href": "/boston/freedom-trail"
+        },
+        {
+          "label": "Fenway Park",
+          "href": "/boston/fenway-park"
+        },
+        {
+          "label": "Boston Common",
+          "href": "/boston/boston-common"
+        }
+      ],
+      "primaryToursHref": "/boston/faneuil-hall/tours",
+      "thingsToDoHref": "/boston/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Freedom Trail",
+        "Fenway Park"
+      ]
+    },
+    {
+      "slug": "fenway-park",
+      "name": "Fenway Park",
+      "type": "stadium",
+      "summary": "Fenway Park is one of the more recognizable history-focused stops in Boston for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "sports",
+        "history"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "Fenway Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Fenway Park in Boston, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Fenway Park as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Fenway Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Fenway Park more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Fenway Park history tours",
+          "query": "boston fenway park history tour",
+          "description": "A simple starting point for visitors who want more context around Fenway Park."
+        },
+        {
+          "label": "Fenway Park guided experiences",
+          "query": "boston fenway park tours",
+          "description": "A general search path for tours and guided experiences connected to Fenway Park in Boston."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Freedom Trail",
+          "href": "/boston/freedom-trail"
+        },
+        {
+          "label": "Faneuil Hall",
+          "href": "/boston/faneuil-hall"
+        },
+        {
+          "label": "Boston Common",
+          "href": "/boston/boston-common"
+        }
+      ],
+      "primaryToursHref": "/boston/fenway-park/tours",
+      "thingsToDoHref": "/boston/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Freedom Trail",
+        "Faneuil Hall"
+      ]
+    },
+    {
+      "slug": "boston-common",
+      "name": "Boston Common",
+      "type": "park",
+      "summary": "Boston Common is one of the more recognizable history-focused stops in Boston for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "park",
+        "history",
+        "walks"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Boston Common guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Boston Common in Boston, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Boston Common as a stop for a more history-focused city walk or half-day plan.",
+        "Use Boston Common as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Boston Common as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves.",
+        "A guided walk or city tour often gives Boston Common more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Boston Common history tours",
+          "query": "boston boston common history tour",
+          "description": "A simple starting point for visitors who want more context around Boston Common."
+        },
+        {
+          "label": "Boston Common outdoor experiences",
+          "query": "boston boston common outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Boston Common guided experiences",
+          "query": "boston boston common tours",
+          "description": "A general search path for tours and guided experiences connected to Boston Common in Boston."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Freedom Trail",
+          "href": "/boston/freedom-trail"
+        },
+        {
+          "label": "Faneuil Hall",
+          "href": "/boston/faneuil-hall"
+        },
+        {
+          "label": "Fenway Park",
+          "href": "/boston/fenway-park"
+        }
+      ],
+      "primaryToursHref": "/boston/boston-common/tours",
+      "thingsToDoHref": "/boston/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Freedom Trail",
+        "Faneuil Hall"
+      ]
+    },
+    {
+      "slug": "north-end",
+      "name": "North End",
+      "type": "district",
+      "summary": "North End is a useful district to understand early if you want a clearer feel for how visitors actually spend time in Boston.",
+      "categories": [
+        "food",
+        "history",
+        "walks"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "North End guide, things to do, and local tours",
+      "heroSummary": "Planning guide for North End in Boston, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Walk North End with one clear purpose, such as food, music, shopping, or evening atmosphere.",
+        "Treat North End as a time block rather than a quick pass-through if it is one of the main reasons for the trip.",
+        "Use North End as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan North End as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Districts usually feel stronger when you decide whether the point is food, shopping, nightlife, or a general walk before you arrive.",
+        "A guided walk or city tour often gives North End more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "North End neighborhood tours",
+          "query": "boston north end neighborhood tour",
+          "description": "Helpful when North End is better experienced as part of a larger district walk or evening plan."
+        },
+        {
+          "label": "North End history tours",
+          "query": "boston north end history tour",
+          "description": "A simple starting point for visitors who want more context around North End."
+        },
+        {
+          "label": "North End food experiences",
+          "query": "boston north end food tour",
+          "description": "Helpful when North End fits naturally into a food-first city plan."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Freedom Trail",
+          "href": "/boston/freedom-trail"
+        },
+        {
+          "label": "Faneuil Hall",
+          "href": "/boston/faneuil-hall"
+        },
+        {
+          "label": "Fenway Park",
+          "href": "/boston/fenway-park"
+        }
+      ],
+      "primaryToursHref": "/boston/north-end/tours",
+      "thingsToDoHref": "/boston/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Freedom Trail",
+        "Faneuil Hall"
+      ]
+    },
+    {
+      "slug": "museum-of-fine-arts-boston",
+      "name": "Museum of Fine Arts, Boston",
+      "type": "museum",
+      "summary": "Museum of Fine Arts, Boston is a useful museum stop in Boston for visitors who want more structure, context, or indoor time built into the trip.",
+      "categories": [
+        "museum",
+        "culture",
+        "history"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Museum of Fine Arts, Boston guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Museum of Fine Arts, Boston in Boston, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Museum of Fine Arts, Boston as an anchor for a more structured indoor block, especially on hotter, colder, or wetter days.",
+        "Pair Museum of Fine Arts, Boston with one nearby neighborhood, food, or walking stop instead of stacking too many museums at once.",
+        "Use Museum of Fine Arts, Boston as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Museum of Fine Arts, Boston as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Museum stops usually add the most value when you pair them with one nearby walk, meal, or neighborhood block instead of stacking too much indoor time.",
+        "A guided walk or city tour often gives Museum of Fine Arts, Boston more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Museum of Fine Arts, Boston museum experiences",
+          "query": "boston museum of fine arts boston museum tour",
+          "description": "Useful when visitors want more context than a quick self-guided pass-through."
+        },
+        {
+          "label": "Museum of Fine Arts, Boston history tours",
+          "query": "boston museum of fine arts boston history tour",
+          "description": "A simple starting point for visitors who want more context around Museum of Fine Arts, Boston."
+        },
+        {
+          "label": "Museum of Fine Arts, Boston guided experiences",
+          "query": "boston museum of fine arts boston tours",
+          "description": "A general search path for tours and guided experiences connected to Museum of Fine Arts, Boston in Boston."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Freedom Trail",
+          "href": "/boston/freedom-trail"
+        },
+        {
+          "label": "Faneuil Hall",
+          "href": "/boston/faneuil-hall"
+        },
+        {
+          "label": "Fenway Park",
+          "href": "/boston/fenway-park"
+        }
+      ],
+      "primaryToursHref": "/boston/museum-of-fine-arts-boston/tours",
+      "thingsToDoHref": "/boston/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Freedom Trail",
+        "Faneuil Hall"
+      ]
+    }
+  ]
+}

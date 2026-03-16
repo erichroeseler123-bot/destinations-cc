@@ -1,0 +1,353 @@
+{
+  "citySlug": "phoenix",
+  "cityName": "Phoenix",
+  "attractions": [
+    {
+      "slug": "desert-botanical-garden",
+      "name": "Desert Botanical Garden",
+      "type": "garden",
+      "summary": "Desert Botanical Garden gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader Phoenix day plan.",
+      "categories": [
+        "outdoor",
+        "family"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Desert Botanical Garden guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Desert Botanical Garden in Phoenix, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Desert Botanical Garden as a slower outdoor break between denser city attractions or tours.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Desert Botanical Garden as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Desert Botanical Garden outdoor experiences",
+          "query": "phoenix desert botanical garden outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Desert Botanical Garden guided experiences",
+          "query": "phoenix desert botanical garden tours",
+          "description": "A general search path for tours and guided experiences connected to Desert Botanical Garden in Phoenix."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Camelback Mountain",
+          "href": "/phoenix/camelback-mountain"
+        },
+        {
+          "label": "Old Town Scottsdale",
+          "href": "/phoenix/old-town-scottsdale"
+        },
+        {
+          "label": "Papago Park",
+          "href": "/phoenix/papago-park"
+        }
+      ],
+      "primaryToursHref": "/phoenix/desert-botanical-garden/tours",
+      "thingsToDoHref": "/phoenix/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Camelback Mountain",
+        "Old Town Scottsdale"
+      ]
+    },
+    {
+      "slug": "camelback-mountain",
+      "name": "Camelback Mountain",
+      "type": "landmark",
+      "summary": "Camelback Mountain gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader Phoenix day plan.",
+      "categories": [
+        "hiking",
+        "outdoor",
+        "views"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Camelback Mountain guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Camelback Mountain in Phoenix, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Camelback Mountain as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Camelback Mountain as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Camelback Mountain outdoor experiences",
+          "query": "phoenix camelback mountain outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Camelback Mountain guided experiences",
+          "query": "phoenix camelback mountain tours",
+          "description": "A general search path for tours and guided experiences connected to Camelback Mountain in Phoenix."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Desert Botanical Garden",
+          "href": "/phoenix/desert-botanical-garden"
+        },
+        {
+          "label": "Old Town Scottsdale",
+          "href": "/phoenix/old-town-scottsdale"
+        },
+        {
+          "label": "Papago Park",
+          "href": "/phoenix/papago-park"
+        }
+      ],
+      "primaryToursHref": "/phoenix/camelback-mountain/tours",
+      "thingsToDoHref": "/phoenix/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Desert Botanical Garden",
+        "Old Town Scottsdale"
+      ]
+    },
+    {
+      "slug": "old-town-scottsdale",
+      "name": "Old Town Scottsdale",
+      "type": "district",
+      "summary": "Old Town Scottsdale is a useful Phoenix stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "shopping",
+        "food",
+        "nightlife"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "Old Town Scottsdale guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Old Town Scottsdale in Phoenix, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair Old Town Scottsdale with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "Treat Old Town Scottsdale as an evening block if nightlife is a major part of the trip."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Old Town Scottsdale as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Old Town Scottsdale matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Old Town Scottsdale food experiences",
+          "query": "phoenix old town scottsdale food tour",
+          "description": "Helpful when Old Town Scottsdale fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Old Town Scottsdale guided experiences",
+          "query": "phoenix old town scottsdale tours",
+          "description": "A general search path for tours and guided experiences connected to Old Town Scottsdale in Phoenix."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Desert Botanical Garden",
+          "href": "/phoenix/desert-botanical-garden"
+        },
+        {
+          "label": "Camelback Mountain",
+          "href": "/phoenix/camelback-mountain"
+        },
+        {
+          "label": "Papago Park",
+          "href": "/phoenix/papago-park"
+        }
+      ],
+      "primaryToursHref": "/phoenix/old-town-scottsdale/tours",
+      "thingsToDoHref": "/phoenix/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Desert Botanical Garden",
+        "Camelback Mountain"
+      ]
+    },
+    {
+      "slug": "papago-park",
+      "name": "Papago Park",
+      "type": "park",
+      "summary": "Papago Park gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader Phoenix day plan.",
+      "categories": [
+        "outdoor",
+        "hiking"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Papago Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Papago Park in Phoenix, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Papago Park as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Papago Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Papago Park outdoor experiences",
+          "query": "phoenix papago park outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Papago Park guided experiences",
+          "query": "phoenix papago park tours",
+          "description": "A general search path for tours and guided experiences connected to Papago Park in Phoenix."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Desert Botanical Garden",
+          "href": "/phoenix/desert-botanical-garden"
+        },
+        {
+          "label": "Camelback Mountain",
+          "href": "/phoenix/camelback-mountain"
+        },
+        {
+          "label": "Old Town Scottsdale",
+          "href": "/phoenix/old-town-scottsdale"
+        }
+      ],
+      "primaryToursHref": "/phoenix/papago-park/tours",
+      "thingsToDoHref": "/phoenix/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Desert Botanical Garden",
+        "Camelback Mountain"
+      ]
+    },
+    {
+      "slug": "heard-museum",
+      "name": "Heard Museum",
+      "type": "museum",
+      "summary": "Heard Museum is a useful museum stop in Phoenix for visitors who want more structure, context, or indoor time built into the trip.",
+      "categories": [
+        "museum",
+        "culture",
+        "history"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Heard Museum guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Heard Museum in Phoenix, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Heard Museum as an anchor for a more structured indoor block, especially on hotter, colder, or wetter days.",
+        "Pair Heard Museum with one nearby neighborhood, food, or walking stop instead of stacking too many museums at once.",
+        "Use Heard Museum as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Heard Museum as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Museum stops usually add the most value when you pair them with one nearby walk, meal, or neighborhood block instead of stacking too much indoor time.",
+        "A guided walk or city tour often gives Heard Museum more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Heard Museum museum experiences",
+          "query": "phoenix heard museum museum tour",
+          "description": "Useful when visitors want more context than a quick self-guided pass-through."
+        },
+        {
+          "label": "Heard Museum history tours",
+          "query": "phoenix heard museum history tour",
+          "description": "A simple starting point for visitors who want more context around Heard Museum."
+        },
+        {
+          "label": "Heard Museum guided experiences",
+          "query": "phoenix heard museum tours",
+          "description": "A general search path for tours and guided experiences connected to Heard Museum in Phoenix."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Desert Botanical Garden",
+          "href": "/phoenix/desert-botanical-garden"
+        },
+        {
+          "label": "Camelback Mountain",
+          "href": "/phoenix/camelback-mountain"
+        },
+        {
+          "label": "Old Town Scottsdale",
+          "href": "/phoenix/old-town-scottsdale"
+        }
+      ],
+      "primaryToursHref": "/phoenix/heard-museum/tours",
+      "thingsToDoHref": "/phoenix/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Desert Botanical Garden",
+        "Camelback Mountain"
+      ]
+    },
+    {
+      "slug": "south-mountain-park",
+      "name": "South Mountain Park",
+      "type": "nature-area",
+      "summary": "South Mountain Park is a useful nature-focused stop near Phoenix for visitors who want scenery, fresh air, and a break from denser urban pacing.",
+      "categories": [
+        "outdoor",
+        "hiking",
+        "scenic"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "South Mountain Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for South Mountain Park in Phoenix, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use South Mountain Park as a slower scenic or outdoor block instead of trying to stack too many urban stops around it.",
+        "Pair South Mountain Park with one other nearby attraction or a dedicated half-day plan rather than forcing multiple long jumps.",
+        "Use South Mountain Park as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan South Mountain Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Nature stops usually feel better when you leave margin for weather, travel time, and a slower overall pace.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "South Mountain Park outdoor experiences",
+          "query": "phoenix south mountain park outdoor tour",
+          "description": "Helpful when visitors want structure around scenery, hiking, or a more nature-forward day."
+        },
+        {
+          "label": "South Mountain Park guided experiences",
+          "query": "phoenix south mountain park tours",
+          "description": "A general search path for tours and guided experiences connected to South Mountain Park in Phoenix."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Desert Botanical Garden",
+          "href": "/phoenix/desert-botanical-garden"
+        },
+        {
+          "label": "Camelback Mountain",
+          "href": "/phoenix/camelback-mountain"
+        },
+        {
+          "label": "Old Town Scottsdale",
+          "href": "/phoenix/old-town-scottsdale"
+        }
+      ],
+      "primaryToursHref": "/phoenix/south-mountain-park/tours",
+      "thingsToDoHref": "/phoenix/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Desert Botanical Garden",
+        "Camelback Mountain"
+      ]
+    }
+  ]
+}

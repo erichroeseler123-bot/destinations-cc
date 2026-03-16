@@ -50,11 +50,20 @@ export default function CitiesSearchClient({
   }, [safeCities, q, usOnly]);
 
   const shown = filtered.slice(0, 300);
+  const featuredCount = shown.filter((city) => typeof city.metrics?.population === "number" && city.metrics.population > 500000).length;
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-        <div className="flex flex-col md:flex-row gap-3 md:items-center">
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4">
+        <div className="space-y-1">
+          <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Browse cities</p>
+          <h3 className="text-2xl font-bold text-white">Search destination hubs</h3>
+          <p className="max-w-3xl text-sm text-zinc-400">
+            Filter the city network by name, state, or country, then move into the right guide, tour surface, or destination page.
+          </p>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-center">
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -78,6 +87,21 @@ export default function CitiesSearchClient({
           </div>
         </div>
 
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div className="text-xs uppercase tracking-[0.16em] text-zinc-500">Current set</div>
+            <div className="mt-2 text-sm font-medium text-zinc-100">{filtered.length} cities match the current filter.</div>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div className="text-xs uppercase tracking-[0.16em] text-zinc-500">Large city hubs</div>
+            <div className="mt-2 text-sm font-medium text-zinc-100">{featuredCount} visible cities have populations above 500k.</div>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div className="text-xs uppercase tracking-[0.16em] text-zinc-500">Best next move</div>
+            <div className="mt-2 text-sm font-medium text-zinc-100">Open a city guide first, then move into tours, shows, or attractions from there.</div>
+          </div>
+        </div>
+
         {filtered.length > shown.length && (
           <p className="mt-3 text-xs text-zinc-500">
             Showing first {shown.length} results. Refine your search to narrow it
@@ -90,18 +114,20 @@ export default function CitiesSearchClient({
         {shown.map((c) => (
           <article
             key={c.id}
-            className="rounded-2xl border border-white/10 bg-white/5 p-4 hover:bg-white/10 transition"
+            className="rounded-3xl border border-white/10 bg-white/[0.05] p-5 hover:bg-white/[0.08] transition"
           >
             <Link href={`/${c.slug}`} className="block">
-              <div className="font-bold text-lg">{c.name}</div>
-              <div className="text-sm text-zinc-400">
+              <div className="font-bold text-lg text-white">{c.name}</div>
+              <div className="mt-2 text-sm text-zinc-400">
                 {(c.admin?.country || "—")}
                 {c.admin?.region_code ? ` • ${c.admin.region_code}` : ""}
                 {typeof c.metrics?.population === "number"
                   ? ` • Pop ${c.metrics.population.toLocaleString()}`
                   : ""}
               </div>
-              <div className="mt-1 text-xs text-zinc-500">/{c.slug}</div>
+              <div className="mt-2 inline-flex rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-zinc-400">
+                /{c.slug}
+              </div>
             </Link>
 
             <div className="mt-4 flex flex-wrap gap-2">
@@ -130,7 +156,7 @@ export default function CitiesSearchClient({
               )}
             </div>
             {viatorEnabled ? (
-              <p className="mt-2 text-[11px] text-zinc-500">
+              <p className="mt-3 text-[11px] leading-6 text-zinc-500">
                 Powered by Viator. DCC may earn a commission if you book through partner links, at no extra cost to you.
               </p>
             ) : null}

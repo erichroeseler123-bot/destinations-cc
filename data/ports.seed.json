@@ -4,56 +4,72 @@
     "area": "Asia • China",
     "country": "HK",
     "slug": "hong-kong",
-    "tags": []
+    "tags": [],
+    "lat": 22.27832,
+    "lon": 114.17469
   },
   {
     "name": "Shanghai",
     "area": "Asia • China",
     "country": "CN",
     "slug": "shanghai",
-    "tags": []
+    "tags": [],
+    "lat": 31.22222,
+    "lon": 121.45806
   },
   {
     "name": "Yokohama (Tokyo)",
     "area": "Asia • Japan",
     "country": "JP",
     "slug": "yokohama",
-    "tags": []
+    "tags": [],
+    "lat": 35.43333,
+    "lon": 139.65
   },
   {
     "name": "Singapore",
     "area": "Asia • Southeast Asia",
     "country": "SG",
     "slug": "singapore",
-    "tags": []
+    "tags": [],
+    "lat": 1.28967,
+    "lon": 103.85007
   },
   {
     "name": "Brisbane",
     "area": "Australia & NZ • Australia",
     "country": "AU",
     "slug": "brisbane",
-    "tags": []
+    "tags": [],
+    "lat": -27.46794,
+    "lon": 153.02809
   },
   {
     "name": "Melbourne",
     "area": "Australia & NZ • Australia",
     "country": "AU",
     "slug": "melbourne",
-    "tags": []
+    "tags": [],
+    "lat": -37.814,
+    "lon": 144.96332
   },
   {
     "name": "Sydney",
     "area": "Australia & NZ • Australia",
     "country": "AU",
     "slug": "sydney",
-    "tags": []
+    "tags": [],
+    "lat": -33.86785,
+    "lon": 151.20732
   },
   {
     "name": "Auckland",
     "area": "Australia & NZ • New Zealand",
     "country": "NZ",
     "slug": "auckland",
-    "tags": []
+    "tags": [],
+    "lat": -36.84853,
+    "lon": 174.76349
   },
   {
     "name": "Great Stirrup Cay",
@@ -255,7 +271,9 @@
     "area": "Europe • Mediterranean",
     "country": "ES",
     "slug": "barcelona",
-    "tags": []
+    "tags": [],
+    "lat": 41.38879,
+    "lon": 2.15899
   },
   {
     "name": "Santorini",
@@ -297,14 +315,18 @@
     "area": "Europe • Northern Europe",
     "country": "DK",
     "slug": "copenhagen",
-    "tags": []
+    "tags": [],
+    "lat": 55.67594,
+    "lon": 12.56553
   },
   {
     "name": "Hamburg",
     "area": "Europe • Northern Europe",
     "country": "DE",
     "slug": "hamburg",
-    "tags": []
+    "tags": [],
+    "lat": 53.55073,
+    "lon": 9.99302
   },
   {
     "name": "Helsinki",
@@ -318,7 +340,9 @@
     "area": "Europe • Northern Europe",
     "country": "SE",
     "slug": "stockholm",
-    "tags": []
+    "tags": [],
+    "lat": 59.32938,
+    "lon": 18.06871
   },
   {
     "name": "Tallinn",
@@ -332,7 +356,9 @@
     "area": "Europe • Turkey",
     "country": "TR",
     "slug": "istanbul",
-    "tags": []
+    "tags": [],
+    "lat": 41.01384,
+    "lon": 28.94966
   },
   {
     "name": "Kuşadası (Ephesus)",
@@ -395,14 +421,18 @@
     "area": "Middle East • UAE",
     "country": "AE",
     "slug": "abu-dhabi",
-    "tags": []
+    "tags": [],
+    "lat": 24.45118,
+    "lon": 54.39696
   },
   {
     "name": "Dubai",
     "area": "Middle East • UAE",
     "country": "AE",
     "slug": "dubai",
-    "tags": []
+    "tags": [],
+    "lat": 25.07725,
+    "lon": 55.30927
   },
   {
     "name": "Vancouver",
@@ -553,14 +583,18 @@
     "area": "USA • California",
     "country": "US",
     "slug": "los-angeles",
-    "tags": []
+    "tags": [],
+    "lat": 34.05223,
+    "lon": -118.24368
   },
   {
     "name": "San Diego",
     "area": "USA • California",
     "country": "US",
     "slug": "san-diego",
-    "tags": []
+    "tags": [],
+    "lat": 32.71571,
+    "lon": -117.16472
   },
   {
     "name": "San Francisco",

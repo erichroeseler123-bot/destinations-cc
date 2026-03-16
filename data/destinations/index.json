@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "updated_at": "2026-03-13T18:30:00-05:00",
+  "destinations": [
+    {
+      "slug": "athens",
+      "name": "Athens",
+      "country_code": "GR",
+      "status": "seed",
+      "visibility": "public"
+    },
+    {
+      "slug": "nassau",
+      "name": "Nassau",
+      "country_code": "BS",
+      "status": "seed",
+      "visibility": "public"
+    },
+    {
+      "slug": "rome",
+      "name": "Rome",
+      "country_code": "IT",
+      "status": "seed",
+      "visibility": "public"
+    }
+  ]
+}

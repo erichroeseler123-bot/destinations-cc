@@ -22,27 +22,36 @@ export default function VegasEntityGridSection({
   backLinks: Array<{ href: string; label: string }>;
 }) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
+    <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
       <div className="max-w-3xl">
         <h2 className="text-3xl font-black tracking-tight">{title}</h2>
         <p className="mt-3 text-zinc-300">{intro}</p>
       </div>
 
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm">
+        <div className="flex flex-wrap items-center gap-3 text-zinc-300">
+          <span className="font-medium text-white">{entities.length} places to browse</span>
+          <span className="text-zinc-500">•</span>
+          <span>Follow nearby guides and next-step paths</span>
+        </div>
+      </div>
+
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {entities.map((entity) => (
-          <article key={entity.slug} className="overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+          <article key={entity.slug} className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/20 transition-colors hover:bg-white/[0.08]">
             {entity.image ? (
               <div className="overflow-hidden border-b border-white/10 bg-black/30">
                 <img src={entity.image.src} alt={entity.image.alt} className="h-44 w-full object-cover" loading="lazy" />
               </div>
             ) : null}
             <div className="p-5">
-            <h3 className="text-xl font-bold">{entity.name}</h3>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Las Vegas guide</p>
+            <h3 className="mt-2 text-xl font-bold">{entity.name}</h3>
             <p className="mt-3 text-sm text-zinc-300">{entity.summary}</p>
 
             <div className="mt-4 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.16em] text-zinc-400">
               {entity.chips.map((chip) => (
-                <span key={chip} className="rounded-full border border-white/10 px-2 py-1">
+                <span key={chip} className="rounded-full border border-white/10 bg-white/5 px-2 py-1">
                   {chip}
                 </span>
               ))}
@@ -70,7 +79,7 @@ export default function VegasEntityGridSection({
                 className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-100 hover:bg-white/10"
                 aria-label={`View ${entity.name} details`}
               >
-                Open linked node
+                Open guide
               </Link>
             </div>
             </div>

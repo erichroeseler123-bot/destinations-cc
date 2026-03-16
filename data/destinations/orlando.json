@@ -1,0 +1,27 @@
+{
+  "slug": "orlando",
+  "display_name": "Orlando",
+  "aliases": [
+    "orlando-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Disney World Transfers",
+      "description": "Transportation to Disney parks.",
+      "query": "Disney World transportation Orlando"
+    },
+    {
+      "title": "Universal Studios",
+      "description": "Theme park admission and tours.",
+      "query": "Universal Studios Orlando tickets"
+    }
+  ],
+  "gateway_mappings": [
+    {
+      "kind": "port_tours_handoff",
+      "source_slug": "port-canaveral"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

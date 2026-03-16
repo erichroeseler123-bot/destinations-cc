@@ -1,0 +1,126 @@
+{
+  "slug": "new-york",
+  "name": "New York City",
+  "metadata": {
+    "title": "New York City Tours, Things to Do, and Attractions | Destination Command Center",
+    "description": "Discover New York City tours, things to do, attractions, food, neighborhoods, and trip ideas. Browse guided experiences and plan around the city's most useful travel highlights.",
+    "keywords": [
+      "new york tours",
+      "things to do in new york",
+      "new york attractions",
+      "new york sightseeing"
+    ]
+  },
+  "hero": {
+    "eyebrow": "New York City travel guide",
+    "title": "New York City tours, things to do, and local travel planning",
+    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger New York City trip.",
+    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in New York City.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/new-york/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/new-york/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly."
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+    }
+  ],
+  "topAttractions": [
+    {
+      "slug": "statue-of-liberty",
+      "title": "Statue of Liberty",
+      "description": ""
+    },
+    {
+      "slug": "central-park",
+      "title": "Central Park",
+      "description": ""
+    },
+    {
+      "slug": "times-square",
+      "title": "Times Square",
+      "description": ""
+    },
+    {
+      "slug": "brooklyn-bridge",
+      "title": "Brooklyn Bridge",
+      "description": ""
+    },
+    {
+      "slug": "metropolitan-museum-of-art",
+      "title": "The Metropolitan Museum of Art",
+      "description": ""
+    },
+    {
+      "slug": "high-line",
+      "title": "The High Line",
+      "description": ""
+    }
+  ],
+  "featuredTours": {
+    "title": "Popular New York City experiences",
+    "description": "Guided experiences and bookable activities that help visitors plan around New York City's most useful highlights.",
+    "fallbackQueries": [
+      "new york walking tour",
+      "new york food tour",
+      "new york sightseeing tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Things to do in New York City",
+      "description": "A broader planning surface for attractions, neighborhoods, and trip ideas.",
+      "href": "/new-york/things-to-do"
+    },
+    {
+      "title": "New York City tours",
+      "description": "A cleaner starting point for guided experiences, day trips, and visitor favorites.",
+      "href": "/new-york/tours"
+    },
+    {
+      "title": "New York City food guide",
+      "description": "Restaurants, food neighborhoods, and tasting-focused experiences.",
+      "href": "/new-york/food"
+    },
+    {
+      "title": "New York City day trips",
+      "description": "Half-day and full-day options that fit naturally with a city stay.",
+      "href": "/new-york/day-trips"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in New York City for first-time visitors?",
+      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+    },
+    {
+      "q": "How many days should you spend in New York City?",
+      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+    }
+  ],
+  "coordinates": {
+    "lat": 40.7128,
+    "lng": -74.006
+  },
+  "timezone": "America/New_York",
+  "lat": 40.7128,
+  "lng": -74.006
+}

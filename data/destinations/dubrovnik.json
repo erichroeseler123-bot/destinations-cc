@@ -1,0 +1,27 @@
+{
+  "slug": "dubrovnik",
+  "display_name": "Dubrovnik",
+  "aliases": [
+    "dubrovnik-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Dubrovnik City Highlights Tour",
+      "description": "A quick way to see the best of Dubrovnik with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Coast Cruise",
+      "description": "Short scenic sailings and waterfront views along Dubrovnik’s old port and coast.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for old walls, stone streets, and city landmarks.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

@@ -1,0 +1,339 @@
+{
+  "citySlug": "key-west",
+  "cityName": "Key West",
+  "attractions": [
+    {
+      "slug": "duval-street",
+      "name": "Duval Street",
+      "type": "district",
+      "summary": "Duval Street is a useful Key West stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "nightlife",
+        "food",
+        "shopping"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Duval Street guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Duval Street in Key West, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair Duval Street with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "Treat Duval Street as an evening block if nightlife is a major part of the trip."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Duval Street as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Duval Street matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Duval Street food experiences",
+          "query": "key west duval street food tour",
+          "description": "Helpful when Duval Street fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Duval Street guided experiences",
+          "query": "key west duval street tours",
+          "description": "A general search path for tours and guided experiences connected to Duval Street in Key West."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Mallory Square",
+          "href": "/key-west/mallory-square"
+        },
+        {
+          "label": "Ernest Hemingway Home",
+          "href": "/key-west/ernest-hemingway-home"
+        },
+        {
+          "label": "Dry Tortugas National Park",
+          "href": "/key-west/dry-tortugas"
+        }
+      ],
+      "primaryToursHref": "/key-west/duval-street/tours",
+      "thingsToDoHref": "/key-west/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Mallory Square",
+        "Ernest Hemingway Home"
+      ]
+    },
+    {
+      "slug": "mallory-square",
+      "name": "Mallory Square",
+      "type": "waterfront",
+      "summary": "Mallory Square is one of the more recognizable visitor stops in Key West and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "sunset",
+        "sightseeing"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Mallory Square guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Mallory Square in Key West, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Mallory Square as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Mallory Square guided experiences",
+          "query": "key west mallory square tours",
+          "description": "A general search path for tours and guided experiences connected to Mallory Square in Key West."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Duval Street",
+          "href": "/key-west/duval-street"
+        },
+        {
+          "label": "Ernest Hemingway Home",
+          "href": "/key-west/ernest-hemingway-home"
+        },
+        {
+          "label": "Dry Tortugas National Park",
+          "href": "/key-west/dry-tortugas"
+        }
+      ],
+      "primaryToursHref": "/key-west/mallory-square/tours",
+      "thingsToDoHref": "/key-west/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Duval Street",
+        "Ernest Hemingway Home"
+      ]
+    },
+    {
+      "slug": "ernest-hemingway-home",
+      "name": "Ernest Hemingway Home",
+      "type": "historic-site",
+      "summary": "Ernest Hemingway Home is one of the more recognizable history-focused stops in Key West for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "history",
+        "culture"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "Ernest Hemingway Home guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Ernest Hemingway Home in Key West, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Ernest Hemingway Home as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Ernest Hemingway Home as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Ernest Hemingway Home more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Ernest Hemingway Home history tours",
+          "query": "key west ernest hemingway home history tour",
+          "description": "A simple starting point for visitors who want more context around Ernest Hemingway Home."
+        },
+        {
+          "label": "Ernest Hemingway Home guided experiences",
+          "query": "key west ernest hemingway home tours",
+          "description": "A general search path for tours and guided experiences connected to Ernest Hemingway Home in Key West."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Duval Street",
+          "href": "/key-west/duval-street"
+        },
+        {
+          "label": "Mallory Square",
+          "href": "/key-west/mallory-square"
+        },
+        {
+          "label": "Dry Tortugas National Park",
+          "href": "/key-west/dry-tortugas"
+        }
+      ],
+      "primaryToursHref": "/key-west/ernest-hemingway-home/tours",
+      "thingsToDoHref": "/key-west/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Duval Street",
+        "Mallory Square"
+      ]
+    },
+    {
+      "slug": "dry-tortugas",
+      "name": "Dry Tortugas National Park",
+      "type": "park",
+      "summary": "Dry Tortugas National Park gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader Key West day plan.",
+      "categories": [
+        "day-trips",
+        "outdoor",
+        "snorkeling"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Dry Tortugas National Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Dry Tortugas National Park in Key West, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Dry Tortugas National Park as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Dry Tortugas National Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Dry Tortugas National Park outdoor experiences",
+          "query": "key west dry tortugas outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Dry Tortugas National Park guided experiences",
+          "query": "key west dry tortugas tours",
+          "description": "A general search path for tours and guided experiences connected to Dry Tortugas National Park in Key West."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Duval Street",
+          "href": "/key-west/duval-street"
+        },
+        {
+          "label": "Mallory Square",
+          "href": "/key-west/mallory-square"
+        },
+        {
+          "label": "Ernest Hemingway Home",
+          "href": "/key-west/ernest-hemingway-home"
+        }
+      ],
+      "primaryToursHref": "/key-west/dry-tortugas/tours",
+      "thingsToDoHref": "/key-west/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Duval Street",
+        "Mallory Square"
+      ]
+    },
+    {
+      "slug": "southernmost-point",
+      "name": "Southernmost Point",
+      "type": "landmark",
+      "summary": "Southernmost Point is one of the better-known landmarks in Key West and usually works best as part of a broader sightseeing block instead of a standalone stop.",
+      "categories": [
+        "landmark",
+        "sightseeing",
+        "walks"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Southernmost Point guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Southernmost Point in Key West, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Southernmost Point as part of a broader sightseeing block instead of making it the only stop in that part of the day.",
+        "Pair Southernmost Point with one nearby walk, museum, or neighborhood stop for a more complete visit.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Southernmost Point as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Landmark stops usually work better when they are tied to a broader city route instead of treated as a one-stop plan."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Southernmost Point sightseeing tours",
+          "query": "key west southernmost point sightseeing tour",
+          "description": "A simple starting point for visitors who want to see Southernmost Point in a broader city context."
+        },
+        {
+          "label": "Southernmost Point guided experiences",
+          "query": "key west southernmost point tours",
+          "description": "A general search path for tours and guided experiences connected to Southernmost Point in Key West."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Duval Street",
+          "href": "/key-west/duval-street"
+        },
+        {
+          "label": "Mallory Square",
+          "href": "/key-west/mallory-square"
+        },
+        {
+          "label": "Ernest Hemingway Home",
+          "href": "/key-west/ernest-hemingway-home"
+        }
+      ],
+      "primaryToursHref": "/key-west/southernmost-point/tours",
+      "thingsToDoHref": "/key-west/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Duval Street",
+        "Mallory Square"
+      ]
+    },
+    {
+      "slug": "key-west-butterfly-conservatory",
+      "name": "Key West Butterfly and Nature Conservatory",
+      "type": "garden",
+      "summary": "Key West Butterfly and Nature Conservatory is a calmer garden stop in Key West for visitors looking to add a quieter outdoor block to a busier trip.",
+      "categories": [
+        "family",
+        "nature",
+        "indoor"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Key West Butterfly and Nature Conservatory guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Key West Butterfly and Nature Conservatory in Key West, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Key West Butterfly and Nature Conservatory for a slower walkable block, especially if the rest of the trip is more urban or schedule-heavy.",
+        "Pair Key West Butterfly and Nature Conservatory with one nearby museum, neighborhood, or meal instead of overloading the rest of the day.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Key West Butterfly and Nature Conservatory as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Garden stops usually work best as part of a lighter daytime schedule instead of a rushed cross-city route."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Key West Butterfly and Nature Conservatory garden experiences",
+          "query": "key west key west butterfly conservatory garden tour",
+          "description": "Helpful when visitors want a more structured outdoor visit or a quieter sightseeing option."
+        },
+        {
+          "label": "Key West Butterfly and Nature Conservatory guided experiences",
+          "query": "key west key west butterfly conservatory tours",
+          "description": "A general search path for tours and guided experiences connected to Key West Butterfly and Nature Conservatory in Key West."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Duval Street",
+          "href": "/key-west/duval-street"
+        },
+        {
+          "label": "Mallory Square",
+          "href": "/key-west/mallory-square"
+        },
+        {
+          "label": "Ernest Hemingway Home",
+          "href": "/key-west/ernest-hemingway-home"
+        }
+      ],
+      "primaryToursHref": "/key-west/key-west-butterfly-conservatory/tours",
+      "thingsToDoHref": "/key-west/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Duval Street",
+        "Mallory Square"
+      ]
+    }
+  ]
+}

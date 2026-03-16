@@ -762,5 +762,31 @@
     "galveston": "dcc:port:us-galveston:0001",
     "seattle": "dcc:port:us-seattle:0001",
     "st-thomas": "dcc:port:vi-st-thomas:0001"
+  },
+  "venue": {
+    "paramount-theatre": "dcc:venue:us-co-denver-paramount-theatre:0001",
+    "colorado-convention-center": "dcc:venue:us-co-denver-colorado-convention-center:0001",
+    "union-station": "dcc:venue:us-co-denver-union-station:0001",
+    "larimer-square": "dcc:venue:us-co-denver-larimer-square:0001",
+    "denver-performing-arts-complex": "dcc:venue:us-co-denver-denver-performing-arts-complex:0001",
+    "comedy-works-downtown": "dcc:venue:us-co-denver-comedy-works-downtown:0001",
+    "ball-arena": "dcc:venue:us-co-denver-ball-arena:0001",
+    "summit-music-hall": "dcc:venue:us-co-denver-summit-music-hall:0001",
+    "mission-ballroom": "dcc:venue:us-co-denver-mission-ballroom:0001",
+    "kaseya-center": "dcc:venue:us-fl-miami-kaseya-center:0001",
+    "adrienne-arsht-center": "dcc:venue:us-fl-miami-adrienne-arsht-center:0001",
+    "brickell-city-centre": "dcc:venue:us-fl-miami-brickell-city-centre:0001",
+    "chicago-theatre": "dcc:venue:us-il-chicago-chicago-theatre:0001",
+    "millennium-park-campus": "dcc:venue:us-il-chicago-millennium-park-campus:0001",
+    "merchandise-mart": "dcc:venue:us-il-chicago-merchandise-mart:0001",
+    "madison-square-garden": "dcc:venue:us-ny-new-york-city-madison-square-garden:0001",
+    "pier-17": "dcc:venue:us-ny-new-york-city-pier-17:0001",
+    "the-bowery-ballroom": "dcc:venue:us-ny-new-york-city-the-bowery-ballroom:0001",
+    "bridgestone-arena": "dcc:venue:us-tn-nashville-bridgestone-arena:0001",
+    "ryman-auditorium": "dcc:venue:us-tn-nashville-ryman-auditorium:0001",
+    "fifth-and-broad": "dcc:venue:us-tn-nashville-fifth-and-broad:0001",
+    "moody-center": "dcc:venue:us-tx-austin-moody-center:0001",
+    "acl-live": "dcc:venue:us-tx-austin-acl-live:0001",
+    "rainey-street-district": "dcc:venue:us-tx-austin-rainey-street-district:0001"
   }
 }

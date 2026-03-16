@@ -19,11 +19,13 @@ type NavItem = {
 };
 
 const PRIMARY_NAV: NavItem[] = [
-  { href: "/cities", label: "Cities", description: "Browse city hubs and high-intent destination nodes." },
-  { href: "/ports", label: "Ports & Hubs", description: "Cruise ports, logistics anchors, and regional authority pages." },
-  { href: "/tours", label: "Tours & Activities", description: "Bookable tours, attractions, and experience lanes." },
-  { href: "/authority", label: "Route Intel", description: "Routing, constraints, staging, and reality checks." },
-  { href: "/alerts", label: "Trend Watch", description: "Live travel signals, graph pulse, and event monitoring." },
+  { href: "/cities", label: "Cities", description: "Browse city guides and destination pages." },
+  { href: "/ports", label: "Ports & Hubs", description: "Cruise ports, embarkation guidance, and nearby planning." },
+  { href: "/tours", label: "Experiences", description: "Bookable tours, attractions, and popular experiences." },
+  { href: "/transportation", label: "Transportation", description: "Supported venue transport coverage, planning, and Red Rocks guidance." },
+  { href: "/venues", label: "Events", description: "Venue guides, live events, and show planning." },
+  { href: "/authority", label: "Guides", description: "Travel guides, planning pages, and destination context." },
+  { href: "/alerts", label: "Trend Watch", description: "Live destination updates, alerts, and event monitoring." },
 ];
 
 export default function SiteHeader({ cities }: { cities: HeaderCity[] }) {
@@ -35,7 +37,12 @@ export default function SiteHeader({ cities }: { cities: HeaderCity[] }) {
       <div className="dcc-site-header__inner">
         <div className="dcc-site-header__brand-row">
           <Link href="/" className="dcc-site-header__brand" aria-label="Destination Command Center home">
-            <span className="dcc-site-header__eyebrow">Verified route and destination intelligence</span>
+            <img
+              src="/brand/dcc-logo-horizontal.svg"
+              alt="Destination Command Center"
+              className="dcc-site-header__logo"
+            />
+            <span className="dcc-site-header__eyebrow">Shows, tours, attractions, and transportation</span>
             <span className="dcc-site-header__title">Destination Command Center</span>
           </Link>
 
@@ -52,7 +59,7 @@ export default function SiteHeader({ cities }: { cities: HeaderCity[] }) {
 
         <div className="dcc-site-header__topline">
           <p className="dcc-site-header__tagline">
-            Verified destination logistics, routing, and booking intelligence.
+            Destination guides and trip planning for busy or complex places.
           </p>
           <Link href="/road-trips" className="dcc-site-header__utility-link">
             Road Trips

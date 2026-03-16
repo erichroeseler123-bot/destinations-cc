@@ -1,0 +1,91 @@
+{
+  "city": "las-vegas",
+  "version": 1,
+  "as_of": "2026-03-15T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-14T12:00:00-05:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable Las Vegas live music and show venues for city show discovery.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large format venue or event complex."
+    }
+  },
+  "venues": [
+    {
+      "slug": "sphere",
+      "name": "Sphere",
+      "venue_type": "major-event-campus",
+      "category": "immersive-live-entertainment",
+      "address": "255 Sands Ave, Las Vegas, NV 89169",
+      "lat": 36.1213,
+      "lng": -115.1607,
+      "impact_potential": "high",
+      "district_slugs": ["las-vegas-strip"],
+      "near_anchor_slugs": ["aria", "fontainebleau"]
+    },
+    {
+      "slug": "t-mobile-arena",
+      "name": "T-Mobile Arena",
+      "venue_type": "event-venue",
+      "category": "arena-concerts",
+      "address": "3780 S Las Vegas Blvd, Las Vegas, NV 89158",
+      "lat": 36.1028,
+      "lng": -115.1781,
+      "impact_potential": "high",
+      "district_slugs": ["las-vegas-strip"],
+      "near_anchor_slugs": ["aria"]
+    },
+    {
+      "slug": "mgm-grand-garden-arena",
+      "name": "MGM Grand Garden Arena",
+      "venue_type": "event-venue",
+      "category": "arena-concerts",
+      "address": "3799 S Las Vegas Blvd, Las Vegas, NV 89109",
+      "lat": 36.1025,
+      "lng": -115.1696,
+      "impact_potential": "high",
+      "district_slugs": ["las-vegas-strip"],
+      "near_anchor_slugs": ["aria"]
+    },
+    {
+      "slug": "house-of-blues-las-vegas",
+      "name": "House of Blues Las Vegas",
+      "venue_type": "event-venue",
+      "category": "live-music-club",
+      "address": "3950 S Las Vegas Blvd, Las Vegas, NV 89119",
+      "lat": 36.0924,
+      "lng": -115.1757,
+      "impact_potential": "medium",
+      "district_slugs": ["las-vegas-strip"],
+      "near_anchor_slugs": ["aria"]
+    },
+    {
+      "slug": "brooklyn-bowl-las-vegas",
+      "name": "Brooklyn Bowl Las Vegas",
+      "venue_type": "event-venue",
+      "category": "live-music-club",
+      "address": "3545 S Las Vegas Blvd, Las Vegas, NV 89109",
+      "lat": 36.1182,
+      "lng": -115.1716,
+      "impact_potential": "medium",
+      "district_slugs": ["las-vegas-strip"],
+      "near_anchor_slugs": ["fontainebleau"]
+    },
+    {
+      "slug": "virgin-theater",
+      "name": "Virgin Theater",
+      "venue_type": "event-venue",
+      "category": "casino-theater",
+      "address": "4455 Paradise Rd, Las Vegas, NV 89169",
+      "lat": 36.1081,
+      "lng": -115.1519,
+      "impact_potential": "medium",
+      "district_slugs": ["las-vegas-strip"],
+      "near_anchor_slugs": ["fontainebleau"]
+    }
+  ]
+}

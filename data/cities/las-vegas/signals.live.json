@@ -1,0 +1,61 @@
+{
+  "city": "las-vegas",
+  "version": 1,
+  "as_of": "2026-03-15T18:00:00-07:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-15T18:05:00-07:00",
+  "schema": {
+    "entity": "signal",
+    "description": "Ephemeral NOW-layer output for Las Vegas.",
+    "provenance_types": ["derived", "source_backed", "manual_editorial"]
+  },
+  "signals": [
+    {
+      "id": "sig-vegas-sphere-traffic",
+      "signal_type": "high_impact",
+      "provenance": "derived",
+      "title": "Sphere corridor building heavy traffic tonight",
+      "description": "Expect slower rideshare pickups and denser foot traffic around Sphere as headline inventory stacks into the evening.",
+      "impact_level": "high",
+      "rank_weight": 0.95,
+      "status": "active",
+      "starts_at": "2026-03-15T17:30:00-07:00",
+      "expires_at": "2026-03-15T23:45:00-07:00",
+      "linked_event_id": "evt-vegas-sphere-u2",
+      "linked_venue_slug": "sphere",
+      "affected_district_slugs": ["las-vegas-strip", "north-strip"],
+      "near_anchor_slugs": ["fontainebleau"],
+      "pro_tip": "Plan extra exit time if you are pairing Sphere with another late-night stop."
+    },
+    {
+      "id": "sig-vegas-strip-dinner-rush",
+      "signal_type": "district_activity",
+      "provenance": "derived",
+      "title": "Dinner rush peaking through the resort corridor",
+      "description": "Restaurants and pre-show bars are stacking up around ARIA, Park MGM, and adjacent arena lanes before tonight's shows.",
+      "impact_level": "medium",
+      "rank_weight": 0.72,
+      "status": "active",
+      "starts_at": "2026-03-15T17:00:00-07:00",
+      "expires_at": "2026-03-15T20:00:00-07:00",
+      "affected_district_slugs": ["resort-corridor"],
+      "near_anchor_slugs": ["aria"]
+    },
+    {
+      "id": "sig-vegas-brewdog-rooftop",
+      "signal_type": "micro_post",
+      "provenance": "source_backed",
+      "title": "Rooftop crowd active now at BrewDog",
+      "description": "Pre-show beer and skyline traffic is building now before arena and Strip theater doors.",
+      "impact_level": "low",
+      "rank_weight": 0.44,
+      "status": "active",
+      "starts_at": "2026-03-15T18:00:00-07:00",
+      "expires_at": "2026-03-15T20:00:00-07:00",
+      "linked_place_slug": "brewdog-las-vegas",
+      "affected_district_slugs": ["resort-corridor"],
+      "near_anchor_slugs": ["aria"],
+      "source_ref": { "kind": "venue-partner", "external_id": "brewdog-2026-03-15-1800" }
+    }
+  ]
+}

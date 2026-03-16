@@ -1,35 +1,63 @@
-# DCC Registry v1
+# DCC Registry
 
 This directory is the canonical authority layer for Destination Command Center.
 
+It defines the durable node identity system that other layers reference:
+
+- routing
+- graphs
+- overlays
+- products
+- signals
+- source provenance
+
+The registry is the backbone of the system. Slugs, aliases, routes, and edges are all subordinate to canonical node identity.
+
 ## DCC ID Format
 
-All canonical nodes must have a permanent ID:
+Every canonical node must have a permanent DCC-owned ID:
 
 `dcc:{class}:{scope}:{serial}`
 
-- `class`: canonical node class (for example `place`, `port`, `region`)
-- `scope`: normalized geo/logical scope (`us-ak-juneau`)
-- `serial`: zero-padded stable suffix (`0001`)
+Examples:
 
-IDs are immutable once assigned.
+- `dcc:place:us-nv-las-vegas:0001`
+- `dcc:port:us-ak-juneau:0001`
+- `dcc:venue:us-il-chicago-loop:0003`
+
+Rules:
+
+- `class` is the canonical node class
+- `scope` is a normalized geographic or logical scope
+- `serial` is a zero-padded stable suffix
+- IDs are immutable once assigned
+- IDs are the true foreign-key target across the system
+
+Slugs are never identity. DCC IDs are identity.
 
 ## Reference Code Format
 
-Optional human-facing tracking code:
+Reference codes are human-facing operational labels, not system identity keys.
+
+Format:
 
 `{CLASS_CODE}-{SCOPE_SEGMENTS}-{SERIAL}`
 
 Examples:
 
-- `PLC-US-AK-JUNEAU-0001`
+- `PLC-US-NV-LAS-VEGAS-0001`
 - `PRT-US-AK-JUNEAU-0001`
+- `VEN-US-IL-CHICAGO-LOOP-0003`
 
-Reference codes are operational labels, not identity keys.
+Rules:
+
+- reference codes should be readable in ops, QA, and exports
+- reference codes may change only under controlled migration
+- DCC IDs do not change when reference codes are reformatted
 
 ## Canonical Node Classes
 
-Current v1 classes:
+Current canonical classes:
 
 - `world`
 - `continent`
@@ -54,21 +82,35 @@ Current v1 classes:
 - `collection`
 - `virtual`
 
+Class choice should reflect the node’s durable role in the system, not a temporary product use.
+
 ## Shard Structure
 
-Canonical source data is sharded JSONL by class and geography.
+Canonical source data is sharded by class and geography.
+
+Current patterns include:
+
+- `data/registry/place/{country_code}/{admin1_code}.jsonl`
+- `data/registry/port/{country_code}.jsonl`
 
 Examples:
 
-- `data/registry/place/us/ak.jsonl`
+- `data/registry/place/us/nv.jsonl`
+- `data/registry/place/cn/25.jsonl`
 - `data/registry/port/us.jsonl`
-- `data/registry/virtual/global.jsonl`
 
-Each line is one canonical node.
+Rules:
+
+- one line equals one canonical node
+- shard boundaries should be deterministic
+- sharding should favor stable geographic grouping over arbitrary volume slicing
+- shards are source-of-truth content, not query indexes
 
 ## Index Files
 
-Generated indexes live in `data/index/` and are rebuildable artifacts.
+Indexes are generated artifacts, not hand-edited authority files.
+
+Generated indexes live in `data/index/`.
 
 Core indexes:
 
@@ -82,41 +124,111 @@ Core indexes:
 - `by-tag.json`
 - `by-source/*.json`
 
+Rules:
+
+- indexes must be rebuildable from canonical registry content
+- registry shards are authoritative
+- index files are query accelerators and resolvers
+
 ## Slug Policy
 
-- `slug` is routing/presentation, not identity.
-- Global slug collisions are expected at world scale.
-- Class-aware lookup is required for deterministic resolution (`by-slug-class`).
-- Canonical route policy can be either:
-  - strict globally-unique slugs, or
-  - class-aware canonical routes (`/place/[slug]`, `/port/[slug]`, etc.).
+`slug` is a routing and presentation handle, not the canonical key.
+
+Rules:
+
+- slugs should be lowercase ASCII
+- use hyphen-separated words
+- avoid punctuation except hyphens
+- prefer stable geographic specificity where ambiguity is likely
+- global slug collisions are expected at world scale
+- deterministic resolution must use class-aware or ID-aware lookup
+
+Examples:
+
+- `las-vegas-nv`
+- `union-station`
+- `red-rock-canyon`
+
+A slug can be canonical for one node and ambiguous globally. That is acceptable if the resolver layer handles it explicitly.
 
 ## Alias Policy
 
-- Aliases belong on node records (`aliases[]`), not detached files.
-- Alias resolver is generated from canonical nodes (`by-alias.json`).
-- Alias values must not silently shadow canonical slugs of other nodes.
-- During migration phases, keep aliases conservative until normalization rules are fully enforced.
+Aliases are alternate inbound handles for an existing canonical node.
+
+Rules:
+
+- aliases belong on node records via `aliases[]`
+- aliases do not create new identity
+- aliases are resolved into canonical nodes through generated indexes
+- aliases must not silently shadow another node’s canonical slug
+- aliases should be conservative during migrations
+
+Good alias use:
+
+- old city spellings
+- legacy route handles
+- known abbreviated forms
+- pre-normalization imported slugs
+
+Bad alias use:
+
+- speculative marketing phrases
+- temporary campaign strings
+- ambiguous short names without resolver safeguards
 
 ## Edge Policy
 
-- Edges always reference target DCC IDs, never slugs.
-- Edge records are directional.
-- Only approved edge types are allowed.
-- Edge targets must exist in canonical registry at validation time for strict mode.
+Edges express canonical graph relationships between nodes.
+
+Rules:
+
+- edges always target DCC IDs, never slugs
+- edges are directional
+- edge types must come from the approved edge taxonomy
+- strict validation should fail when referenced target nodes do not exist
+- routing should not depend on edge presence
+
+Examples of valid edge intent:
+
+- containment
+- proximity
+- service coverage
+- gateway relationships
+- commercial attachment
+- alias equivalence where explicitly modeled
+
+Edges belong to the structural graph, not to page copy.
 
 ## source_refs Policy
 
-- `source_refs` is required on every node.
-- Each entry must include at least:
+Every canonical node must carry provenance.
+
+Rules:
+
+- `source_refs` is required on every node
+- each `source_ref` must include at least:
   - `system`
   - `id`
-- `source_refs` stores provenance and external IDs (for example GeoNames, Viator, Wikidata, OSM, IATA, UN/LOCODE).
-- Canonical node identity remains DCC-owned, regardless of external sources.
+- source refs store origin evidence and external identifiers
+- DCC still owns the canonical node identity
 
-## Build and Validation
+Typical source systems:
 
-Use the DCC pipeline scripts:
+- GeoNames
+- Wikidata
+- OpenStreetMap
+- Viator
+- IATA
+- UN/LOCODE
+- internal editorial systems
+
+`source_refs` answers: where did this node come from and what external record backs it.
+
+## Build And Validation
+
+Registry maintenance runs through the DCC pipeline.
+
+Current core scripts:
 
 - `npm run dcc:migrate:locations`
 - `npm run dcc:migrate:ports`
@@ -124,4 +236,24 @@ Use the DCC pipeline scripts:
 - `npm run dcc:validate`
 - `npm run dcc:build`
 
-`dcc:validate` is the strict gate for registry correctness.
+Validation is the strict gate for:
+
+- canonical identity correctness
+- shard consistency
+- alias safety
+- edge referential integrity
+- source provenance presence
+
+## Operating Principle
+
+The registry is not a content dump.
+
+It is the durable identity and structure layer that every faster system depends on:
+
+- pages
+- APIs
+- overlays
+- products
+- signals
+- maps
+- future ranking and orchestration

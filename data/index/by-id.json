@@ -5318,5 +5318,173 @@
     "slug": "st-thomas",
     "file": "data/registry/port/vi.jsonl",
     "line": 1
+  },
+  "dcc:venue:us-co-denver-paramount-theatre:0001": {
+    "id": "dcc:venue:us-co-denver-paramount-theatre:0001",
+    "class": "venue",
+    "slug": "paramount-theatre",
+    "file": "data/registry/venue/us/co.jsonl",
+    "line": 1
+  },
+  "dcc:venue:us-co-denver-colorado-convention-center:0001": {
+    "id": "dcc:venue:us-co-denver-colorado-convention-center:0001",
+    "class": "venue",
+    "slug": "colorado-convention-center",
+    "file": "data/registry/venue/us/co.jsonl",
+    "line": 2
+  },
+  "dcc:venue:us-co-denver-union-station:0001": {
+    "id": "dcc:venue:us-co-denver-union-station:0001",
+    "class": "venue",
+    "slug": "union-station",
+    "file": "data/registry/venue/us/co.jsonl",
+    "line": 3
+  },
+  "dcc:venue:us-co-denver-larimer-square:0001": {
+    "id": "dcc:venue:us-co-denver-larimer-square:0001",
+    "class": "venue",
+    "slug": "larimer-square",
+    "file": "data/registry/venue/us/co.jsonl",
+    "line": 4
+  },
+  "dcc:venue:us-co-denver-denver-performing-arts-complex:0001": {
+    "id": "dcc:venue:us-co-denver-denver-performing-arts-complex:0001",
+    "class": "venue",
+    "slug": "denver-performing-arts-complex",
+    "file": "data/registry/venue/us/co.jsonl",
+    "line": 5
+  },
+  "dcc:venue:us-co-denver-comedy-works-downtown:0001": {
+    "id": "dcc:venue:us-co-denver-comedy-works-downtown:0001",
+    "class": "venue",
+    "slug": "comedy-works-downtown",
+    "file": "data/registry/venue/us/co.jsonl",
+    "line": 6
+  },
+  "dcc:venue:us-co-denver-ball-arena:0001": {
+    "id": "dcc:venue:us-co-denver-ball-arena:0001",
+    "class": "venue",
+    "slug": "ball-arena",
+    "file": "data/registry/venue/us/co.jsonl",
+    "line": 7
+  },
+  "dcc:venue:us-co-denver-summit-music-hall:0001": {
+    "id": "dcc:venue:us-co-denver-summit-music-hall:0001",
+    "class": "venue",
+    "slug": "summit-music-hall",
+    "file": "data/registry/venue/us/co.jsonl",
+    "line": 8
+  },
+  "dcc:venue:us-co-denver-mission-ballroom:0001": {
+    "id": "dcc:venue:us-co-denver-mission-ballroom:0001",
+    "class": "venue",
+    "slug": "mission-ballroom",
+    "file": "data/registry/venue/us/co.jsonl",
+    "line": 9
+  },
+  "dcc:venue:us-fl-miami-kaseya-center:0001": {
+    "id": "dcc:venue:us-fl-miami-kaseya-center:0001",
+    "class": "venue",
+    "slug": "kaseya-center",
+    "file": "data/registry/venue/us/fl.jsonl",
+    "line": 1
+  },
+  "dcc:venue:us-fl-miami-adrienne-arsht-center:0001": {
+    "id": "dcc:venue:us-fl-miami-adrienne-arsht-center:0001",
+    "class": "venue",
+    "slug": "adrienne-arsht-center",
+    "file": "data/registry/venue/us/fl.jsonl",
+    "line": 2
+  },
+  "dcc:venue:us-fl-miami-brickell-city-centre:0001": {
+    "id": "dcc:venue:us-fl-miami-brickell-city-centre:0001",
+    "class": "venue",
+    "slug": "brickell-city-centre",
+    "file": "data/registry/venue/us/fl.jsonl",
+    "line": 3
+  },
+  "dcc:venue:us-il-chicago-chicago-theatre:0001": {
+    "id": "dcc:venue:us-il-chicago-chicago-theatre:0001",
+    "class": "venue",
+    "slug": "chicago-theatre",
+    "file": "data/registry/venue/us/il.jsonl",
+    "line": 1
+  },
+  "dcc:venue:us-il-chicago-millennium-park-campus:0001": {
+    "id": "dcc:venue:us-il-chicago-millennium-park-campus:0001",
+    "class": "venue",
+    "slug": "millennium-park-campus",
+    "file": "data/registry/venue/us/il.jsonl",
+    "line": 2
+  },
+  "dcc:venue:us-il-chicago-merchandise-mart:0001": {
+    "id": "dcc:venue:us-il-chicago-merchandise-mart:0001",
+    "class": "venue",
+    "slug": "merchandise-mart",
+    "file": "data/registry/venue/us/il.jsonl",
+    "line": 3
+  },
+  "dcc:venue:us-ny-new-york-city-madison-square-garden:0001": {
+    "id": "dcc:venue:us-ny-new-york-city-madison-square-garden:0001",
+    "class": "venue",
+    "slug": "madison-square-garden",
+    "file": "data/registry/venue/us/ny.jsonl",
+    "line": 1
+  },
+  "dcc:venue:us-ny-new-york-city-pier-17:0001": {
+    "id": "dcc:venue:us-ny-new-york-city-pier-17:0001",
+    "class": "venue",
+    "slug": "pier-17",
+    "file": "data/registry/venue/us/ny.jsonl",
+    "line": 2
+  },
+  "dcc:venue:us-ny-new-york-city-the-bowery-ballroom:0001": {
+    "id": "dcc:venue:us-ny-new-york-city-the-bowery-ballroom:0001",
+    "class": "venue",
+    "slug": "the-bowery-ballroom",
+    "file": "data/registry/venue/us/ny.jsonl",
+    "line": 3
+  },
+  "dcc:venue:us-tn-nashville-bridgestone-arena:0001": {
+    "id": "dcc:venue:us-tn-nashville-bridgestone-arena:0001",
+    "class": "venue",
+    "slug": "bridgestone-arena",
+    "file": "data/registry/venue/us/tn.jsonl",
+    "line": 1
+  },
+  "dcc:venue:us-tn-nashville-ryman-auditorium:0001": {
+    "id": "dcc:venue:us-tn-nashville-ryman-auditorium:0001",
+    "class": "venue",
+    "slug": "ryman-auditorium",
+    "file": "data/registry/venue/us/tn.jsonl",
+    "line": 2
+  },
+  "dcc:venue:us-tn-nashville-fifth-and-broad:0001": {
+    "id": "dcc:venue:us-tn-nashville-fifth-and-broad:0001",
+    "class": "venue",
+    "slug": "fifth-and-broad",
+    "file": "data/registry/venue/us/tn.jsonl",
+    "line": 3
+  },
+  "dcc:venue:us-tx-austin-moody-center:0001": {
+    "id": "dcc:venue:us-tx-austin-moody-center:0001",
+    "class": "venue",
+    "slug": "moody-center",
+    "file": "data/registry/venue/us/tx.jsonl",
+    "line": 1
+  },
+  "dcc:venue:us-tx-austin-acl-live:0001": {
+    "id": "dcc:venue:us-tx-austin-acl-live:0001",
+    "class": "venue",
+    "slug": "acl-live",
+    "file": "data/registry/venue/us/tx.jsonl",
+    "line": 2
+  },
+  "dcc:venue:us-tx-austin-rainey-street-district:0001": {
+    "id": "dcc:venue:us-tx-austin-rainey-street-district:0001",
+    "class": "venue",
+    "slug": "rainey-street-district",
+    "file": "data/registry/venue/us/tx.jsonl",
+    "line": 3
   }
 }

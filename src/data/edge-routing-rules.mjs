@@ -7,21 +7,6 @@ const DCC_WWW_HOST = "www.destinationcommandcenter.com";
  */
 export const SATELLITE_EDGE_ROUTES = [
   {
-    id: "parr-red-rocks",
-    prefix: "/red-rocks",
-    targetOrigin: "https://partyatredrocks.com",
-  },
-  {
-    id: "parr-red-rocks-shuttle",
-    prefix: "/red-rocks-shuttle",
-    targetOrigin: "https://partyatredrocks.com",
-  },
-  {
-    id: "parr-denver-concert-shuttle",
-    prefix: "/denver-concert-shuttle",
-    targetOrigin: "https://partyatredrocks.com",
-  },
-  {
     id: "wta-juneau-whale-watching",
     prefix: "/juneau-whale-watching",
     targetOrigin: "https://welcome-to-alaska-tours.com",

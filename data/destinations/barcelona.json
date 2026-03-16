@@ -1,0 +1,27 @@
+{
+  "slug": "barcelona",
+  "display_name": "Barcelona",
+  "aliases": [
+    "barcelona-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Barcelona City Highlights Tour",
+      "description": "A quick way to see the best of Barcelona with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Waterfront Cruise",
+      "description": "Short scenic sailings and Mediterranean waterfront views near the port.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for Gothic Quarter streets, plazas, and city icons.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

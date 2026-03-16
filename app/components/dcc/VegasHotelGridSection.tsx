@@ -18,15 +18,23 @@ export default function VegasHotelGridSection({
   hotels: VegasHotel[];
 }) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
+    <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
       <div className="max-w-3xl">
         <h2 className="text-3xl font-black tracking-tight">{title}</h2>
         <p className="mt-3 text-zinc-300">{intro}</p>
       </div>
 
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm">
+        <div className="flex flex-wrap items-center gap-3 text-zinc-300">
+          <span className="font-medium text-white">{hotels.length} hotels in this guide</span>
+          <span className="text-zinc-500">•</span>
+          <span>Compare areas, style, and nearby paths</span>
+        </div>
+      </div>
+
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {hotels.map((hotel) => (
-          <article key={hotel.slug} className="overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+          <article key={hotel.slug} className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/20 transition-colors hover:bg-white/[0.08]">
             {hotel.image ? (
               <div className="overflow-hidden border-b border-white/10 bg-black/30">
                 <img src={hotel.image.src} alt={hotel.image.alt} className="h-44 w-full object-cover" loading="lazy" />
@@ -73,7 +81,7 @@ export default function VegasHotelGridSection({
                 className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-100 hover:bg-white/10"
                 aria-label={`View ${hotel.name} hotel details`}
               >
-                Open hotel node
+                Open hotel guide
               </Link>
             </div>
             </div>
@@ -82,11 +90,11 @@ export default function VegasHotelGridSection({
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <Link href="/vegas" aria-label="Back to the Las Vegas city hub" className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10">
-          Back to Vegas hub
+        <Link href="/vegas" aria-label="Back to the Las Vegas city guide" className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10">
+          Back to Las Vegas guide
         </Link>
         <Link href="/las-vegas-strip" aria-label="Open the Las Vegas Strip guide" className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10">
-          Las Vegas Strip pillar
+          Las Vegas Strip guide
         </Link>
         <Link href="/las-vegas/shows" aria-label="Open Las Vegas shows guide" className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10">
           Las Vegas shows

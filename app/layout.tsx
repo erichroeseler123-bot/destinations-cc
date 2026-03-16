@@ -1,23 +1,23 @@
 // app/layout.tsx
-import { Roboto, Montserrat } from 'next/font/google'; // Built-in font import
+import { Montserrat, Playfair_Display } from 'next/font/google';
 import './globals.css'; // your global styles
 import SiteHeader from "@/app/components/dcc/SiteHeader";
 import SiteBreadcrumbs from "@/app/components/dcc/SiteBreadcrumbs";
 import SiteFooter from "@/app/components/dcc/SiteFooter";
 import { getLiveCityRegistryNodes } from "@/src/data/cities-registry";
 
-const roboto = Roboto({
+const headingFont = Montserrat({
   subsets: ['latin'],
-  weight: ['400', '500'],
-  display: 'swap', // prevents invisible text
-  variable: '--font-roboto',
+  weight: ['500', '600', '700', '800', '900'],
+  display: 'swap',
+  variable: '--font-heading',
 });
 
-const montserrat = Montserrat({
+const accentFont = Playfair_Display({
   subsets: ['latin'],
-  weight: ['700'],
+  weight: ['600', '700'],
   display: 'swap',
-  variable: '--font-montserrat',
+  variable: '--font-accent',
 });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en">
-      <body className={`${roboto.variable} ${montserrat.variable}`}>
+      <body className={`${headingFont.variable} ${accentFont.variable}`}>
         <a href="#main-content" className="dcc-skip-link">
           Skip to main content
         </a>

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import DecisionEngineTemplate from "@/app/components/dcc/DecisionEngineTemplate";
 import LivePulseBlock from "@/app/components/dcc/livePulse/LivePulseBlock";
 import Next48Button from "@/app/components/dcc/next48/Next48Button";
+import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
 import ShareWeekendCard from "@/app/components/dcc/share/ShareWeekendCard";
 import { getSurface, hasSurfaceEntity } from "@/lib/dcc/surfaces/getSurface";
 import {
@@ -62,6 +63,7 @@ export default async function CityDecisionPage({
     <main className="min-h-screen bg-zinc-950 text-white">
       <div className="mx-auto max-w-6xl px-6 py-14 space-y-8">
         <DecisionEngineTemplate page={page} />
+        {slug === "denver" ? <RideOptionsCard venueSlug="red-rocks-amphitheatre" sourcePage="/cities/denver" /> : null}
         {slug === "denver" ? (
           <LivePulseBlock
             entityType="city"

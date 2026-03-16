@@ -1,0 +1,27 @@
+{
+  "slug": "istanbul",
+  "display_name": "Istanbul",
+  "aliases": [
+    "istanbul-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Istanbul City Highlights Tour",
+      "description": "A quick way to see the best of Istanbul with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Bosporus Cruise",
+      "description": "Short scenic sailings and skyline views across the Bosporus and waterfront.",
+      "query": "bosporus cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for historic districts, waterfront history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

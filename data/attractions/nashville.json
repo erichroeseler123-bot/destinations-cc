@@ -1,0 +1,251 @@
+{
+  "citySlug": "nashville",
+  "cityName": "Nashville",
+  "attractions": [
+    {
+      "slug": "broadway",
+      "name": "Broadway",
+      "type": "district",
+      "summary": "Broadway is a useful Nashville stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "music",
+        "nightlife",
+        "food"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Broadway guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Broadway in Nashville, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair Broadway with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "Use Broadway as part of a music-first evening or culture-focused route through the city.",
+        "Treat Broadway as an evening block if nightlife is a major part of the trip."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Broadway as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Broadway matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Broadway food experiences",
+          "query": "nashville broadway food tour",
+          "description": "Helpful when Broadway fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Broadway music experiences",
+          "query": "nashville broadway music tour",
+          "description": "Useful when you want a more structured music or nightlife plan around Broadway."
+        },
+        {
+          "label": "Broadway guided experiences",
+          "query": "nashville broadway tours",
+          "description": "A general search path for tours and guided experiences connected to Broadway in Nashville."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Country Music Hall of Fame",
+          "href": "/nashville/country-music-hall-of-fame"
+        },
+        {
+          "label": "Ryman Auditorium",
+          "href": "/nashville/ryman-auditorium"
+        },
+        {
+          "label": "The Gulch",
+          "href": "/nashville/the-gulch"
+        }
+      ],
+      "primaryToursHref": "/nashville/broadway/tours",
+      "thingsToDoHref": "/nashville/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Country Music Hall of Fame",
+        "Ryman Auditorium"
+      ]
+    },
+    {
+      "slug": "country-music-hall-of-fame",
+      "name": "Country Music Hall of Fame",
+      "type": "museum",
+      "summary": "Country Music Hall of Fame is one of the more recognizable history-focused stops in Nashville for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "music",
+        "museum",
+        "history"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Country Music Hall of Fame guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Country Music Hall of Fame in Nashville, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Country Music Hall of Fame as a stop for a more history-focused city walk or half-day plan.",
+        "Use Country Music Hall of Fame as part of a music-first evening or culture-focused route through the city."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Country Music Hall of Fame as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Country Music Hall of Fame matters most after dark, keep the rest of the day lighter so the evening does not feel rushed.",
+        "A guided walk or city tour often gives Country Music Hall of Fame more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Country Music Hall of Fame history tours",
+          "query": "nashville country music hall of fame history tour",
+          "description": "A simple starting point for visitors who want more context around Country Music Hall of Fame."
+        },
+        {
+          "label": "Country Music Hall of Fame music experiences",
+          "query": "nashville country music hall of fame music tour",
+          "description": "Useful when you want a more structured music or nightlife plan around Country Music Hall of Fame."
+        },
+        {
+          "label": "Country Music Hall of Fame guided experiences",
+          "query": "nashville country music hall of fame tours",
+          "description": "A general search path for tours and guided experiences connected to Country Music Hall of Fame in Nashville."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Broadway",
+          "href": "/nashville/broadway"
+        },
+        {
+          "label": "Ryman Auditorium",
+          "href": "/nashville/ryman-auditorium"
+        },
+        {
+          "label": "The Gulch",
+          "href": "/nashville/the-gulch"
+        }
+      ],
+      "primaryToursHref": "/nashville/country-music-hall-of-fame/tours",
+      "thingsToDoHref": "/nashville/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Broadway",
+        "Ryman Auditorium"
+      ]
+    },
+    {
+      "slug": "ryman-auditorium",
+      "name": "Ryman Auditorium",
+      "type": "venue",
+      "summary": "Ryman Auditorium is one of the more recognizable history-focused stops in Nashville for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "music",
+        "history"
+      ],
+      "priority": 90,
+      "featured": true,
+      "heroTitle": "Ryman Auditorium guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Ryman Auditorium in Nashville, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Ryman Auditorium as a stop for a more history-focused city walk or half-day plan.",
+        "Use Ryman Auditorium as part of a music-first evening or culture-focused route through the city."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Ryman Auditorium as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Ryman Auditorium matters most after dark, keep the rest of the day lighter so the evening does not feel rushed.",
+        "A guided walk or city tour often gives Ryman Auditorium more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Ryman Auditorium history tours",
+          "query": "nashville ryman auditorium history tour",
+          "description": "A simple starting point for visitors who want more context around Ryman Auditorium."
+        },
+        {
+          "label": "Ryman Auditorium music experiences",
+          "query": "nashville ryman auditorium music tour",
+          "description": "Useful when you want a more structured music or nightlife plan around Ryman Auditorium."
+        },
+        {
+          "label": "Ryman Auditorium guided experiences",
+          "query": "nashville ryman auditorium tours",
+          "description": "A general search path for tours and guided experiences connected to Ryman Auditorium in Nashville."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Broadway",
+          "href": "/nashville/broadway"
+        },
+        {
+          "label": "Country Music Hall of Fame",
+          "href": "/nashville/country-music-hall-of-fame"
+        },
+        {
+          "label": "The Gulch",
+          "href": "/nashville/the-gulch"
+        }
+      ],
+      "primaryToursHref": "/nashville/ryman-auditorium/tours",
+      "thingsToDoHref": "/nashville/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Broadway",
+        "Country Music Hall of Fame"
+      ]
+    },
+    {
+      "slug": "the-gulch",
+      "name": "The Gulch",
+      "type": "district",
+      "summary": "The Gulch is a useful Nashville stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "food",
+        "shopping",
+        "nightlife"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "The Gulch guide, things to do, and local tours",
+      "heroSummary": "Planning guide for The Gulch in Nashville, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair The Gulch with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "Treat The Gulch as an evening block if nightlife is a major part of the trip."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan The Gulch as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If The Gulch matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "The Gulch food experiences",
+          "query": "nashville the gulch food tour",
+          "description": "Helpful when The Gulch fits naturally into a food-first city plan."
+        },
+        {
+          "label": "The Gulch guided experiences",
+          "query": "nashville the gulch tours",
+          "description": "A general search path for tours and guided experiences connected to The Gulch in Nashville."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Broadway",
+          "href": "/nashville/broadway"
+        },
+        {
+          "label": "Country Music Hall of Fame",
+          "href": "/nashville/country-music-hall-of-fame"
+        },
+        {
+          "label": "Ryman Auditorium",
+          "href": "/nashville/ryman-auditorium"
+        }
+      ],
+      "primaryToursHref": "/nashville/the-gulch/tours",
+      "thingsToDoHref": "/nashville/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Broadway",
+        "Country Music Hall of Fame"
+      ]
+    }
+  ]
+}

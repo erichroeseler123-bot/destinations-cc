@@ -1,0 +1,127 @@
+{
+  "city": "denver",
+  "version": 1,
+  "as_of": "2026-03-13T12:00:00-06:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-12T12:00:00-06:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable city activity nodes. Includes event venues, district-style hubs, and social hubs. Type contract determines behavior.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity across many businesses.",
+      "mobility-hub": "A place with transit and walkable spillover activity.",
+      "major-event-campus": "A large complex or district-scale activity center."
+    }
+  },
+  "venues": [
+    {
+      "slug": "ball-arena",
+      "name": "Ball Arena",
+      "venue_type": "event-venue",
+      "category": "sports-concerts",
+      "address": "1000 Chopper Cir, Denver, CO 80204",
+      "lat": 39.7487,
+      "lng": -105.0077,
+      "impact_potential": "high",
+      "district_slugs": ["ballpark", "lodo"],
+      "near_anchor_slugs": ["spire", "brooks-tower", "four-seasons-denver", "coloradan", "windsor-denver"]
+    },
+    {
+      "slug": "comedy-works-downtown",
+      "name": "Comedy Works Downtown",
+      "venue_type": "event-venue",
+      "category": "comedy-nightlife",
+      "address": "1226 15th St, Denver, CO 80202",
+      "lat": 39.7495,
+      "lng": -104.997,
+      "impact_potential": "medium",
+      "district_slugs": ["downtown-core", "lodo"],
+      "near_anchor_slugs": ["spire", "brooks-tower", "four-seasons-denver", "ritz-carlton-denver", "windsor-denver"]
+    },
+    {
+      "slug": "paramount-theatre",
+      "name": "Paramount Theatre",
+      "venue_type": "event-venue",
+      "category": "theater-comedy-live",
+      "address": "1621 Glenarm Pl, Denver, CO 80202",
+      "lat": 39.7441,
+      "lng": -104.9897,
+      "impact_potential": "medium",
+      "district_slugs": ["downtown-core", "theater-district"],
+      "near_anchor_slugs": ["spire", "brooks-tower", "four-seasons-denver", "ritz-carlton-denver"]
+    },
+    {
+      "slug": "denver-performing-arts-complex",
+      "name": "Denver Performing Arts Complex",
+      "venue_type": "major-event-campus",
+      "category": "theater-arts",
+      "address": "1400 Curtis St, Denver, CO 80204",
+      "lat": 39.7458,
+      "lng": -104.9985,
+      "impact_potential": "medium",
+      "district_slugs": ["theater-district", "downtown-core"],
+      "near_anchor_slugs": ["spire", "brooks-tower", "four-seasons-denver", "ritz-carlton-denver"]
+    },
+    {
+      "slug": "larimer-square",
+      "name": "Larimer Square",
+      "venue_type": "district-hub",
+      "category": "dining-nightlife",
+      "address": "Larimer St between 14th St and 15th St, Denver, CO 80202",
+      "lat": 39.7477,
+      "lng": -104.999,
+      "impact_potential": "medium",
+      "district_slugs": ["lodo", "downtown-core"],
+      "near_anchor_slugs": ["spire", "brooks-tower", "ritz-carlton-denver", "windsor-denver", "coloradan"]
+    },
+    {
+      "slug": "union-station",
+      "name": "Union Station Denver",
+      "venue_type": "mobility-hub",
+      "category": "dining-social",
+      "address": "1701 Wynkoop St, Denver, CO 80202",
+      "lat": 39.7527,
+      "lng": -105.0008,
+      "impact_potential": "medium",
+      "district_slugs": ["union-station", "lodo"],
+      "near_anchor_slugs": ["coloradan", "windsor-denver", "ritz-carlton-denver", "spire"]
+    },
+    {
+      "slug": "mission-ballroom",
+      "name": "Mission Ballroom",
+      "venue_type": "event-venue",
+      "category": "live-music",
+      "address": "4242 Wynkoop St, Denver, CO 80216",
+      "lat": 39.7724,
+      "lng": -104.9784,
+      "impact_potential": "medium-high",
+      "district_slugs": ["rino"],
+      "near_anchor_slugs": ["coloradan", "windsor-denver"]
+    },
+    {
+      "slug": "colorado-convention-center",
+      "name": "Colorado Convention Center",
+      "venue_type": "major-event-campus",
+      "category": "conventions-major-events",
+      "address": "700 14th St, Denver, CO 80202",
+      "lat": 39.7434,
+      "lng": -104.9968,
+      "impact_potential": "high",
+      "district_slugs": ["downtown-core", "theater-district"],
+      "near_anchor_slugs": ["spire", "brooks-tower", "four-seasons-denver"]
+    },
+    {
+      "slug": "summit-music-hall",
+      "name": "Summit Music Hall",
+      "venue_type": "event-venue",
+      "category": "live-music",
+      "address": "1902 Blake St, Denver, CO 80202",
+      "lat": 39.7537,
+      "lng": -104.9937,
+      "impact_potential": "medium",
+      "district_slugs": ["ballpark", "lodo"],
+      "near_anchor_slugs": ["windsor-denver", "coloradan", "ritz-carlton-denver"]
+    }
+  ]
+}

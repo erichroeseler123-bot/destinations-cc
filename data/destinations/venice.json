@@ -1,0 +1,27 @@
+{
+  "slug": "venice",
+  "display_name": "Venice",
+  "aliases": [
+    "venice-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Venice City Highlights Tour",
+      "description": "A quick way to see the best of Venice with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Grand Canal Cruise",
+      "description": "Short scenic sailings and classic canal views across the city.",
+      "query": "canal cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for canals, bridges, and historic city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

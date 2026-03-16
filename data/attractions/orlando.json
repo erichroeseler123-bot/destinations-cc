@@ -1,0 +1,326 @@
+{
+  "citySlug": "orlando",
+  "cityName": "Orlando",
+  "attractions": [
+    {
+      "slug": "walt-disney-world",
+      "name": "Walt Disney World",
+      "type": "theme-park",
+      "summary": "Walt Disney World is one of the more recognizable visitor stops in Orlando and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "family",
+        "theme-park"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Walt Disney World guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Walt Disney World in Orlando, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Walt Disney World as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Walt Disney World guided experiences",
+          "query": "orlando walt disney world tours",
+          "description": "A general search path for tours and guided experiences connected to Walt Disney World in Orlando."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Universal Orlando Resort",
+          "href": "/orlando/universal-orlando"
+        },
+        {
+          "label": "ICON Park",
+          "href": "/orlando/icon-park"
+        },
+        {
+          "label": "Disney Springs",
+          "href": "/orlando/disney-springs"
+        }
+      ],
+      "primaryToursHref": "/orlando/walt-disney-world/tours",
+      "thingsToDoHref": "/orlando/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Universal Orlando Resort",
+        "ICON Park"
+      ]
+    },
+    {
+      "slug": "universal-orlando",
+      "name": "Universal Orlando Resort",
+      "type": "theme-park",
+      "summary": "Universal Orlando Resort is one of the more recognizable visitor stops in Orlando and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "family",
+        "theme-park"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Universal Orlando Resort guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Universal Orlando Resort in Orlando, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Universal Orlando Resort as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Universal Orlando Resort guided experiences",
+          "query": "orlando universal orlando tours",
+          "description": "A general search path for tours and guided experiences connected to Universal Orlando Resort in Orlando."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Walt Disney World",
+          "href": "/orlando/walt-disney-world"
+        },
+        {
+          "label": "ICON Park",
+          "href": "/orlando/icon-park"
+        },
+        {
+          "label": "Disney Springs",
+          "href": "/orlando/disney-springs"
+        }
+      ],
+      "primaryToursHref": "/orlando/universal-orlando/tours",
+      "thingsToDoHref": "/orlando/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Walt Disney World",
+        "ICON Park"
+      ]
+    },
+    {
+      "slug": "icon-park",
+      "name": "ICON Park",
+      "type": "attraction-district",
+      "summary": "ICON Park is one of the more recognizable visitor stops in Orlando and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "family",
+        "sightseeing"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "ICON Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for ICON Park in Orlando, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "This area works well for visitors trying to keep a mixed-age itinerary simple.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan ICON Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "ICON Park guided experiences",
+          "query": "orlando icon park tours",
+          "description": "A general search path for tours and guided experiences connected to ICON Park in Orlando."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Walt Disney World",
+          "href": "/orlando/walt-disney-world"
+        },
+        {
+          "label": "Universal Orlando Resort",
+          "href": "/orlando/universal-orlando"
+        },
+        {
+          "label": "Disney Springs",
+          "href": "/orlando/disney-springs"
+        }
+      ],
+      "primaryToursHref": "/orlando/icon-park/tours",
+      "thingsToDoHref": "/orlando/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Walt Disney World",
+        "Universal Orlando Resort"
+      ]
+    },
+    {
+      "slug": "disney-springs",
+      "name": "Disney Springs",
+      "type": "district",
+      "summary": "Disney Springs is a useful Orlando stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "shopping",
+        "food",
+        "family"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Disney Springs guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Disney Springs in Orlando, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair Disney Springs with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Disney Springs as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Disney Springs food experiences",
+          "query": "orlando disney springs food tour",
+          "description": "Helpful when Disney Springs fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Disney Springs guided experiences",
+          "query": "orlando disney springs tours",
+          "description": "A general search path for tours and guided experiences connected to Disney Springs in Orlando."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Walt Disney World",
+          "href": "/orlando/walt-disney-world"
+        },
+        {
+          "label": "Universal Orlando Resort",
+          "href": "/orlando/universal-orlando"
+        },
+        {
+          "label": "ICON Park",
+          "href": "/orlando/icon-park"
+        }
+      ],
+      "primaryToursHref": "/orlando/disney-springs/tours",
+      "thingsToDoHref": "/orlando/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Walt Disney World",
+        "Universal Orlando Resort"
+      ]
+    },
+    {
+      "slug": "sea-world-orlando",
+      "name": "SeaWorld Orlando",
+      "type": "theme-park",
+      "summary": "SeaWorld Orlando is one of the bigger all-day attractions in Orlando and usually works best when visitors treat it as a dedicated block, not a quick add-on.",
+      "categories": [
+        "family",
+        "theme-park"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "SeaWorld Orlando guide, things to do, and local tours",
+      "heroSummary": "Planning guide for SeaWorld Orlando in Orlando, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use SeaWorld Orlando as a dedicated day or major half-day instead of trying to sandwich it between unrelated city stops.",
+        "Keep the rest of the itinerary light if SeaWorld Orlando is one of the main reasons for the trip.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan SeaWorld Orlando as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Large attraction parks usually work best when you decide early whether the day is focused on rides, families, or a broader resort-area plan."
+      ],
+      "experienceIntents": [
+        {
+          "label": "SeaWorld Orlando park tickets and tours",
+          "query": "orlando sea world orlando tickets tours",
+          "description": "A practical starting point for visitors comparing admission, transport, or bundled experiences."
+        },
+        {
+          "label": "SeaWorld Orlando guided experiences",
+          "query": "orlando sea world orlando tours",
+          "description": "A general search path for tours and guided experiences connected to SeaWorld Orlando in Orlando."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Walt Disney World",
+          "href": "/orlando/walt-disney-world"
+        },
+        {
+          "label": "Universal Orlando Resort",
+          "href": "/orlando/universal-orlando"
+        },
+        {
+          "label": "ICON Park",
+          "href": "/orlando/icon-park"
+        }
+      ],
+      "primaryToursHref": "/orlando/sea-world-orlando/tours",
+      "thingsToDoHref": "/orlando/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Walt Disney World",
+        "Universal Orlando Resort"
+      ]
+    },
+    {
+      "slug": "kennedy-space-center",
+      "name": "Kennedy Space Center",
+      "type": "historic-site",
+      "summary": "Kennedy Space Center is one of the more recognizable historic sites in Orlando and usually adds the most value when visitors want stronger context, not just a quick pass-through.",
+      "categories": [
+        "history",
+        "family",
+        "day-trips"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Kennedy Space Center guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Kennedy Space Center in Orlando, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Kennedy Space Center as part of a more history-focused block instead of treating it as a standalone stop.",
+        "Pair Kennedy Space Center with a guided walk, museum, or nearby landmark if you want a fuller sense of place.",
+        "Use Kennedy Space Center as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Kennedy Space Center as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Historic sites usually feel more useful when they are part of a broader city story instead of a quick photo stop.",
+        "A guided walk or city tour often gives Kennedy Space Center more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Kennedy Space Center history tours",
+          "query": "orlando kennedy space center history tour",
+          "description": "A useful starting point for visitors who want more context around Kennedy Space Center."
+        },
+        {
+          "label": "Kennedy Space Center guided experiences",
+          "query": "orlando kennedy space center tours",
+          "description": "A general search path for tours and guided experiences connected to Kennedy Space Center in Orlando."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Walt Disney World",
+          "href": "/orlando/walt-disney-world"
+        },
+        {
+          "label": "Universal Orlando Resort",
+          "href": "/orlando/universal-orlando"
+        },
+        {
+          "label": "ICON Park",
+          "href": "/orlando/icon-park"
+        }
+      ],
+      "primaryToursHref": "/orlando/kennedy-space-center/tours",
+      "thingsToDoHref": "/orlando/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Walt Disney World",
+        "Universal Orlando Resort"
+      ]
+    }
+  ]
+}

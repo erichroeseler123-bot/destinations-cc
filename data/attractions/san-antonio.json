@@ -1,0 +1,349 @@
+{
+  "citySlug": "san-antonio",
+  "cityName": "San Antonio",
+  "attractions": [
+    {
+      "slug": "the-alamo",
+      "name": "The Alamo",
+      "type": "historic-site",
+      "summary": "The Alamo is one of the more recognizable history-focused stops in San Antonio for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "history",
+        "landmark"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "The Alamo guide, things to do, and local tours",
+      "heroSummary": "Planning guide for The Alamo in San Antonio, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use The Alamo as a stop for a more history-focused city walk or half-day plan.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan The Alamo as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives The Alamo more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "The Alamo history tours",
+          "query": "san antonio the alamo history tour",
+          "description": "A simple starting point for visitors who want more context around The Alamo."
+        },
+        {
+          "label": "The Alamo guided experiences",
+          "query": "san antonio the alamo tours",
+          "description": "A general search path for tours and guided experiences connected to The Alamo in San Antonio."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "San Antonio River Walk",
+          "href": "/san-antonio/river-walk"
+        },
+        {
+          "label": "Market Square",
+          "href": "/san-antonio/market-square"
+        },
+        {
+          "label": "San Antonio Missions",
+          "href": "/san-antonio/san-antonio-missions"
+        }
+      ],
+      "primaryToursHref": "/san-antonio/the-alamo/tours",
+      "thingsToDoHref": "/san-antonio/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "San Antonio River Walk",
+        "Market Square"
+      ]
+    },
+    {
+      "slug": "river-walk",
+      "name": "San Antonio River Walk",
+      "type": "waterfront",
+      "summary": "San Antonio River Walk is a useful San Antonio stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "food",
+        "walks",
+        "sightseeing"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "San Antonio River Walk guide, things to do, and local tours",
+      "heroSummary": "Planning guide for San Antonio River Walk in San Antonio, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair San Antonio River Walk with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan San Antonio River Walk as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "San Antonio River Walk food experiences",
+          "query": "san antonio river walk food tour",
+          "description": "Helpful when San Antonio River Walk fits naturally into a food-first city plan."
+        },
+        {
+          "label": "San Antonio River Walk guided experiences",
+          "query": "san antonio river walk tours",
+          "description": "A general search path for tours and guided experiences connected to San Antonio River Walk in San Antonio."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "The Alamo",
+          "href": "/san-antonio/the-alamo"
+        },
+        {
+          "label": "Market Square",
+          "href": "/san-antonio/market-square"
+        },
+        {
+          "label": "San Antonio Missions",
+          "href": "/san-antonio/san-antonio-missions"
+        }
+      ],
+      "primaryToursHref": "/san-antonio/river-walk/tours",
+      "thingsToDoHref": "/san-antonio/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "The Alamo",
+        "Market Square"
+      ]
+    },
+    {
+      "slug": "market-square",
+      "name": "Market Square",
+      "type": "market",
+      "summary": "Market Square is a useful San Antonio stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "food",
+        "shopping",
+        "culture"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "Market Square guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Market Square in San Antonio, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair Market Square with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Market Square as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Market Square food experiences",
+          "query": "san antonio market square food tour",
+          "description": "Helpful when Market Square fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Market Square guided experiences",
+          "query": "san antonio market square tours",
+          "description": "A general search path for tours and guided experiences connected to Market Square in San Antonio."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "The Alamo",
+          "href": "/san-antonio/the-alamo"
+        },
+        {
+          "label": "San Antonio River Walk",
+          "href": "/san-antonio/river-walk"
+        },
+        {
+          "label": "San Antonio Missions",
+          "href": "/san-antonio/san-antonio-missions"
+        }
+      ],
+      "primaryToursHref": "/san-antonio/market-square/tours",
+      "thingsToDoHref": "/san-antonio/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "The Alamo",
+        "San Antonio River Walk"
+      ]
+    },
+    {
+      "slug": "san-antonio-missions",
+      "name": "San Antonio Missions",
+      "type": "historic-site",
+      "summary": "San Antonio Missions is one of the more recognizable history-focused stops in San Antonio for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "history",
+        "culture"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "San Antonio Missions guide, things to do, and local tours",
+      "heroSummary": "Planning guide for San Antonio Missions in San Antonio, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use San Antonio Missions as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan San Antonio Missions as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives San Antonio Missions more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "San Antonio Missions history tours",
+          "query": "san antonio san antonio missions history tour",
+          "description": "A simple starting point for visitors who want more context around San Antonio Missions."
+        },
+        {
+          "label": "San Antonio Missions guided experiences",
+          "query": "san antonio san antonio missions tours",
+          "description": "A general search path for tours and guided experiences connected to San Antonio Missions in San Antonio."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "The Alamo",
+          "href": "/san-antonio/the-alamo"
+        },
+        {
+          "label": "San Antonio River Walk",
+          "href": "/san-antonio/river-walk"
+        },
+        {
+          "label": "Market Square",
+          "href": "/san-antonio/market-square"
+        }
+      ],
+      "primaryToursHref": "/san-antonio/san-antonio-missions/tours",
+      "thingsToDoHref": "/san-antonio/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "The Alamo",
+        "San Antonio River Walk"
+      ]
+    },
+    {
+      "slug": "pearl-district",
+      "name": "Pearl District",
+      "type": "district",
+      "summary": "Pearl District is a useful district to understand early if you want a clearer feel for how visitors actually spend time in San Antonio.",
+      "categories": [
+        "food",
+        "walks",
+        "shopping"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Pearl District guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Pearl District in San Antonio, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Walk Pearl District with one clear purpose, such as food, music, shopping, or evening atmosphere.",
+        "Treat Pearl District as a time block rather than a quick pass-through if it is one of the main reasons for the trip.",
+        "Pair Pearl District with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Pearl District as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Districts usually feel stronger when you decide whether the point is food, shopping, nightlife, or a general walk before you arrive."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Pearl District neighborhood tours",
+          "query": "san antonio pearl district neighborhood tour",
+          "description": "Helpful when Pearl District is better experienced as part of a larger district walk or evening plan."
+        },
+        {
+          "label": "Pearl District food experiences",
+          "query": "san antonio pearl district food tour",
+          "description": "Helpful when Pearl District fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Pearl District guided experiences",
+          "query": "san antonio pearl district tours",
+          "description": "A general search path for tours and guided experiences connected to Pearl District in San Antonio."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "The Alamo",
+          "href": "/san-antonio/the-alamo"
+        },
+        {
+          "label": "San Antonio River Walk",
+          "href": "/san-antonio/river-walk"
+        },
+        {
+          "label": "Market Square",
+          "href": "/san-antonio/market-square"
+        }
+      ],
+      "primaryToursHref": "/san-antonio/pearl-district/tours",
+      "thingsToDoHref": "/san-antonio/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "The Alamo",
+        "San Antonio River Walk"
+      ]
+    },
+    {
+      "slug": "tower-of-the-americas",
+      "name": "Tower of the Americas",
+      "type": "landmark",
+      "summary": "Tower of the Americas is one of the better-known landmarks in San Antonio and usually works best as part of a broader sightseeing block instead of a standalone stop.",
+      "categories": [
+        "views",
+        "landmark",
+        "sightseeing"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Tower of the Americas guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Tower of the Americas in San Antonio, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Tower of the Americas as part of a broader sightseeing block instead of making it the only stop in that part of the day.",
+        "Pair Tower of the Americas with one nearby walk, museum, or neighborhood stop for a more complete visit.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Tower of the Americas as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Landmark stops usually work better when they are tied to a broader city route instead of treated as a one-stop plan."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Tower of the Americas sightseeing tours",
+          "query": "san antonio tower of the americas sightseeing tour",
+          "description": "A simple starting point for visitors who want to see Tower of the Americas in a broader city context."
+        },
+        {
+          "label": "Tower of the Americas guided experiences",
+          "query": "san antonio tower of the americas tours",
+          "description": "A general search path for tours and guided experiences connected to Tower of the Americas in San Antonio."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "The Alamo",
+          "href": "/san-antonio/the-alamo"
+        },
+        {
+          "label": "San Antonio River Walk",
+          "href": "/san-antonio/river-walk"
+        },
+        {
+          "label": "Market Square",
+          "href": "/san-antonio/market-square"
+        }
+      ],
+      "primaryToursHref": "/san-antonio/tower-of-the-americas/tours",
+      "thingsToDoHref": "/san-antonio/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "The Alamo",
+        "San Antonio River Walk"
+      ]
+    }
+  ]
+}

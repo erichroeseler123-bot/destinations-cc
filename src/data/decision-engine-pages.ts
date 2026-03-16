@@ -2,6 +2,7 @@ import {
   DecisionEnginePageSchema,
   type DecisionEnginePage,
 } from "@/lib/dcc/decision/schema";
+import { buildParrBookUrl, buildParrShuttlesUrl } from "@/lib/dcc/contracts/dccParrBridge";
 
 const pages: DecisionEnginePage[] = [
   {
@@ -105,6 +106,7 @@ const pages: DecisionEnginePage[] = [
     ],
     executionCtas: [
       { label: "View Denver tours", href: "/tours?city=denver", kind: "internal" },
+      { label: "Party At Red Rocks shuttle service", href: buildParrShuttlesUrl(), kind: "external" },
     ],
     faq: [
       {
@@ -372,6 +374,7 @@ const pages: DecisionEnginePage[] = [
     ],
     executionCtas: [
       { label: "Explore Denver tours", href: "/tours?city=denver", kind: "internal" },
+      { label: "Party At Red Rocks shuttle service", href: buildParrShuttlesUrl(), kind: "external" },
     ],
     faq: [
       {
@@ -637,6 +640,7 @@ const pages: DecisionEnginePage[] = [
     ],
     executionCtas: [
       { label: "See route-adjacent tours", href: "/tours?city=denver&q=red%20rocks", kind: "internal" },
+      { label: "Book Red Rocks transportation", href: buildParrBookUrl(), kind: "external" },
     ],
     faq: [
       {

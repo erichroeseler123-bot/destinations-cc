@@ -1,0 +1,27 @@
+{
+  "slug": "yokohama",
+  "display_name": "Yokohama",
+  "aliases": [
+    "yokohama-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Yokohama City Highlights Tour",
+      "description": "A quick way to see the best of Yokohama with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor Cruise",
+      "description": "Short scenic sailings and waterfront views near the harbor district.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront districts, gardens, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

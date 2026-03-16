@@ -40,9 +40,9 @@ function tagLink(tag: VegasCasinoTag) {
     case "luxury":
       return { href: "/luxury-hotels-las-vegas", label: "Luxury Vegas" };
     case "sportsbook":
-      return { href: "/sports", label: "Sports hub" };
+      return { href: "/sports", label: "Sports" };
     case "nightlife":
-      return { href: "/vegas", label: "Vegas nightlife layer" };
+      return { href: "/vegas", label: "Vegas nightlife" };
     case "show-adjacent":
       return { href: "/las-vegas/shows", label: "Las Vegas shows" };
     case "classic":
@@ -65,7 +65,7 @@ function getCasinoRelationshipLinks(slug: string) {
         {
           href: "/accessible-hotels-near/caesars-palace-casino",
           title: "Accessible hotels near Caesars Palace Casino",
-          body: "Compare nearby hotels when Caesars is the anchor but entrance clarity, mobility flow, or lower-friction routing matters before the room is chosen.",
+          body: "Compare nearby hotels when Caesars is the anchor but easier entrances, smoother movement, or simpler arrival matters before the room is chosen.",
         },
         {
           href: "/hotels-near/caesars-palace-casino",
@@ -102,11 +102,11 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
   return {
     title: `${casino.name} Casino Guide | Destination Command Center`,
-    description: `${casino.name} in Las Vegas: district, hotel linkage, sportsbook and nightlife context, and DCC routing across shows, hotels, and city planning.`,
+    description: `${casino.name} in Las Vegas: nearby hotels, sportsbook and nightlife context, and helpful links into shows, hotels, and city planning.`,
     alternates: { canonical: `/casino/${casino.slug}` },
     openGraph: {
       title: `${casino.name} Casino Guide`,
-      description: `${casino.name} in Las Vegas with district routing, hotel context, and connections into shows, nightlife, and sportsbook intent.`,
+      description: `${casino.name} in Las Vegas with nearby hotel context, shows, nightlife, and sportsbook-related planning.`,
       url: `https://destinationcommandcenter.com/casino/${casino.slug}`,
       type: "website",
     },
@@ -169,7 +169,7 @@ export default async function VegasCasinoNodePage({ params }: { params: Promise<
       <JsonLd slug={slug} />
       <div className="mx-auto max-w-5xl px-6 py-16 space-y-8">
         <header className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">DCC Casino Node</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Casino Guide</p>
           <h1 className="text-4xl font-black tracking-tight md:text-6xl">{casino.name}</h1>
           <p className="max-w-3xl text-lg text-zinc-200">{casino.summary}</p>
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">
@@ -200,12 +200,13 @@ export default async function VegasCasinoNodePage({ params }: { params: Promise<
             <h2 className="text-lg font-semibold">Best fit</h2>
             <p className="mt-2 text-sm text-zinc-300">
               Use this page when the buyer starts from gaming, sportsbook, nightlife, or a specific resort casino rather than from general hotel search.
+              Use this page when the trip starts from a specific casino, sportsbook plan, or nightlife-heavy resort area.
             </p>
           </article>
         </section>
 
         <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
-          <h2 className="text-2xl font-bold">Tags and routing overlays</h2>
+          <h2 className="text-2xl font-bold">Helpful tags</h2>
           <div className="mt-4 flex flex-wrap gap-3">
             {casino.tags.map((tag) => {
               const target = tagLink(tag);
@@ -227,31 +228,31 @@ export default async function VegasCasinoNodePage({ params }: { params: Promise<
         <section className="grid gap-4 md:grid-cols-2">
           <Link href="/las-vegas/casinos" className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
             <h2 className="text-xl font-bold">Back to Las Vegas casinos</h2>
-            <p className="mt-2 text-zinc-300">Return to the casino mesh hub and compare this property against Strip, Fremont, sportsbook, and nightlife intent.</p>
+            <p className="mt-2 text-zinc-300">Return to the main casino guide and compare this property with Strip, Fremont, sportsbook, and nightlife-oriented picks.</p>
           </Link>
           <Link href={districtTarget.href} className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
             <h2 className="text-xl font-bold">{districtTarget.label}</h2>
-            <p className="mt-2 text-zinc-300">Jump back into the district hub when the gaming decision is really a location and neighborhood-routing choice.</p>
+            <p className="mt-2 text-zinc-300">Open the area guide if your choice depends more on location and nearby plans than the casino itself.</p>
           </Link>
           {casino.hotelSlug ? (
             <Link href={`/hotel/${casino.hotelSlug}`} className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
-              <h2 className="text-xl font-bold">Linked hotel node</h2>
-              <p className="mt-2 text-zinc-300">Open the hotel page when the trip starts shifting from casino choice into room, pool, dining, and stay-quality tradeoffs.</p>
+              <h2 className="text-xl font-bold">Linked hotel</h2>
+              <p className="mt-2 text-zinc-300">Open the hotel page if the trip starts shifting from gaming into rooms, pools, dining, and overall stay quality.</p>
             </Link>
           ) : (
             <Link href="/vegas" className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
-              <h2 className="text-xl font-bold">Back to Vegas hub</h2>
-              <p className="mt-2 text-zinc-300">Return to the main city authority page for shows, sports, attractions, and broader trip planning.</p>
+              <h2 className="text-xl font-bold">Back to Vegas guide</h2>
+              <p className="mt-2 text-zinc-300">Return to the main city guide for shows, sports, attractions, and broader trip planning.</p>
             </Link>
           )}
           <Link href="/las-vegas/shows" className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
             <h2 className="text-xl font-bold">Las Vegas shows</h2>
-            <p className="mt-2 text-zinc-300">Use the live-performance lane when the casino choice is tied to residencies, magic, comedy, or theater planning.</p>
+            <p className="mt-2 text-zinc-300">Open the shows guide if this casino choice is tied to residencies, magic, comedy, or theater plans.</p>
           </Link>
         </section>
 
         <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
-          <h2 className="text-2xl font-bold">Connected nodes</h2>
+          <h2 className="text-2xl font-bold">Related places</h2>
           <div className="mt-4 flex flex-wrap gap-3">
             {casino.nearbyLinks.map((link) => (
               <Link
@@ -280,7 +281,7 @@ export default async function VegasCasinoNodePage({ params }: { params: Promise<
         ) : null}
 
         <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
-          <h2 className="text-2xl font-bold">Related casino nodes</h2>
+          <h2 className="text-2xl font-bold">Related casinos</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {siblingCasinos.map((candidate) => (
               <Link key={candidate.slug} href={`/casino/${candidate.slug}`} className="rounded-xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">

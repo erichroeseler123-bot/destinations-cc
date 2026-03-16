@@ -1,0 +1,126 @@
+{
+  "slug": "scottsdale",
+  "name": "Scottsdale",
+  "metadata": {
+    "title": "Scottsdale Tours, Things to Do, and Attractions | Destination Command Center",
+    "description": "Discover Scottsdale tours, things to do, attractions, food, neighborhoods, and trip ideas. Browse guided experiences and plan around the city's most useful travel highlights.",
+    "keywords": [
+      "scottsdale tours",
+      "things to do in scottsdale",
+      "scottsdale attractions",
+      "scottsdale sightseeing"
+    ]
+  },
+  "hero": {
+    "eyebrow": "Scottsdale travel guide",
+    "title": "Scottsdale tours, things to do, and local travel planning",
+    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Scottsdale trip.",
+    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Scottsdale.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/scottsdale/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/scottsdale/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly."
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+    }
+  ],
+  "topAttractions": [
+    {
+      "slug": "old-town-scottsdale",
+      "title": "Old Town Scottsdale",
+      "description": ""
+    },
+    {
+      "slug": "taliesin-west",
+      "title": "Taliesin West",
+      "description": ""
+    },
+    {
+      "slug": "mcdowell-sonoran-preserve",
+      "title": "McDowell Sonoran Preserve",
+      "description": ""
+    },
+    {
+      "slug": "scottsdale-fashion-square",
+      "title": "Scottsdale Fashion Square",
+      "description": ""
+    },
+    {
+      "slug": "western-spirit-museum",
+      "title": "Western Spirit: Scottsdale's Museum of the West",
+      "description": ""
+    },
+    {
+      "slug": "scottsdale-quarter",
+      "title": "Scottsdale Quarter",
+      "description": ""
+    }
+  ],
+  "featuredTours": {
+    "title": "Popular Scottsdale experiences",
+    "description": "Guided experiences and bookable activities that help visitors plan around Scottsdale's most useful highlights.",
+    "fallbackQueries": [
+      "scottsdale walking tour",
+      "scottsdale food tour",
+      "scottsdale sightseeing tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Things to do in Scottsdale",
+      "description": "A broader planning surface for attractions, neighborhoods, and trip ideas.",
+      "href": "/scottsdale/things-to-do"
+    },
+    {
+      "title": "Scottsdale tours",
+      "description": "A cleaner starting point for guided experiences, day trips, and visitor favorites.",
+      "href": "/scottsdale/tours"
+    },
+    {
+      "title": "Scottsdale food guide",
+      "description": "Restaurants, food neighborhoods, and tasting-focused experiences.",
+      "href": "/scottsdale/food"
+    },
+    {
+      "title": "Scottsdale day trips",
+      "description": "Half-day and full-day options that fit naturally with a city stay.",
+      "href": "/scottsdale/day-trips"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in Scottsdale for first-time visitors?",
+      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+    },
+    {
+      "q": "How many days should you spend in Scottsdale?",
+      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+    }
+  ],
+  "coordinates": {
+    "lat": 33.4942,
+    "lng": -111.9261
+  },
+  "timezone": "America/Phoenix",
+  "lat": 33.4942,
+  "lng": -111.9261
+}

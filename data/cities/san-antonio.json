@@ -1,0 +1,126 @@
+{
+  "slug": "san-antonio",
+  "name": "San Antonio",
+  "metadata": {
+    "title": "San Antonio Tours, Things to Do, and Attractions | Destination Command Center",
+    "description": "Discover San Antonio tours, things to do, attractions, food, neighborhoods, and trip ideas. Browse guided experiences and plan around the city's most useful travel highlights.",
+    "keywords": [
+      "san antonio tours",
+      "things to do in san antonio",
+      "san antonio attractions",
+      "san antonio sightseeing"
+    ]
+  },
+  "hero": {
+    "eyebrow": "San Antonio travel guide",
+    "title": "San Antonio tours, things to do, and local travel planning",
+    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger San Antonio trip.",
+    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in San Antonio.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/san-antonio/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/san-antonio/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly."
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+    }
+  ],
+  "topAttractions": [
+    {
+      "slug": "the-alamo",
+      "title": "The Alamo",
+      "description": ""
+    },
+    {
+      "slug": "river-walk",
+      "title": "San Antonio River Walk",
+      "description": ""
+    },
+    {
+      "slug": "market-square",
+      "title": "Market Square",
+      "description": ""
+    },
+    {
+      "slug": "san-antonio-missions",
+      "title": "San Antonio Missions",
+      "description": ""
+    },
+    {
+      "slug": "pearl-district",
+      "title": "Pearl District",
+      "description": ""
+    },
+    {
+      "slug": "tower-of-the-americas",
+      "title": "Tower of the Americas",
+      "description": ""
+    }
+  ],
+  "featuredTours": {
+    "title": "Popular San Antonio experiences",
+    "description": "Guided experiences and bookable activities that help visitors plan around San Antonio's most useful highlights.",
+    "fallbackQueries": [
+      "san antonio walking tour",
+      "san antonio food tour",
+      "san antonio sightseeing tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Things to do in San Antonio",
+      "description": "A broader planning surface for attractions, neighborhoods, and trip ideas.",
+      "href": "/san-antonio/things-to-do"
+    },
+    {
+      "title": "San Antonio tours",
+      "description": "A cleaner starting point for guided experiences, day trips, and visitor favorites.",
+      "href": "/san-antonio/tours"
+    },
+    {
+      "title": "San Antonio food guide",
+      "description": "Restaurants, food neighborhoods, and tasting-focused experiences.",
+      "href": "/san-antonio/food"
+    },
+    {
+      "title": "San Antonio day trips",
+      "description": "Half-day and full-day options that fit naturally with a city stay.",
+      "href": "/san-antonio/day-trips"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in San Antonio for first-time visitors?",
+      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+    },
+    {
+      "q": "How many days should you spend in San Antonio?",
+      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+    }
+  ],
+  "coordinates": {
+    "lat": 29.4241,
+    "lng": -98.4936
+  },
+  "timezone": "America/Chicago",
+  "lat": 29.4241,
+  "lng": -98.4936
+}

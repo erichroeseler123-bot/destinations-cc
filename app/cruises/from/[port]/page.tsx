@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import JsonLd from "@/app/components/dcc/JsonLd";
 import DiagnosticsBlock from "@/app/components/DiagnosticsBlock";
 import StatGrid from "@/app/components/StatGrid";
+import { buildArticleJsonLd, buildBreadcrumbJsonLd } from "@/lib/dcc/jsonld";
 import {
   buildEmbarkCruisePayload,
   getCruiseEmbarkPortCanonicalSlug,
@@ -47,64 +49,6 @@ function summarizeDestinations(
   return Array.from(counts.entries())
     .sort((a, b) => b[1] - a[1])
     .slice(0, 6);
-}
-
-function JsonLd({
-  pageUrl,
-  title,
-  portName,
-  cruises,
-}: {
-  pageUrl: string;
-  title: string;
-  portName: string;
-  cruises: Awaited<ReturnType<typeof buildEmbarkCruisePayload>>["cruises"];
-}) {
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": pageUrl,
-        url: pageUrl,
-        name: title,
-        description:
-          "Cruise departures by embarkation port with ship choices, departure dates, and route context.",
-      },
-      {
-        "@type": "ItemList",
-        name: `Cruises from ${portName}`,
-        itemListElement: cruises.slice(0, 24).map((sailing, idx) => ({
-          "@type": "ListItem",
-          position: idx + 1,
-          item: {
-            "@type": "Trip",
-            name: `${sailing.ship} from ${portName}`,
-            departureTime: sailing.departure_date,
-            provider: {
-              "@type": "Organization",
-              name: sailing.line,
-            },
-            offers:
-              typeof sailing.starting_price?.amount === "number"
-                ? {
-                    "@type": "Offer",
-                    price: sailing.starting_price.amount,
-                    priceCurrency: sailing.starting_price.currency || "USD",
-                  }
-                : undefined,
-          },
-        })),
-      },
-    ],
-  };
-
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-    />
-  );
 }
 
 export async function generateMetadata({
@@ -154,10 +98,47 @@ export default async function CruisesFromPortPage({
   return (
     <main className="max-w-6xl mx-auto px-6 py-16 space-y-10">
       <JsonLd
-        pageUrl={`${BASE_URL}${canonicalPath}`}
-        title={`Cruises from ${portName}`}
-        portName={portName}
-        cruises={payload.cruises}
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            buildArticleJsonLd({
+              path: canonicalPath,
+              headline: `Cruises from ${portName}`,
+              description:
+                "Cruise departures by embarkation port with ship choices, departure dates, and route context.",
+            }),
+            buildBreadcrumbJsonLd([
+              { name: "Home", item: "/" },
+              { name: "Cruises", item: "/cruises" },
+              { name: `Cruises from ${portName}`, item: canonicalPath },
+            ]),
+            {
+              "@type": "ItemList",
+              name: `Cruises from ${portName}`,
+              itemListElement: payload.cruises.slice(0, 24).map((sailing, idx) => ({
+                "@type": "ListItem",
+                position: idx + 1,
+                item: {
+                  "@type": "Trip",
+                  name: `${sailing.ship} from ${portName}`,
+                  departureTime: sailing.departure_date,
+                  provider: {
+                    "@type": "Organization",
+                    name: sailing.line,
+                  },
+                  offers:
+                    typeof sailing.starting_price?.amount === "number"
+                      ? {
+                          "@type": "Offer",
+                          price: sailing.starting_price.amount,
+                          priceCurrency: sailing.starting_price.currency || "USD",
+                        }
+                      : undefined,
+                },
+              })),
+            },
+          ],
+        }}
       />
 
       <header className="space-y-3 border-b border-white/10 pb-8">

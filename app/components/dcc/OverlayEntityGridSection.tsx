@@ -21,7 +21,7 @@ export default function OverlayEntityGridSection({ eyebrow, title, intro, entiti
           <Link
             key={`${entity.entityType}-${entity.slug}`}
             href={entity.canonicalPath}
-            className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/25 hover:bg-white/10"
+            className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/25 transition-colors hover:bg-white/10"
             aria-label={`View ${entity.title}`}
           >
             {entity.imageSet?.card ? (
@@ -81,6 +81,7 @@ export default function OverlayEntityGridSection({ eyebrow, title, intro, entiti
                   </span>
                 ) : null}
               </div>
+              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Open guide and connected paths</p>
             </div>
           </Link>
         ))}

@@ -1,0 +1,727 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-tx-austin-acl-live:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97.747,
+          30.2652
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-tx-austin-acl-live:0001",
+        "class": "venue",
+        "subclass": "event-venue",
+        "slug": "acl-live",
+        "name": "ACL Live at The Moody Theater",
+        "display_name": "ACL Live at The Moody Theater",
+        "reference_code": "VEN-US-TX-AUSTIN-ACL-LIVE-0001",
+        "country_code": "US",
+        "admin1_code": "TX",
+        "tags": [
+          "category:live-music",
+          "city:austin",
+          "district:warehouse-district",
+          "impact:medium",
+          "venue-type:event-venue"
+        ],
+        "canonical_path": "/nodes/acl-live"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-fl-miami-adrienne-arsht-center:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.1883,
+          25.7872
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-fl-miami-adrienne-arsht-center:0001",
+        "class": "venue",
+        "subclass": "major-event-campus",
+        "slug": "adrienne-arsht-center",
+        "name": "Adrienne Arsht Center",
+        "display_name": "Adrienne Arsht Center",
+        "reference_code": "VEN-US-FL-MIAMI-ADRIENNE-ARSHT-CENTER-0001",
+        "country_code": "US",
+        "admin1_code": "FL",
+        "tags": [
+          "category:theater-arts",
+          "city:miami",
+          "district:downtown-miami",
+          "impact:medium",
+          "venue-type:major-event-campus"
+        ],
+        "canonical_path": "/nodes/adrienne-arsht-center"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-co-denver-ball-arena:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0077,
+          39.7487
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-co-denver-ball-arena:0001",
+        "class": "venue",
+        "subclass": "event-venue",
+        "slug": "ball-arena",
+        "name": "Ball Arena",
+        "display_name": "Ball Arena",
+        "reference_code": "VEN-US-CO-DENVER-BALL-ARENA-0001",
+        "country_code": "US",
+        "admin1_code": "CO",
+        "tags": [
+          "category:sports-concerts",
+          "city:denver",
+          "district:downtown-core",
+          "district:union-station",
+          "impact:high",
+          "venue-type:event-venue"
+        ],
+        "canonical_path": "/nodes/ball-arena"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-fl-miami-brickell-city-centre:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.1931,
+          25.7673
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-fl-miami-brickell-city-centre:0001",
+        "class": "venue",
+        "subclass": "district-hub",
+        "slug": "brickell-city-centre",
+        "name": "Brickell City Centre",
+        "display_name": "Brickell City Centre",
+        "reference_code": "VEN-US-FL-MIAMI-BRICKELL-CITY-CENTRE-0001",
+        "country_code": "US",
+        "admin1_code": "FL",
+        "tags": [
+          "category:shopping-dining-nightlife",
+          "city:miami",
+          "district:brickell-core",
+          "impact:medium",
+          "venue-type:district-hub"
+        ],
+        "canonical_path": "/nodes/brickell-city-centre"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-tn-nashville-bridgestone-arena:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -86.7785,
+          36.1591
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-tn-nashville-bridgestone-arena:0001",
+        "class": "venue",
+        "subclass": "event-venue",
+        "slug": "bridgestone-arena",
+        "name": "Bridgestone Arena",
+        "display_name": "Bridgestone Arena",
+        "reference_code": "VEN-US-TN-NASHVILLE-BRIDGESTONE-ARENA-0001",
+        "country_code": "US",
+        "admin1_code": "TN",
+        "tags": [
+          "category:sports-concerts",
+          "city:nashville",
+          "district:broadway-core",
+          "impact:high",
+          "venue-type:event-venue"
+        ],
+        "canonical_path": "/nodes/bridgestone-arena"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-il-chicago-chicago-theatre:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -87.6272,
+          41.8855
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-il-chicago-chicago-theatre:0001",
+        "class": "venue",
+        "subclass": "event-venue",
+        "slug": "chicago-theatre",
+        "name": "The Chicago Theatre",
+        "display_name": "The Chicago Theatre",
+        "reference_code": "VEN-US-IL-CHICAGO-CHICAGO-THEATRE-0001",
+        "country_code": "US",
+        "admin1_code": "IL",
+        "tags": [
+          "category:theater-comedy-live",
+          "city:chicago",
+          "district:loop-core",
+          "impact:medium",
+          "venue-type:event-venue"
+        ],
+        "canonical_path": "/nodes/chicago-theatre"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-co-denver-colorado-convention-center:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9968,
+          39.7434
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-co-denver-colorado-convention-center:0001",
+        "class": "venue",
+        "subclass": "major-event-campus",
+        "slug": "colorado-convention-center",
+        "name": "Colorado Convention Center",
+        "display_name": "Colorado Convention Center",
+        "reference_code": "VEN-US-CO-DENVER-COLORADO-CONVENTION-CENTER-0001",
+        "country_code": "US",
+        "admin1_code": "CO",
+        "tags": [
+          "category:conventions-major-events",
+          "city:denver",
+          "district:downtown-core",
+          "impact:high",
+          "venue-type:major-event-campus"
+        ],
+        "canonical_path": "/nodes/colorado-convention-center"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-co-denver-comedy-works-downtown:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.997,
+          39.7495
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-co-denver-comedy-works-downtown:0001",
+        "class": "venue",
+        "subclass": "event-venue",
+        "slug": "comedy-works-downtown",
+        "name": "Comedy Works Downtown",
+        "display_name": "Comedy Works Downtown",
+        "reference_code": "VEN-US-CO-DENVER-COMEDY-WORKS-DOWNTOWN-0001",
+        "country_code": "US",
+        "admin1_code": "CO",
+        "tags": [
+          "category:comedy-nightlife",
+          "city:denver",
+          "district:downtown-core",
+          "impact:medium",
+          "venue-type:event-venue"
+        ],
+        "canonical_path": "/nodes/comedy-works-downtown"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-co-denver-denver-performing-arts-complex:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9985,
+          39.7458
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-co-denver-denver-performing-arts-complex:0001",
+        "class": "venue",
+        "subclass": "major-event-campus",
+        "slug": "denver-performing-arts-complex",
+        "name": "Denver Performing Arts Complex",
+        "display_name": "Denver Performing Arts Complex",
+        "reference_code": "VEN-US-CO-DENVER-DENVER-PERFORMING-ARTS-0001",
+        "country_code": "US",
+        "admin1_code": "CO",
+        "tags": [
+          "category:theater-arts",
+          "city:denver",
+          "district:downtown-core",
+          "impact:medium",
+          "venue-type:major-event-campus"
+        ],
+        "canonical_path": "/nodes/denver-performing-arts-complex"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-tn-nashville-fifth-and-broad:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -86.7824,
+          36.1604
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-tn-nashville-fifth-and-broad:0001",
+        "class": "venue",
+        "subclass": "district-hub",
+        "slug": "fifth-and-broad",
+        "name": "Fifth + Broadway",
+        "display_name": "Fifth + Broadway",
+        "reference_code": "VEN-US-TN-NASHVILLE-FIFTH-AND-BROAD-0001",
+        "country_code": "US",
+        "admin1_code": "TN",
+        "tags": [
+          "category:dining-retail-nightlife",
+          "city:nashville",
+          "district:the-gulch",
+          "impact:medium",
+          "venue-type:district-hub"
+        ],
+        "canonical_path": "/nodes/fifth-and-broad"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-fl-miami-kaseya-center:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.187,
+          25.7814
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-fl-miami-kaseya-center:0001",
+        "class": "venue",
+        "subclass": "event-venue",
+        "slug": "kaseya-center",
+        "name": "Kaseya Center",
+        "display_name": "Kaseya Center",
+        "reference_code": "VEN-US-FL-MIAMI-KASEYA-CENTER-0001",
+        "country_code": "US",
+        "admin1_code": "FL",
+        "tags": [
+          "category:sports-concerts",
+          "city:miami",
+          "district:downtown-miami",
+          "impact:high",
+          "venue-type:event-venue"
+        ],
+        "canonical_path": "/nodes/kaseya-center"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-co-denver-larimer-square:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.999,
+          39.7477
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-co-denver-larimer-square:0001",
+        "class": "venue",
+        "subclass": "district-hub",
+        "slug": "larimer-square",
+        "name": "Larimer Square",
+        "display_name": "Larimer Square",
+        "reference_code": "VEN-US-CO-DENVER-LARIMER-SQUARE-0001",
+        "country_code": "US",
+        "admin1_code": "CO",
+        "tags": [
+          "category:dining-nightlife",
+          "city:denver",
+          "district:downtown-core",
+          "district:union-station",
+          "impact:medium",
+          "venue-type:district-hub"
+        ],
+        "canonical_path": "/nodes/larimer-square"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-ny-new-york-city-madison-square-garden:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9934,
+          40.7505
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-ny-new-york-city-madison-square-garden:0001",
+        "class": "venue",
+        "subclass": "event-venue",
+        "slug": "madison-square-garden",
+        "name": "Madison Square Garden",
+        "display_name": "Madison Square Garden",
+        "reference_code": "VEN-US-NY-NEW-YORK-CITY-MADISON-0001",
+        "country_code": "US",
+        "admin1_code": "NY",
+        "tags": [
+          "category:sports-concerts",
+          "city:new-york-city",
+          "district:midtown-event-core",
+          "impact:high",
+          "venue-type:event-venue"
+        ],
+        "canonical_path": "/nodes/madison-square-garden"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-il-chicago-merchandise-mart:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -87.6359,
+          41.8889
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-il-chicago-merchandise-mart:0001",
+        "class": "venue",
+        "subclass": "mobility-hub",
+        "slug": "merchandise-mart",
+        "name": "Merchandise Mart",
+        "display_name": "Merchandise Mart",
+        "reference_code": "VEN-US-IL-CHICAGO-MERCHANDISE-MART-0001",
+        "country_code": "US",
+        "admin1_code": "IL",
+        "tags": [
+          "category:dining-social",
+          "city:chicago",
+          "district:river-north",
+          "impact:medium",
+          "venue-type:mobility-hub"
+        ],
+        "canonical_path": "/nodes/merchandise-mart"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-il-chicago-millennium-park-campus:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -87.6226,
+          41.8826
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-il-chicago-millennium-park-campus:0001",
+        "class": "venue",
+        "subclass": "major-event-campus",
+        "slug": "millennium-park-campus",
+        "name": "Millennium Park Campus",
+        "display_name": "Millennium Park Campus",
+        "reference_code": "VEN-US-IL-CHICAGO-MILLENNIUM-PARK-CAMPUS-0001",
+        "country_code": "US",
+        "admin1_code": "IL",
+        "tags": [
+          "category:civic-events",
+          "city:chicago",
+          "district:loop-core",
+          "impact:high",
+          "venue-type:major-event-campus"
+        ],
+        "canonical_path": "/nodes/millennium-park-campus"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-co-denver-mission-ballroom:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9784,
+          39.7724
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-co-denver-mission-ballroom:0001",
+        "class": "venue",
+        "subclass": "event-venue",
+        "slug": "mission-ballroom",
+        "name": "Mission Ballroom",
+        "display_name": "Mission Ballroom",
+        "reference_code": "VEN-US-CO-DENVER-MISSION-BALLROOM-0001",
+        "country_code": "US",
+        "admin1_code": "CO",
+        "tags": [
+          "category:live-music",
+          "city:denver",
+          "district:union-station",
+          "impact:medium-high",
+          "venue-type:event-venue"
+        ],
+        "canonical_path": "/nodes/mission-ballroom"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-tx-austin-moody-center:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97.7321,
+          30.2809
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-tx-austin-moody-center:0001",
+        "class": "venue",
+        "subclass": "event-venue",
+        "slug": "moody-center",
+        "name": "Moody Center",
+        "display_name": "Moody Center",
+        "reference_code": "VEN-US-TX-AUSTIN-MOODY-CENTER-0001",
+        "country_code": "US",
+        "admin1_code": "TX",
+        "tags": [
+          "category:sports-concerts",
+          "city:austin",
+          "district:rainey-street",
+          "impact:high",
+          "venue-type:event-venue"
+        ],
+        "canonical_path": "/nodes/moody-center"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-co-denver-paramount-theatre:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9897,
+          39.7441
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-co-denver-paramount-theatre:0001",
+        "class": "venue",
+        "subclass": "event-venue",
+        "slug": "paramount-theatre",
+        "name": "Paramount Theatre",
+        "display_name": "Paramount Theatre",
+        "reference_code": "VEN-US-CO-DENVER-PARAMOUNT-THEATRE-0001",
+        "country_code": "US",
+        "admin1_code": "CO",
+        "tags": [
+          "category:theater-comedy-live",
+          "city:denver",
+          "district:downtown-core",
+          "impact:medium",
+          "venue-type:event-venue"
+        ],
+        "canonical_path": "/nodes/paramount-theatre"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-ny-new-york-city-pier-17:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0016,
+          40.7061
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-ny-new-york-city-pier-17:0001",
+        "class": "venue",
+        "subclass": "district-hub",
+        "slug": "pier-17",
+        "name": "Pier 17",
+        "display_name": "Pier 17",
+        "reference_code": "VEN-US-NY-NEW-YORK-CITY-PIER-0001",
+        "country_code": "US",
+        "admin1_code": "NY",
+        "tags": [
+          "category:riverfront-dining-live",
+          "city:new-york-city",
+          "district:lower-manhattan",
+          "impact:medium",
+          "venue-type:district-hub"
+        ],
+        "canonical_path": "/nodes/pier-17"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-tx-austin-rainey-street-district:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97.7381,
+          30.2588
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-tx-austin-rainey-street-district:0001",
+        "class": "venue",
+        "subclass": "district-hub",
+        "slug": "rainey-street-district",
+        "name": "Rainey Street District",
+        "display_name": "Rainey Street District",
+        "reference_code": "VEN-US-TX-AUSTIN-RAINEY-STREET-DISTRICT-0001",
+        "country_code": "US",
+        "admin1_code": "TX",
+        "tags": [
+          "category:bars-nightlife",
+          "city:austin",
+          "district:rainey-street",
+          "impact:medium",
+          "venue-type:district-hub"
+        ],
+        "canonical_path": "/nodes/rainey-street-district"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-tn-nashville-ryman-auditorium:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -86.7785,
+          36.1612
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-tn-nashville-ryman-auditorium:0001",
+        "class": "venue",
+        "subclass": "event-venue",
+        "slug": "ryman-auditorium",
+        "name": "Ryman Auditorium",
+        "display_name": "Ryman Auditorium",
+        "reference_code": "VEN-US-TN-NASHVILLE-RYMAN-AUDITORIUM-0001",
+        "country_code": "US",
+        "admin1_code": "TN",
+        "tags": [
+          "category:live-music",
+          "city:nashville",
+          "district:broadway-core",
+          "impact:medium",
+          "venue-type:event-venue"
+        ],
+        "canonical_path": "/nodes/ryman-auditorium"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-co-denver-summit-music-hall:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.9937,
+          39.7537
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-co-denver-summit-music-hall:0001",
+        "class": "venue",
+        "subclass": "event-venue",
+        "slug": "summit-music-hall",
+        "name": "Summit Music Hall",
+        "display_name": "Summit Music Hall",
+        "reference_code": "VEN-US-CO-DENVER-SUMMIT-MUSIC-HALL-0001",
+        "country_code": "US",
+        "admin1_code": "CO",
+        "tags": [
+          "category:live-music",
+          "city:denver",
+          "district:union-station",
+          "impact:medium",
+          "venue-type:event-venue"
+        ],
+        "canonical_path": "/nodes/summit-music-hall"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-ny-new-york-city-the-bowery-ballroom:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9939,
+          40.7207
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-ny-new-york-city-the-bowery-ballroom:0001",
+        "class": "venue",
+        "subclass": "event-venue",
+        "slug": "the-bowery-ballroom",
+        "name": "The Bowery Ballroom",
+        "display_name": "The Bowery Ballroom",
+        "reference_code": "VEN-US-NY-NEW-YORK-CITY-THE-0001",
+        "country_code": "US",
+        "admin1_code": "NY",
+        "tags": [
+          "category:live-music",
+          "city:new-york-city",
+          "district:midtown-event-core",
+          "impact:medium",
+          "venue-type:event-venue"
+        ],
+        "canonical_path": "/nodes/the-bowery-ballroom"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dcc:venue:us-co-denver-union-station:0001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.0008,
+          39.7527
+        ]
+      },
+      "properties": {
+        "id": "dcc:venue:us-co-denver-union-station:0001",
+        "class": "venue",
+        "subclass": "mobility-hub",
+        "slug": "union-station",
+        "name": "Union Station Denver",
+        "display_name": "Union Station Denver",
+        "reference_code": "VEN-US-CO-DENVER-UNION-STATION-0001",
+        "country_code": "US",
+        "admin1_code": "CO",
+        "tags": [
+          "category:dining-social",
+          "city:denver",
+          "district:union-station",
+          "impact:medium",
+          "venue-type:mobility-hub"
+        ],
+        "canonical_path": "/nodes/union-station"
+      }
+    }
+  ]
+}

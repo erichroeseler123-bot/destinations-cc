@@ -1,0 +1,18 @@
+<svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="dccMarkRing" x1="12" y1="10" x2="60" y2="62" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE"/>
+      <stop offset="0.52" stop-color="#34D399"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+  <rect width="72" height="72" rx="18" fill="#090A0D"/>
+  <circle cx="36" cy="36" r="22" stroke="url(#dccMarkRing)" stroke-width="4"/>
+  <circle cx="36" cy="36" r="6" fill="#F8FAFC"/>
+  <path d="M36 14V22" stroke="#22D3EE" stroke-width="3" stroke-linecap="round"/>
+  <path d="M36 50V58" stroke="#34D399" stroke-width="3" stroke-linecap="round"/>
+  <path d="M14 36H22" stroke="#38BDF8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M50 36H58" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+  <path d="M24 45L34 35L41 41L49 25" stroke="#F8FAFC" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="49" cy="25" r="3.5" fill="#F59E0B"/>
+</svg>

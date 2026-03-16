@@ -3,9 +3,15 @@ export const dynamicParams = false;
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
 import aliases from "@/data/city-aliases.json";
 import { bandsintownAdapter } from "@/lib/dcc/providers/adapters/bandsintown";
 import { ticketmasterAdapter } from "@/lib/dcc/providers/adapters/ticketmaster";
+import {
+  buildCityShowEventSlug,
+  resolveCityShowVenueSlug,
+  resolveCrossSiteVenueSlug,
+} from "@/lib/dcc/shows/cityShows";
 import { getMediaForEntity } from "@/src/lib/media";
 import { getCityShowsConfig } from "@/src/data/city-shows-config";
 import { getCityIntents, titleCase } from "@/src/data/city-intents";
@@ -17,7 +23,7 @@ import {
 import { buildCityTrackedHref } from "@/src/lib/city-analytics";
 
 type Params = { city: string };
-type SearchParams = { q?: string };
+type SearchParams = { q?: string; qty?: string };
 
 export async function generateStaticParams() {
   return Object.keys(aliases).map((city) => ({ city }));
@@ -225,6 +231,7 @@ export default async function CityShowsPage({
   const resolvedSearchParams = await searchParams;
   const cityKey = (city || "").toLowerCase();
   const rawQuery = (resolvedSearchParams?.q || "").trim().toLowerCase();
+  const qty = (resolvedSearchParams?.qty || "").trim();
   const cityName = titleCase(cityKey);
   const config = getCityShowsConfig(cityKey);
 
@@ -365,6 +372,12 @@ export default async function CityShowsPage({
               Browse live show inventory
             </Link>
             <Link
+              href={`/${cityKey}/shows-this-week`}
+              className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-5 py-3 font-semibold text-zinc-100 hover:bg-white/10"
+            >
+              Shows this week
+            </Link>
+            <Link
               href={`/${cityKey}/tours`}
               className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-5 py-3 font-semibold text-zinc-100 hover:bg-white/10"
             >
@@ -376,6 +389,21 @@ export default async function CityShowsPage({
             >
               Switch to attractions
             </Link>
+          </div>
+
+          <div className="mt-6 grid gap-3 md:grid-cols-3">
+            <div className="rounded-[24px] border border-white/10 bg-black/20 p-4">
+              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-300">Buyer state</div>
+              <div className="mt-2 text-sm leading-6 text-white/80">This visitor is planning a fixed-time night, not casually browsing attractions.</div>
+            </div>
+            <div className="rounded-[24px] border border-white/10 bg-black/20 p-4">
+              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-300">Best next move</div>
+              <div className="mt-2 text-sm leading-6 text-white/80">Choose the show, then route into venue, transport, or city-night planning immediately.</div>
+            </div>
+            <div className="rounded-[24px] border border-white/10 bg-black/20 p-4">
+              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-300">Monetization path</div>
+              <div className="mt-2 text-sm leading-6 text-white/80">Tickets, transport, hotel adjacency, and pre-show city plans can all branch from this page.</div>
+            </div>
           </div>
 
           {rawQuery ? (
@@ -415,68 +443,99 @@ export default async function CityShowsPage({
           {liveShows.length > 0 ? (
             <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {visibleLiveCards.map(({ event, media }) => (
-                <article
-                  key={event.id}
-                  className="overflow-hidden rounded-3xl border border-white/10 bg-black/25"
-                >
-                  {media.card ? (
-                    <div
-                      className="h-40 bg-cover bg-center"
-                      style={{ backgroundImage: `linear-gradient(180deg,rgba(0,0,0,0.15),rgba(0,0,0,0.7)), url(${media.card.src})` }}
-                    />
-                  ) : (
-                    <div className="h-40 bg-[linear-gradient(135deg,rgba(251,191,36,0.22),rgba(24,24,27,0.92))]" />
-                  )}
-                  <div className="space-y-3 p-5">
-                    <div className="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.18em] text-zinc-400">
-                      {event.segment_name ? (
-                        <span className="rounded-full border border-white/10 px-2 py-1">{event.segment_name}</span>
-                      ) : null}
-                      {event.genre_name ? (
-                        <span className="rounded-full border border-white/10 px-2 py-1">{event.genre_name}</span>
-                      ) : null}
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-white">{event.name}</h3>
-                      <p className="mt-1 text-sm text-zinc-400">
-                        {formatEventDate(event.start_date, event.start_time)}
-                        {event.venue_name ? ` • ${event.venue_name}` : ""}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm text-zinc-300">
-                        {event.subgenre_name || "Live entertainment inventory"}
-                      </p>
-                      {event.url ? (
-                        <a
-                          href={event.url}
-                          target="_blank"
-                          rel="noopener noreferrer sponsored nofollow"
-                          className="inline-flex items-center rounded-full border border-amber-400/30 px-3 py-1.5 text-sm font-semibold text-amber-200 hover:bg-amber-400/10"
-                        >
-                          View tickets
-                        </a>
-                      ) : null}
-                    </div>
-                    {media.card?.attribution ? (
-                      <p className="text-xs text-zinc-500">
-                        Image source:{" "}
-                        {media.card.attribution.href ? (
-                          <a
-                            href={media.card.attribution.href}
-                            target="_blank"
-                            rel="noopener noreferrer sponsored nofollow"
-                            className="text-zinc-400 hover:text-zinc-200"
-                          >
-                            {media.card.attribution.label}
-                          </a>
-                        ) : (
-                          <span className="text-zinc-400">{media.card.attribution.label}</span>
-                        )}
-                      </p>
-                    ) : null}
-                  </div>
-                </article>
+                (() => {
+                  const showVenueSlug = resolveCityShowVenueSlug(cityKey, event.venue_name);
+                  const venueSlug = resolveCrossSiteVenueSlug(event.venue_name);
+
+                  return (
+                    <article
+                      key={event.id}
+                      className="overflow-hidden rounded-3xl border border-white/10 bg-black/25"
+                    >
+                      {media.card ? (
+                        <div
+                          className="h-40 bg-cover bg-center"
+                          style={{ backgroundImage: `linear-gradient(180deg,rgba(0,0,0,0.15),rgba(0,0,0,0.7)), url(${media.card.src})` }}
+                        />
+                      ) : (
+                        <div className="h-40 bg-[linear-gradient(135deg,rgba(251,191,36,0.22),rgba(24,24,27,0.92))]" />
+                      )}
+                      <div className="space-y-3 p-5">
+                        <div className="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.18em] text-zinc-400">
+                          {event.segment_name ? (
+                            <span className="rounded-full border border-white/10 px-2 py-1">{event.segment_name}</span>
+                          ) : null}
+                          {event.genre_name ? (
+                            <span className="rounded-full border border-white/10 px-2 py-1">{event.genre_name}</span>
+                          ) : null}
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-white">{event.name}</h3>
+                          <p className="mt-1 text-sm text-zinc-400">
+                            {formatEventDate(event.start_date, event.start_time)}
+                            {event.venue_name ? ` • ${event.venue_name}` : ""}
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-sm text-zinc-300">
+                            {event.subgenre_name || "Live entertainment inventory"}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {showVenueSlug ? (
+                              <Link
+                                href={`/${cityKey}/shows/${buildCityShowEventSlug(event)}`}
+                                className="inline-flex items-center rounded-full border border-cyan-400/30 px-3 py-1.5 text-sm font-semibold text-cyan-200 hover:bg-cyan-400/10"
+                              >
+                                Show details
+                              </Link>
+                            ) : null}
+                            {event.url ? (
+                              <a
+                                href={event.url}
+                                target="_blank"
+                                rel="noopener noreferrer sponsored nofollow"
+                                className="inline-flex items-center rounded-full border border-amber-400/30 px-3 py-1.5 text-sm font-semibold text-amber-200 hover:bg-amber-400/10"
+                              >
+                                View tickets
+                              </a>
+                            ) : null}
+                          </div>
+                        </div>
+                        {venueSlug ? (
+                          <RideOptionsCard
+                            venueSlug={venueSlug}
+                            title="Getting There"
+                            sourcePage={`/${cityKey}/shows`}
+                            showVenueLink={false}
+                            bookingContext={{
+                              artist: event.name || undefined,
+                              event: event.name || undefined,
+                              date: event.start_date || undefined,
+                              qty: qty || undefined,
+                            }}
+                          />
+                        ) : null}
+                        {media.card?.attribution ? (
+                          <p className="text-xs text-zinc-500">
+                            Image source:{" "}
+                            {media.card.attribution.href ? (
+                              <a
+                                href={media.card.attribution.href}
+                                target="_blank"
+                                rel="noopener noreferrer sponsored nofollow"
+                                className="text-zinc-400 hover:text-zinc-200"
+                              >
+                                {media.card.attribution.label}
+                              </a>
+                            ) : (
+                              <span className="text-zinc-400">{media.card.attribution.label}</span>
+                            )}
+                          </p>
+                        ) : null}
+                      </div>
+                    </article>
+                  );
+                })()
               ))}
             </div>
           ) : (
@@ -496,65 +555,90 @@ export default async function CityShowsPage({
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             {visibleCuratedShowCards.map(({ show, media }) => (
-              <Link
-                key={`${show.title}-${show.query}`}
-                href={buildCityTrackedHref({
-                  href: `/${cityKey}/shows?q=${encodeURIComponent(show.query)}`,
-                  city: cityKey,
-                  lane: "events",
-                  sourceSection: "city_events_intent",
-                  intentQuery: show.query,
-                })}
-                className="overflow-hidden rounded-3xl border border-white/10 bg-black/20 hover:bg-white/10"
-              >
-                {media.card ? (
+              (() => {
+                const venueSlug = resolveCrossSiteVenueSlug(show.venueSlug, show.venue);
+
+                return (
                   <div
-                    className="h-44 bg-cover bg-center"
-                    style={{ backgroundImage: `linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.68)), url(${media.card.src})` }}
-                  />
-                ) : null}
-                <div className="p-5">
-                  <div className="text-xs uppercase tracking-[0.22em] text-amber-300">{show.category}</div>
-                  <h3 className="mt-2 text-xl font-semibold text-white">{show.title}</h3>
-                  <p className="mt-1 text-sm text-zinc-400">{show.venue}</p>
-                  <p className="mt-3 text-zinc-300">{show.description}</p>
-                  <div className="mt-4 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.16em] text-zinc-400">
-                    <span className="rounded-full border border-white/10 px-2 py-1">
-                      {formatLabel(show.showType)}
-                    </span>
-                    <span className="rounded-full border border-white/10 px-2 py-1">
-                      {formatLabel(show.venueType)}
-                    </span>
-                    {show.isPerformingArts ? (
-                      <span className="rounded-full border border-amber-400/30 px-2 py-1 text-amber-200">
-                        Performing Arts
-                      </span>
-                    ) : null}
-                    {show.isJazzClub ? (
-                      <span className="rounded-full border border-amber-400/30 px-2 py-1 text-amber-200">
-                        Jazz Club
-                      </span>
+                    key={`${show.title}-${show.query}`}
+                    className="overflow-hidden rounded-3xl border border-white/10 bg-black/20"
+                  >
+                    <Link
+                      href={buildCityTrackedHref({
+                        href: `/${cityKey}/shows?q=${encodeURIComponent(show.query)}`,
+                        city: cityKey,
+                        lane: "events",
+                        sourceSection: "city_events_intent",
+                        intentQuery: show.query,
+                      })}
+                      className="block hover:bg-white/10"
+                    >
+                      {media.card ? (
+                        <div
+                          className="h-44 bg-cover bg-center"
+                          style={{ backgroundImage: `linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.68)), url(${media.card.src})` }}
+                        />
+                      ) : null}
+                      <div className="p-5">
+                        <div className="text-xs uppercase tracking-[0.22em] text-amber-300">{show.category}</div>
+                        <h3 className="mt-2 text-xl font-semibold text-white">{show.title}</h3>
+                        <p className="mt-1 text-sm text-zinc-400">{show.venue}</p>
+                        <p className="mt-3 text-zinc-300">{show.description}</p>
+                        <div className="mt-4 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.16em] text-zinc-400">
+                          <span className="rounded-full border border-white/10 px-2 py-1">
+                            {formatLabel(show.showType)}
+                          </span>
+                          <span className="rounded-full border border-white/10 px-2 py-1">
+                            {formatLabel(show.venueType)}
+                          </span>
+                          {show.isPerformingArts ? (
+                            <span className="rounded-full border border-amber-400/30 px-2 py-1 text-amber-200">
+                              Performing Arts
+                            </span>
+                          ) : null}
+                          {show.isJazzClub ? (
+                            <span className="rounded-full border border-amber-400/30 px-2 py-1 text-amber-200">
+                              Jazz Club
+                            </span>
+                          ) : null}
+                        </div>
+                        {media.card?.attribution ? (
+                          <p className="mt-4 text-xs text-zinc-500">
+                            Image source:{" "}
+                            {media.card.attribution.href ? (
+                              <a
+                                href={media.card.attribution.href}
+                                target="_blank"
+                                rel="noopener noreferrer sponsored nofollow"
+                                className="text-zinc-400 hover:text-zinc-200"
+                              >
+                                {media.card.attribution.label}
+                              </a>
+                            ) : (
+                              <span className="text-zinc-400">{media.card.attribution.label}</span>
+                            )}
+                          </p>
+                        ) : null}
+                      </div>
+                    </Link>
+                    {venueSlug ? (
+                      <div className="px-5 pb-5">
+                        <RideOptionsCard
+                          venueSlug={venueSlug}
+                          title="Getting There"
+                          sourcePage={`/${cityKey}/shows`}
+                          showVenueLink={false}
+                          bookingContext={{
+                            artist: show.title,
+                            event: show.query,
+                            qty: qty || undefined,
+                          }}
+                        />
+                      </div>
                     ) : null}
                   </div>
-                  {media.card?.attribution ? (
-                    <p className="mt-4 text-xs text-zinc-500">
-                      Image source:{" "}
-                      {media.card.attribution.href ? (
-                        <a
-                          href={media.card.attribution.href}
-                          target="_blank"
-                          rel="noopener noreferrer sponsored nofollow"
-                          className="text-zinc-400 hover:text-zinc-200"
-                        >
-                          {media.card.attribution.label}
-                        </a>
-                      ) : (
-                        <span className="text-zinc-400">{media.card.attribution.label}</span>
-                      )}
-                    </p>
-                  ) : null}
-                </div>
-              </Link>
+                );
+              })()
             ))}
           </div>
         </section>

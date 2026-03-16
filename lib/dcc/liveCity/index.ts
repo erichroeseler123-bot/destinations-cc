@@ -17,6 +17,12 @@ import denverEventsJson from "@/data/cities/denver/events.current.json";
 import denverPlacesJson from "@/data/cities/denver/places.json";
 import denverSignalsJson from "@/data/cities/denver/signals.live.json";
 import denverVenuesJson from "@/data/cities/denver/venues.json";
+import lasVegasAnchorsJson from "@/data/cities/las-vegas/anchors.json";
+import lasVegasDistrictsJson from "@/data/cities/las-vegas/districts.json";
+import lasVegasEventsJson from "@/data/cities/las-vegas/events.current.json";
+import lasVegasPlacesJson from "@/data/cities/las-vegas/places.json";
+import lasVegasSignalsJson from "@/data/cities/las-vegas/signals.live.json";
+import lasVegasVenuesJson from "@/data/cities/las-vegas/venues.json";
 import miamiAnchorsJson from "@/data/cities/miami/anchors.json";
 import miamiDistrictsJson from "@/data/cities/miami/districts.json";
 import miamiEventsJson from "@/data/cities/miami/events.current.json";
@@ -29,6 +35,12 @@ import nashvilleEventsJson from "@/data/cities/nashville/events.current.json";
 import nashvillePlacesJson from "@/data/cities/nashville/places.json";
 import nashvilleSignalsJson from "@/data/cities/nashville/signals.live.json";
 import nashvilleVenuesJson from "@/data/cities/nashville/venues.json";
+import newOrleansAnchorsJson from "@/data/cities/new-orleans/anchors.json";
+import newOrleansDistrictsJson from "@/data/cities/new-orleans/districts.json";
+import newOrleansEventsJson from "@/data/cities/new-orleans/events.current.json";
+import newOrleansPlacesJson from "@/data/cities/new-orleans/places.json";
+import newOrleansSignalsJson from "@/data/cities/new-orleans/signals.live.json";
+import newOrleansVenuesJson from "@/data/cities/new-orleans/venues.json";
 import newYorkCityAnchorsJson from "@/data/cities/new-york-city/anchors.json";
 import newYorkCityDistrictsJson from "@/data/cities/new-york-city/districts.json";
 import newYorkCityEventsJson from "@/data/cities/new-york-city/events.current.json";
@@ -80,6 +92,14 @@ const LIVE_CITY_DATA = {
     events: LiveCityEventsFileSchema.parse(denverEventsJson),
     signals: LiveCitySignalsFileSchema.parse(denverSignalsJson),
   },
+  "las-vegas": {
+    anchors: LiveCityAnchorsFileSchema.parse(lasVegasAnchorsJson),
+    districts: LiveCityDistrictsFileSchema.parse(lasVegasDistrictsJson),
+    venues: LiveCityVenuesFileSchema.parse(lasVegasVenuesJson),
+    places: LiveCityPlacesFileSchema.parse(lasVegasPlacesJson),
+    events: LiveCityEventsFileSchema.parse(lasVegasEventsJson),
+    signals: LiveCitySignalsFileSchema.parse(lasVegasSignalsJson),
+  },
   miami: {
     anchors: LiveCityAnchorsFileSchema.parse(miamiAnchorsJson),
     districts: LiveCityDistrictsFileSchema.parse(miamiDistrictsJson),
@@ -95,6 +115,14 @@ const LIVE_CITY_DATA = {
     places: LiveCityPlacesFileSchema.parse(nashvillePlacesJson),
     events: LiveCityEventsFileSchema.parse(nashvilleEventsJson),
     signals: LiveCitySignalsFileSchema.parse(nashvilleSignalsJson),
+  },
+  "new-orleans": {
+    anchors: LiveCityAnchorsFileSchema.parse(newOrleansAnchorsJson),
+    districts: LiveCityDistrictsFileSchema.parse(newOrleansDistrictsJson),
+    venues: LiveCityVenuesFileSchema.parse(newOrleansVenuesJson),
+    places: LiveCityPlacesFileSchema.parse(newOrleansPlacesJson),
+    events: LiveCityEventsFileSchema.parse(newOrleansEventsJson),
+    signals: LiveCitySignalsFileSchema.parse(newOrleansSignalsJson),
   },
   "new-york-city": {
     anchors: LiveCityAnchorsFileSchema.parse(newYorkCityAnchorsJson),

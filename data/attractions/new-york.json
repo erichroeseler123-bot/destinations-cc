@@ -1,0 +1,345 @@
+{
+  "citySlug": "new-york",
+  "cityName": "New York City",
+  "attractions": [
+    {
+      "slug": "statue-of-liberty",
+      "name": "Statue of Liberty",
+      "type": "landmark",
+      "summary": "Statue of Liberty is one of the more recognizable history-focused stops in New York City for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "landmark",
+        "history",
+        "sightseeing"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Statue of Liberty guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Statue of Liberty in New York City, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Statue of Liberty as a stop for a more history-focused city walk or half-day plan.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Statue of Liberty as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Statue of Liberty more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Statue of Liberty history tours",
+          "query": "new york statue of liberty history tour",
+          "description": "A simple starting point for visitors who want more context around Statue of Liberty."
+        },
+        {
+          "label": "Statue of Liberty guided experiences",
+          "query": "new york statue of liberty tours",
+          "description": "A general search path for tours and guided experiences connected to Statue of Liberty in New York City."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Central Park",
+          "href": "/new-york/central-park"
+        },
+        {
+          "label": "Times Square",
+          "href": "/new-york/times-square"
+        },
+        {
+          "label": "Brooklyn Bridge",
+          "href": "/new-york/brooklyn-bridge"
+        }
+      ],
+      "primaryToursHref": "/new-york/statue-of-liberty/tours",
+      "thingsToDoHref": "/new-york/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Central Park",
+        "Times Square"
+      ]
+    },
+    {
+      "slug": "central-park",
+      "name": "Central Park",
+      "type": "park",
+      "summary": "Central Park gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader New York City day plan.",
+      "categories": [
+        "park",
+        "family",
+        "outdoor"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Central Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Central Park in New York City, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Central Park as a slower outdoor break between denser city attractions or tours.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Central Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Central Park outdoor experiences",
+          "query": "new york central park outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Central Park guided experiences",
+          "query": "new york central park tours",
+          "description": "A general search path for tours and guided experiences connected to Central Park in New York City."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Statue of Liberty",
+          "href": "/new-york/statue-of-liberty"
+        },
+        {
+          "label": "Times Square",
+          "href": "/new-york/times-square"
+        },
+        {
+          "label": "Brooklyn Bridge",
+          "href": "/new-york/brooklyn-bridge"
+        }
+      ],
+      "primaryToursHref": "/new-york/central-park/tours",
+      "thingsToDoHref": "/new-york/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Statue of Liberty",
+        "Times Square"
+      ]
+    },
+    {
+      "slug": "times-square",
+      "name": "Times Square",
+      "type": "district",
+      "summary": "Times Square is one of the more useful city districts to understand early if you want a clearer feel for how visitors actually spend time in New York City.",
+      "categories": [
+        "landmark",
+        "nightlife",
+        "sightseeing"
+      ],
+      "priority": 90,
+      "featured": true,
+      "heroTitle": "Times Square guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Times Square in New York City, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Treat Times Square as an evening block if nightlife is a major part of the trip.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Times Square as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Times Square matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Times Square guided experiences",
+          "query": "new york times square tours",
+          "description": "A general search path for tours and guided experiences connected to Times Square in New York City."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Statue of Liberty",
+          "href": "/new-york/statue-of-liberty"
+        },
+        {
+          "label": "Central Park",
+          "href": "/new-york/central-park"
+        },
+        {
+          "label": "Brooklyn Bridge",
+          "href": "/new-york/brooklyn-bridge"
+        }
+      ],
+      "primaryToursHref": "/new-york/times-square/tours",
+      "thingsToDoHref": "/new-york/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Statue of Liberty",
+        "Central Park"
+      ]
+    },
+    {
+      "slug": "brooklyn-bridge",
+      "name": "Brooklyn Bridge",
+      "type": "landmark",
+      "summary": "Brooklyn Bridge is one of the more recognizable visitor stops in New York City and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "landmark",
+        "walks",
+        "sightseeing"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "Brooklyn Bridge guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Brooklyn Bridge in New York City, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Brooklyn Bridge as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Brooklyn Bridge guided experiences",
+          "query": "new york brooklyn bridge tours",
+          "description": "A general search path for tours and guided experiences connected to Brooklyn Bridge in New York City."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Statue of Liberty",
+          "href": "/new-york/statue-of-liberty"
+        },
+        {
+          "label": "Central Park",
+          "href": "/new-york/central-park"
+        },
+        {
+          "label": "Times Square",
+          "href": "/new-york/times-square"
+        }
+      ],
+      "primaryToursHref": "/new-york/brooklyn-bridge/tours",
+      "thingsToDoHref": "/new-york/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Statue of Liberty",
+        "Central Park"
+      ]
+    },
+    {
+      "slug": "metropolitan-museum-of-art",
+      "name": "The Metropolitan Museum of Art",
+      "type": "museum",
+      "summary": "The Metropolitan Museum of Art is a useful museum stop in New York City for visitors who want more structure, context, or indoor time built into the trip.",
+      "categories": [
+        "museum",
+        "culture",
+        "history"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "The Metropolitan Museum of Art guide, things to do, and local tours",
+      "heroSummary": "Planning guide for The Metropolitan Museum of Art in New York City, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use The Metropolitan Museum of Art as an anchor for a more structured indoor block, especially on hotter, colder, or wetter days.",
+        "Pair The Metropolitan Museum of Art with one nearby neighborhood, food, or walking stop instead of stacking too many museums at once.",
+        "Use The Metropolitan Museum of Art as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan The Metropolitan Museum of Art as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Museum stops usually add the most value when you pair them with one nearby walk, meal, or neighborhood block instead of stacking too much indoor time.",
+        "A guided walk or city tour often gives The Metropolitan Museum of Art more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "The Metropolitan Museum of Art museum experiences",
+          "query": "new york metropolitan museum of art museum tour",
+          "description": "Useful when visitors want more context than a quick self-guided pass-through."
+        },
+        {
+          "label": "The Metropolitan Museum of Art history tours",
+          "query": "new york metropolitan museum of art history tour",
+          "description": "A simple starting point for visitors who want more context around The Metropolitan Museum of Art."
+        },
+        {
+          "label": "The Metropolitan Museum of Art guided experiences",
+          "query": "new york metropolitan museum of art tours",
+          "description": "A general search path for tours and guided experiences connected to The Metropolitan Museum of Art in New York City."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Statue of Liberty",
+          "href": "/new-york/statue-of-liberty"
+        },
+        {
+          "label": "Central Park",
+          "href": "/new-york/central-park"
+        },
+        {
+          "label": "Times Square",
+          "href": "/new-york/times-square"
+        }
+      ],
+      "primaryToursHref": "/new-york/metropolitan-museum-of-art/tours",
+      "thingsToDoHref": "/new-york/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Statue of Liberty",
+        "Central Park"
+      ]
+    },
+    {
+      "slug": "high-line",
+      "name": "The High Line",
+      "type": "park",
+      "summary": "The High Line gives visitors a practical outdoor break from denser city blocks and usually fits best into a slower part of the day in New York City.",
+      "categories": [
+        "walks",
+        "outdoor",
+        "sightseeing"
+      ],
+      "priority": 76,
+      "featured": false,
+      "heroTitle": "The High Line guide, things to do, and local tours",
+      "heroSummary": "Planning guide for The High Line in New York City, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use The High Line for a slower outdoor block, especially if the rest of the day is built around denser city stops.",
+        "Pair The High Line with one nearby indoor attraction, meal, or sightseeing route instead of overloading the day.",
+        "Use The High Line as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan The High Line as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops tend to be easier to pace when you keep the rest of the day light and avoid too many cross-city jumps.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "The High Line outdoor experiences",
+          "query": "new york high line outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery, fresh air, or a slower pace."
+        },
+        {
+          "label": "The High Line guided experiences",
+          "query": "new york high line tours",
+          "description": "A general search path for tours and guided experiences connected to The High Line in New York City."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Statue of Liberty",
+          "href": "/new-york/statue-of-liberty"
+        },
+        {
+          "label": "Central Park",
+          "href": "/new-york/central-park"
+        },
+        {
+          "label": "Times Square",
+          "href": "/new-york/times-square"
+        }
+      ],
+      "primaryToursHref": "/new-york/high-line/tours",
+      "thingsToDoHref": "/new-york/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Statue of Liberty",
+        "Central Park"
+      ]
+    }
+  ]
+}

@@ -15,19 +15,19 @@ const FAQ = [
   },
   {
     q: "Are there pet-friendly hotels in Las Vegas?",
-    a: "Yes. Pet-friendly inventory exists across both luxury and midscale Vegas hotels, which is why pet-friendly should be treated as a real overlay, not a footnote.",
+    a: "Yes. Pet-friendly options exist across both luxury and midscale Las Vegas hotels, so it is worth filtering for them early if that matters to your trip.",
   },
 ];
 
 export const metadata: Metadata = {
   title: "Las Vegas Hotels | Strip, Downtown, Luxury, Family, and Pet-Friendly",
   description:
-    "Browse Las Vegas hotels through a search-intent mesh: Strip vs downtown, luxury vs value, family-friendly, pet-friendly, and show-adjacent stays.",
+    "Browse Las Vegas hotels by area and trip style: Strip vs downtown, luxury vs value, family-friendly, pet-friendly, and show-friendly stays.",
   alternates: { canonical: "/las-vegas/hotels" },
   openGraph: {
     title: "Las Vegas Hotels",
     description:
-      "A DCC hotel hub for Las Vegas stays across Strip, downtown, luxury, family, pet-friendly, and show-led trip planning.",
+      "A Las Vegas hotel guide covering the Strip, downtown, luxury stays, family-friendly picks, pet-friendly stays, and show-friendly planning.",
     url: PAGE_URL,
     type: "website",
   },
@@ -43,7 +43,7 @@ function JsonLd() {
         url: PAGE_URL,
         name: "Las Vegas hotels",
         description:
-          "A Las Vegas hotel hub organized by Strip vs downtown, luxury, family, pet-friendly, and show-adjacent search intent.",
+          "A Las Vegas hotel guide organized by Strip vs downtown, luxury, family, pet-friendly, and show-friendly stays.",
         dateModified: "2026-03-12",
       },
       {
@@ -77,45 +77,45 @@ export default function LasVegasHotelsPage() {
       <JsonLd />
       <div className="mx-auto max-w-6xl px-6 py-16 space-y-8">
         <header className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">DCC Vegas Entity Hub</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Las Vegas Hotels</p>
           <h1 className="text-4xl font-black tracking-tight md:text-6xl">Las Vegas hotels</h1>
           <p className="max-w-3xl text-zinc-300">
-            This is the first hotel mesh layer for Vegas: flagship Strip resorts, downtown alternatives, luxury anchors,
-            family-friendly options, and pet-friendly overlays that can later generate near-X and best-for-Y pages.
+            Compare Las Vegas hotels by area and trip style: flagship Strip resorts, downtown alternatives,
+            luxury stays, family-friendly options, and pet-friendly picks.
           </p>
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Last updated: March 2026</p>
         </header>
 
         <section className="grid gap-4 md:grid-cols-3">
           <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
-            <h2 className="text-lg font-semibold">What this hub does</h2>
-            <p className="mt-2 text-sm text-zinc-300">It turns Vegas hotels into graph nodes instead of one-off mentions inside city copy.</p>
+            <h2 className="text-lg font-semibold">Start here</h2>
+            <p className="mt-2 text-sm text-zinc-300">Use this page when you want to compare hotel areas and stay styles before choosing one property.</p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
-            <h2 className="text-lg font-semibold">Search overlays</h2>
-            <p className="mt-2 text-sm text-zinc-300">Pet-friendly and kid-friendly are driven by the same tag system, so overlays and hub stay in sync.</p>
+            <h2 className="text-lg font-semibold">Helpful filters</h2>
+            <p className="mt-2 text-sm text-zinc-300">Pet-friendly, family-friendly, luxury, and downtown picks are all easier to compare from one page.</p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
-            <h2 className="text-lg font-semibold">Next graph step</h2>
-            <p className="mt-2 text-sm text-zinc-300">This same config can later power hotel detail nodes, near-venue pages, and casino overlays.</p>
+            <h2 className="text-lg font-semibold">Why it helps</h2>
+            <p className="mt-2 text-sm text-zinc-300">It is easier to narrow your stay once you know whether you want the Strip, downtown, a luxury resort, or a quieter fit.</p>
           </article>
         </section>
 
         <VegasHotelGridSection
-          title="Core Las Vegas hotel mesh"
-          intro="These seeded properties are the anchor nodes for Vegas hotel discovery: major Strip resorts, downtown alternatives, and the strongest luxury, family, and value signals."
+          title="Core Las Vegas hotels"
+          intro="These properties cover major Strip resorts, downtown alternatives, and some of the strongest luxury, family, and value options."
           hotels={VEGAS_HOTELS_CONFIG}
         />
 
         <div className="grid gap-4 lg:grid-cols-2">
           <VegasHotelGridSection
             title="Luxury and romantic cluster"
-            intro="This overlay matters because luxury, romance, and show-adjacent planning are major Vegas search behaviors."
+            intro="Useful for upscale stays, romantic trips, and hotels that fit well with a nicer night out."
             hotels={luxuryHotels}
           />
           <VegasHotelGridSection
             title="Downtown and Fremont cluster"
-            intro="Downtown hotels need their own layer because Fremont-led trips behave differently from Strip-led trips."
+            intro="Downtown hotels are a different fit from Strip resorts and often work better for Fremont-heavy trips."
             hotels={downtownHotels}
           />
         </div>

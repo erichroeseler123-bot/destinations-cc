@@ -57,6 +57,13 @@ function mapPort(p) {
     tags: Array.from(tags),
     reference_code: refCode("PRT", scope, 1),
     source_refs: [{ system: "manual", id: `ports.generated:${slug}` }],
+    geo: {
+      lat: typeof p?.lat === "number" ? p.lat : null,
+      lon: typeof p?.lon === "number" ? p.lon : null,
+      elevation_m: null,
+      bbox: null,
+      geohash: null,
+    },
     metrics: {
       passenger_volume: p?.passenger_volume ?? null,
     },
@@ -94,6 +101,8 @@ if (!fs.existsSync(INPUT)) {
 
 const ports = JSON.parse(fs.readFileSync(INPUT, "utf8"));
 const buckets = new Map();
+
+fs.rmSync(OUT_ROOT, { recursive: true, force: true });
 
 for (const p of ports) {
   const out = mapPort(p);

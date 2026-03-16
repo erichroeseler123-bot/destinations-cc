@@ -1,0 +1,22 @@
+{
+  "slug": "chicago",
+  "display_name": "Chicago",
+  "aliases": [
+    "chicago-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Architecture River Cruise",
+      "description": "Famous skyline boat tour.",
+      "query": "Chicago architecture river cruise",
+      "badge": "Best Seller"
+    },
+    {
+      "title": "Millennium Park & Bean",
+      "description": "Cloud Gate and downtown landmarks.",
+      "query": "Millennium Park Chicago walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

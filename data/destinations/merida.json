@@ -1,0 +1,33 @@
+{
+  "slug": "merida",
+  "display_name": "Merida",
+  "aliases": [
+    "merida-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Merida City Highlights Tour",
+      "description": "A quick way to see the best of Merida with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Coastal & City Excursion",
+      "description": "Short scenic outings connecting the Yucatan coast with Merida highlights.",
+      "query": "coastal excursion"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for plazas, history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "gateway_mappings": [
+    {
+      "kind": "port_tours_handoff",
+      "source_slug": "progreso"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

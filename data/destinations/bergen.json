@@ -1,0 +1,27 @@
+{
+  "slug": "bergen",
+  "display_name": "Bergen",
+  "aliases": [
+    "bergen-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Bergen City Highlights Tour",
+      "description": "A quick way to see the best of Bergen with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Fjord & Harbor Cruise",
+      "description": "Short scenic sailings and waterfront views near the historic harbor.",
+      "query": "fjord cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for Bryggen, harbor history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

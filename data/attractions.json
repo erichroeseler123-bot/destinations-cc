@@ -1,4 +1,929 @@
 {
+  "amsterdam": [
+    {
+      "title": "Amsterdam City Highlights Tour",
+      "description": "A quick way to see the best of Amsterdam with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Canal Cruise",
+      "description": "Short scenic canal sailings and iconic waterfront views across the city.",
+      "query": "canal cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for canals, neighborhoods, and historic streets.",
+      "query": "walking tour"
+    }
+  ],
+  "anaheim": [
+    {
+      "title": "Anaheim City Highlights Tour",
+      "description": "A quick way to see the best of Anaheim with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "ann-arbor": [
+    {
+      "title": "Ann Arbor City Highlights Tour",
+      "description": "A quick way to see the best of Ann Arbor with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "athens": [
+    {
+      "title": "Athens City Highlights Tour",
+      "description": "A quick way to see the best of Athens with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Riviera Cruise",
+      "description": "Short scenic sailings and waterfront views tied to the Athens coast.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for ancient landmarks, neighborhoods, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "atlanta": [
+    {
+      "title": "Atlanta City Highlights Tour",
+      "description": "A quick way to see the best of Atlanta with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "augusta": [
+    {
+      "title": "Augusta City Highlights Tour",
+      "description": "A quick way to see the best of Augusta with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "austin": [
+    {
+      "title": "BBQ Food Tour",
+      "description": "Taste legendary Texas barbecue.",
+      "query": "Austin BBQ food tour"
+    },
+    {
+      "title": "Live Music Crawl",
+      "description": "Downtown music venues.",
+      "query": "Austin live music tour"
+    }
+  ],
+  "bar-harbor": [
+    {
+      "title": "Bar Harbor City Highlights Tour",
+      "description": "A quick way to see the best of Bar Harbor with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "barcelona": [
+    {
+      "title": "Barcelona City Highlights Tour",
+      "description": "A quick way to see the best of Barcelona with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Waterfront Cruise",
+      "description": "Short scenic sailings and Mediterranean waterfront views near the port.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for Gothic Quarter streets, plazas, and city icons.",
+      "query": "walking tour"
+    }
+  ],
+  "baton-rouge": [
+    {
+      "title": "Baton Rouge City Highlights Tour",
+      "description": "A quick way to see the best of Baton Rouge with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "beaverton": [
+    {
+      "title": "Beaverton City Highlights Tour",
+      "description": "A quick way to see the best of Beaverton with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "bellevue": [
+    {
+      "title": "Bellevue City Highlights Tour",
+      "description": "A quick way to see the best of Bellevue with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "bergen": [
+    {
+      "title": "Bergen City Highlights Tour",
+      "description": "A quick way to see the best of Bergen with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Fjord & Harbor Cruise",
+      "description": "Short scenic sailings and waterfront views near the historic harbor.",
+      "query": "fjord cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for Bryggen, harbor history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "boston": [
+    {
+      "title": "Boston City Highlights Tour",
+      "description": "A quick way to see the best of Boston with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "boulder": [
+    {
+      "title": "Boulder City Highlights Tour",
+      "description": "A quick way to see the best of Boulder with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "burbank": [
+    {
+      "title": "Burbank City Highlights Tour",
+      "description": "A quick way to see the best of Burbank with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "burlington": [
+    {
+      "title": "Burlington City Highlights Tour",
+      "description": "A quick way to see the best of Burlington with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "cabo-san-lucas": [
+    {
+      "title": "Cabo San Lucas City Highlights Tour",
+      "description": "A quick way to see the best of Cabo San Lucas with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Bay Cruise",
+      "description": "Short scenic sailings and waterfront views near the marina and bay.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for the marina, historic streets, and city highlights.",
+      "query": "walking tour"
+    }
+  ],
+  "cambridge": [
+    {
+      "title": "Cambridge City Highlights Tour",
+      "description": "A quick way to see the best of Cambridge with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "chandler": [
+    {
+      "title": "Chandler City Highlights Tour",
+      "description": "A quick way to see the best of Chandler with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "charleston": [
+    {
+      "title": "Charleston City Highlights Tour",
+      "description": "A quick way to see the best of Charleston with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "chicago": [
+    {
+      "title": "Architecture River Cruise",
+      "description": "Famous skyline boat tour.",
+      "query": "Chicago architecture river cruise",
+      "badge": "Best Seller"
+    },
+    {
+      "title": "Millennium Park & Bean",
+      "description": "Cloud Gate and downtown landmarks.",
+      "query": "Millennium Park Chicago walking tour"
+    }
+  ],
+  "cincinnati": [
+    {
+      "title": "Cincinnati City Highlights Tour",
+      "description": "A quick way to see the best of Cincinnati with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "cleveland": [
+    {
+      "title": "Cleveland City Highlights Tour",
+      "description": "A quick way to see the best of Cleveland with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "colorado-springs": [
+    {
+      "title": "Colorado Springs City Highlights Tour",
+      "description": "A quick way to see the best of Colorado Springs with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "columbus": [
+    {
+      "title": "Columbus City Highlights Tour",
+      "description": "A quick way to see the best of Columbus with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "concord": [
+    {
+      "title": "Concord City Highlights Tour",
+      "description": "A quick way to see the best of Concord with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "copenhagen": [
+    {
+      "title": "Copenhagen City Highlights Tour",
+      "description": "A quick way to see the best of Copenhagen with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Canal Cruise",
+      "description": "Short scenic canal sailings and harbor views near the city center.",
+      "query": "canal cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront districts, palaces, and historic streets.",
+      "query": "walking tour"
+    }
+  ],
+  "cozumel": [
+    {
+      "title": "Cozumel City Highlights Tour",
+      "description": "A quick way to see the best of Cozumel with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Reef Cruise",
+      "description": "Short scenic sailings and waterfront views around the cruise harbor and reef coast.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront streets, plazas, and island town highlights.",
+      "query": "walking tour"
+    }
+  ],
+  "dallas": [
+    {
+      "title": "Dallas City Highlights Tour",
+      "description": "A quick way to see the best of Dallas with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "denver": [
+    {
+      "title": "Denver City Highlights Tour",
+      "description": "A quick way to see the best of Denver with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "detroit": [
+    {
+      "title": "Detroit City Highlights Tour",
+      "description": "A quick way to see the best of Detroit with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "dubai": [
+    {
+      "title": "Dubai City Highlights Tour",
+      "description": "A quick way to see the best of Dubai with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Marina & Creek Cruise",
+      "description": "Short scenic sailings and skyline views across Dubai’s waterfront.",
+      "query": "marina cruise"
+    },
+    {
+      "title": "Old Dubai Walking Tour",
+      "description": "A simple first-timer lane for souks, creekside history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "dubrovnik": [
+    {
+      "title": "Dubrovnik City Highlights Tour",
+      "description": "A quick way to see the best of Dubrovnik with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Coast Cruise",
+      "description": "Short scenic sailings and waterfront views along Dubrovnik’s old port and coast.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for old walls, stone streets, and city landmarks.",
+      "query": "walking tour"
+    }
+  ],
+  "ephesus": [
+    {
+      "title": "Ephesus Highlights Tour",
+      "description": "A quick way to see the best of Ephesus with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Coastal Excursion",
+      "description": "Short scenic outings connecting the cruise coast with major archaeological highlights.",
+      "query": "coastal excursion"
+    },
+    {
+      "title": "Ancient City Walking Tour",
+      "description": "A simple first-timer lane for ruins, history, and the main archaeological corridor.",
+      "query": "walking tour"
+    }
+  ],
+  "everett": [
+    {
+      "title": "Everett City Highlights Tour",
+      "description": "A quick way to see the best of Everett with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "florence": [
+    {
+      "title": "Florence City Highlights Tour",
+      "description": "A quick way to see the best of Florence with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "River & City Views Cruise",
+      "description": "Short scenic outings and waterfront-style viewpoints paired with Florence highlights.",
+      "query": "river cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for piazzas, landmarks, and historic city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "fort-collins": [
+    {
+      "title": "Fort Collins City Highlights Tour",
+      "description": "A quick way to see the best of Fort Collins with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "fort-lauderdale": [
+    {
+      "title": "Fort Lauderdale City Highlights Tour",
+      "description": "A quick way to see the best of Fort Lauderdale with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "fort-worth": [
+    {
+      "title": "Fort Worth City Highlights Tour",
+      "description": "A quick way to see the best of Fort Worth with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "helsinki": [
+    {
+      "title": "Helsinki City Highlights Tour",
+      "description": "A quick way to see the best of Helsinki with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor Cruise",
+      "description": "Short scenic sailings and waterfront views near the harbor and islands.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for civic landmarks, harbor history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "hillsboro": [
+    {
+      "title": "Hillsboro City Highlights Tour",
+      "description": "A quick way to see the best of Hillsboro with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "hong-kong": [
+    {
+      "title": "Hong Kong City Highlights Tour",
+      "description": "A quick way to see the best of Hong Kong with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Victoria Harbour Cruise",
+      "description": "Short scenic sailings and skyline views across Victoria Harbour.",
+      "query": "harbour cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront districts, markets, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "honolulu": [
+    {
+      "title": "Honolulu City Highlights Tour",
+      "description": "A quick way to see the best of Honolulu with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Coast Cruise",
+      "description": "Short scenic sailings and waterfront views near Honolulu Harbor and the coast.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront districts, landmarks, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "houston": [
+    {
+      "title": "Houston City Highlights Tour",
+      "description": "A quick way to see the best of Houston with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "istanbul": [
+    {
+      "title": "Istanbul City Highlights Tour",
+      "description": "A quick way to see the best of Istanbul with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Bosporus Cruise",
+      "description": "Short scenic sailings and skyline views across the Bosporus and waterfront.",
+      "query": "bosporus cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for historic districts, waterfront history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "juneau": [
+    {
+      "title": "Juneau City Highlights Tour",
+      "description": "A quick way to see the best of Juneau with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "ketchikan": [
+    {
+      "title": "Ketchikan City Highlights Tour",
+      "description": "A quick way to see the best of Ketchikan with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "key-west": [
+    {
+      "title": "Key West City Highlights Tour",
+      "description": "A quick way to see the best of Key West with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "knoxville": [
+    {
+      "title": "Knoxville City Highlights Tour",
+      "description": "A quick way to see the best of Knoxville with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "lafayette": [
+    {
+      "title": "Lafayette City Highlights Tour",
+      "description": "A quick way to see the best of Lafayette with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "lancaster": [
+    {
+      "title": "Lancaster City Highlights Tour",
+      "description": "A quick way to see the best of Lancaster with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
   "las-vegas": [
     {
       "title": "Hoover Dam",
@@ -41,6 +966,282 @@
       "badge": "Bestseller"
     }
   ],
+  "lisbon": [
+    {
+      "title": "Lisbon City Highlights Tour",
+      "description": "A quick way to see the best of Lisbon with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "River Cruise",
+      "description": "Short scenic sailings and waterfront views along the Tagus.",
+      "query": "river cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for historic hills, plazas, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "los-angeles": [
+    {
+      "title": "Los Angeles City Highlights Tour",
+      "description": "A quick way to see the best of Los Angeles with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "madison": [
+    {
+      "title": "Madison City Highlights Tour",
+      "description": "A quick way to see the best of Madison with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "mahahual": [
+    {
+      "title": "Mahahual Highlights Tour",
+      "description": "A quick way to see the best of Mahahual with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Coast Cruise",
+      "description": "Short scenic sailings and waterfront views near the Caribbean cruise coast.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for the waterfront promenade, beaches, and town streets.",
+      "query": "walking tour"
+    }
+  ],
+  "marseille": [
+    {
+      "title": "Marseille City Highlights Tour",
+      "description": "A quick way to see the best of Marseille with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor Cruise",
+      "description": "Short scenic sailings and waterfront views near the old port.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for the Vieux-Port, historic quarters, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "memphis": [
+    {
+      "title": "Memphis City Highlights Tour",
+      "description": "A quick way to see the best of Memphis with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "merida": [
+    {
+      "title": "Merida City Highlights Tour",
+      "description": "A quick way to see the best of Merida with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Coastal & City Excursion",
+      "description": "Short scenic outings connecting the Yucatan coast with Merida highlights.",
+      "query": "coastal excursion"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for plazas, history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "mesa": [
+    {
+      "title": "Mesa City Highlights Tour",
+      "description": "A quick way to see the best of Mesa with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "miami": [
+    {
+      "title": "Everglades Airboat Tour",
+      "description": "Airboat rides through alligator country.",
+      "query": "Everglades airboat tour from Miami"
+    },
+    {
+      "title": "Biscayne Bay Cruise",
+      "description": "Celebrity homes and skyline views.",
+      "query": "Miami Biscayne Bay cruise"
+    }
+  ],
+  "milwaukee": [
+    {
+      "title": "Milwaukee City Highlights Tour",
+      "description": "A quick way to see the best of Milwaukee with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "minneapolis": [
+    {
+      "title": "Minneapolis City Highlights Tour",
+      "description": "A quick way to see the best of Minneapolis with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "montpelier": [
+    {
+      "title": "Montpelier City Highlights Tour",
+      "description": "A quick way to see the best of Montpelier with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "myrtle-beach": [
+    {
+      "title": "Myrtle Beach City Highlights Tour",
+      "description": "A quick way to see the best of Myrtle Beach with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "naples": [
+    {
+      "title": "Naples City Highlights Tour",
+      "description": "A quick way to see the best of Naples with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "nashville": [
+    {
+      "title": "Music Row Tour",
+      "description": "Behind-the-scenes music history.",
+      "query": "Nashville Music Row tour"
+    },
+    {
+      "title": "Grand Ole Opry",
+      "description": "Country music legend venue.",
+      "query": "Grand Ole Opry tickets"
+    }
+  ],
+  "nassau": [
+    {
+      "title": "Nassau City Highlights Tour",
+      "description": "A quick way to see the best of Nassau with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Bay Cruise",
+      "description": "Short scenic sailings and waterfront views near Nassau Harbor.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront streets, forts, and city highlights.",
+      "query": "walking tour"
+    }
+  ],
   "new-orleans": [
     {
       "title": "French Quarter Walking Tour",
@@ -78,29 +1279,40 @@
       "badge": "High Conversion"
     }
   ],
-  "chicago": [
+  "new-york": [
     {
-      "title": "Architecture River Cruise",
-      "description": "Famous skyline boat tour.",
-      "query": "Chicago architecture river cruise",
-      "badge": "Best Seller"
+      "title": "New York City Highlights Tour",
+      "description": "A quick way to see the best of New York with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
     },
     {
-      "title": "Millennium Park & Bean",
-      "description": "Cloud Gate and downtown landmarks.",
-      "query": "Millennium Park Chicago walking tour"
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
     }
   ],
-  "miami": [
+  "newport": [
     {
-      "title": "Everglades Airboat Tour",
-      "description": "Airboat rides through alligator country.",
-      "query": "Everglades airboat tour from Miami"
+      "title": "Newport City Highlights Tour",
+      "description": "A quick way to see the best of Newport with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
     },
     {
-      "title": "Biscayne Bay Cruise",
-      "description": "Celebrity homes and skyline views.",
-      "query": "Miami Biscayne Bay cruise"
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
     }
   ],
   "orlando": [
@@ -115,46 +1327,28 @@
       "query": "Universal Studios Orlando tickets"
     }
   ],
-  "nashville": [
+  "pasadena": [
     {
-      "title": "Music Row Tour",
-      "description": "Behind-the-scenes music history.",
-      "query": "Nashville Music Row tour"
+      "title": "Pasadena City Highlights Tour",
+      "description": "A quick way to see the best of Pasadena with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
     },
     {
-      "title": "Grand Ole Opry",
-      "description": "Country music legend venue.",
-      "query": "Grand Ole Opry tickets"
-    }
-  ],
-  "austin": [
-    {
-      "title": "BBQ Food Tour",
-      "description": "Taste legendary Texas barbecue.",
-      "query": "Austin BBQ food tour"
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
     },
     {
-      "title": "Live Music Crawl",
-      "description": "Downtown music venues.",
-      "query": "Austin live music tour"
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
     }
   ],
-  "san-diego": [
+  "philadelphia": [
     {
-      "title": "San Diego Zoo",
-      "description": "World famous wildlife park.",
-      "query": "San Diego Zoo tickets"
-    },
-    {
-      "title": "Harbor Cruise",
-      "description": "Bay sightseeing cruise.",
-      "query": "San Diego harbor cruise"
-    }
-  ],
-  "denver": [
-    {
-      "title": "Denver City Highlights Tour",
-      "description": "A quick way to see the best of Denver with a local guide.",
+      "title": "Philadelphia City Highlights Tour",
+      "description": "A quick way to see the best of Philadelphia with a local guide.",
       "query": "city highlights tour",
       "badge": "Starter"
     },
@@ -173,6 +1367,288 @@
     {
       "title": "Phoenix City Highlights Tour",
       "description": "A quick way to see the best of Phoenix with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "pittsburgh": [
+    {
+      "title": "Pittsburgh City Highlights Tour",
+      "description": "A quick way to see the best of Pittsburgh with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "portland": [
+    {
+      "title": "Portland City Highlights Tour",
+      "description": "A quick way to see the best of Portland with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "portsmouth": [
+    {
+      "title": "Portsmouth City Highlights Tour",
+      "description": "A quick way to see the best of Portsmouth with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "providence": [
+    {
+      "title": "Providence City Highlights Tour",
+      "description": "A quick way to see the best of Providence with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "puerto-vallarta": [
+    {
+      "title": "Puerto Vallarta City Highlights Tour",
+      "description": "A quick way to see the best of Puerto Vallarta with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Bay Cruise",
+      "description": "Short scenic sailings and waterfront views around the bay and marina.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for the waterfront, plazas, and old town streets.",
+      "query": "walking tour"
+    }
+  ],
+  "redmond": [
+    {
+      "title": "Redmond City Highlights Tour",
+      "description": "A quick way to see the best of Redmond with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "rome": [
+    {
+      "title": "Rome City Highlights Tour",
+      "description": "A quick way to see the best of Rome with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "River & Landmark Cruise",
+      "description": "Short scenic outings and iconic city views tied to Rome’s core sights.",
+      "query": "river cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for ruins, piazzas, and historic city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "sacramento": [
+    {
+      "title": "Sacramento City Highlights Tour",
+      "description": "A quick way to see the best of Sacramento with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "salem": [
+    {
+      "title": "Salem City Highlights Tour",
+      "description": "A quick way to see the best of Salem with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "san-antonio": [
+    {
+      "title": "San Antonio City Highlights Tour",
+      "description": "A quick way to see the best of San Antonio with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "san-diego": [
+    {
+      "title": "San Diego Zoo",
+      "description": "World famous wildlife park.",
+      "query": "San Diego Zoo tickets"
+    },
+    {
+      "title": "Harbor Cruise",
+      "description": "Bay sightseeing cruise.",
+      "query": "San Diego harbor cruise"
+    }
+  ],
+  "san-francisco": [
+    {
+      "title": "San Francisco City Highlights Tour",
+      "description": "A quick way to see the best of San Francisco with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "san-jose": [
+    {
+      "title": "San Jose City Highlights Tour",
+      "description": "A quick way to see the best of San Jose with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "san-juan": [
+    {
+      "title": "San Juan City Highlights Tour",
+      "description": "A quick way to see the best of San Juan with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Bay Cruise",
+      "description": "Short scenic sailings and waterfront views near Old San Juan.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for forts, waterfront history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "santa-monica": [
+    {
+      "title": "Santa Monica City Highlights Tour",
+      "description": "A quick way to see the best of Santa Monica with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "savannah": [
+    {
+      "title": "Savannah City Highlights Tour",
+      "description": "A quick way to see the best of Savannah with a local guide.",
       "query": "city highlights tour",
       "badge": "Starter"
     },
@@ -223,1191 +1699,21 @@
       "query": "walking tour"
     }
   ],
-  "portland": [
+  "singapore": [
     {
-      "title": "Portland City Highlights Tour",
-      "description": "A quick way to see the best of Portland with a local guide.",
+      "title": "Singapore City Highlights Tour",
+      "description": "A quick way to see the best of Singapore with a local guide.",
       "query": "city highlights tour",
       "badge": "Starter"
     },
     {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
+      "title": "Marina Bay Cruise",
+      "description": "Short scenic sailings and skyline views across the bay and waterfront.",
+      "query": "marina bay cruise"
     },
     {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "san-francisco": [
-    {
-      "title": "San Francisco City Highlights Tour",
-      "description": "A quick way to see the best of San Francisco with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "los-angeles": [
-    {
-      "title": "Los Angeles City Highlights Tour",
-      "description": "A quick way to see the best of Los Angeles with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "san-jose": [
-    {
-      "title": "San Jose City Highlights Tour",
-      "description": "A quick way to see the best of San Jose with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "dallas": [
-    {
-      "title": "Dallas City Highlights Tour",
-      "description": "A quick way to see the best of Dallas with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "houston": [
-    {
-      "title": "Houston City Highlights Tour",
-      "description": "A quick way to see the best of Houston with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "atlanta": [
-    {
-      "title": "Atlanta City Highlights Tour",
-      "description": "A quick way to see the best of Atlanta with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "new-york": [
-    {
-      "title": "New York City Highlights Tour",
-      "description": "A quick way to see the best of New York with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "sacramento": [
-    {
-      "title": "Sacramento City Highlights Tour",
-      "description": "A quick way to see the best of Sacramento with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "santa-monica": [
-    {
-      "title": "Santa Monica City Highlights Tour",
-      "description": "A quick way to see the best of Santa Monica with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "pasadena": [
-    {
-      "title": "Pasadena City Highlights Tour",
-      "description": "A quick way to see the best of Pasadena with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "burbank": [
-    {
-      "title": "Burbank City Highlights Tour",
-      "description": "A quick way to see the best of Burbank with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "anaheim": [
-    {
-      "title": "Anaheim City Highlights Tour",
-      "description": "A quick way to see the best of Anaheim with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "tacoma": [
-    {
-      "title": "Tacoma City Highlights Tour",
-      "description": "A quick way to see the best of Tacoma with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "bellevue": [
-    {
-      "title": "Bellevue City Highlights Tour",
-      "description": "A quick way to see the best of Bellevue with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "everett": [
-    {
-      "title": "Everett City Highlights Tour",
-      "description": "A quick way to see the best of Everett with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "redmond": [
-    {
-      "title": "Redmond City Highlights Tour",
-      "description": "A quick way to see the best of Redmond with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "beaverton": [
-    {
-      "title": "Beaverton City Highlights Tour",
-      "description": "A quick way to see the best of Beaverton with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "hillsboro": [
-    {
-      "title": "Hillsboro City Highlights Tour",
-      "description": "A quick way to see the best of Hillsboro with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "tempe": [
-    {
-      "title": "Tempe City Highlights Tour",
-      "description": "A quick way to see the best of Tempe with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "mesa": [
-    {
-      "title": "Mesa City Highlights Tour",
-      "description": "A quick way to see the best of Mesa with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "chandler": [
-    {
-      "title": "Chandler City Highlights Tour",
-      "description": "A quick way to see the best of Chandler with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "boulder": [
-    {
-      "title": "Boulder City Highlights Tour",
-      "description": "A quick way to see the best of Boulder with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "fort-collins": [
-    {
-      "title": "Fort Collins City Highlights Tour",
-      "description": "A quick way to see the best of Fort Collins with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "colorado-springs": [
-    {
-      "title": "Colorado Springs City Highlights Tour",
-      "description": "A quick way to see the best of Colorado Springs with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "san-antonio": [
-    {
-      "title": "San Antonio City Highlights Tour",
-      "description": "A quick way to see the best of San Antonio with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "fort-worth": [
-    {
-      "title": "Fort Worth City Highlights Tour",
-      "description": "A quick way to see the best of Fort Worth with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "baton-rouge": [
-    {
-      "title": "Baton Rouge City Highlights Tour",
-      "description": "A quick way to see the best of Baton Rouge with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "lafayette": [
-    {
-      "title": "Lafayette City Highlights Tour",
-      "description": "A quick way to see the best of Lafayette with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "memphis": [
-    {
-      "title": "Memphis City Highlights Tour",
-      "description": "A quick way to see the best of Memphis with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "knoxville": [
-    {
-      "title": "Knoxville City Highlights Tour",
-      "description": "A quick way to see the best of Knoxville with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "savannah": [
-    {
-      "title": "Savannah City Highlights Tour",
-      "description": "A quick way to see the best of Savannah with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "augusta": [
-    {
-      "title": "Augusta City Highlights Tour",
-      "description": "A quick way to see the best of Augusta with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "charleston": [
-    {
-      "title": "Charleston City Highlights Tour",
-      "description": "A quick way to see the best of Charleston with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "myrtle-beach": [
-    {
-      "title": "Myrtle Beach City Highlights Tour",
-      "description": "A quick way to see the best of Myrtle Beach with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "fort-lauderdale": [
-    {
-      "title": "Fort Lauderdale City Highlights Tour",
-      "description": "A quick way to see the best of Fort Lauderdale with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "west-palm-beach": [
-    {
-      "title": "West Palm Beach City Highlights Tour",
-      "description": "A quick way to see the best of West Palm Beach with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "key-west": [
-    {
-      "title": "Key West City Highlights Tour",
-      "description": "A quick way to see the best of Key West with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "tampa": [
-    {
-      "title": "Tampa City Highlights Tour",
-      "description": "A quick way to see the best of Tampa with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "st-petersburg": [
-    {
-      "title": "St Petersburg City Highlights Tour",
-      "description": "A quick way to see the best of St Petersburg with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "naples": [
-    {
-      "title": "Naples City Highlights Tour",
-      "description": "A quick way to see the best of Naples with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "madison": [
-    {
-      "title": "Madison City Highlights Tour",
-      "description": "A quick way to see the best of Madison with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "milwaukee": [
-    {
-      "title": "Milwaukee City Highlights Tour",
-      "description": "A quick way to see the best of Milwaukee with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "minneapolis": [
-    {
-      "title": "Minneapolis City Highlights Tour",
-      "description": "A quick way to see the best of Minneapolis with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "st-paul": [
-    {
-      "title": "St Paul City Highlights Tour",
-      "description": "A quick way to see the best of St Paul with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "detroit": [
-    {
-      "title": "Detroit City Highlights Tour",
-      "description": "A quick way to see the best of Detroit with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "ann-arbor": [
-    {
-      "title": "Ann Arbor City Highlights Tour",
-      "description": "A quick way to see the best of Ann Arbor with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "cleveland": [
-    {
-      "title": "Cleveland City Highlights Tour",
-      "description": "A quick way to see the best of Cleveland with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "columbus": [
-    {
-      "title": "Columbus City Highlights Tour",
-      "description": "A quick way to see the best of Columbus with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "cincinnati": [
-    {
-      "title": "Cincinnati City Highlights Tour",
-      "description": "A quick way to see the best of Cincinnati with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "pittsburgh": [
-    {
-      "title": "Pittsburgh City Highlights Tour",
-      "description": "A quick way to see the best of Pittsburgh with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "philadelphia": [
-    {
-      "title": "Philadelphia City Highlights Tour",
-      "description": "A quick way to see the best of Philadelphia with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "lancaster": [
-    {
-      "title": "Lancaster City Highlights Tour",
-      "description": "A quick way to see the best of Lancaster with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "boston": [
-    {
-      "title": "Boston City Highlights Tour",
-      "description": "A quick way to see the best of Boston with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "cambridge": [
-    {
-      "title": "Cambridge City Highlights Tour",
-      "description": "A quick way to see the best of Cambridge with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "salem": [
-    {
-      "title": "Salem City Highlights Tour",
-      "description": "A quick way to see the best of Salem with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "newport": [
-    {
-      "title": "Newport City Highlights Tour",
-      "description": "A quick way to see the best of Newport with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "providence": [
-    {
-      "title": "Providence City Highlights Tour",
-      "description": "A quick way to see the best of Providence with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "bar-harbor": [
-    {
-      "title": "Bar Harbor City Highlights Tour",
-      "description": "A quick way to see the best of Bar Harbor with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "burlington": [
-    {
-      "title": "Burlington City Highlights Tour",
-      "description": "A quick way to see the best of Burlington with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "montpelier": [
-    {
-      "title": "Montpelier City Highlights Tour",
-      "description": "A quick way to see the best of Montpelier with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "concord": [
-    {
-      "title": "Concord City Highlights Tour",
-      "description": "A quick way to see the best of Concord with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "portsmouth": [
-    {
-      "title": "Portsmouth City Highlights Tour",
-      "description": "A quick way to see the best of Portsmouth with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "juneau": [
-    {
-      "title": "Juneau City Highlights Tour",
-      "description": "A quick way to see the best of Juneau with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "ketchikan": [
-    {
-      "title": "Ketchikan City Highlights Tour",
-      "description": "A quick way to see the best of Ketchikan with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
-      "query": "walking tour"
-    }
-  ],
-  "vegas": [
-    {
-      "title": "Vegas City Highlights Tour",
-      "description": "A quick way to see the best of Vegas with a local guide.",
-      "query": "city highlights tour",
-      "badge": "Starter"
-    },
-    {
-      "title": "Food & Drink Tour",
-      "description": "A high-conversion category: local tastings, bars, and signature bites.",
-      "query": "food tour"
-    },
-    {
-      "title": "Neighborhood Walking Tour",
-      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront districts, markets, and city streets.",
       "query": "walking tour"
     }
   ],
@@ -1447,6 +1753,204 @@
       "query": "walking tour"
     }
   ],
+  "southampton": [
+    {
+      "title": "Southampton City Highlights Tour",
+      "description": "A quick way to see the best of Southampton with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor Cruise",
+      "description": "Short scenic sailings and waterfront views near the port and harbor.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for the old walls, waterfront history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "st-paul": [
+    {
+      "title": "St Paul City Highlights Tour",
+      "description": "A quick way to see the best of St Paul with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "st-petersburg": [
+    {
+      "title": "St Petersburg City Highlights Tour",
+      "description": "A quick way to see the best of St Petersburg with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "stockholm": [
+    {
+      "title": "Stockholm City Highlights Tour",
+      "description": "A quick way to see the best of Stockholm with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor Cruise",
+      "description": "Short scenic sailings and waterfront views across the archipelago gateway.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for Gamla Stan, waterfront history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "sydney": [
+    {
+      "title": "Sydney City Highlights Tour",
+      "description": "A quick way to see the best of Sydney with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbour Cruise",
+      "description": "Short scenic sailings and iconic harbor views across Sydney.",
+      "query": "harbour cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for harbor districts, landmarks, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "tacoma": [
+    {
+      "title": "Tacoma City Highlights Tour",
+      "description": "A quick way to see the best of Tacoma with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "tampa": [
+    {
+      "title": "Tampa City Highlights Tour",
+      "description": "A quick way to see the best of Tampa with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "tempe": [
+    {
+      "title": "Tempe City Highlights Tour",
+      "description": "A quick way to see the best of Tempe with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "vancouver": [
+    {
+      "title": "Vancouver City Highlights Tour",
+      "description": "A quick way to see the best of Vancouver with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor Cruise",
+      "description": "Short scenic sailings and waterfront views near the city and mountains.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront districts, markets, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "vegas": [
+    {
+      "title": "Vegas City Highlights Tour",
+      "description": "A quick way to see the best of Vegas with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "venice": [
+    {
+      "title": "Venice City Highlights Tour",
+      "description": "A quick way to see the best of Venice with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Grand Canal Cruise",
+      "description": "Short scenic sailings and classic canal views across the city.",
+      "query": "canal cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for canals, bridges, and historic city streets.",
+      "query": "walking tour"
+    }
+  ],
   "washington-dc": [
     {
       "title": "Washington, D.C. City Highlights Tour",
@@ -1463,6 +1967,42 @@
       "title": "Museum and Capitol Walking Tour",
       "description": "Use this lane for museum-first and civic-core discovery with lower-friction routing.",
       "query": "washington dc museum capitol walking tour"
+    }
+  ],
+  "west-palm-beach": [
+    {
+      "title": "West Palm Beach City Highlights Tour",
+      "description": "A quick way to see the best of West Palm Beach with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "yokohama": [
+    {
+      "title": "Yokohama City Highlights Tour",
+      "description": "A quick way to see the best of Yokohama with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor Cruise",
+      "description": "Short scenic sailings and waterfront views near the harbor district.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront districts, gardens, and city streets.",
+      "query": "walking tour"
     }
   ]
 }

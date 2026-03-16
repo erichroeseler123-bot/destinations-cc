@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
+import { getCrossSiteVenue } from "@/lib/crossSiteMap";
 import {
   getActiveSignals,
   getLiveCityAnchor,
@@ -14,6 +16,17 @@ type SearchParams = {
   anchor?: string;
 };
 
+function formatDateTime(iso: string, timeZone: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone,
+  }).format(new Date(iso));
+}
+
 function formatClock(iso: string, timeZone: string) {
   return new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
@@ -24,6 +37,57 @@ function formatClock(iso: string, timeZone: string) {
 
 function signalSort(a: { rank_weight: number }, b: { rank_weight: number }) {
   return b.rank_weight - a.rank_weight;
+}
+
+function EventCard({
+  city,
+  timeZone,
+  event,
+  venueName,
+}: {
+  city: string;
+  timeZone: string;
+  event: {
+    id: string;
+    title: string;
+    category: string;
+    start_time: string;
+    end_time: string;
+    status: string;
+    impact_level: string;
+    description: string;
+    venue_slug: string;
+  };
+  venueName: string;
+}) {
+  return (
+    <article className="rounded-[1.6rem] border border-white/10 bg-black/25 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.28)]">
+      <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-zinc-400">
+        <span className="rounded-full border border-white/10 px-2.5 py-1">{beautifyCategory(event.category)}</span>
+        <span className="rounded-full border border-white/10 px-2.5 py-1">{titleize(event.status)}</span>
+      </div>
+      <h3 className="mt-4 text-xl font-semibold text-white">{event.title}</h3>
+      <p className="mt-2 text-sm leading-6 text-zinc-300">{event.description}</p>
+      <div className="mt-4 flex flex-wrap gap-2 text-xs text-zinc-400">
+        <span>{formatDateTime(event.start_time, timeZone)}</span>
+        <span>{venueName}</span>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <Link
+          href={`/${city}/shows?q=${encodeURIComponent(event.title)}`}
+          className="text-sm font-semibold text-cyan-200 hover:text-cyan-100"
+        >
+          Open show search
+        </Link>
+        <Link
+          href={`/${city}/shows-this-week`}
+          className="text-sm font-semibold text-zinc-300 hover:text-white"
+        >
+          This week
+        </Link>
+      </div>
+    </article>
+  );
 }
 
 function SignalCard({
@@ -129,6 +193,11 @@ export async function LiveCityNowPage({
   const districtsBySlug = new Map(bundle.districts.districts.map((district) => [district.slug, district]));
 
   const activeSignals = getActiveSignals(city).sort(signalSort);
+  const current = new Date(bundle.signals.as_of);
+  const fourHoursFromNow = new Date(current);
+  fourHoursFromNow.setHours(fourHoursFromNow.getHours() + 4);
+  const fortyEightHoursFromNow = new Date(current);
+  fortyEightHoursFromNow.setHours(fortyEightHoursFromNow.getHours() + 48);
   const scoredAnchorSignals = bundle.signals.signals
     .map((signal) =>
       scoreSignalForAnchor({
@@ -141,11 +210,10 @@ export async function LiveCityNowPage({
     )
     .sort((a, b) => b.score - a.score);
 
-  const now = new Date(bundle.signals.as_of);
   const tonightSignals = bundle.signals.signals
     .filter((signal) => {
       const startsAt = new Date(signal.starts_at);
-      return signal.status === "scheduled" && startsAt.toDateString() === now.toDateString() && startsAt.getTime() >= now.getTime();
+      return signal.status === "scheduled" && startsAt.toDateString() === current.toDateString() && startsAt.getTime() >= current.getTime();
     })
     .sort((a, b) => {
       const scoreA = scoredAnchorSignals.find((entry) => entry.signal.id === a.id)?.score ?? 0;
@@ -158,6 +226,42 @@ export async function LiveCityNowPage({
     scoredAnchorSignals[0]?.signal ??
     null;
   const upcomingSignals = tonightSignals.slice(0, 3);
+  const liveNowEvents = bundle.events.events
+    .filter((event) => {
+      const startsAt = new Date(event.start_time).getTime();
+      const endsAt = new Date(event.end_time).getTime();
+      return event.status !== "cancelled" && endsAt >= current.getTime() && startsAt <= fourHoursFromNow.getTime();
+    })
+    .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+    .slice(0, 4);
+  const startingSoonEvents = bundle.events.events
+    .filter((event) => {
+      const startsAt = new Date(event.start_time).getTime();
+      return (
+        event.status !== "cancelled" &&
+        startsAt > current.getTime() &&
+        startsAt <= fortyEightHoursFromNow.getTime()
+      );
+    })
+    .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+    .slice(0, 6);
+  const citySignals = activeSignals.filter((signal) => signal.signal_type !== "micro_post").slice(0, 4);
+  const communitySignals = bundle.signals.signals
+    .filter((signal) => {
+      if (signal.signal_type !== "micro_post") return false;
+      const startsAt = new Date(signal.starts_at).getTime();
+      const expiresAt = new Date(signal.expires_at).getTime();
+      return expiresAt > current.getTime() && startsAt <= fortyEightHoursFromNow.getTime();
+    })
+    .sort(signalSort)
+    .slice(0, 4);
+  const transportVenueSlugs = Array.from(
+    new Set(
+      [...liveNowEvents, ...startingSoonEvents]
+        .map((event) => event.venue_slug)
+        .filter((slug) => getCrossSiteVenue(slug))
+    )
+  ).slice(0, 2);
 
   const anchorDistricts = bundle.districts.districts.filter((district) => anchor.district_slugs.includes(district.slug));
   const anchorVenues = bundle.venues.venues.filter((venue) => anchor.nearby_venue_slugs.includes(venue.slug));
@@ -219,6 +323,108 @@ export async function LiveCityNowPage({
         </header>
 
         <div className="mt-8 space-y-10">
+          <section id="live-now" className="space-y-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-emerald-200">Live Music Now</p>
+              <h2 className="mt-2 text-2xl font-bold">What is happening now or over the next few hours</h2>
+            </div>
+            <div className="grid gap-4 lg:grid-cols-2">
+              {liveNowEvents.length > 0 ? (
+                liveNowEvents.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    city={city}
+                    timeZone={registry.timezone}
+                    event={event}
+                    venueName={venuesBySlug.get(event.venue_slug)?.name || beautifyCategory(event.venue_slug)}
+                  />
+                ))
+              ) : (
+                <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-5 text-zinc-300 lg:col-span-2">
+                  No live or near-live events are seeded in this city pulse yet.
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section id="starting-soon" className="space-y-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-200">Starting Soon</p>
+              <h2 className="mt-2 text-2xl font-bold">Shows building over the next 48 hours</h2>
+            </div>
+            <div className="grid gap-4 lg:grid-cols-3">
+              {startingSoonEvents.length > 0 ? (
+                startingSoonEvents.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    city={city}
+                    timeZone={registry.timezone}
+                    event={event}
+                    venueName={venuesBySlug.get(event.venue_slug)?.name || beautifyCategory(event.venue_slug)}
+                  />
+                ))
+              ) : (
+                <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-5 text-zinc-300 lg:col-span-3">
+                  No upcoming shows are seeded in the next 48 hours yet.
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section id="city-signals" className="space-y-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-rose-200">City Signals</p>
+              <h2 className="mt-2 text-2xl font-bold">Conditions shaping the night</h2>
+            </div>
+            <div className="grid gap-4 lg:grid-cols-2">
+              {citySignals.length > 0 ? (
+                citySignals.map((signal) => <SignalCard key={signal.id} signal={signal} timeZone={registry.timezone} />)
+              ) : (
+                <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-5 text-zinc-300 lg:col-span-2">
+                  No active city-condition signals are seeded yet.
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section id="community-signals" className="space-y-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-amber-200">Community Signals</p>
+              <h2 className="mt-2 text-2xl font-bold">Short-lived posts and local movement</h2>
+            </div>
+            <div className="grid gap-4 lg:grid-cols-2">
+              {communitySignals.length > 0 ? (
+                communitySignals.map((signal) => <SignalCard key={signal.id} signal={signal} timeZone={registry.timezone} />)
+              ) : (
+                <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-5 text-zinc-300 lg:col-span-2">
+                  No short-lived community signals are active yet.
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section id="transportation" className="space-y-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-200">Transportation</p>
+              <h2 className="mt-2 text-2xl font-bold">Getting there</h2>
+            </div>
+            {transportVenueSlugs.length > 0 ? (
+              <div className="grid gap-4 lg:grid-cols-2">
+                {transportVenueSlugs.map((venueSlug) => (
+                  <RideOptionsCard
+                    key={venueSlug}
+                    venueSlug={venueSlug}
+                    sourcePage={`/${city}/now`}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-5 text-zinc-300">
+                Direct ride coverage is not active on this city pulse right now. Use the show and venue links above to plan the night.
+              </div>
+            )}
+          </section>
+
           <section id="right-now" className="space-y-4">
             <div>
               <p className="text-[11px] uppercase tracking-[0.22em] text-rose-200">Right Now</p>

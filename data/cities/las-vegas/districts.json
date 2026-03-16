@@ -1,0 +1,43 @@
+{
+  "city": "las-vegas",
+  "version": 1,
+  "as_of": "2026-03-15T18:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-14T18:00:00-07:00",
+  "schema": { "entity": "district", "description": "Durable Las Vegas districts for the NOW layer." },
+  "districts": [
+    {
+      "slug": "las-vegas-strip",
+      "name": "Las Vegas Strip",
+      "district_type": "entertainment-district",
+      "center": { "lat": 36.1147, "lng": -115.1728 },
+      "radius_m": 2200,
+      "vibe_tags": ["shows", "tourism", "nightlife", "traffic"],
+      "venue_slugs": ["sphere", "t-mobile-arena", "mgm-grand-garden-arena", "house-of-blues-las-vegas", "brooklyn-bowl-las-vegas"],
+      "place_slugs": ["easy-donuts-and-coffee", "brewdog-las-vegas", "bar-centra", "peppermill-restaurant"],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "north-strip",
+      "name": "North Strip",
+      "district_type": "nightlife-corridor",
+      "center": { "lat": 36.1268, "lng": -115.1672 },
+      "radius_m": 1100,
+      "vibe_tags": ["late-night", "clubs", "high-volume"],
+      "venue_slugs": ["sphere", "brooklyn-bowl-las-vegas"],
+      "place_slugs": ["peppermill-restaurant", "caspians-cocktails", "resorts-world-dining-promenade"],
+      "impact_profile": "medium-high"
+    },
+    {
+      "slug": "resort-corridor",
+      "name": "Resort Corridor",
+      "district_type": "mixed-use-core",
+      "center": { "lat": 36.1068, "lng": -115.1734 },
+      "radius_m": 1200,
+      "vibe_tags": ["arenas", "restaurants", "rideshare"],
+      "venue_slugs": ["t-mobile-arena", "mgm-grand-garden-arena", "house-of-blues-las-vegas"],
+      "place_slugs": ["easy-donuts-and-coffee", "brewdog-las-vegas", "bar-centra"],
+      "impact_profile": "high"
+    }
+  ]
+}

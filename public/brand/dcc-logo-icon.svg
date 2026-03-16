@@ -1,0 +1,14 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="dccIconRing" x1="10" y1="8" x2="54" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE"/>
+      <stop offset="0.52" stop-color="#34D399"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#090A0D"/>
+  <circle cx="32" cy="32" r="20" stroke="url(#dccIconRing)" stroke-width="4"/>
+  <path d="M21 40L30 31L37 36L44 22" stroke="#F8FAFC" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="44" cy="22" r="3" fill="#F59E0B"/>
+  <circle cx="32" cy="32" r="4.5" fill="#F8FAFC" opacity="0.92"/>
+</svg>

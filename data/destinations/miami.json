@@ -1,0 +1,27 @@
+{
+  "slug": "miami",
+  "display_name": "Miami",
+  "aliases": [
+    "miami-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Everglades Airboat Tour",
+      "description": "Airboat rides through alligator country.",
+      "query": "Everglades airboat tour from Miami"
+    },
+    {
+      "title": "Biscayne Bay Cruise",
+      "description": "Celebrity homes and skyline views.",
+      "query": "Miami Biscayne Bay cruise"
+    }
+  ],
+  "gateway_mappings": [
+    {
+      "kind": "port_tours_handoff",
+      "source_slug": "port-everglades"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

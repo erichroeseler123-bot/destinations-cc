@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import JsonLd from "@/app/components/dcc/JsonLd";
 import { SPORTS_VENUES_CONFIG, getSportsVenuesByCity } from "@/src/data/sports-venues-config";
+import { buildBreadcrumbJsonLd, buildArticleJsonLd } from "@/lib/dcc/jsonld";
 
 const PAGE_URL = "https://destinationcommandcenter.com/venues";
 const LAST_UPDATED = "2026-03-12";
@@ -31,34 +33,26 @@ export const metadata: Metadata = {
   alternates: { canonical: "/venues" },
 };
 
-function JsonLd() {
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": PAGE_URL,
-        url: PAGE_URL,
-        name: "Venue Guides and Ticket Nodes",
-        description: "Venue authority hub for stadiums and arenas in the DCC sports graph.",
-        dateModified: LAST_UPDATED,
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: "https://destinationcommandcenter.com/" },
-          { "@type": "ListItem", position: 2, name: "Venues", item: PAGE_URL },
-        ],
-      },
-    ],
-  };
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
-}
-
 export default function VenuesHubPage() {
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
-      <JsonLd />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            buildArticleJsonLd({
+              path: "/venues",
+              headline: "Venue Guides and Ticket Nodes",
+              description: "Venue authority hub for stadiums and arenas in the DCC sports graph.",
+              dateModified: LAST_UPDATED,
+            }),
+            buildBreadcrumbJsonLd([
+              { name: "Home", item: "/" },
+              { name: "Venues", item: "/venues" },
+            ]),
+          ],
+        }}
+      />
       <div className="mx-auto max-w-6xl px-6 py-16 space-y-8">
         <header className="space-y-4">
           <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">DCC Venue Layer</p>

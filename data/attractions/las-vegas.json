@@ -1,0 +1,347 @@
+{
+  "citySlug": "las-vegas",
+  "cityName": "Las Vegas",
+  "attractions": [
+    {
+      "slug": "las-vegas-strip",
+      "name": "Las Vegas Strip",
+      "type": "district",
+      "summary": "Las Vegas Strip is one of the more useful city districts to understand early if you want a clearer feel for how visitors actually spend time in Las Vegas.",
+      "categories": [
+        "nightlife",
+        "sightseeing",
+        "landmark"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Las Vegas Strip guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Las Vegas Strip in Las Vegas, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Treat Las Vegas Strip as an evening block if nightlife is a major part of the trip.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Las Vegas Strip as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Las Vegas Strip matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Las Vegas Strip guided experiences",
+          "query": "las vegas las vegas strip tours",
+          "description": "A general search path for tours and guided experiences connected to Las Vegas Strip in Las Vegas."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Fremont Street Experience",
+          "href": "/las-vegas/fremont-street"
+        },
+        {
+          "label": "Sphere",
+          "href": "/las-vegas/sphere-las-vegas"
+        },
+        {
+          "label": "Red Rock Canyon",
+          "href": "/las-vegas/red-rock-canyon"
+        }
+      ],
+      "primaryToursHref": "/las-vegas/las-vegas-strip/tours",
+      "thingsToDoHref": "/las-vegas/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Fremont Street Experience",
+        "Sphere"
+      ]
+    },
+    {
+      "slug": "fremont-street",
+      "name": "Fremont Street Experience",
+      "type": "district",
+      "summary": "Fremont Street Experience is a strong Las Vegas stop for visitors planning around live music, nightlife, or a more culture-forward trip.",
+      "categories": [
+        "nightlife",
+        "music",
+        "sightseeing"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Fremont Street Experience guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Fremont Street Experience in Las Vegas, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Fremont Street Experience as part of a music-first evening or culture-focused route through the city.",
+        "Treat Fremont Street Experience as an evening block if nightlife is a major part of the trip.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Fremont Street Experience as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Fremont Street Experience matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Fremont Street Experience music experiences",
+          "query": "las vegas fremont street music tour",
+          "description": "Useful when you want a more structured music or nightlife plan around Fremont Street Experience."
+        },
+        {
+          "label": "Fremont Street Experience guided experiences",
+          "query": "las vegas fremont street tours",
+          "description": "A general search path for tours and guided experiences connected to Fremont Street Experience in Las Vegas."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Las Vegas Strip",
+          "href": "/las-vegas/las-vegas-strip"
+        },
+        {
+          "label": "Sphere",
+          "href": "/las-vegas/sphere-las-vegas"
+        },
+        {
+          "label": "Red Rock Canyon",
+          "href": "/las-vegas/red-rock-canyon"
+        }
+      ],
+      "primaryToursHref": "/las-vegas/fremont-street/tours",
+      "thingsToDoHref": "/las-vegas/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Las Vegas Strip",
+        "Sphere"
+      ]
+    },
+    {
+      "slug": "sphere-las-vegas",
+      "name": "Sphere",
+      "type": "venue",
+      "summary": "Sphere is a strong Las Vegas stop for visitors planning around live music, nightlife, or a more culture-forward trip.",
+      "categories": [
+        "shows",
+        "landmark",
+        "music"
+      ],
+      "priority": 90,
+      "featured": true,
+      "heroTitle": "Sphere guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Sphere in Las Vegas, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Sphere as part of a music-first evening or culture-focused route through the city.",
+        "Plan time for a short sightseeing loop and nearby photo stops instead of only passing through."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Sphere as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Sphere matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Sphere music experiences",
+          "query": "las vegas sphere las vegas music tour",
+          "description": "Useful when you want a more structured music or nightlife plan around Sphere."
+        },
+        {
+          "label": "Sphere guided experiences",
+          "query": "las vegas sphere las vegas tours",
+          "description": "A general search path for tours and guided experiences connected to Sphere in Las Vegas."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Las Vegas Strip",
+          "href": "/las-vegas/las-vegas-strip"
+        },
+        {
+          "label": "Fremont Street Experience",
+          "href": "/las-vegas/fremont-street"
+        },
+        {
+          "label": "Red Rock Canyon",
+          "href": "/las-vegas/red-rock-canyon"
+        }
+      ],
+      "primaryToursHref": "/las-vegas/sphere-las-vegas/tours",
+      "thingsToDoHref": "/las-vegas/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Las Vegas Strip",
+        "Fremont Street Experience"
+      ]
+    },
+    {
+      "slug": "red-rock-canyon",
+      "name": "Red Rock Canyon",
+      "type": "park",
+      "summary": "Red Rock Canyon gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader Las Vegas day plan.",
+      "categories": [
+        "outdoor",
+        "day-trips",
+        "scenic"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "Red Rock Canyon guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Red Rock Canyon in Las Vegas, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Red Rock Canyon as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Red Rock Canyon as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Red Rock Canyon outdoor experiences",
+          "query": "las vegas red rock canyon outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Red Rock Canyon guided experiences",
+          "query": "las vegas red rock canyon tours",
+          "description": "A general search path for tours and guided experiences connected to Red Rock Canyon in Las Vegas."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Las Vegas Strip",
+          "href": "/las-vegas/las-vegas-strip"
+        },
+        {
+          "label": "Fremont Street Experience",
+          "href": "/las-vegas/fremont-street"
+        },
+        {
+          "label": "Sphere",
+          "href": "/las-vegas/sphere-las-vegas"
+        }
+      ],
+      "primaryToursHref": "/las-vegas/red-rock-canyon/tours",
+      "thingsToDoHref": "/las-vegas/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Las Vegas Strip",
+        "Fremont Street Experience"
+      ]
+    },
+    {
+      "slug": "bellagio-fountains",
+      "name": "Bellagio Fountains",
+      "type": "landmark",
+      "summary": "Bellagio Fountains is one of the better-known landmarks in Las Vegas and usually works best as part of a broader sightseeing block instead of a standalone stop.",
+      "categories": [
+        "landmark",
+        "sightseeing",
+        "nightlife"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Bellagio Fountains guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Bellagio Fountains in Las Vegas, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Bellagio Fountains as part of a broader sightseeing block instead of making it the only stop in that part of the day.",
+        "Pair Bellagio Fountains with one nearby walk, museum, or neighborhood stop for a more complete visit.",
+        "Treat Bellagio Fountains as an evening block if nightlife is a major part of the trip."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Bellagio Fountains as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Landmark stops usually work better when they are tied to a broader city route instead of treated as a one-stop plan.",
+        "If Bellagio Fountains matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Bellagio Fountains sightseeing tours",
+          "query": "las vegas bellagio fountains sightseeing tour",
+          "description": "A simple starting point for visitors who want to see Bellagio Fountains in a broader city context."
+        },
+        {
+          "label": "Bellagio Fountains guided experiences",
+          "query": "las vegas bellagio fountains tours",
+          "description": "A general search path for tours and guided experiences connected to Bellagio Fountains in Las Vegas."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Las Vegas Strip",
+          "href": "/las-vegas/las-vegas-strip"
+        },
+        {
+          "label": "Fremont Street Experience",
+          "href": "/las-vegas/fremont-street"
+        },
+        {
+          "label": "Sphere",
+          "href": "/las-vegas/sphere-las-vegas"
+        }
+      ],
+      "primaryToursHref": "/las-vegas/bellagio-fountains/tours",
+      "thingsToDoHref": "/las-vegas/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Las Vegas Strip",
+        "Fremont Street Experience"
+      ]
+    },
+    {
+      "slug": "high-roller",
+      "name": "High Roller",
+      "type": "landmark",
+      "summary": "High Roller is one of the better-known landmarks in Las Vegas and usually works best as part of a broader sightseeing block instead of a standalone stop.",
+      "categories": [
+        "views",
+        "sightseeing",
+        "nightlife"
+      ],
+      "priority": 75,
+      "featured": false,
+      "heroTitle": "High Roller guide, things to do, and local tours",
+      "heroSummary": "Planning guide for High Roller in Las Vegas, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use High Roller as part of a broader sightseeing block instead of making it the only stop in that part of the day.",
+        "Pair High Roller with one nearby walk, museum, or neighborhood stop for a more complete visit.",
+        "Treat High Roller as an evening block if nightlife is a major part of the trip."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan High Roller as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Landmark stops usually work better when they are tied to a broader city route instead of treated as a one-stop plan.",
+        "If High Roller matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "High Roller sightseeing tours",
+          "query": "las vegas high roller sightseeing tour",
+          "description": "A simple starting point for visitors who want to see High Roller in a broader city context."
+        },
+        {
+          "label": "High Roller guided experiences",
+          "query": "las vegas high roller tours",
+          "description": "A general search path for tours and guided experiences connected to High Roller in Las Vegas."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Las Vegas Strip",
+          "href": "/las-vegas/las-vegas-strip"
+        },
+        {
+          "label": "Fremont Street Experience",
+          "href": "/las-vegas/fremont-street"
+        },
+        {
+          "label": "Sphere",
+          "href": "/las-vegas/sphere-las-vegas"
+        }
+      ],
+      "primaryToursHref": "/las-vegas/high-roller/tours",
+      "thingsToDoHref": "/las-vegas/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Las Vegas Strip",
+        "Fremont Street Experience"
+      ]
+    }
+  ]
+}

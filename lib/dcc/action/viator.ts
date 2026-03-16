@@ -35,6 +35,11 @@ type Tour = {
   reviews?: number | null;
   review_count?: number | null;
   image_url?: string | null;
+  supplier_name?: string | null;
+  itinerary_type?: string | null;
+  booking_confirmation_type?: string | null;
+  product_option_count?: number | null;
+  product_option_titles?: string[] | null;
   booking_url?: string;
   url?: string;
   viatorUrl?: string;
@@ -72,6 +77,11 @@ export type ViatorActionProduct = {
   currency: string;
   duration_minutes: number | null;
   image_url: string | null;
+  supplier_name?: string | null;
+  itinerary_type?: string | null;
+  booking_confirmation_type?: string | null;
+  product_option_count?: number | null;
+  product_option_titles?: string[] | null;
   url: string;
 };
 
@@ -93,6 +103,42 @@ export type ViatorActionInput = {
   hub?: string;
   citySlug?: string;
 };
+
+function tokenize(value: string): string[] {
+  return slugify(value)
+    .split("-")
+    .filter((token) => token.length > 2);
+}
+
+function productMatchesPlace(tour: Tour, node: ViatorActionInput): boolean {
+  const cityName = node.name.replace(/\s*Guide\s*$/i, "").trim();
+  const acceptedExact = new Set<string>(
+    [node.slug, node.citySlug, node.hub, cityName]
+      .filter((value): value is string => Boolean(value))
+      .map((value) => slugify(value))
+  );
+  const textHaystack = slugify(
+    [
+      tour.name,
+      tour.title,
+      tour.city,
+      tour.citySlug,
+      tour.destination,
+      tour.destinationSlug,
+      tour.dcc?.citySlug,
+      tour.dcc?.destinationSlug,
+      tour.url,
+      tour.viatorUrl,
+    ]
+      .filter(Boolean)
+      .join(" ")
+  );
+
+  if ([...acceptedExact].some((value) => value && textHaystack.includes(value))) return true;
+
+  const cityTokens = tokenize(cityName);
+  return cityTokens.length > 0 && cityTokens.every((token) => textHaystack.includes(token));
+}
 
 function normalizeTours(raw: unknown): Tour[] {
   if (Array.isArray(raw)) return raw as Tour[];
@@ -170,6 +216,14 @@ function mapToursToActionProducts(tours: Tour[], placeName: string): ViatorActio
           ? tour.duration_minutes
           : toDurationMinutes(tour.duration),
       image_url: tour.image_url || null,
+      supplier_name: tour.supplier_name || null,
+      itinerary_type: tour.itinerary_type || null,
+      booking_confirmation_type: tour.booking_confirmation_type || null,
+      product_option_count:
+        typeof tour.product_option_count === "number" ? tour.product_option_count : null,
+      product_option_titles: Array.isArray(tour.product_option_titles)
+        ? tour.product_option_titles.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+        : null,
       url: tracked,
     };
   });
@@ -205,7 +259,7 @@ function getCatalogFallback(node: ViatorActionInput): Tour[] {
   const primaryTours = normalizeTours(toursCatalog);
   const fallbackTours = normalizeTours(vegasTours);
   const allTours = primaryTours.length > 0 ? primaryTours : fallbackTours;
-  return allTours.filter((t) => accepted.has(getTourNodeKey(t)));
+  return allTours.filter((t) => accepted.has(getTourNodeKey(t)) || productMatchesPlace(t, node));
 }
 
 export function resolveViatorActionFromCache(
@@ -224,7 +278,7 @@ export function resolveViatorActionFromCache(
 
   return {
     enabled: true,
-    products: mapToursToActionProducts(cached.products, placeName),
+    products: mapToursToActionProducts(cached.products.filter((tour) => productMatchesPlace(tour, node)), placeName),
     source: "cache",
     cache_status: fresh ? "fresh" : "stale",
     stale: !fresh,
@@ -241,7 +295,7 @@ export function resolveViatorActionFromCatalog(
   reason = "cache_miss"
 ): ViatorActionResult {
   const placeName = node.name.replace(/\s*Guide\s*$/i, "").trim();
-  const fallbackTours = getCatalogFallback(node);
+  const fallbackTours = getCatalogFallback(node).filter((tour) => productMatchesPlace(tour, node));
   return {
     enabled: fallbackTours.length > 0,
     products: mapToursToActionProducts(fallbackTours, placeName),

@@ -42,14 +42,14 @@ export const CITY_AUTHORITY_CONFIG: Record<string, CityAuthorityConfig> = {
     ],
     heroTitle: "New Orleans Travel Guide",
     heroDescription:
-      "A practical New Orleans guide for French Quarter planning, airport-to-hotel logistics, live music routing, and food blocks that actually fit a real day.",
+      "A practical New Orleans guide for French Quarter planning, airport-to-hotel logistics, live music planning, and food stops that fit a real day.",
     pillars: [
       "French Quarter timing + crowd windows",
       "MSY airport transfer + check-in blocks",
       "Music route planning by neighborhood",
       "Food strategy by daypart",
     ],
-    trustLine: "Top-reviewed New Orleans airboat and swamp experiences, prioritized for conversion intent.",
+    trustLine: "Top-reviewed New Orleans airboat and swamp experiences for visitors planning ahead.",
     eventVenues: [
       "Smoothie King Center",
       "Caesars Superdome",
@@ -110,7 +110,7 @@ export const CITY_AUTHORITY_CONFIG: Record<string, CityAuthorityConfig> = {
     refreshIntervalDays: 45,
     seoTitle: "Las Vegas Travel Guide 2026 | Grand Canyon, Hoover Dam, Shows, and Tours",
     seoDescription:
-      "Plan Las Vegas with practical timing, show-night flow, Grand Canyon and Hoover Dam tour options, helicopter experiences, and route-first logistics.",
+      "Plan Las Vegas with practical timing, show-night flow, Grand Canyon and Hoover Dam tour options, helicopter experiences, and cleaner logistics.",
     keywords: [
       "las vegas travel guide",
       "best tours from las vegas",
@@ -122,14 +122,14 @@ export const CITY_AUTHORITY_CONFIG: Record<string, CityAuthorityConfig> = {
     ],
     heroTitle: "Las Vegas Travel Guide",
     heroDescription:
-      "A conversion-first Vegas guide for people who want clean logistics and high-value experiences without breaking their schedule.",
+      "A practical Vegas guide for people who want clean logistics and worthwhile experiences without overloading the schedule.",
     pillars: [
       "Show-night pacing without overbooking the day",
       "Airport arrival and hotel check-in timing",
-      "High-value day tour routing from the Strip",
+      "Day trips from the Strip that fit a real schedule",
       "Buffer-first planning for long desert day trips",
     ],
-    trustLine: "Top-reviewed Las Vegas day tours prioritized for conversion and repeatable commission flow.",
+    trustLine: "Top-reviewed Las Vegas day tours for visitors who want the strongest options first.",
     eventVenues: [
       "Sphere Las Vegas",
       "T-Mobile Arena",
@@ -197,14 +197,14 @@ export const CITY_AUTHORITY_CONFIG: Record<string, CityAuthorityConfig> = {
     ],
     heroTitle: "Miami Travel Guide",
     heroDescription:
-      "A route-first Miami page for beach, boat, and excursion planning with conversion-focused money lanes.",
+      "A practical Miami guide for beach, boat, and excursion planning with clearer trip structure.",
     pillars: [
       "Everglades and day-trip timing",
       "Beach + nightlife pacing",
       "Cruise and transfer windows",
-      "Weather-aware routing with buffers",
+      "Weather-aware planning with buffers",
     ],
-    trustLine: "Top-reviewed Miami excursions prioritized for high booking intent and repeatable commission flow.",
+    trustLine: "Top-reviewed Miami excursions for travelers planning ahead.",
     eventVenues: [
       "Kaseya Center",
       "Hard Rock Stadium",
@@ -261,7 +261,7 @@ export const CITY_AUTHORITY_CONFIG: Record<string, CityAuthorityConfig> = {
     refreshIntervalDays: 45,
     seoTitle: "Nashville Travel Guide 2026 | Broadway, Music Tours, and Nightlife Logistics",
     seoDescription:
-      "Plan Nashville with practical Broadway timing, live-music event routing, distillery tour priorities, and experience-first logistics.",
+      "Plan Nashville with practical Broadway timing, live-music planning, distillery tour priorities, and clearer logistics.",
     keywords: [
       "nashville travel guide",
       "things to do in nashville",
@@ -272,14 +272,14 @@ export const CITY_AUTHORITY_CONFIG: Record<string, CityAuthorityConfig> = {
     ],
     heroTitle: "Nashville Travel Guide",
     heroDescription:
-      "A conversion-aware Nashville page for Broadway flow, music discovery, and experience booking without schedule chaos.",
+      "A practical Nashville guide for Broadway timing, music discovery, and experience booking without schedule chaos.",
     pillars: [
       "Broadway live-music pacing",
-      "Day-to-night routing with buffer time",
+      "Day-to-night planning with buffer time",
       "Music history and neighborhood clusters",
       "Tour categories with high booking intent",
     ],
-    trustLine: "Top-reviewed Nashville experiences prioritized for music-driven traveler intent and conversion.",
+    trustLine: "Top-reviewed Nashville experiences for music-focused travelers.",
     eventVenues: [
       "Bridgestone Arena",
       "Ryman Auditorium",
@@ -315,7 +315,7 @@ export const CITY_AUTHORITY_CONFIG: Record<string, CityAuthorityConfig> = {
       },
       {
         q: "Should I plan Broadway and tours on the same day?",
-        a: "You can, but conversion and experience quality are better when you protect one clean evening block for live music without overloading daytime routing.",
+        a: "You can, but the trip usually works better when you protect one clean evening block for live music without overloading the daytime plan.",
       },
     ],
     linkedPages: [

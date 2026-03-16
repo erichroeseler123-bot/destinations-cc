@@ -37,6 +37,7 @@ export type AudienceType =
 export type CuratedShowCard = {
   title: string;
   venue: string;
+  venueSlug?: string;
   category: string;
   description: string;
   query: string;
@@ -90,6 +91,148 @@ export type CityShowsConfig = {
 };
 
 export const CITY_SHOWS_CONFIG: Record<string, CityShowsConfig> = {
+  denver: {
+    heroSummary:
+      "Denver shows span Red Rocks concert nights, RiNo headline rooms, downtown arena dates, neighborhood theaters, Boulder clubs, and destination venues in the Front Range orbit.",
+    liveFeed: {
+      lat: 39.7392,
+      lon: -104.9903,
+      radiusKm: 70,
+      size: 18,
+    },
+    featuredShows: [
+      {
+        title: "Red Rocks concert nights",
+        venue: "Red Rocks Amphitheatre",
+        venueSlug: "red-rocks-amphitheatre",
+        category: "Amphitheatre",
+        description:
+          "Flagship Colorado concert nights where venue access, timing, parking, and ride planning matter more than almost anywhere else in the metro.",
+        query: "red rocks concerts",
+        showType: "concert",
+        venueType: "arena",
+        audienceTypes: ["music-first", "weekend-trip", "couples"],
+      },
+      {
+        title: "Mission Ballroom headline runs",
+        venue: "Mission Ballroom",
+        venueSlug: "mission-ballroom",
+        category: "Live Music",
+        description:
+          "RiNo headline inventory with a cleaner indoor concert format, strong weekend demand, and easier pre-show neighborhood routing.",
+        query: "mission ballroom shows",
+        showType: "concert",
+        venueType: "arena",
+        audienceTypes: ["music-first", "nightlife", "weekend-trip"],
+      },
+      {
+        title: "Ball Arena concert dates",
+        venue: "Ball Arena",
+        venueSlug: "ball-arena",
+        category: "Arena",
+        description:
+          "Large-format downtown concert inventory with heavier event-night traffic and different arrival patterns than club or amphitheatre shows.",
+        query: "ball arena concerts",
+        showType: "concert",
+        venueType: "arena",
+        audienceTypes: ["music-first", "weekend-trip", "family"],
+      },
+      {
+        title: "Boulder and Mishawaka music nights",
+        venue: "Boulder Theater, Fox Theatre, and Mishawaka Amphitheatre",
+        venueSlug: "boulder-theater",
+        category: "Destination Music",
+        description:
+          "North-of-Denver show nights with more travel friction, more planning overhead, and a stronger destination feel than central Denver rooms.",
+        query: "boulder theater shows",
+        showType: "concert",
+        venueType: "historic-theater",
+        audienceTypes: ["music-first", "culture", "weekend-trip"],
+      },
+    ],
+    showCategories: [
+      {
+        title: "Amphitheatre concerts",
+        description: "Red Rocks and Fiddler's Green headline dates where parking, timing, and transport decisions shape the entire night.",
+        query: "denver amphitheatre concerts",
+        showType: "concert",
+        venueType: "arena",
+        audienceTypes: ["music-first", "weekend-trip", "couples"],
+      },
+      {
+        title: "RiNo and downtown headline rooms",
+        description: "Mission Ballroom, Summit Music Hall, and other central Denver live-music rooms with strong weekly concert demand.",
+        query: "denver live music venues this week",
+        showType: "concert",
+        venueType: "club-district",
+        audienceTypes: ["music-first", "nightlife", "weekend-trip"],
+      },
+      {
+        title: "Neighborhood theaters and clubs",
+        description: "Ogden, Gothic, Bluebird, Cervantes, and Marquis nights for smaller-format concert discovery.",
+        query: "denver theater concerts tonight",
+        showType: "concert",
+        venueType: "historic-theater",
+        audienceTypes: ["music-first", "nightlife", "couples"],
+      },
+      {
+        title: "Arena and major event dates",
+        description: "Ball Arena and larger-capacity Denver nights with downtown crowd concentration and heavier ingress decisions.",
+        query: "denver arena concerts",
+        showType: "concert",
+        venueType: "arena",
+        audienceTypes: ["music-first", "weekend-trip", "family"],
+      },
+      {
+        title: "Boulder and destination venues",
+        description: "Boulder Theater, Fox Theatre, and Mishawaka inventory for music-first trips that extend beyond the city core.",
+        query: "boulder live music this weekend",
+        showType: "concert",
+        venueType: "historic-theater",
+        audienceTypes: ["music-first", "culture", "weekend-trip"],
+      },
+    ],
+    venueClusters: [
+      {
+        title: "Red Rocks and major amphitheatres",
+        venueType: "arena",
+        venues: ["Red Rocks Amphitheatre", "Fiddler's Green Amphitheatre"],
+      },
+      {
+        title: "RiNo and downtown headline rooms",
+        venueType: "club-district",
+        venues: ["Mission Ballroom", "Summit Music Hall", "Cervantes' Masterpiece Ballroom", "Ball Arena"],
+      },
+      {
+        title: "Neighborhood theaters and Boulder rooms",
+        venueType: "historic-theater",
+        venues: ["Ogden Theatre", "Bluebird Theater", "Gothic Theatre", "Boulder Theater", "Fox Theatre"],
+      },
+    ],
+    culturalAnchors: [
+      {
+        title: "Colorado amphitheatre planning",
+        description:
+          "Denver show discovery is not only downtown. Red Rocks and other destination venues create a very different planning pattern than a standard indoor concert night.",
+        query: "red rocks shows tonight",
+        showType: "concert",
+        venueType: "arena",
+      },
+      {
+        title: "Boulder and Front Range music nights",
+        description:
+          "For some trips the real decision is whether to stay in Denver or plan around Boulder and foothill venues with longer travel overhead.",
+        query: "front range live music colorado",
+        showType: "concert",
+        venueType: "historic-theater",
+      },
+    ],
+    planningNotes: [
+      "Denver concert planning splits between destination amphitheatre nights, downtown headline rooms, and smaller neighborhood venues. Those are different arrival and transport decisions.",
+      "Red Rocks nights usually need earlier planning than central Denver rooms because parking, weather, and return logistics create more friction.",
+      "Boulder and mountain-adjacent venues often behave like destination nights rather than quick downtown events.",
+    ],
+  },
   "las-vegas": {
     heroSummary:
       "Las Vegas shows are a dedicated live-performance lane: residencies, magic, comedy, Sphere productions, casino showroom acts, headline concerts, and premium spectacle inventory.",

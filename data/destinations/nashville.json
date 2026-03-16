@@ -1,0 +1,21 @@
+{
+  "slug": "nashville",
+  "display_name": "Nashville",
+  "aliases": [
+    "nashville-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Music Row Tour",
+      "description": "Behind-the-scenes music history.",
+      "query": "Nashville Music Row tour"
+    },
+    {
+      "title": "Grand Ole Opry",
+      "description": "Country music legend venue.",
+      "query": "Grand Ole Opry tickets"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

@@ -3,6 +3,7 @@ export const dynamicParams = false;
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import JsonLd from "@/app/components/dcc/JsonLd";
 import { getPortBySlug, getPortSlugs } from "@/lib/dcc/ports";
 import PortAuthorityTemplate from "@/app/components/dcc/PortAuthorityTemplate";
 import { getPortAuthorityConfig } from "@/src/data/port-authority-config";
@@ -12,6 +13,11 @@ import Next48Button from "@/app/components/dcc/next48/Next48Button";
 import ShareWeekendCard from "@/app/components/dcc/share/ShareWeekendCard";
 import { getSurface, hasSurfaceEntity } from "@/lib/dcc/surfaces/getSurface";
 import { getDecisionEnginePageByPath } from "@/src/data/decision-engine-pages";
+import {
+  buildBreadcrumbJsonLd,
+  buildCityJsonLd,
+  buildFaqJsonLd,
+} from "@/lib/dcc/jsonld";
 
 const BASE_URL = "https://destinationcommandcenter.com";
 
@@ -73,47 +79,30 @@ export default async function PortPage({
     : null;
   const decisionPage = surface?.modules.decision?.page || getDecisionEnginePageByPath(`/ports/${port.slug}`);
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": pageUrl,
-        url: pageUrl,
-        name: pageTitle,
-        description,
-      },
-      {
-        "@type": "TouristDestination",
-        name: pageTitle,
-        url: pageUrl,
-        description,
-        touristType: ["Cruise travelers", "Shore excursion buyers", "Port planners"],
-        address: {
-          "@type": "PostalAddress",
-          addressCountry: country,
-          addressRegion: region,
-        },
-      },
-      {
-        "@type": "FAQPage",
-        mainEntity: config.faq.slice(0, 3).map((item) => ({
-          "@type": "Question",
-          name: item.question,
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: item.answer,
-          },
-        })),
-      },
-    ],
-  };
-
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            buildCityJsonLd({
+              path: `/ports/${port.slug}`,
+              name: pageTitle,
+              description,
+              address: {
+                region,
+                country,
+              },
+              touristTypes: ["Cruise travelers", "Shore excursion buyers", "Port planners"],
+            }),
+            buildBreadcrumbJsonLd([
+              { name: "Home", item: "/" },
+              { name: "Ports", item: "/ports" },
+              { name: port.name, item: `/ports/${port.slug}` },
+            ]),
+            buildFaqJsonLd(config.faq.slice(0, 3)),
+          ],
+        }}
       />
       <PortAuthorityTemplate port={port} config={config} />
       {decisionPage ? (

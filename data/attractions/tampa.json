@@ -1,0 +1,342 @@
+{
+  "citySlug": "tampa",
+  "cityName": "Tampa",
+  "attractions": [
+    {
+      "slug": "ybor-city",
+      "name": "Ybor City",
+      "type": "historic-district",
+      "summary": "Ybor City is one of the more recognizable history-focused stops in Tampa for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "food",
+        "nightlife",
+        "history"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Ybor City guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Ybor City in Tampa, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Ybor City as a stop for a more history-focused city walk or half-day plan.",
+        "Pair Ybor City with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "Treat Ybor City as an evening block if nightlife is a major part of the trip."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Ybor City as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Ybor City matters most after dark, keep the rest of the day lighter so the evening does not feel rushed.",
+        "A guided walk or city tour often gives Ybor City more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Ybor City history tours",
+          "query": "tampa ybor city history tour",
+          "description": "A simple starting point for visitors who want more context around Ybor City."
+        },
+        {
+          "label": "Ybor City food experiences",
+          "query": "tampa ybor city food tour",
+          "description": "Helpful when Ybor City fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Ybor City guided experiences",
+          "query": "tampa ybor city tours",
+          "description": "A general search path for tours and guided experiences connected to Ybor City in Tampa."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Tampa Riverwalk",
+          "href": "/tampa/tampa-riverwalk"
+        },
+        {
+          "label": "Busch Gardens Tampa Bay",
+          "href": "/tampa/busch-gardens-tampa-bay"
+        },
+        {
+          "label": "Sparkman Wharf",
+          "href": "/tampa/sparkman-wharf"
+        }
+      ],
+      "primaryToursHref": "/tampa/ybor-city/tours",
+      "thingsToDoHref": "/tampa/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Tampa Riverwalk",
+        "Busch Gardens Tampa Bay"
+      ]
+    },
+    {
+      "slug": "tampa-riverwalk",
+      "name": "Tampa Riverwalk",
+      "type": "waterfront",
+      "summary": "Tampa Riverwalk is one of the more recognizable visitor stops in Tampa and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "walks",
+        "waterfront",
+        "family"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Tampa Riverwalk guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Tampa Riverwalk in Tampa, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Tampa Riverwalk as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Tampa Riverwalk guided experiences",
+          "query": "tampa tampa riverwalk tours",
+          "description": "A general search path for tours and guided experiences connected to Tampa Riverwalk in Tampa."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Ybor City",
+          "href": "/tampa/ybor-city"
+        },
+        {
+          "label": "Busch Gardens Tampa Bay",
+          "href": "/tampa/busch-gardens-tampa-bay"
+        },
+        {
+          "label": "Sparkman Wharf",
+          "href": "/tampa/sparkman-wharf"
+        }
+      ],
+      "primaryToursHref": "/tampa/tampa-riverwalk/tours",
+      "thingsToDoHref": "/tampa/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Ybor City",
+        "Busch Gardens Tampa Bay"
+      ]
+    },
+    {
+      "slug": "busch-gardens-tampa-bay",
+      "name": "Busch Gardens Tampa Bay",
+      "type": "theme-park",
+      "summary": "Busch Gardens Tampa Bay is one of the more recognizable visitor stops in Tampa and works best when paired with a broader city plan instead of treated as an isolated stop.",
+      "categories": [
+        "family",
+        "theme-park"
+      ],
+      "priority": 90,
+      "featured": true,
+      "heroTitle": "Busch Gardens Tampa Bay guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Busch Gardens Tampa Bay in Tampa, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Busch Gardens Tampa Bay as part of a wider neighborhood or city block instead of making it the only stop in that part of the day."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Busch Gardens Tampa Bay guided experiences",
+          "query": "tampa busch gardens tampa bay tours",
+          "description": "A general search path for tours and guided experiences connected to Busch Gardens Tampa Bay in Tampa."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Ybor City",
+          "href": "/tampa/ybor-city"
+        },
+        {
+          "label": "Tampa Riverwalk",
+          "href": "/tampa/tampa-riverwalk"
+        },
+        {
+          "label": "Sparkman Wharf",
+          "href": "/tampa/sparkman-wharf"
+        }
+      ],
+      "primaryToursHref": "/tampa/busch-gardens-tampa-bay/tours",
+      "thingsToDoHref": "/tampa/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Ybor City",
+        "Tampa Riverwalk"
+      ]
+    },
+    {
+      "slug": "sparkman-wharf",
+      "name": "Sparkman Wharf",
+      "type": "waterfront",
+      "summary": "Sparkman Wharf is a useful Tampa stop for visitors planning around food, neighborhood time, and a more walkable day in the city.",
+      "categories": [
+        "food",
+        "nightlife"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Sparkman Wharf guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Sparkman Wharf in Tampa, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Pair Sparkman Wharf with a meal, tasting stop, or nearby food-focused block instead of treating it as a standalone stop.",
+        "Treat Sparkman Wharf as an evening block if nightlife is a major part of the trip."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Sparkman Wharf as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "If Sparkman Wharf matters most after dark, keep the rest of the day lighter so the evening does not feel rushed."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Sparkman Wharf food experiences",
+          "query": "tampa sparkman wharf food tour",
+          "description": "Helpful when Sparkman Wharf fits naturally into a food-first city plan."
+        },
+        {
+          "label": "Sparkman Wharf guided experiences",
+          "query": "tampa sparkman wharf tours",
+          "description": "A general search path for tours and guided experiences connected to Sparkman Wharf in Tampa."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Ybor City",
+          "href": "/tampa/ybor-city"
+        },
+        {
+          "label": "Tampa Riverwalk",
+          "href": "/tampa/tampa-riverwalk"
+        },
+        {
+          "label": "Busch Gardens Tampa Bay",
+          "href": "/tampa/busch-gardens-tampa-bay"
+        }
+      ],
+      "primaryToursHref": "/tampa/sparkman-wharf/tours",
+      "thingsToDoHref": "/tampa/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Ybor City",
+        "Tampa Riverwalk"
+      ]
+    },
+    {
+      "slug": "tampa-theatre",
+      "name": "Tampa Theatre",
+      "type": "historic-site",
+      "summary": "Tampa Theatre is one of the more recognizable historic sites in Tampa and usually adds the most value when visitors want stronger context, not just a quick pass-through.",
+      "categories": [
+        "history",
+        "culture",
+        "architecture"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Tampa Theatre guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Tampa Theatre in Tampa, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Tampa Theatre as part of a more history-focused block instead of treating it as a standalone stop.",
+        "Pair Tampa Theatre with a guided walk, museum, or nearby landmark if you want a fuller sense of place.",
+        "Use Tampa Theatre as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Tampa Theatre as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Historic sites usually feel more useful when they are part of a broader city story instead of a quick photo stop.",
+        "A guided walk or city tour often gives Tampa Theatre more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Tampa Theatre history tours",
+          "query": "tampa tampa theatre history tour",
+          "description": "A useful starting point for visitors who want more context around Tampa Theatre."
+        },
+        {
+          "label": "Tampa Theatre guided experiences",
+          "query": "tampa tampa theatre tours",
+          "description": "A general search path for tours and guided experiences connected to Tampa Theatre in Tampa."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Ybor City",
+          "href": "/tampa/ybor-city"
+        },
+        {
+          "label": "Tampa Riverwalk",
+          "href": "/tampa/tampa-riverwalk"
+        },
+        {
+          "label": "Busch Gardens Tampa Bay",
+          "href": "/tampa/busch-gardens-tampa-bay"
+        }
+      ],
+      "primaryToursHref": "/tampa/tampa-theatre/tours",
+      "thingsToDoHref": "/tampa/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Ybor City",
+        "Tampa Riverwalk"
+      ]
+    },
+    {
+      "slug": "florida-aquarium",
+      "name": "The Florida Aquarium",
+      "type": "attraction",
+      "summary": "The Florida Aquarium is one of the better-known landmarks in Tampa and usually works best as part of a broader sightseeing block instead of a standalone stop.",
+      "categories": [
+        "family",
+        "wildlife",
+        "waterfront"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "The Florida Aquarium guide, things to do, and local tours",
+      "heroSummary": "Planning guide for The Florida Aquarium in Tampa, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use The Florida Aquarium as part of a broader sightseeing block instead of making it the only stop in that part of the day.",
+        "Pair The Florida Aquarium with one nearby walk, museum, or neighborhood stop for a more complete visit.",
+        "This area works well for visitors trying to keep a mixed-age itinerary simple."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan The Florida Aquarium as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Landmark stops usually work better when they are tied to a broader city route instead of treated as a one-stop plan."
+      ],
+      "experienceIntents": [
+        {
+          "label": "The Florida Aquarium sightseeing tours",
+          "query": "tampa florida aquarium sightseeing tour",
+          "description": "A simple starting point for visitors who want to see The Florida Aquarium in a broader city context."
+        },
+        {
+          "label": "The Florida Aquarium guided experiences",
+          "query": "tampa florida aquarium tours",
+          "description": "A general search path for tours and guided experiences connected to The Florida Aquarium in Tampa."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Ybor City",
+          "href": "/tampa/ybor-city"
+        },
+        {
+          "label": "Tampa Riverwalk",
+          "href": "/tampa/tampa-riverwalk"
+        },
+        {
+          "label": "Busch Gardens Tampa Bay",
+          "href": "/tampa/busch-gardens-tampa-bay"
+        }
+      ],
+      "primaryToursHref": "/tampa/florida-aquarium/tours",
+      "thingsToDoHref": "/tampa/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Ybor City",
+        "Tampa Riverwalk"
+      ]
+    }
+  ]
+}

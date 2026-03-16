@@ -1,0 +1,351 @@
+{
+  "citySlug": "salt-lake-city",
+  "cityName": "Salt Lake City",
+  "attractions": [
+    {
+      "slug": "temple-square",
+      "name": "Temple Square",
+      "type": "landmark",
+      "summary": "Temple Square is one of the more recognizable history-focused stops in Salt Lake City for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "history",
+        "culture"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Temple Square guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Temple Square in Salt Lake City, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Temple Square as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Temple Square as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Temple Square more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Temple Square history tours",
+          "query": "salt lake city temple square history tour",
+          "description": "A simple starting point for visitors who want more context around Temple Square."
+        },
+        {
+          "label": "Temple Square guided experiences",
+          "query": "salt lake city temple square tours",
+          "description": "A general search path for tours and guided experiences connected to Temple Square in Salt Lake City."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Park City",
+          "href": "/salt-lake-city/park-city-day-trip"
+        },
+        {
+          "label": "Big Cottonwood Canyon",
+          "href": "/salt-lake-city/big-cottonwood-canyon"
+        },
+        {
+          "label": "Red Butte Garden",
+          "href": "/salt-lake-city/red-butte-garden"
+        }
+      ],
+      "primaryToursHref": "/salt-lake-city/temple-square/tours",
+      "thingsToDoHref": "/salt-lake-city/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Park City",
+        "Big Cottonwood Canyon"
+      ]
+    },
+    {
+      "slug": "park-city-day-trip",
+      "name": "Park City",
+      "type": "day-trip",
+      "summary": "Park City gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader Salt Lake City day plan.",
+      "categories": [
+        "day-trips",
+        "outdoor",
+        "ski"
+      ],
+      "priority": 95,
+      "featured": true,
+      "heroTitle": "Park City guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Park City in Salt Lake City, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Park City as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Park City as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Park City outdoor experiences",
+          "query": "salt lake city park city day trip outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Park City guided experiences",
+          "query": "salt lake city park city day trip tours",
+          "description": "A general search path for tours and guided experiences connected to Park City in Salt Lake City."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Temple Square",
+          "href": "/salt-lake-city/temple-square"
+        },
+        {
+          "label": "Big Cottonwood Canyon",
+          "href": "/salt-lake-city/big-cottonwood-canyon"
+        },
+        {
+          "label": "Red Butte Garden",
+          "href": "/salt-lake-city/red-butte-garden"
+        }
+      ],
+      "primaryToursHref": "/salt-lake-city/park-city-day-trip/tours",
+      "thingsToDoHref": "/salt-lake-city/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Temple Square",
+        "Big Cottonwood Canyon"
+      ]
+    },
+    {
+      "slug": "big-cottonwood-canyon",
+      "name": "Big Cottonwood Canyon",
+      "type": "nature-area",
+      "summary": "Big Cottonwood Canyon gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader Salt Lake City day plan.",
+      "categories": [
+        "outdoor",
+        "hiking",
+        "scenic"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "Big Cottonwood Canyon guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Big Cottonwood Canyon in Salt Lake City, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Big Cottonwood Canyon as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Big Cottonwood Canyon as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Big Cottonwood Canyon outdoor experiences",
+          "query": "salt lake city big cottonwood canyon outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Big Cottonwood Canyon guided experiences",
+          "query": "salt lake city big cottonwood canyon tours",
+          "description": "A general search path for tours and guided experiences connected to Big Cottonwood Canyon in Salt Lake City."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Temple Square",
+          "href": "/salt-lake-city/temple-square"
+        },
+        {
+          "label": "Park City",
+          "href": "/salt-lake-city/park-city-day-trip"
+        },
+        {
+          "label": "Red Butte Garden",
+          "href": "/salt-lake-city/red-butte-garden"
+        }
+      ],
+      "primaryToursHref": "/salt-lake-city/big-cottonwood-canyon/tours",
+      "thingsToDoHref": "/salt-lake-city/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Temple Square",
+        "Park City"
+      ]
+    },
+    {
+      "slug": "red-butte-garden",
+      "name": "Red Butte Garden",
+      "type": "garden",
+      "summary": "Red Butte Garden gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader Salt Lake City day plan.",
+      "categories": [
+        "gardens",
+        "outdoor"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Red Butte Garden guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Red Butte Garden in Salt Lake City, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Red Butte Garden as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Red Butte Garden as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Red Butte Garden outdoor experiences",
+          "query": "salt lake city red butte garden outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Red Butte Garden guided experiences",
+          "query": "salt lake city red butte garden tours",
+          "description": "A general search path for tours and guided experiences connected to Red Butte Garden in Salt Lake City."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Temple Square",
+          "href": "/salt-lake-city/temple-square"
+        },
+        {
+          "label": "Park City",
+          "href": "/salt-lake-city/park-city-day-trip"
+        },
+        {
+          "label": "Big Cottonwood Canyon",
+          "href": "/salt-lake-city/big-cottonwood-canyon"
+        }
+      ],
+      "primaryToursHref": "/salt-lake-city/red-butte-garden/tours",
+      "thingsToDoHref": "/salt-lake-city/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Temple Square",
+        "Park City"
+      ]
+    },
+    {
+      "slug": "utah-state-capitol",
+      "name": "Utah State Capitol",
+      "type": "landmark",
+      "summary": "Utah State Capitol is one of the better-known landmarks in Salt Lake City and usually works best as part of a broader sightseeing block instead of a standalone stop.",
+      "categories": [
+        "history",
+        "landmark",
+        "views"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Utah State Capitol guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Utah State Capitol in Salt Lake City, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Utah State Capitol as part of a broader sightseeing block instead of making it the only stop in that part of the day.",
+        "Pair Utah State Capitol with one nearby walk, museum, or neighborhood stop for a more complete visit.",
+        "Use Utah State Capitol as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Utah State Capitol as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Landmark stops usually work better when they are tied to a broader city route instead of treated as a one-stop plan.",
+        "A guided walk or city tour often gives Utah State Capitol more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Utah State Capitol sightseeing tours",
+          "query": "salt lake city utah state capitol sightseeing tour",
+          "description": "A simple starting point for visitors who want to see Utah State Capitol in a broader city context."
+        },
+        {
+          "label": "Utah State Capitol history tours",
+          "query": "salt lake city utah state capitol history tour",
+          "description": "A simple starting point for visitors who want more context around Utah State Capitol."
+        },
+        {
+          "label": "Utah State Capitol guided experiences",
+          "query": "salt lake city utah state capitol tours",
+          "description": "A general search path for tours and guided experiences connected to Utah State Capitol in Salt Lake City."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Temple Square",
+          "href": "/salt-lake-city/temple-square"
+        },
+        {
+          "label": "Park City",
+          "href": "/salt-lake-city/park-city-day-trip"
+        },
+        {
+          "label": "Big Cottonwood Canyon",
+          "href": "/salt-lake-city/big-cottonwood-canyon"
+        }
+      ],
+      "primaryToursHref": "/salt-lake-city/utah-state-capitol/tours",
+      "thingsToDoHref": "/salt-lake-city/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Temple Square",
+        "Park City"
+      ]
+    },
+    {
+      "slug": "great-salt-lake",
+      "name": "Great Salt Lake",
+      "type": "nature-area",
+      "summary": "Great Salt Lake is a useful nature-focused stop near Salt Lake City for visitors who want scenery, fresh air, and a break from denser urban pacing.",
+      "categories": [
+        "outdoor",
+        "scenic",
+        "day-trips"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "Great Salt Lake guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Great Salt Lake in Salt Lake City, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Great Salt Lake as a slower scenic or outdoor block instead of trying to stack too many urban stops around it.",
+        "Pair Great Salt Lake with one other nearby attraction or a dedicated half-day plan rather than forcing multiple long jumps.",
+        "Use Great Salt Lake as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Great Salt Lake as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Nature stops usually feel better when you leave margin for weather, travel time, and a slower overall pace.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Great Salt Lake outdoor experiences",
+          "query": "salt lake city great salt lake outdoor tour",
+          "description": "Helpful when visitors want structure around scenery, hiking, or a more nature-forward day."
+        },
+        {
+          "label": "Great Salt Lake guided experiences",
+          "query": "salt lake city great salt lake tours",
+          "description": "A general search path for tours and guided experiences connected to Great Salt Lake in Salt Lake City."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Temple Square",
+          "href": "/salt-lake-city/temple-square"
+        },
+        {
+          "label": "Park City",
+          "href": "/salt-lake-city/park-city-day-trip"
+        },
+        {
+          "label": "Big Cottonwood Canyon",
+          "href": "/salt-lake-city/big-cottonwood-canyon"
+        }
+      ],
+      "primaryToursHref": "/salt-lake-city/great-salt-lake/tours",
+      "thingsToDoHref": "/salt-lake-city/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Temple Square",
+        "Park City"
+      ]
+    }
+  ]
+}

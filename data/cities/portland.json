@@ -1,0 +1,126 @@
+{
+  "slug": "portland",
+  "name": "Portland",
+  "metadata": {
+    "title": "Portland Tours, Things to Do, and Attractions | Destination Command Center",
+    "description": "Discover Portland tours, things to do, attractions, food, neighborhoods, and trip ideas. Browse guided experiences and plan around the city's most useful travel highlights.",
+    "keywords": [
+      "portland tours",
+      "things to do in portland",
+      "portland attractions",
+      "portland sightseeing"
+    ]
+  },
+  "hero": {
+    "eyebrow": "Portland travel guide",
+    "title": "Portland tours, things to do, and local travel planning",
+    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Portland trip.",
+    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Portland.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/portland/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/portland/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly."
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+    }
+  ],
+  "topAttractions": [
+    {
+      "slug": "powells-city-of-books",
+      "title": "Powell's City of Books",
+      "description": ""
+    },
+    {
+      "slug": "washington-park",
+      "title": "Washington Park",
+      "description": ""
+    },
+    {
+      "slug": "pearl-district",
+      "title": "Pearl District",
+      "description": ""
+    },
+    {
+      "slug": "lan-su-chinese-garden",
+      "title": "Lan Su Chinese Garden",
+      "description": ""
+    },
+    {
+      "slug": "portland-japanese-garden",
+      "title": "Portland Japanese Garden",
+      "description": ""
+    },
+    {
+      "slug": "tom-mccall-waterfront-park",
+      "title": "Tom McCall Waterfront Park",
+      "description": ""
+    }
+  ],
+  "featuredTours": {
+    "title": "Popular Portland experiences",
+    "description": "Guided experiences and bookable activities that help visitors plan around Portland's most useful highlights.",
+    "fallbackQueries": [
+      "portland walking tour",
+      "portland food tour",
+      "portland sightseeing tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Things to do in Portland",
+      "description": "A broader planning surface for attractions, neighborhoods, and trip ideas.",
+      "href": "/portland/things-to-do"
+    },
+    {
+      "title": "Portland tours",
+      "description": "A cleaner starting point for guided experiences, day trips, and visitor favorites.",
+      "href": "/portland/tours"
+    },
+    {
+      "title": "Portland food guide",
+      "description": "Restaurants, food neighborhoods, and tasting-focused experiences.",
+      "href": "/portland/food"
+    },
+    {
+      "title": "Portland day trips",
+      "description": "Half-day and full-day options that fit naturally with a city stay.",
+      "href": "/portland/day-trips"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in Portland for first-time visitors?",
+      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+    },
+    {
+      "q": "How many days should you spend in Portland?",
+      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+    }
+  ],
+  "coordinates": {
+    "lat": 45.5152,
+    "lng": -122.6784
+  },
+  "timezone": "America/Los_Angeles",
+  "lat": 45.5152,
+  "lng": -122.6784
+}

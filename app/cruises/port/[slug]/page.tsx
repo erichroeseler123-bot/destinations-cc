@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import DiagnosticsBlock from "@/app/components/DiagnosticsBlock";
 import StatGrid from "@/app/components/StatGrid";
+import JsonLd from "@/app/components/dcc/JsonLd";
 import BookableToursSection from "@/app/components/dcc/BookableToursSection";
 import CruiseSpecialtyLaneSection from "@/app/components/dcc/CruiseSpecialtyLaneSection";
 import CruisePortHybridSection from "@/app/components/dcc/CruisePortHybridSection";
@@ -19,6 +20,11 @@ import { ACTION_LABELS } from "@/lib/dcc/actionLabels";
 import { getCruisePortAddress, getCruisePortGeo } from "@/src/data/cruise-port-geo";
 import { getCruiseSpecialtyLanesForPort } from "@/src/data/cruise-specialty-lanes";
 import { buildPortTrackedHref } from "@/src/lib/port-analytics";
+import {
+  buildBreadcrumbJsonLd,
+  buildCityJsonLd,
+  buildFaqJsonLd,
+} from "@/lib/dcc/jsonld";
 
 const BASE_URL = "https://destinationcommandcenter.com";
 
@@ -26,6 +32,20 @@ export const dynamicParams = false;
 
 export function generateStaticParams() {
   return listCruisePortSlugs().map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const resolved = await params;
+  const portTitle = toTitle(resolved.slug);
+  return {
+    title: `${portTitle} Shore Excursions and Cruise Port Guide`,
+    description: `Cruise port schedule, shore excursions, and timing guidance for ${portTitle}, with direct paths into excursion and transfer planning.`,
+    alternates: { canonical: `/cruises/port/${resolved.slug}` },
+  };
 }
 
 function toTitle(slug: string): string {
@@ -40,118 +60,6 @@ function fmtDate(value: string): string {
   const dt = new Date(value);
   if (Number.isNaN(dt.getTime())) return value;
   return dt.toISOString().slice(0, 10);
-}
-
-function JsonLd({
-  portTitle,
-  canonicalPortSlug,
-  isAlaskaPortContext,
-  sailings,
-  geo,
-  address,
-}: {
-  portTitle: string;
-  canonicalPortSlug: string;
-  isAlaskaPortContext: boolean;
-  sailings: Awaited<ReturnType<typeof buildCruisePayload>>["cruises"];
-  geo: { latitude: number; longitude: number } | null;
-  address: { addressLocality: string; addressRegion?: string; addressCountry: string } | null;
-}) {
-  const pageUrl = `${BASE_URL}/cruises/port/${canonicalPortSlug}`;
-  const faq = [
-    {
-      q: `When is the best time to plan ${portTitle} cruise excursions?`,
-      a: `Plan excursions after checking confirmed departure windows for sailings into ${portTitle}. Build buffer time before and after tour activities.`,
-    },
-    {
-      q: `Can I book shore excursions for ${portTitle} online?`,
-      a: `Yes. Compare shore excursion options and transfer routes from the ${portTitle} port page and linked booking partners.`,
-    },
-    {
-      q: `Should I keep extra buffer time in ${portTitle}?`,
-      a: `Yes. Port traffic, weather, and tender timing can shift schedules, so avoid tight reservation chains.`,
-    },
-  ];
-
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": pageUrl,
-        url: pageUrl,
-        name: `${portTitle} Cruise Schedule`,
-        description:
-          "Cruise port schedule, route context, and shore excursion planning with booking handoffs.",
-      },
-      {
-        "@type": "TouristDestination",
-        name: portTitle,
-        url: pageUrl,
-        touristType: isAlaskaPortContext
-          ? ["Cruise travelers", "Shore excursion buyers", "Alaska route planners"]
-          : ["Cruise travelers", "Shore excursion buyers"],
-        geo: geo
-          ? {
-              "@type": "GeoCoordinates",
-              latitude: geo.latitude,
-              longitude: geo.longitude,
-            }
-          : undefined,
-        address: address
-          ? {
-              "@type": "PostalAddress",
-              addressLocality: address.addressLocality,
-              addressRegion: address.addressRegion,
-              addressCountry: address.addressCountry,
-            }
-          : undefined,
-      },
-      {
-        "@type": "ItemList",
-        name: `${portTitle} upcoming sailings`,
-        itemListElement: sailings.slice(0, 24).map((sailing, idx) => ({
-          "@type": "ListItem",
-          position: idx + 1,
-          item: {
-            "@type": "Trip",
-            name: `${sailing.line} • ${sailing.ship}`,
-            departureTime: sailing.departure_date,
-            provider: {
-              "@type": "Organization",
-              name: sailing.line,
-            },
-            offers:
-              typeof sailing.starting_price?.amount === "number"
-                ? {
-                    "@type": "Offer",
-                    price: sailing.starting_price.amount,
-                    priceCurrency: sailing.starting_price.currency || "USD",
-                  }
-                : undefined,
-          },
-        })),
-      },
-      {
-        "@type": "FAQPage",
-        mainEntity: faq.map((item) => ({
-          "@type": "Question",
-          name: item.q,
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: item.a,
-          },
-        })),
-      },
-    ],
-  };
-
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-    />
-  );
 }
 
 export default async function CruisePortPage({
@@ -188,23 +96,107 @@ export default async function CruisePortPage({
     name: portTitle,
     citySlug: canonicalPortSlug,
   });
+  const faq = [
+    {
+      question: `When is the best time to plan ${portTitle} cruise excursions?`,
+      answer: `Plan excursions after checking confirmed departure windows for sailings into ${portTitle}. Build buffer time before and after tour activities.`,
+    },
+    {
+      question: `Can I book shore excursions for ${portTitle} online?`,
+      answer: `Yes. Compare shore excursion options and transfer routes from the ${portTitle} port page and linked booking partners.`,
+    },
+    {
+      question: `Should I keep extra buffer time in ${portTitle}?`,
+      answer: `Yes. Port traffic, weather, and tender timing can shift schedules, so avoid tight reservation chains.`,
+    },
+  ];
+  const primaryExcursionQuery = `${portTitle} shore excursions`;
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-16 space-y-10">
       <JsonLd
-        portTitle={portTitle}
-        canonicalPortSlug={canonicalPortSlug}
-        isAlaskaPortContext={isAlaskaPortContext}
-        sailings={payload.cruises}
-        geo={geo}
-        address={address}
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            buildCityJsonLd({
+              path: `/cruises/port/${canonicalPortSlug}`,
+              name: `${portTitle} Cruise Schedule`,
+              description:
+                "Cruise port schedule, route context, and shore excursion planning with booking handoffs.",
+              address: address
+                ? {
+                    locality: address.addressLocality,
+                    region: address.addressRegion,
+                    country: address.addressCountry,
+                  }
+                : undefined,
+              geo: geo
+                ? {
+                    lat: geo.latitude,
+                    lng: geo.longitude,
+                  }
+                : undefined,
+              touristTypes: isAlaskaPortContext
+                ? ["Cruise travelers", "Shore excursion buyers", "Alaska route planners"]
+                : ["Cruise travelers", "Shore excursion buyers"],
+            }),
+            {
+              "@type": "ItemList",
+              name: `${portTitle} upcoming sailings`,
+              itemListElement: payload.cruises.slice(0, 24).map((sailing, idx) => ({
+                "@type": "ListItem",
+                position: idx + 1,
+                item: {
+                  "@type": "Trip",
+                  name: `${sailing.line} • ${sailing.ship}`,
+                  departureTime: sailing.departure_date,
+                  provider: {
+                    "@type": "Organization",
+                    name: sailing.line,
+                  },
+                  offers:
+                    typeof sailing.starting_price?.amount === "number"
+                      ? {
+                          "@type": "Offer",
+                          price: sailing.starting_price.amount,
+                          priceCurrency: sailing.starting_price.currency || "USD",
+                        }
+                      : undefined,
+                },
+              })),
+            },
+            buildBreadcrumbJsonLd([
+              { name: "Cruises", item: "/cruises" },
+              { name: "Ports", item: "/ports" },
+              { name: portTitle, item: `/cruises/port/${canonicalPortSlug}` },
+            ]),
+            buildFaqJsonLd(faq),
+          ],
+        }}
       />
-      <header className="space-y-3 border-b border-white/10 pb-8">
-        <p className="text-xs uppercase tracking-wider text-zinc-500">Cruise Port View</p>
+      <header className="space-y-3 overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(61,243,255,0.12),transparent_30%),radial-gradient(circle_at_top_right,rgba(255,176,124,0.14),transparent_28%),linear-gradient(180deg,rgba(9,15,31,0.96),rgba(7,11,25,0.96))] p-8 shadow-[0_28px_80px_rgba(0,0,0,0.45)]">
+        <div className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-[#8fd0ff]">
+          Cruise port excursion page
+        </div>
+        <p className="mt-4 text-xs uppercase tracking-wider text-zinc-500">Cruise Port View</p>
         <h1 className="text-4xl font-black tracking-tight">{portTitle} Cruise Schedule</h1>
         <p className="text-zinc-300 max-w-3xl">
           Truth-first port schedule context from the cruise cache, with excursion discovery and booking handoffs where relevant.
         </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link
+            href={`/tours?q=${encodeURIComponent(primaryExcursionQuery)}`}
+            className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#3df3ff] px-6 text-sm font-black uppercase tracking-[0.16em] text-[#07111d] transition hover:bg-[#62f6ff]"
+          >
+            Browse Shore Excursions
+          </Link>
+          <Link
+            href={`/cruises/from/${canonicalPortSlug}`}
+            className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/14 bg-white/6 px-6 text-sm font-black uppercase tracking-[0.16em] text-white transition hover:bg-white/10"
+          >
+            Cruises From {portTitle}
+          </Link>
+        </div>
         {isAlaskaPortContext ? (
           <p className="text-sm text-cyan-300">
             Alaska port context detected: WTA handoff links include canonical ship and port payload metadata.
@@ -392,9 +384,14 @@ export default async function CruisePortPage({
       />
 
       <footer className="pt-4">
-        <Link href="/" className="text-zinc-400 hover:text-zinc-200 text-sm">
-          Back to home →
-        </Link>
+        <div className="flex flex-wrap gap-4">
+          <Link href="/" className="text-zinc-400 hover:text-zinc-200 text-sm">
+            Back to home →
+          </Link>
+          <Link href="/cruises/shore-excursions" className="text-zinc-400 hover:text-zinc-200 text-sm">
+            Shore excursions hub →
+          </Link>
+        </div>
       </footer>
     </main>
   );

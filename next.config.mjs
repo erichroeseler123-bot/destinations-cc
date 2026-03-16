@@ -19,6 +19,21 @@ const nextConfig = {
       ...satelliteRedirects,
       ...citySatelliteRedirects,
       {
+        source: "/concert-shuttles",
+        destination: "/transportation",
+        permanent: false,
+      },
+      {
+        source: "/red-rocks/transportation",
+        destination: "/red-rocks-transportation",
+        permanent: false,
+      },
+      {
+        source: "/red-rocks/parking",
+        destination: "/red-rocks-parking",
+        permanent: false,
+      },
+      {
         source: "/.env",
         destination: "/404",
         permanent: false,

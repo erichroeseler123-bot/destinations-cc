@@ -1,0 +1,27 @@
+{
+  "slug": "dubai",
+  "display_name": "Dubai",
+  "aliases": [
+    "dubai-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Dubai City Highlights Tour",
+      "description": "A quick way to see the best of Dubai with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Marina & Creek Cruise",
+      "description": "Short scenic sailings and skyline views across Dubai’s waterfront.",
+      "query": "marina cruise"
+    },
+    {
+      "title": "Old Dubai Walking Tour",
+      "description": "A simple first-timer lane for souks, creekside history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

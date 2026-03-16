@@ -1,0 +1,54 @@
+{
+  "city": "new-orleans",
+  "version": 1,
+  "as_of": "2026-03-15T18:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-14T18:00:00-05:00",
+  "schema": { "entity": "district", "description": "Durable New Orleans districts for the NOW layer." },
+  "districts": [
+    {
+      "slug": "french-quarter",
+      "name": "French Quarter",
+      "district_type": "nightlife-corridor",
+      "center": { "lat": 29.9584, "lng": -90.0643 },
+      "radius_m": 1300,
+      "vibe_tags": ["tourism", "music", "late-night", "walkable"],
+      "venue_slugs": ["saenger-theatre", "fillmore-new-orleans"],
+      "place_slugs": ["cane-and-table", "jewel-of-the-south", "frenchmen-food-window"],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "warehouse-district",
+      "name": "Warehouse District",
+      "district_type": "arts-district",
+      "center": { "lat": 29.9437, "lng": -90.0682 },
+      "radius_m": 1100,
+      "vibe_tags": ["shows", "warehouses", "event-crowds"],
+      "venue_slugs": ["howlin-wolf", "smoothie-king-center"],
+      "place_slugs": ["cochon-butcher", "bacchanal-wine"],
+      "impact_profile": "medium-high"
+    },
+    {
+      "slug": "uptown-riverbend",
+      "name": "Uptown / Riverbend",
+      "district_type": "mixed-use-core",
+      "center": { "lat": 29.936, "lng": -90.122 },
+      "radius_m": 1600,
+      "vibe_tags": ["neighborhood", "live-music", "late-night"],
+      "venue_slugs": ["tipitinas", "maple-leaf-bar"],
+      "place_slugs": ["maple-leaf-patio", "bacchanal-wine"],
+      "impact_profile": "medium"
+    },
+    {
+      "slug": "canal-street",
+      "name": "Canal Street",
+      "district_type": "downtown-core",
+      "center": { "lat": 29.9561, "lng": -90.0727 },
+      "radius_m": 900,
+      "vibe_tags": ["theater", "hotels", "tourism"],
+      "venue_slugs": ["saenger-theatre", "fillmore-new-orleans"],
+      "place_slugs": ["cane-and-table", "jewel-of-the-south"],
+      "impact_profile": "medium"
+    }
+  ]
+}

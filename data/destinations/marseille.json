@@ -1,0 +1,27 @@
+{
+  "slug": "marseille",
+  "display_name": "Marseille",
+  "aliases": [
+    "marseille-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Marseille City Highlights Tour",
+      "description": "A quick way to see the best of Marseille with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor Cruise",
+      "description": "Short scenic sailings and waterfront views near the old port.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for the Vieux-Port, historic quarters, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

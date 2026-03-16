@@ -1,0 +1,33 @@
+{
+  "slug": "rome",
+  "display_name": "Rome",
+  "aliases": [
+    "rome-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Rome City Highlights Tour",
+      "description": "A quick way to see the best of Rome with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "River & Landmark Cruise",
+      "description": "Short scenic outings and iconic city views tied to Rome’s core sights.",
+      "query": "river cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for ruins, piazzas, and historic city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "gateway_mappings": [
+    {
+      "kind": "port_tours_handoff",
+      "source_slug": "civitavecchia"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

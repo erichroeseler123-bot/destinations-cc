@@ -14,7 +14,7 @@ function walkJsonl(dir, out = []) {
     if (name.isDirectory()) walkJsonl(full, out);
     else if (name.isFile() && full.endsWith(".jsonl")) out.push(full);
   }
-  return out;
+  return out.sort();
 }
 
 function ensureDir(p) {
@@ -60,8 +60,15 @@ function toFeature(node) {
       tags: Array.isArray(node.tags) ? node.tags : [],
       canonical_path: node?.links?.canonical_path || null,
     },
-    bbox: node?.map?.bbox || node?.geo?.bbox || null,
   };
+}
+
+function featureSort(a, b) {
+  const classCompare = String(a.properties.class).localeCompare(String(b.properties.class));
+  if (classCompare !== 0) return classCompare;
+  const slugCompare = String(a.properties.slug).localeCompare(String(b.properties.slug));
+  if (slugCompare !== 0) return slugCompare;
+  return String(a.id).localeCompare(String(b.id));
 }
 
 const files = walkJsonl(REGISTRY_ROOT);
@@ -84,6 +91,11 @@ for (const full of files) {
     if (!byClass[node.class]) byClass[node.class] = [];
     byClass[node.class].push(feature);
   }
+}
+
+allFeatures.sort(featureSort);
+for (const features of Object.values(byClass)) {
+  features.sort(featureSort);
 }
 
 ensureDir(MAP_ROOT);
@@ -110,6 +122,18 @@ for (const [cls, features] of Object.entries(byClass)) {
   );
 }
 
-console.log(
-  `Built master map: ${allFeatures.length} point feature(s), ${Object.keys(byClass).length} class layer(s).`,
+const classCounts = Object.fromEntries(
+  Object.entries(byClass)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([cls, features]) => [cls, features.length])
 );
+
+console.log(JSON.stringify({
+  registry_root: path.relative(ROOT, REGISTRY_ROOT),
+  outputs: {
+    master_map: path.relative(ROOT, path.join(MAP_ROOT, "master-map.geojson")),
+    by_class_dir: path.relative(ROOT, BY_CLASS_DIR),
+  },
+  total_features: allFeatures.length,
+  feature_counts_by_class: classCounts,
+}, null, 2));

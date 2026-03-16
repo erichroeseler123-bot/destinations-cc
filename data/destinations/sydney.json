@@ -1,0 +1,27 @@
+{
+  "slug": "sydney",
+  "display_name": "Sydney",
+  "aliases": [
+    "sydney-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Sydney City Highlights Tour",
+      "description": "A quick way to see the best of Sydney with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbour Cruise",
+      "description": "Short scenic sailings and iconic harbor views across Sydney.",
+      "query": "harbour cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for harbor districts, landmarks, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

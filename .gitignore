@@ -17,3 +17,4 @@ out/
 *.tsbuildinfo
 *.bak
 *.bak.*
+data/sources/geonames/

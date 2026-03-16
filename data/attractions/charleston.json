@@ -1,0 +1,354 @@
+{
+  "citySlug": "charleston",
+  "cityName": "Charleston",
+  "attractions": [
+    {
+      "slug": "historic-charleston",
+      "name": "Historic Charleston",
+      "type": "historic-district",
+      "summary": "Historic Charleston is one of the more recognizable history-focused stops in Charleston for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "history",
+        "walks"
+      ],
+      "priority": 100,
+      "featured": true,
+      "heroTitle": "Historic Charleston guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Historic Charleston in Charleston, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Historic Charleston as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Historic Charleston as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Historic Charleston more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Historic Charleston history tours",
+          "query": "charleston historic charleston history tour",
+          "description": "A simple starting point for visitors who want more context around Historic Charleston."
+        },
+        {
+          "label": "Historic Charleston guided experiences",
+          "query": "charleston historic charleston tours",
+          "description": "A general search path for tours and guided experiences connected to Historic Charleston in Charleston."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Waterfront Park",
+          "href": "/charleston/waterfront-park"
+        },
+        {
+          "label": "Charleston City Market",
+          "href": "/charleston/charleston-city-market"
+        },
+        {
+          "label": "Fort Sumter",
+          "href": "/charleston/fort-sumter"
+        }
+      ],
+      "primaryToursHref": "/charleston/historic-charleston/tours",
+      "thingsToDoHref": "/charleston/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Waterfront Park",
+        "Charleston City Market"
+      ]
+    },
+    {
+      "slug": "waterfront-park",
+      "name": "Waterfront Park",
+      "type": "park",
+      "summary": "Waterfront Park gives visitors a practical outdoor counterweight to busier city blocks and works well as part of a broader Charleston day plan.",
+      "categories": [
+        "waterfront",
+        "walks"
+      ],
+      "priority": 90,
+      "featured": true,
+      "heroTitle": "Waterfront Park guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Waterfront Park in Charleston, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Waterfront Park as a slower outdoor break between denser city attractions or tours."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Waterfront Park as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Outdoor stops usually work best when you pair them with one or two nearby indoor attractions instead of stacking too many transit-heavy moves."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Waterfront Park outdoor experiences",
+          "query": "charleston waterfront park outdoor tour",
+          "description": "A safer starting point for visitors planning around scenery or time outside the city core."
+        },
+        {
+          "label": "Waterfront Park guided experiences",
+          "query": "charleston waterfront park tours",
+          "description": "A general search path for tours and guided experiences connected to Waterfront Park in Charleston."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Historic Charleston",
+          "href": "/charleston/historic-charleston"
+        },
+        {
+          "label": "Charleston City Market",
+          "href": "/charleston/charleston-city-market"
+        },
+        {
+          "label": "Fort Sumter",
+          "href": "/charleston/fort-sumter"
+        }
+      ],
+      "primaryToursHref": "/charleston/waterfront-park/tours",
+      "thingsToDoHref": "/charleston/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Historic Charleston",
+        "Charleston City Market"
+      ]
+    },
+    {
+      "slug": "charleston-city-market",
+      "name": "Charleston City Market",
+      "type": "market",
+      "summary": "Charleston City Market is one of the more recognizable history-focused stops in Charleston for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "shopping",
+        "history"
+      ],
+      "priority": 85,
+      "featured": false,
+      "heroTitle": "Charleston City Market guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Charleston City Market in Charleston, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Charleston City Market as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Charleston City Market as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Charleston City Market more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Charleston City Market history tours",
+          "query": "charleston charleston city market history tour",
+          "description": "A simple starting point for visitors who want more context around Charleston City Market."
+        },
+        {
+          "label": "Charleston City Market guided experiences",
+          "query": "charleston charleston city market tours",
+          "description": "A general search path for tours and guided experiences connected to Charleston City Market in Charleston."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Historic Charleston",
+          "href": "/charleston/historic-charleston"
+        },
+        {
+          "label": "Waterfront Park",
+          "href": "/charleston/waterfront-park"
+        },
+        {
+          "label": "Fort Sumter",
+          "href": "/charleston/fort-sumter"
+        }
+      ],
+      "primaryToursHref": "/charleston/charleston-city-market/tours",
+      "thingsToDoHref": "/charleston/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Historic Charleston",
+        "Waterfront Park"
+      ]
+    },
+    {
+      "slug": "fort-sumter",
+      "name": "Fort Sumter",
+      "type": "historic-site",
+      "summary": "Fort Sumter is one of the more recognizable history-focused stops in Charleston for visitors building a first trip around the city's core landmarks.",
+      "categories": [
+        "history",
+        "boat-tours"
+      ],
+      "priority": 80,
+      "featured": false,
+      "heroTitle": "Fort Sumter guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Fort Sumter in Charleston, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Fort Sumter as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Fort Sumter as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "A guided walk or city tour often gives Fort Sumter more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Fort Sumter history tours",
+          "query": "charleston fort sumter history tour",
+          "description": "A simple starting point for visitors who want more context around Fort Sumter."
+        },
+        {
+          "label": "Fort Sumter guided experiences",
+          "query": "charleston fort sumter tours",
+          "description": "A general search path for tours and guided experiences connected to Fort Sumter in Charleston."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Historic Charleston",
+          "href": "/charleston/historic-charleston"
+        },
+        {
+          "label": "Waterfront Park",
+          "href": "/charleston/waterfront-park"
+        },
+        {
+          "label": "Charleston City Market",
+          "href": "/charleston/charleston-city-market"
+        }
+      ],
+      "primaryToursHref": "/charleston/fort-sumter/tours",
+      "thingsToDoHref": "/charleston/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Historic Charleston",
+        "Waterfront Park"
+      ]
+    },
+    {
+      "slug": "rainbow-row",
+      "name": "Rainbow Row",
+      "type": "landmark",
+      "summary": "Rainbow Row is one of the better-known landmarks in Charleston and usually works best as part of a broader sightseeing block instead of a standalone stop.",
+      "categories": [
+        "history",
+        "landmark",
+        "walks"
+      ],
+      "priority": 78,
+      "featured": false,
+      "heroTitle": "Rainbow Row guide, things to do, and local tours",
+      "heroSummary": "Planning guide for Rainbow Row in Charleston, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use Rainbow Row as part of a broader sightseeing block instead of making it the only stop in that part of the day.",
+        "Pair Rainbow Row with one nearby walk, museum, or neighborhood stop for a more complete visit.",
+        "Use Rainbow Row as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan Rainbow Row as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Landmark stops usually work better when they are tied to a broader city route instead of treated as a one-stop plan.",
+        "A guided walk or city tour often gives Rainbow Row more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "Rainbow Row sightseeing tours",
+          "query": "charleston rainbow row sightseeing tour",
+          "description": "A simple starting point for visitors who want to see Rainbow Row in a broader city context."
+        },
+        {
+          "label": "Rainbow Row history tours",
+          "query": "charleston rainbow row history tour",
+          "description": "A simple starting point for visitors who want more context around Rainbow Row."
+        },
+        {
+          "label": "Rainbow Row guided experiences",
+          "query": "charleston rainbow row tours",
+          "description": "A general search path for tours and guided experiences connected to Rainbow Row in Charleston."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Historic Charleston",
+          "href": "/charleston/historic-charleston"
+        },
+        {
+          "label": "Waterfront Park",
+          "href": "/charleston/waterfront-park"
+        },
+        {
+          "label": "Charleston City Market",
+          "href": "/charleston/charleston-city-market"
+        }
+      ],
+      "primaryToursHref": "/charleston/rainbow-row/tours",
+      "thingsToDoHref": "/charleston/things-to-do",
+      "schemaType": "LandmarksOrHistoricalBuildings",
+      "nearbyAreas": [
+        "Historic Charleston",
+        "Waterfront Park"
+      ]
+    },
+    {
+      "slug": "the-battery",
+      "name": "The Battery",
+      "type": "waterfront",
+      "summary": "The Battery is one of the more useful waterfront areas in Charleston for visitors planning around walking, views, and a lighter sightseeing pace.",
+      "categories": [
+        "walks",
+        "history",
+        "sightseeing"
+      ],
+      "priority": 74,
+      "featured": false,
+      "heroTitle": "The Battery guide, things to do, and local tours",
+      "heroSummary": "Planning guide for The Battery in Charleston, with visitor basics and helpful local experiences.",
+      "thingsToDo": [
+        "Use The Battery for a walkable waterfront block with time for views, food, or an easier sightseeing pace.",
+        "Pair The Battery with one nearby district or attraction instead of treating the waterfront as the whole day.",
+        "Use The Battery as a stop for a more history-focused city walk or half-day plan."
+      ],
+      "visitorInfo": [],
+      "planningTips": [
+        "Plan The Battery as part of a wider neighborhood or city block instead of making it the only stop in that part of the day.",
+        "Waterfront areas usually work best as part of a slower sightseeing window instead of a tightly scheduled day.",
+        "A guided walk or city tour often gives The Battery more value than a quick standalone pass-through."
+      ],
+      "experienceIntents": [
+        {
+          "label": "The Battery waterfront tours",
+          "query": "charleston the battery waterfront tour",
+          "description": "Helpful when the waterfront fits naturally into a sightseeing or walking-focused city plan."
+        },
+        {
+          "label": "The Battery history tours",
+          "query": "charleston the battery history tour",
+          "description": "A simple starting point for visitors who want more context around The Battery."
+        },
+        {
+          "label": "The Battery guided experiences",
+          "query": "charleston the battery tours",
+          "description": "A general search path for tours and guided experiences connected to The Battery in Charleston."
+        }
+      ],
+      "relatedAttractions": [
+        {
+          "label": "Historic Charleston",
+          "href": "/charleston/historic-charleston"
+        },
+        {
+          "label": "Waterfront Park",
+          "href": "/charleston/waterfront-park"
+        },
+        {
+          "label": "Charleston City Market",
+          "href": "/charleston/charleston-city-market"
+        }
+      ],
+      "primaryToursHref": "/charleston/the-battery/tours",
+      "thingsToDoHref": "/charleston/things-to-do",
+      "schemaType": "TouristAttraction",
+      "nearbyAreas": [
+        "Historic Charleston",
+        "Waterfront Park"
+      ]
+    }
+  ]
+}

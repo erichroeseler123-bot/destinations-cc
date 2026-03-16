@@ -1,0 +1,27 @@
+{
+  "slug": "cozumel",
+  "display_name": "Cozumel",
+  "aliases": [
+    "cozumel-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Cozumel City Highlights Tour",
+      "description": "A quick way to see the best of Cozumel with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Reef Cruise",
+      "description": "Short scenic sailings and waterfront views around the cruise harbor and reef coast.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for waterfront streets, plazas, and island town highlights.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

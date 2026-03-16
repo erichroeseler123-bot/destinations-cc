@@ -1,0 +1,33 @@
+{
+  "slug": "florence",
+  "display_name": "Florence",
+  "aliases": [
+    "florence-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Florence City Highlights Tour",
+      "description": "A quick way to see the best of Florence with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "River & City Views Cruise",
+      "description": "Short scenic outings and waterfront-style viewpoints paired with Florence highlights.",
+      "query": "river cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for piazzas, landmarks, and historic city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "gateway_mappings": [
+    {
+      "kind": "port_tours_handoff",
+      "source_slug": "livorno"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

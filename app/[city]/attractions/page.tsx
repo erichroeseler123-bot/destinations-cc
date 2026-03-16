@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -5,8 +6,15 @@ import tours from "@/data/tours.json";
 import aliases from "@/data/city-aliases.json";
 import attractionsMap from "@/data/attractions.json";
 import { getNodeSlugFromCity } from "@/src/data/city-aliases";
+import { getCityManifest, getAttractionsManifest } from "@/lib/dcc/manifests/cityExpansion";
 
 export const dynamicParams = false;
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: true,
+  },
+};
 
 type Tour = {
   id: string | number;
@@ -55,6 +63,41 @@ export default async function CityAttractionsPage({
 
   const displayCity = titleCase(city);
   const cityKey = city; // city param is already a slug key like "juneau", "denver", etc.
+  const cityManifest = getCityManifest(cityKey);
+  const attractionsManifest = getAttractionsManifest(cityKey);
+
+  if (cityManifest && attractionsManifest?.attractions?.length) {
+    return (
+      <main className="min-h-screen bg-[#050816] text-white">
+        <div className="mx-auto max-w-6xl px-6 py-16 space-y-8">
+          <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,176,124,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(61,243,255,0.10),transparent_26%),linear-gradient(180deg,rgba(15,23,42,0.96),rgba(7,11,25,0.98))] p-8 shadow-[0_28px_90px_rgba(0,0,0,0.45)] md:p-10">
+            <p className="text-xs uppercase tracking-[0.24em] text-[#ffb07c]">{displayCity} attractions</p>
+            <h1 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">{displayCity} attraction guides</h1>
+            <p className="mt-4 max-w-3xl text-lg leading-8 text-white/82">
+              Explore the landmarks, neighborhoods, and attraction guides that lead naturally into tours and local experiences.
+            </p>
+          </header>
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {attractionsManifest.attractions.map((item) => (
+              <article key={item.slug} className="rounded-3xl border border-white/10 bg-white/[0.05] p-5">
+                <h2 className="text-xl font-semibold text-white">{item.name}</h2>
+                <p className="mt-3 text-sm leading-7 text-white/74">{item.heroSummary}</p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Link href={`/${cityKey}/${item.slug}`} className="text-sm font-medium text-cyan-200 hover:text-cyan-100">
+                    Open guide →
+                  </Link>
+                  <Link href={`/${cityKey}/${item.slug}/tours`} className="text-sm text-white/68 hover:text-white/88">
+                    Guided experiences →
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   const curated = (attractionsMap as any)[cityKey] as AttractionLite[] | undefined;
 

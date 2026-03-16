@@ -1,0 +1,126 @@
+{
+  "slug": "key-west",
+  "name": "Key West",
+  "metadata": {
+    "title": "Key West Tours, Things to Do, and Attractions | Destination Command Center",
+    "description": "Discover Key West tours, things to do, attractions, food, neighborhoods, and trip ideas. Browse guided experiences and plan around the city's most useful travel highlights.",
+    "keywords": [
+      "key west tours",
+      "things to do in key west",
+      "key west attractions",
+      "key west sightseeing"
+    ]
+  },
+  "hero": {
+    "eyebrow": "Key West travel guide",
+    "title": "Key West tours, things to do, and local travel planning",
+    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Key West trip.",
+    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Key West.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/key-west/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/key-west/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly."
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+    }
+  ],
+  "topAttractions": [
+    {
+      "slug": "duval-street",
+      "title": "Duval Street",
+      "description": ""
+    },
+    {
+      "slug": "mallory-square",
+      "title": "Mallory Square",
+      "description": ""
+    },
+    {
+      "slug": "ernest-hemingway-home",
+      "title": "Ernest Hemingway Home",
+      "description": ""
+    },
+    {
+      "slug": "dry-tortugas",
+      "title": "Dry Tortugas National Park",
+      "description": ""
+    },
+    {
+      "slug": "southernmost-point",
+      "title": "Southernmost Point",
+      "description": ""
+    },
+    {
+      "slug": "key-west-butterfly-conservatory",
+      "title": "Key West Butterfly and Nature Conservatory",
+      "description": ""
+    }
+  ],
+  "featuredTours": {
+    "title": "Popular Key West experiences",
+    "description": "Guided experiences and bookable activities that help visitors plan around Key West's most useful highlights.",
+    "fallbackQueries": [
+      "key west walking tour",
+      "key west food tour",
+      "key west sightseeing tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Things to do in Key West",
+      "description": "A broader planning surface for attractions, neighborhoods, and trip ideas.",
+      "href": "/key-west/things-to-do"
+    },
+    {
+      "title": "Key West tours",
+      "description": "A cleaner starting point for guided experiences, day trips, and visitor favorites.",
+      "href": "/key-west/tours"
+    },
+    {
+      "title": "Key West food guide",
+      "description": "Restaurants, food neighborhoods, and tasting-focused experiences.",
+      "href": "/key-west/food"
+    },
+    {
+      "title": "Key West day trips",
+      "description": "Half-day and full-day options that fit naturally with a city stay.",
+      "href": "/key-west/day-trips"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in Key West for first-time visitors?",
+      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+    },
+    {
+      "q": "How many days should you spend in Key West?",
+      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+    }
+  ],
+  "coordinates": {
+    "lat": 24.5551,
+    "lng": -81.78
+  },
+  "timezone": "America/New_York",
+  "lat": 24.5551,
+  "lng": -81.78
+}

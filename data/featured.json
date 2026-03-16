@@ -1,62 +1,62 @@
 {
   "title": "DCC Picks",
-  "subtitle": "High-signal pages: route intel, staging hubs, and reality checks.",
+  "subtitle": "Featured guides, attractions, and destination planning pages.",
   "cta": { "label": "Browse Cities →", "href": "/cities" },
   "items": [
     {
       "title": "Mighty Argo Shuttle",
       "href": "/mighty-argo-shuttle",
-      "tag": "ROUTE INTEL",
-      "why": "Route intel + pickup flow",
+      "tag": "TRANSPORTATION",
+      "why": "Pickup details and what to expect",
       "description": "Pickups, buffers, and a clean Denver → Idaho Springs plan."
     },
     {
       "title": "Mighty Argo Guide",
       "href": "/mighty-argo",
-      "tag": "ATTRACTION INTEL",
-      "why": "What to expect + failure modes",
+      "tag": "ATTRACTION GUIDE",
+      "why": "What to expect before you go",
       "description": "What it is, what to expect, and why it matters."
     },
     {
       "title": "Ports Directory",
       "href": "/ports",
-      "tag": "ROUTING ANCHORS",
-      "why": "Cruise ports + routing anchors",
-      "description": "High-volume ports, patterns, and decision pages."
+      "tag": "PORT GUIDES",
+      "why": "Cruise ports and embarkation planning",
+      "description": "High-volume ports, nearby context, and planning pages."
     },
     {
       "title": "PortMiami Hub",
       "href": "/ports/portmiami",
-      "tag": "PORT HUB",
-      "why": "Embarkation logistics + nearby intel",
-      "description": "One of the busiest cruise hubs—build your port cluster."
+      "tag": "PORT GUIDE",
+      "why": "Embarkation guidance and nearby planning",
+      "description": "One of the busiest cruise ports, with nearby planning in one place."
     },
     {
       "title": "Nassau Hub",
       "href": "/ports/nassau",
-      "tag": "PORT HUB",
-      "why": "Tender timing + shore-day constraints",
+      "tag": "PORT GUIDE",
+      "why": "Tender timing and shore-day planning",
       "description": "Fast decisions for the most common Bahamas stop."
     },
     {
       "title": "Mexico Region",
       "href": "/regions/mexico",
-      "tag": "REGIONAL HUBS",
-      "why": "Staging hubs + corridor logic",
-      "description": "Clustered routing for Mexico ports and day plans."
+      "tag": "REGION GUIDE",
+      "why": "Ports, places, and nearby planning",
+      "description": "A regional guide to Mexico ports and day plans."
     },
     {
       "title": "Tours Hub",
       "href": "/tours",
       "tag": "CATALOG",
-      "why": "Browse inventory by intent",
+      "why": "Browse tours by destination",
       "description": "Entry point to the catalog and city tour pages."
     },
     {
       "title": "Search Cities: Miami",
       "href": "/cities?q=miami",
       "tag": "FAST ENTRY",
-      "why": "Jump to a city node",
+      "why": "Jump straight to a city guide",
       "description": "Skip scrolling—go straight to a target city."
     }
   ]

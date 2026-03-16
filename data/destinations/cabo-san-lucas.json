@@ -1,0 +1,27 @@
+{
+  "slug": "cabo-san-lucas",
+  "display_name": "Cabo San Lucas",
+  "aliases": [
+    "cabo-san-lucas-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Cabo San Lucas City Highlights Tour",
+      "description": "A quick way to see the best of Cabo San Lucas with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor & Bay Cruise",
+      "description": "Short scenic sailings and waterfront views near the marina and bay.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for the marina, historic streets, and city highlights.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

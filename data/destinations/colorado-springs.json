@@ -1,0 +1,27 @@
+{
+  "slug": "colorado-springs",
+  "display_name": "Colorado Springs",
+  "aliases": [
+    "colorado-springs-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Colorado Springs City Highlights Tour",
+      "description": "A quick way to see the best of Colorado Springs with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Food & Drink Tour",
+      "description": "A high-conversion category: local tastings, bars, and signature bites.",
+      "query": "food tour"
+    },
+    {
+      "title": "Neighborhood Walking Tour",
+      "description": "Perfect for first-timers: history, architecture, and the best streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

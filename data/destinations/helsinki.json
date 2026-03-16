@@ -1,0 +1,27 @@
+{
+  "slug": "helsinki",
+  "display_name": "Helsinki",
+  "aliases": [
+    "helsinki-guide"
+  ],
+  "starter_intents": [
+    {
+      "title": "Helsinki City Highlights Tour",
+      "description": "A quick way to see the best of Helsinki with a local guide.",
+      "query": "city highlights tour",
+      "badge": "Starter"
+    },
+    {
+      "title": "Harbor Cruise",
+      "description": "Short scenic sailings and waterfront views near the harbor and islands.",
+      "query": "harbor cruise"
+    },
+    {
+      "title": "Old Town Walking Tour",
+      "description": "A simple first-timer lane for civic landmarks, harbor history, and city streets.",
+      "query": "walking tour"
+    }
+  ],
+  "status": "active",
+  "visibility": "public"
+}

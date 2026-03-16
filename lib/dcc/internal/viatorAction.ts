@@ -14,6 +14,7 @@ export type ViatorPlaceInput = {
   name: string;
   hub?: string;
   citySlug?: string;
+  currency?: string;
 };
 
 export type ViatorSourcePolicy = "auto" | "live" | "cache" | "fallback";
@@ -120,12 +121,66 @@ function extractLiveDurationMinutes(product: Record<string, unknown>): number | 
   return null;
 }
 
+function normalizeItineraryType(value: unknown): string | null {
+  const raw = firstString(value);
+  if (!raw) return null;
+  return raw
+    .toLowerCase()
+    .split("_")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 function getViatorApiKey(): string {
   return getEnvOptional("VIATOR_API_KEY") || "";
 }
 
 function getViatorBase(): string {
   return getEnvOptional("VIATOR_API_BASE") || "https://api.viator.com/partner";
+}
+
+function getRequestedCurrency(value: string | undefined): string {
+  const currency = String(value || "USD").trim().toUpperCase();
+  const supported = new Set([
+    "AED",
+    "ARS",
+    "USD",
+    "BRL",
+    "EUR",
+    "GBP",
+    "AUD",
+    "CAD",
+    "CHF",
+    "CLP",
+    "CNY",
+    "COP",
+    "DKK",
+    "FJD",
+    "HKD",
+    "IDR",
+    "ILS",
+    "INR",
+    "ISK",
+    "JPY",
+    "KRW",
+    "MXN",
+    "MYR",
+    "NOK",
+    "NZD",
+    "SGD",
+    "PEN",
+    "PHP",
+    "PLN",
+    "RUB",
+    "SEK",
+    "THB",
+    "TRY",
+    "TWD",
+    "VND",
+    "ZAR",
+  ]);
+  return supported.has(currency) ? currency : "USD";
 }
 
 function getViatorPolicy(): ViatorSourcePolicy {
@@ -163,6 +218,22 @@ function lookupDestinationId(place: ViatorPlaceInput): number | null {
   return loose?.destinationId || null;
 }
 
+function liveProductMatchesPlace(product: ViatorActionProduct, place: ViatorPlaceInput): boolean {
+  const placeSlug = slugify(place.citySlug || place.slug || place.name);
+  const placeNameSlug = slugify(place.name.replace(/\s*Guide\s*$/i, "").trim());
+  const haystack = slugify(
+    [product.title, product.short_description, product.url]
+      .filter(Boolean)
+      .join(" ")
+  );
+
+  if (placeSlug && haystack.includes(placeSlug)) return true;
+  if (placeNameSlug && haystack.includes(placeNameSlug)) return true;
+
+  const tokens = placeNameSlug.split("-").filter((token) => token.length > 2);
+  return tokens.length > 0 && tokens.every((token) => haystack.includes(token));
+}
+
 function normalizeLiveProducts(data: unknown, placeName: string): ViatorActionProduct[] {
   const payload = asRecord(data);
   const rowsRaw =
@@ -178,6 +249,10 @@ function normalizeLiveProducts(data: unknown, placeName: string): ViatorActionPr
     const pricing = asRecord(p.pricing);
     const pricingSummary = asRecord(pricing?.summary);
     const price = asRecord(p.price);
+    const supplier = asRecord(p.supplier);
+    const itinerary = asRecord(p.itinerary);
+    const bookingConfirmationSettings = asRecord(p.bookingConfirmationSettings);
+    const productOptions = Array.isArray(p.productOptions) ? p.productOptions : [];
     const reviewCount = Number(reviews?.totalReviews ?? reviews?.total ?? reviews?.count ?? 0);
     const rating = Number(reviews?.combinedAverageRating ?? reviews?.average ?? NaN);
     const priceFrom = Number(
@@ -188,6 +263,14 @@ function normalizeLiveProducts(data: unknown, placeName: string): ViatorActionPr
     const imageUrl = extractLiveImageUrl(p);
     const shortDescription = extractLiveDescription(p);
     const durationMinutes = extractLiveDurationMinutes(p);
+    const supplierName = firstString(supplier?.name);
+    const itineraryType = normalizeItineraryType(itinerary?.itineraryType);
+    const bookingConfirmationType = normalizeItineraryType(
+      bookingConfirmationSettings?.confirmationType
+    );
+    const productOptionTitles = productOptions
+      .map((option) => firstString(asRecord(option)?.title))
+      .filter((value): value is string => Boolean(value));
 
     const tracked = (() => {
       try {
@@ -214,6 +297,11 @@ function normalizeLiveProducts(data: unknown, placeName: string): ViatorActionPr
       currency,
       duration_minutes: durationMinutes,
       image_url: imageUrl,
+      supplier_name: supplierName,
+      itinerary_type: itineraryType,
+      booking_confirmation_type: bookingConfirmationType,
+      product_option_count: productOptions.length || null,
+      product_option_titles: productOptionTitles.length > 0 ? productOptionTitles : null,
       url: tracked,
     };
   });
@@ -259,7 +347,7 @@ async function fetchLiveViatorAction(place: ViatorPlaceInput): Promise<ViatorAct
     },
     body: JSON.stringify({
       filtering: { destination: destinationId },
-      currency: "USD",
+      currency: getRequestedCurrency(place.currency),
       pagination: { start: 1, count: 8 },
     }),
     cache: "no-store",
@@ -284,7 +372,9 @@ async function fetchLiveViatorAction(place: ViatorPlaceInput): Promise<ViatorAct
   }
 
   const json = (await response.json()) as unknown;
-  const products = normalizeLiveProducts(json, place.name);
+  const products = normalizeLiveProducts(json, place.name).filter((product) =>
+    liveProductMatchesPlace(product, place)
+  );
   if (products.length === 0) {
     const payload = asRecord(json);
     const hasProductsArray = Boolean(payload && Array.isArray(payload.products));

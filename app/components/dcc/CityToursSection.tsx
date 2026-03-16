@@ -34,8 +34,9 @@ export default function CityToursSection({
   products,
   fallbacks,
 }: CityToursSectionProps) {
+  const hasLiveProducts = products.length > 0;
   const cards =
-    products.length > 0
+    hasLiveProducts
       ? products.slice(0, 6).map((product) => ({
           key: product.product_code,
           title: product.title,
@@ -59,46 +60,63 @@ export default function CityToursSection({
         }));
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/[0.05] p-6 shadow-[0_16px_50px_rgba(0,0,0,0.35)]">
-      <div className="space-y-4">
+    <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+      <div className="space-y-5">
         <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Book Tours & Activities</p>
-          <h2 className="text-2xl font-bold md:text-3xl">Book {cityName} tours on this page</h2>
+          <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Guided Experiences</p>
+          <h2 className="text-2xl font-bold md:text-3xl">Popular ways to experience {cityName}</h2>
           <p className="max-w-3xl text-zinc-300">
-            Use DCC to discover the best things to do in {cityName}. When you&apos;re ready to book, complete your reservation securely via Viator.
+            Browse local tours and activities in {cityName}, then check live pricing and availability with a booking partner when you&apos;re ready.
           </p>
         </div>
 
         <PoweredByViator
           compact
           disclosure
-          body={`DCC helps you find the right experiences faster in ${cityName}. When you're ready to book, you can book with DCC via Viator, a trusted tours and activities partner with secure checkout.`}
+          body={`DCC helps you compare travel-ready experiences in ${cityName}. Availability, live pricing, and checkout are provided by Viator.`}
         />
+
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm">
+          <div className="flex flex-wrap items-center gap-3 text-zinc-300">
+            <span className="font-medium text-white">{cards.length} featured options</span>
+            <span className="text-zinc-500">•</span>
+            <span>{hasLiveProducts ? "Live inventory" : "Partner search shortcuts"}</span>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.16em] text-zinc-400">
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Tours</span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Activities</span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Availability on partner page</span>
+          </div>
+        </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {cards.map((card) => (
             <article
               key={card.key}
-              className="rounded-2xl border border-white/10 bg-black/20 p-5"
+              className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5 transition-colors hover:bg-white/[0.08]"
             >
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-white">{card.title}</h3>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">
+                    {hasLiveProducts ? "Featured experience" : "Search partner page"}
+                  </p>
+                  <h3 className="mt-2 text-lg font-semibold text-white">{card.title}</h3>
                   <p className="mt-2 text-sm text-zinc-300">⭐ {card.rating}</p>
                 </div>
 
-                <div className="flex flex-wrap gap-3 text-sm text-zinc-400">
-                  <span>{card.duration}</span>
-                  <span>{card.price}</span>
+                <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.16em] text-zinc-400">
+                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">{card.duration}</span>
+                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">{card.price}</span>
                 </div>
 
                 <a
                   href={card.href}
                   target="_blank"
                   rel="noopener noreferrer sponsored nofollow"
-                  className="inline-flex w-full items-center justify-center rounded-2xl bg-cyan-600 px-4 py-3 font-semibold text-white hover:bg-cyan-500"
+                  className="inline-flex w-full items-center justify-between rounded-2xl bg-cyan-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-cyan-500"
                 >
-                  Book with DCC via Viator
+                  <span>{hasLiveProducts ? "View experience" : "Check availability"}</span>
+                  <span aria-hidden="true">→</span>
                 </a>
               </div>
             </article>
@@ -110,10 +128,10 @@ export default function CityToursSection({
             href={`/${encodeURIComponent(cityKey)}/tours`}
             className="inline-flex items-center justify-center rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-5 py-3 font-semibold text-emerald-200 hover:bg-emerald-500/20"
           >
-            Browse All Tours
+            Browse More Tours
           </Link>
           <p className="text-sm text-zinc-400">
-            Discovery on DCC, booking via Viator.
+            Browse on DCC, availability and checkout via Viator.
           </p>
         </div>
       </div>
