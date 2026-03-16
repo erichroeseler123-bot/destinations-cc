@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getAllCities } from "@/lib/data/locations";
+import { getAllCityHubs } from "@/lib/data/locations";
 import CitiesSearchClient from "./CitiesSearchClient";
 import PoweredByViator from "@/app/components/dcc/PoweredByViator";
 import { SITE_IDENTITY } from "@/src/data/site-identity";
@@ -22,7 +22,7 @@ export default function CitiesPage({
 }: {
   searchParams?: { q?: string };
 }) {
-  const cities = getAllCities()
+  const cities = getAllCityHubs()
     .slice()
     .sort((a, b) => (b.metrics?.population ?? 0) - (a.metrics?.population ?? 0));
 
