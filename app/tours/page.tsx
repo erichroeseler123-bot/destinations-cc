@@ -19,7 +19,8 @@ import CinematicBackdrop from "@/app/components/dcc/CinematicBackdrop";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
 import { getViatorDestinationOptions } from "@/lib/viator/destinations";
 import { getViatorFrontendCategoryTags } from "@/lib/viator/tags";
-import { getViatorReviewContentNotice } from "@/lib/viator/reviews";
+import { getViatorCapabilities } from "@/lib/viator/access";
+import { getViatorPolicy } from "@/lib/viator/policy";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,8 @@ type ToursSearchParams = {
   minRating?: string;
   maxPrice?: string;
   maxDuration?: string;
+  tag?: string;
+  recommended?: string;
   source_section?: string;
   intent_query?: string;
 };
@@ -59,6 +62,8 @@ const FEATURED_TOUR_CATEGORIES = [
 ] as const;
 const VIATOR_DESTINATION_OPTIONS = getViatorDestinationOptions();
 const VIATOR_FRONTEND_TAGS = getViatorFrontendCategoryTags();
+const VIATOR_CAPABILITIES = getViatorCapabilities();
+const VIATOR_POLICY = getViatorPolicy();
 
 function stripStateSuffix(slug: string): string {
   return slug.replace(/-[a-z]{2}$/i, "");
@@ -205,12 +210,20 @@ function sortProducts(
 
 function filterProductsByTravelerControls(
   products: Awaited<ReturnType<typeof getViatorActionForPlace>>["products"],
-  controls: { minRating: number | null; maxPrice: number | null; maxDuration: number | null }
+  controls: {
+    minRating: number | null;
+    maxPrice: number | null;
+    maxDuration: number | null;
+    tagId: number | null;
+    recommendedOnly: boolean;
+  }
 ) {
   return products.filter((product) => {
     if (controls.minRating !== null && (product.rating ?? -1) < controls.minRating) return false;
     if (controls.maxPrice !== null && typeof product.price_from === "number" && product.price_from > controls.maxPrice) return false;
     if (controls.maxDuration !== null && typeof product.duration_minutes === "number" && product.duration_minutes > controls.maxDuration) return false;
+    if (controls.tagId !== null && !(product.tag_ids || []).includes(controls.tagId)) return false;
+    if (controls.recommendedOnly && (product.merchandising_score ?? 0) <= 0) return false;
     return true;
   });
 }
@@ -277,6 +290,8 @@ export default async function ToursPage({
   const minRating = resolvedSearch.minRating ? Number(resolvedSearch.minRating) : null;
   const maxPrice = resolvedSearch.maxPrice ? Number(resolvedSearch.maxPrice) : null;
   const maxDuration = resolvedSearch.maxDuration ? Number(resolvedSearch.maxDuration) : null;
+  const tagId = resolvedSearch.tag ? Number(resolvedSearch.tag) : null;
+  const recommendedOnly = resolvedSearch.recommended === "1";
   const sourceSection = (resolvedSearch.source_section || "").trim() || null;
   const lane = (resolvedSearch.lane || "").trim() || null;
 
@@ -295,6 +310,8 @@ export default async function ToursPage({
           minRating: Number.isFinite(minRating as number) ? minRating : null,
           maxPrice: Number.isFinite(maxPrice as number) ? maxPrice : null,
           maxDuration: Number.isFinite(maxDuration as number) ? maxDuration : null,
+          tagId: Number.isFinite(tagId as number) ? tagId : null,
+          recommendedOnly,
         }),
         sort
       )
@@ -368,8 +385,19 @@ export default async function ToursPage({
           graph_places={health.places} • graph_edges={health.edges} • stale={health.stale ? "yes" : "no"}
         </p>
         <p className="max-w-3xl text-xs text-zinc-500">
-          {getViatorReviewContentNotice()}
+          {VIATOR_POLICY.reviewNotice}
         </p>
+        <div className="flex flex-wrap gap-2 pt-1 text-[11px] uppercase tracking-[0.16em] text-zinc-400">
+          <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">
+            Tier {VIATOR_CAPABILITIES.accessTier.replace(/_/g, " ")}
+          </span>
+          <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">
+            Search {VIATOR_CAPABILITIES.canUseSearch ? "enabled" : "disabled"}
+          </span>
+          <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">
+            {VIATOR_CAPABILITIES.shouldUseIngestionModel ? "Ingestion-ready" : "Search-first"}
+          </span>
+        </div>
         <PoweredByViator
           compact
           disclosure
@@ -417,6 +445,8 @@ export default async function ToursPage({
         defaultMinRating={resolvedSearch.minRating || ""}
         defaultMaxPrice={resolvedSearch.maxPrice || ""}
         defaultMaxDuration={resolvedSearch.maxDuration || ""}
+        defaultTagId={resolvedSearch.tag || ""}
+        defaultRecommendedOnly={recommendedOnly}
         sourceSection="tours-search-panel"
         suggestions={
           cityName
@@ -497,6 +527,16 @@ export default async function ToursPage({
             {minRating ? <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-zinc-300">rating {minRating}+</span> : null}
             {maxPrice ? <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-zinc-300">under {currency} {maxPrice}</span> : null}
             {maxDuration ? <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-zinc-300">under {Math.round(maxDuration / 60)}h</span> : null}
+            {tagId ? (
+              <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-zinc-300">
+                {VIATOR_FRONTEND_TAGS.find((tag) => tag.tagId === tagId)?.label || "approved category"}
+              </span>
+            ) : null}
+            {recommendedOnly ? (
+              <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-zinc-300">
+                recommended only
+              </span>
+            ) : null}
             <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-zinc-300">
               review content non-indexed
             </span>
@@ -531,6 +571,12 @@ export default async function ToursPage({
               <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Compliant categories</p>
                 <p className="mt-2 text-sm text-zinc-200">{compliantCategoryLabels.slice(0, 3).join(" • ")}</p>
+              </article>
+              <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Access posture</p>
+                <p className="mt-2 text-sm text-zinc-200">
+                  {VIATOR_CAPABILITIES.accessTier.replace(/_/g, " ")} • {VIATOR_CAPABILITIES.canUseSearch ? "search active" : "search unavailable"}
+                </p>
               </article>
             </div>
           </section>

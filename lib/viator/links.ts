@@ -9,6 +9,8 @@ type ViatorAttributionOptions = {
   campaign?: string | null;
   medium?: ViatorMedium | null;
   preserveExistingCampaign?: boolean;
+  locale?: string | null;
+  currency?: string | null;
 };
 
 function normalizeUrl(url: string): URL | null {
@@ -46,6 +48,8 @@ export function appendViatorAttribution(
   normalized.searchParams.set("utm_source", config.utmSource);
   normalized.searchParams.set("utm_medium", config.utmMedium);
   normalized.searchParams.set("utm_campaign", config.utmCampaign);
+  normalized.searchParams.set("locale", options.locale || config.locale);
+  if (options.currency) normalized.searchParams.set("currencyCode", options.currency);
 
   return normalized.toString();
 }

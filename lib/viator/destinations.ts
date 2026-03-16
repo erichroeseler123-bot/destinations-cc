@@ -3,16 +3,7 @@ import cityIndex from "@/data/cities/index.json";
 import destinationsData from "@/data/destinations.json";
 import usTopTourism from "@/data/cities/us-top-tourism.json";
 import { slugify } from "@/lib/dcc/slug";
-
-export type ViatorDestinationOption = {
-  routeSlug: string;
-  cityName: string;
-  state?: string;
-  country?: string;
-  destinationId?: number;
-  timeZone?: string;
-  defaultCurrencyCode?: string;
-};
+import { ViatorDestinationOptionSchema, type ViatorDestinationOption } from "@/lib/viator/schema";
 
 type ViatorDestinationRow = {
   destinationId?: number;
@@ -46,8 +37,23 @@ export function getViatorDestinationOptions(): ViatorDestinationOption[] {
       const cityName =
         cityIndexEntry?.name || tourismEntry?.name || titleCaseSlug(routeSlug);
       const destinationRow = destinationBySlug.get(slugify(cityName));
+      const searchTerms = Array.from(
+        new Set(
+          [
+            routeSlug,
+            cityName,
+            cityIndexEntry?.name,
+            tourismEntry?.name,
+            `${cityName} tours`,
+            `${cityName} attractions`,
+            cityIndexEntry?.state ? `${cityName}, ${cityIndexEntry.state}` : null,
+          ]
+            .filter((value): value is string => Boolean(value))
+            .map((value) => value.trim())
+        )
+      );
 
-      return {
+      return ViatorDestinationOptionSchema.parse({
         routeSlug,
         cityName,
         state: cityIndexEntry?.state || tourismEntry?.state,
@@ -55,7 +61,17 @@ export function getViatorDestinationOptions(): ViatorDestinationOption[] {
         destinationId: destinationRow?.destinationId,
         timeZone: destinationRow?.timeZone,
         defaultCurrencyCode: destinationRow?.defaultCurrencyCode,
-      };
+        searchTerms,
+      });
     })
     .sort((a, b) => a.cityName.localeCompare(b.cityName));
+}
+
+export function searchViatorDestinationOptions(query: string, limit = 8): ViatorDestinationOption[] {
+  const normalized = slugify(query);
+  if (!normalized) return getViatorDestinationOptions().slice(0, limit);
+
+  return getViatorDestinationOptions()
+    .filter((option) => option.searchTerms.some((term) => slugify(term).includes(normalized)))
+    .slice(0, limit);
 }

@@ -3,9 +3,12 @@ import path from "path";
 import toursCatalog from "@/data/tours.json";
 import vegasTours from "@/data/vegas.tours.json";
 import { slugify } from "@/lib/dcc/slug";
-import { getEnvNumber, getEnvOptional } from "@/lib/dcc/config/env";
+import { getEnvNumber } from "@/lib/dcc/config/env";
 import { appendViatorAttribution, buildViatorCampaignFromParts, buildViatorSearchUrl } from "@/lib/viator/links";
-import { getDisplayableViatorTags, normalizeViatorTagIds, scoreViatorMerchandisingSignals, type ViatorTagDefinition } from "@/lib/viator/tags";
+import { getDisplayableViatorTags, normalizeViatorTagIds, scoreViatorMerchandisingSignals } from "@/lib/viator/tags";
+import { normalizeViatorActionProduct, type ViatorActionProduct } from "@/lib/viator/schema";
+
+export type { ViatorActionProduct } from "@/lib/viator/schema";
 
 const ROOT = process.cwd();
 const VIATOR_CACHE_PATH = path.join(ROOT, "data", "action", "viator.products.cache.json");
@@ -58,27 +61,6 @@ type CacheFile = {
   generated_at: string;
   source: string;
   places: Record<string, CacheEntry>;
-};
-
-export type ViatorActionProduct = {
-  product_code: string;
-  title: string;
-  short_description?: string | null;
-  rating: number | null;
-  review_count: number | null;
-  price_from: number | null;
-  currency: string;
-  duration_minutes: number | null;
-  image_url: string | null;
-  supplier_name?: string | null;
-  itinerary_type?: string | null;
-  booking_confirmation_type?: string | null;
-  product_option_count?: number | null;
-  product_option_titles?: string[] | null;
-  tag_ids?: number[];
-  display_tags?: ViatorTagDefinition[];
-  merchandising_score?: number;
-  url: string;
 };
 
 export type ViatorActionResult = {
@@ -174,6 +156,7 @@ function buildFallbackViatorSearchUrl(placeName: string, title: string): string 
   const query = [placeName, title].filter(Boolean).join(" ").trim() || `${placeName} tours`;
   return buildViatorSearchUrl(query, {
     campaign: buildViatorCampaignFromParts([placeName, title || "search", "catalog"]),
+    currency: "USD",
   });
 }
 
@@ -189,7 +172,7 @@ function mapToursToActionProducts(tours: Tour[], placeName: string): ViatorActio
             campaign: buildViatorCampaignFromParts([placeName, title, "catalog"]),
           })
         : buildFallbackViatorSearchUrl(placeName, title);
-    return {
+    return normalizeViatorActionProduct({
       product_code: String(tour.product_code || tour.id || slugify(title)),
       title,
       short_description: null,
@@ -219,7 +202,7 @@ function mapToursToActionProducts(tours: Tour[], placeName: string): ViatorActio
       display_tags: getDisplayableViatorTags(tagIds),
       merchandising_score: scoreViatorMerchandisingSignals(tagIds),
       url: tracked,
-    };
+    });
   });
 }
 

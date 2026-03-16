@@ -2,7 +2,7 @@ import { buildViatorSearchLink } from "@/utils/affiliateLinks";
 import type { ViatorActionProduct } from "@/lib/dcc/action/viator";
 import TravelerTakeaways from "@/app/components/dcc/TravelerTakeaways";
 import { summarizeGuestFeedback } from "@/lib/dcc/guestFeedback";
-import { getViatorTravelerPhotoNotice } from "@/lib/viator/reviews";
+import { getViatorPolicy } from "@/lib/viator/policy";
 
 type FallbackIntent = {
   label: string;
@@ -53,6 +53,7 @@ export default function ViatorTourGrid({
   ctaLabel = "Book with DCC via Viator",
   linkBuilder,
 }: ViatorTourGridProps) {
+  const viatorPolicy = getViatorPolicy();
   const cards =
     products.length > 0
       ? products.slice(0, 6).map((product) => ({
@@ -220,7 +221,7 @@ export default function ViatorTourGrid({
                     {ctaLabel}
                   </a>
                   <p className="text-[11px] leading-5 text-zinc-500">
-                    {getViatorTravelerPhotoNotice()}
+                    {viatorPolicy.travelerPhotoNotice}
                   </p>
                 </div>
               </article>

@@ -11,6 +11,9 @@ import { getEnvCsv, getEnvNumber, getEnvOptional } from "@/lib/dcc/config/env";
 import { appendViatorAttribution, buildViatorCampaignFromParts } from "@/lib/viator/links";
 import { normalizeViatorCurrency } from "@/lib/viator/config";
 import { getDisplayableViatorTags, normalizeViatorTagIds, scoreViatorMerchandisingSignals } from "@/lib/viator/tags";
+import { getViatorCapabilities } from "@/lib/viator/access";
+import { getViatorPolicy as getViatorIntegrationPolicy } from "@/lib/viator/policy";
+import { normalizeViatorActionProduct } from "@/lib/viator/schema";
 
 export type ViatorPlaceInput = {
   slug: string;
@@ -147,7 +150,7 @@ function getRequestedCurrency(value: string | undefined): string {
   return normalizeViatorCurrency(value);
 }
 
-function getViatorPolicy(): ViatorSourcePolicy {
+function getViatorSourcePolicy(): ViatorSourcePolicy {
   const raw = (getEnvOptional("VIATOR_SOURCE_POLICY") || "auto").toLowerCase();
   if (raw === "auto" || raw === "live" || raw === "cache" || raw === "fallback") return raw;
   return "auto";
@@ -244,7 +247,7 @@ function normalizeLiveProducts(data: unknown, placeName: string): ViatorActionPr
       }
     );
 
-    return {
+    return normalizeViatorActionProduct({
       product_code: productCode,
       title,
       short_description: shortDescription,
@@ -263,11 +266,24 @@ function normalizeLiveProducts(data: unknown, placeName: string): ViatorActionPr
       display_tags: getDisplayableViatorTags(tagIds),
       merchandising_score: scoreViatorMerchandisingSignals(tagIds),
       url: tracked,
-    };
+    });
   });
 }
 
 async function fetchLiveViatorAction(place: ViatorPlaceInput): Promise<ViatorActionResult | null> {
+  if (!getViatorCapabilities().canUseSearch) {
+    return {
+      enabled: false,
+      products: [],
+      source: "live_api",
+      cache_status: "bypass",
+      stale: false,
+      last_updated: new Date().toISOString(),
+      stale_after: null,
+      max_age_hours: 0,
+      fallback_reason: "search_not_allowed_for_access_tier",
+    };
+  }
   const VIATOR_API_KEY = getViatorApiKey();
   if (!VIATOR_API_KEY) {
     return {
@@ -366,7 +382,8 @@ async function fetchLiveViatorAction(place: ViatorPlaceInput): Promise<ViatorAct
 }
 
 function policyForPlace(place: ViatorPlaceInput): { policy: ViatorSourcePolicy; useLive: boolean; reason: string } {
-  const policy = getViatorPolicy();
+  const capabilities = getViatorCapabilities();
+  const policy = getViatorSourcePolicy();
   const slug = slugify(place.slug);
   const VIATOR_LIVE_ALLOWLIST = getViatorLiveAllowlist();
   const VIATOR_LIVE_PERCENT = getViatorLivePercent();
@@ -374,6 +391,9 @@ function policyForPlace(place: ViatorPlaceInput): { policy: ViatorSourcePolicy; 
   const inPercentRollout = hashPercent(slug) < VIATOR_LIVE_PERCENT;
 
   if (policy === "live") {
+    if (!capabilities.canUseSearch) {
+      return { policy, useLive: false, reason: "live_policy_blocked_by_access_tier" };
+    }
     if (VIATOR_LIVE_ALLOWLIST.size > 0 && !inAllowlist) {
       return { policy, useLive: false, reason: "live_policy_allowlist_block" };
     }
@@ -382,8 +402,8 @@ function policyForPlace(place: ViatorPlaceInput): { policy: ViatorSourcePolicy; 
   if (policy === "cache") return { policy, useLive: false, reason: "cache_policy" };
   if (policy === "fallback") return { policy, useLive: false, reason: "fallback_policy" };
 
-  if (inAllowlist) return { policy: "auto", useLive: true, reason: "allowlist" };
-  if (inPercentRollout) return { policy: "auto", useLive: true, reason: "percent_rollout" };
+  if (capabilities.canUseSearch && inAllowlist) return { policy: "auto", useLive: true, reason: "allowlist" };
+  if (capabilities.canUseSearch && inPercentRollout) return { policy: "auto", useLive: true, reason: "percent_rollout" };
   return { policy: "auto", useLive: false, reason: "auto_cache_default" };
 }
 
@@ -397,6 +417,7 @@ export async function getViatorProductsForPlace(
 export async function getViatorActionForPlace(
   place: ViatorPlaceInput
 ): Promise<ControlledViatorActionResult> {
+  const policyState = getViatorIntegrationPolicy();
   const decision = policyForPlace(place);
   const maxAgeHours = getEnvNumber("VIATOR_CACHE_MAX_AGE_HOURS", 72, { min: 1 });
 
@@ -419,7 +440,12 @@ export async function getViatorActionForPlace(
         return { ...live, policy_applied: decision.policy, served_source: live.source, reason: decision.reason };
       }
       if (live) {
-        return { ...live, policy_applied: decision.policy, served_source: live.source, reason: "live_diagnostics_only" };
+        return {
+          ...live,
+          policy_applied: decision.policy,
+          served_source: live.source,
+          reason: `${decision.reason}:${policyState.accessTier}:live_diagnostics_only`,
+        };
       }
       const fallback = resolveViatorAction(place, maxAgeHours);
       return {
