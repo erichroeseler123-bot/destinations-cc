@@ -254,6 +254,13 @@ export const CANONICAL_ENV_VARS = [
     optional: true,
   },
   {
+    name: "TELNYX_PUBLIC_KEY",
+    exposure: "server",
+    section: "Messaging",
+    defaultValue: "",
+    optional: true,
+  },
+  {
     name: "TELNYX_AI_SYSTEM_PROMPT",
     exposure: "server",
     section: "Messaging",

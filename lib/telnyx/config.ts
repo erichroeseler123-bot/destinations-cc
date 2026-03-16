@@ -5,6 +5,7 @@ export type TelnyxConfig = {
   fromNumber: string;
   messagingProfileId: string;
   webhookSecret: string;
+  publicKey: string;
   aiSystemPrompt: string;
   geminiApiKey: string;
   geminiModel: string;
@@ -20,6 +21,7 @@ export function getTelnyxConfig(): TelnyxConfig {
     fromNumber: read("TELNYX_FROM_NUMBER") || read("TELNYX_PHONE_NUMBER"),
     messagingProfileId: read("TELNYX_MESSAGING_PROFILE_ID"),
     webhookSecret: read("TELNYX_WEBHOOK_SECRET"),
+    publicKey: read("TELNYX_PUBLIC_KEY"),
     aiSystemPrompt:
       read("TELNYX_AI_SYSTEM_PROMPT") ||
       "You are the Destination Command Center SMS assistant. Reply in plain SMS, under 320 characters, helpful, direct, no markdown, no emojis unless clearly natural.",

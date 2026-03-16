@@ -16,8 +16,11 @@ export async function GET(req: NextRequest) {
       apiConfigured: Boolean(config.apiKey),
       fromConfigured: Boolean(config.fromNumber),
       messagingProfileConfigured: Boolean(config.messagingProfileId),
-      tokenProtected: Boolean(config.webhookSecret),
-      hint: config.webhookSecret
+      publicKeyConfigured: Boolean(config.publicKey),
+      tokenProtected: Boolean(config.webhookSecret) && !config.publicKey,
+      hint: config.publicKey
+        ? `Use this URL in Telnyx: ${req.nextUrl.origin}/api/telnyx/inbound`
+        : config.webhookSecret
         ? `Use this full URL in Telnyx: ${req.nextUrl.origin}/api/telnyx/inbound?token=${config.webhookSecret}`
         : `Use this URL in Telnyx: ${req.nextUrl.origin}/api/telnyx/inbound`,
     },
@@ -26,11 +29,12 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!verifyTelnyxWebhookRequest(req)) {
+  const rawBody = await req.text();
+  if (!(await verifyTelnyxWebhookRequest(req, rawBody))) {
     return NextResponse.json({ ok: false, error: "invalid_webhook_token" }, { status: 401 });
   }
 
-  const payload = (await req.json()) as unknown;
+  const payload = JSON.parse(rawBody) as unknown;
   const inbound = parseTelnyxInboundEvent(payload);
   if (!inbound) {
     return NextResponse.json({ ok: true, ignored: true });

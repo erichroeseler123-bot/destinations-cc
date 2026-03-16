@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { TelnyxWebhook } from "telnyx/webhooks";
 import { getTelnyxConfig } from "@/lib/telnyx/config";
 
 export type TelnyxInboundMessage = {
@@ -20,12 +21,33 @@ function firstString(...values: unknown[]): string | null {
   return null;
 }
 
-export function verifyTelnyxWebhookRequest(req: NextRequest): boolean {
-  const secret = getTelnyxConfig().webhookSecret;
-  if (!secret) return true;
+function getHeaderMap(req: NextRequest): Record<string, string> {
+  const headers: Record<string, string> = {};
+  req.headers.forEach((value, key) => {
+    headers[key] = value;
+  });
+  return headers;
+}
 
+export async function verifyTelnyxWebhookRequest(
+  req: NextRequest,
+  rawBody: string
+): Promise<boolean> {
+  const config = getTelnyxConfig();
+
+  if (config.publicKey) {
+    try {
+      const webhook = new TelnyxWebhook(config.publicKey);
+      await webhook.verify(rawBody, getHeaderMap(req));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  if (!config.webhookSecret) return true;
   const token = req.nextUrl.searchParams.get("token");
-  return token === secret;
+  return token === config.webhookSecret;
 }
 
 export function parseTelnyxInboundEvent(payload: unknown): TelnyxInboundMessage | null {
