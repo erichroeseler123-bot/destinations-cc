@@ -1,18 +1,22 @@
-import fs from "fs";
-import path from "path";
+import { writeViatorDestinationsCache, writeViatorTagsCache } from "@/lib/viator/cache";
 import { getViatorClient } from "@/lib/viator/client";
+import { getViatorServerConfig } from "@/lib/viator/config";
 
 async function main() {
-  const client = getViatorClient();
-  const root = process.cwd();
-  const destinationsPath = path.join(root, "data", "viator-destinations.json");
-  const tagsPath = path.join(root, "data", "viator-tags.json");
+  const config = getViatorServerConfig();
+  if (!config.apiKey) {
+    throw new Error("VIATOR_API_KEY missing. Refusing to write fallback taxonomy as if it were live taxonomy.");
+  }
 
+  const client = getViatorClient();
   const destinations = await client.listDestinations();
   const tags = await client.listTags();
+  if (!Array.isArray(tags) || tags.length === 0) {
+    throw new Error("No tags returned from Viator. Refusing to write an empty live tag cache.");
+  }
 
-  fs.writeFileSync(destinationsPath, `${JSON.stringify(destinations, null, 2)}\n`);
-  fs.writeFileSync(tagsPath, `${JSON.stringify(tags, null, 2)}\n`);
+  const destinationsPath = writeViatorDestinationsCache(destinations);
+  const tagsPath = writeViatorTagsCache(tags);
 
   console.log(`Saved Viator destinations cache to ${destinationsPath}`);
   console.log(`Saved Viator tags cache to ${tagsPath}`);

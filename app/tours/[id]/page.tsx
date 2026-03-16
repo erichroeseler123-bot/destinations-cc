@@ -15,7 +15,7 @@ import OperatorAboutCard from "@/app/components/dcc/OperatorAboutCard";
 import { getOperatorManifest, mergeOperatorRef, type TourOperatorRef } from "@/lib/dcc/operators";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import { buildBreadcrumbJsonLd, buildTourJsonLd } from "@/lib/dcc/jsonld";
-import { getLocalViatorProductDetail } from "@/lib/viator/product";
+import { getViatorProductDetailForTour } from "@/lib/viator/detail";
 import { getViatorNonIndexedMetadata, getViatorReviewContentNotice, getViatorTravelerPhotoNotice } from "@/lib/viator/reviews";
 
 type Tour = {
@@ -33,6 +33,7 @@ type Tour = {
   timezone?: string;
   duration?: string;
   operator?: TourOperatorRef;
+  product_code?: string;
 };
 
 const allTours = tours as unknown as Tour[];
@@ -56,7 +57,10 @@ export default async function TourDetailPage({
   const tour = allTours.find((t) => String(t.id) === resolvedParams.id);
 
   if (!tour) return notFound();
-  const productDetail = getLocalViatorProductDetail(String(tour.id));
+  const { detail: productDetail, source: productDetailSource } = await getViatorProductDetailForTour({
+    id: String(tour.id),
+    productCode: tour.product_code || null,
+  });
 
   // --- 1. DATA CALCULATIONS ---
   const rating = Number(tour.rating ?? 4.8);
@@ -168,6 +172,7 @@ export default async function TourDetailPage({
           <article className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
             <h3 className="text-cyan-400">Trip details</h3>
             <div className="mt-4 space-y-3 text-sm text-zinc-300">
+              <p className="text-zinc-500">Detail source: {productDetailSource}</p>
               {productDetail.languages.length > 0 ? <p>Languages: {productDetail.languages.join(", ")}</p> : null}
               {productDetail.ticketType ? <p>Ticket type: {productDetail.ticketType}</p> : null}
               {productDetail.cancellationPolicy?.description ? (
@@ -208,6 +213,11 @@ export default async function TourDetailPage({
         <h3 className="text-cyan-400">Reviews and traveler photos</h3>
         <p className="mt-3 text-sm text-zinc-300">{getViatorReviewContentNotice()}</p>
         <p className="mt-2 text-sm text-zinc-400">{getViatorTravelerPhotoNotice()}</p>
+        {productDetail?.travelerImages?.length ? (
+          <p className="mt-3 text-sm text-zinc-300">
+            Cached traveler photos available: {productDetail.travelerImages.length}
+          </p>
+        ) : null}
       </section>
 
       {operator ? (
