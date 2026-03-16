@@ -106,10 +106,42 @@ export function normalizeDestinationCatalogResponse(value: unknown): ViatorDesti
     : value && typeof value === "object" && Array.isArray((value as { destinations?: unknown[] }).destinations)
       ? (value as { destinations?: unknown[] }).destinations || []
       : [];
-  const destinations = rawRows
-    .map((row) => ViatorDestinationCatalogRowSchema.safeParse(row))
-    .filter((row): row is { success: true; data: ViatorDestinationCatalogRow } => row.success)
-    .map((row) => row.data);
+
+  if (rawRows.length > 0) {
+    const destinations = rawRows
+      .map((row) => ViatorDestinationCatalogRowSchema.safeParse(row))
+      .filter((row): row is { success: true; data: ViatorDestinationCatalogRow } => row.success)
+      .map((row) => row.data);
+    return ViatorDestinationCatalogSchema.parse({ destinations });
+  }
+
+  const legacyMap =
+    value && typeof value === "object" && !Array.isArray(value)
+      ? Object.entries(value as Record<string, unknown>)
+          .map(([slug, destinationId]) => {
+            if (typeof destinationId !== "number") return null;
+            return {
+              destinationId,
+              parentDestinationId: null,
+              name: slug
+                .split("-")
+                .filter(Boolean)
+                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+                .join(" "),
+              type: "CITY",
+              timeZone: null,
+              defaultCurrencyCode: "USD",
+              countryCode: "US",
+            } satisfies ViatorDestinationCatalogRow;
+          })
+          .filter((row): row is ViatorDestinationCatalogRow => Boolean(row))
+      : [];
+
+  if (legacyMap.length > 0) {
+    return ViatorDestinationCatalogSchema.parse({ destinations: legacyMap });
+  }
+
+  const destinations: ViatorDestinationCatalogRow[] = [];
   return ViatorDestinationCatalogSchema.parse({ destinations });
 }
 
