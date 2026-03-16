@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { getViatorCapabilities } from "@/lib/viator/access";
-import { getViatorServerConfig } from "@/lib/viator/config";
+import { getViatorServerConfig, normalizeViatorCurrency } from "@/lib/viator/config";
 import {
   ViatorDestinationCatalogSchema,
   ViatorDestinationCatalogRowSchema,
@@ -77,7 +77,15 @@ async function request(endpoint: string, options: ViatorRequestOptions = {}): Pr
 }
 
 function getDestinationsEndpoint(): string {
-  return "/v1/taxonomy/destinations";
+  return "/destinations";
+}
+
+function withDefaultSearchCurrency(input: Record<string, unknown>): Record<string, unknown> {
+  if (typeof input.currency === "string" && input.currency.trim().length > 0) return input;
+  return {
+    ...input,
+    currency: normalizeViatorCurrency("USD"),
+  };
 }
 
 function readDestinationsCache(): unknown {
@@ -134,7 +142,7 @@ export function getViatorClient(): ViatorClient {
       if (!getViatorCapabilities().canUseSearch) {
         throw new Error("viator_search_not_enabled_for_tier");
       }
-      return request("/products/search", { method: "POST", body: input });
+      return request("/products/search", { method: "POST", body: withDefaultSearchCurrency(input) });
     },
 
     async getProductDetail(productCode: string) {
@@ -186,7 +194,14 @@ export function getViatorClient(): ViatorClient {
       const probes: Array<[string, () => Promise<unknown>]> = [
         ["destinations", () => request(getDestinationsEndpoint())],
         ["tags", () => request("/products/tags")],
-        ["search", () => request("/products/search", { method: "POST", body: { pagination: { start: 1, count: 1 } } })],
+        [
+          "search",
+          () =>
+            request("/products/search", {
+              method: "POST",
+              body: withDefaultSearchCurrency({ pagination: { start: 1, count: 1 } }),
+            }),
+        ],
       ];
 
       if (caps.canUseModifiedSince) {
