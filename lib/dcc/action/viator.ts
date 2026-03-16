@@ -4,19 +4,11 @@ import toursCatalog from "@/data/tours.json";
 import vegasTours from "@/data/vegas.tours.json";
 import { slugify } from "@/lib/dcc/slug";
 import { getEnvNumber, getEnvOptional } from "@/lib/dcc/config/env";
+import { appendViatorAttribution, buildViatorCampaignFromParts, buildViatorSearchUrl } from "@/lib/viator/links";
+import { getDisplayableViatorTags, normalizeViatorTagIds, scoreViatorMerchandisingSignals, type ViatorTagDefinition } from "@/lib/viator/tags";
 
 const ROOT = process.cwd();
 const VIATOR_CACHE_PATH = path.join(ROOT, "data", "action", "viator.products.cache.json");
-const DEFAULT_VIATOR_PID = "P00281144";
-const DEFAULT_VIATOR_MCID = "42383";
-
-function getViatorPid(): string {
-  return getEnvOptional("VIATOR_PID") || DEFAULT_VIATOR_PID;
-}
-
-function getViatorMcid(): string {
-  return getEnvOptional("VIATOR_MCID") || DEFAULT_VIATOR_MCID;
-}
 
 function getDefaultMaxAgeHours(): number {
   return getEnvNumber("VIATOR_CACHE_MAX_AGE_HOURS", 72, { min: 1, max: 720 });
@@ -43,6 +35,7 @@ type Tour = {
   booking_url?: string;
   url?: string;
   viatorUrl?: string;
+  tags?: Array<number | string>;
   city?: string;
   citySlug?: string;
   destination?: string;
@@ -82,6 +75,9 @@ export type ViatorActionProduct = {
   booking_confirmation_type?: string | null;
   product_option_count?: number | null;
   product_option_titles?: string[] | null;
+  tag_ids?: number[];
+  display_tags?: ViatorTagDefinition[];
+  merchandising_score?: number;
   url: string;
 };
 
@@ -174,29 +170,24 @@ function toDurationMinutes(duration: string | number | null | undefined): number
   return null;
 }
 
-function appendViatorTracking(url: string): string {
-  try {
-    const u = new URL(url);
-    u.searchParams.set("pid", getViatorPid());
-    u.searchParams.set("mcid", getViatorMcid());
-    return u.toString();
-  } catch {
-    return url;
-  }
-}
-
 function buildFallbackViatorSearchUrl(placeName: string, title: string): string {
-  const q = encodeURIComponent([placeName, title].filter(Boolean).join(" ").trim() || `${placeName} tours`);
-  return `https://www.viator.com/searchResults/all?text=${q}&pid=${encodeURIComponent(getViatorPid())}&mcid=${encodeURIComponent(getViatorMcid())}`;
+  const query = [placeName, title].filter(Boolean).join(" ").trim() || `${placeName} tours`;
+  return buildViatorSearchUrl(query, {
+    campaign: buildViatorCampaignFromParts([placeName, title || "search", "catalog"]),
+  });
 }
 
 function mapToursToActionProducts(tours: Tour[], placeName: string): ViatorActionProduct[] {
   return tours.slice(0, 8).map((tour) => {
     const title = (tour.name || tour.title || "Experience").trim();
     const baseUrl = tour.viatorUrl || tour.url || tour.booking_url || "";
+    const tagIds = normalizeViatorTagIds(Array.isArray(tour.tags) ? tour.tags : []);
     const tracked =
       baseUrl && baseUrl.includes("viator.com")
-        ? appendViatorTracking(baseUrl)
+        ? appendViatorAttribution(baseUrl, {
+            preserveExistingCampaign: true,
+            campaign: buildViatorCampaignFromParts([placeName, title, "catalog"]),
+          })
         : buildFallbackViatorSearchUrl(placeName, title);
     return {
       product_code: String(tour.product_code || tour.id || slugify(title)),
@@ -224,6 +215,9 @@ function mapToursToActionProducts(tours: Tour[], placeName: string): ViatorActio
       product_option_titles: Array.isArray(tour.product_option_titles)
         ? tour.product_option_titles.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
         : null,
+      tag_ids: tagIds,
+      display_tags: getDisplayableViatorTags(tagIds),
+      merchandising_score: scoreViatorMerchandisingSignals(tagIds),
       url: tracked,
     };
   });

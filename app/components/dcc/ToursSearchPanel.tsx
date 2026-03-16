@@ -1,4 +1,5 @@
-import cityIndex from "@/data/cities/index.json";
+import { getViatorDestinationOptions } from "@/lib/viator/destinations";
+import { getViatorFrontendCategoryTags } from "@/lib/viator/tags";
 
 type ToursSearchPanelProps = {
   title: string;
@@ -17,11 +18,10 @@ type ToursSearchPanelProps = {
   suggestions?: string[];
 };
 
-const CITY_NAMES = (cityIndex.cities || [])
-  .map((city) => city.name)
-  .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-  .slice()
-  .sort((a, b) => a.localeCompare(b));
+const CITY_NAMES = getViatorDestinationOptions().map((destination) => destination.cityName);
+const CATEGORY_OPTIONS = getViatorFrontendCategoryTags()
+  .filter((tag) => Boolean(tag.query))
+  .slice(0, 10);
 
 const SORT_OPTIONS = [
   { value: "recommended", label: "Recommended" },
@@ -217,6 +217,22 @@ export default function ToursSearchPanel({
           ))}
         </div>
       ) : null}
+
+      <div className="mt-5 flex flex-wrap gap-2">
+        {CATEGORY_OPTIONS.map((tag) => (
+          <button
+            key={tag.tagId}
+            type="submit"
+            formAction="/tours"
+            formMethod="get"
+            name="q"
+            value={tag.query}
+            className="rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-cyan-100 transition hover:bg-cyan-500/20"
+          >
+            {tag.label}
+          </button>
+        ))}
+      </div>
 
       {!fixedCity ? (
         <datalist id="dcc-tour-destinations">

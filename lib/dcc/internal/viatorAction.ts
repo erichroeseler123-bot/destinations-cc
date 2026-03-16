@@ -8,6 +8,9 @@ import {
 } from "@/lib/dcc/action/viator";
 import { slugify } from "@/lib/dcc/slug";
 import { getEnvCsv, getEnvNumber, getEnvOptional } from "@/lib/dcc/config/env";
+import { appendViatorAttribution, buildViatorCampaignFromParts } from "@/lib/viator/links";
+import { normalizeViatorCurrency } from "@/lib/viator/config";
+import { getDisplayableViatorTags, normalizeViatorTagIds, scoreViatorMerchandisingSignals } from "@/lib/viator/tags";
 
 export type ViatorPlaceInput = {
   slug: string;
@@ -141,46 +144,7 @@ function getViatorBase(): string {
 }
 
 function getRequestedCurrency(value: string | undefined): string {
-  const currency = String(value || "USD").trim().toUpperCase();
-  const supported = new Set([
-    "AED",
-    "ARS",
-    "USD",
-    "BRL",
-    "EUR",
-    "GBP",
-    "AUD",
-    "CAD",
-    "CHF",
-    "CLP",
-    "CNY",
-    "COP",
-    "DKK",
-    "FJD",
-    "HKD",
-    "IDR",
-    "ILS",
-    "INR",
-    "ISK",
-    "JPY",
-    "KRW",
-    "MXN",
-    "MYR",
-    "NOK",
-    "NZD",
-    "SGD",
-    "PEN",
-    "PHP",
-    "PLN",
-    "RUB",
-    "SEK",
-    "THB",
-    "TRY",
-    "TWD",
-    "VND",
-    "ZAR",
-  ]);
-  return supported.has(currency) ? currency : "USD";
+  return normalizeViatorCurrency(value);
 }
 
 function getViatorPolicy(): ViatorSourcePolicy {
@@ -268,24 +232,17 @@ function normalizeLiveProducts(data: unknown, placeName: string): ViatorActionPr
     const bookingConfirmationType = normalizeItineraryType(
       bookingConfirmationSettings?.confirmationType
     );
+    const tagIds = normalizeViatorTagIds(Array.isArray(p.tags) ? p.tags : []);
     const productOptionTitles = productOptions
       .map((option) => firstString(asRecord(option)?.title))
       .filter((value): value is string => Boolean(value));
-
-    const tracked = (() => {
-      try {
-        const u = new URL(
-          productUrl || `https://www.viator.com/searchResults/all?text=${encodeURIComponent(`${placeName} ${title}`)}`
-        );
-        const pid = getEnvOptional("VIATOR_PID");
-        const mcid = getEnvOptional("VIATOR_MCID");
-        if (pid) u.searchParams.set("pid", pid);
-        if (mcid) u.searchParams.set("mcid", mcid);
-        return u.toString();
-      } catch {
-        return productUrl;
+    const tracked = appendViatorAttribution(
+      productUrl || `https://www.viator.com/searchResults/all?text=${encodeURIComponent(`${placeName} ${title}`)}`,
+      {
+        preserveExistingCampaign: true,
+        campaign: buildViatorCampaignFromParts([placeName, title, "live"]),
       }
-    })();
+    );
 
     return {
       product_code: productCode,
@@ -302,6 +259,9 @@ function normalizeLiveProducts(data: unknown, placeName: string): ViatorActionPr
       booking_confirmation_type: bookingConfirmationType,
       product_option_count: productOptions.length || null,
       product_option_titles: productOptionTitles.length > 0 ? productOptionTitles : null,
+      tag_ids: tagIds,
+      display_tags: getDisplayableViatorTags(tagIds),
+      merchandising_score: scoreViatorMerchandisingSignals(tagIds),
       url: tracked,
     };
   });

@@ -17,6 +17,9 @@ import { SITE_IDENTITY } from "@/src/data/site-identity";
 import StatGrid from "@/app/components/StatGrid";
 import CinematicBackdrop from "@/app/components/dcc/CinematicBackdrop";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
+import { getViatorDestinationOptions } from "@/lib/viator/destinations";
+import { getViatorFrontendCategoryTags } from "@/lib/viator/tags";
+import { getViatorReviewContentNotice } from "@/lib/viator/reviews";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +57,8 @@ const FEATURED_TOUR_CATEGORIES = [
   { label: "Private Tours", query: "private tours", tone: "cyan" },
   { label: "Night Tours", query: "night tours", tone: "amber" },
 ] as const;
+const VIATOR_DESTINATION_OPTIONS = getViatorDestinationOptions();
+const VIATOR_FRONTEND_TAGS = getViatorFrontendCategoryTags();
 
 function stripStateSuffix(slug: string): string {
   return slug.replace(/-[a-z]{2}$/i, "");
@@ -325,6 +330,8 @@ export default async function ToursPage({
       prompt: `${city.name} tours`,
       modes: (city.modes || []).slice(0, 3),
     }));
+  const compliantCategoryLabels = VIATOR_FRONTEND_TAGS.slice(0, 6).map((tag) => tag.label);
+  const featuredViatorDestinationCount = VIATOR_DESTINATION_OPTIONS.length;
 
   const heading = isResultsMode
     ? deriveResultsHeading({ cityName, query, lane })
@@ -359,6 +366,9 @@ export default async function ToursPage({
         {tourContextSummary ? <p className="max-w-3xl text-sm text-zinc-400">{tourContextSummary}</p> : null}
         <p className="text-xs text-zinc-500">
           graph_places={health.places} • graph_edges={health.edges} • stale={health.stale ? "yes" : "no"}
+        </p>
+        <p className="max-w-3xl text-xs text-zinc-500">
+          {getViatorReviewContentNotice()}
         </p>
         <PoweredByViator
           compact
@@ -487,6 +497,9 @@ export default async function ToursPage({
             {minRating ? <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-zinc-300">rating {minRating}+</span> : null}
             {maxPrice ? <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-zinc-300">under {currency} {maxPrice}</span> : null}
             {maxDuration ? <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-zinc-300">under {Math.round(maxDuration / 60)}h</span> : null}
+            <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-zinc-300">
+              review content non-indexed
+            </span>
           </div>
         ) : null}
       </section>
@@ -515,6 +528,10 @@ export default async function ToursPage({
                 <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Travel window</p>
                 <p className="mt-2 text-sm text-zinc-200">{startDate || endDate ? `${startDate || "Flexible"} → ${endDate || "Flexible"}` : "Flexible dates"}</p>
               </article>
+              <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Compliant categories</p>
+                <p className="mt-2 text-sm text-zinc-200">{compliantCategoryLabels.slice(0, 3).join(" • ")}</p>
+              </article>
             </div>
           </section>
 
@@ -537,6 +554,9 @@ export default async function ToursPage({
               <h2 className="text-2xl font-bold">Browse tours by city</h2>
               <p className="text-sm text-zinc-400">
                 Jump into destination-led tour discovery across the cities where travelers most often start planning.
+              </p>
+              <p className="text-xs text-zinc-500">
+                Canonical Viator-linked destinations available in DCC: {featuredViatorDestinationCount}
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

@@ -2,6 +2,7 @@ import { buildViatorSearchLink } from "@/utils/affiliateLinks";
 import type { ViatorActionProduct } from "@/lib/dcc/action/viator";
 import TravelerTakeaways from "@/app/components/dcc/TravelerTakeaways";
 import { summarizeGuestFeedback } from "@/lib/dcc/guestFeedback";
+import { getViatorTravelerPhotoNotice } from "@/lib/viator/reviews";
 
 type FallbackIntent = {
   label: string;
@@ -70,6 +71,8 @@ export default function ViatorTourGrid({
           confirmationType: formatConfirmationType(product.booking_confirmation_type),
           productOptionCount: product.product_option_count ?? null,
           productOptionTitles: product.product_option_titles || null,
+          displayTags: product.display_tags || [],
+          merchandisingScore: product.merchandising_score ?? 0,
           href: product.url,
           intentQuery: `${placeName} ${product.title}`.trim(),
           categoryLabel: product.title,
@@ -94,6 +97,8 @@ export default function ViatorTourGrid({
           confirmationType: null,
           productOptionCount: null,
           productOptionTitles: null,
+          displayTags: [],
+          merchandisingScore: 0,
           href: buildViatorSearchLink(item.query),
           intentQuery: item.query,
           categoryLabel: item.label,
@@ -173,6 +178,30 @@ export default function ViatorTourGrid({
                     </div>
                   ) : null}
 
+                  {card.displayTags.length > 0 ? (
+                    <div className="flex flex-wrap gap-2 text-xs text-zinc-300">
+                      {card.displayTags.slice(0, 3).map((tag) => (
+                        <span
+                          key={`${card.key}-tag-${tag.tagId}`}
+                          className="rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3 py-1 text-cyan-100"
+                        >
+                          {tag.label}
+                        </span>
+                      ))}
+                      {card.merchandisingScore > 0 ? (
+                        <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-emerald-100">
+                          Recommended by DCC
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : card.merchandisingScore > 0 ? (
+                    <div className="flex flex-wrap gap-2 text-xs text-zinc-300">
+                      <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-emerald-100">
+                        Recommended by DCC
+                      </span>
+                    </div>
+                  ) : null}
+
                   {card.productOptionTitles && card.productOptionTitles.length > 0 ? (
                     <p className="text-xs leading-6 text-zinc-400">
                       Options: {card.productOptionTitles.slice(0, 2).join(" • ")}
@@ -190,6 +219,9 @@ export default function ViatorTourGrid({
                   >
                     {ctaLabel}
                   </a>
+                  <p className="text-[11px] leading-5 text-zinc-500">
+                    {getViatorTravelerPhotoNotice()}
+                  </p>
                 </div>
               </article>
             );
