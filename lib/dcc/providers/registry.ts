@@ -337,7 +337,7 @@ export const DCC_PROVIDER_REGISTRY: ProviderContract[] = [
   {
     id: "rapidapi_airbnb",
     name: "RapidAPI Airbnb",
-    env_vars_required: ["RAPIDAPI_KEY"],
+    env_vars_required: ["RAPID_API_KEY"],
     layer: "layer2_action",
     primary_lanes: ["lodging", "stays"],
     live_cache_support: {
@@ -361,7 +361,7 @@ export const DCC_PROVIDER_REGISTRY: ProviderContract[] = [
     rollout_policy: {
       strategy: "policy_switch",
       env_controls: [
-        "RAPIDAPI_KEY",
+        "RAPID_API_KEY",
         "RAPIDAPI_AIRBNB_HOST",
         "RAPIDAPI_AIRBNB_BASE_URL",
         "RAPIDAPI_AIRBNB_REVALIDATE_SECONDS",

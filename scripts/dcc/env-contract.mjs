@@ -219,7 +219,7 @@ export const CANONICAL_ENV_VARS = [
     optional: true,
   },
   {
-    name: "RAPIDAPI_KEY",
+    name: "RAPID_API_KEY",
     exposure: "server",
     section: "Providers",
     defaultValue: "",
@@ -453,6 +453,10 @@ export const LEGACY_ENV_ALIASES = {
   seatgeekapi: {
     replacement: "SEATGEEK_CLIENT_ID",
     reason: "Legacy Vercel import name; the app does not read it.",
+  },
+  RAPIDAPI_KEY: {
+    replacement: "RAPID_API_KEY",
+    reason: "RapidAPI provider code now prefers RAPID_API_KEY and only falls back to the old name.",
   },
   openai: {
     replacement: "OPENAI_API_KEY",
