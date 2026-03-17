@@ -27,9 +27,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     canonicalPath: city.canonicalPath,
     state: city.state,
   }));
+  const travelpayoutsDriveEnabled = process.env.TRAVELPAYOUTS_DRIVE_ENABLED === "true";
+  const travelpayoutsDriveSrc = process.env.TRAVELPAYOUTS_DRIVE_SRC?.trim();
+  const shouldLoadTravelpayoutsDrive = travelpayoutsDriveEnabled && Boolean(travelpayoutsDriveSrc);
 
   return (
     <html lang="en">
+      <head>
+        {shouldLoadTravelpayoutsDrive ? (
+          <script
+            async
+            data-noptimize="1"
+            data-cfasync="false"
+            data-wpfc-render="false"
+            src={travelpayoutsDriveSrc}
+          />
+        ) : null}
+      </head>
       <body className={`${headingFont.variable} ${accentFont.variable}`}>
         <a href="#main-content" className="dcc-skip-link">
           Skip to main content
