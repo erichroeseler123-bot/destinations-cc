@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import AuthorityMediaStrip from "@/app/components/dcc/AuthorityMediaStrip";
 import PageActionBar from "@/app/components/dcc/PageActionBar";
 import SocialProfileSection from "@/app/components/dcc/SocialProfileSection";
+import SubtleAffiliateModules from "@/app/components/dcc/SubtleAffiliateModules";
 import { getCityRegistryNode } from "@/src/data/cities-registry";
 import {
   getEntityRegistryNode,
@@ -254,6 +255,14 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
 
           {genericHotel.socialProfile ? <SocialProfileSection profile={genericHotel.socialProfile} /> : null}
 
+          <SubtleAffiliateModules
+            context={{ surface: "hotel", priority: 70 }}
+            hrefs={{
+              airport_transfer: "/transportation",
+            }}
+            intro={`Keep trip-support tools understated on hotel pages. The hotel itself stays primary, with logistics as a secondary assist for ${city.name}.`}
+          />
+
           <section className="grid gap-4 md:grid-cols-2">
             <Link href={city.canonicalPath} className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 hover:bg-white/10">
               <h2 className="text-xl font-bold">Back to {city.name}</h2>
@@ -350,6 +359,15 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
         </section>
 
         {hotelSocialProfile ? <SocialProfileSection profile={hotelSocialProfile} /> : null}
+
+        <SubtleAffiliateModules
+          context={{ surface: "hotel", priority: 80 }}
+          hrefs={{
+            stays_nearby: "/las-vegas/hotels",
+            airport_transfer: "/transportation",
+          }}
+          intro={`Use these as quiet support tools around ${hotel.name}, not as the main action of the page.`}
+        />
 
         {hotel.premiumStayInfo?.suiteTypes?.length ? (
           <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">

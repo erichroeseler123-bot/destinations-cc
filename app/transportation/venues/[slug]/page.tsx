@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
+import SubtleAffiliateModules from "@/app/components/dcc/SubtleAffiliateModules";
 import { getTransportDirectoryEntry, TRANSPORT_DIRECTORY } from "@/src/data/transport-directory";
 
 type Params = { slug: string };
@@ -55,6 +56,15 @@ export default async function TransportationVenuePage({ params }: { params: Prom
         </section>
 
         <RideOptionsCard venueSlug={entry.slug} sourcePage={entry.dccUrl} />
+
+        <SubtleAffiliateModules
+          context={{ surface: "transport", priority: 75 }}
+          hrefs={{
+            stays_nearby: entry.city.toLowerCase() === "las vegas" ? "/las-vegas/hotels" : undefined,
+          }}
+          title="Quiet trip-support links"
+          intro={`Transportation pages stay routing-first. If a traveler still needs a place to stay, keep that as a secondary move after the transport plan is clear.`}
+        />
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">How DCC treats this venue</h2>

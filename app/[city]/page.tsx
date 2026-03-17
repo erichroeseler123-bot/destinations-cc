@@ -12,6 +12,7 @@ import ManifestCityHubPage from "@/app/components/dcc/ManifestCityHubPage";
 import CityHero from "@/app/components/dcc/CityHero";
 import CityTimePanel from "@/app/components/dcc/CityTimePanel";
 import WeatherPanel from "@/app/components/dcc/WeatherPanel";
+import SubtleAffiliateModules from "@/app/components/dcc/SubtleAffiliateModules";
 import { getCityBySlug } from "@/lib/data/locations";
 import { getCityAdventureLane } from "@/src/data/city-adventure-lanes";
 import { getCityMoneyLane } from "@/src/data/city-money-lanes";
@@ -122,6 +123,15 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
 
   const cityKey = resolveCanonicalCityKey(city);
   const cityName = prettyCity(cityKey);
+  const cityAffiliateHrefs =
+    cityKey === "las-vegas"
+      ? {
+          stays_nearby: "/las-vegas/hotels",
+          airport_transfer: "/transportation",
+        }
+      : {
+          airport_transfer: "/transportation",
+        };
   const manifest = getCityManifest(cityKey);
   const cityNode = getCityBySlug(cityKey);
   const fallbackTimezone = cityNode?.tz;
@@ -287,6 +297,12 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
             fallbacks={cityTourFallbacks}
           />
 
+          <SubtleAffiliateModules
+            context={{ surface: "city", priority: 65 }}
+            hrefs={cityAffiliateHrefs}
+            intro={`Keep these as optional utilities around ${config.cityName}. They should support the trip, not dominate the page.`}
+          />
+
           <section className="rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(17,11,18,0.96),rgba(10,9,20,0.96))] p-6 sm:p-8">
             <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#ffb07c]">
               City fundamentals
@@ -394,6 +410,12 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
           cityName={cityName}
           products={viatorAction.products}
           fallbacks={cityTourFallbacks}
+        />
+
+        <SubtleAffiliateModules
+          context={{ surface: "city", priority: 55 }}
+          hrefs={cityAffiliateHrefs}
+          intro={`These are optional trip-support tools for ${cityName}. They stay secondary to the main city discovery flow.`}
         />
 
         <section className="rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(17,11,18,0.96),rgba(10,9,20,0.96))] p-6 sm:p-8">

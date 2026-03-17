@@ -296,6 +296,13 @@ export const CANONICAL_ENV_VARS = [
     optional: true,
   },
   {
+    name: "TRAVELPAYOUTS_TRS_BOOKING_COM",
+    exposure: "server",
+    section: "Affiliate",
+    defaultValue: "",
+    optional: true,
+  },
+  {
     name: "TELNYX_API_KEY",
     exposure: "server",
     section: "Messaging",
