@@ -4,6 +4,8 @@ import './globals.css'; // your global styles
 import SiteHeader from "@/app/components/dcc/SiteHeader";
 import SiteBreadcrumbs from "@/app/components/dcc/SiteBreadcrumbs";
 import SiteFooter from "@/app/components/dcc/SiteFooter";
+import TravelpayoutsDriveScript from "@/app/components/dcc/TravelpayoutsDriveScript";
+import { getTravelpayoutsDrivePolicy } from "@/lib/travelpayouts/policy";
 import { getLiveCityRegistryNodes } from "@/src/data/cities-registry";
 
 const headingFont = Montserrat({
@@ -27,24 +29,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     canonicalPath: city.canonicalPath,
     state: city.state,
   }));
-  const travelpayoutsDriveEnabled = process.env.TRAVELPAYOUTS_DRIVE_ENABLED === "true";
-  const travelpayoutsDriveSrc = process.env.TRAVELPAYOUTS_DRIVE_SRC?.trim();
-  const shouldLoadTravelpayoutsDrive = travelpayoutsDriveEnabled && Boolean(travelpayoutsDriveSrc);
+  const drivePolicy = getTravelpayoutsDrivePolicy();
 
   return (
     <html lang="en">
       <head>
-        {shouldLoadTravelpayoutsDrive ? (
-          <script
-            async
-            data-noptimize="1"
-            data-cfasync="false"
-            data-wpfc-render="false"
-            src={travelpayoutsDriveSrc}
-          />
-        ) : null}
       </head>
       <body className={`${headingFont.variable} ${accentFont.variable}`}>
+        <TravelpayoutsDriveScript
+          enabled={drivePolicy.enabled}
+          src={drivePolicy.src}
+          allowedPrefixes={drivePolicy.allowedPrefixes}
+          blockedPrefixes={drivePolicy.blockedPrefixes}
+        />
         <a href="#main-content" className="dcc-skip-link">
           Skip to main content
         </a>

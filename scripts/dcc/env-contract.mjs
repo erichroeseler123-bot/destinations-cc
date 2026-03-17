@@ -261,6 +261,20 @@ export const CANONICAL_ENV_VARS = [
     optional: true,
   },
   {
+    name: "TRAVELPAYOUTS_DRIVE_ALLOWED_PREFIXES",
+    exposure: "server",
+    section: "Affiliate",
+    defaultValue: "",
+    optional: true,
+  },
+  {
+    name: "TRAVELPAYOUTS_DRIVE_BLOCKED_PREFIXES",
+    exposure: "server",
+    section: "Affiliate",
+    defaultValue: "/admin,/api,/book,/checkout,/internal,/tours",
+    optional: true,
+  },
+  {
     name: "TRAVELPAYOUTS_API_TOKEN",
     exposure: "server",
     section: "Affiliate",
