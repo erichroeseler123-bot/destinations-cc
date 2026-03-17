@@ -218,6 +218,29 @@ export function getTransportEntriesByRegion(region: string) {
   return TRANSPORT_DIRECTORY.filter((entry) => entry.region === region);
 }
 
+function normalizeTransportToken(value: string | undefined | null) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-");
+}
+
+export function getTransportGuideHrefForCitySlug(citySlug: string | undefined | null) {
+  const normalizedCity = normalizeTransportToken(citySlug);
+  if (!normalizedCity) return null;
+
+  const matchingEntry = TRANSPORT_DIRECTORY.find(
+    (entry) => normalizeTransportToken(entry.city) === normalizedCity
+  );
+  if (!matchingEntry) return null;
+
+  if (matchingEntry.region === "Colorado") {
+    return "/transportation/colorado";
+  }
+
+  return "/transportation";
+}
+
 export function getTransportRegions() {
   return [...new Set(TRANSPORT_DIRECTORY.map((entry) => entry.region))];
 }

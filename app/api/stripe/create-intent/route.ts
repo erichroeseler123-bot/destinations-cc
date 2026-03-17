@@ -13,10 +13,6 @@ type CreateIntentBody = {
   customerEmail?: string;
 };
 
-function mockIntentId() {
-  return `pi_mock_${Date.now()}`;
-}
-
 export async function POST(req: NextRequest) {
   if (process.env.ENABLE_ARGO_PAYMENTS !== "true") {
     return Response.json(
@@ -37,13 +33,13 @@ export async function POST(req: NextRequest) {
 
   const stripeKey = process.env.STRIPE_SECRET_KEY?.trim();
   if (!stripeKey) {
-    return Response.json({
-      ok: true,
-      mode: "mock",
-      paymentIntentId: mockIntentId(),
-      clientSecret: null,
-      message: "STRIPE_SECRET_KEY not set. Using mock payment intent.",
-    });
+    return Response.json(
+      {
+        ok: false,
+        error: "Stripe is not configured.",
+      },
+      { status: 503 }
+    );
   }
 
   const params = new URLSearchParams();

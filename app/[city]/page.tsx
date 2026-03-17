@@ -27,6 +27,7 @@ import {
   buildCityJsonLd,
 } from "@/lib/dcc/jsonld";
 import { resolveCanonicalCityKey } from "@/src/data/city-aliases";
+import { getTransportGuideHrefForCitySlug } from "@/src/data/transport-directory";
 
 type Params = { city: string };
 
@@ -123,14 +124,15 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
 
   const cityKey = resolveCanonicalCityKey(city);
   const cityName = prettyCity(cityKey);
+  const transportGuideHref = getTransportGuideHrefForCitySlug(cityKey);
   const cityAffiliateHrefs =
     cityKey === "las-vegas"
       ? {
           stays_nearby: "/las-vegas/hotels",
-          airport_transfer: "/transportation",
+          airport_transfer: transportGuideHref ?? undefined,
         }
       : {
-          airport_transfer: "/transportation",
+          airport_transfer: transportGuideHref ?? undefined,
         };
   const manifest = getCityManifest(cityKey);
   const cityNode = getCityBySlug(cityKey);

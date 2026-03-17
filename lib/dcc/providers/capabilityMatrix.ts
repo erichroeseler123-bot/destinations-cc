@@ -13,6 +13,7 @@ export type ProviderCapabilityRow = {
   env_required: string[];
   env_present: string[];
   configured: boolean;
+  operational: boolean;
   diagnostics_endpoints: string[];
 };
 
@@ -20,6 +21,10 @@ export function listProviderCapabilityMatrix(): ProviderCapabilityRow[] {
   return DCC_PROVIDER_REGISTRY.map((p) => {
     const envPresent = p.env_vars_required.filter((k) => Boolean(getEnvOptional(k)));
     const configured = p.env_vars_required.length === 0 || envPresent.length === p.env_vars_required.length;
+    const operational =
+      p.id === "travelpayouts_partner_links"
+        ? configured && getEnvOptional("TRAVELPAYOUTS_DEFAULT_BRANDS_APPROVED") === "true"
+        : configured;
     return {
       id: p.id,
       name: p.name,
@@ -32,6 +37,7 @@ export function listProviderCapabilityMatrix(): ProviderCapabilityRow[] {
       env_required: p.env_vars_required,
       env_present: envPresent,
       configured,
+      operational,
       diagnostics_endpoints: p.diagnostics_surface.endpoints,
     };
   });
@@ -46,6 +52,7 @@ export function getProviderCapabilitySummary() {
   return {
     total: rows.length,
     configured: rows.filter((r) => r.configured).length,
+    operational: rows.filter((r) => r.operational).length,
     live_enabled: rows.filter((r) => r.live).length,
     cache_enabled: rows.filter((r) => r.cache).length,
     by_layer: byLayer,

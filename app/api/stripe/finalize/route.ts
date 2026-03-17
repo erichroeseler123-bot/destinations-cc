@@ -123,18 +123,31 @@ export async function POST(req: NextRequest) {
   const totalCents = product.priceCents * qty;
   const paymentIntentId = (body.paymentIntentId || "").trim();
   const stripeKey = process.env.STRIPE_SECRET_KEY?.trim();
-
-  let paymentStatus = "mock_paid";
-  if (stripeKey && paymentIntentId && !paymentIntentId.startsWith("pi_mock_")) {
-    const intent = await fetchStripeIntent(paymentIntentId, stripeKey);
-    if (intent.status !== "succeeded") {
-      return Response.json(
-        { ok: false, error: `PaymentIntent not succeeded (status: ${intent.status}).` },
-        { status: 400 },
-      );
-    }
-    paymentStatus = intent.status;
+  if (!stripeKey) {
+    return Response.json(
+      {
+        ok: false,
+        error: "Stripe is not configured.",
+      },
+      { status: 503 }
+    );
   }
+
+  if (!paymentIntentId || paymentIntentId.startsWith("pi_mock_")) {
+    return Response.json(
+      { ok: false, error: "A live Stripe PaymentIntent is required." },
+      { status: 400 }
+    );
+  }
+
+  const intent = await fetchStripeIntent(paymentIntentId, stripeKey);
+  if (intent.status !== "succeeded") {
+    return Response.json(
+      { ok: false, error: `PaymentIntent not succeeded (status: ${intent.status}).` },
+      { status: 400 },
+    );
+  }
+  const paymentStatus = intent.status;
 
   const orderId = `argo_${Date.now()}_${randomUUID().slice(0, 8)}`;
   const orderRecord = {

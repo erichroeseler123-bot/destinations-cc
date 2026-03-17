@@ -10,6 +10,7 @@ import {
   getEntityRegistryNode,
   getEntityRegistryNodesByCityAndType,
 } from "@/src/data/entities-registry";
+import { getTransportGuideHrefForCitySlug } from "@/src/data/transport-directory";
 import { getVegasHotelBySlug, VEGAS_HOTELS_CONFIG, type VegasHotelTag } from "@/src/data/vegas-hotels-config";
 import { buildMapsSearchUrl, buildOfficialSearchUrl, type PageAction } from "@/src/lib/page-actions";
 
@@ -195,6 +196,7 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
     const siblingHotels = getEntityRegistryNodesByCityAndType(genericHotel.citySlug, "hotel")
       .filter((candidate) => candidate.slug !== genericHotel.slug)
       .slice(0, 6);
+    const transportGuideHref = getTransportGuideHrefForCitySlug(genericHotel.citySlug);
     const actionBarActions: PageAction[] = [
       { href: buildMapsSearchUrl(`${genericHotel.title}, ${city.name}`), label: "Open in Maps", kind: "external" },
       { href: buildOfficialSearchUrl(`${genericHotel.title} ${city.name}`), label: "Find official site", kind: "external" },
@@ -258,7 +260,7 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
           <SubtleAffiliateModules
             context={{ surface: "hotel", priority: 70 }}
             hrefs={{
-              airport_transfer: "/transportation",
+              airport_transfer: transportGuideHref ?? undefined,
             }}
             intro={`Keep trip-support tools understated on hotel pages. The hotel itself stays primary, with logistics as a secondary assist for ${city.name}.`}
           />
@@ -293,6 +295,7 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
   }
 
   const relationshipLinks = getHotelRelationshipLinks(hotel.slug);
+  const vegasTransportGuideHref = getTransportGuideHrefForCitySlug("las-vegas");
   const siblingHotels = VEGAS_HOTELS_CONFIG.filter(
     (candidate) => candidate.slug !== hotel.slug && (candidate.area === hotel.area || candidate.tags.some((tag) => hotel.tags.includes(tag)))
   ).slice(0, 6);
@@ -364,7 +367,7 @@ export default async function VegasHotelNodePage({ params }: { params: Promise<P
           context={{ surface: "hotel", priority: 80 }}
           hrefs={{
             stays_nearby: "/las-vegas/hotels",
-            airport_transfer: "/transportation",
+            airport_transfer: vegasTransportGuideHref ?? undefined,
           }}
           intro={`Use these as quiet support tools around ${hotel.name}, not as the main action of the page.`}
         />

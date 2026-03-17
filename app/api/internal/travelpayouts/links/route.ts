@@ -78,15 +78,23 @@ export async function POST(request: NextRequest) {
       trs: body?.trs,
       shorten: body?.shorten,
     });
+    const linkResults = result.result?.links || [];
+    const failedLinks = linkResults.filter(
+      (entry) => entry.code !== "success" || !String(entry.partner_url || "").trim()
+    );
+    const allFailed = linkResults.length > 0 && failedLinks.length === linkResults.length;
+    const partiallyFailed = failedLinks.length > 0 && failedLinks.length < linkResults.length;
 
     return NextResponse.json(
       {
-        ok: true,
+        ok: failedLinks.length === 0,
+        partial: partiallyFailed,
         configured: true,
         brand: brand || null,
+        failed_links: failedLinks,
         result,
       },
-      { status: 200 }
+      { status: allFailed ? 409 : partiallyFailed ? 207 : 200 }
     );
   } catch (error) {
     return NextResponse.json(
