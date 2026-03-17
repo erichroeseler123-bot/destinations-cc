@@ -251,13 +251,46 @@ export function getViatorClient(): ViatorClient {
         probes.push(["modifiedSince", () => request("/products/modified-since?count=1")]);
       }
 
+      let sampleReviewProductCode: string | null = null;
       for (const [label, probe] of probes) {
         try {
-          await probe();
+          const result = await probe();
           snapshot[label] = "ok";
+          if (label === "search" && !sampleReviewProductCode) {
+            const record =
+              result && typeof result === "object" ? (result as Record<string, unknown>) : null;
+            const rows = Array.isArray(record?.products)
+              ? record.products
+              : Array.isArray(record?.data)
+                ? record.data
+                : Array.isArray(record?.results)
+                  ? record.results
+                  : [];
+            const first = rows.find(
+              (row) =>
+                row &&
+                typeof row === "object" &&
+                typeof (row as { productCode?: unknown }).productCode === "string"
+            ) as { productCode?: string } | undefined;
+            sampleReviewProductCode = first?.productCode || null;
+          }
         } catch (error) {
           snapshot[label] = error instanceof Error ? error.message : "probe_failed";
         }
+      }
+
+      if (caps.canUseReviews && sampleReviewProductCode) {
+        try {
+          await request("/reviews/product", {
+            method: "POST",
+            body: { productCode: sampleReviewProductCode, count: 1 },
+          });
+          snapshot.reviews = "ok";
+        } catch (error) {
+          snapshot.reviews = error instanceof Error ? error.message : "probe_failed";
+        }
+      } else if (caps.canUseReviews) {
+        snapshot.reviews = "unverified";
       }
 
       return snapshot;

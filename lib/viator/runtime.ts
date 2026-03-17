@@ -12,8 +12,14 @@ export async function getViatorRuntimeCapabilityProbe(): Promise<Record<string, 
 export async function getViatorRuntimeSnapshot(probe: Record<string, string> | null = null) {
   const publicConfig = getViatorPublicConfig();
   const serverConfig = getViatorServerConfig();
-  const capabilities = getViatorCapabilities(publicConfig.accessTier);
   const resolvedProbe = probe || (await getViatorRuntimeCapabilityProbe());
+  const baseCapabilities = getViatorCapabilities(publicConfig.accessTier);
+  const reviewsOperational = resolvedProbe.reviews === "ok";
+  const capabilities = {
+    ...baseCapabilities,
+    canUseReviews: baseCapabilities.canUseReviews && reviewsOperational,
+    canUseTravelerPhotos: baseCapabilities.canUseTravelerPhotos && reviewsOperational,
+  };
   const taxonomy = getTaxonomyCacheStatus();
   const reviews = getReviewCacheStatus();
   const apiConfigured = Boolean(serverConfig.apiKey);

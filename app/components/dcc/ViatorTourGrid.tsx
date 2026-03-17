@@ -44,6 +44,13 @@ function formatConfirmationType(value: string | null | undefined): string | null
   return value;
 }
 
+function buildProductHref(product: ViatorActionProduct): string {
+  if (product.product_code && product.product_code.trim().length > 0) {
+    return `/tours/${encodeURIComponent(product.product_code)}`;
+  }
+  return product.url;
+}
+
 export default function ViatorTourGrid({
   placeName,
   title,
@@ -74,7 +81,7 @@ export default function ViatorTourGrid({
           productOptionTitles: product.product_option_titles || null,
           displayTags: product.display_tags || [],
           merchandisingScore: product.merchandising_score ?? 0,
-          href: product.url,
+          href: buildProductHref(product),
           intentQuery: `${placeName} ${product.title}`.trim(),
           categoryLabel: product.title,
           takeaways: summarizeGuestFeedback({
@@ -214,11 +221,11 @@ export default function ViatorTourGrid({
 
                   <a
                     href={href}
-                    target="_blank"
-                    rel="noopener noreferrer sponsored nofollow"
+                    target={href.startsWith("/tours/") ? undefined : "_blank"}
+                    rel={href.startsWith("/tours/") ? undefined : "noopener noreferrer sponsored nofollow"}
                     className="inline-flex w-full items-center justify-center rounded-2xl bg-cyan-600 px-4 py-3 font-semibold text-white hover:bg-cyan-500"
                   >
-                    {ctaLabel}
+                    {href.startsWith("/tours/") ? "View tour details" : ctaLabel}
                   </a>
                   <p className="text-[11px] leading-5 text-zinc-500">
                     {viatorPolicy.travelerPhotoNotice}

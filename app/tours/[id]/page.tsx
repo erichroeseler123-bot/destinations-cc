@@ -1,5 +1,5 @@
 // app/tours/[id]/page.tsx
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 import type { Metadata } from "next";
 import tours from "@/data/tours.json";
@@ -52,6 +52,21 @@ export function generateStaticParams() {
     .map((t) => ({ id: String(t.id) }));
 }
 
+function buildFallbackTourFromDetail(id: string, detail: NonNullable<Awaited<ReturnType<typeof getViatorProductDetailForTour>>["detail"]>): Tour {
+  return {
+    id,
+    product_code: detail.product_code,
+    name: detail.title,
+    description: detail.overview || detail.short_description || undefined,
+    image_url: detail.image_url || detail.supplierImages[0]?.url || undefined,
+    city: detail.destinations[0]?.name || undefined,
+    price_from: detail.price_from ?? undefined,
+    rating: detail.rating ?? undefined,
+    review_count: detail.review_count ?? undefined,
+    duration: detail.durationText || undefined,
+  };
+}
+
 // NEXT.js 15 UPDATE: params is now a Promise
 export default async function TourDetailPage({ 
   params 
@@ -60,24 +75,27 @@ export default async function TourDetailPage({
 }) {
   // Await params at the top of the component
   const resolvedParams = await params;
-  const tour = allTours.find((t) => String(t.id) === resolvedParams.id);
+  const seededTour = allTours.find((t) => String(t.id) === resolvedParams.id);
+  const { detail: productDetail, source: productDetailSource } = await getViatorProductDetailForTour({
+    id: resolvedParams.id,
+    productCode: seededTour?.product_code || (seededTour ? null : resolvedParams.id),
+  });
+  const tour =
+    seededTour ||
+    (productDetail ? buildFallbackTourFromDetail(resolvedParams.id, productDetail) : null);
 
   if (!tour) return notFound();
-  const { detail: productDetail, source: productDetailSource } = await getViatorProductDetailForTour({
-    id: String(tour.id),
-    productCode: tour.product_code || null,
-  });
   const reviewCacheStatus = getProductCacheStatus(productDetail?.product_code || tour.product_code || null);
 
   // --- 1. DATA CALCULATIONS ---
-  const rating = Number(tour.rating ?? 4.8);
-  const reviews = Number(tour.review_count ?? 120);
-  const price = tour.price_from ?? null;
+  const rating = Number(productDetail?.rating ?? tour.rating ?? 4.8);
+  const reviews = Number(productDetail?.review_count ?? tour.review_count ?? 120);
+  const price = productDetail?.price_from ?? tour.price_from ?? null;
   const affiliateUrl = buildViatorLink(tour);
   const takeaways = summarizeGuestFeedback({
-    title: tour.name,
-    description: tour.description,
-    durationText: tour.duration,
+    title: productDetail?.title || tour.name,
+    description: productDetail?.overview || tour.description,
+    durationText: productDetail?.durationText || tour.duration,
     rating,
     reviewCount: reviews,
   });
@@ -115,11 +133,14 @@ export default async function TourDetailPage({
           "@graph": [
             buildTourJsonLd({
               path: `/tours/${tour.id}`,
-              name: tour.name,
-              description: tour.description || `Travel experience in ${tour.city}`,
-              image: tour.image_url || undefined,
+              name: productDetail?.title || tour.name,
+              description:
+                productDetail?.overview ||
+                tour.description ||
+                `Travel experience in ${tour.city}`,
+              image: productDetail?.image_url || tour.image_url || undefined,
               price,
-              currency: "USD",
+              currency: productDetail?.currency || "USD",
               rating,
               reviewCount: reviews,
               touristTypes: ["First-time visitors", "Experience-focused travelers"],
@@ -132,7 +153,7 @@ export default async function TourDetailPage({
             }),
             buildBreadcrumbJsonLd([
               { name: "Tours", item: "/tours" },
-              { name: tour.name, item: `/tours/${tour.id}` },
+              { name: productDetail?.title || tour.name, item: `/tours/${tour.id}` },
             ]),
           ],
         }}
@@ -149,8 +170,10 @@ export default async function TourDetailPage({
               Reliability: <span className="text-white font-bold">{trustScore}%</span>
             </span>
           </div>
-          <h1 className="text-4xl font-black mt-3 tracking-tight">{tour.name}</h1>
-          {tour.duration && <div className="text-zinc-400 mt-2 text-sm italic">⏱ {tour.duration}</div>}
+          <h1 className="text-4xl font-black mt-3 tracking-tight">{productDetail?.title || tour.name}</h1>
+          {(productDetail?.durationText || tour.duration) ? (
+            <div className="text-zinc-400 mt-2 text-sm italic">⏱ {productDetail?.durationText || tour.duration}</div>
+          ) : null}
         </div>
 
         {tour.lat && tour.lng && tour.timezone && (
@@ -255,7 +278,7 @@ export default async function TourDetailPage({
       <PoweredByViator
         compact
         disclosure
-        body={`Use DCC to evaluate this experience quickly, then book with DCC via Viator when you're ready to check availability and complete checkout.`}
+        body={`Use DCC to evaluate this experience quickly, then continue to Viator when you're ready to check availability and complete checkout.`}
         className="mb-16"
       />
 

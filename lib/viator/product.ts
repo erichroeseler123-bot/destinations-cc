@@ -120,6 +120,36 @@ function extractVariants(images: unknown, source: "supplier" | "traveler") {
   });
 }
 
+function readReviewSummary(value: unknown): { rating: number | null; reviewCount: number | null } {
+  const reviews = asRecord(value);
+  const rating =
+    typeof reviews?.combinedAverageRating === "number"
+      ? reviews.combinedAverageRating
+      : typeof reviews?.averageRating === "number"
+        ? reviews.averageRating
+        : null;
+  const reviewCount =
+    typeof reviews?.totalReviews === "number"
+      ? reviews.totalReviews
+      : typeof reviews?.totalCount === "number"
+        ? reviews.totalCount
+        : null;
+  return { rating, reviewCount };
+}
+
+function readPricingSummary(value: unknown): { priceFrom: number | null; currency: string | null } {
+  const pricing = asRecord(value);
+  const summary = asRecord(pricing?.summary);
+  const currency = firstString(pricing?.currency, pricing?.currencyCode);
+  const priceFrom =
+    typeof summary?.fromPrice === "number"
+      ? summary.fromPrice
+      : typeof pricing?.fromPrice === "number"
+        ? pricing.fromPrice
+        : null;
+  return { priceFrom, currency };
+}
+
 function normalizeRemoteDestinations(product: Record<string, unknown>): ViatorDestinationCatalogRow[] {
   const rows = Array.isArray(product.destinations) ? product.destinations : [];
   const output: ViatorDestinationCatalogRow[] = [];
@@ -231,6 +261,8 @@ export function normalizeLiveProductDetailResponse(raw: unknown, fallbackKey: st
   const bookingConfirmationSettings = asRecord(product.bookingConfirmationSettings);
   const duration = asRecord(product.duration);
   const cancellationPolicy = asRecord(product.cancellationPolicy);
+  const reviewSummary = readReviewSummary(product.reviews);
+  const pricingSummary = readPricingSummary(product.pricing);
   const media = splitSupplierAndTravelerMedia(
     {
       supplierImages: extractVariants(product.images, "supplier"),
@@ -245,10 +277,10 @@ export function normalizeLiveProductDetailResponse(raw: unknown, fallbackKey: st
     short_description: firstString(product.shortDescription, product.summary, product.description),
     overview: firstString(product.description, product.shortDescription, product.summary),
     durationText: firstString(product.durationText, duration?.formattedDuration, duration?.text),
-    rating: null,
-    review_count: null,
-    price_from: null,
-    currency: "USD",
+    rating: reviewSummary.rating,
+    review_count: reviewSummary.reviewCount,
+    price_from: pricingSummary.priceFrom,
+    currency: normalizeViatorCurrency(pricingSummary.currency),
     duration_minutes:
       typeof duration?.fixedDurationInMinutes === "number"
         ? duration.fixedDurationInMinutes
@@ -298,7 +330,6 @@ export async function getResolvedViatorProductDetail(
   options: { productCode?: string | null; forceReviewRefresh?: boolean } = {}
 ): Promise<{ detail: ViatorProductDetail | null; source: "live" | "local" | "missing" }> {
   const local = getLocalViatorProductDetail(options.productCode || productCodeOrId);
-  const productCode = options.productCode || local?.product_code || productCodeOrId;
 
   if (options.productCode) {
     try {
@@ -340,6 +371,15 @@ export async function getResolvedViatorProductDetail(
             reviews: mergedReviews,
           }),
         };
+      }
+    } catch {}
+  }
+
+  if (!local) {
+    try {
+      const live = await getLiveViatorProductDetail(productCodeOrId);
+      if (live) {
+        return { detail: live, source: "live" };
       }
     } catch {}
   }
