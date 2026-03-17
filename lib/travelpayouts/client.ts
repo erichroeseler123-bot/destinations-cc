@@ -67,9 +67,18 @@ export async function createTravelpayoutsPartnerLinks(
     throw new Error("travelpayouts_brand_unsupported");
   }
 
+  const trsValue = Number(options.trs || getTravelpayoutsTrsForBrand(brandKey));
+  const markerValue = Number(config.marker);
+  if (!Number.isFinite(trsValue) || trsValue <= 0) {
+    throw new Error("travelpayouts_invalid_trs");
+  }
+  if (!Number.isFinite(markerValue) || markerValue <= 0) {
+    throw new Error("travelpayouts_invalid_marker");
+  }
+
   const payload = {
-    trs: options.trs || getTravelpayoutsTrsForBrand(brandKey),
-    marker: config.marker,
+    trs: trsValue,
+    marker: markerValue,
     shorten: options.shorten ?? true,
     links: links.slice(0, 10),
   };
