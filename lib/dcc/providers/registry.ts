@@ -369,6 +369,40 @@ export const DCC_PROVIDER_REGISTRY: ProviderContract[] = [
       default_behavior: "supplemental cached lodging source only; never canonical truth",
     },
   },
+  {
+    id: "travelpayouts_partner_links",
+    name: "Travelpayouts Partner Links API",
+    env_vars_required: [
+      "TRAVELPAYOUTS_API_TOKEN",
+      "TRAVELPAYOUTS_MARKER",
+      "TRAVELPAYOUTS_TRS_DEFAULT",
+    ],
+    layer: "layer2_action",
+    primary_lanes: ["affiliate_links", "monetization"],
+    live_cache_support: {
+      live: true,
+      cache: false,
+      cache_source: null,
+    },
+    refresh_strategy: {
+      mode: "request_time",
+      cadence: "per outbound link conversion request",
+      commands: [],
+    },
+    diagnostics_surface: {
+      runtime_fields: ["configured", "brand", "error"],
+      endpoints: ["/api/internal/travelpayouts/links", "/api/internal/providers/capability-matrix"],
+    },
+    rollout_policy: {
+      strategy: "policy_switch",
+      env_controls: [
+        "TRAVELPAYOUTS_API_TOKEN",
+        "TRAVELPAYOUTS_MARKER",
+        "TRAVELPAYOUTS_TRS_DEFAULT",
+      ],
+      default_behavior: "disabled when Travelpayouts credentials are missing; use only for supported brands",
+    },
+  },
 ];
 
 export function getProviderContract(providerId: string): ProviderContract | null {

@@ -261,6 +261,27 @@ export const CANONICAL_ENV_VARS = [
     optional: true,
   },
   {
+    name: "TRAVELPAYOUTS_API_TOKEN",
+    exposure: "server",
+    section: "Affiliate",
+    defaultValue: "",
+    optional: true,
+  },
+  {
+    name: "TRAVELPAYOUTS_MARKER",
+    exposure: "server",
+    section: "Affiliate",
+    defaultValue: "",
+    optional: true,
+  },
+  {
+    name: "TRAVELPAYOUTS_TRS_DEFAULT",
+    exposure: "server",
+    section: "Affiliate",
+    defaultValue: "",
+    optional: true,
+  },
+  {
     name: "TELNYX_API_KEY",
     exposure: "server",
     section: "Messaging",
