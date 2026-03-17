@@ -26,6 +26,18 @@ export async function GET(req: NextRequest) {
 
   try {
     const payload = await getAirbnbPropertyDetails(url);
+    if (!payload.detail) {
+      return NextResponse.json(
+        {
+          ok: false,
+          configured: true,
+          source: payload.source,
+          error: "airbnb_detail_not_found",
+          hint: "The upstream Airbnb source did not return a usable property detail payload for that URL.",
+        },
+        { status: 404 }
+      );
+    }
     return NextResponse.json(
       {
         ok: true,
