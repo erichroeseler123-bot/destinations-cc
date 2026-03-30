@@ -114,6 +114,8 @@ export type CategoryManifest = {
     intro?: string;
     bullets?: string[];
     intents?: Array<{ label: string; query: string; description: string }>;
+    inventoryTitle?: string;
+    filterTokens?: string[];
   }>;
 };
 

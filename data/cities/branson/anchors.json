@@ -1,0 +1,36 @@
+{
+  "city": "branson",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-05:00",
+  "schema": {
+    "entity": "anchor",
+    "description": "Resident origin nodes used for personalization, distance calculations, and local context."
+  },
+  "anchors": [
+    {
+      "slug": "the-branson-hotel",
+      "name": "The Branson Hotel",
+      "anchor_type": "boutique-hotel",
+      "address": "214 W Main St, Branson, MO 65616",
+      "lat": 36.6443,
+      "lng": -93.22,
+      "district_slugs": [
+        "highway-76-strip",
+        "branson-landing"
+      ],
+      "nearby_venue_slugs": [
+        "dolly-partons-stampede",
+        "titanic-museum-attraction",
+        "branson-convention-center"
+      ],
+      "nearby_place_slugs": [
+        "gettin-basted",
+        "crazy-craigs-cheeky-monkey-bar",
+        "guy-fieris-branson-kitchen-bar"
+      ],
+      "default_walk_radius_m": 1200
+    }
+  ]
+}

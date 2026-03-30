@@ -1,0 +1,36 @@
+{
+  "city": "san-diego",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-07:00",
+  "schema": {
+    "entity": "anchor",
+    "description": "Resident origin nodes used for personalization, distance calculations, and local context."
+  },
+  "anchors": [
+    {
+      "slug": "park-12",
+      "name": "Park 12",
+      "anchor_type": "residential-tower",
+      "address": "100 Park Blvd, San Diego, CA 92101",
+      "lat": 32.7084,
+      "lng": -117.1585,
+      "district_slugs": [
+        "gaslamp-quarter",
+        "embarcadero-bayfront"
+      ],
+      "nearby_venue_slugs": [
+        "petco-park",
+        "san-diego-convention-center",
+        "seaport-village"
+      ],
+      "nearby_place_slugs": [
+        "lionfish-modern-coastal-cuisine",
+        "the-nolen",
+        "brigantine-seaport"
+      ],
+      "default_walk_radius_m": 1450
+    }
+  ]
+}

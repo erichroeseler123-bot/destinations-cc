@@ -1,0 +1,67 @@
+{
+  "city": "washington-dc",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-04:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable city activity nodes.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large complex or district-scale activity center."
+    }
+  },
+  "venues": [
+    {
+      "slug": "capital-one-arena",
+      "name": "Capital One Arena",
+      "venue_type": "event-venue",
+      "category": "sports-concerts",
+      "address": "601 F St NW, Washington, DC 20004",
+      "lat": 38.8981,
+      "lng": -77.0209,
+      "impact_potential": "high",
+      "district_slugs": [
+        "national-mall"
+      ],
+      "near_anchor_slugs": [
+        "citycenterdc"
+      ]
+    },
+    {
+      "slug": "the-anthem",
+      "name": "The Anthem",
+      "venue_type": "event-venue",
+      "category": "live-music",
+      "address": "901 Wharf St SW, Washington, DC 20024",
+      "lat": 38.8792,
+      "lng": -77.0256,
+      "impact_potential": "medium",
+      "district_slugs": [
+        "the-wharf"
+      ],
+      "near_anchor_slugs": [
+        "citycenterdc"
+      ]
+    },
+    {
+      "slug": "the-wharf-dc",
+      "name": "The Wharf",
+      "venue_type": "district-hub",
+      "category": "waterfront-dining-live",
+      "address": "760 Maine Ave SW, Washington, DC 20024",
+      "lat": 38.8786,
+      "lng": -77.0259,
+      "impact_potential": "medium",
+      "district_slugs": [
+        "the-wharf"
+      ],
+      "near_anchor_slugs": [
+        "citycenterdc"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "citySlug": "pigeon-forge",
+  "cityName": "Pigeon Forge",
+  "categories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly.",
+      "intro": "Walking Tours are one of the cleaner ways to add structure and local context to a Pigeon Forge trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a stronger starting point.",
+        "Works well when you want a guided option instead of stitching the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Walking Tours",
+          "query": "pigeon forge walking tours",
+          "description": "A straightforward starting query for walking tours in Pigeon Forge."
+        }
+      ]
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip.",
+      "intro": "Food Tours are one of the cleaner ways to add structure and local context to a Pigeon Forge trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a stronger starting point.",
+        "Works well when you want a guided option instead of stitching the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Food Tours",
+          "query": "pigeon forge food tours",
+          "description": "A straightforward starting query for food tours in Pigeon Forge."
+        }
+      ]
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights.",
+      "intro": "Sightseeing Tours are one of the cleaner ways to add structure and local context to a Pigeon Forge trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a stronger starting point.",
+        "Works well when you want a guided option instead of stitching the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Sightseeing Tours",
+          "query": "pigeon forge sightseeing tours",
+          "description": "A straightforward starting query for sightseeing tours in Pigeon Forge."
+        }
+      ]
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay.",
+      "intro": "Day Trips are one of the cleaner ways to add structure and local context to a Pigeon Forge trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a stronger starting point.",
+        "Works well when you want a guided option instead of stitching the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Day Trips",
+          "query": "pigeon forge day trips",
+          "description": "A straightforward starting query for day trips in Pigeon Forge."
+        }
+      ]
+    },
+    {
+      "slug": "private-tours",
+      "title": "Private Tours",
+      "description": "More tailored guided experiences for travelers who want flexibility or a slower pace.",
+      "intro": "Private Tours are one of the cleaner ways to add structure and local context to a Pigeon Forge trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a stronger starting point.",
+        "Works well when you want a guided option instead of stitching the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Private Tours",
+          "query": "pigeon forge private tours",
+          "description": "A straightforward starting query for private tours in Pigeon Forge."
+        }
+      ]
+    },
+    {
+      "slug": "night-tours",
+      "title": "Night Tours",
+      "description": "Evening experiences built around nightlife, views, or after-dark city energy.",
+      "intro": "Night Tours are one of the cleaner ways to add structure and local context to a Pigeon Forge trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a stronger starting point.",
+        "Works well when you want a guided option instead of stitching the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Night Tours",
+          "query": "pigeon forge night tours",
+          "description": "A straightforward starting query for night tours in Pigeon Forge."
+        }
+      ]
+    },
+    {
+      "slug": "history-tours",
+      "title": "History Tours",
+      "description": "Guided experiences that add cultural and historical context to major sights.",
+      "intro": "History Tours are one of the cleaner ways to add structure and local context to a Pigeon Forge trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a stronger starting point.",
+        "Works well when you want a guided option instead of stitching the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "History Tours",
+          "query": "pigeon forge history tours",
+          "description": "A straightforward starting query for history tours in Pigeon Forge."
+        }
+      ]
+    },
+    {
+      "slug": "family-activities",
+      "title": "Family Activities",
+      "description": "Low-friction experiences that work well for mixed-age travel groups.",
+      "intro": "Family Activities are one of the cleaner ways to add structure and local context to a Pigeon Forge trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a stronger starting point.",
+        "Works well when you want a guided option instead of stitching the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Family Activities",
+          "query": "pigeon forge family activities",
+          "description": "A straightforward starting query for family activities in Pigeon Forge."
+        }
+      ]
+    },
+    {
+      "slug": "mountain-activities",
+      "title": "Mountain Activities",
+      "description": "Outdoor demand tied to Smoky Mountains access, scenic routes, and zipline inventory.",
+      "intro": "Mountain Activities are one of the cleaner ways to add structure and local context to a Pigeon Forge trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a stronger starting point.",
+        "Works well when you want a guided option instead of stitching the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Mountain Activities",
+          "query": "pigeon forge mountain activities",
+          "description": "A straightforward starting query for mountain activities in Pigeon Forge."
+        }
+      ]
+    },
+    {
+      "slug": "dinner-theaters",
+      "title": "Dinner Theaters",
+      "description": "High-intent family entertainment that shapes evening planning in Pigeon Forge.",
+      "intro": "Dinner Theaters are one of the cleaner ways to add structure and local context to a Pigeon Forge trip.",
+      "bullets": [
+        "Useful for first-time visitors who want a stronger starting point.",
+        "Works well when you want a guided option instead of stitching the day together yourself."
+      ],
+      "intents": [
+        {
+          "label": "Dinner Theaters",
+          "query": "pigeon forge dinner theaters",
+          "description": "A straightforward starting query for dinner theaters in Pigeon Forge."
+        }
+      ]
+    }
+  ]
+}

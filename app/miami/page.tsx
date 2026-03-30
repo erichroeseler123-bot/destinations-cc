@@ -50,6 +50,13 @@ export const metadata: Metadata = {
   title: "Miami Travel Guide 2026 | Water Activities, Everglades, and Adventure Planning",
   description:
     "Plan Miami around water sports, Biscayne activities, Everglades timing, nightlife pacing, and high-intent adventure booking lanes.",
+  keywords: [
+    "miami travel guide",
+    "things to do in miami",
+    "miami water activities",
+    "miami everglades tours",
+    "miami adventure activities",
+  ],
   alternates: { canonical: "/miami" },
   openGraph: {
     title: "Miami Travel Guide | Water Activities and Adventure Planning",
@@ -139,6 +146,29 @@ export default function MiamiPage() {
           </div>
         </section>
 
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">How Miami search intent usually breaks down</h2>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4 text-sm leading-7 text-zinc-300">
+              <p>
+                Broad Miami searches usually split into beach planning, water activities, nightlife, or one major excursion like the Everglades. The city works better when those lanes stay separated, because the traveler who wants a South Beach day is usually not making the same decision as the traveler comparing airboats, boat tours, or premium skyline activities.
+              </p>
+              <p>
+                This page is strongest as a sorting hub. The best crawl and ranking path is to move from the city guide into a narrower page like beaches, tours, or a high-intent activity category instead of leaving every question on one general Miami page.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Best next clicks</div>
+              <div className="mt-4 grid gap-3">
+                <Link href="/miami/beaches" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Miami beaches</Link>
+                <Link href="/miami/tours" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Miami tours</Link>
+                <Link href="/miami/attractions" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Miami attractions</Link>
+                <Link href="/orlando" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Compare Orlando</Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {ADVENTURE_LANE ? <AdventureLaneSection config={ADVENTURE_LANE} /> : null}
 
         <CitySportsSection cityName="Miami" citySlug="miami" teams={sportsTeams} />
@@ -172,6 +202,28 @@ export default function MiamiPage() {
               <h3 className="font-semibold">Miami tours</h3>
               <p className="mt-2 text-sm text-zinc-300">Use the broader tours lane when the beach plan becomes Everglades, boats, or excursion routing.</p>
             </Link>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Best-fit Miami trip shapes</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">First trip</h3>
+              <p className="mt-2 text-sm text-zinc-300">Split the stay into one beach-and-water day, one boat or excursion day, and one nightlife or food-heavy evening block.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Beach-first</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use the beach guide when sand quality, family fit, or South Beach versus quieter shoreline choices matter more than tours.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Adventure buyer</h3>
+              <p className="mt-2 text-sm text-zinc-300">Jet skis, parasailing, boat routes, and helicopter upgrades work best when booked as the main event, not squeezed between meals and nightlife.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Short stay</h3>
+              <p className="mt-2 text-sm text-zinc-300">Choose either beach momentum or one premium excursion lane; trying to force both into one rushed day usually weakens the trip.</p>
+            </article>
           </div>
         </section>
 

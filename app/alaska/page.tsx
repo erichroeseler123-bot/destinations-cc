@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import BookableToursSection from "@/app/components/dcc/BookableToursSection";
+import NextStepEngine from "@/app/components/dcc/NextStepEngine";
+import { getPortRecommendationActions } from "@/lib/dcc/handoffAnalytics";
 
 export const dynamic = "force-static";
 const PAGE_URL = "https://destinationcommandcenter.com/alaska";
@@ -28,6 +30,7 @@ export const metadata: Metadata = {
 };
 
 export default function AlaskaPage() {
+  const juneauActions = getPortRecommendationActions("juneau-alaska");
   const topPorts = [
     { slug: "juneau", label: "Juneau" },
     { slug: "ketchikan", label: "Ketchikan" },
@@ -95,6 +98,31 @@ export default function AlaskaPage() {
             ))}
           </div>
         </section>
+
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 space-y-4">
+          <h2 className="text-2xl font-bold">High-intent Alaska decision pages</h2>
+          <div className="grid gap-3 md:grid-cols-2">
+            <Link
+              href="/juneau-whale-watching-from-port"
+              className="rounded-xl border border-white/10 bg-black/20 p-4 text-zinc-200 hover:bg-white/10"
+            >
+              Juneau whale watching from cruise port
+            </Link>
+            <Link
+              href="/cruises/port/juneau-alaska"
+              className="rounded-xl border border-white/10 bg-black/20 p-4 text-zinc-200 hover:bg-white/10"
+            >
+              Juneau cruise port authority page
+            </Link>
+          </div>
+        </section>
+
+        <NextStepEngine
+          title="Alaska Next Step Engine"
+          eyebrow="Bottleneck-aware routing"
+          description="DCC should hold cruise travelers in authority-mode when a shore-excursion lane is strained, then release them into execution when the port lane is healthy."
+          actions={juneauActions}
+        />
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6 space-y-3">
           <h2 className="text-2xl font-bold">Operational Next Build</h2>

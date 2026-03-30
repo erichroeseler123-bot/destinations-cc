@@ -1,0 +1,40 @@
+{
+  "handoffId": "partner-forward-1773790577450",
+  "satelliteId": "welcome-to-alaska",
+  "firstEventAt": "2026-03-17T23:36:17.451Z",
+  "lastEventAt": "2026-03-17T23:36:17.451Z",
+  "latestEventType": "forwarded_to_partner",
+  "latestStatus": "forwarded",
+  "latestStage": "partner_handoff",
+  "latestMessage": null,
+  "eventCount": 1,
+  "externalReferences": [],
+  "degraded": false,
+  "traveler": {
+    "email": "traveler@example.com",
+    "phone": null,
+    "name": "Jane Traveler",
+    "partySize": null
+  },
+  "attribution": {
+    "sourceSlug": null,
+    "sourcePage": null,
+    "topicSlug": null
+  },
+  "booking": {
+    "venueSlug": null,
+    "portSlug": null,
+    "citySlug": null,
+    "productSlug": null,
+    "eventDate": null,
+    "quantity": null,
+    "currency": null,
+    "amount": null
+  },
+  "partner": {
+    "fromSite": "welcome-to-alaska",
+    "toSite": "partyatredrocks",
+    "partnerHandoffId": "partner-forward-1773790577450",
+    "reason": "traveler_reuse"
+  }
+}

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import DiagnosticsBlock from "@/app/components/DiagnosticsBlock";
@@ -21,6 +22,33 @@ export const dynamicParams = false;
 
 export function generateStaticParams() {
   return listCruiseShipSlugs().map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const resolved = await params;
+  const shipTitle = toTitle(resolved.slug);
+  return {
+    title: `${shipTitle} Cruise Sailings and Ship Guide`,
+    description: `Upcoming sailings, embarkation context, themed cruise fit, and ship-planning guidance for ${shipTitle}.`,
+    keywords: [
+      `${shipTitle} cruises`,
+      `${shipTitle} sailings`,
+      `${shipTitle} ship guide`,
+      `${shipTitle} embarkation ports`,
+      `${shipTitle} cruise itinerary`,
+    ],
+    alternates: { canonical: `/cruises/ship/${resolved.slug}` },
+    openGraph: {
+      title: `${shipTitle} Cruise Sailings and Ship Guide`,
+      description: `Upcoming sailings, embarkation context, themed cruise fit, and ship-planning guidance for ${shipTitle}.`,
+      url: `${BASE_URL}/cruises/ship/${resolved.slug}`,
+      type: "website",
+    },
+  };
 }
 
 function toTitle(slug: string): string {
@@ -178,6 +206,36 @@ export default async function CruiseShipPage({
         )}
       </section>
 
+      <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <h2 className="text-2xl font-bold">How to use this ship page</h2>
+        <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="space-y-4 text-sm leading-7 text-zinc-300">
+            <p>
+              Ship pages are strongest when the traveler already knows the vessel or line and wants to compare upcoming sailings, departure ports, or the type of trip the ship supports best. That is a different search from a port-first or region-first cruise query.
+            </p>
+            <p>
+              This page helps narrow the decision into sailings, embarkation ports, and themed cruise lanes instead of pushing everything into one broad cruise search.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+            <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Best next clicks</div>
+            <div className="mt-4 grid gap-3">
+              <Link href="/cruises" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">
+                Cruise explorer
+              </Link>
+              <Link href="/ports" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">
+                Ports directory
+              </Link>
+              {specialtyLanes.slice(0, 2).map((lane) => (
+                <Link key={lane.key} href={`/cruises/themed/${lane.key}`} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">
+                  {lane.title}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-xl font-semibold">Upcoming Sailings</h2>
@@ -253,6 +311,28 @@ export default async function CruiseShipPage({
               </div>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <h2 className="text-2xl font-bold">Best-fit ship planning lanes</h2>
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <h3 className="font-semibold">Ship-first buyer</h3>
+            <p className="mt-2 text-sm text-zinc-300">Best when the traveler cares more about the vessel than the port or destination headline.</p>
+          </article>
+          <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <h3 className="font-semibold">Date and price compare</h3>
+            <p className="mt-2 text-sm text-zinc-300">Use this page to compare future sailings without losing the ship context.</p>
+          </article>
+          <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <h3 className="font-semibold">Embark-port question</h3>
+            <p className="mt-2 text-sm text-zinc-300">Jump into departure ports when the sailing works but the logistics still need to be judged.</p>
+          </article>
+          <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <h3 className="font-semibold">Niche cruise fit</h3>
+            <p className="mt-2 text-sm text-zinc-300">Themed lanes help when the ship’s value depends on a niche interest, not just the itinerary.</p>
+          </article>
         </div>
       </section>
       <DiagnosticsBlock

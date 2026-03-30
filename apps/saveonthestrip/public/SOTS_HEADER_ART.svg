@@ -1,0 +1,84 @@
+<svg width="1600" height="760" viewBox="0 0 1600 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="110" y1="36" x2="1450" y2="640" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#211027"/>
+      <stop offset="0.48" stop-color="#150B1C"/>
+      <stop offset="1" stop-color="#0B0711"/>
+    </linearGradient>
+    <radialGradient id="glowPink" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1190 156) rotate(90) scale(280 380)">
+      <stop stop-color="#FF4FA1" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#FF4FA1" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowOrange" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(398 104) rotate(90) scale(250 340)">
+      <stop stop-color="#FF8F4A" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#FF8F4A" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="frameStroke" x1="112" y1="62" x2="1480" y2="660" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF62B1"/>
+      <stop offset="0.5" stop-color="#FF9B58"/>
+      <stop offset="1" stop-color="#F9D56E"/>
+    </linearGradient>
+    <linearGradient id="signFill" x1="220" y1="132" x2="988" y2="408" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF6EF"/>
+      <stop offset="0.5" stop-color="#FFD3B3"/>
+      <stop offset="1" stop-color="#FFA1C8"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="34" y="34" width="1532" height="692" rx="42" fill="url(#bg)"/>
+  <rect x="34" y="34" width="1532" height="692" rx="42" stroke="url(#frameStroke)" stroke-width="4"/>
+  <rect x="34" y="34" width="1532" height="692" rx="42" fill="url(#glowPink)"/>
+  <rect x="34" y="34" width="1532" height="692" rx="42" fill="url(#glowOrange)"/>
+
+  <g opacity="0.24">
+    <path d="M102 592H1498" stroke="#FFF7F0" stroke-width="2"/>
+    <path d="M144 592V520H204V592" stroke="#FF8F4A" stroke-width="4"/>
+    <path d="M220 592V470H310V592" stroke="#FF4FA1" stroke-width="4"/>
+    <path d="M334 592V440H430V592" stroke="#F9D56E" stroke-width="4"/>
+    <path d="M456 592V500H532V592" stroke="#FF8F4A" stroke-width="4"/>
+    <path d="M1090 592V458H1164V592" stroke="#FF4FA1" stroke-width="4"/>
+    <path d="M1186 592V428H1292V592" stroke="#F9D56E" stroke-width="4"/>
+    <path d="M1314 592V490H1400V592" stroke="#FF8F4A" stroke-width="4"/>
+  </g>
+
+  <g>
+    <rect x="124" y="104" width="890" height="268" rx="34" fill="#160C1E" fill-opacity="0.82"/>
+    <rect x="124" y="104" width="890" height="268" rx="34" stroke="url(#frameStroke)" stroke-width="3"/>
+    <text x="182" y="206" fill="url(#signFill)" font-size="96" font-weight="800" font-family="Georgia, 'Times New Roman', serif">
+      $ave on the Strip
+    </text>
+    <text x="188" y="266" fill="#FFF5E7" opacity="0.82" font-size="28" font-weight="700" font-family="Arial, Helvetica, sans-serif" letter-spacing="7">
+      VEGAS SHOWS • TOURS • DEALS
+    </text>
+    <text x="188" y="318" fill="#FFD7BC" opacity="0.9" font-size="32" font-weight="700" font-family="Georgia, 'Times New Roman', serif">
+      Find the fun. Keep the money.
+    </text>
+  </g>
+
+  <g transform="translate(1136 136)">
+    <rect x="0" y="0" width="324" height="164" rx="28" fill="#130A19" fill-opacity="0.88"/>
+    <rect x="0" y="0" width="324" height="164" rx="28" stroke="#FF62B1" stroke-width="3"/>
+    <circle cx="64" cy="74" r="42" stroke="#F9D56E" stroke-width="6"/>
+    <circle cx="64" cy="74" r="18" fill="#F9D56E"/>
+    <path d="M120 48H264" stroke="#FFF7F0" stroke-width="4" stroke-linecap="round"/>
+    <path d="M120 82H234" stroke="#FF9B58" stroke-width="4" stroke-linecap="round"/>
+    <path d="M120 116H252" stroke="#FF62B1" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <g transform="translate(1080 402)">
+    <rect x="0" y="0" width="380" height="180" rx="28" fill="#120913" fill-opacity="0.86"/>
+    <rect x="0" y="0" width="380" height="180" rx="28" stroke="#F9D56E" stroke-width="3"/>
+    <text x="34" y="64" fill="#FFF7F0" font-size="30" font-weight="700" font-family="Georgia, 'Times New Roman', serif">
+      Vegas picks
+    </text>
+    <text x="34" y="104" fill="#FF9B58" font-size="24" font-weight="700" font-family="Arial, Helvetica, sans-serif">
+      Sphere nights
+    </text>
+    <text x="34" y="138" fill="#FF62B1" font-size="24" font-weight="700" font-family="Arial, Helvetica, sans-serif">
+      Grand Canyon
+    </text>
+    <text x="34" y="172" fill="#F9D56E" font-size="24" font-weight="700" font-family="Arial, Helvetica, sans-serif">
+      Hoover Dam
+    </text>
+  </g>
+</svg>

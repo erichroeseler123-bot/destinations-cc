@@ -1,0 +1,78 @@
+{
+  "city": "pigeon-forge",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-04:00",
+  "schema": {
+    "entity": "place",
+    "description": "Durable social and discovery inventory."
+  },
+  "places": [
+    {
+      "slug": "local-goat",
+      "name": "Local Goat",
+      "place_type": "restaurant",
+      "category": "american",
+      "address": "2167 Parkway, Pigeon Forge, TN 37863",
+      "lat": 35.8016,
+      "lng": -83.5723,
+      "district_slugs": [
+        "parkway-core"
+      ],
+      "tags": [
+        "family",
+        "casual",
+        "high-demand"
+      ],
+      "quick_actions": [
+        "menu",
+        "reserve",
+        "directions"
+      ]
+    },
+    {
+      "slug": "junction-35-spirits",
+      "name": "Junction 35 Spirits",
+      "place_type": "restaurant",
+      "category": "distillery-restaurant",
+      "address": "2655 Teaster Ln Suite 300, Pigeon Forge, TN 37863",
+      "lat": 35.806,
+      "lng": -83.5627,
+      "district_slugs": [
+        "teaster-lane"
+      ],
+      "tags": [
+        "distillery",
+        "dinner",
+        "groups"
+      ],
+      "quick_actions": [
+        "menu",
+        "reserve",
+        "directions"
+      ]
+    },
+    {
+      "slug": "blue-moose-burgers-wings",
+      "name": "Blue Moose Burgers & Wings",
+      "place_type": "restaurant",
+      "category": "sports-bar",
+      "address": "2430 Teaster Ln, Pigeon Forge, TN 37863",
+      "lat": 35.8069,
+      "lng": -83.5639,
+      "district_slugs": [
+        "teaster-lane"
+      ],
+      "tags": [
+        "family",
+        "casual",
+        "groups"
+      ],
+      "quick_actions": [
+        "menu",
+        "directions"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "city": "seattle",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-07:00",
+  "schema": {
+    "entity": "district",
+    "description": "Durable district layer used to group venues, places, and signals."
+  },
+  "districts": [
+    {
+      "slug": "pike-place-waterfront",
+      "name": "Pike Place Waterfront",
+      "district_type": "waterfront-corridor",
+      "center": {
+        "lat": 47.6088,
+        "lng": -122.3406
+      },
+      "radius_m": 1300,
+      "vibe_tags": [
+        "market",
+        "waterfront",
+        "tourism"
+      ],
+      "venue_slugs": [
+        "climate-pledge-arena",
+        "seattle-aquarium-waterfront"
+      ],
+      "place_slugs": [
+        "the-pink-door",
+        "old-stove-brewing"
+      ],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "capitol-hill",
+      "name": "Capitol Hill",
+      "district_type": "nightlife-corridor",
+      "center": {
+        "lat": 47.6231,
+        "lng": -122.3193
+      },
+      "radius_m": 1300,
+      "vibe_tags": [
+        "bars",
+        "music",
+        "late-night"
+      ],
+      "venue_slugs": [
+        "neumos"
+      ],
+      "place_slugs": [
+        "spinasse"
+      ],
+      "impact_profile": "medium"
+    }
+  ]
+}

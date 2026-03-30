@@ -1,0 +1,78 @@
+{
+  "city": "los-angeles",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-07:00",
+  "schema": {
+    "entity": "place",
+    "description": "Durable social and discovery inventory."
+  },
+  "places": [
+    {
+      "slug": "yard-house-la-live",
+      "name": "Yard House LA Live",
+      "place_type": "restaurant",
+      "category": "sports-bar",
+      "address": "800 W Olympic Blvd, Los Angeles, CA 90015",
+      "lat": 34.0451,
+      "lng": -118.2663,
+      "district_slugs": [
+        "la-live"
+      ],
+      "tags": [
+        "pre-show",
+        "groups",
+        "walkable"
+      ],
+      "quick_actions": [
+        "menu",
+        "reserve",
+        "directions"
+      ]
+    },
+    {
+      "slug": "broken-shaker-dtla",
+      "name": "Broken Shaker",
+      "place_type": "bar",
+      "category": "cocktail-bar",
+      "address": "416 W 8th St, Los Angeles, CA 90014",
+      "lat": 34.0462,
+      "lng": -118.2578,
+      "district_slugs": [
+        "la-live"
+      ],
+      "tags": [
+        "cocktails",
+        "rooftop",
+        "nightlife"
+      ],
+      "quick_actions": [
+        "menu",
+        "directions"
+      ]
+    },
+    {
+      "slug": "musso-frank-grill",
+      "name": "Musso & Frank Grill",
+      "place_type": "restaurant",
+      "category": "classic-hollywood",
+      "address": "6667 Hollywood Blvd, Hollywood, CA 90028",
+      "lat": 34.1017,
+      "lng": -118.3336,
+      "district_slugs": [
+        "hollywood-core"
+      ],
+      "tags": [
+        "classic",
+        "dinner",
+        "tourism"
+      ],
+      "quick_actions": [
+        "menu",
+        "reserve",
+        "directions"
+      ]
+    }
+  ]
+}

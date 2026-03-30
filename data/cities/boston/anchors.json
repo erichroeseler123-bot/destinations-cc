@@ -1,0 +1,36 @@
+{
+  "city": "boston",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-04:00",
+  "schema": {
+    "entity": "anchor",
+    "description": "Resident origin nodes used for personalization, distance calculations, and local context."
+  },
+  "anchors": [
+    {
+      "slug": "the-bosworth",
+      "name": "The Bosworth",
+      "anchor_type": "residential-tower",
+      "address": "1 Milk St, Boston, MA 02109",
+      "lat": 42.3577,
+      "lng": -71.0563,
+      "district_slugs": [
+        "downtown-crossing",
+        "seaport-boston"
+      ],
+      "nearby_venue_slugs": [
+        "td-garden",
+        "citizens-opera-house",
+        "boston-convention-and-exhibition-center"
+      ],
+      "nearby_place_slugs": [
+        "jm-curley",
+        "sam-la-grassa-s",
+        "legal-harborside"
+      ],
+      "default_walk_radius_m": 1500
+    }
+  ]
+}

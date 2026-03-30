@@ -7,6 +7,13 @@ const page = NEW_ORLEANS_GUIDE_PAGES["weekend-guide"];
 export const metadata: Metadata = {
   title: "New Orleans Weekend Guide | What To Do, Where To Stay, and How To Plan",
   description: page.description,
+  keywords: [
+    "new orleans weekend guide",
+    "weekend in new orleans",
+    "what to do in new orleans this weekend",
+    "new orleans itinerary",
+    "new orleans weekend trip",
+  ],
   alternates: { canonical: "/new-orleans/weekend-guide" },
 };
 

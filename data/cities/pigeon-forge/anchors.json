@@ -1,0 +1,36 @@
+{
+  "city": "pigeon-forge",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-04:00",
+  "schema": {
+    "entity": "anchor",
+    "description": "Resident origin nodes used for personalization, distance calculations, and local context."
+  },
+  "anchors": [
+    {
+      "slug": "margaritaville-island-hotel",
+      "name": "Margaritaville Island Hotel",
+      "anchor_type": "resort",
+      "address": "131 Island Dr, Pigeon Forge, TN 37863",
+      "lat": 35.8038,
+      "lng": -83.5716,
+      "district_slugs": [
+        "parkway-core",
+        "teaster-lane"
+      ],
+      "nearby_venue_slugs": [
+        "dollywood",
+        "the-island-in-pigeon-forge",
+        "leconte-center"
+      ],
+      "nearby_place_slugs": [
+        "local-goat",
+        "junction-35-spirits",
+        "blue-moose-burgers-wings"
+      ],
+      "default_walk_radius_m": 1150
+    }
+  ]
+}

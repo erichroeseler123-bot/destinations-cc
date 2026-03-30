@@ -1,0 +1,36 @@
+{
+  "city": "seattle",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-07:00",
+  "schema": {
+    "entity": "anchor",
+    "description": "Resident origin nodes used for personalization, distance calculations, and local context."
+  },
+  "anchors": [
+    {
+      "slug": "insignia-seattle",
+      "name": "Insignia Seattle",
+      "anchor_type": "residential-tower",
+      "address": "588 Bell St, Seattle, WA 98121",
+      "lat": 47.6155,
+      "lng": -122.349,
+      "district_slugs": [
+        "pike-place-waterfront",
+        "capitol-hill"
+      ],
+      "nearby_venue_slugs": [
+        "climate-pledge-arena",
+        "seattle-aquarium-waterfront",
+        "neumos"
+      ],
+      "nearby_place_slugs": [
+        "the-pink-door",
+        "old-stove-brewing",
+        "spinasse"
+      ],
+      "default_walk_radius_m": 1500
+    }
+  ]
+}

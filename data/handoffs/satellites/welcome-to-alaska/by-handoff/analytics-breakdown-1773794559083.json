@@ -1,0 +1,41 @@
+{
+  "handoffId": "analytics-breakdown-1773794559083",
+  "satelliteId": "welcome-to-alaska",
+  "firstEventAt": "2026-03-18T00:42:39.083Z",
+  "lastEventAt": "2026-03-18T00:42:39.083Z",
+  "latestEventType": "booking_completed",
+  "latestStatus": "booked",
+  "latestStage": "confirmed",
+  "latestMessage": null,
+  "eventCount": 1,
+  "externalReferences": [],
+  "degraded": false,
+  "traveler": {
+    "email": null,
+    "phone": null,
+    "name": null,
+    "partySize": null
+  },
+  "attribution": {
+    "sourceSlug": "dcc-cruises-port",
+    "sourcePage": "/cruises/port/juneau-alaska",
+    "topicSlug": "shore-excursions"
+  },
+  "booking": {
+    "venueSlug": "red-rocks-amphitheatre",
+    "portSlug": "juneau-alaska",
+    "citySlug": null,
+    "productSlug": null,
+    "eventDate": "2026-07-12",
+    "quantity": null,
+    "currency": "USD",
+    "amount": 899
+  },
+  "partner": {
+    "fromSite": null,
+    "toSite": null,
+    "partnerHandoffId": null,
+    "reason": null
+  },
+  "metadata": {}
+}

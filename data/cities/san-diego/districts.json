@@ -1,0 +1,59 @@
+{
+  "city": "san-diego",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-07:00",
+  "schema": {
+    "entity": "district",
+    "description": "Durable district layer used to group venues, places, and signals."
+  },
+  "districts": [
+    {
+      "slug": "gaslamp-quarter",
+      "name": "Gaslamp Quarter",
+      "district_type": "nightlife-corridor",
+      "center": {
+        "lat": 32.7108,
+        "lng": -117.1607
+      },
+      "radius_m": 1200,
+      "vibe_tags": [
+        "bars",
+        "conventions",
+        "sports"
+      ],
+      "venue_slugs": [
+        "petco-park",
+        "san-diego-convention-center"
+      ],
+      "place_slugs": [
+        "lionfish-modern-coastal-cuisine",
+        "the-nolen"
+      ],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "embarcadero-bayfront",
+      "name": "Embarcadero Bayfront",
+      "district_type": "waterfront-corridor",
+      "center": {
+        "lat": 32.7159,
+        "lng": -117.1731
+      },
+      "radius_m": 1500,
+      "vibe_tags": [
+        "harbor",
+        "cruises",
+        "tourism"
+      ],
+      "venue_slugs": [
+        "seaport-village"
+      ],
+      "place_slugs": [
+        "brigantine-seaport"
+      ],
+      "impact_profile": "medium"
+    }
+  ]
+}

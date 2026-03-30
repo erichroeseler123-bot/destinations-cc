@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import NextStepEngine from "@/app/components/dcc/NextStepEngine";
 import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
+import { getColoradoTransferRecommendationActions } from "@/lib/dcc/handoffAnalytics";
 import { getTransportEntriesByRegion } from "@/src/data/transport-directory";
 
 export const metadata: Metadata = {
@@ -34,6 +36,7 @@ const GROUPS = [
 ];
 
 export default function ColoradoTransportationPage() {
+  const actions = getColoradoTransferRecommendationActions();
   const entries = getTransportEntriesByRegion("Colorado");
   const bySlug = new Map(entries.map((entry) => [entry.slug, entry]));
 
@@ -51,6 +54,29 @@ export default function ColoradoTransportationPage() {
         </header>
 
         <RideOptionsCard venueSlug="red-rocks-amphitheatre" sourcePage="/transportation/colorado" />
+
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">High-intent Colorado guides</h2>
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <Link href="/red-rocks-shuttle-vs-uber" className="rounded-2xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Comparison page</div>
+              <h3 className="mt-2 text-lg font-semibold text-white">Red Rocks shuttle vs Uber</h3>
+              <p className="mt-3 text-sm text-zinc-300">Narrow-intent authority page for post-show ride-home decisions.</p>
+            </Link>
+            <Link href="/transportation/colorado/denver-to-vail-shuttle-guide" className="rounded-2xl border border-white/10 bg-black/20 p-4 hover:bg-white/10">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Ski corridor guide</div>
+              <h3 className="mt-2 text-lg font-semibold text-white">Denver to Vail shuttle guide</h3>
+              <p className="mt-3 text-sm text-zinc-300">Authority-first transfer logic before the traveler moves into GOSNO execution.</p>
+            </Link>
+          </div>
+        </section>
+
+        <NextStepEngine
+          title="Colorado Transfer Next Step"
+          eyebrow="Lane balancing"
+          description="DCC can absorb ski-transfer demand when GOSNO is strained, then hand travelers back into execution once the lane recovers."
+          actions={actions}
+        />
 
         {GROUPS.map((group) => {
           const groupEntries = group.slugs

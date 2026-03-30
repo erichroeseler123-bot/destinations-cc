@@ -3,6 +3,7 @@ export const dynamicParams = false;
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import HeroVisual from "@/app/components/dcc/HeroVisual";
 import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
 import aliases from "@/data/city-aliases.json";
 import { bandsintownAdapter } from "@/lib/dcc/providers/adapters/bandsintown";
@@ -348,79 +349,142 @@ export default async function CityShowsPage({
     }),
   );
 
+  const leadingShowCards =
+    cityKey === "las-vegas"
+      ? visibleCuratedShowCards.slice(0, 4)
+      : visibleCuratedShowCards.slice(0, 3);
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <div className="mx-auto max-w-6xl px-6 py-12 md:py-16">
-        <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.18),transparent_35%),linear-gradient(180deg,rgba(39,39,42,0.94),rgba(9,9,11,0.98))] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.45)] md:p-8">
-          <div className="text-xs uppercase tracking-[0.32em] text-amber-300">
-            Destination Command Center • {cityName} Shows
-          </div>
-          <h1 className="mt-4 max-w-4xl text-4xl font-black leading-[0.95] md:text-6xl">
-            {cityName} shows: residencies, comedy, magic, concerts, and showroom nights
-          </h1>
-          <p className="mt-4 max-w-3xl text-base text-zinc-300 md:text-lg">{config.heroSummary}</p>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href={buildCityTrackedHref({
-                href: `/${cityKey}/shows`,
-                city: cityKey,
-                lane: "events",
-                sourceSection: "city_events_primary",
-              })}
-              className="inline-flex items-center justify-center rounded-2xl bg-amber-500 px-5 py-3 font-semibold text-black hover:bg-amber-400"
-            >
-              Browse live show inventory
-            </Link>
-            <Link
-              href={`/${cityKey}/shows-this-week`}
-              className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-5 py-3 font-semibold text-zinc-100 hover:bg-white/10"
-            >
-              Shows this week
-            </Link>
-            <Link
-              href={`/${cityKey}/tours`}
-              className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-5 py-3 font-semibold text-zinc-100 hover:bg-white/10"
-            >
-              Switch to {cityName} tours
-            </Link>
-            <Link
-              href={`/${cityKey}/attractions`}
-              className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-5 py-3 font-semibold text-zinc-100 hover:bg-white/10"
-            >
-              Switch to attractions
-            </Link>
-          </div>
-
-          <div className="mt-6 grid gap-3 md:grid-cols-3">
-            <div className="rounded-[24px] border border-white/10 bg-black/20 p-4">
-              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-300">Buyer state</div>
-              <div className="mt-2 text-sm leading-6 text-white/80">This visitor is planning a fixed-time night, not casually browsing attractions.</div>
+        <section className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
+          <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.18),transparent_35%),linear-gradient(180deg,rgba(39,39,42,0.94),rgba(9,9,11,0.98))] p-6 shadow-[0_28px_80px_rgba(0,0,0,0.45)] md:p-8">
+            <div className="text-xs uppercase tracking-[0.32em] text-amber-300">
+              Destination Command Center • {cityName} Shows
             </div>
-            <div className="rounded-[24px] border border-white/10 bg-black/20 p-4">
-              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-300">Best next move</div>
-              <div className="mt-2 text-sm leading-6 text-white/80">Choose the show, then route into venue, transport, or city-night planning immediately.</div>
-            </div>
-            <div className="rounded-[24px] border border-white/10 bg-black/20 p-4">
-              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-300">Monetization path</div>
-              <div className="mt-2 text-sm leading-6 text-white/80">Tickets, transport, hotel adjacency, and pre-show city plans can all branch from this page.</div>
-            </div>
-          </div>
+            <h1 className="mt-4 max-w-4xl text-4xl font-black leading-[0.95] md:text-6xl">
+              {cityName} shows: residencies, comedy, magic, concerts, and showroom nights
+            </h1>
+            <p className="mt-4 max-w-3xl text-base text-zinc-300 md:text-lg">{config.heroSummary}</p>
 
-          {rawQuery ? (
-            <p className="mt-4 text-sm text-zinc-400">
-              Filtering this page for <span className="text-zinc-100">{rawQuery}</span>.
-            </p>
-          ) : null}
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href={buildCityTrackedHref({
+                  href: `/${cityKey}/shows`,
+                  city: cityKey,
+                  lane: "events",
+                  sourceSection: "city_events_primary",
+                })}
+                className="inline-flex items-center justify-center rounded-2xl bg-amber-500 px-5 py-3 font-semibold text-black hover:bg-amber-400"
+              >
+                Browse live show inventory
+              </Link>
+              <Link
+                href={`/${cityKey}/shows-this-week`}
+                className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-5 py-3 font-semibold text-zinc-100 hover:bg-white/10"
+              >
+                Shows this week
+              </Link>
+              <Link
+                href={`/${cityKey}/tours`}
+                className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-5 py-3 font-semibold text-zinc-100 hover:bg-white/10"
+              >
+                Switch to {cityName} tours
+              </Link>
+              <Link
+                href={`/${cityKey}/attractions`}
+                className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-5 py-3 font-semibold text-zinc-100 hover:bg-white/10"
+              >
+                Switch to attractions
+              </Link>
+            </div>
 
-          <div className="mt-6 grid gap-3 md:grid-cols-3">
-            {config.planningNotes.map((note) => (
-              <div key={note} className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-zinc-200">
-                {note}
+            <div className="mt-6 grid gap-3 md:grid-cols-3">
+              <div className="rounded-[24px] border border-white/10 bg-black/20 p-4">
+                <div className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-300">Buyer state</div>
+                <div className="mt-2 text-sm leading-6 text-white/80">This visitor is planning a fixed-time night, not casually browsing attractions.</div>
               </div>
+              <div className="rounded-[24px] border border-white/10 bg-black/20 p-4">
+                <div className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-300">Best next move</div>
+                <div className="mt-2 text-sm leading-6 text-white/80">Choose the show, then route into venue, transport, or city-night planning immediately.</div>
+              </div>
+              <div className="rounded-[24px] border border-white/10 bg-black/20 p-4">
+                <div className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-300">Monetization path</div>
+                <div className="mt-2 text-sm leading-6 text-white/80">Tickets, transport, hotel adjacency, and pre-show city plans can all branch from this page.</div>
+              </div>
+            </div>
+
+            {rawQuery ? (
+              <p className="mt-4 text-sm text-zinc-400">
+                Filtering this page for <span className="text-zinc-100">{rawQuery}</span>.
+              </p>
+            ) : null}
+
+            <div className="mt-6 grid gap-3 md:grid-cols-3">
+              {config.planningNotes.map((note) => (
+                <div key={note} className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-zinc-200">
+                  {note}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <HeroVisual
+            canonicalPath={`/${cityKey}`}
+            fallbackTitle={`${cityName} shows`}
+            fallbackSubtitle={config.heroSummary}
+            fallbackType="venue"
+          />
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+          <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-2xl font-bold">
+                {cityKey === "las-vegas" ? "Top Las Vegas Shows Right Now" : `Top ${cityName} Show Lanes`}
+              </h2>
+              <p className="mt-2 max-w-3xl text-zinc-300">
+                {cityKey === "las-vegas"
+                  ? "Lead with the real Vegas lanes first: Sphere, Cirque, residency rooms, and classic magic or comedy commitments that shape the whole night."
+                  : "Lead with the strongest city-specific show lanes first, then branch into broader live inventory below."}
+              </p>
+            </div>
+            <div className="text-sm text-amber-200">
+              Relevance-first fallback layer when live feed quality is uneven.
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {leadingShowCards.map(({ show, media }) => (
+              <Link
+                key={`lead-${show.title}-${show.query}`}
+                href={buildCityTrackedHref({
+                  href: `/${cityKey}/shows?q=${encodeURIComponent(show.query)}`,
+                  city: cityKey,
+                  lane: "events",
+                  sourceSection: "city_events_primary",
+                  intentQuery: show.query,
+                })}
+                className="overflow-hidden rounded-3xl border border-white/10 bg-black/20 hover:bg-white/10"
+              >
+                {media.card ? (
+                  <div
+                    className="h-44 bg-cover bg-center"
+                    style={{ backgroundImage: `linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.68)), url(${media.card.src})` }}
+                  />
+                ) : (
+                  <div className="h-44 bg-[linear-gradient(135deg,rgba(251,191,36,0.22),rgba(24,24,27,0.92))]" />
+                )}
+                <div className="p-5">
+                  <div className="text-xs uppercase tracking-[0.22em] text-amber-300">{show.category}</div>
+                  <h3 className="mt-2 text-xl font-semibold text-white">{show.title}</h3>
+                  <p className="mt-1 text-sm text-zinc-400">{show.venue}</p>
+                  <p className="mt-3 text-zinc-300">{show.description}</p>
+                </div>
+              </Link>
             ))}
           </div>
-        </div>
+        </section>
 
         <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">

@@ -137,6 +137,42 @@
           "description": "A straightforward starting query for family activities in Miami."
         }
       ]
+    },
+    {
+      "slug": "beach-tours",
+      "title": "Miami Beach Tours",
+      "description": "Beach-first experiences that help visitors choose between South Beach energy, Key Biscayne reset time, and water-led Miami days.",
+      "intro": "Beach planning in Miami works best when the page answers the real comparison first: iconic South Beach energy, a cleaner Key Biscayne escape, a boat-heavy bay day, or a lower-friction coastal route that still feels worth leaving the hotel for. This page should lead with those lanes instead of broad sightseeing noise.",
+      "inventoryTitle": "Top Miami Beach Tours Right Now",
+      "filterTokens": ["beach", "south beach", "key biscayne", "bay", "boat", "coast", "sandbar"],
+      "bullets": [
+        "Best fit for travelers choosing one strong beach or water block instead of a generic Miami sightseeing list",
+        "Useful for comparing South Beach energy, Key Biscayne downtime, bay cruises, and easier half-day coastal options",
+        "Easy to pair with a food stop, sunset cruise, or one cleaner waterfront day in a short trip",
+        "Strong option when the decision is about beach feel, water access, and pace rather than a broad city tour"
+      ],
+      "intents": [
+        {
+          "label": "South Beach highlights",
+          "query": "miami south beach tours",
+          "description": "The clearest lane for travelers who want the iconic beach scene, art deco context, and the highest-energy Miami coastline."
+        },
+        {
+          "label": "Key Biscayne beach escape",
+          "query": "key biscayne beach tour from miami",
+          "description": "Best for visitors who want a calmer sand-and-water reset away from South Beach crowds."
+        },
+        {
+          "label": "Biscayne Bay beach and boat day",
+          "query": "miami biscayne bay boat and beach tour",
+          "description": "Useful when the trip should mix skyline water views with a more activity-led bay block."
+        },
+        {
+          "label": "Sandbar and coastal half-day",
+          "query": "miami sandbar boat beach half day",
+          "description": "A strong fallback for shorter planning windows when the goal is easy beach access and a lighter water itinerary."
+        }
+      ]
     }
   ]
 }

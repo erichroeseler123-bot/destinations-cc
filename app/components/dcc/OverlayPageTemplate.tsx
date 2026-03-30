@@ -112,6 +112,45 @@ export default function OverlayPageTemplate({ city, overlay, entities }: Props) 
           </article>
         </section>
 
+        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+          <h2 className="text-2xl font-bold">How to use this {overlayLabel} page</h2>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4 text-sm leading-7 text-zinc-300">
+              <p>
+                Modifier searches like {overlayLabel} {city.name} are usually easier to rank than the broad city term because the traveler already knows the constraint or trip style that matters. This page works best when it helps that visitor move directly into the right hotel, attraction, beach, pool, or casino instead of forcing them back through a generic city guide.
+              </p>
+              <p>
+                The strongest next step is usually one of three things: a specific entity page, a category child page, or a related overlay that narrows the decision even further.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Best next clicks</div>
+              <div className="mt-4 grid gap-3">
+                <Link href={city.canonicalPath} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">
+                  {city.name} hub
+                </Link>
+                {availableEntityTypes.slice(0, 2).map((entityType) => {
+                  const categoryPath = categoryPathForEntityType(entityType);
+                  return (
+                    <Link
+                      key={`best-next-${entityType}`}
+                      href={`/${overlay.overlayType}/${categoryPath}/${city.slug}`}
+                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10"
+                    >
+                      {categoryPath.replace(/-/g, " ")}
+                    </Link>
+                  );
+                })}
+                {(overlay.relatedLinks || []).filter((link) => linkKind(link) === "internal").slice(0, 1).map((link) => (
+                  <Link key={`internal-${link.href}`} href={link.href} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {socialPlanning ? (
           <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
             <h2 className="text-2xl font-bold">How to use this overlay</h2>
@@ -184,6 +223,28 @@ export default function OverlayPageTemplate({ city, overlay, entities }: Props) 
             </div>
           </section>
         ) : null}
+
+        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+          <h2 className="text-2xl font-bold">Best-fit planning lanes</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Constraint-first search</h3>
+              <p className="mt-2 text-sm text-zinc-300">Best when the traveler already knows the rule, comfort need, or trip style that matters most.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Compare categories</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use child category pages when the traveler wants only hotels, beaches, pools, casinos, or attractions.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Named-place decision</h3>
+              <p className="mt-2 text-sm text-zinc-300">Move into the exact entity page when one property or place is already on the shortlist.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Broader trip planning</h3>
+              <p className="mt-2 text-sm text-zinc-300">Return to the city hub when the trip question expands beyond the modifier and into general planning.</p>
+            </article>
+          </div>
+        </section>
 
         {overlay.relatedLinks?.length ? (
           <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">

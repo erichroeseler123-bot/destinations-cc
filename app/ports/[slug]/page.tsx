@@ -3,7 +3,11 @@ export const dynamicParams = false;
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import AirportLinksSection from "@/app/components/dcc/AirportLinksSection";
+import StationLinksSection from "@/app/components/dcc/StationLinksSection";
 import JsonLd from "@/app/components/dcc/JsonLd";
+import { getAirportsByPortSlug } from "@/lib/dcc/airports";
+import { getStationsByPortSlug } from "@/lib/dcc/stations";
 import { getPortBySlug, getPortSlugs } from "@/lib/dcc/ports";
 import PortAuthorityTemplate from "@/app/components/dcc/PortAuthorityTemplate";
 import { getPortAuthorityConfig } from "@/src/data/port-authority-config";
@@ -15,8 +19,8 @@ import { getSurface, hasSurfaceEntity } from "@/lib/dcc/surfaces/getSurface";
 import { getDecisionEnginePageByPath } from "@/src/data/decision-engine-pages";
 import {
   buildBreadcrumbJsonLd,
-  buildCityJsonLd,
   buildFaqJsonLd,
+  buildPlaceJsonLd,
 } from "@/lib/dcc/jsonld";
 
 const BASE_URL = "https://destinationcommandcenter.com";
@@ -50,6 +54,12 @@ export async function generateMetadata({
       type: "website",
       images: [`${BASE_URL}/api/og?title=${encodeURIComponent(pageTitle)}`],
     },
+    twitter: {
+      card: "summary_large_image",
+      title: pageTitle,
+      description,
+      images: [`${BASE_URL}/api/og?title=${encodeURIComponent(pageTitle)}`],
+    },
   };
 }
 
@@ -63,6 +73,8 @@ export default async function PortPage({
   if (!port) notFound();
 
   const config = getPortAuthorityConfig(port);
+  const nearbyAirports = getAirportsByPortSlug(port.slug);
+  const nearbyStations = getStationsByPortSlug(port.slug);
   const pageTitle = config.heroTitle || `${port.name} Cruise Port`;
   const description = config.summary;
   const pageUrl = `${BASE_URL}/ports/${port.slug}`;
@@ -85,7 +97,7 @@ export default async function PortPage({
         data={{
           "@context": "https://schema.org",
           "@graph": [
-            buildCityJsonLd({
+            buildPlaceJsonLd({
               path: `/ports/${port.slug}`,
               name: pageTitle,
               description,
@@ -105,6 +117,20 @@ export default async function PortPage({
         }}
       />
       <PortAuthorityTemplate port={port} config={config} />
+      <section className="max-w-6xl mx-auto px-6 pb-10">
+        <AirportLinksSection
+          title={`Airports that affect ${port.name} planning`}
+          intro={`Use airport pages when the real decision is airport-to-port timing, pre-cruise hotel staging, or transfer risk before embarkation.`}
+          airports={nearbyAirports}
+        />
+        <div className="mt-8">
+          <StationLinksSection
+            title={`Train and bus stations that affect ${port.name} planning`}
+            intro={`Use station pages when the traveler is arriving by rail or bus and the real decision is how to route into ${port.name}, nearby staging, or the cruise-port side of the trip.`}
+            stations={nearbyStations}
+          />
+        </div>
+      </section>
       {decisionPage ? (
         <section className="max-w-6xl mx-auto px-6 pb-10">
           <DecisionEngineTemplate page={decisionPage} />

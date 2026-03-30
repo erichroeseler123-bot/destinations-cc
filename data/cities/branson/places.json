@@ -1,0 +1,77 @@
+{
+  "city": "branson",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-05:00",
+  "schema": {
+    "entity": "place",
+    "description": "Durable social and discovery inventory."
+  },
+  "places": [
+    {
+      "slug": "gettin-basted",
+      "name": "Gettin' Basted",
+      "place_type": "restaurant",
+      "category": "barbecue",
+      "address": "2845 W 76 Country Blvd, Branson, MO 65616",
+      "lat": 36.6422,
+      "lng": -93.2804,
+      "district_slugs": [
+        "highway-76-strip"
+      ],
+      "tags": [
+        "family",
+        "dinner",
+        "casual"
+      ],
+      "quick_actions": [
+        "menu",
+        "directions"
+      ]
+    },
+    {
+      "slug": "crazy-craigs-cheeky-monkey-bar",
+      "name": "Crazy Craig's Cheeky Monkey Bar",
+      "place_type": "bar",
+      "category": "show-bar",
+      "address": "120 Montgomery Dr, Branson, MO 65616",
+      "lat": 36.6378,
+      "lng": -93.2447,
+      "district_slugs": [
+        "highway-76-strip"
+      ],
+      "tags": [
+        "cocktails",
+        "post-show",
+        "nightlife"
+      ],
+      "quick_actions": [
+        "menu",
+        "directions"
+      ]
+    },
+    {
+      "slug": "guy-fieris-branson-kitchen-bar",
+      "name": "Guy Fieri's Branson Kitchen + Bar",
+      "place_type": "restaurant",
+      "category": "american",
+      "address": "100 Branson Landing Blvd, Branson, MO 65616",
+      "lat": 36.6401,
+      "lng": -93.2164,
+      "district_slugs": [
+        "branson-landing"
+      ],
+      "tags": [
+        "groups",
+        "riverfront",
+        "casual"
+      ],
+      "quick_actions": [
+        "menu",
+        "reserve",
+        "directions"
+      ]
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import LocationMapCard from "@/app/components/dcc/LocationMapCard";
+import { getLocalFallbackImageSetForEntity } from "@/src/lib/media/source-local";
 
 export const metadata: Metadata = {
   title: "Mighty Argo Cable Car — Idaho Springs (Opening Spring 2026)",
@@ -9,6 +11,8 @@ export const metadata: Metadata = {
 };
 
 export default function MightyArgoOverview() {
+  const imageSet = getLocalFallbackImageSetForEntity("attraction", "mighty-argo");
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <section className="border-b border-white/10">
@@ -39,6 +43,14 @@ export default function MightyArgoOverview() {
             >
               Stats + elevation
             </Link>
+          </div>
+
+          <div className="mt-8 overflow-hidden rounded-[28px] border border-white/10 bg-black/20">
+            <img
+              src={imageSet?.hero?.src || "/images/argo-hero.jpg"}
+              alt={imageSet?.hero?.alt || "Mighty Argo proof image from Idaho Springs"}
+              className="h-[260px] w-full object-cover md:h-[380px]"
+            />
           </div>
 
           <div className="mt-10 grid gap-3 sm:grid-cols-3">
@@ -87,6 +99,18 @@ export default function MightyArgoOverview() {
             checkout flow without rewriting the attraction content.
           </p>
         </div>
+
+        <LocationMapCard
+          label="Mighty Argo Cable Car"
+          title="Mighty Argo map and arrival anchor"
+          lat={39.7422}
+          lng={-105.5138}
+          description="Use this as a fast arrival anchor for Idaho Springs and the Mighty Argo area before moving into the shuttle or attraction planning pages."
+          nearbyLinks={[
+            { href: "/mighty-argo-shuttle", label: "Shuttle guide" },
+            { href: "/regions/colorado/idaho-springs", label: "Idaho Springs" },
+          ]}
+        />
       </section>
     </main>
   );

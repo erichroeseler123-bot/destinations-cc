@@ -1,0 +1,30 @@
+{
+  "city": "orlando",
+  "version": 1,
+  "as_of": "2026-03-26T18:00:00-04:00",
+  "ttl_seconds": 900,
+  "stale_after": "2026-03-26T18:15:00-04:00",
+  "schema": {
+    "entity": "event",
+    "description": "Ingested timed facts."
+  },
+  "events": [
+    {
+      "id": "evt-orlando-kia-center",
+      "slug": "kia-center-pulse-2026-03-26",
+      "title": "Arena crowd build at Kia Center",
+      "venue_slug": "kia-center",
+      "category": "sports-concerts",
+      "start_time": "2026-03-26T19:00:00-04:00",
+      "end_time": "2026-03-26T21:30:00-04:00",
+      "status": "starting_soon",
+      "impact_level": "medium",
+      "attendance_band": "moderate",
+      "source": {
+        "kind": "ticketing-feed",
+        "external_id": "kia-center-pulse-2026-03-26"
+      },
+      "description": "A downtown arena event is expected to lift rideshare and pre-show restaurant traffic around Lake Eola tonight."
+    }
+  ]
+}

@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { getCrossSiteVenue } from "@/lib/crossSiteMap";
 import { getTransportDirectoryEntry } from "@/src/data/transport-directory";
-
-const PARR_ORIGIN = "https://www.partyatredrocks.com";
+import { buildParrHandoffHref } from "@/lib/dcc/satelliteHandoffs";
 
 type RideOptionsCardProps = {
   venueSlug: string;
@@ -48,29 +47,39 @@ function buildServiceCopy(venueSlug: string) {
   return `${items.slice(0, -1).join(", ")}, and ${items.at(-1)} are available for this venue.`;
 }
 
+function cardToneClasses(value: "shared" | "private" | undefined) {
+  if (value === "private") {
+    return "border-[#ffb07c]/30 bg-[linear-gradient(180deg,rgba(58,30,18,0.7),rgba(18,10,7,0.8))]";
+  }
+
+  return "border-cyan-400/25 bg-[linear-gradient(180deg,rgba(14,40,53,0.7),rgba(8,17,29,0.8))]";
+}
+
 function buildBookingHref(
   parrBookingPath: string,
   venueSlug: string,
   sourcePage?: string,
   bookingContext?: RideOptionsCardProps["bookingContext"],
 ) {
-  const url = new URL(parrBookingPath, PARR_ORIGIN);
-  url.searchParams.set("source", "dcc");
-  url.searchParams.set("source_slug", venueSlug);
-  if (sourcePage) url.searchParams.set("source_page", sourcePage);
-  if (bookingContext?.event) url.searchParams.set("event", bookingContext.event);
-  if (bookingContext?.artist) url.searchParams.set("artist", bookingContext.artist);
-  if (bookingContext?.date) url.searchParams.set("date", bookingContext.date);
-  if (bookingContext?.qty) url.searchParams.set("qty", bookingContext.qty);
-  return url.toString();
+  return buildParrHandoffHref(parrBookingPath, {
+    sourceSlug: venueSlug,
+    sourcePage,
+    venueSlug,
+    event: bookingContext?.event,
+    artist: bookingContext?.artist,
+    eventDate: bookingContext?.date,
+    quantity: bookingContext?.qty,
+    returnPath: sourcePage || `/transportation/venues/${venueSlug}`,
+  });
 }
 
 function buildVenueHref(parrVenuePath: string, venueSlug: string, sourcePage?: string) {
-  const url = new URL(parrVenuePath, PARR_ORIGIN);
-  url.searchParams.set("source", "dcc");
-  url.searchParams.set("source_slug", venueSlug);
-  if (sourcePage) url.searchParams.set("source_page", sourcePage);
-  return url.toString();
+  return buildParrHandoffHref(parrVenuePath, {
+    sourceSlug: venueSlug,
+    sourcePage,
+    venueSlug,
+    returnPath: sourcePage || `/transportation/venues/${venueSlug}`,
+  });
 }
 
 export default function RideOptionsCard({
@@ -94,6 +103,8 @@ export default function RideOptionsCard({
   const venueHref = buildVenueHref(mapEntry.parrVenuePath, venueSlug, sourcePage);
   const serviceCopy = buildServiceCopy(venueSlug);
   const status = transportEntry?.serviceStatus ?? "active";
+  const trustBadges = transportEntry?.trustBadges ?? [];
+  const offerCards = transportEntry?.offerCards ?? [];
 
   return (
     <section className="rounded-[1.9rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
@@ -108,6 +119,59 @@ export default function RideOptionsCard({
         </span>
       </div>
 
+      {trustBadges.length ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {trustBadges.map((badge) => (
+            <span
+              key={badge}
+              className="rounded-full border border-white/12 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-100"
+            >
+              {badge}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      {transportEntry?.urgencyNote ? (
+        <div className="mt-5 rounded-[1.5rem] border border-amber-300/20 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100">
+          {transportEntry.urgencyNote}
+        </div>
+      ) : null}
+
+      {offerCards.length ? (
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          {offerCards.map((card) => (
+            <div
+              key={card.title}
+              className={`rounded-[1.6rem] border p-5 shadow-[0_18px_60px_rgba(0,0,0,0.22)] ${cardToneClasses(card.emphasis)}`}
+            >
+              <div className="text-[11px] font-black uppercase tracking-[0.18em] text-zinc-200">
+                {card.emphasis === "private" ? "Group and premium fit" : "Fastest booking lane"}
+              </div>
+              <h3 className="mt-2 text-xl font-bold text-white">{card.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-zinc-200">{card.detail}</p>
+              <ul className="mt-4 space-y-2 text-sm text-zinc-100/90">
+                {card.bullets.map((bullet) => (
+                  <li key={bullet}>• {bullet}</li>
+                ))}
+              </ul>
+              <a
+                href={bookingHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`mt-5 inline-flex min-h-11 items-center justify-center rounded-full px-4 text-xs font-black uppercase tracking-[0.16em] transition ${
+                  card.emphasis === "private"
+                    ? "bg-[#ffb07c] text-[#1d0d06] hover:bg-[#ffc39a]"
+                    : "bg-cyan-400 text-[#04131c] hover:bg-cyan-300"
+                }`}
+              >
+                {card.ctaLabel}
+              </a>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
       <div className="mt-5 flex flex-wrap gap-3">
         <a
           href={bookingHref}
@@ -115,7 +179,7 @@ export default function RideOptionsCard({
           rel="noopener noreferrer"
           className="inline-flex items-center justify-center rounded-2xl bg-cyan-500 px-4 py-3 text-sm font-semibold text-black hover:bg-cyan-400"
         >
-          See Ride Options
+          Book Shuttle or Private Ride
         </a>
         {showVenueLink ? (
           <a

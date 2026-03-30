@@ -1,4 +1,4 @@
-import type { NodeImageSet } from "@/src/lib/media/types";
+import type { NodeImageAsset, NodeImageSet } from "@/src/lib/media/types";
 import { CITY_BEACHES_CONFIG } from "@/src/data/city-beaches-config";
 import { CITY_POOLS_CONFIG } from "@/src/data/city-pools-config";
 import { SPORTS_TEAMS_CONFIG } from "@/src/data/sports-teams-config";
@@ -58,9 +58,9 @@ export type DccEntityRegistryNode = {
   updatedAt: string;
 };
 
-function singleCardImage(image?: { src: string; alt: string; source: "local" | "ticketmaster" | "bandsintown" | "viator" | "seatgeek" | "unsplash"; attribution?: { label: string; href?: string } }): NodeImageSet | undefined {
+function singleImageSet(image?: NodeImageAsset): NodeImageSet | undefined {
   if (!image) return undefined;
-  return { card: image };
+  return { hero: image, card: image, gallery: [image] };
 }
 
 const vegasHotelEntities: DccEntityRegistryNode[] = VEGAS_HOTELS_CONFIG.map((hotel) => ({
@@ -144,7 +144,7 @@ const vegasCasinoEntities: DccEntityRegistryNode[] = VEGAS_CASINOS_CONFIG.map((c
   title: casino.name,
   summary: casino.summary,
   tags: casino.tags,
-  imageSet: singleCardImage(casino.image),
+  imageSet: singleImageSet(casino.image),
   relatedEntitySlugs: casino.hotelSlug ? [casino.hotelSlug] : [],
   socialProfile:
     casino.slug === "bellagio-casino"
@@ -206,7 +206,7 @@ const vegasAttractionEntities: DccEntityRegistryNode[] = VEGAS_ATTRACTIONS_CONFI
   title: attraction.name,
   summary: attraction.summary,
   tags: attraction.tags,
-  imageSet: singleCardImage(attraction.image),
+  imageSet: singleImageSet(attraction.image),
   relatedEntitySlugs: [],
   accessibilityInfo:
     attraction.slug === "sphere-las-vegas" || attraction.slug === "fountains-of-bellagio" || attraction.slug === "adventuredome"

@@ -59,7 +59,7 @@ export default function SiteHeader({ cities }: { cities: HeaderCity[] }) {
 
         <div className="dcc-site-header__topline">
           <p className="dcc-site-header__tagline">
-            Destination guides and trip planning for busy or complex places.
+            Destination guides and trip planning for high-intent or complex places.
           </p>
           <Link href="/road-trips" className="dcc-site-header__utility-link">
             Road Trips

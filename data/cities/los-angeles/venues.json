@@ -1,0 +1,67 @@
+{
+  "city": "los-angeles",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-07:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable city activity nodes.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large complex or district-scale activity center."
+    }
+  },
+  "venues": [
+    {
+      "slug": "crypto-com-arena",
+      "name": "Crypto.com Arena",
+      "venue_type": "event-venue",
+      "category": "sports-concerts",
+      "address": "1111 S Figueroa St, Los Angeles, CA 90015",
+      "lat": 34.043,
+      "lng": -118.2673,
+      "impact_potential": "high",
+      "district_slugs": [
+        "la-live"
+      ],
+      "near_anchor_slugs": [
+        "circa-la"
+      ]
+    },
+    {
+      "slug": "peacock-theater",
+      "name": "Peacock Theater",
+      "venue_type": "event-venue",
+      "category": "performing-arts",
+      "address": "777 Chick Hearn Ct, Los Angeles, CA 90015",
+      "lat": 34.0447,
+      "lng": -118.2663,
+      "impact_potential": "medium",
+      "district_slugs": [
+        "la-live"
+      ],
+      "near_anchor_slugs": [
+        "circa-la"
+      ]
+    },
+    {
+      "slug": "hollywood-bowl",
+      "name": "Hollywood Bowl",
+      "venue_type": "event-venue",
+      "category": "live-music",
+      "address": "2301 Highland Ave, Los Angeles, CA 90068",
+      "lat": 34.1122,
+      "lng": -118.3391,
+      "impact_potential": "high",
+      "district_slugs": [
+        "hollywood-core"
+      ],
+      "near_anchor_slugs": [
+        "circa-la"
+      ]
+    }
+  ]
+}

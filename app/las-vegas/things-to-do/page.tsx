@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import VegasEntityGridSection from "@/app/components/dcc/VegasEntityGridSection";
 import { getVegasAttractionsByTag, VEGAS_ATTRACTIONS_CONFIG } from "@/src/data/vegas-attractions-config";
 
@@ -8,6 +9,13 @@ export const metadata: Metadata = {
   title: "Things To Do in Las Vegas | Attractions, Day Trips, and Strip Experiences",
   description:
     "Browse things to do in Las Vegas across Strip landmarks, Fremont attractions, immersive entertainment, and major day trips like the Grand Canyon and Hoover Dam.",
+  keywords: [
+    "things to do in las vegas",
+    "las vegas attractions",
+    "best things to do in las vegas",
+    "las vegas day trips",
+    "las vegas strip attractions",
+  ],
   alternates: { canonical: "/las-vegas/things-to-do" },
   openGraph: {
     title: "Things To Do in Las Vegas",
@@ -78,6 +86,29 @@ export default function LasVegasThingsToDoPage() {
           </article>
         </section>
 
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">How visitors usually search this page</h2>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4 text-sm leading-7 text-zinc-300">
+              <p>
+                Broad &quot;things to do in Las Vegas&quot; searches usually break into four smaller buckets once a traveler starts comparing options: Strip attractions, downtown and Fremont, indoor or family-friendly stops, and bigger day trips that compete with a full pool or show day.
+              </p>
+              <p>
+                That is why this page works best as a sorting page, not a final answer. A good crawl path from here is into one named attraction, one day-trip pillar, or one hotel or casino cluster that better matches the shape of the trip.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">High-intent next steps</div>
+              <div className="mt-4 grid gap-3">
+                <Link href="/las-vegas/hotels" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Las Vegas hotels</Link>
+                <Link href="/las-vegas/casinos" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Las Vegas casinos</Link>
+                <Link href="/las-vegas/best-day-trips" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Best day trips from Las Vegas</Link>
+                <Link href="/las-vegas/helicopter-tours" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Las Vegas helicopter tours</Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <VegasEntityGridSection
           title="Core Las Vegas attractions"
           intro="These attractions cover landmarks, immersive entertainment, family-friendly stops, and the regional day trips most visitors consider."
@@ -135,6 +166,28 @@ export default function LasVegasThingsToDoPage() {
             ]}
           />
         </div>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Best-fit planning lanes</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">First-time Vegas</h3>
+              <p className="mt-2 text-sm text-zinc-300">Start with Strip landmarks, one Fremont block, and one premium anchor like a show, rooftop, or immersive attraction.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Family trip</h3>
+              <p className="mt-2 text-sm text-zinc-300">Indoor attractions, pool-heavy resorts, and one easy desert half-day usually outperform nightlife-first planning.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Short stay</h3>
+              <p className="mt-2 text-sm text-zinc-300">Protect your evenings and avoid overcommitting to long canyon routes unless the day trip is the main reason for the trip.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Outdoor-heavy stay</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use Red Rock, Valley of Fire, Hoover Dam, and helicopter routes as separate planning lanes instead of generic attraction browsing.</p>
+            </article>
+          </div>
+        </section>
       </div>
     </main>
   );

@@ -106,6 +106,32 @@ export default function TransportationPage() {
           </p>
         </section>
 
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
+          <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+            <div>
+              <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Mode Fit</p>
+              <h2 className="mt-2 text-2xl font-bold">Choosing the wrong transport type is the real problem.</h2>
+              <p className="mt-3 max-w-4xl text-sm leading-7 text-zinc-300">
+                Most ride options look similar until timing, cost, and return logistics start to matter. The cleanest plan usually comes from solving both directions first, then choosing the transport type that can actually carry that plan.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Plan transport in this order</div>
+              <div className="mt-4 grid gap-3">
+                {[
+                  "1. When you need to arrive",
+                  "2. How you are getting back",
+                  "3. Then which transport option fits both directions",
+                ].map((item) => (
+                  <div key={item} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-200">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         <RideOptionsCard venueSlug="red-rocks-amphitheatre" sourcePage="/transportation" />
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6">

@@ -1,0 +1,67 @@
+{
+  "city": "seattle",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-07:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable city activity nodes.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large complex or district-scale activity center."
+    }
+  },
+  "venues": [
+    {
+      "slug": "climate-pledge-arena",
+      "name": "Climate Pledge Arena",
+      "venue_type": "event-venue",
+      "category": "sports-concerts",
+      "address": "334 1st Ave N, Seattle, WA 98109",
+      "lat": 47.6221,
+      "lng": -122.354,
+      "impact_potential": "high",
+      "district_slugs": [
+        "pike-place-waterfront"
+      ],
+      "near_anchor_slugs": [
+        "insignia-seattle"
+      ]
+    },
+    {
+      "slug": "seattle-aquarium-waterfront",
+      "name": "Seattle Aquarium Waterfront",
+      "venue_type": "district-hub",
+      "category": "waterfront-attraction",
+      "address": "1483 Alaskan Way Pier 59, Seattle, WA 98101",
+      "lat": 47.6073,
+      "lng": -122.3425,
+      "impact_potential": "medium",
+      "district_slugs": [
+        "pike-place-waterfront"
+      ],
+      "near_anchor_slugs": [
+        "insignia-seattle"
+      ]
+    },
+    {
+      "slug": "neumos",
+      "name": "Neumos",
+      "venue_type": "event-venue",
+      "category": "live-music",
+      "address": "925 E Pike St, Seattle, WA 98122",
+      "lat": 47.6143,
+      "lng": -122.3202,
+      "impact_potential": "medium",
+      "district_slugs": [
+        "capitol-hill"
+      ],
+      "near_anchor_slugs": [
+        "insignia-seattle"
+      ]
+    }
+  ]
+}

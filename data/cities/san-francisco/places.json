@@ -1,0 +1,78 @@
+{
+  "city": "san-francisco",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-07:00",
+  "schema": {
+    "entity": "place",
+    "description": "Durable social and discovery inventory."
+  },
+  "places": [
+    {
+      "slug": "hog-island-oyster-co",
+      "name": "Hog Island Oyster Co.",
+      "place_type": "restaurant",
+      "category": "seafood",
+      "address": "1 Ferry Building #11, San Francisco, CA 94111",
+      "lat": 37.7955,
+      "lng": -122.3937,
+      "district_slugs": [
+        "embarcadero"
+      ],
+      "tags": [
+        "seafood",
+        "tourism",
+        "lunch"
+      ],
+      "quick_actions": [
+        "menu",
+        "reserve",
+        "directions"
+      ]
+    },
+    {
+      "slug": "waterbar",
+      "name": "Waterbar",
+      "place_type": "restaurant",
+      "category": "seafood",
+      "address": "399 The Embarcadero, San Francisco, CA 94105",
+      "lat": 37.7909,
+      "lng": -122.3902,
+      "district_slugs": [
+        "embarcadero"
+      ],
+      "tags": [
+        "views",
+        "dinner",
+        "date-night"
+      ],
+      "quick_actions": [
+        "menu",
+        "reserve",
+        "directions"
+      ]
+    },
+    {
+      "slug": "tonys-pizza-napoletana",
+      "name": "Tony's Pizza Napoletana",
+      "place_type": "restaurant",
+      "category": "pizza",
+      "address": "1570 Stockton St, San Francisco, CA 94133",
+      "lat": 37.8003,
+      "lng": -122.4091,
+      "district_slugs": [
+        "north-beach"
+      ],
+      "tags": [
+        "casual",
+        "family",
+        "walkable"
+      ],
+      "quick_actions": [
+        "menu",
+        "directions"
+      ]
+    }
+  ]
+}

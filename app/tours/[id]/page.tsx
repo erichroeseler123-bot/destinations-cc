@@ -12,6 +12,9 @@ import PoweredByViator from "@/app/components/dcc/PoweredByViator";
 import TravelerTakeaways from "@/app/components/dcc/TravelerTakeaways";
 import { summarizeGuestFeedback } from "@/lib/dcc/guestFeedback";
 import OperatorAboutCard from "@/app/components/dcc/OperatorAboutCard";
+import ViatorAvailabilityCheckCard from "@/app/components/dcc/ViatorAvailabilityCheckCard";
+import ViatorBookingQuestionsCard from "@/app/components/dcc/ViatorBookingQuestionsCard";
+import ViatorPrebookStateCard from "@/app/components/dcc/ViatorPrebookStateCard";
 import { getOperatorManifest, mergeOperatorRef, type TourOperatorRef } from "@/lib/dcc/operators";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import { buildBreadcrumbJsonLd, buildTourJsonLd } from "@/lib/dcc/jsonld";
@@ -67,6 +70,20 @@ function buildFallbackTourFromDetail(id: string, detail: NonNullable<Awaited<Ret
   };
 }
 
+function formatPrice(price: number | null, currency = "USD") {
+  if (typeof price !== "number" || !Number.isFinite(price)) return "Check live price";
+  return `From ${currency} ${price.toFixed(0)}`;
+}
+
+function buildDestinationTrail(
+  detail: NonNullable<Awaited<ReturnType<typeof getViatorProductDetailForTour>>["detail"]> | null,
+  tour: Tour
+) {
+  const names = detail?.destinations?.map((row) => row.name).filter(Boolean) || [];
+  if (names.length > 0) return Array.from(new Set(names));
+  return [tour.region, tour.city].filter((value): value is string => Boolean(value));
+}
+
 // NEXT.js 15 UPDATE: params is now a Promise
 export default async function TourDetailPage({ 
   params 
@@ -92,6 +109,9 @@ export default async function TourDetailPage({
   const reviews = Number(productDetail?.review_count ?? tour.review_count ?? 120);
   const price = productDetail?.price_from ?? tour.price_from ?? null;
   const affiliateUrl = buildViatorLink(tour);
+  const destinationTrail = buildDestinationTrail(productDetail, tour);
+  const supplierImages = productDetail?.supplierImages?.slice(0, 6) || [];
+  const travelerImages = productDetail?.travelerImages?.slice(0, 6) || [];
   const takeaways = summarizeGuestFeedback({
     title: productDetail?.title || tour.name,
     description: productDetail?.overview || tour.description,
@@ -162,6 +182,17 @@ export default async function TourDetailPage({
       {/* HEADER SECTION */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
+          <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+            <Link href="/tours" className="hover:text-white">
+              Tours
+            </Link>
+            {destinationTrail.map((item) => (
+              <span key={item} className="inline-flex items-center gap-2">
+                <span>/</span>
+                <span>{item}</span>
+              </span>
+            ))}
+          </div>
           <div className="flex items-center gap-3">
             <span className="text-cyan-400 text-xs font-bold uppercase tracking-widest border border-cyan-400/30 px-2 py-1 rounded">
               DCC Verified
@@ -176,14 +207,70 @@ export default async function TourDetailPage({
           ) : null}
         </div>
 
-        {tour.lat && tour.lng && tour.timezone && (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
-            <LocalTimeWeather lat={tour.lat} lng={tour.lng} timezone={tour.timezone} />
+        <div className="grid gap-4 sm:min-w-[280px]">
+          <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-5">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-300">Price from</p>
+            <p className="mt-2 text-3xl font-black text-white">
+              {formatPrice(price, productDetail?.currency || "USD")}
+            </p>
+            <p className="mt-2 text-sm text-zinc-400">
+              Final availability, date options, and live pricing are confirmed on the Viator booking page.
+            </p>
           </div>
-        )}
+          {tour.lat && tour.lng && tour.timezone ? (
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
+              <LocalTimeWeather lat={tour.lat} lng={tour.lng} timezone={tour.timezone} />
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <TrustBadges reviews={reviews} rating={rating} />
+
+      {productDetail && (supplierImages.length > 0 || travelerImages.length > 0) ? (
+        <section className="mb-16 mt-10 grid gap-6 lg:grid-cols-2">
+          {supplierImages.length > 0 ? (
+            <article className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
+              <h2 className="text-cyan-400">Supplier photos</h2>
+              <p className="mt-2 text-sm text-zinc-400">
+                Operator-provided media for the official experience listing.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {supplierImages.map((image) => (
+                  <div key={image.url} className="overflow-hidden rounded-xl border border-zinc-800 bg-black/20">
+                    <img
+                      src={image.url}
+                      alt={productDetail.title}
+                      className="aspect-[4/3] h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
+              </div>
+            </article>
+          ) : null}
+          {travelerImages.length > 0 ? (
+            <article className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
+              <h2 className="text-cyan-400">Traveler photos</h2>
+              <p className="mt-2 text-sm text-zinc-400">
+                Kept separate from supplier media, matching Viator’s recommended PDP structure.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {travelerImages.map((image) => (
+                  <div key={image.url} className="overflow-hidden rounded-xl border border-zinc-800 bg-black/20">
+                    <img
+                      src={image.url}
+                      alt={`${productDetail.title} traveler photo`}
+                      className="aspect-[4/3] h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
+              </div>
+            </article>
+          ) : null}
+        </section>
+      ) : null}
 
       {/* DECISION SUPPORT */}
       <section className="mb-16 mt-12 space-y-6">
@@ -263,8 +350,8 @@ export default async function TourDetailPage({
             <article className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
               <h3 className="text-cyan-400">Supplier photos</h3>
               <div className="mt-4 space-y-3 text-sm text-zinc-300">
-                <p>Supplier images available: {productDetail.supplierImages.length}</p>
-                {productDetail.supplierImages.length > 0 ? (
+                <p>Supplier images available: {supplierImages.length}</p>
+                {supplierImages.length > 0 ? (
                   <p className="text-zinc-400">Live supplier media stays separate from traveler-submitted media.</p>
                 ) : (
                   <p>No supplier photo set is cached for this product yet.</p>
@@ -274,6 +361,21 @@ export default async function TourDetailPage({
           </div>
         </section>
       ) : null}
+
+      <ViatorAvailabilityCheckCard
+        productCode={productDetail?.product_code || tour.product_code || null}
+        currency={productDetail?.currency || "USD"}
+      />
+
+      <ViatorBookingQuestionsCard
+        productCode={productDetail?.product_code || tour.product_code || null}
+        questionRefs={productDetail?.bookingQuestionRefs || []}
+      />
+
+      <ViatorPrebookStateCard
+        productCode={productDetail?.product_code || tour.product_code || null}
+        currency={productDetail?.currency || "USD"}
+      />
 
       <PoweredByViator
         compact
@@ -295,7 +397,7 @@ export default async function TourDetailPage({
         )}
         {productDetail?.travelerImages?.length ? (
           <p className="mt-3 text-sm text-zinc-300">
-            Cached traveler photos available: {productDetail.travelerImages.length}
+            Cached traveler photos available: {travelerImages.length}
           </p>
         ) : null}
         {productDetail?.reviews?.slice(0, 2).map((review) => (
@@ -337,7 +439,7 @@ export default async function TourDetailPage({
       <div className="sticky bottom-4 bg-zinc-950/90 backdrop-blur-md border border-cyan-500/30 p-6 rounded-2xl shadow-2xl flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
         <div>
           <p className="text-zinc-500 text-xs uppercase font-bold tracking-tight">Best rate found</p>
-          <p className="text-3xl font-black text-white">{price ? `$${price}` : "Live Rates"}</p>
+          <p className="text-3xl font-black text-white">{formatPrice(price, productDetail?.currency || "USD")}</p>
         </div>
 
         <a

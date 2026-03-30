@@ -50,6 +50,13 @@ export const metadata: Metadata = {
   title: "Orlando Travel Guide 2026 | Airboats, Balloon Flights, and Adventure Planning",
   description:
     "Plan Orlando beyond the park core with airboats, balloon rides, skydiving, water activities, and cleaner trip-structure decisions.",
+  keywords: [
+    "orlando travel guide",
+    "things to do in orlando",
+    "orlando airboat rides",
+    "orlando balloon flights",
+    "orlando outdoor activities",
+  ],
   alternates: { canonical: "/orlando" },
   openGraph: {
     title: "Orlando Travel Guide | Airboats, Balloon Flights, and Outdoor Activities",
@@ -139,6 +146,29 @@ export default function OrlandoPage() {
           </div>
         </section>
 
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">How Orlando search intent usually splits</h2>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4 text-sm leading-7 text-zinc-300">
+              <p>
+                Orlando searches often look broad on the surface, but they usually break into a park-first itinerary, a family planning question, or a separate outdoor and adventure day. Travelers comparing airboats, balloon rides, and lake activities are not really asking the same question as travelers building a four-day theme-park plan.
+              </p>
+              <p>
+                This page is meant to catch that non-park and mixed-itinerary intent, then push visitors into the right lane instead of letting the city collapse into one generic Orlando list page.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Best next clicks</div>
+              <div className="mt-4 grid gap-3">
+                <Link href="/orlando/tours" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Orlando tours</Link>
+                <Link href="/orlando/attractions" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Orlando attractions</Link>
+                <Link href="/kid-friendly/orlando" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Kid-friendly Orlando</Link>
+                <Link href="/miami" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Compare Miami</Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {ADVENTURE_LANE ? <AdventureLaneSection config={ADVENTURE_LANE} /> : null}
 
         <CitySportsSection cityName="Orlando" citySlug="orlando" teams={sportsTeams} />
@@ -170,6 +200,28 @@ export default function OrlandoPage() {
                 <p className="mt-2 text-sm text-zinc-300">{item.a}</p>
               </article>
             ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Best-fit Orlando trip shapes</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Park-first family trip</h3>
+              <p className="mt-2 text-sm text-zinc-300">Treat outdoor inventory as one intentional contrast day instead of trying to squeeze it between long park sessions.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Outdoor reset day</h3>
+              <p className="mt-2 text-sm text-zinc-300">Airboats, balloon rides, and lake activity lanes work best when they replace a park day instead of competing with one.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Thrill buyer</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use the adventure lane when the buyer cares about skydiving, helicopters, or speed-driven activity choices outside the park core.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Short stay</h3>
+              <p className="mt-2 text-sm text-zinc-300">Keep one clear park priority and one optional outdoor add-on instead of overbuilding the itinerary.</p>
+            </article>
           </div>
         </section>
 

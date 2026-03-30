@@ -308,6 +308,25 @@ export default async function CityShowEventPage({
           </section>
 
           <div className="space-y-6">
+            <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.05] p-6">
+              <div className="text-xs uppercase tracking-[0.22em] text-zinc-400">Exit First</div>
+              <h2 className="mt-3 text-2xl font-bold">Getting out is harder than getting in.</h2>
+              <p className="mt-3 text-zinc-300">
+                Most people plan how they will arrive and treat the exit like a later problem. That is usually where delay, surge pricing, and post-event chaos start to stack up.
+              </p>
+              <div className="mt-5 grid gap-3">
+                {[
+                  "1. When the event ends",
+                  "2. How you are getting back",
+                  "3. Then how you are getting there",
+                ].map((item) => (
+                  <div key={item} className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm font-semibold text-zinc-100">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </section>
+
             {crossSiteVenueSlug ? (
               <RideOptionsCard
                 venueSlug={crossSiteVenueSlug}

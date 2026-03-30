@@ -50,7 +50,7 @@ export default function ArgoLaunchAlertForm({ source = "argo-page", compact = fa
     <form onSubmit={onSubmit} className={compact ? "space-y-2" : "space-y-3"}>
       {!compact ? (
         <p className="text-sm text-zinc-300">
-          Get an email when Mighty Argo shuttle bookings officially open.
+          Get an email when transport options for the Mighty Argo Cable Car officially open.
         </p>
       ) : null}
 
@@ -102,7 +102,7 @@ export default function ArgoLaunchAlertForm({ source = "argo-page", compact = fa
         disabled={busy}
         className="min-h-11 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-50"
       >
-        {busy ? "Saving..." : "Notify Me When Bookings Open"}
+        {busy ? "Saving..." : "Notify Me When Options Open"}
       </button>
 
       {done ? (

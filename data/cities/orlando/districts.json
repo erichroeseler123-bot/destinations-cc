@@ -1,0 +1,59 @@
+{
+  "city": "orlando",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-04:00",
+  "schema": {
+    "entity": "district",
+    "description": "Durable district layer used to group venues, places, and signals."
+  },
+  "districts": [
+    {
+      "slug": "lake-eola-downtown",
+      "name": "Lake Eola Downtown",
+      "district_type": "downtown-core",
+      "center": {
+        "lat": 28.5432,
+        "lng": -81.3732
+      },
+      "radius_m": 1200,
+      "vibe_tags": [
+        "downtown",
+        "lakefront",
+        "restaurants"
+      ],
+      "venue_slugs": [
+        "kia-center",
+        "dr-phillips-center"
+      ],
+      "place_slugs": [
+        "the-stubborn-mule",
+        "mathers-social-gathering"
+      ],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "international-drive",
+      "name": "International Drive",
+      "district_type": "tourism-corridor",
+      "center": {
+        "lat": 28.4401,
+        "lng": -81.469
+      },
+      "radius_m": 1800,
+      "vibe_tags": [
+        "tourism",
+        "attractions",
+        "conventions"
+      ],
+      "venue_slugs": [
+        "orange-county-convention-center"
+      ],
+      "place_slugs": [
+        "cafe-tu-tu-tango"
+      ],
+      "impact_profile": "medium"
+    }
+  ]
+}

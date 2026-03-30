@@ -10,11 +10,12 @@
   "barcelona": "barcelona-guide",
   "baton-rouge": "baton-rouge-guide",
   "beaverton": "beaverton-guide",
-  "bellevue": "bellevue-guide",
   "beijing": "beijing-guide",
+  "bellevue": "bellevue-guide",
   "bergen": "bergen-guide",
   "boston": "boston-guide",
   "boulder": "boulder-guide",
+  "branson": "branson-guide",
   "burbank": "burbank-guide",
   "burlington": "burlington-guide",
   "cabo-san-lucas": "cabo-san-lucas-guide",
@@ -82,6 +83,7 @@
   "pasadena": "pasadena-guide",
   "philadelphia": "philadelphia-guide",
   "phoenix": "phoenix-guide",
+  "pigeon-forge": "pigeon-forge-guide",
   "pittsburgh": "pittsburgh-guide",
   "portland": "portland-guide",
   "portsmouth": "portsmouth-guide",
@@ -116,5 +118,6 @@
   "venice": "venice-guide",
   "washington-dc": "washington-dc-guide",
   "west-palm-beach": "west-palm-beach-guide",
+  "wisconsin-dells": "wisconsin-dells-guide",
   "yokohama": "yokohama-guide"
 }

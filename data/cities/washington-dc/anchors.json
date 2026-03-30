@@ -1,0 +1,36 @@
+{
+  "city": "washington-dc",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-04:00",
+  "schema": {
+    "entity": "anchor",
+    "description": "Resident origin nodes used for personalization, distance calculations, and local context."
+  },
+  "anchors": [
+    {
+      "slug": "citycenterdc",
+      "name": "CityCenterDC",
+      "anchor_type": "mixed-use-residential",
+      "address": "825 10th St NW, Washington, DC 20001",
+      "lat": 38.9015,
+      "lng": -77.0262,
+      "district_slugs": [
+        "national-mall",
+        "the-wharf"
+      ],
+      "nearby_venue_slugs": [
+        "capital-one-arena",
+        "the-anthem",
+        "the-wharf-dc"
+      ],
+      "nearby_place_slugs": [
+        "old-ebbitt-grill",
+        "mita-dc",
+        "moon-rabbit"
+      ],
+      "default_walk_radius_m": 1600
+    }
+  ]
+}

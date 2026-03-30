@@ -12,6 +12,13 @@ export const metadata: Metadata = {
   title: "Miami Beaches | South Beach, Family Beaches, and Beach-Day Planning",
   description:
     "Use DCC to plan Miami beaches across South Beach, calmer family stretches, scenic sands, and beach-adjacent water activity routing.",
+  keywords: [
+    "miami beaches",
+    "best beaches in miami",
+    "south beach miami",
+    "family beaches in miami",
+    "things to do near miami beaches",
+  ],
   alternates: { canonical: "/miami/beaches" },
   openGraph: {
     title: "Miami Beaches",
@@ -83,6 +90,29 @@ export default function MiamiBeachesPage() {
         </section>
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">How to use this Miami beach guide</h2>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4 text-sm leading-7 text-zinc-300">
+              <p>
+                Miami beach searches are usually hiding a second question: do you want iconic South Beach energy, a calmer family-friendly stretch, easier water access, or a shoreline that pairs better with the rest of the day? That is why this page works better as a comparison page than a simple list of beaches.
+              </p>
+              <p>
+                The strongest organic path from here is into one named beach, one water-activity lane, or the broader Miami tours page if the beach day is turning into a boat or Everglades plan.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Best next clicks</div>
+              <div className="mt-4 grid gap-3">
+                <Link href="/miami" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Miami city guide</Link>
+                <Link href="/miami/tours" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Miami tours</Link>
+                <Link href="/kid-friendly/miami" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Kid-friendly Miami</Link>
+                <Link href="/pet-friendly/miami" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Pet-friendly Miami</Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-3xl font-black tracking-tight">Core beach nodes</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {CONFIG.beaches.map((beach) => (
@@ -121,6 +151,28 @@ export default function MiamiBeachesPage() {
                 {link.label}
               </Link>
             ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Best-fit beach plans</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">First Miami trip</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use one iconic South Beach block, then balance it with a calmer or more scenic shoreline if you have more time.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Family beach day</h3>
+              <p className="mt-2 text-sm text-zinc-300">Bias toward easier parking, lower chaos, and beaches that work with shorter attention spans and mixed-age groups.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Activity-first</h3>
+              <p className="mt-2 text-sm text-zinc-300">Choose beaches that pair cleanly with rentals, parasailing, or boat departures instead of treating every shoreline as interchangeable.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Short stay</h3>
+              <p className="mt-2 text-sm text-zinc-300">Keep it simple: one main beach block and one non-beach lane, rather than trying to bounce across too many shoreline zones.</p>
+            </article>
           </div>
         </section>
 

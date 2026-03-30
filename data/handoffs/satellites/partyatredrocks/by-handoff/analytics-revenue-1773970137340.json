@@ -1,0 +1,44 @@
+{
+  "handoffId": "analytics-revenue-1773970137340",
+  "satelliteId": "partyatredrocks",
+  "firstEventAt": "2026-03-20T01:28:57.340Z",
+  "lastEventAt": "2026-03-20T01:28:57.340Z",
+  "latestEventType": "partner_booking_completed",
+  "latestStatus": "booked",
+  "latestStage": "partner_confirmed",
+  "latestMessage": null,
+  "eventCount": 1,
+  "externalReferences": [],
+  "degraded": false,
+  "traveler": {
+    "email": null,
+    "phone": null,
+    "name": null,
+    "partySize": 5
+  },
+  "attribution": {
+    "sourceSlug": "wta-network-forward",
+    "sourcePage": "/handoff/partner/partyatredrocks",
+    "topicSlug": "concert-transport"
+  },
+  "booking": {
+    "venueSlug": "red-rocks-amphitheatre",
+    "portSlug": null,
+    "citySlug": null,
+    "productSlug": "private-suv",
+    "eventDate": "2026-08-01",
+    "quantity": 5,
+    "currency": "USD",
+    "amount": 480
+  },
+  "partner": {
+    "fromSite": "welcome-to-alaska",
+    "toSite": "partyatredrocks",
+    "partnerHandoffId": "analytics-revenue-1773970137340",
+    "reason": "traveler_reuse"
+  },
+  "metadata": {
+    "artist": "Tycho",
+    "event": "Tycho at Red Rocks"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "city": "wisconsin-dells",
+  "version": 1,
+  "as_of": "2026-03-26T18:00:00-05:00",
+  "ttl_seconds": 900,
+  "stale_after": "2026-03-26T18:15:00-05:00",
+  "schema": {
+    "entity": "event",
+    "description": "Ingested timed facts."
+  },
+  "events": [
+    {
+      "id": "evt-wisconsin-dells-noahs-ark-waterpark",
+      "slug": "noahs-ark-waterpark-pulse-2026-03-26",
+      "title": "Family-demand spike along the Parkway",
+      "venue_slug": "noahs-ark-waterpark",
+      "category": "waterpark",
+      "start_time": "2026-03-26T19:00:00-05:00",
+      "end_time": "2026-03-26T21:30:00-05:00",
+      "status": "starting_soon",
+      "impact_level": "medium",
+      "attendance_band": "moderate",
+      "source": {
+        "kind": "ticketing-feed",
+        "external_id": "noahs-ark-waterpark-pulse-2026-03-26"
+      },
+      "description": "Heavy family traffic is expected to lift parking pressure and casual dining demand along the Parkway today."
+    }
+  ]
+}

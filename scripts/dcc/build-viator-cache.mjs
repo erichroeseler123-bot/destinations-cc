@@ -7,6 +7,7 @@ const ACTION_DIR = path.join(DATA_DIR, "action");
 const OUT_PATH = path.join(ACTION_DIR, "viator.products.cache.json");
 const TOURS_PATH = path.join(DATA_DIR, "tours.json");
 const VEGAS_TOURS_PATH = path.join(DATA_DIR, "vegas.tours.json");
+const INGESTED_PRODUCTS_PATH = path.join(DATA_DIR, "viator-products.catalog.json");
 
 function slugify(input) {
   return String(input || "")
@@ -30,6 +31,7 @@ function asArray(raw) {
   if (raw && typeof raw === "object") {
     if (Array.isArray(raw.tours)) return raw.tours;
     if (Array.isArray(raw.items)) return raw.items;
+    if (Array.isArray(raw.products)) return raw.products;
   }
   return [];
 }
@@ -47,9 +49,10 @@ function nodeKey(tour) {
   );
 }
 
+const ingestedProducts = asArray(loadJson(INGESTED_PRODUCTS_PATH, []));
 const tours = asArray(loadJson(TOURS_PATH, []));
 const vegasTours = asArray(loadJson(VEGAS_TOURS_PATH, []));
-const merged = [...tours, ...vegasTours];
+const merged = [...ingestedProducts, ...tours, ...vegasTours];
 const places = {};
 const now = new Date().toISOString();
 

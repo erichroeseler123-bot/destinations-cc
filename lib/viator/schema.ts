@@ -135,6 +135,89 @@ export const ViatorSearchControlsSchema = z.object({
   recommendedOnly: z.boolean().default(false),
 });
 
+export const ViatorPassengerMixItemSchema = z.object({
+  ageBand: z.string().min(1),
+  numberOfTravelers: z.number().int().min(0),
+});
+
+export const ViatorPrebookStateSchema = z.object({
+  productCode: z.string().min(1),
+  travelDate: z.string().min(1),
+  currency: z.string().min(3),
+  paxMix: z.array(ViatorPassengerMixItemSchema).min(1),
+  bookableOptions: z.array(
+    z.object({
+      id: z.string().min(1),
+      label: z.string().min(1),
+      startTime: z.string().nullable(),
+      price: z.number().nullable(),
+    })
+  ),
+  bookingQuestions: z.array(
+    z.object({
+      id: z.string().min(1),
+      label: z.string().min(1),
+      required: z.boolean(),
+      type: z.string().nullable(),
+      answered: z.boolean(),
+    })
+  ),
+  answers: z.record(z.string(), z.string()).default({}),
+  availabilitySummary: z.object({
+    optionCount: z.number().int().min(0),
+    hasBookableItems: z.boolean(),
+    firstPrice: z.number().nullable(),
+  }),
+  readyForHold: z.boolean(),
+});
+
+export const ViatorPreparedBookingSchema = z.object({
+  preparationId: z.string().min(1),
+  createdAt: z.string().min(1),
+  productCode: z.string().min(1),
+  travelDate: z.string().min(1),
+  currency: z.string().min(3),
+  paxMix: z.array(ViatorPassengerMixItemSchema).min(1),
+  selectedOption: z.object({
+    id: z.string().min(1),
+    label: z.string().min(1),
+    startTime: z.string().nullable(),
+    price: z.number().nullable(),
+  }).nullable(),
+  bookingQuestions: z.array(
+    z.object({
+      id: z.string().min(1),
+      label: z.string().min(1),
+      required: z.boolean(),
+      type: z.string().nullable(),
+      answered: z.boolean(),
+    })
+  ),
+  answers: z.record(z.string(), z.string()).default({}),
+  validation: z.object({
+    readyForHold: z.boolean(),
+    missingRequiredAnswers: z.array(z.string()).default([]),
+    missingSelectedOption: z.boolean(),
+  }),
+});
+
+export const ViatorHoldRequestDraftSchema = z.object({
+  preparationId: z.string().min(1),
+  partnerBookingRef: z.string().min(1),
+  partnerCartRef: z.string().min(1),
+  paymentDataSubmissionMode: z.enum(["PARTNER_FORM", "VIATOR_FORM"]),
+  hostingUrl: z.string().nullable(),
+  payload: z.record(z.string(), z.unknown()),
+});
+
+export const ViatorPaymentSessionSchema = z.object({
+  preparationId: z.string().min(1),
+  paymentDataSubmissionMode: z.enum(["PARTNER_FORM", "VIATOR_FORM"]).nullable(),
+  paymentDataSubmissionUrl: z.string().nullable(),
+  paymentSessionToken: z.string().nullable(),
+  hostingUrl: z.string().nullable(),
+});
+
 export type ViatorDisplayTag = z.infer<typeof ViatorDisplayTagSchema>;
 export type ViatorActionProduct = z.infer<typeof ViatorActionProductSchema>;
 export type ViatorProductDetail = z.infer<typeof ViatorProductDetailSchema>;
@@ -146,6 +229,11 @@ export type ViatorTagCatalogItem = z.infer<typeof ViatorTagCatalogItemSchema>;
 export type ViatorDestinationCatalogRow = z.infer<typeof ViatorDestinationCatalogRowSchema>;
 export type ViatorDestinationCatalog = z.infer<typeof ViatorDestinationCatalogSchema>;
 export type ViatorTagCatalog = z.infer<typeof ViatorTagCatalogSchema>;
+export type ViatorPassengerMixItem = z.infer<typeof ViatorPassengerMixItemSchema>;
+export type ViatorPrebookState = z.infer<typeof ViatorPrebookStateSchema>;
+export type ViatorPreparedBooking = z.infer<typeof ViatorPreparedBookingSchema>;
+export type ViatorHoldRequestDraft = z.infer<typeof ViatorHoldRequestDraftSchema>;
+export type ViatorPaymentSession = z.infer<typeof ViatorPaymentSessionSchema>;
 
 export function normalizeViatorActionProduct(
   value: z.input<typeof ViatorActionProductSchema>
@@ -157,4 +245,28 @@ export function normalizeViatorProductDetail(
   value: z.input<typeof ViatorProductDetailSchema>
 ): ViatorProductDetail {
   return ViatorProductDetailSchema.parse(value);
+}
+
+export function normalizeViatorPrebookState(
+  value: z.input<typeof ViatorPrebookStateSchema>
+): ViatorPrebookState {
+  return ViatorPrebookStateSchema.parse(value);
+}
+
+export function normalizeViatorPreparedBooking(
+  value: z.input<typeof ViatorPreparedBookingSchema>
+): ViatorPreparedBooking {
+  return ViatorPreparedBookingSchema.parse(value);
+}
+
+export function normalizeViatorHoldRequestDraft(
+  value: z.input<typeof ViatorHoldRequestDraftSchema>
+): ViatorHoldRequestDraft {
+  return ViatorHoldRequestDraftSchema.parse(value);
+}
+
+export function normalizeViatorPaymentSession(
+  value: z.input<typeof ViatorPaymentSessionSchema>
+): ViatorPaymentSession {
+  return ViatorPaymentSessionSchema.parse(value);
 }

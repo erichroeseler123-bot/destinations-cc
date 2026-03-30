@@ -7,6 +7,8 @@ import { getGraphHealth } from "@/lib/dcc/graph/health";
 import { SITE_IDENTITY } from "@/src/data/site-identity";
 import CinematicBackdrop from "@/app/components/dcc/CinematicBackdrop";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
+import NextStepEngine from "@/app/components/dcc/NextStepEngine";
+import { getRedRocksRecommendationActions } from "@/lib/dcc/handoffAnalytics";
 
 export const dynamic = "force-static";
 
@@ -42,6 +44,7 @@ const PLANNING_HUBS = [
 
 export default function AuthorityPage() {
   const health = getGraphHealth();
+  const actions = getRedRocksRecommendationActions();
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-zinc-950 text-white">
@@ -171,6 +174,13 @@ export default function AuthorityPage() {
             </p>
           </Link>
         </section>
+
+        <NextStepEngine
+          title="Canonical Next Step Engine"
+          eyebrow="Network routing"
+          description="DCC should decide the next move first, then hand travelers into the correct execution lane only after the decision is clear."
+          actions={actions}
+        />
       </div>
     </main>
   );

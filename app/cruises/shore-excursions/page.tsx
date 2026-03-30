@@ -17,6 +17,13 @@ export const metadata: Metadata = {
   title: "Cruise Shore Excursions Guide | Best Regions, Booking Strategy, and Reality Checks",
   description:
     "Practical cruise shore excursion guidance covering Alaska, Caribbean, Mediterranean, independent vs ship-booked decisions, and recent traveler reality checks.",
+  keywords: [
+    "cruise shore excursions",
+    "best cruise excursions",
+    "ship booked vs independent excursions",
+    "shore excursion planning",
+    "cruise port tours",
+  ],
   alternates: { canonical: "/cruises/shore-excursions" },
   openGraph: {
     title: "Cruise Shore Excursions Guide",
@@ -83,6 +90,29 @@ export default function CruiseShoreExcursionsPage() {
         </section>
 
         <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6">
+          <h2 className="text-2xl font-bold">How to use this shore-excursions guide</h2>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4 text-sm leading-7 text-zinc-300">
+              <p>
+                Shore-excursion searches usually look simple, but the real decision is whether the stop supports an easy beach day, a wildlife or scenery priority, a bus-heavy inland route, or a port day that should stay close to the ship because of timing and friction.
+              </p>
+              <p>
+                This page is meant to answer that strategy question first, then push travelers into region-specific examples, port pages, or tendering guidance depending on what will actually shape the day.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <div className="text-xs uppercase tracking-[0.18em] text-emerald-300">Best next clicks</div>
+              <div className="mt-4 grid gap-3">
+                <Link href="/ports" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Ports directory</Link>
+                <Link href="/cruises/tendering" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Tendering guide</Link>
+                <Link href="/ports/juneau" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Juneau example</Link>
+                <Link href="/ports/santorini" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Santorini example</Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6">
           <h2 className="text-2xl font-bold">Region-by-region high-signal picks</h2>
           <div className="mt-5 space-y-5">
             {CRUISE_SHORE_EXCURSION_REGIONS.map((region) => (
@@ -123,6 +153,28 @@ export default function CruiseShoreExcursionsPage() {
               <li className="rounded-xl border border-white/10 bg-black/20 px-4 py-4">Weather or tendering friction that shrinks the useful shore window.</li>
             </ul>
           </article>
+        </section>
+
+        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6">
+          <h2 className="text-2xl font-bold">Best-fit excursion planning lanes</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Scenery-first stop</h3>
+              <p className="mt-2 text-sm text-zinc-300">Choose fewer transfers and more direct landscape payoff when the port is famous for views or wildlife.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Easy beach day</h3>
+              <p className="mt-2 text-sm text-zinc-300">Not every port needs a complicated tour. Simple beach or reef plans often outperform coach-heavy itineraries.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">History or inland route</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use more caution when the attraction is far from port and timing buffers start eating the day.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Constraint-heavy port</h3>
+              <p className="mt-2 text-sm text-zinc-300">Tendering, crowd pressure, and weather can make conservative excursion choices the better value.</p>
+            </article>
+          </div>
         </section>
 
         <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6">

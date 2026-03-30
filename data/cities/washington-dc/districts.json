@@ -1,0 +1,59 @@
+{
+  "city": "washington-dc",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-04:00",
+  "schema": {
+    "entity": "district",
+    "description": "Durable district layer used to group venues, places, and signals."
+  },
+  "districts": [
+    {
+      "slug": "national-mall",
+      "name": "National Mall",
+      "district_type": "civic-core",
+      "center": {
+        "lat": 38.8895,
+        "lng": -77.0353
+      },
+      "radius_m": 1800,
+      "vibe_tags": [
+        "museums",
+        "monuments",
+        "tourism"
+      ],
+      "venue_slugs": [
+        "capital-one-arena",
+        "the-wharf-dc"
+      ],
+      "place_slugs": [
+        "old-ebbitt-grill",
+        "mita-dc"
+      ],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "the-wharf",
+      "name": "The Wharf",
+      "district_type": "waterfront-corridor",
+      "center": {
+        "lat": 38.8786,
+        "lng": -77.0266
+      },
+      "radius_m": 1000,
+      "vibe_tags": [
+        "waterfront",
+        "nightlife",
+        "music"
+      ],
+      "venue_slugs": [
+        "the-anthem"
+      ],
+      "place_slugs": [
+        "moon-rabbit"
+      ],
+      "impact_profile": "medium"
+    }
+  ]
+}

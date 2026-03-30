@@ -1,0 +1,104 @@
+{
+  "slug": "branson",
+  "name": "Branson",
+  "timezone": "America/Chicago",
+  "coordinates": {
+    "lat": 36.6437,
+    "lng": -93.2185
+  },
+  "metadata": {
+    "title": "Branson Tours, Things to Do, and Attractions | Destination Command Center",
+    "description": "Discover Branson tours, things to do, attractions, neighborhoods, and practical trip-planning paths with a stronger city-first DCC guide.",
+    "keywords": [
+      "branson tours",
+      "things to do in branson",
+      "branson attractions",
+      "shows",
+      "lake activities"
+    ]
+  },
+  "hero": {
+    "eyebrow": "Branson travel guide",
+    "title": "Branson tours, things to do, and local travel planning",
+    "summary": "Browse guided experiences, major attractions, and route-first planning ideas for a stronger Branson trip.",
+    "trustLine": "Find tours, attractions, and trip ideas in Branson with DCC's city-first planning model.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/branson/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/branson/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly."
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+    },
+    {
+      "slug": "shows",
+      "title": "Shows",
+      "description": "Live music, comedy, and family-theater inventory that defines Branson trip planning."
+    },
+    {
+      "slug": "lake-activities",
+      "title": "Lake Activities",
+      "description": "Table Rock Lake outings that add outdoor range to a show-heavy Branson stay."
+    }
+  ],
+  "topAttractions": [],
+  "featuredTours": {
+    "title": "Popular Branson experiences",
+    "description": "Guided experiences and bookable activities that help visitors plan around Branson's strongest demand lanes.",
+    "fallbackQueries": [
+      "branson walking tour",
+      "branson food tour",
+      "branson sightseeing tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Things to do in Branson",
+      "description": "A broader planning surface for attractions, neighborhoods, and trip ideas.",
+      "href": "/branson/things-to-do"
+    },
+    {
+      "title": "Branson tours",
+      "description": "A cleaner starting point for guided experiences, day trips, and visitor favorites.",
+      "href": "/branson/tours"
+    },
+    {
+      "title": "Branson attractions",
+      "description": "Core sights and activity clusters that shape a real visitor route.",
+      "href": "/branson/attractions"
+    },
+    {
+      "title": "Branson day trips",
+      "description": "Half-day and full-day options that fit naturally with a city stay.",
+      "href": "/branson/day-trips"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in Branson for first-time visitors?",
+      "a": "Most first-time visitors do best with one broad sightseeing experience, one neighborhood or food block, and one standout attraction or day trip."
+    },
+    {
+      "q": "How many days should you spend in Branson?",
+      "a": "A practical first visit is usually 2 to 4 days depending on how many major attractions, shows, or day trips you want to fit into one trip."
+    }
+  ]
+}

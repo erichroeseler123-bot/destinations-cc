@@ -1,0 +1,59 @@
+{
+  "city": "pigeon-forge",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-04:00",
+  "schema": {
+    "entity": "district",
+    "description": "Durable district layer used to group venues, places, and signals."
+  },
+  "districts": [
+    {
+      "slug": "parkway-core",
+      "name": "Parkway Core",
+      "district_type": "tourism-corridor",
+      "center": {
+        "lat": 35.7946,
+        "lng": -83.5702
+      },
+      "radius_m": 2200,
+      "vibe_tags": [
+        "shows",
+        "family",
+        "traffic"
+      ],
+      "venue_slugs": [
+        "dollywood",
+        "the-island-in-pigeon-forge"
+      ],
+      "place_slugs": [
+        "local-goat",
+        "junction-35-spirits"
+      ],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "teaster-lane",
+      "name": "Teaster Lane",
+      "district_type": "family-corridor",
+      "center": {
+        "lat": 35.8061,
+        "lng": -83.5622
+      },
+      "radius_m": 1200,
+      "vibe_tags": [
+        "shopping",
+        "family",
+        "rides"
+      ],
+      "venue_slugs": [
+        "leconte-center"
+      ],
+      "place_slugs": [
+        "blue-moose-burgers-wings"
+      ],
+      "impact_profile": "medium"
+    }
+  ]
+}

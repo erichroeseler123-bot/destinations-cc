@@ -13,9 +13,13 @@
   },
   "hero": {
     "eyebrow": "Seattle travel guide",
-    "title": "Seattle tours, things to do, and local travel planning",
-    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Seattle trip.",
-    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Seattle.",
+    "title": "Seattle planning for market time, waterfront routes, and mountain-day-trip decisions",
+    "summary": "Seattle is strongest when you split the trip into one Pike Place and waterfront block, one Seattle Center or skyline block, and one day-trip or ferry-style contrast instead of overloading the core in bad weather.",
+    "trustLine": "Best used when you need Pike Place, Seattle Center, harbor edges, and weather-aware planning to fit together cleanly.",
+    "image": {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Seattle_Skyline.jpg/1280px-Seattle_Skyline.jpg",
+      "alt": "Seattle skyline viewed from the waterfront"
+    },
     "primaryCtaLabel": "Browse Tours",
     "primaryCtaHref": "/seattle/tours",
     "secondaryCtaLabel": "Explore Things to Do",
@@ -25,39 +29,39 @@
     {
       "slug": "walking-tours",
       "title": "Walking Tours",
-      "description": "Guided city walks that help visitors get oriented quickly."
+      "description": "Best for Pike Place, Pioneer Square, and first-day downtown orientation without wasting time on route decisions."
     },
     {
       "slug": "food-tours",
       "title": "Food Tours",
-      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+      "description": "Useful when the market, coffee, and neighborhood food culture matter more than just checking off landmarks."
     },
     {
       "slug": "sightseeing-tours",
       "title": "Sightseeing Tours",
-      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+      "description": "Good when you want a weather-proof first pass across skyline, waterfront, and city core highlights."
     },
     {
       "slug": "day-trips",
       "title": "Day Trips",
-      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+      "description": "Strongest for ferry days, Mount Rainier pivots, and wider Pacific Northwest contrast beyond downtown."
     }
   ],
   "topAttractions": [
     {
       "slug": "pike-place-market",
       "title": "Pike Place Market",
-      "description": ""
+      "description": "The clearest first stop for Seattle because it ties food, waterfront walking, and city orientation together quickly."
     },
     {
       "slug": "space-needle",
       "title": "Space Needle",
-      "description": ""
+      "description": "Best used as part of a Seattle Center block, not as a standalone one-stop day plan."
     },
     {
       "slug": "chihuly-garden-and-glass",
       "title": "Chihuly Garden and Glass",
-      "description": ""
+      "description": "A high-value Seattle Center add-on when weather makes indoor structure more useful than another open-air route."
     },
     {
       "slug": "waterfront-park",
@@ -77,11 +81,12 @@
   ],
   "featuredTours": {
     "title": "Popular Seattle experiences",
-    "description": "Guided experiences and bookable activities that help visitors plan around Seattle's most useful highlights.",
+    "description": "Seattle converts best when tours help you choose between market-city time, harbor movement, and one bigger Pacific Northwest outing.",
     "fallbackQueries": [
       "seattle walking tour",
       "seattle food tour",
-      "seattle sightseeing tour"
+      "seattle sightseeing tour",
+      "seattle ferry tour"
     ]
   },
   "planningLinks": [
@@ -109,11 +114,15 @@
   "faq": [
     {
       "q": "What are the best tours in Seattle for first-time visitors?",
-      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+      "a": "The strongest first Seattle plan is usually one Pike Place or downtown orientation block, one skyline or Seattle Center block, and one harbor, ferry, or day-trip decision."
     },
     {
       "q": "How many days should you spend in Seattle?",
-      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+      "a": "Two to four days is the practical range because Seattle rewards slower neighborhood pacing, weather-aware backups, and one bigger day-trip rather than nonstop downtown stacking."
+    },
+    {
+      "q": "What is the smartest way to handle Seattle weather when planning?",
+      "a": "Keep one indoor-heavy block like Seattle Center or museum time ready, and one outdoor block like Pike Place or the waterfront ready, then pick between them based on the day instead of locking everything too early."
     }
   ],
   "coordinates": {

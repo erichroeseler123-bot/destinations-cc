@@ -337,3 +337,234 @@ The next reasonable build target is:
 4. review/traveler photo cache and compliance
 5. only then booking-capable workflows if access exists
 
+## Certification Back-End Checklist
+
+Source baseline:
+
+- Viator Partner Resource Center: `Managing Product & Availability Data` dated October 3, 2025
+- Viator Partner Resource Center: `Viator API certification: back-end checks` dated July 15, 2025
+
+This section converts the certification rules into a repo-specific pass/fail checklist.
+
+### Content ingestion
+
+Status: partially compliant after the `scripts/viator-ingest.mjs` rewrite
+
+What now aligns:
+
+- product content ingestion is now modeled around `/products/modified-since`
+- availability ingestion is now modeled around `/availability/schedules/modified-since`
+- product and schedule ingestion are separated
+- cursor state is persisted so delta updates can resume instead of re-ingesting full data
+
+Still missing for certification:
+
+- a documented or automated cadence of at least hourly, ideally every 15 to 30 minutes
+- ingestion-time exclusion policy for filtered-out products and matching schedule exclusion
+- proof that search endpoints are no longer being used operationally for ingestion
+- a normalized local store that is clearly the source of truth for downstream pages
+
+### Auxiliary data refresh
+
+Status: partially compliant
+
+What exists:
+
+- local caches for destinations and tags
+- local review cache support
+- taxonomy sync scripts
+
+Still missing for certification:
+
+- exchange-rate ingestion and expiry-driven refresh workflow
+- locations cache and `/locations/bulk` resolution flow with the 500-location cap enforced
+- explicit booking-question cache refresh flow
+- explicit monthly or fixed-cadence jobs for auxiliary full refreshes
+- on-demand refresh logic when new destination IDs, tags, booking questions, or locations are encountered during ingestion
+
+### Real-time search
+
+Status: mostly aligned for discovery, but not yet certification-proof
+
+What exists:
+
+- `/products/search` client support
+- live search usage for discovery flows
+
+Still missing for certification:
+
+- clear rate-limit/backoff policy for concurrent search requests
+- explicit guardrails proving search is not used for ingestion anywhere in production jobs
+- recommendation-specific handling for `/products/bulk` and `/availability/schedules/bulk` when multiple recommendation products must be resolved in real time
+
+### Affiliate attribution
+
+Status: mostly compliant
+
+What exists:
+
+- centralized outbound attribution wrapper in [lib/viator/links.ts](/home/ewrewr12/destinations-cc/lib/viator/links.ts)
+- default `pid`, `mcid`, and `medium=api` config in [lib/viator/config.ts](/home/ewrewr12/destinations-cc/lib/viator/config.ts)
+- campaign sanitization limited to lowercase alphanumeric characters and dashes
+- campaign composition helper so multiple internal touchpoints can be encoded into one safe campaign string
+
+What this means:
+
+- the repo already follows the important attribution rule from Viator's affiliate guidance: do not hand-build inconsistent tracking params across the app
+- campaign values are already normalized to the allowed character set, which reduces silent attribution loss
+
+Still worth tightening:
+
+- keep all Viator outbound URLs routed through `appendViatorAttribution(...)`
+- avoid raw Viator URL construction outside the shared wrapper
+- if multilingual Viator redirects become important, handle locale at the request/header or host-selection layer deliberately instead of scattering ad hoc URL params
+
+### Real-time availability and pricing
+
+Status: not implemented
+
+Certification blockers:
+
+- no active `/availability/check` workflow was found
+- no evidence that availability is checked only after date and passenger mix are selected
+- no evidence of a second final availability check immediately before booking
+- no currency-handling logic tied to invoicing currency for availability checks
+
+### Booking hold and booking
+
+Status: not implemented
+
+Certification blockers:
+
+- no `/bookings/cart/hold` or `/bookings/hold` flow found
+- no `/bookings/cart/book` or `/bookings/book` flow found
+- no payment token flow
+- no booking timeout handling at 120 seconds minimum
+- no booking-status recovery flow after booking errors or timeouts
+
+Implication:
+
+- if this integration is staying affiliate search-only, that is fine, but it should be treated as non-booking and scoped accordingly during certification
+- if full plus booking access is planned, this area is still a major implementation gap
+
+### Booking status and manual confirmation
+
+Status: not implemented
+
+Certification blockers:
+
+- no `/bookings/status` polling flow found
+- no hourly recheck flow for pending manual-confirmation products
+- no status-based traveler communication logic
+
+### Traveler and supplier cancellations
+
+Status: not implemented
+
+Certification blockers:
+
+- no cancel-quote flow
+- no cancel-reasons refresh flow
+- no `/bookings/modified-since` supplier-cancellation ingestion loop
+- no `/bookings/modified-since/acknowledge` support
+
+### Timeout and operational safeguards
+
+Status: not implemented or not provable
+
+Still missing:
+
+- centralized Viator timeout policy that guarantees at least 120 seconds for booking endpoints
+- explicit retry spacing for booking status polling after errors
+- internal diagnostics showing live capability reachability by endpoint family
+
+## Revised Priority
+
+If the goal is Viator certification instead of just a working tours surface, the priority order should be:
+
+1. finish ingestion compliance
+2. add auxiliary-data refresh and on-demand reference resolution
+3. implement real-time `/availability/check`
+4. decide whether this integration remains search-only affiliate or becomes booking-capable
+5. only if booking-capable, add hold, book, status, cancellation, and timeout workflows
+
+## Current Best Interpretation
+
+As of this audit, the repo looks closest to:
+
+- search-capable affiliate integration with improving ingestion readiness
+- not yet ready for booking certification
+- not yet ready to claim full backend certification compliance without additional ingestion and auxiliary-data work
+
+## Front-End Guide Check
+
+Source baseline:
+
+- Viator Partner Resource Center: `Front-End Guide for API Partners` dated March 17, 2021
+
+### Landing page / tours hub
+
+Status: partially aligned
+
+What exists:
+
+- a dedicated `/tours` landing surface
+- destination-led search entry
+- featured category shortcuts
+- destination search suggestions
+
+Still worth improving:
+
+- stronger prioritization of high-conversion and high-revenue products on the initial landing state
+- clearer top-destination and top-product modules when no city intent is selected
+
+### Search results page
+
+Status: mostly aligned
+
+What exists:
+
+- destination search
+- category and text filtering
+- sort controls
+- rating, thumbnail, teaser, price, duration, and approved tag display on result cards
+- DCC recommendation signal
+
+Still missing or thin:
+
+- clickable destination breadcrumb above results
+- stronger free-cancellation and other high-conversion merchandising flags where available
+- clearer distinction between live product cards and fallback search cards
+
+### Product detail page
+
+Status: improved, but still not fully PDP-complete
+
+What exists:
+
+- unified PDP route at `/tours/[id]`
+- product title, rating, reviews, duration, price-from framing
+- destination trail
+- supplier and traveler photo separation
+- overview, inclusions, exclusions, itinerary, pickup, departure, return, languages, ticket type, and cancellation copy
+- sticky outbound booking CTA
+
+Still missing or thin:
+
+- date and traveler selection flow on-site
+- visible product-option selection
+- map/location rendering from itinerary or points of interest
+- richer nearby-attraction and nearby-product modules
+- more complete review presentation once cache coverage improves
+
+### User flow
+
+Status: directionally aligned
+
+Current path:
+
+- landing page to SRP
+- SRP to PDP
+- PDP to Viator for live availability and checkout
+
+This is compatible with Viator's recommended simple flow, but it still leans more editorial than transactional in places.

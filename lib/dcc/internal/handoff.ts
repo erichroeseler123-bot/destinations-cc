@@ -1,6 +1,9 @@
 import { createHmac, randomUUID } from "crypto";
 import { slugify } from "@/lib/dcc/slug";
 import { matchCruiseShip } from "@/lib/dcc/cruise/shipRegistry";
+import { buildDccReturnUrl } from "@/lib/dcc/satelliteHandoffs";
+
+const DEFAULT_WTA_ORIGIN = "https://welcometoalaskatours.com";
 
 export type DccHandoffInput = {
   sourceSlug?: string;
@@ -136,17 +139,24 @@ export function buildDccWtaHandoffHref(
     pathname?: string;
     routerBaseUrl?: string;
     signingSecret?: string;
+    returnPath?: string;
   }
 ): string {
   const pathname = opts?.pathname || "/handoff/dcc";
   const relative = buildDccHandoffUrl(input, pathname, {
     signingSecret: opts?.signingSecret,
   });
-  const base = (opts?.routerBaseUrl || process.env.DCC_ROUTER_URL || "").trim();
-  if (!base || isPlaceholderRouterUrl(base)) return relative;
+  const base = (opts?.routerBaseUrl || process.env.DCC_ROUTER_URL || DEFAULT_WTA_ORIGIN).trim();
+  const withReturn = (() => {
+    const returnUrl = buildDccReturnUrl(opts?.returnPath, input.handoffId);
+    const params = new URLSearchParams(relative.split("?")[1] || "");
+    params.set("dcc_return", returnUrl);
+    return `${pathname}?${params.toString()}`;
+  })();
+  if (!base || isPlaceholderRouterUrl(base)) return withReturn;
   try {
-    return new URL(relative, base).toString();
+    return new URL(withReturn, base).toString();
   } catch {
-    return relative;
+    return withReturn;
   }
 }

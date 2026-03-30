@@ -1,0 +1,41 @@
+{
+  "handoffId": "analytics-highest-revenue-1774378163151",
+  "satelliteId": "partyatredrocks",
+  "firstEventAt": "2026-03-24T18:49:23.151Z",
+  "lastEventAt": "2026-03-24T18:49:23.151Z",
+  "latestEventType": "partner_booking_completed",
+  "latestStatus": "booked",
+  "latestStage": "partner_confirmed",
+  "latestMessage": null,
+  "eventCount": 1,
+  "externalReferences": [],
+  "degraded": false,
+  "traveler": {
+    "email": null,
+    "phone": null,
+    "name": null,
+    "partySize": 6
+  },
+  "attribution": {
+    "sourceSlug": "wta-network-forward",
+    "sourcePage": "/handoff/partner/partyatredrocks",
+    "topicSlug": "concert-transport"
+  },
+  "booking": {
+    "venueSlug": "red-rocks-amphitheatre",
+    "portSlug": "juneau-alaska",
+    "citySlug": null,
+    "productSlug": "lux-sprinter",
+    "eventDate": "2026-08-01",
+    "quantity": 6,
+    "currency": "USD",
+    "amount": 1200
+  },
+  "partner": {
+    "fromSite": "welcome-to-alaska",
+    "toSite": "partyatredrocks",
+    "partnerHandoffId": "analytics-highest-revenue-1774378163151",
+    "reason": "cross_sell"
+  },
+  "metadata": {}
+}

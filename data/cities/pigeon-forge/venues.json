@@ -1,0 +1,67 @@
+{
+  "city": "pigeon-forge",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-04:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable city activity nodes.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large complex or district-scale activity center."
+    }
+  },
+  "venues": [
+    {
+      "slug": "dollywood",
+      "name": "Dollywood",
+      "venue_type": "major-event-campus",
+      "category": "theme-park",
+      "address": "2700 Dollywood Parks Blvd, Pigeon Forge, TN 37863",
+      "lat": 35.7945,
+      "lng": -83.5306,
+      "impact_potential": "high",
+      "district_slugs": [
+        "parkway-core"
+      ],
+      "near_anchor_slugs": [
+        "margaritaville-island-hotel"
+      ]
+    },
+    {
+      "slug": "the-island-in-pigeon-forge",
+      "name": "The Island in Pigeon Forge",
+      "venue_type": "district-hub",
+      "category": "family-entertainment",
+      "address": "131 Island Dr, Pigeon Forge, TN 37863",
+      "lat": 35.8043,
+      "lng": -83.5714,
+      "impact_potential": "high",
+      "district_slugs": [
+        "parkway-core"
+      ],
+      "near_anchor_slugs": [
+        "margaritaville-island-hotel"
+      ]
+    },
+    {
+      "slug": "leconte-center",
+      "name": "LeConte Center at Pigeon Forge",
+      "venue_type": "major-event-campus",
+      "category": "conventions",
+      "address": "2986 Teaster Ln, Pigeon Forge, TN 37863",
+      "lat": 35.8078,
+      "lng": -83.5642,
+      "impact_potential": "medium",
+      "district_slugs": [
+        "teaster-lane"
+      ],
+      "near_anchor_slugs": [
+        "margaritaville-island-hotel"
+      ]
+    }
+  ]
+}

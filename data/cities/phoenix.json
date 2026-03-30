@@ -13,9 +13,13 @@
   },
   "hero": {
     "eyebrow": "Phoenix travel guide",
-    "title": "Phoenix tours, things to do, and local travel planning",
-    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Phoenix trip.",
-    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Phoenix.",
+    "title": "Phoenix planning for desert-city nights, Scottsdale pivots, and outdoor blocks",
+    "summary": "Phoenix is strongest when you split the trip into one desert landmark block, one Scottsdale or food-and-nightlife block, and one early-morning outdoor move instead of forcing the whole city into midday heat.",
+    "trustLine": "Best used when you need Camelback, Papago, Scottsdale, and downtown Phoenix to fit together without wasting the cooler hours.",
+    "image": {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Phoenix_Skyline_from_South_Mountain_at_Night.2010.jpg/1280px-Phoenix_Skyline_from_South_Mountain_at_Night.2010.jpg",
+      "alt": "Phoenix skyline at night viewed from South Mountain"
+    },
     "primaryCtaLabel": "Browse Tours",
     "primaryCtaHref": "/phoenix/tours",
     "secondaryCtaLabel": "Explore Things to Do",
@@ -25,39 +29,39 @@
     {
       "slug": "walking-tours",
       "title": "Walking Tours",
-      "description": "Guided city walks that help visitors get oriented quickly."
+      "description": "Best used for compact downtown orientation or Old Town Scottsdale instead of trying to walk the whole metro like a dense city core."
     },
     {
       "slug": "food-tours",
       "title": "Food Tours",
-      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+      "description": "Useful when Scottsdale, Roosevelt Row, or Sonoran-style food is part of the point of the trip."
     },
     {
       "slug": "sightseeing-tours",
       "title": "Sightseeing Tours",
-      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+      "description": "Good first-day lane for visitors who want the desert-city shape and major landmarks without self-driving every segment."
     },
     {
       "slug": "day-trips",
       "title": "Day Trips",
-      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+      "description": "Best when you want Sedona, desert edge, or cooler-hour escapes to balance the city stay."
     }
   ],
   "topAttractions": [
     {
       "slug": "desert-botanical-garden",
       "title": "Desert Botanical Garden",
-      "description": ""
+      "description": "One of the cleanest first stops in Phoenix if you want a signature desert landscape without committing to a strenuous hike."
     },
     {
       "slug": "camelback-mountain",
       "title": "Camelback Mountain",
-      "description": ""
+      "description": "Best treated as an early-hour commitment, not a casual midday add-on."
     },
     {
       "slug": "old-town-scottsdale",
       "title": "Old Town Scottsdale",
-      "description": ""
+      "description": "The easiest nightlife and food pivot when Phoenix needs one more social or walkable block."
     },
     {
       "slug": "papago-park",
@@ -77,11 +81,12 @@
   ],
   "featuredTours": {
     "title": "Popular Phoenix experiences",
-    "description": "Guided experiences and bookable activities that help visitors plan around Phoenix's most useful highlights.",
+    "description": "The strongest Phoenix experiences are the ones that respect heat, driving distance, and the split between desert landmarks and Scottsdale-style leisure.",
     "fallbackQueries": [
       "phoenix walking tour",
       "phoenix food tour",
-      "phoenix sightseeing tour"
+      "phoenix sightseeing tour",
+      "phoenix desert jeep tour"
     ]
   },
   "planningLinks": [
@@ -109,11 +114,15 @@
   "faq": [
     {
       "q": "What are the best tours in Phoenix for first-time visitors?",
-      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+      "a": "The cleanest first Phoenix plan is usually one desert landmark block, one Scottsdale or downtown food block, and one early-morning outdoor move before the hotter part of the day."
     },
     {
       "q": "How many days should you spend in Phoenix?",
-      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+      "a": "Two to four days is the useful range because Phoenix often works best when you separate desert time, city time, and one wider day-trip instead of compressing everything into one long day."
+    },
+    {
+      "q": "What is the smartest way to plan around heat in Phoenix?",
+      "a": "Put outdoor moves early, keep one indoor or food-focused block for the hotter middle of the day, and leave Scottsdale or downtown as your evening pivot."
     }
   ],
   "coordinates": {

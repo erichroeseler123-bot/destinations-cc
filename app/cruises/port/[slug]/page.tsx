@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import DiagnosticsBlock from "@/app/components/DiagnosticsBlock";
@@ -7,6 +8,11 @@ import BookableToursSection from "@/app/components/dcc/BookableToursSection";
 import CruiseSpecialtyLaneSection from "@/app/components/dcc/CruiseSpecialtyLaneSection";
 import CruisePortHybridSection from "@/app/components/dcc/CruisePortHybridSection";
 import PoweredByViator from "@/app/components/dcc/PoweredByViator";
+import SatelliteHandoffStatusCard from "@/app/components/dcc/SatelliteHandoffStatusCard";
+import NextStepEngine from "@/app/components/dcc/NextStepEngine";
+import AirportLinksSection from "@/app/components/dcc/AirportLinksSection";
+import StationLinksSection from "@/app/components/dcc/StationLinksSection";
+import LocationMapCard from "@/app/components/dcc/LocationMapCard";
 import ViatorTourGrid from "@/app/components/dcc/ViatorTourGrid";
 import {
   buildCruisePayload,
@@ -20,10 +26,13 @@ import { ACTION_LABELS } from "@/lib/dcc/actionLabels";
 import { getCruisePortAddress, getCruisePortGeo } from "@/src/data/cruise-port-geo";
 import { getCruiseSpecialtyLanesForPort } from "@/src/data/cruise-specialty-lanes";
 import { buildPortTrackedHref } from "@/src/lib/port-analytics";
+import { getPortRecommendationActions } from "@/lib/dcc/handoffAnalytics";
+import { getAirportsByPortSlug } from "@/lib/dcc/airports";
+import { getStationsByPortSlug } from "@/lib/dcc/stations";
 import {
   buildBreadcrumbJsonLd,
-  buildCityJsonLd,
   buildFaqJsonLd,
+  buildPlaceJsonLd,
 } from "@/lib/dcc/jsonld";
 
 const BASE_URL = "https://destinationcommandcenter.com";
@@ -38,13 +47,31 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
-}) {
+}): Promise<Metadata> {
   const resolved = await params;
   const portTitle = toTitle(resolved.slug);
   return {
     title: `${portTitle} Shore Excursions and Cruise Port Guide`,
     description: `Cruise port schedule, shore excursions, and timing guidance for ${portTitle}, with direct paths into excursion and transfer planning.`,
+    keywords: [
+      `${portTitle} cruise port`,
+      `${portTitle} shore excursions`,
+      `${portTitle} port guide`,
+      `${portTitle} cruise transfers`,
+      `${portTitle} things to do from port`,
+    ],
     alternates: { canonical: `/cruises/port/${resolved.slug}` },
+    openGraph: {
+      title: `${portTitle} Shore Excursions and Cruise Port Guide`,
+      description: `Cruise port schedule, shore excursions, and timing guidance for ${portTitle}, with direct paths into excursion and transfer planning.`,
+      url: `${BASE_URL}/cruises/port/${resolved.slug}`,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${portTitle} Shore Excursions and Cruise Port Guide`,
+      description: `Cruise port schedule, shore excursions, and timing guidance for ${portTitle}, with direct paths into excursion and transfer planning.`,
+    },
   };
 }
 
@@ -64,10 +91,14 @@ function fmtDate(value: string): string {
 
 export default async function CruisePortPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ dcc_handoff_id?: string }>;
 }) {
   const resolved = await params;
+  const resolvedSearch = await searchParams;
+  const handoffId = resolvedSearch?.dcc_handoff_id || null;
   const payload = await buildCruisePayload({
     type: "port",
     value: resolved.slug,
@@ -79,6 +110,8 @@ export default async function CruisePortPage({
 
   const canonicalPortSlug = payload.query.value;
   const portTitle = toTitle(canonicalPortSlug);
+  const nearbyAirports = getAirportsByPortSlug(canonicalPortSlug);
+  const nearbyStations = getStationsByPortSlug(canonicalPortSlug);
   const isAlaskaPortContext = isAlaskaCruisePortSlug(canonicalPortSlug);
   const geo = getCruisePortGeo(canonicalPortSlug);
   const address = getCruisePortAddress(canonicalPortSlug);
@@ -110,6 +143,7 @@ export default async function CruisePortPage({
       answer: `Yes. Port traffic, weather, and tender timing can shift schedules, so avoid tight reservation chains.`,
     },
   ];
+  const nextActions = getPortRecommendationActions(canonicalPortSlug);
   const primaryExcursionQuery = `${portTitle} shore excursions`;
 
   return (
@@ -118,9 +152,9 @@ export default async function CruisePortPage({
         data={{
           "@context": "https://schema.org",
           "@graph": [
-            buildCityJsonLd({
+            buildPlaceJsonLd({
               path: `/cruises/port/${canonicalPortSlug}`,
-              name: `${portTitle} Cruise Schedule`,
+              name: `${portTitle} Cruise Port`,
               description:
                 "Cruise port schedule, route context, and shore excursion planning with booking handoffs.",
               address: address
@@ -241,6 +275,64 @@ export default async function CruisePortPage({
         )}
       </section>
 
+      {geo ? (
+        <LocationMapCard
+          title={`${portTitle} port map and directions`}
+          label={`${portTitle} cruise port`}
+          lat={geo.latitude}
+          lng={geo.longitude}
+          description={`Use this as a fast location anchor for ${portTitle}. DCC keeps the port page lightweight, then hands the traveler into a full map app only when transfer, dock, or excursion direction context is needed.`}
+          nearbyLinks={[
+            { href: "/ports", label: "Ports" },
+            { href: `/cruises/from/${canonicalPortSlug}`, label: "Cruises from port" },
+            { href: "/cruises/shore-excursions", label: "Shore excursions" },
+          ]}
+        />
+      ) : null}
+
+      <AirportLinksSection
+        title={`Airports that shape ${portTitle} cruise timing`}
+        intro={`Use airport pages when the real question is airport-to-port buffer, hotel staging, or whether the arrival path is simple enough for the day you want.`}
+        airports={nearbyAirports}
+      />
+
+      <StationLinksSection
+        title={`Train and bus stations that shape ${portTitle} cruise timing`}
+        intro={`Use station pages when the traveler is rail-first or bus-first and the real question is how to route into ${portTitle}, a hotel staging area, or the embarkation side of the trip.`}
+        stations={nearbyStations}
+      />
+
+      <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <h2 className="text-2xl font-bold">How to use this port page</h2>
+        <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="space-y-4 text-sm leading-7 text-zinc-300">
+            <p>
+              Port pages work best when the traveler already knows the stop and needs to answer what fits the usable shore window. That usually means comparing shore excursions, transfer friction, tendering risk, and whether the best plan is to stay close to port or commit to one bigger outing.
+            </p>
+            <p>
+              This page is stronger than a generic tours result because it keeps the decision tied to real cruise timing and port-specific context.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+            <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Best next clicks</div>
+            <div className="mt-4 grid gap-3">
+              <Link href="/ports" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">
+                Ports directory
+              </Link>
+              <Link href={`/cruises/from/${canonicalPortSlug}`} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">
+                Cruises from {portTitle}
+              </Link>
+              <Link href="/cruises/shore-excursions" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">
+                Shore excursions guide
+              </Link>
+              <Link href="/cruises/tendering" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">
+                Tendering guide
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <BookableToursSection
         cityName={portTitle}
         title="Book Shore Excursions & Port Activities"
@@ -283,6 +375,36 @@ export default async function CruisePortPage({
         lanes={specialtyLanes}
         contextType="port"
         contextName={portTitle}
+      />
+
+      <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <h2 className="text-2xl font-bold">Best-fit port planning lanes</h2>
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <h3 className="font-semibold">Excursion-first</h3>
+            <p className="mt-2 text-sm text-zinc-300">Use this page when the stop is mainly about choosing the right shore day.</p>
+          </article>
+          <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <h3 className="font-semibold">Transfer-sensitive</h3>
+            <p className="mt-2 text-sm text-zinc-300">Best when port traffic, return timing, or ride logistics can change what is realistic.</p>
+          </article>
+          <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <h3 className="font-semibold">Tender or crowd risk</h3>
+            <p className="mt-2 text-sm text-zinc-300">Useful when the ship day may lose effective time to boarding friction or congestion.</p>
+          </article>
+          <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <h3 className="font-semibold">Stay close to port</h3>
+            <p className="mt-2 text-sm text-zinc-300">Choose conservative excursions when the schedule or port layout does not reward a long inland route.</p>
+          </article>
+        </div>
+      </section>
+
+      <SatelliteHandoffStatusCard handoffId={handoffId} title="WTA Handoff Status" />
+
+      <NextStepEngine
+        title={`${portTitle} best next step`}
+        description="DCC should decide whether this port day stays authority-first or moves into execution now."
+        actions={nextActions}
       />
 
       <section className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">

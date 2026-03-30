@@ -1,0 +1,78 @@
+{
+  "city": "seattle",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-07:00",
+  "schema": {
+    "entity": "place",
+    "description": "Durable social and discovery inventory."
+  },
+  "places": [
+    {
+      "slug": "the-pink-door",
+      "name": "The Pink Door",
+      "place_type": "restaurant",
+      "category": "italian",
+      "address": "1919 Post Alley, Seattle, WA 98101",
+      "lat": 47.6105,
+      "lng": -122.3423,
+      "district_slugs": [
+        "pike-place-waterfront"
+      ],
+      "tags": [
+        "date-night",
+        "tourism",
+        "dinner"
+      ],
+      "quick_actions": [
+        "menu",
+        "reserve",
+        "directions"
+      ]
+    },
+    {
+      "slug": "old-stove-brewing",
+      "name": "Old Stove Brewing",
+      "place_type": "bar",
+      "category": "brewpub",
+      "address": "1901 Western Ave, Seattle, WA 98101",
+      "lat": 47.6104,
+      "lng": -122.3432,
+      "district_slugs": [
+        "pike-place-waterfront"
+      ],
+      "tags": [
+        "views",
+        "casual",
+        "groups"
+      ],
+      "quick_actions": [
+        "menu",
+        "directions"
+      ]
+    },
+    {
+      "slug": "spinasse",
+      "name": "Spinasse",
+      "place_type": "restaurant",
+      "category": "italian",
+      "address": "1531 14th Ave, Seattle, WA 98122",
+      "lat": 47.6154,
+      "lng": -122.3147,
+      "district_slugs": [
+        "capitol-hill"
+      ],
+      "tags": [
+        "dinner",
+        "date-night",
+        "walkable"
+      ],
+      "quick_actions": [
+        "menu",
+        "reserve",
+        "directions"
+      ]
+    }
+  ]
+}

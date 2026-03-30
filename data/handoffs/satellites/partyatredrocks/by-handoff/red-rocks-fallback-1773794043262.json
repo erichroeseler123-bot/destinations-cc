@@ -1,0 +1,40 @@
+{
+  "handoffId": "red-rocks-fallback-1773794043262",
+  "satelliteId": "partyatredrocks",
+  "firstEventAt": "2026-03-18T00:34:03.262Z",
+  "lastEventAt": "2026-03-18T00:34:03.262Z",
+  "latestEventType": "inventory_unavailable",
+  "latestStatus": "sold_out",
+  "latestStage": "capacity",
+  "latestMessage": null,
+  "eventCount": 1,
+  "externalReferences": [],
+  "degraded": true,
+  "traveler": {
+    "email": null,
+    "phone": null,
+    "name": null,
+    "partySize": null
+  },
+  "attribution": {
+    "sourceSlug": null,
+    "sourcePage": "/red-rocks-shuttle",
+    "topicSlug": null
+  },
+  "booking": {
+    "venueSlug": "red-rocks-amphitheatre",
+    "portSlug": null,
+    "citySlug": null,
+    "productSlug": null,
+    "eventDate": "2026-08-02",
+    "quantity": null,
+    "currency": null,
+    "amount": null
+  },
+  "partner": {
+    "fromSite": null,
+    "toSite": null,
+    "partnerHandoffId": null,
+    "reason": null
+  }
+}

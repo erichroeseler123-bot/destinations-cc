@@ -1,0 +1,38 @@
+{
+  "city": "san-francisco",
+  "version": 1,
+  "as_of": "2026-03-26T17:30:00-07:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-26T17:35:00-07:00",
+  "schema": {
+    "entity": "signal",
+    "description": "Ephemeral NOW-layer output.",
+    "provenance_types": [
+      "derived",
+      "source_backed",
+      "manual_editorial"
+    ]
+  },
+  "signals": [
+    {
+      "id": "sig-san-francisco-chase-center-tonight",
+      "signal_type": "event_awareness",
+      "provenance": "derived",
+      "title": "Bayfront event pulse near Chase Center",
+      "description": "A major event is expected to pull extra rideshare and waterfront dining traffic through the Embarcadero tonight.",
+      "impact_level": "medium",
+      "rank_weight": 0.7,
+      "status": "scheduled",
+      "starts_at": "2026-03-26T18:30:00-07:00",
+      "expires_at": "2026-03-26T22:30:00-07:00",
+      "linked_event_id": "evt-san-francisco-chase-center",
+      "linked_venue_slug": "chase-center",
+      "affected_district_slugs": [
+        "embarcadero"
+      ],
+      "near_anchor_slugs": [
+        "one-rincon-hill"
+      ]
+    }
+  ]
+}

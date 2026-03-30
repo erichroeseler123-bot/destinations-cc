@@ -51,32 +51,32 @@
     {
       "slug": "south-beach",
       "title": "South Beach",
-      "description": ""
+      "description": "The iconic Miami beach-and-nightlife anchor, best for first-time visitors who want skyline energy, sand, and easy people-watching."
     },
     {
       "slug": "wynwood",
       "title": "Wynwood",
-      "description": ""
+      "description": "A mural-heavy arts district that works well for food, bars, galleries, and a more urban contrast to beach time."
     },
     {
       "slug": "little-havana",
       "title": "Little Havana",
-      "description": ""
+      "description": "A strong culture and food lane for visitors who want Cuban influence, live music, and a neighborhood-first Miami experience."
     },
     {
       "slug": "vizcaya-museum-gardens",
       "title": "Vizcaya Museum & Gardens",
-      "description": ""
+      "description": "A historic estate and waterfront garden stop that fits slower sightseeing, architecture, and photo-driven daytime planning."
     },
     {
       "slug": "bayside-marketplace",
       "title": "Bayside Marketplace",
-      "description": ""
+      "description": "A useful harbor-front stop for boat departures, casual browsing, and easy pairing with downtown or Biscayne activities."
     },
     {
       "slug": "perez-art-museum-miami",
       "title": "Perez Art Museum Miami",
-      "description": ""
+      "description": "A modern art and waterfront culture stop that works best for museum time, design interest, and a calmer downtown block."
     }
   ],
   "featuredTours": {

@@ -5,16 +5,12 @@ import { notFound } from "next/navigation";
 import tours from "@/data/tours.json";
 import aliases from "@/data/city-aliases.json";
 import attractionsMap from "@/data/attractions.json";
+import JsonLd from "@/app/components/dcc/JsonLd";
+import { buildBreadcrumbJsonLd } from "@/lib/dcc/jsonld";
 import { getNodeSlugFromCity, resolveCanonicalCityKey } from "@/src/data/city-aliases";
 import { getCityManifest, getAttractionsManifest } from "@/lib/dcc/manifests/cityExpansion";
 
 export const dynamicParams = false;
-export const metadata: Metadata = {
-  robots: {
-    index: false,
-    follow: true,
-  },
-};
 
 type Tour = {
   id: string | number;
@@ -51,6 +47,40 @@ function slugifyCity(s: string) {
   return s.toLowerCase().trim().replace(/\s+/g, "-");
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ city: string }>;
+}): Promise<Metadata> {
+  const { city } = await params;
+  const cityKey = resolveCanonicalCityKey(city);
+  const displayCity = titleCase(cityKey);
+  const cityManifest = getCityManifest(cityKey);
+
+  const description =
+    cityManifest?.metadata?.description
+      ? `${cityManifest.metadata.description} Browse attraction guides, neighborhoods, landmarks, and visitor planning pages in ${displayCity}.`
+      : `Browse attraction guides, neighborhoods, and visitor planning pages for ${displayCity}, including landmarks, local highlights, and nearby tours.`;
+
+  return {
+    title: `${displayCity} Attractions and Things to Do`,
+    description,
+    keywords: [
+      `${displayCity} attractions`,
+      `things to do in ${displayCity}`,
+      `${displayCity} landmarks`,
+      `${displayCity} visitor guide`,
+    ],
+    alternates: { canonical: `/${cityKey}/attractions` },
+    openGraph: {
+      title: `${displayCity} Attractions and Things to Do`,
+      description,
+      url: `https://destinationcommandcenter.com/${cityKey}/attractions`,
+      type: "website",
+    },
+  };
+}
+
 export default async function CityAttractionsPage({
   params,
 }: {
@@ -69,6 +99,25 @@ export default async function CityAttractionsPage({
   if (cityManifest && attractionsManifest?.attractions?.length) {
     return (
       <main className="min-h-screen bg-[#050816] text-white">
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "CollectionPage",
+                "@id": `https://destinationcommandcenter.com/${cityKey}/attractions`,
+                url: `https://destinationcommandcenter.com/${cityKey}/attractions`,
+                name: `${displayCity} Attractions`,
+                description: `Attraction guides and things to do in ${displayCity}.`,
+              },
+              buildBreadcrumbJsonLd([
+                { name: "Home", item: "/" },
+                { name: displayCity, item: `/${cityKey}` },
+                { name: "Attractions", item: `/${cityKey}/attractions` },
+              ]),
+            ],
+          }}
+        />
         <div className="mx-auto max-w-6xl px-6 py-16 space-y-8">
           <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,176,124,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(61,243,255,0.10),transparent_26%),linear-gradient(180deg,rgba(15,23,42,0.96),rgba(7,11,25,0.98))] p-8 shadow-[0_28px_90px_rgba(0,0,0,0.45)] md:p-10">
             <p className="text-xs uppercase tracking-[0.24em] text-[#ffb07c]">{displayCity} attractions</p>
@@ -107,6 +156,25 @@ export default async function CityAttractionsPage({
 
   return (
     <main className="max-w-5xl mx-auto px-6 py-16 space-y-10">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "CollectionPage",
+              "@id": `https://destinationcommandcenter.com/${cityKey}/attractions`,
+              url: `https://destinationcommandcenter.com/${cityKey}/attractions`,
+              name: `${displayCity} Attractions`,
+              description: `Attraction guides and things to do in ${displayCity}.`,
+            },
+            buildBreadcrumbJsonLd([
+              { name: "Home", item: "/" },
+              { name: displayCity, item: `/${cityKey}` },
+              { name: "Attractions", item: `/${cityKey}/attractions` },
+            ]),
+          ],
+        }}
+      />
       <header className="space-y-3">
         <div className="flex items-center gap-3">
           <span className="text-cyan-400 text-xs font-bold uppercase tracking-widest border border-cyan-400/30 px-2 py-1 rounded">

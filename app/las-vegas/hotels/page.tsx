@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import VegasHotelGridSection from "@/app/components/dcc/VegasHotelGridSection";
 import { VEGAS_HOTELS_CONFIG, getVegasHotelsByTag } from "@/src/data/vegas-hotels-config";
 
@@ -23,6 +24,13 @@ export const metadata: Metadata = {
   title: "Las Vegas Hotels | Strip, Downtown, Luxury, Family, and Pet-Friendly",
   description:
     "Browse Las Vegas hotels by area and trip style: Strip vs downtown, luxury vs value, family-friendly, pet-friendly, and show-friendly stays.",
+  keywords: [
+    "las vegas hotels",
+    "best hotels in las vegas",
+    "las vegas strip hotels",
+    "family friendly las vegas hotels",
+    "pet friendly las vegas hotels",
+  ],
   alternates: { canonical: "/las-vegas/hotels" },
   openGraph: {
     title: "Las Vegas Hotels",
@@ -101,6 +109,29 @@ export default function LasVegasHotelsPage() {
           </article>
         </section>
 
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">How to narrow Las Vegas hotel intent</h2>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4 text-sm leading-7 text-zinc-300">
+              <p>
+                Hotel searches in Las Vegas are usually really about trip shape. Travelers who search for the best Las Vegas hotels often mean one of four things: easiest Strip access, quieter non-Strip fit, luxury or romantic atmosphere, or a family-friendly base that does not depend on nightlife.
+              </p>
+              <p>
+                That is why this page is strongest when it pushes users into a narrower cluster instead of trying to make every resort feel interchangeable. Better internal paths from here are luxury, downtown, pet-friendly, family, or casino-connected stays.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Related Vegas paths</div>
+              <div className="mt-4 grid gap-3">
+                <Link href="/luxury-hotels-las-vegas" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Luxury Las Vegas hotels</Link>
+                <Link href="/pet-friendly/las-vegas" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Pet-friendly Las Vegas</Link>
+                <Link href="/kid-friendly/las-vegas" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Kid-friendly Las Vegas</Link>
+                <Link href="/las-vegas/casinos" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Las Vegas casinos</Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <VegasHotelGridSection
           title="Core Las Vegas hotels"
           intro="These properties cover major Strip resorts, downtown alternatives, and some of the strongest luxury, family, and value options."
@@ -119,6 +150,28 @@ export default function LasVegasHotelsPage() {
             hotels={downtownHotels}
           />
         </div>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Best fit by stay style</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">First Vegas trip</h3>
+              <p className="mt-2 text-sm text-zinc-300">Center-Strip properties usually win because walking range matters more than small price differences.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Show-heavy itinerary</h3>
+              <p className="mt-2 text-sm text-zinc-300">Bias toward properties with easier Strip movement and less rideshare friction before and after big-ticket evening plans.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Family base</h3>
+              <p className="mt-2 text-sm text-zinc-300">Pool quality, daytime attractions, room layout, and easier food logistics matter more than nightlife adjacency.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Downtown value</h3>
+              <p className="mt-2 text-sm text-zinc-300">Downtown works best when Fremont is a feature, not just a side trip from a Strip-first stay.</p>
+            </article>
+          </div>
+        </section>
 
         <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-2xl font-bold">FAQ</h2>

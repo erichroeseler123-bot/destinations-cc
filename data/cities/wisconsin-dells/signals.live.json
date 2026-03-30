@@ -1,0 +1,38 @@
+{
+  "city": "wisconsin-dells",
+  "version": 1,
+  "as_of": "2026-03-26T17:30:00-05:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-26T17:35:00-05:00",
+  "schema": {
+    "entity": "signal",
+    "description": "Ephemeral NOW-layer output.",
+    "provenance_types": [
+      "derived",
+      "source_backed",
+      "manual_editorial"
+    ]
+  },
+  "signals": [
+    {
+      "id": "sig-wisconsin-dells-noahs-ark-waterpark-tonight",
+      "signal_type": "event_awareness",
+      "provenance": "derived",
+      "title": "Family-demand spike along the Parkway",
+      "description": "Heavy family traffic is expected to lift parking pressure and casual dining demand along the Parkway today.",
+      "impact_level": "medium",
+      "rank_weight": 0.7,
+      "status": "scheduled",
+      "starts_at": "2026-03-26T18:30:00-05:00",
+      "expires_at": "2026-03-26T22:30:00-05:00",
+      "linked_event_id": "evt-wisconsin-dells-noahs-ark-waterpark",
+      "linked_venue_slug": "noahs-ark-waterpark",
+      "affected_district_slugs": [
+        "wisconsin-dells-parkway"
+      ],
+      "near_anchor_slugs": [
+        "delton-grand-resort"
+      ]
+    }
+  ]
+}

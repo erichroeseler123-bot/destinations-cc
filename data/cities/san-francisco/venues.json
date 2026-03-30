@@ -1,0 +1,67 @@
+{
+  "city": "san-francisco",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-07:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable city activity nodes.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large complex or district-scale activity center."
+    }
+  },
+  "venues": [
+    {
+      "slug": "chase-center",
+      "name": "Chase Center",
+      "venue_type": "event-venue",
+      "category": "sports-concerts",
+      "address": "1 Warriors Way, San Francisco, CA 94158",
+      "lat": 37.768,
+      "lng": -122.3877,
+      "impact_potential": "high",
+      "district_slugs": [
+        "embarcadero"
+      ],
+      "near_anchor_slugs": [
+        "one-rincon-hill"
+      ]
+    },
+    {
+      "slug": "ferry-building",
+      "name": "Ferry Building Marketplace",
+      "venue_type": "district-hub",
+      "category": "waterfront-market",
+      "address": "1 Ferry Building, San Francisco, CA 94111",
+      "lat": 37.7955,
+      "lng": -122.3937,
+      "impact_potential": "medium",
+      "district_slugs": [
+        "embarcadero"
+      ],
+      "near_anchor_slugs": [
+        "one-rincon-hill"
+      ]
+    },
+    {
+      "slug": "the-masonic",
+      "name": "The Masonic",
+      "venue_type": "event-venue",
+      "category": "live-music",
+      "address": "1111 California St, San Francisco, CA 94108",
+      "lat": 37.7927,
+      "lng": -122.4135,
+      "impact_potential": "medium",
+      "district_slugs": [
+        "north-beach"
+      ],
+      "near_anchor_slugs": [
+        "one-rincon-hill"
+      ]
+    }
+  ]
+}

@@ -7,6 +7,13 @@ const page = NEW_ORLEANS_GUIDE_PAGES.music;
 export const metadata: Metadata = {
   title: "New Orleans Music Guide | Destination Command Center",
   description: page.description,
+  keywords: [
+    "new orleans music guide",
+    "live music in new orleans",
+    "new orleans jazz guide",
+    "frenchmen street guide",
+    "new orleans shows",
+  ],
   alternates: { canonical: "/new-orleans/music" },
 };
 
@@ -23,6 +30,8 @@ export default function NewOrleansMusicPage() {
       primaryLabel="See New Orleans Shows"
       secondaryHref="/new-orleans"
       secondaryLabel="Back to New Orleans"
+      tertiaryHref="/new-orleans/weekend-guide"
+      tertiaryLabel="Weekend Guide"
     />
   );
 }

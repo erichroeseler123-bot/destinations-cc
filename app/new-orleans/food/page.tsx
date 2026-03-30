@@ -7,6 +7,13 @@ const page = NEW_ORLEANS_GUIDE_PAGES.food;
 export const metadata: Metadata = {
   title: "New Orleans Food Guide | Destination Command Center",
   description: page.description,
+  keywords: [
+    "new orleans food guide",
+    "what to eat in new orleans",
+    "new orleans food tours",
+    "best food in new orleans",
+    "new orleans restaurants guide",
+  ],
   alternates: { canonical: "/new-orleans/food" },
 };
 
@@ -23,6 +30,8 @@ export default function NewOrleansFoodPage() {
       primaryLabel="Browse Food Tours"
       secondaryHref="/new-orleans"
       secondaryLabel="Back to New Orleans"
+      tertiaryHref="/new-orleans/things-to-do"
+      tertiaryLabel="Things to Do"
     />
   );
 }

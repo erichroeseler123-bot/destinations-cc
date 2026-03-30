@@ -1,4 +1,5 @@
 import { SITE_IDENTITY } from "@/src/data/site-identity";
+import { getSameAs } from "@/lib/socials";
 
 type BreadcrumbItem = {
   name: string;
@@ -14,6 +15,25 @@ type AddressInput = {
 type GeoInput = {
   lat?: number;
   lng?: number;
+};
+
+type LiveSlotSchemaInput = {
+  name: string;
+  description?: string;
+  startDate: string;
+  endDate?: string;
+  locationName: string;
+  locationUrl?: string;
+  address?: AddressInput;
+  price?: number | string | null;
+  priceCurrency?: string;
+  availability?:
+    | "https://schema.org/InStock"
+    | "https://schema.org/LimitedAvailability"
+    | "https://schema.org/SoldOut";
+  url: string;
+  sellerName?: string;
+  organizerName?: string;
 };
 
 function toAbsoluteUrl(pathOrUrl: string): string {
@@ -61,6 +81,7 @@ export function buildOrganizationJsonLd() {
     name: SITE_IDENTITY.name,
     url: SITE_IDENTITY.siteUrl,
     description: SITE_IDENTITY.canonicalDescription,
+    sameAs: getSameAs("dcc"),
   };
 }
 
@@ -72,8 +93,152 @@ export function buildWebsiteJsonLd() {
     name: SITE_IDENTITY.name,
     url: SITE_IDENTITY.siteUrl,
     description: SITE_IDENTITY.homepageDescription,
+    sameAs: getSameAs("dcc"),
     publisher: {
       "@id": `${SITE_IDENTITY.siteUrl}/#organization`,
+    },
+  };
+}
+
+
+export function buildWebPageJsonLd(input: {
+  path: string;
+  name: string;
+  description: string;
+  dateModified?: string;
+  isPartOfPath?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${toAbsoluteUrl(input.path)}#webpage`,
+    url: toAbsoluteUrl(input.path),
+    name: input.name,
+    description: input.description,
+    dateModified: input.dateModified,
+    isPartOf: {
+      "@id": input.isPartOfPath
+        ? `${toAbsoluteUrl(input.isPartOfPath)}#webpage`
+        : `${SITE_IDENTITY.siteUrl}/#website`,
+    },
+    about: {
+      "@id": `${SITE_IDENTITY.siteUrl}/#organization`,
+    },
+  };
+}
+
+export function buildItemListJsonLd(input: {
+  itemListOrder?: string;
+  items: Array<{
+    name: string;
+    url?: string;
+    item?: Record<string, unknown>;
+    description?: string;
+  }>;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListOrder: input.itemListOrder || "https://schema.org/ItemListOrderAscending",
+    numberOfItems: input.items.length,
+    itemListElement: input.items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      description: item.description,
+      url: item.url ? toAbsoluteUrl(item.url) : undefined,
+      item: item.item,
+    })),
+  };
+}
+
+export function buildCollectionPageJsonLd(input: {
+  path: string;
+  name: string;
+  description: string;
+  items: Array<{
+    name: string;
+    url?: string;
+    item?: Record<string, unknown>;
+    description?: string;
+  }>;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": `${toAbsoluteUrl(input.path)}#collection-page`,
+    name: input.name,
+    url: toAbsoluteUrl(input.path),
+    description: input.description,
+    publisher: {
+      "@id": `${SITE_IDENTITY.siteUrl}/#organization`,
+    },
+    mainEntity: buildItemListJsonLd({ items: input.items }),
+  };
+}
+
+export function buildLiveSlotEventJsonLd(input: LiveSlotSchemaInput) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: input.name,
+    description: input.description,
+    startDate: input.startDate,
+    endDate: input.endDate,
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    eventStatus: "https://schema.org/EventScheduled",
+    location: {
+      "@type": "Place",
+      name: input.locationName,
+      url: input.locationUrl ? toAbsoluteUrl(input.locationUrl) : undefined,
+      address: maybeAddress(input.address),
+    },
+    organizer: input.organizerName
+      ? {
+          "@type": "Organization",
+          name: input.organizerName,
+        }
+      : undefined,
+    offers: {
+      "@type": "Offer",
+      url: toAbsoluteUrl(input.url),
+      price: input.price ?? undefined,
+      priceCurrency: input.priceCurrency || (input.price != null ? "USD" : undefined),
+      availability: input.availability || "https://schema.org/InStock",
+      seller: input.sellerName
+        ? {
+            "@type": "Organization",
+            name: input.sellerName,
+          }
+        : undefined,
+    },
+  };
+}
+
+export function buildLiveSlotsCollectionJsonLd(input: {
+  pageUrl: string;
+  name: string;
+  description: string;
+  slots: LiveSlotSchemaInput[];
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: input.name,
+    url: toAbsoluteUrl(input.pageUrl),
+    description: input.description,
+    publisher: {
+      "@id": `${SITE_IDENTITY.siteUrl}/#organization`,
+    },
+    mainEntity: {
+      "@type": "ItemList",
+      itemListOrder: "https://schema.org/ItemListOrderAscending",
+      numberOfItems: input.slots.length,
+      itemListElement: input.slots.map((slot, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        item: buildLiveSlotEventJsonLd(slot),
+      })),
     },
   };
 }
@@ -291,6 +456,9 @@ export function buildPlaceJsonLd(input: {
   description: string;
   address?: AddressInput;
   geo?: GeoInput;
+  containedInPath?: string;
+  containedInName?: string;
+  touristTypes?: string[];
 }) {
   return {
     "@context": "https://schema.org",
@@ -301,6 +469,76 @@ export function buildPlaceJsonLd(input: {
     description: input.description,
     address: maybeAddress(input.address),
     geo: maybeGeo(input.geo),
+    containedInPlace:
+      input.containedInPath && input.containedInName
+        ? {
+            "@id": `${toAbsoluteUrl(input.containedInPath)}#destination`,
+            name: input.containedInName,
+          }
+        : undefined,
+    touristType: (input.touristTypes || []).map((audienceType) => ({
+      "@type": "Audience",
+      audienceType,
+    })),
+  };
+}
+
+export function buildAirportJsonLd(input: {
+  path: string;
+  name: string;
+  description: string;
+  address?: AddressInput;
+  geo?: GeoInput;
+  servedCityPath?: string;
+  servedCityName?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Airport",
+    "@id": `${toAbsoluteUrl(input.path)}#airport`,
+    name: input.name,
+    url: toAbsoluteUrl(input.path),
+    description: input.description,
+    address: maybeAddress(input.address),
+    geo: maybeGeo(input.geo),
+    containedInPlace:
+      input.servedCityPath && input.servedCityName
+        ? {
+            "@type": "City",
+            "@id": toAbsoluteUrl(input.servedCityPath),
+            name: input.servedCityName,
+          }
+        : undefined,
+  };
+}
+
+export function buildTransitStationJsonLd(input: {
+  path: string;
+  subtype: "train-station" | "bus-station";
+  name: string;
+  description: string;
+  address?: AddressInput;
+  geo?: GeoInput;
+  servedCityPath?: string;
+  servedCityName?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": input.subtype === "train-station" ? "TrainStation" : "BusStation",
+    "@id": `${toAbsoluteUrl(input.path)}#station`,
+    name: input.name,
+    url: toAbsoluteUrl(input.path),
+    description: input.description,
+    address: maybeAddress(input.address),
+    geo: maybeGeo(input.geo),
+    containedInPlace:
+      input.servedCityPath && input.servedCityName
+        ? {
+            "@type": "City",
+            "@id": toAbsoluteUrl(input.servedCityPath),
+            name: input.servedCityName,
+          }
+        : undefined,
   };
 }
 

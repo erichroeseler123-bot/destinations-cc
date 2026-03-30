@@ -7,6 +7,13 @@ const page = NEW_ORLEANS_GUIDE_PAGES.neighborhoods;
 export const metadata: Metadata = {
   title: "New Orleans Neighborhood Guide | Destination Command Center",
   description: page.description,
+  keywords: [
+    "new orleans neighborhoods",
+    "where to stay in new orleans",
+    "french quarter guide",
+    "garden district guide",
+    "best areas in new orleans",
+  ],
   alternates: { canonical: "/new-orleans/neighborhoods" },
 };
 
@@ -23,6 +30,8 @@ export default function NewOrleansNeighborhoodsPage() {
       primaryLabel="Explore Things to Do"
       secondaryHref="/new-orleans"
       secondaryLabel="Back to New Orleans"
+      tertiaryHref="/new-orleans/tours"
+      tertiaryLabel="Browse Tours"
     />
   );
 }

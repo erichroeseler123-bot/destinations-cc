@@ -16,6 +16,13 @@ export const metadata: Metadata = {
   title: "Cruise Tendering Guide | Timing, Queues, Motion, and Return Buffer",
   description:
     "Practical cruise tendering guidance covering priority groups, ticket systems, motion, accessibility, and how much buffer to keep before the last tender back.",
+  keywords: [
+    "cruise tendering",
+    "tender port guide",
+    "cruise tender process",
+    "tender port return time",
+    "cruise shore tender tips",
+  ],
   alternates: { canonical: "/cruises/tendering" },
   openGraph: {
     title: "Cruise Tendering Guide",
@@ -82,6 +89,29 @@ export default function CruiseTenderingPage() {
         </section>
 
         <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6">
+          <h2 className="text-2xl font-bold">How to use this tendering guide</h2>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4 text-sm leading-7 text-zinc-300">
+              <p>
+                Travelers usually search for tender-port advice when they are trying to understand how much real shore time they will lose, whether independent plans are still safe, or how motion and boarding friction change the day for older travelers, kids, or anyone with accessibility concerns.
+              </p>
+              <p>
+                This page is meant to answer that process question first, then push visitors into a real port page or excursion page once they understand how tendering changes the plan.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Best next clicks</div>
+              <div className="mt-4 grid gap-3">
+                <Link href="/cruises/shore-excursions" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Shore excursions guide</Link>
+                <Link href="/ports" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Ports directory</Link>
+                <Link href="/ports/grand-cayman" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Grand Cayman port</Link>
+                <Link href="/ports/cabo-san-lucas" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Cabo San Lucas port</Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6">
           <h2 className="text-2xl font-bold">Seven practical tendering rules</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             {CRUISE_TENDERING_TIPS.map((tip) => (
@@ -112,6 +142,28 @@ export default function CruiseTenderingPage() {
               <li className="rounded-xl border border-white/10 bg-black/20 px-4 py-4">When mobility, seasickness, or transfer friction make a simpler handoff worth the extra cost.</li>
             </ul>
           </article>
+        </section>
+
+        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6">
+          <h2 className="text-2xl font-bold">Best-fit tendering scenarios</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Independent explorer</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use this guide to understand whether the return-risk margin still makes independent plans worth it.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Mobility-sensitive traveler</h3>
+              <p className="mt-2 text-sm text-zinc-300">Tendering matters more when steps, motion, and boarding friction change what feels realistic.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Family group</h3>
+              <p className="mt-2 text-sm text-zinc-300">Queue time and return compression hit harder when the group cannot pivot quickly or wait comfortably.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Excursion-first day</h3>
+              <p className="mt-2 text-sm text-zinc-300">Tendering can make ship-booked or port-near excursions more valuable than they first appear.</p>
+            </article>
+          </div>
         </section>
 
         <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6">

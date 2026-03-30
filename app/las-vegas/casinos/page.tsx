@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import VegasEntityGridSection from "@/app/components/dcc/VegasEntityGridSection";
 import { getVegasCasinosByTag, VEGAS_CASINOS_CONFIG } from "@/src/data/vegas-casinos-config";
 
@@ -8,6 +9,13 @@ export const metadata: Metadata = {
   title: "Las Vegas Casinos | Strip, Fremont, Sportsbook, and Resort Casino Planning",
   description:
     "Browse Las Vegas casinos through a DCC mesh: Strip anchors, Fremont classics, sportsbook-heavy properties, and casino nodes tied to hotels, shows, and district routing.",
+  keywords: [
+    "las vegas casinos",
+    "best casinos in las vegas",
+    "las vegas strip casinos",
+    "fremont street casinos",
+    "las vegas sportsbook casinos",
+  ],
   alternates: { canonical: "/las-vegas/casinos" },
   openGraph: {
     title: "Las Vegas Casinos",
@@ -78,6 +86,29 @@ export default function LasVegasCasinosPage() {
           </article>
         </section>
 
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Casino intent is not the same as hotel intent</h2>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4 text-sm leading-7 text-zinc-300">
+              <p>
+                Many Las Vegas searches that look like hotel research are really casino-choice questions underneath: table-game vibe, sportsbook strength, Fremont versus Strip energy, smoking rules, and how well the property supports the rest of the night.
+              </p>
+              <p>
+                This page is designed to capture that narrower casino intent and then route travelers into the right supporting page, whether that is a hotel node, a district hub, a nightlife overlay, or a nearby show cluster.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Best supporting guides</div>
+              <div className="mt-4 grid gap-3">
+                <Link href="/las-vegas/hotels" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Las Vegas hotels</Link>
+                <Link href="/fremont-street" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Fremont Street</Link>
+                <Link href="/smoking/las-vegas" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Smoking in Las Vegas</Link>
+                <Link href="/date-night/las-vegas" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Date-night Las Vegas</Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <VegasEntityGridSection
           title="Core Las Vegas casino mesh"
           intro="These seeded casino nodes are the first graph layer for resort gaming discovery across the Strip, Fremont, and Summerlin."
@@ -134,6 +165,28 @@ export default function LasVegasCasinosPage() {
             ]}
           />
         </div>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Best fit by casino style</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">First-time Vegas</h3>
+              <p className="mt-2 text-sm text-zinc-300">Start with flagship Strip properties if you want the cleanest all-in-one casino, hotel, and entertainment package.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Classic Vegas energy</h3>
+              <p className="mt-2 text-sm text-zinc-300">Downtown and Fremont properties usually win when atmosphere and lower-cost gaming matter more than polished resort scale.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Sportsbook buyer</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use casino pages to compare where sportsbook culture and game-day flow matter more than room quality alone.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Nightlife first</h3>
+              <p className="mt-2 text-sm text-zinc-300">Bias toward properties that keep the casino, the bars, and the walkable late-night plan in the same orbit.</p>
+            </article>
+          </div>
+        </section>
       </div>
     </main>
   );

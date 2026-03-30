@@ -31,6 +31,8 @@ import {
   getCategoriesManifest,
   listManifestCitySlugs,
 } from "@/lib/dcc/manifests/cityExpansion";
+import { getAirportSlugs } from "@/lib/dcc/airports";
+import { getStationSlugs } from "@/lib/dcc/stations";
 import { listOperatorSlugs } from "@/lib/dcc/operators";
 
 type Region = { slug: string };
@@ -170,6 +172,7 @@ function rankPath(
 
   const highPriorityRoots = new Set([
     "/cruises",
+    "/cruises/fit",
     "/cruises/tendering",
     "/cruises/shore-excursions",
     "/national-parks",
@@ -179,6 +182,8 @@ function rankPath(
     "/tours",
     "/ports",
     "/cities",
+    "/airports",
+    "/stations",
   ]);
   if (highPriorityRoots.has(pathname)) return { priority: 0.95, changeFrequency: "weekly" };
 
@@ -221,6 +226,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const { portLastModified, cruisePortLastModified } = buildPortLastModifiedMaps();
   const cruiseLastModified = readCruiseLastModified();
   const regionUrls = REGIONS.map((r) => `/regions/${r.slug}`);
+  const airportUrls = getAirportSlugs().map((slug) => `/airports/${slug}`);
+  const stationUrls = getStationSlugs().map((slug) => `/stations/${slug}`);
   const cruiseDepartureUrls = listCruiseEmbarkCanonicalPortSlugs().map((slug) => `/cruises/from/${slug}`);
   const cruiseShipUrls = listCruiseShipSlugs().map((slug) => `/cruises/ship/${slug}`);
   const cruiseSpecialtyUrls = CRUISE_SPECIALTY_LANES.map((lane) => `/cruises/themed/${lane.key}`);
@@ -284,6 +291,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/",
     "/about",
     "/ai",
+    "/crawl-paths",
     "/llms.txt",
     "/mighty-argo-shuttle",
     "/mighty-argo",
@@ -296,7 +304,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/red-rocks-events",
     "/red-rocks-shuttle",
     "/red-rocks-complete-guide",
-    "/denver-concert-shuttle",
     "/denver/concert-transportation",
     "/vegas",
     "/las-vegas/casinos",
@@ -330,12 +337,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/new-orleans/ghost-tours",
     "/new-orleans/food-tours",
     "/new-orleans/jazz-tours",
+    "/juneau/helicopter-tours",
     "/miami",
     "/miami/beaches",
     "/orlando",
     "/nashville",
     "/alaska",
     "/cruises",
+    "/cruises/fit",
     "/cruises/tendering",
     "/cruises/shore-excursions",
     "/summerlin",
@@ -346,6 +355,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/national-parks",
     "/snowmobiling",
     "/cities",
+    "/airports",
+    "/stations",
     "/usa",
   ];
 
@@ -353,6 +364,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...staticPaths,
     ...buildPublishableCityUrls(),
     ...buildPublishablePortUrls(),
+    ...airportUrls,
+    ...stationUrls,
     ...buildPublishableCruisePortUrls(),
     ...cruiseDepartureUrls,
     ...nationalParkUrls,

@@ -15,6 +15,13 @@ export const metadata: Metadata = {
   title: "Cruise Ports and Embarkation Guides | Destination Command Center",
   description:
     "Find cruise ports, embarkation guidance, nearby planning, and transportation context from Destination Command Center.",
+  keywords: [
+    "cruise ports",
+    "embarkation guides",
+    "cruise port guide",
+    "ports directory",
+    "shore excursion planning",
+  ],
   alternates: { canonical: "/ports" },
 };
 
@@ -105,6 +112,30 @@ export default function PortsIndex() {
           />
         </section>
 
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">How to use the ports directory</h2>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4 text-sm leading-7 text-zinc-300">
+              <p>
+                Port searches usually mean one of two things: either the traveler is trying to solve embarkation logistics before the cruise starts, or they are trying to understand what the port day actually supports once the ship arrives. That makes a port directory different from a ship or destination page.
+              </p>
+              <p>
+                This hub is meant to route visitors into the right port page first, then into nearby planning, shore excursions, transfer logic, or the cruise explorer if the ship question becomes more important than the port itself.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Best next clicks</div>
+              <div className="mt-4 grid gap-3">
+                <Link href="/cruises" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Cruise explorer</Link>
+                <Link href="/airports" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Airport guides</Link>
+                <Link href="/cruises/shore-excursions" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Shore excursions</Link>
+                <Link href="/cruises/tendering" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Tendering guide</Link>
+                <Link href="/alerts" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Alerts and trends</Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <PortsSearchClient ports={ports} />
 
         <section className="grid gap-4 md:grid-cols-3">
@@ -112,6 +143,12 @@ export default function PortsIndex() {
             <div className="font-semibold text-cyan-100">Cruises explorer</div>
             <p className="mt-2 text-sm text-zinc-300">
               Move into ships, cruise routes, and embarkation-focused planning once you know the port question.
+            </p>
+          </Link>
+          <Link href="/airports" className="rounded-2xl border border-sky-400/20 bg-sky-500/10 p-5 hover:bg-sky-500/20">
+            <div className="font-semibold text-sky-100">Airport guides</div>
+            <p className="mt-2 text-sm text-zinc-300">
+              Compare airport-to-port and airport-to-city arrival logic when the transfer chain is the real planning problem.
             </p>
           </Link>
           <Link href="/cruises/shore-excursions" className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-5 hover:bg-emerald-500/20">
@@ -126,6 +163,28 @@ export default function PortsIndex() {
               Check signal pressure and route friction before you commit to a tight embarkation or shore-day plan.
             </p>
           </Link>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Best-fit port planning lanes</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Embarkation hotel stay</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use port pages when you need a smoother pre-cruise night, transfer timing, and airport-to-port logic.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Short shore day</h3>
+              <p className="mt-2 text-sm text-zinc-300">Port guides help when the real question is what fits the time window without risking the all-aboard buffer.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Excursion-first</h3>
+              <p className="mt-2 text-sm text-zinc-300">Move into shore-excursion pages when the stop itself is the core buying decision.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Tendering risk</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use the tendering guide when queues, uplifts, or transfer friction can change what is realistic in port.</p>
+            </article>
+          </div>
         </section>
       </div>
     </main>

@@ -1,0 +1,59 @@
+{
+  "city": "branson",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-05:00",
+  "schema": {
+    "entity": "district",
+    "description": "Durable district layer used to group venues, places, and signals."
+  },
+  "districts": [
+    {
+      "slug": "highway-76-strip",
+      "name": "Highway 76 Strip",
+      "district_type": "show-corridor",
+      "center": {
+        "lat": 36.6431,
+        "lng": -93.2541
+      },
+      "radius_m": 2200,
+      "vibe_tags": [
+        "shows",
+        "family",
+        "theaters"
+      ],
+      "venue_slugs": [
+        "dolly-partons-stampede",
+        "titanic-museum-attraction"
+      ],
+      "place_slugs": [
+        "gettin-basted",
+        "crazy-craigs-cheeky-monkey-bar"
+      ],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "branson-landing",
+      "name": "Branson Landing",
+      "district_type": "waterfront-corridor",
+      "center": {
+        "lat": 36.6404,
+        "lng": -93.2168
+      },
+      "radius_m": 1000,
+      "vibe_tags": [
+        "shopping",
+        "riverfront",
+        "dining"
+      ],
+      "venue_slugs": [
+        "branson-convention-center"
+      ],
+      "place_slugs": [
+        "guy-fieris-branson-kitchen-bar"
+      ],
+      "impact_profile": "medium"
+    }
+  ]
+}

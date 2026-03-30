@@ -1,6 +1,12 @@
 import fs from "fs";
 import path from "path";
-import { VIATOR_CACHE_FILES, getViatorReviewsDir, readViatorTaxonomyMeta } from "@/lib/viator/cache";
+import {
+  VIATOR_CACHE_FILES,
+  getViatorBookingQuestionsDir,
+  getViatorLocationsDir,
+  getViatorReviewsDir,
+  readViatorTaxonomyMeta,
+} from "@/lib/viator/cache";
 import { getViatorDestinationCatalogSource } from "@/lib/viator/destinations";
 import { getViatorTagCatalogSource } from "@/lib/viator/tags";
 
@@ -50,6 +56,40 @@ export function getReviewCacheStatus() {
     ...dirStatus,
     fileCount,
   };
+}
+
+export function getBookingQuestionCacheStatus() {
+  const dir = getViatorBookingQuestionsDir();
+  const dirStatus = statPath(dir);
+  let fileCount = 0;
+  if (dirStatus.exists) {
+    try {
+      fileCount = fs.readdirSync(dir).filter((entry) => entry.endsWith(".json")).length;
+    } catch {}
+  }
+  return {
+    ...dirStatus,
+    fileCount,
+  };
+}
+
+export function getLocationCacheStatus() {
+  const dir = getViatorLocationsDir();
+  const dirStatus = statPath(dir);
+  let fileCount = 0;
+  if (dirStatus.exists) {
+    try {
+      fileCount = fs.readdirSync(dir).filter((entry) => entry.endsWith(".json")).length;
+    } catch {}
+  }
+  return {
+    ...dirStatus,
+    fileCount,
+  };
+}
+
+export function getExchangeRatesCacheStatus() {
+  return statPath(VIATOR_CACHE_FILES.exchangeRates);
 }
 
 export function getProductCacheStatus(productCode?: string | null) {

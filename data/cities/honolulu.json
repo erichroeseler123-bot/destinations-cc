@@ -13,9 +13,13 @@
   },
   "hero": {
     "eyebrow": "Honolulu travel guide",
-    "title": "Honolulu tours, things to do, and local travel planning",
-    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Honolulu trip.",
-    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Honolulu.",
+    "title": "Honolulu planning for Waikiki mornings, Pearl Harbor blocks, and ocean-time decisions",
+    "summary": "Honolulu works best when you split the trip into one Waikiki beach-and-food block, one major memorial or history block, and one ocean or island-views block instead of treating Oahu like a single interchangeable beach day.",
+    "trustLine": "Best used when you want Waikiki, Diamond Head, Pearl Harbor, and water time to fit together without wasting the best weather windows.",
+    "image": {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Hawaii_Honolulu_Waikiki_beach.JPG/1280px-Hawaii_Honolulu_Waikiki_beach.JPG",
+      "alt": "Waikiki Beach and Diamond Head in Honolulu"
+    },
     "primaryCtaLabel": "Browse Tours",
     "primaryCtaHref": "/honolulu/tours",
     "secondaryCtaLabel": "Explore Things to Do",
@@ -25,22 +29,22 @@
     {
       "slug": "walking-tours",
       "title": "Walking Tours",
-      "description": "Guided city walks that help visitors get oriented quickly."
+      "description": "Best used for Waikiki orientation, downtown Honolulu context, or a lighter cultural block between beach and ocean time."
     },
     {
       "slug": "food-tours",
       "title": "Food Tours",
-      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+      "description": "Useful when the trip needs one strong local-food lane instead of another generic resort meal."
     },
     {
       "slug": "sightseeing-tours",
       "title": "Sightseeing Tours",
-      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+      "description": "Good first-day lane for visitors trying to connect Waikiki, memorial stops, and island viewpoints without self-driving the full route."
     },
     {
       "slug": "day-trips",
       "title": "Day Trips",
-      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+      "description": "Best when Honolulu is the base and the real value is in adding a North Shore, east-side, or full-island contrast day."
     },
     {
       "slug": "snorkeling-tours",
@@ -62,17 +66,17 @@
     {
       "slug": "waikiki",
       "title": "Waikiki",
-      "description": ""
+      "description": "The cleanest first Honolulu block when you want beach time, easy meals, and walkable first-day momentum."
     },
     {
       "slug": "diamond-head",
       "title": "Diamond Head",
-      "description": ""
+      "description": "Best treated as an early-hour commitment with weather and reservation timing in mind."
     },
     {
       "slug": "pearl-harbor",
       "title": "Pearl Harbor",
-      "description": ""
+      "description": "A major planning anchor that works better as a dedicated history block than a casual add-on."
     },
     {
       "slug": "hanauma-bay",
@@ -92,11 +96,12 @@
   ],
   "featuredTours": {
     "title": "Popular Honolulu experiences",
-    "description": "Guided experiences and bookable activities that help visitors plan around Honolulu's most useful highlights.",
+    "description": "The strongest Honolulu experiences are the ones that respect weather windows, beach time, memorial timing, and how long island loops really take.",
     "fallbackQueries": [
-      "honolulu walking tour",
-      "honolulu food tour",
-      "honolulu sightseeing tour"
+      "honolulu circle island tour",
+      "honolulu pearl harbor tour",
+      "honolulu snorkeling tour",
+      "honolulu diamond head tour"
     ]
   },
   "planningLinks": [
@@ -124,11 +129,15 @@
   "faq": [
     {
       "q": "What are the best tours in Honolulu for first-time visitors?",
-      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+      "a": "The cleanest first Honolulu trip usually includes one Waikiki or beach block, one Pearl Harbor or history block, and one ocean or scenic island loop instead of trying to overpack every side of Oahu."
     },
     {
       "q": "How many days should you spend in Honolulu?",
-      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+      "a": "Three to five days is the useful range because Honolulu works better when you leave room for beach time, memorial timing, and at least one wider island or water-focused outing."
+    },
+    {
+      "q": "Should you stay only in Waikiki for a Honolulu trip?",
+      "a": "Waikiki is the easiest first base, but most trips improve when you treat it as the anchor rather than the whole plan and add one stronger history block plus one wider island decision."
     }
   ],
   "coordinates": {

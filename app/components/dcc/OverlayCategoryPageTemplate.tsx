@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import PageActionBar from "@/app/components/dcc/PageActionBar";
 import OverlayEntityGridSection from "@/app/components/dcc/OverlayEntityGridSection";
 import type { DccCityRegistryNode } from "@/src/data/cities-registry";
@@ -103,12 +104,64 @@ export default function OverlayCategoryPageTemplate({ city, overlay, category, e
           </article>
         </section>
 
+        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+          <h2 className="text-2xl font-bold">How to use this category page</h2>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4 text-sm leading-7 text-zinc-300">
+              <p>
+                This page is the narrower version of the main overlay, which makes it a better match for searches like {overlayLabel.toLowerCase()} {categoryLabel.toLowerCase()} in {city.name}. That specificity usually leads to better crawl understanding and a cleaner user path than a broader city or overlay page.
+              </p>
+              <p>
+                Use it to compare only the category that matters, then click into one named entity or back out to the main overlay if the decision needs a wider view.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Best next clicks</div>
+              <div className="mt-4 grid gap-3">
+                <Link href={overlay.canonicalPath} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">
+                  {overlayLabel} {city.name}
+                </Link>
+                <Link href={city.canonicalPath} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">
+                  {city.name} hub
+                </Link>
+                {(overlay.relatedLinks || []).filter((link) => linkKind(link) === "internal").slice(0, 2).map((link) => (
+                  <Link key={link.href} href={link.href} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         <OverlayEntityGridSection
           eyebrow={`${city.name} ${overlay.overlayType}`}
           title={title}
           intro={`Compare the strongest ${categoryLabel.toLowerCase()} for this overlay without dropping back into a generic city directory.`}
           entities={entities}
         />
+
+        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+          <h2 className="text-2xl font-bold">Best-fit search lanes</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Category-first traveler</h3>
+              <p className="mt-2 text-sm text-zinc-300">Use this page when the traveler already knows the category that matters most.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Modifier search</h3>
+              <p className="mt-2 text-sm text-zinc-300">Good fit for searches combining a traveler constraint with a city and category.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Shortlist building</h3>
+              <p className="mt-2 text-sm text-zinc-300">Compare a few candidates here before clicking into one exact place page.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Return to broader overlay</h3>
+              <p className="mt-2 text-sm text-zinc-300">Go back to the main overlay when the traveler needs more than one category in the plan.</p>
+            </article>
+          </div>
+        </section>
       </div>
     </main>
   );

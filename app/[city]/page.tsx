@@ -11,8 +11,13 @@ import DecisionEngineTemplate from "@/app/components/dcc/DecisionEngineTemplate"
 import ManifestCityHubPage from "@/app/components/dcc/ManifestCityHubPage";
 import CityHero from "@/app/components/dcc/CityHero";
 import CityTimePanel from "@/app/components/dcc/CityTimePanel";
+import LocationMapCard from "@/app/components/dcc/LocationMapCard";
 import WeatherPanel from "@/app/components/dcc/WeatherPanel";
 import SubtleAffiliateModules from "@/app/components/dcc/SubtleAffiliateModules";
+import AirportLinksSection from "@/app/components/dcc/AirportLinksSection";
+import StationLinksSection from "@/app/components/dcc/StationLinksSection";
+import { getAirportsByCitySlug } from "@/lib/dcc/airports";
+import { getStationsByCitySlug } from "@/lib/dcc/stations";
 import { getCityBySlug } from "@/lib/data/locations";
 import { getCityAdventureLane } from "@/src/data/city-adventure-lanes";
 import { getCityMoneyLane } from "@/src/data/city-money-lanes";
@@ -26,6 +31,7 @@ import {
   buildBreadcrumbJsonLd,
   buildCityJsonLd,
 } from "@/lib/dcc/jsonld";
+import { buildCityClusterNarrative } from "@/lib/dcc/seoCopy";
 import { resolveCanonicalCityKey } from "@/src/data/city-aliases";
 import { getTransportGuideHrefForCitySlug } from "@/src/data/transport-directory";
 
@@ -73,8 +79,10 @@ function SectionCard({
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { city } = await params;
+  if (!city || city.length < 2) notFound();
   const cityKey = resolveCanonicalCityKey(city);
   const manifest = getCityManifest(cityKey);
+  const cityNode = getCityBySlug(cityKey);
   if (manifest) {
     return {
       title: manifest.metadata?.title || `${manifest.name} Travel Guide | Destination Command Center`,
@@ -89,10 +97,18 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
         url: `https://destinationcommandcenter.com/${cityKey}`,
         type: "website",
       },
+      twitter: {
+        card: "summary_large_image",
+        title: manifest.metadata?.title || `${manifest.name} Travel Guide`,
+        description:
+          manifest.metadata?.description || `Discover tours, attractions, and trip-planning ideas in ${manifest.name}.`,
+      },
     };
   }
   const config = getCityAuthorityConfig(cityKey);
   const cityName = prettyCity(cityKey);
+
+  if (!config && !cityNode) notFound();
 
   if (!config) {
     return {
@@ -114,6 +130,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
       type: "website",
       images: [config.openGraphImage],
     },
+    twitter: {
+      card: "summary_large_image",
+      title: config.heroTitle,
+      description: config.seoDescription,
+      images: [config.openGraphImage],
+    },
   };
 }
 
@@ -124,6 +146,8 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
 
   const cityKey = resolveCanonicalCityKey(city);
   const cityName = prettyCity(cityKey);
+  const nearbyAirports = getAirportsByCitySlug(cityKey);
+  const nearbyStations = getStationsByCitySlug(cityKey);
   const transportGuideHref = getTransportGuideHrefForCitySlug(cityKey);
   const cityAffiliateHrefs =
     cityKey === "las-vegas"
@@ -136,6 +160,7 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
         };
   const manifest = getCityManifest(cityKey);
   const cityNode = getCityBySlug(cityKey);
+  if (!manifest && !cityNode && !getCityAuthorityConfig(cityKey)) notFound();
   const fallbackTimezone = cityNode?.tz;
   const fallbackLat = cityNode?.geo?.lat;
   const fallbackLng = cityNode?.geo?.lon;
@@ -290,6 +315,32 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
             </section>
           ) : null}
 
+          {typeof fallbackLat === "number" && typeof fallbackLng === "number" ? (
+            <LocationMapCard
+              label={config.cityName}
+              lat={fallbackLat}
+              lng={fallbackLng}
+              description={`Use this as a fast location anchor for ${config.cityName}. DCC stays lightweight here, then hands the traveler into a full map app only when directions or neighborhood orientation are needed.`}
+              nearbyLinks={[
+                { href: `/${cityKey}/attractions`, label: "Attractions" },
+                { href: `/${cityKey}/things-to-do`, label: "Things to do" },
+                { href: `/${cityKey}/tours`, label: "Tours" },
+              ]}
+            />
+          ) : null}
+
+          <AirportLinksSection
+            title={`Airports that shape ${config.cityName} arrivals`}
+            intro={`Use airport pages when the first real trip problem is arrival timing, transfer friction, or deciding how to enter ${config.cityName} without breaking the day.`}
+            airports={nearbyAirports}
+          />
+
+          <StationLinksSection
+            title={`Train and bus stations that shape ${config.cityName} arrivals`}
+            intro={`Use station pages when the traveler is rail-first or bus-first and the real decision is how to route into ${config.cityName}, a port, or a venue corridor without wasting the first move.`}
+            stations={nearbyStations}
+          />
+
           {decisionPage ? <DecisionEngineTemplate page={decisionPage} /> : null}
 
           <CityToursSection
@@ -312,6 +363,9 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
             <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] sm:text-3xl">
               Build the day around the real trip shape
             </h2>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
+              {buildCityClusterNarrative(config.cityName)}
+            </p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {config.pillars.map((item) => (
                 <div key={item} className="rounded-[24px] border border-white/10 bg-[#0b1224] p-5 text-white/82">
@@ -405,6 +459,26 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
           </section>
         ) : null}
 
+        {typeof fallbackLat === "number" && typeof fallbackLng === "number" ? (
+          <LocationMapCard
+            label={cityName}
+            lat={fallbackLat}
+            lng={fallbackLng}
+            description={`Use this as a fast location anchor for ${cityName}. DCC keeps the map layer light and lets the traveler open a full navigation app only when location intent becomes real.`}
+            nearbyLinks={[
+              { href: `/${cityKey}/attractions`, label: "Attractions" },
+              { href: `/${cityKey}/day-trips`, label: "Day trips" },
+              { href: `/${cityKey}/tours`, label: "Tours" },
+            ]}
+          />
+        ) : null}
+
+        <AirportLinksSection
+          title={`Airports that shape ${cityName} arrivals`}
+          intro={`Use airport pages when the first real trip problem is arrival timing, transfer friction, or deciding how to enter ${cityName} without breaking the day.`}
+          airports={nearbyAirports}
+        />
+
         {decisionPage ? <DecisionEngineTemplate page={decisionPage} /> : null}
 
         <CityToursSection
@@ -444,6 +518,9 @@ export default async function CityHubPage({ params }: { params: Promise<Params> 
         <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] sm:text-3xl">
           Move into the right part of the trip
         </h2>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
+          {buildCityClusterNarrative(cityName)}
+        </p>
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           <SectionCard href={`/${cityKey}/tours`} title="Tours" desc="High-demand tours by category with clear intent and booking paths." />
           <SectionCard href={`/${cityKey}/attractions`} title="Attractions" desc="Landmarks, must-dos, and quick-hit experiences — curated for time." />

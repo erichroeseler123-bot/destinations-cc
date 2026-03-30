@@ -65,8 +65,6 @@ import {
 } from "@/lib/dcc/liveCity/schema";
 import { scoreSignalForAnchor } from "@/lib/dcc/liveCity/relevance";
 
-export const LIVE_CITY_REGISTRY = LiveCityRegistrySchema.parse(cityRegistryJson);
-
 const LIVE_CITY_DATA = {
   austin: {
     anchors: LiveCityAnchorsFileSchema.parse(austinAnchorsJson),
@@ -133,6 +131,11 @@ const LIVE_CITY_DATA = {
     signals: LiveCitySignalsFileSchema.parse(newYorkCitySignalsJson),
   },
 } as const;
+
+export const LIVE_CITY_REGISTRY = LiveCityRegistrySchema.parse({
+  ...cityRegistryJson,
+  cities: cityRegistryJson.cities.filter((entry) => entry.slug in LIVE_CITY_DATA),
+});
 
 export { LIVE_CITY_DATA };
 export type LiveCityKey = keyof typeof LIVE_CITY_DATA;

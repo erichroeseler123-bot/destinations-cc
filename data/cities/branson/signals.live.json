@@ -1,0 +1,38 @@
+{
+  "city": "branson",
+  "version": 1,
+  "as_of": "2026-03-26T17:30:00-05:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-26T17:35:00-05:00",
+  "schema": {
+    "entity": "signal",
+    "description": "Ephemeral NOW-layer output.",
+    "provenance_types": [
+      "derived",
+      "source_backed",
+      "manual_editorial"
+    ]
+  },
+  "signals": [
+    {
+      "id": "sig-branson-dolly-partons-stampede-tonight",
+      "signal_type": "event_awareness",
+      "provenance": "derived",
+      "title": "Evening show traffic on Highway 76",
+      "description": "A heavy evening show block is expected to concentrate dinner demand and post-show traffic along the Strip tonight.",
+      "impact_level": "medium",
+      "rank_weight": 0.7,
+      "status": "scheduled",
+      "starts_at": "2026-03-26T18:30:00-05:00",
+      "expires_at": "2026-03-26T22:30:00-05:00",
+      "linked_event_id": "evt-branson-dolly-partons-stampede",
+      "linked_venue_slug": "dolly-partons-stampede",
+      "affected_district_slugs": [
+        "highway-76-strip"
+      ],
+      "near_anchor_slugs": [
+        "the-branson-hotel"
+      ]
+    }
+  ]
+}

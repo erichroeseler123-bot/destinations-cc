@@ -4,6 +4,12 @@ export default function robots() {
       {
         userAgent: "*",
         allow: "/",
+        disallow: [
+          "/admin/",
+          "/api/",
+          "/_next/",
+          "/_vercel/",
+        ],
       },
     ],
     sitemap: "https://destinationcommandcenter.com/sitemap.xml",

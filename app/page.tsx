@@ -15,6 +15,38 @@ import {
   buildOrganizationJsonLd,
   buildWebsiteJsonLd,
 } from "@/lib/dcc/jsonld";
+import { getNetworkLanes } from "@/lib/dcc/networkFeeds";
+import { buildParrSharedRedRocksUrl } from "@/lib/dcc/contracts/dccParrBridge";
+
+const CURATED_HIGHLIGHTS = [
+  {
+    href: buildParrSharedRedRocksUrl(),
+    eyebrow: "Colorado shuttles",
+    title: "Red Rocks ride booking is live",
+    body: "Shared seats and private rides are the active execution lane for Red Rocks show nights.",
+  },
+  {
+    href: "https://saveonthestrip.com",
+    eyebrow: "Vegas planning",
+    title: "Save On The Strip is live",
+    body: "Use the Vegas site for show picks, tours, deals, and practical hotel-change context.",
+  },
+  {
+    href: "https://juneauflightdeck.com",
+    eyebrow: "Juneau tours",
+    title: "Juneau helicopter booking lane",
+    body: "Date-first Juneau helicopter inventory is being routed into the dedicated flight-booking surface.",
+  },
+];
+
+const EXPANSION_SPOTLIGHT_SLUGS = [
+  "washington-dc",
+  "boston",
+  "seattle",
+  "honolulu",
+  "phoenix",
+  "salt-lake-city",
+] as const;
 
 export const dynamic = "force-static";
 
@@ -30,18 +62,26 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
   const cities = getAllCities();
+  const cityBySlug = new Map(cities.map((city) => [city.slug, city]));
 
   const vegas = pickCitySlugByName("Las Vegas") || "cities?q=las%20vegas";
   const miami = pickCitySlugByName("Miami") || "cities?q=miami";
 
   const topUS = topCities({ country: "US", limit: 18 });
   const topGlobal = topCities({ limit: 18 });
+  const expansionSpotlight = EXPANSION_SPOTLIGHT_SLUGS.map((slug) => cityBySlug.get(slug)).filter(
+    (city): city is NonNullable<typeof city> => Boolean(city)
+  );
   const planetarySummary = getPlanetarySummary();
   const planetaryRecent = getPlanetaryEvents(10);
   const graphPulse = listPlaceGraphSummaries(8);
   const graphHealth = getGraphHealth();
+  const network = await getNetworkLanes();
+  const parrLive = network.parr?.status === "ok";
+  const sotsLive = network.sots?.status === "ok";
+  const pulseHealthy = parrLive || sotsLive;
 
   return (
     <main className="min-h-screen text-white">
@@ -140,6 +180,36 @@ export default function HomePage() {
           cities={topUS}
         />
 
+        {expansionSpotlight.length ? (
+          <section className="space-y-6">
+            <header className="space-y-2">
+              <div className="text-[11px] font-black uppercase tracking-[0.28em] text-[#f5c66c]">City Network</div>
+              <h2 className="text-2xl md:text-3xl font-black uppercase text-white">Newly expanded city hubs</h2>
+              <p className="max-w-3xl text-[#f8f4ed]/66">
+                Freshly promoted DCC city nodes that are now live in the main rollout instead of sitting only in dormant manifest coverage.
+              </p>
+            </header>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {expansionSpotlight.map((city) => (
+                <Link
+                  key={city.id}
+                  href={`/${city.slug}`}
+                  className="rounded-[1.65rem] border border-[#f5c66c]/18 bg-[linear-gradient(180deg,rgba(24,21,18,0.86),rgba(15,13,12,0.92))] p-5 transition hover:-translate-y-0.5 hover:border-[#f5c66c]/30 hover:bg-white/[0.04]"
+                >
+                  <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#f5c66c]">Expansion lane</div>
+                  <div className="mt-3 text-lg font-black uppercase text-white">{city.name}</div>
+                  <div className="mt-2 text-sm text-[#f8f4ed]/66">
+                    {city.admin?.country || "—"}
+                    {city.admin?.region_code ? ` • ${city.admin.region_code}` : ""}
+                  </div>
+                  <div className="mt-2 text-xs uppercase tracking-[0.16em] text-[#f8f4ed]/42">/{city.slug}</div>
+                  <div className="mt-4 text-xs font-black uppercase tracking-[0.16em] text-[#efe5d3]">Open city hub</div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <CityGrid
           title="Top Global Cities"
           subtitle="High-volume global hubs framed more like featured venue guides than utilitarian directory links."
@@ -178,6 +248,69 @@ export default function HomePage() {
           </Link>
         </section>
 
+        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-6 space-y-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
+          <header className="space-y-1">
+            <div className="text-[11px] font-black uppercase tracking-[0.26em] text-[#f5c66c]">Live network products</div>
+            <h2 className="text-2xl font-black uppercase">Book directly on the active sites</h2>
+            <p className="text-sm text-[#f8f4ed]/66">
+              Destination Command Center is the planning and authority layer. These are the live execution lanes across the network.
+            </p>
+          </header>
+          <div className="flex items-center gap-3 rounded-full border border-white/10 bg-black/20 px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-[#f8f4ed]/72">
+            <span
+              className={`inline-flex h-2.5 w-2.5 rounded-full ${
+                pulseHealthy ? "animate-pulse bg-[#4ade80]" : "bg-[#d29a3a]"
+              }`}
+            />
+            <span>Network pulse</span>
+            <span className="text-[#f8f4ed]/46">Updated {network.refreshedAt.slice(11, 16)} UTC</span>
+          </div>
+          <div className="flex flex-wrap gap-3 text-[11px] font-black uppercase tracking-[0.18em] text-[#f8f4ed]/52">
+            <span>PARR {parrLive ? "connected" : "fallback"}</span>
+            <span>SOTS {sotsLive ? "connected" : "fallback"}</span>
+            <span>WTA static</span>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {network.lanes.map((lane) => (
+              <a
+                key={lane.href}
+                href={lane.href}
+                className="rounded-[1.4rem] border border-white/10 bg-black/20 p-5 transition hover:border-[#f5c66c]/30 hover:bg-black/30"
+              >
+                <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#f5c66c]">{lane.eyebrow}</div>
+                <div className="mt-3 text-xl font-black uppercase">{lane.title}</div>
+                <p className="mt-2 text-sm text-[#f8f4ed]/70">{lane.body}</p>
+                <div className="mt-4 text-xs font-black uppercase tracking-[0.18em] text-[#efe5d3]">{lane.cta}</div>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        {graphHealth.stale ? (
+          <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-6 space-y-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
+            <header className="space-y-1">
+              <div className="text-[11px] font-black uppercase tracking-[0.26em] text-[#f5c66c]">Current highlights</div>
+              <h2 className="text-2xl font-black uppercase">Live modules are being refreshed</h2>
+              <p className="text-sm text-[#f8f4ed]/66">
+                DCC hides stale live rails when freshness drops and surfaces the strongest active network paths instead.
+              </p>
+            </header>
+            <div className="grid gap-4 md:grid-cols-3">
+              {CURATED_HIGHLIGHTS.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-[1.4rem] border border-white/10 bg-black/20 p-5 transition hover:border-[#f5c66c]/30 hover:bg-black/30"
+                >
+                  <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#f5c66c]">{item.eyebrow}</div>
+                  <div className="mt-3 text-xl font-black uppercase">{item.title}</div>
+                  <p className="mt-2 text-sm text-[#f8f4ed]/70">{item.body}</p>
+                  <div className="mt-4 text-xs font-black uppercase tracking-[0.18em] text-[#efe5d3]">Open active lane</div>
+                </a>
+              ))}
+            </div>
+          </section>
+        ) : (
         <section id="trend-watch" className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-6 space-y-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
           <header className="space-y-1">
             <div className="text-[11px] font-black uppercase tracking-[0.26em] text-[#f5c66c]">Trend Watch</div>
@@ -217,7 +350,9 @@ export default function HomePage() {
             <p className="text-sm text-[#f8f4ed]/46">No graph pulse entries available yet.</p>
           )}
         </section>
+        )}
 
+        {!graphHealth.stale ? (
         <section id="planetary-timeline" className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-6 space-y-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
           <header className="space-y-1">
             <div className="text-[11px] font-black uppercase tracking-[0.26em] text-[#f5c66c]">Timeline</div>
@@ -275,6 +410,7 @@ export default function HomePage() {
             )}
           </div>
         </section>
+        ) : null}
       </div>
     </main>
   );

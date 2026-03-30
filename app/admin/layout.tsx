@@ -57,7 +57,18 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <div>
       <div className="border-b border-white/10 bg-zinc-950/90 px-6 py-3 text-sm text-zinc-300">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <span>Admin area</span>
+          <div className="flex items-center gap-4">
+            <span>Admin area</span>
+            <Link href="/admin/argo-waitlist" className="text-zinc-200 hover:text-white">
+              Argo Waitlist
+            </Link>
+            <Link href="/admin/live-pulse" className="text-zinc-200 hover:text-white">
+              Live Pulse
+            </Link>
+            <Link href="/admin/satellite-handoffs" className="text-zinc-200 hover:text-white">
+              Satellite Handoffs
+            </Link>
+          </div>
           <Link href="/admin/logout" className="text-zinc-200 hover:text-white">
             Log out
           </Link>

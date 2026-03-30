@@ -39,18 +39,20 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { city, attraction } = await params;
+  const cityName = city.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
   const category = getManifestCategory(city, attraction);
   if (category) {
     return {
-      title: `${category.title} | Destination Command Center`,
+      title: `${category.title} in ${cityName}`,
       description: category.description,
+      keywords: [
+        category.title,
+        `${category.title} in ${cityName}`,
+        `best ${category.title.toLowerCase()} in ${cityName}`,
+      ],
       alternates: { canonical: `/${city}/${attraction}` },
-      robots: {
-        index: false,
-        follow: true,
-      },
       openGraph: {
-        title: category.title,
+        title: `${category.title} in ${cityName}`,
         description: category.description,
         url: `https://destinationcommandcenter.com/${city}/${attraction}`,
         type: "website",
@@ -61,15 +63,17 @@ export async function generateMetadata({
   if (!entry) return { title: "Attraction Guide" };
 
   return {
-    title: `${entry.name} Guide, Tours, and Things to Do | ${city.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase())}`,
+    title: `${entry.name} Guide, Tours, and Things to Do | ${cityName}`,
     description: entry.heroSummary,
+    keywords: [
+      entry.name,
+      `${entry.name} tours`,
+      `${entry.name} things to do`,
+      `${entry.name} ${cityName}`,
+    ],
     alternates: { canonical: `/${city}/${entry.slug}` },
-    robots: {
-      index: false,
-      follow: true,
-    },
     openGraph: {
-      title: `${entry.name} Guide | ${city.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase())}`,
+      title: `${entry.name} Guide | ${cityName}`,
       description: entry.heroSummary,
       url: `https://destinationcommandcenter.com/${city}/${entry.slug}`,
       type: "website",
@@ -138,8 +142,18 @@ export default async function AttractionGuidePage({
           intro={category.intro || category.description}
           bullets={category.bullets || []}
           intents={category.intents || []}
+          inventoryTitle={category.inventoryTitle}
+          filterTokens={category.filterTokens || []}
           products={viatorAction.products}
           weather={weather}
+          heroImage={
+            cityManifest?.heroImage
+              ? {
+                  src: cityManifest.heroImage,
+                  alt: cityManifest.heroImageAlt || `${cityManifest.name} city guide hero image`,
+                }
+              : null
+          }
         />
       </>
     );

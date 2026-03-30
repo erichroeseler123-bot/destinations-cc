@@ -1,4 +1,5 @@
 import { buildCitySatelliteRedirects, buildSatelliteRedirects } from "./src/data/edge-routing-rules.mjs";
+import { buildRuntimeRedirects } from "./src/data/runtime-redirects.mjs";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -8,6 +9,14 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.viator.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'upload.wikimedia.org',
+      },
+      {
+        protocol: 'https',
+        hostname: 'commons.wikimedia.org',
+      },
     ],
     deviceSizes: [640, 750, 828, 1080, 1200],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -15,22 +24,14 @@ const nextConfig = {
   async redirects() {
     const satelliteRedirects = buildSatelliteRedirects();
     const citySatelliteRedirects = buildCitySatelliteRedirects();
+    const runtimeRedirects = buildRuntimeRedirects();
     return [
       ...satelliteRedirects,
       ...citySatelliteRedirects,
+      ...runtimeRedirects,
       {
         source: "/concert-shuttles",
         destination: "/transportation",
-        permanent: false,
-      },
-      {
-        source: "/red-rocks/transportation",
-        destination: "/red-rocks-transportation",
-        permanent: false,
-      },
-      {
-        source: "/red-rocks/parking",
-        destination: "/red-rocks-parking",
         permanent: false,
       },
       {

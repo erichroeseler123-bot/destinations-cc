@@ -47,32 +47,32 @@
     {
       "slug": "millennium-park",
       "title": "Millennium Park",
-      "description": ""
+      "description": "A central first-stop landmark for skyline views, public art, and easy walking links into downtown Chicago."
     },
     {
       "slug": "navy-pier",
       "title": "Navy Pier",
-      "description": ""
+      "description": "A lakefront entertainment and sightseeing anchor that fits families, boat departures, and casual daytime planning."
     },
     {
       "slug": "art-institute-of-chicago",
       "title": "Art Institute of Chicago",
-      "description": ""
+      "description": "A major museum priority for culture-led trips and one of the strongest indoor anchors in a Chicago itinerary."
     },
     {
       "slug": "chicago-riverwalk",
       "title": "Chicago Riverwalk",
-      "description": ""
+      "description": "A practical waterfront lane for architecture views, easier walks, and combining downtown sightseeing with food or boat time."
     },
     {
       "slug": "willis-tower",
       "title": "Willis Tower",
-      "description": ""
+      "description": "A skyline-view landmark that works best as one concentrated downtown stop instead of the whole day."
     },
     {
       "slug": "lincoln-park",
       "title": "Lincoln Park",
-      "description": ""
+      "description": "A greener neighborhood and park district that offers a slower contrast to Chicago's denser downtown sightseeing blocks."
     }
   ],
   "featuredTours": {

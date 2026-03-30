@@ -1,0 +1,104 @@
+{
+  "slug": "wisconsin-dells",
+  "name": "Wisconsin Dells",
+  "timezone": "America/Chicago",
+  "coordinates": {
+    "lat": 43.6275,
+    "lng": -89.7709
+  },
+  "metadata": {
+    "title": "Wisconsin Dells Tours, Things to Do, and Attractions | Destination Command Center",
+    "description": "Discover Wisconsin Dells tours, things to do, attractions, neighborhoods, and practical trip-planning paths with a stronger city-first DCC guide.",
+    "keywords": [
+      "wisconsin dells tours",
+      "things to do in wisconsin dells",
+      "wisconsin dells attractions",
+      "waterparks",
+      "boat rides"
+    ]
+  },
+  "hero": {
+    "eyebrow": "Wisconsin Dells travel guide",
+    "title": "Wisconsin Dells tours, things to do, and local travel planning",
+    "summary": "Browse guided experiences, major attractions, and route-first planning ideas for a stronger Wisconsin Dells trip.",
+    "trustLine": "Find tours, attractions, and trip ideas in Wisconsin Dells with DCC's city-first planning model.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/wisconsin-dells/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/wisconsin-dells/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly."
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+    },
+    {
+      "slug": "waterparks",
+      "title": "Waterparks",
+      "description": "Core family-demand inventory around indoor and outdoor waterpark planning."
+    },
+    {
+      "slug": "boat-rides",
+      "title": "Boat Rides",
+      "description": "Classic Dells experiences built around the river, bluffs, and scenic boat tours."
+    }
+  ],
+  "topAttractions": [],
+  "featuredTours": {
+    "title": "Popular Wisconsin Dells experiences",
+    "description": "Guided experiences and bookable activities that help visitors plan around Wisconsin Dells's strongest demand lanes.",
+    "fallbackQueries": [
+      "wisconsin dells walking tour",
+      "wisconsin dells food tour",
+      "wisconsin dells sightseeing tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Things to do in Wisconsin Dells",
+      "description": "A broader planning surface for attractions, neighborhoods, and trip ideas.",
+      "href": "/wisconsin-dells/things-to-do"
+    },
+    {
+      "title": "Wisconsin Dells tours",
+      "description": "A cleaner starting point for guided experiences, day trips, and visitor favorites.",
+      "href": "/wisconsin-dells/tours"
+    },
+    {
+      "title": "Wisconsin Dells attractions",
+      "description": "Core sights and activity clusters that shape a real visitor route.",
+      "href": "/wisconsin-dells/attractions"
+    },
+    {
+      "title": "Wisconsin Dells day trips",
+      "description": "Half-day and full-day options that fit naturally with a city stay.",
+      "href": "/wisconsin-dells/day-trips"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in Wisconsin Dells for first-time visitors?",
+      "a": "Most first-time visitors do best with one broad sightseeing experience, one neighborhood or food block, and one standout attraction or day trip."
+    },
+    {
+      "q": "How many days should you spend in Wisconsin Dells?",
+      "a": "A practical first visit is usually 2 to 4 days depending on how many major attractions, shows, or day trips you want to fit into one trip."
+    }
+  ]
+}

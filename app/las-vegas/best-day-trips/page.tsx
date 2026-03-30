@@ -32,6 +32,13 @@ export const metadata: Metadata = {
   title: "Best Day Trips from Las Vegas | Grand Canyon, Hoover Dam, and Desert Tours",
   description:
     "Compare the best day trips from Las Vegas, including Grand Canyon, Hoover Dam, Antelope Canyon, and desert routes that fit real Vegas schedules.",
+  keywords: [
+    "best day trips from las vegas",
+    "las vegas day trips",
+    "grand canyon day trip from las vegas",
+    "hoover dam day trip from las vegas",
+    "best tours from las vegas",
+  ],
   alternates: { canonical: "/las-vegas/best-day-trips" },
   openGraph: {
     title: "Best Day Trips from Las Vegas",
@@ -107,6 +114,29 @@ export default function LasVegasBestDayTripsPage() {
           </article>
         </section>
 
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">How to choose the right Las Vegas day trip</h2>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4 text-sm leading-7 text-zinc-300">
+              <p>
+                The best day trip from Las Vegas usually depends less on the headline attraction and more on how much of your schedule you are willing to trade away. Grand Canyon and Antelope Canyon are higher-commitment bets, while Hoover Dam and Red Rock fit better when you still want dinner, nightlife, or a show back in the city.
+              </p>
+              <p>
+                This page works as a commercial comparison layer for travelers who already know they want one major off-Strip day but have not decided whether the right answer is a bus, self-drive, scenic outdoor route, or helicopter upgrade.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Best supporting pages</div>
+              <div className="mt-4 grid gap-3">
+                <Link href="/grand-canyon" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Grand Canyon guide</Link>
+                <Link href="/hoover-dam" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Hoover Dam guide</Link>
+                <Link href="/red-rock-canyon" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Red Rock Canyon guide</Link>
+                <Link href="/las-vegas/helicopter-tours" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Helicopter tours from Las Vegas</Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <ViatorTourGrid
           placeName="Las Vegas"
           title="Bookable Las Vegas day-trip lanes"
@@ -131,6 +161,28 @@ export default function LasVegasBestDayTripsPage() {
               <h3 className="font-semibold">Day-trips lane</h3>
               <p className="mt-2 text-sm text-zinc-300">Use the broader lane page for more exploratory intent and less commercial filtering.</p>
             </Link>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-2xl font-bold">Best-fit routes by traveler type</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">First-timer</h3>
+              <p className="mt-2 text-sm text-zinc-300">Grand Canyon and Hoover Dam are usually the easiest day-trip concepts to justify on a first Vegas visit.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Short stay</h3>
+              <p className="mt-2 text-sm text-zinc-300">Pick the routes that protect the evening. Hoover Dam, Red Rock, and helicopter options usually beat longer bus days.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Bucket-list buyer</h3>
+              <p className="mt-2 text-sm text-zinc-300">Grand Canyon and Antelope Canyon win when the off-Strip day is the main memory you want from the trip.</p>
+            </article>
+            <article className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <h3 className="font-semibold">Scenic outdoor fit</h3>
+              <p className="mt-2 text-sm text-zinc-300">Red Rock and Valley of Fire work better when the goal is desert scenery without losing a full day to heavy transit.</p>
+            </article>
           </div>
         </section>
 

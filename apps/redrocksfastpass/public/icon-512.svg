@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#000000"/>
+  <rect x="48" y="48" width="416" height="416" rx="74" fill="#19110d" stroke="#ffb164" stroke-width="12"/>
+  <text x="256" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="108" font-weight="700" fill="#f8f1e6">RR</text>
+  <text x="256" y="306" text-anchor="middle" font-family="Arial, sans-serif" font-size="46" font-weight="700" letter-spacing="6" fill="#ffb164">FAST PASS</text>
+  <text x="256" y="378" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="#f8f1e6">$25 ROUND-TRIP</text>
+</svg>

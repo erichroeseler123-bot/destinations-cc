@@ -5,6 +5,19 @@ export const metadata: Metadata = {
   title: "Red Rocks Parking Guide | Destination Command Center",
   description: "Parking reality for Red Rocks concerts including arrival windows, uphill walking, and why some visitors choose shuttle service instead.",
   alternates: { canonical: "/red-rocks-parking" },
+  keywords: [
+    "red rocks parking",
+    "red rocks parking tips",
+    "red rocks parking lots",
+    "can you park at red rocks",
+    "red rocks shuttle vs parking",
+  ],
+  openGraph: {
+    title: "Red Rocks Parking Guide | Destination Command Center",
+    description: "Red Rocks parking guide covering arrival windows, walking load, exit friction, and when shuttle service is the cleaner play.",
+    url: "/red-rocks-parking",
+    type: "article",
+  },
 };
 
 export default function RedRocksParkingPage() {
@@ -14,6 +27,10 @@ export default function RedRocksParkingPage() {
       title="Parking is part of the Red Rocks experience, not a footnote."
       intro="Parking at Red Rocks changes the full shape of the night. It affects how early you leave, how much uphill walking you absorb, and how painful the exit feels when the show ends."
       sourcePath="/red-rocks-parking"
+      primaryCtaHref="/red-rocks-transportation"
+      primaryCtaLabel="See The Transport Decision"
+      secondaryCtaHref="/red-rocks-shuttle"
+      secondaryCtaLabel="Check Shuttle Fit"
       sections={[
         {
           title: "Parking reality on busy nights",

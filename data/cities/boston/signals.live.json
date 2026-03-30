@@ -1,0 +1,38 @@
+{
+  "city": "boston",
+  "version": 1,
+  "as_of": "2026-03-26T17:30:00-04:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-26T17:35:00-04:00",
+  "schema": {
+    "entity": "signal",
+    "description": "Ephemeral NOW-layer output.",
+    "provenance_types": [
+      "derived",
+      "source_backed",
+      "manual_editorial"
+    ]
+  },
+  "signals": [
+    {
+      "id": "sig-boston-td-garden-tonight",
+      "signal_type": "event_awareness",
+      "provenance": "derived",
+      "title": "Garden-night traffic in downtown Boston",
+      "description": "A major TD Garden event is expected to increase walk traffic, train load, and pre-event dining demand downtown tonight.",
+      "impact_level": "medium",
+      "rank_weight": 0.7,
+      "status": "scheduled",
+      "starts_at": "2026-03-26T18:30:00-04:00",
+      "expires_at": "2026-03-26T22:30:00-04:00",
+      "linked_event_id": "evt-boston-td-garden",
+      "linked_venue_slug": "td-garden",
+      "affected_district_slugs": [
+        "downtown-crossing"
+      ],
+      "near_anchor_slugs": [
+        "the-bosworth"
+      ]
+    }
+  ]
+}

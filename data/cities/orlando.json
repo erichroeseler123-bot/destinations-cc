@@ -47,32 +47,32 @@
     {
       "slug": "walt-disney-world",
       "title": "Walt Disney World",
-      "description": ""
+      "description": "The main Orlando trip anchor for park-first families, multi-day stays, and visitors building the schedule around major theme-park time."
     },
     {
       "slug": "universal-orlando",
       "title": "Universal Orlando Resort",
-      "description": ""
+      "description": "A stronger fit for thrill-heavy park days, movie-franchise fans, and visitors who want a more compact resort-and-rides focus."
     },
     {
       "slug": "icon-park",
       "title": "ICON Park",
-      "description": ""
+      "description": "A flexible non-park stop for dining, rides, and easier same-day planning when you do not want a full theme-park commitment."
     },
     {
       "slug": "disney-springs",
       "title": "Disney Springs",
-      "description": ""
+      "description": "A shopping, dining, and entertainment lane that works well for lighter evenings or a lower-pressure day between park blocks."
     },
     {
       "slug": "sea-world-orlando",
       "title": "SeaWorld Orlando",
-      "description": ""
+      "description": "A marine-life and thrill-ride option that can fit visitors who want a park day with a different pace from Disney or Universal."
     },
     {
       "slug": "kennedy-space-center",
       "title": "Kennedy Space Center",
-      "description": ""
+      "description": "A major day-trip and science-heavy outing that works best as one committed off-core day rather than a quick add-on."
     }
   ],
   "featuredTours": {

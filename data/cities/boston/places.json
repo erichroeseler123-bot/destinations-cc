@@ -1,0 +1,77 @@
+{
+  "city": "boston",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-04:00",
+  "schema": {
+    "entity": "place",
+    "description": "Durable social and discovery inventory."
+  },
+  "places": [
+    {
+      "slug": "jm-curley",
+      "name": "jm Curley",
+      "place_type": "restaurant",
+      "category": "gastropub",
+      "address": "21 Temple Pl, Boston, MA 02111",
+      "lat": 42.3547,
+      "lng": -71.0616,
+      "district_slugs": [
+        "downtown-crossing"
+      ],
+      "tags": [
+        "casual",
+        "pre-show",
+        "groups"
+      ],
+      "quick_actions": [
+        "menu",
+        "directions"
+      ]
+    },
+    {
+      "slug": "sam-la-grassa-s",
+      "name": "Sam LaGrassa's",
+      "place_type": "restaurant",
+      "category": "sandwiches",
+      "address": "44 Province St, Boston, MA 02108",
+      "lat": 42.3562,
+      "lng": -71.0607,
+      "district_slugs": [
+        "downtown-crossing"
+      ],
+      "tags": [
+        "lunch",
+        "walkable",
+        "classic"
+      ],
+      "quick_actions": [
+        "menu",
+        "directions"
+      ]
+    },
+    {
+      "slug": "legal-harborside",
+      "name": "Legal Harborside",
+      "place_type": "restaurant",
+      "category": "seafood",
+      "address": "270 Northern Ave, Boston, MA 02210",
+      "lat": 42.3504,
+      "lng": -71.0408,
+      "district_slugs": [
+        "seaport-boston"
+      ],
+      "tags": [
+        "seafood",
+        "waterfront",
+        "dinner"
+      ],
+      "quick_actions": [
+        "menu",
+        "reserve",
+        "directions"
+      ]
+    }
+  ]
+}

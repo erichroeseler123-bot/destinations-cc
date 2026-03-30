@@ -188,6 +188,78 @@
           "description": "A straightforward starting query for nightlife tours in Las Vegas."
         }
       ]
+    },
+    {
+      "slug": "concerts",
+      "title": "Las Vegas Concerts and Residencies",
+      "description": "Find concerts, residency nights, and live-music experiences that help visitors choose a real Vegas show night instead of scrolling broad entertainment noise.",
+      "intro": "Concert and residency planning in Las Vegas works best when the page answers the big question first: Sphere or another premium headline room, a residency or artist-led night, or an easier concert/comedy option that still feels worth dressing up for. This category should lead with the show-night lanes people actually compare before they dig into the full ticket inventory.",
+      "inventoryTitle": "Top Las Vegas Concerts & Residencies Right Now",
+      "filterTokens": ["sphere", "cirque", "concert", "residency", "headliner", "comedy", "magic"],
+      "bullets": [
+        "Best fit for travelers choosing one headline Vegas night rather than browsing generic entertainment lists",
+        "Useful for comparing Sphere, residencies, Strip production rooms, and simpler concert or comedy options",
+        "Easy to pair with dinner, club plans, or one premium night in a shorter trip",
+        "Strong option when the decision is about venue feel, production level, and artist priority, not just ticket availability"
+      ],
+      "intents": [
+        {
+          "label": "Sphere concert series",
+          "query": "las vegas sphere concerts",
+          "description": "The premium lane for immersive-format headline nights and the clearest marquee Vegas concert answer."
+        },
+        {
+          "label": "Residency shows",
+          "query": "las vegas residency shows",
+          "description": "Best for visitors planning around one artist, one room, or one classic Vegas-style production night."
+        },
+        {
+          "label": "Headliner concerts",
+          "query": "las vegas headliner concerts",
+          "description": "Useful when the trip revolves around a current major act rather than a broad entertainment crawl."
+        },
+        {
+          "label": "Magic and comedy concerts",
+          "query": "las vegas comedy and magic shows",
+          "description": "A cleaner fallback for easier budgets, shorter planning windows, or same-night ticket decisions."
+        }
+      ]
+    },
+    {
+      "slug": "residencies",
+      "title": "Las Vegas Residencies",
+      "description": "Find residency nights, headline Strip concerts, and easier Vegas magic or comedy options that still feel worth dressing up for.",
+      "intro": "Residency planning in Las Vegas works best when the page answers the comparison visitors are actually making: one premium headliner, one Cirque-style production room, or a lower-friction magic or comedy ticket that still feels like a real Vegas night. This page should lead with those lanes instead of letting broad entertainment noise bury the decision.",
+      "inventoryTitle": "Top Las Vegas Residencies Right Now",
+      "filterTokens": ["residency", "headliner", "cirque", "magic", "comedy", "adele", "jlo"],
+      "bullets": [
+        "Best fit for travelers choosing one dress-up night instead of browsing a generic show list",
+        "Useful for comparing headline residencies, Cirque-style production nights, and easier same-night ticket options",
+        "Easy to pair with dinner, cocktails, or a bigger Strip night without overbuilding the itinerary",
+        "Strong option when the decision is more about production level and name value than venue-only browsing"
+      ],
+      "intents": [
+        {
+          "label": "JLo, Adele, and A-list residency nights",
+          "query": "las vegas residency shows adele carrie underwood jlo",
+          "description": "Best for visitors planning around one premium headliner and one signature Vegas room."
+        },
+        {
+          "label": "Cirque residencies and production nights",
+          "query": "las vegas cirque residency tickets",
+          "description": "A cleaner lane for travelers who want scale, choreography, and a classic Vegas production feel."
+        },
+        {
+          "label": "Headliner concerts and premium rooms",
+          "query": "las vegas headliner concert tickets strip",
+          "description": "Useful when the trip revolves around a current major name rather than a general entertainment crawl."
+        },
+        {
+          "label": "Magic and comedy fallback nights",
+          "query": "las vegas david copperfield penn teller comedy magic shows",
+          "description": "A clean fallback for easier budgets, shorter planning windows, or same-night ticket decisions."
+        }
+      ]
     }
   ]
 }

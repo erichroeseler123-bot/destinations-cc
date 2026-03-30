@@ -1,0 +1,78 @@
+{
+  "city": "san-diego",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-07:00",
+  "schema": {
+    "entity": "place",
+    "description": "Durable social and discovery inventory."
+  },
+  "places": [
+    {
+      "slug": "lionfish-modern-coastal-cuisine",
+      "name": "Lionfish Modern Coastal Cuisine",
+      "place_type": "restaurant",
+      "category": "seafood-steak",
+      "address": "435 Fifth Ave, San Diego, CA 92101",
+      "lat": 32.7092,
+      "lng": -117.1607,
+      "district_slugs": [
+        "gaslamp-quarter"
+      ],
+      "tags": [
+        "pre-show",
+        "seafood",
+        "date-night"
+      ],
+      "quick_actions": [
+        "menu",
+        "reserve",
+        "directions"
+      ]
+    },
+    {
+      "slug": "the-nolen",
+      "name": "The Nolen",
+      "place_type": "bar",
+      "category": "rooftop-bar",
+      "address": "453 Sixth Ave, San Diego, CA 92101",
+      "lat": 32.7093,
+      "lng": -117.1591,
+      "district_slugs": [
+        "gaslamp-quarter"
+      ],
+      "tags": [
+        "rooftop",
+        "cocktails",
+        "nightlife"
+      ],
+      "quick_actions": [
+        "menu",
+        "directions"
+      ]
+    },
+    {
+      "slug": "brigantine-seaport",
+      "name": "Brigantine Seaport",
+      "place_type": "restaurant",
+      "category": "seafood",
+      "address": "1360 N Harbor Dr, San Diego, CA 92101",
+      "lat": 32.7182,
+      "lng": -117.1707,
+      "district_slugs": [
+        "embarcadero-bayfront"
+      ],
+      "tags": [
+        "waterfront",
+        "lunch",
+        "casual"
+      ],
+      "quick_actions": [
+        "menu",
+        "reserve",
+        "directions"
+      ]
+    }
+  ]
+}

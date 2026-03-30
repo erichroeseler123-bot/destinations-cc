@@ -1,94 +1,456 @@
 {
   "version": 1,
-  "updated_at": "2026-03-13T12:00:00-06:00",
+  "updated_at": "2026-03-26T12:00:00-06:00",
   "cities": [
     {
-      "slug": "denver",
-      "name": "Denver",
-      "state": "CO",
-      "timezone": "America/Denver",
-      "centroid": { "lat": 39.7392, "lng": -104.9903 },
-      "default_walk_radius_m": 1500,
-      "launch_status": "beta",
+      "slug": "austin",
+      "name": "Austin",
+      "state": "TX",
+      "timezone": "America/Chicago",
+      "centroid": {
+        "lat": 30.2672,
+        "lng": -97.7431
+      },
+      "default_walk_radius_m": 1400,
+      "launch_status": "seed",
       "density_profile": "mixed",
-      "modes": ["event-heavy", "convention-heavy", "nightlife-heavy"]
+      "modes": [
+        "nightlife-heavy",
+        "event-heavy",
+        "tourism-heavy"
+      ]
+    },
+    {
+      "slug": "boston",
+      "name": "Boston",
+      "state": "MA",
+      "timezone": "America/New_York",
+      "centroid": {
+        "lat": 42.3601,
+        "lng": -71.0589
+      },
+      "default_walk_radius_m": 1500,
+      "launch_status": "seed",
+      "density_profile": "compact",
+      "modes": [
+        "tourism-heavy",
+        "event-heavy",
+        "convention-heavy"
+      ]
+    },
+    {
+      "slug": "branson",
+      "name": "Branson",
+      "state": "MO",
+      "timezone": "America/Chicago",
+      "centroid": {
+        "lat": 36.6437,
+        "lng": -93.2185
+      },
+      "default_walk_radius_m": 1200,
+      "launch_status": "seed",
+      "density_profile": "mixed",
+      "modes": [
+        "tourism-heavy",
+        "show-heavy",
+        "family-heavy"
+      ]
     },
     {
       "slug": "chicago",
       "name": "Chicago",
       "state": "IL",
       "timezone": "America/Chicago",
-      "centroid": { "lat": 41.8781, "lng": -87.6298 },
+      "centroid": {
+        "lat": 41.8781,
+        "lng": -87.6298
+      },
       "default_walk_radius_m": 1600,
       "launch_status": "seed",
       "density_profile": "compact",
-      "modes": ["event-heavy", "tourism-heavy", "nightlife-heavy"]
+      "modes": [
+        "event-heavy",
+        "tourism-heavy",
+        "nightlife-heavy"
+      ]
+    },
+    {
+      "slug": "denver",
+      "name": "Denver",
+      "state": "CO",
+      "timezone": "America/Denver",
+      "centroid": {
+        "lat": 39.7392,
+        "lng": -104.9903
+      },
+      "default_walk_radius_m": 1500,
+      "launch_status": "beta",
+      "density_profile": "mixed",
+      "modes": [
+        "event-heavy",
+        "convention-heavy",
+        "nightlife-heavy"
+      ]
+    },
+    {
+      "slug": "honolulu",
+      "name": "Honolulu",
+      "state": "HI",
+      "timezone": "Pacific/Honolulu",
+      "centroid": {
+        "lat": 21.3069,
+        "lng": -157.8583
+      },
+      "default_walk_radius_m": 1500,
+      "launch_status": "seed",
+      "density_profile": "mixed",
+      "modes": [
+        "tourism-heavy",
+        "event-heavy",
+        "nightlife-heavy"
+      ]
     },
     {
       "slug": "las-vegas",
       "name": "Las Vegas",
       "state": "NV",
       "timezone": "America/Los_Angeles",
-      "centroid": { "lat": 36.1147, "lng": -115.1728 },
+      "centroid": {
+        "lat": 36.1147,
+        "lng": -115.1728
+      },
       "default_walk_radius_m": 1500,
       "launch_status": "seed",
       "density_profile": "mixed",
-      "modes": ["nightlife-heavy", "event-heavy", "tourism-heavy"]
+      "modes": [
+        "nightlife-heavy",
+        "event-heavy",
+        "tourism-heavy"
+      ]
+    },
+    {
+      "slug": "los-angeles",
+      "name": "Los Angeles",
+      "state": "CA",
+      "timezone": "America/Los_Angeles",
+      "centroid": {
+        "lat": 34.0522,
+        "lng": -118.2437
+      },
+      "default_walk_radius_m": 1500,
+      "launch_status": "seed",
+      "density_profile": "sprawling",
+      "modes": [
+        "tourism-heavy",
+        "event-heavy",
+        "nightlife-heavy"
+      ]
     },
     {
       "slug": "miami",
       "name": "Miami",
       "state": "FL",
       "timezone": "America/New_York",
-      "centroid": { "lat": 25.7617, "lng": -80.1918 },
+      "centroid": {
+        "lat": 25.7617,
+        "lng": -80.1918
+      },
       "default_walk_radius_m": 1400,
       "launch_status": "seed",
       "density_profile": "mixed",
-      "modes": ["tourism-heavy", "nightlife-heavy", "convention-heavy"]
+      "modes": [
+        "tourism-heavy",
+        "nightlife-heavy",
+        "convention-heavy"
+      ]
     },
     {
       "slug": "nashville",
       "name": "Nashville",
       "state": "TN",
       "timezone": "America/Chicago",
-      "centroid": { "lat": 36.1627, "lng": -86.7816 },
+      "centroid": {
+        "lat": 36.1627,
+        "lng": -86.7816
+      },
       "default_walk_radius_m": 1400,
       "launch_status": "seed",
       "density_profile": "mixed",
-      "modes": ["nightlife-heavy", "event-heavy", "tourism-heavy"]
-    },
-    {
-      "slug": "austin",
-      "name": "Austin",
-      "state": "TX",
-      "timezone": "America/Chicago",
-      "centroid": { "lat": 30.2672, "lng": -97.7431 },
-      "default_walk_radius_m": 1400,
-      "launch_status": "seed",
-      "density_profile": "mixed",
-      "modes": ["nightlife-heavy", "event-heavy", "tourism-heavy"]
+      "modes": [
+        "nightlife-heavy",
+        "event-heavy",
+        "tourism-heavy"
+      ]
     },
     {
       "slug": "new-orleans",
       "name": "New Orleans",
       "state": "LA",
       "timezone": "America/Chicago",
-      "centroid": { "lat": 29.9511, "lng": -90.0715 },
+      "centroid": {
+        "lat": 29.9511,
+        "lng": -90.0715
+      },
       "default_walk_radius_m": 1400,
       "launch_status": "seed",
       "density_profile": "compact",
-      "modes": ["nightlife-heavy", "event-heavy", "tourism-heavy"]
+      "modes": [
+        "nightlife-heavy",
+        "event-heavy",
+        "tourism-heavy"
+      ]
     },
     {
       "slug": "new-york-city",
       "name": "New York City",
       "state": "NY",
       "timezone": "America/New_York",
-      "centroid": { "lat": 40.7128, "lng": -74.006 },
+      "centroid": {
+        "lat": 40.7128,
+        "lng": -74.006
+      },
       "default_walk_radius_m": 1700,
       "launch_status": "seed",
       "density_profile": "compact",
-      "modes": ["event-heavy", "tourism-heavy", "nightlife-heavy"]
+      "modes": [
+        "event-heavy",
+        "tourism-heavy",
+        "nightlife-heavy"
+      ]
+    },
+    {
+      "slug": "orlando",
+      "name": "Orlando",
+      "state": "FL",
+      "timezone": "America/New_York",
+      "centroid": {
+        "lat": 28.5383,
+        "lng": -81.3792
+      },
+      "default_walk_radius_m": 1450,
+      "launch_status": "seed",
+      "density_profile": "mixed",
+      "modes": [
+        "tourism-heavy",
+        "family-heavy",
+        "event-heavy"
+      ]
+    },
+    {
+      "slug": "phoenix",
+      "name": "Phoenix",
+      "state": "AZ",
+      "timezone": "America/Phoenix",
+      "centroid": {
+        "lat": 33.4484,
+        "lng": -112.074
+      },
+      "default_walk_radius_m": 1400,
+      "launch_status": "seed",
+      "density_profile": "sprawling",
+      "modes": [
+        "event-heavy",
+        "tourism-heavy",
+        "convention-heavy"
+      ]
+    },
+    {
+      "slug": "pigeon-forge",
+      "name": "Pigeon Forge",
+      "state": "TN",
+      "timezone": "America/New_York",
+      "centroid": {
+        "lat": 35.7884,
+        "lng": -83.5543
+      },
+      "default_walk_radius_m": 1150,
+      "launch_status": "seed",
+      "density_profile": "mixed",
+      "modes": [
+        "tourism-heavy",
+        "family-heavy",
+        "show-heavy"
+      ]
+    },
+    {
+      "slug": "portland",
+      "name": "Portland",
+      "state": "OR",
+      "timezone": "America/Los_Angeles",
+      "centroid": {
+        "lat": 45.5152,
+        "lng": -122.6784
+      },
+      "default_walk_radius_m": 1450,
+      "launch_status": "seed",
+      "density_profile": "compact",
+      "modes": [
+        "tourism-heavy",
+        "nightlife-heavy",
+        "event-heavy"
+      ]
+    },
+    {
+      "slug": "salt-lake-city",
+      "name": "Salt Lake City",
+      "state": "UT",
+      "timezone": "America/Denver",
+      "centroid": {
+        "lat": 40.7608,
+        "lng": -111.891
+      },
+      "default_walk_radius_m": 1400,
+      "launch_status": "seed",
+      "density_profile": "mixed",
+      "modes": [
+        "tourism-heavy",
+        "event-heavy",
+        "convention-heavy"
+      ]
+    },
+    {
+      "slug": "san-antonio",
+      "name": "San Antonio",
+      "state": "TX",
+      "timezone": "America/Chicago",
+      "centroid": {
+        "lat": 29.4241,
+        "lng": -98.4936
+      },
+      "default_walk_radius_m": 1450,
+      "launch_status": "seed",
+      "density_profile": "mixed",
+      "modes": [
+        "tourism-heavy",
+        "event-heavy",
+        "convention-heavy"
+      ]
+    },
+    {
+      "slug": "san-diego",
+      "name": "San Diego",
+      "state": "CA",
+      "timezone": "America/Los_Angeles",
+      "centroid": {
+        "lat": 32.7157,
+        "lng": -117.1611
+      },
+      "default_walk_radius_m": 1450,
+      "launch_status": "seed",
+      "density_profile": "mixed",
+      "modes": [
+        "tourism-heavy",
+        "water-activity-heavy",
+        "event-heavy"
+      ]
+    },
+    {
+      "slug": "san-francisco",
+      "name": "San Francisco",
+      "state": "CA",
+      "timezone": "America/Los_Angeles",
+      "centroid": {
+        "lat": 37.7749,
+        "lng": -122.4194
+      },
+      "default_walk_radius_m": 1500,
+      "launch_status": "seed",
+      "density_profile": "compact",
+      "modes": [
+        "tourism-heavy",
+        "event-heavy",
+        "nightlife-heavy"
+      ]
+    },
+    {
+      "slug": "scottsdale",
+      "name": "Scottsdale",
+      "state": "AZ",
+      "timezone": "America/Phoenix",
+      "centroid": {
+        "lat": 33.4942,
+        "lng": -111.9261
+      },
+      "default_walk_radius_m": 1300,
+      "launch_status": "seed",
+      "density_profile": "mixed",
+      "modes": [
+        "tourism-heavy",
+        "nightlife-heavy",
+        "convention-heavy"
+      ]
+    },
+    {
+      "slug": "seattle",
+      "name": "Seattle",
+      "state": "WA",
+      "timezone": "America/Los_Angeles",
+      "centroid": {
+        "lat": 47.6062,
+        "lng": -122.3321
+      },
+      "default_walk_radius_m": 1500,
+      "launch_status": "seed",
+      "density_profile": "mixed",
+      "modes": [
+        "tourism-heavy",
+        "event-heavy",
+        "convention-heavy"
+      ]
+    },
+    {
+      "slug": "tampa",
+      "name": "Tampa",
+      "state": "FL",
+      "timezone": "America/New_York",
+      "centroid": {
+        "lat": 27.9506,
+        "lng": -82.4572
+      },
+      "default_walk_radius_m": 1400,
+      "launch_status": "seed",
+      "density_profile": "mixed",
+      "modes": [
+        "tourism-heavy",
+        "event-heavy",
+        "nightlife-heavy"
+      ]
+    },
+    {
+      "slug": "washington-dc",
+      "name": "Washington, DC",
+      "state": "DC",
+      "timezone": "America/New_York",
+      "centroid": {
+        "lat": 38.9072,
+        "lng": -77.0369
+      },
+      "default_walk_radius_m": 1600,
+      "launch_status": "seed",
+      "density_profile": "compact",
+      "modes": [
+        "tourism-heavy",
+        "event-heavy",
+        "convention-heavy"
+      ]
+    },
+    {
+      "slug": "wisconsin-dells",
+      "name": "Wisconsin Dells",
+      "state": "WI",
+      "timezone": "America/Chicago",
+      "centroid": {
+        "lat": 43.6275,
+        "lng": -89.7709
+      },
+      "default_walk_radius_m": 1100,
+      "launch_status": "seed",
+      "density_profile": "mixed",
+      "modes": [
+        "tourism-heavy",
+        "family-heavy",
+        "water-activity-heavy"
+      ]
     }
   ]
 }

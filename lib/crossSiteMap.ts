@@ -11,7 +11,7 @@ export const CROSS_SITE_VENUE_MAP: Record<string, CrossSiteVenueMapEntry> = {
   "red-rocks-amphitheatre": {
     slug: "red-rocks-amphitheatre",
     parrVenuePath: "/venues/red-rocks-amphitheatre",
-    parrBookingPath: "/book/red-rocks-amphitheatre",
+    parrBookingPath: "/book/red-rocks-amphitheatre/custom/shared",
     dccAuthorityPath: `${DCC_ORIGIN}/red-rocks`,
   },
   "mission-ballroom": {

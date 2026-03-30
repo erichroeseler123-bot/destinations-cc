@@ -1,0 +1,41 @@
+{
+  "handoffId": "gosno-fallback-1773796101234",
+  "satelliteId": "gosno",
+  "firstEventAt": "2026-03-18T01:08:21.234Z",
+  "lastEventAt": "2026-03-18T01:08:21.234Z",
+  "latestEventType": "temporarily_paused",
+  "latestStatus": "paused",
+  "latestStage": "ops",
+  "latestMessage": null,
+  "eventCount": 1,
+  "externalReferences": [],
+  "degraded": true,
+  "traveler": {
+    "email": null,
+    "phone": null,
+    "name": null,
+    "partySize": null
+  },
+  "attribution": {
+    "sourceSlug": null,
+    "sourcePage": "/transportation/colorado/denver-to-vail-shuttle-guide",
+    "topicSlug": "ski-transfers"
+  },
+  "booking": {
+    "venueSlug": null,
+    "portSlug": null,
+    "citySlug": "vail",
+    "productSlug": null,
+    "eventDate": "2026-12-20",
+    "quantity": null,
+    "currency": null,
+    "amount": null
+  },
+  "partner": {
+    "fromSite": null,
+    "toSite": null,
+    "partnerHandoffId": null,
+    "reason": null
+  },
+  "metadata": {}
+}

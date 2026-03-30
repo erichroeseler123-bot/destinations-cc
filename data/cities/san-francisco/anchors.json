@@ -1,0 +1,36 @@
+{
+  "city": "san-francisco",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-07:00",
+  "schema": {
+    "entity": "anchor",
+    "description": "Resident origin nodes used for personalization, distance calculations, and local context."
+  },
+  "anchors": [
+    {
+      "slug": "one-rincon-hill",
+      "name": "One Rincon Hill",
+      "anchor_type": "residential-tower",
+      "address": "425 1st St, San Francisco, CA 94105",
+      "lat": 37.7861,
+      "lng": -122.3922,
+      "district_slugs": [
+        "embarcadero",
+        "north-beach"
+      ],
+      "nearby_venue_slugs": [
+        "chase-center",
+        "ferry-building",
+        "the-masonic"
+      ],
+      "nearby_place_slugs": [
+        "hog-island-oyster-co",
+        "waterbar",
+        "tonys-pizza-napoletana"
+      ],
+      "default_walk_radius_m": 1500
+    }
+  ]
+}

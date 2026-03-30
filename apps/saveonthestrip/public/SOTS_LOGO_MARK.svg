@@ -1,0 +1,31 @@
+<svg width="720" height="220" viewBox="0 0 720 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="saveFill" x1="66" y1="42" x2="258" y2="136" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5F1735"/>
+      <stop offset="0.55" stop-color="#B43B77"/>
+      <stop offset="1" stop-color="#EE6F43"/>
+    </linearGradient>
+    <linearGradient id="dividerFill" x1="280" y1="98" x2="492" y2="98" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D4A63D"/>
+      <stop offset="1" stop-color="#EE6F43"/>
+    </linearGradient>
+    <linearGradient id="otsFill" x1="312" y1="122" x2="462" y2="174" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#24141C"/>
+      <stop offset="1" stop-color="#7F244C"/>
+    </linearGradient>
+  </defs>
+
+  <text x="44" y="118" fill="url(#saveFill)" font-size="94" font-weight="700" font-family="Georgia, 'Times New Roman', serif" letter-spacing="-2">
+    $ave
+  </text>
+
+  <path d="M286 98H486" stroke="url(#dividerFill)" stroke-width="6" stroke-linecap="round"/>
+
+  <text x="314" y="164" fill="url(#otsFill)" font-size="74" font-weight="800" font-family="Georgia, 'Times New Roman', serif" letter-spacing="2">
+    OTS!
+  </text>
+
+  <text x="286" y="196" fill="#5F1735" opacity="0.78" font-size="18" font-weight="700" font-family="'Avenir Next', 'Segoe UI', Arial, sans-serif" letter-spacing="4">
+    VEGAS DEALS • SHOWS • TOURS
+  </text>
+</svg>

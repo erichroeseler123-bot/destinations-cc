@@ -1,0 +1,41 @@
+{
+  "handoffId": "degraded-handoff-1774378163082",
+  "satelliteId": "partyatredrocks",
+  "firstEventAt": "2026-03-24T18:49:23.082Z",
+  "lastEventAt": "2026-03-24T18:49:23.082Z",
+  "latestEventType": "temporarily_paused",
+  "latestStatus": "paused",
+  "latestStage": "capacity",
+  "latestMessage": null,
+  "eventCount": 1,
+  "externalReferences": [],
+  "degraded": true,
+  "traveler": {
+    "email": null,
+    "phone": null,
+    "name": null,
+    "partySize": null
+  },
+  "attribution": {
+    "sourceSlug": null,
+    "sourcePage": "/red-rocks-shuttle",
+    "topicSlug": null
+  },
+  "booking": {
+    "venueSlug": "red-rocks-amphitheatre",
+    "portSlug": null,
+    "citySlug": null,
+    "productSlug": null,
+    "eventDate": "2026-08-01",
+    "quantity": null,
+    "currency": null,
+    "amount": null
+  },
+  "partner": {
+    "fromSite": null,
+    "toSite": null,
+    "partnerHandoffId": null,
+    "reason": null
+  },
+  "metadata": {}
+}

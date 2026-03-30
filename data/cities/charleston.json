@@ -47,32 +47,32 @@
     {
       "slug": "historic-charleston",
       "title": "Historic Charleston",
-      "description": ""
+      "description": "Historic streets, landmark buildings, and guided walks that give first-time visitors a stronger starting point."
     },
     {
       "slug": "waterfront-park",
       "title": "Waterfront Park",
-      "description": ""
+      "description": "A scenic outdoor reset that works well between denser historic stops and food or walking routes."
     },
     {
       "slug": "charleston-city-market",
       "title": "Charleston City Market",
-      "description": ""
+      "description": "A classic first-trip stop for browsing, local atmosphere, and easy pairing with nearby historic blocks."
     },
     {
       "slug": "fort-sumter",
       "title": "Fort Sumter",
-      "description": ""
+      "description": "A major history anchor for visitors who want one signature harbor or Civil War-oriented experience."
     },
     {
       "slug": "rainbow-row",
       "title": "Rainbow Row",
-      "description": ""
+      "description": "An iconic Charleston landmark best used as part of a broader sightseeing and walking route."
     },
     {
       "slug": "the-battery",
       "title": "The Battery",
-      "description": ""
+      "description": "A waterfront and mansion-lined district that fits well into scenic walks and slower daytime planning."
     }
   ],
   "featuredTours": {

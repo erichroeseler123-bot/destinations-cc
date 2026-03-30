@@ -64,7 +64,7 @@ export default function SnowmobilingPage() {
             No unverified permit or mileage claims beyond source-backed notes
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-zinc-200">
-            Built for later state pages, winter routing, and GoSno tie-ins
+            Built for later state pages, winter routing, and Colorado execution tie-ins
           </div>
         </section>
 

@@ -13,9 +13,13 @@
   },
   "hero": {
     "eyebrow": "Tampa travel guide",
-    "title": "Tampa tours, things to do, and local travel planning",
-    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Tampa trip.",
-    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Tampa.",
+    "title": "Tampa planning for riverwalk blocks, Ybor pivots, and bayfront energy",
+    "summary": "Tampa is strongest when you split the trip into one waterfront or Riverwalk block, one Ybor or food-and-nightlife block, and one major attraction or bay-area contrast instead of treating the whole metro as a single downtown walk.",
+    "trustLine": "Best used when you want Riverwalk, Ybor, cruise-port energy, and one bigger attraction block to fit together without wasting the day in cross-town pivots.",
+    "image": {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tampa_Skyline.jpg/1920px-Tampa_Skyline.jpg",
+      "alt": "Tampa skyline above the waterfront"
+    },
     "primaryCtaLabel": "Browse Tours",
     "primaryCtaHref": "/tampa/tours",
     "secondaryCtaLabel": "Explore Things to Do",
@@ -25,39 +29,39 @@
     {
       "slug": "walking-tours",
       "title": "Walking Tours",
-      "description": "Guided city walks that help visitors get oriented quickly."
+      "description": "Best used for Riverwalk, downtown, and Ybor orientation instead of trying to stitch the whole bay-side trip together on the fly."
     },
     {
       "slug": "food-tours",
       "title": "Food Tours",
-      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+      "description": "Useful when Ybor, Cuban influence, and local neighborhoods matter more than another generic waterfront stop."
     },
     {
       "slug": "sightseeing-tours",
       "title": "Sightseeing Tours",
-      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+      "description": "Good first-day lane for visitors trying to understand downtown, the bayfront, and Tampa's spread before choosing a deeper block."
     },
     {
       "slug": "day-trips",
       "title": "Day Trips",
-      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+      "description": "Best when the Tampa stay needs a beach, wildlife, or St. Pete contrast instead of another downtown-only day."
     }
   ],
   "topAttractions": [
     {
       "slug": "ybor-city",
       "title": "Ybor City",
-      "description": ""
+      "description": "The easiest way to give a Tampa trip more identity, nightlife, and local history without overcomplicating logistics."
     },
     {
       "slug": "tampa-riverwalk",
       "title": "Tampa Riverwalk",
-      "description": ""
+      "description": "A strong first orientation block when you want waterfront movement, museums, and easy downtown pacing."
     },
     {
       "slug": "busch-gardens-tampa-bay",
       "title": "Busch Gardens Tampa Bay",
-      "description": ""
+      "description": "Best treated as the main event of the day, not a quick add-on after downtown sightseeing."
     },
     {
       "slug": "sparkman-wharf",
@@ -77,11 +81,12 @@
   ],
   "featuredTours": {
     "title": "Popular Tampa experiences",
-    "description": "Guided experiences and bookable activities that help visitors plan around Tampa's most useful highlights.",
+    "description": "The strongest Tampa experiences are the ones that respect waterfront pacing, Ybor timing, and whether the day is city-first, attraction-first, or bay-area-first.",
     "fallbackQueries": [
-      "tampa walking tour",
-      "tampa food tour",
-      "tampa sightseeing tour"
+      "tampa sightseeing tour",
+      "tampa riverwalk tour",
+      "tampa boat tour",
+      "tampa ybor city tour"
     ]
   },
   "planningLinks": [
@@ -109,11 +114,15 @@
   "faq": [
     {
       "q": "What are the best tours in Tampa for first-time visitors?",
-      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+      "a": "The cleanest first Tampa day is usually one Riverwalk or waterfront block, one Ybor or food block, and one bigger attraction or bay-area decision instead of trying to cover everything in one downtown loop."
     },
     {
       "q": "How many days should you spend in Tampa?",
-      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+      "a": "Two to four days is the useful range because Tampa usually works best when you separate city time, attraction time, and any beach or bay-area contrast into different blocks."
+    },
+    {
+      "q": "Is Tampa better as a downtown trip or a broader bay-area trip?",
+      "a": "Most trips improve when Tampa is treated as the city anchor rather than the whole story, with room for Ybor, waterfront time, and one broader bay or attraction move."
     }
   ],
   "coordinates": {

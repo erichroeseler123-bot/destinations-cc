@@ -1,0 +1,38 @@
+{
+  "city": "washington-dc",
+  "version": 1,
+  "as_of": "2026-03-26T17:30:00-04:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-26T17:35:00-04:00",
+  "schema": {
+    "entity": "signal",
+    "description": "Ephemeral NOW-layer output.",
+    "provenance_types": [
+      "derived",
+      "source_backed",
+      "manual_editorial"
+    ]
+  },
+  "signals": [
+    {
+      "id": "sig-washington-dc-capital-one-arena-tonight",
+      "signal_type": "event_awareness",
+      "provenance": "derived",
+      "title": "Arena pressure near the civic core",
+      "description": "A major arena event is expected to lift dinner and transit demand across downtown Washington tonight.",
+      "impact_level": "medium",
+      "rank_weight": 0.7,
+      "status": "scheduled",
+      "starts_at": "2026-03-26T18:30:00-04:00",
+      "expires_at": "2026-03-26T22:30:00-04:00",
+      "linked_event_id": "evt-washington-dc-capital-one-arena",
+      "linked_venue_slug": "capital-one-arena",
+      "affected_district_slugs": [
+        "national-mall"
+      ],
+      "near_anchor_slugs": [
+        "citycenterdc"
+      ]
+    }
+  ]
+}

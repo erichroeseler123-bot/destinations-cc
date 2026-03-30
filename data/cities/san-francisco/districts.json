@@ -1,0 +1,59 @@
+{
+  "city": "san-francisco",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-07:00",
+  "schema": {
+    "entity": "district",
+    "description": "Durable district layer used to group venues, places, and signals."
+  },
+  "districts": [
+    {
+      "slug": "embarcadero",
+      "name": "Embarcadero",
+      "district_type": "waterfront-corridor",
+      "center": {
+        "lat": 37.7955,
+        "lng": -122.3937
+      },
+      "radius_m": 1500,
+      "vibe_tags": [
+        "waterfront",
+        "ferries",
+        "tourism"
+      ],
+      "venue_slugs": [
+        "chase-center",
+        "ferry-building"
+      ],
+      "place_slugs": [
+        "hog-island-oyster-co",
+        "waterbar"
+      ],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "north-beach",
+      "name": "North Beach",
+      "district_type": "nightlife-corridor",
+      "center": {
+        "lat": 37.8004,
+        "lng": -122.4101
+      },
+      "radius_m": 1000,
+      "vibe_tags": [
+        "italian",
+        "late-night",
+        "bars"
+      ],
+      "venue_slugs": [
+        "the-masonic"
+      ],
+      "place_slugs": [
+        "tonys-pizza-napoletana"
+      ],
+      "impact_profile": "medium"
+    }
+  ]
+}

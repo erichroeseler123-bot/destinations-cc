@@ -1,0 +1,30 @@
+{
+  "city": "branson",
+  "version": 1,
+  "as_of": "2026-03-26T18:00:00-05:00",
+  "ttl_seconds": 900,
+  "stale_after": "2026-03-26T18:15:00-05:00",
+  "schema": {
+    "entity": "event",
+    "description": "Ingested timed facts."
+  },
+  "events": [
+    {
+      "id": "evt-branson-dolly-partons-stampede",
+      "slug": "dolly-partons-stampede-pulse-2026-03-26",
+      "title": "Evening show traffic on Highway 76",
+      "venue_slug": "dolly-partons-stampede",
+      "category": "family-show",
+      "start_time": "2026-03-26T19:00:00-05:00",
+      "end_time": "2026-03-26T21:30:00-05:00",
+      "status": "starting_soon",
+      "impact_level": "medium",
+      "attendance_band": "moderate",
+      "source": {
+        "kind": "ticketing-feed",
+        "external_id": "dolly-partons-stampede-pulse-2026-03-26"
+      },
+      "description": "A heavy evening show block is expected to concentrate dinner demand and post-show traffic along the Strip tonight."
+    }
+  ]
+}

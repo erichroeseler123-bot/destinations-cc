@@ -31,6 +31,8 @@ export default function CityGuideStubPage({
   tertiaryHref,
   tertiaryLabel,
 }: CityGuideStubPageProps) {
+  const tourHref = cityHref === secondaryHref ? primaryHref : primaryHref;
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <JsonLd
@@ -81,6 +83,29 @@ export default function CityGuideStubPage({
                 {item}
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-white/10 bg-white/[0.05] p-6">
+          <h2 className="text-2xl font-bold">Why this page deserves its own search lane</h2>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4 text-sm leading-7 text-zinc-300">
+              <p>
+                This page exists because visitors often search for one specific slice of {cityName}, not just the city overall. A page like this should answer that narrower intent clearly, then connect the visitor into tours, shows, or the broader city guide when the plan expands.
+              </p>
+              <p>
+                That internal-link path helps both users and crawlers understand how this topic fits inside the wider {cityName} cluster instead of leaving it as an isolated stub.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Best next clicks</div>
+              <div className="mt-4 grid gap-3">
+                <Link href={cityHref} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">{cityName} hub</Link>
+                <Link href={tourHref} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Browse tours</Link>
+                <Link href={`${cityHref}/shows`} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">{cityName} shows</Link>
+                <Link href={`${cityHref}/attractions`} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">{cityName} attractions</Link>
+              </div>
+            </div>
           </div>
         </section>
 

@@ -29,6 +29,22 @@ type ViatorClient = {
   getProductsModifiedSince(cursor?: string): Promise<unknown>;
   getAvailabilitySchedulesModifiedSince(cursor?: string): Promise<unknown>;
   getProductSchedules(productCode: string): Promise<unknown>;
+  checkAvailability(input: Record<string, unknown>): Promise<unknown>;
+  getProductBookingQuestions(productCode: string): Promise<unknown[]>;
+  getExchangeRates(currency?: string): Promise<unknown>;
+  getLocationsBulk(locationReferences: string[]): Promise<unknown>;
+  createCartHold(input: Record<string, unknown>): Promise<unknown>;
+  createCartBooking(input: Record<string, unknown>): Promise<unknown>;
+  submitPaymentAccount(paymentDataSubmissionUrl: string, input: Record<string, unknown>): Promise<unknown>;
+  getBookingStatus(input: Record<string, unknown>): Promise<unknown>;
+  getCancelReasons(): Promise<unknown>;
+  getCancelQuote(bookingReference: string): Promise<unknown>;
+  cancelBooking(bookingReference: string, input: Record<string, unknown>): Promise<unknown>;
+  checkAmendment(bookingReference: string): Promise<unknown>;
+  quoteAmendment(input: Record<string, unknown>): Promise<unknown>;
+  amendBooking(quoteReference: string, input?: Record<string, unknown>): Promise<unknown>;
+  getBookingsModifiedSince(input?: { cursor?: string; modifiedSince?: string }): Promise<unknown>;
+  acknowledgeBookingsModifiedSince(input: Record<string, unknown>): Promise<unknown>;
   getProductReviews(productCode: string, body?: Record<string, unknown>): Promise<ViatorReview[]>;
   probeCapabilities(): Promise<Record<string, string>>;
 };
@@ -200,6 +216,139 @@ export function getViatorClient(): ViatorClient {
 
     async getProductSchedules(productCode: string) {
       return request(`/availability/schedules/${encodeURIComponent(productCode)}`);
+    },
+
+    async checkAvailability(input: Record<string, unknown>) {
+      return request("/availability/check", {
+        method: "POST",
+        body: withDefaultSearchCurrency(input),
+      });
+    },
+
+    async getProductBookingQuestions(productCode: string) {
+      const payload = await request(`/products/booking-questions?productCode=${encodeURIComponent(productCode)}`);
+      if (Array.isArray(payload)) return payload;
+      if (payload && typeof payload === "object" && Array.isArray((payload as { bookingQuestions?: unknown[] }).bookingQuestions)) {
+        return (payload as { bookingQuestions?: unknown[] }).bookingQuestions || [];
+      }
+      return [];
+    },
+
+    async getExchangeRates(currency?: string) {
+      const suffix = currency ? `?currency=${encodeURIComponent(normalizeViatorCurrency(currency))}` : "";
+      return request(`/exchange-rates${suffix}`);
+    },
+
+    async getLocationsBulk(locationReferences: string[]) {
+      const uniqueReferences = Array.from(
+        new Set(locationReferences.map((value) => String(value || "").trim()).filter(Boolean))
+      );
+      if (uniqueReferences.length === 0) return { locations: [] };
+      if (uniqueReferences.length > 500) {
+        throw new Error("viator_locations_bulk_limit_exceeded");
+      }
+      return request("/locations/bulk", {
+        method: "POST",
+        body: { locations: uniqueReferences },
+      });
+    },
+
+    async createCartHold(input: Record<string, unknown>) {
+      return request("/bookings/cart/hold", {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    async createCartBooking(input: Record<string, unknown>) {
+      return request("/bookings/cart/book", {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    async submitPaymentAccount(paymentDataSubmissionUrl: string, input: Record<string, unknown>) {
+      const config = getViatorServerConfig();
+      if (!config.apiKey) {
+        throw new Error("missing_viator_api_key");
+      }
+
+      const response = await fetch(paymentDataSubmissionUrl, {
+        method: "POST",
+        headers: {
+          ...withVersionHeader(config.locale, config.apiKey),
+          "x-trip-clientid": config.pid,
+          "x-trip-requestid": `dcc-${Date.now()}`,
+        },
+        body: JSON.stringify(input),
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        const message = (await response.text()).slice(0, 200);
+        throw new Error(`viator_paymentaccounts_http_${response.status}:${message}`);
+      }
+
+      return response.json();
+    },
+
+    async getBookingStatus(input: Record<string, unknown>) {
+      return request("/bookings/status", {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    async getCancelReasons() {
+      return request("/bookings/cancel-reasons");
+    },
+
+    async getCancelQuote(bookingReference: string) {
+      return request(`/bookings/${encodeURIComponent(bookingReference)}/cancel-quote`);
+    },
+
+    async cancelBooking(bookingReference: string, input: Record<string, unknown>) {
+      return request(`/bookings/${encodeURIComponent(bookingReference)}/cancel`, {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    async checkAmendment(bookingReference: string) {
+      return request(`/amendment/check/${encodeURIComponent(bookingReference)}`);
+    },
+
+    async quoteAmendment(input: Record<string, unknown>) {
+      return request("/amendment/quote", {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    async amendBooking(quoteReference: string, input: Record<string, unknown> = {}) {
+      return request(`/amendment/amend/${encodeURIComponent(quoteReference)}`, {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    async getBookingsModifiedSince(input: { cursor?: string; modifiedSince?: string } = {}) {
+      const params = new URLSearchParams();
+      if (typeof input.cursor === "string" && input.cursor.trim().length > 0) {
+        params.set("cursor", input.cursor.trim());
+      }
+      if (typeof input.modifiedSince === "string" && input.modifiedSince.trim().length > 0) {
+        params.set("modified-since", input.modifiedSince.trim());
+      }
+      const suffix = params.toString() ? `?${params.toString()}` : "";
+      return request(`/bookings/modified-since${suffix}`);
+    },
+
+    async acknowledgeBookingsModifiedSince(input: Record<string, unknown>) {
+      return request("/bookings/modified-since/acknowledge", {
+        method: "POST",
+        body: input,
+      });
     },
 
     async getProductReviews(productCode: string, body: Record<string, unknown> = {}) {

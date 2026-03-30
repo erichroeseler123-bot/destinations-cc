@@ -13,9 +13,13 @@
   },
   "hero": {
     "eyebrow": "San Antonio travel guide",
-    "title": "San Antonio tours, things to do, and local travel planning",
-    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger San Antonio trip.",
-    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in San Antonio.",
+    "title": "San Antonio planning for River Walk timing, mission routes, and Pearl pivots",
+    "summary": "San Antonio is strongest when you split the trip into one River Walk and downtown block, one mission or history block, and one Pearl or neighborhood-food decision instead of treating everything like a single tourist strip.",
+    "trustLine": "Best used when you want the Alamo, River Walk, mission corridor, and Pearl-area pacing to fit together without wasting time on redundant downtown loops.",
+    "image": {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Skyline_of_San_Antonio.jpg/1920px-Skyline_of_San_Antonio.jpg",
+      "alt": "San Antonio skyline above downtown at dusk"
+    },
     "primaryCtaLabel": "Browse Tours",
     "primaryCtaHref": "/san-antonio/tours",
     "secondaryCtaLabel": "Explore Things to Do",
@@ -25,49 +29,49 @@
     {
       "slug": "walking-tours",
       "title": "Walking Tours",
-      "description": "Guided city walks that help visitors get oriented quickly."
+      "description": "Best used for downtown, Alamo, and River Walk orientation before deciding whether the trip leans historic, neighborhood-focused, or mission-focused."
     },
     {
       "slug": "food-tours",
       "title": "Food Tours",
-      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+      "description": "Useful when Pearl, Market Square, and regional food identity matter more than another generic chain-heavy downtown stop."
     },
     {
       "slug": "sightseeing-tours",
       "title": "Sightseeing Tours",
-      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+      "description": "Good first-day lane for visitors trying to connect the Alamo, mission context, and the broader downtown footprint without overcommitting too early."
     },
     {
       "slug": "day-trips",
       "title": "Day Trips",
-      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+      "description": "Best when the stay needs a Hill Country or wider South Texas contrast instead of another downtown-only day."
     }
   ],
   "topAttractions": [
     {
       "slug": "the-alamo",
       "title": "The Alamo",
-      "description": ""
+      "description": "A core stop that works best when you give it real historical context instead of treating it like a five-minute photo stop."
     },
     {
       "slug": "river-walk",
       "title": "San Antonio River Walk",
-      "description": ""
+      "description": "The easiest orientation block for downtown pacing, but stronger when paired with one neighborhood or mission decision instead of repeated loops."
     },
     {
       "slug": "market-square",
       "title": "Market Square",
-      "description": ""
+      "description": "A useful culture-and-food move when the trip needs a stronger local lane beyond the main visitor corridor."
     },
     {
       "slug": "san-antonio-missions",
       "title": "San Antonio Missions",
-      "description": ""
+      "description": "Best treated as a dedicated history and route block rather than an afterthought squeezed in after downtown sightseeing."
     },
     {
       "slug": "pearl-district",
       "title": "Pearl District",
-      "description": ""
+      "description": "One of the cleanest ways to give a San Antonio trip better food, design, and neighborhood texture."
     },
     {
       "slug": "tower-of-the-americas",
@@ -77,9 +81,10 @@
   ],
   "featuredTours": {
     "title": "Popular San Antonio experiences",
-    "description": "Guided experiences and bookable activities that help visitors plan around San Antonio's most useful highlights.",
+    "description": "The strongest San Antonio experiences are the ones that respect downtown pacing, mission geography, and whether the day is history-first, food-first, or River Walk-first.",
     "fallbackQueries": [
-      "san antonio walking tour",
+      "san antonio river walk tour",
+      "san antonio missions tour",
       "san antonio food tour",
       "san antonio sightseeing tour"
     ]
@@ -109,11 +114,15 @@
   "faq": [
     {
       "q": "What are the best tours in San Antonio for first-time visitors?",
-      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+      "a": "The cleanest first San Antonio trip usually includes one River Walk or downtown block, one mission or history block, and one Pearl or food-focused block instead of repeating the same central corridor all day."
     },
     {
       "q": "How many days should you spend in San Antonio?",
-      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+      "a": "Two to four days is the useful range because San Antonio improves when you separate downtown, mission corridor, and neighborhood-food decisions into different blocks."
+    },
+    {
+      "q": "Is San Antonio mainly a downtown trip or a wider city trip?",
+      "a": "Most trips start downtown, but the city gets better when you treat the River Walk as the anchor and then add one stronger mission, food, or neighborhood lane beyond it."
     }
   ],
   "coordinates": {

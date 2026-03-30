@@ -15,6 +15,15 @@ export type TransportDirectoryEntry = {
   bookingUrl?: string;
   guideUrl?: string;
   notes?: string;
+  trustBadges?: string[];
+  urgencyNote?: string;
+  offerCards?: Array<{
+    title: string;
+    detail: string;
+    bullets: string[];
+    ctaLabel: string;
+    emphasis?: "shared" | "private";
+  }>;
 };
 
 export const TRANSPORT_DIRECTORY_UPDATED_AT = "2026-03-15";
@@ -36,6 +45,25 @@ export const TRANSPORT_DIRECTORY: TransportDirectoryEntry[] = [
     guideUrl: "/red-rocks-shuttle",
     notes:
       "Shared shuttle seats from Denver and Golden, plus private door-to-door rides. This is the primary active transport execution lane.",
+    trustBadges: ["Denver and Golden pickup anchors", "Shared shuttle and private rides", "Built for post-show ride-home certainty"],
+    urgencyNote:
+      "High-demand nights make the ride-home decision more important than the ride in. If the plan already revolves around Red Rocks, solve transport early.",
+    offerCards: [
+      {
+        title: "Shared Shuttle",
+        detail: "Round-trip concert transportation from Denver or Golden pickup anchors.",
+        bullets: ["Best when you want the cleanest ride-home path", "Stronger fit than late-lot parking for many visitors", "Simpler than gambling on post-show Uber pickup"],
+        ctaLabel: "Book Shuttle",
+        emphasis: "shared",
+      },
+      {
+        title: "Private Ride",
+        detail: "Door-to-door group transportation with tighter control over the night.",
+        bullets: ["Best for groups, dates, and tighter schedules", "Less parking friction and less pickup uncertainty", "Cleaner fit when autonomy matters more than seat pricing"],
+        ctaLabel: "Plan Private Ride",
+        emphasis: "private",
+      },
+    ],
   },
   {
     slug: "mission-ballroom",

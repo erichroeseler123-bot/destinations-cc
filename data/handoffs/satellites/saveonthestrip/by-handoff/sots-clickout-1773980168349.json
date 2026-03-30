@@ -1,0 +1,44 @@
+{
+  "handoffId": "sots-clickout-1773980168349",
+  "satelliteId": "saveonthestrip",
+  "firstEventAt": "2026-03-20T04:16:08.349Z",
+  "lastEventAt": "2026-03-20T04:16:08.349Z",
+  "latestEventType": "ticket_clickout",
+  "latestStatus": "clickout",
+  "latestStage": "ticket_affiliate",
+  "latestMessage": null,
+  "eventCount": 1,
+  "externalReferences": [],
+  "degraded": false,
+  "traveler": {
+    "email": null,
+    "phone": null,
+    "name": null,
+    "partySize": null
+  },
+  "attribution": {
+    "sourceSlug": "saveonthestrip-sphere",
+    "sourcePage": "/shows/sphere",
+    "topicSlug": "sphere-shows"
+  },
+  "booking": {
+    "venueSlug": null,
+    "portSlug": null,
+    "citySlug": "las-vegas",
+    "productSlug": null,
+    "eventDate": "2026-08-01",
+    "quantity": null,
+    "currency": null,
+    "amount": null
+  },
+  "partner": {
+    "fromSite": null,
+    "toSite": null,
+    "partnerHandoffId": null,
+    "reason": null
+  },
+  "metadata": {
+    "affiliateTarget": "ticketmaster",
+    "eventName": "Wizard of Oz at Sphere"
+  }
+}

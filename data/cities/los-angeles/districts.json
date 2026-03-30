@@ -1,0 +1,59 @@
+{
+  "city": "los-angeles",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-07:00",
+  "schema": {
+    "entity": "district",
+    "description": "Durable district layer used to group venues, places, and signals."
+  },
+  "districts": [
+    {
+      "slug": "la-live",
+      "name": "LA Live",
+      "district_type": "event-district",
+      "center": {
+        "lat": 34.043,
+        "lng": -118.2673
+      },
+      "radius_m": 1100,
+      "vibe_tags": [
+        "arenas",
+        "bars",
+        "downtown"
+      ],
+      "venue_slugs": [
+        "crypto-com-arena",
+        "peacock-theater"
+      ],
+      "place_slugs": [
+        "yard-house-la-live",
+        "broken-shaker-dtla"
+      ],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "hollywood-core",
+      "name": "Hollywood Core",
+      "district_type": "entertainment-district",
+      "center": {
+        "lat": 34.1018,
+        "lng": -118.3269
+      },
+      "radius_m": 1500,
+      "vibe_tags": [
+        "theater",
+        "tourism",
+        "nightlife"
+      ],
+      "venue_slugs": [
+        "hollywood-bowl"
+      ],
+      "place_slugs": [
+        "musso-frank-grill"
+      ],
+      "impact_profile": "medium"
+    }
+  ]
+}

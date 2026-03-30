@@ -29,6 +29,20 @@ const CITY_STATE_OVERRIDES: Record<string, string | undefined> = {
   "new-york-city": "New York",
   "los-angeles": "California",
   "san-francisco": "California",
+  "washington-dc": "District of Columbia",
+  boston: "Massachusetts",
+  seattle: "Washington",
+  honolulu: "Hawaii",
+  phoenix: "Arizona",
+  scottsdale: "Arizona",
+  "san-diego": "California",
+  "san-antonio": "Texas",
+  tampa: "Florida",
+  portland: "Oregon",
+  "salt-lake-city": "Utah",
+  branson: "Missouri",
+  "wisconsin-dells": "Wisconsin",
+  "pigeon-forge": "Tennessee",
 };
 
 const CITY_DISTRICT_OVERRIDES: Record<string, string[]> = {

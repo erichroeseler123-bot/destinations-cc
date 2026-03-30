@@ -1,0 +1,67 @@
+{
+  "city": "orlando",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-04:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable city activity nodes.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large complex or district-scale activity center."
+    }
+  },
+  "venues": [
+    {
+      "slug": "kia-center",
+      "name": "Kia Center",
+      "venue_type": "event-venue",
+      "category": "sports-concerts",
+      "address": "400 W Church St, Orlando, FL 32801",
+      "lat": 28.5392,
+      "lng": -81.3839,
+      "impact_potential": "high",
+      "district_slugs": [
+        "lake-eola-downtown"
+      ],
+      "near_anchor_slugs": [
+        "the-jackson"
+      ]
+    },
+    {
+      "slug": "dr-phillips-center",
+      "name": "Dr. Phillips Center for the Performing Arts",
+      "venue_type": "event-venue",
+      "category": "performing-arts",
+      "address": "445 S Magnolia Ave, Orlando, FL 32801",
+      "lat": 28.5387,
+      "lng": -81.3788,
+      "impact_potential": "medium",
+      "district_slugs": [
+        "lake-eola-downtown"
+      ],
+      "near_anchor_slugs": [
+        "the-jackson"
+      ]
+    },
+    {
+      "slug": "orange-county-convention-center",
+      "name": "Orange County Convention Center",
+      "venue_type": "major-event-campus",
+      "category": "conventions",
+      "address": "9800 International Dr, Orlando, FL 32819",
+      "lat": 28.4247,
+      "lng": -81.4695,
+      "impact_potential": "high",
+      "district_slugs": [
+        "international-drive"
+      ],
+      "near_anchor_slugs": [
+        "the-jackson"
+      ]
+    }
+  ]
+}

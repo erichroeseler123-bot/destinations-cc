@@ -1,0 +1,67 @@
+{
+  "city": "boston",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-04:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable city activity nodes.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large complex or district-scale activity center."
+    }
+  },
+  "venues": [
+    {
+      "slug": "td-garden",
+      "name": "TD Garden",
+      "venue_type": "event-venue",
+      "category": "sports-concerts",
+      "address": "100 Legends Way, Boston, MA 02114",
+      "lat": 42.3662,
+      "lng": -71.0621,
+      "impact_potential": "high",
+      "district_slugs": [
+        "downtown-crossing"
+      ],
+      "near_anchor_slugs": [
+        "the-bosworth"
+      ]
+    },
+    {
+      "slug": "citizens-opera-house",
+      "name": "Citizens Opera House",
+      "venue_type": "event-venue",
+      "category": "performing-arts",
+      "address": "539 Washington St, Boston, MA 02111",
+      "lat": 42.3533,
+      "lng": -71.0642,
+      "impact_potential": "medium",
+      "district_slugs": [
+        "downtown-crossing"
+      ],
+      "near_anchor_slugs": [
+        "the-bosworth"
+      ]
+    },
+    {
+      "slug": "boston-convention-and-exhibition-center",
+      "name": "Boston Convention and Exhibition Center",
+      "venue_type": "major-event-campus",
+      "category": "conventions",
+      "address": "415 Summer St, Boston, MA 02210",
+      "lat": 42.3473,
+      "lng": -71.0452,
+      "impact_potential": "high",
+      "district_slugs": [
+        "seaport-boston"
+      ],
+      "near_anchor_slugs": [
+        "the-bosworth"
+      ]
+    }
+  ]
+}

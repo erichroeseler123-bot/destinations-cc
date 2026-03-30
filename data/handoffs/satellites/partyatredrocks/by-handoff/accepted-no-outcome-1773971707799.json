@@ -1,0 +1,41 @@
+{
+  "handoffId": "accepted-no-outcome-1773971707799",
+  "satelliteId": "partyatredrocks",
+  "firstEventAt": "2026-03-20T01:55:07.799Z",
+  "lastEventAt": "2026-03-20T01:55:07.799Z",
+  "latestEventType": "accepted_from_partner",
+  "latestStatus": "received",
+  "latestStage": "landing",
+  "latestMessage": null,
+  "eventCount": 1,
+  "externalReferences": [],
+  "degraded": false,
+  "traveler": {
+    "email": null,
+    "phone": null,
+    "name": null,
+    "partySize": null
+  },
+  "attribution": {
+    "sourceSlug": null,
+    "sourcePage": "/handoff/partner/partyatredrocks",
+    "topicSlug": "concert-transport"
+  },
+  "booking": {
+    "venueSlug": "red-rocks-amphitheatre",
+    "portSlug": null,
+    "citySlug": null,
+    "productSlug": null,
+    "eventDate": "2026-07-12",
+    "quantity": null,
+    "currency": null,
+    "amount": null
+  },
+  "partner": {
+    "fromSite": "welcome-to-alaska",
+    "toSite": "partyatredrocks",
+    "partnerHandoffId": "accepted-no-outcome-1773971707799",
+    "reason": "traveler_reuse"
+  },
+  "metadata": {}
+}

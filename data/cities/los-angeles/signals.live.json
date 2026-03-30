@@ -1,0 +1,38 @@
+{
+  "city": "los-angeles",
+  "version": 1,
+  "as_of": "2026-03-26T17:30:00-07:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-26T17:35:00-07:00",
+  "schema": {
+    "entity": "signal",
+    "description": "Ephemeral NOW-layer output.",
+    "provenance_types": [
+      "derived",
+      "source_backed",
+      "manual_editorial"
+    ]
+  },
+  "signals": [
+    {
+      "id": "sig-los-angeles-crypto-com-arena-tonight",
+      "signal_type": "event_awareness",
+      "provenance": "derived",
+      "title": "Arena rush at LA Live",
+      "description": "An arena event is expected to concentrate rideshare demand and pre-show bar traffic across LA Live tonight.",
+      "impact_level": "medium",
+      "rank_weight": 0.7,
+      "status": "scheduled",
+      "starts_at": "2026-03-26T18:30:00-07:00",
+      "expires_at": "2026-03-26T22:30:00-07:00",
+      "linked_event_id": "evt-los-angeles-crypto-com-arena",
+      "linked_venue_slug": "crypto-com-arena",
+      "affected_district_slugs": [
+        "la-live"
+      ],
+      "near_anchor_slugs": [
+        "circa-la"
+      ]
+    }
+  ]
+}

@@ -6,4 +6,5 @@ export * from "@/src/lib/media/source-ticketmaster";
 export * from "@/src/lib/media/source-bandsintown";
 export * from "@/src/lib/media/source-unsplash";
 export * from "@/src/lib/media/source-seatgeek";
+export * from "@/src/lib/media/source-wikimedia";
 export * from "@/src/lib/media/cache";

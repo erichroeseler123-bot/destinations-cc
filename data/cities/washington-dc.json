@@ -13,9 +13,13 @@
   },
   "hero": {
     "eyebrow": "Washington DC travel guide",
-    "title": "Washington DC tours, things to do, and local travel planning",
-    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Washington DC trip.",
-    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Washington DC.",
+    "title": "Washington DC planning for monument days, museum clusters, and neighborhood pivots",
+    "summary": "Use Washington DC as a route-first city: build one National Mall block, one museum-heavy stretch, and one Georgetown or Capitol Hill pivot instead of trying to brute-force every landmark in a single day.",
+    "trustLine": "Best used when you need to group Smithsonian time, monument walking, and neighborhood meals into one cleaner DC plan.",
+    "image": {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/National_Mall_WDC.JPG/1280px-National_Mall_WDC.JPG",
+      "alt": "National Mall and Washington Monument in Washington DC"
+    },
     "primaryCtaLabel": "Browse Tours",
     "primaryCtaHref": "/washington-dc/tours",
     "secondaryCtaLabel": "Explore Things to Do",
@@ -25,39 +29,39 @@
     {
       "slug": "walking-tours",
       "title": "Walking Tours",
-      "description": "Guided city walks that help visitors get oriented quickly."
+      "description": "Strongest for National Mall, memorial, and Capitol-area orientation without wasting half the day on backtracking."
     },
     {
       "slug": "food-tours",
       "title": "Food Tours",
-      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+      "description": "Useful when you want Georgetown, Union Market, or neighborhood food context instead of another museum block."
     },
     {
       "slug": "sightseeing-tours",
       "title": "Sightseeing Tours",
-      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+      "description": "Good first-day option when you need the monuments, White House area, and core memorials framed quickly."
     },
     {
       "slug": "day-trips",
       "title": "Day Trips",
-      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+      "description": "Useful when you want to break up museum density with Mount Vernon, Alexandria, or wider Mid-Atlantic contrast."
     }
   ],
   "topAttractions": [
     {
       "slug": "national-mall",
       "title": "National Mall",
-      "description": ""
+      "description": "Best when you group memorial walking, Smithsonian timing, and photo stops into one dedicated block."
     },
     {
       "slug": "smithsonian-museums",
       "title": "Smithsonian Museums",
-      "description": ""
+      "description": "The city's easiest high-value lane if you plan by cluster instead of bouncing museum to museum all day."
     },
     {
       "slug": "georgetown",
       "title": "Georgetown",
-      "description": ""
+      "description": "A strong reset lane for food, shopping, and an evening walk after heavier monument or museum time."
     },
     {
       "slug": "capitol-hill",
@@ -77,11 +81,12 @@
   ],
   "featuredTours": {
     "title": "Popular Washington DC experiences",
-    "description": "Guided experiences and bookable activities that help visitors plan around Washington DC's most useful highlights.",
+    "description": "Use guided DC experiences to simplify monument pacing, museum clusters, and neighborhood choices instead of building a scattered first trip.",
     "fallbackQueries": [
       "washington dc walking tour",
       "washington dc food tour",
-      "washington dc sightseeing tour"
+      "washington dc sightseeing tour",
+      "washington dc monuments night tour"
     ]
   },
   "planningLinks": [
@@ -109,11 +114,15 @@
   "faq": [
     {
       "q": "What are the best tours in Washington DC for first-time visitors?",
-      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+      "a": "The strongest first pass is usually one monument or National Mall tour, one museum cluster, and one neighborhood block like Georgetown instead of trying to clear the entire city core in one push."
     },
     {
       "q": "How many days should you spend in Washington DC?",
-      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+      "a": "Two to four days is the useful window for most visitors because DC works best when you split the trip into monument time, museum time, and one lighter neighborhood or food block."
+    },
+    {
+      "q": "What is the smartest way to do the Smithsonian museums?",
+      "a": "Treat the Smithsonian as a cluster choice, not an all-day checklist. Pick one or two museums that fit the same part of the Mall and leave buffer for memorial walking or a meal break."
     }
   ],
   "coordinates": {

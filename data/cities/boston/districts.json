@@ -1,0 +1,59 @@
+{
+  "city": "boston",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-04:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-04:00",
+  "schema": {
+    "entity": "district",
+    "description": "Durable district layer used to group venues, places, and signals."
+  },
+  "districts": [
+    {
+      "slug": "downtown-crossing",
+      "name": "Downtown Crossing",
+      "district_type": "downtown-core",
+      "center": {
+        "lat": 42.3555,
+        "lng": -71.0605
+      },
+      "radius_m": 1300,
+      "vibe_tags": [
+        "walkable",
+        "historic",
+        "theater"
+      ],
+      "venue_slugs": [
+        "td-garden",
+        "citizens-opera-house"
+      ],
+      "place_slugs": [
+        "jm-curley",
+        "sam-la-grassa-s"
+      ],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "seaport-boston",
+      "name": "Seaport Boston",
+      "district_type": "waterfront-corridor",
+      "center": {
+        "lat": 42.3511,
+        "lng": -71.0436
+      },
+      "radius_m": 1200,
+      "vibe_tags": [
+        "conventions",
+        "waterfront",
+        "restaurants"
+      ],
+      "venue_slugs": [
+        "boston-convention-and-exhibition-center"
+      ],
+      "place_slugs": [
+        "legal-harborside"
+      ],
+      "impact_profile": "medium"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+requested_url,decision,target_url,reason,domain,priority,notes
+https://www.destinationcommandcenter.com/book/red-rocks,301,https://www.partyatredrocks.com/book/red-rocks-amphitheatre/custom/shared,canonical_cleanup,dcc,high,DCC-local booking path should hand off to PARR
+https://www.destinationcommandcenter.com/book/red-rocks-amphitheatre,301,https://www.partyatredrocks.com/book/red-rocks-amphitheatre/custom/shared,exact_replacement,dcc,high,Runtime redirect already exists
+https://www.destinationcommandcenter.com/book/red-rocks-amphitheatre/private,301,https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private,exact_replacement,dcc,high,Runtime redirect already exists
+https://www.destinationcommandcenter.com/checkout?route=parr-private,301,https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private,canonical_cleanup,dcc,high,Any indexed DCC checkout URL for PARR-private should collapse into PARR
+https://www.destinationcommandcenter.com/best-transportation-options-denver-to-red-rocks,301,https://www.destinationcommandcenter.com/red-rocks-transportation,close_equivalent,dcc,high,Collapse duplicate DCC decision surface into hub
+https://www.destinationcommandcenter.com/denver-concert-shuttle,301,https://www.destinationcommandcenter.com/red-rocks-transportation,close_equivalent,dcc,high,Collapse duplicate DCC decision surface into hub
+https://www.destinationcommandcenter.com/red-rocks/transportation,301,https://www.destinationcommandcenter.com/red-rocks-transportation,exact_replacement,dcc,high,Legacy nested path
+https://www.destinationcommandcenter.com/red-rocks/parking,301,https://www.destinationcommandcenter.com/red-rocks-parking,exact_replacement,dcc,medium,Legacy nested path
+https://www.destinationcommandcenter.com/old-shuttle-page,410,,no_equivalent,dcc,medium,Legacy junk path
+https://www.partyatredrocks.com/book/red-rocks-amphitheatre/shared,301,https://www.partyatredrocks.com/book/red-rocks-amphitheatre/custom/shared,exact_replacement,parr,high,Tighten booking canonicalization

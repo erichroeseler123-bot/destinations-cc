@@ -13,9 +13,13 @@
   },
   "hero": {
     "eyebrow": "Boston travel guide",
-    "title": "Boston tours, things to do, and local travel planning",
-    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Boston trip.",
-    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Boston.",
+    "title": "Boston planning for Freedom Trail blocks, harbor time, and neighborhood meals",
+    "summary": "Boston works best when you treat it as a compact route city: one history-heavy block, one harbor or waterfront block, and one North End or Fenway pivot instead of overbuilding a museum-and-walking marathon.",
+    "trustLine": "Best used when you want the Freedom Trail, Fenway, harbor edges, and food neighborhoods to fit into a cleaner first trip.",
+    "image": {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Boston_Skyline_Panorama.jpg/1280px-Boston_Skyline_Panorama.jpg",
+      "alt": "Boston skyline panorama above the Charles River"
+    },
     "primaryCtaLabel": "Browse Tours",
     "primaryCtaHref": "/boston/tours",
     "secondaryCtaLabel": "Explore Things to Do",
@@ -25,39 +29,39 @@
     {
       "slug": "walking-tours",
       "title": "Walking Tours",
-      "description": "Guided city walks that help visitors get oriented quickly."
+      "description": "The best lane for Freedom Trail, Beacon Hill, and compact-city orientation without forcing your own route logic."
     },
     {
       "slug": "food-tours",
       "title": "Food Tours",
-      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+      "description": "Strongest when you want North End, market, and seafood context instead of another dry historic block."
     },
     {
       "slug": "sightseeing-tours",
       "title": "Sightseeing Tours",
-      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+      "description": "Useful first-day lane for visitors trying to cover Boston Common, harbor edges, and core landmarks efficiently."
     },
     {
       "slug": "day-trips",
       "title": "Day Trips",
-      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+      "description": "Best when you want to split the trip with Salem, Cambridge, or coastal contrast instead of staying downtown the whole time."
     }
   ],
   "topAttractions": [
     {
       "slug": "freedom-trail",
       "title": "Freedom Trail",
-      "description": ""
+      "description": "Still the cleanest first-time Boston route if you want history without inventing your own walking plan."
     },
     {
       "slug": "faneuil-hall",
       "title": "Faneuil Hall",
-      "description": ""
+      "description": "Good transition point between history, harbor-side wandering, and easy meal planning."
     },
     {
       "slug": "fenway-park",
       "title": "Fenway Park",
-      "description": ""
+      "description": "A worthwhile sports and identity stop even when you are not building the whole trip around baseball."
     },
     {
       "slug": "boston-common",
@@ -77,11 +81,12 @@
   ],
   "featuredTours": {
     "title": "Popular Boston experiences",
-    "description": "Guided experiences and bookable activities that help visitors plan around Boston's most useful highlights.",
+    "description": "The strongest Boston experiences are the ones that reduce route friction across history walks, harbor edges, and neighborhood food time.",
     "fallbackQueries": [
       "boston walking tour",
       "boston food tour",
-      "boston sightseeing tour"
+      "boston sightseeing tour",
+      "boston harbor cruise"
     ]
   },
   "planningLinks": [
@@ -109,11 +114,15 @@
   "faq": [
     {
       "q": "What are the best tours in Boston for first-time visitors?",
-      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+      "a": "The cleanest first Boston day is usually one guided Freedom Trail or history block, one harbor or waterfront choice, and one neighborhood food lane like the North End."
     },
     {
       "q": "How many days should you spend in Boston?",
-      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+      "a": "Two to four days is the useful range because Boston is compact enough to move efficiently, but dense enough that history, food, harbor time, and sports can still crowd each other out."
+    },
+    {
+      "q": "Is Boston better as a walking city or a transit city for visitors?",
+      "a": "For most first trips, Boston is best as a walking city with short transit assists. Group nearby stops into one block instead of crossing the city repeatedly for isolated attractions."
     }
   ],
   "coordinates": {

@@ -1,0 +1,59 @@
+{
+  "city": "wisconsin-dells",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-05:00",
+  "schema": {
+    "entity": "district",
+    "description": "Durable district layer used to group venues, places, and signals."
+  },
+  "districts": [
+    {
+      "slug": "wisconsin-dells-parkway",
+      "name": "Wisconsin Dells Parkway",
+      "district_type": "tourism-corridor",
+      "center": {
+        "lat": 43.5981,
+        "lng": -89.7903
+      },
+      "radius_m": 2100,
+      "vibe_tags": [
+        "waterparks",
+        "family",
+        "resorts"
+      ],
+      "venue_slugs": [
+        "noahs-ark-waterpark",
+        "mt-olympus"
+      ],
+      "place_slugs": [
+        "monks-bar-grill",
+        "showboat-saloon"
+      ],
+      "impact_profile": "high"
+    },
+    {
+      "slug": "downtown-dells",
+      "name": "Downtown Dells",
+      "district_type": "tourism-core",
+      "center": {
+        "lat": 43.6272,
+        "lng": -89.7714
+      },
+      "radius_m": 900,
+      "vibe_tags": [
+        "walkable",
+        "boats",
+        "family"
+      ],
+      "venue_slugs": [
+        "upper-dells-boat-tours"
+      ],
+      "place_slugs": [
+        "high-rock-cafe"
+      ],
+      "impact_profile": "medium"
+    }
+  ]
+}

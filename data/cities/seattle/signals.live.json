@@ -1,0 +1,38 @@
+{
+  "city": "seattle",
+  "version": 1,
+  "as_of": "2026-03-26T17:30:00-07:00",
+  "ttl_seconds": 300,
+  "stale_after": "2026-03-26T17:35:00-07:00",
+  "schema": {
+    "entity": "signal",
+    "description": "Ephemeral NOW-layer output.",
+    "provenance_types": [
+      "derived",
+      "source_backed",
+      "manual_editorial"
+    ]
+  },
+  "signals": [
+    {
+      "id": "sig-seattle-climate-pledge-arena-tonight",
+      "signal_type": "event_awareness",
+      "provenance": "derived",
+      "title": "Arena-night pressure from Uptown to the waterfront",
+      "description": "A major event is expected to lift rideshare friction and dinner demand between the arena and the waterfront tonight.",
+      "impact_level": "medium",
+      "rank_weight": 0.7,
+      "status": "scheduled",
+      "starts_at": "2026-03-26T18:30:00-07:00",
+      "expires_at": "2026-03-26T22:30:00-07:00",
+      "linked_event_id": "evt-seattle-climate-pledge-arena",
+      "linked_venue_slug": "climate-pledge-arena",
+      "affected_district_slugs": [
+        "pike-place-waterfront"
+      ],
+      "near_anchor_slugs": [
+        "insignia-seattle"
+      ]
+    }
+  ]
+}

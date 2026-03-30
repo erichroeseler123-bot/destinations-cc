@@ -1,0 +1,67 @@
+{
+  "city": "wisconsin-dells",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-05:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-05:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable city activity nodes.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large complex or district-scale activity center."
+    }
+  },
+  "venues": [
+    {
+      "slug": "noahs-ark-waterpark",
+      "name": "Noah's Ark Waterpark",
+      "venue_type": "major-event-campus",
+      "category": "waterpark",
+      "address": "1410 Wisconsin Dells Pkwy, Wisconsin Dells, WI 53965",
+      "lat": 43.6062,
+      "lng": -89.7894,
+      "impact_potential": "high",
+      "district_slugs": [
+        "wisconsin-dells-parkway"
+      ],
+      "near_anchor_slugs": [
+        "delton-grand-resort"
+      ]
+    },
+    {
+      "slug": "mt-olympus",
+      "name": "Mt. Olympus Water & Theme Park",
+      "venue_type": "major-event-campus",
+      "category": "family-attraction",
+      "address": "1881 Wisconsin Dells Pkwy A, Wisconsin Dells, WI 53965",
+      "lat": 43.6047,
+      "lng": -89.794,
+      "impact_potential": "high",
+      "district_slugs": [
+        "wisconsin-dells-parkway"
+      ],
+      "near_anchor_slugs": [
+        "delton-grand-resort"
+      ]
+    },
+    {
+      "slug": "upper-dells-boat-tours",
+      "name": "Original Wisconsin Ducks Upper Dells Boat Tours",
+      "venue_type": "district-hub",
+      "category": "boat-tour",
+      "address": "107 Broadway Ave, Wisconsin Dells, WI 53965",
+      "lat": 43.6267,
+      "lng": -89.7706,
+      "impact_potential": "medium",
+      "district_slugs": [
+        "downtown-dells"
+      ],
+      "near_anchor_slugs": [
+        "delton-grand-resort"
+      ]
+    }
+  ]
+}

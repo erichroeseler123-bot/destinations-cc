@@ -3,19 +3,38 @@ export type MediaSource =
   | "ticketmaster"
   | "bandsintown"
   | "viator"
+  | "fareharbor"
   | "seatgeek"
-  | "unsplash";
+  | "unsplash"
+  | "wikimedia";
 
 export type MediaAttribution = {
   label: string;
   href?: string;
 };
 
+export type MediaTermsBucket =
+  | "owned"
+  | "provider-restricted"
+  | "open-license"
+  | "hotlink-only"
+  | "synthetic";
+
 export type NodeImageAsset = {
   src: string;
   alt: string;
   source: MediaSource;
   attribution?: MediaAttribution;
+  sourceId?: string;
+  pageUrl?: string;
+  license?: string;
+  licenseUrl?: string;
+  providerTermsBucket?: MediaTermsBucket;
+  canIndex?: boolean;
+  hotlinkOnly?: boolean;
+  width?: number;
+  height?: number;
+  priority?: number;
 };
 
 export type NodeImageSet = {

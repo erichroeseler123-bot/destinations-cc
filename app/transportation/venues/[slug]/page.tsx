@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import StationLinksSection from "@/app/components/dcc/StationLinksSection";
 import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
 import SubtleAffiliateModules from "@/app/components/dcc/SubtleAffiliateModules";
+import { getStationsByVenueSlug } from "@/lib/dcc/stations";
 import { getTransportDirectoryEntry, TRANSPORT_DIRECTORY } from "@/src/data/transport-directory";
 
 type Params = { slug: string };
@@ -27,6 +29,7 @@ export default async function TransportationVenuePage({ params }: { params: Prom
   const { slug } = await params;
   const entry = getTransportDirectoryEntry(slug);
   if (!entry) notFound();
+  const nearbyStations = getStationsByVenueSlug(entry.slug);
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -56,6 +59,12 @@ export default async function TransportationVenuePage({ params }: { params: Prom
         </section>
 
         <RideOptionsCard venueSlug={entry.slug} sourcePage={entry.dccUrl} />
+
+        <StationLinksSection
+          title={`Nearby train and bus stations for ${entry.name}`}
+          intro={`Use station pages when the traveler is arriving by rail or bus and still needs to solve the final move into ${entry.name} without guessing at the route shape.`}
+          stations={nearbyStations}
+        />
 
         <SubtleAffiliateModules
           context={{ surface: "transport", priority: 75 }}

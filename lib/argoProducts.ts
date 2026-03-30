@@ -12,19 +12,19 @@ export type ArgoProduct = {
 export const ARGO_PRODUCTS: Record<ArgoProductKey, ArgoProduct> = {
   "argo-seat": {
     key: "argo-seat",
-    title: "Argo Shuttle Seat",
-    priceCents: 5900,
+    title: "Shared Seat to the Mighty Argo Cable Car",
+    priceCents: 3500,
     kind: "seat",
     maxQty: 12,
-    description: "Shared shuttle seat from Denver to the Argo attraction.",
+    description: "Shared transport option from Denver to the Mighty Argo Cable Car.",
   },
   "argo-suv": {
     key: "argo-suv",
-    title: "Argo Private SUV",
-    priceCents: 49900,
+    title: "Private SUV to the Mighty Argo Cable Car",
+    priceCents: 20000,
     kind: "private",
     maxQty: 1,
-    description: "Private SUV for your group to the Argo attraction.",
+    description: "Private transport option for your group heading to the Mighty Argo Cable Car.",
   },
 };
 

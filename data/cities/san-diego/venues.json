@@ -1,0 +1,67 @@
+{
+  "city": "san-diego",
+  "version": 1,
+  "as_of": "2026-03-26T12:00:00-07:00",
+  "ttl_seconds": 2592000,
+  "stale_after": "2026-04-25T12:00:00-07:00",
+  "schema": {
+    "entity": "venue",
+    "description": "Durable city activity nodes.",
+    "venue_types": {
+      "event-venue": "A place where scheduled events occur directly.",
+      "district-hub": "A district-like social area that aggregates activity.",
+      "mobility-hub": "A place with transit and spillover activity.",
+      "major-event-campus": "A large complex or district-scale activity center."
+    }
+  },
+  "venues": [
+    {
+      "slug": "petco-park",
+      "name": "Petco Park",
+      "venue_type": "event-venue",
+      "category": "sports-concerts",
+      "address": "100 Park Blvd, San Diego, CA 92101",
+      "lat": 32.7073,
+      "lng": -117.1573,
+      "impact_potential": "high",
+      "district_slugs": [
+        "gaslamp-quarter"
+      ],
+      "near_anchor_slugs": [
+        "park-12"
+      ]
+    },
+    {
+      "slug": "san-diego-convention-center",
+      "name": "San Diego Convention Center",
+      "venue_type": "major-event-campus",
+      "category": "conventions",
+      "address": "111 Harbor Dr, San Diego, CA 92101",
+      "lat": 32.7066,
+      "lng": -117.1619,
+      "impact_potential": "high",
+      "district_slugs": [
+        "gaslamp-quarter"
+      ],
+      "near_anchor_slugs": [
+        "park-12"
+      ]
+    },
+    {
+      "slug": "seaport-village",
+      "name": "Seaport Village",
+      "venue_type": "district-hub",
+      "category": "waterfront-retail",
+      "address": "849 W Harbor Dr, San Diego, CA 92101",
+      "lat": 32.7086,
+      "lng": -117.1687,
+      "impact_potential": "medium",
+      "district_slugs": [
+        "embarcadero-bayfront"
+      ],
+      "near_anchor_slugs": [
+        "park-12"
+      ]
+    }
+  ]
+}

@@ -1,19 +1,35 @@
 import type { Metadata } from "next";
 import RedRocksAuthorityPage from "@/app/components/dcc/RedRocksAuthorityPage";
+import { PARR_OPERATOR } from "@/lib/parrOperator";
 
 export const metadata: Metadata = {
   title: "Red Rocks Complete Guide | Destination Command Center",
   description: "A complete Red Rocks guide covering the venue, concerts, parking, tailgating, and transportation.",
   alternates: { canonical: "/red-rocks-complete-guide" },
+  keywords: [
+    "red rocks complete guide",
+    "red rocks concert guide",
+    "red rocks transportation",
+    "red rocks parking and shuttle",
+    "first time red rocks guide",
+  ],
+  openGraph: {
+    title: "Red Rocks Complete Guide | Destination Command Center",
+    description: "Complete Red Rocks planning stack covering concerts, parking, tailgating, and transportation from Denver.",
+    url: "/red-rocks-complete-guide",
+    type: "article",
+  },
 };
+
 
 export default function RedRocksCompleteGuidePage() {
   return (
     <RedRocksAuthorityPage
       eyebrow="DCC Complete Guide"
       title="The full Red Rocks planning stack in one guide."
-      intro="This page is the authority-first overview for Red Rocks: venue basics, concert timing, parking decisions, tailgating expectations, and transportation options. DCC resolves the planning layer. Party At Red Rocks handles the ride once the transportation decision is made."
+      intro="This page is the authority-first overview for Red Rocks: venue basics, concert timing, parking decisions, tailgating expectations, and transportation options. DCC resolves the planning layer. Party at Red Rocks handles the ride once the transportation decision is made."
       sourcePath="/red-rocks-complete-guide"
+      operatorAttribution={PARR_OPERATOR}
       sections={[
         {
           title: "Venue overview",
@@ -29,7 +45,7 @@ export default function RedRocksCompleteGuidePage() {
         },
         {
           title: "Transportation",
-          body: "Transportation to Red Rocks is available through several options. Many visitors use Party At Red Rocks for shared shuttles and private rides because it removes part of the parking and pickup burden from the night.",
+          body: "Transportation to Red Rocks is available through several options. Many visitors use Party at Red Rocks for shared shuttles and private rides because it removes part of the parking and pickup burden from the night.",
         },
       ]}
     />

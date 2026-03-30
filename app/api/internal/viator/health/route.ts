@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
-import { getProductCacheStatus, getReviewCacheStatus, getTaxonomyCacheStatus } from "@/lib/viator/cache-status";
+import {
+  getBookingQuestionCacheStatus,
+  getExchangeRatesCacheStatus,
+  getLocationCacheStatus,
+  getProductCacheStatus,
+  getReviewCacheStatus,
+  getTaxonomyCacheStatus,
+} from "@/lib/viator/cache-status";
 import { getViatorPublicConfig, getViatorServerConfig } from "@/lib/viator/config";
 import { getViatorRuntimeCapabilityProbe, getViatorRuntimeSnapshot } from "@/lib/viator/runtime";
 import { getViatorDestinationCatalogSource } from "@/lib/viator/destinations";
@@ -48,6 +55,9 @@ export async function GET() {
       caches: {
         taxonomy: getTaxonomyCacheStatus(),
         reviews: getReviewCacheStatus(),
+        bookingQuestions: getBookingQuestionCacheStatus(),
+        locations: getLocationCacheStatus(),
+        exchangeRates: getExchangeRatesCacheStatus(),
         sampleProductReviewCache: getProductCacheStatus(sampleProductCode),
         policyOverlay: {
           tagDefinitions: getViatorPolicyTagDefinitions().length,

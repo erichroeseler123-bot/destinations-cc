@@ -11,11 +11,14 @@ import {
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "data");
 const REVIEWS_DIR = path.join(DATA_DIR, "viator-reviews");
+const BOOKING_QUESTIONS_DIR = path.join(DATA_DIR, "viator-booking-questions");
+const LOCATIONS_DIR = path.join(DATA_DIR, "viator-locations");
 
 export const VIATOR_CACHE_FILES = {
   destinations: path.join(DATA_DIR, "viator-destinations.json"),
   tags: path.join(DATA_DIR, "viator-tags.json"),
   taxonomyMeta: path.join(DATA_DIR, "viator-taxonomy.meta.json"),
+  exchangeRates: path.join(DATA_DIR, "viator-exchange-rates.json"),
 } as const;
 
 export type ViatorTaxonomyMeta = {
@@ -119,4 +122,60 @@ export function writeViatorTaxonomyMeta(payload: ViatorTaxonomyMeta): string {
 
 export function getViatorReviewsDir(): string {
   return REVIEWS_DIR;
+}
+
+export function getViatorBookingQuestionsCachePath(productCode: string): string {
+  return path.join(BOOKING_QUESTIONS_DIR, `${productCode}.json`);
+}
+
+export function readViatorBookingQuestionsCache(productCode: string): unknown[] {
+  try {
+    return JSON.parse(fs.readFileSync(getViatorBookingQuestionsCachePath(productCode), "utf8")) as unknown[];
+  } catch {
+    return [];
+  }
+}
+
+export function writeViatorBookingQuestionsCache(productCode: string, questions: unknown[]): string {
+  fs.mkdirSync(BOOKING_QUESTIONS_DIR, { recursive: true });
+  const filePath = getViatorBookingQuestionsCachePath(productCode);
+  fs.writeFileSync(filePath, `${JSON.stringify(questions, null, 2)}\n`);
+  return filePath;
+}
+
+export function getViatorBookingQuestionsDir(): string {
+  return BOOKING_QUESTIONS_DIR;
+}
+
+export function getViatorLocationCachePath(reference: string): string {
+  return path.join(LOCATIONS_DIR, `${reference}.json`);
+}
+
+export function readViatorLocationCache(reference: string): unknown | null {
+  try {
+    return JSON.parse(fs.readFileSync(getViatorLocationCachePath(reference), "utf8")) as unknown;
+  } catch {
+    return null;
+  }
+}
+
+export function writeViatorLocationCache(reference: string, payload: unknown): string {
+  fs.mkdirSync(LOCATIONS_DIR, { recursive: true });
+  const filePath = getViatorLocationCachePath(reference);
+  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
+  return filePath;
+}
+
+export function getViatorLocationsDir(): string {
+  return LOCATIONS_DIR;
+}
+
+export function readViatorExchangeRatesCache(): unknown | null {
+  return readJsonFile<unknown>(VIATOR_CACHE_FILES.exchangeRates);
+}
+
+export function writeViatorExchangeRatesCache(payload: unknown): string {
+  ensureDataDir(VIATOR_CACHE_FILES.exchangeRates);
+  fs.writeFileSync(VIATOR_CACHE_FILES.exchangeRates, `${JSON.stringify(payload, null, 2)}\n`);
+  return VIATOR_CACHE_FILES.exchangeRates;
 }

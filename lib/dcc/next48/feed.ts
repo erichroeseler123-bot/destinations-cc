@@ -6,6 +6,7 @@ import { fetchFestivalItems } from "@/lib/dcc/next48/sources/festivals";
 import { fetchTourItems } from "@/lib/dcc/next48/sources/tours";
 import { fetchCuratedItems } from "@/lib/dcc/next48/sources/curated";
 import { buildNext48LivePulseOverlayItems } from "@/lib/dcc/livePulse/next48";
+import { NEXT48_SUPPORTED, isSupportedNext48Entity } from "@/lib/dcc/next48/supported";
 import {
   NEXT48_FILTERS,
   type Next48CandidateItem,
@@ -15,13 +16,8 @@ import {
   type Next48SourceName,
 } from "@/lib/dcc/next48/types";
 
-const SUPPORTED: Array<{ entityType: "city" | "port"; slug: string }> = [
-  { entityType: "city", slug: "denver" },
-  { entityType: "port", slug: "juneau" },
-];
-
 export function isNext48Supported(entityType: "city" | "port", slug: string): boolean {
-  return SUPPORTED.some((item) => item.entityType === entityType && item.slug === slug);
+  return isSupportedNext48Entity(entityType, slug);
 }
 
 export async function buildNext48Feed(context: Next48SourceContext): Promise<Next48Feed> {

@@ -1,0 +1,104 @@
+{
+  "slug": "pigeon-forge",
+  "name": "Pigeon Forge",
+  "timezone": "America/New_York",
+  "coordinates": {
+    "lat": 35.7884,
+    "lng": -83.5543
+  },
+  "metadata": {
+    "title": "Pigeon Forge Tours, Things to Do, and Attractions | Destination Command Center",
+    "description": "Discover Pigeon Forge tours, things to do, attractions, neighborhoods, and practical trip-planning paths with a stronger city-first DCC guide.",
+    "keywords": [
+      "pigeon forge tours",
+      "things to do in pigeon forge",
+      "pigeon forge attractions",
+      "mountain activities",
+      "dinner theaters"
+    ]
+  },
+  "hero": {
+    "eyebrow": "Pigeon Forge travel guide",
+    "title": "Pigeon Forge tours, things to do, and local travel planning",
+    "summary": "Browse guided experiences, major attractions, and route-first planning ideas for a stronger Pigeon Forge trip.",
+    "trustLine": "Find tours, attractions, and trip ideas in Pigeon Forge with DCC's city-first planning model.",
+    "primaryCtaLabel": "Browse Tours",
+    "primaryCtaHref": "/pigeon-forge/tours",
+    "secondaryCtaLabel": "Explore Things to Do",
+    "secondaryCtaHref": "/pigeon-forge/things-to-do"
+  },
+  "tourCategories": [
+    {
+      "slug": "walking-tours",
+      "title": "Walking Tours",
+      "description": "Guided city walks that help visitors get oriented quickly."
+    },
+    {
+      "slug": "food-tours",
+      "title": "Food Tours",
+      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+    },
+    {
+      "slug": "sightseeing-tours",
+      "title": "Sightseeing Tours",
+      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+    },
+    {
+      "slug": "day-trips",
+      "title": "Day Trips",
+      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+    },
+    {
+      "slug": "mountain-activities",
+      "title": "Mountain Activities",
+      "description": "Outdoor demand tied to Smoky Mountains access, scenic routes, and zipline inventory."
+    },
+    {
+      "slug": "dinner-theaters",
+      "title": "Dinner Theaters",
+      "description": "High-intent family entertainment that shapes evening planning in Pigeon Forge."
+    }
+  ],
+  "topAttractions": [],
+  "featuredTours": {
+    "title": "Popular Pigeon Forge experiences",
+    "description": "Guided experiences and bookable activities that help visitors plan around Pigeon Forge's strongest demand lanes.",
+    "fallbackQueries": [
+      "pigeon forge walking tour",
+      "pigeon forge food tour",
+      "pigeon forge sightseeing tour"
+    ]
+  },
+  "planningLinks": [
+    {
+      "title": "Things to do in Pigeon Forge",
+      "description": "A broader planning surface for attractions, neighborhoods, and trip ideas.",
+      "href": "/pigeon-forge/things-to-do"
+    },
+    {
+      "title": "Pigeon Forge tours",
+      "description": "A cleaner starting point for guided experiences, day trips, and visitor favorites.",
+      "href": "/pigeon-forge/tours"
+    },
+    {
+      "title": "Pigeon Forge attractions",
+      "description": "Core sights and activity clusters that shape a real visitor route.",
+      "href": "/pigeon-forge/attractions"
+    },
+    {
+      "title": "Pigeon Forge day trips",
+      "description": "Half-day and full-day options that fit naturally with a city stay.",
+      "href": "/pigeon-forge/day-trips"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What are the best tours in Pigeon Forge for first-time visitors?",
+      "a": "Most first-time visitors do best with one broad sightseeing experience, one neighborhood or food block, and one standout attraction or day trip."
+    },
+    {
+      "q": "How many days should you spend in Pigeon Forge?",
+      "a": "A practical first visit is usually 2 to 4 days depending on how many major attractions, shows, or day trips you want to fit into one trip."
+    }
+  ]
+}

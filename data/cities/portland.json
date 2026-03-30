@@ -13,9 +13,13 @@
   },
   "hero": {
     "eyebrow": "Portland travel guide",
-    "title": "Portland tours, things to do, and local travel planning",
-    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Portland trip.",
-    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Portland.",
+    "title": "Portland planning for neighborhood food runs, garden blocks, and gorge pivots",
+    "summary": "Portland works best when you split the trip into one walkable neighborhood or food block, one park or garden block, and one Columbia Gorge or wider-nature decision instead of treating the city like a single downtown loop.",
+    "trustLine": "Best used when you want Powell's, Washington Park, food neighborhoods, and one stronger outdoors move to fit together without flattening Portland into generic Pacific Northwest filler.",
+    "image": {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Portland_Skyline_%2818169410045%29.jpg/1920px-Portland_Skyline_%2818169410045%29.jpg",
+      "alt": "Portland skyline with downtown towers and tree-lined foreground"
+    },
     "primaryCtaLabel": "Browse Tours",
     "primaryCtaHref": "/portland/tours",
     "secondaryCtaLabel": "Explore Things to Do",
@@ -25,49 +29,49 @@
     {
       "slug": "walking-tours",
       "title": "Walking Tours",
-      "description": "Guided city walks that help visitors get oriented quickly."
+      "description": "Best used for downtown, Pearl District, and neighborhood orientation before deciding whether the trip leans food-first, books-and-culture, or gardens-and-parks."
     },
     {
       "slug": "food-tours",
       "title": "Food Tours",
-      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+      "description": "Useful when the city needs to feel like Portland, not just another coffee-and-brunch stop with generic downtown filler."
     },
     {
       "slug": "sightseeing-tours",
       "title": "Sightseeing Tours",
-      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+      "description": "Good first-day lane for visitors trying to connect downtown, parks, bridges, and local context before choosing a deeper neighborhood block."
     },
     {
       "slug": "day-trips",
       "title": "Day Trips",
-      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+      "description": "Best when Portland is the base and the real value is adding Columbia Gorge, wine country, or coast contrast instead of staying urban the whole time."
     }
   ],
   "topAttractions": [
     {
       "slug": "powells-city-of-books",
       "title": "Powell's City of Books",
-      "description": ""
+      "description": "A clean first stop when the trip needs immediate Portland identity and a walkable neighborhood anchor."
     },
     {
       "slug": "washington-park",
       "title": "Washington Park",
-      "description": ""
+      "description": "Best treated as a real block of time because the park, gardens, and viewpoints work better together than as a quick add-on."
     },
     {
       "slug": "pearl-district",
       "title": "Pearl District",
-      "description": ""
+      "description": "One of the easiest ways to give the trip better food, shopping, and neighborhood texture without overcomplicating logistics."
     },
     {
       "slug": "lan-su-chinese-garden",
       "title": "Lan Su Chinese Garden",
-      "description": ""
+      "description": "A strong urban calm-and-culture stop when downtown needs more than coffee and retail."
     },
     {
       "slug": "portland-japanese-garden",
       "title": "Portland Japanese Garden",
-      "description": ""
+      "description": "Best treated as a dedicated garden-and-viewpoint move, especially if the day already leans park-heavy."
     },
     {
       "slug": "tom-mccall-waterfront-park",
@@ -77,11 +81,12 @@
   ],
   "featuredTours": {
     "title": "Popular Portland experiences",
-    "description": "Guided experiences and bookable activities that help visitors plan around Portland's most useful highlights.",
+    "description": "The strongest Portland experiences are the ones that respect neighborhood pacing, weather, and whether the day is city-first, food-first, or gorge-first.",
     "fallbackQueries": [
-      "portland walking tour",
       "portland food tour",
-      "portland sightseeing tour"
+      "portland walking tour",
+      "portland columbia gorge tour",
+      "portland brewery tour"
     ]
   },
   "planningLinks": [
@@ -109,11 +114,15 @@
   "faq": [
     {
       "q": "What are the best tours in Portland for first-time visitors?",
-      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+      "a": "The cleanest first Portland trip usually includes one neighborhood or food block, one park or garden block, and one bigger outdoors choice instead of trying to treat downtown as the whole story."
     },
     {
       "q": "How many days should you spend in Portland?",
-      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+      "a": "Two to four days is the useful range because Portland improves when you leave room for neighborhoods, parks, and at least one wider Columbia Gorge or coast decision."
+    },
+    {
+      "q": "Is Portland better as a city-only trip or a base for day trips?",
+      "a": "Most trips are stronger when Portland is the city anchor and one day is reserved for the Gorge, wine country, or another nearby contrast instead of staying in the same urban rhythm every day."
     }
   ],
   "coordinates": {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PoweredByViator from "@/app/components/dcc/PoweredByViator";
+import { getCategoriesManifest } from "@/lib/dcc/manifests/cityExpansion";
 import { buildViatorSearchLink } from "@/utils/affiliateLinks";
 import type { ViatorActionProduct } from "@/lib/dcc/action/viator";
 
@@ -35,6 +36,7 @@ export default function CityToursSection({
   fallbacks,
 }: CityToursSectionProps) {
   const hasLiveProducts = products.length > 0;
+  const categoryGuides = (getCategoriesManifest(cityKey)?.categories || []).slice(0, 4);
   const cards =
     hasLiveProducts
       ? products.slice(0, 6).map((product) => ({
@@ -88,6 +90,26 @@ export default function CityToursSection({
             <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Availability on partner page</span>
           </div>
         </div>
+
+        {categoryGuides.length ? (
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">Category guides</p>
+            <p className="mt-2 max-w-3xl text-sm text-zinc-300">
+              These are stronger organic entry points than a generic city tour page because they line up with specific search intent.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {categoryGuides.map((item) => (
+                <Link
+                  key={item.slug}
+                  href={`/${cityKey}/${item.slug}`}
+                  className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.14em] text-zinc-200 hover:bg-white/10"
+                >
+                  {item.title}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {cards.map((card) => (

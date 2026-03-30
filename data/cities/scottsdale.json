@@ -13,9 +13,13 @@
   },
   "hero": {
     "eyebrow": "Scottsdale travel guide",
-    "title": "Scottsdale tours, things to do, and local travel planning",
-    "summary": "Browse guided experiences, top attractions, neighborhood ideas, and practical planning paths for a stronger Scottsdale trip.",
-    "trustLine": "Find tours, attractions, neighborhoods, and trip ideas in Scottsdale.",
+    "title": "Scottsdale planning for Old Town nights, desert mornings, and resort-area pivots",
+    "summary": "Scottsdale works best when you split the trip into one Old Town or nightlife block, one desert or preserve block, and one architecture, spa, or resort-area decision instead of treating the city like a generic Phoenix overflow stay.",
+    "trustLine": "Best used when you want Old Town, Taliesin West, McDowell preserve time, and Scottsdale resort geography to fit together without wasting the best weather hours.",
+    "image": {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Scottsdale%2C_Arizona_%28101299903%29.jpg",
+      "alt": "Scottsdale city view with desert-edge urban grid"
+    },
     "primaryCtaLabel": "Browse Tours",
     "primaryCtaHref": "/scottsdale/tours",
     "secondaryCtaLabel": "Explore Things to Do",
@@ -25,39 +29,39 @@
     {
       "slug": "walking-tours",
       "title": "Walking Tours",
-      "description": "Guided city walks that help visitors get oriented quickly."
+      "description": "Best used for Old Town orientation and art-district context instead of trying to understand Scottsdale by driving from plaza to plaza."
     },
     {
       "slug": "food-tours",
       "title": "Food Tours",
-      "description": "Tastings and neighborhood food experiences that add local context to a trip."
+      "description": "Useful when the trip needs one strong Old Town or local-dining lane rather than another generic resort meal."
     },
     {
       "slug": "sightseeing-tours",
       "title": "Sightseeing Tours",
-      "description": "Broad city tours for visitors who want a stronger first look at the main highlights."
+      "description": "Good first-day lane for visitors trying to connect Scottsdale, desert context, and nearby Phoenix-area contrast without overbuilding the route."
     },
     {
       "slug": "day-trips",
       "title": "Day Trips",
-      "description": "Useful half-day and full-day escapes that pair well with a city stay."
+      "description": "Best when Scottsdale is the base and the real value is adding a desert, canyon, or wider Valley contrast day."
     }
   ],
   "topAttractions": [
     {
       "slug": "old-town-scottsdale",
       "title": "Old Town Scottsdale",
-      "description": ""
+      "description": "The easiest way to give the trip real identity with walkable dining, galleries, and nightlife instead of another interchangeable resort block."
     },
     {
       "slug": "taliesin-west",
       "title": "Taliesin West",
-      "description": ""
+      "description": "Best treated as a dedicated architecture and desert-design stop, not a casual add-on between shopping runs."
     },
     {
       "slug": "mcdowell-sonoran-preserve",
       "title": "McDowell Sonoran Preserve",
-      "description": ""
+      "description": "A high-value early-hour move when the plan needs desert scenery and trail time before the afternoon heat settles in."
     },
     {
       "slug": "scottsdale-fashion-square",
@@ -77,11 +81,12 @@
   ],
   "featuredTours": {
     "title": "Popular Scottsdale experiences",
-    "description": "Guided experiences and bookable activities that help visitors plan around Scottsdale's most useful highlights.",
+    "description": "The strongest Scottsdale experiences are the ones that respect heat, driving spread, and whether the day is Old Town-first, desert-first, or architecture-first.",
     "fallbackQueries": [
-      "scottsdale walking tour",
+      "scottsdale old town tour",
       "scottsdale food tour",
-      "scottsdale sightseeing tour"
+      "scottsdale desert tour",
+      "scottsdale taliesin west tour"
     ]
   },
   "planningLinks": [
@@ -109,11 +114,15 @@
   "faq": [
     {
       "q": "What are the best tours in Scottsdale for first-time visitors?",
-      "a": "Many first-time visitors start with a broad sightseeing experience, one neighborhood or food-focused tour, and a single attraction or day trip that fits the pace of the city."
+      "a": "The cleanest first Scottsdale trip usually includes one Old Town or food block, one desert or preserve block, and one architecture or resort-area move instead of treating everything as one long driving day."
     },
     {
       "q": "How many days should you spend in Scottsdale?",
-      "a": "A strong first visit is usually 2 to 4 days, depending on how many major attractions, neighborhoods, and guided experiences you want to fit into one trip."
+      "a": "Two to four days is the useful range because Scottsdale works better when you separate desert mornings, Old Town time, and any broader Valley outings into different blocks."
+    },
+    {
+      "q": "Is Scottsdale better as its own trip or as part of a wider Phoenix stay?",
+      "a": "It works best as a defined Scottsdale-first base with room for one or two wider Valley moves, not as an afterthought tacked onto an otherwise generic Phoenix plan."
     }
   ],
   "coordinates": {

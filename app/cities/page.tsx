@@ -25,6 +25,19 @@ export default function CitiesPage({
   const cities = getAllCityHubs()
     .slice()
     .sort((a, b) => (b.metrics?.population ?? 0) - (a.metrics?.population ?? 0));
+  const expansionSlugs = new Set([
+    "washington-dc",
+    "boston",
+    "seattle",
+    "honolulu",
+    "phoenix",
+    "scottsdale",
+    "san-antonio",
+    "tampa",
+    "portland",
+    "salt-lake-city",
+  ]);
+  const expandedCities = cities.filter((city) => expansionSlugs.has(city.slug));
 
   const getModes = (city: (typeof cities)[number]) => ((city as { modes?: string[] }).modes || []);
   const tourismHeavy = cities.filter((city) => getModes(city).includes("tourism-heavy")).length;
@@ -89,12 +102,42 @@ export default function CitiesPage({
           <StatGrid
             items={[
               { label: "Cities listed", value: cities.length.toLocaleString() },
+              { label: "Newly expanded", value: expandedCities.length },
               { label: "Tourism-heavy", value: tourismHeavy },
               { label: "Event-heavy", value: eventHeavy },
               { label: "Nightlife-heavy", value: nightlifeHeavy },
             ]}
           />
         </section>
+
+        {expandedCities.length ? (
+          <section className="rounded-2xl border border-[#f5c66c]/20 bg-[#f5c66c]/10 p-6 space-y-4">
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.22em] text-[#f5c66c]">Fresh rollout</p>
+              <h2 className="text-2xl font-bold">Newly expanded city hubs</h2>
+              <p className="text-sm text-zinc-200">
+                These city nodes were promoted into the live DCC rollout and now surface as first-class city hubs instead of staying buried in manifest-only coverage.
+              </p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {expandedCities.map((city) => (
+                <Link
+                  key={city.slug}
+                  href={`/${city.slug}`}
+                  className="rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:bg-black/30"
+                >
+                  <div className="text-xs uppercase tracking-[0.18em] text-[#f5c66c]">Expansion lane</div>
+                  <div className="mt-2 text-lg font-bold text-zinc-100">{city.name}</div>
+                  <p className="mt-1 text-sm text-zinc-300">
+                    {city.admin?.country || "—"}
+                    {city.admin?.region_code ? ` • ${city.admin.region_code}` : ""}
+                  </p>
+                  <p className="mt-2 text-xs uppercase tracking-[0.14em] text-zinc-500">/{city.slug}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <PoweredByViator
           compact

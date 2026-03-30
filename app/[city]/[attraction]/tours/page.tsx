@@ -30,14 +30,24 @@ export async function generateMetadata({
   const { city, attraction } = await params;
   const entry = getManifestAttraction(city, attraction);
   if (!entry) return { title: "Local Tours" };
+  const cityName = city.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+  const description = `Browse guided experiences, local tours, and popular ways visitors explore ${entry.name} in ${cityName}.`;
 
   return {
-    title: `${entry.name} Tours and Guided Experiences | ${city.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase())}`,
-    description: `Browse guided experiences, local tours, and popular ways visitors explore ${entry.name} in ${city.replace(/-/g, " ")}.`,
+    title: `${entry.name} Tours and Guided Experiences | ${cityName}`,
+    description,
+    keywords: [
+      `${entry.name} tours`,
+      `${entry.name} guided experiences`,
+      `${entry.name} ${cityName}`,
+      `${cityName} tours`,
+    ],
     alternates: { canonical: `/${city}/${entry.slug}/tours` },
-    robots: {
-      index: false,
-      follow: true,
+    openGraph: {
+      title: `${entry.name} Tours and Guided Experiences | ${cityName}`,
+      description,
+      url: `https://destinationcommandcenter.com/${city}/${entry.slug}/tours`,
+      type: "website",
     },
   };
 }
@@ -117,6 +127,32 @@ export default async function AttractionToursPage({
             </div>
           ) : null}
         </header>
+
+        <section className="rounded-3xl border border-white/10 bg-white/[0.05] p-6">
+          <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+            <div>
+              <p className="text-xs uppercase tracking-[0.22em] text-[#8fd0ff]">Conditions First</p>
+              <h2 className="mt-2 text-2xl font-bold">Timing matters more than the tour type.</h2>
+              <p className="mt-3 text-sm leading-7 text-zinc-300">
+                The same experience can feel completely different depending on when you go. Conditions, crowd level, and weather windows often change the quality of the outing more than the label on the tour card.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8fd0ff]">Plan this in this order</div>
+              <div className="mt-4 grid gap-3">
+                {[
+                  "1. When conditions are best",
+                  "2. How long the experience runs",
+                  "3. Then which option fits that window",
+                ].map((item) => (
+                  <div key={item} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-200">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
         <ViatorTourGrid
           placeName={`${city.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase())} ${entry.name}`}
