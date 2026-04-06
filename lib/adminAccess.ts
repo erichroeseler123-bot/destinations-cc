@@ -63,3 +63,9 @@ export function isValidAdminSession(value: string | null | undefined) {
 
   return timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
 }
+
+export function getAdminActorLabel(value: string | null | undefined) {
+  if (!isValidAdminSession(value)) return "unknown-admin";
+  const nonce = String(value).split(".")[2] || "admin";
+  return `admin:${nonce.slice(0, 8)}`;
+}

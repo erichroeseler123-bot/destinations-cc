@@ -5,6 +5,8 @@ export type StoredOrder = {
   orderId: string;
   createdAt?: string;
   route: string;
+  handoffId?: string | null;
+  sessionKey?: string;
   product?: string;
   productTitle?: string;
   qty?: number;
@@ -14,6 +16,10 @@ export type StoredOrder = {
   dropoff?: string | null;
   pickupTime?: string | null;
   specialRequests?: string | null;
+  tripContext?: {
+    flightNumber?: string | null;
+    dispensaryPreference?: string | null;
+  };
   customer?: {
     name?: string | null;
     email?: string | null;
@@ -43,6 +49,25 @@ export type StoredOrder = {
   reminders?: {
     balanceLastSentAt?: string | null;
     balanceSendCount?: number;
+  };
+  ops?: {
+    workflowStatus?: "needs_review" | "pending_payment" | "confirmed" | "canceled" | "archived" | null;
+    note?: string | null;
+    noteUpdatedAt?: string | null;
+    noteUpdatedBy?: string | null;
+    archivedAt?: string | null;
+    archivedBy?: string | null;
+    archivedReason?: string | null;
+    canceledAt?: string | null;
+    canceledBy?: string | null;
+    canceledReason?: string | null;
+    auditLog?: Array<{
+      id: string;
+      at: string;
+      actor: string;
+      action: string;
+      detail?: string | null;
+    }>;
   };
 };
 
