@@ -1,8 +1,18 @@
+import { randomUUID } from "crypto";
 import type { Metadata } from "next";
 import Link from "next/link";
+import JsonLd from "@/app/components/dcc/JsonLd";
+import { buildBreadcrumbJsonLd, buildWebPageJsonLd } from "@/lib/dcc/jsonld";
+import { getEdgeSignalMapForSubjects } from "@/lib/dcc/routing/edge-signals";
+import {
+  buildDccJuneauHelicopterGoUrl,
+  JUNEAU_HELICOPTER_GO_PATH,
+  JUNEAU_HELICOPTER_SIGNAL_SUBJECT_IDS,
+  resolveGoRedirect,
+} from "@/lib/dcc/routing/middleware";
+import { buildWtaProductWidgetUrl } from "@/lib/wta/embed";
 
 const PAGE_URL = "https://destinationcommandcenter.com/juneau/helicopter-tours";
-const SATELLITE_URL = "https://juneauflightdeck.com";
 
 type SearchParams = {
   date?: string;
@@ -46,30 +56,28 @@ export const metadata: Metadata = {
   },
 };
 
-function JsonLd() {
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": PAGE_URL,
-        url: PAGE_URL,
-        name: "Juneau Helicopter Tours",
-        description:
-          "Decision-first DCC page for Juneau helicopter-tour buyers who need a date-first handoff into live availability.",
-        dateModified: "2026-03-23",
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Alaska", item: "https://destinationcommandcenter.com/alaska" },
-          { "@type": "ListItem", position: 2, name: "Juneau Helicopter Tours", item: PAGE_URL },
+function JsonLdGraph() {
+  return (
+    <JsonLd
+      data={{
+        "@context": "https://schema.org",
+        "@graph": [
+          buildWebPageJsonLd({
+            path: "/juneau/helicopter-tours",
+            name: "Juneau Helicopter Tours",
+            description:
+              "Decision-first DCC feeder for Juneau helicopter-tour buyers who need a date-first handoff into live availability.",
+            dateModified: "2026-04-10",
+            isPartOfPath: "/command",
+          }),
+          buildBreadcrumbJsonLd([
+            { name: "Command", item: "/command" },
+            { name: "Juneau Helicopter Tours", item: "/juneau/helicopter-tours" },
+          ]),
         ],
-      },
-    ],
-  };
-
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
+      }}
+    />
+  );
 }
 
 function isValidDate(value?: string): value is string {
@@ -83,12 +91,79 @@ export default async function JuneauHelicopterToursPage({
 }) {
   const sp = await searchParams;
   const selectedDate = isValidDate(sp.date) ? sp.date : null;
-  const satelliteHref = selectedDate ? `${SATELLITE_URL}?date=${encodeURIComponent(selectedDate)}` : SATELLITE_URL;
-  const mobileHandoffQr = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(PAGE_URL)}`;
+  const signalMap = await getEdgeSignalMapForSubjects([...JUNEAU_HELICOPTER_SIGNAL_SUBJECT_IDS]);
+  const goHref = buildDccJuneauHelicopterGoUrl(
+    selectedDate
+      ? {
+          date: selectedDate,
+          port: "juneau",
+          lane: "premium-helicopter",
+          recommendationSlug: "date-first-primary",
+          sourcePage: "/juneau/helicopter-tours",
+          cta: "primary",
+        }
+      : {
+          port: "juneau",
+          lane: "premium-helicopter",
+          recommendationSlug: "date-first-primary",
+          sourcePage: "/juneau/helicopter-tours",
+          cta: "primary",
+        }
+  );
+  const resolvedPrimary = resolveGoRedirect({
+    pathname: JUNEAU_HELICOPTER_GO_PATH,
+    searchParams: new URLSearchParams(
+      selectedDate
+        ? {
+            date: selectedDate,
+            port: "juneau",
+            lane: "premium-helicopter",
+            recommendationSlug: "date-first-primary",
+            sourcePage: "/juneau/helicopter-tours",
+            cta: "primary",
+          }
+        : {
+            port: "juneau",
+            lane: "premium-helicopter",
+            recommendationSlug: "date-first-primary",
+            sourcePage: "/juneau/helicopter-tours",
+            cta: "primary",
+          }
+    ),
+    signalMap,
+  });
+  const primaryCtaLabel = resolvedPrimary?.ctaText || (selectedDate ? `Get DCC Fast Pass for ${selectedDate}` : "Get DCC Fast Pass");
+  const widgetHandoffId = resolvedPrimary?.handoffId || randomUUID();
+  const featuredWidgetHref = buildWtaProductWidgetUrl({
+    company: "coastalhelicopters",
+    item: "413056",
+    attribution: {
+      handoffId: widgetHandoffId,
+      source: "dcc",
+      sourceSlug: "dcc-juneau-helicopter-embed",
+      sourcePage: "/juneau/helicopter-tours",
+      topicSlug: "helicopter-tours",
+      portSlug: "juneau-alaska",
+      productSlug: "icefield-excursion",
+      eventDate: selectedDate || undefined,
+      returnPath: "/juneau/helicopter-tours",
+      embedDomain: "destinationcommandcenter.com",
+      embedPath: "/juneau/helicopter-tours",
+      widgetPlacement: "inline-primary",
+      embedId: "juneau-helicopter-inline-primary",
+    },
+  });
+  const mobileHandoffQr = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(goHref)}`;
+  const liveStateCopy =
+    resolvedPrimary?.status === "fallback"
+      ? "Helicopter inventory is not the cleanest live lane right now. The go path will fall back to a safer Juneau decision lane."
+      : resolvedPrimary?.status === "warning"
+        ? "Live signals are active for the helicopter lane. The go path stays in the primary handoff, but the CTA reflects tighter live conditions."
+        : "The button routes through DCC first, then resolves into the live Juneau helicopter handoff at the edge.";
 
   return (
     <main className="min-h-screen bg-[#07131d] text-white">
-      <JsonLd />
+      <JsonLdGraph />
       <div className="mx-auto max-w-6xl space-y-8 px-6 py-16">
         <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(103,232,249,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(96,165,250,0.10),transparent_24%),linear-gradient(180deg,rgba(9,17,24,0.97),rgba(5,8,22,0.99))] p-8 shadow-[0_28px_90px_rgba(0,0,0,0.45)] md:p-10">
           <p className="text-xs uppercase tracking-[0.24em] text-cyan-300">DCC Juneau flight lane</p>
@@ -104,13 +179,13 @@ export default async function JuneauHelicopterToursPage({
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a
-              href={satelliteHref}
+              href={goHref}
               className="rounded-2xl border border-[#67e8f9]/30 bg-[linear-gradient(180deg,#67e8f9,#60a5fa)] px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#071018] shadow-[0_18px_38px_rgba(96,165,250,0.12)] transition hover:scale-[1.02]"
             >
-              {selectedDate ? `Get DCC Fast Pass for ${selectedDate}` : "Get DCC Fast Pass"}
+              {primaryCtaLabel}
             </a>
-            <Link href="/alaska" className="rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm text-white/88 hover:bg-white/10">
-              Back to Alaska planning
+            <Link href="/juneau/whale-watching-tours" className="rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm text-white/88 hover:bg-white/10">
+              Juneau whale corridor
             </Link>
           </div>
         </header>
@@ -123,10 +198,10 @@ export default async function JuneauHelicopterToursPage({
               The dedicated Juneau helicopter site is optimized for fast cruise-day booking. Pick the exact date you will be in port and move straight into live availability.
             </p>
             <a
-              href={satelliteHref}
+              href={goHref}
               className="mt-5 inline-flex rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm font-medium text-white/88 hover:bg-white/10"
             >
-              Open the Juneau booking surface
+              {primaryCtaLabel}
             </a>
           </div>
           <div className="shrink-0 rounded-[2rem] border border-white/10 bg-white p-4 text-center shadow-[0_18px_40px_rgba(0,0,0,0.22)]">
@@ -163,7 +238,40 @@ export default async function JuneauHelicopterToursPage({
                 ? `Current handoff date: ${selectedDate}.`
                 : "If you already know your port date, add it to the URL or pick it on the satellite site first."}
             </p>
+            <p className="mt-4 text-xs uppercase tracking-[0.18em] text-[#8df0cc]">{liveStateCopy}</p>
           </article>
+        </section>
+
+        <section className="rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(6,22,33,0.96),rgba(4,13,22,0.98))] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
+          <div className="max-w-3xl">
+            <div className="text-xs uppercase tracking-[0.24em] text-cyan-300">Embedded booking surface</div>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-white">This is the live WTA widget DCC can drop directly into the corridor</h2>
+            <p className="mt-3 text-sm leading-7 text-white/78">
+              Instead of handing every traveler to a generic catalog, DCC can embed a real Juneau helicopter product with branded pricing, booking context, and attribution already attached.
+            </p>
+          </div>
+          <div className="mt-6 overflow-hidden rounded-[28px] border border-white/10 bg-white shadow-[0_24px_70px_rgba(0,0,0,0.34)]">
+            <iframe
+              src={featuredWidgetHref}
+              title="Juneau helicopter tour widget"
+              loading="lazy"
+              className="block h-[980px] w-full bg-white"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          </div>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <a
+              href={featuredWidgetHref}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm text-white/88 hover:bg-white/10"
+            >
+              Open widget in a new tab
+            </a>
+            <p className="text-sm leading-7 text-white/60">
+              The embed carries a shared handoff id, source page, placement id, and return link so WTA can report iframe views, widget CTA clicks, and downstream booking events back into DCC analytics.
+            </p>
+          </div>
         </section>
 
         <section className="grid gap-4 md:grid-cols-3">
@@ -172,7 +280,15 @@ export default async function JuneauHelicopterToursPage({
               <h2 className="text-xl font-semibold text-white">{lane.title}</h2>
               <p className="mt-3 text-sm leading-7 text-white/74">{lane.body}</p>
               <a
-                href={`${satelliteHref}${selectedDate ? "&" : "?"}q=${encodeURIComponent(lane.query)}`}
+                href={buildDccJuneauHelicopterGoUrl({
+                  date: selectedDate || undefined,
+                  port: "juneau",
+                  lane: "premium-helicopter",
+                  recommendationSlug: lane.query.replace(/\s+/g, "-"),
+                  sourcePage: "/juneau/helicopter-tours",
+                  cta: lane.query,
+                  q: lane.query,
+                })}
                 className="mt-5 inline-flex text-sm font-medium text-cyan-200 hover:text-cyan-100"
               >
                 Hand off to this helicopter lane →

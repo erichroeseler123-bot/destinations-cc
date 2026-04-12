@@ -29,8 +29,6 @@ export default function RedRocksParkingPage() {
       sourcePath="/red-rocks-parking"
       primaryCtaHref="/red-rocks-transportation"
       primaryCtaLabel="See The Transport Decision"
-      secondaryCtaHref="/red-rocks-shuttle"
-      secondaryCtaLabel="Check Shuttle Fit"
       sections={[
         {
           title: "Parking reality on busy nights",

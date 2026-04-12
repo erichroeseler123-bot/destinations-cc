@@ -1,29 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import StatGrid from "@/app/components/StatGrid";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import { buildArticleJsonLd, buildBreadcrumbJsonLd } from "@/lib/dcc/jsonld";
-import { getGraphHealth } from "@/lib/dcc/graph/health";
 import { SITE_IDENTITY } from "@/src/data/site-identity";
 import CinematicBackdrop from "@/app/components/dcc/CinematicBackdrop";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
 import NextStepEngine from "@/app/components/dcc/NextStepEngine";
 import { getRedRocksRecommendationActions } from "@/lib/dcc/handoffAnalytics";
+import { buildNoindexRobots } from "@/lib/seo/indexingPolicy";
 
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
   title: "Travel Guides and Planning Hubs | Destination Command Center",
   description:
-    "Explore the main DCC guide hubs for destinations, ports, tours, alerts, and trip-planning context.",
+    "Use the main DCC guide hubs for destinations, ports, tours, alerts, and trip-planning context.",
   alternates: { canonical: "/authority" },
+  robots: buildNoindexRobots(),
 };
 
 const PLANNING_HUBS = [
   {
     href: "/cities",
     title: "Cities",
-    description: "Browse destination guides, city pages, live shows, attractions, and trip-planning context.",
+    description: "Use destination guides, city pages, live shows, attractions, and trip-planning context.",
   },
   {
     href: "/ports",
@@ -43,7 +43,6 @@ const PLANNING_HUBS = [
 ];
 
 export default function AuthorityPage() {
-  const health = getGraphHealth();
   const actions = getRedRocksRecommendationActions();
 
   return (
@@ -57,7 +56,7 @@ export default function AuthorityPage() {
               path: "/authority",
               headline: "Travel Guides and Planning Hubs",
               description:
-                "Explore the main DCC guide hubs for destinations, ports, tours, alerts, and trip-planning context.",
+                "Use the main DCC guide hubs for destinations, ports, tours, alerts, and trip-planning context.",
             }),
             buildBreadcrumbJsonLd([
               { name: "Home", item: "/" },
@@ -70,59 +69,41 @@ export default function AuthorityPage() {
       <div className="relative mx-auto max-w-6xl px-6 py-16 space-y-8">
         <header className="space-y-3">
           <RouteHeroMark eyebrow="Destination Command Center" title="PLANNING HUBS" tone="emerald" />
-          <p className="text-xs uppercase tracking-wider text-zinc-500">Destination discovery</p>
-          <h1 className="text-4xl font-black tracking-tight">Planning hubs and guide surfaces</h1>
+          <p className="text-xs uppercase tracking-wider text-zinc-500">Understand → decide → execute</p>
+          <h1 className="text-4xl font-black tracking-tight">Use the right DCC surface fast</h1>
           <p className="max-w-3xl text-zinc-300">
-            Use this page to move into the right DCC surface quickly, whether the question is destination discovery,
-            port logistics, tours, or changing travel conditions.
+            This page is for one job only: move into the right DCC surface quickly when the question is about destination planning, port logistics, tours, or changing conditions.
           </p>
         </header>
 
         <section className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 p-6 space-y-4">
           <div className="space-y-1">
-            <p className="text-xs uppercase tracking-[0.22em] text-cyan-200">Trip Planning Snapshot</p>
-            <h2 className="text-2xl font-bold">What this hub helps you decide quickly</h2>
+            <p className="text-xs uppercase tracking-[0.22em] text-cyan-200">What this page does</p>
+            <h2 className="text-2xl font-bold">Choose the right planning lane</h2>
             <p className="text-sm text-zinc-200">
-              Which DCC surface best matches the question in front of you, so you spend less time jumping between unrelated pages.
+              If you already know the problem but not the right DCC section, this page gets you to the correct lane without extra browsing.
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Best for</p>
+              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Start here when</p>
               <p className="mt-2 text-sm font-medium text-zinc-100">
-                Travelers choosing between cities, ports, tours, planning tools, and live-condition hubs.
+                You know the planning problem, but not yet the correct DCC route.
               </p>
             </article>
             <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Typical use</p>
+              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Best result</p>
               <p className="mt-2 text-sm font-medium text-zinc-100">
-                Start here when you know the planning problem but not yet the right DCC section.
+                Less time bouncing between unrelated sections before you find the correct path.
               </p>
             </article>
             <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Good companion pages</p>
+              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Typical next step</p>
               <p className="mt-2 text-sm font-medium text-zinc-100">
-                About DCC • Cities • Ports • Tours • Alerts & Trends
+                Move into a city, port, tours, or alerts surface and then keep going from there.
               </p>
             </article>
           </div>
-        </section>
-
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-bold">Platform snapshot</h2>
-            <p className="text-sm text-zinc-400">
-              A quick read on the scale of the current DCC graph and the guide hubs travelers use most.
-            </p>
-          </div>
-          <StatGrid
-            items={[
-              { label: "Guide hubs", value: PLANNING_HUBS.length },
-              { label: "Places tracked", value: health.places },
-              { label: "Edges tracked", value: health.edges },
-              { label: "Brand promise", value: "Find what’s happening and how to get there" },
-            ]}
-          />
         </section>
 
         <section className="grid gap-4 md:grid-cols-2">
@@ -154,11 +135,20 @@ export default function AuthorityPage() {
           ))}
         </section>
 
+        <section className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold">What DCC is not</h2>
+            <p className="max-w-3xl text-zinc-300">
+              DCC is not trying to be a generic OTA, a review platform, or a giant travel directory. Its job is to make the next move obvious and route travelers into the right planning or execution path.
+            </p>
+          </div>
+        </section>
+
         <section className="grid gap-4 md:grid-cols-3">
           <Link href="/about" className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 p-5 hover:bg-cyan-500/20">
             <div className="font-semibold text-cyan-100">About DCC</div>
             <p className="mt-2 text-sm text-zinc-300">
-              See how {SITE_IDENTITY.name} fits destination guides, tours, transportation, and partner booking paths together.
+              See how {SITE_IDENTITY.name} fits destination guides, tours, transportation, and execution paths together.
             </p>
           </Link>
           <Link href="/ai" className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-5 hover:bg-emerald-500/20">
@@ -178,7 +168,7 @@ export default function AuthorityPage() {
         <NextStepEngine
           title="Canonical Next Step Engine"
           eyebrow="Network routing"
-          description="DCC should decide the next move first, then hand travelers into the correct execution lane only after the decision is clear."
+          description="DCC should decide the next move first, then release travelers into the correct route only after the answer is clear."
           actions={actions}
         />
       </div>

@@ -6,13 +6,14 @@ import CinematicBackdrop from "@/app/components/dcc/CinematicBackdrop";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
 import { getEffectiveAirports } from "@/lib/dcc/airports";
 import { buildArticleJsonLd, buildBreadcrumbJsonLd } from "@/lib/dcc/jsonld";
+import { buildNoindexRobots } from "@/lib/seo/indexingPolicy";
 
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
   title: "Airport Guides and Transfer Planning | Destination Command Center",
   description:
-    "Compare U.S. airports with transfer-first guidance into cities, cruise ports, and logistics-heavy arrival lanes.",
+    "Use U.S. airport guides with transfer-first guidance into cities, cruise ports, and logistics-heavy arrival lanes.",
   keywords: [
     "airport transfer guides",
     "airport to port planning",
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
     "airport to city transfer",
   ],
   alternates: { canonical: "/airports" },
+  robots: buildNoindexRobots(),
 };
 
 export default function AirportsIndexPage() {
@@ -39,7 +41,7 @@ export default function AirportsIndexPage() {
               path: "/airports",
               headline: "Airport Guides and Transfer Planning",
               description:
-                "Compare U.S. airports with transfer-first guidance into cities, cruise ports, and logistics-heavy arrival lanes.",
+                "Use U.S. airport guides with transfer-first guidance into cities, cruise ports, and logistics-heavy arrival lanes.",
             }),
             buildBreadcrumbJsonLd([
               { name: "Home", item: "/" },
@@ -82,12 +84,12 @@ export default function AirportsIndexPage() {
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Best next clicks</div>
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Best next moves</div>
               <div className="mt-4 grid gap-3">
-                <Link href="/ports" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Cruise ports</Link>
-                <Link href="/cities" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Cities directory</Link>
-                <Link href="/transportation" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Transportation</Link>
-                <Link href="/cruises" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Cruise explorer</Link>
+                <Link href="/ports" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Use the cruise port plan</Link>
+                <Link href="/cities" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Use the city network</Link>
+                <Link href="/transportation" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Use the transport plan</Link>
+                <Link href="/cruises" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Use the cruise plan</Link>
               </div>
             </div>
           </div>

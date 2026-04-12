@@ -3,15 +3,10 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { EntrySurface } from "@/src/data/entry-surfaces-types";
+import { isVisibleSurfacePath } from "@/src/data/visible-surface";
 
-type SearchCity = {
-  slug: string;
-  name: string;
-  canonicalPath?: string;
-  state?: string;
-};
-
-export default function SiteHeaderSearch({ cities }: { cities: SearchCity[] }) {
+export default function SiteHeaderSearch({ cities }: { cities: EntrySurface[] }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
@@ -20,14 +15,16 @@ export default function SiteHeaderSearch({ cities }: { cities: SearchCity[] }) {
     if (!q) return [];
 
     return cities
+      .filter((city) => isVisibleSurfacePath(city.canonicalPath))
       .map((city) => {
-        const haystack = `${city.name} ${city.slug} ${city.state ?? ""}`.toLowerCase();
+        const haystack = city.searchText.toLowerCase();
         let score = 0;
-        if (city.slug === q) score += 100;
-        if (city.name.toLowerCase() === q) score += 90;
-        if (city.name.toLowerCase().startsWith(q)) score += 40;
-        if (city.slug.startsWith(q)) score += 35;
+        if (city.path.replace(/^\/+/, "") === q) score += 100;
+        if (city.label.toLowerCase() === q) score += 90;
+        if (city.label.toLowerCase().startsWith(q)) score += 40;
+        if (city.searchText.startsWith(q)) score += 35;
         if (haystack.includes(q)) score += 10;
+        score += Math.round(city.rankScore / 10);
         return { city, score };
       })
       .filter((entry) => entry.score > 0)
@@ -40,18 +37,18 @@ export default function SiteHeaderSearch({ cities }: { cities: SearchCity[] }) {
     if (!q) return;
     const top = results[0]?.city;
     if (top) {
-      router.push(top.canonicalPath ?? `/${top.slug}`);
+      router.push(top.canonicalPath);
       setQuery("");
       return;
     }
-    router.push(`/cities?q=${encodeURIComponent(q)}`);
+    router.push("/command");
     setQuery("");
   }
 
   return (
     <div className="dcc-site-search">
       <label htmlFor="dcc-global-search" className="sr-only">
-        Search cities, ports, and hubs
+        Search active corridors
       </label>
       <input
         id="dcc-global-search"
@@ -62,7 +59,7 @@ export default function SiteHeaderSearch({ cities }: { cities: SearchCity[] }) {
           if (event.key === "Enter") submit();
           if (event.key === "Escape") setQuery("");
         }}
-        placeholder="Search cities, ports, and hubs"
+        placeholder="Search active corridors"
         className="dcc-site-search__input"
       />
       <button type="button" onClick={submit} className="dcc-site-search__button">
@@ -72,15 +69,15 @@ export default function SiteHeaderSearch({ cities }: { cities: SearchCity[] }) {
         <div className="dcc-site-search__results">
           {results.map(({ city }) => (
             <Link
-              key={city.slug}
-              href={city.canonicalPath ?? `/${city.slug}`}
+              key={city.id}
+              href={city.canonicalPath}
               className="dcc-site-search__result"
               onClick={() => setQuery("")}
             >
-              <span>{city.name}</span>
+              <span>{city.label}</span>
               <span className="dcc-site-search__meta">
                 {city.state ? `${city.state} • ` : ""}
-                /{city.slug}
+                {city.canonicalPath}
               </span>
             </Link>
           ))}

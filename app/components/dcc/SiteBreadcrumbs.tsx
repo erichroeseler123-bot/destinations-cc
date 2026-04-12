@@ -58,6 +58,7 @@ export default function SiteBreadcrumbs() {
   const pathname = usePathname();
 
   if (!pathname || pathname === "/") return null;
+  if (pathname === "/sedona/jeep-tours") return null;
 
   const cleanPath = pathname.split("?")[0];
   const segments = cleanPath.split("/").filter(Boolean);

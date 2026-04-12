@@ -1,16 +1,15 @@
 // app/layout.tsx
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Montserrat, Playfair_Display } from 'next/font/google';
 import './globals.css'; // your global styles
 import SiteHeader from "@/app/components/dcc/SiteHeader";
 import SiteBreadcrumbs from "@/app/components/dcc/SiteBreadcrumbs";
 import SiteFooter from "@/app/components/dcc/SiteFooter";
 import WhatsLiveFloatingButton from "@/app/components/dcc/next48/WhatsLiveFloatingButton";
-import TravelpayoutsDriveScript from "@/app/components/dcc/TravelpayoutsDriveScript";
-import { getTravelpayoutsDrivePolicy } from "@/lib/travelpayouts/policy";
-import { getLiveCityRegistryNodes } from "@/src/data/cities-registry";
+import PartnerAnalyticsScript from "@/lib/getyourguide/PartnerAnalyticsScript";
+import { getHeaderSearchEntries } from "@/src/data/header-search-registry";
 import { SITE_IDENTITY } from "@/src/data/site-identity";
-import { SITE_CONFIG } from "@/src/data/site-config";
 
 const headingFont = Montserrat({
   subsets: ['latin'],
@@ -25,6 +24,8 @@ const accentFont = Playfair_Display({
   display: 'swap',
   variable: '--font-accent',
 });
+
+const GA_MEASUREMENT_ID = "G-S6JEJVWVDT";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_IDENTITY.siteUrl),
@@ -59,28 +60,23 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const brandKey = SITE_CONFIG.socialBrandKey;
-  const navCities = getLiveCityRegistryNodes().map((city) => ({
-    slug: city.slug,
-    name: city.name,
-    canonicalPath: city.canonicalPath,
-    state: city.state,
-  }));
-  const drivePolicy = getTravelpayoutsDrivePolicy();
+  const navCities = getHeaderSearchEntries();
 
   return (
     <html lang="en">
       <head>
         <link rel="alternate" type="application/json" href="/agent.json" />
         <link rel="alternate" type="text/plain" href="/llms.txt" />
+        <link rel="preconnect" href="https://sentry.avs.io" crossOrigin="" />
+        <link rel="preconnect" href="https://widget.getyourguide.com" crossOrigin="" />
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script src={`/ga-init.js?id=${GA_MEASUREMENT_ID}`} strategy="afterInteractive" />
+        <PartnerAnalyticsScript />
       </head>
       <body className={`${headingFont.variable} ${accentFont.variable}`}>
-        <TravelpayoutsDriveScript
-          enabled={drivePolicy.enabled}
-          src={drivePolicy.src}
-          allowedPrefixes={drivePolicy.allowedPrefixes}
-          blockedPrefixes={drivePolicy.blockedPrefixes}
-        />
         <a href="#main-content" className="dcc-skip-link">
           Skip to main content
         </a>

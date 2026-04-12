@@ -1,16 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SiteHeaderSearch from "@/app/components/dcc/SiteHeaderSearch";
-
-type HeaderCity = {
-  slug: string;
-  name: string;
-  canonicalPath?: string;
-  state?: string;
-};
+import type { EntrySurface } from "@/src/data/entry-surfaces-types";
 
 type NavItem = {
   href: string;
@@ -19,28 +14,33 @@ type NavItem = {
 };
 
 const PRIMARY_NAV: NavItem[] = [
-  { href: "/cities", label: "Cities", description: "Browse city guides and destination pages." },
-  { href: "/ports", label: "Ports & Hubs", description: "Cruise ports, embarkation guidance, and nearby planning." },
-  { href: "/tours", label: "Experiences", description: "Bookable tours, attractions, and popular experiences." },
-  { href: "/transportation", label: "Transportation", description: "Supported venue transport coverage, planning, and Red Rocks guidance." },
-  { href: "/venues", label: "Events", description: "Venue guides, live events, and show planning." },
-  { href: "/authority", label: "Guides", description: "Travel guides, planning pages, and destination context." },
-  { href: "/alerts", label: "Trend Watch", description: "Live destination updates, alerts, and event monitoring." },
+  { href: "/red-rocks-transportation", label: "Red Rocks", description: "Primary transportation corridor and authority node." },
+  { href: "/sedona/jeep-tours", label: "Sedona", description: "Decision-first activity lane for the strongest Sedona fit." },
+  { href: "/juneau/helicopter-tours", label: "Juneau Helicopter", description: "Air-tour corridor tuned for the cleanest fit decision." },
+  { href: "/juneau/whale-watching-tours", label: "Juneau Whale", description: "Wildlife corridor built to remove the wrong tour choice." },
+  { href: "/command", label: "Command", description: "System view of the active entry surfaces." },
 ];
 
-export default function SiteHeader({ cities }: { cities: HeaderCity[] }) {
+export default function SiteHeader({ cities }: { cities: EntrySurface[] }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  if (pathname === "/sedona/jeep-tours") return null;
 
   return (
     <header className="dcc-site-header">
       <div className="dcc-site-header__inner">
         <div className="dcc-site-header__brand-row">
           <Link href="/" className="dcc-site-header__brand" aria-label="Destination Command Center home">
-            <img
+            <Image
               src="/brand/dcc-logo-horizontal.svg"
               alt="Destination Command Center"
               className="dcc-site-header__logo"
+              width={210}
+              height={44}
+              sizes="210px"
+              style={{ width: "210px", height: "44px" }}
+              priority
             />
             <span className="dcc-site-header__eyebrow">Shows, tours, attractions, and transportation</span>
             <span className="dcc-site-header__title">Destination Command Center</span>
@@ -59,10 +59,10 @@ export default function SiteHeader({ cities }: { cities: HeaderCity[] }) {
 
         <div className="dcc-site-header__topline">
           <p className="dcc-site-header__tagline">
-            Destination guides and trip planning for high-intent or complex places.
+            Decision-first corridors for travelers who need the correct move, not more browsing.
           </p>
-          <Link href="/road-trips" className="dcc-site-header__utility-link">
-            Road Trips
+          <Link href="/red-rocks-transportation" className="dcc-site-header__utility-link">
+            Strongest corridor
           </Link>
         </div>
 

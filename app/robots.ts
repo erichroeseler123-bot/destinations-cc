@@ -9,6 +9,7 @@ export default function robots() {
           "/api/",
           "/_next/",
           "/_vercel/",
+          "/wp-content/",
         ],
       },
     ],

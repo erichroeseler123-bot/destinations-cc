@@ -75,6 +75,11 @@ const nextConfig = {
         permanent: false,
       },
       {
+        source: "/wp-content/:path*",
+        destination: "/404",
+        permanent: false,
+      },
+      {
         source: "/phpmyadmin/:path*",
         destination: "/404",
         permanent: false,

@@ -32,6 +32,7 @@ import {
   buildCityJsonLd,
 } from "@/lib/dcc/jsonld";
 import { buildCityClusterNarrative } from "@/lib/dcc/seoCopy";
+import { buildNoindexRobots } from "@/lib/seo/indexingPolicy";
 import { resolveCanonicalCityKey } from "@/src/data/city-aliases";
 import { getTransportGuideHrefForCitySlug } from "@/src/data/transport-directory";
 
@@ -103,6 +104,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
         description:
           manifest.metadata?.description || `Discover tours, attractions, and trip-planning ideas in ${manifest.name}.`,
       },
+      robots: buildNoindexRobots(),
     };
   }
   const config = getCityAuthorityConfig(cityKey);
@@ -115,6 +117,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
       title: `${cityName} Travel Hub | Tours, Attractions, and Logistics`,
       description: `Plan ${cityName} with decision-first routing for tours, attractions, day trips, and event timing.`,
       alternates: { canonical: `/${cityKey}` },
+      robots: buildNoindexRobots(),
     };
   }
 
@@ -136,6 +139,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
       description: config.seoDescription,
       images: [config.openGraphImage],
     },
+    robots: buildNoindexRobots(),
   };
 }
 

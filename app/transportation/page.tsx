@@ -8,6 +8,7 @@ import {
   getTransportRegions,
 } from "@/src/data/transport-directory";
 import { SITE_IDENTITY } from "@/src/data/site-identity";
+import { buildNoindexRobots } from "@/lib/seo/indexingPolicy";
 
 const PAGE_URL = "https://destinationcommandcenter.com/transportation";
 
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
   description:
     "Destination transportation guides and supported venue coverage from Destination Command Center, starting with Colorado and Red Rocks.",
   alternates: { canonical: "/transportation" },
+  robots: buildNoindexRobots(),
 };
 
 function JsonLd() {
@@ -51,10 +53,10 @@ export default function TransportationPage() {
             Supported venue and destination transportation
           </h1>
           <p className="mt-4 max-w-4xl text-base leading-8 text-zinc-300">
-            Find transportation guidance for supported venues and destinations, with clear coverage status for where ride options are active, limited, partner-led, or still coming soon.
+            Use transportation guidance for supported venues and destinations, with clear coverage status for where execution is active, limited, partner-led, or still coming soon.
           </p>
           <p className="mt-3 max-w-4xl text-sm leading-7 text-zinc-500">
-            {SITE_IDENTITY.name} helps travelers find what is happening in a place and how to get there. Where transportation support exists, DCC points travelers to the right ride options without turning this page into a generic operator directory.
+            {SITE_IDENTITY.name} helps travelers find what is happening in a place and how to get there. Where transportation support exists, DCC points travelers to the right live ride path without turning this page into a generic operator directory.
           </p>
           <div className="mt-5 flex flex-wrap gap-3 text-sm text-zinc-300">
             <div className="rounded-full border border-white/10 bg-black/30 px-4 py-2">
@@ -112,7 +114,7 @@ export default function TransportationPage() {
               <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Mode Fit</p>
               <h2 className="mt-2 text-2xl font-bold">Choosing the wrong transport type is the real problem.</h2>
               <p className="mt-3 max-w-4xl text-sm leading-7 text-zinc-300">
-                Most ride options look similar until timing, cost, and return logistics start to matter. The cleanest plan usually comes from solving both directions first, then choosing the transport type that can actually carry that plan.
+                Most ride paths look similar until timing, cost, and return logistics start to matter. The cleanest move usually comes from solving both directions first, then using the transport type that can actually carry that plan.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-black/20 p-5">

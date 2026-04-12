@@ -7,21 +7,33 @@ import { SITE_IDENTITY } from "@/src/data/site-identity";
 import StatGrid from "@/app/components/StatGrid";
 import CinematicBackdrop from "@/app/components/dcc/CinematicBackdrop";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
+import { buildNoindexRobots } from "@/lib/seo/indexingPolicy";
 
 export const dynamic = "force-static";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   title: "City Guides and Destinations | Destination Command Center",
   description:
-    "Browse city guides, destination pages, shows, tours, attractions, and transportation planning from Destination Command Center.",
+    "Use the DCC city network to route into the right city guide, live plan, and transportation-aware travel surface.",
   alternates: { canonical: "/cities" },
+  robots: buildNoindexRobots(),
 };
 
-export default function CitiesPage({
+export async function generateMetadata({
   searchParams,
 }: {
-  searchParams?: { q?: string };
+  searchParams?: Promise<{ q?: string }>;
+}): Promise<Metadata> {
+  await searchParams;
+  return baseMetadata;
+}
+
+export default async function CitiesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ q?: string }>;
 }) {
+  const resolvedSearchParams = (await searchParams) || {};
   const cities = getAllCityHubs()
     .slice()
     .sort((a, b) => (b.metrics?.population ?? 0) - (a.metrics?.population ?? 0));
@@ -50,12 +62,12 @@ export default function CitiesPage({
       <div className="relative max-w-7xl mx-auto px-6 py-16 space-y-8">
         <header className="space-y-3">
           <RouteHeroMark eyebrow="Destination Command Center" title="CITIES" tone="cyan" />
-          <p className="text-xs uppercase tracking-wider text-zinc-500">Destination discovery</p>
+          <p className="text-xs uppercase tracking-wider text-zinc-500">City routing</p>
           <h1 className="text-4xl md:text-6xl font-black tracking-tight">
-            City guides and destination hubs
+            Use the city network to start in the right place
           </h1>
           <p className="max-w-3xl text-zinc-300">
-            Browse the DCC city network for travel guides, shows, attractions, tours, and transportation-aware planning.
+            Use the DCC city network when the real question is which city surface should shape the trip first, then route into the right guide, live plan, or transportation lane.
           </p>
           <p className="max-w-3xl text-sm text-zinc-500">
             {SITE_IDENTITY.name} helps travelers find what is happening in a place and how to get there.
@@ -74,13 +86,13 @@ export default function CitiesPage({
             <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
               <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Best for</p>
               <p className="mt-2 text-sm font-medium text-zinc-100">
-                Travelers comparing cities before drilling into tours, live events, neighborhoods, and destination fit.
+                Travelers narrowing the right city before moving into tours, live events, neighborhoods, and destination fit.
               </p>
             </article>
             <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
               <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Typical use</p>
               <p className="mt-2 text-sm font-medium text-zinc-100">
-                Use this page to move from a broad destination question into a specific city guide with real local context.
+                Use this page to move from a broad destination question into the city guide that should shape the trip next.
               </p>
             </article>
             <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
@@ -145,7 +157,7 @@ export default function CitiesPage({
           body="DCC helps travelers discover tours and activities in the right destination context. When you want to book, you can book with DCC via Viator, a trusted global travel experiences platform."
         />
 
-        <CitiesSearchClient cities={cities as any} initialQuery={searchParams?.q || ""} />
+        <CitiesSearchClient cities={cities as any} initialQuery={resolvedSearchParams?.q || ""} />
 
         <section className="grid gap-4 md:grid-cols-3">
           <Link href="/tours" className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 p-5 hover:bg-cyan-500/20">

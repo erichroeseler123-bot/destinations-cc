@@ -3,11 +3,10 @@ import RedRocksAuthorityPage from "@/app/components/dcc/RedRocksAuthorityPage";
 import { PARR_OPERATOR } from "@/lib/parrOperator";
 import SatelliteHandoffStatusCard from "@/app/components/dcc/SatelliteHandoffStatusCard";
 import { getLocalFallbackImageSetForEntity } from "@/src/lib/media/source-local";
-import { buildParrPrivateRedRocksUrl, buildParrSharedRedRocksUrl } from "@/lib/dcc/contracts/dccParrBridge";
 
 export const metadata: Metadata = {
-  title: "Red Rocks Shuttle From Denver | Shuttle vs Driving vs Uber",
-  description: "Compare Red Rocks shuttle service, driving, parking, and Uber after the show. Built for visitors deciding how to get to Red Rocks from Denver.",
+  title: "Red Rocks Shuttle From Denver | Cleanest Ride Plan",
+  description: "Use the cleanest Red Rocks ride plan from Denver when you want parking and the ride home solved before the show starts.",
   alternates: { canonical: "/red-rocks-shuttle" },
   keywords: [
     "red rocks shuttle",
@@ -37,13 +36,11 @@ export default async function RedRocksShuttlePage({
   return (
     <RedRocksAuthorityPage
       eyebrow="DCC Shuttle Guide"
-      title="Red Rocks shuttle from Denver is usually the cleanest answer when you do not want to fight parking or post-show Uber."
+      title="Red Rocks shuttle from Denver is usually the cleanest move when you do not want to fight parking or post-show Uber."
       intro="Visitors searching for a Red Rocks shuttle are usually past the inspiration phase. They want the simplest way to get from Denver to Red Rocks and back without parking stress, uphill lot walks, or a surge-priced pickup mess after the show."
       sourcePath="/red-rocks-shuttle"
       primaryCtaHref="/red-rocks-transportation"
-      primaryCtaLabel="See The Transport Decision"
-      secondaryCtaHref={buildParrSharedRedRocksUrl()}
-      secondaryCtaLabel="Book Shared Shuttle If You Are Sure"
+      primaryCtaLabel="Use The Transport Decision"
       buyerIntentLabel="Red Rocks shuttle from Denver"
       heroImageSrc={imageSet?.hero?.src || "https://www.partyatredrocks.com/hero/hero-home.jpg"}
       heroImageAlt={imageSet?.hero?.alt || "Red Rocks shuttle proof image tied to the live Party at Red Rocks service"}
@@ -51,16 +48,9 @@ export default async function RedRocksShuttlePage({
         <>
           <SatelliteHandoffStatusCard handoffId={handoffId} />
           <section className="rounded-[1.9rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Private ride shortcut</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Feeder rule</p>
             <p className="mt-3 text-sm leading-7 text-zinc-300">
-              If the group already knows it wants one vehicle for the full night, skip the generic transport loop and go straight to{" "}
-              <a
-                href={buildParrPrivateRedRocksUrl({ product: "parr-suburban" })}
-                className="font-semibold text-cyan-300 underline decoration-cyan-400/40 underline-offset-4"
-              >
-                private shuttle for Red Rocks concerts
-              </a>
-              . That page shows current SUV, van, Sprinter, and party-bus pricing with the custom online checkout flow.
+              This feeder exists for one reason only: to answer whether shuttle is the correct default. Once that answer is yes, the next move is the main transport corridor rather than another comparison stack.
             </p>
           </section>
         </>
@@ -73,15 +63,15 @@ export default async function RedRocksShuttlePage({
           bullets: [
             "They already know the venue.",
             "They already know transportation is the main friction point.",
-            "They are deciding between shuttle, driving, Uber, or private ride.",
+            "They are narrowing the cleanest move between shuttle, driving, Uber, or private ride.",
           ],
         },
         {
-          title: "Shuttle vs. driving",
+          title: "When shuttle beats driving",
           body: "Driving works for visitors who want full control and can arrive early. Shuttle service is stronger when the group wants to offload the parking decision and reduce end-of-night route friction.",
         },
         {
-          title: "Shuttle vs. rideshare",
+          title: "When shuttle beats rideshare",
           body: "Uber and Lyft can work on the way in, but the return trip is where the plan gets brittle. Shuttle service is stronger for visitors who care more about a clean ride home than gambling on surge pricing and pickup congestion.",
           bullets: [
             "Ingress is usually easier than egress.",
@@ -108,8 +98,8 @@ export default async function RedRocksShuttlePage({
           ],
         },
         {
-          title: "What makes this a real product lane",
-          body: "This page routes directly into the live Party at Red Rocks booking flow for shared seats and private rides once the visitor decides they want less parking and pickup friction.",
+          title: "What makes this a valid feeder",
+          body: "A feeder only stays visible when it removes one specific mistake and then hands the visitor into the dominant node. This page exists to rule shuttle in or out cleanly, then move the visitor into the main transportation decision.",
         },
       ]}
     />
