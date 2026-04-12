@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import ParrCtaLink from "@/app/components/dcc/ParrCtaLink";
 import RedRocksFunnelTelemetry from "@/app/components/dcc/RedRocksFunnelTelemetry";
+import { RED_ROCKS_CORRIDOR } from "@/lib/dcc/corridors";
 import { buildArticleJsonLd, buildBreadcrumbJsonLd } from "@/lib/dcc/jsonld";
 
 type RedRocksSection = {
@@ -30,6 +31,11 @@ type RedRocksOperatorAttribution = {
   }[];
 };
 
+type RedRocksHeroSummaryCard = {
+  label: string;
+  body: string;
+};
+
 type RedRocksAuthorityPageProps = {
   eyebrow: string;
   title: string;
@@ -45,41 +51,13 @@ type RedRocksAuthorityPageProps = {
   heroImageSrc?: string;
   heroImageAlt?: string;
   operatorAttribution?: RedRocksOperatorAttribution;
+  heroTrustBadges?: string[];
+  heroSummaryCards?: RedRocksHeroSummaryCard[];
+  hidePrimaryPathLinks?: boolean;
+  hideSupportReading?: boolean;
+  hideSimpleFunnel?: boolean;
+  hideRecommendedFlow?: boolean;
 };
-
-const RELATED_GUIDES = [
-  { href: "/red-rocks-transportation", label: "Transportation hub" },
-  { href: "/red-rocks-shuttle-vs-uber", label: "Shuttle vs Uber" },
-  { href: "/how-to-get-to-red-rocks-without-parking-hassle", label: "No parking hassle" },
-  { href: "/best-way-to-leave-red-rocks", label: "Best way to leave" },
-];
-
-const DECISION_CARDS = [
-  {
-    href: "/red-rocks-transportation",
-    title: "Make the transport decision",
-    body: "Use this when you want the parent answer on what usually works best before you book.",
-    label: "Decision hub",
-  },
-  {
-    href: "/red-rocks-shuttle-vs-uber",
-    title: "Resolve the rideshare question",
-    body: "Use this when the real comparison is shuttle versus the post-show pickup mess.",
-    label: "Rideshare lane",
-  },
-  {
-    href: "/how-to-get-to-red-rocks-without-parking-hassle",
-    title: "Remove parking from the night",
-    body: "Use this when parking is already the problem and you want the cleanest way around it.",
-    label: "Parking lane",
-  },
-  {
-    href: "/best-way-to-leave-red-rocks",
-    title: "Solve the exit plan",
-    body: "Use this when the real concern is how the night ends once everyone tries to leave at once.",
-    label: "Exit lane",
-  },
-];
 
 const HERO_TRUST_BADGES = [
   "Denver-focused ride planning",
@@ -87,11 +65,18 @@ const HERO_TRUST_BADGES = [
   "Built around the post-show return",
 ];
 
+const PRIMARY_PATH_LINKS = new Set([
+  "/red-rocks-transportation",
+  "/red-rocks-shuttle-vs-uber",
+  "/how-to-get-to-red-rocks-without-parking-hassle",
+  "/how-to-leave-red-rocks-after-a-concert",
+]);
+
 const NIGHT_FLOW = [
   "Spot the real friction before the night gets built around it.",
   "Use DCC to resolve the transport decision instead of comparing forever.",
   "Move into one clear booking action once the answer is obvious.",
-  "Land on Party at Red Rocks with the booking path already decided.",
+              "Land on Party at Red Rocks with the booking path already decided.",
 ];
 
 export default function RedRocksAuthorityPage({
@@ -109,6 +94,25 @@ export default function RedRocksAuthorityPage({
   heroImageSrc,
   heroImageAlt = "Red Rocks proof-of-life image",
   operatorAttribution,
+  heroTrustBadges = HERO_TRUST_BADGES,
+  heroSummaryCards = [
+    {
+      label: "Problem query",
+      body: "Visitor already knows the night can break on parking, pickup, or the ride home.",
+    },
+    {
+      label: "Decision path",
+      body: "Resolve the transport question, choose the cleanest path, then move straight into booking.",
+    },
+    {
+      label: "Best fit",
+      body: "Visitors staying in Denver who want fewer moving parts after the show.",
+    },
+  ],
+  hidePrimaryPathLinks = false,
+  hideSupportReading = false,
+  hideSimpleFunnel = false,
+  hideRecommendedFlow = false,
 }: RedRocksAuthorityPageProps) {
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -139,7 +143,7 @@ export default function RedRocksAuthorityPage({
           <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">{title}</h1>
           <p className="mt-4 max-w-4xl text-base leading-8 text-zinc-300">{intro}</p>
           <div className="mt-5 flex flex-wrap gap-2">
-            {HERO_TRUST_BADGES.map((item) => (
+            {heroTrustBadges.map((item) => (
               <span
                 key={item}
                 className="rounded-full border border-white/12 bg-white/8 px-3 py-1.5 text-xs font-semibold text-zinc-100"
@@ -167,18 +171,12 @@ export default function RedRocksAuthorityPage({
             ) : null}
           </div>
           <div className="mt-6 grid gap-3 md:grid-cols-3">
-            <div className="rounded-[24px] border border-white/10 bg-[#0b1224] p-4">
-              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-[#ffb07c]">Problem query</div>
-              <div className="mt-2 text-sm leading-6 text-white/80">Visitor already knows the night can break on parking, pickup, or the ride home.</div>
-            </div>
-            <div className="rounded-[24px] border border-white/10 bg-[#0b1224] p-4">
-              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-[#ffb07c]">Decision path</div>
-              <div className="mt-2 text-sm leading-6 text-white/80">Resolve the transport question, choose the cleanest path, then move straight into booking.</div>
-            </div>
-            <div className="rounded-[24px] border border-white/10 bg-[#0b1224] p-4">
-              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-[#ffb07c]">Best fit</div>
-              <div className="mt-2 text-sm leading-6 text-white/80">Visitors staying in Denver who want fewer moving parts after the show.</div>
-            </div>
+            {heroSummaryCards.map((card) => (
+              <div key={card.label} className="rounded-[24px] border border-white/10 bg-[#0b1224] p-4">
+                <div className="text-[11px] font-black uppercase tracking-[0.2em] text-[#ffb07c]">{card.label}</div>
+                <div className="mt-2 text-sm leading-6 text-white/80">{card.body}</div>
+              </div>
+            ))}
           </div>
           {heroImageSrc ? (
             <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-white/10 bg-black/20">
@@ -189,37 +187,46 @@ export default function RedRocksAuthorityPage({
               />
             </div>
           ) : null}
-          <section className="mt-6 rounded-[1.75rem] border border-white/10 bg-black/20 p-5">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#ffb07c]">Choose your next move</p>
-            <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {DECISION_CARDS.map((card) => (
-                <Link
-                  key={card.href}
-                  href={card.href}
-                  className={`rounded-[1.4rem] border p-4 transition hover:bg-white/10 ${
-                    card.href === sourcePath ? "border-cyan-300/40 bg-white/10" : "border-white/10 bg-white/[0.04]"
-                  }`}
-                >
-                  <div className="text-[11px] font-black uppercase tracking-[0.18em] text-cyan-200">{card.label}</div>
-                  <h2 className="mt-2 text-lg font-bold text-white">{card.title}</h2>
-                  <p className="mt-2 text-sm leading-6 text-zinc-300">{card.body}</p>
-                </Link>
-              ))}
-            </div>
-          </section>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {RELATED_GUIDES.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-200 hover:bg-white/10 ${
-                  item.href === sourcePath ? "bg-white/10" : "bg-black/30"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
+          {hidePrimaryPathLinks ? null : (
+            <section className="mt-6 rounded-[1.75rem] border border-white/10 bg-black/20 p-5">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-[#ffb07c]">Primary path</p>
+              <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {RED_ROCKS_CORRIDOR.decisionCards
+                  .filter((card) => PRIMARY_PATH_LINKS.has(card.href))
+                  .map((card) => (
+                    <Link
+                      key={card.href}
+                      href={card.href}
+                      className={`rounded-[1.4rem] border p-4 transition hover:bg-white/10 ${
+                        card.href === sourcePath ? "border-cyan-300/40 bg-white/10" : "border-white/10 bg-white/[0.04]"
+                      }`}
+                    >
+                      <div className="text-[11px] font-black uppercase tracking-[0.18em] text-cyan-200">{card.label}</div>
+                      <h2 className="mt-2 text-lg font-bold text-white">{card.title}</h2>
+                      <p className="mt-2 text-sm leading-6 text-zinc-300">{card.body}</p>
+                    </Link>
+                  ))}
+              </div>
+            </section>
+          )}
+          {hideSupportReading ? null : (
+            <section className="mt-5 rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">Support reading</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {RED_ROCKS_CORRIDOR.relatedGuides.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-200 hover:bg-white/10 ${
+                      item.href === sourcePath ? "bg-white/10" : "bg-black/30"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -296,33 +303,37 @@ export default function RedRocksAuthorityPage({
               </section>
             ) : null}
 
-            <section className="rounded-[1.9rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
-              <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Simple funnel</p>
-              <h2 className="mt-3 text-2xl font-bold">How a Red Rocks night usually gets decided</h2>
-              <div className="mt-5 grid gap-3 md:grid-cols-2">
-                {NIGHT_FLOW.map((item, index) => (
-                  <div key={item} className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
-                    <div className="text-[11px] font-black uppercase tracking-[0.18em] text-cyan-200">
-                      Step {index + 1}
+            {hideSimpleFunnel ? null : (
+              <section className="rounded-[1.9rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Simple funnel</p>
+                <h2 className="mt-3 text-2xl font-bold">How a Red Rocks night usually gets decided</h2>
+                <div className="mt-5 grid gap-3 md:grid-cols-2">
+                  {NIGHT_FLOW.map((item, index) => (
+                    <div key={item} className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
+                      <div className="text-[11px] font-black uppercase tracking-[0.18em] text-cyan-200">
+                        Step {index + 1}
+                      </div>
+                      <p className="mt-2 text-sm leading-6 text-zinc-300">{item}</p>
                     </div>
-                    <p className="mt-2 text-sm leading-6 text-zinc-300">{item}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
 
           <aside className="space-y-6">
-            <section className="rounded-[1.9rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
-              <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Recommended flow</p>
-              <div className="mt-3 space-y-3 text-sm text-zinc-300">
-                <p>User searches</p>
-                <p>Destination Command Center guide</p>
-                <p>Resolve the transport question</p>
-                <p>Party at Red Rocks booking</p>
-                <p>Ride home already handled</p>
-              </div>
-            </section>
+            {hideRecommendedFlow ? null : (
+              <section className="rounded-[1.9rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Recommended flow</p>
+                <div className="mt-3 space-y-3 text-sm text-zinc-300">
+                  <p>User searches</p>
+                  <p>Destination Command Center guide</p>
+                  <p>Resolve the transport question</p>
+                  <p>Party at Red Rocks booking</p>
+                  <p>Ride home already handled</p>
+                </div>
+              </section>
+            )}
 
             <section className="rounded-[1.9rem] border border-white/10 bg-[linear-gradient(180deg,rgba(17,11,18,0.96),rgba(10,9,20,0.96))] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
               <p className="text-xs font-black uppercase tracking-[0.2em] text-[#ffb07c]">Fastest next step</p>
