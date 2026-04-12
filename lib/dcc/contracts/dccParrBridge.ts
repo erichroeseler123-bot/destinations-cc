@@ -1,14 +1,13 @@
 import bridgeContract from "@/data/contracts/dcc-parr-bridge.contract.v1.json";
+import {
+  RED_ROCKS_CORRIDOR,
+  getRedRocksHandoffTarget,
+  getRedRocksPageParamAlias,
+} from "@/lib/dcc/corridors/redRocks";
 
 type BridgeContract = typeof bridgeContract;
 type SearchParamValue = string | string[] | undefined;
-
-const RED_ROCKS_PAGE_PARAM_MAP: Record<string, string> = {
-  "/red-rocks-transportation": "rr-transportation",
-  "/red-rocks-shuttle-vs-uber": "rr-shuttle-vs-uber",
-  "/how-to-get-to-red-rocks-without-parking-hassle": "rr-no-parking",
-  "/best-way-to-leave-red-rocks": "rr-leave",
-};
+type SearchParamMap = Record<string, SearchParamValue>;
 
 export const DCC_PARR_BRIDGE_CONTRACT: BridgeContract = bridgeContract;
 
@@ -36,27 +35,32 @@ function appendSearchParams(url: URL, params?: Record<string, SearchParamValue>)
   return url;
 }
 
-function withRedRocksTrackingParams(params?: Record<string, SearchParamValue>) {
+function withRedRocksTrackingParams(params?: SearchParamMap) {
   const next = { ...(params ?? {}) };
   const sourcePage = typeof next.sourcePage === "string" ? next.sourcePage : undefined;
+  const allowed = new Set(RED_ROCKS_CORRIDOR.handoff.approvedParams);
+  const filtered: SearchParamMap = {};
 
   delete next.sourcePage;
-  delete next.source;
-  delete next.source_page;
-  delete next.intent;
-  delete next.topic;
-  delete next.subtype;
-  delete next.product;
-
-  if (!next.src) {
-    next.src = "dcc";
+  for (const forbidden of RED_ROCKS_CORRIDOR.handoff.forbiddenLegacyParams) {
+    delete next[forbidden];
   }
 
-  if (!next.page && sourcePage) {
-    next.page = RED_ROCKS_PAGE_PARAM_MAP[sourcePage] ?? sourcePage.replace(/^\/+/, "");
+  for (const [key, value] of Object.entries(next)) {
+    if (allowed.has(key)) {
+      filtered[key] = value;
+    }
   }
 
-  return next;
+  if (!filtered.src) {
+    filtered.src = "dcc";
+  }
+
+  if (!filtered.page && sourcePage) {
+    filtered.page = getRedRocksPageParamAlias(sourcePage);
+  }
+
+  return filtered;
 }
 
 export function buildParrUrl(pathname: string, params?: Record<string, SearchParamValue>) {
@@ -82,15 +86,17 @@ export function buildParrBookUrl(params?: Record<string, SearchParamValue>) {
 }
 
 export function buildParrSharedRedRocksUrl(params?: Record<string, SearchParamValue>) {
-  return buildParrUrl(
-    "/book/red-rocks-amphitheatre/custom/shared",
-    withRedRocksTrackingParams(params)
-  );
+  return buildRedRocksHandoffUrl("shared", params);
 }
 
 export function buildParrPrivateRedRocksUrl(params?: Record<string, SearchParamValue>) {
-  return buildParrUrl(
-    "/book/red-rocks-amphitheatre/private",
-    withRedRocksTrackingParams(params)
-  );
+  return buildRedRocksHandoffUrl("private", params);
+}
+
+export function buildRedRocksHandoffUrl(targetId: "shared" | "private", params?: SearchParamMap) {
+  const target = getRedRocksHandoffTarget(targetId);
+  if (!target) {
+    throw new Error(`Unknown Red Rocks handoff target: ${targetId}`);
+  }
+  return buildParrUrl(new URL(target.href).pathname, withRedRocksTrackingParams(params));
 }
