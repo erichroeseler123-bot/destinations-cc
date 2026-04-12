@@ -38,10 +38,10 @@ function resolvePlaceIdMatchers(...entries: Array<{ slug: string; cls: string }>
 }
 
 const redRocksCommandBinding = RED_ROCKS_CORRIDOR.command;
-const redRocksCommandHandoff =
+const redRocksCommandHandoff: CommandCorridorDefinition["handoff"] =
   redRocksCommandBinding?.satelliteId
     ? {
-        satelliteId: redRocksCommandBinding.satelliteId,
+        satelliteId: "partyatredrocks",
         venueSlug: redRocksCommandBinding.venueSlug,
       }
     : undefined;
