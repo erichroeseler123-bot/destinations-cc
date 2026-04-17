@@ -1,10 +1,10 @@
 import JuneauHomeClient from "./components/JuneauHomeClient";
-import { readHandoffContext } from "@/lib/handoff/readContext";
-import { resolveInitialState } from "@/lib/handoff/resolveInitialState";
-import { applyConfidenceGate, validateJfdState } from "@/lib/handoff/safety";
-import { jfdBaseState, jfdResolverRules } from "@/lib/handoff/jfdResolver";
-import type { HandoffContext } from "@/lib/handoff/types";
-import { readDecisionModeFromSearchParams } from "@/lib/session/decisionMode";
+import { readHandoffContext } from "../lib/handoff/readContext";
+import { resolveInitialState } from "../lib/handoff/resolveInitialState";
+import { applyConfidenceGate, validateJfdState } from "../lib/handoff/safety";
+import { jfdBaseState, jfdResolverRules } from "../lib/handoff/jfdResolver";
+import type { HandoffContext } from "../lib/handoff/types";
+import { readDecisionModeFromSearchParams } from "../lib/session/decisionMode";
 
 export const dynamic = "force-dynamic";
 
