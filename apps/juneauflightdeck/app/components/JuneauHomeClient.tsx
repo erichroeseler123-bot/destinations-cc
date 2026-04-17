@@ -3,13 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import DecisionWidgetCard from "./DecisionWidgetCard";
-import CertaintyBlock from "@/app/components/decision/CertaintyBlock";
-import GuidedFlowController from "@/app/components/decision/GuidedFlowController";
-import GuidedResults from "@/app/components/decision/GuidedResults";
-import { buildGuidedHref } from "@/lib/session/decisionMode";
-import { trackWidgetEvent, type DecisionWidget } from "@/lib/telemetry";
-import type { HandoffContext, InitialUiState } from "@/lib/handoff/types";
-import type { DecisionMode } from "@/types/session";
+import CertaintyBlock from "./decision/CertaintyBlock";
+import GuidedFlowController from "./decision/GuidedFlowController";
+import GuidedResults from "./decision/GuidedResults";
+import { buildGuidedHref } from "../../lib/session/decisionMode";
+import { trackWidgetEvent, type DecisionWidget } from "../../lib/telemetry";
+import type { HandoffContext, InitialUiState } from "../../lib/handoff/types";
+import type { DecisionMode } from "../../types/session";
 
 type ResolutionDebug = {
   downgraded: boolean;
