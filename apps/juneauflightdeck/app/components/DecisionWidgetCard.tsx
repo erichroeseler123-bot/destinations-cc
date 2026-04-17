@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
-import { trackWidgetEvent, type DecisionWidget } from "@/lib/telemetry";
+import { trackWidgetEvent, type DecisionWidget } from "../../lib/telemetry";
 
 export default function DecisionWidgetCard({
   widget,
