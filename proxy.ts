@@ -51,6 +51,24 @@ function shouldApplyInvisibleNoindex(pathname: string) {
   return !isVisibleSurfacePath(pathname);
 }
 
+function readBearerToken(request: NextRequest): string {
+  const raw = request.headers.get("authorization") || "";
+  if (!raw.toLowerCase().startsWith("bearer ")) return "";
+  return raw.slice(7).trim();
+}
+
+function isInternalApiAuthorized(request: NextRequest) {
+  if (request.nextUrl.pathname === "/api/internal/satellite-handoffs/events") {
+    return Boolean(request.headers.get("x-dcc-satellite-token") || request.nextUrl.searchParams.get("token"));
+  }
+
+  const internalSecret = process.env.INTERNAL_API_SECRET?.trim();
+  if (!internalSecret) return false;
+  const headerSecret = request.headers.get("x-internal-secret")?.trim() || "";
+  const bearerSecret = readBearerToken(request);
+  return internalSecret === headerSecret || internalSecret === bearerSecret;
+}
+
 function buildHandoffEventPayload(request: NextRequest, resolved: NonNullable<ReturnType<typeof resolveGoRedirect>>) {
   const partySizeRaw =
     request.nextUrl.searchParams.get("partySize") || request.nextUrl.searchParams.get("qty");
@@ -205,12 +223,17 @@ function queueHandoffEvent(request: NextRequest, resolved: NonNullable<ReturnTyp
     headers: {
       "content-type": "application/json",
       "x-dcc-satellite-token": token,
+      ...(process.env.INTERNAL_API_SECRET ? { "x-internal-secret": process.env.INTERNAL_API_SECRET } : {}),
     },
     body: JSON.stringify(payload),
   }).catch(() => undefined);
 }
 
 export async function proxy(request: NextRequest, event: NextFetchEvent) {
+  if (request.nextUrl.pathname.startsWith("/api/internal/") && !isInternalApiAuthorized(request)) {
+    return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });
+  }
+
   if (shouldReturnGone(request.nextUrl.pathname)) {
     return new NextResponse("Gone", {
       status: 410,
