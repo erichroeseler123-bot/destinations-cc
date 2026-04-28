@@ -6,7 +6,7 @@ const ARGO_BOOKING_URL = "https://shuttleya.com/book/argo-shuttle";
 export const metadata: Metadata = {
   title: "Mighty Argo Cable Car Shuttle Status",
   description:
-    "Current DCC status page for the Mighty Argo Cable Car shuttle: opening timing, pickup and return plan, who should book, and the Shuttleya link.",
+    "Current DCC status page for the $35 Mighty Argo Cable Car shuttle: opening timing, pickup and return plan, who should book, and the Shuttleya link.",
   alternates: { canonical: "/mighty-argo/status" },
 };
 
@@ -22,7 +22,7 @@ export default function MightyArgoStatusPage() {
             Mighty Argo Cable Car Shuttle Status
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-zinc-300">
-            The useful decision is simple: if you want the Mighty Argo day without managing the return from Idaho Springs yourself, use the Shuttleya Argo shuttle path.
+            The useful decision is simple: if you want the Mighty Argo day without managing the return from Idaho Springs yourself, use the $35 Shuttleya Argo shuttle path.
           </p>
 
           <section className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
@@ -39,7 +39,7 @@ export default function MightyArgoStatusPage() {
               href={ARGO_BOOKING_URL}
               className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 font-semibold text-black"
             >
-              Open the Shuttleya Argo shuttle
+              Open the $35 Shuttleya Argo shuttle
             </a>
             <Link
               href="/mighty-argo"
@@ -78,7 +78,7 @@ export default function MightyArgoStatusPage() {
           </p>
           <h2 className="mt-3 text-2xl font-bold">Travelers who want the day framed</h2>
           <p className="mt-3 text-sm leading-7 text-zinc-300">
-            Book the shuttle if you want the Argo visit without sorting rideshare, parking, or the return timing from Idaho Springs after you get there.
+            Book the $35 shuttle if you want the Argo visit without sorting rideshare, parking, or the return timing from Idaho Springs after you get there.
           </p>
         </article>
       </section>
