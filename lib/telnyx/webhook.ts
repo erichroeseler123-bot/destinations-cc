@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { TelnyxWebhook } from "telnyx/webhooks";
+import { TelnyxWebhook } from "telnyx";
 import { getTelnyxConfig } from "@/lib/telnyx/config";
 
 export type TelnyxInboundMessage = {

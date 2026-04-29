@@ -2,6 +2,9 @@ import {
   buildParrPrivateRedRocksUrl,
   buildParrSharedRedRocksUrl,
 } from "@/lib/dcc/contracts/dccParrBridge";
+import {
+  resolveBreckenridgeSharedVariant,
+} from "@/lib/dcc/routing/breckenridgeSharedExperiment";
 import { resolveIntentPath } from "@/lib/dcc/routing/resolve";
 import {
   EdgeSignalMapSchema,
@@ -42,6 +45,7 @@ export const VEGAS_DEALS_SIGNAL_SUBJECT_IDS = [
   "product_sots_vegas_deals",
   "operator_saveonthestrip",
 ] as const;
+export const BRECKENRIDGE_SHARED_GO_PATH = "/go/denver/breckenridge/shared";
 export const DENVER_420_AIRPORT_PICKUP_GO_PATH = "/go/denver/420-airport-pickup";
 export const JUNEAU_HELICOPTER_GO_PATH = "/go/juneau/helicopter-tours";
 export const JUNEAU_HELICOPTER_SIGNAL_SUBJECT_IDS = [
@@ -59,6 +63,7 @@ const SOTS_PUBLIC_BASE_URL = "https://www.saveonthestrip.com";
 const WTS_PUBLIC_BASE_URL = "https://welcometotheswamp.com";
 const RRFP_PUBLIC_BASE_URL = "https://redrocksfastpass.com";
 const AIRPORT_420_PUBLIC_BASE_URL = "https://420friendlyairportpickup.com";
+const GOSNO_BRECKENRIDGE_PUBLIC_BASE_URL = "https://gosno.co/denver-to-breckenridge";
 
 const PARR_OPERATOR: CanonicalOperator = {
   id: "operator_parr",
@@ -520,6 +525,27 @@ export function buildDccVegasDealsGoUrl(params?: Record<string, SearchParamValue
   return `${url.pathname}${url.search}`;
 }
 
+export function buildDccBreckenridgeSharedGoUrl(params?: Record<string, SearchParamValue>) {
+  const url = new URL(BRECKENRIDGE_SHARED_GO_PATH, "https://www.destinationcommandcenter.com");
+
+  for (const [key, value] of Object.entries(params ?? {})) {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (typeof item === "string" && item.length > 0) {
+          url.searchParams.append(key, item);
+        }
+      }
+      continue;
+    }
+
+    if (typeof value === "string" && value.length > 0) {
+      url.searchParams.set(key, value);
+    }
+  }
+
+  return `${url.pathname}${url.search}`;
+}
+
 export function buildDccDenver420AirportPickupGoUrl(params?: Record<string, SearchParamValue>) {
   const url = new URL(DENVER_420_AIRPORT_PICKUP_GO_PATH, "https://www.destinationcommandcenter.com");
 
@@ -609,6 +635,34 @@ function buildEdgeSafe420AirportPickupUrl(input: {
   if (input.date) {
     url.searchParams.set("date", input.date);
   }
+  url.searchParams.set("dcc_return", buildDccReturnUrl(input.returnPath, input.handoffId));
+  return url.toString();
+}
+
+function buildEdgeSafeBreckenridgeGosnoUrl(input: {
+  handoffId: string;
+  sourcePage?: string;
+  cta?: string;
+  date?: string;
+  partySize?: string;
+  pickup?: string;
+  dropoff?: string;
+  pickupWindow?: string;
+  returnPath?: string;
+}) {
+  const url = new URL(GOSNO_BRECKENRIDGE_PUBLIC_BASE_URL);
+  url.searchParams.set("dcc_handoff_id", input.handoffId);
+  url.searchParams.set("source", "dcc");
+  url.searchParams.set("route", "breckenridge");
+  url.searchParams.set("ride_type", "shared");
+  url.searchParams.set("transport_context", "breckenridge-shuttle");
+  if (input.sourcePage) url.searchParams.set("source_page", input.sourcePage);
+  if (input.cta) url.searchParams.set("cta", input.cta);
+  if (input.date) url.searchParams.set("date", input.date);
+  if (input.partySize) url.searchParams.set("partySize", input.partySize);
+  if (input.pickup) url.searchParams.set("pickup", input.pickup);
+  if (input.dropoff) url.searchParams.set("dropoff", input.dropoff);
+  if (input.pickupWindow) url.searchParams.set("pickup_window", input.pickupWindow);
   url.searchParams.set("dcc_return", buildDccReturnUrl(input.returnPath, input.handoffId));
   return url.toString();
 }
@@ -742,6 +796,8 @@ export function resolveGoRedirect(input: {
   searchParams: SearchParamInput;
   signalMap?: EdgeSignalMap;
   nowIso?: string;
+  experimentVariant?: string;
+  experimentBucketKey?: string;
 }): EdgeRedirectResolution | null {
   const params = extractSearchParams(input.searchParams);
   const handoffId = ensureHandoffId(params);
@@ -750,6 +806,39 @@ export function resolveGoRedirect(input: {
     dcc_handoff_id: handoffId,
   };
   const signalMap = input.signalMap || readEdgeSignalMapFromEnv();
+
+  if (input.pathname === BRECKENRIDGE_SHARED_GO_PATH) {
+    const variant = resolveBreckenridgeSharedVariant({
+      override:
+        readSearchParam(input.searchParams, "breck_variant") ||
+        readSearchParam(input.searchParams, "page_variant") ||
+        readSearchParam(input.searchParams, "test"),
+      cookieVariant: input.experimentVariant,
+      bucketKey: input.experimentBucketKey || handoffId,
+    });
+
+    const destinationUrl = buildEdgeSafeBreckenridgeGosnoUrl({
+      handoffId,
+      sourcePage: params.sourcePage || "/denver-to-mountains/breckenridge/transportation",
+      cta: readSearchParam(input.searchParams, "cta") || undefined,
+      date: params.date,
+      partySize: params.partySize || params.qty,
+      pickup: readSearchParam(input.searchParams, "pickup") || undefined,
+      dropoff: readSearchParam(input.searchParams, "dropoff") || undefined,
+      pickupWindow: readSearchParam(input.searchParams, "pickup_window") || undefined,
+      returnPath: params.sourcePage || "/denver-to-mountains/breckenridge/transportation",
+    });
+
+    return {
+      destinationUrl,
+      handoffId,
+      routeId: "experiment_breck_shared_gosno_default",
+      status: "available",
+      ctaText: "Continue to GoSno Breckenridge booking",
+      reasons: [`variant=${variant}`],
+      activeSignals: [],
+    };
+  }
 
   if (input.pathname === RED_ROCKS_SHARED_GO_PATH) {
     const resolved = resolveIntentPath({

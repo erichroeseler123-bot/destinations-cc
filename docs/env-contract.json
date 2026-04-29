@@ -1,0 +1,96 @@
+{
+  "project": "DCC",
+  "description": "Machine-readable environment contract for Destination Command Center control-plane wiring.",
+  "variables": [
+    {
+      "name": "DATABASE_URL",
+      "type": "url",
+      "requirement": "CRITICAL",
+      "description": "Primary Postgres/Neon URL for DB-backed telemetry, orders, and EarthOS persistence."
+    },
+    {
+      "name": "INTERNAL_API_SECRET",
+      "type": "secret",
+      "requirement": "CRITICAL",
+      "description": "Auth secret for internal APIs, corridor event smoke, and system checks."
+    },
+    {
+      "name": "FEASTLY_PAYMENT_CHECKOUT_URL",
+      "type": "url",
+      "requirement": "LOCAL_SMOKE",
+      "description": "Feastly checkout continuation URL used by production readiness and local parity checks."
+    },
+    {
+      "name": "DCC_RESEND_API_KEY",
+      "type": "secret",
+      "requirement": "LOCAL_SMOKE",
+      "description": "Central DCC Resend key for deploy email smoke and future control-plane mailer."
+    },
+    {
+      "name": "RESEND_API_KEY",
+      "type": "secret",
+      "requirement": "PROD_ONLY",
+      "description": "App-level Resend key where code paths still read the generic provider name."
+    },
+    {
+      "name": "DCC_SATELLITE_SECRET",
+      "type": "secret",
+      "requirement": "LOCAL_SMOKE",
+      "description": "Shared local/dev satellite bootstrap secret for runtime-kit parity."
+    },
+    {
+      "name": "DCC_SATELLITE_WEBHOOK_TOKEN",
+      "type": "secret",
+      "requirement": "LOCAL_SMOKE",
+      "description": "Shared fallback webhook token for local satellite callback validation."
+    },
+    {
+      "name": "DCC_SHUTTLEYA_WEBHOOK_TOKEN",
+      "type": "secret",
+      "requirement": "PROD_ONLY",
+      "description": "Scoped Shuttleya callback token for production blast-radius isolation."
+    },
+    {
+      "name": "DCC_PARR_WEBHOOK_TOKEN",
+      "type": "secret",
+      "requirement": "PROD_ONLY",
+      "description": "Scoped PARR callback token for Red Rocks booking lifecycle events."
+    },
+    {
+      "name": "NEXT_PUBLIC_SQUARE_APP_ID",
+      "type": "string",
+      "requirement": "LOCAL_SMOKE",
+      "description": "Public Square app identifier for payment smoke and system integrity checks."
+    },
+    {
+      "name": "NEXT_PUBLIC_SQUARE_LOCATION_ID",
+      "type": "string",
+      "requirement": "LOCAL_SMOKE",
+      "description": "Public Square location identifier for payment smoke and system integrity checks."
+    },
+    {
+      "name": "SQUARE_LOCATION_ID",
+      "type": "string",
+      "requirement": "PROD_ONLY",
+      "description": "Server-side Square location identifier for DCC-owned payment-capable paths."
+    },
+    {
+      "name": "SQUARE_ACCESS_TOKEN",
+      "type": "secret",
+      "requirement": "PROD_ONLY",
+      "description": "Square server token for DCC-owned payment-capable paths."
+    },
+    {
+      "name": "MAIL_FROM_DCC",
+      "type": "email_header",
+      "requirement": "PROD_ONLY",
+      "description": "DCC-branded sender identity for Mission Control email."
+    },
+    {
+      "name": "EARTHOS_APPROVAL_TO",
+      "type": "email_list",
+      "requirement": "PROD_ONLY",
+      "description": "Comma-separated default recipients for EarthOS mission approvals."
+    }
+  ]
+}

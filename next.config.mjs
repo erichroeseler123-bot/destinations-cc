@@ -1,3 +1,4 @@
+import { withWorkflow } from "workflow/next";
 import { buildCitySatelliteRedirects, buildSatelliteRedirects } from "./src/data/edge-routing-rules.mjs";
 import { buildRuntimeRedirects } from "./src/data/runtime-redirects.mjs";
 
@@ -20,6 +21,19 @@ const nextConfig = {
     ],
     deviceSizes: [640, 750, 828, 1080, 1200],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
+  async headers() {
+    return [
+      {
+        source: "/internal/:path*",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow",
+          },
+        ],
+      },
+    ];
   },
   async redirects() {
     const satelliteRedirects = buildSatelliteRedirects();
@@ -212,4 +226,4 @@ const nextConfig = {
     ];
   },
 };
-export default nextConfig;
+export default withWorkflow(nextConfig);

@@ -2,10 +2,10 @@ import fs from "fs";
 import path from "path";
 import { getNodeById, getNodeBySlugInClass, getNodesByAlias } from "@/lib/dcc/registry";
 
-const ROOT = process.cwd();
-const GRAPH_ROOT = path.join(ROOT, "data", "graph");
+const GRAPH_ROOT = path.join(/*turbopackIgnore: true*/ process.cwd(), "data", "graph");
 const BY_PLACE_DIR = path.join(GRAPH_ROOT, "by-place");
 const INDEX_PATH = path.join(GRAPH_ROOT, "place-action-index.json");
+const BY_PLACE_REL_PREFIX = "data/graph/by-place/";
 
 export type PlaceActionGraphEdgeType =
   | "available_in"
@@ -116,7 +116,11 @@ export function getPlaceActionGraph(placeId: string): PlaceActionGraph | null {
   if (!index) return null;
   const rel = index.by_place_id[placeId];
   if (!rel) return null;
-  const fullPath = path.join(ROOT, rel);
+  const byPlaceFile = rel.startsWith(BY_PLACE_REL_PREFIX)
+    ? rel.slice(BY_PLACE_REL_PREFIX.length)
+    : "";
+  if (!byPlaceFile || byPlaceFile.includes("..") || path.isAbsolute(byPlaceFile)) return null;
+  const fullPath = path.join(BY_PLACE_DIR, byPlaceFile);
   return safeReadJson<PlaceActionGraph>(fullPath);
 }
 
