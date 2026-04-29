@@ -2,14 +2,18 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import { z } from "zod";
+import { getDb } from "@/lib/db/client";
+import { dccHandoffEvents, dccHandoffSummaries } from "@/lib/db/schema";
 
 export const runtime = "nodejs";
 
 export const SATELLITE_IDS = [
   "partyatredrocks",
+  "shuttleya",
   "gosno",
   "saveonthestrip",
   "redrocksfastpass",
+  "welcometotheswamp",
   "welcome-to-alaska",
 ] as const;
 
@@ -172,17 +176,28 @@ function resolveSatelliteStorageRoot() {
 const ROOT = resolveSatelliteStorageRoot();
 export const SATELLITE_STORAGE_ROOT = ROOT;
 const DCC_BASE_URL = "https://destinationcommandcenter.com";
+const SATELLITE_DIRS: Record<DccSatelliteId, string> = {
+  partyatredrocks: path.join(ROOT, "partyatredrocks"),
+  shuttleya: path.join(ROOT, "shuttleya"),
+  gosno: path.join(ROOT, "gosno"),
+  saveonthestrip: path.join(ROOT, "saveonthestrip"),
+  redrocksfastpass: path.join(ROOT, "redrocksfastpass"),
+  welcometotheswamp: path.join(ROOT, "welcometotheswamp"),
+  "welcome-to-alaska": path.join(ROOT, "welcome-to-alaska"),
+};
 
 function getSatelliteTokenEnvKey(satelliteId: DccSatelliteId) {
   if (satelliteId === "partyatredrocks") return "DCC_PARR_WEBHOOK_TOKEN";
+  if (satelliteId === "shuttleya") return "DCC_SHUTTLEYA_WEBHOOK_TOKEN";
   if (satelliteId === "gosno") return "DCC_GOSNO_WEBHOOK_TOKEN";
   if (satelliteId === "saveonthestrip") return "DCC_SAVEONTHESTRIP_WEBHOOK_TOKEN";
   if (satelliteId === "redrocksfastpass") return "DCC_REDROCKSFASTPASS_WEBHOOK_TOKEN";
+  if (satelliteId === "welcometotheswamp") return "DCC_WTS_WEBHOOK_TOKEN";
   return "DCC_WTA_WEBHOOK_TOKEN";
 }
 
 function getSatelliteDir(satelliteId: DccSatelliteId) {
-  return path.join(ROOT, satelliteId);
+  return SATELLITE_DIRS[satelliteId];
 }
 
 function getSatelliteEventsFile(satelliteId: DccSatelliteId) {
@@ -304,6 +319,119 @@ export function appendSatelliteEvent(input: SatelliteEventPayload): StoredSatell
     `${JSON.stringify(summary, null, 2)}\n`,
     "utf8"
   );
+
+  return event;
+}
+
+function serializeAmount(value: number | null | undefined) {
+  return typeof value === "number" ? value.toFixed(2) : null;
+}
+
+function buildEventInsertRow(event: StoredSatelliteEvent) {
+  return {
+    eventId: event.eventId,
+    handoffId: event.handoffId,
+    satelliteId: event.satelliteId,
+    eventType: event.eventType,
+    occurredAt: new Date(event.occurredAt || event.receivedAt),
+    receivedAt: new Date(event.receivedAt),
+
+    source: event.source ?? null,
+    sourcePath: event.sourcePath ?? null,
+    externalReference: event.externalReference ?? null,
+    status: event.status ?? null,
+    stage: event.stage ?? null,
+    message: event.message ?? null,
+
+    travelerEmail: event.traveler?.email ?? null,
+    travelerPhone: event.traveler?.phone ?? null,
+    travelerName: event.traveler?.name ?? null,
+    travelerPartySize: event.traveler?.partySize ?? null,
+
+    attributionSourceSlug: event.attribution?.sourceSlug ?? null,
+    attributionSourcePage: event.attribution?.sourcePage ?? null,
+    attributionTopicSlug: event.attribution?.topicSlug ?? null,
+
+    bookingVenueSlug: event.booking?.venueSlug ?? null,
+    bookingPortSlug: event.booking?.portSlug ?? null,
+    bookingCitySlug: event.booking?.citySlug ?? null,
+    bookingProductSlug: event.booking?.productSlug ?? null,
+    bookingEventDate: event.booking?.eventDate ?? null,
+    bookingQuantity: event.booking?.quantity ?? null,
+    bookingCurrency: event.booking?.currency ?? null,
+    bookingAmount: serializeAmount(event.booking?.amount),
+
+    partnerFromSite: event.partner?.fromSite ?? null,
+    partnerToSite: event.partner?.toSite ?? null,
+    partnerHandoffId: event.partner?.partnerHandoffId ?? null,
+    partnerReason: event.partner?.reason ?? null,
+
+    metadata: event.metadata ?? {},
+    payload: event as unknown as Record<string, unknown>,
+  };
+}
+
+function buildSummaryUpsertRow(summary: SatelliteHandoffSummary) {
+  return {
+    handoffId: summary.handoffId,
+    satelliteId: summary.satelliteId,
+    firstEventAt: new Date(summary.firstEventAt),
+    lastEventAt: new Date(summary.lastEventAt),
+    latestEventType: summary.latestEventType,
+    latestStatus: summary.latestStatus,
+    latestStage: summary.latestStage,
+    latestMessage: summary.latestMessage,
+    eventCount: summary.eventCount,
+    degraded: summary.degraded,
+
+    travelerEmail: summary.traveler.email,
+    travelerPhone: summary.traveler.phone,
+    travelerName: summary.traveler.name,
+    travelerPartySize: summary.traveler.partySize,
+
+    attributionSourceSlug: summary.attribution.sourceSlug,
+    attributionSourcePage: summary.attribution.sourcePage,
+    attributionTopicSlug: summary.attribution.topicSlug,
+
+    bookingVenueSlug: summary.booking.venueSlug,
+    bookingPortSlug: summary.booking.portSlug,
+    bookingCitySlug: summary.booking.citySlug,
+    bookingProductSlug: summary.booking.productSlug,
+    bookingEventDate: summary.booking.eventDate,
+    bookingQuantity: summary.booking.quantity,
+    bookingCurrency: summary.booking.currency,
+    bookingAmount: serializeAmount(summary.booking.amount),
+
+    partnerFromSite: summary.partner.fromSite,
+    partnerToSite: summary.partner.toSite,
+    partnerHandoffId: summary.partner.partnerHandoffId,
+    partnerReason: summary.partner.reason,
+
+    externalReferences: summary.externalReferences,
+    metadata: summary.metadata,
+    updatedAt: new Date(),
+  };
+}
+
+export async function appendSatelliteEventDurably(input: SatelliteEventPayload): Promise<StoredSatelliteEvent> {
+  const event = appendSatelliteEvent(input);
+  const db = getDb();
+  if (!db) return event;
+
+  const summary = readSatelliteHandoffSummary(event.satelliteId, event.handoffId);
+  if (!summary) return event;
+
+  await db.insert(dccHandoffEvents).values(buildEventInsertRow(event));
+  await db
+    .insert(dccHandoffSummaries)
+    .values({
+      ...buildSummaryUpsertRow(summary),
+      createdAt: new Date(),
+    })
+    .onConflictDoUpdate({
+      target: dccHandoffSummaries.handoffId,
+      set: buildSummaryUpsertRow(summary),
+    });
 
   return event;
 }

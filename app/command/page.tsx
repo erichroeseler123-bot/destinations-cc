@@ -4,7 +4,8 @@ import { CommandStatusStrip } from "@/app/components/dcc/command/CommandStatusSt
 import { CommandViewShell } from "@/app/components/dcc/command/CommandViewShell";
 import { getCommandViewData } from "@/lib/dcc/command/service";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 export const metadata: Metadata = {
   title: "Command View | Destination Command Center",

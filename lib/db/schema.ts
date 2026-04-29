@@ -17,6 +17,7 @@ import { sql } from "drizzle-orm";
 
 export const dccSatelliteIdEnum = pgEnum("dcc_satellite_id", [
   "partyatredrocks",
+  "shuttleya",
   "gosno",
   "saveonthestrip",
   "redrocksfastpass",
@@ -184,6 +185,30 @@ export const dccShipmentEventTypeEnum = pgEnum("dcc_shipment_event_type", [
   "reroute",
   "delivery_confirmation",
   "exception",
+]);
+
+export const earthosMissionEntityEnum = pgEnum("earthos_mission_entity", [
+  "gosno",
+  "alaska",
+  "redrocks",
+  "earthos",
+]);
+
+export const earthosMissionStatusEnum = pgEnum("earthos_mission_status", [
+  "running",
+  "waiting",
+  "failed",
+  "completed",
+]);
+
+export const earthosMissionRiskLevelEnum = pgEnum("earthos_mission_risk_level", [
+  "Normal",
+  "Watch",
+  "High",
+]);
+
+export const earthosNetworkTargetEnum = pgEnum("earthos_network_target", [
+  "live-ops",
 ]);
 
 export const dccCorridorCatalog = pgTable(
@@ -414,6 +439,30 @@ export const dccReconciliation = pgTable(
   }),
 );
 
+export const dccOrders = pgTable(
+  "dcc_orders",
+  {
+    orderId: text("order_id").primaryKey(),
+    route: text("route").notNull(),
+    status: text("status"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    customerEmail: text("customer_email"),
+    customerPhone: text("customer_phone"),
+    paymentProvider: text("payment_provider"),
+    paymentId: text("payment_id"),
+    eventDate: date("event_date"),
+    payload: jsonb("payload").$type<Record<string, unknown>>().notNull(),
+  },
+  (table) => ({
+    routeCreatedAtIdx: index("dcc_orders_route_created_at_idx").on(table.route, table.createdAt),
+    statusIdx: index("dcc_orders_status_idx").on(table.status),
+    customerEmailIdx: index("dcc_orders_customer_email_idx").on(table.customerEmail),
+    paymentIdIdx: uniqueIndex("dcc_orders_payment_id_uidx").on(table.paymentId),
+    eventDateIdx: index("dcc_orders_event_date_idx").on(table.eventDate),
+  }),
+);
+
 export const dccOperators = pgTable(
   "dcc_operators",
   {
@@ -635,6 +684,138 @@ export const dccShipmentEvents = pgTable(
   }),
 );
 
+export const earthosMissions = pgTable(
+  "earthos_missions",
+  {
+    missionId: text("mission_id").primaryKey(),
+    entity: earthosMissionEntityEnum("entity").notNull(),
+    region: text("region").notNull(),
+    mission: text("mission").notNull(),
+    status: earthosMissionStatusEnum("status").notNull(),
+    currentStep: text("current_step"),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+    lastCheckpointAt: timestamp("last_checkpoint_at", { withTimezone: true }),
+    waitingForEvent: text("waiting_for_event"),
+    payload: jsonb("payload").$type<Record<string, unknown>>().notNull().default({}),
+    result: jsonb("result").$type<Record<string, unknown> | null>(),
+    error: jsonb("error").$type<{
+      message: string;
+      step?: string;
+    } | null>(),
+    intelligence: jsonb("intelligence").$type<{
+      headline: string;
+      briefing: string;
+      riskLevel: "Normal" | "Watch" | "High";
+      recommendedAction: string;
+      dccSignals: {
+        alertCount: number;
+        graphHealth: number | null;
+      };
+    } | null>(),
+    workflowSource: text("workflow_source").notNull().default("earthos"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    entityIdx: index("earthos_missions_entity_idx").on(table.entity),
+    statusIdx: index("earthos_missions_status_idx").on(table.status),
+    updatedAtIdx: index("earthos_missions_updated_at_idx").on(table.updatedAt),
+    waitingEventIdx: index("earthos_missions_waiting_event_idx").on(table.waitingForEvent),
+    entityRegionIdx: index("earthos_missions_entity_region_idx").on(table.entity, table.region),
+  }),
+);
+
+export const earthosMissionSteps = pgTable(
+  "earthos_mission_steps",
+  {
+    stepId: text("step_id").primaryKey(),
+    missionId: text("mission_id")
+      .notNull()
+      .references(() => earthosMissions.missionId, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    status: earthosMissionStatusEnum("status").notNull(),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    endedAt: timestamp("ended_at", { withTimezone: true }),
+    retryCount: integer("retry_count").notNull().default(0),
+    output: jsonb("output").$type<Record<string, unknown> | null>(),
+    errorMessage: text("error_message"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    missionIdx: index("earthos_mission_steps_mission_id_idx").on(table.missionId),
+    missionStatusIdx: index("earthos_mission_steps_mission_status_idx").on(table.missionId, table.status),
+  }),
+);
+
+export const earthosPublications = pgTable(
+  "earthos_publications",
+  {
+    missionId: text("mission_id").primaryKey(),
+    slug: text("slug").notNull(),
+    path: text("path").notNull(),
+    entity: earthosMissionEntityEnum("entity").notNull(),
+    region: text("region").notNull(),
+    headline: text("headline").notNull(),
+    briefing: text("briefing").notNull(),
+    riskLevel: earthosMissionRiskLevelEnum("risk_level").notNull(),
+    recommendedAction: text("recommended_action").notNull(),
+    publishedAt: timestamp("published_at", { withTimezone: true }).notNull().defaultNow(),
+    networkTarget: earthosNetworkTargetEnum("network_target").notNull().default("live-ops"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    slugUniqueIdx: uniqueIndex("earthos_publications_slug_uidx").on(table.slug),
+    publishedAtIdx: index("earthos_publications_published_at_idx").on(table.publishedAt),
+    entityPublishedIdx: index("earthos_publications_entity_published_at_idx").on(table.entity, table.publishedAt),
+    riskPublishedIdx: index("earthos_publications_risk_published_at_idx").on(table.riskLevel, table.publishedAt),
+  }),
+);
+
+export const earthosDiscoveryPublications = pgTable(
+  "earthos_discovery_publications",
+  {
+    publicationId: text("publication_id").primaryKey(),
+    surfaceId: text("surface_id").notNull(),
+    role: text("role").notNull(),
+    domain: text("domain").notNull(),
+    siteName: text("site_name").notNull(),
+    generatedAt: timestamp("generated_at", { withTimezone: true }).notNull(),
+    publishedAt: timestamp("published_at", { withTimezone: true }).notNull().defaultNow(),
+    version: text("version").notNull(),
+    contentHash: text("content_hash").notNull(),
+    agentHash: text("agent_hash").notNull(),
+    llmsHash: text("llms_hash").notNull(),
+    sitemapHash: text("sitemap_hash").notNull(),
+    winnerCode: text("winner_code"),
+    winnerConfidence: text("winner_confidence"),
+    fitReason: text("fit_reason"),
+    resolutionPath: text("resolution_path"),
+    previousPublicationId: text("previous_publication_id"),
+    previousWinnerCode: text("previous_winner_code"),
+    previousWinnerConfidence: text("previous_winner_confidence"),
+    changed: boolean("changed").notNull().default(false),
+    changedFields: jsonb("changed_fields").$type<string[]>().notNull().default([]),
+    winnerChangedAt: timestamp("winner_changed_at", { withTimezone: true }),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    surfacePublishedIdx: index("earthos_discovery_publications_surface_published_at_idx").on(
+      table.surfaceId,
+      table.publishedAt,
+    ),
+    domainPublishedIdx: index("earthos_discovery_publications_domain_published_at_idx").on(
+      table.domain,
+      table.publishedAt,
+    ),
+    changedPublishedIdx: index("earthos_discovery_publications_changed_published_at_idx").on(
+      table.changed,
+      table.publishedAt,
+    ),
+  }),
+);
+
 export type DccHandoffEventRow = typeof dccHandoffEvents.$inferSelect;
 export type NewDccHandoffEventRow = typeof dccHandoffEvents.$inferInsert;
 
@@ -643,6 +824,9 @@ export type NewDccHandoffSummaryRow = typeof dccHandoffSummaries.$inferInsert;
 
 export type DccReconciliationRow = typeof dccReconciliation.$inferSelect;
 export type NewDccReconciliationRow = typeof dccReconciliation.$inferInsert;
+
+export type DccOrderRow = typeof dccOrders.$inferSelect;
+export type NewDccOrderRow = typeof dccOrders.$inferInsert;
 
 export type DccCorridorCatalogRow = typeof dccCorridorCatalog.$inferSelect;
 export type NewDccCorridorCatalogRow = typeof dccCorridorCatalog.$inferInsert;
@@ -667,3 +851,15 @@ export type NewDccShipmentUnitRow = typeof dccShipmentUnits.$inferInsert;
 
 export type DccShipmentEventRow = typeof dccShipmentEvents.$inferSelect;
 export type NewDccShipmentEventRow = typeof dccShipmentEvents.$inferInsert;
+
+export type EarthosMissionRow = typeof earthosMissions.$inferSelect;
+export type NewEarthosMissionRow = typeof earthosMissions.$inferInsert;
+
+export type EarthosMissionStepRow = typeof earthosMissionSteps.$inferSelect;
+export type NewEarthosMissionStepRow = typeof earthosMissionSteps.$inferInsert;
+
+export type EarthosPublicationRow = typeof earthosPublications.$inferSelect;
+export type NewEarthosPublicationRow = typeof earthosPublications.$inferInsert;
+
+export type EarthosDiscoveryPublicationRow = typeof earthosDiscoveryPublications.$inferSelect;
+export type NewEarthosDiscoveryPublicationRow = typeof earthosDiscoveryPublications.$inferInsert;
