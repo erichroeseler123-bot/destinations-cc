@@ -8,6 +8,14 @@ const LINK_FILE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".mjs", ".md", ".jso
 const PUBLIC_SURFACE_SCAN = /(sitemap|nav|navbar|navigation)/i;
 const PAYMENT_PATH = /(checkout|create-payment|create-intent|pay-balance|pay(?:\/|$))/i;
 const EXECUTION_METRIC = /(checkout|booking|completion|purchase|revenue|paid|execution)/i;
+const PUBLIC_STATUSES = new Set(["canonical", "keep"]);
+const PUBLIC_LAYERS = new Set(["understand", "choose", "act"]);
+
+const SCHEMA_FAMILY_BY_LAYER = {
+  understand: "WebSite/CollectionPage/Guide",
+  choose: "FAQPage/ItemList/Service",
+  act: "LocalBusiness/Product/Offer/Service",
+} as const;
 
 type Finding = {
   code: string;
@@ -38,7 +46,9 @@ function findReferences(target: string, predicate?: (filePath: string) => boolea
 
   for (const filePath of files) {
     const relative = path.relative(ROOT, filePath);
-    if (relative === "data/page-registry.ts" || relative === "data/cleanup-queue.ts") continue;
+    if (relative === "data/page-registry.ts" || relative === "data/cleanup-queue.ts" || relative === "data/redirect-map.ts") {
+      continue;
+    }
     if (predicate && !predicate(relative)) continue;
     const content = fs.readFileSync(filePath, "utf8");
     if (content.includes(target)) hits.push(relative);
@@ -47,10 +57,70 @@ function findReferences(target: string, predicate?: (filePath: string) => boolea
   return hits;
 }
 
+function isPublicUrlContractSubject(entry: (typeof pageRegistry)[number]) {
+  return PUBLIC_STATUSES.has(entry.status) && PUBLIC_LAYERS.has(entry.layer);
+}
+
+function getDerivedSchemaFamily(entry: (typeof pageRegistry)[number]) {
+  if (entry.layer === "understand" || entry.layer === "choose" || entry.layer === "act") {
+    return SCHEMA_FAMILY_BY_LAYER[entry.layer];
+  }
+  return null;
+}
+
+function getDerivedNextStep(entry: (typeof pageRegistry)[number]) {
+  return entry.handoffTarget || entry.canonicalTarget || null;
+}
+
+function getDerivedJob(entry: (typeof pageRegistry)[number]) {
+  return entry.justification || entry.notes || null;
+}
+
 function main() {
   const findings: Finding[] = [];
 
   for (const entry of pageRegistry) {
+    if (isPublicUrlContractSubject(entry)) {
+      const schemaFamily = getDerivedSchemaFamily(entry);
+      const nextStep = getDerivedNextStep(entry);
+      const job = getDerivedJob(entry);
+
+      if (!job?.trim()) {
+        findings.push({
+          code: "governance.public_url_missing_job",
+          message: `${entry.path} is public but does not declare one clear job in justification or notes.`,
+        });
+      }
+
+      if (!entry.owner?.trim()) {
+        findings.push({
+          code: "governance.public_url_missing_owner",
+          message: `${entry.path} is public but does not declare one canonical owner.`,
+        });
+      }
+
+      if (!schemaFamily) {
+        findings.push({
+          code: "governance.public_url_missing_schema_family",
+          message: `${entry.path} is public but cannot derive one schema family from layer ${entry.layer}.`,
+        });
+      }
+
+      if (!nextStep) {
+        findings.push({
+          code: "governance.public_url_missing_next_step",
+          message: `${entry.path} is public but does not declare one intended next step via handoffTarget or canonicalTarget.`,
+        });
+      }
+
+      if (!entry.successMetric?.trim()) {
+        findings.push({
+          code: "governance.public_url_missing_outcome",
+          message: `${entry.path} is public but does not declare one measurable outcome in successMetric.`,
+        });
+      }
+    }
+
     if (entry.status === "review" && !entry.justification?.trim()) {
       findings.push({
         code: "governance.review_missing_justification",
