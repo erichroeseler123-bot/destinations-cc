@@ -35,11 +35,70 @@ function appendSearchParams(url: URL, params?: Record<string, SearchParamValue>)
   return url;
 }
 
-function withRedRocksTrackingParams(params?: SearchParamMap) {
+function firstString(value: SearchParamValue) {
+  if (Array.isArray(value)) {
+    return value.find((item) => typeof item === "string" && item.length > 0);
+  }
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+function inferParrOption(value?: string) {
+  if (!value) return undefined;
+  const normalized = value.toLowerCase();
+  if (
+    normalized.includes("private")
+    || normalized.includes("suburban")
+    || normalized.includes("suv")
+    || normalized.includes("sprinter")
+  ) {
+    return "private";
+  }
+  if (normalized.includes("shared") || normalized.includes("shuttle")) {
+    return "shuttle";
+  }
+  return undefined;
+}
+
+function normalizePickupHub(value?: string) {
+  const normalized = value?.trim().toLowerCase();
+  if (!normalized) return undefined;
+  if (normalized === "golden" || normalized === "marriott-west" || normalized.includes("marriott")) {
+    return "golden";
+  }
+  if (normalized === "denver" || normalized === "downtown") {
+    return "denver";
+  }
+  return undefined;
+}
+
+function withRedRocksTrackingParams(targetId: "shared" | "private", params?: SearchParamMap) {
   const next = { ...(params ?? {}) };
   const sourcePage = typeof next.sourcePage === "string" ? next.sourcePage : undefined;
   const allowed = new Set(RED_ROCKS_CORRIDOR.handoff.approvedParams);
   const filtered: SearchParamMap = {};
+  const pageAlias = sourcePage ? getRedRocksPageParamAlias(sourcePage) : undefined;
+
+  const sourcePageParam = firstString(next.source_page) || sourcePage;
+  const decisionCorridor = firstString(next.decision_corridor) || "red-rocks-transport";
+  const decisionCta = firstString(next.decision_cta) || firstString(next.cta) || (targetId === "private" ? "secondary" : "primary");
+  const decisionAction = firstString(next.decision_action)
+    || (targetId === "private" ? "book_private_red_rocks_ride" : "book_shared_red_rocks_shuttle");
+  const inferredOptionFromProduct = inferParrOption(firstString(next.decision_product) || firstString(next.product_slug));
+  const decisionOption = firstString(next.decision_option)
+    || inferredOptionFromProduct
+    || (targetId === "private" ? "private" : "shuttle");
+  const decisionProduct = firstString(next.decision_product)
+    || firstString(next.product_slug)
+    || (targetId === "private" ? "parr-private" : "shared-red-rocks-shuttle-seat");
+  const requestedLane = firstString(next.requested_lane)
+    || (decisionOption === "private" ? "private" : "transport");
+  const resolvedLane = firstString(next.resolved_lane)
+    || decisionProduct;
+  const pickupLabel = firstString(next.pickupLabel) || firstString(next.pickup_label);
+  const pickupHub = firstString(next.pickupHub)
+    || normalizePickupHub(firstString(next.pickup))
+    || normalizePickupHub(pickupLabel)
+    || normalizePickupHub(requestedLane);
 
   delete next.sourcePage;
   for (const forbidden of RED_ROCKS_CORRIDOR.handoff.forbiddenLegacyParams) {
@@ -56,8 +115,52 @@ function withRedRocksTrackingParams(params?: SearchParamMap) {
     filtered.src = "dcc";
   }
 
-  if (!filtered.page && sourcePage) {
-    filtered.page = getRedRocksPageParamAlias(sourcePage);
+  if (!filtered.page && pageAlias) {
+    filtered.page = pageAlias;
+  }
+
+  if (!filtered.source_page && sourcePageParam) {
+    filtered.source_page = sourcePageParam;
+  }
+
+  if (!filtered.decision_corridor) {
+    filtered.decision_corridor = decisionCorridor;
+  }
+
+  if (!filtered.decision_cta) {
+    filtered.decision_cta = decisionCta;
+  }
+
+  if (!filtered.decision_action) {
+    filtered.decision_action = decisionAction;
+  }
+
+  if (!filtered.decision_option) {
+    filtered.decision_option = decisionOption;
+  }
+
+  if (!filtered.decision_product) {
+    filtered.decision_product = decisionProduct;
+  }
+
+  if (!filtered.requested_lane) {
+    filtered.requested_lane = requestedLane;
+  }
+
+  if (!filtered.resolved_lane) {
+    filtered.resolved_lane = resolvedLane;
+  }
+
+  if (!filtered.product_slug) {
+    filtered.product_slug = decisionProduct;
+  }
+
+  if (!filtered.pickupHub && pickupHub) {
+    filtered.pickupHub = pickupHub;
+  }
+
+  if (!filtered.pickupLabel && pickupLabel) {
+    filtered.pickupLabel = pickupLabel;
   }
 
   return filtered;
@@ -98,5 +201,5 @@ export function buildRedRocksHandoffUrl(targetId: "shared" | "private", params?:
   if (!target) {
     throw new Error(`Unknown Red Rocks handoff target: ${targetId}`);
   }
-  return buildParrUrl(new URL(target.href).pathname, withRedRocksTrackingParams(params));
+  return buildParrUrl(new URL(target.href).pathname, withRedRocksTrackingParams(targetId, params));
 }
