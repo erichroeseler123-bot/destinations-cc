@@ -8,6 +8,10 @@ import {
   buildParrPrivateRedRocksUrl,
   buildParrSharedRedRocksUrl,
 } from "@/lib/dcc/contracts/dccParrBridge";
+import {
+  RED_ROCKS_SHARED_GO_PATH,
+  resolveGoRedirect,
+} from "@/lib/dcc/routing/middleware";
 
 test("decision continuation params carry the chosen action forward", () => {
   const params = buildDecisionContinuationParams({
@@ -105,6 +109,38 @@ test("red rocks bridge preserves Marriott West pickup prefill params for shared 
   });
 
   const parsed = new URL(url);
+  assert.equal(parsed.pathname, "/book/red-rocks-amphitheatre/custom/shared");
+  assert.equal(parsed.searchParams.get("decision_cta"), "golden-marriott-west-push");
+  assert.equal(parsed.searchParams.get("decision_option"), "golden_shuttle");
+  assert.equal(parsed.searchParams.get("decision_product"), "shared-golden");
+  assert.equal(parsed.searchParams.get("requested_lane"), "golden");
+  assert.equal(parsed.searchParams.get("resolved_lane"), "shared-golden");
+  assert.equal(parsed.searchParams.get("pickup"), "golden");
+  assert.equal(parsed.searchParams.get("pickupHub"), "golden");
+  assert.equal(parsed.searchParams.get("pickupLabel"), "Denver Marriott West");
+});
+
+test("red rocks shared go route preserves Marriott West pickup prefill params", () => {
+  const resolved = resolveGoRedirect({
+    pathname: RED_ROCKS_SHARED_GO_PATH,
+    searchParams: new URLSearchParams({
+      sourcePage: "/red-rocks-transportation",
+      decision_cta: "golden-marriott-west-push",
+      decision_option: "golden_shuttle",
+      decision_product: "shared-golden",
+      requested_lane: "golden",
+      resolved_lane: "shared-golden",
+      pickup: "golden",
+      pickup_label: "Denver Marriott West",
+      date: "2026-05-05",
+      artist: "David Guetta",
+      event: "David Guetta at Red Rocks",
+    }),
+    signalMap: {},
+  });
+
+  assert.ok(resolved);
+  const parsed = new URL(resolved.destinationUrl);
   assert.equal(parsed.pathname, "/book/red-rocks-amphitheatre/custom/shared");
   assert.equal(parsed.searchParams.get("decision_cta"), "golden-marriott-west-push");
   assert.equal(parsed.searchParams.get("decision_option"), "golden_shuttle");
