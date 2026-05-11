@@ -478,7 +478,7 @@ export const CANONICAL_ENV_VARS = [
     optional: true,
   },
   {
-    name: "NEXT_PUBLIC_SQUARE_APPLICATION_ID",
+    name: "NEXT_PUBLIC_SQUARE_APP_ID",
     exposure: "client",
     section: "Revenue",
     defaultValue: "",
@@ -1206,6 +1206,30 @@ export const LEGACY_ENV_ALIASES = {
   RAPIDAPI_KEY: {
     replacement: "RAPID_API_KEY",
     reason: "RapidAPI provider code now prefers RAPID_API_KEY and only falls back to the old name.",
+  },
+  NEXT_PUBLIC_SQUARE_APPLICATION_ID: {
+    replacement: "NEXT_PUBLIC_SQUARE_APP_ID",
+    reason: "Temporary Square public app id alias; canonical checkout config uses NEXT_PUBLIC_SQUARE_APP_ID.",
+  },
+  SQUARE_access_token: {
+    replacement: "SQUARE_ACCESS_TOKEN",
+    reason: "Temporary Square casing alias; canonical checkout config uses SQUARE_ACCESS_TOKEN.",
+  },
+  SQUARE_sandbox_access_token: {
+    replacement: "SQUARE_ENVIRONMENT + SQUARE_ACCESS_TOKEN",
+    reason: "Temporary Square sandbox alias; environment should be explicit and token should use canonical casing.",
+  },
+  SQUARE_Sandbox_App_ID: {
+    replacement: "SQUARE_ENVIRONMENT + SQUARE_APP_ID",
+    reason: "Temporary Square sandbox app alias; environment should be explicit and app id should use canonical casing.",
+  },
+  SQUARE_access_token_420_pickup: {
+    replacement: "SQUARE_ACCESS_TOKEN_420_PICKUP",
+    reason: "Temporary 420 pickup Square token casing alias; do not flatten 420-specific payment config into root DCC keys.",
+  },
+  SQUARE_location_id: {
+    replacement: "SQUARE_LOCATION_ID",
+    reason: "Temporary Square location casing alias; canonical checkout config uses SQUARE_LOCATION_ID.",
   },
   openai: {
     replacement: "OPENAI_API_KEY",

@@ -1,6 +1,8 @@
-function read(name: string) {
-  return String(process.env[name] || "").trim();
-}
+import {
+  hasLegacySquareEnvAlias,
+  readCanonicalSquareEnv,
+  reportLegacySquareEnvAlias,
+} from "@/lib/squareEnvDrift";
 
 function pickFirst(...values: Array<string | undefined>) {
   for (const value of values) {
@@ -13,7 +15,19 @@ function getSquareEnvironment() {
   const explicit = pickFirst(process.env.SQUARE_ENVIRONMENT);
   if (explicit) return explicit.toLowerCase();
 
-  if (pickFirst(process.env.SQUARE_sandbox_access_token, process.env.SQUARE_Sandbox_App_ID)) {
+  if (hasLegacySquareEnvAlias("SQUARE_sandbox_access_token")) {
+    reportLegacySquareEnvAlias(
+      { name: "SQUARE_sandbox_access_token", replacement: "SQUARE_ENVIRONMENT + SQUARE_ACCESS_TOKEN" },
+      "redrocksfastpass.square.environment",
+    );
+    return "sandbox";
+  }
+
+  if (hasLegacySquareEnvAlias("SQUARE_Sandbox_App_ID")) {
+    reportLegacySquareEnvAlias(
+      { name: "SQUARE_Sandbox_App_ID", replacement: "SQUARE_ENVIRONMENT + SQUARE_APP_ID" },
+      "redrocksfastpass.square.environment",
+    );
     return "sandbox";
   }
 
@@ -21,27 +35,33 @@ function getSquareEnvironment() {
 }
 
 function getSquareLocationId() {
-  return pickFirst(
-    process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID,
-    process.env.SQUARE_LOCATION_ID,
-    process.env.SQUARE_location_id
+  return readCanonicalSquareEnv(
+    ["NEXT_PUBLIC_SQUARE_LOCATION_ID", "SQUARE_LOCATION_ID"],
+    [{ name: "SQUARE_location_id", replacement: "SQUARE_LOCATION_ID" }],
+    "redrocksfastpass.square.location_id",
   );
 }
 
 function getSquareAccessToken() {
   const env = getSquareEnvironment();
   if (env === "sandbox") {
-    return pickFirst(
-      process.env.SQUARE_ACCESS_TOKEN,
-      process.env.SQUARE_access_token,
-      process.env.SQUARE_sandbox_access_token
+    return readCanonicalSquareEnv(
+      ["SQUARE_ACCESS_TOKEN"],
+      [
+        { name: "SQUARE_access_token", replacement: "SQUARE_ACCESS_TOKEN" },
+        { name: "SQUARE_sandbox_access_token", replacement: "SQUARE_ACCESS_TOKEN" },
+      ],
+      "redrocksfastpass.square.access_token",
     );
   }
 
-  return pickFirst(
-    process.env.SQUARE_ACCESS_TOKEN,
-    process.env.SQUARE_access_token,
-    process.env.SQUARE_sandbox_access_token
+  return readCanonicalSquareEnv(
+    ["SQUARE_ACCESS_TOKEN"],
+    [
+      { name: "SQUARE_access_token", replacement: "SQUARE_ACCESS_TOKEN" },
+      { name: "SQUARE_sandbox_access_token", replacement: "SQUARE_ACCESS_TOKEN" },
+    ],
+    "redrocksfastpass.square.access_token",
   );
 }
 
