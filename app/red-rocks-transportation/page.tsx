@@ -13,9 +13,9 @@ import { buildDecisionContinuationParams } from "@/lib/dcc/contracts/decisionCon
 import { mapDecisionToDestination } from "@/lib/dcc/mapping";
 
 export const metadata: Metadata = {
-  title: "Red Rocks Transportation — Solved | Easiest Way To Get There And Back",
+  title: "Best Way to Get to Red Rocks from Denver | Shuttle First",
   description:
-    "Parking fills early, Uber gets brittle after the show, and the easiest Red Rocks move is usually to solve the ride before the night starts.",
+    "For most Denver visitors, the shared Red Rocks shuttle is the right first move because it solves parking, pickup, and the ride home before the show.",
   alternates: { canonical: "/red-rocks-transportation" },
   keywords: [
     "best way to get to red rocks",
@@ -107,8 +107,8 @@ export default async function RedRocksTransportationPage({
   return (
     <RedRocksAuthorityPage
       eyebrow="Ride plan"
-      title="Red Rocks transportation — solved"
-      intro="Parking is limited. Uber works better getting there than leaving. If you want the easiest, most reliable way to get there and back without stress, solve the ride before the show and stop improvising the trip home."
+      title="Take the shared shuttle unless your group needs a private ride."
+      intro="Parking is limited. Uber works better getting there than leaving. For most visitors, the shared shuttle is the right default because it solves the ride home before the show starts. Private is the exception when group control matters more than price."
       sourcePath={PAGE_PATH}
       primaryCtaHref={sharedBookingHref}
       primaryCtaLabel="See shuttle options"
@@ -125,7 +125,7 @@ export default async function RedRocksTransportationPage({
         },
         {
           label: "Best default",
-          body: "For most visitors, shuttle is the easiest, most reliable move.",
+          body: "For most visitors, shared shuttle is the easiest, most reliable move.",
         },
         {
           label: "Best fit",
@@ -145,7 +145,7 @@ export default async function RedRocksTransportationPage({
               <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-[#ffb07c]">Still deciding</p>
                 <p className="mt-3 text-sm leading-7 text-zinc-300">
-                  Use a narrow feeder only when you need to eliminate one specific mistake first. Otherwise go straight into the main transportation lane.
+                  Use a narrow feeder only when you need to eliminate one specific mistake first. Otherwise go straight into shared shuttle availability.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-3 text-sm">
                   <Link href="/red-rocks-shuttle" className="rounded-full border border-white/14 bg-white/6 px-4 py-2 font-black uppercase tracking-[0.14em] text-white transition hover:bg-white/10">
@@ -162,7 +162,7 @@ export default async function RedRocksTransportationPage({
               <div className="rounded-[1.5rem] border border-cyan-300/20 bg-[#08141d] p-5">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">Ready to act</p>
                 <p className="mt-3 text-sm leading-7 text-zinc-300">
-                  If you already know you want the cleanest ride-home plan, skip the comparison step and go straight into shuttle availability.
+                  If you already know you want the cleanest ride-home plan, skip comparison and go straight into shuttle availability.
                 </p>
                 <div className="mt-4">
                   <ParrCtaLink
@@ -198,7 +198,7 @@ export default async function RedRocksTransportationPage({
             <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">What most people get wrong</p>
             <h2 className="mt-3 text-2xl font-bold text-white">The hard part is not getting there. It is ending the night cleanly when everyone tries to leave at once.</h2>
             <p className="mt-3 text-sm leading-7 text-zinc-300">
-              Driving feels easier until parking pushes you farther out than expected and the exit drags. Uber can work on the way in, but the ride home is where that plan gets brittle. If you want the easiest option, take the shuttle and treat the return as solved.
+              Driving feels easier until parking pushes you farther out than expected and the exit drags. Uber can work on the way in, but the ride home is where that plan gets brittle. If you want the easiest option, take the shared shuttle and treat the return as solved.
             </p>
             <p className="mt-3 text-xs uppercase tracking-[0.18em] text-[#ffb07c]">{urgencyCopy}</p>
             <div className="mt-5 grid gap-3 md:grid-cols-3">
@@ -221,15 +221,15 @@ export default async function RedRocksTransportationPage({
       sections={[
         {
           title: "Your options, simplified",
-          body: "This is a friction decision, not a research project. Driving adds parking and exit stress. Uber is weakest after the show. Shuttle is the cleanest default when you want the whole night to feel easier.",
+          body: "This is a friction decision, not a research project. Driving adds parking and exit stress. Uber is weakest after the show. Shared shuttle is the cleanest default when you want the whole night to feel easier.",
           bullets: [
             "Uber or Lyft: easiest to imagine, least reliable after the show.",
             "Driving yourself: workable only if you accept parking, walking, and a slower exit.",
-            "Shuttle: recommended for the easiest reliable round trip.",
+            "Shared shuttle: recommended for the easiest reliable round trip.",
           ],
         },
         {
-          title: "Why shuttle usually wins",
+          title: "Why shared shuttle usually wins",
           body: "Most people choose shuttle because it solves the part of the night that breaks most often: the return. You are not paying for more theory. You are paying to avoid parking friction, surge pricing, long uphill walks, and the scramble that starts once the crowd moves at the same time.",
           bullets: [
             "Round-trip is planned before the show starts.",
@@ -248,7 +248,7 @@ export default async function RedRocksTransportationPage({
         },
         {
           title: "If you already know you want the shuttle",
-          body: "Skip the decision loop and go straight into availability. That is the right move when the recommendation is already clear in your head and you are ready to act.",
+          body: "Skip the decision loop and go straight into availability. That is the right move when the recommendation is already clear and you are ready to act.",
           bullets: [
             "Use the booking flow for live availability and pickup details.",
             "Treat the ride home as solved before the first song starts.",
