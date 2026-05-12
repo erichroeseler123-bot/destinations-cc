@@ -24,15 +24,40 @@ export default function RedRocksParkingPage() {
   return (
     <RedRocksAuthorityPage
       eyebrow="DCC Parking Guide"
-      title="Parking is part of the Red Rocks experience, not a footnote."
-      intro="Parking at Red Rocks changes the full shape of the night. It affects how early you leave, how much uphill walking you absorb, and how painful the exit feels when the show ends."
+      title="Do not make Red Rocks parking the plan unless you want the burden."
+      intro="For most concert nights, take the shared shuttle instead. Parking means lot strategy, uphill walking, and a slower exit after the show."
       sourcePath="/red-rocks-parking"
       primaryCtaHref="/red-rocks-transportation"
-      primaryCtaLabel="See The Transport Decision"
+      primaryCtaLabel="Check Shared Shuttle Availability"
+      buyerIntentLabel="Red Rocks parking decision"
+      heroTrustBadges={[
+        "Parking is the friction",
+        "Shared shuttle removes the lot decision",
+        "Party at Red Rocks executes booking",
+      ]}
+      heroSummaryCards={[
+        {
+          label: "Verdict",
+          body: "If you are trying to avoid parking stress, stop here and choose shuttle.",
+        },
+        {
+          label: "What driving costs",
+          body: "Time, walking, exit traffic, and the need for a sober driver.",
+        },
+        {
+          label: "Next step",
+          body: "Confirm shared vs private, then book with Party at Red Rocks.",
+        },
+      ]}
       sections={[
         {
           title: "Parking reality on busy nights",
-          body: "The stress is not just finding a space. It is the full chain: arrival timing, lot selection, walking grade, weather exposure, and exit drag after the encore. Visitors who underweight parking friction usually end up compressing the whole night around the car.",
+          body: "The stress is not just finding a space. The shared shuttle is the better default for most Denver visitors because it removes arrival timing, lot selection, walking grade, weather exposure, and exit drag after the encore.",
+          bullets: [
+            "Parking chaos avoided.",
+            "No post-show waiting around the lots.",
+            "Predictable timing before and after the show.",
+          ],
         },
         {
           title: "Why parking pages naturally recommend shuttles",

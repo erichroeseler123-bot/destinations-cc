@@ -5,8 +5,8 @@ import SatelliteHandoffStatusCard from "@/app/components/dcc/SatelliteHandoffSta
 import { getLocalFallbackImageSetForEntity } from "@/src/lib/media/source-local";
 
 export const metadata: Metadata = {
-  title: "Red Rocks Shuttle From Denver | Cleanest Ride Plan",
-  description: "Use the cleanest Red Rocks ride plan from Denver when you want parking and the ride home solved before the show starts.",
+  title: "Red Rocks Shuttle from Denver: Skip Parking and Post-Show Uber Problems",
+  description: "Use a Denver shuttle to get to Red Rocks without parking stress, surge pricing, or waiting for a ride after the concert.",
   alternates: { canonical: "/red-rocks-shuttle" },
   keywords: [
     "red rocks shuttle",
@@ -36,21 +36,49 @@ export default async function RedRocksShuttlePage({
   return (
     <RedRocksAuthorityPage
       eyebrow="DCC Shuttle Guide"
-      title="Red Rocks shuttle from Denver is usually the cleanest move when you do not want to fight parking or post-show Uber."
-      intro="Visitors searching for a Red Rocks shuttle are usually past the inspiration phase. They want the simplest way to get from Denver to Red Rocks and back without parking stress, uphill lot walks, or a surge-priced pickup mess after the show."
+      title="Take the Red Rocks shuttle from Denver if you want the night handled."
+      intro="For most concert nights, this is the move. The shared shuttle solves parking, the uphill lot walk, and the post-show Uber scramble before you arrive."
       sourcePath="/red-rocks-shuttle"
       primaryCtaHref="/red-rocks-transportation"
-      primaryCtaLabel="Use The Transport Decision"
+      primaryCtaLabel="Check Shared Shuttle Availability"
       buyerIntentLabel="Red Rocks shuttle from Denver"
+      heroTrustBadges={[
+        "Shared shuttle is the default",
+        "Private only when control matters",
+        "Party at Red Rocks executes booking",
+      ]}
+      heroSummaryCards={[
+        {
+          label: "Verdict",
+          body: "Use the shared shuttle unless your group needs private control.",
+        },
+        {
+          label: "Why",
+          body: "The return trip is solved before the crowd starts competing for rides.",
+        },
+        {
+          label: "Next step",
+          body: "Confirm shared vs private, then book with Party at Red Rocks.",
+        },
+      ]}
       heroImageSrc={imageSet?.hero?.src || "https://www.partyatredrocks.com/hero/hero-home.jpg"}
       heroImageAlt={imageSet?.hero?.alt || "Red Rocks shuttle proof image tied to the live Party at Red Rocks service"}
       notice={
         <>
           <SatelliteHandoffStatusCard handoffId={handoffId} />
           <section className="rounded-[1.9rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+          <section>
+            <h2>Decision Locked</h2>
+            <p>
+              Shuttle is the default. The next step is confirming shared or private,
+              then moving into the Party at Red Rocks booking path.
+            </p>
+          </section>
             <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Feeder rule</p>
             <p className="mt-3 text-sm leading-7 text-zinc-300">
-              This feeder exists for one reason only: to answer whether shuttle is the correct default. Once that answer is yes, the next move is the main transport corridor rather than another comparison stack.
+              This page answers one question: should shuttle be the default? Yes for
+              most visitors. The main transport corridor handles the final shared vs
+              private split.
             </p>
           </section>
         </>
@@ -59,11 +87,11 @@ export default async function RedRocksShuttlePage({
       sections={[
         {
           title: "Why visitors search for a Red Rocks shuttle",
-          body: "This is a problem-solving query, not a browsing query. Most searchers are trying to avoid parking stress, long uphill walks from late lots, and the uncertainty of getting back to Denver after the show.",
+          body: "This is a problem-solving query, not a browsing query. The clear answer is shared shuttle for most visitors because it solves the ride-home problem before the concert starts.",
           bullets: [
-            "They already know the venue.",
-            "They already know transportation is the main friction point.",
-            "They are narrowing the cleanest move between shuttle, driving, Uber, or private ride.",
+            "Parking chaos avoided before the night starts.",
+            "No post-show waiting while the rideshare zone backs up.",
+            "Predictable timing from Denver into Red Rocks and back.",
           ],
         },
         {
