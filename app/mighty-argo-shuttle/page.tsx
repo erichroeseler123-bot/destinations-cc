@@ -10,9 +10,9 @@ const PAGE_URL = "https://destinationcommandcenter.com/mighty-argo-shuttle";
 const ATTRACTION_URL = "https://destinationcommandcenter.com/mighty-argo";
 
 export const metadata: Metadata = {
-  title: "Shuttle to the Mighty Argo Cable Car | Denver Transport Options",
+  title: "Mighty Argo Shuttle | Denver to Idaho Springs Ride",
   description:
-    "Plan a Denver to Idaho Springs Argo day with live route context, pickup anchors, timing buffers, and shuttle seat or private SUV options when the ride fits your outing.",
+    "Book the recommended Denver to Mighty Argo shuttle path with clear pickup, return, and next-step expectations before you continue.",
   alternates: { canonical: "/mighty-argo-shuttle" },
   openGraph: {
     title: "Shuttle to the Mighty Argo Cable Car | Denver to Idaho Springs",
@@ -171,10 +171,10 @@ function JsonLd() {
       {
         "@type": "WebPage",
         "@id": PAGE_URL,
-        name: "Shuttle to the Mighty Argo Cable Car",
+        name: "Mighty Argo Shuttle",
         url: PAGE_URL,
         description:
-          "Planning-first shuttle page for Denver to Idaho Springs, focused on Argo Mine and Argo Cable Car transportation.",
+          "Decision-first shuttle page for Denver to Idaho Springs, focused on pickup, return, and Argo day certainty.",
       },
       {
         "@type": "Service",
@@ -306,10 +306,10 @@ export default function MightyArgoShuttlePage() {
                   <RouteHeroMark eyebrow="Destination Command Center" title="MIGHTY ARGO CABLE CAR" tone="amber" />
                 </div>
                 <h1 className="dcc-hero-enter dcc-hero-enter-3 mt-5 text-[clamp(2.35rem,9vw,5.5rem)] font-black leading-[0.92] tracking-tight">
-                  Shuttle to the Mighty Argo Cable Car.
+                  Take the shuttle if you want Argo without the I-70 drive.
                 </h1>
                 <p className="dcc-hero-enter dcc-hero-enter-4 mt-4 max-w-2xl text-base leading-7 text-zinc-200 sm:text-lg">
-                  Plan the outing first, then choose the transport option that fits your day. Use the route context, pickup anchors, and current conditions to decide whether shuttle is the cleanest way to get there from Denver.
+                  This is the right move when you want a simple Denver pickup, a planned Idaho Springs return, and one transportation path instead of comparing rental cars, rideshare uncertainty, and mountain parking.
                 </p>
                 <p className="mt-3 text-sm font-medium text-amber-100">Transport options from $35.</p>
 
@@ -338,7 +338,7 @@ export default function MightyArgoShuttlePage() {
                     href="#book"
                     className="rounded-full border border-amber-300/25 bg-amber-400/12 px-4 py-2 font-semibold text-amber-100 hover:bg-amber-400/18"
                   >
-                    Review shuttle options
+                    Continue to Argo shuttle booking
                   </Link>
                   <Link
                     href="/mighty-argo"
@@ -351,10 +351,10 @@ export default function MightyArgoShuttlePage() {
 
               <div className="space-y-5">
                 <div className="rounded-[28px] border border-white/10 bg-black/25 p-5">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">Current Route Context</p>
-                  <h2 className="mt-2 text-2xl font-black tracking-tight text-white">Check the day before you lock the ride.</h2>
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">What happens next</p>
+                  <h2 className="mt-2 text-2xl font-black tracking-tight text-white">Confirm the ride details, then send the request.</h2>
                   <p className="mt-3 text-sm leading-7 text-zinc-300">
-                    Argo works best when weather, timing, and pickup expectations all line up. Start with the conditions snapshot, then use the shuttle only if it keeps the day simpler.
+                    Choose the ride, confirm pickup, passenger count, and return expectation, then continue with the Argo shuttle path instead of reopening the transportation decision.
                   </p>
                   <div className="mt-4">
                     <ArgoStatusPanel />
@@ -362,10 +362,10 @@ export default function MightyArgoShuttlePage() {
                 </div>
 
                 <div id="book" className="rounded-[28px] border border-amber-300/20 bg-amber-400/10 p-5 shadow-[0_18px_50px_rgba(249,115,22,0.12)]">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-amber-200">Transport Options</p>
-                  <h2 className="mt-2 text-2xl font-black tracking-tight text-white">If the ride fits your plan, choose the right option.</h2>
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-amber-200">Recommended next move</p>
+                  <h2 className="mt-2 text-2xl font-black tracking-tight text-white">Use the shuttle when Argo is the point of the day.</h2>
                   <p className="mt-3 text-sm leading-7 text-zinc-100">
-                    Seat shuttle works best for straightforward Argo days. Private SUV is the better fit for groups, gear, or a more flexible rhythm.
+                    Seat shuttle works best for straightforward Argo days. Private SUV is the better fit for families, gear, or groups that need their own rhythm.
                   </p>
                   <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     {OFFER_CARDS.map((offer) => (
@@ -383,7 +383,7 @@ export default function MightyArgoShuttlePage() {
       </section>
 
       <section className="relative mx-auto max-w-6xl space-y-6 px-5 pb-14 sm:px-6">
-        <Section title="When the Shuttle Makes Sense" eyebrow="Fit Check">
+        <Section title="The Verdict" eyebrow="Decision">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {VALUE_POINTS.map((item) => (
               <div key={item.label} className="rounded-[24px] border border-white/10 bg-black/25 p-4">
@@ -394,7 +394,7 @@ export default function MightyArgoShuttlePage() {
           </div>
         </Section>
 
-        <Section title="Getting Back Matters" eyebrow="Return Planning">
+        <Section title="Pickup and Return Certainty" eyebrow="Return Planning">
           <div className="grid gap-3 md:grid-cols-2">
             <div className="rounded-[24px] border border-white/10 bg-black/25 p-5">
               <h3 className="text-lg font-bold text-white">Ride share is limited up there.</h3>
@@ -419,7 +419,7 @@ export default function MightyArgoShuttlePage() {
 
         <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="space-y-6">
-            <Section title="How the Day Flows" eyebrow="Three Steps">
+        <Section title="What Happens Next" eyebrow="Three Steps">
               <div className="grid gap-3">
                 {HOW_IT_WORKS.map((item) => (
                   <div key={item.step} className="rounded-[24px] border border-white/10 bg-black/25 p-4">
