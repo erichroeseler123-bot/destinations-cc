@@ -55,8 +55,10 @@ export default function OpsFilters({ view, status, payment, route, search, date 
           className="mt-1 min-h-11 w-full rounded-xl border border-white/15 bg-black/40 px-3 text-white"
         >
           <option value="all">All routes</option>
-          <option value="parr-shared">Shared</option>
-          <option value="parr-private">Private</option>
+          <option value="parr-shared">Red Rocks shared</option>
+          <option value="parr-private">Red Rocks private</option>
+          <option value="argo">Argo Shuttle</option>
+          <option value="airport-420-pickup">420 Airport Pickup</option>
         </select>
       </label>
 
