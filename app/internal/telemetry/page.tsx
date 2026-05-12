@@ -18,6 +18,13 @@ import {
   USA_PROOF_MEASURE_FIRST_ROOT_PATHS,
 } from "@/src/data/usa-proof-rollout";
 import { buildNoindexRobots } from "@/lib/seo/indexingPolicy";
+import { getDb } from "@/lib/db/client";
+import {
+  dccCorridorEvents,
+  dccHandoffEvents,
+  dccHandoffSummaries,
+} from "@/lib/db/schema";
+import { desc, eq, sql } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -170,6 +177,179 @@ function isUsaProofRevenueRow(
   return row.topSourcePages.some((item) => USA_PROOF_MEASURE_FIRST_ROOT_PATHS.includes(item.value));
 }
 
+const DECISION_HEALTH_MAPPING = [
+  {
+    label: "Total users / handoffs",
+    source: "dcc_handoff_summaries",
+    eventNames: ["unique handoff rows"],
+    filter: "active satellite filter only",
+  },
+  {
+    label: "Decision attempts",
+    source: "dcc_corridor_events",
+    eventNames: [
+      "destination_selected",
+      "base_selected",
+      "activity_selected",
+      "transport_mode_selected",
+    ],
+    filter: "last 5000 production-like corridor events",
+  },
+  {
+    label: "Primary CTA clicks",
+    source: "dcc_corridor_events",
+    eventNames: ["cta_clicked_primary"],
+    filter: "last 5000 production-like corridor events; source_page must not start with /transportation/",
+  },
+  {
+    label: "Alternative CTA clicks",
+    source: "dcc_corridor_events",
+    eventNames: ["cta_clicked_alternative"],
+    filter: "last 5000 production-like corridor events; source_page must not start with /transportation/",
+  },
+  {
+    label: "booking_opened",
+    source: "dcc_corridor_events",
+    eventNames: ["booking_opened"],
+    filter: "last 5000 production-like corridor events",
+  },
+  {
+    label: "checkout_started",
+    source: "dcc_corridor_events",
+    eventNames: ["checkout_started"],
+    filter: "last 5000 production-like corridor events",
+  },
+  {
+    label: "booking_completed",
+    source: "dcc_corridor_events",
+    eventNames: ["booking_completed"],
+    filter: "last 5000 production-like corridor events",
+  },
+  {
+    label: "Satellite handoff rows",
+    source: "dcc_handoff_summaries + dcc_handoff_events",
+    eventNames: [
+      "handoff_viewed",
+      "booking_started",
+      "booking_completed",
+      "traveler_returned",
+      "ticket_clickout",
+      "tour_clickout",
+    ],
+    filter: "active satellite filter; rows sort by dcc_handoff_summaries.last_event_at",
+  },
+];
+
+const DECISION_HEALTH_INCLUDED_EVENTS = new Set(
+  DECISION_HEALTH_MAPPING.flatMap((row) =>
+    row.source === "dcc_corridor_events" ? row.eventNames : [],
+  ),
+);
+
+async function getTelemetryDebugSnapshot(
+  activeSatellite: DccSatelliteId | null,
+  recentSptTokenEvents: Array<{ createdAt: string }>,
+) {
+  const db = getDb();
+  if (!db) {
+    return {
+      latestBySource: [
+        { source: "dcc_handoff_summaries", latestAt: null, note: "No database configured." },
+        { source: "dcc_handoff_events", latestAt: null, note: "No database configured." },
+        { source: "dcc_corridor_events", latestAt: null, note: "No database configured." },
+        {
+          source: "dcc_spt_token_events",
+          latestAt: recentSptTokenEvents[0]?.createdAt || null,
+          note: "Recent token diagnostics from the dashboard snapshot.",
+        },
+      ],
+      corridorEventCounts: [],
+      satelliteEventCounts: [],
+    };
+  }
+
+  const [
+    latestHandoffSummary,
+    latestHandoffEvent,
+    latestCorridorEvent,
+    corridorEventCounts,
+    satelliteEventCounts,
+  ] = await Promise.all([
+    db
+      .select({ latestAt: sql<Date | null>`max(${dccHandoffSummaries.lastEventAt})` })
+      .from(dccHandoffSummaries)
+      .where(activeSatellite ? eq(dccHandoffSummaries.satelliteId, activeSatellite) : undefined),
+    db
+      .select({ latestAt: sql<Date | null>`max(${dccHandoffEvents.receivedAt})` })
+      .from(dccHandoffEvents)
+      .where(activeSatellite ? eq(dccHandoffEvents.satelliteId, activeSatellite) : undefined),
+    db.select({ latestAt: sql<Date | null>`max(${dccCorridorEvents.occurredAt})` }).from(dccCorridorEvents),
+    db
+      .select({
+        eventName: dccCorridorEvents.eventName,
+        last24h: sql<number>`count(*) filter (where ${dccCorridorEvents.occurredAt} >= now() - interval '24 hours')::int`,
+        last7d: sql<number>`count(*) filter (where ${dccCorridorEvents.occurredAt} >= now() - interval '7 days')::int`,
+        allTime: sql<number>`count(*)::int`,
+        latestAt: sql<Date | null>`max(${dccCorridorEvents.occurredAt})`,
+      })
+      .from(dccCorridorEvents)
+      .groupBy(dccCorridorEvents.eventName)
+      .orderBy(desc(sql`count(*)`)),
+    db
+      .select({
+        eventName: dccHandoffEvents.eventType,
+        last24h: sql<number>`count(*) filter (where ${dccHandoffEvents.receivedAt} >= now() - interval '24 hours')::int`,
+        last7d: sql<number>`count(*) filter (where ${dccHandoffEvents.receivedAt} >= now() - interval '7 days')::int`,
+        allTime: sql<number>`count(*)::int`,
+        latestAt: sql<Date | null>`max(${dccHandoffEvents.receivedAt})`,
+      })
+      .from(dccHandoffEvents)
+      .where(activeSatellite ? eq(dccHandoffEvents.satelliteId, activeSatellite) : undefined)
+      .groupBy(dccHandoffEvents.eventType)
+      .orderBy(desc(sql`count(*)`)),
+  ]);
+
+  return {
+    latestBySource: [
+      {
+        source: "dcc_handoff_summaries",
+        latestAt: latestHandoffSummary[0]?.latestAt?.toISOString?.() || null,
+        note: "Powers Total users / handoffs and the satellite handoff table rows.",
+      },
+      {
+        source: "dcc_handoff_events",
+        latestAt: latestHandoffEvent[0]?.latestAt?.toISOString?.() || null,
+        note: "Raw satellite lifecycle ledger behind each handoff summary.",
+      },
+      {
+        source: "dcc_corridor_events",
+        latestAt: latestCorridorEvent[0]?.latestAt?.toISOString?.() || null,
+        note: "Powers Decision attempts, CTA clicks, booking_opened, checkout_started, and booking_completed.",
+      },
+      {
+        source: "dcc_spt_token_events",
+        latestAt: recentSptTokenEvents[0]?.createdAt || null,
+        note: "Recent token creation/resolution diagnostics from the dashboard snapshot.",
+      },
+    ],
+    corridorEventCounts: corridorEventCounts.map((row) => ({
+      eventName: row.eventName,
+      last24h: Number(row.last24h || 0),
+      last7d: Number(row.last7d || 0),
+      allTime: Number(row.allTime || 0),
+      latestAt: row.latestAt?.toISOString?.() || null,
+      includedInDecisionHealth: DECISION_HEALTH_INCLUDED_EVENTS.has(row.eventName),
+    })),
+    satelliteEventCounts: satelliteEventCounts.map((row) => ({
+      eventName: row.eventName,
+      last24h: Number(row.last24h || 0),
+      last7d: Number(row.last7d || 0),
+      allTime: Number(row.allTime || 0),
+      latestAt: row.latestAt?.toISOString?.() || null,
+    })),
+  };
+}
+
 export default async function InternalTelemetryPage({
   searchParams,
 }: {
@@ -213,6 +393,7 @@ export default async function InternalTelemetryPage({
   };
   const airportPickupOrders = (await listStoredOrders("airport-420-pickup")).slice(0, 20);
   const confirmedAirportPickupOrders = airportPickupOrders.filter(isConfirmedOrder);
+  const telemetryDebug = await getTelemetryDebugSnapshot(activeSatellite, snapshot.recentSptTokenEvents);
   const summaryItems = [
     { label: "Total users / handoffs", value: snapshot.totals.handoffs },
     { label: "Decision attempts", value: 0 },
@@ -378,6 +559,143 @@ export default async function InternalTelemetryPage({
             <div className="rounded-xl border border-cyan-300/20 bg-cyan-500/10 p-4">
               <div className="text-xs uppercase tracking-[0.16em] text-cyan-100">Default acceptance rate</div>
               <div className="mt-3 text-3xl font-black text-white">{defaultAcceptanceDisplay}</div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-500/10 p-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-100">Telemetry Debug</div>
+              <h2 className="mt-2 text-2xl font-black text-white">
+                Why handoff rows can move while Decision Health stays flat
+              </h2>
+              <p className="mt-2 max-w-4xl text-sm leading-6 text-cyan-50/80">
+                Satellite rows read the handoff ledger. Decision Health reads the corridor-event funnel.
+                Fresh <code className="rounded bg-black/30 px-1 py-0.5">handoff_viewed</code> rows from WTA update the ledger by design, but they do not count as decision attempts, CTA clicks, <code className="rounded bg-black/30 px-1 py-0.5">booking_opened</code>, checkout starts, or booking completions unless a matching corridor event is also written.
+              </p>
+            </div>
+            <div className="rounded-full border border-cyan-200/30 bg-black/20 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-cyan-100">
+              Read-only mapping
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-4 xl:grid-cols-3">
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4 xl:col-span-1">
+              <div className="text-xs uppercase tracking-[0.16em] text-cyan-100">Latest event by source</div>
+              <div className="mt-4 space-y-3 text-sm">
+                {telemetryDebug.latestBySource.map((row) => (
+                  <div key={row.source} className="rounded-lg border border-white/10 bg-black/20 p-3">
+                    <div className="font-mono text-xs text-cyan-100">{row.source}</div>
+                    <div className="mt-1 text-zinc-100">{formatDateTime(row.latestAt || undefined)}</div>
+                    <div className="mt-1 text-xs leading-5 text-zinc-400">{row.note}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4 xl:col-span-2">
+              <div className="text-xs uppercase tracking-[0.16em] text-cyan-100">Decision Health event-name mapping</div>
+              <div className="mt-4 overflow-x-auto">
+                <table className="min-w-full table-auto text-left text-sm">
+                  <thead className="border-b border-white/10 text-zinc-300">
+                    <tr>
+                      <th className="px-3 py-2 font-semibold">Counter</th>
+                      <th className="px-3 py-2 font-semibold">Source</th>
+                      <th className="px-3 py-2 font-semibold">Included names</th>
+                      <th className="px-3 py-2 font-semibold">Filter</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {DECISION_HEALTH_MAPPING.map((row) => (
+                      <tr key={row.label} className="border-b border-white/10">
+                        <td className="px-3 py-3 font-semibold text-white">{row.label}</td>
+                        <td className="px-3 py-3 font-mono text-xs text-cyan-100">{row.source}</td>
+                        <td className="px-3 py-3 text-zinc-300">{row.eventNames.join(", ")}</td>
+                        <td className="px-3 py-3 text-zinc-400">{row.filter}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-4 xl:grid-cols-2">
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <div className="text-xs uppercase tracking-[0.16em] text-cyan-100">Corridor events by event_name</div>
+              <div className="mt-4 max-h-[420px] overflow-auto">
+                <table className="min-w-full table-auto text-left text-sm">
+                  <thead className="sticky top-0 border-b border-white/10 bg-zinc-950 text-zinc-300">
+                    <tr>
+                      <th className="px-3 py-2 font-semibold">event_name</th>
+                      <th className="px-3 py-2 font-semibold">24h</th>
+                      <th className="px-3 py-2 font-semibold">7d</th>
+                      <th className="px-3 py-2 font-semibold">All</th>
+                      <th className="px-3 py-2 font-semibold">Included</th>
+                      <th className="px-3 py-2 font-semibold">Latest</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {telemetryDebug.corridorEventCounts.map((row) => (
+                      <tr key={row.eventName} className="border-b border-white/10">
+                        <td className="px-3 py-3 font-mono text-xs text-zinc-100">{row.eventName}</td>
+                        <td className="px-3 py-3 text-zinc-300">{row.last24h}</td>
+                        <td className="px-3 py-3 text-zinc-300">{row.last7d}</td>
+                        <td className="px-3 py-3 text-zinc-300">{row.allTime}</td>
+                        <td className={row.includedInDecisionHealth ? "px-3 py-3 text-emerald-200" : "px-3 py-3 text-zinc-500"}>
+                          {row.includedInDecisionHealth ? "yes" : "no"}
+                        </td>
+                        <td className="px-3 py-3 text-xs text-zinc-400">{formatDateTime(row.latestAt || undefined)}</td>
+                      </tr>
+                    ))}
+                    {telemetryDebug.corridorEventCounts.length === 0 ? (
+                      <tr>
+                        <td className="px-3 py-6 text-zinc-400" colSpan={6}>
+                          No corridor events found.
+                        </td>
+                      </tr>
+                    ) : null}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <div className="text-xs uppercase tracking-[0.16em] text-cyan-100">Satellite handoff events by event_type</div>
+              <div className="mt-4 max-h-[420px] overflow-auto">
+                <table className="min-w-full table-auto text-left text-sm">
+                  <thead className="sticky top-0 border-b border-white/10 bg-zinc-950 text-zinc-300">
+                    <tr>
+                      <th className="px-3 py-2 font-semibold">event_type</th>
+                      <th className="px-3 py-2 font-semibold">24h</th>
+                      <th className="px-3 py-2 font-semibold">7d</th>
+                      <th className="px-3 py-2 font-semibold">All</th>
+                      <th className="px-3 py-2 font-semibold">Decision Health</th>
+                      <th className="px-3 py-2 font-semibold">Latest</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {telemetryDebug.satelliteEventCounts.map((row) => (
+                      <tr key={row.eventName} className="border-b border-white/10">
+                        <td className="px-3 py-3 font-mono text-xs text-zinc-100">{row.eventName}</td>
+                        <td className="px-3 py-3 text-zinc-300">{row.last24h}</td>
+                        <td className="px-3 py-3 text-zinc-300">{row.last7d}</td>
+                        <td className="px-3 py-3 text-zinc-300">{row.allTime}</td>
+                        <td className="px-3 py-3 text-zinc-500">no</td>
+                        <td className="px-3 py-3 text-xs text-zinc-400">{formatDateTime(row.latestAt || undefined)}</td>
+                      </tr>
+                    ))}
+                    {telemetryDebug.satelliteEventCounts.length === 0 ? (
+                      <tr>
+                        <td className="px-3 py-6 text-zinc-400" colSpan={6}>
+                          No satellite handoff events found for this filter.
+                        </td>
+                      </tr>
+                    ) : null}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </section>
