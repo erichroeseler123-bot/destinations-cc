@@ -32,6 +32,8 @@ type CreateSquarePaymentBody = {
   customerEmail?: string;
   customerPhone?: string;
   specialRequests?: string;
+  flightNumber?: string;
+  dispensaryPreference?: string;
   sourceId?: string;
 };
 
@@ -60,6 +62,22 @@ function logParrNeedsReview(
 }
 
 function getRouteLabels(route: string, qty: number) {
+  if (route === "argo") {
+    return {
+      heading: "Argo Shuttle Confirmation",
+      subject: `Argo Shuttle Confirmed`,
+      quantityLabel: qty === 1 ? "Seat" : "Seats",
+    };
+  }
+
+  if (route === "airport-420-pickup") {
+    return {
+      heading: "420 Friendly Airport Pickup Confirmation",
+      subject: `420 Friendly Airport Pickup Confirmed`,
+      quantityLabel: qty === 1 ? "Ride" : "Rides",
+    };
+  }
+
   if (route === "parr-shared") {
     return {
       heading: "Party at Red Rocks Shared Shuttle Confirmation",
@@ -159,6 +177,51 @@ async function maybeSendConfirmationEmail({
 }
 
 async function getAvailabilityForRoute(route: string, date: string): Promise<AvailabilityRow[]> {
+  if (route === "argo") {
+    return [
+      {
+        productKey: "argo-seat",
+        total: 12,
+        booked: 0,
+        remaining: 12,
+        available: true,
+      },
+    ];
+  }
+
+  if (route === "airport-420-pickup") {
+    return [
+      {
+        productKey: "airport-pickup",
+        total: 8,
+        booked: 0,
+        remaining: 8,
+        available: true,
+      },
+      {
+        productKey: "airport-dispensary",
+        total: 6,
+        booked: 0,
+        remaining: 6,
+        available: true,
+      },
+      {
+        productKey: "airport-red-rocks",
+        total: 6,
+        booked: 0,
+        remaining: 6,
+        available: true,
+      },
+      {
+        productKey: "airport-420-premium",
+        total: 8,
+        booked: 0,
+        remaining: 8,
+        available: true,
+      },
+    ];
+  }
+
   if (route === "parr-shared") {
     return getParrSharedAvailability(date);
   }
@@ -184,7 +247,7 @@ export async function POST(req: NextRequest) {
   const customerName = (body.customerName || "").trim();
   const customerPhone = (body.customerPhone || "").trim();
   const pickup = (body.pickup || "").trim();
-  const isSupportedRoute = ["parr-private", "parr-shared"].includes(route);
+  const isSupportedRoute = ["argo", "airport-420-pickup", "parr-private", "parr-shared"].includes(route);
   const hasDate = typeof body.date === "string" && body.date.trim() !== "";
   const validProduct = product != null && product.route === route;
 
@@ -217,6 +280,8 @@ export async function POST(req: NextRequest) {
   const totalCents = pricing.totalCents;
   const amountPaidCents = pricing.amountDueNowCents;
   const remainingBalanceCents = pricing.remainingBalanceCents;
+  const orderPickup = route === "argo" ? "Union Station" : pickup;
+  const orderPickupTime = route === "argo" ? "9:00 AM" : body.pickupTime || null;
   const availability = await getAvailabilityForRoute(route, body.date || "");
   const row = availability.find((item) => item.productKey === product.key) || null;
   const inventoryMessage = product.kind === "seat"
@@ -262,10 +327,14 @@ export async function POST(req: NextRequest) {
     qty,
     partySize,
     date: body.date,
-    pickup,
+    pickup: orderPickup,
     dropoff: body.dropoff || routeConfig.defaultDropoff || null,
-    pickupTime: body.pickupTime || null,
+    pickupTime: orderPickupTime,
     specialRequests: body.specialRequests || null,
+    tripContext: {
+      flightNumber: body.flightNumber?.trim() || null,
+      dispensaryPreference: body.dispensaryPreference?.trim() || null,
+    },
     customer: {
       name: customerName,
       email: body.customerEmail || null,
@@ -306,7 +375,7 @@ export async function POST(req: NextRequest) {
         date: body.date || "",
         qty,
         partySize,
-        pickup,
+        pickup: orderPickup,
         dropoff: body.dropoff || routeConfig.defaultDropoff || "",
         amountPaid: amountPaidCents / 100,
         remainingBalance: remainingBalanceCents / 100,

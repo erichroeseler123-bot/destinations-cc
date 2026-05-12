@@ -1,6 +1,6 @@
 import { PARR_PICKUP_HUBS } from "@/lib/parrOperator";
 
-export type CheckoutRouteKey = "argo" | "parr-private" | "parr-shared";
+export type CheckoutRouteKey = "argo" | "airport-420-pickup" | "parr-private" | "parr-shared";
 
 export type CheckoutProductKind = "seat" | "private";
 
@@ -35,6 +35,46 @@ export type CheckoutRouteConfig = {
 };
 
 const PRODUCTS: CheckoutProduct[] = [
+  {
+    key: "airport-pickup",
+    route: "airport-420-pickup",
+    title: "Denver Private Airport Pickup",
+    priceCents: 9900,
+    kind: "private",
+    maxQty: 1,
+    maxPassengers: 6,
+    description: "Private DEN pickup with direct metro drop-off.",
+  },
+  {
+    key: "airport-dispensary",
+    route: "airport-420-pickup",
+    title: "Denver Airport Pickup + Dispensary Stop",
+    priceCents: 10900,
+    kind: "private",
+    maxQty: 1,
+    maxPassengers: 6,
+    description: "Private DEN pickup with one curated dispensary stop and direct drop-off.",
+  },
+  {
+    key: "airport-red-rocks",
+    route: "airport-420-pickup",
+    title: "Denver Airport Pickup + Red Rocks Transfer",
+    priceCents: 11900,
+    kind: "private",
+    maxQty: 1,
+    maxPassengers: 6,
+    description: "Private DEN pickup aligned to a Red Rocks arrival and event-night handoff.",
+  },
+  {
+    key: "airport-420-premium",
+    route: "airport-420-pickup",
+    title: "420 Friendly Airport Pickup",
+    priceCents: 9900,
+    kind: "private",
+    maxQty: 1,
+    maxPassengers: 6,
+    description: "Private DIA pickup with optional dispensary stop and direct drop-off.",
+  },
   {
     key: "argo-seat",
     route: "argo",
@@ -123,14 +163,35 @@ const ROUTES: Record<CheckoutRouteKey, CheckoutRouteConfig> = {
     backLabel: "Back to Argo page",
     defaultProduct: "argo-seat",
     pickupMode: "select",
-    pickupOptions: ["Denver", "Union Station", "Downtown Hotel"],
-    defaultPickup: "Denver",
+    pickupOptions: ["Union Station"],
+    defaultPickup: "Union Station",
     checkoutTitle: "Checkout",
-    checkoutIntro: "Argo booking preload is active. Review this cart snapshot before payment.",
+    checkoutIntro: "Argo booking preload is active. Review the fixed 9:00 AM Union Station pickup before payment.",
     prelaunchEnvVar: "NEXT_PUBLIC_ARGO_PRELAUNCH",
     paymentsEnvVar: "ENABLE_ARGO_PAYMENTS",
     depositPercentage: 100,
     defaultDropoff: "Argo Mill and Tunnel",
+  },
+  "airport-420-pickup": {
+    key: "airport-420-pickup",
+    title: "Book 420 Friendly Airport Pickup",
+    intro: "Choose your arrival date, flight details, and curated stop preferences, then continue to secure checkout.",
+    backHref: "https://420friendlyairportpickup.com",
+    backLabel: "Back to 420 Friendly Airport Pickup",
+    defaultProduct: "airport-red-rocks",
+    pickupMode: "select",
+    pickupOptions: [
+      "DEN Terminal Level 5 - East side",
+      "DEN Terminal Level 5 - West side",
+      "Private aviation / Signature",
+    ],
+    defaultPickup: "DEN Terminal Level 5 - East side",
+    checkoutTitle: "420 Airport Pickup Checkout",
+    checkoutIntro: "Review the arrival window, flight info, and pickup details before payment.",
+    prelaunchEnvVar: "NEXT_PUBLIC_420_PICKUP_PRELAUNCH",
+    paymentsEnvVar: "ENABLE_420_PICKUP_PAYMENTS",
+    depositPercentage: 100,
+    defaultDropoff: "Denver metro drop-off",
   },
   "parr-private": {
     key: "parr-private",
@@ -189,7 +250,7 @@ export function isCheckoutPaymentsEnabled(route: string | null | undefined) {
   const config = getCheckoutRouteConfig(route);
   if (config == null) return false;
   if (process.env[config.paymentsEnvVar] === "true") return true;
-  if (["parr-private", "parr-shared"].includes(route || "")) {
+  if (["airport-420-pickup", "parr-private", "parr-shared"].includes(route || "")) {
     return process.env.ENABLE_ARGO_PAYMENTS === "true";
   }
   return false;
@@ -200,7 +261,7 @@ export function isCheckoutPrelaunch(route: string | null | undefined) {
   if (config == null) return true;
   const value = process.env[config.prelaunchEnvVar];
   if (typeof value === "string") return value === "false" ? false : true;
-  if (["parr-private", "parr-shared"].includes(route || "")) {
+  if (["airport-420-pickup", "parr-private", "parr-shared"].includes(route || "")) {
     return process.env.NEXT_PUBLIC_ARGO_PRELAUNCH === "false" ? false : true;
   }
   return process.env.NEXT_PUBLIC_ARGO_PRELAUNCH === "false" ? false : true;

@@ -51,10 +51,13 @@ export default function OpsOrderDrawer({
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <DetailRow label="Phone" value={order.customerPhone} />
         <DetailRow label="Email" value={order.customerEmail} />
+        <DetailRow label="Service" value={order.serviceLabel} />
         <DetailRow label="Service date" value={order.serviceDate} />
         <DetailRow label="Departure" value={order.departureLabel} />
         <DetailRow label="Pickup" value={order.pickupLabel} />
+        <DetailRow label="Drop-off" value={order.dropoffLabel} />
         <DetailRow label="Seats" value={String(order.seats)} />
+        <DetailRow label="Party size / riders" value={String(order.partySize)} />
         <DetailRow label="Order status" value={order.orderStatus.replace("_", " ")} />
         <DetailRow label="Payment status" value={order.paymentStatus} />
         <DetailRow label="Created" value={formatDateTime(order.createdAt)} />
@@ -63,6 +66,9 @@ export default function OpsOrderDrawer({
         <DetailRow label="Session key" value={order.sessionKey} />
         <DetailRow label="Route" value={order.route} />
         <DetailRow label="Product" value={order.productLabel} />
+        <DetailRow label="Flight number" value={order.flightNumber} />
+        <DetailRow label="Dispensary preference" value={order.dispensaryPreference} />
+        <DetailRow label="Special requests" value={order.source.specialRequests || null} />
         <DetailRow label="Paid / Total" value={`${formatMoney(order.amountPaidCents)} / ${formatMoney(order.totalCents)}`} />
         <DetailRow label="Balance left" value={formatMoney(order.remainingBalanceCents)} />
       </div>
