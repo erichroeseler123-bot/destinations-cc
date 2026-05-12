@@ -76,7 +76,7 @@ const NIGHT_FLOW = [
   "Spot the real friction before the night gets built around it.",
   "Use DCC to resolve the transport decision instead of comparing forever.",
   "Move into one clear booking action once the answer is obvious.",
-              "Land on Party at Red Rocks with the booking path already decided.",
+  "Land on Party at Red Rocks with the booking path already decided.",
 ];
 
 export default function RedRocksAuthorityPage({
@@ -142,6 +142,14 @@ export default function RedRocksAuthorityPage({
           <p className="mt-5 text-xs uppercase tracking-[0.24em] text-cyan-300">{eyebrow}</p>
           <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">{title}</h1>
           <p className="mt-4 max-w-4xl text-base leading-8 text-zinc-300">{intro}</p>
+          <section className="mt-5 rounded-[1.5rem] border border-cyan-300/20 bg-cyan-500/10 p-5">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200">Quick answer</p>
+            <p className="mt-3 text-sm leading-7 text-zinc-100">
+              For most concert nights, the shared Red Rocks shuttle is the move. It
+              removes parking, reduces post-show waiting, and locks the return plan
+              before you arrive.
+            </p>
+          </section>
           <div className="mt-5 flex flex-wrap gap-2">
             {heroTrustBadges.map((item) => (
               <span
@@ -170,6 +178,13 @@ export default function RedRocksAuthorityPage({
               </Link>
             ) : null}
           </div>
+          <section className="mt-5 rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-4">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">What happens after click</p>
+            <p className="mt-2 text-sm leading-7 text-zinc-300">
+              DCC carries the decision forward. If you are booking-ready, Party at Red
+              Rocks handles the live transportation booking and execution.
+            </p>
+          </section>
           <div className="mt-6 grid gap-3 md:grid-cols-3">
             {heroSummaryCards.map((card) => (
               <div key={card.label} className="rounded-[24px] border border-white/10 bg-[#0b1224] p-4">
@@ -209,6 +224,46 @@ export default function RedRocksAuthorityPage({
               </div>
             </section>
           )}
+          <section className="mt-5 rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200">Why this is the move</p>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] p-4 text-sm leading-6 text-zinc-300">
+                <strong className="block text-white">Parking chaos avoided</strong>
+                No lot strategy, uphill walk, or slow car exit shaping the night.
+              </div>
+              <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] p-4 text-sm leading-6 text-zinc-300">
+                <strong className="block text-white">No post-show waiting</strong>
+                The ride-home plan is chosen before everyone opens rideshare at once.
+              </div>
+              <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] p-4 text-sm leading-6 text-zinc-300">
+                <strong className="block text-white">Predictable timing</strong>
+                Shared shuttle is the clean default; private is only for groups needing control.
+              </div>
+            </div>
+          </section>
+          <section className="mt-5 rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">Fast comparison</p>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <div className="rounded-[1.2rem] border border-cyan-300/25 bg-cyan-500/10 p-4">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">Recommended</p>
+                <h2 className="mt-2 text-xl font-black text-white">Red Rocks shuttle</h2>
+                <ul className="mt-3 space-y-2 text-sm leading-6 text-zinc-200">
+                  <li>• Best when you want parking and the ride home solved.</li>
+                  <li>• Better default for Denver visitors and first-time Red Rocks groups.</li>
+                  <li>• Moves you into a clear booking path instead of another decision loop.</li>
+                </ul>
+              </div>
+              <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] p-4 opacity-85">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#ffb07c]">Alternative</p>
+                <h2 className="mt-2 text-xl font-black text-white">Uber or driving</h2>
+                <ul className="mt-3 space-y-2 text-sm leading-6 text-zinc-300">
+                  <li>• Uber only works if you accept post-show waiting and surge pricing.</li>
+                  <li>• Driving only works if you accept parking, walking, and exit traffic.</li>
+                  <li>• Both leave the hardest part of the night less predictable.</li>
+                </ul>
+              </div>
+            </div>
+          </section>
           {hideSupportReading ? null : (
             <section className="mt-5 rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
               <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">Support reading</p>
@@ -232,6 +287,27 @@ export default function RedRocksAuthorityPage({
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-6">
             {notice}
+            <section className="rounded-[1.9rem] border border-cyan-300/20 bg-cyan-500/10 p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200">What happens next</p>
+              <h2 className="mt-3 text-2xl font-bold">Choose the shuttle path, then continue to the booking surface.</h2>
+              <p className="mt-3 text-sm leading-7 text-zinc-200">
+                DCC settles the decision. Party at Red Rocks handles the operator booking and Red Rocks shuttle entry path when you want to start from the execution layer.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3 text-sm">
+                <Link href="/red-rocks-shuttle-vs-uber" className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 hover:bg-white/10">
+                  Red Rocks shuttle vs Uber
+                </Link>
+                <Link href="/how-to-get-to-red-rocks-without-parking-hassle" className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 hover:bg-white/10">
+                  how to get to Red Rocks without parking hassle
+                </Link>
+                <Link href="/how-to-leave-red-rocks-after-a-concert" className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 hover:bg-white/10">
+                  best way to leave Red Rocks
+                </Link>
+                <a href="https://www.partyatredrocks.com/shuttles" className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 hover:bg-white/10">
+                  Party at Red Rocks shuttles
+                </a>
+              </div>
+            </section>
             {sections.map((section) => (
               <section
                 key={section.title}
