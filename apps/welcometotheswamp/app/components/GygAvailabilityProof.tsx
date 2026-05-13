@@ -1,8 +1,8 @@
 "use client";
 
-import Script from "next/script";
-
 const PARTNER_ID = process.env.NEXT_PUBLIC_GETYOURGUIDE_PARTNER_ID || "F2MMUUH";
+const TOUR_ID = process.env.NEXT_PUBLIC_WTS_GYG_TOUR_ID || "280242";
+const CURRENCY = process.env.NEXT_PUBLIC_GETYOURGUIDE_CURRENCY || "USD";
 
 export default function GygAvailabilityProof() {
   return (
@@ -18,13 +18,14 @@ export default function GygAvailabilityProof() {
 
       <div
         className="gyg-proof__widget"
-        data-gyg-href="https://widget.getyourguide.com/default/activities.frame"
+        data-gyg-href="https://widget.getyourguide.com/default/availability.frame"
+        data-gyg-tour-id={TOUR_ID}
         data-gyg-locale-code="en-US"
-        data-gyg-widget="activities"
-        data-gyg-number-of-items="3"
+        data-gyg-currency={CURRENCY}
+        data-gyg-widget="availability"
+        data-gyg-variant="horizontal"
         data-gyg-cmp="wts_availability_proof"
         data-gyg-partner-id={PARTNER_ID}
-        data-gyg-q="New Orleans swamp tour"
       >
         <span>
           Powered by{" "}
@@ -38,7 +39,6 @@ export default function GygAvailabilityProof() {
         GetYourGuide handles live availability, supplier terms, payment, confirmation, and cancellation for these
         fallback listings.
       </p>
-      <Script async src="https://widget.getyourguide.com/dist/pa.umd.production.min.js" />
     </section>
   );
 }
