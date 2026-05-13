@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import DecisionWidgetCard from "./DecisionWidgetCard";
+import GygAvailabilityProof from "./GygAvailabilityProof";
 import CertaintyBlock from "./decision/CertaintyBlock";
 import GuidedFlowController from "./decision/GuidedFlowController";
 import GuidedResults from "./decision/GuidedResults";
@@ -575,6 +576,7 @@ export default function JuneauHomeClient({
             }
             alternativesLabel="Prefer a different pace?"
           />
+          <GygAvailabilityProof selectedDate={date} />
         </>
       ) : (
         <div className="guided-empty">
@@ -635,6 +637,7 @@ export default function JuneauHomeClient({
               </div>
             </div>
           ) : null}
+          <GygAvailabilityProof selectedDate={date} />
           <div className="meta-row">
             <div className="last-updated">Last updated: {updatedLabel}</div>
             <button className="refresh-link" type="button" onClick={handleRefresh}>

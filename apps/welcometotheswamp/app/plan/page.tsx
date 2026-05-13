@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import GygAvailabilityProof from "@/app/components/GygAvailabilityProof";
 import JsonLd from "@/app/components/JsonLd";
 import WarmTransferTelemetry from "@/app/components/WarmTransferTelemetry";
 import { IntentRouter } from "@/app/components/IntentRouter";
@@ -169,6 +170,8 @@ export default async function SwampPlanPage({
           </Link>
         </div>
       </section>
+
+      <GygAvailabilityProof />
 
       <section id="decision-shortlist" className="panel">
         <p className="eyebrow">Decision shortlist</p>

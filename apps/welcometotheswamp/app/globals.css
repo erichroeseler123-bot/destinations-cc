@@ -543,6 +543,40 @@ input {
   border-color: rgba(32, 86, 58, 0.24);
 }
 
+.gyg-proof {
+  display: grid;
+  gap: 18px;
+}
+
+.gyg-proof__header {
+  max-width: 780px;
+}
+
+.gyg-proof__header h2 {
+  margin: 0;
+}
+
+.gyg-proof__widget {
+  min-height: 280px;
+  border: 1px solid rgba(18, 34, 24, 0.12);
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.gyg-proof__widget > span {
+  display: block;
+  padding: 16px;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+
+.gyg-proof__note {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+
 @media (max-width: 720px) {
   .router-head {
     align-items: flex-start;
