@@ -100,6 +100,21 @@ iframe {
   overflow: hidden;
 }
 
+.sales-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.sales-hero--juneau {
+  border-color: rgba(255, 213, 150, 0.28);
+  background:
+    linear-gradient(90deg, rgba(2, 11, 18, 0.88), rgba(2, 11, 18, 0.48) 58%, rgba(2, 11, 18, 0.84)),
+    linear-gradient(180deg, rgba(2, 11, 18, 0.1), rgba(2, 11, 18, 0.82)),
+    url("https://images.unsplash.com/photo-1508264165352-258a6f82b6f4?auto=format&fit=crop&w=1600&q=82");
+  background-position: center;
+  background-size: cover;
+}
+
 .hero-media,
 .hero-media > span {
   position: absolute !important;
@@ -172,6 +187,26 @@ iframe {
   max-width: 46rem;
   margin: 18px 0 0;
   font-size: 1.08rem;
+}
+
+.sales-proof-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 22px 0 0;
+}
+
+.sales-proof-row span,
+.gyg-proof__signals span {
+  border: 1px solid rgba(255, 213, 150, 0.22);
+  border-radius: 999px;
+  background: rgba(4, 17, 27, 0.68);
+  color: var(--accent-strong);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  padding: 9px 12px;
+  text-transform: uppercase;
 }
 
 .hero-trust {
@@ -870,7 +905,12 @@ body.dcc-guided-mode footer {
 
 .gyg-proof {
   display: grid;
-  gap: 18px;
+  gap: 20px;
+  overflow: hidden;
+  border-color: rgba(255, 213, 150, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(158, 217, 255, 0.14), transparent 28%),
+    linear-gradient(180deg, rgba(8, 28, 42, 0.95), rgba(5, 17, 27, 0.94));
 }
 
 .gyg-proof__header {
@@ -879,14 +919,20 @@ body.dcc-guided-mode footer {
 
 .gyg-proof__header h2 {
   margin: 0;
+  max-width: 760px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.1rem, 5vw, 3.8rem);
+  line-height: 0.96;
+  letter-spacing: -0.04em;
 }
 
 .gyg-proof__widget {
   min-height: 280px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 18px;
+  border-radius: 24px;
   overflow: hidden;
   background: #fff;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
 }
 
 .gyg-proof__widget > span {
@@ -900,6 +946,13 @@ body.dcc-guided-mode footer {
   margin: 0;
   color: var(--muted);
   font-size: 0.92rem;
+}
+
+.gyg-proof__signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .decision-widget {

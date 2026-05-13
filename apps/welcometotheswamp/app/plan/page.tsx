@@ -132,18 +132,29 @@ export default async function SwampPlanPage({
     <main className="page-stack" data-page-intent={pageIntent}>
       <JsonLd data={jsonLd} />
       <WarmTransferTelemetry packet={packet} lane={lane} />
-      <section className="hero-card hero-guide">
+      <section className="hero-card hero-guide sales-hero sales-hero--swamp">
         <div className="router-head">
-          <p className="eyebrow">Warm transfer plan</p>
-          <div className="intent-pill">Intent: Decide</div>
+          <p className="eyebrow">Local decision desk</p>
+          <div className="intent-pill">Filtered before booking</div>
         </div>
         <h1>{headline.title}</h1>
-        <p className="lede">{headline.intro}</p>
+        <p className="lede">
+          The move is not to compare every swamp tour in Louisiana. Start with the lane that fits your trip, confirm
+          live departures, then book the option that keeps the day simple.
+        </p>
+        <div className="sales-proof-row" aria-label="Swamp tour decision signals">
+          <span>Recommended lane first</span>
+          <span>Live departures next</span>
+          <span>Checkout without another research loop</span>
+        </div>
         <div className="stack-list">
-          <article className="info-card">
-            <h2>What we already know about you</h2>
+          <article className="info-card sales-decision-card">
+            <p className="eyebrow">Why this lane</p>
+            <h2>Someone local already filtered the swamp chaos for you.</h2>
             <p className="muted">
-              This page keeps the handoff warm instead of dumping you into a generic list. It uses the context from DCC to start with the right decision lane before you review the shortlist.
+              This page keeps the handoff warm instead of dumping you into a generic list. It uses the DCC context to
+              start with the right decision lane, then uses live availability as proof that the recommendation can be
+              booked.
             </p>
             <div className="lane-match-grid">
               <div className="lane-match-card">
@@ -163,7 +174,7 @@ export default async function SwampPlanPage({
         </div>
         <div className="cta-row">
           <Link href={shortlistHref} className="button" data-warm-transfer-click="hero_shortlist">
-            {lane ? "See this shortlist" : "See your shortlist"}
+            See the Recommended Lane
           </Link>
           <Link href={recheckHref} className="button-secondary" data-warm-transfer-click="hero_recheck_lane">
             Re-check the right question

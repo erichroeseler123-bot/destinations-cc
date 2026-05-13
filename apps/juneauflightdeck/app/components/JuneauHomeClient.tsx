@@ -721,18 +721,23 @@ export default function JuneauHomeClient({
 
   return (
     <main>
-      <section className="hero">
+      <section className="hero sales-hero sales-hero--juneau">
         <div className="hero-grid">
           <div>
-            <p className="eyebrow">Juneau helicopter tours</p>
+            <p className="eyebrow">Juneau flight operations</p>
             <h1>{initialUiState.headline}</h1>
             {initialUiState.arrivalConfirmationLine ? (
               <p className="trust-line">{initialUiState.arrivalConfirmationLine}</p>
             ) : null}
             <p className="hero-copy">
               {initialUiState.supportLine ||
-                "Pick your cruise day first. Then open the helicopter tour most likely to be worth your one shot in Juneau."}
+                "For most cruise days, start with one reliable helicopter choice. Pick your date, confirm the live departure, then book the tour worth building the day around."}
             </p>
+            <div className="sales-proof-row" aria-label="Juneau booking confidence signals">
+              <span>One cruise day</span>
+              <span>One strongest recommendation</span>
+              <span>Live departure proof</span>
+            </div>
           </div>
         </div>
       </section>
@@ -744,13 +749,13 @@ export default function JuneauHomeClient({
         <CertaintyBlock
           surface="juneau-certainty-block"
           eyebrow="Handled path"
-          verdict="Best move: Lock in your Juneau day"
-          title="A Juneau day that still works when conditions change."
+          verdict="Best move: lock in the helicopter window first"
+          title="A premium Juneau day should feel handled before you pay."
           paragraphs={[
-            "Planning your day in Juneau should not depend on perfect weather or last-minute guessing. This is the simplest way to lock in a high-quality experience without worrying about what might shift.",
-            "You get access to the signature Juneau experience without having to sort through every helicopter option yourself. Start with the handled path, then open the clearest fit for your cruise day.",
+            "Planning your day in Juneau should not depend on perfect weather, weak inventory, or last-minute guessing. This is the simplest way to lock in the premium experience without sorting through every helicopter option yourself.",
+            "Start with the handled path, confirm the strongest live departure for your cruise day, then move into checkout while the window is still real.",
           ]}
-          proofChips={["Less timing risk", "Cleaner day-of decision", "No re-planning later"]}
+          proofChips={["Cruise-day first", "Live departure proof", "Premium route framing"]}
           ctaLabel="Lock in your day"
           href={guidedHref}
           microcopy="Fastest path from decision to booking."
