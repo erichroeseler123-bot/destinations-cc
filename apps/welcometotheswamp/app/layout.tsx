@@ -4,6 +4,8 @@ import { SiteHeader } from "@/app/components/SiteHeader";
 import { SITE_CONFIG } from "@/app/site-config";
 import "./globals.css";
 
+const GETYOURGUIDE_PARTNER_ID = process.env.NEXT_PUBLIC_GETYOURGUIDE_PARTNER_ID || "F2MMUUH";
+
 export const metadata: Metadata = {
   title: "Welcome to the Swamp",
   description:
@@ -24,6 +26,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="alternate" type="application/json" href="/agent.json" />
         <link rel="alternate" type="text/plain" href="/llms.txt" />
+        <script
+          async
+          defer
+          src="https://widget.getyourguide.com/dist/pa.umd.production.min.js"
+          data-gyg-partner-id={GETYOURGUIDE_PARTNER_ID}
+        />
       </head>
       <body>
         <div className="shell shell-chrome">
