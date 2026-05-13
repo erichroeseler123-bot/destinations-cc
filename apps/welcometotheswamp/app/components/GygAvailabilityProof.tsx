@@ -8,12 +8,17 @@ export default function GygAvailabilityProof() {
   return (
     <section className="panel gyg-proof" aria-labelledby="gyg-proof-title">
       <div className="gyg-proof__header">
-        <p className="eyebrow">Live availability proof</p>
-        <h2 id="gyg-proof-title">For most visitors, start with the recommended swamp-tour lane.</h2>
+        <p className="eyebrow">Confirmed departures</p>
+        <h2 id="gyg-proof-title">For most visitors, this is the move.</h2>
         <p className="muted">
-          The recommendation stays first. The live GetYourGuide feed below proves that bookable New Orleans swamp-tour
-          departures exist now, then sends you to checkout without another research loop.
+          The page still decides first. These live GetYourGuide departures are proof that the recommended swamp-tour
+          lane is real, bookable, and ready to move into checkout.
         </p>
+        <div className="gyg-proof__signals" aria-label="Availability proof signals">
+          <span>Next available departures</span>
+          <span>Supplier terms handled</span>
+          <span>Checkout opens from the proof layer</span>
+        </div>
       </div>
 
       <div
@@ -36,8 +41,8 @@ export default function GygAvailabilityProof() {
       </div>
 
       <p className="gyg-proof__note">
-        GetYourGuide handles live availability, supplier terms, payment, confirmation, and cancellation for these
-        fallback listings.
+        These are fallback live listings. WTS makes the recommendation; GetYourGuide handles availability, payment,
+        confirmation, and cancellation once you choose a departure.
       </p>
     </section>
   );
