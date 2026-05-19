@@ -384,6 +384,7 @@ export default function JuneauHomeClient({
     );
     return haystack.includes(normalizedQuery);
   });
+  const hasHelicopterProducts = data.products.length > 0;
   const orderedProducts = prioritizeProducts(filteredProducts, initialUiState);
   const featuredWidgets = buildDecisionWidgets(orderedProducts, handoffId, data.selectedDate);
   const primaryWidget = featuredWidgets[0];
@@ -688,7 +689,7 @@ export default function JuneauHomeClient({
                   </a>
                 );
               })
-            ) : (
+            ) : hasHelicopterProducts ? null : (
               <div className="slot-card">
                 <h3>No helicopter products are showing right now</h3>
                 <div className="slot-summary">
