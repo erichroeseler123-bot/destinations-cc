@@ -24,11 +24,28 @@ type TrackedLinkProps = {
   rel?: string;
 };
 
-function emit(pathname: string, events?: EventDescriptor[]) {
+export function withTrackedLinkContext(event: EventDescriptor, href: string): EventDescriptor {
+  const targetPath = typeof event.props.target_path === "string" ? event.props.target_path : href;
+  const targetUrl = typeof event.props.target_url === "string" ? event.props.target_url : href;
+  const eventHref = typeof event.props.href === "string" ? event.props.href : href;
+
+  return {
+    ...event,
+    props: {
+      ...event.props,
+      target_path: targetPath,
+      target_url: targetUrl,
+      href: eventHref,
+    },
+  };
+}
+
+function emit(pathname: string, events: EventDescriptor[] | undefined, href: string) {
   if (!events?.length) return;
   for (const event of events) {
-    trackEvent(event.name, {
-      ...event.props,
+    const enrichedEvent = withTrackedLinkContext(event, href);
+    trackEvent(enrichedEvent.name, {
+      ...enrichedEvent.props,
       page: pathname,
     });
   }
@@ -48,12 +65,12 @@ export default function TrackedLink({
 
   useEffect(() => {
     if (shown.current) return;
-    emit(pathname, shownEvents);
+    emit(pathname, shownEvents, href);
     shown.current = true;
-  }, [pathname, shownEvents]);
+  }, [href, pathname, shownEvents]);
 
   function handleClick() {
-    emit(pathname, clickEvents);
+    emit(pathname, clickEvents, href);
   }
 
   if (href.startsWith("/")) {
