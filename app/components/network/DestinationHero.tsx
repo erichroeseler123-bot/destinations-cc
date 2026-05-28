@@ -6,6 +6,8 @@ type DestinationHeroProps = NetworkSectionProps & {
 };
 
 export function DestinationHero({ hero, theme }: DestinationHeroProps) {
+  const heroImage = hero.media?.image || theme.hero.image;
+
   return (
     <section className="mx-auto grid max-w-7xl gap-6 px-4 pb-8 pt-6 sm:px-6 md:pt-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(300px,0.95fr)] lg:gap-8 lg:pb-12">
       <div className="flex min-h-[480px] flex-col justify-center rounded-lg border border-[var(--network-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03))] p-5 shadow-[0_26px_90px_rgba(0,0,0,0.34)] sm:min-h-[520px] sm:p-7 lg:p-9">
@@ -57,6 +59,28 @@ export function DestinationHero({ hero, theme }: DestinationHeroProps) {
             <p className="mt-4 text-sm leading-7 text-[var(--network-muted)]">
               {hero.media?.body || "Match the tour to pickup, weather, group fit, and timing before opening inventory."}
             </p>
+          </div>
+          <div className="relative aspect-[16/10] overflow-hidden rounded-lg border border-[var(--network-border)] bg-black/[0.18]">
+            {heroImage ? (
+              <img
+                src={heroImage.src}
+                alt={heroImage.alt}
+                className="h-full w-full object-cover"
+                loading="eager"
+              />
+            ) : (
+              <div className="relative flex h-full flex-col justify-between bg-[radial-gradient(circle_at_18%_20%,rgba(17,197,138,0.34),transparent_32%),radial-gradient(circle_at_80%_28%,rgba(242,191,103,0.26),transparent_28%),linear-gradient(135deg,rgba(4,47,46,0.9),rgba(7,19,24,0.94))] p-4">
+                <div className="h-10 w-24 rounded-full border border-white/20 bg-white/10" />
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--destination-accent-2)]">
+                    Media-ready
+                  </div>
+                  <div className="mt-2 max-w-[14rem] text-lg font-black leading-tight text-[var(--network-text)]">
+                    Add real New Orleans tour imagery here.
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           <div className="grid gap-3">
             {(hero.media?.rows || []).map((row) => (

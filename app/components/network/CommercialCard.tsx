@@ -20,8 +20,30 @@ export function CommercialCard({ card, featured = false }: { card: CommercialCar
         featured
           ? "border-[var(--destination-accent)] bg-[radial-gradient(circle_at_top_left,var(--destination-accent-soft),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.035))]"
           : "border-[var(--network-border)] bg-[var(--network-surface-soft)]"
-      }`}
+        }`}
     >
+      <div className="mb-4 aspect-[16/10] overflow-hidden rounded-lg border border-[var(--network-border)] bg-black/[0.18]">
+        {card.image ? (
+          <img
+            src={card.image.src}
+            alt={card.image.alt}
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex h-full flex-col justify-between bg-[radial-gradient(circle_at_18%_18%,var(--destination-accent-soft),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] p-4">
+            <div className="h-8 w-20 rounded-full border border-white/20 bg-white/10" />
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--destination-accent-2)]">
+                {card.category}
+              </div>
+              <div className="mt-1 text-base font-black leading-tight text-[var(--network-text)]">
+                Photo slot ready
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-full border border-[var(--network-border)] bg-black/[0.2] px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--network-muted)]">
           {providerLabels[card.providerType]}
