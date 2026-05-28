@@ -1,5 +1,6 @@
 export type DccSatelliteId =
   | "partyatredrocks"
+  | "dropatthetop"
   | "gosno"
   | "saveonthestrip"
   | "redrocksfastpass"
@@ -83,6 +84,7 @@ export type CorridorManifest = {
   canonicalHubRoute: string;
   handoff: CorridorHandoffContract;
   command?: CorridorCommandBinding;
+  viator?: ViatorLaneConfig;
   relatedGuides: CorridorNavigationLink[];
   decisionCards: CorridorDecisionCard[];
   routes: CorridorRouteConfig[];
@@ -109,6 +111,33 @@ export type AvailabilityLaneRule = {
   lane: string;
   includeTerms: string[];
   fitTag: string;
+};
+
+export type ViatorLaneEntryType = "DecisionPage" | "Satellite" | "Operator";
+
+export type ViatorLaneRole = "Decision" | "Narrowing" | "Execution";
+
+export type ViatorLaneProduct = {
+  slot: string;
+  title: string;
+  campaign: string;
+  intent: string;
+  provider?: "viator" | "operator" | "internal";
+  productCode?: string;
+  productUrl?: string;
+  searchQuery?: string;
+  fallbackSearchQuery?: string;
+  decisionOption?: string;
+};
+
+export type ViatorLaneConfig = {
+  destination: string;
+  corridorId: string;
+  sourcePage: string;
+  entryType: ViatorLaneEntryType;
+  role: ViatorLaneRole;
+  primaryIntent: string;
+  products: ViatorLaneProduct[];
 };
 
 export type AvailabilityCorridorSearchInput = {
@@ -173,4 +202,5 @@ export type AvailabilityCorridorConfig = {
     ctaLabel: string;
     defaultLane: string;
   };
+  viator?: ViatorLaneConfig;
 };
