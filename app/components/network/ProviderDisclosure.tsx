@@ -8,7 +8,7 @@ export function ProviderDisclosure({ config }: { config?: ProviderDisclosureConf
       <article className="grid gap-5 rounded-lg border border-[var(--network-border)] bg-black/[0.18] p-5 md:grid-cols-[0.85fr_1.15fr] md:p-6">
         <div>
           <div className="text-[11px] font-black uppercase tracking-[0.2em] text-[var(--destination-accent-2)]">
-            Provider clarity
+            Before you book
           </div>
           <h2 className="mt-3 text-2xl font-black leading-tight text-[var(--network-text)]">
             {config.label}
@@ -17,7 +17,7 @@ export function ProviderDisclosure({ config }: { config?: ProviderDisclosureConf
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-lg border border-[var(--network-border)] bg-white/[0.04] p-4">
-            <h3 className="text-sm font-black text-[var(--network-text)]">Allowed claims</h3>
+            <h3 className="text-sm font-black text-[var(--network-text)]">What this page helps with</h3>
             <ul className="mt-3 grid gap-2 text-sm leading-6 text-[var(--network-muted)]">
               {config.allowedClaims.map((claim) => (
                 <li key={claim}>{claim}</li>
@@ -25,7 +25,7 @@ export function ProviderDisclosure({ config }: { config?: ProviderDisclosureConf
             </ul>
           </div>
           <div className="rounded-lg border border-[var(--network-border)] bg-white/[0.04] p-4">
-            <h3 className="text-sm font-black text-[var(--network-text)]">Not claimed</h3>
+            <h3 className="text-sm font-black text-[var(--network-text)]">What to confirm before booking</h3>
             <ul className="mt-3 grid gap-2 text-sm leading-6 text-[var(--network-muted)]">
               {config.notClaimed.map((claim) => (
                 <li key={claim}>{claim}</li>
