@@ -74,6 +74,7 @@ export type DestinationHeroConfig = {
     eyebrow: string;
     title: string;
     body: string;
+    image?: NetworkImageConfig;
     rows: Array<{ label: string; value: string }>;
   };
 };
