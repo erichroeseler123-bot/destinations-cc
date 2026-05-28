@@ -2,15 +2,15 @@ import type { CommercialCardConfig } from "./types";
 import { NetworkLink } from "./NetworkLink";
 
 const providerLabels: Record<CommercialCardConfig["providerType"], string> = {
-  owned_booking: "Owned booking",
-  partner_handoff: "Partner handoff",
-  affiliate_fallback: "Marketplace fallback",
+  owned_booking: "Book direct",
+  partner_handoff: "Partner booking",
+  affiliate_fallback: "Marketplace option",
   qualified_lead: "Qualified lead",
   sponsored_operator: "Sponsored operator",
   planning_fee: "Planning fee",
   marketing_service: "Marketing service",
   white_label_widget_later: "Widget later",
-  mixed: "Mixed handoff",
+  mixed: "Multiple options",
 };
 
 export function CommercialCard({ card, featured = false }: { card: CommercialCardConfig; featured?: boolean }) {
@@ -38,7 +38,7 @@ export function CommercialCard({ card, featured = false }: { card: CommercialCar
                 {card.category}
               </div>
               <div className="mt-1 text-base font-black leading-tight text-[var(--network-text)]">
-                Photo slot ready
+                Image coming soon
               </div>
             </div>
           </div>
