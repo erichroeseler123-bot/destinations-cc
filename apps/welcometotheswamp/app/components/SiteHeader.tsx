@@ -9,10 +9,16 @@ export function SiteHeader() {
 
   return (
     <header className="site-header">
-      <Link href="/" className="brand-block" aria-label="Welcome to the Swamp home">
-        <span className="brand-kicker">New Orleans swamp guide</span>
-        <span className="brand-name">Welcome to the Swamp</span>
-      </Link>
+      <div className="site-header-top">
+        <Link href="/" className="brand-block" aria-label="Welcome to the Swamp home">
+          <span className="brand-kicker">New Orleans swamp guide</span>
+          <span className="brand-name">Welcome to the Swamp</span>
+        </Link>
+        <div className="header-status">
+          <span className="header-status-dot" aria-hidden="true" />
+          Swamp tours made easy
+        </div>
+      </div>
       <nav className="nav-links" aria-label="Primary">
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href;
