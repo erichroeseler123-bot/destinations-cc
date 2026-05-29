@@ -41,6 +41,24 @@ const swampDockImage = {
   alt: "Boats staged at a Louisiana marsh dock for a swamp tour departure",
 };
 
+// Source credit: Wikimedia Commons. Context image only; not a specific provider photo.
+const airboatSwampImage = {
+  src: "/images/wno/airboat-swamp-tour.webp",
+  alt: "An airboat moving across swamp water during a Louisiana-style tour",
+};
+
+// Source credit: Wikimedia Commons. Context image only; not a specific provider photo.
+const smallBoatSwampImage = {
+  src: "/images/wno/small-boat-swamp-tour.webp",
+  alt: "A covered swamp tour boat traveling through Louisiana marsh scenery",
+};
+
+// Source credit: Wikimedia Commons. Context image only; not a specific provider photo.
+const louisianaSwampImage = {
+  src: "/images/wno/louisiana-swamp-backup.webp",
+  alt: "Still Louisiana swamp water and trees for a rainy-day tour planning backup",
+};
+
 export const newOrleansToursPageConfig: NetworkCommercialPageConfig = {
   id: "wno-new-orleans-tours",
   path: NEW_ORLEANS_TOURS_PATH,
@@ -145,6 +163,7 @@ export const newOrleansToursPageConfig: NetworkCommercialPageConfig = {
         "Louder, faster, more wind-in-your-face. This is the high-energy swamp move when the group wants a ride.",
       category: "Airboat tours",
       destination: "wno",
+      image: airboatSwampImage,
       tags: ["airboat tours", "open-air ride", "boat type"],
       cta: { label: "Compare airboats", href: airboatDecisionHref },
       providerType: "partner_handoff",
@@ -158,6 +177,7 @@ export const newOrleansToursPageConfig: NetworkCommercialPageConfig = {
         "A calmer bayou day for families, mixed-age groups, wildlife watching, and anyone choosing comfort over speed.",
       category: "Swamp tours",
       destination: "wno",
+      image: smallBoatSwampImage,
       tags: ["family-friendly", "small boat", "wildlife"],
       cta: { label: "Compare boat styles", href: smallBoatDecisionHref },
       providerType: "partner_handoff",
@@ -171,6 +191,7 @@ export const newOrleansToursPageConfig: NetworkCommercialPageConfig = {
         "For parties, reunions, team trips, and groups that need timing, pickup, or privacy to fit the day.",
       category: "Private groups",
       destination: "wno",
+      image: swampDockImage,
       tags: ["private groups", "custom timing", "fallback"],
       cta: {
         label: "Explore group tours",
@@ -187,6 +208,7 @@ export const newOrleansToursPageConfig: NetworkCommercialPageConfig = {
         "Food, ghosts, history, music, and walkable Quarter options for stormy afternoons or short stays.",
       category: "Rainy-day options",
       destination: "wno",
+      image: louisianaSwampImage,
       tags: ["rainy-day options", "French Quarter", "low transfer"],
       cta: { label: "Find backup ideas", href: "/new-orleans/things-to-do" },
       providerType: "affiliate_fallback",
