@@ -3,8 +3,8 @@ import { NetworkLink } from "./NetworkLink";
 
 const providerLabels: Record<CommercialCardConfig["providerType"], string> = {
   owned_booking: "Book direct",
-  partner_handoff: "Partner booking",
-  affiliate_fallback: "Marketplace option",
+  partner_handoff: "Book with partner",
+  affiliate_fallback: "Compare options",
   qualified_lead: "Qualified lead",
   sponsored_operator: "Sponsored operator",
   planning_fee: "Planning fee",
@@ -16,18 +16,18 @@ const providerLabels: Record<CommercialCardConfig["providerType"], string> = {
 export function CommercialCard({ card, featured = false }: { card: CommercialCardConfig; featured?: boolean }) {
   return (
     <article
-      className={`flex min-h-[360px] flex-col rounded-lg border p-5 shadow-[0_22px_70px_rgba(0,0,0,0.24)] ${
+      className={`flex min-h-[390px] flex-col overflow-hidden rounded-lg border p-4 shadow-[0_20px_55px_rgba(20,55,47,0.14)] ${
         featured
-          ? "border-[var(--destination-accent)] bg-[radial-gradient(circle_at_top_left,var(--destination-accent-soft),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.035))]"
-          : "border-[var(--network-border)] bg-[var(--network-surface-soft)]"
+          ? "border-[var(--destination-accent)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,255,255,0.74))]"
+          : "border-[var(--network-border)] bg-[var(--network-surface)]"
         }`}
     >
-      <div className="mb-4 aspect-[16/10] overflow-hidden rounded-lg border border-[var(--network-border)] bg-black/[0.18]">
+      <div className="-mx-1 -mt-1 mb-4 aspect-[16/10] overflow-hidden rounded-lg border border-[var(--network-border)] bg-white/60">
         {card.image ? (
           <img
             src={card.image.src}
             alt={card.image.alt}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover transition duration-500 hover:scale-[1.03]"
             loading="lazy"
           />
         ) : (
@@ -45,11 +45,11 @@ export function CommercialCard({ card, featured = false }: { card: CommercialCar
         )}
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full border border-[var(--network-border)] bg-black/[0.2] px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--network-muted)]">
-          {providerLabels[card.providerType]}
-        </span>
-        <span className="rounded-full border border-[var(--network-border)] bg-white/[0.045] px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--destination-accent-2)]">
+        <span className="rounded-full border border-[var(--network-border)] bg-[var(--destination-accent-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--destination-accent)]">
           {card.category}
+        </span>
+        <span className="rounded-full border border-[var(--network-border)] bg-white/70 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--network-muted)]">
+          {providerLabels[card.providerType]}
         </span>
       </div>
       <h3 className="mt-4 text-2xl font-black leading-[1.02] tracking-normal text-[var(--network-text)]">
@@ -59,7 +59,7 @@ export function CommercialCard({ card, featured = false }: { card: CommercialCar
         <p className="mt-3 text-sm font-semibold leading-7 text-[var(--network-muted)]">{card.subtitle}</p>
       ) : null}
       {card.decisionReason ? (
-        <p className="mt-4 rounded-lg border border-[var(--network-border)] bg-black/[0.16] p-3 text-xs leading-6 text-[var(--network-muted)]">
+        <p className="mt-4 rounded-lg border border-[var(--network-border)] bg-[var(--destination-accent-soft)] p-3 text-xs font-semibold leading-6 text-[var(--network-text)]">
           {card.decisionReason}
         </p>
       ) : null}
@@ -68,7 +68,7 @@ export function CommercialCard({ card, featured = false }: { card: CommercialCar
           {card.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-[var(--network-border)] bg-white/[0.04] px-3 py-1 text-[11px] font-bold text-[var(--network-muted)]"
+              className="rounded-full border border-[var(--network-border)] bg-white/70 px-3 py-1 text-[11px] font-bold text-[var(--network-muted)]"
             >
               {tag}
             </span>
@@ -78,7 +78,7 @@ export function CommercialCard({ card, featured = false }: { card: CommercialCar
       <p className="mt-4 text-xs leading-6 text-[var(--network-muted)]">{card.disclosure}</p>
       <NetworkLink
         cta={card.cta}
-        className="mt-auto inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--destination-accent-2)] px-5 text-center text-xs font-black uppercase tracking-[0.14em] text-[var(--destination-accent-text)] transition hover:bg-white"
+        className="mt-auto inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--destination-accent-2)] px-5 text-center text-xs font-black uppercase tracking-[0.12em] text-[var(--destination-accent-text)] shadow-[0_14px_30px_rgba(143,91,24,0.16)] transition hover:bg-white"
       />
     </article>
   );

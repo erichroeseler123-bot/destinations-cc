@@ -4,13 +4,14 @@ export function TrustStrip({ config }: { config?: TrustStripConfig }) {
   if (!config?.items.length) return null;
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-5 sm:px-6">
+    <section className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {config.items.map((item) => (
           <article
             key={item.id}
-            className="min-h-[112px] rounded-lg border border-[var(--network-border)] bg-[var(--network-surface-soft)] p-4"
+            className="min-h-[112px] rounded-lg border border-[var(--network-border)] bg-[var(--network-surface)] p-4 shadow-[0_14px_35px_rgba(20,55,47,0.08)]"
           >
+            <div className="mb-3 h-1.5 w-10 rounded-full bg-[var(--destination-accent-2)]" />
             <h2 className="text-sm font-black text-[var(--network-text)]">{item.label}</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--network-muted)]">{item.body}</p>
           </article>

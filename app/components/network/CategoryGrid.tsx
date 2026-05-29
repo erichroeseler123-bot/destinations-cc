@@ -11,7 +11,7 @@ export function CategoryGrid({ config }: { config?: CategoryGridConfig }) {
           <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[var(--destination-accent-2)]">
             {config.eyebrow}
           </div>
-          <h2 className="mt-3 text-3xl font-black uppercase leading-[0.98] tracking-normal text-[var(--network-text)] sm:text-4xl">
+          <h2 className="mt-3 text-3xl font-black leading-[0.98] tracking-normal text-[var(--network-text)] sm:text-4xl">
             {config.title}
           </h2>
         </div>
@@ -23,13 +23,13 @@ export function CategoryGrid({ config }: { config?: CategoryGridConfig }) {
         {config.items.map((item) => (
           <article
             key={item.id}
-            className="flex min-h-[230px] flex-col rounded-lg border border-[var(--network-border)] bg-[var(--network-surface-soft)] p-5 transition hover:border-[var(--destination-accent)] hover:bg-white/[0.07]"
+            className="flex min-h-[230px] flex-col rounded-lg border border-[var(--network-border)] bg-[var(--network-surface)] p-5 shadow-[0_14px_35px_rgba(20,55,47,0.08)] transition hover:-translate-y-0.5 hover:border-[var(--destination-accent)] hover:bg-white"
           >
             <h3 className="text-xl font-black leading-tight text-[var(--network-text)]">{item.title}</h3>
             <p className="mt-3 text-sm leading-7 text-[var(--network-muted)]">{item.body}</p>
             <NetworkLink
               cta={item.cta}
-              className="mt-auto inline-flex min-h-11 items-center text-sm font-black text-[var(--destination-accent)] hover:text-white"
+              className="mt-auto inline-flex min-h-11 items-center text-sm font-black text-[var(--destination-accent)] hover:text-[var(--network-text)]"
             />
           </article>
         ))}
