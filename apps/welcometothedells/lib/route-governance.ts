@@ -38,6 +38,16 @@ const WELCOME_TO_THE_DELLS_ROUTE_GOVERNANCE = [
     changeFrequency: "weekly",
     notes: "Editorial newspaper section for supper clubs, neon, after-hours moves, and river handoffs.",
   },
+  {
+    path: "/river-ops/jet-boat-adventures",
+    publishState: "live_unpromoted",
+    networkRole: "operator",
+    handoffPolicy: "outbound_only",
+    priority: 0.72,
+    changeFrequency: "weekly",
+    notes:
+      "Execution-adjacent confirmation surface for the jet-boat-primary River Ops decision. Held out of sitemap promotion until visual and telemetry review passes.",
+  },
 ] as const satisfies readonly RouteGovernanceEntry[];
 
 function createRouteGovernanceIndex<T extends { path: string; publishState: PublishState; networkRole: NetworkRole }>(

@@ -1,6 +1,12 @@
 "use client";
 
-type DellsTelemetryEvent = "landing_viewed" | "hub_selected" | "next_stop_viewed" | "product_opened" | "support_opened";
+type DellsTelemetryEvent =
+  | "landing_viewed"
+  | "hub_selected"
+  | "next_stop_viewed"
+  | "verdict_shown"
+  | "product_opened"
+  | "support_opened";
 type DellsEventProps = Record<string, unknown>;
 
 const CORRIDOR_EVENT_ENDPOINT =
