@@ -30,9 +30,7 @@ body {
   margin: 0;
   min-height: 100%;
   background:
-    radial-gradient(circle at top left, rgba(139, 212, 255, 0.28), transparent 30%),
-    radial-gradient(circle at 85% 0, rgba(240, 179, 91, 0.14), transparent 24%),
-    linear-gradient(180deg, #eef8ff 0%, #d9edf8 18%, var(--bg) 58%, var(--bg-2) 100%);
+    linear-gradient(180deg, #f5fbff 0%, #dceff8 38%, #082134 100%);
   color: var(--text);
   font-family: "Segoe UI", Helvetica, Arial, sans-serif;
   text-rendering: optimizeLegibility;
@@ -66,7 +64,7 @@ body::before {
   top: 0;
   z-index: 20;
   backdrop-filter: blur(18px);
-  background: rgba(239, 248, 255, 0.88);
+  background: rgba(246, 251, 255, 0.9);
   border-bottom: 1px solid rgba(9, 43, 65, 0.12);
 }
 
@@ -409,12 +407,12 @@ iframe {
   display: grid;
   gap: 22px;
   align-items: stretch;
-  min-height: 76svh;
+  min-height: 82svh;
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow);
   overflow: hidden;
-  padding: clamp(24px, 5vw, 54px);
+  padding: clamp(20px, 5vw, 48px);
 }
 
 .storefront-hero {
@@ -441,38 +439,41 @@ iframe {
   inset: 0;
   z-index: 1;
   background:
-    linear-gradient(90deg, rgba(2, 11, 18, 0.82) 0%, rgba(2, 11, 18, 0.45) 50%, rgba(2, 11, 18, 0.66) 100%),
-    linear-gradient(180deg, rgba(4, 17, 27, 0.08), rgba(4, 17, 27, 0.88));
+    linear-gradient(90deg, rgba(2, 13, 23, 0.72) 0%, rgba(2, 13, 23, 0.18) 54%, rgba(2, 13, 23, 0.54) 100%),
+    linear-gradient(180deg, rgba(4, 17, 27, 0.05), rgba(4, 17, 27, 0.78));
 }
 
 .dispatch-hero-copy {
   display: grid;
-  align-content: center;
-  max-width: 780px;
+  align-content: end;
+  max-width: 620px;
 }
 
 .dispatch-hero h1 {
-  max-width: 13ch;
+  max-width: 10ch;
   margin: 0;
-  font-size: clamp(3rem, 7.4vw, 6.6rem);
-  line-height: 0.92;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(3.4rem, 9vw, 7.2rem);
+  line-height: 0.86;
 }
 
 .dispatch-subhead {
-  max-width: 660px;
-  margin: 20px 0 0;
+  max-width: 420px;
+  margin: 18px 0 0;
   color: var(--text);
-  font-size: clamp(1.05rem, 2.4vw, 1.35rem);
-  line-height: 1.48;
+  font-size: clamp(1.02rem, 2.1vw, 1.18rem);
+  line-height: 1.35;
 }
 
 .dispatch-verdict {
   display: grid;
   gap: 8px;
-  max-width: 720px;
+  max-width: 470px;
   margin-top: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-left: 4px solid var(--accent);
-  background: rgba(2, 11, 18, 0.66);
+  border-radius: 18px;
+  background: rgba(2, 11, 18, 0.48);
   backdrop-filter: blur(16px);
   padding: 16px 18px;
 }
@@ -488,7 +489,7 @@ iframe {
 
 .dispatch-verdict span {
   color: var(--text);
-  line-height: 1.6;
+  line-height: 1.35;
 }
 
 .dispatch-pills {
@@ -512,7 +513,7 @@ iframe {
   display: grid;
   align-self: end;
   gap: 12px;
-  max-width: 520px;
+  max-width: 360px;
 }
 
 .dispatch-panel > div,
@@ -577,13 +578,13 @@ iframe {
 
 .jfd-tour-grid {
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
 
 .jfd-tour-card {
   overflow: hidden;
   border: 1px solid rgba(9, 43, 65, 0.1);
-  border-radius: var(--radius-lg);
+  border-radius: 18px;
   background: #ffffff;
   box-shadow: 0 18px 42px rgba(9, 43, 65, 0.12);
 }
@@ -602,8 +603,8 @@ iframe {
 
 .jfd-tour-copy {
   display: grid;
-  gap: 12px;
-  padding: 18px;
+  gap: 10px;
+  padding: 16px;
 }
 
 .jfd-tour-copy p {
@@ -618,14 +619,14 @@ iframe {
 .jfd-tour-copy h3 {
   margin: 0;
   color: #092b41;
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   line-height: 1.05;
 }
 
 .jfd-tour-copy > span {
   color: rgba(9, 43, 65, 0.72);
-  font-size: 0.95rem;
-  line-height: 1.55;
+  font-size: 0.9rem;
+  line-height: 1.35;
 }
 
 .jfd-tour-meta {
@@ -671,6 +672,14 @@ iframe {
   gap: 18px;
 }
 
+.jfd-availability {
+  background:
+    linear-gradient(135deg, rgba(9, 43, 65, 0.96), rgba(14, 78, 112, 0.9)),
+    url("/images/authority/ports/juneau/section-1.webp");
+  background-size: cover;
+  background-position: center;
+}
+
 .dispatch-widget-grid {
   display: grid;
   gap: 18px;
@@ -689,7 +698,7 @@ iframe {
 .dispatch-widget-heading p {
   margin: 10px 0 0;
   color: var(--muted);
-  line-height: 1.65;
+  line-height: 1.4;
 }
 
 .gyg-widget-shell {

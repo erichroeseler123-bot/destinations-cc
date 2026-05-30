@@ -4,7 +4,7 @@ type PortSlug = "juneau" | "skagway";
 
 type HelicopterDispatchBoardProps = {
   portSlug: PortSlug;
-  sourcePage: string;
+  sourcePage?: string;
 };
 
 const PORT_COPY: Record<
@@ -21,25 +21,19 @@ const PORT_COPY: Record<
 > = {
   juneau: {
     label: "Juneau shore day",
-    headline: "Book the Alaska flight day that earns the port stop.",
-    subhead:
-      "Glacier flights, Mendenhall scenery, whale-watching backups, and cruise-safe timing help in one clean storefront.",
-    verdict:
-      "Start with a helicopter glacier tour if weather and ship timing work. Keep whale watching ready as the stronger backup when flight conditions tighten.",
-    portNote:
-      "For Juneau, confirm pickup location, flight time, and return buffer against your ship schedule before paying.",
+    headline: "Fly the glacier. Keep a backup.",
+    subhead: "Big ice, ship timing, weather pivots, clean next step.",
+    verdict: "Start with the glacier flight. Keep whales ready.",
+    portNote: "Check pickup, flight time, return buffer, and weather policy.",
     crossLinkHref: "/skagway/helicopter",
     crossLinkLabel: "Need Skagway instead?",
   },
   skagway: {
     label: "Skagway shore day",
-    headline: "Find the Skagway glacier flight that fits the ship clock.",
-    subhead:
-      "Skagway helicopter excursions available today or tomorrow, narrowed to premium glacier-style options.",
-    verdict:
-      "Use Skagway when that is the port on your itinerary. Do not book a Juneau operator unless your cruise actually stops in Juneau with enough time.",
-    portNote:
-      "For Skagway, verify meeting point, total duration, and ship return margin before paying.",
+    headline: "Match the glacier to the ship.",
+    subhead: "Skagway flight options, ship timing, weather backup.",
+    verdict: "Use Skagway only when your ship stops there.",
+    portNote: "Check meeting point, total duration, and ship return margin.",
     crossLinkHref: "/helicopter",
     crossLinkLabel: "Need Juneau instead?",
   },
@@ -53,19 +47,19 @@ const WHALE_IMAGE = "/images/authority/ports/juneau/gallery-1.webp";
 const TRUST_BADGES = [
   {
     label: "Cruise timing",
-    body: "Check meeting point, flight window, and ship return buffer before paying.",
+    body: "Ship clock first.",
   },
   {
     label: "Weather aware",
-    body: "Helicopter routes can move or cancel. Keep a strong backup in view.",
+    body: "Flight weather changes.",
   },
   {
     label: "Glacier fit",
-    body: "Pick flightseeing, landing, or dogsled-style options based on the day you actually have.",
+    body: "Pick the ice level.",
   },
   {
-    label: "Backup plan",
-    body: "Whale watching stays close to the Alaska feeling when flight weather does not cooperate.",
+    label: "Whale backup",
+    body: "Still feels Alaska.",
   },
 ];
 
@@ -75,18 +69,18 @@ const TOUR_CARDS = [
     kicker: "Signature Juneau",
     image: GLACIER_IMAGE,
     alt: "Mendenhall Glacier landscape near Juneau, Alaska",
-    body: "The premium first check when you want the big Alaska moment and your ship schedule has enough room.",
-    meta: ["Glacier views", "Weather dependent", "Confirm return buffer"],
+    body: "Big ice, short clock, real Alaska payoff.",
+    meta: ["Glacier views", "Weather dependent", "Ship buffer"],
     href: "/helicopter",
     cta: "Compare glacier flights",
   },
   {
-    title: "Mendenhall Glacier Landing / Walk",
+    title: "Mendenhall Landing",
     kicker: "Glacier focus",
     image: "/images/authority/attractions/mendenhall-glacier/section-1.webp",
     alt: "Mendenhall Glacier and mountain scenery near Juneau",
-    body: "Use this lane when the glacier is the point of the day and you want the strongest visual payoff.",
-    meta: ["Photo led", "Glacier terrain", "Terms on provider page"],
+    body: "Glacier closeups when landing is the point.",
+    meta: ["Ice detail", "Photo led", "Provider terms"],
     href: "/juneau/helicopter",
     cta: "Compare glacier options",
   },
@@ -95,40 +89,40 @@ const TOUR_CARDS = [
     kicker: "Weather-smart fallback",
     image: WHALE_IMAGE,
     alt: "Juneau harbor and coastal Alaska scenery for whale watching backup plans",
-    body: "The clean backup when helicopter weather gets unstable but you still want one real Alaska excursion.",
-    meta: ["Cruise friendly", "Less flight risk", "Good backup"],
+    body: "Lower-risk Alaska when flight weather turns.",
+    meta: ["Cruise friendly", "Less flight risk", "Backup"],
     href: "/juneau-whale-watching-tours",
     cta: "Plan whale backup",
   },
   {
-    title: "If Weather Cancels",
+    title: "Weather Pivot",
     kicker: "Port-day save",
     image: HARBOR_IMAGE,
     alt: "Juneau waterfront and harbor scenery for cruise excursion planning",
-    body: "Know what to switch to before the day gets away from you. The best backup is decided before cancellation.",
-    meta: ["Weather policy", "Same-day pivot", "Ship clock first"],
+    body: "Know the pivot before the port day slips.",
+    meta: ["Weather policy", "Same-day pivot", "Ship first"],
     href: "/juneau/what-to-do-if-helicopter-tour-canceled",
-    cta: "Weather cancellation plan",
+    cta: "Weather plan",
   },
 ];
 
 const PLANNING_CARDS = [
   {
-    label: "Flight lane",
-    title: "Check helicopter options",
-    body: "Use this when the weather looks workable and the ship schedule leaves enough room for a glacier flight.",
+    label: "Availability",
+    title: "Check glacier flights",
+    body: "Start here when weather looks workable.",
     href: "/helicopter",
   },
   {
-    label: "Cruise port",
-    title: "Compare the shore day",
-    body: "Use the port guide if you are still deciding between glacier, whale watching, and a lower-risk town day.",
+    label: "Backup",
+    title: "Compare whale backup",
+    body: "Keep one lower-risk Alaska move ready.",
     href: "/what-to-do-in-juneau-cruise-port",
   },
   {
-    label: "Weather backup",
-    title: "Plan whale backup",
-    body: "Keep a whale-watching plan ready when helicopter weather starts to look unstable.",
+    label: "Weather",
+    title: "Read the pivot",
+    body: "Know the switch before cancellation.",
     href: "/juneau-whale-watching-tours",
   },
 ];
@@ -171,43 +165,30 @@ export default function HelicopterDispatchBoard({
             </Link>
           </div>
           <p className="storefront-disclosure">
-            Current price, availability, pickup details, cancellation policy, and final terms continue on the provider booking page.
+            Final price, pickup, weather policy, and terms stay with the provider.
           </p>
         </div>
 
-        <aside className="dispatch-panel" aria-label="Cruise-safe timing checklist">
+        <aside className="dispatch-panel" aria-label="Juneau trip checks">
           <div>
             <span className="dispatch-metric">Ship</span>
-            <span className="dispatch-metric-label">Return buffer checked before checkout</span>
+            <span className="dispatch-metric-label">Return buffer</span>
           </div>
           <div>
             <span className="dispatch-metric">Wx</span>
-            <span className="dispatch-metric-label">Weather policy read before paying</span>
+            <span className="dispatch-metric-label">Weather read</span>
           </div>
           <div>
             <span className="dispatch-metric">Alt</span>
-            <span className="dispatch-metric-label">Whale backup ready if flights cancel</span>
+            <span className="dispatch-metric-label">Backup ready</span>
           </div>
         </aside>
       </section>
 
-      <section className="trust-strip jfd-trust-strip" aria-label="Juneau booking trust badges">
-        {TRUST_BADGES.map((badge) => (
-          <div key={badge.label}>
-            <strong>{badge.label}</strong>
-            <span>{badge.body}</span>
-          </div>
-        ))}
-      </section>
-
       <section className="section-block jfd-tour-section" aria-label="Popular Juneau tour choices">
         <div className="section-heading">
-          <p className="eyebrow">Popular Juneau choices</p>
-          <h2>Start with the trip that fits your ship day.</h2>
-          <p>
-            These are not fake live-price cards. Use them to pick the right lane, then confirm current price,
-            availability, pickup details, and terms on the provider page.
-          </p>
+          <p className="eyebrow">Juneau picks</p>
+          <h2>Choose the big Alaska move.</h2>
         </div>
         <div className="jfd-tour-grid">
           {TOUR_CARDS.map((card) => (
@@ -233,14 +214,14 @@ export default function HelicopterDispatchBoard({
         </div>
       </section>
 
-      <section className="section-block dispatch-widget-block" aria-label="Juneau booking planning options">
+      <section
+        className="section-block dispatch-widget-block jfd-availability"
+        id="availability"
+        aria-label="Juneau availability path"
+      >
         <div className="section-heading">
-          <p className="eyebrow">Booking plan</p>
-          <h2>Pick the next move before opening a provider page.</h2>
-          <p>
-            Final price, availability, pickup details, cancellation policy, and provider terms stay on
-            the booking page. Use this storefront to choose the right Juneau lane first.
-          </p>
+          <p className="eyebrow">Availability path</p>
+          <h2>Pick here. Book there.</h2>
         </div>
 
         <div className="dispatch-widget-grid">
@@ -262,23 +243,32 @@ export default function HelicopterDispatchBoard({
         </div>
       </section>
 
+      <section className="trust-strip jfd-trust-strip" aria-label="Juneau booking trust badges">
+        {TRUST_BADGES.map((badge) => (
+          <div key={badge.label}>
+            <strong>{badge.label}</strong>
+            <span>{badge.body}</span>
+          </div>
+        ))}
+      </section>
+
       <section className="section-block dispatch-rules">
         <div className="section-heading">
-          <p className="eyebrow">Before checkout</p>
-          <h2>Only book it if these three things line up</h2>
+          <p className="eyebrow">Before booking</p>
+          <h2>Ship clock. Weather. Backup.</h2>
         </div>
         <div className="dispatch-rule-grid">
           <div>
             <strong>Correct port</strong>
-            <span>{copy.label} must match the ship stop on your itinerary.</span>
+            <span>{copy.label} must match your itinerary.</span>
           </div>
           <div>
-            <strong>Enough return margin</strong>
-            <span>Leave buffer for weather, transport, and cruise boarding cutoff.</span>
+            <strong>Return margin</strong>
+            <span>Leave room for weather and boarding.</span>
           </div>
           <div>
-            <strong>Weather policy understood</strong>
-            <span>Helicopter tours can move or cancel. Read the operator policy before paying.</span>
+            <strong>Weather terms</strong>
+            <span>Helicopter tours can move or cancel.</span>
           </div>
         </div>
       </section>
