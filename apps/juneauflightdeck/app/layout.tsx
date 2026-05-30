@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { buildNetworkEntityGraph } from "@/lib/dcc/networkEntityJsonLd";
 import PartnerAnalyticsScript from "./components/PartnerAnalyticsScript";
 import SiteFooter from "./components/SiteFooter";
 import SiteHeader from "./components/SiteHeader";
@@ -29,23 +28,42 @@ export const metadata: Metadata = {
   },
 };
 
-const siteJsonLd = buildNetworkEntityGraph({
-  baseUrl: "https://juneauflightdeck.com",
-  name: "Juneau Flight Deck",
-  description:
-    "Cruise-port storefront for Juneau and Skagway travelers comparing helicopter glacier tours and shore-day backups.",
-  relationshipToDcc: "parentOrganization",
-  service: {
-    name: "Juneau excursion decision support",
-    description:
-      "A focused helicopter and shore-excursion planning storefront for cruise passengers at Juneau and Skagway.",
-    areaServed: [
-      { "@type": "City", name: "Juneau" },
-      { "@type": "City", name: "Skagway" },
-      { "@type": "AdministrativeArea", name: "Alaska" },
-    ],
-  },
-});
+const siteJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://juneauflightdeck.com/#organization",
+      name: "Juneau Flight Deck",
+      url: "https://juneauflightdeck.com",
+      description:
+        "Cruise-port storefront for Juneau and Skagway travelers comparing helicopter glacier tours and shore-day backups.",
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://juneauflightdeck.com/#website",
+      name: "Juneau Flight Deck",
+      url: "https://juneauflightdeck.com",
+      description:
+        "Cruise-port storefront for Juneau and Skagway travelers comparing helicopter glacier tours and shore-day backups.",
+      publisher: { "@id": "https://juneauflightdeck.com/#organization" },
+    },
+    {
+      "@type": "Service",
+      "@id": "https://juneauflightdeck.com/#service",
+      name: "Juneau excursion planning",
+      url: "https://juneauflightdeck.com",
+      description:
+        "A focused helicopter and shore-excursion planning storefront for cruise passengers at Juneau and Skagway.",
+      provider: { "@id": "https://juneauflightdeck.com/#organization" },
+      areaServed: [
+        { "@type": "City", name: "Juneau" },
+        { "@type": "City", name: "Skagway" },
+        { "@type": "AdministrativeArea", name: "Alaska" },
+      ],
+    },
+  ],
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
