@@ -601,6 +601,37 @@ iframe {
   object-fit: cover;
 }
 
+.jfd-tour-badge-visual {
+  display: grid;
+  gap: 10px;
+  align-content: end;
+  min-height: 150px;
+  padding: 16px;
+  background: #eaf5fb;
+  color: #092b41;
+}
+
+.jfd-tour-badge-visual span {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(9, 43, 65, 0.16);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0a5a82;
+  font-size: 0.86rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.jfd-tour-badge-visual strong {
+  max-width: 11rem;
+  font-size: 1rem;
+  line-height: 1.15;
+}
+
 .jfd-tour-copy {
   display: grid;
   gap: 10px;

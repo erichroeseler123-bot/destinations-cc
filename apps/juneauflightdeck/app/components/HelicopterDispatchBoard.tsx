@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { jfdMedia } from "../mediaRegistry";
 
 type PortSlug = "juneau" | "skagway";
 
@@ -39,10 +40,9 @@ const PORT_COPY: Record<
   },
 };
 
-const HERO_IMAGE = "/images/authority/ports/juneau/hero.webp";
-const GLACIER_IMAGE = "/images/authority/attractions/mendenhall-glacier/hero.webp";
-const HARBOR_IMAGE = "/images/authority/ports/juneau/section-1.webp";
-const WHALE_IMAGE = "/images/authority/ports/juneau/gallery-1.webp";
+const HERO_IMAGE = jfdMedia.juneauPortHero.src;
+const GLACIER_IMAGE = jfdMedia.mendenhallHero.src;
+const WHALE_IMAGE = jfdMedia.juneauWaterBackup.src;
 
 const TRUST_BADGES = [
   {
@@ -68,7 +68,8 @@ const TOUR_CARDS = [
     title: "Helicopter Glacier Tour",
     kicker: "Signature Juneau",
     image: GLACIER_IMAGE,
-    alt: "Mendenhall Glacier landscape near Juneau, Alaska",
+    alt: jfdMedia.mendenhallHero.alt,
+    visual: "image" as const,
     body: "Big ice, short clock, real Alaska payoff.",
     meta: ["Glacier views", "Weather dependent", "Ship buffer"],
     href: "/helicopter",
@@ -77,8 +78,9 @@ const TOUR_CARDS = [
   {
     title: "Mendenhall Landing",
     kicker: "Glacier focus",
-    image: "/images/authority/attractions/mendenhall-glacier/section-1.webp",
-    alt: "Mendenhall Glacier and mountain scenery near Juneau",
+    image: jfdMedia.mendenhallSection.src,
+    alt: jfdMedia.mendenhallSection.alt,
+    visual: "image" as const,
     body: "Glacier closeups when landing is the point.",
     meta: ["Ice detail", "Photo led", "Provider terms"],
     href: "/juneau/helicopter",
@@ -88,7 +90,8 @@ const TOUR_CARDS = [
     title: "Whale Watching Backup",
     kicker: "Weather-smart fallback",
     image: WHALE_IMAGE,
-    alt: "Juneau harbor and coastal Alaska scenery for whale watching backup plans",
+    alt: jfdMedia.juneauWaterBackup.alt,
+    visual: "image" as const,
     body: "Lower-risk Alaska when flight weather turns.",
     meta: ["Cruise friendly", "Less flight risk", "Backup"],
     href: "/juneau-whale-watching-tours",
@@ -97,8 +100,7 @@ const TOUR_CARDS = [
   {
     title: "Weather Pivot",
     kicker: "Port-day save",
-    image: HARBOR_IMAGE,
-    alt: "Juneau waterfront and harbor scenery for cruise excursion planning",
+    visual: "badge" as const,
     body: "Know the pivot before the port day slips.",
     meta: ["Weather policy", "Same-day pivot", "Ship first"],
     href: "/juneau/what-to-do-if-helicopter-tour-canceled",
@@ -193,9 +195,16 @@ export default function HelicopterDispatchBoard({
         <div className="jfd-tour-grid">
           {TOUR_CARDS.map((card) => (
             <article className="jfd-tour-card" key={card.title}>
-              <div className="jfd-tour-image">
-                <img src={card.image} alt={card.alt} />
-              </div>
+              {card.visual === "image" ? (
+                <div className="jfd-tour-image">
+                  <img src={card.image} alt={card.alt} />
+                </div>
+              ) : (
+                <div className="jfd-tour-badge-visual" aria-hidden="true">
+                  <span>Wx</span>
+                  <strong>Ship clock first</strong>
+                </div>
+              )}
               <div className="jfd-tour-copy">
                 <p>{card.kicker}</p>
                 <h3>{card.title}</h3>
