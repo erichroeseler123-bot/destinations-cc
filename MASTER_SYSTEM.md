@@ -1,122 +1,358 @@
-# 1. System Overview
+---
+STATUS: SUPERSEDED
+DATE: April 23, 2026
+REASON: Unified Decision Surface Architecture (Summer 2026 Doctrine)
+AUTHORITY: See /docs/summer-2026-operating-doctrine.md
+---
 
-Destination Command Center (DCC) is the decision layer.
+> [!WARNING]
+> This file is still useful as historical system context, but it is no longer the top authority for code generation or routing doctrine.
+> Use [docs/summer-2026-operating-doctrine.md](/home/ewrewr12/destinations-cc/docs/summer-2026-operating-doctrine.md) first.
+> For machine-readable network governance, use [docs/spider-path-system.md](/home/ewrewr12/destinations-cc/docs/spider-path-system.md) as the active Spider Path protocol.
 
-Satellite sites and apps, including Last Frontier Shore Excursions and similar corridor surfaces, are decision surfaces.
+# MASTER_SYSTEM
 
-Operators and execution platforms, including Viator, Party at Red Rocks, and other direct booking or operator-owned flows, are execution layers.
+## 1. What The System Is
 
-The system exists to help users decide first, then route them into the correct booking or execution path.
+Destination Command Center is the decision layer.
 
-We do not operate as a traditional broker or marketplace.
+The network is made of three roles:
 
-# 2. Core Model
+- `DCC`
+- `EarthOS`
+- `satellites`
+- `operators`
+
+DCC exists to answer the travel question first.
+It should reduce ambiguity before the booking step starts.
+
+## 2. Core Model
 
 Primary model:
 
-Question -> Decision -> Booking
+`Question -> Decision -> Execution`
 
-Expanded model:
+Expanded network model:
 
-Traffic -> Feeder page -> Decision page -> Operator booking
+`Traffic -> DCC entry -> decision surface -> satellite if needed -> operator / booking`
 
-The system should remove uncertainty before the transaction starts.
+Durable operations model:
 
-# 3. Key Rules (Non-negotiable)
+`DCC signal -> EarthOS mission -> operator approval if needed -> satellite dispatch -> telemetry / publication`
 
-- No traditional blog structure.
-- No large option lists.
-- No marketplace UI.
-- No “we are a broker” positioning.
-- Always preserve:
-  - same tour
-  - same price
-  - direct with operator
-  - decision support
+## 3. Non-Negotiable Rules
 
-# 4. Current Funnel (Alaska example)
+- no marketplace behavior on decision pages
+- no giant option grids when a verdict is possible
+- no chaining satellites
+- no broker framing
+- preserve direct booking truth where execution already exists
 
-Current Alaska shape:
+## 4. Role Boundaries
 
-Homepage -> Cruise page -> Port page -> Feeder -> Decision -> Booking
+### DCC
 
-Key live routes in that path:
+- owns macro decision
+- owns root route governance
+- owns publish-state policy
+- owns continuity contracts
+- speaks the canonical `decision_*` continuity vocabulary at outbound seams
 
-- `/best-alaska-cruise-for-excursions`
-- `/juneau/whale-watch-and-dogsled-same-day`
-- `/juneau/helicopter-tour-weather-risk`
-- `/juneau/is-whale-watching-worth-it`
-- `/skagway/white-pass-train-worth-it`
+### EarthOS
 
-Supporting flow examples:
+- reads DCC context and live network pressure
+- runs durable workflows for long-running synthesis, approvals, dispatch, and publication
+- should not replace DCC route governance or scoring
+- should not create a second continuity vocabulary
 
-- homepage -> `/best-alaska-cruise-for-excursions`
-- `/juneau` -> `/best-alaska-cruise-for-excursions`
-- `/skagway` -> `/best-alaska-cruise-for-excursions`
-- feeder page -> strongest port/category decision lane
-- decision lane -> operator booking or direct execution surface
+### Satellites
 
-# 5. Telemetry Model
+- narrow once
+- compress uncertainty
+- should not reopen broad exploration
+- should normalize inbound traffic into `decision_*` internally even when transport contracts differ
 
-Tracked event names currently in use include:
+### Operators
 
-- `cta_clicked_primary`
-- `cta_clicked_alternative`
-- `product_opened`
-- `cruise_port_selected`
-- `booking_opened`
+- execute
+- own booking / checkout / fulfillment
+- should not be turned into chooser layers
+- should prefer canonical `decision_*` inputs and only read legacy lane/product params as fallback
 
-Not tracked directly:
+## 5. EarthOS Surfaces
 
-- static copy blocks such as the Last Frontier homepage trust block
+EarthOS now has live repo surfaces:
 
-Current telemetry file used for quick audit/debug reads:
+- `/dashboard`
+  - internal Mission Control
+- `/dashboard/missions/[id]`
+  - detail, approval, contextual alerts, and publication
+- `/live-ops`
+  - public newsroom
+- `/live-ops/[slug]`
+  - public operational briefing pages
 
-- `destinations-cc/data/telemetry/cruise-debug-events.jsonl`
+## 6. Current Live Lanes
 
-# 6. Current State (IMPORTANT)
+### Red Rocks
 
-Current reality:
+- `DCC -> partyatredrocks`
+- DCC frames the transport decision
+- PARR owns execution
+- PARR now posts `lead_captured`, `booking_started`, and `booking_completed` back to DCC across the Red Rocks checkout timeline
+- continuity is now bilingual in practice:
+  - canonical `decision_*`
+  - legacy lane/product params preserved temporarily for compatibility
 
-- the system is live
-- tracking is wired
-- feeder pages exist
+### Argo
 
-But:
+- `DCC -> shuttleya`
+- Shuttleya is the active Argo execution surface
+- Shuttleya is now Argo-only in practice and no longer carries airport, Red Rocks, or mountain corridor residue
+- current measurable outcome is `lead_captured`, not paid booking completion
 
-- there is not enough real traffic yet
-- there is not enough decision signal yet
+### Swamp tours
 
-Instrumentation exists, but stored event signal for the new Alaska feeder paths is still effectively absent.
+- `DCC -> welcometotheswamp`
+- WTS narrows swamp-tour uncertainty and routes into downstream booking
 
-# 7. Current Priority
+### New Orleans tours
 
-We are not building new features.
+- `DCC -> welcometoneworleanstours`
+- mobile-first decision utility
+- current pattern is Zero-Gate:
+  - land
+  - see verdict
+  - click
+  - book
 
-Current priority is:
+### Juneau
 
-- driving traffic
-- validating decisions
-- observing behavior
+- `DCC -> juneauflightdeck`
+- Juneau now uses the shared decision-engine contract
+- local Juneau scoring feeds the shared recommendation output shape
+- outbound booking links now preserve canonical decision continuity, not just handoff IDs
 
-# 8. What NOT to do
+### Alaska receiver
 
-- do not add more pages blindly
-- do not redesign UI
-- do not introduce broker/fee messaging
-- do not optimize without data
+- `DCC -> wta-ui`
+- Alaska / Juneau receiver surface with DCC handoff support
+- signed payload remains the edge transport contract
+- decoded payload is normalized into `decision_*` before downstream continuation
+- item-specific handoffs can now resolve directly to concrete `/tours/[company]/[item]` routes
+- otherwise WTA narrows through `/plan`, not broad `/tours` browsing
 
-# 9. Next Actions
+## 7. Shared Decision-Engine State
 
-- drive traffic into feeder pages
-- monitor decision events
-- adjust only after real behavior appears
+Current shared contract lives in DCC and is already used by:
 
-# 10. Instructions for Codex
+- New Orleans
+- Juneau
 
-When working in this repo or related repos:
+The engine returns:
 
-- read this file first
-- do not contradict these rules
-- do not introduce new models
-- always preserve decision-first architecture
+- recommended option
+- ordered alternatives
+- penalties by option
+- confidence level
+- result IDs
+
+This is a controlled rollout, not a mandate to force every corridor into the same UX.
+
+## 8. Telemetry Reality
+
+Decision validation currently matters more than new feature growth.
+
+Current practical rule:
+
+- instrument the decision
+- measure whether users accept it
+- only then expand or retune
+- `/command` now surfaces the live satellite trinity:
+  - PARR revenue-complete events
+  - Shuttleya request captures
+  - WTA lead and booking callbacks
+- `/dashboard` now surfaces EarthOS workflow state:
+  - running
+  - waiting
+  - failed
+  - completed
+  - publication-ready missions
+
+Telemetry must stay atomic and analyzable.
+Do not invent derived client events when reporting can compute the state.
+
+## 9. What Not To Do
+
+- do not add pages just to look bigger
+- do not widen option surfaces into directories
+- do not move operator logic into DCC
+- do not treat all corridors as the same product
+- do not optimize from opinion when measured behavior is available
+- do not let EarthOS become a second decision layer
+- do not let workflow output bypass the normalized mission intelligence contract
+
+## 10. Current Priority
+
+The current priority is not more architecture.
+
+It is:
+
+- keep the decision system coherent
+- keep routing clean
+- validate real user behavior
+- tighten only after traffic and telemetry show the need
+
+Current continuity reality:
+
+- one canonical continuation vocabulary: `decision_*`
+- one justified edge exception: signed DCC -> WTA payload transport
+- temporary compatibility fields remain at some seams until old links age out
+
+## 10A. Daily Spider Path + Machine Understanding Review
+
+Machine-readable understanding is an active operational surface, not a one-time SEO task.
+
+Spider Path means the intended crawl and understanding flow for AI crawlers, search engines, LLM agents, entity systems, recommendation systems, and other machine readers.
+
+Required principle:
+
+- the network should intentionally shape machine understanding
+- DCC is the decision hub
+- satellites narrow uncertainty
+- operators execute
+- marketplaces are fallback inventory
+- continuity matters more than breadth
+
+Daily checks:
+
+- [ ] `llms.txt` validity
+- [ ] `agent.json` validity
+- [ ] Organization/WebSite schema integrity
+- [ ] network relationship consistency
+- [ ] execution hierarchy consistency
+- [ ] canonical URL alignment
+- [ ] sitemap freshness
+- [ ] crawler-discoverable path continuity
+- [ ] internal-link reinforcement
+- [ ] SERP title clarity
+- [ ] meta description decisiveness
+- [ ] decision compression language
+- [ ] marketplace fallback framing
+- [ ] continuity preservation
+- [ ] no stale marketplace wording
+- [ ] no accidental "browse" language
+- [ ] no contradictory execution claims
+- [ ] no broken execution hierarchy references
+
+Daily review questions:
+
+- What are machines learning first?
+- What relationships are they inferring?
+- What execution layer appears primary?
+- Are we reinforcing certainty or reopening optionality?
+- Are we accidentally teaching "marketplace" instead of "decision continuity"?
+- Which pages reinforce operational authority?
+- Which pages weaken confidence?
+
+Machine Understanding Drift means stale doctrine, contradictory metadata, stale descriptions, old marketplace assumptions, weak execution framing, entity ambiguity, or inconsistent crawler paths. If drift is found, log it as a governance finding and fix the machine-readable layer before pushing more traffic.
+
+## 11. Current Persistence Reality
+
+EarthOS persistence is now split:
+
+- live workflow state from Vercel when available
+- Postgres / Neon mission snapshots
+- Postgres / Neon publication records
+- seeded in-memory fallback for degraded local operation
+
+This path is only truly live after migration + deploy.
+
+## 12. Discovery Stack And Publication Layer
+
+The network now treats public discovery files as governed assets, not ad hoc side effects.
+
+Managed files:
+
+- `sitemap.xml`
+- `llms.txt`
+- `agent.json`
+
+Current implementation reality:
+
+- DCC root `sitemap.xml` is now a governed sitemap index route
+- EarthOS publishes discovery snapshots and KV-shaped payloads from shared contracts
+- EarthOS records append-only discovery publication history in Neon via `earthos_discovery_publications`
+- Viator-backed discovery intents may now publish winner metadata when the current resolver path can produce a governed result
+
+Current verified publication state:
+
+- the first live history write created 13 governed surface rows
+- the Alaska receiver lane (`welcometoalaskatours`) now records a winner-backed publish for `helicopter-tours`
+- winner drift is now measurable as a first-class publication change, not inferred after the fact
+
+Role split for discovery publication:
+
+- `DCC`
+  - owns the root network index
+  - owns the canonical machine-readable contract
+  - owns the schema and publication doctrine
+- `EarthOS`
+  - is the only layer allowed to publish or update discovery-stack assets from shared system state
+  - should derive discovery output from governed data, not hand-authored drift
+- `satellites`
+  - host their own discovery files at their own roots
+  - must reflect their actual site role, governed intents, and downstream execution targets
+- `operators`
+  - host execution-truth discovery files for their own execution surfaces
+  - must not impersonate DCC authority or satellite narrowing logic
+
+Practical publication model:
+
+- DCC is the authority and index
+- each domain is still responsible for hosting its own first-party root files
+- EarthOS governs the generation and distribution of those files from shared contracts
+
+Hard rules:
+
+- do not make each repo invent its own `agent.json` schema
+- do not hand-edit production discovery files if EarthOS is the intended writer
+- do not let satellites publish discovery contracts that contradict DCC routing doctrine
+- do not let operator surfaces publish broad decision authority they do not own
+
+## 13. Agent Contract
+
+`agent.json` is the machine manual for agents, not a marketing summary.
+
+It should declare:
+
+- site role
+- governing authority
+- canonical node identity
+- supported intents
+- resolver identity when relevant
+- execution targets
+- handoff protocol and required params
+- machine-readable endpoints
+
+Current governing rule:
+
+- one shared schema family for DCC, satellites, and operators
+- role-specific fields may vary
+- field names should remain stable across the network unless the schema doc changes first
+
+See:
+
+- [docs/discovery-stack-publication-layer.md](/home/ewrewr12/destinations-cc/docs/discovery-stack-publication-layer.md)
+- [docs/agent-json-schema.md](/home/ewrewr12/destinations-cc/docs/agent-json-schema.md)
+
+## 14. Codex Rule
+
+When working in this repo:
+
+- use the current repo state as source of truth
+- preserve role boundaries
+- keep DCC decision-first
+- keep EarthOS orchestration-first, not decision-first
+- keep execution layers direct
+- update docs when live behavior changes

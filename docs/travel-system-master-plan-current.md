@@ -1,294 +1,418 @@
-# Travel System Master Plan (Live - Production Aligned)
+# Travel System Master Plan
 
-## Core Doctrine
+Status: current repo-aligned architecture note for `destinations-cc`.
 
-`DCC = understand`  
-`Satellite = choose`  
-`PARR = act`
+This document explains how the live codebase is organized today. It is intentionally narrower than older vision docs and should be used as the baseline for implementation, documentation, and operational decisions.
 
-The system moves users through:
+## System Summary
 
-`understand -> decide -> book`
+Destination Command Center is the governed decision layer in the system.
 
-The goal is to do that without:
-- losing context
-- duplicating intent
-- splitting execution
+The current system combines:
 
-## Current State
+- public decision pages for destinations, transportation, venues, cruises, and high-friction travel questions
+- internal live-data and recommendation APIs
+- network, registry, and satellite export tooling
+- shaped handoff into guided-action and execution surfaces
+- telemetry and reconciliation jobs that measure whether the recommendation actually worked
 
-The Red Rocks system is now built, deployed, and production-aligned.
+The core loop is:
 
-The key transition is complete:
-- previously, the system was correct in code but inconsistent in production
-- now, the DCC -> PARR seam is enforced live
+`understand -> narrow -> route -> execute -> measure`
 
-The current job is no longer core architecture work. It is:
-- validate the live funnel
-- clean remaining edge cases
-- finish redirect and crawl cleanup
-- confirm that DCC is actually moving users into PARR
+The corridor-production loop layered on top of that is:
 
-## Operating Rule
+`score -> define golden flow -> resolve first-render state -> validate -> harden`
 
-For every route:
-- if it helps the user understand, it belongs in `DCC`
-- if it helps the user choose, it belongs in a `Satellite`
-- if it helps the user act or pay, it belongs in `PARR`
+The live network should not be read as "a few sites."
+It is a set of parallel lanes connected by one decision layer.
 
-If a route tries to do more than one of those jobs, it should be split, redirected, or removed.
+## Intake Layer Status
 
-## Core Insight
+The intake layer is now manifest-backed.
 
-The Red Rocks opportunity is not generic transport demand.
+Current repo behavior:
 
-It is a repeated planning failure:
-- parking friction
-- rideshare unreliability after shows
-- long exits
-- congestion
-- weak fallback options
+- header search reads the shared entry-surface manifest
+- homepage promoted links read the same shared manifest
+- `/command` reads the same corridor roster
 
-That means the real product is not just transportation.
+Operational consequence:
 
-It is solving the most fragile part of the Red Rocks night.
+- promotion is now the growth event
+- building a corridor is not the same thing as promoting it
+- promoted intake should stay selective and deliberate
 
-## Live System
+## Repo Layers
 
-### DCC
+### Public app layer
 
-Role:
-- authority
-- explanation
-- comparison
-- routing
+The main Next.js app lives in `app/`.
 
-Owns:
-- intent capture
-- hidden-problem framing
-- decision framing
-- constraint -> rule -> action
-- routing into the next surface
+Responsibilities:
 
-Does not own:
-- booking
-- checkout
-- transaction execution
+- render public DCC decision routes
+- expose machine-readable feeds such as `/agent.json` and `/llms.txt`
+- host internal dashboards such as `/command` and `/network-health`
+- serve internal and public API routes from `app/api/`
 
-Current live pages:
-- hub: [`/red-rocks-transportation`](/home/ewrewr12/destinations-cc/app/red-rocks-transportation/page.tsx)
-- feeders:
-  - [`/red-rocks-shuttle-vs-uber`](/home/ewrewr12/destinations-cc/app/red-rocks-shuttle-vs-uber/page.tsx)
-  - [`/how-to-get-to-red-rocks-without-parking-hassle`](/home/ewrewr12/destinations-cc/app/how-to-get-to-red-rocks-without-parking-hassle/page.tsx)
-  - [`/best-way-to-leave-red-rocks`](/home/ewrewr12/destinations-cc/app/best-way-to-leave-red-rocks/page.tsx)
-- upstream framing:
-  - [`/red-rocks`](/home/ewrewr12/destinations-cc/app/red-rocks/page.tsx)
-  - [`/red-rocks-events`](/home/ewrewr12/destinations-cc/app/red-rocks-events/page.tsx)
+### Data and identity layer
 
-Live behavior:
-- feeder pages push to the hub and to PARR
-- the hub unifies the decision and pushes to PARR
-- legacy Red Rocks transport and booking paths now redirect to canonical targets
-- DCC -> PARR links carry source and return context
+The durable content and graph inputs live across:
 
-### Satellite Layer
+- `data/registry/`
+- `data/network/`
+- `data/destinations/`
+- `src/data/`
 
-Role:
-- narrowing
-- shortlist
-- decision support
+Responsibilities:
 
-Current state:
-- `WTS` is frozen
-- `WTA` is stable and instrumented
-- telemetry is being used for diagnosis, not expansion-by-default
+- canonical node identity
+- network edges and policy contracts
+- city and destination metadata
+- site identity and product framing
 
-### PARR
+### Runtime logic layer
 
-Role:
-- execution
-- booking
-- payment
-- confirmation
+The shared runtime code lives primarily in `lib/` and `lib/dcc/`.
 
-Owns:
-- all Red Rocks transport transactions
-- shared and private booking flows
+Responsibilities:
 
-Hard rule:
-`PARR` is the only Red Rocks act layer.
+- recommendation and validation logic
+- telemetry adapters
+- decision-quality aggregation
+- routing and reconciliation support
+- provider integration helpers
 
-Current state:
-- canonical shared booking path is enforced
-- legacy `/shared` redirects to the canonical shared path
-- homepage messaging is aligned around relief and certainty
-- shared and private booking are clearly separated inside the operator surface
+### Operations layer
 
-Canonical shared booking path:
-`/book/red-rocks-amphitheatre/custom/shared`
+The automation and reporting entry points live in `scripts/dcc/`.
 
-Private booking remains a valid second execution path for group/private intent.
+Responsibilities:
 
-## Red Rocks Funnel
+- build indexes and caches
+- validate schemas and route coverage
+- export surface and satellite bundles
+- report freshness, sitemap coverage, and routing issues
+- reconcile satellite handoffs
 
-Current live flow:
+## Current Product Areas
 
-`query -> DCC feeder/hub -> PARR booking`
+The repo currently supports several overlapping decision areas:
 
-### Decision Hub
+- city and destination guidance
+- shows, tours, attractions, and venue routing
+- cruise and shore-excursion surfaces
+- transportation and corridor-driven guidance
+- Red Rocks and related concert-transport flows
+- Alaska and Juneau excursion surfaces
+- Vegas vertical and satellite support
 
-Canonical DCC hub:
+Not every route follows the same execution model. Some are decision pages only; others feed guided-action or operator flows more directly.
 
-`/red-rocks-transportation`
+Current intake reality by corridor family:
 
-Purpose:
-- state the problem clearly
-- compare the main options
-- make a recommendation
-- push to booking
+- the top intake layer is manifest-backed and shared across header search, homepage promoted links, and `/command`
+- the current promoted corridor set is:
+  - `Red Rocks Transport`
+  - `Sedona Jeep Tours`
+  - `Lake Tahoe Activities`
+  - `New Orleans Swamp Tours`
+  - `Juneau Helicopter Tours`
+  - `Juneau Whale Watching Tours`
+  - `Denver Weed Airport Pickup`
+- other corridor routes still exist deeper in the route graph and should only be promoted deliberately, one corridor per cycle, with mix quality reviewed each time
 
-### Feeders
+Canonical growth event:
 
-Current feeder set:
-- `shuttle vs Uber`
-- `without parking hassle`
-- `best way to leave`
+- building a corridor is not the same thing as promoting it
+- promotion into the manifest-backed intake layer is the actual growth event
+- after promotion, the corridor enters the keep, demote, or replace loop based on real intake performance
 
-Feeder rule:
-- one page = one constraint
-- feed the hub or hand off cleanly
-- do not compete with the hub
+## System Split
 
-### Execution
+The hard split across the network is:
 
-Canonical operator domain:
-`partyatredrocks.com`
+- `DCC` = governed decision engine
+- `satellites` = narrowing or guided-action layer
+- `operators` = execution layer
 
-Primary shared booking path:
-`/book/red-rocks-amphitheatre/custom/shared`
+Operational rule:
 
-## What Has Been Enforced
+- DCC decides
+- satellites narrow once or guide once
+- operators fulfill
 
-### DCC -> PARR Seam
-- DCC local booking routes redirect to PARR
-- DCC CTAs point to PARR
-- local Red Rocks execution has been removed from the main flow
+That split must stay visible in copy, routing, and product behavior.
 
-### Canonical Control
-- legacy booking variants redirect
-- canonical booking path is enforced
-- DCC runtime redirect layer is live
+## Locked Live Model
 
-### Governance
-- route registry exists
-- `clusterRole` and `canonicalTarget` are part of the schema
-- Red Rocks hub / feeder / redirect relationships are encoded
+Current active workbench:
 
-### Internal Link Cleanup
-- stale booking links were removed
-- redirected targets were removed from active linking
-- checkout leakage was removed from active Red Rocks handoff paths
+- `destinations-cc`
+- `shuttleya`
+- `partyatredrocks`
 
-## Live Redirect Verification
+Current promoted network assets:
 
-Verified on production:
-- `/book/red-rocks` -> `308` -> canonical PARR shared booking
-- `/book/red-rocks-amphitheatre` -> `308` -> canonical PARR shared booking
-- `/best-transportation-options-denver-to-red-rocks` -> `308` -> `/red-rocks-transportation`
-- `/denver-concert-shuttle` -> `308` -> `/red-rocks-transportation`
-- `/red-rocks-transportation` -> `200`
+- `welcometotheswamp`
+- `welcometoalaska` / `wta-ui`
+- `gosno`
+- selective `redrocksfastpass`
 
-Meaning:
-- duplicate booking paths were removed
-- duplicate Red Rocks transport pages were consolidated
-- the canonical Red Rocks funnel is enforced live
+Current live proof loops:
 
-## What Was Fixed
+- Red Rocks: `DCC -> PARR`
+- Argo: `DCC -> Shuttleya -> booking`
 
-Completed:
-- live-city schema validation issue
-- invalid city mode handling in live-city registry parsing
-- missing `LIVE_CITY_REGISTRY` export
-- DCC production build pipeline
-- `destinations-cc` production deployment
-- live DCC redirect layer
+Other live promoted lanes still matter even when they are not the current cleanup workbench:
 
-## What Still Needs Work
+- mountains: `DCC -> GoSno`
+- swamp tours: `DCC -> WTS`
+- Alaska and Juneau excursion ambiguity: `DCC -> WTA`
 
-### Search Console Cleanup
-- export 404s and indexed wrong URLs
-- map each to `301` or `410`
+Current routing doctrine:
 
-### Crawl Validation
-- check redirect chains
-- check orphan pages
-- check for missed legacy paths
+- clear -> execute
+- unclear -> narrow once -> execute
+- never chain satellites
 
-### Broader Route Compression
-- apply the same canonical control and deletion discipline outside the Red Rocks slice
+Important distinction:
 
-### Funnel Validation
-- confirm users actually move from DCC into PARR
-- confirm the hub and feeders are producing outbound booking intent, not just pageviews
+- `ACTIVE` means optimization priority
+- it does not mean the only real lane in the network
 
-## Current Phase
+The real map is:
 
-### Post-Deploy Validation and Tightening
+- DCC = router
+- PARR = Red Rocks execution
+- GoSno = mountain execution
+- Shuttleya = Argo action and booking lane
+- WTS = swamp narrowing and monetization lane
+- WTA = Alaska and Juneau narrowing and handoff lane
+- Fast Pass = selective execution lane
 
-Current sequence:
-1. validate live redirects and canonical behavior
-2. complete Search Console cleanup
-3. run crawl-level checks
-4. confirm DCC -> PARR movement
-5. compress adjacent route clusters where duplication still exists
+## DCC Page Model
 
-## Messaging Standard
+DCC pages are not meant to behave like long travel articles.
 
-The system should speak in terms of real planning friction.
+The default page model is:
 
-Weak framing:
-- “Here are your options”
+- one question
+- 2 to 4 options max
+- one short paragraph explaining the deciding constraint
+- one recommendation
+- one CTA
 
-Correct framing:
-- “Most people underestimate getting home”
-- “The night usually breaks on the way out”
-- “Skip the parking mess and post-show scramble”
+This keeps the product aligned with its real role: ending the search by reducing the mess to a decision.
 
-Guiding line:
-`The night should not fall apart after the encore.`
+## Satellites And Sidecar Apps
 
-## Telemetry
+The `apps/` directory contains standalone Next.js projects deployed separately from the root DCC app.
 
-Telemetry remains active, especially on WTA.
+Current repo-managed satellites and sidecars:
 
-Purpose:
-- diagnose breakpoints
-- identify mismatch
-- support narrow decisions with data
+- `apps/juneauflightdeck`
+- `apps/sedonajeep`
+- `apps/laketahoe`
+- `apps/420-airport-pickup`
+- `apps/welcometotheswamp`
+- `apps/saveonthestrip`
+- `apps/special-pages`
 
-Not:
-- justify broad expansion without proof
+These apps should stay aligned with DCC identity, exports, and handoff conventions, but they are not the canonical source of decision logic.
+
+The newer spoke apps now share a common corridor runtime pattern:
+
+- `HandoffContext` as the spoke input contract
+- `resolveInitialState()` as the field-level resolver
+- confidence gates and corridor-specific coherence passes
+- state-driven hero, shortlist/card ordering, and CTA rendering
+- local QA matrices with deterministic golden-flow URLs
+
+Do not treat every sidecar app as current operating focus.
+The live workbench is smaller than the full app list.
+
+## Recommendation Model
+
+The repo follows a recommendation-first model where possible.
+
+Current rules:
+
+- when confidence is strong, DCC should narrow to a practical next move
+- when confidence is weaker, DCC should still reduce ambiguity without inventing certainty
+- satellites should compress a narrower action path, not fork core identity
+- execution surfaces should preserve context passed from DCC instead of restarting from blank state
+
+This is why the repo contains:
+
+- tokenized handoff support
+- telemetry around recommendation and override behavior
+- validation jobs for live pages, routing, freshness, and decision quality
+
+Operational rule:
+
+- do not render generic defaults first and personalize later
+- resolve the first decision frame before the user sees the page
+
+## Cron And Refresh Model
+
+Cron ownership lives in the main DCC app.
+
+The current Vercel cron schedule in [vercel.json](/home/ewrewr12/destinations-cc/vercel.json) drives:
+
+- provider canary checks
+- network refresh jobs
+- cruise refresh jobs
+- monetization refresh jobs
+- decision-quality evaluation
+- satellite handoff reconciliation
+
+See [docs/dcc-cron-matrix.md](/home/ewrewr12/destinations-cc/docs/dcc-cron-matrix.md) for the maintained schedule and ownership model.
+
+## Analytics And Decision Quality
+
+Decision-quality evaluation currently has two supported modes:
+
+- fixture-backed validation using `DCC_DECISION_QUALITY_FIXTURE_JSON`
+- live aggregation from GA4-exported BigQuery tables via `DCC_BQ_PROJECT_ID` and `DCC_BQ_DATASET`
+
+The adapter implementation lives in [lib/dcc/decision-quality/adapter.ts](/home/ewrewr12/destinations-cc/lib/dcc/decision-quality/adapter.ts).
+
+## Operational Truth
+
+When there is a conflict between an old plan doc and the code:
+
+1. trust the current routes, scripts, and contracts in the repo
+2. update the docs to match the code
+3. do not preserve outdated conceptual language just because it sounds strategic
+
+The goal of this repo is not to publish abstract architecture prose. The goal is to operate and ship a coherent decision-and-routing system that remains stable as the network grows.
+
+Important rule:
+- the map is a renderer of scored truth
+- it is not a second intelligence layer
+
+Similar rule for intake:
+
+- the intake layer should render precomputed corridor truth
+- it should not force each UI surface to rediscover cities, corridors, and feeders independently at runtime
+
+## Registry And Identity Rule
+
+Canonical place and corridor identity are now more important than ever.
+
+Why:
+
+- signal scoring depends on stable place IDs
+- gold corridors depend on canonical endpoints
+- SPT handoffs depend on a stable corridor identity
+- telemetry only becomes meaningful when the same corridor means the same thing everywhere
+
+Operational rule:
+
+- slugs are presentation
+- DCC IDs are identity
+- corridor IDs are the stable operational handle above route copy
+
+## Network Loop
+
+The live network should be understood as this loop:
+
+1. `DCC` understands the situation
+2. `SPT` transports a known flow with that intelligence embedded
+3. `checkout` executes the move
+4. `booking pages` preserve context after conversion
+5. `telemetry` measures whether the recommendation actually held
+6. `DCC` learns which corridors and defaults deserve more weight
+
+This is the core product behavior now.
+
+Compressed model:
+
+`DCC = governed brain`
+`SPT = routing and transfer layer`
+`token = signal packet`
+`checkout = execution layer`
+`telemetry = learning loop`
+
+## What Has Been Proven
+
+The system has crossed several thresholds:
+
+- DCC is no longer just a discovery layer
+- SPT is no longer just a concept demo
+- checkout no longer boots only from legacy “full param” assumptions
+- tokenized handoffs are live
+- multiple corridor types are live
+- the recommendation can shape the act layer directly
+- new corridor clones can now be built from a scored registry entry, base state, resolver rules, and a QA-backed golden flow
+
+Concrete repo state today:
+
+- `apps/juneauflightdeck` is the most advanced decision-engine runtime
+- `apps/sedonajeep` is the first new lab corridor clone
+- `apps/laketahoe` is the first new money corridor clone and now carries resolved state into checkout
+- `apps/420-airport-pickup` has been rebuilt from a static launcher into the shared transport-corridor runtime with Tahoe-level checkout continuity
+- `apps/welcometotheswamp` now uses the shared corridor runtime on the homepage to resolve hero state and booking defaults before the chooser runs
+- the shared binary decision engine is now proven across all three layers:
+  - DCC `private-vs-shared` -> understand
+  - WTS `airboat-vs-boat` -> choose
+  - 420 `standard-vs-420` -> act
+- rollout is selective, not global; WTA, WTNOT, SOTS, and other operator surfaces are governed by the rollout rules but not yet using the shared engine live
+
+Live aliases now in service:
+
+- `apps/laketahoe` -> `https://laketahoe.vercel.app/`
+- `apps/420-airport-pickup` -> `https://420-airport-pickup-v2.vercel.app/`
+
+That means the network is now:
+
+- interpretable
+- executable
+- measurable
+
+The measurement layer is now split into:
+
+- `dcc_handoff_*` tables for satellite durability and reconciliation
+- `dcc_corridor_catalog` for live corridor identity
+- `dcc_corridor_events` for append-only corridor lifecycle events
+
+The internal telemetry page can now compare corridor roster status and, where durable events exist, compute default-card acceptance and step-level funnel movement without inventing unpersisted metrics.
+
+Operational note:
+- smoke traffic is excluded from default corridor comparisons when `handoff_id` or `session_id` starts with `smoke_`, or when `metadata.test === true`
+
+## Current Priorities
+
+1. protect the integrity of the live corridors already in production
+2. harden new corridor clones with real booking targets and end-to-end handoff continuity
+3. use telemetry to confirm whether recommendations improve conversion and adherence
+4. add the next corridor only when it proves a genuinely different behavior model or clean pattern reuse
+5. keep the registry and corridor identity layer stable
+6. deepen return-surface context only where it strengthens the execution loop
 
 ## What Not To Do
 
 Do not:
-- expand to more cities yet
-- start new clusters
-- add broad new features
-- redesign the whole system
-- create pages without a clear role
 
-## Current Priorities
-
-1. validate the live Red Rocks funnel
-2. complete redirect and Search Console cleanup
-3. keep DCC and PARR boundaries hard
-4. confirm the DCC -> PARR conversion path is working
-5. apply the same compression discipline to nearby route clusters
+- create pages that duplicate an existing corridor job
+- let checkout invent its own corridor logic
+- let satellites drift into canonical identity ownership
+- expand SPT abstractions faster than live corridor behavior justifies
+- add more corridors without a distinct behavioral model
+- treat the map or the lab as the product by themselves
 
 ## Final Truth
 
-This is not primarily a content site.  
-This is not primarily a shuttle site.
+This is not primarily a content site.
 
-It is a problem-solving funnel for a repeated, high-friction moment.
+This is not primarily a booking site.
+
+It is a governed decision-and-routing system that:
+
+- understands what is happening
+- selects the best move
+- carries that move into guided action and execution
+- preserves context after conversion
+- measures whether the guidance was actually right
