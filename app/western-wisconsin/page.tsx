@@ -6,6 +6,10 @@ import {
   getWesternWisconsinDecisionState,
   ST_CROIX_VALLEY_PROFILE,
 } from "@/lib/dcc/corridors/westernWisconsin";
+import {
+  getStCroixCalendarEvents,
+  getStCroixVenueCalendarGroups,
+} from "@/lib/dcc/corridors/stCroixCalendar";
 import { DecisionFraming } from "@/components/dcc/DecisionFraming";
 
 export const metadata: Metadata = {
@@ -28,6 +32,8 @@ export const metadata: Metadata = {
   },
 };
 
+export const revalidate = 3600;
+
 const PAGE_PATH = "/western-wisconsin";
 const DEFAULT_DESTINATION = "eau-claire";
 
@@ -46,6 +52,10 @@ export default async function WesternWisconsinHubPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const state = buildState((await searchParams) || {});
+  const [liveEvents, venueCalendarGroups] = await Promise.all([
+    getStCroixCalendarEvents(),
+    getStCroixVenueCalendarGroups(),
+  ]);
   const choice = state.destination === "la-crosse" ? "la-crosse" : DEFAULT_DESTINATION;
   const defaultHref = buildWesternWisconsinHref("/western-wisconsin/eau-claire-vs-la-crosse", {
     ...state,
@@ -212,6 +222,57 @@ export default async function WesternWisconsinHubPage({
 
       <section className="rounded-[1.9rem] border border-emerald-900/10 bg-white/80 p-6 shadow-[0_18px_55px_rgba(18,38,31,0.08)]">
         <p className="text-xs font-black uppercase tracking-[0.24em] text-emerald-800">
+          Venue calendars
+        </p>
+        <h2 className="mt-3 text-3xl font-black tracking-[-0.03em] text-slate-950">
+          Separate auto-updating concert calendars for each St. Croix venue lane.
+        </h2>
+        <p className="mt-4 max-w-3xl text-base leading-8 text-slate-700">
+          Each venue lane refreshes from the configured Ticketmaster and SeatGeek feeds. Official
+          local calendars still control civic dates, campground rules, cancellations, and river-event details.
+        </p>
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          {venueCalendarGroups.map((group) => (
+            <article key={group.slug} className="rounded-[1.3rem] border border-emerald-900/10 bg-[#f7f5ef] p-5">
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-800">
+                {group.location}
+              </p>
+              <h3 className="mt-2 text-xl font-black text-slate-950">{group.name}</h3>
+              <p className="mt-3 text-sm leading-7 text-slate-700">{group.description}</p>
+              <div className="mt-5 divide-y divide-emerald-900/10 rounded-[1rem] border border-emerald-900/10 bg-white/80 px-4">
+                {group.events.map((event) => (
+                  <div key={`${group.slug}-${event.source}-${event.id}`} className="py-4">
+                    <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">
+                      {event.dateLabel} · {event.venueName}
+                    </p>
+                    <h4 className="mt-2 text-base font-black text-slate-950">{event.title}</h4>
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                        {event.source === "ticketmaster" ? "Ticketmaster" : "SeatGeek"}
+                        {event.priceLabel ? ` · ${event.priceLabel}` : ""}
+                      </p>
+                      {event.url ? (
+                        <a href={event.url} className="text-xs font-black uppercase tracking-[0.14em] text-emerald-800 hover:text-emerald-950">
+                          View show
+                        </a>
+                      ) : null}
+                    </div>
+                  </div>
+                ))}
+                {group.events.length === 0 ? (
+                  <div className="py-4 text-sm leading-7 text-slate-700">
+                    No live ticketed shows are available from the configured feeds right now. Keep this
+                    lane active for official-calendar review and future provider matches.
+                  </div>
+                ) : null}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-[1.9rem] border border-emerald-900/10 bg-white/80 p-6 shadow-[0_18px_55px_rgba(18,38,31,0.08)]">
+        <p className="text-xs font-black uppercase tracking-[0.24em] text-emerald-800">
           Unified area overview
         </p>
         <h2 className="mt-3 text-3xl font-black tracking-[-0.03em] text-slate-950">
@@ -296,6 +357,51 @@ export default async function WesternWisconsinHubPage({
         <p className="mt-5 max-w-3xl text-sm font-semibold leading-7 text-slate-700">
           {ST_CROIX_VALLEY_PROFILE.concertCalendar.userPromise}
         </p>
+        <div className="mt-6 rounded-[1.3rem] border border-emerald-900/10 bg-white/80 p-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-800">
+                Auto-updating feed
+              </p>
+              <h3 className="mt-2 text-xl font-black text-slate-950">
+                Live ticketed shows from Ticketmaster and SeatGeek
+              </h3>
+            </div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+              Refreshes hourly
+            </p>
+          </div>
+          <div className="mt-5 divide-y divide-emerald-900/10">
+            {liveEvents.map((event) => (
+              <article key={`${event.source}-${event.id}`} className="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">
+                    {event.dateLabel} · {event.venueName} · {event.city}
+                  </p>
+                  <h4 className="mt-2 text-lg font-black text-slate-950">{event.title}</h4>
+                  <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                    {event.source === "ticketmaster" ? "Ticketmaster" : "SeatGeek"}
+                    {event.priceLabel ? ` · ${event.priceLabel}` : ""}
+                  </p>
+                </div>
+                {event.url ? (
+                  <a
+                    href={event.url}
+                    className="inline-flex min-h-11 items-center justify-center rounded-full border border-emerald-900/12 bg-white px-5 text-sm font-black uppercase tracking-[0.16em] text-slate-900 transition hover:bg-[#eef5ef]"
+                  >
+                    View show
+                  </a>
+                ) : null}
+              </article>
+            ))}
+            {liveEvents.length === 0 ? (
+              <div className="py-5 text-sm leading-7 text-slate-700">
+                No live ticketed shows are available from the configured feeds right now. Use the official
+                local calendars above for civic concerts, campground events, and date changes.
+              </div>
+            ) : null}
+          </div>
+        </div>
       </section>
 
       <section className="rounded-[1.9rem] border border-emerald-900/10 bg-white/80 p-6 shadow-[0_18px_55px_rgba(18,38,31,0.08)]">
