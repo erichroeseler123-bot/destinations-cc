@@ -1,7 +1,9 @@
 import { INDEXABLE_SURFACE_PATHS } from "@/src/data/indexable-surface";
+import { headers } from "next/headers";
 import { SITE_IDENTITY } from "@/src/data/site-identity";
+import { SOMERSET_PAGE_PATHS } from "@/lib/dcc/corridors/somersetPages";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 function xmlEscape(value: string): string {
   return value
@@ -12,13 +14,16 @@ function xmlEscape(value: string): string {
     .replaceAll("'", "&apos;");
 }
 
-function toAbsoluteUrl(pathname: string): string {
-  return `${SITE_IDENTITY.siteUrl}${pathname}`;
+function toAbsoluteUrl(pathname: string, origin: string = SITE_IDENTITY.siteUrl): string {
+  return `${origin}${pathname}`;
 }
 
-export function buildDccSitemapXml(paths: readonly string[] = INDEXABLE_SURFACE_PATHS): string {
+export function buildDccSitemapXml(
+  paths: readonly string[] = INDEXABLE_SURFACE_PATHS,
+  origin: string = SITE_IDENTITY.siteUrl,
+): string {
   const lastmod = new Date().toISOString();
-  const urls = [...paths].map(toAbsoluteUrl).sort();
+  const urls = [...paths].map((pathname) => toAbsoluteUrl(pathname, origin)).sort();
 
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
@@ -31,8 +36,14 @@ export function buildDccSitemapXml(paths: readonly string[] = INDEXABLE_SURFACE_
   ].join("\n");
 }
 
-export function GET() {
-  const body = buildDccSitemapXml();
+export async function GET() {
+  const host = (await headers()).get("host") || "";
+  const isSomersetHost = host === "shuttletosomersetamphitheater.com" || host === "www.shuttletosomersetamphitheater.com";
+  const origin = isSomersetHost ? `https://${host}` : SITE_IDENTITY.siteUrl;
+  const dccPaths = [...new Set([...INDEXABLE_SURFACE_PATHS, ...SOMERSET_PAGE_PATHS])];
+  const body = isSomersetHost
+    ? buildDccSitemapXml(SOMERSET_PAGE_PATHS, origin)
+    : buildDccSitemapXml(dccPaths);
 
   return new Response(body, {
     headers: {

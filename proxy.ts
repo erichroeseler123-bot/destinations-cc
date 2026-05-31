@@ -3,6 +3,7 @@ import type { NextFetchEvent, NextRequest } from "next/server";
 import {
   BRECKENRIDGE_SHARED_VARIANT_COOKIE,
 } from "@/lib/dcc/routing/breckenridgeSharedExperiment";
+import { SOMERSET_BASE_PATH, SOMERSET_PAGE_PATHS } from "@/lib/dcc/corridors/somersetPages";
 import { getEdgeSignalMapForSubjects } from "@/lib/dcc/routing/edge-signals";
 import { isIndexableSurfacePath } from "@/src/data/indexable-surface";
 import {
@@ -37,9 +38,35 @@ const GONE_PREFIXES = [
   "/wp-content/",
 ] as const;
 
+const SOMERSET_HOSTS = new Set([
+  "shuttletosomersetamphitheater.com",
+  "www.shuttletosomersetamphitheater.com",
+]);
+
+const SOMERSET_HOST_PATH_REWRITES = new Map<string, string>(
+  SOMERSET_PAGE_PATHS.map((pathname) => [
+    pathname === SOMERSET_BASE_PATH ? "/" : pathname.replace(`${SOMERSET_BASE_PATH}/`, "/"),
+    pathname,
+  ]),
+);
+
+const SOMERSET_INDEXABLE_PATHS = new Set<string>(SOMERSET_PAGE_PATHS);
+
 function shouldReturnGone(pathname: string) {
   if (GONE_EXACT_PATHS.has(pathname)) return true;
   return GONE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+function getSomersetHostRewrite(request: NextRequest) {
+  if (!SOMERSET_HOSTS.has(request.nextUrl.hostname)) return null;
+  if (request.nextUrl.pathname.startsWith(SOMERSET_BASE_PATH)) return null;
+
+  const destinationPath = SOMERSET_HOST_PATH_REWRITES.get(request.nextUrl.pathname);
+  if (!destinationPath) return null;
+
+  const url = request.nextUrl.clone();
+  url.pathname = destinationPath;
+  return url;
 }
 
 function isDocumentPath(pathname: string) {
@@ -49,10 +76,11 @@ function isDocumentPath(pathname: string) {
   return true;
 }
 
-function shouldApplyInvisibleNoindex(pathname: string) {
-  if (!isDocumentPath(pathname)) return false;
-  if (pathname.startsWith("/go/")) return false;
-  return !isIndexableSurfacePath(pathname);
+export function getGovernedRobotsTag(pathname: string) {
+  if (!isDocumentPath(pathname)) return null;
+  if (pathname.startsWith("/go/")) return null;
+  if (SOMERSET_INDEXABLE_PATHS.has(pathname)) return "index, follow";
+  return isIndexableSurfacePath(pathname) ? "index, follow" : "noindex, nofollow";
 }
 
 function readBearerToken(request: NextRequest): string {
@@ -276,6 +304,13 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });
   }
 
+  const somersetRewrite = getSomersetHostRewrite(request);
+  if (somersetRewrite) {
+    const response = NextResponse.rewrite(somersetRewrite);
+    response.headers.set("x-robots-tag", "index, follow");
+    return response;
+  }
+
   if (shouldReturnGone(request.nextUrl.pathname)) {
     return new NextResponse("Gone", {
       status: 410,
@@ -308,8 +343,9 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
 
   if (!resolved) {
     const response = NextResponse.next();
-    if (shouldApplyInvisibleNoindex(request.nextUrl.pathname)) {
-      response.headers.set("x-robots-tag", "noindex, nofollow");
+    const robotsTag = getGovernedRobotsTag(request.nextUrl.pathname);
+    if (robotsTag) {
+      response.headers.set("x-robots-tag", robotsTag);
     }
     return response;
   }
