@@ -5,13 +5,47 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SocialLinks } from "@/app/components/shared/SocialLinks";
 import { SITE_CONFIG } from "@/src/data/site-config";
+import {
+  buildNetworkSatelliteHref,
+  type NetworkSatelliteId,
+} from "@/lib/dcc/contracts/networkSatellites";
 
 const FOOTER_LINKS = [
   { href: "/red-rocks-transportation", label: "Red Rocks Transportation" },
   { href: "/sedona/jeep-tours", label: "Sedona Jeep Tours" },
   { href: "/juneau/helicopter-tours", label: "Juneau Helicopter Tours" },
   { href: "/juneau/whale-watching-tours", label: "Juneau Whale Watching" },
-  { href: "/command", label: "Command" },
+  { href: "/network", label: "How It Works" },
+  { href: "/operators", label: "For Operators" },
+];
+
+// Intent-based satellite links. Each routes an accepted decision into the
+// satellite that owns the corridor, with telemetry context preserved.
+const FOOTER_SATELLITES: Array<{
+  id: NetworkSatelliteId;
+  label: string;
+  action: string;
+}> = [
+  {
+    id: "partyatredrocks",
+    label: "Red Rocks rides",
+    action: "open_red_rocks_transport_lane",
+  },
+  {
+    id: "juneauflightdeck",
+    label: "Juneau excursions",
+    action: "open_juneau_port_excursion_lane",
+  },
+  {
+    id: "welcometotheswamp",
+    label: "New Orleans swamp tours",
+    action: "open_new_orleans_swamp_lane",
+  },
+  {
+    id: "gosno",
+    label: "Colorado mountain transfers",
+    action: "open_colorado_mountain_transfer_lane",
+  },
 ];
 
 export default function SiteFooter() {
@@ -46,6 +80,27 @@ export default function SiteFooter() {
               <Link key={link.href} href={link.href} className="dcc-site-footer__link">
                 {link.label}
               </Link>
+            ))}
+          </nav>
+          <nav aria-label="Network satellites" className="dcc-site-footer__nav">
+            <span className="dcc-site-footer__link" aria-hidden="true" style={{ opacity: 0.55 }}>
+              Network front doors
+            </span>
+            {FOOTER_SATELLITES.map((satellite) => (
+              <a
+                key={satellite.id}
+                href={buildNetworkSatelliteHref(satellite.id, {
+                  sourcePage: pathname || "/",
+                  action: satellite.action,
+                  cta: `footer-${satellite.id}`,
+                  routeTarget: "satellite",
+                  revenueStage: "intent",
+                })}
+                rel="noopener"
+                className="dcc-site-footer__link"
+              >
+                {satellite.label}
+              </a>
             ))}
           </nav>
           <div className="dcc-site-footer__bottom">
