@@ -9,7 +9,7 @@ export type EntryChoice = {
 };
 
 export type WtsEntryPage = {
-  slug: "airboat-vs-boat" | "best-time" | "with-kids" | "worth-it" | "transportation" | "types";
+  slug: "airboat-vs-boat" | "best-time" | "with-kids" | "worth-it" | "transportation" | "types" | "choose-the-right-tour";
   title: string;
   description: string;
   eyebrow: string;
@@ -26,6 +26,41 @@ export type WtsEntryPage = {
 };
 
 export const WTS_ENTRY_PAGES: Record<WtsEntryPage["slug"], WtsEntryPage> = {
+  "choose-the-right-tour": {
+    slug: "choose-the-right-tour",
+    title: "Choose the Right Swamp Tour, Without Comparing Everything",
+    description:
+      "Skip the wall of near-identical swamp tours. Confirm what actually matters to you, then move into a real shortlist.",
+    eyebrow: "Decision entry",
+    summary:
+      "You do not need to read every operator. Pick the one thing that matters most and we turn it into a shortlist.",
+    confirmText:
+      "If every swamp tour looks the same, you are in the right place. We narrow by speed, comfort, family fit, and pickup, then route you into /plan instead of restarting the search.",
+    choices: [
+      { label: "I want speed and excitement", description: "Thrill-first airboat lane, louder and more intense.", subtype: "airboat", context: "first-time" },
+      { label: "I want calm and scenery", description: "Quieter, steadier boat lane that is easier to settle into.", subtype: "boat", context: "first-time" },
+      { label: "I'm going with kids or a group", description: "Bias toward comfort, pacing, and broader group fit.", subtype: "with-kids", context: "kids" },
+      { label: "I need easy pickup from New Orleans", description: "Bias toward no-car logistics and transport fit.", subtype: "transportation", context: "no-car" },
+    ],
+    comparisonRows: [
+      { left: "Thrill-first", right: "Comfort-first" },
+      { left: "Louder", right: "Quieter" },
+      { left: "Covers more distance", right: "Better wildlife viewing" },
+      { left: "Selective fit", right: "Broader group fit" },
+    ],
+    ctaTitle: "Turn your priority into a real shortlist",
+    ctaBody:
+      "Move forward with the lane that matches what matters most instead of reopening the entire market.",
+    ctaButtonLabel: "See the right shortlist",
+    defaultSubtype: "types",
+    defaultContext: "first-time",
+    metadata: {
+      title: "Choose the Right Tour | Welcome to the Swamp",
+      description:
+        "Narrow swamp tours by speed, comfort, family fit, and pickup, then move into /plan for the right shortlist.",
+      alternates: { canonical: "https://welcometotheswamp.com/choose-the-right-tour" },
+    },
+  },
   "airboat-vs-boat": {
     slug: "airboat-vs-boat",
     title: "Airboat or Swamp Boat? Let’s Find the Right Tour",

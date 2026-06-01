@@ -8,24 +8,71 @@ import {
 } from "@/lib/dcc/jsonld";
 import { getHomepageEntrySurfaces } from "@/src/data/entry-surfaces";
 import type { EntrySurface } from "@/src/data/entry-surfaces-types";
-
-const CURATED_HIGHLIGHTS = [
-  {
-    href: "/red-rocks-transportation",
-    label: "Red Rocks transport dominance",
-  },
-  {
-    href: "/juneau/whale-watching-tours",
-    label: "Juneau wildlife decisions",
-  },
-  {
-    href: "/sedona/jeep-tours",
-    label: "Sedona fit decisions",
-  },
-];
+import {
+  NETWORK_SATELLITES,
+  buildNetworkSatelliteHref,
+  type NetworkSatelliteId,
+} from "@/lib/dcc/contracts/networkSatellites";
 
 const SECTION_PANEL_CLASS =
   "rounded-[2rem] border border-white/10 bg-[#0b1017] p-6 md:p-8";
+
+// The four layers of the stack, top (traveler-facing) to bottom (fulfillment).
+const STACK_LAYERS = [
+  {
+    tag: "Layer 01",
+    title: "Satellite sites",
+    body: "Public storefronts built around one specific traveler intent. They are the front doors people actually land on.",
+  },
+  {
+    tag: "Layer 02",
+    title: "Destination Command Center",
+    body: "The decision and routing layer. It classifies the situation, compresses it into one confident next move, then routes that move through a tracked handoff.",
+  },
+  {
+    tag: "Layer 03",
+    title: "Earth OS",
+    body: "The place and corridor intelligence underneath. Timing windows, route pressure, and local context that make a decision correct instead of generic.",
+  },
+  {
+    tag: "Layer 04",
+    title: "Fulfillment",
+    body: "Operators, GetYourGuide, Viator, Rezdy, FareHarbor, lead forms, and owned checkout. DCC owns the decision, route, and telemetry, not the final inventory.",
+  },
+] as const;
+
+// Intent-based satellite links. Each one is a real accepted decision, not a directory entry.
+const SATELLITE_INTENTS: Array<{
+  id: NetworkSatelliteId;
+  intentLabel: string;
+  action: string;
+  cta: string;
+}> = [
+  {
+    id: "partyatredrocks",
+    intentLabel: "Getting to and from a Red Rocks show",
+    action: "open_red_rocks_transport_lane",
+    cta: "homepage-network-partyatredrocks",
+  },
+  {
+    id: "juneauflightdeck",
+    intentLabel: "Booking a Juneau excursion inside a port window",
+    action: "open_juneau_port_excursion_lane",
+    cta: "homepage-network-juneauflightdeck",
+  },
+  {
+    id: "welcometotheswamp",
+    intentLabel: "Choosing the right New Orleans swamp tour",
+    action: "open_new_orleans_swamp_lane",
+    cta: "homepage-network-welcometotheswamp",
+  },
+  {
+    id: "gosno",
+    intentLabel: "Getting from Denver into the Colorado mountains",
+    action: "open_colorado_mountain_transfer_lane",
+    cta: "homepage-network-gosno",
+  },
+];
 
 export const dynamic = "force-static";
 
@@ -87,14 +134,28 @@ export default function HomePage() {
             <div className="text-[11px] font-black uppercase tracking-[0.32em] text-[#f5b34b]">
               Destination Command Center
             </div>
-            <h1 className="mt-4 text-[clamp(3rem,10vw,7rem)] font-black uppercase leading-[0.88] tracking-[-0.06em] text-white">
-              Travel decisions,
-              <br />
-              handled correctly.
+            <h1 className="mt-4 text-[clamp(2.6rem,8vw,5.5rem)] font-black uppercase leading-[0.9] tracking-[-0.05em] text-white text-balance">
+              We turn travel uncertainty into a tracked next step.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white/72 md:text-lg">
-              Pick your situation. We route you to the correct answer.
+              A blog explains. A directory lists. We decide. Pick your situation
+              and we route you to the correct move, then hand you off to the
+              right place to book it.
             </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href="/network"
+                className="inline-flex items-center rounded-full border border-[#f5b34b]/40 bg-[#f5b34b] px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#07111d] transition hover:bg-[#f7bf6a]"
+              >
+                How the network works
+              </Link>
+              <Link
+                href="/operators"
+                className="inline-flex items-center rounded-full border border-white/12 bg-white/[0.04] px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-white transition hover:border-[#f5b34b]/40 hover:bg-white/[0.07]"
+              >
+                For operators
+              </Link>
+            </div>
           </div>
 
           <div className="mt-8 grid gap-4 md:grid-cols-2">
@@ -138,59 +199,97 @@ export default function HomePage() {
         <section className={SECTION_PANEL_CLASS}>
           <div className="max-w-2xl">
             <div className="text-[11px] font-black uppercase tracking-[0.28em] text-[#f5b34b]">
-              What this is
+              The stack
             </div>
-            <h2 className="mt-3 text-3xl font-black uppercase tracking-[-0.04em] text-white">
-              Most travel sites give you options.
+            <h2 className="mt-3 text-3xl font-black uppercase tracking-[-0.04em] text-white text-balance">
+              One decision layer behind many front doors.
             </h2>
             <p className="mt-3 text-base leading-8 text-white/72">
-              We remove the wrong ones before they waste your time.
+              Travelers see a satellite site built for their exact situation.
+              Underneath, the same decision and routing layer is doing the work.
             </p>
           </div>
+
+          <div className="mt-6 grid gap-3 md:grid-cols-2">
+            {STACK_LAYERS.map((layer) => (
+              <div
+                key={layer.title}
+                className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5"
+              >
+                <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#f5b34b]">
+                  {layer.tag}
+                </div>
+                <div className="mt-3 text-lg font-bold tracking-[-0.01em] text-white">
+                  {layer.title}
+                </div>
+                <p className="mt-2 text-sm leading-7 text-white/68">
+                  {layer.body}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <Link
+            href="/network"
+            className="mt-5 inline-flex text-xs font-black uppercase tracking-[0.18em] text-[#f5b34b] transition hover:text-[#f7bf6a]"
+          >
+            See how a decision becomes a tracked handoff
+          </Link>
         </section>
 
         <section className={SECTION_PANEL_CLASS}>
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
-            <div>
-              <div className="text-[11px] font-black uppercase tracking-[0.28em] text-[#f5b34b]">
-                Proof strip
-              </div>
-              <div className="mt-5 grid gap-3 md:grid-cols-3">
-                {CURATED_HIGHLIGHTS.map((item) => (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    className="rounded-[1.3rem] border border-white/10 bg-white/[0.03] px-4 py-5 text-sm font-semibold leading-7 text-white/84 transition hover:border-[#f5b34b]/40 hover:bg-white/[0.05]"
-                  >
-                    {item.label}
-                  </a>
-                ))}
-              </div>
+          <div className="max-w-2xl">
+            <div className="text-[11px] font-black uppercase tracking-[0.28em] text-[#f5b34b]">
+              Active corridors
             </div>
+            <h2 className="mt-3 text-3xl font-black uppercase tracking-[-0.04em] text-white text-balance">
+              Find the front door for your decision.
+            </h2>
+            <p className="mt-3 text-base leading-8 text-white/72">
+              Each link routes you into the satellite that owns that lane, with
+              your context carried along so you do not start over.
+            </p>
+          </div>
 
-            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
-              <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#f5b34b]">
-                Control surface
-              </div>
-              <div className="mt-4 space-y-4 text-sm leading-7 text-white/68">
-                <p>Choose the correct option.</p>
-                <p>Get there correctly the first time.</p>
-                <p>Avoid the common mistake before it costs you the day.</p>
-              </div>
-            </div>
+          <div className="mt-6 grid gap-3 md:grid-cols-2">
+            {SATELLITE_INTENTS.map((intent) => {
+              const satellite = NETWORK_SATELLITES[intent.id];
+              const href = buildNetworkSatelliteHref(intent.id, {
+                sourcePage: "/",
+                action: intent.action,
+                cta: intent.cta,
+                routeTarget: "satellite",
+                revenueStage: "intent",
+              });
+              return (
+                <a
+                  key={intent.id}
+                  href={href}
+                  rel="noopener"
+                  className="group rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5 transition hover:border-[#f5b34b]/45 hover:bg-white/[0.06]"
+                >
+                  <div className="text-[11px] font-black uppercase tracking-[0.2em] text-white/60">
+                    {intent.intentLabel}
+                  </div>
+                  <div className="mt-3 text-lg font-bold tracking-[-0.01em] text-white">
+                    {satellite.name}
+                  </div>
+                  <p className="mt-2 text-sm leading-7 text-white/66">
+                    {satellite.decisionCompressed}
+                  </p>
+                  <div className="mt-4 text-xs font-black uppercase tracking-[0.18em] text-[#f5b34b] transition group-hover:text-[#f7bf6a]">
+                    Enter this lane
+                  </div>
+                </a>
+              );
+            })}
           </div>
         </section>
 
         <section className="grid gap-3 md:grid-cols-3">
           <Link
-            href="/command"
-            className="rounded-[1.4rem] border border-[#f5b34b]/25 bg-[#f5b34b] px-5 py-5 text-sm font-black uppercase tracking-[0.16em] text-[#07111d] transition hover:bg-[#f7bf6a]"
-          >
-            Open command view
-          </Link>
-          <Link
             href="/red-rocks-transportation"
-            className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] px-5 py-5 text-sm font-black uppercase tracking-[0.16em] text-white transition hover:border-[#f5b34b]/40 hover:bg-white/[0.05]"
+            className="rounded-[1.4rem] border border-[#f5b34b]/25 bg-[#f5b34b] px-5 py-5 text-sm font-black uppercase tracking-[0.16em] text-[#07111d] transition hover:bg-[#f7bf6a]"
           >
             Open primary corridor
           </Link>
@@ -199,6 +298,12 @@ export default function HomePage() {
             className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] px-5 py-5 text-sm font-black uppercase tracking-[0.16em] text-white transition hover:border-[#f5b34b]/40 hover:bg-white/[0.05]"
           >
             Open Juneau corridor
+          </Link>
+          <Link
+            href="/network"
+            className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] px-5 py-5 text-sm font-black uppercase tracking-[0.16em] text-white transition hover:border-[#f5b34b]/40 hover:bg-white/[0.05]"
+          >
+            How it works
           </Link>
         </section>
       </div>

@@ -7,7 +7,45 @@ import {
   buildCollectionPageJsonLd,
   buildWebPageJsonLd,
 } from "@/lib/dcc/jsonld";
+import { buildNetworkSatelliteHref } from "@/lib/dcc/contracts/networkSatellites";
 import { buildWtaProductWidgetUrl } from "@/lib/wta/embed";
+
+const SOURCE_PAGE = "/juneau/whale-watching-tours";
+
+// Each decision lane is a real accepted handoff into the Juneau Flight Deck
+// satellite, which owns the juneau-port-excursion corridor (Viator/Rezdy
+// inventory). Telemetry context travels with every link via the network builder.
+const OPTIONS = [
+  {
+    title: "Most cruise travelers should start here",
+    body: "Choose the cleaner wildlife-first lane when you want one strong whale decision without dragging glacier logistics into the same port block.",
+    product: "whale-first-time",
+    cta: "juneau-whale-card-first-time",
+  },
+  {
+    title: "Premium fit if the wildlife moment matters most",
+    body: "Smaller-group formats are better when intimacy, viewing comfort, and a quieter boat matter more than saving the last few dollars.",
+    product: "whale-premium-small-group",
+    cta: "juneau-whale-card-premium",
+  },
+  {
+    title: "Budget fit when the spend ceiling is the real constraint",
+    body: "Larger shared boats can still be the correct move if whale watching is the priority and premium feel is not the reason you are booking.",
+    product: "whale-budget-shared",
+    cta: "juneau-whale-card-budget",
+  },
+];
+
+function buildWhaleLaneHref(option: { product: string; cta: string }): string {
+  return buildNetworkSatelliteHref("juneauflightdeck", {
+    sourcePage: SOURCE_PAGE,
+    action: "open_juneau_whale_lane",
+    cta: option.cta,
+    product: option.product,
+    routeTarget: "satellite",
+    revenueStage: "intent",
+  });
+}
 
 export const metadata: Metadata = {
   title: "Juneau Whale Watching Tours | Best Options By Port Stop",
@@ -16,37 +54,22 @@ export const metadata: Metadata = {
   alternates: { canonical: "/juneau/whale-watching-tours" },
 };
 
-const OPTIONS = [
-  {
-    title: "Most cruise travelers should start here",
-    body: "Choose the cleaner wildlife-first lane when you want one strong whale decision without dragging glacier logistics into the same port block.",
-  },
-  {
-    title: "Premium fit if the wildlife moment matters most",
-    body: "Smaller-group formats are better when intimacy, viewing comfort, and a quieter boat matter more than saving the last few dollars.",
-  },
-  {
-    title: "Budget fit when the spend ceiling is the real constraint",
-    body: "Larger shared boats can still be the correct move if whale watching is the priority and premium feel is not the reason you are booking.",
-  },
-];
-
 function JsonLdGraph() {
   const optionItems = [
     {
       name: "First-time Juneau whale lane",
       description: "Best fit for most cruise visitors who want one clean marine-first decision.",
-      url: "/juneau/whale-watching?topic=whale-watching&port=juneau&context=first-time",
+      url: buildWhaleLaneHref({ product: "whale-first-time", cta: "jsonld-whale-first-time" }),
     },
     {
       name: "Premium wildlife lane",
       description: "Smaller-group whale options when intimacy and wildlife focus matter more than lowest price.",
-      url: "/juneau/whale-watching?topic=whale-watching&port=juneau&context=premium",
+      url: buildWhaleLaneHref({ product: "whale-premium-small-group", cta: "jsonld-whale-premium" }),
     },
     {
       name: "Budget whale lane",
       description: "Larger shared whale options when spend ceiling matters more than premium feel.",
-      url: "/juneau/whale-watching?topic=whale-watching&port=juneau&context=budget",
+      url: buildWhaleLaneHref({ product: "whale-budget-shared", cta: "jsonld-whale-budget" }),
     },
   ];
 
@@ -147,13 +170,24 @@ export default function JuneauWhaleWatchingToursPage() {
 
         <section className="grid gap-4 md:grid-cols-3">
           {OPTIONS.map((option) => (
-            <article key={option.title} className="rounded-[1.7rem] border border-white/10 bg-[#0b1017] p-6">
-                <div className="text-[11px] uppercase tracking-[0.22em] text-[#f5b34b]">Decision lane</div>
-                <h2 className="mt-4 text-xl font-black uppercase leading-[1.02] tracking-[-0.03em] text-white">
-                  {option.title}
-                </h2>
-                <p className="mt-4 text-sm leading-7 text-white/68">{option.body}</p>
-            </article>
+            <a
+              key={option.title}
+              href={buildWhaleLaneHref(option)}
+              rel="noopener"
+              className="group flex flex-col rounded-[1.7rem] border border-white/10 bg-[#0b1017] p-6 transition hover:border-[#f5b34b]/45 hover:bg-[#0d141d]"
+            >
+              <div className="text-[11px] uppercase tracking-[0.22em] text-[#f5b34b]">Decision lane</div>
+              <h2 className="mt-4 text-xl font-black uppercase leading-[1.02] tracking-[-0.03em] text-white">
+                {option.title}
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-white/68">{option.body}</p>
+              <span className="mt-5 inline-flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.16em] text-[#f5b34b]">
+                Open this lane on Juneau Flight Deck
+                <span aria-hidden="true" className="transition group-hover:translate-x-0.5">
+                  &rarr;
+                </span>
+              </span>
+            </a>
           ))}
         </section>
 

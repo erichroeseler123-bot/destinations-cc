@@ -1,5 +1,8 @@
-import { redirect } from "next/navigation";
+import EntryGuidePage from "../EntryGuidePage";
+import { WTS_ENTRY_PAGES } from "../entryPageData";
+
+export const metadata = WTS_ENTRY_PAGES["choose-the-right-tour"].metadata;
 
 export default function Page() {
-  redirect("/");
+  return <EntryGuidePage page={WTS_ENTRY_PAGES["choose-the-right-tour"]} />;
 }
