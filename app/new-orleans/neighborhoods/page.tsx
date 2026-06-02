@@ -30,8 +30,8 @@ export default function NewOrleansNeighborhoodsPage() {
       primaryLabel="Explore Things to Do"
       secondaryHref="/new-orleans"
       secondaryLabel="Back to New Orleans"
-      tertiaryHref="/new-orleans/tours"
-      tertiaryLabel="Browse Tours"
+      tertiaryHref="/new-orleans/swamp-tours"
+      tertiaryLabel="Compare Swamp Tours"
     />
   );
 }

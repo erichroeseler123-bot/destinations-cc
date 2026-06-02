@@ -30,8 +30,8 @@ export default function NewOrleansWeekendGuidePage() {
       primaryLabel="Browse Tours"
       secondaryHref="/new-orleans/now"
       secondaryLabel="See What’s Happening Now"
-      tertiaryHref="/new-orleans/music"
-      tertiaryLabel="Plan Music Nights"
+      tertiaryHref="/new-orleans/swamp-tours"
+      tertiaryLabel="Compare Swamp Tours"
     />
   );
 }

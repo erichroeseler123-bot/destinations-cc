@@ -19,8 +19,8 @@ export default function NewOrleansFamilyFriendlyPage() {
       title={page.title}
       description={page.description}
       highlights={page.highlights}
-      primaryHref="/new-orleans/tours"
-      primaryLabel="Browse Family Activities"
+      primaryHref="/new-orleans/swamp-tours"
+      primaryLabel="Compare Family Swamp Tours"
       secondaryHref="/new-orleans"
       secondaryLabel="Back to New Orleans"
     />
