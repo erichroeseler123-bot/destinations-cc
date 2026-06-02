@@ -186,12 +186,19 @@ export default async function SwampPlanPage({
                 fitSummary: "Best used as a starting point rather than a final answer.",
               }))
           ).map(({ product, pros, cautions, fitSummary }) => (
-            <article key={product.id} className="lane-match-card">
+            <a
+              key={product.id}
+              href={product.bookHref}
+              className="lane-match-card"
+              data-warm-transfer-click={`product_${product.id}`}
+              rel="sponsored noopener noreferrer"
+            >
               <strong>{product.title}</strong>
               <span>{fitSummary}</span>
               <span><strong>Why it fits:</strong> {pros[0]}</span>
               <span><strong>Watch for:</strong> {cautions[0]}</span>
-            </article>
+              <span><strong>Next:</strong> Open current booking details</span>
+            </a>
           ))}
         </div>
       </section>
