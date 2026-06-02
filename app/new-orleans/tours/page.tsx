@@ -3,7 +3,7 @@ import Link from "next/link";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import PageIntentRouter from "@/app/components/dcc/PageIntentRouter";
 import ViatorTourGrid from "@/app/components/dcc/ViatorTourGrid";
-import { buildSwampPlanHref } from "@/lib/dcc/warmTransfer";
+import { buildDccNewOrleansSwampGoUrl } from "@/lib/dcc/routing/middleware";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -20,6 +20,28 @@ const PAGE_PATH = "/new-orleans/tours";
 const PAGE_URL = "https://destinationcommandcenter.com/new-orleans/tours";
 const PAGE_INTENT = "compare" as const;
 const MOBILE_HANDOFF_QR = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(PAGE_URL)}`;
+
+function buildSwampGoHref(input: {
+  intent: "compare" | "act";
+  subtype: string;
+  context: string;
+}) {
+  return buildDccNewOrleansSwampGoUrl({
+    intent: input.intent,
+    topic: "swamp-tours",
+    subtype: input.subtype,
+    context: input.context,
+    sourcePage: PAGE_PATH,
+    decision_corridor: "swamp-tours",
+    decision_action:
+      input.intent === "act"
+        ? "open_live_swamp_options"
+        : "compare_swamp_tour_lanes",
+    decision_product: "wts-swamp-plan",
+    decision_option: input.subtype,
+    decision_state: "continuing",
+  });
+}
 
 export const metadata: Metadata = {
   title: "New Orleans Tours and Experiences | Destination Command Center",
@@ -95,12 +117,10 @@ export default async function NewOrleansToursPage() {
               Explore things to do
             </Link>
             <a
-              href={buildSwampPlanHref({
+              href={buildSwampGoHref({
                 intent: "compare",
-                topic: "swamp-tours",
                 subtype: "comfort",
                 context: "first-time",
-                sourcePage: PAGE_PATH,
               })}
               className="rounded-2xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-cyan-400"
             >
@@ -185,12 +205,10 @@ export default async function NewOrleansToursPage() {
             {
               title: "Compare swamp tours with WTS",
               description: "Use the specialized decision layer if the visitor is already close to booking a swamp tour and needs narrowing help fast.",
-              href: buildSwampPlanHref({
+              href: buildSwampGoHref({
                 intent: "compare",
-                topic: "swamp-tours",
                 subtype: "comfort",
                 context: "first-time",
-                sourcePage: PAGE_PATH,
               }),
               kind: "external",
               emphasis: "primary",

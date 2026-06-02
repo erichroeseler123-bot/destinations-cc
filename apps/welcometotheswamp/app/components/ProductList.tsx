@@ -44,7 +44,12 @@ export default function ProductList({
           products.map((product) => {
             const durationLabel = formatDuration(product.durationMinutes);
             return (
-              <a key={product.id} href={product.bookHref} className="slot-card product-card">
+              <a
+                key={product.id}
+                href={product.bookHref}
+                className="slot-card product-card"
+                data-warm-transfer-click={`product_${product.id}`}
+              >
                 {product.imageUrl ? (
                   <div className="product-image-wrap">
                     <Image

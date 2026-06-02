@@ -7,7 +7,7 @@ import {
   buildCollectionPageJsonLd,
   buildWebPageJsonLd,
 } from "@/lib/dcc/jsonld";
-import { buildSwampPlanHref } from "@/lib/dcc/warmTransfer";
+import { buildDccNewOrleansSwampGoUrl } from "@/lib/dcc/routing/middleware";
 import { NEW_ORLEANS_TOUR_CATEGORY_PAGES } from "@/src/data/new-orleans-city-site";
 
 const page = NEW_ORLEANS_TOUR_CATEGORY_PAGES["swamp-tours"];
@@ -15,6 +15,28 @@ const PAGE_PATH = "/new-orleans/swamp-tours";
 const PAGE_URL = "https://destinationcommandcenter.com/new-orleans/swamp-tours";
 const SATELLITE_URL = "https://welcometotheswamp.com";
 const PAGE_INTENT = "compare" as const;
+
+function buildSwampGoHref(input: {
+  intent: "compare" | "act";
+  subtype: string;
+  context: string;
+}) {
+  return buildDccNewOrleansSwampGoUrl({
+    intent: input.intent,
+    topic: "swamp-tours",
+    subtype: input.subtype,
+    context: input.context,
+    sourcePage: PAGE_PATH,
+    decision_corridor: "swamp-tours",
+    decision_action:
+      input.intent === "act"
+        ? "open_live_swamp_options"
+        : "compare_swamp_tour_lanes",
+    decision_product: "wts-swamp-plan",
+    decision_option: input.subtype,
+    decision_state: "continuing",
+  });
+}
 
 export const metadata: Metadata = {
   title: "DCC Fast Pass | New Orleans Swamp Tours | Live Availability and Direct Bookings",
@@ -40,9 +62,8 @@ function JsonLdGraph() {
   const laneItems = page.intents.map((intent) => ({
     name: intent.label,
     description: intent.description,
-    url: buildSwampPlanHref({
+    url: buildSwampGoHref({
       intent: "compare",
-      topic: "swamp-tours",
       subtype: intent.label.toLowerCase().includes("airboat")
         ? "airboat"
         : intent.label.toLowerCase().includes("family")
@@ -51,7 +72,6 @@ function JsonLdGraph() {
             ? "comfort"
             : "bayou",
       context: intent.label.toLowerCase().includes("family") ? "kids" : intent.label.toLowerCase().includes("half-day") ? "short-trip" : "first-time",
-      sourcePage: PAGE_PATH,
     }),
   }));
 
@@ -105,12 +125,10 @@ function JsonLdGraph() {
 }
 
 export default function NewOrleansSwampToursPage() {
-  const satelliteHref = buildSwampPlanHref({
+  const satelliteHref = buildSwampGoHref({
     intent: "compare",
-    topic: "swamp-tours",
     subtype: "comfort",
     context: "first-time",
-    sourcePage: PAGE_PATH,
   });
   const mobileHandoffQr = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(PAGE_URL)}`;
 
@@ -204,9 +222,8 @@ export default function NewOrleansSwampToursPage() {
               <h2 className="text-xl font-semibold text-white">{intent.label}</h2>
               <p className="mt-3 text-sm leading-7 text-white/74">{intent.description}</p>
               <a
-                href={buildSwampPlanHref({
+                href={buildSwampGoHref({
                   intent: "compare",
-                  topic: "swamp-tours",
                   subtype: intent.label.toLowerCase().includes("airboat")
                     ? "airboat"
                     : intent.label.toLowerCase().includes("family")
@@ -215,7 +232,6 @@ export default function NewOrleansSwampToursPage() {
                         ? "comfort"
                         : "bayou",
                   context: intent.label.toLowerCase().includes("family") ? "kids" : intent.label.toLowerCase().includes("half-day") ? "short-trip" : "first-time",
-                  sourcePage: PAGE_PATH,
                 })}
                 className="mt-5 inline-flex text-sm font-medium text-cyan-200 hover:text-cyan-100"
               >
@@ -233,12 +249,10 @@ export default function NewOrleansSwampToursPage() {
             {
               title: "Compare on Welcome to the Swamp",
               description: "Best next step if the visitor is already close to booking and needs narrowing help, not more broad context.",
-              href: buildSwampPlanHref({
+              href: buildSwampGoHref({
                 intent: "compare",
-                topic: "swamp-tours",
                 subtype: "comfort",
                 context: "first-time",
-                sourcePage: PAGE_PATH,
               }),
               kind: "external",
               emphasis: "primary",
@@ -246,12 +260,10 @@ export default function NewOrleansSwampToursPage() {
             {
               title: "Open live swamp options",
               description: "Use the satellite live-options surface if the visitor already knows they want a swamp tour and just needs current choices.",
-              href: buildSwampPlanHref({
+              href: buildSwampGoHref({
                 intent: "act",
-                topic: "swamp-tours",
                 subtype: "comfort",
                 context: "first-time",
-                sourcePage: PAGE_PATH,
               }),
               kind: "external",
             },
