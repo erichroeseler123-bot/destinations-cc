@@ -3,16 +3,21 @@ import Link from "next/link";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import PageIntentRouter from "@/app/components/dcc/PageIntentRouter";
 import { buildBreadcrumbJsonLd, buildWebPageJsonLd } from "@/lib/dcc/jsonld";
-import { buildSwampPlanHref } from "@/lib/dcc/warmTransfer";
+import { buildDccNewOrleansSwampGoUrl } from "@/lib/dcc/routing/middleware";
 import { SWAMP_BRIDGE_PAGES, type SwampBridgePage } from "./bridgePageData";
 
 function buildPlanHref(page: SwampBridgePage) {
-  return buildSwampPlanHref({
+  return buildDccNewOrleansSwampGoUrl({
     intent: "compare",
     topic: "swamp-tours",
     subtype: page.subtype,
     context: page.context,
     sourcePage: page.path,
+    decision_corridor: "swamp-tours",
+    decision_action: "compare_swamp_tour_lanes",
+    decision_product: "wts-swamp-plan",
+    decision_option: page.subtype,
+    decision_state: "continuing",
   });
 }
 
