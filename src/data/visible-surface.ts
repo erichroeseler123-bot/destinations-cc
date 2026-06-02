@@ -6,6 +6,12 @@ export const VISIBLE_SURFACE_PATHS = [
   "/sedona/jeep-tours",
   "/juneau/helicopter-tours",
   "/juneau/whale-watching-tours",
+  "/new-orleans/tours",
+  "/new-orleans/things-to-do",
+  "/new-orleans/weekend-guide",
+  "/new-orleans/family-friendly",
+  "/new-orleans/neighborhoods",
+  "/new-orleans/swamp-tours",
   "/command",
 ] as const;
 
