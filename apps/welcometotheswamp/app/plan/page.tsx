@@ -1,72 +1,114 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import ActivitiesWidget from "@/app/components/ActivitiesWidget";
+import AvailabilityWidget from "@/app/components/AvailabilityWidget";
 import JsonLd from "@/app/components/JsonLd";
 import WarmTransferTelemetry from "@/app/components/WarmTransferTelemetry";
-import { IntentRouter } from "@/app/components/IntentRouter";
-import { SITE_CONFIG } from "@/app/site-config";
+import { buildBreadcrumbJsonLd, buildWebPageJsonLd } from "@/lib/jsonld";
 import {
-  buildBreadcrumbJsonLd,
-  buildCollectionPageJsonLd,
-  buildItemListJsonLd,
-  buildWebPageJsonLd,
-} from "@/lib/jsonld";
-import { parseWarmTransfer, inferLaneFromTransfer, getTransferHeadline } from "@/lib/warmTransfer";
-import { getLaneCopy, getShortlistForLane, getSwampProducts } from "@/lib/swampProducts";
+  buildWtsGetYourGuideSearchHref,
+  getWtsAvailabilityTourUrl,
+} from "@/lib/getyourguide";
+import { getWtsLiveProductLinks } from "@/lib/liveProductLinks";
+import { inferLaneFromTransfer, parseWarmTransfer } from "@/lib/warmTransfer";
 
-export const pageIntent = "decide";
+export const pageIntent = "wts_storefront_plan";
 
 export const metadata: Metadata = {
-  title: "Plan Your Swamp Tour | Welcome to the Swamp",
+  title: "Book a New Orleans swamp tour | Welcome to the Swamp",
   description:
-    "Canonical warm-transfer decision page for choosing the right New Orleans swamp tour before you review the shortlist.",
+    "Check New Orleans swamp-tour availability, then choose airboat, covered boat, or hotel pickup based on the day you actually want.",
   alternates: { canonical: "https://welcometotheswamp.com/plan" },
 };
 
-function getDecisionShortlistCopy(packet: { subtype: string | null }, laneCopy: { title: string; intro: string } | null) {
-  if (packet.subtype === "airboat-vs-boat") {
-    return {
-      title: "Start with the safer default, then switch to speed-first if thrill is the real priority",
-      intro: "Because this handoff started with speed versus scenery, the shortlist opens on the calmer default first and still keeps the faster lane one click away.",
-    };
-  }
-  if (packet.subtype === "types") {
-    return {
-      title: "These are the most useful starting lanes when the market feels too broad",
-      intro: "This shortlist reduces option overload instead of pretending every swamp-tour format deserves equal attention.",
-    };
-  }
-  if (packet.subtype === "worth-it") {
-    return {
-      title: "These are the strongest first-pass options if you are still pressure-testing the fit",
-      intro: "The goal here is to make the value feel concrete fast, not to send you back into another abstract worth-it loop.",
-    };
-  }
-  if (packet.subtype === "best-time") {
-    return {
-      title: "These are the safest first-pass options when timing and weather fit matter most",
-      intro: "The shortlist starts with lower-friction options because timing questions usually signal risk reduction, not thrill-seeking.",
-    };
-  }
-  return laneCopy;
+const AIRBOAT_IMAGE = {
+  src: "/images/boat-chooser/airboat.webp",
+  alt: "Airboat cutting across open Louisiana swamp water",
+};
+
+const COVERED_BOAT_IMAGE = {
+  src: "/images/boat-chooser/covered-boat.webp",
+  alt: "Covered boat moving through a Louisiana bayou",
+};
+
+const SWAMP_IMAGE = {
+  src: "/images/boat-chooser/generic-swamp.webp",
+  alt: "Still Louisiana swamp water under cypress trees",
+};
+
+function PlanCard({
+  eyebrow,
+  title,
+  body,
+  image,
+  href,
+  cta,
+  external = false,
+  trackingId,
+}: {
+  eyebrow: string;
+  title: string;
+  body: string;
+  image: typeof AIRBOAT_IMAGE;
+  href: string;
+  cta: string;
+  external?: boolean;
+  trackingId: string;
+}) {
+  return (
+    <article className="wts-tour-card">
+      <div className="wts-tour-image">
+        <img src={image.src} alt={image.alt} loading="lazy" />
+      </div>
+      <div className="wts-tour-copy">
+        <div className="wts-card-topline">{eyebrow}</div>
+        <h3>{title}</h3>
+        <p>{body}</p>
+        <Link
+          href={href}
+          className="wts-button wts-button-card"
+          target={external ? "_blank" : undefined}
+          rel={external ? "sponsored noopener noreferrer" : undefined}
+          data-warm-transfer-click={trackingId}
+        >
+          {cta}
+        </Link>
+      </div>
+    </article>
+  );
 }
 
-function getRecheckHref(packet: { subtype: string | null; context: string | null }) {
-  if (packet.subtype === "airboat-vs-boat") return "/airboat-vs-boat";
-  if (packet.subtype === "with-kids" || packet.context === "kids") return "/with-kids";
-  if (packet.subtype === "best-time" || packet.context === "short-trip") return "/best-time";
-  if (packet.subtype === "transportation" || packet.context === "no-car") return "/transportation";
-  if (packet.subtype === "worth-it") return "/worth-it";
-  if (packet.subtype === "types") return "/types";
-  return "/";
-}
-
-function getContextSummary(context: string | null) {
-  if (context === "first-time") return "First-time visitor";
-  if (context === "kids") return "Traveling with kids";
-  if (context === "no-car") return "No-car / pickup-sensitive";
-  if (context === "short-trip") return "Short-trip fit";
-  if (context === "mixed-group") return "Mixed-age or mixed-priority group";
-  return null;
+function AvailabilityWidgetCard({
+  title,
+  body,
+  tourUrl,
+  campaign,
+  trackingId,
+}: {
+  title: string;
+  body: string;
+  tourUrl: string;
+  campaign: string;
+  trackingId: string;
+}) {
+  return (
+    <article className="wts-tour-card">
+      <div className="wts-tour-copy">
+        <div className="wts-card-topline">Live GetYourGuide availability</div>
+        <h3>{title}</h3>
+        <p>{body}</p>
+        <div data-warm-transfer-click={trackingId}>
+          <AvailabilityWidget
+            tourUrl={tourUrl}
+            campaign={campaign}
+            currency="USD"
+            layout="horizontal"
+            className="wts-availability-widget"
+          />
+        </div>
+      </div>
+    </article>
+  );
 }
 
 export default async function SwampPlanPage({
@@ -77,165 +119,292 @@ export default async function SwampPlanPage({
   const resolved = searchParams ? await searchParams : undefined;
   const packet = parseWarmTransfer(resolved);
   const lane = inferLaneFromTransfer(packet);
-  const headline = getTransferHeadline(packet, lane);
-  const data = await getSwampProducts();
-  const shortlist = lane ? getShortlistForLane(data.products, lane, 3) : [];
-  const shortlistHref = "#decision-shortlist";
-  const contextLabel = getContextSummary(packet.context);
-  const laneCopy = lane ? getLaneCopy(lane) : null;
-  const decisionCopy = getDecisionShortlistCopy(packet, laneCopy);
-  const recheckHref = getRecheckHref(packet);
-  const listItems = lane
-    ? shortlist.map(({ product }) => ({ product }))
-    : data.products.slice(0, 3).map((product) => ({ product }));
+  const links = await getWtsLiveProductLinks();
+  const gygAirboatHref = buildWtsGetYourGuideSearchHref("airboat", "wts-plan-airboat");
+  const gygBoatHref = buildWtsGetYourGuideSearchHref("boat", "wts-plan-covered-boat");
+  const gygBrowseHref = buildWtsGetYourGuideSearchHref("boat", "wts-plan-widget");
+  const airboatAvailabilityTourUrl = getWtsAvailabilityTourUrl("airboat");
+  const boatAvailabilityTourUrl = getWtsAvailabilityTourUrl("boat");
+  const hasAvailabilityWidgets = Boolean(airboatAvailabilityTourUrl || boatAvailabilityTourUrl);
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
       buildWebPageJsonLd({
         path: "/plan",
-        name: "Plan Your Swamp Tour",
+        name: "Book a New Orleans swamp tour",
         description:
-          "Canonical WTS decision page for warm transfers from DCC into swamp-tour planning, narrowing, and shortlist selection.",
+          "A booking-first New Orleans swamp-tour page for checking availability and choosing airboat, covered boat, or hotel pickup.",
       }),
       buildBreadcrumbJsonLd([
         { name: "Welcome to the Swamp", item: "/" },
-        { name: "Plan", item: "/plan" },
+        { name: "Book a New Orleans swamp tour", item: "/plan" },
       ]),
-      buildCollectionPageJsonLd({
-        path: "/plan",
-        name: laneCopy ? laneCopy.title : "Swamp-tour planning lanes",
-        description: headline.intro,
-        items: listItems.map(({ product }) => ({
-          name: product.title,
-          description: product.description || undefined,
-          url: product.bookHref,
-        })),
-      }),
-      buildItemListJsonLd({
-        items: [
-          {
-            name: packet.intent,
-            description: `Warm transfer intent: ${packet.intent}`,
-          },
-          {
-            name: packet.subtype || "general",
-            description: packet.subtype ? `Warm transfer subtype: ${packet.subtype}` : "No subtype was passed.",
-          },
-        ],
-      }),
     ],
   };
 
   return (
-    <main className="page-stack" data-page-intent={pageIntent}>
+    <main className="wts-storefront" data-page-intent={pageIntent}>
       <JsonLd data={jsonLd} />
       <WarmTransferTelemetry packet={packet} lane={lane} />
-      <section className="hero-card hero-guide">
-        <div className="router-head">
-          <p className="eyebrow">Warm transfer plan</p>
-          <div className="intent-pill">Intent: Decide</div>
+
+      <section className="wts-hero">
+        <div className="wts-hero-media">
+          <img src={SWAMP_IMAGE.src} alt={SWAMP_IMAGE.alt} loading="eager" />
+          <div className="wts-hero-overlay">
+            <span>New Orleans after the postcard</span>
+            <strong>Book the bayou, then get back for dinner.</strong>
+          </div>
         </div>
-        <h1>{headline.title}</h1>
-        <p className="lede">{headline.intro}</p>
-        <div className="stack-list">
-          <article className="info-card">
-            <h2>What we already know about you</h2>
-            <p className="muted">
-              This page keeps the handoff warm instead of dumping you into a generic list. It uses the context from DCC to start with the right decision lane before you review the shortlist.
-            </p>
-            <div className="lane-match-grid">
-              <div className="lane-match-card">
-                <strong>Intent</strong>
-                <span>{packet.intent}</span>
-              </div>
-              <div className="lane-match-card">
-                <strong>Subtype</strong>
-                <span>{packet.subtype || "general swamp-tour planning"}</span>
-              </div>
-              <div className="lane-match-card">
-                <strong>Context</strong>
-                <span>{contextLabel || "No special constraint passed"}</span>
-              </div>
+        <div className="wts-hero-copy">
+          <p className="wts-eyebrow">Welcome to the Swamp</p>
+          <h1>Book a New Orleans swamp tour.</h1>
+          <div className="wts-hero-booking" aria-labelledby="wts-gyg-booking">
+            <div className="wts-section-head">
+              <p className="wts-eyebrow">Book through GetYourGuide</p>
+              <h2 id="wts-gyg-booking">Book a New Orleans swamp tour</h2>
+              <p>
+                Check availability and book the tour style that fits first. Final price,
+                live availability, pickup details, cancellation policy, and provider terms
+                continue on GetYourGuide.
+              </p>
             </div>
-          </article>
-        </div>
-        <div className="cta-row">
-          <Link href={shortlistHref} className="button" data-warm-transfer-click="hero_shortlist">
-            {lane ? "See this shortlist" : "See your shortlist"}
-          </Link>
-          <Link href={recheckHref} className="button-secondary" data-warm-transfer-click="hero_recheck_lane">
-            Re-check the right question
-          </Link>
-        </div>
-      </section>
-
-      <section id="decision-shortlist" className="panel">
-        <p className="eyebrow">Decision shortlist</p>
-        <h2>{decisionCopy ? decisionCopy.title : "Best next-fit options before you compare everything"}</h2>
-        <p className="muted">
-          {decisionCopy ? decisionCopy.intro : "Without a subtype, this page defaults to the broadest useful shortlist. The goal is still to reduce decision friction before you jump into booking or broader research."}
-        </p>
-        <div className="lane-match-grid">
-          {(lane
-            ? shortlist
-            : data.products.slice(0, 3).map((product) => ({
-                product,
-                pros: ["Useful starting point when DCC did not pass a narrower subtype."],
-                cautions: ["Confirm comfort, pickup burden, and actual ride style before booking."],
-                fitSummary: "Best used as a starting point rather than a final answer.",
-              }))
-          ).map(({ product, pros, cautions, fitSummary }) => (
-            <article key={product.id} className="lane-match-card">
-              <strong>{product.title}</strong>
-              <span>{fitSummary}</span>
-              <span><strong>Why it fits:</strong> {pros[0]}</span>
-              <span><strong>Watch for:</strong> {cautions[0]}</span>
+            {hasAvailabilityWidgets ? (
+              <div className="wts-tour-grid">
+                {airboatAvailabilityTourUrl ? (
+                  <AvailabilityWidgetCard
+                    title="Airboat swamp tour"
+                    body="Use this if speed, wind, and a louder ride are the point of the trip."
+                    tourUrl={airboatAvailabilityTourUrl}
+                    campaign="wts-plan-airboat-availability"
+                    trackingId="gyg_airboat_availability"
+                  />
+                ) : null}
+                {boatAvailabilityTourUrl ? (
+                  <AvailabilityWidgetCard
+                    title="Covered swamp boat"
+                    body="Use this if shade, slower water, and a calmer ride are the better fit."
+                    tourUrl={boatAvailabilityTourUrl}
+                    campaign="wts-plan-boat-availability"
+                    trackingId="gyg_boat_availability"
+                  />
+                ) : null}
+              </div>
+            ) : (
+              <article className="wts-tour-card">
+                <div className="wts-tour-copy">
+                  <div className="wts-card-topline">GetYourGuide availability</div>
+                  <h3>Exact tour widget slot</h3>
+                  <p>GetYourGuide availability widget goes here once activity URLs are configured.</p>
+                </div>
+              </article>
+            )}
+            <article className="wts-tour-card">
+              <div className="wts-tour-copy">
+                <div className="wts-card-topline">GetYourGuide activity widget</div>
+                <h3>New Orleans swamp tour availability</h3>
+                <p>Use this widget to open current GetYourGuide swamp-tour options.</p>
+                <div data-warm-transfer-click="gyg_activity_widget">
+                  <ActivitiesWidget
+                    href={gygBrowseHref}
+                    campaign="wts-plan-widget"
+                    numberOfItems={3}
+                    className="wts-activities-widget"
+                  />
+                </div>
+              </div>
             </article>
-          ))}
+            <div className="wts-tour-grid">
+              <PlanCard
+                eyebrow="GetYourGuide / airboat"
+                title="Airboat swamp tours"
+                body="Use this if speed, wind, and a louder ride are the point of the trip."
+                image={AIRBOAT_IMAGE}
+                href={gygAirboatHref}
+                cta="Check availability"
+                external
+                trackingId="gyg_card_airboat"
+              />
+              <PlanCard
+                eyebrow="GetYourGuide / covered boat"
+                title="Covered swamp boat tours"
+                body="Use this if shade, slower water, and a calmer ride are the better fit."
+                image={COVERED_BOAT_IMAGE}
+                href={gygBoatHref}
+                cta="Book this tour"
+                external
+                trackingId="gyg_card_covered_boat"
+              />
+            </div>
+          </div>
+          <p className="wts-hero-summary">
+            Check availability first, then choose the ride style: loud airboat,
+            slow covered boat, or hotel pickup when you want the easy move.
+          </p>
+          <div className="wts-cta-row">
+            <Link
+              href={gygAirboatHref}
+              className="wts-button wts-button-primary"
+              target="_blank"
+              rel="sponsored noopener noreferrer"
+              data-warm-transfer-click="gyg_hero_airboat"
+            >
+              Check availability
+            </Link>
+            <Link
+              href="#boat-style"
+              className="wts-button wts-button-secondary"
+              data-warm-transfer-click="hero_compare"
+            >
+              Compare boat styles
+            </Link>
+          </div>
+          <div className="wts-chip-row">
+            <span>Airboat if you want noise</span>
+            <span>Covered boat if you want atmosphere</span>
+            <span>Pickup if you want it easy</span>
+          </div>
         </div>
       </section>
 
-      <IntentRouter
-        intent="decide"
-        title="What should happen after this warm transfer?"
-        summary="The next step should either be this shortlist, a narrower WTS question, or a move back to DCC if the real problem is still educational."
-        options={[
-          {
-            title: lane ? "Review this shortlist" : "Review your shortlist",
-            description: lane
-              ? "Best next step if the warm transfer already narrowed the user into the right lane."
-              : "Use this if the visitor is ready to work from the shortlist even without a narrower subtype.",
-            href: shortlistHref,
-            kind: "internal",
-            emphasis: "primary",
-            trackingId: "router_live_options",
-          },
-          {
-            title: lane ? "Re-check this question on WTS" : "Choose the right question first",
-            description: lane
-              ? "Go here if the user wants to validate the current fit question before clicking into live comparison."
-              : "Use one of the focused entry pages if the handoff did not pass enough context.",
-            href: recheckHref,
-            kind: "internal",
-            trackingId: "router_recheck_lane",
-          },
-          {
-            title: "Check transportation fit",
-            description: "Use this when pickup friction, staying without a car, or transfer burden are still the actual blockers.",
-            href: "/transportation",
-            kind: "internal",
-            trackingId: "router_logistics",
-          },
-          {
-            title: "Go back to DCC authority",
-            description: "If the user is still asking whether the swamp fits the trip at all, return them to DCC instead of forcing action.",
-            href: `${SITE_CONFIG.dccOrigin}${packet.sourcePage || "/new-orleans/swamp-tours"}`,
-            kind: "external",
-            trackingId: "router_back_to_dcc",
-          },
-        ]}
-      />
+      <section className="wts-section" aria-labelledby="wts-plan-picks">
+        <div className="wts-section-head">
+          <p className="wts-eyebrow">Viator fallback links</p>
+          <h2 id="wts-plan-picks">Use these only if GetYourGuide does not fit.</h2>
+          <p>
+            These attributed Viator links keep the backup booking path open. They are not the
+            primary WTS booking path.
+          </p>
+        </div>
+        <div className="wts-tour-grid">
+          <PlanCard
+            eyebrow="Loud / fast"
+            title="Airboat Swamp Tour"
+            body="For the friend who wants the ride to feel like the point. Wind, engine, open water, quick hit."
+            image={AIRBOAT_IMAGE}
+            href={links.airboatHref}
+            cta="Book this tour"
+            external
+            trackingId="card_airboat"
+          />
+          <PlanCard
+            eyebrow="Slow / cinematic"
+            title="Covered Boat Swamp Tour"
+            body="For a moodier bayou pass: shade, slower pacing, and more time to actually look around."
+            image={COVERED_BOAT_IMAGE}
+            href={links.smallBoatHref}
+            cta="Book this tour"
+            external
+            trackingId="card_covered_boat"
+          />
+          <PlanCard
+            eyebrow="Easy move"
+            title="Swamp Tour With Pickup"
+            body="For the no-car plan. Get picked up, leave the city, see the swamp, come back clean."
+            image={SWAMP_IMAGE}
+            href={links.pickupHref}
+            cta="Check availability"
+            external
+            trackingId="card_pickup"
+          />
+          <PlanCard
+            eyebrow="Still deciding"
+            title="Compare the styles"
+            body="Use this if the only real question is fast airboat versus slower covered boat."
+            image={COVERED_BOAT_IMAGE}
+            href="/airboat-vs-boat"
+            cta="Compare styles"
+            trackingId="card_compare_styles"
+          />
+        </div>
+      </section>
+
+      <section className="wts-trust-strip" aria-label="Swamp trip notes">
+        <article className="wts-trust-badge">
+          <strong>Hotel pickup</strong>
+          <span>Best when the Quarter is home base and you do not want to solve transport.</span>
+        </article>
+        <article className="wts-trust-badge">
+          <strong>Boat style</strong>
+          <span>Airboat is the loud, fast version. Covered boat is the slow cinematic version.</span>
+        </article>
+        <article className="wts-trust-badge">
+          <strong>Weather mood</strong>
+          <span>Heat, rain, shade, and wind change the right call more than the tour title does.</span>
+        </article>
+        <article className="wts-trust-badge">
+          <strong>Night plan</strong>
+          <span>Leave town, get the bayou scene, and make it back for dinner or the next bar.</span>
+        </article>
+      </section>
+
+      <section className="wts-section wts-chooser" id="boat-style">
+        <div className="wts-section-head">
+          <p className="wts-eyebrow">Pick the feel</p>
+          <h2>Airboat or covered boat?</h2>
+          <p>
+            This is the only choice that really changes the day. Speed and noise, or shade and
+            slow water. Everything else is timing, pickup, and provider terms.
+          </p>
+        </div>
+        <div className="wts-recommendation">
+          <strong>Airboat if you want the loud, fast version.</strong>
+          <div className="wts-chip-row">
+            <span>open air</span>
+            <span>higher energy</span>
+            <span>more ride than reverie</span>
+          </div>
+          <strong>Covered boat if you want the slow cinematic version.</strong>
+          <div className="wts-chip-row">
+            <span>shade</span>
+            <span>slower water</span>
+            <span>better for looking around</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="wts-disclosure" aria-labelledby="wts-plan-disclosure">
+        <div>
+          <p className="wts-eyebrow">Booking clarity</p>
+          <h2 id="wts-plan-disclosure">Choose the vibe here. Confirm the terms there.</h2>
+          <p>
+            Welcome to the Swamp helps you pick the bayou lane. Final price, live availability,
+            reviews, pickup details, cancellation policy, and provider terms continue on the
+            booking page.
+          </p>
+        </div>
+        <div className="wts-disclosure-grid">
+          <div>
+            <strong>Good reasons to click now</strong>
+            <ul>
+              <li>You want the loud airboat version.</li>
+              <li>You want the slow covered-boat version.</li>
+              <li>You want hotel pickup and less logistics.</li>
+            </ul>
+          </div>
+          <div>
+            <strong>Check before paying</strong>
+            <ul>
+              <li>Exact pickup point and return timing.</li>
+              <li>Weather, cancellation, and age rules.</li>
+              <li>Current price and provider-specific terms.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <div className="wts-mobile-cta">
+        <Link
+          href={gygAirboatHref}
+          className="wts-button wts-button-primary"
+          target="_blank"
+          rel="sponsored noopener noreferrer"
+          data-warm-transfer-click="gyg_sticky_airboat"
+        >
+          Check availability
+        </Link>
+        <span>Final terms continue on booking page</span>
+      </div>
     </main>
   );
 }
