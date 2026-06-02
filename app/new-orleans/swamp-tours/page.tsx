@@ -16,6 +16,37 @@ const PAGE_URL = "https://destinationcommandcenter.com/new-orleans/swamp-tours";
 const SATELLITE_URL = "https://welcometotheswamp.com";
 const PAGE_INTENT = "compare" as const;
 
+const DECISION_CARDS = [
+  {
+    title: "Airboat vs covered swamp boat",
+    body: "Choose an airboat when the ride should feel fast, loud, and thrill-forward. Choose a covered swamp boat when shade, slower pacing, and easier conversation matter more.",
+    subtype: "airboat",
+    context: "first-time",
+    cta: "Choose the right swamp tour",
+  },
+  {
+    title: "Hotel pickup vs self-drive",
+    body: "Hotel pickup is the safer default if you are staying near the Quarter, CBD, or Warehouse District and do not want to solve bayou transportation. Self-drive only makes sense if you already have a car and want more control over timing.",
+    subtype: "pickup",
+    context: "no-car",
+    cta: "Compare live swamp tour options",
+  },
+  {
+    title: "Family-safe vs thrill ride",
+    body: "Families and mixed-age groups usually want the calmer, covered, lower-friction lane first. Thrill-seekers should start with airboat options and confirm age, noise, weather, and ride-style details before booking.",
+    subtype: "families",
+    context: "kids",
+    cta: "See swamp tour picks",
+  },
+  {
+    title: "First-timer recommendation",
+    body: "If this is your first New Orleans swamp tour and you are unsure, start with the comfort-first shortlist: covered boat, simple timing, and pickup-friendly options before switching to a faster ride.",
+    subtype: "comfort",
+    context: "first-time",
+    cta: "Compare live swamp tour options",
+  },
+] as const;
+
 function buildSwampGoHref(input: {
   intent: "compare" | "act";
   subtype: string;
@@ -39,9 +70,9 @@ function buildSwampGoHref(input: {
 }
 
 export const metadata: Metadata = {
-  title: "DCC Fast Pass | New Orleans Swamp Tours | Live Availability and Direct Bookings",
+  title: "New Orleans Swamp Tours | Airboat vs Boat, Pickup, Family Fit",
   description:
-    "DCC Fast Pass for New Orleans swamp tours. Understand the main buying lanes, then hand off to a dedicated mobile-first booking surface for live availability and direct bookings.",
+    "Choose the right New Orleans swamp tour: airboat vs covered boat, hotel pickup vs self-drive, family-safe vs thrill ride, then compare live options.",
   alternates: { canonical: "/new-orleans/swamp-tours" },
   keywords: [
     "new orleans swamp tours",
@@ -50,9 +81,9 @@ export const metadata: Metadata = {
     "swamp tours from new orleans",
   ],
   openGraph: {
-    title: "DCC Fast Pass | New Orleans Swamp Tours",
+    title: "New Orleans Swamp Tours",
     description:
-      "DCC Fast Pass guide to New Orleans swamp-tour intent, with a direct handoff into the dedicated live-availability booking surface.",
+      "A decision-first guide to airboat vs covered boat, pickup vs self-drive, and family-safe vs thrill-focused New Orleans swamp tours.",
     url: PAGE_URL,
     type: "website",
   },
@@ -105,7 +136,7 @@ function JsonLdGraph() {
             name: "What does DCC do on this page?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Destination Command Center explains the main swamp-tour buying lanes, then routes visitors into the dedicated live-availability booking surface.",
+              text: "Destination Command Center helps visitors choose between airboat and covered boat, pickup and self-drive, family-safe and thrill-focused swamp tour lanes, then routes them into the dedicated comparison surface.",
             },
           },
           {
@@ -113,7 +144,7 @@ function JsonLdGraph() {
             name: "How does booking work?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Visitors choose a live departure or live comparison path on the satellite site and then complete the reservation with the provider or the linked booking flow.",
+              text: "Visitors continue through the governed DCC handoff to Welcome to the Swamp, where visible shortlist cards open current provider booking details through attributed product links.",
             },
           },
         ],
@@ -145,18 +176,20 @@ export default function NewOrleansSwampToursPage() {
           </div>
           <h1 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">{page.title}</h1>
           <p className="mt-4 text-base font-bold uppercase tracking-[0.18em] text-[#8df0cc]">
-            DCC Fast Pass - Real-time availability to direct bookings
+            Choose the right swamp tour before opening booking details
           </p>
-          <p className="mt-4 max-w-3xl text-lg leading-8 text-white/82">{page.intro}</p>
+          <p className="mt-4 max-w-3xl text-lg leading-8 text-white/82">
+            The main choice is not whether the swamp is worth seeing. It is which version fits your day: fast airboat or calmer covered boat, pickup or self-drive, family-safe or thrill-first.
+          </p>
           <p className="mt-5 max-w-3xl text-sm leading-7 text-white/68">
-            DCC is the discovery and routing layer here. When you are ready to book, the handoff goes to a dedicated swamp-tour surface showing live availability, and the reservation is completed directly with the provider through FareHarbor.
+            Start with the first-timer default if you are unsure: covered or comfort-first, pickup-friendly, and easy to fit around the rest of New Orleans. Then compare live swamp tour options on the WTS plan page, where visible product cards open attributed provider booking details.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a
               href={satelliteHref}
               className="rounded-2xl border border-[#7dd3fc]/30 bg-[linear-gradient(180deg,#7dd3fc,#4ade80)] px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#071018] shadow-[0_18px_38px_rgba(74,222,128,0.12)] transition hover:scale-[1.02]"
             >
-              Get DCC Fast Pass
+              Compare live swamp tour options
             </a>
             <Link href="/new-orleans/tours" className="rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm text-white/88 hover:bg-white/10">
               Back to New Orleans tours
@@ -167,15 +200,15 @@ export default function NewOrleansSwampToursPage() {
         <section className="hidden items-center justify-between gap-8 rounded-3xl border border-[#8df0cc]/20 bg-[linear-gradient(135deg,rgba(17,29,31,0.96),rgba(7,14,22,0.96))] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.28)] lg:flex">
           <div className="max-w-2xl">
             <div className="text-xs uppercase tracking-[0.24em] text-[#8df0cc]">Desktop handoff</div>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-white">This site is designed for mobile.</h2>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-white">Choose the lane here, then compare options there.</h2>
             <p className="mt-3 text-base leading-7 text-white/76">
-              DCC explains the lane here, but the fastest booking flow is on the dedicated mobile-first swamp-tour site.
+              DCC keeps the decision simple. The governed handoff preserves the choice and opens the WTS plan page, where the shortlist cards lead to attributed product exits.
             </p>
             <a
               href={satelliteHref}
               className="mt-5 inline-flex rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm font-medium text-white/88 hover:bg-white/10"
             >
-              Open the booking surface
+              See swamp tour picks
             </a>
           </div>
           <div className="shrink-0 rounded-[2rem] border border-white/10 bg-white p-4 text-center shadow-[0_18px_40px_rgba(0,0,0,0.22)]">
@@ -195,47 +228,41 @@ export default function NewOrleansSwampToursPage() {
             <h2 className="text-2xl font-bold">How this lane works</h2>
             <div className="mt-4 space-y-4 text-sm leading-7 text-white/78">
               <p>
-                Swamp-tour buyers usually already know the activity. The real friction is figuring out which type of ride fits the day, whether there are open spots, and how to move straight into a live departure without bouncing through generic aggregator pages.
+                Swamp-tour buyers usually already know the activity. The real friction is choosing the right ride style and logistics before opening product pages.
               </p>
               <p>
-                DCC handles the explanation and intent routing. The satellite handles the live slot surface. The booking is then completed directly with the provider through FareHarbor, so the visitor feels like they are booking at the source instead of through a vague middle layer.
+                This page answers the buying decision first. The primary CTA uses <span className="font-semibold text-white">/go/new-orleans/swamp-tours</span>, preserves decision context, and sends you to WTS /plan, where shortlist cards now link to attributed product booking details.
               </p>
             </div>
           </article>
           <article className="rounded-3xl border border-white/10 bg-black/20 p-6">
             <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Booking notice</div>
             <p className="mt-4 text-sm leading-7 text-white/76">
-              DCC Fast Pass gives visitors a faster route into live availability and direct bookings with the provider through FareHarbor. DCC may earn a commission from the operator.
+              DCC may earn a commission when visitors continue through partner or marketplace links. Always confirm the final provider, pickup point, ride style, weather policy, and cancellation terms before paying.
             </p>
             <a
               href={satelliteHref}
               className="mt-5 inline-flex rounded-2xl border border-white/12 bg-white/6 px-4 py-3 text-sm font-medium text-white/88 hover:bg-white/10"
             >
-              Open live slots
+              Choose the right swamp tour
             </a>
           </article>
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {page.intents.map((intent) => (
-            <article key={intent.label} className="rounded-3xl border border-white/10 bg-white/[0.05] p-5">
-              <h2 className="text-xl font-semibold text-white">{intent.label}</h2>
-              <p className="mt-3 text-sm leading-7 text-white/74">{intent.description}</p>
+          {DECISION_CARDS.map((decision) => (
+            <article key={decision.title} className="rounded-3xl border border-white/10 bg-white/[0.05] p-5">
+              <h2 className="text-xl font-semibold text-white">{decision.title}</h2>
+              <p className="mt-3 text-sm leading-7 text-white/74">{decision.body}</p>
               <a
                 href={buildSwampGoHref({
                   intent: "compare",
-                  subtype: intent.label.toLowerCase().includes("airboat")
-                    ? "airboat"
-                    : intent.label.toLowerCase().includes("family")
-                      ? "families"
-                      : intent.label.toLowerCase().includes("half-day")
-                        ? "comfort"
-                        : "bayou",
-                  context: intent.label.toLowerCase().includes("family") ? "kids" : intent.label.toLowerCase().includes("half-day") ? "short-trip" : "first-time",
+                  subtype: decision.subtype,
+                  context: decision.context,
                 })}
                 className="mt-5 inline-flex text-sm font-medium text-cyan-200 hover:text-cyan-100"
               >
-                Hand off to this lane →
+                {decision.cta} →
               </a>
             </article>
           ))}
@@ -244,11 +271,11 @@ export default function NewOrleansSwampToursPage() {
         <PageIntentRouter
           intent={PAGE_INTENT}
           title="What is the best next step after this swamp-tour page?"
-          summary="This DCC lane should either send visitors into the dedicated decision surface, broaden them to the full New Orleans tours layer, or move them back into city context if they are not ready to compare."
+          summary="The best next step is the WTS plan path when the visitor is ready to compare current swamp tour options. Broaden only if they are not committed to a swamp-tour day."
           options={[
             {
-              title: "Compare on Welcome to the Swamp",
-              description: "Best next step if the visitor is already close to booking and needs narrowing help, not more broad context.",
+              title: "Compare live swamp tour options",
+              description: "Best next step if the visitor understands the ride-style and pickup tradeoffs and is ready for the WTS shortlist.",
               href: buildSwampGoHref({
                 intent: "compare",
                 subtype: "comfort",
@@ -258,8 +285,8 @@ export default function NewOrleansSwampToursPage() {
               emphasis: "primary",
             },
             {
-              title: "Open live swamp options",
-              description: "Use the satellite live-options surface if the visitor already knows they want a swamp tour and just needs current choices.",
+              title: "See swamp tour picks",
+              description: "Use this if the visitor already knows they want a swamp tour and just needs current product choices.",
               href: buildSwampGoHref({
                 intent: "act",
                 subtype: "comfort",
