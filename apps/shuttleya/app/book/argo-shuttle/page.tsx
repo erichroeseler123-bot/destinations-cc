@@ -14,7 +14,7 @@ type SearchParamsValue = string | string[] | undefined;
 export const metadata: Metadata = {
   title: "Argo Shuttle from Denver ($35) | Book Direct",
   description:
-    "Book the $35 Argo shuttle from Denver direct on Shuttleya with an 8:00 AM departure and 11:30-11:45 AM return.",
+    "Book the $35 Argo shuttle from Denver direct on Shuttleya with a 9:00 AM Union Station pickup and 12:30-12:45 PM return.",
   alternates: { canonical: "/book/argo-shuttle" },
   robots: {
     index: false,
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Argo Shuttle from Denver ($35) | Book Direct",
     description:
-      "Book the $35 Argo shuttle from Denver direct on Shuttleya with 8:00 AM departure and return handled.",
+      "Book the $35 Argo shuttle from Denver direct on Shuttleya with 9:00 AM Union Station pickup and return handled.",
     url: "https://shuttleya.com/book/argo-shuttle",
     type: "website",
   },

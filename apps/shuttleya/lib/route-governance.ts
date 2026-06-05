@@ -23,7 +23,47 @@ export type RouteGovernanceEntry = {
   notes?: string;
 };
 
-const SHUTTLEYA_ROUTE_GOVERNANCE: readonly RouteGovernanceEntry[] = [];
+const SHUTTLEYA_ROUTE_GOVERNANCE: readonly RouteGovernanceEntry[] = [
+  {
+    path: "/",
+    publishState: "promoted",
+    networkRole: "operator",
+    handoffPolicy: "bidirectional",
+    priority: 1,
+    changeFrequency: "weekly",
+    notes: "Standalone Argo execution entry surface.",
+  },
+  {
+    path: "/book/argo-shuttle",
+    publishState: "promoted",
+    networkRole: "operator",
+    handoffPolicy: "bidirectional",
+    priority: 0.9,
+    changeFrequency: "weekly",
+    notes: "Canonical Argo request route expected by DCC decision continuity.",
+  },
+  {
+    path: "/denver-to-argo-shuttle",
+    publishState: "live_unpromoted",
+    networkRole: "operator",
+    handoffPolicy: "bidirectional",
+    notes: "Acquisition-style alias kept live but not indexable.",
+  },
+  {
+    path: "/argo-shuttle-schedule",
+    publishState: "live_unpromoted",
+    networkRole: "operator",
+    handoffPolicy: "bidirectional",
+    notes: "Acquisition-style alias kept live but not indexable.",
+  },
+  {
+    path: "/mighty-argo-cable-car-shuttle",
+    publishState: "live_unpromoted",
+    networkRole: "operator",
+    handoffPolicy: "bidirectional",
+    notes: "Acquisition-style alias kept live but not indexable.",
+  },
+];
 
 const SHUTTLEYA_ROUTE_GOVERNANCE_INDEX = createRouteGovernanceIndex(SHUTTLEYA_ROUTE_GOVERNANCE);
 
