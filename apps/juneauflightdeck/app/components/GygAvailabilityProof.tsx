@@ -8,12 +8,17 @@ export default function GygAvailabilityProof({ selectedDate }: { selectedDate: s
   return (
     <section className="panel gyg-proof" aria-labelledby="gyg-proof-title">
       <div className="gyg-proof__header">
-        <p className="eyebrow">Live availability proof</p>
-        <h2 id="gyg-proof-title">For most cruise days, start with one reliable helicopter choice.</h2>
+        <p className="eyebrow">Cruise-day proof</p>
+        <h2 id="gyg-proof-title">For most cruise days, this is the move.</h2>
         <p className="muted">
-          The page still decides first. This GetYourGuide feed proves that Juneau helicopter inventory is bookable, then
-          moves you into live checkout for {selectedDate || "your cruise day"}.
+          The page still decides first. These live GetYourGuide departures prove that Juneau helicopter inventory is
+          bookable, then move you into checkout for {selectedDate || "your cruise day"} without another comparison loop.
         </p>
+        <div className="gyg-proof__signals" aria-label="Juneau availability proof signals">
+          <span>Next available departures</span>
+          <span>Cruise-day timing check</span>
+          <span>Live checkout from the proof layer</span>
+        </div>
       </div>
 
       <div
@@ -35,8 +40,8 @@ export default function GygAvailabilityProof({ selectedDate }: { selectedDate: s
       </div>
 
       <p className="gyg-proof__note">
-        GetYourGuide handles live availability, supplier terms, payment, confirmation, and cancellation for these
-        fallback listings.
+        These are fallback live listings. JFD makes the recommendation; GetYourGuide handles availability, payment,
+        confirmation, and cancellation once you choose a departure.
       </p>
       <Script async src="https://widget.getyourguide.com/dist/pa.umd.production.min.js" />
     </section>
