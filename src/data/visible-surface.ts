@@ -1,13 +1,9 @@
-export const VISIBLE_SURFACE_PATHS = [
-  "/",
-  "/red-rocks-transportation",
-  "/red-rocks-shuttle",
-  "/red-rocks-parking",
-  "/sedona/jeep-tours",
-  "/juneau/helicopter-tours",
-  "/juneau/whale-watching-tours",
-  "/command",
-] as const;
+import { getRootPathsByPublishState, getRootRouteGovernance } from "@/src/data/route-governance";
+
+export const VISIBLE_SURFACE_PATHS = getRootPathsByPublishState(
+  "indexable",
+  "promoted",
+).filter((pathname) => getRootRouteGovernance(pathname)?.networkRole !== "utility");
 
 export const PRIMARY_CORRIDOR_PATH = "/red-rocks-transportation";
 

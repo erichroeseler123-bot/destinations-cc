@@ -1,46 +1,69 @@
 export const SITE_IDENTITY = {
   name: "Destination Command Center",
-  siteUrl: "https://destinationcommandcenter.com",
+  siteUrl: "https://www.destinationcommandcenter.com",
   canonicalDescription:
-    "Destination Command Center is a destination discovery platform that helps travelers find shows, tours, attractions, transportation, and trip-planning information in complex or high-traffic places.",
+    "Destination Command Center is the main public DCC site: a governed travel decision layer that helps travelers figure out the right next move and routes them into the correct action or booking surface with context preserved.",
   shortDescription:
-    "Destination discovery platform for travel guides, shows, tours, attractions, and transportation.",
-  homepageTitle: "Destination Command Center | Shows, Tours, Attractions, and Transportation",
+    "Governed travel decision layer for shows, tours, attractions, transportation, and destination choices.",
+  homepageTitle: "Destination Command Center | Clear Travel Decisions",
   homepageDescription:
-    "Destination Command Center helps travelers discover shows, tours, attractions, transportation, and trip-planning information in busy or complex destinations.",
+    "Tell DCC what you are trying to figure out and get a clear next move fast. Short answers. Clear next steps.",
   homepageHeroTitle:
-    "Find shows, tours, attractions, and transportation in busy destinations.",
+    "What are you trying to figure out?",
   homepageHeroSummary:
-    "Destination Command Center helps travelers find what is happening in a place and how to get there, with city guides, live events, tours, attractions, and transportation planning.",
+    "DCC takes the travel question, narrows the right move, and sends you straight into the next step without making you browse.",
   aboutTitle: "About Destination Command Center",
   aboutDescription:
-    "Learn what Destination Command Center covers and how it helps travelers find what is happening in a place and how to get there.",
+    "Learn how Destination Command Center works as the governed decision layer that turns confusion into a clear next move and preserves context into action.",
   aboutHeroTitle:
-    "A destination discovery platform for busy, changing, or hard-to-navigate places.",
+    "The governed decision layer before action.",
   aboutHeroSummary:
-    "Destination Command Center helps travelers find shows, tours, attractions, transportation, and trip-planning information in places where timing and local context matter.",
+    "Destination Command Center exists to reduce confusion, recommend the best next move, and route travelers into the right downstream surface when timing, local context, and execution details matter.",
   aiTitle: "For AI and Crawlers | Destination Command Center",
   aiDescription:
     "Machine-readable overview of Destination Command Center, including its purpose, core content areas, and canonical public sections.",
   coreCoverage: [
-    "Travel guides and destination pages",
-    "Shows and live event discovery",
+    "City plans and destination surfaces",
+    "Shows and live event routing",
     "Tours and attractions",
-    "Transportation guidance",
-    "Trip-planning information",
+    "Transportation routing",
+    "Trip-planning surfaces",
     "Real-time city updates and planning signals",
   ],
   audience: [
-    "Travelers planning around busy venues, cities, and attractions",
-    "Visitors comparing shows, tours, and destination options",
-    "People who need practical guidance on how to get around",
+    "Travelers facing busy, high-friction destination decisions",
+    "Visitors narrowing the right show, tour, attraction, transportation, or destination move",
+    "People who need practical guidance on what to do next without restarting the search",
   ],
   transportationFit:
-    "Destination Command Center focuses on discovery and planning. On routes or venues where transportation support exists, DCC can point travelers to the right ride options or trusted booking partners.",
+    "Destination Command Center focuses on decision quality and routing. On routes or venues where transportation support exists, DCC can carry the traveler into the right ride lane, action path, or trusted booking partner.",
+  entityCategory: "Travel logistics decision resolver",
+  alternateNames: [
+    "DCC Travel Logistics",
+    "Destination Command Center Travel",
+    "DCC Decision Layer",
+  ],
+  entityDisambiguation:
+    "Destination Command Center is a travel logistics and decision-resolution entity, not an IT command center, military command, warehouse platform, or web design agency.",
+  knowsAbout: [
+    "travel logistics",
+    "destination decision support",
+    "cruise port logistics",
+    "guided tour selection",
+    "transportation handoffs",
+    "traffic failure modes",
+    "parking failure modes",
+    "weather-sensitive activity planning",
+    "high-congestion destination planning",
+    "operator and marketplace handoffs",
+    "owned execution before marketplace fallback",
+    "fallback inventory routing",
+  ],
   notDescriptions: [
     "not a generic online travel agency",
-    "not only a booking engine",
-    "not a logistics dashboard or operations platform",
+    "not a generic travel guide",
+    "not a booking marketplace",
+    "not a neutral directory of options",
   ],
   canonicalPaths: [
     "/",
@@ -61,6 +84,7 @@ export const SITE_IDENTITY = {
     "authority layer",
     "logistics coordinator",
     "travel operations center",
+    "travel-routing platform",
   ],
 } as const;
 
@@ -70,6 +94,10 @@ export function getOrganizationSchema() {
     name: SITE_IDENTITY.name,
     url: SITE_IDENTITY.siteUrl,
     description: SITE_IDENTITY.canonicalDescription,
+    alternateName: SITE_IDENTITY.alternateNames,
+    additionalType: "https://schema.org/TravelAgency",
+    disambiguatingDescription: SITE_IDENTITY.entityDisambiguation,
+    knowsAbout: SITE_IDENTITY.knowsAbout,
   };
 }
 
@@ -79,5 +107,10 @@ export function getWebsiteSchema() {
     name: SITE_IDENTITY.name,
     url: SITE_IDENTITY.siteUrl,
     description: SITE_IDENTITY.homepageDescription,
+    about: {
+      "@type": "Thing",
+      name: SITE_IDENTITY.entityCategory,
+      description: SITE_IDENTITY.entityDisambiguation,
+    },
   };
 }
