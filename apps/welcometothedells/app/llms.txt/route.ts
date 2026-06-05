@@ -1,4 +1,5 @@
 import { ACTION_CARDS, HUBS, QR_TEST_URLS, RIVER_OPS_OUTBOUND_TARGETS, RIVER_OPS_TERMINAL, SITE_URL } from "@/lib/content";
+import { OPERATOR_SURFACES, buildOperatorSurfaceUrl } from "@/lib/operatorSurfaces";
 
 export const dynamic = "force-static";
 
@@ -37,6 +38,7 @@ export function GET() {
     "## Canonical Surface",
     `- ${SITE_URL}/`,
     `- ${SITE_URL}/lounge`,
+    ...OPERATOR_SURFACES.map((surface) => `- ${buildOperatorSurfaceUrl(surface)}`),
     "",
     "## Editorial Section",
     "- The Lounge is a newspaper-style section for supper clubs, neon, after-hours decisions, and River Ops display ads.",
@@ -54,6 +56,13 @@ export function GET() {
     "## River Ops Terminal",
     ...RIVER_OPS_TERMINAL.map(
       (card) => `- ${card.rank} ${card.title}: ${card.intensity}; ${card.commissionPath}; CTA ${card.ctaLabel}`,
+    ),
+    "",
+    "## Execution-Adjacent Operator Surfaces",
+    "- Operator surfaces are final confirmation layers for already narrowed decisions, not broad company profiles or all-operator directories.",
+    ...OPERATOR_SURFACES.map(
+      (surface) =>
+        `- ${buildOperatorSurfaceUrl(surface)}: confirms ${surface.executionEntity} for ${surface.decisionProduct}; upstream verdict: ${surface.upstreamVerdict}; outbound route: ${surface.outboundHref}`,
     ),
     "",
     "## Outbound Bridge",
@@ -74,7 +83,7 @@ export function GET() {
     "",
     "## Proof Window Tracking",
     "- The site emits `landing_viewed` once per session/path/search combination.",
-    "- River Ops controlled-execution and fallback clicks emit `product_opened`; Feastly/DCC group clicks emit `support_opened`; local decision cards emit `next_stop_viewed`; hub buttons emit `hub_selected`.",
+    "- River Ops controlled-execution and fallback clicks emit `product_opened`; Feastly/DCC group clicks emit `support_opened`; local decision cards emit `next_stop_viewed`; hub buttons emit `hub_selected`; execution confirmation surfaces emit `verdict_shown` with operator-surface metadata.",
     "- UTM source, medium, campaign, content, term, landing URL, and referrer are preserved into later click events.",
     ...QR_TEST_URLS.map((entry) => `- ${entry.label}: ${entry.url}`),
     "",

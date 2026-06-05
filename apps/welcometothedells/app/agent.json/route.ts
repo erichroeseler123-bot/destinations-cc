@@ -6,6 +6,10 @@ import {
   RIVER_OPS_TERMINAL,
   SITE_URL,
 } from "@/lib/content";
+import {
+  OPERATOR_SURFACES,
+  buildOperatorSurfaceUrl,
+} from "@/lib/operatorSurfaces";
 
 export const dynamic = "force-static";
 
@@ -78,6 +82,12 @@ export function GET() {
           corridor_id: "wisconsin-dells-lounge",
           decision: "What local texture, supper-club, neon, or after-hours move should frame the Dells plan?",
         },
+        ...OPERATOR_SURFACES.map((surface) => ({
+          path: surface.routePath,
+          role: "execution_adjacent_operator_surface",
+          corridor_id: surface.associatedCorridor,
+          decision: surface.upstreamVerdict,
+        })),
       ],
       revenuePriority: [
         {
@@ -94,7 +104,7 @@ export function GET() {
       proofWindow: {
         phase: "first_100_sessions",
         landingEvent: "landing_viewed",
-        clickEvents: ["product_opened", "support_opened", "next_stop_viewed", "hub_selected"],
+        clickEvents: ["product_opened", "support_opened", "next_stop_viewed", "hub_selected", "verdict_shown"],
         controlledQrUrls: QR_TEST_URLS,
       },
       outboundBridge: {
@@ -115,6 +125,19 @@ export function GET() {
           final_host: new URL(target.targetUrl).host,
         })),
       },
+      operatorSurfaces: OPERATOR_SURFACES.map((surface) => ({
+        slug: surface.slug,
+        route: buildOperatorSurfaceUrl(surface),
+        role: "execution_confirmation_surface",
+        associated_corridor: surface.associatedCorridor,
+        decision_product: surface.decisionProduct,
+        execution_entity: surface.executionEntity,
+        execution_tier: surface.executionTier,
+        upstream_verdict: surface.upstreamVerdict,
+        outbound_route: surface.outboundHref,
+        doctrine:
+          "This is not an operator directory profile. It confirms who executes a River Ops decision already narrowed by Welcome to the Dells and DCC.",
+      })),
       riverOpsTerminal: RIVER_OPS_TERMINAL.map((card) => ({
         rank: card.rank,
         slug: card.slug,
