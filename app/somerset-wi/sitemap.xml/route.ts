@@ -12,7 +12,7 @@ function xmlEscape(value: string): string {
     .replaceAll("'", "&apos;");
 }
 
-export function buildSomersetSitemapXml(origin = "https://www.destinationcommandcenter.com") {
+function buildSomersetSitemapXml(origin = "https://www.destinationcommandcenter.com") {
   const lastmod = new Date().toISOString();
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
