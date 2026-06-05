@@ -67,6 +67,9 @@ export default async function SomersetHubPage() {
             concert-night shuttle experience to Somerset Amphitheater with private rides, clear pickup
             plans, and tailgate-ready service.
           </p>
+          <p className="mt-4 text-sm font-bold text-slate-800">
+            Questions about Somerset VIP Shuttle? Text 612-564-6025.
+          </p>
         </section>
 
         <section className="mt-8 rounded-[1.9rem] border border-emerald-900/10 bg-white/80 p-6 shadow-[0_18px_55px_rgba(18,38,31,0.08)]">

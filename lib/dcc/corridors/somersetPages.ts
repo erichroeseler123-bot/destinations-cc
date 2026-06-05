@@ -83,7 +83,7 @@ export const SOMERSET_PAGES: readonly SomersetPageConfig[] = [
       {
         title: "What that means for Somerset Amphitheater",
         body:
-          "The goal is to bring that same concert-night logistics experience to Somerset Amphitheater: private rides, clear pickup plans, tailgate-friendly service, and a driver who understands that the ride is part of the night.",
+          "The goal is to bring that same concert-night logistics experience to Somerset Amphitheater: private rides, clear pickup plans, tailgate-friendly service, and a driver who understands that the ride is part of the night. Questions about Somerset VIP Shuttle can be texted to 612-564-6025.",
       },
     ],
   },
