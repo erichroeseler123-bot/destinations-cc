@@ -211,6 +211,20 @@ export const earthosNetworkTargetEnum = pgEnum("earthos_network_target", [
   "live-ops",
 ]);
 
+export const dccCorridorHealthStatusEnum = pgEnum("dcc_corridor_health_status", [
+  "healthy",
+  "stale",
+  "degraded",
+  "recovery_required",
+  "blocked",
+]);
+
+export const dccExternalDependencyStatusEnum = pgEnum("dcc_external_dependency_status", [
+  "pass",
+  "degraded",
+  "fail",
+]);
+
 export const dccCorridorCatalog = pgTable(
   "dcc_corridor_catalog",
   {
@@ -816,6 +830,180 @@ export const earthosDiscoveryPublications = pgTable(
   }),
 );
 
+export const earthosControlMapFindings = pgTable(
+  "earthos_control_map_findings",
+  {
+    findingId: text("finding_id").primaryKey(),
+    status: text("status").notNull(),
+    severity: text("severity").notNull(),
+    owner: text("owner").notNull(),
+    note: text("note"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    statusIdx: index("earthos_control_map_findings_status_idx").on(table.status),
+    severityIdx: index("earthos_control_map_findings_severity_idx").on(table.severity),
+    updatedAtIdx: index("earthos_control_map_findings_updated_at_idx").on(table.updatedAt),
+  }),
+);
+
+export const earthosControlMapFindingHistory = pgTable(
+  "earthos_control_map_finding_history",
+  {
+    eventSequence: bigserial("event_sequence", { mode: "number" }).primaryKey(),
+    findingId: text("finding_id")
+      .notNull()
+      .references(() => earthosControlMapFindings.findingId, { onDelete: "cascade" }),
+    event: text("event").notNull(),
+    status: text("status").notNull(),
+    severity: text("severity").notNull(),
+    owner: text("owner").notNull(),
+    nodeSlug: text("node_slug").notNull(),
+    corridor: text("corridor").notNull(),
+    recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull(),
+    summary: text("summary").notNull(),
+    approvedAt: timestamp("approved_at", { withTimezone: true }),
+    approvedBy: text("approved_by"),
+    controlSurface: text("control_surface"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    findingRecordedIdx: index("earthos_control_map_finding_history_finding_recorded_idx").on(
+      table.findingId,
+      table.recordedAt,
+    ),
+    eventIdx: index("earthos_control_map_finding_history_event_idx").on(table.event),
+    recordedAtIdx: index("earthos_control_map_finding_history_recorded_at_idx").on(table.recordedAt),
+    corridorIdx: index("earthos_control_map_finding_history_corridor_idx").on(table.corridor),
+  }),
+);
+
+export const governanceDriftEvents = pgTable(
+  "governance_drift_events",
+  {
+    id: text("id").primaryKey(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    sourceSurface: text("source_surface").notNull(),
+    affectedSurface: text("affected_surface").notNull(),
+    corridorId: text("corridor_id").notNull(),
+    eventType: text("event_type").notNull(),
+    severity: text("severity").notNull(),
+    status: text("status").notNull(),
+    findingId: text("finding_id"),
+    summary: text("summary").notNull(),
+    evidenceJson: jsonb("evidence_json").$type<Record<string, unknown>>().notNull().default({}),
+    expectedRole: text("expected_role"),
+    observedRole: text("observed_role"),
+    continuityState: text("continuity_state"),
+    machineInterpretationRisk: text("machine_interpretation_risk").notNull(),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    resolvedBy: text("resolved_by"),
+  },
+  (table) => ({
+    createdAtIdx: index("governance_drift_events_created_at_idx").on(table.createdAt),
+    corridorIdx: index("governance_drift_events_corridor_idx").on(table.corridorId),
+    statusIdx: index("governance_drift_events_status_idx").on(table.status),
+    severityIdx: index("governance_drift_events_severity_idx").on(table.severity),
+    findingIdx: index("governance_drift_events_finding_idx").on(table.findingId),
+  }),
+);
+
+export const governanceReconciliationPackets = pgTable(
+  "governance_reconciliation_packets",
+  {
+    id: text("id").primaryKey(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    packetType: text("packet_type").notNull(),
+    status: text("status").notNull(),
+    proposedChangesJson: jsonb("proposed_changes_json").$type<Record<string, unknown>>().notNull().default({}),
+    affectedRoutesJson: jsonb("affected_routes_json").$type<unknown[]>().notNull().default([]),
+    affectedSurfacesJson: jsonb("affected_surfaces_json").$type<unknown[]>().notNull().default([]),
+    reason: text("reason").notNull(),
+    approvalRequired: boolean("approval_required").notNull().default(true),
+    approvedAt: timestamp("approved_at", { withTimezone: true }),
+    approvedBy: text("approved_by"),
+    appliedAt: timestamp("applied_at", { withTimezone: true }),
+    resultJson: jsonb("result_json").$type<Record<string, unknown> | null>(),
+  },
+  (table) => ({
+    createdAtIdx: index("governance_reconciliation_packets_created_at_idx").on(table.createdAt),
+    packetTypeIdx: index("governance_reconciliation_packets_type_idx").on(table.packetType),
+    statusIdx: index("governance_reconciliation_packets_status_idx").on(table.status),
+    approvalRequiredIdx: index("governance_reconciliation_packets_approval_required_idx").on(table.approvalRequired),
+  }),
+);
+
+export const governanceFindingsHistory = pgTable(
+  "governance_findings_history",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    findingId: text("finding_id").notNull(),
+    driftEventId: text("drift_event_id").references(() => governanceDriftEvents.id, { onDelete: "set null" }),
+    packetId: text("packet_id").references(() => governanceReconciliationPackets.id, { onDelete: "set null" }),
+    eventType: text("event_type").notNull(),
+    status: text("status").notNull(),
+    summary: text("summary").notNull(),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull().defaultNow(),
+    recordedBy: text("recorded_by"),
+  },
+  (table) => ({
+    findingRecordedIdx: index("governance_findings_history_finding_recorded_idx").on(table.findingId, table.recordedAt),
+    driftEventIdx: index("governance_findings_history_drift_event_idx").on(table.driftEventId),
+    packetIdx: index("governance_findings_history_packet_idx").on(table.packetId),
+    eventTypeIdx: index("governance_findings_history_event_type_idx").on(table.eventType),
+  }),
+);
+
+export const dccCorridorHealthSignals = pgTable(
+  "dcc_corridor_health_signals",
+  {
+    corridorId: text("corridor_id").primaryKey(),
+    status: dccCorridorHealthStatusEnum("status").notNull(),
+    lastSuccessfulSyncAt: timestamp("last_successful_sync_at", { withTimezone: true }),
+    lastAttemptedSyncAt: timestamp("last_attempted_sync_at", { withTimezone: true }).notNull(),
+    freshUntil: timestamp("fresh_until", { withTimezone: true }),
+    activeEventCount: integer("active_event_count").notNull().default(0),
+    sourceCount: integer("source_count").notNull().default(0),
+    primarySource: text("primary_source"),
+    lastError: text("last_error"),
+    recoveryMissionId: text("recovery_mission_id"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    statusIdx: index("dcc_corridor_health_signals_status_idx").on(table.status),
+    freshUntilIdx: index("dcc_corridor_health_signals_fresh_until_idx").on(table.freshUntil),
+    updatedAtIdx: index("dcc_corridor_health_signals_updated_at_idx").on(table.updatedAt),
+  }),
+);
+
+export const dccExternalDependencyHealth = pgTable(
+  "dcc_external_dependency_health",
+  {
+    providerId: text("provider_id").primaryKey(),
+    status: dccExternalDependencyStatusEnum("status").notNull(),
+    latencyMs: integer("latency_ms"),
+    checkedAt: timestamp("checked_at", { withTimezone: true }).notNull(),
+    expectedShape: text("expected_shape").notNull(),
+    observedShape: jsonb("observed_shape").$type<Record<string, unknown>>().notNull().default({}),
+    moneyMaker: boolean("money_maker").notNull().default(false),
+    lastError: text("last_error"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    statusIdx: index("dcc_external_dependency_health_status_idx").on(table.status),
+    moneyMakerIdx: index("dcc_external_dependency_health_money_maker_idx").on(table.moneyMaker),
+    checkedAtIdx: index("dcc_external_dependency_health_checked_at_idx").on(table.checkedAt),
+  }),
+);
+
 export type DccHandoffEventRow = typeof dccHandoffEvents.$inferSelect;
 export type NewDccHandoffEventRow = typeof dccHandoffEvents.$inferInsert;
 
@@ -863,3 +1051,24 @@ export type NewEarthosPublicationRow = typeof earthosPublications.$inferInsert;
 
 export type EarthosDiscoveryPublicationRow = typeof earthosDiscoveryPublications.$inferSelect;
 export type NewEarthosDiscoveryPublicationRow = typeof earthosDiscoveryPublications.$inferInsert;
+
+export type EarthosControlMapFindingRow = typeof earthosControlMapFindings.$inferSelect;
+export type NewEarthosControlMapFindingRow = typeof earthosControlMapFindings.$inferInsert;
+
+export type EarthosControlMapFindingHistoryRow = typeof earthosControlMapFindingHistory.$inferSelect;
+export type NewEarthosControlMapFindingHistoryRow = typeof earthosControlMapFindingHistory.$inferInsert;
+
+export type GovernanceDriftEventRow = typeof governanceDriftEvents.$inferSelect;
+export type NewGovernanceDriftEventRow = typeof governanceDriftEvents.$inferInsert;
+
+export type GovernanceReconciliationPacketRow = typeof governanceReconciliationPackets.$inferSelect;
+export type NewGovernanceReconciliationPacketRow = typeof governanceReconciliationPackets.$inferInsert;
+
+export type GovernanceFindingsHistoryRow = typeof governanceFindingsHistory.$inferSelect;
+export type NewGovernanceFindingsHistoryRow = typeof governanceFindingsHistory.$inferInsert;
+
+export type DccCorridorHealthSignalRow = typeof dccCorridorHealthSignals.$inferSelect;
+export type NewDccCorridorHealthSignalRow = typeof dccCorridorHealthSignals.$inferInsert;
+
+export type DccExternalDependencyHealthRow = typeof dccExternalDependencyHealth.$inferSelect;
+export type NewDccExternalDependencyHealthRow = typeof dccExternalDependencyHealth.$inferInsert;
