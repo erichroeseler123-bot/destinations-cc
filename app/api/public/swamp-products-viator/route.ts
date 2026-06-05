@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
+import { buildAttributedSwampProductHref } from "@/lib/dcc/corridors/swampViatorAttribution";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
-import {
-  appendViatorAttribution,
-  buildViatorCampaignFromParts,
-  buildViatorSearchUrl,
-} from "@/lib/viator/links";
+import { buildViatorCampaignFromParts, buildViatorSearchUrl } from "@/lib/viator/links";
 
 export const dynamic = "force-dynamic";
 
@@ -72,21 +69,6 @@ function toProductRank(product: {
   score += Number(product.rating || 0) * 5;
   score += Number(product.merchandising_score || 0);
   return score;
-}
-
-export function buildAttributedSwampProductHref(input: {
-  productUrl: string;
-  productCode: string | null;
-  currency: string;
-}): string {
-  return appendViatorAttribution(input.productUrl, {
-    campaign: buildViatorCampaignFromParts([
-      "new-orleans",
-      "swamp-tours",
-      input.productCode || "product",
-    ]),
-    currency: input.currency,
-  });
 }
 
 export async function GET() {

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildAttributedSwampProductHref } from "@/app/api/public/swamp-products-viator/route";
+import { buildAttributedSwampProductHref } from "@/lib/dcc/corridors/swampViatorAttribution";
 
 test("New Orleans swamp product Viator hrefs receive attribution and preserve existing params", () => {
   const previous = {
