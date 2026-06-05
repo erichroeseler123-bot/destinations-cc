@@ -56,6 +56,21 @@ export default async function SomersetHubPage() {
 
         <section className="mt-8 rounded-[1.9rem] border border-emerald-900/10 bg-white/80 p-6 shadow-[0_18px_55px_rgba(18,38,31,0.08)]">
           <p className="text-xs font-black uppercase tracking-[0.24em] text-emerald-800">
+            New to Somerset. Proven at Red Rocks.
+          </p>
+          <h2 className="mt-3 text-3xl font-black tracking-[-0.03em]">
+            Somerset VIP Shuttle is new to western Wisconsin, but our transportation experience is not new.
+          </h2>
+          <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-700">
+            Somerset VIP Shuttle is a new western Wisconsin service built by the team behind an
+            established Red Rocks transportation operation in Colorado. We are bringing years of
+            concert-night shuttle experience to Somerset Amphitheater with private rides, clear pickup
+            plans, and tailgate-ready service.
+          </p>
+        </section>
+
+        <section className="mt-8 rounded-[1.9rem] border border-emerald-900/10 bg-white/80 p-6 shadow-[0_18px_55px_rgba(18,38,31,0.08)]">
+          <p className="text-xs font-black uppercase tracking-[0.24em] text-emerald-800">
             Auto-updating venue calendars
           </p>
           <h2 className="mt-3 text-3xl font-black tracking-[-0.03em]">

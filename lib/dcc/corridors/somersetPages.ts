@@ -73,17 +73,17 @@ export const SOMERSET_PAGES: readonly SomersetPageConfig[] = [
     eyebrow: "Somerset transportation",
     title: "Somerset WI concert and tubing transportation",
     description:
-      "Transportation planning for Somerset tubing weekends, River's Edge events, St. Croix Valley concerts, Mystic Lake, and The Ledge.",
+      "Somerset VIP Shuttle planning for private concert rides, tubing weekends, River's Edge events, St. Croix Valley concerts, Mystic Lake, and The Ledge.",
     sections: [
       {
-        title: "Transportation is the execution layer",
+        title: "New Wisconsin service, proven concert-night background",
         body:
-          "The main visitor problem is not only finding the show or float. It is getting a group to Somerset, Hudson, Stillwater, Mystic Lake, or The Ledge without turning the day into a driving problem.",
+          "Somerset VIP Shuttle is new to western Wisconsin, but the operator's transportation experience is not new. The service is expanding from an established Red Rocks shuttle operation in Colorado, where concertgoers need calm pickup plans, reliable timing, and a clean ride home through a demanding live-event corridor.",
       },
       {
-        title: "Pricing must be validated",
+        title: "What that means for Somerset Amphitheater",
         body:
-          "DCC should support the same approved concert-transportation service model across these venues, but should not publish fares, pickup points, or booking promises until operator coverage and pricing are confirmed.",
+          "The goal is to bring that same concert-night logistics experience to Somerset Amphitheater: private rides, clear pickup plans, tailgate-friendly service, and a driver who understands that the ride is part of the night.",
       },
     ],
   },
@@ -121,7 +121,7 @@ export const SOMERSET_PAGES: readonly SomersetPageConfig[] = [
       {
         title: "Transportation fit",
         body:
-          "Use the same validated concert-transportation service and pricing rules as the Somerset venue lane once operator coverage is confirmed.",
+          "Use the same validated concert-transportation service model as the Somerset venue lane once operator coverage and pricing are confirmed. Do not imply local Wisconsin operating history until the service has earned it.",
       },
     ],
   },
@@ -140,7 +140,7 @@ export const SOMERSET_PAGES: readonly SomersetPageConfig[] = [
       {
         title: "Transportation fit",
         body:
-          "Use the same validated concert-transportation service and pricing rules as the Somerset venue lane once operator coverage is confirmed.",
+          "Use the same validated concert-transportation service model as the Somerset venue lane once operator coverage and pricing are confirmed. Keep the trust message grounded in Red Rocks transportation experience, not claimed local Wisconsin tenure.",
       },
     ],
   },
