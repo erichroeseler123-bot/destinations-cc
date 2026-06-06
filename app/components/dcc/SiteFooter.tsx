@@ -1,55 +1,125 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SocialLinks } from "@/app/components/shared/SocialLinks";
-import { SITE_CONFIG } from "@/src/data/site-config";
+import {
+  buildNetworkSatelliteHref,
+  type NetworkSatelliteId,
+} from "@/lib/dcc/contracts/networkSatellites";
 
-const FOOTER_LINKS = [
-  { href: "/red-rocks-transportation", label: "Red Rocks Transportation" },
-  { href: "/sedona/jeep-tours", label: "Sedona Jeep Tours" },
-  { href: "/juneau/helicopter-tours", label: "Juneau Helicopter Tours" },
-  { href: "/juneau/whale-watching-tours", label: "Juneau Whale Watching" },
-  { href: "/command", label: "Command" },
+type FooterLink = {
+  href: string;
+  label: string;
+};
+
+const ENGINE_LINKS: FooterLink[] = [
+  { href: "/", label: "Core Index" },
+  { href: "/network", label: "Spatial Core" },
+  { href: "/command", label: "Drift Monitor" },
+];
+
+const SYSTEM_LINKS: FooterLink[] = [
+  { href: "/operator/register", label: "Documentation" },
+  { href: "/agent.json", label: "API Node Spec" },
+  { href: "/llms.txt", label: "Security Base" },
+];
+
+const FOOTER_SATELLITES: Array<{
+  id: NetworkSatelliteId;
+  label: string;
+  action: string;
+}> = [
+  {
+    id: "partyatredrocks",
+    label: "Red Rocks rides",
+    action: "open_red_rocks_transport_lane",
+  },
+  {
+    id: "juneauflightdeck",
+    label: "Juneau excursions",
+    action: "open_juneau_port_excursion_lane",
+  },
+  {
+    id: "welcometotheswamp",
+    label: "New Orleans swamp tours",
+    action: "open_new_orleans_swamp_lane",
+  },
+  {
+    id: "gosno",
+    label: "Colorado mountain transfers",
+    action: "open_colorado_mountain_transfer_lane",
+  },
 ];
 
 export default function SiteFooter() {
   const pathname = usePathname();
-  const brandKey = SITE_CONFIG.socialBrandKey;
 
   if (pathname === "/sedona/jeep-tours") return null;
 
   return (
     <footer className="dcc-site-footer">
       <div className="dcc-site-footer__inner">
-        <div className="dcc-site-footer__panel">
-          <div className="dcc-site-footer__brand">
-            <Image
-              src="/brand/dcc-logo-horizontal.svg"
-              alt="Destination Command Center"
-              className="dcc-site-footer__logo"
-              width={210}
-              height={44}
-              sizes="210px"
-              style={{ width: "210px", height: "44px" }}
-            />
-            <div className="dcc-site-footer__eyebrow">Destination Command Center</div>
-            <div className="dcc-site-footer__title">Decision corridors compressed into a dominant visible system.</div>
-            <p className="dcc-site-footer__copy">
-              Transportation and activity lanes organized to remove the wrong choice before it costs the trip.
+        <div className="dcc-site-footer__matrix">
+          <div className="dcc-site-footer__brand-block">
+            <Link href="/" className="dcc-site-footer__brand" aria-label="Destination Command Center home">
+              DCC<span className="dcc-site-footer__dot">.</span>
+            </Link>
+            <p className="dcc-site-footer__brand-desc">
+              Planetary routing, network orchestration, and system governance modules.
             </p>
-            <SocialLinks brandKey={brandKey} mode="footer" showLabels className="mt-4" />
           </div>
-          <nav aria-label="Footer" className="dcc-site-footer__nav">
-            {FOOTER_LINKS.map((link) => (
-              <Link key={link.href} href={link.href} className="dcc-site-footer__link">
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="dcc-site-footer__bottom">
-            <span>Denver, Colorado</span>
+
+          <div className="dcc-site-footer__column">
+            <h5>.engine</h5>
+            <ul>
+              {ENGINE_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href}>{link.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="dcc-site-footer__column">
+            <h5>.system</h5>
+            <ul>
+              {SYSTEM_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href}>{link.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="dcc-site-footer__column">
+            <h5>.connect</h5>
+            <div className="dcc-site-footer__social-grid">
+              {FOOTER_SATELLITES.slice(0, 2).map((satellite) => (
+                <a
+                  key={satellite.id}
+                  href={buildNetworkSatelliteHref(satellite.id, {
+                    sourcePage: pathname || "/",
+                    action: satellite.action,
+                    cta: `footer-${satellite.id}`,
+                    routeTarget: "satellite",
+                    revenueStage: "intent",
+                  })}
+                  rel="noopener"
+                  className="dcc-site-footer__social-tag"
+                >
+                  {satellite.id === "partyatredrocks" ? "TERMINAL" : "DATABASE"}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="dcc-site-footer__basement">
+          <div className="dcc-site-footer__copyright">© 2026 DCC. All rights reserved.</div>
+          <div className="dcc-site-footer__legal-links">
+            <Link href="/privacy">Privacy Protocol</Link>
+            <span className="dcc-site-footer__divider">/</span>
+            <Link href="/terms">Terms of Service</Link>
           </div>
         </div>
       </div>
