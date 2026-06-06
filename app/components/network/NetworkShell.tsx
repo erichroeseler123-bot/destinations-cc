@@ -24,8 +24,9 @@ export function NetworkShell({ theme, stickyMobileCta, children }: NetworkShellP
 
   return (
     <main
+      id="main-content"
       style={style}
-      className="min-h-screen overflow-x-hidden bg-[var(--network-bg)] pb-24 text-[var(--network-text)] md:pb-0"
+      className="min-h-screen overflow-x-hidden bg-[var(--network-bg)] pb-24 font-[var(--font-sans)] text-[var(--network-text)] md:pb-0"
       data-network-theme={theme.id}
       data-network-mode={theme.mode}
     >

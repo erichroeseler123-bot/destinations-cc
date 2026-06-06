@@ -1,5 +1,6 @@
 // app/layout.tsx
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Script from "next/script";
 import { JetBrains_Mono, Montserrat, Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css'; // your global styles
@@ -73,8 +74,20 @@ export const metadata: Metadata = {
   category: "travel",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+function isWelcomeToNewOrleansToursHost(host: string) {
+  const normalized = host.toLowerCase().split(":")[0] || "";
+  return normalized === "welcometoneworleanstours.com" || normalized === "www.welcometoneworleanstours.com";
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const navCities = getHeaderSearchEntries();
+  const requestHeaders = await headers();
+  const host =
+    requestHeaders.get("x-forwarded-host") ||
+    requestHeaders.get("host") ||
+    "";
+  const brandShell = requestHeaders.get("x-dcc-brand-shell") || "";
+  const isWtonotShell = brandShell === "wtonot" || isWelcomeToNewOrleansToursHost(host);
 
   return (
     <html lang="en">
@@ -91,18 +104,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PartnerAnalyticsScript />
       </head>
       <body className={`${headingFont.variable} ${accentFont.variable} ${sansFont.variable} ${monoFont.variable}`}>
-        <a href="#main-content" className="dcc-skip-link">
-          Skip to main content
-        </a>
-        <SiteHeader cities={navCities} />
-        <div id="main-content" className="dcc-site-shell">
-          <div className="dcc-site-shell__inner">
-            <SiteBreadcrumbs />
+        {isWtonotShell ? (
+          <>
+            <a href="#main-content" className="dcc-skip-link">
+              Skip to main content
+            </a>
             {children}
-          </div>
-        </div>
-        <WhatsLiveFloatingButton />
-        <SiteFooter />
+          </>
+        ) : (
+          <>
+            <a href="#main-content" className="dcc-skip-link">
+              Skip to main content
+            </a>
+            <SiteHeader cities={navCities} />
+            <div id="main-content" className="dcc-site-shell">
+              <div className="dcc-site-shell__inner">
+                <SiteBreadcrumbs />
+                {children}
+              </div>
+            </div>
+            <WhatsLiveFloatingButton />
+            <SiteFooter />
+          </>
+        )}
       </body>
     </html>
   );

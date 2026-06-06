@@ -43,6 +43,14 @@ const SOMERSET_HOSTS = new Set([
   "www.shuttletosomersetamphitheater.com",
 ]);
 
+const WTONOT_HOSTS = new Set([
+  "welcometoneworleanstours.com",
+  "www.welcometoneworleanstours.com",
+]);
+
+const WTONOT_ROOT_PATH = "/new-orleans/tours";
+const WTONOT_BRAND_SHELL_HEADER = "x-dcc-brand-shell";
+
 const SOMERSET_HOST_PATH_REWRITES = new Map<string, string>(
   SOMERSET_PAGE_PATHS.map((pathname) => [
     pathname === SOMERSET_BASE_PATH ? "/" : pathname.replace(`${SOMERSET_BASE_PATH}/`, "/"),
@@ -67,6 +75,21 @@ function getSomersetHostRewrite(request: NextRequest) {
   const url = request.nextUrl.clone();
   url.pathname = destinationPath;
   return url;
+}
+
+function getWtonotHostRewrite(request: NextRequest) {
+  if (!WTONOT_HOSTS.has(request.nextUrl.hostname)) return null;
+  if (request.nextUrl.pathname !== "/") return null;
+
+  const url = request.nextUrl.clone();
+  url.pathname = WTONOT_ROOT_PATH;
+  return url;
+}
+
+function getWtonotBrandShellHeaders(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(WTONOT_BRAND_SHELL_HEADER, "wtonot");
+  return requestHeaders;
 }
 
 function isDocumentPath(pathname: string) {
@@ -307,6 +330,23 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
   const somersetRewrite = getSomersetHostRewrite(request);
   if (somersetRewrite) {
     const response = NextResponse.rewrite(somersetRewrite);
+    response.headers.set("x-robots-tag", "index, follow");
+    return response;
+  }
+
+  const wtonotRewrite = getWtonotHostRewrite(request);
+  if (wtonotRewrite) {
+    const response = NextResponse.rewrite(wtonotRewrite, {
+      request: { headers: getWtonotBrandShellHeaders(request) },
+    });
+    response.headers.set("x-robots-tag", "index, follow");
+    return response;
+  }
+
+  if (request.nextUrl.pathname === WTONOT_ROOT_PATH) {
+    const response = NextResponse.next({
+      request: { headers: getWtonotBrandShellHeaders(request) },
+    });
     response.headers.set("x-robots-tag", "index, follow");
     return response;
   }

@@ -5,7 +5,7 @@ export function ProviderDisclosure({ config }: { config?: ProviderDisclosureConf
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-5 sm:px-6">
-      <article className="grid gap-5 rounded-lg border border-[var(--network-border)] bg-white/55 p-5 shadow-[0_12px_35px_rgba(20,55,47,0.08)] md:grid-cols-[0.85fr_1.15fr] md:p-6">
+      <article className="grid gap-5 rounded-lg border border-[var(--network-border)] bg-[var(--network-surface-soft)] p-5 shadow-[0_12px_35px_rgba(0,0,0,0.18)] md:grid-cols-[0.85fr_1.15fr] md:p-6">
         <div>
           <div className="text-[11px] font-black uppercase tracking-[0.2em] text-[var(--destination-accent)]">
             Before you book
@@ -16,7 +16,7 @@ export function ProviderDisclosure({ config }: { config?: ProviderDisclosureConf
           <p className="mt-3 text-sm leading-7 text-[var(--network-muted)]">{config.body}</p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg border border-[var(--network-border)] bg-white/65 p-4">
+          <div className="rounded-lg border border-[var(--network-border)] bg-black/[0.16] p-4">
             <h3 className="text-sm font-black text-[var(--network-text)]">What this page helps with</h3>
             <ul className="mt-3 grid gap-2 text-sm leading-6 text-[var(--network-muted)]">
               {config.allowedClaims.map((claim) => (
@@ -24,7 +24,7 @@ export function ProviderDisclosure({ config }: { config?: ProviderDisclosureConf
               ))}
             </ul>
           </div>
-          <div className="rounded-lg border border-[var(--network-border)] bg-white/65 p-4">
+          <div className="rounded-lg border border-[var(--network-border)] bg-black/[0.16] p-4">
             <h3 className="text-sm font-black text-[var(--network-text)]">What to confirm before booking</h3>
             <ul className="mt-3 grid gap-2 text-sm leading-6 text-[var(--network-muted)]">
               {config.notClaimed.map((claim) => (

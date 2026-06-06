@@ -18,7 +18,7 @@ export function CommercialCard({ card, featured = false }: { card: CommercialCar
     <article
       className={`flex min-h-[390px] flex-col overflow-hidden rounded-lg border p-4 shadow-[0_20px_55px_rgba(20,55,47,0.14)] ${
         featured
-          ? "border-[var(--destination-accent)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,255,255,0.74))]"
+          ? "border-[var(--destination-accent)] bg-[linear-gradient(180deg,rgba(255,248,232,0.14),rgba(255,248,232,0.07))]"
           : "border-[var(--network-border)] bg-[var(--network-surface)]"
         }`}
     >
@@ -48,7 +48,7 @@ export function CommercialCard({ card, featured = false }: { card: CommercialCar
         <span className="rounded-full border border-[var(--network-border)] bg-[var(--destination-accent-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--destination-accent)]">
           {card.category}
         </span>
-        <span className="rounded-full border border-[var(--network-border)] bg-white/70 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--network-muted)]">
+        <span className="rounded-full border border-[var(--network-border)] bg-white/[0.055] px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--network-muted)]">
           {providerLabels[card.providerType]}
         </span>
       </div>
@@ -68,7 +68,7 @@ export function CommercialCard({ card, featured = false }: { card: CommercialCar
           {card.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-[var(--network-border)] bg-white/70 px-3 py-1 text-[11px] font-bold text-[var(--network-muted)]"
+              className="rounded-full border border-[var(--network-border)] bg-white/[0.055] px-3 py-1 text-[11px] font-bold text-[var(--network-muted)]"
             >
               {tag}
             </span>

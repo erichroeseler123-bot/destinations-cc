@@ -23,7 +23,8 @@ export function CategoryGrid({ config }: { config?: CategoryGridConfig }) {
         {config.items.map((item) => (
           <article
             key={item.id}
-            className="flex min-h-[230px] flex-col rounded-lg border border-[var(--network-border)] bg-[var(--network-surface)] p-5 shadow-[0_14px_35px_rgba(20,55,47,0.08)] transition hover:-translate-y-0.5 hover:border-[var(--destination-accent)] hover:bg-white"
+            id={item.id}
+            className="flex min-h-[230px] flex-col rounded-lg border border-[var(--network-border)] bg-[var(--network-surface)] p-5 shadow-[0_14px_35px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:border-[var(--destination-accent)] hover:bg-white/[0.09]"
           >
             <h3 className="text-xl font-black leading-tight text-[var(--network-text)]">{item.title}</h3>
             <p className="mt-3 text-sm leading-7 text-[var(--network-muted)]">{item.body}</p>

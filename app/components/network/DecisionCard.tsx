@@ -5,7 +5,7 @@ export function DecisionCard({ config }: { config?: DecisionCardConfig }) {
   if (!config) return null;
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-5 sm:px-6" id="what-to-book">
+    <section className="mx-auto max-w-7xl px-4 py-5 sm:px-6" id="tour-finder">
       <article className="grid gap-5 rounded-lg border border-[var(--network-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.032))] p-5 shadow-[0_22px_70px_rgba(0,0,0,0.24)] md:grid-cols-[0.95fr_1.05fr] md:p-7">
         <div>
           <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[var(--destination-accent)]">

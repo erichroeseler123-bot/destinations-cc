@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import NewOrleansToursPage from "@/app/new-orleans/tours/page";
 import { SITE_IDENTITY } from "@/src/data/site-identity";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import {
@@ -27,7 +29,7 @@ const CURATED_HIGHLIGHTS = [
 const SECTION_PANEL_CLASS =
   "rounded-[2rem] border border-white/10 bg-[#0b1017] p-6 md:p-8";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: SITE_IDENTITY.homepageTitle,
@@ -67,7 +69,22 @@ function getEntrySummary(entry: EntrySurface) {
   }
 }
 
-export default function HomePage() {
+function isWelcomeToNewOrleansToursHost(host: string) {
+  const normalized = host.toLowerCase().split(":")[0] || "";
+  return normalized === "welcometoneworleanstours.com" || normalized === "www.welcometoneworleanstours.com";
+}
+
+export default async function HomePage() {
+  const requestHeaders = await headers();
+  const host =
+    requestHeaders.get("x-forwarded-host") ||
+    requestHeaders.get("host") ||
+    "";
+
+  if (isWelcomeToNewOrleansToursHost(host)) {
+    return <NewOrleansToursPage />;
+  }
+
   const homepageEntries = getHomepageEntrySurfaces().slice(0, 7);
   const primaryEntries = homepageEntries.slice(0, 4);
   const secondaryEntries = homepageEntries.slice(4);

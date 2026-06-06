@@ -5,7 +5,7 @@ export function FeaturedCommercialCards({ cards }: { cards?: CommercialCardConfi
   if (!cards?.length) return null;
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-5 sm:px-6">
+    <section className="mx-auto max-w-7xl px-4 py-5 sm:px-6" id="bookable-tours">
       <div className="mb-5">
         <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[var(--destination-accent-2)]">
           Featured tour moves

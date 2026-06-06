@@ -25,6 +25,11 @@ export function NetworkFooter({ config, theme }: { config?: NetworkFooterConfig;
             ))}
           </nav>
         </div>
+        {theme.id === "wno" ? (
+          <p className="mt-5 border-t border-[var(--network-border)] pt-4 font-[var(--font-mono)] text-[11px] uppercase tracking-[0.16em] text-[var(--network-muted)]">
+            Part of the Destination Command Center network. Local tourism storefront, governed visual system.
+          </p>
+        ) : null}
       </div>
     </footer>
   );

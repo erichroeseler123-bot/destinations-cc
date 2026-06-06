@@ -9,26 +9,26 @@ export function DestinationHero({ hero, theme }: DestinationHeroProps) {
   const heroImage = hero.media?.image || theme.hero.image;
 
   return (
-    <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-8 pt-4 sm:px-6 md:pt-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(340px,1.08fr)] lg:gap-6 lg:pb-12">
-      <div className="order-2 flex flex-col justify-center rounded-lg border border-[var(--network-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(255,255,255,0.58))] p-5 shadow-[0_18px_55px_rgba(20,55,47,0.16)] sm:p-7 lg:order-1 lg:min-h-[520px] lg:p-9">
+    <section className="mx-auto grid w-full max-w-[100vw] min-w-0 lg:max-w-7xl gap-5 overflow-hidden px-4 pb-8 pt-4 sm:px-6 md:pt-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(340px,1.08fr)] lg:gap-6 lg:pb-12">
+      <div className="order-1 flex w-full min-w-0 max-w-[calc(100vw-2rem)] sm:max-w-full flex-col justify-center rounded-lg border border-[var(--network-border)] bg-[linear-gradient(180deg,rgba(255,248,232,0.13),rgba(255,248,232,0.055))] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.28)] sm:p-7 lg:order-1 lg:min-h-[520px] lg:p-9">
         <div className="text-[11px] font-black uppercase tracking-[0.2em] text-[var(--destination-accent)]">
           {hero.eyebrow}
         </div>
-        <h1 className="mt-4 max-w-4xl text-4xl font-black leading-[0.94] tracking-normal text-[var(--network-text)] sm:text-6xl lg:text-7xl">
+        <h1 className="mt-4 max-w-4xl break-words [overflow-wrap:anywhere] text-[2.25rem] font-black sm:text-6xl leading-[0.94] tracking-normal text-[var(--network-text)] lg:text-7xl">
           {hero.title}
         </h1>
         <p className="mt-5 max-w-2xl text-base font-semibold leading-8 text-[var(--network-muted)] sm:text-lg">
           {hero.summary}
         </p>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <div className="mt-6 flex w-full max-w-full flex-col gap-3 sm:flex-row sm:flex-wrap">
           <NetworkLink
             cta={hero.primaryCta}
-            className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--destination-accent-2)] px-6 text-center text-xs font-black uppercase tracking-[0.12em] text-[var(--destination-accent-text)] shadow-[0_18px_40px_rgba(143,91,24,0.2)] transition hover:bg-white"
+             className="inline-flex min-h-12 w-full items-center sm:w-auto justify-center rounded-full bg-[#2457ff] px-6 text-center font-[var(--font-mono)] text-xs font-black uppercase tracking-[0.12em] text-white shadow-[0_18px_40px_rgba(36,87,255,0.28)] transition hover:bg-white hover:text-[#120a18]"
           />
           {hero.secondaryCta ? (
             <NetworkLink
               cta={hero.secondaryCta}
-              className="inline-flex min-h-12 items-center justify-center rounded-full border border-[var(--network-border)] bg-white/70 px-6 text-center text-xs font-black uppercase tracking-[0.12em] text-[var(--network-text)] transition hover:bg-white"
+               className="inline-flex min-h-12 w-full items-center sm:w-auto justify-center rounded-full border border-[var(--network-border)] bg-white/[0.055] px-6 text-center font-[var(--font-mono)] text-xs font-black uppercase tracking-[0.12em] text-[var(--network-text)] transition hover:bg-white/[0.1]"
             />
           ) : null}
         </div>
@@ -37,7 +37,7 @@ export function DestinationHero({ hero, theme }: DestinationHeroProps) {
             {hero.trustChips.map((chip) => (
               <span
                 key={chip}
-                className="rounded-full border border-[var(--network-border)] bg-white/70 px-3 py-2 text-xs font-bold text-[var(--network-muted)]"
+                className="rounded-full border border-[var(--network-border)] bg-white/[0.055] px-3 py-2 text-xs font-bold text-[var(--network-muted)]"
               >
                 {chip}
               </span>
@@ -46,7 +46,7 @@ export function DestinationHero({ hero, theme }: DestinationHeroProps) {
         ) : null}
       </div>
 
-      <aside className="relative order-1 overflow-hidden rounded-lg border border-[var(--network-border)] bg-[var(--network-surface)] p-3 shadow-[0_24px_70px_rgba(20,55,47,0.18)] sm:p-4 lg:order-2">
+      <aside className="relative order-2 w-full min-w-0 max-w-[calc(100vw-2rem)] sm:max-w-full overflow-hidden rounded-lg border border-[var(--network-border)] bg-[var(--network-surface)] p-3 shadow-[0_24px_70px_rgba(20,55,47,0.18)] sm:p-4 lg:order-2">
         <div className="relative grid h-full min-h-[420px] content-between gap-4 sm:min-h-[500px]">
           <div className="relative aspect-[16/11] overflow-hidden rounded-lg border border-[var(--network-border)] bg-black/[0.1] sm:aspect-[16/10] lg:aspect-auto lg:min-h-[360px]">
             {heroImage ? (
@@ -87,7 +87,7 @@ export function DestinationHero({ hero, theme }: DestinationHeroProps) {
             {(hero.media?.rows || []).map((row) => (
               <div
                 key={row.label}
-                className="rounded-lg border border-[var(--network-border)] bg-white/70 p-3"
+                className="rounded-lg border border-[var(--network-border)] bg-white/[0.055] p-3"
               >
                 <div className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--destination-accent)]">
                   {row.label}
