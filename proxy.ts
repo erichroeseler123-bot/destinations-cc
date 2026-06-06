@@ -33,9 +33,24 @@ const GONE_PREFIXES = [
   "/wp-content/",
 ] as const;
 
+const WTONO_HOSTS = new Set([
+  "welcometoneworleanstours.com",
+  "www.welcometoneworleanstours.com",
+]);
+
+const WTONO_STOREFRONT_PATH = "/new-orleans/tours";
+
 function shouldReturnGone(pathname: string) {
   if (GONE_EXACT_PATHS.has(pathname)) return true;
   return GONE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+function getNormalizedHost(request: NextRequest) {
+  return request.headers.get("host")?.split(":")[0]?.toLowerCase().trim() || "";
+}
+
+function shouldRewriteWtonoRoot(request: NextRequest) {
+  return WTONO_HOSTS.has(getNormalizedHost(request)) && request.nextUrl.pathname === "/";
 }
 
 function isDocumentPath(pathname: string) {
@@ -218,6 +233,12 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
         "cache-control": "public, max-age=3600",
       },
     });
+  }
+
+  if (shouldRewriteWtonoRoot(request)) {
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = WTONO_STOREFRONT_PATH;
+    return NextResponse.rewrite(rewriteUrl);
   }
 
   const signalMap =
