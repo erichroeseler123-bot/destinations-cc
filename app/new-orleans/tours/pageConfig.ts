@@ -35,28 +35,28 @@ const smallBoatDecisionHref = buildSwampPlanHref({
   sourcePage: NEW_ORLEANS_TOURS_PATH,
 });
 
-// Source credit: Library of Congress / Wikimedia Commons. Context image only; not a specific provider photo.
+// Source credit: Pexels API. Context image only; not a specific provider photo.
 const swampDockImage = {
-  src: "/media/corridors/swamp-dock-pickup.webp",
-  alt: "Boats staged at a Louisiana marsh dock for a swamp tour departure",
+  src: "/images/wno/storefront/louisiana-swamp.jpg",
+  alt: "Louisiana swamp water with cypress trees and Spanish moss",
 };
 
-// Source credit: Wikimedia Commons. Context image only; not a specific provider photo.
+// Source credit: Pexels API. Context image only; not a specific provider photo.
 const airboatSwampImage = {
-  src: "/images/wno/airboat-swamp-tour.webp",
-  alt: "An airboat moving across swamp water during a Louisiana-style tour",
+  src: "/images/wno/storefront/louisiana-swamp.jpg",
+  alt: "Louisiana swamp water with cypress trees and Spanish moss for an airboat decision",
 };
 
-// Source credit: Wikimedia Commons. Context image only; not a specific provider photo.
+// Source credit: Pexels API. Context image only; not a specific provider photo.
 const smallBoatSwampImage = {
-  src: "/images/wno/small-boat-swamp-tour.webp",
-  alt: "A covered swamp tour boat traveling through Louisiana marsh scenery",
+  src: "/images/wno/storefront/louisiana-swamp.jpg",
+  alt: "Cypress trees and still Louisiana swamp water for a small boat tour decision",
 };
 
-// Source credit: Wikimedia Commons. Context image only; not a specific provider photo.
+// Source credit: Pexels API. Context image only; not a specific provider photo.
 const louisianaSwampImage = {
-  src: "/images/wno/louisiana-swamp-backup.webp",
-  alt: "Still Louisiana swamp water and trees for a rainy-day tour planning backup",
+  src: "/images/wno/storefront/architecture-backup.jpg",
+  alt: "Historic French Quarter architecture for a rainy-day tour planning backup",
 };
 
 export const newOrleansToursPageConfig: NetworkCommercialPageConfig = {

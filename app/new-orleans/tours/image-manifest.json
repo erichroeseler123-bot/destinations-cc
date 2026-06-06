@@ -1,0 +1,88 @@
+{
+  "page": "/new-orleans/tours",
+  "source_policy": "Pexels API only. No AI-generated images. Images are used as editorial storefront context, not as standalone resale assets.",
+  "credit_text": "Some photography provided via Pexels.",
+  "images": [
+    {
+      "id": "25003118",
+      "pexels_photo_url": "https://www.pexels.com/photo/river-view-of-jacksons-square-in-new-orleans-in-usa-at-sunset-25003118/",
+      "photographer": "Fernando B M",
+      "local_file_path": "public/images/wno/storefront/hero-jackson-square.jpg",
+      "section_card_used": "Hero",
+      "alt_text": "Sunset river view of Jackson Square and St. Louis Cathedral in New Orleans",
+      "license_source_note": "Downloaded via Pexels API. Pexels license/source; photography credit shown on page as Some photography provided via Pexels."
+    },
+    {
+      "id": "25003129",
+      "pexels_photo_url": "https://www.pexels.com/photo/building-with-plants-hanging-over-balconies-25003129/",
+      "photographer": "Fernando B M",
+      "local_file_path": "public/images/wno/storefront/french-quarter-balcony.jpg",
+      "section_card_used": "About the city / French Quarter first",
+      "alt_text": "French Quarter wrought iron balconies with hanging greenery",
+      "license_source_note": "Downloaded via Pexels API. Pexels license/source; not used as a standalone resale asset."
+    },
+    {
+      "id": "14016445",
+      "pexels_photo_url": "https://www.pexels.com/photo/frontage-of-a-wooden-home-14016445/",
+      "photographer": "Oljamu",
+      "local_file_path": "public/images/wno/storefront/garden-district-house.jpg",
+      "section_card_used": "About the city / Garden District slow burn",
+      "alt_text": "Victorian-style New Orleans house surrounded by greenery",
+      "license_source_note": "Downloaded via Pexels API. Pexels license/source; not used as a standalone resale asset."
+    },
+    {
+      "id": "26839234",
+      "pexels_photo_url": "https://www.pexels.com/photo/cocktails-and-olives-standing-on-the-table-26839234/",
+      "photographer": "Sarah O'Shea",
+      "local_file_path": "public/images/wno/storefront/cocktails-table.jpg",
+      "section_card_used": "About the city / Food and cocktail crawl",
+      "alt_text": "Cocktails and small snacks on a table for a New Orleans food and drinks plan",
+      "license_source_note": "Downloaded via Pexels API. Pexels license/source; not used as a standalone resale asset."
+    },
+    {
+      "id": "35596110",
+      "pexels_photo_url": "https://www.pexels.com/photo/historic-french-quarter-architecture-in-new-orleans-35596110/",
+      "photographer": "Prathyusha Mettupalle",
+      "local_file_path": "public/images/wno/storefront/architecture-backup.jpg",
+      "section_card_used": "About the city / Music and night energy; Attractions / National WWII Museum indoor history day",
+      "alt_text": "Historic French Quarter architecture with ironwork and shutters",
+      "license_source_note": "Downloaded via Pexels API. Pexels license/source; avoids logo/trademark usage for museum/history context."
+    },
+    {
+      "id": "3908304",
+      "pexels_photo_url": "https://www.pexels.com/photo/modern-cozy-steamboat-with-side-wheel-3908304/",
+      "photographer": "Sophia",
+      "local_file_path": "public/images/wno/storefront/steamboat-river.jpg",
+      "section_card_used": "About the city / Riverfront rhythm; Attractions / Steamboat river cruise",
+      "alt_text": "Red and white New Orleans steamboat on the river",
+      "license_source_note": "Downloaded via Pexels API. Pexels license/source; not used as a standalone resale asset."
+    },
+    {
+      "id": "13084373",
+      "pexels_photo_url": "https://www.pexels.com/photo/alley-on-a-catholic-cemetery-13084373/",
+      "photographer": "Shelby Cox",
+      "local_file_path": "public/images/wno/storefront/cemetery-tombs.jpg",
+      "section_card_used": "About the city / Ghosts, cemeteries, and old stories; Attractions / Ghost cemetery",
+      "alt_text": "Historic New Orleans above-ground cemetery tombs under blue sky",
+      "license_source_note": "Downloaded via Pexels API. Pexels license/source; not used as a standalone resale asset."
+    },
+    {
+      "id": "11573495",
+      "pexels_photo_url": "https://www.pexels.com/photo/trees-sunrrounded-with-body-of-water-11573495/",
+      "photographer": "Alfo Medeiros",
+      "local_file_path": "public/images/wno/storefront/louisiana-swamp.jpg",
+      "section_card_used": "Attractions / Swamp bayou; Attractions / Airboat energy",
+      "alt_text": "Louisiana swamp water with cypress trees and Spanish moss",
+      "license_source_note": "Downloaded via Pexels API. Pexels license/source; not used as a standalone resale asset."
+    },
+    {
+      "id": "9697593",
+      "pexels_photo_url": "https://www.pexels.com/photo/pathway-between-grass-field-near-trees-9697593/",
+      "photographer": "Hugo Magalhaes",
+      "local_file_path": "public/images/wno/storefront/oak-alley-history.jpg",
+      "section_card_used": "Attractions / Plantation history day trip",
+      "alt_text": "Louisiana oak-lined pathway for a history day trip",
+      "license_source_note": "Downloaded via Pexels API. Pexels license/source; not used as a standalone resale asset."
+    }
+  ]
+}
