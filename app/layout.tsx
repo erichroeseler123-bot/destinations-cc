@@ -1,7 +1,7 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Montserrat, Playfair_Display } from 'next/font/google';
+import { JetBrains_Mono, Montserrat, Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css'; // your global styles
 import SiteHeader from "@/app/components/dcc/SiteHeader";
 import SiteBreadcrumbs from "@/app/components/dcc/SiteBreadcrumbs";
@@ -23,6 +23,20 @@ const accentFont = Playfair_Display({
   weight: ['600', '700'],
   display: 'swap',
   variable: '--font-accent',
+});
+
+const sansFont = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['500', '700', '800'],
+  display: 'swap',
+  variable: '--font-sans',
+});
+
+const monoFont = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  display: 'swap',
+  variable: '--font-mono',
 });
 
 const GA_MEASUREMENT_ID = "G-S6JEJVWVDT";
@@ -76,7 +90,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script src={`/ga-init.js?id=${GA_MEASUREMENT_ID}`} strategy="afterInteractive" />
         <PartnerAnalyticsScript />
       </head>
-      <body className={`${headingFont.variable} ${accentFont.variable}`}>
+      <body className={`${headingFont.variable} ${accentFont.variable} ${sansFont.variable} ${monoFont.variable}`}>
         <a href="#main-content" className="dcc-skip-link">
           Skip to main content
         </a>
