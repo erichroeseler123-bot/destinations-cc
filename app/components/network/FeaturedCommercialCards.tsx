@@ -14,9 +14,9 @@ export function FeaturedCommercialCards({ cards }: { cards?: CommercialCardConfi
           Pick the best-fit tour path.
         </h2>
       </div>
-      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-5">
+      <div className="grid auto-rows-fr gap-4 md:grid-cols-2 xl:grid-cols-6">
         {cards.map((card, index) => (
-          <div key={card.id} className={index === 0 ? "xl:col-span-2" : ""}>
+          <div key={card.id} className={index === 0 ? "md:col-span-2 xl:col-span-2" : "xl:col-span-2"}>
             <CommercialCard card={card} featured={index === 0} />
           </div>
         ))}

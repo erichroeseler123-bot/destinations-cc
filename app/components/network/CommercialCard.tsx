@@ -16,7 +16,7 @@ const providerLabels: Record<CommercialCardConfig["providerType"], string> = {
 export function CommercialCard({ card, featured = false }: { card: CommercialCardConfig; featured?: boolean }) {
   return (
     <article
-      className={`flex min-h-[390px] flex-col overflow-hidden rounded-lg border p-4 shadow-[0_20px_55px_rgba(20,55,47,0.14)] ${
+      className={`flex h-full min-h-[390px] flex-col overflow-hidden rounded-lg border p-4 shadow-[0_20px_55px_rgba(20,55,47,0.14)] ${
         featured
           ? "border-[var(--destination-accent)] bg-[linear-gradient(180deg,rgba(255,248,232,0.14),rgba(255,248,232,0.07))]"
           : "border-[var(--network-border)] bg-[var(--network-surface)]"
