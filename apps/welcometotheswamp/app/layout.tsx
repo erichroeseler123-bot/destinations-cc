@@ -15,9 +15,9 @@ const siteJsonLd = buildNetworkEntityGraph({
   description: SITE_CONFIG.mission,
   relationshipToDcc: "parentOrganization",
   service: {
-    name: "New Orleans swamp tour decision support",
+    name: "New Orleans swamp tour planning",
     description:
-      "A focused decision surface that narrows New Orleans swamp tour options before travelers move into a booking fit.",
+      "A boutique New Orleans swamp-tour storefront for comparing airboats, covered boats, pickup, and weather-aware plans.",
     areaServed: [
       { "@type": "City", name: "New Orleans" },
       { "@type": "AdministrativeArea", name: "Louisiana" },
@@ -28,12 +28,12 @@ const siteJsonLd = buildNetworkEntityGraph({
 export const metadata: Metadata = {
   title: "Welcome to the Swamp",
   description:
-    "Decision-first guidance for choosing the right swamp tour near New Orleans right now without reopening the whole market.",
+    "The swamp trip worth leaving the Quarter for: airboat, covered boat, hotel pickup, and the easy bayou move.",
   alternates: { canonical: `${SITE_CONFIG.url}/` },
   openGraph: {
     title: "Welcome to the Swamp",
     description:
-      "Fast decision-first guidance on choosing the right swamp tour from New Orleans right now before you move into booking.",
+      "A boutique New Orleans swamp-tour storefront for airboats, covered boats, hotel pickup, and the easy bayou move.",
     url: `${SITE_CONFIG.url}/`,
     type: "website",
   },
@@ -71,43 +71,41 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="footer-grid">
               <div className="footer-block">
                 <p className="eyebrow">Welcome to the Swamp</p>
-                <p>{SITE_CONFIG.mission}</p>
-              </div>
-              <div className="footer-block">
-                <p className="eyebrow">Core sections</p>
-                <div className="footer-links">
-                  <Link href="/airboat-vs-boat">Airboat vs boat</Link>
-                  <Link href="/with-kids">With kids</Link>
-                  <Link href="/best-time">Best time</Link>
-                  <Link href="/transportation">Transportation</Link>
-                  <Link href="/types">Tour types</Link>
-                  <Link href="/plan">Best tours now</Link>
-                </div>
-              </div>
-              <div className="footer-block">
-                <p className="eyebrow">What This Site Does</p>
                 <p>
-                  We help you choose the swamp tour style that fits your group before you open the booking page.
+                  New Orleans swamp tours made easier: pick the ride style, pickup plan, and booking lane that fits the day.
                 </p>
               </div>
               <div className="footer-block">
-                <p className="eyebrow">More</p>
+                <p className="eyebrow">Plan the trip</p>
+                <div className="footer-links">
+                  <Link href="/airboat-vs-boat">Airboat vs boat</Link>
+                  <Link href="/with-kids">With kids</Link>
+                  <Link href="/transportation">Transportation</Link>
+                  <Link href="/types">Covered boat</Link>
+                  <Link href="/plan">Book / compare</Link>
+                </div>
+              </div>
+              <div className="footer-block">
+                <p className="eyebrow">Booking note</p>
+                <p>
+                  Final price, live availability, pickup details, cancellation policy, reviews, and provider terms continue on booking pages.
+                </p>
+              </div>
+              <div className="footer-block">
+                <p className="eyebrow">Support</p>
                 <div className="footer-links">
                   <Link href="/about">About</Link>
                   <Link href="/contact">Contact</Link>
-                  <Link href="/faq">FAQ</Link>
-                  <Link href="/how-it-works">How it works</Link>
-                  <Link href="/editorial-policy">Editorial policy</Link>
-                  <Link href="/how-we-rank-tours">How we rank tours</Link>
-                  <Link href="/privacy-policy">Privacy policy</Link>
                   <Link href="/privacy">Privacy</Link>
                   <Link href="/terms">Terms</Link>
-                  <Link href="/start-here">Start here</Link>
                 </div>
               </div>
             </div>
             <div style={{ marginTop: 18, color: "var(--muted)", lineHeight: 1.7 }}>
               Email <a href="mailto:hello@welcometotheswamp.com">hello@welcometotheswamp.com</a>
+            </div>
+            <div className="network-governance-line">
+              Part of the Destination Command Center network. WTS keeps the swamp decision local; DCC governs the route context.
             </div>
           </footer>
         </div>
