@@ -1,0 +1,8 @@
+{
+  "metadata": {
+    "version": "event-radar.next-48.v1",
+    "generatedAt": null,
+    "description": "DCC Event Radar next-48 display manifest. Empty until ingestion is explicitly enabled."
+  },
+  "items": []
+}
