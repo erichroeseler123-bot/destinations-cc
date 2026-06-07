@@ -1,0 +1,65 @@
+[
+  {
+    "id": "ticketmaster",
+    "provider": "ticketmaster",
+    "displayName": "Ticketmaster Discovery API",
+    "enabled": false,
+    "ingestionMode": "disabled",
+    "baseUrl": "https://app.ticketmaster.com/discovery/v2/",
+    "docsUrl": "https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/",
+    "notes": "Placeholder only. Phase 1 does not ingest live APIs."
+  },
+  {
+    "id": "axs",
+    "provider": "axs",
+    "displayName": "AXS Events",
+    "enabled": false,
+    "ingestionMode": "disabled",
+    "baseUrl": "https://www.axs.com/",
+    "notes": "Placeholder only. Requires approved API/source policy before ingestion."
+  },
+  {
+    "id": "seatgeek",
+    "provider": "seatgeek",
+    "displayName": "SeatGeek Events API",
+    "enabled": false,
+    "ingestionMode": "disabled",
+    "baseUrl": "https://api.seatgeek.com/2/",
+    "docsUrl": "https://platform.seatgeek.com/",
+    "notes": "Placeholder only. Phase 1 does not ingest live APIs."
+  },
+  {
+    "id": "eventbrite",
+    "provider": "eventbrite",
+    "displayName": "Eventbrite Events API",
+    "enabled": false,
+    "ingestionMode": "disabled",
+    "baseUrl": "https://www.eventbriteapi.com/v3/",
+    "docsUrl": "https://www.eventbrite.com/platform/api",
+    "notes": "Placeholder only. Phase 1 does not ingest live APIs."
+  },
+  {
+    "id": "artist-feeds",
+    "provider": "artist_feed",
+    "displayName": "Artist Feed Events",
+    "enabled": false,
+    "ingestionMode": "disabled",
+    "notes": "Bandsintown/Songkick-style artist feed placeholder. No scraping or live ingestion in Phase 1."
+  },
+  {
+    "id": "venue-api",
+    "provider": "venue_api",
+    "displayName": "Venue API",
+    "enabled": false,
+    "ingestionMode": "disabled",
+    "notes": "Venue-owned event feed placeholder."
+  },
+  {
+    "id": "manual-import",
+    "provider": "manual_import",
+    "displayName": "Manual Import",
+    "enabled": false,
+    "ingestionMode": "manual",
+    "notes": "Manual verified events can be imported later through reviewed files only."
+  }
+]
