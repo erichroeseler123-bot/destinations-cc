@@ -2603,6 +2603,102 @@ body {
   gap: 1rem;
 }
 
+/* Mobile Doctrine Phase 1: tap targets, compact utility header, and street-readable action surfaces. */
+@media (max-width: 899px) {
+  .site-header {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .site-header-top {
+    gap: 8px;
+  }
+
+  .brand-block {
+    min-width: 0;
+  }
+
+  .brand-kicker {
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+  }
+
+  .brand-name {
+    font-size: clamp(1.18rem, 7vw, 1.55rem);
+    line-height: 1;
+  }
+
+  .header-status {
+    min-height: 40px;
+    padding: 8px 10px;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+  }
+
+  .nav-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .nav-pill,
+  .button,
+  .button-secondary,
+  .refresh-link,
+  .wts-button,
+  [data-guided-surface] button {
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .nav-pill {
+    display: inline-flex;
+    width: 100%;
+    padding: 0 8px;
+    font-size: 0.61rem;
+    line-height: 1.15;
+  }
+
+  .wts-mobile-cta {
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    display: grid;
+    min-height: 76px;
+    padding: 8px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .wts-mobile-cta .wts-button {
+    min-height: 48px;
+  }
+
+  .trust-stat,
+  .question-card,
+  .verdict-preview,
+  .comparison-chip,
+  .mini-shortlist-item,
+  .lane-match-card,
+  [data-guided-surface] a:not(.button):not(.button-secondary) {
+    color: rgba(248, 243, 231, 0.88);
+  }
+
+  .mini-shortlist-item,
+  .lane-match-card {
+    border-color: rgba(248, 243, 231, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+@media (max-width: 360px) {
+  .nav-pill {
+    font-size: 0.56rem;
+    letter-spacing: 0.06em;
+  }
+}
+
 .router-card {
   display: grid;
   gap: 0.45rem;
