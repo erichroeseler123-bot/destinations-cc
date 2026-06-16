@@ -8,6 +8,7 @@ import {
   DCC_ORGANIZATION_ID,
   DCC_WEBSITE_ID,
 } from "@/lib/dcc/networkEntityJsonLd";
+import { listDccCruisePortEntrypoints } from "@/lib/dcc/cruisePortAuthority";
 
 const NETWORK_DOMAINS = [
   {
@@ -59,6 +60,8 @@ const NETWORK_DOMAINS = [
     note: "Experimental group-dining and private-chef decision surface.",
   },
 ] as const;
+
+const CRUISE_PORT_AUTHORITY_QUEUE = listDccCruisePortEntrypoints();
 
 export const dynamic = "force-static";
 
@@ -162,6 +165,32 @@ export default function NetworkPage() {
             <Link href="/new-orleans/best-swamp-tour" className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4 hover:bg-white/[0.06]">
               New Orleans swamp pages to Welcome to the Swamp
             </Link>
+          </div>
+        </section>
+
+        <section className="rounded-[2rem] border border-white/10 bg-[#0b1017] p-6 md:p-8">
+          <h2 className="text-2xl font-black uppercase tracking-[-0.03em]">Cruise-port authority queue</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-white/68">
+            These DCC authority entries define the next cruise-port TravelMarket builds.
+            They are not public booking surfaces until approved imagery, real inventory,
+            provider URLs, and detail routes pass the launch gate.
+          </p>
+          <div className="mt-5 grid gap-3">
+            {CRUISE_PORT_AUTHORITY_QUEUE.map((entrypoint) => (
+              <Link
+                key={entrypoint.id}
+                href={entrypoint.dccAuthorityPath}
+                className="grid gap-2 rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4 transition hover:border-[#f5b34b]/45 hover:bg-white/[0.06] md:grid-cols-[260px_180px_1fr]"
+              >
+                <span className="font-black text-white">{entrypoint.portName}</span>
+                <span className="text-sm font-semibold text-[#f5b34b]">
+                  {entrypoint.providerMode}
+                </span>
+                <span className="text-sm leading-6 text-white/68">
+                  {entrypoint.completionStatus} / {entrypoint.productLanes.slice(0, 3).join(", ")}
+                </span>
+              </Link>
+            ))}
           </div>
         </section>
       </div>
