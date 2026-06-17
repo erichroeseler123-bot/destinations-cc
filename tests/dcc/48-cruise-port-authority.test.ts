@@ -112,9 +112,13 @@ test("implemented cruise-port DCC URLs rewrite to the TravelMarket execution app
   );
 
   const expectedRewriteSources = [
+    "/dcc/cruise-ports/port-canaveral-orlando",
     "/dcc/cruise-ports/port-canaveral-orlando/:path*",
+    "/dcc/cruise-ports/portmiami",
     "/dcc/cruise-ports/portmiami/:path*",
+    "/dcc/cruise-ports/nassau",
     "/dcc/cruise-ports/nassau/:path*",
+    "/dcc/cruise-ports/port-everglades-fort-lauderdale",
     "/dcc/cruise-ports/port-everglades-fort-lauderdale/:path*",
   ];
 
@@ -122,7 +126,7 @@ test("implemented cruise-port DCC URLs rewrite to the TravelMarket execution app
     const marketId = source.replace("/dcc/cruise-ports/", "").replace("/:path*", "");
     assert(nextConfigSource.includes(source), `${source} should be configured as a rewrite source.`);
     assert(
-      nextConfigSource.includes(`travelMarketCruiseDeskBase}/${marketId}/:path*`),
+      nextConfigSource.includes(`travelMarketCruiseDeskBase}/${marketId}${source.endsWith("/:path*") ? "/:path*" : ""}`),
       `${source} should proxy to the TravelMarket execution app.`,
     );
   }

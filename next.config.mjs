@@ -41,16 +41,32 @@ const nextConfig = {
     return {
       beforeFiles: [
         {
+          source: "/dcc/cruise-ports/port-canaveral-orlando",
+          destination: `${travelMarketCruiseDeskBase}/port-canaveral-orlando`,
+        },
+        {
           source: "/dcc/cruise-ports/port-canaveral-orlando/:path*",
           destination: `${travelMarketCruiseDeskBase}/port-canaveral-orlando/:path*`,
+        },
+        {
+          source: "/dcc/cruise-ports/portmiami",
+          destination: `${travelMarketCruiseDeskBase}/portmiami`,
         },
         {
           source: "/dcc/cruise-ports/portmiami/:path*",
           destination: `${travelMarketCruiseDeskBase}/portmiami/:path*`,
         },
         {
+          source: "/dcc/cruise-ports/nassau",
+          destination: `${travelMarketCruiseDeskBase}/nassau`,
+        },
+        {
           source: "/dcc/cruise-ports/nassau/:path*",
           destination: `${travelMarketCruiseDeskBase}/nassau/:path*`,
+        },
+        {
+          source: "/dcc/cruise-ports/port-everglades-fort-lauderdale",
+          destination: `${travelMarketCruiseDeskBase}/port-everglades-fort-lauderdale`,
         },
         {
           source: "/dcc/cruise-ports/port-everglades-fort-lauderdale/:path*",
