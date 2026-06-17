@@ -4,11 +4,11 @@ export type DccCruiseMarketRole =
   | "pre_post_cruise_market"
   | "shore_excursion_market";
 
-export type DccCruiseProviderMode = "needs_market_build";
+export type DccCruiseProviderMode = "approved_static_real_inventory" | "needs_market_build";
 
-export type DccCruiseCompletionStatus = "needs_domain";
+export type DccCruiseCompletionStatus = "dcc_url_live" | "needs_market_build";
 
-export type DccCruiseTemplateStatus = "not_configured";
+export type DccCruiseTemplateStatus = "configured" | "not_configured";
 
 export type DccCruiseTelemetryEvent =
   | "landing_viewed"
@@ -56,9 +56,9 @@ export const DCC_CRUISE_PORT_ENTRYPOINTS: DccCruisePortEntrypoint[] = [
     marketId: "port-canaveral-orlando-cruise-market",
     dccAuthorityPath: "/dcc/cruise-ports/port-canaveral-orlando",
     suggestedPublicHost: "portcanaveralcruisedesk.com",
-    travelMarketTemplateStatus: "not_configured",
-    providerMode: "needs_market_build",
-    completionStatus: "needs_domain",
+    travelMarketTemplateStatus: "configured",
+    providerMode: "approved_static_real_inventory",
+    completionStatus: "dcc_url_live",
     passengerRankBasis:
       "Selected as a top global cruise homeport with 2025 passenger volume reported around 8.6 million.",
     sourceLabel: "Public cruise-port passenger-volume reference",
@@ -74,11 +74,11 @@ export const DCC_CRUISE_PORT_ENTRYPOINTS: DccCruisePortEntrypoint[] = [
     dccNotes: [
       "DCC classifies this as a high-volume cruise homeport and Orlando pre/post-cruise market.",
       "Primary traveler problem: choosing a family pre-cruise plan, excursion, or transfer without missing embarkation.",
-      "Market implementation requires approved images, real inventory, provider URLs, and working detail routes before live launch.",
+      "The DCC public route proxies the completed TravelMarketTemplate implementation with approved images, real provider URLs, product cards, and working DCC-scoped detail routes.",
     ],
     expectedTelemetryEvents: CRUISE_PORT_TELEMETRY_EVENTS,
     nextRequiredAction:
-      "Create TravelMarketTemplate host config, approved Port Canaveral/Orlando images, and real provider inventory for Kennedy Space Center, transfers, airboat, beach, and timing-buffer lanes.",
+      "Monitor DCC route views, product opens, detail opens, and provider CTA clicks; standalone Port Canaveral domains remain optional future surfaces.",
   },
   {
     id: "portmiami",
@@ -89,9 +89,9 @@ export const DCC_CRUISE_PORT_ENTRYPOINTS: DccCruisePortEntrypoint[] = [
     marketId: "portmiami-cruise-market",
     dccAuthorityPath: "/dcc/cruise-ports/portmiami",
     suggestedPublicHost: "portmiamicruisedesk.com",
-    travelMarketTemplateStatus: "not_configured",
-    providerMode: "needs_market_build",
-    completionStatus: "needs_domain",
+    travelMarketTemplateStatus: "configured",
+    providerMode: "approved_static_real_inventory",
+    completionStatus: "dcc_url_live",
     passengerRankBasis:
       "Selected as a top global cruise homeport with 2025 passenger volume reported around 8.56 million.",
     sourceLabel: "Public PortMiami passenger-volume reference",
@@ -108,11 +108,11 @@ export const DCC_CRUISE_PORT_ENTRYPOINTS: DccCruisePortEntrypoint[] = [
     dccNotes: [
       "DCC classifies this as a high-volume homeport and pre/post-cruise decision market.",
       "Primary traveler problem: fitting Miami tours, airport timing, hotel timing, and cruise transfer logistics into a short window.",
-      "Market implementation requires approved images, real inventory, provider URLs, and working detail routes before live launch.",
+      "The DCC public route proxies the completed TravelMarketTemplate implementation with approved images, real provider URLs, product cards, and working DCC-scoped detail routes.",
     ],
     expectedTelemetryEvents: CRUISE_PORT_TELEMETRY_EVENTS,
     nextRequiredAction:
-      "Create TravelMarketTemplate host config, approved Miami images, and real provider inventory for city, Everglades, Biscayne Bay, South Beach, transfer, and hotel-timing lanes.",
+      "Monitor DCC route views, product opens, detail opens, and provider CTA clicks; standalone PortMiami domains remain optional future surfaces.",
   },
   {
     id: "nassau",
@@ -123,9 +123,9 @@ export const DCC_CRUISE_PORT_ENTRYPOINTS: DccCruisePortEntrypoint[] = [
     marketId: "nassau-cruise-market",
     dccAuthorityPath: "/dcc/cruise-ports/nassau",
     suggestedPublicHost: "nassaucruisedesk.com",
-    travelMarketTemplateStatus: "not_configured",
-    providerMode: "needs_market_build",
-    completionStatus: "needs_domain",
+    travelMarketTemplateStatus: "configured",
+    providerMode: "approved_static_real_inventory",
+    completionStatus: "dcc_url_live",
     passengerRankBasis:
       "Selected as one of the busiest Caribbean cruise ports with 2025 passenger volume reported above 6 million.",
     sourceLabel: "Public cruise-port passenger-volume reference",
@@ -141,11 +141,11 @@ export const DCC_CRUISE_PORT_ENTRYPOINTS: DccCruisePortEntrypoint[] = [
     dccNotes: [
       "DCC classifies this as a high-volume port-of-call shore-excursion market.",
       "Primary traveler problem: choosing a beach, boat, Atlantis, history, or food/culture plan that fits pier return timing.",
-      "Market implementation requires approved images, real inventory, provider URLs, and working detail routes before live launch.",
+      "The DCC public route proxies the completed TravelMarketTemplate implementation with approved images, real provider URLs, product cards, and working DCC-scoped detail routes.",
     ],
     expectedTelemetryEvents: CRUISE_PORT_TELEMETRY_EVENTS,
     nextRequiredAction:
-      "Create TravelMarketTemplate host config, approved Nassau images, and real provider inventory for Atlantis, Blue Lagoon, snorkeling, history, food/culture, and pier-timing lanes.",
+      "Monitor DCC route views, product opens, detail opens, and provider CTA clicks; standalone Nassau domains remain optional future surfaces.",
   },
   {
     id: "port-everglades-fort-lauderdale",
@@ -156,9 +156,9 @@ export const DCC_CRUISE_PORT_ENTRYPOINTS: DccCruisePortEntrypoint[] = [
     marketId: "port-everglades-fort-lauderdale-cruise-market",
     dccAuthorityPath: "/dcc/cruise-ports/port-everglades-fort-lauderdale",
     suggestedPublicHost: "portevergladescruisedesk.com",
-    travelMarketTemplateStatus: "not_configured",
-    providerMode: "needs_market_build",
-    completionStatus: "needs_domain",
+    travelMarketTemplateStatus: "configured",
+    providerMode: "approved_static_real_inventory",
+    completionStatus: "dcc_url_live",
     passengerRankBasis:
       "Selected as a major Florida cruise homeport with 2025 passenger volume reported around 4.77 million.",
     sourceLabel: "Public Port Everglades passenger-volume reference",
@@ -173,11 +173,11 @@ export const DCC_CRUISE_PORT_ENTRYPOINTS: DccCruisePortEntrypoint[] = [
     dccNotes: [
       "DCC classifies this as a high-volume South Florida homeport and pre/post-cruise market.",
       "Primary traveler problem: choosing a short Fort Lauderdale or Everglades plan around airport, hotel, and ship timing.",
-      "Market implementation requires approved images, real inventory, provider URLs, and working detail routes before live launch.",
+      "The DCC public route proxies the completed TravelMarketTemplate implementation with approved images, real provider URLs, product cards, and working DCC-scoped detail routes.",
     ],
     expectedTelemetryEvents: CRUISE_PORT_TELEMETRY_EVENTS,
     nextRequiredAction:
-      "Create TravelMarketTemplate host config, approved Fort Lauderdale images, and real provider inventory for Everglades, water taxi, canals, beach, Las Olas, and timing lanes.",
+      "Monitor DCC route views, product opens, detail opens, and provider CTA clicks; standalone Port Everglades domains remain optional future surfaces.",
   },
   {
     id: "cozumel",
@@ -190,7 +190,7 @@ export const DCC_CRUISE_PORT_ENTRYPOINTS: DccCruisePortEntrypoint[] = [
     suggestedPublicHost: "cozumelcruisedesk.com",
     travelMarketTemplateStatus: "not_configured",
     providerMode: "needs_market_build",
-    completionStatus: "needs_domain",
+    completionStatus: "needs_market_build",
     passengerRankBasis:
       "Selected as one of the busiest Caribbean cruise ports with 2025 passenger volume reported around 4.73 million.",
     sourceLabel: "Public cruise-port passenger-volume reference",

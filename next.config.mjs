@@ -35,6 +35,30 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    const travelMarketCruiseDeskBase = "https://dcc-v1-cut-clean.vercel.app/dcc/cruise-ports";
+
+    return {
+      beforeFiles: [
+        {
+          source: "/dcc/cruise-ports/port-canaveral-orlando/:path*",
+          destination: `${travelMarketCruiseDeskBase}/port-canaveral-orlando/:path*`,
+        },
+        {
+          source: "/dcc/cruise-ports/portmiami/:path*",
+          destination: `${travelMarketCruiseDeskBase}/portmiami/:path*`,
+        },
+        {
+          source: "/dcc/cruise-ports/nassau/:path*",
+          destination: `${travelMarketCruiseDeskBase}/nassau/:path*`,
+        },
+        {
+          source: "/dcc/cruise-ports/port-everglades-fort-lauderdale/:path*",
+          destination: `${travelMarketCruiseDeskBase}/port-everglades-fort-lauderdale/:path*`,
+        },
+      ],
+    };
+  },
   async redirects() {
     const satelliteRedirects = buildSatelliteRedirects();
     const citySatelliteRedirects = buildCitySatelliteRedirects();

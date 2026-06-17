@@ -64,7 +64,7 @@ export default async function CruisePortAuthorityPage({
           <p className="mt-5 max-w-3xl text-base leading-8 text-white/72 md:text-lg">
             DCC classifies this as a high-volume cruise market. The public market surface
             is not activated until approved images, real provider inventory, real handoff
-            URLs, and working detail routes are in place.
+            URLs, working detail routes, and DCC URL routing are in place.
           </p>
           <div className="mt-6 grid gap-3 text-sm md:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
@@ -147,7 +147,8 @@ export default async function CruisePortAuthorityPage({
           <p className="mt-4 max-w-4xl text-sm leading-7 text-white/75">
             This market is not marked Juneau-standard complete. Public launch requires
             approved images, real provider inventory or real handoff URLs, working detail
-            routes, no synthetic inventory, and live custom-domain verification.
+            routes, no synthetic inventory, and live DCC URL verification. A standalone
+            market domain is optional later.
           </p>
           <p className="mt-4 max-w-4xl text-sm leading-7 text-white/75">
             Next required action: {entrypoint.nextRequiredAction}

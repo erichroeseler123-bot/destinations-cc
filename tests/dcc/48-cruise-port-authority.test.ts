@@ -26,6 +26,12 @@ async function renderCruisePortPage(marketId: string) {
 
 test("DCC cruise-port authority registry classifies all queued markets honestly", () => {
   const entrypoints = listDccCruisePortEntrypoints();
+  const implementedMarketIds = new Set([
+    "port-canaveral-orlando",
+    "portmiami",
+    "nassau",
+    "port-everglades-fort-lauderdale",
+  ]);
 
   assert.deepEqual(
     entrypoints.map((entrypoint) => entrypoint.id),
@@ -40,45 +46,91 @@ test("DCC cruise-port authority registry classifies all queued markets honestly"
 
   for (const entrypoint of entrypoints) {
     assert.match(entrypoint.dccAuthorityPath, /^\/dcc\/cruise-ports\//);
-    assert.equal(entrypoint.providerMode, "needs_market_build");
-    assert.equal(entrypoint.completionStatus, "needs_domain");
     assert.notEqual(entrypoint.completionStatus, "juneau_standard_live");
-    assert.equal(entrypoint.travelMarketTemplateStatus, "not_configured");
     assert.equal(entrypoint.productLanes.length >= 5, true);
     assert.deepEqual(entrypoint.expectedTelemetryEvents, CRUISE_PORT_TELEMETRY_EVENTS);
     assert(!entrypoint.providerMode.includes("demo"));
     assert(!entrypoint.providerMode.includes("sample"));
+
+    if (implementedMarketIds.has(entrypoint.id)) {
+      assert.equal(entrypoint.providerMode, "approved_static_real_inventory");
+      assert.equal(entrypoint.completionStatus, "dcc_url_live");
+      assert.equal(entrypoint.travelMarketTemplateStatus, "configured");
+      assert.match(entrypoint.dccNotes.join(" "), /completed TravelMarketTemplate implementation/);
+      assert.match(entrypoint.nextRequiredAction, /Monitor DCC route views/);
+      continue;
+    }
+
+    assert.equal(entrypoint.id, "cozumel");
+    assert.equal(entrypoint.providerMode, "needs_market_build");
+    assert.equal(entrypoint.completionStatus, "needs_market_build");
+    assert.equal(entrypoint.travelMarketTemplateStatus, "not_configured");
   }
 });
 
-test("DCC cruise-port authority pages render authority content without booking surfaces", async () => {
-  for (const entrypoint of listDccCruisePortEntrypoints()) {
-    const html = await renderCruisePortPage(entrypoint.id);
+test("unimplemented DCC cruise-port authority pages render queue content without booking surfaces", async () => {
+  const entrypoint = listDccCruisePortEntrypoints().find((candidate) => candidate.id === "cozumel");
 
-    assert.match(html, new RegExp(entrypoint.portName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-    assert.match(html, /DCC cruise-port authority/);
-    assert.match(html, /TravelMarket queue/);
-    assert.match(html, /needs_market_build/);
-    assert.match(html, /needs_domain/);
-    assert.match(html, /Product lanes to implement/);
-    assert.match(html, /Launch gate/);
+  assert(entrypoint, "Cozumel entrypoint should exist.");
 
-    for (const lane of entrypoint.productLanes) {
-      assert.ok(html.includes(lane), `${entrypoint.id} missing lane ${lane}`);
-    }
+  const html = await renderCruisePortPage(entrypoint.id);
 
-    assert.doesNotMatch(html, /juneau_standard_live/);
-    assert.doesNotMatch(html, /Check Availability/i);
-    assert.doesNotMatch(html, /\/tours\//);
-    assert.doesNotMatch(html, /href="#"/);
-    assert.doesNotMatch(html, /booking_url/);
-    assert.doesNotMatch(html, /fake booking/i);
-    assert.doesNotMatch(html, /product card/i);
-    assert.doesNotMatch(html, /demo inventory/i);
-    assert.doesNotMatch(html, /sample inventory/i);
-    assert.doesNotMatch(html, /coming soon/i);
-    assert.doesNotMatch(html, /provider links under review/i);
+  assert.match(html, new RegExp(entrypoint.portName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.match(html, /DCC cruise-port authority/);
+  assert.match(html, /TravelMarket queue/);
+  assert.match(html, /needs_market_build/);
+  assert.match(html, /Product lanes to implement/);
+  assert.match(html, /Launch gate/);
+  assert.match(html, /live DCC URL verification/);
+  assert.doesNotMatch(html, /needs_domain/);
+
+  for (const lane of entrypoint.productLanes) {
+    assert.ok(html.includes(lane), `${entrypoint.id} missing lane ${lane}`);
   }
+
+  assert.doesNotMatch(html, /juneau_standard_live/);
+  assert.doesNotMatch(html, /Check Availability/i);
+  assert.doesNotMatch(html, /\/tours\//);
+  assert.doesNotMatch(html, /href="#"/);
+  assert.doesNotMatch(html, /booking_url/);
+  assert.doesNotMatch(html, /fake booking/i);
+  assert.doesNotMatch(html, /product card/i);
+  assert.doesNotMatch(html, /demo inventory/i);
+  assert.doesNotMatch(html, /sample inventory/i);
+  assert.doesNotMatch(html, /coming soon/i);
+  assert.doesNotMatch(html, /provider links under review/i);
+});
+
+test("implemented cruise-port DCC URLs rewrite to the TravelMarket execution app", async () => {
+  const nextConfigSource = fs.readFileSync("next.config.mjs", "utf8");
+
+  assert(
+    nextConfigSource.includes(
+      'const travelMarketCruiseDeskBase = "https://dcc-v1-cut-clean.vercel.app/dcc/cruise-ports"',
+    ),
+    "Rewrites should proxy to the verified TravelMarket execution app base URL.",
+  );
+
+  const expectedRewriteSources = [
+    "/dcc/cruise-ports/port-canaveral-orlando/:path*",
+    "/dcc/cruise-ports/portmiami/:path*",
+    "/dcc/cruise-ports/nassau/:path*",
+    "/dcc/cruise-ports/port-everglades-fort-lauderdale/:path*",
+  ];
+
+  for (const source of expectedRewriteSources) {
+    const marketId = source.replace("/dcc/cruise-ports/", "").replace("/:path*", "");
+    assert(nextConfigSource.includes(source), `${source} should be configured as a rewrite source.`);
+    assert(
+      nextConfigSource.includes(`travelMarketCruiseDeskBase}/${marketId}/:path*`),
+      `${source} should proxy to the TravelMarket execution app.`,
+    );
+  }
+
+  assert(
+    !nextConfigSource.includes("/dcc/cruise-ports/cozumel"),
+    "Cozumel should stay on the local authority queue until implemented.",
+  );
 });
 
 test("existing active DCC route files remain present", () => {
