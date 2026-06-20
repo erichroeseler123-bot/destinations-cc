@@ -74,6 +74,14 @@ const nextConfig = {
           destination: `${travelMarketCruisePortBase}/port-everglades/:path*`,
         },
         {
+          source: "/cruise-ports/cozumel",
+          destination: `${travelMarketCruisePortBase}/cozumel`,
+        },
+        {
+          source: "/cruise-ports/cozumel/:path*",
+          destination: `${travelMarketCruisePortBase}/cozumel/:path*`,
+        },
+        {
           source: "/dcc/cruise-ports/port-canaveral-orlando",
           destination: `${travelMarketCruiseDeskBase}/port-canaveral-orlando`,
         },
