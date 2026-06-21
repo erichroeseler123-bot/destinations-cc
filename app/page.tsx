@@ -54,15 +54,15 @@ const COMMAND_LANES = [
 const STATUS_PANELS = [
   {
     label: "GETYOURGUIDE REFERENCE MARKETS",
-    value: "5 live markets",
+    value: "6 live markets",
     copy:
-      "Port Canaveral, PortMiami, Nassau, Port Everglades, and Cozumel now match the reference pattern.",
+      "Port Canaveral, PortMiami, Nassau, Port Everglades, Cozumel, and Key West now match the reference pattern.",
   },
   {
     label: "EXPANSION QUEUE",
-    value: "7 candidates staged",
+    value: "6 candidates staged",
     copy:
-      "Key West, St. Thomas, San Juan, Costa Maya, Roatan, Belize City, and Grand Cayman are queued behind the compliance gate.",
+      "St. Thomas, San Juan, Costa Maya, Roatan, Belize City, and Grand Cayman are queued behind the compliance gate as expansion candidates.",
   },
 ];
 
@@ -88,12 +88,22 @@ function isWelcomeToNewOrleansToursHost(host: string) {
   return normalized === "welcometoneworleanstours.com" || normalized === "www.welcometoneworleanstours.com";
 }
 
+async function getRequestHost() {
+  try {
+    const requestHeaders = await headers();
+
+    return (
+      requestHeaders.get("x-forwarded-host") ||
+      requestHeaders.get("host") ||
+      ""
+    );
+  } catch {
+    return "";
+  }
+}
+
 export default async function HomePage() {
-  const requestHeaders = await headers();
-  const host =
-    requestHeaders.get("x-forwarded-host") ||
-    requestHeaders.get("host") ||
-    "";
+  const host = await getRequestHost();
 
   if (isWelcomeToNewOrleansToursHost(host)) {
     return <NewOrleansToursPage />;

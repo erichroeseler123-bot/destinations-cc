@@ -6,7 +6,10 @@ const ENTRY_SURFACES = [...(rawEntrySurfaces as EntrySurface[])].sort((a, b) => 
 
 function getVisibleEntries(flag: "showInHeader" | "showInHomepage" | "showInCommand") {
   return ENTRY_SURFACES.filter(
-    (entry) => entry[flag] && isVisibleSurfacePath(entry.path) && isVisibleSurfacePath(entry.canonicalPath)
+    (entry) =>
+      entry[flag] &&
+      (entry.availabilityStatus === "expansion_candidate" ||
+        (isVisibleSurfacePath(entry.path) && isVisibleSurfacePath(entry.canonicalPath)))
   );
 }
 

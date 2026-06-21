@@ -10,12 +10,23 @@ export default function SiteHeaderSearch({ cities }: { cities: EntrySurface[] })
   const router = useRouter();
   const [query, setQuery] = useState("");
 
+  function isSearchableEntry(city: EntrySurface) {
+    return (
+      city.availabilityStatus === "expansion_candidate" ||
+      isVisibleSurfacePath(city.canonicalPath)
+    );
+  }
+
+  function isLiveEntry(city: EntrySurface) {
+    return city.availabilityStatus !== "expansion_candidate";
+  }
+
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
 
     return cities
-      .filter((city) => isVisibleSurfacePath(city.canonicalPath))
+      .filter(isSearchableEntry)
       .map((city) => {
         const haystack = city.searchText.toLowerCase();
         let score = 0;
@@ -36,7 +47,7 @@ export default function SiteHeaderSearch({ cities }: { cities: EntrySurface[] })
     const q = query.trim();
     if (!q) return;
     const top = results[0]?.city;
-    if (top) {
+    if (top && isLiveEntry(top)) {
       router.push(top.canonicalPath);
       setQuery("");
       return;
@@ -48,7 +59,7 @@ export default function SiteHeaderSearch({ cities }: { cities: EntrySurface[] })
   return (
     <div className="dcc-site-search">
       <label htmlFor="dcc-global-search" className="sr-only">
-        Search active corridors
+        Search corridors, ports, and DCC lanes
       </label>
       <input
         id="dcc-global-search"
@@ -59,7 +70,7 @@ export default function SiteHeaderSearch({ cities }: { cities: EntrySurface[] })
           if (event.key === "Enter") submit();
           if (event.key === "Escape") setQuery("");
         }}
-        placeholder="Search active corridors"
+        placeholder="Search corridors, ports, and DCC lanes"
         className="dcc-site-search__input"
       />
       <button type="button" onClick={submit} className="dcc-site-search__button">
@@ -67,20 +78,30 @@ export default function SiteHeaderSearch({ cities }: { cities: EntrySurface[] })
       </button>
       {query.trim() && results.length > 0 ? (
         <div className="dcc-site-search__results">
-          {results.map(({ city }) => (
-            <Link
-              key={city.id}
-              href={city.canonicalPath}
-              className="dcc-site-search__result"
-              onClick={() => setQuery("")}
-            >
-              <span>{city.label}</span>
-              <span className="dcc-site-search__meta">
-                {city.state ? `${city.state} • ` : ""}
-                {city.canonicalPath}
-              </span>
-            </Link>
-          ))}
+          {results.map(({ city }) => {
+            const meta = city.statusLabel ?? `${city.state ? `${city.state} • ` : ""}${city.canonicalPath}`;
+
+            if (!isLiveEntry(city)) {
+              return (
+                <div key={city.id} className="dcc-site-search__result" aria-disabled="true">
+                  <span>{city.label}</span>
+                  <span className="dcc-site-search__meta">{meta}</span>
+                </div>
+              );
+            }
+
+            return (
+              <Link
+                key={city.id}
+                href={city.canonicalPath}
+                className="dcc-site-search__result"
+                onClick={() => setQuery("")}
+              >
+                <span>{city.label}</span>
+                <span className="dcc-site-search__meta">{meta}</span>
+              </Link>
+            );
+          })}
         </div>
       ) : null}
     </div>

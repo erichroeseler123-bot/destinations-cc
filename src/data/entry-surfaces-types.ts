@@ -4,6 +4,8 @@ export type EntrySurfaceIntent = "transport" | "tours" | "activity" | "mixed";
 
 export type EntrySurfaceSource = "city-registry" | "corridor-config" | "page-registry" | "override";
 
+export type EntrySurfaceAvailabilityStatus = "live" | "expansion_candidate";
+
 export type EntrySurface = {
   id: string;
   label: string;
@@ -21,6 +23,8 @@ export type EntrySurface = {
   showInHeader: boolean;
   showInHomepage: boolean;
   showInCommand: boolean;
+  availabilityStatus?: EntrySurfaceAvailabilityStatus;
+  statusLabel?: string;
 };
 
 export type EntrySurfaceOverride = Omit<EntrySurface, "source" | "canonicalPath" | "searchText"> & {

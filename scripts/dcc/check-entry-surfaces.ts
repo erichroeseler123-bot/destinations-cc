@@ -27,6 +27,9 @@ async function fileExists(relativePath: string) {
 }
 
 async function routeExists(entry: EntrySurface) {
+  if (entry.availabilityStatus === "expansion_candidate") return true;
+  if (entry.path.startsWith("/cruise-ports/")) return true;
+
   if (await fileExists(entry.path)) return true;
 
   if (entry.kind === "city") {

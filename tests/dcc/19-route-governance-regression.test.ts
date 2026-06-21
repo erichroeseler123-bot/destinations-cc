@@ -47,6 +47,36 @@ test("newly promoted corridor routes stay governed by publish-state metadata", (
   }
 });
 
+test("verified cruise-port proxy routes are visible without promoting expansion candidates", () => {
+  for (const pathname of [
+    "/cruise-ports/port-canaveral",
+    "/cruise-ports/portmiami",
+    "/cruise-ports/nassau",
+    "/cruise-ports/port-everglades",
+    "/cruise-ports/cozumel",
+    "/cruise-ports/key-west",
+  ]) {
+    const entry = getRootRouteGovernance(pathname);
+    assert.equal(entry?.publishState, "indexable", `expected ${pathname} to be indexable`);
+    assert.equal(entry?.networkRole, "dcc", `expected ${pathname} to remain a DCC proxy surface`);
+    assert.equal(entry?.handoffPolicy, "outbound_only", `expected ${pathname} to hand off into TravelMarket`);
+    assert.equal(INDEXABLE_SURFACE_PATHS.includes(pathname), true, `expected ${pathname} to be indexable`);
+    assert.equal(VISIBLE_SURFACE_PATHS.includes(pathname), true, `expected ${pathname} to be visible`);
+  }
+
+  for (const pathname of [
+    "/cruise-ports/st-thomas",
+    "/cruise-ports/san-juan",
+    "/cruise-ports/costa-maya",
+    "/cruise-ports/roatan",
+    "/cruise-ports/belize-city",
+    "/cruise-ports/grand-cayman",
+  ]) {
+    assert.equal(getRootRouteGovernance(pathname), null);
+    assert.equal(VISIBLE_SURFACE_PATHS.includes(pathname), false);
+  }
+});
+
 test("selected Red Rocks decision pages stay indexable and governed", () => {
   for (const pathname of [
     "/red-rocks-shuttle-vs-uber",
