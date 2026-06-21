@@ -8,26 +8,66 @@ import {
   buildOrganizationJsonLd,
   buildWebsiteJsonLd,
 } from "@/lib/dcc/jsonld";
-import { getHomepageEntrySurfaces } from "@/src/data/entry-surfaces";
-import type { EntrySurface } from "@/src/data/entry-surfaces-types";
 
-const CURATED_HIGHLIGHTS = [
+const SIGNAL_CHIPS = [
+  "SYS_OK",
+  "GYG_READY",
+  "VIATOR_BLOCKED",
+  "ROUTES_VERIFIED",
+  "404_GUARDED",
+];
+
+const COMMAND_LANES = [
   {
-    href: "/red-rocks-transportation",
-    label: "Red Rocks transport dominance",
+    href: "/cruise-ports/cozumel",
+    label: "CRUISE PORT ROUTING",
+    title: "Shore-excursion decisions without the vendor fog.",
+    copy:
+      "Exact provider inventory. DCC detail routes. Availability checks where they belong.",
+    cta: "View Cruise Ports",
   },
   {
-    href: "/juneau/whale-watching-tours",
-    label: "Juneau wildlife decisions",
+    href: "/network",
+    label: "TRANSPORT ROUTING",
+    title: "The correct ride path before the checkout.",
+    copy:
+      "Airport, venue, mountain, and event movement sorted by real execution constraints.",
+    cta: "View Network",
   },
   {
-    href: "/sedona/jeep-tours",
-    label: "Sedona fit decisions",
+    href: "/tours",
+    label: "TOUR DECISION SURFACE",
+    title: "Local options compressed into usable choices.",
+    copy: "Cards stay human. Provider links stay exact. Bad exits stay blocked.",
+    cta: "View Tour Markets",
+  },
+  {
+    href: "/command",
+    label: "COMPLIANCE + GOVERNANCE",
+    title: "The system knows when a market is not ready.",
+    copy:
+      "Missing inventory, fake links, broken routes, and blocked providers fail the gate.",
+    cta: "View Governance",
+  },
+];
+
+const STATUS_PANELS = [
+  {
+    label: "GETYOURGUIDE REFERENCE MARKETS",
+    value: "5 live markets",
+    copy:
+      "Port Canaveral, PortMiami, Nassau, Port Everglades, and Cozumel now match the reference pattern.",
+  },
+  {
+    label: "EXPANSION QUEUE",
+    value: "7 candidates staged",
+    copy:
+      "Key West, St. Thomas, San Juan, Costa Maya, Roatan, Belize City, and Grand Cayman are queued behind the compliance gate.",
   },
 ];
 
 const SECTION_PANEL_CLASS =
-  "rounded-[2rem] border border-white/10 bg-[#0b1017] p-6 md:p-8";
+  "rounded-[1.4rem] border border-[#3b4b63]/45 bg-[#07111d]/84 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.32)] md:p-7";
 
 export const dynamic = "force-dynamic";
 
@@ -42,32 +82,6 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
-
-function getIntentLabel(entry: EntrySurface) {
-  switch (entry.intent) {
-    case "transport":
-      return "This is the correct transport lane";
-    case "tours":
-      return "This is the correct tour lane";
-    case "activity":
-      return "This is the correct activity lane";
-    default:
-      return "This is the correct lane";
-  }
-}
-
-function getEntrySummary(entry: EntrySurface) {
-  switch (entry.intent) {
-    case "transport":
-      return "Use this when getting there is the real problem and the wrong route will break the plan.";
-    case "tours":
-      return "Use this when a generic list will slow you down and the right route should be obvious first.";
-    case "activity":
-      return "Use this when the destination is already clear and the activity decision is what still needs to be solved.";
-    default:
-      return "Use this when the situation is mixed and the wrong first move will create unnecessary loops.";
-  }
-}
 
 function isWelcomeToNewOrleansToursHost(host: string) {
   const normalized = host.toLowerCase().split(":")[0] || "";
@@ -85,10 +99,6 @@ export default async function HomePage() {
     return <NewOrleansToursPage />;
   }
 
-  const homepageEntries = getHomepageEntrySurfaces().slice(0, 7);
-  const primaryEntries = homepageEntries.slice(0, 4);
-  const secondaryEntries = homepageEntries.slice(4);
-
   return (
     <main className="min-h-screen bg-[#05070b] text-white">
       <JsonLd
@@ -98,125 +108,125 @@ export default async function HomePage() {
         }}
       />
 
-      <div className="mx-auto max-w-6xl space-y-8 px-6 py-8 md:space-y-10 md:py-12">
-        <section className="rounded-[2.25rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(245,179,75,0.12),transparent_26%),linear-gradient(180deg,#0d1118_0%,#06080d_100%)] px-6 py-8 md:px-10 md:py-12">
-          <div className="max-w-4xl">
-            <div className="text-[11px] font-black uppercase tracking-[0.32em] text-[#f5b34b]">
-              Destination Command Center
-            </div>
-            <h1 className="mt-4 text-[clamp(3rem,10vw,7rem)] font-black uppercase leading-[0.88] tracking-[-0.06em] text-white">
-              Travel decisions,
-              <br />
-              handled correctly.
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-white/72 md:text-lg">
-              Pick your situation. We route you to the correct answer.
-            </p>
-          </div>
+      <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 md:space-y-8 md:px-6 md:py-10">
+        <section className="relative overflow-hidden rounded-[1.7rem] border border-[#28486e]/70 bg-[linear-gradient(180deg,rgba(8,18,31,0.98)_0%,rgba(4,8,14,0.98)_100%)] px-5 py-6 shadow-[0_28px_90px_rgba(0,0,0,0.42)] md:px-8 md:py-9">
+          <div className="absolute inset-0 opacity-45 [background-image:linear-gradient(rgba(55,108,168,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(55,108,168,0.18)_1px,transparent_1px)] [background-size:44px_44px]" />
+          <div className="absolute right-0 top-0 h-44 w-44 bg-[#255dff]/20 blur-3xl" />
+          <div className="absolute bottom-0 left-1/3 h-28 w-44 bg-[#f27a1a]/10 blur-3xl" />
 
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
-            {primaryEntries.map((entry) => (
-              <Link
-                key={entry.id}
-                href={entry.path}
-                className="group rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5 transition hover:border-[#f5b34b]/45 hover:bg-white/[0.06]"
-              >
-                <div className="text-[11px] font-black uppercase tracking-[0.24em] text-[#f5b34b]">
-                  {entry.label}
-                </div>
-                <div className="mt-4 text-sm font-semibold uppercase tracking-[0.14em] text-white/88">
-                  {getIntentLabel(entry)}
-                </div>
-                <p className="mt-3 max-w-sm text-sm leading-7 text-white/66">
-                  {getEntrySummary(entry)}
-                </p>
-                <div className="mt-5 text-xs font-black uppercase tracking-[0.18em] text-white/82 transition group-hover:text-white">
-                  Find the right option
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          {secondaryEntries.length ? (
-            <div className="mt-5 flex flex-wrap gap-3">
-              {secondaryEntries.map((entry) => (
-                <Link
-                  key={entry.id}
-                  href={entry.path}
-                  className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-white/82 transition hover:border-[#f5b34b]/40 hover:bg-white/[0.06]"
-                >
-                  {entry.label}
-                </Link>
-              ))}
-            </div>
-          ) : null}
-        </section>
-
-        <section className={SECTION_PANEL_CLASS}>
-          <div className="max-w-2xl">
-            <div className="text-[11px] font-black uppercase tracking-[0.28em] text-[#f5b34b]">
-              What this is
-            </div>
-            <h2 className="mt-3 text-3xl font-black uppercase tracking-[-0.04em] text-white">
-              Most travel sites give you options.
-            </h2>
-            <p className="mt-3 text-base leading-8 text-white/72">
-              We remove the wrong ones before they waste your time.
-            </p>
-          </div>
-        </section>
-
-        <section className={SECTION_PANEL_CLASS}>
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div>
-              <div className="text-[11px] font-black uppercase tracking-[0.28em] text-[#f5b34b]">
-                Proof strip
+              <div className="text-[11px] font-black uppercase tracking-[0.32em] text-[#f27a1a]">
+                DESTINATION COMMAND CENTER
               </div>
-              <div className="mt-5 grid gap-3 md:grid-cols-3">
-                {CURATED_HIGHLIGHTS.map((item) => (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    className="rounded-[1.3rem] border border-white/10 bg-white/[0.03] px-4 py-5 text-sm font-semibold leading-7 text-white/84 transition hover:border-[#f5b34b]/40 hover:bg-white/[0.05]"
+              <h1 className="mt-4 max-w-4xl text-[clamp(2.85rem,8vw,6.7rem)] font-black leading-[0.9] tracking-[-0.055em] text-white">
+                Travel decisions, routed correctly.
+              </h1>
+              <p className="mt-5 max-w-xl text-base font-semibold leading-7 text-[#c3cedc] md:text-lg">
+                Choose the situation. DCC routes the next step.
+              </p>
+
+              <div className="mt-7 flex flex-wrap gap-3">
+                <Link
+                  href="/command"
+                  className="rounded-full border border-[#f27a1a]/50 bg-[#f27a1a] px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#07111d] shadow-[0_16px_38px_rgba(242,122,26,0.2)] transition hover:bg-[#ff9a3c]"
+                >
+                  Launch Console
+                </Link>
+                <Link
+                  href="/network"
+                  className="rounded-full border border-[#416bff]/45 bg-[#0a1730] px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#dbe6ff] transition hover:border-[#6f8fff] hover:bg-[#11244a]"
+                >
+                  View Routing Map
+                </Link>
+              </div>
+            </div>
+
+            <aside className="rounded-[1.25rem] border border-[#3b4b63]/60 bg-[#050b13]/72 p-4">
+              <div className="text-[10px] font-black uppercase tracking-[0.26em] text-[#7f92ad]">
+                SIGNAL STATE
+              </div>
+              <div className="mt-4 grid gap-2">
+                {SIGNAL_CHIPS.map((chip) => (
+                  <div
+                    key={chip}
+                    className="flex items-center justify-between rounded-xl border border-[#203954] bg-[#071522] px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-[#d7e3f5]"
                   >
-                    {item.label}
-                  </a>
+                    <span>{chip}</span>
+                    <span className="h-2 w-2 rounded-full bg-[#f27a1a]" />
+                  </div>
                 ))}
               </div>
-            </div>
-
-            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
-              <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#f5b34b]">
-                Control surface
-              </div>
-              <div className="mt-4 space-y-4 text-sm leading-7 text-white/68">
-                <p>Choose the correct option.</p>
-                <p>Get there correctly the first time.</p>
-                <p>Avoid the common mistake before it costs you the day.</p>
-              </div>
-            </div>
+            </aside>
           </div>
         </section>
 
-        <section className="grid gap-3 md:grid-cols-3">
-          <Link
-            href="/command"
-            className="rounded-[1.4rem] border border-[#f5b34b]/25 bg-[#f5b34b] px-5 py-5 text-sm font-black uppercase tracking-[0.16em] text-[#07111d] transition hover:bg-[#f7bf6a]"
-          >
-            Open command view
-          </Link>
-          <Link
-            href="/red-rocks-transportation"
-            className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] px-5 py-5 text-sm font-black uppercase tracking-[0.16em] text-white transition hover:border-[#f5b34b]/40 hover:bg-white/[0.05]"
-          >
-            Open primary corridor
-          </Link>
-          <Link
-            href="/juneau/whale-watching-tours"
-            className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] px-5 py-5 text-sm font-black uppercase tracking-[0.16em] text-white transition hover:border-[#f5b34b]/40 hover:bg-white/[0.05]"
-          >
-            Open Juneau corridor
-          </Link>
+        <section className="grid gap-4 md:grid-cols-2">
+          {COMMAND_LANES.map((lane) => (
+            <Link
+              key={lane.label}
+              href={lane.href}
+              className="group relative overflow-hidden rounded-[1.35rem] border border-[#263c59] bg-[#07111d] p-5 transition hover:border-[#416bff]/80 hover:bg-[#0a1828]"
+            >
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-[#416bff] via-[#f27a1a] to-transparent opacity-70" />
+              <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[#f27a1a]">
+                {lane.label}
+              </div>
+              <h2 className="mt-3 max-w-xl text-xl font-black leading-7 tracking-[-0.02em] text-white md:text-2xl">
+                {lane.title}
+              </h2>
+              <p className="mt-3 max-w-lg text-sm font-semibold leading-7 text-[#9dafc4]">
+                {lane.copy}
+              </p>
+              <div className="mt-5 inline-flex items-center rounded-full border border-[#314966] px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-[#dbe6ff] transition group-hover:border-[#f27a1a]/70 group-hover:text-white">
+                {lane.cta}
+              </div>
+            </Link>
+          ))}
+        </section>
+
+        <section className="grid gap-4 md:grid-cols-2">
+          {STATUS_PANELS.map((panel) => (
+            <div key={panel.label} className={SECTION_PANEL_CLASS}>
+              <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[#f27a1a]">
+                {panel.label}
+              </div>
+              <div className="mt-3 text-3xl font-black tracking-[-0.04em] text-white">
+                {panel.value}
+              </div>
+              <p className="mt-3 text-sm font-semibold leading-7 text-[#aebcd0]">
+                {panel.copy}
+              </p>
+            </div>
+          ))}
+        </section>
+
+        <section className={SECTION_PANEL_CLASS}>
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[#f27a1a]">
+                OPERATING RULE
+              </div>
+              <h2 className="mt-3 text-3xl font-black leading-tight tracking-[-0.035em] text-white">
+                Markets do not graduate by assertion.
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm font-semibold leading-7 text-[#aebcd0]">
+                Exact product URLs. Working internal detail routes. Verified public paths.
+                Blocked providers stay blocked.
+              </p>
+            </div>
+
+            <div className="rounded-[1.15rem] border border-[#314966] bg-[#050b13]/72 p-4">
+              <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#7f92ad]">
+                ACTIVE POSTURE
+              </div>
+              <div className="mt-4 space-y-3 text-sm font-semibold leading-6 text-[#c8d4e4]">
+                <p>DCC cards first.</p>
+                <p>Provider exits exact.</p>
+                <p>Bad routes fail closed.</p>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
     </main>

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { EntrySurface } from "@/src/data/entry-surfaces-types";
 
 type NavItem = {
   href: string;
@@ -16,7 +15,7 @@ const PRIMARY_NAV: NavItem[] = [
   { href: "/command", label: "Governance" },
 ];
 
-export default function SiteHeader(_props: { cities: EntrySurface[] }) {
+export default function SiteHeader() {
   const pathname = usePathname();
 
   if (pathname === "/sedona/jeep-tours") return null;

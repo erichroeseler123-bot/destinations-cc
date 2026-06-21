@@ -9,7 +9,6 @@ import SiteBreadcrumbs from "@/app/components/dcc/SiteBreadcrumbs";
 import SiteFooter from "@/app/components/dcc/SiteFooter";
 import WhatsLiveFloatingButton from "@/app/components/dcc/next48/WhatsLiveFloatingButton";
 import PartnerAnalyticsScript from "@/lib/getyourguide/PartnerAnalyticsScript";
-import { getHeaderSearchEntries } from "@/src/data/header-search-registry";
 import { SITE_IDENTITY } from "@/src/data/site-identity";
 
 const headingFont = Montserrat({
@@ -80,7 +79,6 @@ function isWelcomeToNewOrleansToursHost(host: string) {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const navCities = getHeaderSearchEntries();
   const requestHeaders = await headers();
   const host =
     requestHeaders.get("x-forwarded-host") ||
@@ -116,7 +114,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <a href="#main-content" className="dcc-skip-link">
               Skip to main content
             </a>
-            <SiteHeader cities={navCities} />
+            <SiteHeader />
             <div id="main-content" className="dcc-site-shell">
               <div className="dcc-site-shell__inner">
                 <SiteBreadcrumbs />
