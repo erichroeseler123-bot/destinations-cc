@@ -63,6 +63,47 @@ const NETWORK_DOMAINS = [
 
 const CRUISE_PORT_AUTHORITY_QUEUE = listDccCruisePortEntrypoints();
 
+const SATELLITE_FULFILLMENT_CARDS = [
+  {
+    name: "Juneau Flight Deck",
+    travelerProblem:
+      "Cruise travelers have a fixed port window and need to know what they can safely book before the ship leaves.",
+    decisionCompressed:
+      "What fits inside the port window, and what happens if weather affects the trip.",
+    fulfillment: "Approved excursion handoff for the Juneau lane.",
+  },
+  {
+    name: "Welcome to the Swamp",
+    travelerProblem:
+      "New Orleans visitors need to separate swamp-tour fit, pickup constraints, and timing before choosing.",
+    decisionCompressed:
+      "Which swamp-tour lane fits the traveler before execution moves to an approved handoff.",
+    fulfillment:
+      "Approved swamp-tour operator handoff or affiliate handoff, depending on the lane configuration.",
+  },
+  {
+    name: "GoSno",
+    travelerProblem:
+      "Mountain travelers need transfer timing and route fit resolved before committing to a ride.",
+    decisionCompressed: "Which transfer path and operator flow match the trip constraints.",
+    fulfillment: "Owned/operator transfer booking flow.",
+  },
+  {
+    name: "Party at Red Rocks",
+    travelerProblem:
+      "Concert travelers need a transportation choice that fits show timing and group logistics.",
+    decisionCompressed: "Whether the traveler is ready for Red Rocks shuttle execution.",
+    fulfillment: "Owned checkout and shuttle execution.",
+  },
+  {
+    name: "Shuttleya",
+    travelerProblem:
+      "Travelers need route-specific shuttle execution after the corridor decision is already made.",
+    decisionCompressed: "The Mighty Argo shuttle lane and other route-specific transport handoffs.",
+    fulfillment: "Operator handoff for the Mighty Argo shuttle lane.",
+  },
+] as const;
+
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
@@ -123,7 +164,7 @@ export default function NetworkPage() {
         <section className="grid gap-4 md:grid-cols-3">
           {[
             ["DCC decides", "The main DCC site frames the travel decision, removes bad-fit options, and preserves context."],
-            ["Satellites narrow", "Focused sites handle a city, tour type, or route when the traveler needs a smaller decision surface."],
+            ["Satellite sites narrow", "Focused sites handle a city, tour type, or route when the traveler needs a smaller decision surface."],
             ["Operators execute", "Execution sites handle the booking, route, or operational task when the choice is ready."],
           ].map(([title, copy]) => (
             <div key={title} className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-5">
@@ -131,6 +172,50 @@ export default function NetworkPage() {
               <p className="mt-3 text-sm leading-7 text-white/68">{copy}</p>
             </div>
           ))}
+        </section>
+
+        <section className="rounded-[2rem] border border-white/10 bg-[#0b1017] p-6 md:p-8">
+          <div className="text-[11px] font-black uppercase tracking-[0.28em] text-[#f5b34b]">
+            Layer 04 Fulfillment
+          </div>
+          <h2 className="mt-3 text-2xl font-black uppercase tracking-[-0.03em]">
+            Fulfillment is replaceable
+          </h2>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-white/68">
+            Fulfillment is where the accepted decision turns into an action:
+            owned checkout, direct operator handoff, FareHarbor, Rezdy,
+            GetYourGuide, lead forms, or another approved partner for that
+            lane. The provider can change. The corridor, decision logic, and
+            routing record stay with DCC and Earth OS.
+          </p>
+        </section>
+
+        <section className="rounded-[2rem] border border-white/10 bg-[#0b1017] p-6 md:p-8">
+          <h2 className="text-2xl font-black uppercase tracking-[-0.03em]">
+            Satellite sites
+          </h2>
+          <div className="mt-5 grid gap-3">
+            {SATELLITE_FULFILLMENT_CARDS.map((item) => (
+              <div
+                key={item.name}
+                className="grid gap-2 rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4 md:grid-cols-[220px_1fr_1fr_1fr]"
+              >
+                <span className="font-black text-white">{item.name}</span>
+                <span className="text-sm leading-6 text-white/68">
+                  <span className="font-semibold text-white">Traveler problem:</span>{" "}
+                  {item.travelerProblem}
+                </span>
+                <span className="text-sm leading-6 text-white/68">
+                  <span className="font-semibold text-white">Decision compressed:</span>{" "}
+                  {item.decisionCompressed}
+                </span>
+                <span className="text-sm leading-6 text-white/68">
+                  <span className="font-semibold text-white">Fulfillment:</span>{" "}
+                  {item.fulfillment}
+                </span>
+              </div>
+            ))}
+          </div>
         </section>
 
         <section className="rounded-[2rem] border border-white/10 bg-[#0b1017] p-6 md:p-8">
