@@ -37,50 +37,9 @@ const nextConfig = {
   },
   async rewrites() {
     const travelMarketCruiseDeskBase = "https://dcc-v1-cut-clean.vercel.app/dcc/cruise-ports";
-    const travelMarketCruisePortBase = "https://dcc-v1-cut-clean.vercel.app/cruise-ports";
 
     return {
       beforeFiles: [
-        {
-          source: "/cruise-ports/port-canaveral",
-          destination: `${travelMarketCruisePortBase}/port-canaveral`,
-        },
-        {
-          source: "/cruise-ports/port-canaveral/:path*",
-          destination: `${travelMarketCruisePortBase}/port-canaveral/:path*`,
-        },
-        {
-          source: "/cruise-ports/portmiami",
-          destination: `${travelMarketCruisePortBase}/portmiami`,
-        },
-        {
-          source: "/cruise-ports/portmiami/:path*",
-          destination: `${travelMarketCruisePortBase}/portmiami/:path*`,
-        },
-        {
-          source: "/cruise-ports/nassau",
-          destination: `${travelMarketCruisePortBase}/nassau`,
-        },
-        {
-          source: "/cruise-ports/nassau/:path*",
-          destination: `${travelMarketCruisePortBase}/nassau/:path*`,
-        },
-        {
-          source: "/cruise-ports/port-everglades",
-          destination: `${travelMarketCruisePortBase}/port-everglades`,
-        },
-        {
-          source: "/cruise-ports/port-everglades/:path*",
-          destination: `${travelMarketCruisePortBase}/port-everglades/:path*`,
-        },
-        {
-          source: "/cruise-ports/cozumel",
-          destination: `${travelMarketCruisePortBase}/cozumel`,
-        },
-        {
-          source: "/cruise-ports/cozumel/:path*",
-          destination: `${travelMarketCruisePortBase}/cozumel/:path*`,
-        },
         {
           source: "/dcc/cruise-ports/port-canaveral-orlando",
           destination: `${travelMarketCruiseDeskBase}/port-canaveral-orlando`,
