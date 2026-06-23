@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getStCroixVenueCalendarGroups } from "@/lib/dcc/corridors/stCroixCalendar";
 import { SOMERSET_PAGES } from "@/lib/dcc/corridors/somersetPages";
+import JsonLd from "@/app/components/dcc/JsonLd";
+import { buildCityJsonLd, buildBreadcrumbJsonLd } from "@/lib/dcc/jsonld";
 
 export const metadata: Metadata = {
   title: "Somerset WI Concerts, Tubing, and St. Croix Valley Trips",
@@ -24,6 +26,33 @@ export default async function SomersetHubPage() {
 
   return (
     <main className="min-h-screen bg-[#f7f5ef] text-slate-950">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            buildCityJsonLd({
+              path: "/somerset-wi",
+              name: "Somerset",
+              description:
+                "Somerset WI visitor planning for Apple River tubing, River's Edge weekends, St. Croix Valley concerts, Mystic Lake, The Ledge, and future shuttle transportation.",
+              address: {
+                locality: "Somerset",
+                region: "WI",
+                country: "US",
+              },
+              geo: {
+                lat: 45.1244,
+                lng: -92.6758,
+              },
+              touristTypes: ["Concertgoers", "Tubing groups", "Weekend travelers"],
+            }),
+            buildBreadcrumbJsonLd([
+              { name: "Home", item: "/" },
+              { name: "Somerset WI", item: "/somerset-wi" },
+            ]),
+          ],
+        }}
+      />
       <div className="mx-auto max-w-6xl px-6 py-14">
         <header>
           <p className="text-xs font-black uppercase tracking-[0.24em] text-emerald-800">

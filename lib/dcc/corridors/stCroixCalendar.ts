@@ -9,6 +9,7 @@ export type StCroixCalendarEvent = {
   source: "ticketmaster" | "seatgeek";
   url: string | null;
   priceLabel: string | null;
+  startsAt: string | null;
 };
 
 type RawEvent = StCroixCalendarEvent & {
@@ -231,7 +232,7 @@ function normalizeEvents(events: RawEvent[], limit: number) {
   for (const event of sorted) {
     const key = eventKey(event);
     if (!deduped.has(key)) {
-      const { startsAt: _startsAt, searchSlug: _searchSlug, ...publicEvent } = event;
+      const { searchSlug: _searchSlug, ...publicEvent } = event;
       deduped.set(key, publicEvent);
     }
   }

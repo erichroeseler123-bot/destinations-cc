@@ -7,6 +7,8 @@ import {
   SOMERSET_BASE_PATH,
   SOMERSET_PAGES,
 } from "@/lib/dcc/corridors/somersetPages";
+import JsonLd from "@/app/components/dcc/JsonLd";
+import { buildBreadcrumbJsonLd, buildEventJsonLd } from "@/lib/dcc/jsonld";
 
 export const revalidate = 3600;
 
@@ -55,8 +57,46 @@ export default async function SomersetDetailPage({
     matchesVenueGroup(page.slug, group.slug),
   );
 
+  const schemas: Record<string, unknown>[] = [];
+
+  // 1. Breadcrumbs
+  schemas.push(
+    buildBreadcrumbJsonLd([
+      { name: "Home", item: "/" },
+      { name: "Somerset WI", item: SOMERSET_BASE_PATH },
+      { name: page.eyebrow, item: `${SOMERSET_BASE_PATH}/${page.slug}` },
+    ])
+  );
+
+  // 2. Events from live calendars
+  if (venueCalendarGroups.length > 0) {
+    for (const group of venueCalendarGroups) {
+      for (const event of group.events) {
+        if (!event.startsAt) continue; // Filter out events without a valid start date/time
+
+        schemas.push(
+          buildEventJsonLd({
+            path: `${SOMERSET_BASE_PATH}/${page.slug}`,
+            type: "MusicEvent",
+            name: event.title,
+            description: `${event.title} live at ${event.venueName || group.name}. Refreshed hourly.`,
+            startDate: event.startsAt,
+            venueName: event.venueName || group.name,
+            address: {
+              locality: group.location || "Somerset",
+              region: "WI",
+              country: "US",
+            },
+            offerUrl: event.url,
+          })
+        );
+      }
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#f7f5ef] text-slate-950">
+      <JsonLd data={{ "@context": "https://schema.org", "@graph": schemas }} />
       <div className="mx-auto max-w-5xl px-6 py-14">
         <Link href={SOMERSET_BASE_PATH} className="text-sm font-bold text-emerald-800 hover:text-emerald-950">
           Somerset WI
