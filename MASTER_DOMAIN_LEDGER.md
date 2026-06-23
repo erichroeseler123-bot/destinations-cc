@@ -38,15 +38,37 @@ These brands are responsible for their own customer-facing execution paths, oper
 
 ## Domain Ledger
 
-| Domain | Layer | Vercel Project | Repo | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| destinationcommandcenter.com | DCC Authority | destinations-cc | destinations-cc | LIVE / Verified |
-| dcc-v1-cut-clean.vercel.app | TravelMarket | dcc-v1-cut-clean | blank-app | LIVE / Template Engine |
-| welcometoalaskatours.com | Satellite Market | wta-ui | wta-renderer | LIVE / Verified |
-| partyatredrocks.com | Direct-Service | partyatredrocks | partyatredrocks | LIVE / Revenue |
-| gosno.co | Direct-Service | gosno | Unknown | LIVE |
-| shuttleya.com | Direct-Service | v0-code-review (WRONG) | Unknown | HIGH RISK / Mismapped |
-| welcometotheswamp.com | Satellite Market | dcc-v1-cut-clean | blank-app | HIGH RISK / Apex-WWW Split |
+### Project-Level Quarantine Warning
+
+> [!CAUTION]
+> **v0-code-review** is a quarantine project used only for testing and staging. 
+> No public custom domain is allowed to point to it under any circumstances unless explicitly documented in the ledger.
+
+### Verified Domain Rows
+
+| Domain | Canonical Host | Owner Layer | Intended Role | Current Vercel Project | Current Project ID | Current Deployment ID | Source Repo | Local Checkout Path | Live Verification Status | Verification Source | Robots Status | Sitemap Status | Booking/Handoff Status | Risk Notes | Last Verified Date |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **destinationcommandcenter.com / www.destinationcommandcenter.com** | `destinationcommandcenter.com` | DCC Authority | Central Decision / Route Governance | `destinations-cc` | `prj_pqvFn6jtJbbVgv1UsAsg3KtMl26s` | `dpl_FfN16LXUUqRnCndbAu1nMxWj4qTu` | `destinations-cc` | `/home/erichroeseler123/destinations-cc` | `needs-current-refresh` | `vercel-project-metadata` | Static sitemap URL | dynamic multi-host sitemap | Multi-provider / telemetry | None | 2026-06-22 |
+| **dcc-v1-cut-clean.vercel.app** | `dcc-v1-cut-clean.vercel.app` | TravelMarket | Template engine reference / staging | `dcc-v1-cut-clean` | `prj_luX9tL1gnzWWmlz6qagw4H0rCiyC` | `unverified` | `blank-app` | `/home/erichroeseler123/blank-app` | `needs-current-refresh` | `vercel-project-metadata` | `unverified` | `unverified` | Shared template hydration | None | 2026-06-22 |
+| **welcometoalaskatours.com / www.welcometoalaskatours.com** | `welcometoalaskatours.com` | Satellite Market | Alaska tour SEO entrance | `wta-ui` | `prj_BDwKdcDdB4uHALPxUdBYsxZAksLg` | `dpl_4gw4xCCovqz37vEeNaJVYfqQ8mqX` | `wta-renderer` | `None` | `needs-current-refresh` | `owner-memory` | Independent sitemap link | Independent sitemap | Direct detail routing | Standalone wta-ui project | 2026-06-22 |
+| **partyatredrocks.com / www.partyatredrocks.com** | `www.partyatredrocks.com` | Direct-Service | Denver Red Rocks shuttle booking | `partyatredrocks` | `prj_cnUiR8KGviBKpKADWDwcK9Gqr6sH` | `unverified` | `partyatredrocks` | `None` | `do-not-touch` | `owner-memory` | `unverified` | `unverified` | Square checkout / events | revenue-sensitive; apex redirect/MCP mismatch should not be touched without explicit approval | 2026-06-22 |
+| **shuttleya.com / www.shuttleya.com** | `shuttleya.com` | Direct-Service | Argo Denver shuttle | `v0-shuttleya` | `prj_SiiHW7Y8DpAzLWCELG8kqfASZM8a` | `dpl_AEhnvcyt659mL6nNjniU5ZGJQTtN` | `unverified` | `None` | `stale-ledger-correction-needed` | `owner-memory` | `unverified` | `unverified` | Argo lead capture | Repaired live; ledger stale | 2026-06-22 |
+| **welcometotheswamp.com** | `www.welcometotheswamp.com` | Satellite Market | Swamp tour SEO entrance | `dcc-v1-cut-clean` | `prj_luX9tL1gnzWWmlz6qagw4H0rCiyC` | `unverified` | `blank-app` | `/home/erichroeseler123/blank-app` | `verified-host-present-but-high-risk` | `vercel-project-metadata` | `unverified` | `unverified` | GYG/Viator widgets | Apex-WWW DNS split; no repair approved | 2026-06-22 |
+
+### Unverified / Proposed / Needs-Owner-Decision Rows
+
+| Domain | Canonical Host | Owner Layer | Intended Role | Current Vercel Project | Current Project ID | Current Deployment ID | Source Repo | Local Checkout Path | Live Verification Status | Verification Source | Robots Status | Sitemap Status | Booking/Handoff Status | Risk Notes | Last Verified Date |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **gosno.co** | `gosno.co` | Direct-Service | Ski and winter mountain transport | `gosno` | `prj_vXDUvqAXza3XNca9gFCQ3wTa0124` | `unverified` | `unverified` | `None` | `unverified` | `unverified` | `unverified` | `unverified` | Shuttle Booking / Dispatch | Needs Vercel/repo check | `not-live-verified` |
+| **welcometothedells.com** | `www.welcometothedells.com` | Satellite Market | Wisconsin Dells SEO entrance | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `proposed` | `unverified` | `unverified` | `unverified` | Missing from master ledger | `not-live-verified` |
+| **welcometoneworleanstours.com** | `www.welcometoneworleanstours.com` | Satellite Market | New Orleans SEO entrance | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `proposed` | `unverified` | `unverified` | `unverified` | Missing from master ledger | `not-live-verified` |
+| **juneauflightdeck.com** | `juneauflightdeck.com` | Satellite Market | Juneau helicopter SEO entrance | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `proposed` | `unverified` | `unverified` | `unverified` | Missing from master ledger | `not-live-verified` |
+| **lastfrontiershoreexcursions.com** | `www.lastfrontiershoreexcursions.com` | Satellite Market | Alaska excursions SEO entrance | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `proposed` | `unverified` | `unverified` | `unverified` | Missing from master ledger | `not-live-verified` |
+| **frenchquarterorientation.com** | `www.frenchquarterorientation.com` | Satellite Market | New Orleans orientation guide | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `proposed` | `unverified` | `unverified` | `unverified` | Missing from master ledger | `not-live-verified` |
+| **saveonthestrip.com** | `www.saveonthestrip.com` | Satellite Market | Las Vegas SEO entrance | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `proposed` | `unverified` | `unverified` | `unverified` | Missing from master ledger | `not-live-verified` |
+| **shuttletosomersetamphitheater.com** | `www.shuttletosomersetamphitheater.com` | Direct-Service | Somerset private shuttle | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `needs-owner-decision` | `proposed` | `unverified` | `code-supports-host-aware-sitemap / live-unverified` | Private group lead form | Alias shift unverified | `not-live-verified` |
+| **ectomsp.com** | `ectomsp.com` | Direct-Service | Eau Claire to MSP airport ride | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `needs-owner-decision` | `proposed` | `unverified` | `unverified` | Airport transport booking | Spelling: ectomsp.com / ectoMSP | `not-live-verified` |
+| **bluehillsoutpost.com** | `bluehillsoutpost.com` | Local Drop | Outpost supply booking | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `parked-or-unresolved` | `proposed` | `unverified` | `unverified` | Manual booking / local drop | Non-travel classification | `not-live-verified` |
 
 ## Governance Rule
 
