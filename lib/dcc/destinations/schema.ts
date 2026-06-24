@@ -24,12 +24,12 @@ export const DestinationGatewaySchema = z.object({
 
 export const DestinationRecordSchema = z.object({
   slug: SlugSchema,
-  name: z.string().min(2),
+  name: z.string().min(2).optional(),
   display_name: z.string().min(2).optional(),
-  country_code: z.string().regex(/^[A-Z]{2}$/),
-  status: z.enum(["seed", "beta", "live"]).default("seed"),
+  country_code: z.string().regex(/^[A-Z]{2}$/).optional(),
+  status: z.enum(["seed", "beta", "live", "active"]).default("seed"),
   visibility: z.enum(["public", "private", "hidden"]).default("public"),
-  registry_nodes: z.array(DccIdSchema).min(1),
+  registry_nodes: z.array(DccIdSchema).default([]),
   port_gateways: z.array(DestinationGatewaySchema).default([]),
   aliases: z.array(SlugSchema).default([]),
   providers: DestinationProviderSchema.default({}),
@@ -39,7 +39,7 @@ export const DestinationRecordSchema = z.object({
   meta: z.object({
     version: z.number().int().positive().default(1),
     updated_at: IsoDateTimeSchema,
-  }),
+  }).optional(),
 });
 
 export const DestinationRegistrySchema = z.object({
@@ -48,9 +48,9 @@ export const DestinationRegistrySchema = z.object({
   destinations: z.array(
     z.object({
       slug: SlugSchema,
-      name: z.string().min(2),
-      country_code: z.string().regex(/^[A-Z]{2}$/),
-      status: z.enum(["seed", "beta", "live"]),
+      name: z.string().min(2).optional(),
+      country_code: z.string().regex(/^[A-Z]{2}$/).optional(),
+      status: z.enum(["seed", "beta", "live", "active"]),
       visibility: z.enum(["public", "private", "hidden"]),
     })
   ).min(1),

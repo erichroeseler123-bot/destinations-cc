@@ -205,6 +205,13 @@ export default function ProgressiveBookingPageClient() {
   return (
     <main className="min-h-screen bg-[#0b0f16] px-4 py-6 text-white sm:px-6">
       <div className="mx-auto max-w-7xl">
+        {/* Sold Out Notice Banner */}
+        <div className="mb-6 rounded-2xl border border-orange-500/30 bg-orange-500/10 p-4 text-center">
+          <p className="text-sm font-black text-orange-300 uppercase tracking-widest sm:text-base">
+            ⚠️ Friday &amp; Saturday are Sold Out
+          </p>
+        </div>
+
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.22em] text-orange-300">

@@ -71,6 +71,10 @@ function buildDerivativesFromDestinations() {
   };
 }
 
+function camelCase(slug) {
+  return slug.replace(/-([a-z0-9])/g, (g) => g[1].toUpperCase());
+}
+
 function main() {
   const derivatives = buildDerivativesFromDestinations();
 
@@ -78,13 +82,209 @@ function main() {
   writeJson(attractionsPath, derivatives.attractions);
   writeJson(portMappingsPath, derivatives.portMappings);
 
+  const destinationFiles = listDestinationFiles();
+
+  // 1. Sync data/destinations/index.json with all 113 destinations
+  const registryDestinations = [];
+  const countryMap = {
+    "athens": "GR",
+    "rome": "IT",
+    "nassau": "BS",
+    "amsterdam": "NL",
+    "barcelona": "ES",
+    "copenhagen": "DK",
+    "dubai": "AE",
+    "dubrovnik": "HR",
+    "ephesus": "TR",
+    "florence": "IT",
+    "helsinki": "FI",
+    "istanbul": "TR",
+    "lisbon": "PT",
+    "marseille": "FR",
+    "merida": "MX",
+    "naples": "IT",
+    "singapore": "SG",
+    "southampton": "GB",
+    "stockholm": "SE",
+    "sydney": "AU",
+    "vancouver": "CA",
+    "venice": "IT",
+    "yokohama": "JP",
+    "cabo-san-lucas": "MX",
+    "cozumel": "MX",
+    "mahahual": "MX",
+    "puerto-vallarta": "MX"
+  };
+
+  for (const fileName of destinationFiles) {
+    const destination = readJson(path.join(destinationsDir, fileName));
+    registryDestinations.push({
+      slug: destination.slug,
+      name: destination.display_name || destination.slug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
+      country_code: countryMap[destination.slug] || "US",
+      status: destination.status || "active",
+      visibility: destination.visibility || "public"
+    });
+  }
+
+  const registryOutput = {
+    version: 1,
+    updated_at: new Date().toISOString(),
+    destinations: registryDestinations.sort((a, b) => a.slug.localeCompare(b.slug))
+  };
+  writeJson(path.join(destinationsDir, "index.json"), registryOutput);
+
+  // 2. Generate lib/dcc/destinations/index.ts dynamically
+  const importLines = [];
+  const dataEntries = [];
+
+  for (const fileName of destinationFiles) {
+    const slug = fileName.replace(/\.json$/, "");
+    const varName = `${camelCase(slug)}Json`;
+    importLines.push(`import ${varName} from "@/data/destinations/${fileName}";`);
+    dataEntries.push(`  "${slug}": DestinationRecordSchema.parse(${varName}),`);
+  }
+
+  const tsCode = [
+    `import registryJson from "@/data/destinations/index.json";`,
+    importLines.join("\n"),
+    `import {`,
+    `  DestinationRecordSchema,`,
+    `  DestinationRegistrySchema,`,
+    `  type DestinationRecord,`,
+    `} from "@/lib/dcc/destinations/schema";`,
+    ``,
+    `export const DESTINATION_REGISTRY = DestinationRegistrySchema.parse(registryJson);`,
+    ``,
+    `const DESTINATION_DATA = {`,
+    dataEntries.join("\n"),
+    `} as const;`,
+    ``,
+    `export type DestinationKey = keyof typeof DESTINATION_DATA;`,
+    ``,
+    `export function listDestinationKeys(): DestinationKey[] {`,
+    `  return Object.keys(DESTINATION_DATA) as DestinationKey[];`,
+    `}`,
+    ``,
+    `export function isDestinationKey(value: string): value is DestinationKey {`,
+    `  return value in DESTINATION_DATA;`,
+    `}`,
+    ``,
+    `export function getDestination(slug: string): DestinationRecord | null {`,
+    `  if (isDestinationKey(slug)) {`,
+    `    return DESTINATION_DATA[slug];`,
+    `  }`,
+    ``,
+    `  const normalized = slug.trim().toLowerCase();`,
+    `  for (const destination of Object.values(DESTINATION_DATA)) {`,
+    `    if (destination.aliases.includes(normalized)) {`,
+    `      return destination;`,
+    `    }`,
+    `  }`,
+    ``,
+    `  return null;`,
+    `}`,
+    ``,
+    `export function getDestinationByPortGateway(portSlug: string): DestinationRecord | null {`,
+    `  const normalized = portSlug.trim().toLowerCase();`,
+    `  for (const destination of Object.values(DESTINATION_DATA)) {`,
+    `    if (destination.port_gateways.some((gateway) => gateway.port_slug === normalized)) {`,
+    `      return destination;`,
+    `    }`,
+    `  }`,
+    ``,
+    `  return null;`,
+    `}`,
+    ``
+  ].join("\n");
+
+  fs.writeFileSync(path.join(repoRoot, "lib", "dcc", "destinations", "index.ts"), tsCode, "utf8");
+
+  // 3. Generate data/dynamic-routes.json
+  const dynamicRoutes = new Set();
+
+  for (const fileName of destinationFiles) {
+    const slug = fileName.replace(/\.json$/, "");
+    dynamicRoutes.add(`/${slug}`);
+    dynamicRoutes.add(`/${slug}/tours`);
+    dynamicRoutes.add(`/${slug}/attractions`);
+    dynamicRoutes.add(`/${slug}/day-trips`);
+    dynamicRoutes.add(`/${slug}/shows`);
+    dynamicRoutes.add(`/${slug}/helicopter`);
+    dynamicRoutes.add(`/${slug}/shows-this-week`);
+    dynamicRoutes.add(`/${slug}/food`);
+    dynamicRoutes.add(`/${slug}/sports`);
+    dynamicRoutes.add(`/${slug}/things-to-do`);
+  }
+
+  // 4. Statically register Resort OS dynamic routes
+  dynamicRoutes.add("/resort/kalahari-resort-dells");
+  dynamicRoutes.add("/resort/wilderness-resort-dells");
+  dynamicRoutes.add("/resort/chula-vista-resort-dells");
+  dynamicRoutes.add("/resort/grand-geneva-resort");
+
+  const attractionsDir = path.join(repoRoot, "data", "attractions");
+  if (fs.existsSync(attractionsDir)) {
+    const files = fs.readdirSync(attractionsDir).filter(f => f.endsWith(".json"));
+    for (const file of files) {
+      const city = file.replace(/\.json$/, "");
+      try {
+        const manifest = JSON.parse(fs.readFileSync(path.join(attractionsDir, file), "utf8"));
+        if (manifest && Array.isArray(manifest.attractions)) {
+          for (const entry of manifest.attractions) {
+            if (entry.slug) {
+              dynamicRoutes.add(`/${city}/${entry.slug}`);
+              dynamicRoutes.add(`/${city}/${entry.slug}/tours`);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn(`Error reading attractions for ${city}:`, e.message);
+      }
+    }
+  }
+
+  const categoriesDir = path.join(repoRoot, "data", "categories");
+  if (fs.existsSync(categoriesDir)) {
+    const files = fs.readdirSync(categoriesDir).filter(f => f.endsWith(".json"));
+    for (const file of files) {
+      const city = file.replace(/\.json$/, "");
+      try {
+        const manifest = JSON.parse(fs.readFileSync(path.join(categoriesDir, file), "utf8"));
+        if (manifest && Array.isArray(manifest.categories)) {
+          for (const entry of manifest.categories) {
+            if (entry.slug) {
+              dynamicRoutes.add(`/${city}/${entry.slug}`);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn(`Error reading categories for ${city}:`, e.message);
+      }
+    }
+  }
+
+  const venuesFile = path.join(repoRoot, "src", "data", "sports-venues-config.ts");
+  if (fs.existsSync(venuesFile)) {
+    const content = fs.readFileSync(venuesFile, "utf8");
+    const regex = /slug:\s*["']([^"']+)["']/g;
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      dynamicRoutes.add(`/venues/${match[1]}`);
+    }
+  }
+
+  const sortedRoutes = Array.from(dynamicRoutes).sort();
+  writeJson(path.join(repoRoot, "data", "dynamic-routes.json"), sortedRoutes);
+
   console.log(
     JSON.stringify(
       {
-        destinations_read: listDestinationFiles().length,
+        destinations_read: destinationFiles.length,
         city_aliases: Object.keys(derivatives.cityAliases).length,
         attractions: Object.keys(derivatives.attractions).length,
         port_mappings: Object.keys(derivatives.portMappings).length,
+        dynamic_routes_generated: sortedRoutes.length
       },
       null,
       2

@@ -1,26 +1,782 @@
 {
   "version": 1,
-  "updated_at": "2026-03-13T18:30:00-05:00",
+  "updated_at": "2026-06-24T13:43:51.535Z",
   "destinations": [
+    {
+      "slug": "amsterdam",
+      "name": "Amsterdam",
+      "country_code": "NL",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "anaheim",
+      "name": "Anaheim",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "ann-arbor",
+      "name": "Ann Arbor",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
     {
       "slug": "athens",
       "name": "Athens",
       "country_code": "GR",
-      "status": "seed",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "atlanta",
+      "name": "Atlanta",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "augusta",
+      "name": "Augusta",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "austin",
+      "name": "Austin",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "bar-harbor",
+      "name": "Bar Harbor",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "barcelona",
+      "name": "Barcelona",
+      "country_code": "ES",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "baton-rouge",
+      "name": "Baton Rouge",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "beaverton",
+      "name": "Beaverton",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "bellevue",
+      "name": "Bellevue",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "bergen",
+      "name": "Bergen",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "boston",
+      "name": "Boston",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "boulder",
+      "name": "Boulder",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "burbank",
+      "name": "Burbank",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "burlington",
+      "name": "Burlington",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "cabo-san-lucas",
+      "name": "Cabo San Lucas",
+      "country_code": "MX",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "cambridge",
+      "name": "Cambridge",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "chandler",
+      "name": "Chandler",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "charleston",
+      "name": "Charleston",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "chicago",
+      "name": "Chicago",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "cincinnati",
+      "name": "Cincinnati",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "cleveland",
+      "name": "Cleveland",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "colorado-springs",
+      "name": "Colorado Springs",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "columbus",
+      "name": "Columbus",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "concord",
+      "name": "Concord",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "copenhagen",
+      "name": "Copenhagen",
+      "country_code": "DK",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "cozumel",
+      "name": "Cozumel",
+      "country_code": "MX",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "dallas",
+      "name": "Dallas",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "denver",
+      "name": "Denver",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "detroit",
+      "name": "Detroit",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "dubai",
+      "name": "Dubai",
+      "country_code": "AE",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "dubrovnik",
+      "name": "Dubrovnik",
+      "country_code": "HR",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "ephesus",
+      "name": "Ephesus",
+      "country_code": "TR",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "everett",
+      "name": "Everett",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "florence",
+      "name": "Florence",
+      "country_code": "IT",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "fort-collins",
+      "name": "Fort Collins",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "fort-lauderdale",
+      "name": "Fort Lauderdale",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "fort-worth",
+      "name": "Fort Worth",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "helsinki",
+      "name": "Helsinki",
+      "country_code": "FI",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "hillsboro",
+      "name": "Hillsboro",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "hong-kong",
+      "name": "Hong Kong",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "honolulu",
+      "name": "Honolulu",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "houston",
+      "name": "Houston",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "istanbul",
+      "name": "Istanbul",
+      "country_code": "TR",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "juneau",
+      "name": "Juneau",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "ketchikan",
+      "name": "Ketchikan",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "key-west",
+      "name": "Key West",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "knoxville",
+      "name": "Knoxville",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "lafayette",
+      "name": "Lafayette",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "lancaster",
+      "name": "Lancaster",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "las-vegas",
+      "name": "Las Vegas",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "lisbon",
+      "name": "Lisbon",
+      "country_code": "PT",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "los-angeles",
+      "name": "Los Angeles",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "madison",
+      "name": "Madison",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "mahahual",
+      "name": "Mahahual",
+      "country_code": "MX",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "marseille",
+      "name": "Marseille",
+      "country_code": "FR",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "memphis",
+      "name": "Memphis",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "merida",
+      "name": "Merida",
+      "country_code": "MX",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "mesa",
+      "name": "Mesa",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "miami",
+      "name": "Miami",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "milwaukee",
+      "name": "Milwaukee",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "minneapolis",
+      "name": "Minneapolis",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "montpelier",
+      "name": "Montpelier",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "myrtle-beach",
+      "name": "Myrtle Beach",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "naples",
+      "name": "Naples",
+      "country_code": "IT",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "nashville",
+      "name": "Nashville",
+      "country_code": "US",
+      "status": "active",
       "visibility": "public"
     },
     {
       "slug": "nassau",
       "name": "Nassau",
       "country_code": "BS",
-      "status": "seed",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "new-orleans",
+      "name": "New Orleans",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "new-york",
+      "name": "New York",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "newport",
+      "name": "Newport",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "orlando",
+      "name": "Orlando",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "pasadena",
+      "name": "Pasadena",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "philadelphia",
+      "name": "Philadelphia",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "phoenix",
+      "name": "Phoenix",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "pittsburgh",
+      "name": "Pittsburgh",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "portland",
+      "name": "Portland",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "portsmouth",
+      "name": "Portsmouth",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "providence",
+      "name": "Providence",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "puerto-vallarta",
+      "name": "Puerto Vallarta",
+      "country_code": "MX",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "redmond",
+      "name": "Redmond",
+      "country_code": "US",
+      "status": "active",
       "visibility": "public"
     },
     {
       "slug": "rome",
       "name": "Rome",
       "country_code": "IT",
-      "status": "seed",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "sacramento",
+      "name": "Sacramento",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "salem",
+      "name": "Salem",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "san-antonio",
+      "name": "San Antonio",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "san-diego",
+      "name": "San Diego",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "san-francisco",
+      "name": "San Francisco",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "san-jose",
+      "name": "San Jose",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "san-juan",
+      "name": "San Juan",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "santa-monica",
+      "name": "Santa Monica",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "savannah",
+      "name": "Savannah",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "scottsdale",
+      "name": "Scottsdale",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "seattle",
+      "name": "Seattle",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "singapore",
+      "name": "Singapore",
+      "country_code": "SG",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "sitka",
+      "name": "Sitka",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "skagway",
+      "name": "Skagway",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "southampton",
+      "name": "Southampton",
+      "country_code": "GB",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "st-paul",
+      "name": "ST Paul",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "st-petersburg",
+      "name": "ST Petersburg",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "stockholm",
+      "name": "Stockholm",
+      "country_code": "SE",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "sydney",
+      "name": "Sydney",
+      "country_code": "AU",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "tacoma",
+      "name": "Tacoma",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "tampa",
+      "name": "Tampa",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "tempe",
+      "name": "Tempe",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "vancouver",
+      "name": "Vancouver",
+      "country_code": "CA",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "vegas",
+      "name": "Vegas",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "venice",
+      "name": "Venice",
+      "country_code": "IT",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "washington-dc",
+      "name": "Washington DC",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "west-palm-beach",
+      "name": "West Palm Beach",
+      "country_code": "US",
+      "status": "active",
+      "visibility": "public"
+    },
+    {
+      "slug": "yokohama",
+      "name": "Yokohama",
+      "country_code": "JP",
+      "status": "active",
       "visibility": "public"
     }
   ]

@@ -4,6 +4,7 @@ import {
   type NetworkRole,
   type PublishState,
 } from "@/lib/route-governance";
+import dynamicRoutes from "../../data/dynamic-routes.json";
 
 export type RouteGovernanceEntry = {
   path: string;
@@ -735,7 +736,24 @@ const ROOT_ROUTE_GOVERNANCE = [
   },
 ] as const satisfies readonly RouteGovernanceEntry[];
 
-const ROOT_ROUTE_GOVERNANCE_INDEX = createRouteGovernanceIndex(ROOT_ROUTE_GOVERNANCE);
+const staticPaths = new Set<string>(ROOT_ROUTE_GOVERNANCE.map((e) => e.path));
+
+const DYNAMIC_GOVERNED_ROUTES: RouteGovernanceEntry[] = (dynamicRoutes as string[])
+  .filter((path) => !staticPaths.has(path))
+  .map((path) => ({
+    path,
+    publishState: "indexable",
+    networkRole: "dcc",
+    handoffPolicy: "conditional",
+    notes: "Dynamically registered long-tail SEO node.",
+  }));
+
+const ALL_ROUTE_GOVERNANCE: RouteGovernanceEntry[] = [
+  ...ROOT_ROUTE_GOVERNANCE,
+  ...DYNAMIC_GOVERNED_ROUTES,
+];
+
+const ROOT_ROUTE_GOVERNANCE_INDEX = createRouteGovernanceIndex(ALL_ROUTE_GOVERNANCE);
 
 export function getRootRouteGovernanceEntries(): RouteGovernanceEntry[] {
   return [...ROOT_ROUTE_GOVERNANCE_INDEX.entries];

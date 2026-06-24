@@ -12,8 +12,6 @@ test("governed document paths emit index-follow only when indexable", () => {
 
 test("generic document surfaces emit noindex-nofollow when route governance does not expose them", () => {
   for (const pathname of [
-    "/las-vegas/things-to-do",
-    "/new-orleans/things-to-do",
     "/grand-canyon",
     "/hoover-dam",
     "/helicopter-tours",
