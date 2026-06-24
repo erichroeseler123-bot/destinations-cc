@@ -6,7 +6,7 @@ interface RequestInviteModalProps {
   isOpen: boolean;
   onClose: () => void;
   happeningTitle: string;
-  onSubmit: (data: { partySize: number; note: string }) => void;
+  onSubmit: (data: { partySize: number; note: string; phone: string }) => void;
 }
 
 export default function RequestInviteModal({
@@ -16,6 +16,7 @@ export default function RequestInviteModal({
   onSubmit,
 }: RequestInviteModalProps) {
   const [partySize, setPartySize] = useState<number>(2);
+  const [phone, setPhone] = useState<string>("");
   const [note, setNote] = useState<string>("");
 
   // Handle escape key press to close modal
@@ -35,9 +36,10 @@ export default function RequestInviteModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ partySize, note });
+    onSubmit({ partySize, note, phone });
     // Reset form states
     setPartySize(2);
+    setPhone("");
     setNote("");
   };
 
@@ -88,6 +90,22 @@ export default function RequestInviteModal({
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Phone Field */}
+          <div>
+            <label htmlFor="guest-phone" className="modal-field-label">
+              OPERATIVE_PHONE_CONTACT
+            </label>
+            <input
+              type="tel"
+              id="guest-phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+1 (555) 555-5555"
+              required
+              className="modal-input"
+            />
           </div>
 
           {/* Intro Note Field */}

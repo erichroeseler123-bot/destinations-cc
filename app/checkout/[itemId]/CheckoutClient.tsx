@@ -403,7 +403,8 @@ export default function CheckoutClient({ happening, placeId }: CheckoutClientPro
                 partySize: data.partySize,
                 note: data.note,
                 placeId: placeId || "new-orleans-la",
-                price: basePrice
+                price: basePrice,
+                phone: data.phone
               }),
             });
 

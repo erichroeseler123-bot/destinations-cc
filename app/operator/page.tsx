@@ -1,5 +1,5 @@
 import { redis } from "@/lib/redis";
-import { authorizeTransmission, burnTransmission } from "./actions";
+import { authorizeTransmission, burnTransmission, broadcastCoordination } from "./actions";
 
 export const dynamic = "force-dynamic";
 export const runtime = "edge";
@@ -10,6 +10,7 @@ interface InviteRequest {
   happeningTitle: string;
   partySize: number;
   note: string;
+  phone?: string;
   status: string;
   timestamp: string;
 }
@@ -74,6 +75,24 @@ export default async function OperatorPage() {
         </div>
       </header>
 
+      {/* Comms Link Broadcast Box */}
+      {requests.some((r) => r.status === "AUTHORIZED") && (
+        <div className="operator-comms-link">
+          <h2 className="operator-comms-title">COMMS_LINK: BROADCAST COORDINATION</h2>
+          <form action={broadcastCoordination} className="operator-comms-form">
+            <textarea
+              name="message"
+              placeholder="ENTER COORDINATION PROTOCOL..."
+              required
+              className="operator-comms-textarea"
+            />
+            <button type="submit" className="operator-comms-submit-btn">
+              [TRANSMIT_TO_OPERATIVES]
+            </button>
+          </form>
+        </div>
+      )}
+
       {/* Requests Grid */}
       {requests.length === 0 ? (
         <div className="operator-radar-clear">
@@ -105,6 +124,12 @@ export default async function OperatorPage() {
                 <div className="operator-card-meta">
                   <span>PARTY_SIZE: {req.partySize}</span>
                   <span>|</span>
+                  {req.phone && (
+                    <>
+                      <span>PHONE: {req.phone}</span>
+                      <span>|</span>
+                    </>
+                  )}
                   <span>
                     {new Date(req.timestamp).toLocaleString([], {
                       month: "short",

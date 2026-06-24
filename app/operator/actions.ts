@@ -2,6 +2,7 @@
 
 import { redis } from "@/lib/redis";
 import { revalidatePath } from "next/cache";
+import { sendTelnyxSms } from "@/lib/telnyx/client";
 
 export async function burnTransmission(formData: FormData) {
   const id = formData.get("id") as string;
@@ -99,4 +100,53 @@ export async function authorizeTransmission(formData: FormData) {
 
   await redis.set(`invite_req:${id}`, JSON.stringify(parsed));
   revalidatePath("/operator");
+}
+
+export async function broadcastCoordination(formData: FormData) {
+  const message = formData.get("message") as string;
+  const client = redis;
+  if (!message || !client) return;
+
+  try {
+    const keys = await client.keys("invite_req:*");
+    if (keys.length === 0) return;
+
+    const payloads = await Promise.all(keys.map((key) => client.get(key)));
+
+    const authorizedRequests = [];
+    for (let i = 0; i < keys.length; i++) {
+      const payload = payloads[i];
+      if (payload) {
+        const parsed = typeof payload === "string" ? JSON.parse(payload) : payload;
+        if (parsed.status === "AUTHORIZED" && parsed.phone) {
+          authorizedRequests.push({
+            key: keys[i],
+            phone: parsed.phone,
+            transmissionId: parsed.transmissionId,
+          });
+        }
+      }
+    }
+
+    if (authorizedRequests.length === 0) return;
+
+    await Promise.all(
+      authorizedRequests.map(async (req) => {
+        try {
+          await sendTelnyxSms({
+            to: req.phone,
+            text: message,
+          });
+          // Burn transmission record after successful coordination broadcast
+          await client.del(req.key);
+        } catch (smsErr) {
+          console.error(`Failed to send broadcast SMS to ${req.phone} (TX_ID: ${req.transmissionId}):`, smsErr);
+        }
+      })
+    );
+
+    revalidatePath("/operator");
+  } catch (error) {
+    console.error("Failed to run broadcastCoordination server action:", error);
+  }
 }

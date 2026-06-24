@@ -1834,3 +1834,82 @@ body {
     opacity: 0;
   }
 }
+
+.modal-input {
+  width: 100%;
+  background-color: #18181b;
+  border: 1px solid #27272a;
+  padding: 8px;
+  font-size: 12px;
+  color: #ffffff;
+  outline: none;
+  font-family: inherit;
+}
+.modal-input:focus {
+  border-color: #fbbf24;
+}
+
+/* Operator Broadcast UI */
+.operator-comms-link {
+  border: 2px solid #fbbf24; /* high-contrast amber border */
+  background-color: #18181b;
+  padding: 16px;
+  box-shadow: 4px 4px 0px #000000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+  font-family: "Courier New", Courier, monospace;
+}
+
+.operator-comms-title {
+  font-size: 11px;
+  font-weight: bold;
+  color: #fbbf24;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.operator-comms-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.operator-comms-textarea {
+  width: 100%;
+  background-color: #090a0d;
+  border: 1px solid #27272a;
+  color: #00ff88; /* Green text for monospaced terminal styling */
+  padding: 12px;
+  font-size: 12px;
+  font-family: "Courier New", Courier, monospace;
+  height: 80px;
+  resize: none;
+  outline: none;
+  line-height: 1.6;
+}
+.operator-comms-textarea:focus {
+  border-color: #fbbf24;
+}
+
+.operator-comms-submit-btn {
+  align-self: flex-start;
+  padding: 8px 16px;
+  border: 1px solid #fbbf24;
+  color: #fbbf24;
+  background-color: transparent;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-family: inherit;
+}
+.operator-comms-submit-btn:hover {
+  background-color: #fbbf24;
+  color: #000000;
+}
+

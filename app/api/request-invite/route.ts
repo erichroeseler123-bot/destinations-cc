@@ -54,10 +54,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { happeningId, happeningTitle, partySize, note, placeId, price } = body;
+    const { happeningId, happeningTitle, partySize, note, placeId, price, phone } = body;
 
     // Validate payload fields
-    if (!happeningId || !happeningTitle || !partySize || !note || !placeId || price === undefined) {
+    if (!happeningId || !happeningTitle || !partySize || !note || !placeId || price === undefined || !phone) {
       return NextResponse.json(
         { error: "Missing required payload parameters" },
         { status: 400 }
@@ -75,6 +75,7 @@ export async function POST(request: Request) {
       note,
       placeId,
       price: Number(price),
+      phone,
       status: "pending",
       timestamp: new Date().toISOString(),
     };
