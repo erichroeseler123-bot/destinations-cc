@@ -14,12 +14,29 @@
     "latest_event_severity": null,
     "trend": "improving"
   },
-  "related_places": [],
+  "related_places": [
+    {
+      "place_id": "dcc:port:de-hamburg:0001",
+      "place_slug": "hamburg",
+      "place_name": "Hamburg",
+      "reason": "near_port_geo",
+      "distance_km": 255.4
+    }
+  ],
   "counts": {
     "tours": 0,
     "cruises": 0,
     "transport": 0,
     "events": 0
   },
-  "edges": []
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:de-16-berlin:0001",
+      "to": "dcc:port:de-hamburg:0001",
+      "meta": {
+        "reason": "near_port_geo"
+      }
+    }
+  ]
 }

@@ -9,6 +9,7 @@ const ALLOWED_MARKETS = new Set([
   "port-everglades",
   "cozumel",
   "key-west",
+  "juneau",
 ]);
 
 type RouteContext = {

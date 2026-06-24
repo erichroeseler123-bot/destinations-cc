@@ -35,6 +35,13 @@
       "place_name": "Saitama",
       "reason": "near_place_geo",
       "distance_km": 43.4
+    },
+    {
+      "place_id": "dcc:port:jp-yokohama:0001",
+      "place_slug": "yokohama",
+      "place_name": "Yokohama (Tokyo)",
+      "reason": "near_port_geo",
+      "distance_km": 11.5
     }
   ],
   "counts": {
@@ -66,6 +73,14 @@
       "to": "dcc:place:jp-34-saitama:0001",
       "meta": {
         "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:jp-19-kawasaki:0001",
+      "to": "dcc:port:jp-yokohama:0001",
+      "meta": {
+        "reason": "near_port_geo"
       }
     }
   ]

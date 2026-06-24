@@ -35,6 +35,13 @@
       "place_name": "Guangzhou",
       "reason": "near_place_geo",
       "distance_km": 81.1
+    },
+    {
+      "place_id": "dcc:port:hk-hong-kong:0001",
+      "place_slug": "hong-kong",
+      "place_name": "Hong Kong",
+      "reason": "near_port_geo",
+      "distance_km": 195.6
     }
   ],
   "counts": {
@@ -66,6 +73,14 @@
       "to": "dcc:place:cn-30-guangzhou:0001",
       "meta": {
         "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-30-zhaoqing:0001",
+      "to": "dcc:port:hk-hong-kong:0001",
+      "meta": {
+        "reason": "near_port_geo"
       }
     }
   ]

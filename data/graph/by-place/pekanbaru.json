@@ -14,12 +14,29 @@
     "latest_event_severity": null,
     "trend": "degrading"
   },
-  "related_places": [],
+  "related_places": [
+    {
+      "place_id": "dcc:port:sg-singapore:0001",
+      "place_slug": "singapore",
+      "place_name": "Singapore",
+      "reason": "near_port_geo",
+      "distance_km": 281.2
+    }
+  ],
   "counts": {
     "tours": 0,
     "cruises": 0,
     "transport": 0,
     "events": 0
   },
-  "edges": []
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:id-37-pekanbaru:0001",
+      "to": "dcc:port:sg-singapore:0001",
+      "meta": {
+        "reason": "near_port_geo"
+      }
+    }
+  ]
 }

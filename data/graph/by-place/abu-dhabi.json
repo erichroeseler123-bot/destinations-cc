@@ -28,6 +28,20 @@
       "place_name": "Sharjah",
       "reason": "near_place_geo",
       "distance_km": 141.9
+    },
+    {
+      "place_id": "dcc:port:ae-abu-dhabi:0001",
+      "place_slug": "abu-dhabi",
+      "place_name": "Abu Dhabi",
+      "reason": "near_port_geo",
+      "distance_km": 0
+    },
+    {
+      "place_id": "dcc:port:ae-dubai:0001",
+      "place_slug": "dubai",
+      "place_name": "Dubai",
+      "reason": "near_port_geo",
+      "distance_km": 115.5
     }
   ],
   "counts": {
@@ -51,6 +65,22 @@
       "to": "dcc:place:ae-06-sharjah:0001",
       "meta": {
         "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:ae-01-abu-dhabi:0001",
+      "to": "dcc:port:ae-abu-dhabi:0001",
+      "meta": {
+        "reason": "near_port_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:ae-01-abu-dhabi:0001",
+      "to": "dcc:port:ae-dubai:0001",
+      "meta": {
+        "reason": "near_port_geo"
       }
     }
   ]

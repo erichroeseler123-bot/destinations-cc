@@ -21,6 +21,13 @@
       "place_name": "Batam",
       "reason": "near_place_geo",
       "distance_km": 24.9
+    },
+    {
+      "place_id": "dcc:port:sg-singapore:0001",
+      "place_slug": "singapore",
+      "place_name": "Singapore",
+      "reason": "near_port_geo",
+      "distance_km": 0
     }
   ],
   "counts": {
@@ -36,6 +43,14 @@
       "to": "dcc:place:id-37-batam:0001",
       "meta": {
         "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:sg-na-singapore:0001",
+      "to": "dcc:port:sg-singapore:0001",
+      "meta": {
+        "reason": "near_port_geo"
       }
     }
   ]

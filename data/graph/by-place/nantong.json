@@ -35,6 +35,13 @@
       "place_name": "Jiangyin",
       "reason": "near_place_geo",
       "distance_km": 59.2
+    },
+    {
+      "place_id": "dcc:port:cn-shanghai:0001",
+      "place_slug": "shanghai",
+      "place_name": "Shanghai",
+      "reason": "near_port_geo",
+      "distance_km": 105.5
     }
   ],
   "counts": {
@@ -66,6 +73,14 @@
       "to": "dcc:place:cn-04-jiangyin:0001",
       "meta": {
         "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-04-nantong:0001",
+      "to": "dcc:port:cn-shanghai:0001",
+      "meta": {
+        "reason": "near_port_geo"
       }
     }
   ]

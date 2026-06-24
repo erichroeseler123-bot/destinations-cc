@@ -28,6 +28,13 @@
       "place_name": "Osaka",
       "reason": "near_place_geo",
       "distance_km": 139.1
+    },
+    {
+      "place_id": "dcc:port:jp-yokohama:0001",
+      "place_slug": "yokohama",
+      "place_name": "Yokohama (Tokyo)",
+      "reason": "near_port_geo",
+      "distance_km": 250.5
     }
   ],
   "counts": {
@@ -51,6 +58,14 @@
       "to": "dcc:place:jp-32-osaka:0001",
       "meta": {
         "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:jp-01-nagoya:0001",
+      "to": "dcc:port:jp-yokohama:0001",
+      "meta": {
+        "reason": "near_port_geo"
       }
     }
   ]

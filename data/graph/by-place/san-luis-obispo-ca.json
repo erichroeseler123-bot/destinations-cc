@@ -28,6 +28,13 @@
       "place_name": "Bakersfield",
       "reason": "near_place_geo",
       "distance_km": 149.2
+    },
+    {
+      "place_id": "dcc:port:us-los-angeles:0001",
+      "place_slug": "los-angeles",
+      "place_name": "Los Angeles",
+      "reason": "near_port_geo",
+      "distance_km": 259.9
     }
   ],
   "counts": {
@@ -51,6 +58,14 @@
       "to": "dcc:place:us-ca-bakersfield-ca:0001",
       "meta": {
         "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:us-ca-san-luis-obispo-ca:0001",
+      "to": "dcc:port:us-los-angeles:0001",
+      "meta": {
+        "reason": "near_port_geo"
       }
     }
   ]

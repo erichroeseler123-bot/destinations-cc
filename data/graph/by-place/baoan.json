@@ -35,6 +35,13 @@
       "place_name": "New Territories",
       "reason": "near_place_geo",
       "distance_km": 27.4
+    },
+    {
+      "place_id": "dcc:port:hk-hong-kong:0001",
+      "place_slug": "hong-kong",
+      "place_name": "Hong Kong",
+      "reason": "near_port_geo",
+      "distance_km": 42.7
     }
   ],
   "counts": {
@@ -66,6 +73,14 @@
       "to": "dcc:place:hk-00-new-territories:0001",
       "meta": {
         "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-30-baoan:0001",
+      "to": "dcc:port:hk-hong-kong:0001",
+      "meta": {
+        "reason": "near_port_geo"
       }
     }
   ]

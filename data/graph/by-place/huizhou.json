@@ -35,6 +35,13 @@
       "place_name": "Shenzhen",
       "reason": "near_place_geo",
       "distance_km": 72.3
+    },
+    {
+      "place_id": "dcc:port:hk-hong-kong:0001",
+      "place_slug": "hong-kong",
+      "place_name": "Hong Kong",
+      "reason": "near_port_geo",
+      "distance_km": 95.9
     }
   ],
   "counts": {
@@ -66,6 +73,14 @@
       "to": "dcc:place:cn-30-shenzhen:0001",
       "meta": {
         "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-30-huizhou:0001",
+      "to": "dcc:port:hk-hong-kong:0001",
+      "meta": {
+        "reason": "near_port_geo"
       }
     }
   ]

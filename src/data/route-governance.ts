@@ -253,6 +253,13 @@ const ROOT_ROUTE_GOVERNANCE = [
     notes: "Verified TravelMarket cruise-port proxy surface for Key West Cruise Desk.",
   },
   {
+    path: "/cruise-ports/juneau",
+    publishState: "indexable",
+    networkRole: "dcc",
+    handoffPolicy: "outbound_only",
+    notes: "Verified TravelMarket cruise-port proxy surface for Juneau Cruise Desk.",
+  },
+  {
     path: "/sedona/jeep-tours",
     publishState: "promoted",
     networkRole: "dcc",

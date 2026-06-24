@@ -14,12 +14,44 @@
     "latest_event_severity": null,
     "trend": "degrading"
   },
-  "related_places": [],
+  "related_places": [
+    {
+      "place_id": "dcc:port:dk-copenhagen:0001",
+      "place_slug": "copenhagen",
+      "place_name": "Copenhagen",
+      "reason": "near_port_geo",
+      "distance_km": 0
+    },
+    {
+      "place_id": "dcc:port:de-hamburg:0001",
+      "place_slug": "hamburg",
+      "place_name": "Hamburg",
+      "reason": "near_port_geo",
+      "distance_km": 288.5
+    }
+  ],
   "counts": {
     "tours": 0,
     "cruises": 0,
     "transport": 0,
     "events": 0
   },
-  "edges": []
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:dk-17-copenhagen:0001",
+      "to": "dcc:port:dk-copenhagen:0001",
+      "meta": {
+        "reason": "near_port_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:dk-17-copenhagen:0001",
+      "to": "dcc:port:de-hamburg:0001",
+      "meta": {
+        "reason": "near_port_geo"
+      }
+    }
+  ]
 }

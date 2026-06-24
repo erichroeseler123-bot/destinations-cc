@@ -14,12 +14,29 @@
     "latest_event_severity": null,
     "trend": "normal"
   },
-  "related_places": [],
+  "related_places": [
+    {
+      "place_id": "dcc:port:au-melbourne:0001",
+      "place_slug": "melbourne",
+      "place_name": "Melbourne",
+      "reason": "near_port_geo",
+      "distance_km": 0
+    }
+  ],
   "counts": {
     "tours": 0,
     "cruises": 0,
     "transport": 0,
     "events": 0
   },
-  "edges": []
+  "edges": [
+    {
+      "type": "related_to",
+      "from": "dcc:place:au-07-melbourne:0001",
+      "to": "dcc:port:au-melbourne:0001",
+      "meta": {
+        "reason": "near_port_geo"
+      }
+    }
+  ]
 }

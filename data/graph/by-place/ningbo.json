@@ -35,6 +35,13 @@
       "place_name": "Jiaxing",
       "reason": "near_place_geo",
       "distance_km": 123.8
+    },
+    {
+      "place_id": "dcc:port:cn-shanghai:0001",
+      "place_slug": "shanghai",
+      "place_name": "Shanghai",
+      "reason": "near_port_geo",
+      "distance_km": 149.7
     }
   ],
   "counts": {
@@ -66,6 +73,14 @@
       "to": "dcc:place:cn-02-jiaxing:0001",
       "meta": {
         "reason": "near_place_geo"
+      }
+    },
+    {
+      "type": "related_to",
+      "from": "dcc:place:cn-02-ningbo:0001",
+      "to": "dcc:port:cn-shanghai:0001",
+      "meta": {
+        "reason": "near_port_geo"
       }
     }
   ]
