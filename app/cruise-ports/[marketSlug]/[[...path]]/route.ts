@@ -1,15 +1,13 @@
 import { NextRequest } from "next/server";
+import { PORT_AUTHORITY_CONFIG } from "@/src/data/port-authority-config";
 
 const TRAVEL_MARKET_ORIGIN = "https://dcc-v1-cut-clean.vercel.app";
 
 const ALLOWED_MARKETS = new Set([
   "port-canaveral",
-  "portmiami",
-  "nassau",
   "port-everglades",
-  "cozumel",
   "key-west",
-  "juneau",
+  ...Object.keys(PORT_AUTHORITY_CONFIG)
 ]);
 
 type RouteContext = {

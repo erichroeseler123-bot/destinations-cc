@@ -223,6 +223,29 @@ function main() {
   dynamicRoutes.add("/resort/chula-vista-resort-dells");
   dynamicRoutes.add("/resort/grand-geneva-resort");
 
+  // 5. Dynamically register all cruise port routes from PORT_AUTHORITY_CONFIG
+  try {
+    const portConfigPath = path.join(repoRoot, "src", "data", "port-authority-config.ts");
+    if (fs.existsSync(portConfigPath)) {
+      const portConfigContent = fs.readFileSync(portConfigPath, "utf8");
+      const configMatch = portConfigContent.match(/export const PORT_AUTHORITY_CONFIG: Record<string, PortAuthorityConfig> = \{([\s\S]+?)\n\};/);
+      if (configMatch) {
+        const block = configMatch[1];
+        const keyRegex = /^\s+([a-zA-Z0-9-"'\s]+):\s*\{/gm;
+        let match;
+        while ((match = keyRegex.exec(block)) !== null) {
+          const key = match[1].trim().replace(/['"]/g, "");
+          if (key) {
+            dynamicRoutes.add(`/cruise-ports/${key}`);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("Error dynamically generating cruise port routes:", e.message);
+  }
+
+
   const attractionsDir = path.join(repoRoot, "data", "attractions");
   if (fs.existsSync(attractionsDir)) {
     const files = fs.readdirSync(attractionsDir).filter(f => f.endsWith(".json"));
