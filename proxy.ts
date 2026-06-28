@@ -382,7 +382,13 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
   });
 
   if (!resolved) {
-    const response = NextResponse.next();
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-pathname", request.nextUrl.pathname);
+    const response = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
     const robotsTag = getGovernedRobotsTag(request.nextUrl.pathname);
     if (robotsTag) {
       response.headers.set("x-robots-tag", robotsTag);

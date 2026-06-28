@@ -27,7 +27,7 @@ export type SendMissionNotificationInput<TContext extends Record<string, unknown
   subject?: string;
 };
 
-const resend = new Resend(process.env.DCC_RESEND_API_KEY);
+const resend = new Resend(process.env.DCC_RESEND_API_KEY || "re_mock_key");
 
 export function parseEmailList(value?: string): string[] {
   return (value || "")
