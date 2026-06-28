@@ -83,6 +83,7 @@
     "dcc:cruise:freshness": "node scripts/dcc/check-cruise-freshness.mjs",
     "dcc:cruise:build": "npm run dcc:cruise:cache && npm run dcc:cruise:health && npm run dcc:cruise:freshness",
     "dcc:action:refresh": "npm run dcc:viator:refresh && npm run dcc:cruise:build",
+    "dcc:ingest:experiences": "node --import tsx --env-file=.env.local scripts/dcc/ingest-experiences-worker.ts",
     "dcc:memory:build": "npm run dcc:memory:bootstrap && npm run dcc:memory:baseline && npm run dcc:memory:delta && npm run dcc:memory:promote && npm run dcc:memory:planetary",
     "dcc:memory:demo": "npm run dcc:memory:bootstrap && npm run dcc:memory:synth && npm run dcc:memory:baseline && npm run dcc:memory:delta && npm run dcc:memory:promote && npm run dcc:memory:planetary",
     "dcc:build": "npm run dcc:migrate:locations && npm run dcc:migrate:ports && npm run dcc:index && npm run dcc:derivatives && npm run dcc:validate && npm run dcc:graph:place",
