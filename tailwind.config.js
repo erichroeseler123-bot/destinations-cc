@@ -9,7 +9,11 @@ export default {
   ],
   theme: {
     extend: {
-      // Your custom theme extensions can go here
+      colors: {
+        'brand-mint': '#00E676',
+        'brand-violet': '#4C1D95',
+        'charcoal': '#1F2937',
+      }
     },
   },
   plugins: [

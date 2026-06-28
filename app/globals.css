@@ -29,11 +29,8 @@ html, body {
 }
 
 body {
-  background:
-    radial-gradient(circle at top left, rgba(210, 154, 58, 0.16), transparent 28%),
-    radial-gradient(circle at top right, rgba(255, 255, 255, 0.05), transparent 24%),
-    linear-gradient(180deg, #0b0b0b 0%, #090909 100%);
-  color: var(--text);
+  background: #f9fafb;
+  color: #1f2937;
   font-family: var(--font-heading), "Avenir Next", "Segoe UI", sans-serif;
 }
 
@@ -698,11 +695,8 @@ summary:focus-visible {
 }
 
 body {
-  background:
-    radial-gradient(circle at 18% 12%, rgba(37, 99, 235, 0.22), transparent 32%),
-    radial-gradient(circle at 86% 22%, rgba(249, 115, 22, 0.16), transparent 28%),
-    linear-gradient(180deg, #0a0e14, #070a0f 62%, #0a0e14);
-  color: var(--dcc-tech-text);
+  background: #f9fafb;
+  color: #1f2937;
   font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
 }

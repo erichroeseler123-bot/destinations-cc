@@ -86,6 +86,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     "";
   const brandShell = requestHeaders.get("x-dcc-brand-shell") || "";
   const isWtonotShell = brandShell === "wtonot" || isWelcomeToNewOrleansToursHost(host);
+  const pathname = requestHeaders.get("x-pathname") || "";
+  const isHomepage = pathname === "/";
 
   return (
     <html lang="en">
@@ -102,7 +104,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <PartnerAnalyticsScript />
       </head>
       <body className={`${headingFont.variable} ${accentFont.variable} ${sansFont.variable} ${monoFont.variable}`}>
-        {isWtonotShell ? (
+        {isWtonotShell || isHomepage ? (
           <>
             <a href="#main-content" className="dcc-skip-link">
               Skip to main content
