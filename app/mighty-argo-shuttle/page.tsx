@@ -183,24 +183,6 @@ function JsonLd() {
         serviceType: "Shuttle transport",
         areaServed: ["Denver, CO", "Idaho Springs, CO"],
         url: PAGE_URL,
-        offers: [
-          {
-            "@type": "Offer",
-            name: "Seat-based shuttle",
-            price: "35",
-            priceCurrency: "USD",
-            availability: "https://schema.org/InStock",
-            url: `${PAGE_URL}#book`,
-          },
-          {
-            "@type": "Offer",
-            name: "Private SUV",
-            price: "200",
-            priceCurrency: "USD",
-            availability: "https://schema.org/InStock",
-            url: `${PAGE_URL}#book`,
-          },
-        ],
       },
       {
         "@type": "TouristAttraction",
