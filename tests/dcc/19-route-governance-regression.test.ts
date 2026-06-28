@@ -68,12 +68,22 @@ test("verified cruise-port proxy routes are visible without promoting expansion 
     "/cruise-ports/st-thomas",
     "/cruise-ports/san-juan",
     "/cruise-ports/costa-maya",
-    "/cruise-ports/roatan",
     "/cruise-ports/belize-city",
     "/cruise-ports/grand-cayman",
   ]) {
     assert.equal(getRootRouteGovernance(pathname), null);
     assert.equal(VISIBLE_SURFACE_PATHS.includes(pathname), false);
+  }
+
+  for (const pathname of [
+    "/cruise-ports/roatan",
+  ]) {
+    const entry = getRootRouteGovernance(pathname);
+    assert.equal(entry?.publishState, "indexable", `expected ${pathname} to be indexable`);
+    assert.equal(entry?.networkRole, "dcc", `expected ${pathname} to remain a DCC proxy surface`);
+    assert.equal(entry?.handoffPolicy, "conditional", `expected ${pathname} to use conditional handoff`);
+    assert.equal(INDEXABLE_SURFACE_PATHS.includes(pathname), true, `expected ${pathname} to be indexable`);
+    assert.equal(VISIBLE_SURFACE_PATHS.includes(pathname), true, `expected ${pathname} to be visible`);
   }
 });
 

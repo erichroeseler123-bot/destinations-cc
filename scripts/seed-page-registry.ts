@@ -121,12 +121,21 @@ function serializeEntry(entry: PageRegistryEntry) {
   lines.push(`    discoveredFrom: ${JSON.stringify(entry.discoveredFrom)},`);
   lines.push(`    successMetric: ${entry.successMetric === null || entry.successMetric === undefined ? "null" : JSON.stringify(entry.successMetric)},`);
   lines.push(`    handoffTarget: ${entry.handoffTarget === null || entry.handoffTarget === undefined ? "null" : JSON.stringify(entry.handoffTarget)},`);
+  if (entry.canonicalTarget !== undefined) {
+    lines.push(`    canonicalTarget: ${entry.canonicalTarget === null ? "null" : JSON.stringify(entry.canonicalTarget)},`);
+  }
   lines.push(`    surface: ${entry.surface === null || entry.surface === undefined ? "null" : JSON.stringify(entry.surface)},`);
   if (entry.canonicalOf?.length) {
     lines.push(`    canonicalOf: [${entry.canonicalOf.map((item) => JSON.stringify(item)).join(", ")}],`);
   }
+  if (entry.clusterRole !== undefined) {
+    lines.push(`    clusterRole: ${entry.clusterRole === null ? "null" : JSON.stringify(entry.clusterRole)},`);
+  }
   lines.push(`    justification: ${JSON.stringify(entry.justification || "auto-seeded from route scan")},`);
   if (entry.notes) lines.push(`    notes: ${JSON.stringify(entry.notes)},`);
+  if (entry.cluster !== undefined) {
+    lines.push(`    cluster: ${entry.cluster === null ? "null" : JSON.stringify(entry.cluster)},`);
+  }
   lines.push(`    reviewOwner: ${entry.reviewOwner === null || entry.reviewOwner === undefined ? "null" : JSON.stringify(entry.reviewOwner)},`);
   lines.push(`    lastReviewedAt: ${entry.lastReviewedAt === null || entry.lastReviewedAt === undefined ? "null" : JSON.stringify(entry.lastReviewedAt)},`);
   lines.push("  },");
@@ -140,12 +149,14 @@ export const PAGE_OWNERS = ["dcc", "wts", "wta", "parr", "internal"] as const;
 export const PAGE_STATUSES = ["canonical", "keep", "review", "redirect_pending", "kill"] as const;
 export const PAGE_SURFACES = ["authority", "monetized", null] as const;
 export const PAGE_DISCOVERED_FROM = ["manual", "scanner"] as const;
+export const PAGE_CLUSTER_ROLES = ["hub", "feeder", "support", "redirect", "satellite", "handoff", null] as const;
 
 export type PageLayer = (typeof PAGE_LAYERS)[number];
 export type PageOwner = (typeof PAGE_OWNERS)[number];
 export type PageStatus = (typeof PAGE_STATUSES)[number];
 export type PageSurface = (typeof PAGE_SURFACES)[number];
 export type PageDiscoveredFrom = (typeof PAGE_DISCOVERED_FROM)[number];
+export type PageClusterRole = (typeof PAGE_CLUSTER_ROLES)[number];
 
 export type PageRegistryEntry = {
   path: \`/\${string}\`;
@@ -155,10 +166,13 @@ export type PageRegistryEntry = {
   discoveredFrom: PageDiscoveredFrom;
   successMetric?: string | null;
   handoffTarget?: \`/\${string}\` | \`\${"https://" | "http://"}\${string}\` | null;
+  canonicalTarget?: \`/\${string}\` | \`\${"https://" | "http://"}\${string}\` | null;
   surface?: PageSurface;
   justification?: string;
   canonicalOf?: readonly \`/\${string}\`[];
+  clusterRole?: PageClusterRole;
   notes?: string;
+  cluster?: string | null;
   reviewOwner?: string | null;
   lastReviewedAt?: string | null;
 };
@@ -187,13 +201,12 @@ export function getPageRegistryByLayer(layer: PageLayer) {
 
 function main() {
   const existing = [...pageRegistry];
-  const seen = new Set(existing.map((entry) => `${entry.owner}:${entry.path}`));
+  const seen = new Set(existing.map((entry) => entry.path));
   const additions: PageRegistryEntry[] = [];
 
   for (const route of collectRoutes()) {
-    const key = `${route.owner}:${route.path}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
+    if (seen.has(route.path)) continue;
+    seen.add(route.path);
     additions.push(toEntry(route));
   }
 

@@ -741,6 +741,13 @@ const ROOT_ROUTE_GOVERNANCE = [
     networkRole: "utility",
     handoffPolicy: "bidirectional",
   },
+  {
+    path: "/shuttleya",
+    publishState: "indexable",
+    networkRole: "dcc",
+    handoffPolicy: "bidirectional",
+    notes: "Dedicated Denver-to-Argo Shuttleya booking and logistics engine.",
+  },
 ] as const satisfies readonly RouteGovernanceEntry[];
 
 const staticPaths = new Set<string>(ROOT_ROUTE_GOVERNANCE.map((e) => e.path));
