@@ -44,7 +44,7 @@ export default async function EarthOSDashboardPage() {
 
           <div className="flex gap-3">
             <a
-              href="/dashboard"
+              href="/internal/dashboard"
               className="inline-flex rounded-full border border-[rgba(245,198,108,0.2)] bg-[linear-gradient(180deg,#f5c66c,#21c6da)] px-5 py-2 text-sm font-black uppercase tracking-[0.14em] text-[#120f0b] shadow-[0_18px_38px_rgba(245,198,108,0.12)]"
             >
               Refresh View

@@ -23,6 +23,7 @@ export const dccSatelliteIdEnum = pgEnum("dcc_satellite_id", [
   "redrocksfastpass",
   "welcometotheswamp",
   "welcome-to-alaska",
+  "feastly",
 ]);
 
 export const dccSatelliteEventTypeEnum = pgEnum("dcc_satellite_event_type", [
@@ -45,6 +46,7 @@ export const dccSatelliteEventTypeEnum = pgEnum("dcc_satellite_event_type", [
   "accepted_from_partner",
   "partner_booking_completed",
   "partner_booking_failed",
+  "feastly_checkout_intent",
 ]);
 
 export const dccConversionSourceEnum = pgEnum("dcc_conversion_source", [

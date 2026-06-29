@@ -327,6 +327,14 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });
   }
 
+  if (request.nextUrl.pathname === "/dashboard") {
+    return NextResponse.redirect(new URL("/internal/dashboard", request.url), 307);
+  }
+  if (request.nextUrl.pathname.startsWith("/dashboard/")) {
+    const relativePath = request.nextUrl.pathname.slice(11);
+    return NextResponse.redirect(new URL(`/internal/dashboard/${relativePath}${request.nextUrl.search}`, request.url), 307);
+  }
+
   const somersetRewrite = getSomersetHostRewrite(request);
   if (somersetRewrite) {
     const response = NextResponse.rewrite(somersetRewrite);

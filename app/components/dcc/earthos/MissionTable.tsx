@@ -104,7 +104,7 @@ export function MissionTable({ missions }: { missions: MissionListItem[] }) {
                 </td>
                 <td className="px-6 py-4">
                   <Link
-                    href={`/dashboard/missions/${mission.id}`}
+                    href={`/internal/dashboard/missions/${mission.id}`}
                     className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-white transition hover:border-[#f5c66c]/40 hover:bg-white/10"
                   >
                     {actionLabel(mission)}

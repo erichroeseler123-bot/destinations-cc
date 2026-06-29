@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { signalMissionAction } from "@/app/dashboard/actions";
+import { signalMissionAction } from "@/app/internal/dashboard/actions";
 
 type ApprovalPanelProps = {
   missionId: string;

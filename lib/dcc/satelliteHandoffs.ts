@@ -15,6 +15,7 @@ export const SATELLITE_IDS = [
   "redrocksfastpass",
   "welcometotheswamp",
   "welcome-to-alaska",
+  "feastly",
 ] as const;
 
 export type DccSatelliteId = (typeof SATELLITE_IDS)[number];
@@ -39,6 +40,7 @@ export const SATELLITE_EVENT_TYPES = [
   "accepted_from_partner",
   "partner_booking_completed",
   "partner_booking_failed",
+  "feastly_checkout_intent",
 ] as const;
 
 export type DccSatelliteEventType = (typeof SATELLITE_EVENT_TYPES)[number];
@@ -184,6 +186,7 @@ const SATELLITE_DIRS: Record<DccSatelliteId, string> = {
   redrocksfastpass: path.join(ROOT, "redrocksfastpass"),
   welcometotheswamp: path.join(ROOT, "welcometotheswamp"),
   "welcome-to-alaska": path.join(ROOT, "welcome-to-alaska"),
+  feastly: path.join(ROOT, "feastly"),
 };
 
 function getSatelliteTokenEnvKey(satelliteId: DccSatelliteId) {
@@ -193,6 +196,7 @@ function getSatelliteTokenEnvKey(satelliteId: DccSatelliteId) {
   if (satelliteId === "saveonthestrip") return "DCC_SAVEONTHESTRIP_WEBHOOK_TOKEN";
   if (satelliteId === "redrocksfastpass") return "DCC_REDROCKSFASTPASS_WEBHOOK_TOKEN";
   if (satelliteId === "welcometotheswamp") return "DCC_WTS_WEBHOOK_TOKEN";
+  if (satelliteId === "feastly") return "DCC_FEASTLY_WEBHOOK_TOKEN";
   return "DCC_WTA_WEBHOOK_TOKEN";
 }
 

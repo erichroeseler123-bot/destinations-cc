@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { NextRequest } from "next/server";
 import { SquareClient, SquareEnvironment } from "square";
+import { appendCorridorEventDurably } from "@/lib/dcc/telemetry/corridorEvents";
 import {
   getBalanceDueAt,
   getCheckoutPricing,
@@ -33,6 +34,9 @@ type CreateSquarePaymentBody = {
   customerPhone?: string;
   specialRequests?: string;
   sourceId?: string;
+  handoffId?: string;
+  sessionId?: string;
+  sourcePage?: string;
 };
 
 type AvailabilityRow = {
@@ -296,6 +300,27 @@ export async function POST(req: NextRequest) {
 
   try {
     await writeStoredOrder(orderRecord);
+
+    if (route === "feastly") {
+      try {
+        await appendCorridorEventDurably({
+          corridor_id: "feastly-dinner-night",
+          event_name: "booking_completed",
+          occurred_at: new Date().toISOString(),
+          handoff_id: body.handoffId || undefined,
+          session_id: body.sessionId || undefined,
+          source_page: body.sourcePage || undefined,
+          target_path: `/booking/${orderId}`,
+          metadata: {
+            orderId,
+            paymentId: payment.id,
+            amountCents: amountPaidCents,
+          },
+        });
+      } catch (err) {
+        console.error("Failed to append Feastly booking_completed event:", err);
+      }
+    }
 
     if (typeof body.customerEmail === "string" && body.customerEmail.trim() !== "") {
       emailResult = await maybeSendConfirmationEmail({

@@ -32,7 +32,7 @@ function PrioritySection({
           items.slice(0, 4).map((mission) => (
             <Link
               key={mission.id}
-              href={`/dashboard/missions/${mission.id}`}
+              href={`/internal/dashboard/missions/${mission.id}`}
               className="block rounded-2xl border border-white/8 bg-black/20 px-4 py-3 transition hover:border-white/20 hover:bg-white/[0.06]"
             >
               <div className="text-sm font-bold text-white">{mission.mission}</div>

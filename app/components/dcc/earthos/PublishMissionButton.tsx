@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { publishMissionAction } from "@/app/dashboard/actions";
+import { publishMissionAction } from "@/app/internal/dashboard/actions";
 
 type PublishMissionButtonProps = {
   missionId: string;

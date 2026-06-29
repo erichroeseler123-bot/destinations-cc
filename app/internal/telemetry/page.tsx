@@ -44,6 +44,7 @@ const SATELLITE_LABELS: Record<DccSatelliteId, string> = {
   redrocksfastpass: "RRFP",
   welcometotheswamp: "WTS",
   "welcome-to-alaska": "WTA",
+  feastly: "FEASTLY",
 };
 
 function isSatelliteId(value: string | undefined): value is DccSatelliteId {

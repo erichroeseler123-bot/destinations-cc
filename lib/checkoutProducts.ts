@@ -1,6 +1,6 @@
 import { PARR_PICKUP_HUBS } from "@/lib/parrOperator";
 
-export type CheckoutRouteKey = "argo" | "parr-private" | "parr-shared";
+export type CheckoutRouteKey = "argo" | "parr-private" | "parr-shared" | "feastly";
 
 export type CheckoutProductKind = "seat" | "private";
 
@@ -112,6 +112,15 @@ const PRODUCTS: CheckoutProduct[] = [
     maxPassengers: 24,
     description: "Private party bus for larger Red Rocks nights.",
   },
+  {
+    key: "feastly-booking-fee",
+    route: "feastly",
+    title: "Feastly Booking Deposit",
+    priceCents: 50000,
+    kind: "private",
+    maxQty: 1,
+    description: "Private booking deposit fee for Feastly Group Dining.",
+  },
 ];
 
 const ROUTES: Record<CheckoutRouteKey, CheckoutRouteConfig> = {
@@ -168,6 +177,22 @@ const ROUTES: Record<CheckoutRouteKey, CheckoutRouteConfig> = {
     paymentsEnvVar: "ENABLE_PARR_PRIVATE_PAYMENTS",
     depositPercentage: 100,
     defaultDropoff: "Red Rocks Amphitheatre",
+  },
+  feastly: {
+    key: "feastly",
+    title: "Book Feastly Group Dinner",
+    intro: "Secure your private group dining reservation with a deposit.",
+    backHref: "/internal/feastly",
+    backLabel: "Back to Feastly page",
+    defaultProduct: "feastly-booking-fee",
+    pickupMode: "freeform",
+    defaultPickup: "Delivery address",
+    checkoutTitle: "Feastly Group Dinner Checkout",
+    checkoutIntro: "Review your reservation deposit details before payment.",
+    prelaunchEnvVar: "ENABLE_ARGO_PAYMENTS",
+    paymentsEnvVar: "ENABLE_ARGO_PAYMENTS",
+    depositPercentage: 100,
+    defaultDropoff: "Feastly Kitchen",
   },
 };
 

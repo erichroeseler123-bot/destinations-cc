@@ -43,7 +43,7 @@ export default async function MissionDetailPage({
       <div className="mx-auto max-w-5xl px-6 py-12">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <Link href="/dashboard" className="text-sm font-semibold text-[#f5c66c] hover:text-[#ffd989]">
+            <Link href="/internal/dashboard" className="text-sm font-semibold text-[#f5c66c] hover:text-[#ffd989]">
               Back to Mission Control
             </Link>
             <div className="mt-4 text-[11px] font-black uppercase tracking-[0.24em] text-zinc-500">

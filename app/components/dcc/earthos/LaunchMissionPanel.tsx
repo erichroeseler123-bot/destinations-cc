@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { launchMissionAction } from "@/app/dashboard/actions";
+import { launchMissionAction } from "@/app/internal/dashboard/actions";
 import type { LaunchMissionInput, MissionEntity } from "@/lib/dcc/earthos/workflows/types";
 
 const PRESETS: Record<MissionEntity, { region: string; missionType: string; objective: string }> = {
@@ -66,7 +66,7 @@ export function LaunchMissionPanel() {
       }
 
       startTransition(() => {
-        router.push(`/dashboard/missions/${result.data.id}`);
+        router.push(`/internal/dashboard/missions/${result.data.id}`);
         router.refresh();
       });
     } catch (error) {
