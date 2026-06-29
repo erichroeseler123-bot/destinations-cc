@@ -47,11 +47,13 @@ const DESTINATION_COORDS: Record<string, { lat: number; lng: number; name: strin
   "cabo-san-lucas": { lat: 22.8905, lng: -109.9167, name: "Cabo San Lucas" },
   "cabo-san-lucas-mexico": { lat: 22.8905, lng: -109.9167, name: "Cabo San Lucas" },
   "puerto-vallarta": { lat: 20.6534, lng: -105.2253, name: "Puerto Vallarta" },
-  "puerto-vallarta-mexico": { lat: 20.6534, lng: -105.2253, name: "Puerto Vallarta" }
+  "puerto-vallarta-mexico": { lat: 20.6534, lng: -105.2253, name: "Puerto Vallarta" },
+  "new-orleans": { lat: 29.9511, lng: -90.0715, name: "New Orleans" }
 };
 
 export async function hydratePlaceData(id: string) {
-  const cacheKey = `dcc:cache:place:${id}`;
+  const placeId = id === "new-orleans" ? "new-orleans-la" : id;
+  const cacheKey = `dcc:cache:place:${placeId}`;
 
   // 1. Cache-Aside Check via Upstash
   if (redis) {
@@ -63,7 +65,7 @@ export async function hydratePlaceData(id: string) {
   }
 
   // 2. Resolve coordinates and metadata
-  const placeConfig = DESTINATION_COORDS[id] || { lat: 29.9511, lng: -90.0715, name: id };
+  const placeConfig = DESTINATION_COORDS[placeId] || { lat: 29.9511, lng: -90.0715, name: placeId };
   const targetCoords = { lat: placeConfig.lat, lng: placeConfig.lng };
 
   const hasViator = Boolean(process.env.VIATOR_API_KEY);
@@ -71,19 +73,19 @@ export async function hydratePlaceData(id: string) {
 
   // 3. Parallel Provider Aggregation
   const [tours, events] = await Promise.all([
-    fetchTours(id, targetCoords, hasViator),
-    fetchTicketmasterEvents(id, targetCoords, hasTicketmaster)
+    fetchTours(placeId, targetCoords, hasViator),
+    fetchTicketmasterEvents(placeId, targetCoords, hasTicketmaster)
   ]);
 
   // Fetch and normalize approved GetYourGuide experiences
-  const gygExperiences = getApprovedExperiencesForPlace(id);
+  const gygExperiences = getApprovedExperiencesForPlace(placeId);
   const normalizedGyg = gygExperiences.map((exp) =>
     normalizeGetYourGuideExperience(exp, targetCoords)
   );
 
   // 4. Edge Assembly
   const normalizedPayload = {
-    locationId: id,
+    locationId: placeId,
     locationName: placeConfig.name,
     coordinates: targetCoords,
     lastUpdated: Date.now(),
