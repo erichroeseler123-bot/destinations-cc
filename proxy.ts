@@ -116,6 +116,9 @@ function isInternalApiAuthorized(request: NextRequest) {
   if (request.nextUrl.pathname === "/api/internal/satellite-handoffs/events") {
     return Boolean(request.headers.get("x-dcc-satellite-token") || request.nextUrl.searchParams.get("token"));
   }
+  if (request.nextUrl.pathname === "/api/internal/hydrate-pipeline") {
+    return true;
+  }
 
   const internalSecret = process.env.INTERNAL_API_SECRET?.trim();
   if (!internalSecret) return false;
