@@ -7,6 +7,7 @@ const ALLOWED_MARKETS = new Set([
   "port-canaveral",
   "port-everglades",
   "key-west",
+  "new-orleans",
   ...Object.keys(PORT_AUTHORITY_CONFIG)
 ]);
 

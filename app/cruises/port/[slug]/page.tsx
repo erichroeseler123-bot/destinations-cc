@@ -37,7 +37,7 @@ import {
 
 const BASE_URL = "https://destinationcommandcenter.com";
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   return listCruisePortSlugs().map((slug) => ({ slug }));

@@ -1,4 +1,4 @@
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 import Link from "next/link";
 import type { Metadata } from "next";
