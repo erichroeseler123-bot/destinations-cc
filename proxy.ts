@@ -322,6 +322,7 @@ function queueHandoffEvent(request: NextRequest, resolved: NonNullable<ReturnTyp
   }).catch(() => undefined);
 }
 
+// Ensure destinationcommandcenter.com/ falls through to standard Next.js routing (app/page.tsx)
 export async function proxy(request: NextRequest, event: NextFetchEvent) {
   if (request.nextUrl.pathname.startsWith("/api/internal/") && !isInternalApiAuthorized(request)) {
     return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });
