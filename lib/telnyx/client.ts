@@ -26,7 +26,12 @@ export async function sendTelnyxSms(input: {
 }): Promise<{ id: string | null }> {
   const config = getTelnyxConfig();
   const from = input.from || config.fromNumber;
-  if (!from) throw new Error("missing_telnyx_from_number");
+  if (!config.apiKey || !from) {
+    console.log(`[MOCK Telnyx SMS] From: ${from || "DCC_MOCK"} -> To: ${input.to}\nContent:\n${input.text}`);
+    return {
+      id: `mock-msg-${Math.random().toString(36).substr(2, 9)}`,
+    };
+  }
 
   const response = await getTelnyxClient().messages.send({
     from,

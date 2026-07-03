@@ -42,6 +42,7 @@ const EVENT_NAMES = [
   "landing_viewed",
   "verdict_shown",
   "operator_cta_clicked",
+  "driver_dispatched",
 ] as const;
 
 export const CorridorEventPayloadSchema = z.object({

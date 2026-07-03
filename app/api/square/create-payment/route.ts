@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { NextRequest } from "next/server";
 import { SquareClient, SquareEnvironment } from "square";
 import { appendCorridorEventDurably } from "@/lib/dcc/telemetry/corridorEvents";
+import { blastDispatchManifest } from "@/lib/dcc/wrangletangle";
 import {
   getBalanceDueAt,
   getCheckoutPricing,
@@ -300,6 +301,28 @@ export async function POST(req: NextRequest) {
 
   try {
     await writeStoredOrder(orderRecord);
+
+    // Blast SMS Dispatch Manifest to driver fleet via WrangleTangle
+    try {
+      const dispatchResult = await blastDispatchManifest(orderRecord);
+      console.log(`WrangleTangle: Dispatched order ${orderId} to drivers: ${dispatchResult.dispatchedTo.join(", ")}`);
+      
+      await appendCorridorEventDurably({
+        corridor_id: "fleet-dispatch",
+        event_name: "driver_dispatched",
+        occurred_at: new Date().toISOString(),
+        handoff_id: body.handoffId || undefined,
+        session_id: body.sessionId || undefined,
+        source_page: body.sourcePage || undefined,
+        target_path: `/booking/${orderId}`,
+        metadata: {
+          orderId,
+          dispatchedTo: dispatchResult.dispatchedTo,
+        },
+      });
+    } catch (err) {
+      console.error("WrangleTangle: Failed to blast dispatch manifest to drivers:", err);
+    }
 
     if (route === "feastly") {
       try {
