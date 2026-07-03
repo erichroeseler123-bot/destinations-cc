@@ -278,6 +278,8 @@ html {
 .dcc-site-shell {
   min-height: 100vh;
   padding-top: 0.5rem;
+  background-color: var(--dcc-tech-bg-main, #0a0e14);
+  color: var(--dcc-tech-text, #f8fafc);
 }
 
 .dcc-site-shell__inner {
@@ -838,6 +840,8 @@ body {
 .dcc-site-shell {
   min-height: 100vh;
   padding-top: 2rem;
+  background-color: var(--dcc-tech-bg-main, #0a0e14);
+  color: var(--dcc-tech-text, #f8fafc);
 }
 
 .dcc-site-footer {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
 import { appendViatorAttribution } from "@/lib/viator/links";
+import { optimizeViatorProducts } from "@/lib/adapters";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL || "",
@@ -134,7 +135,8 @@ export async function GET(request: Request) {
       }
 
       const data = await res.json();
-      const products = data.products || [];
+      const rawProducts = data.products || [];
+      const products = optimizeViatorProducts(rawProducts, { lat: target.lat, lng: target.lon }, 3);
 
       // 3. Normalize into Experience records & affiliate deck
       const normalizedExperiences: Experience[] = [];

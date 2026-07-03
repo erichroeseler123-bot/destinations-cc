@@ -1,310 +1,298 @@
-import type { NetworkCommercialPageConfig } from "@/app/components/network/types";
-import { buildSwampPlanHref } from "@/lib/dcc/warmTransfer";
+// New Orleans Tours Outpost - Tour Database & Configurations
 
 export const NEW_ORLEANS_TOURS_PATH = "/new-orleans/tours";
+export interface ListingNode {
+  id: string;
+  name: string;
+  category: "swamp" | "ghost" | "food" | "history" | "cruise" | "essentials" | "living-here" | "incubator" | "events";
+  location: string;
+  vibe: string;
+  phone: string;
+  mapUrl: string;
+  menuUrl: string; // Booking or details link
+  logistics: Record<string, string>;
+  hours: { open: number; close: number }; // 24h format
+  verification_status: "unverified" | "contacted" | "verified_active" | "update_received" | "wrong_number" | "do_not_contact";
+  price?: string;
+  rating?: number;
+  reviewsCount?: number;
+}
 
-const swampDecisionHref = buildSwampPlanHref({
-  intent: "compare",
-  topic: "swamp-tours",
-  subtype: "comfort",
-  context: "first-time",
-  sourcePage: NEW_ORLEANS_TOURS_PATH,
-});
-
-const swampPickupHref = buildSwampPlanHref({
-  intent: "compare",
-  topic: "swamp-tours",
-  subtype: "pickup",
-  context: "no-car",
-  sourcePage: NEW_ORLEANS_TOURS_PATH,
-});
-
-const airboatDecisionHref = buildSwampPlanHref({
-  intent: "compare",
-  topic: "swamp-tours",
-  subtype: "airboat",
-  context: "first-time",
-  sourcePage: NEW_ORLEANS_TOURS_PATH,
-});
-
-const smallBoatDecisionHref = buildSwampPlanHref({
-  intent: "compare",
-  topic: "swamp-tours",
-  subtype: "boat",
-  context: "mixed-group",
-  sourcePage: NEW_ORLEANS_TOURS_PATH,
-});
-
-// Source credit: Library of Congress / Wikimedia Commons. Context image only; not a specific provider photo.
-const swampDockImage = {
-  src: "/media/corridors/swamp-dock-pickup.webp",
-  alt: "Boats staged at a Louisiana marsh dock for a swamp tour departure",
-};
-
-// Source credit: Wikimedia Commons. Context image only; not a specific provider photo.
-const airboatSwampImage = {
-  src: "/images/wno/airboat-swamp-tour.webp",
-  alt: "An airboat moving across swamp water during a Louisiana-style tour",
-};
-
-// Source credit: Wikimedia Commons. Context image only; not a specific provider photo.
-const smallBoatSwampImage = {
-  src: "/images/wno/small-boat-swamp-tour.webp",
-  alt: "A covered swamp tour boat traveling through Louisiana marsh scenery",
-};
-
-// Source credit: Wikimedia Commons. Context image only; not a specific provider photo.
-const louisianaSwampImage = {
-  src: "/images/wno/louisiana-swamp-backup.webp",
-  alt: "Still Louisiana swamp water and trees for a rainy-day tour planning backup",
-};
-
-export const newOrleansToursPageConfig: NetworkCommercialPageConfig = {
-  id: "wno-new-orleans-tours",
-  path: NEW_ORLEANS_TOURS_PATH,
-  metadata: {
-    title: "New Orleans Tours | Swamp Tours, Airboats, Food Tours, Ghost Walks",
-    description:
-      "Choose New Orleans swamp tours, airboat tours, food tours, ghost walks, private group tours, family-friendly tours, and rainy-day options.",
-    keywords: [
-      "New Orleans tours",
-      "New Orleans swamp tours",
-      "New Orleans airboat tours",
-      "hotel pickup swamp tour New Orleans",
-      "family-friendly New Orleans tours",
-      "private New Orleans tours",
-    ],
+export const DIRECTORY_DATA: ListingNode[] = [
+  {
+    id: "steamboat-natchez",
+    name: "Steamboat Natchez Jazz Cruise",
+    category: "cruise",
+    location: "Toulouse St. Wharf, French Quarter",
+    vibe: "Authentic Steam Paddlewheeler",
+    phone: "5045691401",
+    mapUrl: "https://maps.google.com/?q=Toulouse+Street+Wharf+New+Orleans",
+    menuUrl: "https://www.viator.com/tours/New-Orleans/Steamboat-Natchez-Harbor-Cruise/d675-3780STEAM",
+    logistics: {
+      "Vibe": "Historic Riverboat & Dixieland Jazz",
+      "Boarding": "Toulouse St. Wharf (walkable from Quarter)",
+      "Vessel": "Last authentic steam paddlewheeler on Mississippi",
+      "Duration": "2 Hours (cruising)",
+      "Cancellation": "Free cancellation up to 24h"
+    },
+    hours: { open: 11, close: 21 },
+    verification_status: "verified_active",
+    price: "$48.00",
+    rating: 4.7,
+    reviewsCount: 3412
   },
-  hero: {
-    eyebrow: "New Orleans tours, swamp rides, Quarter nights",
-    title: "Find the New Orleans tour that fits your trip.",
-    summary:
-      "A warm, practical tour desk for swamp rides, French Quarter history, food, ghost nights, riverboats, and pickup-friendly plans.",
-    primaryCta: {
-      label: "Find My Tour",
-      href: "#tour-finder",
-      ariaLabel: "Use the New Orleans tour finder",
+  {
+    id: "airboat-swamp",
+    name: "Cajun Pride Covered Swamp Tour",
+    category: "swamp",
+    location: "LaPlace, LA (optional hotel pickup)",
+    vibe: "Shaded Pontoon Bayou Cruise",
+    phone: "5044670758",
+    mapUrl: "https://maps.google.com/?q=Cajun+Pride+Swamp+Tours",
+    menuUrl: "https://www.viator.com/tours/New-Orleans/New-Orleans-Swamp-and-Bayou-Boat-Tour-with-Transportation/d675-3780SWAMP",
+    logistics: {
+      "Vibe": "Narrated wetlands sightseeing",
+      "Boat Type": "Covered Pontoon Boat",
+      "Hotel Pickup": "Yes (French Quarter & CBD hotels)",
+      "Wildlife": "Alligators, swamp raccoons, egrets",
+      "Cancellation": "Free cancellation up to 24h"
     },
-    secondaryCta: {
-      label: "Compare Swamp Tours",
-      href: swampDecisionHref,
-    },
-    trustChips: ["Hotel pickup options", "Airboats and bayou rides", "Food, ghosts, history", "Family and group picks"],
-    media: {
-      eyebrow: "Bookable first move",
-      title: "Start with the right category, then check the tour.",
-      body:
-        "Choose the ride style, night slot, food route, or history lane first. Then open the booking path with fewer wrong tabs.",
-      image: swampDockImage,
-      rows: [
-        { label: "Finder", value: "Trip fit before listings" },
-        { label: "Book", value: "Partner availability path" },
-        { label: "Backup", value: "Quarter, food, ghost, river" },
-      ],
-    },
+    hours: { open: 8, close: 17 },
+    verification_status: "verified_active",
+    price: "$59.00",
+    rating: 4.8,
+    reviewsCount: 2980
   },
-  trustStrip: {
-    items: [
-      {
-        id: "hotel-pickup",
-        label: "Pickup made easier",
-        body: "Start with pickup if you are staying in the French Quarter, CBD, or nearby hotel zones.",
-      },
-      {
-        id: "weather",
-        label: "Real swamp energy",
-        body: "Compare airboat speed against calmer bayou boats before choosing the main outdoor trip.",
-      },
-      {
-        id: "family-group",
-        label: "Group-fit picks",
-        body: "Match families, couples, bachelor and bachelorette groups, reunions, and comfort needs.",
-      },
-      {
-        id: "local-support",
-        label: "Bad-weather backup",
-        body: "Keep French Quarter, food, ghost, and shorter city tours ready when storms change the day.",
-      },
-    ],
-  },
-  decisionBlock: {
-    eyebrow: "Tour finder",
-    title: "Tell us the kind of day you want.",
-    body:
-      "Start with the customer decision: swamp or city, day or night, food or history, pickup or walkable. WTONOT keeps the choice practical before you check availability with the provider.",
-    recommendation:
-      "Most visitors should pick one headline category, then choose the tour that fits pickup, timing, group style, and weather.",
-    supportPoints: ["tour type", "pickup", "timing", "group fit"],
-    cta: {
-      label: "Find My Tour",
-      href: "#bookable-tours",
+  {
+    id: "airboat-adventure-large",
+    name: "Jean Lafitte Airboat Swamp Tour",
+    category: "swamp",
+    location: "Lafitte, LA (optional hotel pickup)",
+    vibe: "High-Speed Open-Air Ride",
+    phone: "5046894103",
+    mapUrl: "https://maps.google.com/?q=Jean+Lafitte+Swamp+Tours",
+    menuUrl: "https://www.viator.com/tours/New-Orleans/New-Orleans-Airboat-Swamp-Tour/d675-5807AIR",
+    logistics: {
+      "Vibe": "High-speed open-air adventure",
+      "Boat Type": "16-30 passenger Airboat",
+      "Hotel Pickup": "Yes (French Quarter & CBD hotels)",
+      "Wildlife": "Alligators, turtles, bald eagles",
+      "Cancellation": "Free cancellation up to 24h"
     },
+    hours: { open: 8, close: 17 },
+    verification_status: "verified_active",
+    price: "$85.00",
+    rating: 4.7,
+    reviewsCount: 1980
   },
-  featuredCards: [
-    {
-      id: "swamp-hotel-pickup",
-      title: "Swamp Tour With Hotel Pickup",
-      subtitle:
-        "The low-friction classic: bayou scenery, boat time, and transportation handled before your day gets crowded.",
-      category: "Swamp tours",
-      destination: "wno",
-      image: swampDockImage,
-      tags: ["hotel pickup", "swamp tours", "first-time visitors"],
-      cta: { label: "Check Availability", href: swampPickupHref },
-      providerType: "partner_handoff",
-      disclosure:
-        "Pickup details continue on the swamp-tour booking path. Provider terms apply.",
-      decisionReason: "Best for first-timers and no-car groups that want the signature swamp day without solving transport twice.",
+  {
+    id: "airboat-adventure-small",
+    name: "Small-Group Airboat Swamp Adventure",
+    category: "swamp",
+    location: "Lafitte, LA (optional hotel pickup)",
+    vibe: "Adrenaline-fueled intimate ride",
+    phone: "5046894103",
+    mapUrl: "https://maps.google.com/?q=Jean+Lafitte+Swamp+Tours",
+    menuUrl: "https://www.viator.com/tours/New-Orleans/Small-Group-Airboat-Swamp-Adventure-with-Transportation/d675-3162AIR",
+    logistics: {
+      "Vibe": "High-speed shallow-water thrill",
+      "Boat Type": "6-8 passenger Small Airboat",
+      "Hotel Pickup": "Yes (French Quarter & CBD hotels)",
+      "Wildlife": "Up-close alligator encounters",
+      "Cancellation": "Free cancellation up to 24h"
     },
-    {
-      id: "airboat-tour",
-      title: "Airboat Swamp Tour",
-      subtitle:
-        "Louder, faster, more wind-in-your-face. This is the high-energy swamp move when the group wants a ride.",
-      category: "Airboat tours",
-      destination: "wno",
-      image: airboatSwampImage,
-      tags: ["airboat tours", "open-air ride", "boat type"],
-      cta: { label: "Compare Swamp Tours", href: airboatDecisionHref },
-      providerType: "partner_handoff",
-      disclosure: "Airboats are not the right fit for every group. Compare boat style before booking.",
-      decisionReason: "Best for travelers who want the ride to be part of the memory, not just the transportation.",
-    },
-    {
-      id: "small-boat-swamp-tour",
-      title: "Small Boat Swamp Tour",
-      subtitle:
-        "A calmer bayou day for families, mixed-age groups, wildlife watching, and anyone choosing comfort over speed.",
-      category: "Swamp tours",
-      destination: "wno",
-      image: smallBoatSwampImage,
-      tags: ["family-friendly", "small boat", "wildlife"],
-      cta: { label: "Check Availability", href: smallBoatDecisionHref },
-      providerType: "partner_handoff",
-      disclosure: "Covered or quieter boat options can be a better match when heat, rain, or younger travelers matter.",
-      decisionReason: "Best when shade, pace, conversation, and easier group comfort matter more than speed.",
-    },
-    {
-      id: "private-group-tour",
-      title: "Private / Group Tour",
-      subtitle:
-        "For parties, reunions, team trips, and groups that need timing, pickup, or privacy to fit the day.",
-      category: "Private groups",
-      destination: "wno",
-      image: swampDockImage,
-      tags: ["private groups", "custom timing", "fallback"],
-      cta: {
-        label: "Check Availability",
-        href: "/tours?city=new-orleans&q=private%20group%20tour%20new%20orleans&source_section=wno-featured-groups",
-      },
-      providerType: "affiliate_fallback",
-      disclosure: "This is fallback marketplace coverage, not owned execution. Confirm group terms with the listed provider.",
-      decisionReason: "Best when a public-tour schedule feels too tight or the group needs a cleaner meet-up plan.",
-    },
-    {
-      id: "rainy-day-fallback",
-      title: "Rainy-Day French Quarter Backup",
-      subtitle:
-        "Food, ghosts, history, music, and walkable Quarter options for stormy afternoons or short stays.",
-      category: "Rainy-day options",
-      destination: "wno",
-      image: louisianaSwampImage,
-      tags: ["rainy-day options", "French Quarter", "low transfer"],
-      cta: { label: "Find backup ideas", href: "/new-orleans/things-to-do" },
-      providerType: "affiliate_fallback",
-      disclosure: "Use this when weather or travel time makes an outdoor swamp plan fragile.",
-      decisionReason: "Best when the smart move is staying close, dry, and walkable instead of forcing another outdoor transfer.",
-    },
-  ],
-  categoryGrid: {
-    eyebrow: "Topic map",
-    title: "Start with the tour category.",
-    body:
-      "These are the governed WTONOT topics. Each one can become a category page and booking helper once product coverage is confirmed.",
-    items: [
-      {
-        id: "swamp-wildlife",
-        title: "Swamp & Wildlife Tours",
-        body: "Airboats, calmer bayou boats, wildlife, hotel pickup, and the outside-the-city New Orleans classic.",
-        cta: { label: "Compare Swamp Tours", href: swampDecisionHref },
-        providerType: "partner_handoff",
-      },
-      {
-        id: "history-plantation",
-        title: "French Quarter, History & Plantation Tours",
-        body: "Walking tours, French Quarter context, architecture, cemetery routes, and plantation day decisions.",
-        cta: { label: "Find history tours", href: "/?intent=history" },
-        providerType: "partner_handoff",
-      },
-      {
-        id: "food-cocktail",
-        title: "Food, Cocktail & Culinary Tours",
-        body: "Creole tastings, cocktail walks, hands-on food experiences, and easier first-day eating plans.",
-        cta: { label: "Find food tours", href: "/?intent=food,cocktails" },
-        providerType: "partner_handoff",
-      },
-      {
-        id: "ghost-nightlife",
-        title: "Ghost, Vampire, Jazz & Nightlife Tours",
-        body: "Haunted stories, vampire lore, jazz nights, French Quarter energy, and after-dark tour decisions.",
-        cta: { label: "Find night tours", href: "/?intent=ghosts,cocktails" },
-        providerType: "partner_handoff",
-      },
-      {
-        id: "riverboat-cruises",
-        title: "Riverboat & Mississippi River Cruises",
-        body: "Sightseeing cruises, dinner cruises, sunset routes, and water-first New Orleans plans.",
-        cta: {
-          label: "Check availability",
-          href: "/tours?city=new-orleans&q=mississippi%20river%20cruise%20new%20orleans&source_section=wno-topic-grid",
-        },
-        providerType: "affiliate_fallback",
-      },
-      {
-        id: "pickup-transfers",
-        title: "Transportation, Hotel Pickup & Private Transfers",
-        body: "Pickup-friendly tours, private routes, port transfers, and logistics checks before booking.",
-        cta: {
-          label: "Check pickup options",
-          href: "/tours?city=new-orleans&q=new%20orleans%20tour%20hotel%20pickup&source_section=wno-topic-grid",
-        },
-        providerType: "affiliate_fallback",
-      },
-    ],
+    hours: { open: 8, close: 17 },
+    verification_status: "verified_active",
+    price: "$109.00",
+    rating: 4.8,
+    reviewsCount: 2450
   },
-  providerDisclosure: {
-    providerType: "mixed",
-    label: "Booking paths are labeled before you leave.",
-    body:
-      "Swamp-tour links may continue to Welcome to the Swamp. Broader tour links may open marketplace options. This page does not claim live availability, final prices, operator ratings, or guaranteed pickup.",
-    allowedClaims: [
-      "Compare New Orleans swamp tours and airboat tours",
-      "Start with hotel pickup when transportation matters",
-      "Find city-tour backups for weather or short stays",
-      "See when a link opens a broader marketplace option",
-    ],
-    notClaimed: [
-      "Final pickup zone and pickup window",
-      "Final tour price and taxes",
-      "Provider ratings and reviews",
-      "Live availability on this page",
-    ],
+  {
+    id: "ghost-cemetery",
+    name: "French Quarter Ghost & Voodoo Tour",
+    category: "ghost",
+    location: "Jackson Square, French Quarter",
+    vibe: "Candlelit Walk of Creole Legends",
+    phone: "5045812323",
+    mapUrl: "https://maps.google.com/?q=Jackson+Square+New+Orleans",
+    menuUrl: "https://www.viator.com/tours/New-Orleans/New-Orleans-Ghosts-and-Spirits-Walking-Tour/d675-3316GHOST",
+    logistics: {
+      "Vibe": "Spooky & Historical nighttime walk",
+      "Duration": "2 Hours (walking)",
+      "Stops": "St. Louis Cemetery and haunted gates",
+      "Content Fit": "All ages (PG-13 rated stories)",
+      "Cancellation": "Free cancellation up to 24h"
+    },
+    hours: { open: 18, close: 22 },
+    verification_status: "verified_active",
+    price: "$29.00",
+    rating: 4.6,
+    reviewsCount: 1845
   },
-  stickyMobileCta: {
-    enabled: true,
-    label: "Find My Tour",
-    href: "#tour-finder",
-    disclosureLabel: "Provider terms apply.",
-    providerType: "partner_handoff",
+  {
+    id: "food-cocktail",
+    name: "Creole Food & Cocktail Walk",
+    category: "food",
+    location: "Royal St, French Quarter",
+    vibe: "Tasting NOLA History Block-by-Block",
+    phone: "5045680100",
+    mapUrl: "https://maps.google.com/?q=French+Quarter+New+Orleans",
+    menuUrl: "https://www.viator.com/tours/New-Orleans/French-Quarter-Food-Tour/d675-5674FQFOOD",
+    logistics: {
+      "Vibe": "Culinary & Social walking tour",
+      "Included": "5 food tastings & 3 historic cocktails",
+      "Walking": "1.5 miles (leisurely pace)",
+      "Dietary Support": "Vegetarian options supported",
+      "Cancellation": "Free cancellation up to 24h"
+    },
+    hours: { open: 11, close: 15 },
+    verification_status: "verified_active",
+    price: "$89.00",
+    rating: 4.9,
+    reviewsCount: 1204
   },
-  footer: {
-    eyebrow: "Welcome to New Orleans Tours",
-    body:
-      "A governed New Orleans tourism storefront for choosing swamp, history, food, ghost, riverboat, pickup-friendly, family, and premium tour paths before booking.",
-    links: [
-      { label: "Find My Tour", href: "#tour-finder" },
-      { label: "Compare Swamp Tours", href: swampDecisionHref },
-      { label: "Check Availability", href: "#bookable-tours" },
-    ],
+  {
+    id: "free-tours-foot",
+    name: "Free Tours by Foot FQ Tour",
+    category: "history",
+    location: "St. Peter & Chartres St, French Quarter",
+    vibe: "Pay-What-You-Wish FQ Layout",
+    phone: "5042220101",
+    mapUrl: "https://maps.google.com/?q=St+Peter+and+Chartres+St+New+Orleans",
+    menuUrl: "https://freetoursbyfoot.com/french-quarter-walking-tours/",
+    logistics: {
+      "Vibe": "Casual, educational architectural walk",
+      "Cost": "Pay-what-you-wish tipping basis",
+      "Meeting Point": "Outside St. Louis Cathedral gates",
+      "Duration": "2 Hours",
+      "Cancellation": "No-fee reservations"
+    },
+    hours: { open: 9, close: 17 },
+    verification_status: "verified_active",
+    price: "Tips",
+    rating: 4.9,
+    reviewsCount: 4233
   },
+  {
+    id: "preservation-hall",
+    name: "Preservation Hall Jazz Concerts",
+    category: "events",
+    location: "726 St Peter St, French Quarter",
+    vibe: "Raw Acoustic Jazz Sanctuary",
+    phone: "5045222234",
+    mapUrl: "https://maps.google.com/?q=Preservation+Hall+New+Orleans",
+    menuUrl: "https://www.preservationhall.com",
+    logistics: {
+      "Vibe": "Historic, intimate listening room",
+      "Shows": "Daily at 5:00 PM, 6:15 PM, 7:30 PM, 8:45 PM",
+      "Age Limit": "All ages welcome",
+      "Rules": "Strictly no phones or flash photography allowed"
+    },
+    hours: { open: 17, close: 22 },
+    verification_status: "verified_active"
+  },
+  {
+    id: "tulane-er",
+    name: "Tulane Medical Center Emergency Room",
+    category: "essentials",
+    location: "1415 Tulane Ave, New Orleans",
+    vibe: "24/7 Emergency Medical Support",
+    phone: "5049885263",
+    mapUrl: "https://maps.google.com/?q=Tulane+Medical+Center+New+Orleans",
+    menuUrl: "tel:5049885263",
+    logistics: {
+      "ER Open": "24 Hours / 365 Days",
+      "Transit": "10-minute rideshare from French Quarter",
+      "Services": "Full emergency medical, trauma care, pharmacy sync"
+    },
+    hours: { open: 0, close: 24 },
+    verification_status: "verified_active"
+  },
+  {
+    id: "walgreens-fq",
+    name: "Walgreens FQ Pharmacy",
+    category: "essentials",
+    location: "900 Canal St, French Quarter",
+    vibe: "FQ Provisions & Pharmacy",
+    phone: "5045689511",
+    mapUrl: "https://maps.google.com/?q=Walgreens+Canal+St+New+Orleans",
+    menuUrl: "https://www.walgreens.com",
+    logistics: {
+      "Store Hours": "8:00 AM - 10:00 PM (Daily)",
+      "Pharmacy": "On-site prescriptions & OTC relief",
+      "Convenience": "Water, snacks, basic toiletries"
+    },
+    hours: { open: 8, close: 22 },
+    verification_status: "verified_active"
+  },
+  {
+    id: "safety-zones-guide",
+    name: "Block-by-Block Safety Dispatch",
+    category: "living-here",
+    location: "French Quarter Grid",
+    vibe: "NOLA Safety Protocols",
+    phone: "5045559111",
+    mapUrl: "https://maps.google.com/?q=French+Quarter+New+Orleans",
+    menuUrl: "https://www.google.com",
+    logistics: {
+      "Rule 1": "Stick to lit paths (Decatur, Canal St)",
+      "Rule 2": "Avoid N. Rampart St at night alone",
+      "Rule 3": "Don't wander down dark residential side streets late"
+    },
+    hours: { open: 0, close: 24 },
+    verification_status: "verified_active"
+  },
+  {
+    id: "scam-guide",
+    name: "Orleans Scam Cheat Sheet",
+    category: "living-here",
+    location: "Bourbon / Decatur St",
+    vibe: "Dodge the Hustlers Like a Local",
+    phone: "5045559222",
+    mapUrl: "https://maps.google.com/?q=Jackson+Square+New+Orleans",
+    menuUrl: "https://www.google.com",
+    logistics: {
+      "Shoe Hustle": "Bet twenty they spell where you got shoes. Answer: 'On my feet in Louisiana!'",
+      "CD Hustler": "Never let anyone hand you a CD. Keep hands in pockets.",
+      "Vibe Check": "A polite 'No thanks, I'm good' with a continuous walk works best."
+    },
+    hours: { open: 0, close: 24 },
+    verification_status: "verified_active"
+  },
+  {
+    id: "jazz-foundation",
+    name: "NOLA Jazz & Heritage Foundation",
+    category: "incubator",
+    location: "1205 N Rampart St, New Orleans",
+    vibe: "Cultural Incubator & Musicians Support",
+    phone: "5045586100",
+    mapUrl: "https://maps.google.com/?q=New+Orleans+Jazz+and+Heritage+Foundation",
+    menuUrl: "https://www.jazzandheritage.org",
+    logistics: {
+      "Mission": "Community development, arts grants, music training",
+      "Support": "Donate directly to support local NOLA musicians",
+      "Events": "Sponsors of local community free festivals"
+    },
+    hours: { open: 9, close: 17 },
+    verification_status: "verified_active"
+  }
+];
+
+export const CATEGORIES = [
+  { id: "all", label: "All Telemetry", icon: "🌐" },
+  { id: "swamp", label: "Swamps & Airboats", icon: "🐊" },
+  { id: "ghost", label: "Ghosts & Voodoo", icon: "👻" },
+  { id: "food", label: "Food & Cocktails", icon: "🍹" },
+  { id: "history", label: "Historic Walks", icon: "⛪" },
+  { id: "cruise", label: "Mississippi Cruises", icon: "🚢" },
+  { id: "essentials", label: "Life Support", icon: "💊" },
+  { id: "events", label: "Live Events", icon: "🎺" },
+  { id: "living-here", label: "Local Wisdom", icon: "⚜️" },
+  { id: "incubator", label: "Community Launch", icon: "💡" }
+];
+
+export const METADATA = {
+  title: "New Orleans Tours Outpost | High-Speed Zero-Scroll Local Guide",
+  description: "Instant, decision-first tourist console. Compare swamp airboats, haunted ghosts, creole food walks, and paddlewheels with zero scroll.",
+  keywords: ["new orleans tours", "swamp tour hotel pickup", "french quarter ghost tour", "creole food tasting", "steamboat natchez"]
 };

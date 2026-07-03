@@ -1,0 +1,432 @@
+/* app/cruises/ship/[slug]/ship-outpost.module.css */
+
+.consoleContainer {
+  min-height: 100vh;
+  background-color: #070709;
+  color: #f4f4f5;
+  font-family: var(--font-mono), monospace;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.consoleWrapper {
+  width: 100%;
+  max-width: 600px;
+  background-color: #0c0c0e;
+  border: 1px solid #1f2023;
+  padding: 16px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+/* Tactical borders and indicators */
+.consoleWrapper::before {
+  content: "DECK LOGISTICS CONTROL v1.0.8";
+  position: absolute;
+  top: -9px;
+  left: 12px;
+  background: #070709;
+  color: #52525b;
+  font-size: 8px;
+  padding: 0 4px;
+  border: 1px solid #1f2023;
+  letter-spacing: 1px;
+}
+
+/* HUD Header */
+.hudHeader {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 2px double #27272a;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.hudBrand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.hudTitle {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  margin: 0;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hudTitle span {
+  color: #06b6d4; /* cyan */
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  background-color: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #10b981;
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+.hudSubtitle {
+  font-size: 10px;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Danger Close Warning Banner */
+.warningBanner {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 10px;
+  font-size: 11px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: pulseBorder 1.5s infinite alternate;
+}
+
+@keyframes pulseBorder {
+  0% { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 4px rgba(239, 68, 68, 0.1); }
+  100% { border-color: rgba(239, 68, 68, 1); box-shadow: 0 0 12px rgba(239, 68, 68, 0.3); }
+}
+
+.warningBannerIcon {
+  font-size: 14px;
+}
+
+/* Time Telemetry Board */
+.telemetryBoard {
+  background: #0f1013;
+  border: 1px solid #27272a;
+  padding: 12px;
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-cols: 1fr 1fr;
+  gap: 12px;
+}
+
+.telemetryCell {
+  display: flex;
+  flex-direction: column;
+}
+
+.telemetryLabel {
+  font-size: 8px;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.telemetryVal {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.telemetryValAlert {
+  color: #f59e0b; /* Amber alert */
+}
+
+.telemetryCellFull {
+  grid-column: span 2;
+  border-top: 1px dashed #27272a;
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+.countdownTimer {
+  font-size: 18px;
+  font-weight: 800;
+  color: #06b6d4; /* cyan */
+  letter-spacing: 1px;
+}
+
+.countdownTimerDanger {
+  color: #ef4444; /* red */
+  animation: flashDanger 1s infinite steps(2, start);
+}
+
+@keyframes flashDanger {
+  to { opacity: 0.3; }
+}
+
+/* Filter buttons */
+.filterLabel {
+  font-size: 9px;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-cols: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.categoryBtn {
+  background: #18181b;
+  border: 1px solid #27272a;
+  color: #d4d4d8;
+  padding: 8px;
+  font-size: 10px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.categoryBtnActive {
+  background: rgba(6, 182, 212, 0.08);
+  border-color: #06b6d4;
+  color: #06b6d4;
+}
+
+.categoryBtnIcon {
+  font-size: 12px;
+}
+
+/* Results panel */
+.resultsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed #27272a;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+
+.resultsTitle {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #a1a1aa;
+}
+
+.resultsCount {
+  font-size: 9px;
+  color: #71717a;
+}
+
+.listingsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.listingCard {
+  background: #0f1013;
+  border: 1px solid #27272a;
+  padding: 12px;
+  position: relative;
+  transition: border-color 0.2s ease;
+}
+
+.listingCard:hover {
+  border-color: #3f3f46;
+}
+
+.listingHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.listingTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 2px 0;
+}
+
+.listingVibe {
+  font-size: 10px;
+  color: #71717a;
+  font-style: italic;
+}
+
+.listingMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.listingPrice {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid #fbbf24;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.statusBadge {
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+
+.badgeActive {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid #10b981;
+}
+
+.badgeFull {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.listingLogistics {
+  background: #09090b;
+  border: 1px dashed #27272a;
+  padding: 8px;
+  margin-bottom: 10px;
+  font-size: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.logisticsRow {
+  display: flex;
+  justify-content: space-between;
+}
+
+.logisticsKey {
+  color: #71717a;
+}
+
+.logisticsVal {
+  color: #e4e4e7;
+  text-align: right;
+}
+
+.listingActions {
+  display: grid;
+  grid-template-cols: 1fr 1fr;
+  gap: 8px;
+}
+
+.actionBtn {
+  background: transparent;
+  border: 1px solid #27272a;
+  color: #a1a1aa;
+  padding: 6px 0;
+  font-size: 10px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.actionBtn:hover {
+  background: #18181b;
+  color: #ffffff;
+  border-color: #52525b;
+}
+
+.actionBtnPrimary {
+  background: #06b6d4;
+  border-color: #06b6d4;
+  color: #070709;
+  font-weight: 700;
+}
+
+.actionBtnPrimary:hover {
+  background: #22d3ee;
+  border-color: #22d3ee;
+  color: #070709;
+}
+
+.actionBtnDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.actionBtnDisabled:hover {
+  background: transparent;
+  color: #a1a1aa;
+  border-color: #27272a;
+}
+
+/* Time shifting controls for testing/debugging */
+.timeshiftDebugBar {
+  margin-top: 24px;
+  border-top: 1px solid #27272a;
+  padding-top: 16px;
+}
+
+.timeshiftLabel {
+  font-size: 8px;
+  color: #f59e0b;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.timeshiftBtns {
+  display: grid;
+  grid-template-cols: 1fr 1fr;
+  gap: 8px;
+}
+
+.timeshiftBtn {
+  background: #18181b;
+  border: 1px solid #27272a;
+  color: #71717a;
+  padding: 6px;
+  font-size: 9px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.timeshiftBtnActive {
+  border-color: #f59e0b;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.footerCopyright {
+  margin-top: 24px;
+  font-size: 8px;
+  color: #3f3f46;
+  text-align: center;
+  border-top: 1px solid #1f2023;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

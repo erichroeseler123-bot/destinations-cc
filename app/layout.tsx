@@ -73,11 +73,6 @@ export const metadata: Metadata = {
   category: "travel",
 };
 
-function isWelcomeToNewOrleansToursHost(host: string) {
-  const normalized = host.toLowerCase().split(":")[0] || "";
-  return normalized === "welcometoneworleanstours.com" || normalized === "www.welcometoneworleanstours.com";
-}
-
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const requestHeaders = await headers();
   const host =
@@ -85,7 +80,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     requestHeaders.get("host") ||
     "";
   const brandShell = requestHeaders.get("x-dcc-brand-shell") || "";
-  const isWtonotShell = brandShell === "wtonot" || isWelcomeToNewOrleansToursHost(host);
+  const isWtonotShell = brandShell === "wtonot";
   const pathname = requestHeaders.get("x-pathname") || "";
   const isHomepage = pathname === "/";
 

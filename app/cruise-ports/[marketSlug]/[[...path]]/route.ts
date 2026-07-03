@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { notFound, redirect } from "next/navigation";
 import { PORT_AUTHORITY_CONFIG } from "@/src/data/port-authority-config";
 
 const TRAVEL_MARKET_ORIGIN = "https://dcc-v1-cut-clean.vercel.app";
@@ -33,7 +34,7 @@ async function proxyTravelMarketRequest(
   const { marketSlug, path = [] } = await context.params;
 
   if (!ALLOWED_MARKETS.has(marketSlug)) {
-    return new Response("Not found", { status: 404 });
+    redirect("/not-found");
   }
 
   const targetPath = [
@@ -99,9 +100,31 @@ function buildProxyHeaders(upstreamHeaders: Headers): Headers {
 }
 
 function rewriteTravelMarketHtmlAssets(html: string): string {
+  const darkStyleBlock = `
+<style>
+  body {
+    background-color: #0a0e14 !important;
+    color: #f8fafc !important;
+    font-family: system-ui, -apple-system, sans-serif !important;
+  }
+  a {
+    color: #38bdf8 !important;
+    text-decoration: underline !important;
+  }
+  a:hover {
+    color: #7dd3fc !important;
+  }
+  div, section, header, footer, main, article, aside {
+    background-color: transparent !important;
+    color: inherit !important;
+  }
+</style>
+</head>`;
+
   return html
     .replaceAll('href="/_next/', `href="${TRAVEL_MARKET_ORIGIN}/_next/`)
     .replaceAll('src="/_next/', `src="${TRAVEL_MARKET_ORIGIN}/_next/`)
     .replaceAll('href="/images/', `href="${TRAVEL_MARKET_ORIGIN}/images/`)
-    .replaceAll('src="/images/', `src="${TRAVEL_MARKET_ORIGIN}/images/`);
+    .replaceAll('src="/images/', `src="${TRAVEL_MARKET_ORIGIN}/images/`)
+    .replace(/<\/head>/i, darkStyleBlock);
 }

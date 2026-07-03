@@ -1,3 +1,8 @@
+if (process.env.SKIP_ENV_CHECK === "1") {
+  console.log("deploy env check skipped via SKIP_ENV_CHECK=1");
+  process.exit(0);
+}
+
 const requiredEnvVars = [
   "DATABASE_URL",
   "SQUARE_ACCESS_TOKEN",

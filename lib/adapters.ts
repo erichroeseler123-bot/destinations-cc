@@ -373,4 +373,60 @@ export function normalizeViatorExperience(
   return normalized;
 }
 
+/**
+ * Ranks, sorts, and slices Viator products based on Yield Optimization Score:
+ * S = (C * R^2) / (D + 1)
+ */
+export function optimizeViatorProducts(
+  products: any[],
+  portCoords: { lat: number; lng: number },
+  limit: number = 3
+): any[] {
+  const scored = products.map((product) => {
+    // 1. Commission (C) = 10% of price
+    const price = product.pricing?.summary?.fromPrice ?? 49;
+    const commission = price * 0.10;
+
+    // 2. Review score (R) - average rating
+    const rating = product.reviews?.combinedAverageRating || product.reviews?.averageRating || 4.0;
+
+    // 3. Distance (D) in miles
+    let distance = 2.0; // fallback
+    const startPoint = product.startPoints?.[0] || product.meetingPoint;
+    if (startPoint?.location?.latitude && startPoint?.location?.longitude) {
+      const lat1 = portCoords.lat;
+      const lon1 = portCoords.lng;
+      const lat2 = parseFloat(startPoint.location.latitude);
+      const lon2 = parseFloat(startPoint.location.longitude);
+      
+      const R_earth = 3958.8; // Radius of Earth in miles
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      distance = R_earth * c;
+    } else {
+      // Deterministic fallback based on code hash
+      const code = product.productCode || "";
+      let hash = 0;
+      for (let i = 0; i < code.length; i++) {
+        hash = code.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      distance = 0.5 + Math.abs(hash % 120) / 10;
+    }
+
+    const score = (commission * rating * rating) / (distance + 1);
+    return { product, score };
+  });
+
+  // Sort descending by score
+  scored.sort((a, b) => b.score - a.score);
+
+  return scored.slice(0, limit).map((item) => item.product);
+}
+
+
 
