@@ -331,6 +331,33 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });
   }
 
+  // Time-decay routing for cruise ports based on hours until arrival parameter `t`
+  const portMatch = request.nextUrl.pathname.match(/^\/cruise-ports\/([^/]+)$/);
+  if (portMatch) {
+    const tRaw = request.nextUrl.searchParams.get("t");
+    if (tRaw) {
+      const t = parseFloat(tRaw);
+      if (!isNaN(t)) {
+        if (t <= 12) {
+          const transferUrl = process.env.SQUARE_TRANSFER_LINK || "https://checkout.square.site/pay/emergency-port-transfer";
+          return NextResponse.redirect(new URL(transferUrl), 307);
+        } else if (t <= 48) {
+          if (request.nextUrl.searchParams.get("tab") !== "logistics") {
+            const url = request.nextUrl.clone();
+            url.searchParams.set("tab", "logistics");
+            return NextResponse.redirect(url, 307);
+          }
+        } else {
+          if (request.nextUrl.searchParams.get("tab") !== "excursions") {
+            const url = request.nextUrl.clone();
+            url.searchParams.set("tab", "excursions");
+            return NextResponse.redirect(url, 307);
+          }
+        }
+      }
+    }
+  }
+
   if (request.nextUrl.pathname === "/dashboard") {
     return NextResponse.redirect(new URL("/internal/dashboard", request.url), 307);
   }
