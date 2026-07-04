@@ -150,7 +150,7 @@ function main() {
       },
       {
         title: "Food & Drink Tour",
-        description: `A high-conversion category: local tastings, bars, and signature bites.`,
+        description: `Savor signature bites, craft brews, and local favorites on a guided food walk.`,
         query: "food tour",
       },
       {
