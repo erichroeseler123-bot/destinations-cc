@@ -9,7 +9,8 @@ const nextConfig = {
       { protocol: "https", hostname: "www.destinationcommandcenter.com" },
       { protocol: "https", hostname: "destinationcommandcenter.com" }
     ]
-  }
+  },
+  outputFileTracingRoot: '../../'
 };
 
 export default nextConfig;

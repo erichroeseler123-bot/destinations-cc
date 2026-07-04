@@ -34,6 +34,10 @@
       "@/lib/db/*": ["../../lib/db/*"],
       "@/lib/session/*": ["../../lib/session/*"],
       "@/types/*": ["../../types/*"],
+      "@/utils/*": ["../../utils/*"],
+      "@/app/components/dcc/*": ["../../app/components/dcc/*"],
+      "@/app/internal/*": ["../../app/internal/*"],
+      "@/lib/handoff/*": ["../../lib/handoff/*"],
       "@/*": [
         "./*"
       ]
