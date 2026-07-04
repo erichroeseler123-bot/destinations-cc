@@ -8,17 +8,31 @@ type NavItem = {
   label: string;
 };
 
-const PRIMARY_NAV: NavItem[] = [
+const PRIMARY_NAV_CONSOLE: NavItem[] = [
   { href: "/", label: "Overview" },
   { href: "/network", label: "Routing" },
   { href: "/internal/telemetry", label: "Metrics" },
   { href: "/command", label: "Governance" },
 ];
 
+const PRIMARY_NAV_PUBLIC: NavItem[] = [
+  { href: "/", label: "CORRIDORS" },
+  { href: "/about", label: "HOW IT WORKS" },
+  { href: "/internal/telemetry", label: "SYSTEM LOG" },
+];
+
 export default function SiteHeader() {
   const pathname = usePathname();
 
   if (pathname === "/sedona/jeep-tours") return null;
+
+  const isConsoleView =
+    pathname === "/command" ||
+    pathname?.startsWith("/internal") ||
+    pathname === "/network" ||
+    pathname === "/governance";
+
+  const navItems = isConsoleView ? PRIMARY_NAV_CONSOLE : PRIMARY_NAV_PUBLIC;
 
   return (
     <header className="dcc-site-header">
@@ -27,11 +41,11 @@ export default function SiteHeader() {
           <Link href="/" className="dcc-site-header__brand-mark" aria-label="Destination Command Center home">
             DCC<span className="dcc-site-header__dot">.</span>
           </Link>
-          <span className="dcc-site-header__status">SYS_OK</span>
+          {isConsoleView && <span className="dcc-site-header__status">SYS_OK</span>}
         </div>
 
         <nav className="dcc-site-header__nav" aria-label="Primary">
-          {PRIMARY_NAV.map((item, index) => {
+          {navItems.map((item, index) => {
             const isActive = item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href);
             return (
               <span key={item.href} className="dcc-site-header__nav-slot">
@@ -48,9 +62,11 @@ export default function SiteHeader() {
           <Link href="/operator/register" className="dcc-site-header__login">
             Sign In
           </Link>
-          <Link href="/command" className="dcc-site-header__button">
-            Launch Console
-          </Link>
+          {isConsoleView && (
+            <Link href="/command" className="dcc-site-header__button">
+              Launch Console
+            </Link>
+          )}
         </div>
       </div>
     </header>

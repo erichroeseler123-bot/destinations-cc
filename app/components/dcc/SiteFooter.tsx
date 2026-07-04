@@ -56,6 +56,12 @@ export default function SiteFooter() {
 
   if (pathname === "/sedona/jeep-tours") return null;
 
+  const isConsoleView =
+    pathname === "/command" ||
+    pathname?.startsWith("/internal") ||
+    pathname === "/network" ||
+    pathname === "/governance";
+
   return (
     <footer className="dcc-site-footer">
       <div className="dcc-site-footer__inner">
@@ -65,12 +71,14 @@ export default function SiteFooter() {
               DCC<span className="dcc-site-footer__dot">.</span>
             </Link>
             <p className="dcc-site-footer__brand-desc">
-              Planetary routing, network orchestration, and system governance modules.
+              {isConsoleView
+                ? "Planetary routing, network orchestration, and system governance modules."
+                : "A clean intent-based travel orchestration directory."}
             </p>
           </div>
 
           <div className="dcc-site-footer__column">
-            <h5>.engine</h5>
+            <h5>{isConsoleView ? ".engine" : "Engine"}</h5>
             <ul>
               {ENGINE_LINKS.map((link) => (
                 <li key={link.href}>
@@ -81,7 +89,7 @@ export default function SiteFooter() {
           </div>
 
           <div className="dcc-site-footer__column">
-            <h5>.system</h5>
+            <h5>{isConsoleView ? ".system" : "System"}</h5>
             <ul>
               {SYSTEM_LINKS.map((link) => (
                 <li key={link.href}>
@@ -92,7 +100,7 @@ export default function SiteFooter() {
           </div>
 
           <div className="dcc-site-footer__column">
-            <h5>.connect</h5>
+            <h5>{isConsoleView ? ".connect" : "Connect"}</h5>
             <div className="dcc-site-footer__social-grid">
               {FOOTER_SATELLITES.slice(0, 2).map((satellite) => (
                 <a
@@ -107,7 +115,9 @@ export default function SiteFooter() {
                   rel="noopener"
                   className="dcc-site-footer__social-tag"
                 >
-                  {satellite.id === "partyatredrocks" ? "TERMINAL" : "DATABASE"}
+                  {isConsoleView
+                    ? (satellite.id === "partyatredrocks" ? "TERMINAL" : "DATABASE")
+                    : (satellite.id === "partyatredrocks" ? "Red Rocks Shuttle" : "Alaska Cruise Flight Deck")}
                 </a>
               ))}
             </div>

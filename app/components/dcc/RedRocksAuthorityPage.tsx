@@ -114,6 +114,8 @@ export default function RedRocksAuthorityPage({
   hideSimpleFunnel = false,
   hideRecommendedFlow = false,
 }: RedRocksAuthorityPageProps) {
+  const isConsoleView = sourcePath === "/command" || sourcePath.startsWith("/internal");
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <RedRocksFunnelTelemetry page={sourcePath} />
@@ -137,7 +139,7 @@ export default function RedRocksAuthorityPage({
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-14">
         <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,176,124,0.16),transparent_26%),radial-gradient(circle_at_top_right,rgba(61,243,255,0.12),transparent_26%),linear-gradient(180deg,rgba(9,15,31,0.96),rgba(7,11,25,0.96))] p-7 shadow-[0_20px_70px_rgba(0,0,0,0.35)]">
           <div className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-[#8fd0ff]">
-            {buyerIntentLabel}
+            {isConsoleView ? buyerIntentLabel : "Guaranteed Red Rocks ride plan"}
           </div>
           <p className="mt-5 text-xs uppercase tracking-[0.24em] text-cyan-300">{eyebrow}</p>
           <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">{title}</h1>
@@ -146,7 +148,7 @@ export default function RedRocksAuthorityPage({
             {heroTrustBadges.map((item) => (
               <span
                 key={item}
-                className="rounded-full border border-white/12 bg-white/8 px-3 py-1.5 text-xs font-semibold text-zinc-100"
+                className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs text-zinc-300"
               >
                 {item}
               </span>
@@ -187,7 +189,7 @@ export default function RedRocksAuthorityPage({
               />
             </div>
           ) : null}
-          {hidePrimaryPathLinks ? null : (
+          {hidePrimaryPathLinks || !isConsoleView ? null : (
             <section className="mt-6 rounded-[1.75rem] border border-white/10 bg-black/20 p-5">
               <p className="text-xs font-black uppercase tracking-[0.2em] text-[#ffb07c]">Primary path</p>
               <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -209,7 +211,7 @@ export default function RedRocksAuthorityPage({
               </div>
             </section>
           )}
-          {hideSupportReading ? null : (
+          {hideSupportReading || !isConsoleView ? null : (
             <section className="mt-5 rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
               <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">Support reading</p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -231,6 +233,68 @@ export default function RedRocksAuthorityPage({
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-6">
+            {!isConsoleView && (
+              <section className="rounded-[1.9rem] border border-cyan-400/20 bg-gradient-to-b from-cyan-950/40 to-slate-950 p-6 md:p-8 space-y-6 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+                <div>
+                  <span className="text-[11px] font-black uppercase tracking-[0.25em] text-cyan-300">
+                    DECISION ASSISTANT
+                  </span>
+                  <h3 className="mt-2 text-2xl font-black uppercase tracking-tight text-white">
+                    Segment by traveler intent
+                  </h3>
+                  <p className="mt-2 text-sm text-zinc-300">
+                    Avoid the post-show scramble. Choose the transport fit that matches your group size and style.
+                  </p>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  <article className="rounded-2xl border border-white/10 bg-[#090f1e] p-5 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#ffb07c]">
+                        Option 1: Standard Broad-Fit
+                      </span>
+                      <h4 className="mt-2 text-lg font-bold text-white">Shared Shuttle seats</h4>
+                      <p className="mt-3 text-xs leading-6 text-zinc-300">
+                        Round-trip seats from Sheraton Denver Downtown or Golden. Perfect for couples, solos, or groups who want zero parking hassles and direct hub transport.
+                      </p>
+                    </div>
+                    <div className="mt-6">
+                      <ParrCtaLink
+                        href={primaryCtaHref}
+                        page={sourcePath}
+                        cta="shuttle-segment-cta"
+                        className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#3df3ff] px-4 text-xs font-black uppercase tracking-[0.16em] text-[#07111d] transition hover:bg-[#62f6ff]"
+                      >
+                        Book Shared Shuttle
+                      </ParrCtaLink>
+                    </div>
+                  </article>
+
+                  <article className="rounded-2xl border border-white/10 bg-[#090f1e] p-5 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#ffb07c]">
+                        Option 2: Premium Private
+                      </span>
+                      <h4 className="mt-2 text-lg font-bold text-white">Private Suburban / Passenger Van</h4>
+                      <p className="mt-3 text-xs leading-6 text-zinc-300">
+                        Dedicated private ride with custom pickup schedules. Ideal for larger parties, VIP groups, or anyone demanding absolute comfort and direct curb-to-curb service.
+                      </p>
+                    </div>
+                    <div className="mt-6">
+                      <ParrCtaLink
+                        href="https://www.partyatredrocks.com"
+                        page={sourcePath}
+                        cta="private-segment-cta"
+                        className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-white/12 bg-white/6 px-4 text-xs font-black uppercase tracking-[0.16em] text-white transition hover:bg-white/10"
+                      >
+                        Secure Private Ride
+                      </ParrCtaLink>
+                    </div>
+                  </article>
+                </div>
+              </section>
+            )}
+
             {notice}
             {sections.map((section) => (
               <section
@@ -303,7 +367,7 @@ export default function RedRocksAuthorityPage({
               </section>
             ) : null}
 
-            {hideSimpleFunnel ? null : (
+            {hideSimpleFunnel || !isConsoleView ? null : (
               <section className="rounded-[1.9rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
                 <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Simple funnel</p>
                 <h2 className="mt-3 text-2xl font-bold">How a Red Rocks night usually gets decided</h2>
@@ -322,7 +386,7 @@ export default function RedRocksAuthorityPage({
           </div>
 
           <aside className="space-y-6">
-            {hideRecommendedFlow ? null : (
+            {hideRecommendedFlow || !isConsoleView ? null : (
               <section className="rounded-[1.9rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
                 <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Recommended flow</p>
                 <div className="mt-3 space-y-3 text-sm text-zinc-300">

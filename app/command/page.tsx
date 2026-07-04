@@ -19,6 +19,23 @@ export default async function CommandViewPage() {
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
+      {/* Live Sandbox Demo Banner */}
+      <div className="border-b border-[#f5c66c]/20 bg-[#f5c66c]/10 px-6 py-4">
+        <div className="mx-auto max-w-7xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <span className="inline-flex items-center rounded-full bg-[#f5c66c] px-2.5 py-0.5 text-xs font-bold text-[#120f0b]">
+              LIVE SANDBOX DEMO
+            </span>
+            <p className="text-sm font-semibold text-[#f5c66c]">
+              This is DCC’s real-time algorithmic orchestration layer tracking active transport pipelines.
+            </p>
+          </div>
+          <p className="text-xs text-white/50 max-w-md">
+            This dashboard displays active metrics, bitmask configurations, and telemetry signals for developers and system stakeholders.
+          </p>
+        </div>
+      </div>
+
       <CommandHero data={data.networkStatus} />
       <CommandStatusStrip data={data.networkStatus} />
       <CommandViewShell data={data} />

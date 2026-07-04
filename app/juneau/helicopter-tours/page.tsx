@@ -159,23 +159,23 @@ export default async function JuneauHelicopterToursPage({
       ? "Helicopter inventory is not the cleanest live lane right now. The go path will fall back to a safer Juneau decision lane."
       : resolvedPrimary?.status === "warning"
         ? "Live signals are active for the helicopter lane. The go path stays in the primary handoff, but the CTA reflects tighter live conditions."
-        : "The button routes through DCC first, then resolves into the live Juneau helicopter handoff at the edge.";
+        : "The button routes through DCC first, then resolves into the live Juneau helicopter handoff.";
 
   return (
     <main className="min-h-screen bg-[#07131d] text-white">
       <JsonLdGraph />
       <div className="mx-auto max-w-6xl space-y-8 px-6 py-16">
-        <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(103,232,249,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(96,165,250,0.10),transparent_24%),linear-gradient(180deg,rgba(9,17,24,0.97),rgba(5,8,22,0.99))] p-8 shadow-[0_28px_90px_rgba(0,0,0,0.45)] md:p-10">
-          <p className="text-xs uppercase tracking-[0.24em] text-cyan-300">DCC Juneau flight lane</p>
+        <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(103,232,249,0.12),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(96,165,250,0.10),transparent_24%),linear-gradient(180deg,rgba(9,17,24,0.97),rgba(5,8,22,0.99))] p-8 shadow-[0_28px_90px_rgba(0,0,0,0.45)] md:p-10">
+          <p className="text-xs uppercase tracking-[0.24em] text-cyan-300">Juneau Shore Excursions</p>
           <h1 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">Juneau helicopter tours</h1>
           <p className="mt-4 text-base font-bold uppercase tracking-[0.18em] text-[#8df0cc]">
-            DCC Fast Pass - Real-time availability to direct bookings
+            Guaranteed flight lane – Real-time availability & direct bookings
           </p>
           <p className="mt-4 max-w-3xl text-lg leading-8 text-white/82">
-            Juneau helicopter-tour buyers behave differently from same-day activity buyers. Most cruise visitors only have one day in port, so the cleanest booking path starts with the date they will actually be in Juneau and shows only that day&apos;s helicopter inventory.
+            Most cruise visitors only have one day in port, so the cleanest booking path starts with the date you will actually be in Juneau and shows only that day&apos;s helicopter inventory.
           </p>
           <p className="mt-5 max-w-3xl text-sm leading-7 text-white/68">
-            DCC explains the category and routes the buyer into a dedicated date-first booking surface. From there, the visitor sees live helicopter availability for the chosen day and completes the reservation directly with the provider through FareHarbor.
+            Choose your helicopter flight lane below to check live availability for your chosen date and complete the reservation directly with the operator.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a
@@ -190,116 +190,52 @@ export default async function JuneauHelicopterToursPage({
           </div>
         </header>
 
-        <section className="hidden items-center justify-between gap-8 rounded-3xl border border-[#8df0cc]/20 bg-[linear-gradient(135deg,rgba(17,29,31,0.96),rgba(7,14,22,0.96))] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.28)] lg:flex">
-          <div className="max-w-2xl">
-            <div className="text-xs uppercase tracking-[0.24em] text-[#8df0cc]">Desktop handoff</div>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-white">This site is designed for mobile.</h2>
-            <p className="mt-3 text-base leading-7 text-white/76">
-              The dedicated Juneau helicopter site is optimized for fast cruise-day booking. Pick the exact date you will be in port and move straight into live availability.
+        {/* Segment by Traveler Intent Cards */}
+        <section className="rounded-3xl border border-cyan-400/20 bg-gradient-to-b from-cyan-950/20 to-[#07131d] p-6 md:p-8 space-y-6 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+          <div>
+            <span className="text-xs uppercase tracking-[0.24em] text-cyan-300">FLIGHT PATH SELECTION</span>
+            <h2 className="mt-2 text-3xl font-black uppercase tracking-tight text-white">Segment by traveler intent</h2>
+            <p className="mt-2 text-sm text-white/70">
+              Compare the three canonical Juneau helicopter flight lanes. Select your fit and view live real-time schedules.
             </p>
-            <a
-              href={goHref}
-              className="mt-5 inline-flex rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm font-medium text-white/88 hover:bg-white/10"
-            >
-              {primaryCtaLabel}
-            </a>
           </div>
-          <div className="shrink-0 rounded-[2rem] border border-white/10 bg-white p-4 text-center shadow-[0_18px_40px_rgba(0,0,0,0.22)]">
-            <img
-              src={mobileHandoffQr}
-              alt="QR code to open the Juneau helicopter tours page on your phone"
-              width={220}
-              height={220}
-              className="h-[220px] w-[220px] rounded-2xl"
-            />
-            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">Scan on your phone</p>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {EXPERIENCE_LANES.map((lane) => (
+              <article key={lane.title} className="rounded-2xl border border-white/10 bg-[#091724] p-5 flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8df0cc]">
+                    {lane.title === "Dog sled + helicopter" ? "Adventure Fit" : lane.title === "Glacier landing flights" ? "First-Time Fit" : "Scenic Fit"}
+                  </span>
+                  <h3 className="mt-2 text-xl font-bold text-white">{lane.title}</h3>
+                  <p className="mt-3 text-xs leading-6 text-white/70">{lane.body}</p>
+                </div>
+                <div className="mt-6">
+                  <a
+                    href={buildDccJuneauHelicopterGoUrl({
+                      date: selectedDate || undefined,
+                      port: "juneau",
+                      lane: "premium-helicopter",
+                      recommendationSlug: lane.query.replace(/\s+/g, "-"),
+                      sourcePage: "/juneau/helicopter-tours",
+                      cta: lane.query,
+                      q: lane.query,
+                    })}
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#67e8f9] px-4 text-xs font-black uppercase tracking-[0.16em] text-[#071018] transition hover:bg-[#60a5fa]"
+                  >
+                    View Live Availability
+                  </a>
+                </div>
+              </article>
+            ))}
           </div>
         </section>
 
-        <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-          <article className="rounded-3xl border border-white/10 bg-white/[0.05] p-6">
-            <h2 className="text-2xl font-bold">Why Juneau is different</h2>
-            <div className="mt-4 space-y-4 text-sm leading-7 text-white/78">
-              <p>
-                Helicopter tours in Juneau are usually not impulse same-day purchases in the way swamp or nightlife products can be. Cruise visitors tend to know their exact port day and only care about what is open on that one date.
-              </p>
-              <p>
-                That is why the satellite flow starts with the date instead of a generic list. The DCC page exists to capture search intent, explain the structure, and route the visitor into a cleaner booking surface that only shows relevant helicopter slots.
-              </p>
-            </div>
-          </article>
-          <article className="rounded-3xl border border-white/10 bg-black/20 p-6">
-            <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Booking notice</div>
-            <p className="mt-4 text-sm leading-7 text-white/76">
-              DCC Fast Pass keeps this lane date-first and helicopter-only. When you choose a slot there, the reservation is completed directly with the operator through FareHarbor. DCC may earn a commission from the operator.
-            </p>
-            <p className="mt-4 text-sm leading-7 text-white/62">
-              {selectedDate
-                ? `Current handoff date: ${selectedDate}.`
-                : "If you already know your port date, add it to the URL or pick it on the satellite site first."}
-            </p>
-            <p className="mt-4 text-xs uppercase tracking-[0.18em] text-[#8df0cc]">{liveStateCopy}</p>
-          </article>
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 text-sm leading-7 text-white/78 animate-fade-in">
+          <p>
+            Bookings made through these links are processed directly with registered local operators via FareHarbor. Flight safety, weather protocols, and cancelation guarantees are managed directly by your operator. We recommend booking early, as Juneau helicopter inventory is tightly limited on cruise arrival days.
+          </p>
         </section>
-
-        <section className="rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(6,22,33,0.96),rgba(4,13,22,0.98))] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
-          <div className="max-w-3xl">
-            <div className="text-xs uppercase tracking-[0.24em] text-cyan-300">Embedded booking surface</div>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-white">This is the live WTA widget DCC can drop directly into the corridor</h2>
-            <p className="mt-3 text-sm leading-7 text-white/78">
-              Instead of handing every traveler to a generic catalog, DCC can embed a real Juneau helicopter product with branded pricing, booking context, and attribution already attached.
-            </p>
-          </div>
-          <div className="mt-6 overflow-hidden rounded-[28px] border border-white/10 bg-white shadow-[0_24px_70px_rgba(0,0,0,0.34)]">
-            <iframe
-              src={featuredWidgetHref}
-              title="Juneau helicopter tour widget"
-              loading="lazy"
-              className="block h-[980px] w-full bg-white"
-              referrerPolicy="strict-origin-when-cross-origin"
-            />
-          </div>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <a
-              href={featuredWidgetHref}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm text-white/88 hover:bg-white/10"
-            >
-              Open widget in a new tab
-            </a>
-            <p className="text-sm leading-7 text-white/60">
-              The embed carries a shared handoff id, source page, placement id, and return link so WTA can report iframe views, widget CTA clicks, and downstream booking events back into DCC analytics.
-            </p>
-          </div>
-        </section>
-
-        <section className="grid gap-4 md:grid-cols-3">
-          {EXPERIENCE_LANES.map((lane) => (
-            <article key={lane.title} className="rounded-3xl border border-white/10 bg-white/[0.05] p-5">
-              <h2 className="text-xl font-semibold text-white">{lane.title}</h2>
-              <p className="mt-3 text-sm leading-7 text-white/74">{lane.body}</p>
-              <a
-                href={buildDccJuneauHelicopterGoUrl({
-                  date: selectedDate || undefined,
-                  port: "juneau",
-                  lane: "premium-helicopter",
-                  recommendationSlug: lane.query.replace(/\s+/g, "-"),
-                  sourcePage: "/juneau/helicopter-tours",
-                  cta: lane.query,
-                  q: lane.query,
-                })}
-                className="mt-5 inline-flex text-sm font-medium text-cyan-200 hover:text-cyan-100"
-              >
-                Hand off to this helicopter lane →
-              </a>
-            </article>
-          ))}
-        </section>
-
-        <p className="text-center text-sm font-semibold uppercase tracking-[0.18em] text-white/46">
-          DCC Fast Pass - To Direct Bookings
-        </p>
       </div>
     </main>
   );
