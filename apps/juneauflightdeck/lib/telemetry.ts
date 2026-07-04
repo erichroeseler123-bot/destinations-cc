@@ -1,7 +1,7 @@
 "use client";
 
 export type WidgetVariant = "primary" | "backup" | "edge";
-export type WidgetIntent = "trust" | "value" | "chooser" | "direct";
+export type WidgetIntent = "trust" | "value" | "chooser" | "direct" | "glacier_experience";
 export type WidgetAction = "inline_selector" | "detail_page" | "add_to_cart" | "external_booking";
 
 export type DecisionWidget = {
