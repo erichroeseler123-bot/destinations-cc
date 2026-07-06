@@ -23,6 +23,7 @@ import {
   buildPlaceJsonLd,
 } from "@/lib/dcc/jsonld";
 import { headers } from "next/headers";
+import LfsTrustStrip from "@/components/LfsTrustStrip";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 
 const BASE_URL = "https://destinationcommandcenter.com";
@@ -349,6 +350,11 @@ export default async function PortPage({
           </section>
 
         </main>
+
+        {/* Trust Strip */}
+        <div className="max-w-5xl mx-auto px-6 pt-8 pb-4">
+          <LfsTrustStrip />
+        </div>
 
         <footer className="max-w-5xl mx-auto px-6 pt-4 text-center">
           <Link href="/ports" className="text-xs font-bold text-slate-400 hover:text-sky-600 transition">

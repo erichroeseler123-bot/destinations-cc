@@ -5,6 +5,7 @@ import BookableToursSection from "@/app/components/dcc/BookableToursSection";
 import NextStepEngine from "@/app/components/dcc/NextStepEngine";
 import { getPortRecommendationActions } from "@/lib/dcc/handoffAnalytics";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
+import LfsTrustStrip from "@/components/LfsTrustStrip";
 
 export const dynamic = "force-dynamic";
 
@@ -122,6 +123,11 @@ export default async function AlaskaPage() {
             </div>
           </div>
         </header>
+
+        {/* Trust Strip */}
+        <div className="max-w-5xl mx-auto px-6 pt-10">
+          <LfsTrustStrip />
+        </div>
 
         {/* Port list & Excursions */}
         <section id="ports" className="max-w-5xl mx-auto px-6 pt-16 space-y-16">

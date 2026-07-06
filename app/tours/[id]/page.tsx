@@ -5,7 +5,9 @@ import type { Metadata } from "next";
 import tours from "@/data/tours.json";
 import LocalTimeWeather from "@/components/LocalTimeWeather";
 import TrustBadges from "@/components/TrustBadges";
+import LfsTrustStrip from "@/components/LfsTrustStrip";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { buildViatorLink } from "@/utils/affiliateLinks";
 import Link from "next/link";
 import PoweredByViator from "@/app/components/dcc/PoweredByViator";
@@ -92,6 +94,9 @@ export default async function TourDetailPage({
 }) {
   // Await params at the top of the component
   const resolvedParams = await params;
+  const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
+  const host = hostHeader.split(":")[0];
+  const isLfse = host === "lastfrontiershoreexcursions.com" || host === "www.lastfrontiershoreexcursions.com";
   const seededTour = allTours.find((t) => String(t.id) === resolvedParams.id);
   const { detail: productDetail, source: productDetailSource } = await getViatorProductDetailForTour({
     id: resolvedParams.id,
@@ -146,7 +151,7 @@ export default async function TourDetailPage({
 
   // --- CHANGE #1: JSON-LD Schema Object ---
   return (
-    <main className="max-w-4xl mx-auto px-6 py-12">
+    <main className={`max-w-4xl mx-auto px-6 py-12 ${isLfse ? "text-slate-800" : "text-white"}`}>
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -193,39 +198,53 @@ export default async function TourDetailPage({
               </span>
             ))}
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-cyan-400 text-xs font-bold uppercase tracking-widest border border-cyan-400/30 px-2 py-1 rounded">
-              DCC Verified
-            </span>
-            <span className="text-zinc-500 text-[10px] uppercase tracking-tighter">
-              Reliability: <span className="text-white font-bold">{trustScore}%</span>
-            </span>
-          </div>
-          <h1 className="text-4xl font-black mt-3 tracking-tight">{productDetail?.title || tour.name}</h1>
+          {isLfse ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sky-600 text-xs font-bold uppercase tracking-widest border border-sky-200 bg-sky-50 px-2 py-1 rounded">
+                Alaska Excursion
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <span className="text-cyan-400 text-xs font-bold uppercase tracking-widest border border-cyan-400/30 px-2 py-1 rounded">
+                DCC Verified
+              </span>
+              <span className="text-zinc-500 text-[10px] uppercase tracking-tighter">
+                Reliability: <span className="text-white font-bold">{trustScore}%</span>
+              </span>
+            </div>
+          )}
+          <h1 className={`text-4xl font-black mt-3 tracking-tight ${isLfse ? "text-slate-900" : "text-white"}`}>{productDetail?.title || tour.name}</h1>
           {(productDetail?.durationText || tour.duration) ? (
-            <div className="text-zinc-400 mt-2 text-sm italic">⏱ {productDetail?.durationText || tour.duration}</div>
+            <div className={`${isLfse ? "text-slate-500" : "text-zinc-400"} mt-2 text-sm italic`}>⏱ {productDetail?.durationText || tour.duration}</div>
           ) : null}
         </div>
 
         <div className="grid gap-4 sm:min-w-[280px]">
-          <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-5">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-300">Price from</p>
-            <p className="mt-2 text-3xl font-black text-white">
+          <div className={`rounded-2xl border p-5 ${isLfse ? "border-slate-200 bg-slate-50" : "border-cyan-500/20 bg-cyan-500/5"}`}>
+            <p className={`text-[11px] font-bold uppercase tracking-[0.2em] ${isLfse ? "text-slate-500" : "text-cyan-300"}`}>Price from</p>
+            <p className={`mt-2 text-3xl font-black ${isLfse ? "text-slate-900" : "text-white"}`}>
               {formatPrice(price, productDetail?.currency || "USD")}
             </p>
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className={`mt-2 text-sm ${isLfse ? "text-slate-500" : "text-zinc-400"}`}>
               Final availability, date options, and live pricing are confirmed on the Viator booking page.
             </p>
           </div>
           {tour.lat && tour.lng && tour.timezone ? (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
+            <div className={`rounded-2xl border p-4 ${isLfse ? "border-slate-200 bg-slate-50/50" : "border-zinc-800 bg-zinc-900/50"}`}>
               <LocalTimeWeather lat={tour.lat} lng={tour.lng} timezone={tour.timezone} />
             </div>
           ) : null}
         </div>
       </div>
 
-      <TrustBadges reviews={reviews} rating={rating} />
+      {isLfse ? (
+        <div className="mb-10 text-slate-800">
+          <LfsTrustStrip />
+        </div>
+      ) : (
+        <TrustBadges reviews={reviews} rating={rating} />
+      )}
 
       {productDetail && (supplierImages.length > 0 || travelerImages.length > 0) ? (
         <section className="mb-16 mt-10 grid gap-6 lg:grid-cols-2">

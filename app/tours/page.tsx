@@ -23,6 +23,7 @@ import { getViatorCapabilities } from "@/lib/viator/access";
 import { getViatorPolicy } from "@/lib/viator/policy";
 
 import { headers } from "next/headers";
+import LfsTrustStrip from "@/components/LfsTrustStrip";
 
 export const dynamic = "force-dynamic";
 
@@ -622,6 +623,11 @@ export default async function ToursPage({
               No matching tours found. Try searching with a different keyword or port filter.
             </div>
           )}
+
+          {/* Trust Strip */}
+          <div className="pt-4 pb-4">
+            <LfsTrustStrip />
+          </div>
 
           {/* Affiliate Disclosure */}
           <div className="pt-8 border-t border-slate-200 text-center text-xs text-slate-400 font-medium max-w-2xl mx-auto">
