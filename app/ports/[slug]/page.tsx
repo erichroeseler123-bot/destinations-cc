@@ -24,6 +24,7 @@ import {
 } from "@/lib/dcc/jsonld";
 import { headers } from "next/headers";
 import LfsTrustStrip from "@/components/LfsTrustStrip";
+import DccNetworkStrip from "@/components/DccNetworkStrip";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 
 const BASE_URL = "https://destinationcommandcenter.com";
@@ -351,15 +352,25 @@ export default async function PortPage({
 
         </main>
 
+        {/* DCC Network Strip */}
+        <div className="max-w-5xl mx-auto px-6 pt-8">
+          <DccNetworkStrip />
+        </div>
+
         {/* Trust Strip */}
-        <div className="max-w-5xl mx-auto px-6 pt-8 pb-4">
+        <div className="max-w-5xl mx-auto px-6 pt-4 pb-4">
           <LfsTrustStrip />
         </div>
 
-        <footer className="max-w-5xl mx-auto px-6 pt-4 text-center">
-          <Link href="/ports" className="text-xs font-bold text-slate-400 hover:text-sky-600 transition">
-            ← Back to Ports Directory
-          </Link>
+        <footer className="max-w-5xl mx-auto px-6 pt-4 text-center space-y-3">
+          <div className="text-[10px] text-slate-400">
+            Verified Network Node: <a href="https://www.destinationcommandcenter.com/network/last-frontier-shore-excursions" target="_blank" rel="noopener noreferrer" className="underline hover:text-sky-600">last-frontier-shore-excursions</a>
+          </div>
+          <div>
+            <Link href="/ports" className="text-xs font-bold text-slate-400 hover:text-sky-600 transition">
+              ← Back to Ports Directory
+            </Link>
+          </div>
         </footer>
       </div>
     );

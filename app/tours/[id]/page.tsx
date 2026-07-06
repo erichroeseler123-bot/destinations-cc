@@ -6,6 +6,7 @@ import tours from "@/data/tours.json";
 import LocalTimeWeather from "@/components/LocalTimeWeather";
 import TrustBadges from "@/components/TrustBadges";
 import LfsTrustStrip from "@/components/LfsTrustStrip";
+import DccNetworkStrip from "@/components/DccNetworkStrip";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { buildViatorLink } from "@/utils/affiliateLinks";
@@ -239,8 +240,9 @@ export default async function TourDetailPage({
       </div>
 
       {isLfse ? (
-        <div className="mb-10 text-slate-800">
+        <div className="mb-10 text-slate-800 space-y-4">
           <LfsTrustStrip />
+          <DccNetworkStrip />
         </div>
       ) : (
         <TrustBadges reviews={reviews} rating={rating} />
@@ -399,7 +401,10 @@ export default async function TourDetailPage({
       <PoweredByViator
         compact
         disclosure
-        body={`Use DCC to evaluate this experience quickly, then continue to Viator when you're ready to check availability and complete checkout.`}
+        body={isLfse 
+          ? "Use Last Frontier Shore Excursions to evaluate this experience quickly, then continue to Viator when you're ready to check availability and complete checkout."
+          : "Use DCC to evaluate this experience quickly, then continue to Viator when you're ready to check availability and complete checkout."
+        }
         className="mb-16"
       />
 
@@ -465,14 +470,25 @@ export default async function TourDetailPage({
           href={affiliateUrl}
           target="_blank"
           rel="noopener noreferrer sponsored nofollow"
-          className="text-center bg-cyan-600 hover:bg-cyan-500 text-white px-10 py-4 rounded-xl font-bold transition-all shadow-lg shadow-cyan-600/20 active:scale-95"
+          className={`text-center text-white px-10 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 ${isLfse ? "bg-sky-600 hover:bg-sky-500 shadow-sky-600/20" : "bg-cyan-600 hover:bg-cyan-500 shadow-cyan-600/20"}`}
         >
-          {isBusinessHours ? "Book with DCC via Viator" : "Check Availability via Viator"}
+          {isLfse 
+            ? (isBusinessHours ? "Book with Viator" : "Check Availability via Viator")
+            : (isBusinessHours ? "Book with DCC via Viator" : "Check Availability via Viator")
+          }
         </a>
         <p className="text-[11px] text-zinc-500 sm:max-w-sm">
-          Powered by Viator. DCC may earn a commission if you book through this partner link, at no extra cost to you.
+          Powered by Viator. {isLfse ? "Last Frontier Shore Excursions" : "DCC"} may earn a commission if you book through this partner link, at no extra cost to you.
         </p>
       </div>
+
+      {isLfse && (
+        <footer className="text-center mt-12 pb-6 space-y-2">
+          <div className="text-[10px] text-slate-400">
+            Verified Network Node: <a href="https://www.destinationcommandcenter.com/network/last-frontier-shore-excursions" target="_blank" rel="noopener noreferrer" className="underline hover:text-sky-600">last-frontier-shore-excursions</a>
+          </div>
+        </footer>
+      )}
     </main>
   );
 }

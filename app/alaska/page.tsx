@@ -6,6 +6,7 @@ import NextStepEngine from "@/app/components/dcc/NextStepEngine";
 import { getPortRecommendationActions } from "@/lib/dcc/handoffAnalytics";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 import LfsTrustStrip from "@/components/LfsTrustStrip";
+import DccNetworkStrip from "@/components/DccNetworkStrip";
 
 export const dynamic = "force-dynamic";
 
@@ -187,6 +188,27 @@ export default async function AlaskaPage() {
             ))}
           </div>
         </section>
+
+        {/* DCC Network Strip */}
+        <div className="pt-10">
+          <DccNetworkStrip />
+        </div>
+
+        {/* Footer */}
+        <footer className="bg-white border-t border-slate-200 py-12 px-6 text-center mt-16">
+          <div className="max-w-5xl mx-auto space-y-4">
+            <div className="text-xs font-bold text-slate-400">
+              © {new Date().getFullYear()} Last Frontier Shore Excursions. All rights reserved.
+            </div>
+            <div className="text-[10px] text-slate-400">
+              Verified Network Node: <a href="https://www.destinationcommandcenter.com/network/last-frontier-shore-excursions" target="_blank" rel="noopener noreferrer" className="underline hover:text-sky-600">last-frontier-shore-excursions</a>
+            </div>
+            <div className="flex justify-center gap-6 text-xs font-bold uppercase tracking-wider text-slate-500">
+              <Link href="/ports" className="hover:text-sky-600 transition">Ports Guide</Link>
+              <Link href="/tours" className="hover:text-sky-600 transition">Shore Excursions</Link>
+            </div>
+          </div>
+        </footer>
       </main>
     );
   }
