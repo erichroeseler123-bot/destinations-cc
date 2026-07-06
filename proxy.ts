@@ -172,7 +172,7 @@ function getLfseHostRewrite(request: NextRequest) {
   }
 
   // /tours -> /tours (allow)
-  if (pathname === "/tours") {
+  if (pathname === "/tours" || pathname.startsWith("/tours/")) {
     return url;
   }
 
