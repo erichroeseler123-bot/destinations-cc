@@ -8,18 +8,28 @@ import {
 } from "@/lib/dcc/jsonld";
 import { NEW_ORLEANS_TOURS_PATH, METADATA, CATEGORIES } from "./pageConfig";
 
-export const metadata: Metadata = {
-  title: METADATA.title,
-  description: METADATA.description,
-  keywords: METADATA.keywords,
-  alternates: { canonical: NEW_ORLEANS_TOURS_PATH },
-  openGraph: {
+import { headers } from "next/headers";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
+  const host = hostHeader.split(":")[0];
+  const isWto = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
+  const origin = isWto ? "https://www.welcometoneworleanstours.com" : "https://destinationcommandcenter.com";
+
+  return {
     title: METADATA.title,
     description: METADATA.description,
-    url: NEW_ORLEANS_TOURS_PATH,
-    type: "website",
-  },
-};
+    keywords: METADATA.keywords,
+    metadataBase: new URL(origin),
+    alternates: { canonical: isWto ? "/" : NEW_ORLEANS_TOURS_PATH },
+    openGraph: {
+      title: METADATA.title,
+      description: METADATA.description,
+      url: isWto ? "/" : NEW_ORLEANS_TOURS_PATH,
+      type: "website",
+    },
+  };
+}
 
 function JsonLdGraph() {
   const categoryItems = CATEGORIES.slice(1).map((item) => ({

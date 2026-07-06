@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DIRECTORY_DATA, ListingNode } from "../../tours/pageConfig";
 import JsonLd from "@/app/components/dcc/JsonLd";
+import { headers } from "next/headers";
 
 // Allowed categories mapping
 type CategoryConfig = {
@@ -86,10 +87,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!config) {
     return { title: "Category Not Found" };
   }
+  const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
+  const host = hostHeader.split(":")[0];
+  const isWto = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
+  const origin = isWto ? "https://www.welcometoneworleanstours.com" : "https://destinationcommandcenter.com";
+
   return {
     title: `${config.title} | New Orleans Tours`,
     description: config.description,
-    alternates: { canonical: `/categories/${slug}` },
+    metadataBase: new URL(origin),
+    alternates: { canonical: isWto ? `/categories/${slug}` : `/new-orleans/categories/${slug}` },
   };
 }
 

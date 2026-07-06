@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import JsonLd from "@/app/components/dcc/JsonLd";
+import { headers } from "next/headers";
 
 type GuideConfig = {
   id: string;
@@ -74,10 +75,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!config) {
     return { title: "Guide Not Found" };
   }
+  const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
+  const host = hostHeader.split(":")[0];
+  const isWto = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
+  const origin = isWto ? "https://www.welcometoneworleanstours.com" : "https://destinationcommandcenter.com";
+
   return {
     title: `${config.title} | New Orleans Tours`,
     description: config.quickAnswer.slice(0, 150),
-    alternates: { canonical: `/guides/${slug}` },
+    metadataBase: new URL(origin),
+    alternates: { canonical: isWto ? `/guides/${slug}` : `/new-orleans/guides/${slug}` },
   };
 }
 
