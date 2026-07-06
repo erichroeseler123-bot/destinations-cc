@@ -24,17 +24,17 @@ export const metadata: Metadata = {
 };
 
 const AIRBOAT_IMAGE = {
-  src: "/images/boat-chooser/airboat.webp",
+  src: "/images/boat-chooser/airboat.png",
   alt: "Airboat cutting across open Louisiana swamp water",
 };
 
 const COVERED_BOAT_IMAGE = {
-  src: "/images/boat-chooser/covered-boat.webp",
+  src: "/images/boat-chooser/covered-boat.png",
   alt: "Covered boat moving through a Louisiana bayou",
 };
 
 const SWAMP_IMAGE = {
-  src: "/images/boat-chooser/generic-swamp.webp",
+  src: "/images/boat-chooser/generic-swamp.jpg",
   alt: "Still Louisiana swamp water under cypress trees",
 };
 

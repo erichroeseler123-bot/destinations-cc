@@ -20,17 +20,17 @@ const boatHref = fhBoatProduct && asn
   : buildWtsGetYourGuideSearchHref("boat", "wts-storefront-covered-boat");
 
 const airboatImage = {
-  src: "/images/boat-chooser/airboat.webp",
+  src: "/images/boat-chooser/airboat.png",
   alt: "An airboat crossing open swamp water",
 };
 
 const coveredBoatImage = {
-  src: "/images/boat-chooser/covered-boat.webp",
+  src: "/images/boat-chooser/covered-boat.png",
   alt: "A covered swamp tour boat moving through Louisiana marsh scenery",
 };
 
 const quietSwampImage = {
-  src: "/images/boat-chooser/generic-swamp.webp",
+  src: "/images/boat-chooser/generic-swamp.jpg",
   alt: "Still Louisiana swamp water surrounded by cypress trees",
 };
 
