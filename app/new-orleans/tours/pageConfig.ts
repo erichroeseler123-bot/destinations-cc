@@ -1,4 +1,5 @@
 // New Orleans Tours Outpost - Tour Database & Configurations
+import { appendViatorAttribution, buildViatorCampaignFromParts } from "@/lib/viator/links";
 
 export const NEW_ORLEANS_TOURS_PATH = "/new-orleans/tours";
 export interface ListingNode {
@@ -18,7 +19,7 @@ export interface ListingNode {
   reviewsCount?: number;
 }
 
-export const DIRECTORY_DATA: ListingNode[] = [
+const RAW_DIRECTORY_DATA: ListingNode[] = [
   {
     id: "steamboat-natchez",
     name: "Steamboat Natchez Jazz Cruise",
@@ -278,21 +279,33 @@ export const DIRECTORY_DATA: ListingNode[] = [
   }
 ];
 
+export const DIRECTORY_DATA: ListingNode[] = RAW_DIRECTORY_DATA.map(item => {
+  if (item.menuUrl && item.menuUrl.includes("viator.com")) {
+    return {
+      ...item,
+      menuUrl: appendViatorAttribution(item.menuUrl, {
+        campaign: buildViatorCampaignFromParts(["welcome-to-new-orleans-tours", item.id])
+      })
+    };
+  }
+  return item;
+});
+
 export const CATEGORIES = [
-  { id: "all", label: "All Telemetry", icon: "🌐" },
+  { id: "all", label: "All Tours", icon: "🌐" },
   { id: "swamp", label: "Swamps & Airboats", icon: "🐊" },
   { id: "ghost", label: "Ghosts & Voodoo", icon: "👻" },
   { id: "food", label: "Food & Cocktails", icon: "🍹" },
   { id: "history", label: "Historic Walks", icon: "⛪" },
   { id: "cruise", label: "Mississippi Cruises", icon: "🚢" },
-  { id: "essentials", label: "Life Support", icon: "💊" },
+  { id: "essentials", label: "Essentials", icon: "💊" },
   { id: "events", label: "Live Events", icon: "🎺" },
-  { id: "living-here", label: "Local Wisdom", icon: "⚜️" },
-  { id: "incubator", label: "Community Launch", icon: "💡" }
+  { id: "living-here", label: "Local Guides", icon: "⚜️" },
+  { id: "incubator", label: "Community Support", icon: "💡" }
 ];
 
 export const METADATA = {
-  title: "New Orleans Tours Outpost | High-Speed Zero-Scroll Local Guide",
-  description: "Instant, decision-first tourist console. Compare swamp airboats, haunted ghosts, creole food walks, and paddlewheels with zero scroll.",
+  title: "Welcome To New Orleans Tours | Swamp, French Quarter, Food & Riverboat Tours",
+  description: "Compare and book New Orleans swamp tours, airboat runs, French Quarter history walks, food crawls, ghost stories, and riverboat cruises.",
   keywords: ["new orleans tours", "swamp tour hotel pickup", "french quarter ghost tour", "creole food tasting", "steamboat natchez"]
 };

@@ -1,10 +1,73 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { DIRECTORY_DATA, ListingNode } from "./pageConfig";
+import WnoNetworkStrip from "@/components/WnoNetworkStrip";
 
-export default function NewOrleansStorefront() {
+const TOUR_IMAGES: Record<string, string> = {
+  "steamboat-natchez": "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
+  "airboat-swamp": "/images/travel-markets/new-orleans/covered-boat-swamp.png",
+  "airboat-adventure-large": "/images/travel-markets/new-orleans/airboat-swamp.png",
+  "airboat-adventure-small": "/images/travel-markets/new-orleans/small-group-airboat.png",
+  "ghost-cemetery": "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+  "food-cocktail": "/images/travel-markets/new-orleans/new-orleans-live-music.jpg",
+  "free-tours-foot": "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+  "preservation-hall": "/images/travel-markets/new-orleans/new-orleans-live-music.jpg",
+};
+
+const CATEGORIES_MAP = [
+  {
+    id: "swamp",
+    slug: "swamp-tours",
+    title: "Swamp Tours",
+    hook: "Covered pontoon boat bayou crawls, perfect for families and photography.",
+    imageUrl: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
+    vessel: "Covered Pontoon Boat"
+  },
+  {
+    id: "airboat",
+    slug: "airboat-tours",
+    title: "Airboat Tours",
+    hook: "High-speed thrill rides through shallow marshes and gator nesting spots.",
+    imageUrl: "/images/travel-markets/new-orleans/airboat-swamp.png",
+    vessel: "Open-Air Airboat"
+  },
+  {
+    id: "history",
+    slug: "french-quarter-tours",
+    title: "French Quarter Tours",
+    hook: "Historical walks, architectural tours, and classic jazz history walks.",
+    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    vessel: "Walking Excursion"
+  },
+  {
+    id: "food",
+    slug: "food-and-cocktail-tours",
+    title: "Food & Cocktail Tours",
+    hook: "Sample gumbo, jambalaya, and Sazerac cocktails in historic dining rooms.",
+    imageUrl: "/images/travel-markets/new-orleans/new-orleans-live-music.jpg",
+    vessel: "Culinary Walk"
+  },
+  {
+    id: "ghost",
+    slug: "ghost-and-cemetery-tours",
+    title: "Ghost & Cemetery Tours",
+    hook: "Nighttime candlelit walks through haunted gates and voodoo history.",
+    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    vessel: "Walking Excursion"
+  },
+  {
+    id: "cruise",
+    slug: "riverboat-cruises",
+    title: "Riverboat Cruises",
+    hook: "Authentic paddlewheel steamboat rides with Dixieland jazz and river buffet.",
+    imageUrl: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
+    vessel: "Paddlewheel Steamboat"
+  }
+];
+
+export default function NewOrleansToursStorefront() {
   // Filters state
   const [selectedVessel, setSelectedVessel] = useState<string>("all"); // all, land, boat
   const [selectedPickup, setSelectedPickup] = useState<string>("all"); // all, pickup, meet
@@ -94,7 +157,7 @@ export default function NewOrleansStorefront() {
                 Welcome To New Orleans Tours
               </h1>
               <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-                Public Tour Storefront & Guide
+                Premium Sightseeing & Swamp Tours
               </span>
             </div>
           </div>
@@ -108,69 +171,93 @@ export default function NewOrleansStorefront() {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-emerald-900 to-slate-950 text-white py-16 px-6 text-center">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl text-white uppercase">
-            New Orleans tours that fit your trip.
-          </h2>
-          <p className="mt-6 text-lg text-emerald-100 max-w-2xl mx-auto leading-relaxed">
-            Compare swamp tours, French Quarter walks, food tours, river cruises, and more with clear timing and booking links.
-          </p>
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <a 
-              href="#decision-board" 
-              className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-xl transition-colors text-sm uppercase tracking-wider"
-            >
-              Start with a tour type
-            </a>
-            <a 
-              href="#tours-grid" 
-              className="bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-xl transition-colors border border-white/20 text-sm uppercase tracking-wider"
-            >
-              Browse tours
-            </a>
-            <button 
-              onClick={() => {
-                setActiveCategory("swamp");
-                document.getElementById("tours-grid")?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className="bg-emerald-500/25 hover:bg-emerald-500/40 text-emerald-300 font-bold py-3 px-6 rounded-xl transition-colors text-sm uppercase tracking-wider"
-            >
-              Find swamp tours
-            </button>
+      <header className="bg-slate-900 text-white py-16 md:py-24 px-6 relative overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.15),transparent_50%)]">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-8 items-center relative z-10">
+          <div className="md:col-span-7 space-y-6 text-left">
+            <span className="inline-flex rounded-full bg-emerald-500/10 border border-emerald-400/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-emerald-400">
+              New Orleans Tours & Experiences
+            </span>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.05]">
+              New Orleans tours built for first-time visitors.
+            </h2>
+            <p className="text-base md:text-lg text-slate-300 font-medium leading-relaxed">
+              Compare swamp tours, airboat rides, French Quarter walks, food and cocktail tours, ghost stories, cemetery tours, and riverboat cruises — with clear provider booking links.
+            </p>
+            <div className="flex flex-wrap gap-4 pt-2">
+              <a href="#tours-grid" className="bg-emerald-600 text-white font-bold px-6 py-3 rounded-2xl hover:bg-emerald-500 transition shadow-lg text-sm">
+                Browse New Orleans Tours
+              </a>
+              <a href="#categories-section" className="bg-white/10 text-white border border-white/20 font-bold px-6 py-3 rounded-2xl hover:bg-white/20 transition text-sm">
+                Explore Tour Categories
+              </a>
+            </div>
+          </div>
+          <div className="md:col-span-5 relative group">
+            <div className="absolute inset-0 bg-emerald-500/10 rounded-3xl blur-2xl group-hover:bg-emerald-500/20 transition" />
+            <div className="relative rounded-3xl overflow-hidden aspect-[4/3] shadow-2xl border border-white/10">
+              <img 
+                src="/images/travel-markets/new-orleans/french-quarter-street.jpg" 
+                alt="New Orleans French Quarter streetscape" 
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-left">
+                <p className="text-xs font-bold text-white uppercase tracking-wider">Royal Street, French Quarter</p>
+                <p className="text-[10px] text-slate-300">Verified storefront exit path active</p>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      </header>
 
-      {/* Category Links Grid */}
-      <section className="max-w-6xl mx-auto py-12 px-6">
-        <h3 className="text-xl font-extrabold text-slate-900 uppercase tracking-wider mb-6 text-center">
-          Explore Tour Types
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => {
-                setActiveCategory(cat.id);
-                document.getElementById("tours-grid")?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className={`p-4 rounded-2xl border text-center transition-all ${
-                activeCategory === cat.id 
-                  ? "border-emerald-600 bg-emerald-50/50 shadow-sm" 
-                  : "border-slate-200 bg-white hover:border-slate-300"
-              }`}
-            >
-              <span className="block text-3xl mb-2">{cat.icon}</span>
-              <span className="block text-xs font-bold text-slate-700 leading-tight">{cat.label}</span>
-            </button>
+      {/* Category cards section */}
+      <section id="categories-section" className="max-w-6xl mx-auto py-16 px-6">
+        <div className="text-center max-w-xl mx-auto mb-12 space-y-2">
+          <h3 className="text-3xl font-black tracking-tight text-slate-900 uppercase">Explore Tour Categories</h3>
+          <p className="text-slate-500 text-sm">Select a category to read detailed timing guides or compare specific excursions.</p>
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {CATEGORIES_MAP.map((cat) => (
+            <div key={cat.id} className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between text-left">
+              {/* Card Image */}
+              <div className="relative aspect-[16/10] w-full overflow-hidden">
+                <img src={cat.imageUrl} alt={cat.title} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-slate-900/10" />
+                <div className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                  {cat.vessel}
+                </div>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-6 flex-grow flex flex-col justify-between space-y-4">
+                <div className="space-y-2">
+                  <h4 className="text-lg font-black text-slate-900">{cat.title}</h4>
+                  <p className="text-slate-600 text-xs leading-relaxed">{cat.hook}</p>
+                </div>
+
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+                  <Link href={`/categories/${cat.slug}`} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition shadow-sm">
+                    View Guide
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setActiveCategory(cat.id);
+                      document.getElementById("tours-grid")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 font-bold px-4 py-2 rounded-xl text-xs transition shadow-sm"
+                  >
+                    Compare Tours
+                  </button>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </section>
 
       {/* Decision Board (Trip-Fit Filter) */}
       <section id="decision-board" className="max-w-6xl mx-auto px-6 mb-12">
-        <div className="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 shadow-sm">
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 shadow-sm text-left">
           <h3 className="text-lg font-bold text-slate-900 uppercase tracking-wider mb-6 flex items-center gap-2">
             ⚜️ Tour Decision Helper
           </h3>
@@ -300,20 +387,32 @@ export default function NewOrleansStorefront() {
         {filteredListings.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredListings.map((item) => (
-              <article key={item.id} className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between hover:border-emerald-500/50 transition-colors">
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
-                      {item.price ? `${item.price}` : "Book Excursion"}
-                    </span>
-                    {item.rating && (
-                      <span className="text-xs font-bold text-slate-500">
-                        ★ {item.rating} ({item.reviewsCount} reviews)
+              <article key={item.id} className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between hover:border-emerald-500/50 transition-colors text-left group">
+                {/* Tour Card Image */}
+                <div className="relative aspect-[16/9] w-full overflow-hidden">
+                  <img
+                    src={TOUR_IMAGES[item.id] || "/images/travel-markets/new-orleans/french-quarter-street.jpg"}
+                    alt={item.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-slate-900/10" />
+                </div>
+
+                <div className="p-6 flex-grow flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start mb-4">
+                      <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                        {item.price ? `${item.price}` : "Book Excursion"}
                       </span>
-                    )}
+                      {item.rating && (
+                        <span className="text-xs font-bold text-slate-500">
+                          ★ {item.rating} ({item.reviewsCount} reviews)
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="text-xl font-bold text-slate-900 mb-2">{item.name}</h4>
+                    <p className="text-xs text-slate-400 font-bold mb-4 uppercase tracking-wider">{item.vibe}</p>
                   </div>
-                  <h4 className="text-xl font-bold text-slate-900 mb-2">{item.name}</h4>
-                  <p className="text-xs text-slate-400 font-bold mb-4 uppercase tracking-wider">{item.vibe}</p>
                   
                   <div className="border-t border-slate-100 pt-4 space-y-2 text-xs text-slate-600">
                     {item.logistics["Duration"] && (
@@ -370,7 +469,7 @@ export default function NewOrleansStorefront() {
       </section>
 
       {/* Guide / Decision Layer Links */}
-      <section className="max-w-6xl mx-auto px-6 mb-16">
+      <section className="max-w-6xl mx-auto px-6 mb-16 text-left">
         <h3 className="text-xl font-extrabold text-slate-900 uppercase tracking-wider mb-6 text-center">
           New Orleans Excursion Guides
         </h3>
@@ -417,16 +516,21 @@ export default function NewOrleansStorefront() {
         </div>
       </section>
 
+      {/* DCC Network Verification Strip */}
+      <div className="pt-10 max-w-6xl mx-auto px-6">
+        <WnoNetworkStrip />
+      </div>
+
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 py-12 px-6 border-t border-slate-800 text-center">
         <div className="max-w-4xl mx-auto">
           <p className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
             ⚜️ Welcome To New Orleans Tours
           </p>
-          <p className="text-xs leading-relaxed max-w-xl mx-auto">
+          <p className="text-xs leading-relaxed max-w-xl mx-auto font-medium">
             Bookings are handled in association with authorized Viator and local tour operator partners. Tour availability, pricing, and timing fluctuate seasonally depending on delta river conditions and festival calendars.
           </p>
-          <div className="mt-6 text-[10px] text-slate-500 uppercase tracking-wider">
+          <div className="mt-6 text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
             © 2026 Welcome To New Orleans Tours. All rights reserved.
           </div>
         </div>

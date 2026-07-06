@@ -45,9 +45,9 @@ function JsonLdGraph() {
         "@graph": [
           buildWebPageJsonLd({
             path: NEW_ORLEANS_TOURS_PATH,
-            name: "New Orleans Tours Outpost",
+            name: "Welcome To New Orleans Tours",
             description:
-              "Public New Orleans tours Outpost dashboard for swamp airboats, haunted ghosts, creole food walks, and paddlewheels.",
+              "Compare and book New Orleans swamp tours, airboat runs, French Quarter history walks, food crawls, ghost stories, and riverboat cruises.",
             dateModified: "2026-06-29",
             isPartOfPath: "/new-orleans",
           }),
@@ -57,9 +57,9 @@ function JsonLdGraph() {
           ]),
           buildCollectionPageJsonLd({
             path: NEW_ORLEANS_TOURS_PATH,
-            name: "New Orleans tour categories",
+            name: "Welcome To New Orleans Tour Categories",
             description:
-              "Outpost telemetry category lanes for New Orleans tours and visitor experiences.",
+              "Welcome To New Orleans tour categories and visitor experiences.",
             items: categoryItems,
           }),
         ],

@@ -4,19 +4,83 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
+type NetworkConfig = {
+  slug: string;
+  name: string;
+  domain: string;
+  marketScopeLabel: string;
+  marketScope: string;
+  activeItemsLabel: string;
+  activeItemsList: string;
+  description: string;
+  providerModel: string;
+  activeItems: { name: string; desc: string; url: string }[];
+  linkBackTitle: string;
+  linkBackDesc: string;
+  linkBackUrl: string;
+  linkBackCta: string;
+};
+
+const NETWORK_RECORDS: Record<string, NetworkConfig> = {
+  "last-frontier-shore-excursions": {
+    slug: "last-frontier-shore-excursions",
+    name: "Last Frontier Shore Excursions",
+    domain: "lastfrontiershoreexcursions.com",
+    marketScopeLabel: "Market Scope",
+    marketScope: "Alaska Cruise Ports",
+    activeItemsLabel: "Active Ports",
+    activeItemsList: "Juneau, Skagway, Ketchikan",
+    description: "Last Frontier Shore Excursions is an active Alaska cruise-port storefront in the Destination Command Center network. This record confirms the domain, market scope, supported ports, public sitemap, and provider booking path currently associated with the site.",
+    providerModel: "Partner / Affiliate booking exits",
+    activeItems: [
+      { name: "Juneau", desc: "Whale watching, Mendenhall Glacier, helicopter tours", url: "https://www.lastfrontiershoreexcursions.com/ports/juneau" },
+      { name: "Skagway", desc: "White Pass railway, historic excursions, wilderness hikes", url: "https://www.lastfrontiershoreexcursions.com/ports/skagway" },
+      { name: "Ketchikan", desc: "Floatplanes, rainforest fjord routes, totem parks", url: "https://www.lastfrontiershoreexcursions.com/ports/ketchikan" }
+    ],
+    linkBackTitle: "Last Frontier Shore Excursions",
+    linkBackDesc: "Browse verified shore excursions for your upcoming Alaska cruise day.",
+    linkBackUrl: "https://www.lastfrontiershoreexcursions.com/",
+    linkBackCta: "Visit Last Frontier Shore Excursions"
+  },
+  "welcome-to-new-orleans-tours": {
+    slug: "welcome-to-new-orleans-tours",
+    name: "Welcome To New Orleans Tours",
+    domain: "welcometoneworleanstours.com",
+    marketScopeLabel: "Market Scope",
+    marketScope: "New Orleans visitor tours",
+    activeItemsLabel: "Active Categories",
+    activeItemsList: "Swamp tours, airboat tours, French Quarter walks, food/cocktail, ghost/cemetery, riverboat cruises",
+    description: "Welcome To New Orleans Tours is an active New Orleans travel storefront in the Destination Command Center network. This record confirms the domain, market scope, active categories, public sitemap, and provider booking path currently associated with the site.",
+    providerModel: "Partner / Affiliate / Direct provider exits",
+    activeItems: [
+      { name: "Swamp Tours", desc: "Pontoon cruises through Lafitte and LaPlace bayous, perfect for families", url: "https://www.welcometoneworleanstours.com/categories/swamp-tours" },
+      { name: "Airboat Tours", desc: "High-speed open-air airboat runs in Louisiana marshes and shallow bayous", url: "https://www.welcometoneworleanstours.com/categories/airboat-tours" },
+      { name: "French Quarter Tours", desc: "Guided architectural walks, French Quarter history, and classic jazz walks", url: "https://www.welcometoneworleanstours.com/categories/french-quarter-tours" },
+      { name: "Food & Cocktail Tours", desc: "Sample gumbo, jambalaya, and Sazerac cocktails in historic dining rooms", url: "https://www.welcometoneworleanstours.com/categories/food-and-cocktail-tours" },
+      { name: "Ghost & Cemetery Tours", desc: "Nighttime candlelit walks through haunted gates and voodoo history sites", url: "https://www.welcometoneworleanstours.com/categories/ghost-and-cemetery-tours" },
+      { name: "Mississippi Cruises", desc: "Authentic paddlewheel steamboat cruises and jazz dinner events on the river", url: "https://www.welcometoneworleanstours.com/categories/riverboat-cruises" }
+    ],
+    linkBackTitle: "Welcome To New Orleans Tours",
+    linkBackDesc: "Browse verified swamp tours and walking excursions for your upcoming New Orleans trip.",
+    linkBackUrl: "https://www.welcometoneworleanstours.com/",
+    linkBackCta: "Visit Welcome To New Orleans Tours"
+  }
+};
+
 export async function generateMetadata({ 
   params 
 }: { 
   params: Promise<{ slug: string }> 
 }): Promise<Metadata> {
   const resolvedParams = await params;
-  if (resolvedParams.slug !== "last-frontier-shore-excursions") {
+  const config = NETWORK_RECORDS[resolvedParams.slug];
+  if (!config) {
     return { title: "Not Found" };
   }
 
   return {
-    title: "DCC Network Record: Last Frontier Shore Excursions",
-    description: "Official network profile, domain verification, and booking exit routing status for Last Frontier Shore Excursions.",
+    title: `DCC Network Record: ${config.name}`,
+    description: `Official network profile, domain verification, and booking exit routing status for ${config.name}.`,
     robots: "index, follow",
   };
 }
@@ -27,7 +91,8 @@ export default async function NetworkRecordPage({
   params: Promise<{ slug: string }>;
 }) {
   const resolvedParams = await params;
-  if (resolvedParams.slug !== "last-frontier-shore-excursions") {
+  const config = NETWORK_RECORDS[resolvedParams.slug];
+  if (!config) {
     return notFound();
   }
 
@@ -52,10 +117,10 @@ export default async function NetworkRecordPage({
           Network Record
         </div>
         <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white leading-none">
-          Last Frontier Shore Excursions
+          {config.name}
         </h1>
         <p className="text-lg text-slate-400 max-w-3xl leading-relaxed">
-          Last Frontier Shore Excursions is an active Alaska cruise-port storefront in the Destination Command Center network. This record confirms the domain, market scope, supported ports, public sitemap, and provider booking path currently associated with the site.
+          {config.description}
         </p>
 
         {/* Status Indicators */}
@@ -79,7 +144,7 @@ export default async function NetworkRecordPage({
       <div className="max-w-5xl mx-auto px-6 grid gap-8 md:grid-cols-12 items-start">
         
         {/* Left Column: Facts and Status */}
-        <div className="md:col-span-4 space-y-6">
+        <div className="md:col-span-4 space-y-6 text-left">
           <div className="bg-slate-900 border border-slate-800/80 rounded-3xl p-6 space-y-6 shadow-sm">
             <h3 className="text-xs uppercase tracking-widest text-slate-500 font-bold">Primary Facts</h3>
             
@@ -87,28 +152,28 @@ export default async function NetworkRecordPage({
               <div className="space-y-1">
                 <span className="text-xs text-slate-500 block">Verified Domain</span>
                 <a 
-                  href="https://www.lastfrontiershoreexcursions.com" 
+                  href={`https://www.${config.domain}`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="font-bold text-sky-400 hover:underline break-all"
                 >
-                  lastfrontiershoreexcursions.com
+                  {config.domain}
                 </a>
               </div>
 
               <div className="space-y-1 border-t border-slate-800/60 pt-3">
-                <span className="text-xs text-slate-500 block">Market Scope</span>
-                <span className="font-bold text-white">Alaska Cruise Ports</span>
+                <span className="text-xs text-slate-500 block">{config.marketScopeLabel}</span>
+                <span className="font-bold text-white">{config.marketScope}</span>
               </div>
 
               <div className="space-y-1 border-t border-slate-800/60 pt-3">
-                <span className="text-xs text-slate-500 block">Active Ports</span>
-                <span className="font-bold text-white">Juneau, Skagway, Ketchikan</span>
+                <span className="text-xs text-slate-500 block">{config.activeItemsLabel}</span>
+                <span className="font-bold text-white">{config.activeItemsList}</span>
               </div>
 
               <div className="space-y-1 border-t border-slate-800/60 pt-3">
                 <span className="text-xs text-slate-500 block">Provider Model</span>
-                <span className="font-bold text-white">Partner / Affiliate booking exits</span>
+                <span className="font-bold text-white">{config.providerModel}</span>
               </div>
 
               <div className="space-y-1 border-t border-slate-800/60 pt-3">
@@ -125,7 +190,7 @@ export default async function NetworkRecordPage({
         </div>
 
         {/* Right Column: In-depth Verification Details */}
-        <div className="md:col-span-8 space-y-8">
+        <div className="md:col-span-8 space-y-8 text-left">
           
           {/* Network status checklists */}
           <section className="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 md:p-8 space-y-6">
@@ -160,7 +225,7 @@ export default async function NetworkRecordPage({
                 <span className="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">✓</span>
                 <div className="space-y-1">
                   <h4 className="font-bold text-white text-sm">Internal Routes Blocked</h4>
-                  <p className="text-xs text-slate-400">Restricted admin, network feed, and operator tools return HTTP 404 with indexation protection tags on the LFSE host.</p>
+                  <p className="text-xs text-slate-400 text-slate-400">Restricted admin, network feed, and operator tools return HTTP 404 with indexation protection tags on the storefront host.</p>
                 </div>
               </div>
             </div>
@@ -171,38 +236,18 @@ export default async function NetworkRecordPage({
             <h2 className="text-xl font-black text-white">2. Active Market Coverage</h2>
             
             <div className="grid gap-4 sm:grid-cols-3">
-              <div className="bg-slate-900 border border-slate-800/60 rounded-3xl p-5 space-y-4 flex flex-col justify-between">
-                <div className="space-y-1">
-                  <h3 className="font-bold text-white text-sm">Juneau</h3>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">Whale watching, Mendenhall Glacier, helicopter tours</p>
+              {config.activeItems.map((item) => (
+                <div key={item.name} className="bg-slate-900 border border-slate-800/60 rounded-3xl p-5 space-y-4 flex flex-col justify-between">
+                  <div className="space-y-1">
+                    <h3 className="font-bold text-white text-sm">{item.name}</h3>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">{item.desc}</p>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-slate-800/60 pt-3">
+                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Active</span>
+                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-sky-400 font-bold hover:underline">View Page →</a>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between border-t border-slate-800/60 pt-3">
-                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Active</span>
-                  <a href="https://www.lastfrontiershoreexcursions.com/ports/juneau" target="_blank" rel="noopener noreferrer" className="text-[10px] text-sky-400 font-bold hover:underline">View Page →</a>
-                </div>
-              </div>
-
-              <div className="bg-slate-900 border border-slate-800/60 rounded-3xl p-5 space-y-4 flex flex-col justify-between">
-                <div className="space-y-1">
-                  <h3 className="font-bold text-white text-sm">Skagway</h3>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">White Pass railway, historic excursions, wilderness hikes</p>
-                </div>
-                <div className="flex items-center justify-between border-t border-slate-800/60 pt-3">
-                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Active</span>
-                  <a href="https://www.lastfrontiershoreexcursions.com/ports/skagway" target="_blank" rel="noopener noreferrer" className="text-[10px] text-sky-400 font-bold hover:underline">View Page →</a>
-                </div>
-              </div>
-
-              <div className="bg-slate-900 border border-slate-800/60 rounded-3xl p-5 space-y-4 flex flex-col justify-between">
-                <div className="space-y-1">
-                  <h3 className="font-bold text-white text-sm">Ketchikan</h3>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">Floatplanes, rainforest fjord routes, totem parks</p>
-                </div>
-                <div className="flex items-center justify-between border-t border-slate-800/60 pt-3">
-                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Active</span>
-                  <a href="https://www.lastfrontiershoreexcursions.com/ports/ketchikan" target="_blank" rel="noopener noreferrer" className="text-[10px] text-sky-400 font-bold hover:underline">View Page →</a>
-                </div>
-              </div>
+              ))}
             </div>
           </section>
 
@@ -214,19 +259,19 @@ export default async function NetworkRecordPage({
               <div className="bg-slate-950 border border-slate-800/60 rounded-2xl p-4 space-y-1">
                 <span className="text-sky-400 text-xs font-black uppercase tracking-widest block">Step 01</span>
                 <h4 className="font-bold text-white text-sm">Search &amp; Compare</h4>
-                <p className="text-[10px] text-slate-400 leading-relaxed">Travelers browse tours by port and duration.</p>
+                <p className="text-[10px] text-slate-400 leading-relaxed">Travelers browse tours by category and duration.</p>
               </div>
 
               <div className="bg-slate-950 border border-slate-800/60 rounded-2xl p-4 space-y-1">
                 <span className="text-sky-400 text-xs font-black uppercase tracking-widest block">Step 02</span>
-                <h4 className="font-bold text-white text-sm">Cruise-Day Fit</h4>
-                <p className="text-[10px] text-slate-400 leading-relaxed">Check logistics and tour duration against port hours.</p>
+                <h4 className="font-bold text-white text-sm">Trip Fit</h4>
+                <p className="text-[10px] text-slate-400 leading-relaxed">Check logistics, walking level, and hotel pickup.</p>
               </div>
 
               <div className="bg-slate-950 border border-slate-800/60 rounded-2xl p-4 space-y-1">
                 <span className="text-sky-400 text-xs font-black uppercase tracking-widest block">Step 03</span>
                 <h4 className="font-bold text-white text-sm">Continue to Exit</h4>
-                <p className="text-[10px] text-slate-400 leading-relaxed">Redirect safely to the provider checkout.</p>
+                <p className="text-[10px] text-slate-400 leading-relaxed">Redirect safely to the partner/provider checkout.</p>
               </div>
 
               <div className="bg-slate-950 border border-slate-800/60 rounded-2xl p-4 space-y-1">
@@ -265,7 +310,7 @@ export default async function NetworkRecordPage({
 
               <div className="bg-slate-900 border border-slate-800/60 rounded-3xl p-5 space-y-2">
                 <h4 className="font-bold text-white text-xs uppercase tracking-wider">Unsupported Destinations Blocked</h4>
-                <p className="text-[11px] text-slate-400 leading-relaxed">Out-of-scope destinations are strictly restricted. Non-Alaska ports redirect to error pages to preserve data integrity.</p>
+                <p className="text-[11px] text-slate-400 leading-relaxed">Out-of-scope destinations are strictly restricted. Non-market pages redirect to error pages to preserve data integrity.</p>
               </div>
 
               <div className="bg-slate-900 border border-slate-800/60 rounded-3xl p-5 space-y-2">
@@ -275,20 +320,20 @@ export default async function NetworkRecordPage({
             </div>
           </section>
 
-          {/* Link back to LFSE */}
+          {/* Link back to Storefront */}
           <section className="pt-4 flex flex-col sm:flex-row gap-4 items-center justify-between border-t border-slate-800/60">
             <div className="space-y-1 text-center sm:text-left">
-              <h4 className="font-bold text-white text-sm">Last Frontier Shore Excursions</h4>
-              <p className="text-xs text-slate-400">Browse verified shore excursions for your upcoming Alaska cruise day.</p>
+              <h4 className="font-bold text-white text-sm">{config.linkBackTitle}</h4>
+              <p className="text-xs text-slate-400">{config.linkBackDesc}</p>
             </div>
             <div className="flex gap-3">
               <a 
-                href="https://www.lastfrontiershoreexcursions.com/" 
+                href={config.linkBackUrl}
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="bg-sky-600 hover:bg-sky-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-sm transition"
               >
-                Visit Last Frontier Shore Excursions
+                {config.linkBackCta}
               </a>
             </div>
           </section>
