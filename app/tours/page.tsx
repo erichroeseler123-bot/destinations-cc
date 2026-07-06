@@ -302,6 +302,19 @@ function deriveResultsHeading(input: { cityName: string | null; query: string; l
   return readableCategory;
 }
 
+function formatDuration(minutes: number | null): string {
+  if (!minutes || minutes <= 0) return "Check duration";
+  if (minutes < 60) return `${minutes} min`;
+  const hours = minutes / 60;
+  if (Number.isInteger(hours)) return `${hours} hours`;
+  return `${hours.toFixed(1)} hours`;
+}
+
+function formatPrice(price: number | null, currency: string): string {
+  if (typeof price !== "number" || !Number.isFinite(price)) return "See live price";
+  return `From ${currency} ${price}`;
+}
+
 export default async function ToursPage({
   searchParams,
 }: {
@@ -340,27 +353,66 @@ export default async function ToursPage({
   const sourceSection = (resolvedSearch.source_section || "").trim() || null;
   const lane = (resolvedSearch.lane || "").trim() || null;
 
-  const viatorAction = cityRouteSlug
-      ? await getViatorActionForPlace({
-        slug: cityRouteSlug,
-        name: cityName || toTitle(cityRouteSlug),
-        citySlug: cityRouteSlug,
-        currency,
+  let products: any[] = [];
+  if (isLfse && !cityRouteSlug) {
+    // Fetch products from Juneau, Skagway, and Ketchikan in parallel
+    const portSlugs = ["juneau", "skagway", "ketchikan"];
+    const actions = await Promise.all(
+      portSlugs.map(async (slug) => {
+        try {
+          const act = await getViatorActionForPlace({
+            slug,
+            name: toTitle(slug),
+            citySlug: slug,
+            currency,
+          });
+          return (act?.products || []).map((product) => ({
+            ...product,
+            cityName: toTitle(slug),
+          }));
+        } catch (e) {
+          console.error(`Failed to fetch Viator tours for ${slug} on LFSE:`, e);
+          return [];
+        }
       })
-    : null;
+    );
+    const combinedProducts = actions.flat();
+    products = sortProducts(
+      filterProductsByTravelerControls(filterProductsByQuery(combinedProducts, query), {
+        minRating: Number.isFinite(minRating as number) ? minRating : null,
+        maxPrice: Number.isFinite(maxPrice as number) ? maxPrice : null,
+        maxDuration: Number.isFinite(maxDuration as number) ? maxDuration : null,
+        tagId: Number.isFinite(tagId as number) ? tagId : null,
+        recommendedOnly,
+      }),
+      sort
+    );
+  } else {
+    const viatorAction = cityRouteSlug
+        ? await getViatorActionForPlace({
+          slug: cityRouteSlug,
+          name: cityName || toTitle(cityRouteSlug),
+          citySlug: cityRouteSlug,
+          currency,
+        })
+      : null;
 
-  const products = viatorAction
-    ? sortProducts(
-        filterProductsByTravelerControls(filterProductsByQuery(viatorAction.products, query), {
-          minRating: Number.isFinite(minRating as number) ? minRating : null,
-          maxPrice: Number.isFinite(maxPrice as number) ? maxPrice : null,
-          maxDuration: Number.isFinite(maxDuration as number) ? maxDuration : null,
-          tagId: Number.isFinite(tagId as number) ? tagId : null,
-          recommendedOnly,
-        }),
-        sort
-      )
-    : [];
+    products = viatorAction
+      ? sortProducts(
+          filterProductsByTravelerControls(filterProductsByQuery(viatorAction.products, query), {
+            minRating: Number.isFinite(minRating as number) ? minRating : null,
+            maxPrice: Number.isFinite(maxPrice as number) ? maxPrice : null,
+            maxDuration: Number.isFinite(maxDuration as number) ? maxDuration : null,
+            tagId: Number.isFinite(tagId as number) ? tagId : null,
+            recommendedOnly,
+          }),
+          sort
+        ).map((product) => ({
+          ...product,
+          cityName: cityName || toTitle(cityRouteSlug || ""),
+        }))
+      : [];
+  }
   const isResultsMode = Boolean(cityRouteSlug || query);
   const fallbackQueries = [
     query || null,
@@ -422,6 +474,176 @@ export default async function ToursPage({
     endDate,
     sourceSection,
   });
+
+  if (isLfse) {
+    return (
+      <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+        {/* Navigation Bar */}
+        <nav className="sticky top-0 z-50 bg-white/95 border-b border-slate-200/80 backdrop-blur-md px-6 py-4 shadow-sm">
+          <div className="max-w-5xl mx-auto flex items-center justify-between">
+            <Link href="/" className="text-base font-black tracking-tight text-slate-800 hover:text-sky-600 transition flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-sky-600"></span>
+              Last Frontier Shore Excursions
+            </Link>
+            <div className="flex items-center gap-6 text-xs font-bold uppercase tracking-wider text-slate-500">
+              <Link href="/tours" className="text-sky-600 hover:text-sky-500 transition">Tours</Link>
+              <Link href="/ports" className="hover:text-sky-600 transition">Ports</Link>
+            </div>
+          </div>
+        </nav>
+
+        {/* Hero Section */}
+        <header className="bg-gradient-to-r from-sky-50 to-slate-100 border-b border-slate-200/80 py-12 md:py-16 px-6">
+          <div className="max-w-5xl mx-auto space-y-4">
+            <div className="text-xs font-bold uppercase tracking-widest text-sky-600">Alaska Shore Excursions</div>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 leading-[1.1]">
+              Alaska Shore Excursions
+            </h1>
+            <p className="text-slate-600 text-base max-w-3xl leading-relaxed">
+              Browse real bookable tours for Juneau, Skagway, and Ketchikan.
+            </p>
+          </div>
+        </header>
+
+        {/* Search & Filter Controls */}
+        <section className="max-w-5xl mx-auto px-6 py-8">
+          <form action="/tours" method="get" className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm grid gap-4 md:grid-cols-12 items-end">
+            <label className="grid gap-1.5 md:col-span-4">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Search Activities</span>
+              <input
+                type="text"
+                name="q"
+                defaultValue={query}
+                placeholder="Search tours (e.g. whale watching)"
+                className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-600"
+              />
+            </label>
+
+            <label className="grid gap-1.5 md:col-span-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Destination</span>
+              <select
+                name="city"
+                defaultValue={cityRouteSlug || ""}
+                className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-sky-600"
+              >
+                <option value="">All Ports (Juneau, Skagway, Ketchikan)</option>
+                <option value="juneau">Juneau</option>
+                <option value="skagway">Skagway</option>
+                <option value="ketchikan">Ketchikan</option>
+              </select>
+            </label>
+
+            <label className="grid gap-1.5 md:col-span-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Sort By</span>
+              <select
+                name="sort"
+                defaultValue={sort}
+                className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-sky-600"
+              >
+                <option value="recommended">Recommended</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="rating">Best Rating</option>
+                <option value="reviews">Most Reviewed</option>
+                <option value="duration-short">Shortest Duration</option>
+              </select>
+            </label>
+
+            <div className="md:col-span-2">
+              <button
+                type="submit"
+                className="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-sm transition"
+              >
+                Apply Filters
+              </button>
+            </div>
+          </form>
+        </section>
+
+        {/* Results / Tours Grid */}
+        <section className="max-w-5xl mx-auto px-6 pb-16 space-y-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-black text-slate-900">
+              {cityName ? `${cityName} Tours` : "All Alaska Tours"} ({products.length} found)
+            </h2>
+          </div>
+
+          {products.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {products.map((product) => {
+                const image = product.image_url;
+                const duration = formatDuration(product.duration_minutes);
+                const price = formatPrice(product.price_from, product.currency || "USD");
+                const ratingText = typeof product.rating === "number" && product.rating > 0
+                  ? `★ ${product.rating.toFixed(1)} (${product.review_count || 0} reviews)`
+                  : "";
+                const href = product.product_code 
+                  ? `/tours/${encodeURIComponent(product.product_code)}`
+                  : product.url;
+                const category = product.display_tags?.[0]?.label || "Alaska Excursion";
+
+                return (
+                  <div key={product.product_code || product.url} className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+                    <div className="space-y-4">
+                      {image ? (
+                        <div className="rounded-2xl overflow-hidden h-48 bg-slate-100 relative">
+                          <img src={image} alt={product.title} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="rounded-2xl overflow-hidden h-48 bg-slate-100 flex items-center justify-center text-slate-400 text-xs">No image available</div>
+                      )}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs font-bold text-sky-600 uppercase tracking-wide">
+                          <span>{category}</span>
+                          {ratingText ? <span className="text-amber-500">{ratingText}</span> : null}
+                        </div>
+                        <h3 className="font-bold text-slate-900 text-base line-clamp-2 leading-snug">{product.title}</h3>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{product.cityName || "Alaska Port"}</p>
+                        {product.short_description ? (
+                          <p className="text-slate-500 text-xs line-clamp-2 leading-relaxed">{product.short_description}</p>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className="mt-6 pt-4 border-t border-slate-100 space-y-4">
+                      <div className="flex items-center justify-between text-sm text-slate-500">
+                        <span>{duration}</span>
+                        <span className="font-extrabold text-slate-900 text-base">{price}</span>
+                      </div>
+                      <a href={href} target="_blank" rel="noopener noreferrer" className="w-full text-center block bg-sky-600 text-white hover:bg-sky-500 transition font-bold py-2.5 rounded-xl text-xs shadow-sm">
+                        Check availability
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-12 text-center text-slate-500 text-sm">
+              No matching tours found. Try searching with a different keyword or port filter.
+            </div>
+          )}
+
+          {/* Affiliate Disclosure */}
+          <div className="pt-8 border-t border-slate-200 text-center text-xs text-slate-400 font-medium max-w-2xl mx-auto">
+            Last Frontier Shore Excursions may earn a commission if you book through partner links, at no extra cost to you.
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="bg-white border-t border-slate-200 py-12 px-6 text-center">
+          <div className="max-w-5xl mx-auto space-y-4">
+            <div className="text-xs font-bold text-slate-400">
+              © {new Date().getFullYear()} Last Frontier Shore Excursions. All rights reserved.
+            </div>
+            <div className="flex justify-center gap-6 text-xs font-bold uppercase tracking-wider text-slate-500">
+              <Link href="/ports" className="hover:text-sky-600 transition">Ports Guide</Link>
+              <Link href="/tours" className="hover:text-sky-600 transition">Shore Excursions</Link>
+            </div>
+          </div>
+        </footer>
+      </div>
+    );
+  }
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-zinc-950 text-white">
