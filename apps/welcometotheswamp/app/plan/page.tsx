@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ActivitiesWidget from "@/app/components/ActivitiesWidget";
 import AvailabilityWidget from "@/app/components/AvailabilityWidget";
+import FareHarborWidget from "@/app/components/FareHarborWidget";
 import JsonLd from "@/app/components/JsonLd";
 import WarmTransferTelemetry from "@/app/components/WarmTransferTelemetry";
 import { buildBreadcrumbJsonLd, buildWebPageJsonLd } from "@/lib/jsonld";
@@ -11,6 +12,7 @@ import {
 } from "@/lib/getyourguide";
 import { getWtsLiveProductLinks } from "@/lib/liveProductLinks";
 import { inferLaneFromTransfer, parseWarmTransfer } from "@/lib/warmTransfer";
+import { SITE_CONFIG } from "@/app/site-config";
 
 export const pageIntent = "wts_storefront_plan";
 
@@ -55,6 +57,9 @@ function PlanCard({
   external?: boolean;
   trackingId: string;
 }) {
+  const isFareHarbor = href.includes("fareharbor.com/embeds/book/");
+  const classes = isFareHarbor ? "wts-button wts-button-card fh-book" : "wts-button wts-button-card";
+
   return (
     <article className="wts-tour-card">
       <div className="wts-tour-image">
@@ -66,7 +71,7 @@ function PlanCard({
         <p>{body}</p>
         <Link
           href={href}
-          className="wts-button wts-button-card"
+          className={classes}
           target={external ? "_blank" : undefined}
           rel={external ? "sponsored noopener noreferrer" : undefined}
           data-warm-transfer-click={trackingId}
@@ -84,27 +89,49 @@ function AvailabilityWidgetCard({
   tourUrl,
   campaign,
   trackingId,
+  companyShortname,
+  refCode,
+  itemId,
+  flowId,
 }: {
   title: string;
   body: string;
   tourUrl: string;
   campaign: string;
   trackingId: string;
+  companyShortname?: string;
+  refCode?: string;
+  itemId?: string | number;
+  flowId?: string | number;
 }) {
   return (
     <article className="wts-tour-card">
       <div className="wts-tour-copy">
-        <div className="wts-card-topline">Live GetYourGuide availability</div>
+        <div className="wts-card-topline">
+          {companyShortname ? "Live FareHarbor availability" : "Live GetYourGuide availability"}
+        </div>
         <h3>{title}</h3>
         <p>{body}</p>
         <div data-warm-transfer-click={trackingId}>
-          <AvailabilityWidget
-            tourUrl={tourUrl}
-            campaign={campaign}
-            currency="USD"
-            layout="horizontal"
-            className="wts-availability-widget"
-          />
+          {companyShortname ? (
+            <FareHarborWidget
+              companyShortname={companyShortname}
+              refCode={refCode}
+              campaign={campaign}
+              itemId={itemId}
+              flowId={flowId}
+              layout="calendar"
+              className="wts-availability-widget"
+            />
+          ) : (
+            <AvailabilityWidget
+              tourUrl={tourUrl}
+              campaign={campaign}
+              currency="USD"
+              layout="horizontal"
+              className="wts-availability-widget"
+            />
+          )}
         </div>
       </div>
     </article>
@@ -119,13 +146,49 @@ export default async function SwampPlanPage({
   const resolved = searchParams ? await searchParams : undefined;
   const packet = parseWarmTransfer(resolved);
   const lane = inferLaneFromTransfer(packet);
+  
+  const products = SITE_CONFIG.swampFareHarborProducts;
+  const asn = SITE_CONFIG.fareharborSwampAsn;
+  const hasFhConfig = products && products.length > 0 && asn;
+
+  const fhAirboat = products?.find(p => p.type === "airboat");
+  const fhBoat = products?.find(p => p.type === "boat");
+
   const links = await getWtsLiveProductLinks();
-  const gygAirboatHref = buildWtsGetYourGuideSearchHref("airboat", "wts-plan-airboat");
-  const gygBoatHref = buildWtsGetYourGuideSearchHref("boat", "wts-plan-covered-boat");
-  const gygBrowseHref = buildWtsGetYourGuideSearchHref("boat", "wts-plan-widget");
+
+  const fhPickupProduct = products?.find(p => p.id === "southernstyle-swamp");
+
+  const gygAirboatHref = fhAirboat && asn
+    ? (fhAirboat.itemId
+        ? `https://fareharbor.com/embeds/book/${fhAirboat.companyShortname}/items/${fhAirboat.itemId}/?asn=${asn}&flow=${fhAirboat.flowId || ""}&ref=wts-plan-airboat`
+        : `https://fareharbor.com/embeds/book/${fhAirboat.companyShortname}/?asn=${asn}&flow=${fhAirboat.flowId || ""}&ref=wts-plan-airboat`)
+    : buildWtsGetYourGuideSearchHref("airboat", "wts-plan-airboat");
+
+  const gygBoatHref = fhBoat && asn
+    ? (fhBoat.itemId
+        ? `https://fareharbor.com/embeds/book/${fhBoat.companyShortname}/items/${fhBoat.itemId}/?asn=${asn}&flow=${fhBoat.flowId || ""}&ref=wts-plan-covered-boat`
+        : `https://fareharbor.com/embeds/book/${fhBoat.companyShortname}/?asn=${asn}&flow=${fhBoat.flowId || ""}&ref=wts-plan-covered-boat`)
+    : buildWtsGetYourGuideSearchHref("boat", "wts-plan-covered-boat");
+
+  const heroBookingHref = fhAirboat && asn
+    ? (fhAirboat.itemId
+        ? `https://fareharbor.com/embeds/book/${fhAirboat.companyShortname}/items/${fhAirboat.itemId}/?asn=${asn}&flow=${fhAirboat.flowId || ""}&ref=wts-hero-booking`
+        : `https://fareharbor.com/embeds/book/${fhAirboat.companyShortname}/?asn=${asn}&flow=${fhAirboat.flowId || ""}&ref=wts-hero-booking`)
+    : buildWtsGetYourGuideSearchHref("airboat", "wts-plan-airboat");
+
+  const pickupHref = fhPickupProduct && asn
+    ? `https://fareharbor.com/embeds/book/${fhPickupProduct.companyShortname}/items/${fhPickupProduct.itemId}/?asn=${asn}&flow=${fhPickupProduct.flowId || ""}&ref=wts-plan-pickup`
+    : links.pickupHref;
+
+  const gygBrowseHref = fhBoat && asn
+    ? (fhBoat.itemId
+        ? `https://fareharbor.com/embeds/book/${fhBoat.companyShortname}/items/${fhBoat.itemId}/?asn=${asn}&flow=${fhBoat.flowId || ""}&ref=wts-plan-widget`
+        : `https://fareharbor.com/embeds/book/${fhBoat.companyShortname}/?asn=${asn}&flow=${fhBoat.flowId || ""}&ref=wts-plan-widget`)
+    : buildWtsGetYourGuideSearchHref("boat", "wts-plan-widget");
+
   const airboatAvailabilityTourUrl = getWtsAvailabilityTourUrl("airboat");
   const boatAvailabilityTourUrl = getWtsAvailabilityTourUrl("boat");
-  const hasAvailabilityWidgets = Boolean(airboatAvailabilityTourUrl || boatAvailabilityTourUrl);
+  const hasAvailabilityWidgets = Boolean(hasFhConfig || airboatAvailabilityTourUrl || boatAvailabilityTourUrl);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -159,61 +222,80 @@ export default async function SwampPlanPage({
         <div className="wts-hero-copy">
           <p className="wts-eyebrow">Welcome to the Swamp</p>
           <h1>Book a New Orleans swamp tour.</h1>
-          <div className="wts-hero-booking" aria-labelledby="wts-gyg-booking">
-            <div className="wts-section-head">
-              <p className="wts-eyebrow">Book through GetYourGuide</p>
-              <h2 id="wts-gyg-booking">Book a New Orleans swamp tour</h2>
-              <p>
-                Check availability and book the tour style that fits first. Final price,
-                live availability, pickup details, cancellation policy, and provider terms
-                continue on GetYourGuide.
-              </p>
-            </div>
-            {hasAvailabilityWidgets ? (
-              <div className="wts-tour-grid">
-                {airboatAvailabilityTourUrl ? (
-                  <AvailabilityWidgetCard
-                    title="Airboat swamp tour"
-                    body="Use this if speed, wind, and a louder ride are the point of the trip."
-                    tourUrl={airboatAvailabilityTourUrl}
-                    campaign="wts-plan-airboat-availability"
-                    trackingId="gyg_airboat_availability"
-                  />
-                ) : null}
-                {boatAvailabilityTourUrl ? (
-                  <AvailabilityWidgetCard
-                    title="Covered swamp boat"
-                    body="Use this if shade, slower water, and a calmer ride are the better fit."
-                    tourUrl={boatAvailabilityTourUrl}
-                    campaign="wts-plan-boat-availability"
-                    trackingId="gyg_boat_availability"
-                  />
-                ) : null}
-              </div>
-            ) : (
-              <article className="wts-tour-card">
-                <div className="wts-tour-copy">
-                  <div className="wts-card-topline">GetYourGuide availability</div>
-                  <h3>Exact tour widget slot</h3>
-                  <p>GetYourGuide availability widget goes here once activity URLs are configured.</p>
-                </div>
-              </article>
-            )}
-            <article className="wts-tour-card">
-              <div className="wts-tour-copy">
-                <div className="wts-card-topline">GetYourGuide activity widget</div>
-                <h3>New Orleans swamp tour availability</h3>
-                <p>Use this widget to open current GetYourGuide swamp-tour options.</p>
-                <div data-warm-transfer-click="gyg_activity_widget">
-                  <ActivitiesWidget
-                    href={gygBrowseHref}
-                    campaign="wts-plan-widget"
-                    numberOfItems={3}
-                    className="wts-activities-widget"
-                  />
-                </div>
-              </div>
-            </article>
+            <div className="wts-hero-booking" aria-labelledby="wts-gyg-booking">
+             <div className="wts-section-head">
+               <p className="wts-eyebrow">{hasFhConfig ? "Book through FareHarbor" : "Book through GetYourGuide"}</p>
+               <h2 id="wts-gyg-booking">Book a New Orleans swamp tour</h2>
+               <p>
+                 {hasFhConfig
+                   ? "Check real-time slot calendar and finish reservation directly with the provider."
+                   : "Check availability and book the tour style that fits first. Final price, live availability, pickup details, cancellation policy, and provider terms continue on GetYourGuide."}
+               </p>
+             </div>
+             {hasFhConfig ? (
+               <div className="wts-tour-grid">
+                 {products.map((product) => (
+                   <AvailabilityWidgetCard
+                     key={product.id}
+                     title={product.title}
+                     body={product.description}
+                     tourUrl=""
+                     campaign={`wts-plan-${product.id}`}
+                     trackingId={`fh_${product.id}`}
+                     companyShortname={product.companyShortname}
+                     refCode={asn}
+                     itemId={product.itemId}
+                     flowId={product.flowId}
+                   />
+                 ))}
+               </div>
+             ) : hasAvailabilityWidgets ? (
+               <div className="wts-tour-grid">
+                 {airboatAvailabilityTourUrl ? (
+                   <AvailabilityWidgetCard
+                     title="Airboat swamp tour"
+                     body="Use this if speed, wind, and a louder ride are the point of the trip."
+                     tourUrl={airboatAvailabilityTourUrl}
+                     campaign="wts-plan-airboat-availability"
+                     trackingId="gyg_airboat_availability"
+                   />
+                 ) : null}
+                 {boatAvailabilityTourUrl ? (
+                   <AvailabilityWidgetCard
+                     title="Covered swamp boat"
+                     body="Use this if shade, slower water, and a calmer ride are the better fit."
+                     tourUrl={boatAvailabilityTourUrl}
+                     campaign="wts-plan-boat-availability"
+                     trackingId="gyg_boat_availability"
+                   />
+                 ) : null}
+               </div>
+             ) : (
+               <article className="wts-tour-card">
+                 <div className="wts-tour-copy">
+                   <div className="wts-card-topline">GetYourGuide availability</div>
+                   <h3>Exact tour widget slot</h3>
+                   <p>GetYourGuide availability widget goes here once activity URLs are configured.</p>
+                 </div>
+               </article>
+             )}
+             {!hasFhConfig && (
+               <article className="wts-tour-card">
+                 <div className="wts-tour-copy">
+                   <div className="wts-card-topline">GetYourGuide activity widget</div>
+                   <h3>New Orleans swamp tour availability</h3>
+                   <p>Use this widget to open current GetYourGuide swamp-tour options.</p>
+                   <div data-warm-transfer-click="gyg_activity_widget">
+                     <ActivitiesWidget
+                       href={gygBrowseHref}
+                       campaign="wts-plan-widget"
+                       numberOfItems={3}
+                       className="wts-activities-widget"
+                     />
+                   </div>
+                 </div>
+               </article>
+             )}
             <div className="wts-tour-grid">
               <PlanCard
                 eyebrow="GetYourGuide / airboat"
@@ -243,8 +325,8 @@ export default async function SwampPlanPage({
           </p>
           <div className="wts-cta-row">
             <Link
-              href={gygAirboatHref}
-              className="wts-button wts-button-primary"
+              href={heroBookingHref}
+              className={`wts-button wts-button-primary${heroBookingHref.includes("fareharbor") ? " fh-book" : ""}`}
               target="_blank"
               rel="sponsored noopener noreferrer"
               data-warm-transfer-click="gyg_hero_airboat"
@@ -395,8 +477,8 @@ export default async function SwampPlanPage({
 
       <div className="wts-mobile-cta">
         <Link
-          href={gygAirboatHref}
-          className="wts-button wts-button-primary"
+          href={heroBookingHref}
+          className={`wts-button wts-button-primary${heroBookingHref.includes("fareharbor") ? " fh-book" : ""}`}
           target="_blank"
           rel="sponsored noopener noreferrer"
           data-warm-transfer-click="gyg_sticky_airboat"

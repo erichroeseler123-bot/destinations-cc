@@ -58,6 +58,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `}
         </Script>
         <PartnerAnalyticsScript />
+        {SITE_CONFIG.swampFareHarborProducts && SITE_CONFIG.swampFareHarborProducts.length > 0 && (
+          <Script
+            src="https://fareharbor.com/embeds/api/v1/?autolightframe=yes"
+            strategy="afterInteractive"
+          />
+        )}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}

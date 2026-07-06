@@ -1,8 +1,23 @@
 import type { NetworkCommercialPageConfig } from "@/app/components/network/types";
 import { buildWtsGetYourGuideSearchHref } from "@/lib/getyourguide";
+import { SITE_CONFIG } from "./site-config";
 
-const airboatHref = buildWtsGetYourGuideSearchHref("airboat", "wts-storefront-airboat");
-const boatHref = buildWtsGetYourGuideSearchHref("boat", "wts-storefront-covered-boat");
+const products = SITE_CONFIG.swampFareHarborProducts;
+const asn = SITE_CONFIG.fareharborSwampAsn;
+const fhAirboatProduct = products?.find(p => p.type === "airboat");
+const fhBoatProduct = products?.find(p => p.type === "boat");
+
+const airboatHref = fhAirboatProduct && asn
+  ? (fhAirboatProduct.itemId
+      ? `https://fareharbor.com/embeds/book/${fhAirboatProduct.companyShortname}/items/${fhAirboatProduct.itemId}/?asn=${asn}&flow=${fhAirboatProduct.flowId || ""}`
+      : `https://fareharbor.com/embeds/book/${fhAirboatProduct.companyShortname}/?asn=${asn}&flow=${fhAirboatProduct.flowId || ""}`)
+  : buildWtsGetYourGuideSearchHref("airboat", "wts-storefront-airboat");
+
+const boatHref = fhBoatProduct && asn
+  ? (fhBoatProduct.itemId
+      ? `https://fareharbor.com/embeds/book/${fhBoatProduct.companyShortname}/items/${fhBoatProduct.itemId}/?asn=${asn}&flow=${fhBoatProduct.flowId || ""}`
+      : `https://fareharbor.com/embeds/book/${fhBoatProduct.companyShortname}/?asn=${asn}&flow=${fhBoatProduct.flowId || ""}`)
+  : buildWtsGetYourGuideSearchHref("boat", "wts-storefront-covered-boat");
 
 const airboatImage = {
   src: "/images/boat-chooser/airboat.webp",
