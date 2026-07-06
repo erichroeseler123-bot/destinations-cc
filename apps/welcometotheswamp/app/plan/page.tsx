@@ -74,6 +74,8 @@ function PlanCard({
 }) {
   const isFareHarbor = href.includes("fareharbor.com/embeds/book/");
   const classes = isFareHarbor ? "wts-button wts-button-card fh-book" : "wts-button wts-button-card";
+  const duration = title.toLowerCase().includes("city") ? "3 Hours" : "2 Hours";
+  const operatorName = href.includes("southernstyletours") ? "Southern Style Tours" : (href.includes("ragincajuntours") ? "Ragin Cajun Tours" : null);
 
   return (
     <article className="wts-tour-card">
@@ -85,6 +87,23 @@ function PlanCard({
       <div className="wts-tour-copy">
         <div className="wts-card-topline">{eyebrow}</div>
         <h3>{title}</h3>
+        {operatorName ? <p className="wts-operator-name" style={{ margin: 0, fontWeight: 700, color: "#0f8f68", fontSize: "11px" }}>{operatorName}</p> : null}
+        
+        <div className="wts-spec-grid">
+          <div className="wts-spec-item">
+            <span className="wts-spec-label">Duration</span>
+            <span className="wts-spec-value">{duration}</span>
+          </div>
+          <div className="wts-spec-item">
+            <span className="wts-spec-label">From Price</span>
+            <span className="wts-spec-value">Check Dates</span>
+          </div>
+          <div className="wts-spec-item">
+            <span className="wts-spec-label">Availability</span>
+            <span className="wts-spec-value" style={{ color: "#166534" }}>Live Dates</span>
+          </div>
+        </div>
+
         <p>{body}</p>
         <Link
           href={href}
@@ -121,6 +140,9 @@ function AvailabilityWidgetCard({
   itemId?: string | number;
   flowId?: string | number;
 }) {
+  const duration = title.toLowerCase().includes("city") ? "3 Hours" : "2 Hours";
+  const operatorName = companyShortname === "southernstyletours" ? "Southern Style Tours" : (companyShortname === "ragincajuntours" ? "Ragin Cajun Tours" : null);
+
   return (
     <article className="wts-tour-card">
       <div className="wts-tour-copy">
@@ -128,6 +150,23 @@ function AvailabilityWidgetCard({
           {companyShortname ? "Live FareHarbor availability" : "Live GetYourGuide availability"}
         </div>
         <h3>{title}</h3>
+        {operatorName ? <p className="wts-operator-name" style={{ margin: 0, fontWeight: 700, color: "#0f8f68", fontSize: "11px" }}>{operatorName}</p> : null}
+
+        <div className="wts-spec-grid">
+          <div className="wts-spec-item">
+            <span className="wts-spec-label">Duration</span>
+            <span className="wts-spec-value">{duration}</span>
+          </div>
+          <div className="wts-spec-item">
+            <span className="wts-spec-label">From Price</span>
+            <span className="wts-spec-value">Check Dates</span>
+          </div>
+          <div className="wts-spec-item">
+            <span className="wts-spec-label">Availability</span>
+            <span className="wts-spec-value" style={{ color: "#166534" }}>Live Dates</span>
+          </div>
+        </div>
+
         <p>{body}</p>
         <div data-warm-transfer-click={trackingId}>
           {companyShortname ? (

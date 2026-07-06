@@ -2246,3 +2246,364 @@ body.dcc-guided-mode .site-footer {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* ==========================================================================
+   WTA Design Style Overrides (Light Theme, Modern Cards, full-width Hero)
+   ========================================================================== */
+
+/* Global Reset & Typography */
+html,
+body {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+/* Header & Brand styling */
+.brand-name {
+  color: #0f172a !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-weight: 800 !important;
+}
+
+.brand-kicker {
+  color: #0f8f68 !important;
+}
+
+.site-header {
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 24px !important;
+}
+
+.nav-pill {
+  border: 1px solid #e2e8f0 !important;
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+.nav-pill.is-active {
+  background: rgba(15, 143, 104, 0.1) !important;
+  border-color: rgba(15, 143, 104, 0.3) !important;
+  color: #0f8f68 !important;
+}
+
+.header-status {
+  border-color: rgba(15, 143, 104, 0.2) !important;
+  background: rgba(15, 143, 104, 0.05) !important;
+  color: #0f8f68 !important;
+}
+
+/* Hero Section */
+.wts-hero {
+  position: relative !important;
+  min-height: 520px !important;
+  display: block !important; /* disable grid layout */
+  border: none !important;
+  background: #0f172a !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  padding: 0 !important;
+}
+
+.wts-hero-media {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1 !important;
+  min-height: auto !important;
+}
+
+.wts-hero-media img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.wts-hero-overlay {
+  display: none !important; /* Hide overlay inside media */
+}
+
+.wts-hero-copy {
+  position: relative !important;
+  z-index: 2 !important;
+  max-width: 580px !important;
+  margin: 40px !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 28px !important;
+  padding: 32px !important;
+  backdrop-filter: blur(12px) !important;
+  color: #ffffff !important;
+  display: grid !important;
+  gap: 16px !important;
+  align-content: start !important;
+}
+
+.wts-hero-copy h1 {
+  color: #ffffff !important;
+  font-size: clamp(2rem, 5vw, 3.2rem) !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.04em !important;
+  max-width: 100% !important;
+  line-height: 1.05 !important;
+  margin-top: 8px !important;
+}
+
+.wts-hero-copy .wts-eyebrow {
+  color: #38bdf8 !important; /* light blue/cyan */
+}
+
+.wts-hero-copy .wts-hero-summary {
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+}
+
+.wts-hero-copy .wts-button-primary {
+  background: #06b6d4 !important; /* cyan-500 */
+  color: #0f172a !important;
+  box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.3) !important;
+  border: none !important;
+}
+
+.wts-hero-copy .wts-button-secondary {
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+.wts-hero-copy .wts-chip-row span {
+  border-radius: 999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  padding: 6px 12px !important;
+  font-size: 11px !important;
+}
+
+/* Trust Strip Section */
+.wts-trust-strip {
+  margin-top: 16px !important;
+  gap: 16px !important;
+}
+
+.wts-trust-badge {
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 20px !important;
+  padding: 20px !important;
+}
+
+.wts-trust-badge strong {
+  color: #0f172a !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+}
+
+.wts-trust-badge span {
+  color: #475569 !important;
+  font-size: 12px !important;
+}
+
+/* General Panels */
+.wts-section,
+.wts-disclosure {
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 28px !important;
+}
+
+.wts-section h2,
+.wts-disclosure h2 {
+  color: #0f172a !important;
+  font-family: -apple-system, sans-serif !important;
+  font-weight: 800 !important;
+}
+
+.wts-section-head p {
+  color: #475569 !important;
+}
+
+.wts-recommendation {
+  border: 1px solid rgba(15, 143, 104, 0.2) !important;
+  background: #f0fdf4 !important;
+}
+
+.wts-recommendation strong {
+  color: #166534 !important;
+}
+
+/* Tour Cards & Plan Cards (WTA Product Card layout) */
+.wts-tour-card {
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 24px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+.wts-tour-copy {
+  padding: 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.wts-tour-copy h3 {
+  color: #0f172a !important;
+  font-family: -apple-system, sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 1.4rem !important;
+  margin: 0 !important;
+}
+
+.wts-tour-copy p {
+  color: #475569 !important;
+  font-size: 13px !important;
+  margin: 0 !important;
+}
+
+.wts-best-for {
+  background: #f0fdf4 !important;
+  border: 1px solid #dcfce7 !important;
+  color: #166534 !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  border-radius: 12px !important;
+  padding: 8px 12px !important;
+}
+
+.wts-chip-row span {
+  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  color: #475569 !important;
+  padding: 6px 10px !important;
+  font-size: 11px !important;
+}
+
+.wts-provider-note {
+  font-size: 11px !important;
+  color: #64748b !important;
+}
+
+.wts-button-card {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  min-height: 44px !important;
+}
+
+.wts-button-card:hover {
+  background: #1e293b !important;
+}
+
+/* Specifications Grid */
+.wts-spec-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 8px !important;
+  border-top: 1px solid #f1f5f9 !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  padding: 10px 0 !important;
+  margin: 8px 0 !important;
+}
+
+.wts-spec-item {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.wts-spec-label {
+  font-family: "Avenir Next", "Segoe UI", sans-serif !important;
+  font-size: 8px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  color: #94a3b8 !important;
+}
+
+.wts-spec-value {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #1e293b !important;
+}
+
+/* Grid Layout overrides */
+.wts-tour-grid {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+  gap: 20px !important;
+}
+
+/* Category grid lanes */
+.wts-lane-card {
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+}
+
+.wts-lane-card h3 {
+  color: #0f172a !important;
+  font-family: -apple-system, sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 18px !important;
+}
+
+.wts-text-link {
+  color: #0f8f68 !important;
+  font-weight: 700 !important;
+}
+
+/* Footer and Site Header */
+.site-footer {
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 24px !important;
+  color: #0f172a !important;
+}
+
+.footer-block p.eyebrow {
+  color: #0f8f68 !important;
+}
+
+.footer-block p {
+  color: #475569 !important;
+}
+
+.footer-links a {
+  color: #475569 !important;
+}
+
+.footer-links a:hover {
+  color: #0f8f68 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 899px) {
+  .wts-hero {
+    min-height: auto !important;
+  }
+  .wts-hero-media {
+    position: relative !important;
+    min-height: 240px !important;
+  }
+  .wts-hero-copy {
+    margin: 16px !important;
+    padding: 24px !important;
+  }
+}
+

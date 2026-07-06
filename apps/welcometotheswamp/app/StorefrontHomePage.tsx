@@ -45,6 +45,8 @@ function TrustBadges({ config }: { config?: TrustStripConfig }) {
 }
 
 function TourCard({ card }: { card: CommercialCardConfig }) {
+  const duration = card.id.includes("city-tour") ? "3 Hours" : "2 Hours";
+
   return (
     <article className="wts-tour-card">
       {card.image ? (
@@ -55,7 +57,23 @@ function TourCard({ card }: { card: CommercialCardConfig }) {
       <div className="wts-tour-copy">
         <div className="wts-card-topline">{card.category}</div>
         <h3>{card.title}</h3>
-        {card.subtitle ? <p>{card.subtitle}</p> : null}
+        {card.subtitle ? <p className="wts-operator-name" style={{ margin: 0, fontWeight: 700, color: "#0f8f68", fontSize: "11px" }}>{card.subtitle}</p> : null}
+        
+        <div className="wts-spec-grid">
+          <div className="wts-spec-item">
+            <span className="wts-spec-label">Duration</span>
+            <span className="wts-spec-value">{duration}</span>
+          </div>
+          <div className="wts-spec-item">
+            <span className="wts-spec-label">From Price</span>
+            <span className="wts-spec-value">Check Dates</span>
+          </div>
+          <div className="wts-spec-item">
+            <span className="wts-spec-label">Availability</span>
+            <span className="wts-spec-value" style={{ color: "#166534" }}>Live Dates</span>
+          </div>
+        </div>
+
         {card.decisionReason ? <div className="wts-best-for">{card.decisionReason}</div> : null}
         {card.tags?.length ? (
           <div className="wts-chip-row">
