@@ -31,6 +31,12 @@
       "@/lib/dcc/networkEntityJsonLd": ["../../lib/dcc/networkEntityJsonLd"],
       "@/lib/liveProductLinks": ["../../lib/liveProductLinks"],
       "@/lib/getyourguide/*": ["../../lib/getyourguide/*"],
+      "@/lib/dcc/*": ["../../lib/dcc/*"],
+      "@/lib/wta/*": ["../../lib/wta/*"],
+      "@/lib/db/*": ["../../lib/db/*"],
+      "@/lib/route-governance": ["../../lib/route-governance"],
+      "@/data/*": ["../../data/*"],
+      "@/src/*": ["../../src/*"],
       "@/*": ["./*"]
     },
     "noImplicitAny": false
