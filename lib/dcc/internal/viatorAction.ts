@@ -421,23 +421,15 @@ export async function getViatorActionForPlace(
   if (decision.useLive) {
     try {
       const live = await fetchLiveViatorAction(place);
-      if (live?.enabled || live?.products.length) {
+      if (live?.products && live.products.length > 0) {
         return { ...live, policy_applied: decision.policy, served_source: live.source, reason: decision.reason };
-      }
-      if (live) {
-        return {
-          ...live,
-          policy_applied: decision.policy,
-          served_source: live.source,
-          reason: `${decision.reason}:${policyState.accessTier}:live_diagnostics_only`,
-        };
       }
       const fallback = resolveViatorAction(place, maxAgeHours);
       return {
         ...fallback,
         policy_applied: decision.policy,
         served_source: fallback.source,
-        reason: "live_failed_fallback",
+        reason: live ? `${decision.reason}:live_empty_fallback` : "live_failed_fallback",
       };
     } catch {
       const fallback = resolveViatorAction(place, maxAgeHours);
