@@ -66,7 +66,7 @@ function PlanCard({
   eyebrow: string;
   title: string;
   body: string;
-  image: typeof AIRBOAT_IMAGE;
+  image?: typeof AIRBOAT_IMAGE;
   href: string;
   cta: string;
   external?: boolean;
@@ -77,9 +77,11 @@ function PlanCard({
 
   return (
     <article className="wts-tour-card">
-      <div className="wts-tour-image">
-        <img src={image.src} alt={image.alt} loading="lazy" />
-      </div>
+      {image ? (
+        <div className="wts-tour-image">
+          <img src={image.src} alt={image.alt} loading="lazy" />
+        </div>
+      ) : null}
       <div className="wts-tour-copy">
         <div className="wts-card-topline">{eyebrow}</div>
         <h3>{title}</h3>
@@ -316,7 +318,7 @@ export default async function SwampPlanPage({
                 eyebrow="GetYourGuide / airboat"
                 title="Airboat swamp tours"
                 body="Use this if speed, wind, and a louder ride are the point of the trip."
-                image={smallGroupAirboatImage}
+                image={undefined}
                 href={gygAirboatHref}
                 cta="Check availability"
                 external
@@ -326,7 +328,7 @@ export default async function SwampPlanPage({
                 eyebrow="GetYourGuide / covered boat"
                 title="Covered swamp boat tours"
                 body="Use this if shade, slower water, and a calmer ride are the better fit."
-                image={swampBoatImage}
+                image={undefined}
                 href={gygBoatHref}
                 cta="Book this tour"
                 external
@@ -378,7 +380,7 @@ export default async function SwampPlanPage({
             eyebrow="Loud / fast"
             title="Airboat Swamp Tour"
             body="For the friend who wants the ride to feel like the point. Wind, engine, open water, quick hit."
-            image={smallGroupAirboatImage}
+            image={undefined}
             href={links.airboatHref}
             cta="Book this tour"
             external
@@ -388,7 +390,7 @@ export default async function SwampPlanPage({
             eyebrow="Slow / cinematic"
             title="Covered Boat Swamp Tour"
             body="For a moodier bayou pass: shade, slower pacing, and more time to actually look around."
-            image={swampBoatImage}
+            image={undefined}
             href={links.smallBoatHref}
             cta="Book this tour"
             external
@@ -398,7 +400,7 @@ export default async function SwampPlanPage({
             eyebrow="Easy move"
             title="Swamp Tour With Pickup"
             body="For the no-car plan. Get picked up, leave the city, see the swamp, come back clean."
-            image={frenchQuarterStreetImage}
+            image={undefined}
             href={links.pickupHref}
             cta="Check availability"
             external
@@ -408,7 +410,7 @@ export default async function SwampPlanPage({
             eyebrow="Still deciding"
             title="Compare the styles"
             body="Use this if the only real question is fast airboat versus slower covered boat."
-            image={COVERED_BOAT_IMAGE}
+            image={undefined}
             href="/airboat-vs-boat"
             cta="Compare styles"
             trackingId="card_compare_styles"
