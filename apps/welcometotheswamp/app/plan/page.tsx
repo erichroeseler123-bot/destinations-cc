@@ -362,34 +362,6 @@ export default async function SwampPlanPage({
               />
             </div>
           </div>
-          <p className="wts-hero-summary">
-            Check availability first, then choose the ride style: loud airboat,
-            slow covered boat, or hotel pickup when you want the easy move.
-          </p>
-          <div className="wts-cta-row">
-            <Link
-              href={heroBookingHref}
-              className={`wts-button wts-button-primary${heroBookingHref.includes("fareharbor") ? " fh-book" : ""}`}
-              target="_blank"
-              rel="sponsored noopener noreferrer"
-              data-warm-transfer-click="gyg_hero_airboat"
-            >
-              Check availability
-            </Link>
-            <Link
-              href="#boat-style"
-              className="wts-button wts-button-secondary"
-              data-warm-transfer-click="hero_compare"
-            >
-              Compare boat styles
-            </Link>
-          </div>
-          <div className="wts-chip-row">
-            <span>Airboat if you want noise</span>
-            <span>Covered boat if you want atmosphere</span>
-            <span>Pickup if you want it easy</span>
-          </div>
-        </div>
       </section>
 
       <section className="wts-section" aria-labelledby="wts-plan-picks">
