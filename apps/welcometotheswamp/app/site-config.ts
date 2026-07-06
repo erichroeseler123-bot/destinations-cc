@@ -6,7 +6,7 @@ export interface SwampFareHarborProduct {
   title: string;
   description: string;
   eyebrow: string;
-  type: "airboat" | "boat";
+  type: "airboat" | "boat" | "city";
 }
 
 export const SITE_CONFIG = {
@@ -57,6 +57,16 @@ export const SITE_CONFIG = {
       description: "Classic New Orleans swamp excursion with optional French Quarter pickup.",
       eyebrow: "Pickup-friendly option",
       type: "boat"
+    },
+    {
+      id: "southernstyle-city-tour",
+      companyShortname: "southernstyletours",
+      itemId: "51942",
+      flowId: "4344",
+      title: "Southern Style New Orleans City Tour",
+      description: "Explore the French Quarter, Garden District, and historic landmarks with local guides.",
+      eyebrow: "City exploration",
+      type: "city"
     }
   ] as SwampFareHarborProduct[],
-} as const;
+};

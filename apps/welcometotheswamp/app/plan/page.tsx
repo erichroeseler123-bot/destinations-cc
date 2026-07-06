@@ -232,62 +232,67 @@ export default async function SwampPlanPage({
         <div className="wts-hero-media">
           <img src={SWAMP_IMAGE.src} alt={SWAMP_IMAGE.alt} loading="eager" />
           <div className="wts-hero-overlay">
-            <span>New Orleans after the postcard</span>
-            <strong>Book the bayou, then get back for dinner.</strong>
+            <span>New Orleans Tours & Swamp Rides</span>
+            <strong>Airboats, Shaded Boats, and City Sightseeing</strong>
           </div>
         </div>
         <div className="wts-hero-copy">
-          <p className="wts-eyebrow">Welcome to the Swamp</p>
-          <h1>Book a New Orleans swamp tour.</h1>
-            <div className="wts-hero-booking" aria-labelledby="wts-gyg-booking">
-             <div className="wts-section-head">
-               <p className="wts-eyebrow">{hasFhConfig ? "Book through FareHarbor" : "Book through GetYourGuide"}</p>
-               <h2 id="wts-gyg-booking">Book a New Orleans swamp tour</h2>
-               <p>
-                 {hasFhConfig
-                   ? "Check real-time slot calendar and finish reservation directly with the provider."
-                   : "Check availability and book the tour style that fits first. Final price, live availability, pickup details, cancellation policy, and provider terms continue on GetYourGuide."}
-               </p>
-             </div>
-              {hasFhConfig ? (
-                <>
-                  <div className="wts-tour-grid">
-                    {products.map((product) => (
-                      <AvailabilityWidgetCard
-                        key={product.id}
-                        title={product.title}
-                        body={product.description}
-                        tourUrl=""
-                        campaign={`wts-plan-${product.id}`}
-                        trackingId={`fh_${product.id}`}
-                        companyShortname={product.companyShortname}
-                        refCode={asn}
-                        itemId={product.itemId}
-                        flowId={product.flowId}
-                      />
-                    ))}
-                  </div>
-                  <div className="wts-secondary-section" style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid rgba(36, 86, 69, 0.12)" }}>
-                    <article className="wts-tour-card" style={{ maxWidth: "480px", margin: "0 auto" }}>
-                      <div className="wts-tour-copy">
-                        <div className="wts-card-topline">Also available</div>
-                        <h3>Also available: New Orleans City Tour</h3>
-                        <p>Want a city overview before or after the swamp? Southern Style also offers a New Orleans city tour through FareHarbor.</p>
-                        <div style={{ marginTop: "16px" }}>
-                          <a
-                            href="https://fareharbor.com/embeds/book/southernstyletours/items/51942/calendar/?asn=aktourcenter&flow=4344&ref=wts-city-tour"
-                            className="wts-button wts-button-card fh-book"
-                            target="_blank"
-                            rel="sponsored noopener noreferrer"
-                          >
-                            View City Tour
-                          </a>
-                        </div>
-                      </div>
-                    </article>
-                  </div>
-                </>
-              ) : hasAvailabilityWidgets ? (
+          <p className="wts-eyebrow">New Orleans tours & local experiences</p>
+          <h1>New Orleans tours, swamp rides, and local experiences.</h1>
+          <p className="wts-hero-summary">
+            Compare real bookable New Orleans tour options — from airboats and covered swamp boats to city tours and pickup-friendly experiences — then book directly through FareHarbor provider links.
+          </p>
+          <div className="wts-cta-row">
+            <a
+              href="#tours"
+              className="wts-button wts-button-primary"
+            >
+              Browse Tours
+            </a>
+            <Link
+              href="/airboat-vs-boat"
+              className="wts-button wts-button-secondary"
+            >
+              Compare Options
+            </Link>
+          </div>
+          <div className="wts-chip-row">
+            <span>Curated FareHarbor picks</span>
+            <span>French Quarter pickup notes</span>
+            <span>Group & family-fit guidance</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="wts-section" id="tours" aria-labelledby="wts-gyg-booking">
+        <div className="wts-hero-booking" aria-labelledby="wts-gyg-booking">
+          <div className="wts-section-head">
+            <p className="wts-eyebrow">{hasFhConfig ? "Book through FareHarbor" : "Book through GetYourGuide"}</p>
+            <h2 id="wts-gyg-booking">Featured New Orleans Tours & Local Experiences</h2>
+            <p>
+              {hasFhConfig
+                ? "Compare real bookable New Orleans tour options directly through FareHarbor provider calendars."
+                : "Check availability and book the tour style that fits first. Final price, live availability, pickup details, cancellation policy, and provider terms continue on GetYourGuide."}
+            </p>
+          </div>
+          {hasFhConfig ? (
+            <div className="wts-tour-grid">
+              {products.map((product) => (
+                <AvailabilityWidgetCard
+                  key={product.id}
+                  title={product.title}
+                  body={product.description}
+                  tourUrl=""
+                  campaign={`wts-plan-${product.id}`}
+                  trackingId={`fh_${product.id}`}
+                  companyShortname={product.companyShortname}
+                  refCode={asn}
+                  itemId={product.itemId}
+                  flowId={product.flowId}
+                />
+              ))}
+            </div>
+          ) : hasAvailabilityWidgets ? (
                <div className="wts-tour-grid">
                  {airboatAvailabilityTourUrl ? (
                    <AvailabilityWidgetCard

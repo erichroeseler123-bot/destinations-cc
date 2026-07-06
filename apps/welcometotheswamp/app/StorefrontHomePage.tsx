@@ -213,25 +213,6 @@ export function SwampStorefrontPage({ page }: { page: NetworkCommercialPageConfi
               <TourCard key={card.id} card={card} />
             ))}
           </div>
-          <div className="wts-secondary-section" style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid rgba(36, 86, 69, 0.12)" }}>
-            <article className="wts-tour-card" style={{ maxWidth: "480px", margin: "0 auto" }}>
-              <div className="wts-tour-copy">
-                <div className="wts-card-topline">Also available</div>
-                <h3>Also available: New Orleans City Tour</h3>
-                <p>Want a city overview before or after the swamp? Southern Style also offers a New Orleans city tour through FareHarbor.</p>
-                <div style={{ marginTop: "16px" }}>
-                  <a
-                    href="https://fareharbor.com/embeds/book/southernstyletours/items/51942/calendar/?asn=aktourcenter&flow=4344&ref=wts-city-tour"
-                    className="wts-button wts-button-card fh-book"
-                    target="_blank"
-                    rel="sponsored noopener noreferrer"
-                  >
-                    View City Tour
-                  </a>
-                </div>
-              </div>
-            </article>
-          </div>
         </section>
       ) : null}
 
