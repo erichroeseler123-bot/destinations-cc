@@ -34,6 +34,21 @@ const quietSwampImage = {
   alt: "Still Louisiana swamp water surrounded by cypress trees",
 };
 
+const smallGroupAirboatImage = {
+  src: "/images/boat-chooser/small-group-airboat.png",
+  alt: "Passengers on a small-group airboat swamp tour",
+};
+
+const swampBoatImage = {
+  src: "/images/boat-chooser/swamp-boat.png",
+  alt: "A swamp tour boat navigating the Louisiana bayou",
+};
+
+const hotelPickupSwampImage = {
+  src: "/images/boat-chooser/hotel-pickup-swamp-boat.png",
+  alt: "Swamp boat tour with hotel pickup service",
+};
+
 export const swampStorefrontConfig: NetworkCommercialPageConfig = {
   id: "wts-home",
   path: "/",
@@ -69,7 +84,7 @@ export const swampStorefrontConfig: NetworkCommercialPageConfig = {
       title: "Airboat if you want the ride. Covered boat if you want the bayou.",
       body:
         "The right tour depends on noise, shade, pickup, group age, and how much of the day you want to spend outside the city.",
-      image: airboatImage,
+      image: quietSwampImage,
       rows: [
         { label: "Thrill", value: "Airboat" },
         { label: "Comfort", value: "Covered boat" },
@@ -122,7 +137,7 @@ export const swampStorefrontConfig: NetworkCommercialPageConfig = {
         "Fast, open-air, loud in the fun way, and best when the ride itself is the memory.",
       category: "Most exciting",
       destination: "wts",
-      image: airboatImage,
+      image: smallGroupAirboatImage,
       tags: ["open-air ride", "high energy", "check current price"],
       cta: { label: "Book airboat", href: airboatHref, external: true },
       providerType: "affiliate_fallback",
@@ -136,7 +151,7 @@ export const swampStorefrontConfig: NetworkCommercialPageConfig = {
         "A calmer bayou ride with more shade, easier conversation, and a better fit for mixed groups.",
       category: "Most comfortable",
       destination: "wts",
-      image: coveredBoatImage,
+      image: swampBoatImage,
       tags: ["shade", "families", "wildlife pace"],
       cta: { label: "Compare covered boats", href: boatHref, external: true },
       providerType: "affiliate_fallback",
@@ -150,7 +165,7 @@ export const swampStorefrontConfig: NetworkCommercialPageConfig = {
         "The cleaner no-car choice for visitors staying around the Quarter, CBD, or hotel zones.",
       category: "Easiest logistics",
       destination: "wts",
-      image: quietSwampImage,
+      image: hotelPickupSwampImage,
       tags: ["hotel pickup", "no car", "first-timers"],
       cta: { label: "Check pickup tours", href: "/transportation" },
       providerType: "partner_handoff",

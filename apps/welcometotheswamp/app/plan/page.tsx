@@ -38,6 +38,21 @@ const SWAMP_IMAGE = {
   alt: "Still Louisiana swamp water under cypress trees",
 };
 
+const smallGroupAirboatImage = {
+  src: "/images/boat-chooser/small-group-airboat.png",
+  alt: "Passengers on a small-group airboat swamp tour",
+};
+
+const swampBoatImage = {
+  src: "/images/boat-chooser/swamp-boat.png",
+  alt: "A swamp tour boat navigating the Louisiana bayou",
+};
+
+const frenchQuarterStreetImage = {
+  src: "/images/boat-chooser/french-quarter-street.jpg",
+  alt: "Historic French Quarter street scene in New Orleans",
+};
+
 function PlanCard({
   eyebrow,
   title,
@@ -301,7 +316,7 @@ export default async function SwampPlanPage({
                 eyebrow="GetYourGuide / airboat"
                 title="Airboat swamp tours"
                 body="Use this if speed, wind, and a louder ride are the point of the trip."
-                image={AIRBOAT_IMAGE}
+                image={smallGroupAirboatImage}
                 href={gygAirboatHref}
                 cta="Check availability"
                 external
@@ -311,7 +326,7 @@ export default async function SwampPlanPage({
                 eyebrow="GetYourGuide / covered boat"
                 title="Covered swamp boat tours"
                 body="Use this if shade, slower water, and a calmer ride are the better fit."
-                image={COVERED_BOAT_IMAGE}
+                image={swampBoatImage}
                 href={gygBoatHref}
                 cta="Book this tour"
                 external
@@ -363,7 +378,7 @@ export default async function SwampPlanPage({
             eyebrow="Loud / fast"
             title="Airboat Swamp Tour"
             body="For the friend who wants the ride to feel like the point. Wind, engine, open water, quick hit."
-            image={AIRBOAT_IMAGE}
+            image={smallGroupAirboatImage}
             href={links.airboatHref}
             cta="Book this tour"
             external
@@ -373,7 +388,7 @@ export default async function SwampPlanPage({
             eyebrow="Slow / cinematic"
             title="Covered Boat Swamp Tour"
             body="For a moodier bayou pass: shade, slower pacing, and more time to actually look around."
-            image={COVERED_BOAT_IMAGE}
+            image={swampBoatImage}
             href={links.smallBoatHref}
             cta="Book this tour"
             external
@@ -383,7 +398,7 @@ export default async function SwampPlanPage({
             eyebrow="Easy move"
             title="Swamp Tour With Pickup"
             body="For the no-car plan. Get picked up, leave the city, see the swamp, come back clean."
-            image={SWAMP_IMAGE}
+            image={frenchQuarterStreetImage}
             href={links.pickupHref}
             cta="Check availability"
             external
