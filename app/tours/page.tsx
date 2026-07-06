@@ -22,14 +22,43 @@ import { getViatorFrontendCategoryTags } from "@/lib/viator/tags";
 import { getViatorCapabilities } from "@/lib/viator/access";
 import { getViatorPolicy } from "@/lib/viator/policy";
 
+import { headers } from "next/headers";
+
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Tours and Activities | Destination Command Center",
-  description:
-    "Discover tours, attractions, excursions, and activity planning with Destination Command Center, then continue into booking with trusted partners.",
-  alternates: { canonical: "/tours" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
+  const host = hostHeader.split(":")[0];
+  const isLfse = host === "lastfrontiershoreexcursions.com" || host === "www.lastfrontiershoreexcursions.com";
+  const origin = isLfse ? "https://www.lastfrontiershoreexcursions.com" : "https://destinationcommandcenter.com";
+
+  return {
+    title: isLfse ? "Alaska Tours & Shore Excursions" : "Tours and Activities | Destination Command Center",
+    description: isLfse
+      ? "Discover and compare real Alaska cruise shore excursions in Juneau, Skagway, and Ketchikan."
+      : "Discover tours, attractions, excursions, and activity planning with Destination Command Center, then continue into booking with trusted partners.",
+    metadataBase: new URL(origin),
+    alternates: { canonical: "/tours" },
+    applicationName: isLfse ? "Last Frontier Shore Excursions" : "Destination Command Center",
+    openGraph: {
+      siteName: isLfse ? "Last Frontier Shore Excursions" : "Destination Command Center",
+      type: "website",
+      locale: "en_US",
+      url: "/tours",
+      title: isLfse ? "Alaska Tours & Shore Excursions" : "Tours and Activities | Destination Command Center",
+      description: isLfse
+        ? "Discover and compare real Alaska cruise shore excursions in Juneau, Skagway, and Ketchikan."
+        : "Discover tours, attractions, excursions, and activity planning with Destination Command Center, then continue into booking with trusted partners.",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: isLfse ? "Alaska Tours & Shore Excursions" : "Tours and Activities | Destination Command Center",
+      description: isLfse
+        ? "Discover and compare real Alaska cruise shore excursions in Juneau, Skagway, and Ketchikan."
+        : "Discover tours, attractions, excursions, and activity planning with Destination Command Center, then continue into booking with trusted partners.",
+    },
+  };
+}
 
 type ToursSearchParams = {
   city?: string;
@@ -278,11 +307,27 @@ export default async function ToursPage({
 }: {
   searchParams: Promise<ToursSearchParams>;
 }) {
+  const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
+  const host = hostHeader.split(":")[0];
+  const isLfse = host === "lastfrontiershoreexcursions.com" || host === "www.lastfrontiershoreexcursions.com";
+
   const resolvedSearch = await searchParams;
-  const portRouteSlug = resolvedSearch.port ? resolvePortToCityRouteSlug(resolvedSearch.port) : null;
-  const cityRouteSlug = portRouteSlug || (resolvedSearch.city ? resolveCityRouteSlug(resolvedSearch.city) : null);
-  const cityName = getCityName(cityRouteSlug);
   const query = (resolvedSearch.q || resolvedSearch.intent_query || "").trim();
+  const portRouteSlug = resolvedSearch.port ? resolvePortToCityRouteSlug(resolvedSearch.port) : null;
+
+  let cityRouteSlug = portRouteSlug || (resolvedSearch.city ? resolveCityRouteSlug(resolvedSearch.city) : null);
+  const allowedLfseSlugs = new Set(["juneau", "skagway", "ketchikan"]);
+
+  if (isLfse) {
+    if (!cityRouteSlug && !query) {
+      cityRouteSlug = "juneau";
+    }
+    if (cityRouteSlug && !allowedLfseSlugs.has(cityRouteSlug)) {
+      cityRouteSlug = null;
+    }
+  }
+
+  const cityName = getCityName(cityRouteSlug);
   const sort = (resolvedSearch.sort || "recommended").trim().toLowerCase();
   const currency = String(resolvedSearch.currency || "USD").trim().toUpperCase() || "USD";
   const startDate = (resolvedSearch.startDate || "").trim() || null;
@@ -326,7 +371,7 @@ export default async function ToursPage({
     .map((value) => ({ label: value, query: value }));
 
   const health = getGraphHealth();
-  const rows =
+  let rows =
     !isResultsMode
       ? listPlaceGraphSummaries(200)
           .filter((r) => r.action_counts.tours > 0)
@@ -337,7 +382,12 @@ export default async function ToursPage({
           })
           .slice(0, 48)
       : [];
-  const featuredDestinations = (cityIndex.cities || [])
+
+  if (isLfse) {
+    rows = rows.filter((r) => allowedLfseSlugs.has(r.place_slug));
+  }
+
+  let featuredDestinations = (cityIndex.cities || [])
     .filter((city) => Array.isArray(city.modes) && city.modes.includes("tourism-heavy"))
     .slice(0, 12)
     .map((city) => ({
@@ -347,6 +397,11 @@ export default async function ToursPage({
       prompt: `${city.name} tours`,
       modes: (city.modes || []).slice(0, 3),
     }));
+
+  if (isLfse) {
+    featuredDestinations = featuredDestinations.filter((d) => allowedLfseSlugs.has(d.slug));
+  }
+
   const compliantCategoryLabels = VIATOR_FRONTEND_TAGS.slice(0, 6).map((tag) => tag.label);
   const featuredViatorDestinationCount = VIATOR_DESTINATION_OPTIONS.length;
 

@@ -48,6 +48,11 @@ const WTONOT_HOSTS = new Set([
   "www.welcometoneworleanstours.com",
 ]);
 
+const LFSE_HOSTS = new Set([
+  "lastfrontiershoreexcursions.com",
+  "www.lastfrontiershoreexcursions.com",
+]);
+
 const WTONOT_ROOT_PATH = "/new-orleans/tours";
 const WTONOT_BRAND_SHELL_HEADER = "x-dcc-brand-shell";
 
@@ -138,6 +143,67 @@ function getWtonotHostRewrite(request: NextRequest) {
   // Block all other DCC/admin/operator pages on New Orleans tours domain by rewriting to /not-found
   url.pathname = "/not-found";
   return url;
+}
+
+function getLfseHostRewrite(request: NextRequest) {
+  const hostHeader = request.headers.get("x-forwarded-host") || request.nextUrl.hostname;
+  const host = hostHeader.split(":")[0];
+  if (!LFSE_HOSTS.has(host)) return null;
+
+  const pathname = request.nextUrl.pathname;
+
+  // Allow static next/image/assets resources
+  if (
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/images/") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/sitemap.xml" ||
+    pathname === "/robots.txt"
+  ) {
+    return null;
+  }
+
+  const url = request.nextUrl.clone();
+
+  // Root -> /alaska
+  if (pathname === "/") {
+    url.pathname = "/alaska";
+    return url;
+  }
+
+  // /tours -> /tours (allow)
+  if (pathname === "/tours") {
+    return url;
+  }
+
+  // /ports -> /ports (allow)
+  if (pathname === "/ports") {
+    return url;
+  }
+
+  // Allowed core Alaska cruise ports only (Juneau, Skagway, Ketchikan)
+  const allowedPorts = new Set([
+    "juneau",
+    "skagway",
+    "ketchikan"
+  ]);
+
+  if (pathname.startsWith("/ports/")) {
+    const slug = pathname.slice(7);
+    if (allowedPorts.has(slug)) {
+      return url;
+    }
+  }
+
+  // Block all other DCC/admin/operator pages on LFSE domain by rewriting to /not-found
+  url.pathname = "/not-found";
+  return url;
+}
+
+function getLfseBrandShellHeaders(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(WTONOT_BRAND_SHELL_HEADER, "lfse");
+  return requestHeaders;
 }
 
 function getWtonotBrandShellHeaders(request: NextRequest) {
@@ -381,6 +447,14 @@ function queueHandoffEvent(request: NextRequest, resolved: NonNullable<ReturnTyp
 
 // Ensure destinationcommandcenter.com/ falls through to standard Next.js routing (app/page.tsx)
 export async function proxy(request: NextRequest, event: NextFetchEvent) {
+  const hostHeader = request.headers.get("x-forwarded-host") || request.nextUrl.hostname;
+  const host = hostHeader.split(":")[0];
+
+  // Enforce www canonical host redirection for LFSE
+  if (host === "lastfrontiershoreexcursions.com") {
+    return NextResponse.redirect(`https://www.lastfrontiershoreexcursions.com${request.nextUrl.pathname}${request.nextUrl.search}`, 308);
+  }
+
   if (request.nextUrl.pathname.startsWith("/api/internal/") && !isInternalApiAuthorized(request)) {
     return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });
   }
@@ -432,6 +506,16 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     const isNotFound = wtonotRewrite.pathname === "/not-found";
     const response = NextResponse.rewrite(wtonotRewrite, {
       request: { headers: getWtonotBrandShellHeaders(request) },
+    });
+    response.headers.set("x-robots-tag", isNotFound ? "noindex, nofollow" : "index, follow");
+    return response;
+  }
+
+  const lfseRewrite = getLfseHostRewrite(request);
+  if (lfseRewrite) {
+    const isNotFound = lfseRewrite.pathname === "/not-found";
+    const response = NextResponse.rewrite(lfseRewrite, {
+      request: { headers: getLfseBrandShellHeaders(request) },
     });
     response.headers.set("x-robots-tag", isNotFound ? "noindex, nofollow" : "index, follow");
     return response;

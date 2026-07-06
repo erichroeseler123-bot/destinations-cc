@@ -22,6 +22,7 @@ import {
   buildFaqJsonLd,
   buildPlaceJsonLd,
 } from "@/lib/dcc/jsonld";
+import { headers } from "next/headers";
 
 const BASE_URL = "https://destinationcommandcenter.com";
 
@@ -43,22 +44,30 @@ export async function generateMetadata({
   const description = config.summary;
   const canonicalPath = `/ports/${port.slug}`;
 
+  const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
+  const host = hostHeader.split(":")[0];
+  const isLfse = host === "lastfrontiershoreexcursions.com" || host === "www.lastfrontiershoreexcursions.com";
+  const origin = isLfse ? "https://www.lastfrontiershoreexcursions.com" : "https://destinationcommandcenter.com";
+
   return {
     title: pageTitle,
     description,
+    metadataBase: new URL(origin),
     alternates: { canonical: canonicalPath },
+    applicationName: isLfse ? "Last Frontier Shore Excursions" : "Destination Command Center",
     openGraph: {
+      siteName: isLfse ? "Last Frontier Shore Excursions" : "Destination Command Center",
       title: pageTitle,
       description,
-      url: `${BASE_URL}${canonicalPath}`,
+      url: canonicalPath,
       type: "website",
-      images: [`${BASE_URL}/api/og?title=${encodeURIComponent(pageTitle)}`],
+      images: [`/api/og?title=${encodeURIComponent(pageTitle)}`],
     },
     twitter: {
       card: "summary_large_image",
       title: pageTitle,
       description,
-      images: [`${BASE_URL}/api/og?title=${encodeURIComponent(pageTitle)}`],
+      images: [`/api/og?title=${encodeURIComponent(pageTitle)}`],
     },
   };
 }
@@ -72,12 +81,24 @@ export default async function PortPage({
   const port = getPortBySlug(resolvedParams.slug);
   if (!port) notFound();
 
+  const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
+  const host = hostHeader.split(":")[0];
+  const isLfse = host === "lastfrontiershoreexcursions.com" || host === "www.lastfrontiershoreexcursions.com";
+
+  if (isLfse) {
+    const allowedLfseSlugs = new Set(["juneau", "skagway", "ketchikan"]);
+    if (!allowedLfseSlugs.has(port.slug)) {
+      notFound();
+    }
+  }
+
   const config = getPortAuthorityConfig(port);
   const nearbyAirports = getAirportsByPortSlug(port.slug);
   const nearbyStations = getStationsByPortSlug(port.slug);
   const pageTitle = config.heroTitle || `${port.name} Cruise Port`;
   const description = config.summary;
-  const pageUrl = `${BASE_URL}/ports/${port.slug}`;
+  const origin = isLfse ? "https://www.lastfrontiershoreexcursions.com" : "https://destinationcommandcenter.com";
+  const pageUrl = `${origin}/ports/${port.slug}`;
   const region = port.area || port.region || port.country || "Cruise region";
   const country = port.country || "Unknown";
   const entityKey = `port:${port.slug}`;
@@ -149,7 +170,7 @@ export default async function PortPage({
                 subtitle="Port Intelligence Snapshot"
                 context="port:juneau"
                 fallbackHero="/images/authority/ports/juneau/hero.webp"
-                pageUrl="https://destinationcommandcenter.com/ports/juneau"
+                pageUrl={pageUrl}
               />
             </div>
           ) : null}

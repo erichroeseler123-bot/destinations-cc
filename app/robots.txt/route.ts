@@ -9,6 +9,8 @@ const ALLOWED_HOSTS = new Set([
   "www.shuttletosomersetamphitheater.com",
   "welcometoneworleanstours.com",
   "www.welcometoneworleanstours.com",
+  "lastfrontiershoreexcursions.com",
+  "www.lastfrontiershoreexcursions.com",
 ]);
 
 export async function GET() {

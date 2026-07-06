@@ -9,26 +9,64 @@ import StatGrid from "@/app/components/StatGrid";
 import CinematicBackdrop from "@/app/components/dcc/CinematicBackdrop";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
 
-export const dynamic = "force-static";
+import { headers } from "next/headers";
 
-export const metadata: Metadata = {
-  title: "Cruise Ports and Embarkation Guides | Destination Command Center",
-  description:
-    "Find cruise ports, embarkation guidance, nearby planning, and transportation context from Destination Command Center.",
-  keywords: [
-    "cruise ports",
-    "embarkation guides",
-    "cruise port guide",
-    "ports directory",
-    "shore excursion planning",
-  ],
-  alternates: { canonical: "/ports" },
-};
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
+  const host = hostHeader.split(":")[0];
+  const isLfse = host === "lastfrontiershoreexcursions.com" || host === "www.lastfrontiershoreexcursions.com";
+  const origin = isLfse ? "https://www.lastfrontiershoreexcursions.com" : "https://destinationcommandcenter.com";
+
+  return {
+    title: isLfse ? "Alaska Cruise Ports Guide" : "Cruise Ports and Embarkation Guides | Destination Command Center",
+    description: isLfse
+      ? "Detailed guides and shore excursions for Alaska cruise ports including Juneau, Skagway, and Ketchikan."
+      : "Find cruise ports, embarkation guidance, nearby planning, and transportation context from Destination Command Center.",
+    keywords: [
+      "alaska cruise ports",
+      "alaska shore excursions",
+      "juneau excursions",
+      "ketchikan tours",
+      "skagway shore excursion",
+    ],
+    metadataBase: new URL(origin),
+    alternates: { canonical: "/ports" },
+    applicationName: isLfse ? "Last Frontier Shore Excursions" : "Destination Command Center",
+    openGraph: {
+      siteName: isLfse ? "Last Frontier Shore Excursions" : "Destination Command Center",
+      type: "website",
+      locale: "en_US",
+      url: "/ports",
+      title: isLfse ? "Alaska Cruise Ports Guide" : "Cruise Ports and Embarkation Guides | Destination Command Center",
+      description: isLfse
+        ? "Detailed guides and shore excursions for Alaska cruise ports including Juneau, Skagway, and Ketchikan."
+        : "Find cruise ports, embarkation guidance, nearby planning, and transportation context from Destination Command Center.",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: isLfse ? "Alaska Cruise Ports Guide" : "Cruise Ports and Embarkation Guides | Destination Command Center",
+      description: isLfse
+        ? "Detailed guides and shore excursions for Alaska cruise ports including Juneau, Skagway, and Ketchikan."
+        : "Find cruise ports, embarkation guidance, nearby planning, and transportation context from Destination Command Center.",
+    },
+  };
+}
 
 type Port = { slug: string; name: string; area?: string; country?: string; tags?: string[] };
 
-export default function PortsIndex() {
-  const ports = getEffectivePorts() as Port[];
+export default async function PortsIndex() {
+  const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
+  const host = hostHeader.split(":")[0];
+  const isLfse = host === "lastfrontiershoreexcursions.com" || host === "www.lastfrontiershoreexcursions.com";
+
+  let ports = getEffectivePorts() as Port[];
+  if (isLfse) {
+    const allowedLfseSlugs = new Set(["juneau", "skagway", "ketchikan"]);
+    ports = ports.filter((p) => allowedLfseSlugs.has(p.slug));
+  }
+
   const uniqueAreas = new Set(ports.map((port) => port.area).filter(Boolean));
   const usPorts = ports.filter((port) => port.country === "US").length;
 

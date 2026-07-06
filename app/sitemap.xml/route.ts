@@ -41,6 +41,25 @@ export async function GET() {
   const host = hostHeader.split(":")[0];
   const isWtonotHost = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
   const isSomersetHost = host === "shuttletosomersetamphitheater.com" || host === "www.shuttletosomersetamphitheater.com";
+  const isLfseHost = host === "lastfrontiershoreexcursions.com" || host === "www.lastfrontiershoreexcursions.com";
+
+  if (isLfseHost) {
+    const origin = `https://www.lastfrontiershoreexcursions.com`;
+    const lfsePaths = [
+      "/",
+      "/tours",
+      "/ports",
+      "/ports/juneau",
+      "/ports/skagway",
+      "/ports/ketchikan",
+    ];
+    return new Response(buildDccSitemapXml(lfsePaths, origin), {
+      headers: {
+        "Content-Type": "application/xml; charset=utf-8",
+        "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      },
+    });
+  }
 
   if (isWtonotHost) {
     const origin = `https://${host}`;
