@@ -70,20 +70,47 @@ export default async function AlaskaPage() {
       {
         slug: "juneau",
         name: "Juneau",
+        tags: "Whales • Glaciers • Helicopter tours",
+        hook: "Whales, Mendenhall Glacier, helicopter tours, and flightseeing close to the cruise docks.",
         description: "Mendenhall Glacier flights, helicopter dog sledding, and whale watching.",
+        imageUrl: "/images/travel-markets/juneau/alaska-whale-watching.jpg",
         tours: (juneauRes?.products || []).slice(0, 3),
+        curatedSearches: [
+          { label: "Whale Watching Tours", desc: "Compare whale watching excursions in Auke Bay.", q: "Juneau whale watching" },
+          { label: "Mendenhall Glacier Combos", desc: "Excursions combining the glacier with whale watching or city sights.", q: "Mendenhall Glacier" },
+          { label: "Helicopter Glacier Landings", desc: "Fly to Juneau's icefields and walk on real glaciers.", q: "Juneau helicopter" },
+          { label: "Wildlife & Flightseeing", desc: "Floatplane and boat tours focusing on bears, eagles, and fjords.", q: "Juneau wildlife" },
+        ],
       },
       {
         slug: "skagway",
         name: "Skagway",
+        tags: "Railway scenery • Gold rush history • Mountain routes",
+        hook: "White Pass railway, Yukon scenery, gold-rush history, and mountain routes.",
         description: "White Pass & Yukon Route train rides, historic tours, and wilderness trips.",
+        imageUrl: "/images/travel-markets/last-frontier/skagway-white-pass-railroad.jpg",
         tours: (skagwayRes?.products || []).slice(0, 3),
+        curatedSearches: [
+          { label: "White Pass Railway Tours", desc: "Ride the historic narrow-gauge railroad up to the Yukon.", q: "Skagway White Pass Railway" },
+          { label: "Yukon Scenery Tours", desc: "Excursions climbing through the mountains into the Yukon territory.", q: "Skagway Yukon" },
+          { label: "Gold Rush History Tours", desc: "Explore Skagway's historic streets and gold-panning sites.", q: "Skagway Gold Rush" },
+          { label: "Scenic Mountain Routes", desc: "Guided van and hiking tours along scenic mountain passes.", q: "Skagway mountain" },
+        ],
       },
       {
         slug: "ketchikan",
         name: "Ketchikan",
+        tags: "Rainforest hikes • Fjords floatplanes • Totem parks",
+        hook: "Rainforest, wildlife, totems, Misty Fjords, and floatplane-style adventure.",
         description: "Rainforest hikes, floatplane fjord flights, and wildlife totems.",
+        imageUrl: "/images/travel-markets/last-frontier/ketchikan-misty-fjords.jpg",
         tours: (ketchikanRes?.products || []).slice(0, 3),
+        curatedSearches: [
+          { label: "Misty Fjords Flightseeing", desc: "Fly by floatplane over dramatic waterfalls and deep fjords.", q: "Misty Fjords" },
+          { label: "Wildlife & Rainforest Tours", desc: "Spot eagles and salmon in Ketchikan's coastal rainforest.", q: "Ketchikan wildlife" },
+          { label: "Totem Heritage Tours", desc: "Visit historical parks containing authentic native totem poles.", q: "Ketchikan totem" },
+          { label: "Floatplane-Style Adventure", desc: "Excursions that fly or boat out to remote wilderness sights.", q: "Ketchikan floatplane" },
+        ],
       },
     ];
 
@@ -103,27 +130,67 @@ export default async function AlaskaPage() {
         </nav>
 
         {/* Hero Section */}
-        <header className="bg-slate-900 text-white py-16 px-6 relative overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.15),transparent_50%)]">
-          <div className="max-w-5xl mx-auto space-y-6 relative z-10">
-            <span className="inline-flex rounded-full bg-sky-500/10 border border-sky-400/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-sky-400">
-              Cruise Port Guides
-            </span>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tight max-w-3xl leading-[1.05]">
-              Alaska shore excursions for cruise passengers.
-            </h1>
-            <p className="text-lg md:text-xl text-slate-300 max-w-2xl font-medium leading-relaxed">
-              Compare real cruise-port tours in Juneau, Skagway, and Ketchikan with clear booking links and port-day guidance.
-            </p>
-            <div className="flex flex-wrap gap-4 pt-2">
-              <a href="#ports" className="bg-sky-600 text-white font-bold px-6 py-3 rounded-2xl hover:bg-sky-500 transition shadow-lg">
-                View Port Guides
-              </a>
-              <Link href="/tours" className="bg-white/10 text-white border border-white/20 font-bold px-6 py-3 rounded-2xl hover:bg-white/20 transition">
-                Search All Excursions
-              </Link>
+        <header className="bg-slate-900 text-white py-16 md:py-24 px-6 relative overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.15),transparent_50%)]">
+          <div className="max-w-5xl mx-auto grid md:grid-cols-12 gap-8 items-center relative z-10">
+            <div className="md:col-span-7 space-y-6">
+              <span className="inline-flex rounded-full bg-sky-500/10 border border-sky-400/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-sky-400">
+                Cruise Port Excursion Storefront
+              </span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.05]">
+                Alaska shore excursions built for your cruise day.
+              </h1>
+              <p className="text-base md:text-lg text-slate-300 font-medium leading-relaxed">
+                Compare whale watching, glacier, railway, wildlife, and flightseeing options in Juneau, Skagway, and Ketchikan — with clear provider booking links and port-day timing guidance.
+              </p>
+              <div className="flex flex-wrap gap-4 pt-2">
+                <Link href="/tours" className="bg-sky-600 text-white font-bold px-6 py-3 rounded-2xl hover:bg-sky-500 transition shadow-lg text-sm">
+                  Browse Alaska Excursions
+                </Link>
+                <a href="#ports" className="bg-white/10 text-white border border-white/20 font-bold px-6 py-3 rounded-2xl hover:bg-white/20 transition text-sm">
+                  View Cruise Port Guides
+                </a>
+              </div>
+            </div>
+            <div className="md:col-span-5 relative group">
+              <div className="absolute inset-0 bg-sky-500/10 rounded-3xl blur-2xl group-hover:bg-sky-500/20 transition" />
+              <div className="relative rounded-3xl overflow-hidden aspect-[4/3] shadow-2xl border border-white/10">
+                <img 
+                  src="/images/travel-markets/juneau/alaska-whale-watching.jpg" 
+                  alt="Alaska Whale Watching" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4">
+                  <p className="text-xs font-bold text-white uppercase tracking-wider">Auke Bay, Juneau</p>
+                  <p className="text-[10px] text-slate-300 font-medium">Verified storefront exit path active</p>
+                </div>
+              </div>
             </div>
           </div>
         </header>
+
+        {/* Popular Searches */}
+        <section className="max-w-5xl mx-auto px-6 pt-10 space-y-4">
+          <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+            Popular Alaska shore-excursion searches
+          </h3>
+          <div className="flex flex-wrap gap-3">
+            {[
+              { label: "Juneau whale watching", q: "Juneau whale watching" },
+              { label: "Mendenhall Glacier tours", q: "Mendenhall Glacier" },
+              { label: "Skagway railway tours", q: "Skagway railway" },
+              { label: "Ketchikan wildlife tours", q: "Ketchikan wildlife" },
+              { label: "Misty Fjords flightseeing", q: "Misty Fjords" },
+            ].map((search) => (
+              <Link
+                key={search.label}
+                href={`/tours?q=${encodeURIComponent(search.q)}`}
+                className="bg-white border border-slate-200 hover:border-sky-500 hover:text-sky-600 px-4 py-2 text-xs font-bold rounded-2xl transition shadow-sm text-slate-700"
+              >
+                🔍 {search.label}
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {/* Trust Strip */}
         <div className="max-w-5xl mx-auto px-6 pt-10">
@@ -133,59 +200,100 @@ export default async function AlaskaPage() {
         {/* Port list & Excursions */}
         <section id="ports" className="max-w-5xl mx-auto px-6 pt-16 space-y-16">
           <div className="space-y-2 text-center md:text-left">
-            <h2 className="text-3xl font-black tracking-tight text-slate-900">Core Alaska Cruise Ports</h2>
-            <p className="text-slate-500 max-w-xl">Choose a port to read local logistically safe day schedules or browse real-time available excursions.</p>
+            <h2 className="text-3xl font-black tracking-tight text-slate-900">Choose Your Cruise Port</h2>
+            <p className="text-slate-500 max-w-xl">Start with your port, then compare excursions that fit the way your ship day usually works.</p>
           </div>
 
           <div className="grid gap-8">
-            {portsData.map((port) => (
-              <div key={port.slug} className="bg-white rounded-3xl border border-slate-200/80 p-6 md:p-8 shadow-sm hover:shadow-md transition space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
-                  <div className="space-y-1">
-                    <h3 className="text-2xl font-black text-slate-900">{port.name} Cruise Port</h3>
-                    <p className="text-slate-500 text-sm">{port.description}</p>
+            {portsData.map((port) => {
+              const hasRealProducts = port.tours.length > 0 && !port.tours.some(t => t.product_code === "1" || t.product_code === "2");
+              return (
+                <div key={port.slug} className="bg-white rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-md transition overflow-hidden flex flex-col md:flex-row">
+                  {/* Left/Top Image Column */}
+                  <div className="md:w-1/3 min-h-[240px] relative shrink-0">
+                    <img src={port.imageUrl} alt={port.name} className="absolute inset-0 w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-slate-900/10" />
                   </div>
-                  <Link href={`/ports/${port.slug}`} className="inline-flex items-center justify-center bg-slate-900 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-slate-800 transition text-sm">
-                    View Port Logistics Guide →
-                  </Link>
-                </div>
 
-                <div className="space-y-4">
-                  <h4 className="text-xs uppercase tracking-widest text-slate-400 font-bold">Top Bookable Excursions</h4>
-                  {port.tours.length > 0 ? (
-                    <div className="grid gap-6 md:grid-cols-3">
-                      {port.tours.map((tour) => {
-                        const duration = tour.duration_minutes ? `${(tour.duration_minutes / 60).toFixed(1).replace(".0", "")} hrs` : "Varies";
-                        const price = tour.price_from ? `$${tour.price_from}` : "Varies";
-                        return (
-                          <div key={tour.product_code} className="border border-slate-100 rounded-2xl p-4 flex flex-col justify-between hover:border-sky-300 transition">
-                            <div className="space-y-3">
-                              {tour.image_url ? (
-                                <img src={tour.image_url} alt={tour.title} className="w-full h-32 object-cover rounded-xl" />
-                              ) : (
-                                <div className="w-full h-32 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 text-xs">No image</div>
-                              )}
-                              <h5 className="font-bold text-slate-950 text-sm line-clamp-2">{tour.title}</h5>
-                            </div>
-                            <div className="mt-4 pt-3 border-t border-slate-100 space-y-3">
-                              <div className="flex items-center justify-between text-xs text-slate-500">
-                                <span>{duration}</span>
-                                <span className="font-bold text-slate-900">{price}</span>
-                              </div>
-                              <a href={tour.url} target="_blank" rel="noopener noreferrer" className="w-full text-center block bg-sky-50 text-sky-700 hover:bg-sky-100 transition font-bold py-2 rounded-xl text-xs">
-                                Book on Viator
-                              </a>
-                            </div>
-                          </div>
-                        );
-                      })}
+                  {/* Right/Bottom Content Column */}
+                  <div className="p-6 md:p-8 flex-grow flex flex-col justify-between space-y-6">
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-sky-600 block">{port.tags}</span>
+                        <h3 className="text-2xl font-black text-slate-900">{port.name} Cruise Port</h3>
+                      </div>
+                      <p className="text-slate-600 text-sm leading-relaxed">{port.hook}</p>
+                      <p className="text-slate-400 text-xs italic">{port.description}</p>
                     </div>
-                  ) : (
-                    <p className="text-slate-400 text-sm">No cached tours found for this port.</p>
-                  )}
+
+                    {/* Excursions Section */}
+                    <div className="space-y-4 pt-4 border-t border-slate-100">
+                      {hasRealProducts ? (
+                        <>
+                          <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Top Excursions</h4>
+                          <div className="grid gap-4 sm:grid-cols-3">
+                            {port.tours.map((tour) => {
+                              const duration = tour.duration_minutes ? `${(tour.duration_minutes / 60).toFixed(1).replace(".0", "")} hrs` : "Varies";
+                              const price = tour.price_from ? `$${tour.price_from}` : "Varies";
+                              return (
+                                <div key={tour.product_code} className="border border-slate-100 rounded-2xl p-3 flex flex-col justify-between hover:border-sky-300 bg-slate-50/50 transition">
+                                  <div className="space-y-2">
+                                    {tour.image_url ? (
+                                      <img src={tour.image_url} alt={tour.title} className="w-full h-24 object-cover rounded-xl" />
+                                    ) : (
+                                      <img src={port.imageUrl} alt={tour.title} className="w-full h-24 object-cover rounded-xl" />
+                                    )}
+                                    <h5 className="font-bold text-slate-900 text-xs line-clamp-2 leading-snug">{tour.title}</h5>
+                                  </div>
+                                  <div className="mt-3 flex items-center justify-between text-[10px] text-slate-500 font-semibold">
+                                    <span>{duration}</span>
+                                    <span className="text-slate-800 font-bold">{price}</span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Recommended Excursion Types</h4>
+                            <Link href={`/tours?port=${port.slug}`} className="text-[10px] font-bold text-sky-600 hover:underline">
+                              View current tour options →
+                            </Link>
+                          </div>
+                          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            {port.curatedSearches.map((search) => (
+                              <Link
+                                key={search.label}
+                                href={`/tours?q=${encodeURIComponent(search.q)}`}
+                                className="border border-slate-100 rounded-2xl p-4 flex flex-col justify-between hover:border-sky-300 hover:bg-sky-50/50 bg-slate-50/30 transition text-left group"
+                              >
+                                <div className="space-y-1">
+                                  <h5 className="font-bold text-slate-900 text-xs group-hover:text-sky-600 transition">{search.label}</h5>
+                                  <p className="text-[10px] text-slate-500 leading-relaxed">{search.desc}</p>
+                                </div>
+                                <span className="text-[10px] font-bold text-sky-600 mt-3 block group-hover:underline">Search →</span>
+                              </Link>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Port CTAs */}
+                    <div className="flex flex-wrap gap-3 pt-2">
+                      <Link href={`/ports/${port.slug}`} className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-5 py-2.5 rounded-xl transition text-xs shadow-sm">
+                        View {port.name} Guide
+                      </Link>
+                      <Link href={`/tours?port=${port.slug}`} className="border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 font-bold px-5 py-2.5 rounded-xl transition text-xs shadow-sm">
+                        Browse {port.name} Tours
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
