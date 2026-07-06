@@ -7,10 +7,12 @@ const ALLOWED_HOSTS = new Set([
   "www.destinationcommandcenter.com",
   "shuttletosomersetamphitheater.com",
   "www.shuttletosomersetamphitheater.com",
+  "welcometoneworleanstours.com",
+  "www.welcometoneworleanstours.com",
 ]);
 
 export async function GET() {
-  const hostHeader = (await headers()).get("host") || "";
+  const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
   // Normalize/remove port if present
   const host = hostHeader.split(":")[0];
 

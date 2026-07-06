@@ -78,11 +78,65 @@ function getSomersetHostRewrite(request: NextRequest) {
 }
 
 function getWtonotHostRewrite(request: NextRequest) {
-  if (!WTONOT_HOSTS.has(request.nextUrl.hostname)) return null;
-  if (request.nextUrl.pathname !== "/") return null;
+  const hostHeader = request.headers.get("x-forwarded-host") || request.nextUrl.hostname;
+  const host = hostHeader.split(":")[0];
+  if (!WTONOT_HOSTS.has(host)) return null;
+
+  const pathname = request.nextUrl.pathname;
+
+  // Allow static next/image/assets resources
+  if (
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/images/") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/sitemap.xml" ||
+    pathname === "/robots.txt"
+  ) {
+    return null;
+  }
 
   const url = request.nextUrl.clone();
-  url.pathname = WTONOT_ROOT_PATH;
+
+  // Root or /tours -> /new-orleans/tours
+  if (pathname === "/" || pathname === "/tours") {
+    url.pathname = "/new-orleans/tours";
+    return url;
+  }
+
+  // Categories mapping
+  const allowedCategories = new Set([
+    "swamp-tours",
+    "airboat-tours",
+    "french-quarter-tours",
+    "food-and-cocktail-tours",
+    "ghost-and-cemetery-tours",
+    "riverboat-cruises",
+  ]);
+
+  if (pathname.startsWith("/categories/")) {
+    const slug = pathname.slice(12);
+    if (allowedCategories.has(slug)) {
+      url.pathname = `/new-orleans/categories/${slug}`;
+      return url;
+    }
+  }
+
+  // Guides mapping
+  const allowedGuides = new Set([
+    "best-new-orleans-swamp-tour",
+    "french-quarter-tour-timing",
+  ]);
+
+  if (pathname.startsWith("/guides/")) {
+    const slug = pathname.slice(8);
+    if (allowedGuides.has(slug)) {
+      url.pathname = `/new-orleans/guides/${slug}`;
+      return url;
+    }
+  }
+
+  // Block all other DCC/admin/operator pages on New Orleans tours domain by rewriting to /not-found
+  url.pathname = "/not-found";
   return url;
 }
 
@@ -375,10 +429,11 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
 
   const wtonotRewrite = getWtonotHostRewrite(request);
   if (wtonotRewrite) {
+    const isNotFound = wtonotRewrite.pathname === "/not-found";
     const response = NextResponse.rewrite(wtonotRewrite, {
       request: { headers: getWtonotBrandShellHeaders(request) },
     });
-    response.headers.set("x-robots-tag", "index, follow");
+    response.headers.set("x-robots-tag", isNotFound ? "noindex, nofollow" : "index, follow");
     return response;
   }
 

@@ -37,8 +37,33 @@ export function buildDccSitemapXml(
 }
 
 export async function GET() {
-  const host = (await headers()).get("host") || "";
+  const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
+  const host = hostHeader.split(":")[0];
+  const isWtonotHost = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
   const isSomersetHost = host === "shuttletosomersetamphitheater.com" || host === "www.shuttletosomersetamphitheater.com";
+
+  if (isWtonotHost) {
+    const origin = `https://${host}`;
+    const wtoPaths = [
+      "/",
+      "/tours",
+      "/categories/swamp-tours",
+      "/categories/airboat-tours",
+      "/categories/french-quarter-tours",
+      "/categories/food-and-cocktail-tours",
+      "/categories/ghost-and-cemetery-tours",
+      "/categories/riverboat-cruises",
+      "/guides/best-new-orleans-swamp-tour",
+      "/guides/french-quarter-tour-timing",
+    ];
+    return new Response(buildDccSitemapXml(wtoPaths, origin), {
+      headers: {
+        "Content-Type": "application/xml; charset=utf-8",
+        "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      },
+    });
+  }
+
   const origin = isSomersetHost ? `https://${host}` : SITE_IDENTITY.siteUrl;
   const dccPaths = [...new Set([...INDEXABLE_SURFACE_PATHS, ...SOMERSET_PAGE_PATHS])];
   const body = isSomersetHost

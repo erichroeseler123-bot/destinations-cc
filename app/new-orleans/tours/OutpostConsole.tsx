@@ -1,779 +1,437 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import styles from "./outpost.module.css";
-import { DIRECTORY_DATA, CATEGORIES, METADATA, ListingNode } from "./pageConfig";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { DIRECTORY_DATA, ListingNode } from "./pageConfig";
 
-export default function OutpostConsole() {
-  // Navigation & filter state
+export default function NewOrleansStorefront() {
+  // Filters state
+  const [selectedVessel, setSelectedVessel] = useState<string>("all"); // all, land, boat
+  const [selectedPickup, setSelectedPickup] = useState<string>("all"); // all, pickup, meet
+  const [selectedTimeOfDay, setSelectedTimeOfDay] = useState<string>("all"); // all, morning, afternoon, evening
+  const [selectedIntensity, setSelectedIntensity] = useState<string>("all"); // all, low, moderate
+
   const [activeCategory, setActiveCategory] = useState<string>("all");
-  const [activeFilters, setActiveFilters] = useState({
-    pickup: false,
-    late: false,
-    kids: false,
-  });
-  
-  // Host Integration state (URL query params)
-  const [hostName, setHostName] = useState<string>("");
-  const [hostFavorites, setHostFavorites] = useState<string[]>([]);
-  
-  // Time simulation
-  const [simulatedTime, setSimulatedTime] = useState<"normal" | "friday" | "sunday" | "happy">("normal");
-  const [currentTimeText, setCurrentTimeText] = useState<string>("");
-  
-  // Drawers & Modals
-  const [selectedListing, setSelectedListing] = useState<ListingNode | null>(null);
-  const [hostPortalOpen, setHostPortalOpen] = useState<boolean>(false);
-  const [isDebug, setIsDebug] = useState<boolean>(false);
-  
-  // Host Portal Form State
-  const [hostCabinName, setHostCabinName] = useState<string>("");
-  const [hostFavsChecked, setHostFavsChecked] = useState<Record<string, boolean>>({});
-  const [hostFiltersChecked, setHostFiltersChecked] = useState({
-    pickup: false,
-    late: false,
-    kids: false,
-  });
-  const [generatedLink, setGeneratedLink] = useState<string>("");
-  const [copyConfirm, setCopyConfirm] = useState<boolean>(false);
-  const [emailInput, setEmailInput] = useState<string>("");
-  const [emailStatus, setEmailStatus] = useState<string>("");
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
-  
-  // Comments state (in-memory reports)
-  const [comments, setComments] = useState<Record<string, { initials: string; text: string; time: string }[]>>({
-    "steamboat-natchez": [
-      { initials: "EL", text: "Verified. Steam organ was playing at Toulouse St. Wharf.", time: "10 mins ago" },
-      { initials: "KB", text: "Crowded today but the jazz band was incredible.", time: "2 hours ago" },
-    ],
-    "airboat-swamp": [
-      { initials: "JM", text: "Alligators are active! The captain knew the bayou perfectly.", time: "1 hour ago" },
-    ],
-    "ghost-cemetery": [
-      { initials: "TX", text: "Voodoo history walk was amazing. Guide had a real candle lantern.", time: "3 hours ago" },
-    ]
-  });
-  const [commentInitialsInput, setCommentInitialsInput] = useState<string>("");
-  const [commentTextInput, setCommentTextInput] = useState<string>("");
 
-  // Refs for printing
-  const printAreaRef = useRef<HTMLDivElement>(null);
+  // NOLA categories definition
+  const CATEGORIES = [
+    { id: "all", label: "All Tours", slug: "tours", icon: "⚜️" },
+    { id: "swamp", label: "Swamp Tours", slug: "swamp-tours", icon: "🐊" },
+    { id: "airboat", label: "Airboat Runs", slug: "airboat-tours", icon: "🚤" },
+    { id: "history", label: "French Quarter Walks", slug: "french-quarter-tours", icon: "⛪" },
+    { id: "food", label: "Food & Cocktail Crawls", slug: "food-and-cocktail-tours", icon: "🍹" },
+    { id: "ghost", label: "Ghost & Cemetery Tours", slug: "ghost-and-cemetery-tours", icon: "👻" },
+    { id: "cruise", label: "Mississippi Cruises", slug: "riverboat-cruises", icon: "🚢" },
+  ];
 
-  // Parse URL parameters on load
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const hostParam = params.get("host") || "";
-      const favsParam = params.get("favs") || "";
-      setIsDebug(params.get("debug") === "true" || params.get("simulate") === "true");
-      
-      // Parse filters if present
-      const filterParam = params.get("filter") || "";
-      if (filterParam) {
-        const filters = filterParam.split(",");
-        setActiveFilters({
-          pickup: filters.includes("pickup"),
-          late: filters.includes("late"),
-          kids: filters.includes("kids"),
-        });
-      }
-
-      if (hostParam) {
-        setHostName(decodeURIComponent(hostParam));
-      }
-      if (favsParam) {
-        setHostFavorites(favsParam.split(","));
-      }
-    }
-  }, []);
-
-  // Update time display
-  useEffect(() => {
-    const updateTime = () => {
-      if (simulatedTime === "normal") {
-        const now = new Date();
-        setCurrentTimeText(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " (LOCAL)");
-      } else if (simulatedTime === "friday") {
-        setCurrentTimeText("06:00 PM (FRI SIMULATION)");
-      } else if (simulatedTime === "sunday") {
-        setCurrentTimeText("09:00 AM (SUN SIMULATION)");
-      } else if (simulatedTime === "happy") {
-        setCurrentTimeText("04:00 PM (MON-THU SIMULATION)");
-      }
-    };
-    updateTime();
-    const interval = setInterval(updateTime, 60000);
-    return () => clearInterval(interval);
-  }, [simulatedTime]);
-
-  // Compute status open/closed based on clock
-  const getListingStatus = (item: ListingNode) => {
-    let hour = new Date().getHours();
-    let day = new Date().getDay();
-
-    if (simulatedTime === "friday") {
-      hour = 18; // 6 PM
-      day = 5;   // Friday
-    } else if (simulatedTime === "sunday") {
-      hour = 9;  // 9 AM
-      day = 0;   // Sunday
-    } else if (simulatedTime === "happy") {
-      hour = 16; // 4 PM
-      day = 1;   // Monday
-    }
-
-    const { open, close } = item.hours;
-
-    // 24-hour calculations
-    const isOpen = open === 0 && close === 24 ? true : (hour >= open && hour < close);
-
-    if (!isOpen) {
-      return { text: "CLOSED", type: styles.badgeClosed };
-    }
-
-    // Specific category alerts
-    if (item.category === "swamp") {
-      return { text: "⚡️ TOURS ACTIVE", type: styles.badgeActive };
-    }
-    if (item.category === "ghost" && hour >= 18) {
-      return { text: "👻 GHOST WALK LIVE", type: styles.badgeActive };
-    }
-    if (item.category === "food" && hour >= 11 && hour <= 15) {
-      return { text: "🍳 TASTING LIVE", type: styles.badgeActive };
-    }
-    if (item.category === "cruise") {
-      return { text: "🚢 ON THE WATER", type: styles.badgeActive };
-    }
-    if (item.category === "living-here") {
-      return { text: "⚜️ WISDOM LOADED", type: styles.badgeOpen };
-    }
-    
-    return { text: "OPEN NOW", type: styles.badgeOpen };
-  };
-
-  // Filter & sort data
+  // Helper to determine filters
   const filteredListings = DIRECTORY_DATA.filter((item) => {
-    // Category check
-    if (activeCategory !== "all" && item.category !== activeCategory) {
+    // 1. Category check
+    if (activeCategory !== "all") {
+      if (activeCategory === "airboat") {
+        if (item.category !== "swamp" || !item.name.toLowerCase().includes("airboat")) return false;
+      } else if (activeCategory === "swamp") {
+        if (item.category !== "swamp" || item.name.toLowerCase().includes("airboat")) return false;
+      } else {
+        if (item.category !== activeCategory) return false;
+      }
+    }
+
+    // 2. Filter out essentials or guides that aren't public tours
+    if (item.category === "essentials" || item.category === "living-here" || item.category === "incubator") {
       return false;
     }
-    
-    // Telemetry filters
-    if (activeFilters.pickup && item.logistics["Hotel Pickup"] !== "Yes") {
-      return false;
+
+    // 3. Vessel / Location type check
+    if (selectedVessel === "boat") {
+      if (item.category !== "swamp" && item.category !== "cruise") return false;
     }
-    if (activeFilters.late && item.hours.close < 21 && item.hours.close !== 24) {
-      return false;
+    if (selectedVessel === "land") {
+      if (item.category === "swamp" || item.category === "cruise") return false;
     }
-    if (activeFilters.kids && item.logistics["Content Fit"] === "Adults only") {
-      return false;
+
+    // 4. Hotel pickup check
+    if (selectedPickup === "pickup") {
+      if (item.logistics["Hotel Pickup"] !== "Yes") return false;
     }
-    
+    if (selectedPickup === "meet") {
+      if (item.logistics["Hotel Pickup"] === "Yes") return false;
+    }
+
+    // 5. Time of day check
+    if (selectedTimeOfDay === "morning") {
+      if (item.hours.open >= 12) return false;
+    }
+    if (selectedTimeOfDay === "afternoon") {
+      if (item.hours.open < 11 || item.hours.open >= 16) return false;
+    }
+    if (selectedTimeOfDay === "evening") {
+      if (item.hours.open < 16) return false;
+    }
+
+    // 6. Intensity / Walking check
+    if (selectedIntensity === "low") {
+      if (item.logistics["Walking"] && !item.logistics["Walking"].includes("leisurely")) return false;
+      if (item.category === "history" || item.category === "ghost") return false; // walking intensive
+    }
+    if (selectedIntensity === "moderate") {
+      if (item.category !== "history" && item.category !== "ghost" && item.category !== "food") return false;
+    }
+
     return true;
   });
 
-  // Sort: Host Favorites bubble to the top
-  const sortedListings = [...filteredListings].sort((a, b) => {
-    const aFav = hostFavorites.includes(a.id);
-    const bFav = hostFavorites.includes(b.id);
-    if (aFav && !bFav) return -1;
-    if (!aFav && bFav) return 1;
-    return 0;
-  });
-
-  // Generate Host welcome kit links
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const hostVal = encodeURIComponent(hostCabinName.trim());
-      const favsVal = Object.keys(hostFavsChecked).filter(k => hostFavsChecked[k]).join(",");
-      
-      const filterParts = [];
-      if (hostFiltersChecked.pickup) filterParts.push("pickup");
-      if (hostFiltersChecked.late) filterParts.push("late");
-      if (hostFiltersChecked.kids) filterParts.push("kids");
-      const filterVal = filterParts.join(",");
-
-      if (!hostCabinName.trim()) {
-        setGeneratedLink("Enter property name to generate...");
-        setQrCodeUrl("");
-        return;
-      }
-
-      let link = `${window.location.origin}${window.location.pathname}?host=${hostVal}`;
-      if (favsVal) link += `&favs=${favsVal}`;
-      if (filterVal) link += `&filter=${filterVal}`;
-
-      setGeneratedLink(link);
-      setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(link)}`);
-    }
-  }, [hostCabinName, hostFavsChecked, hostFiltersChecked]);
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(generatedLink);
-    setCopyConfirm(true);
-    setTimeout(() => setCopyConfirm(false), 2000);
-  };
-
-  const handleEmailSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!emailInput) return;
-    
-    setEmailStatus("SENDING WELCOME KIT...");
-    setTimeout(() => {
-      setEmailStatus(`SENT TO ${emailInput.toUpperCase()} SUCCESSFULLY!`);
-      setEmailInput("");
-      setTimeout(() => setEmailStatus(""), 4000);
-    }, 1200);
-  };
-
-  const handleCommentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedListing || !commentInitialsInput || !commentTextInput) return;
-
-    const listId = selectedListing.id;
-    const newComment = {
-      initials: commentInitialsInput.trim().toUpperCase(),
-      text: commentTextInput.trim(),
-      time: "Just now"
-    };
-
-    setComments(prev => ({
-      ...prev,
-      [listId]: [newComment, ...(prev[listId] || [])]
-    }));
-
-    setCommentInitialsInput("");
-    setCommentTextInput("");
-  };
-
-  const executePrint = () => {
-    if (typeof window !== "undefined") {
-      window.print();
-    }
-  };
-
-  // Custom icons mapping
-  const renderCategoryIcon = (catId: string) => {
-    const cat = CATEGORIES.find(c => c.id === catId);
-    return cat ? cat.icon : "⚜️";
-  };
-
   return (
-    <div id="main-content" className={styles.consoleContainer}>
-      <div className={styles.consoleWrapper}>
-        
-        {/* HUD header */}
-        <header className={styles.hudHeader}>
-          <div className={styles.hudBrand}>
-            <h1 className={styles.hudTitle}>
-              ⚜️ NOLA TOURS <span>OUTPOST</span>
-            </h1>
-            <span className={styles.statusDot}></span>
-          </div>
-          <div className={styles.hudSubtitle}>
-            NOLA DIRECTORY // LOCAL TIME: {currentTimeText}
-          </div>
-        </header>
-
-        {/* Host Welcome Card */}
-        {hostName && (
-          <section className={styles.hostBanner}>
-            <div className={styles.hostWelcomeText}>
-              Welcome to New Orleans! Guests of <strong>{hostName}</strong> get direct access to recommendations.
+    <div className="bg-slate-50 min-h-screen text-slate-800 font-sans">
+      
+      {/* Brand Header */}
+      <header className="border-b border-slate-200 bg-white py-4 px-6 shadow-sm sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">⚜️</span>
+            <div>
+              <h1 className="text-lg font-black text-slate-900 tracking-tight leading-none uppercase">
+                Welcome To New Orleans Tours
+              </h1>
+              <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
+                Public Tour Storefront & Guide
+              </span>
             </div>
-            <div className={styles.hostWelcomeSub}>
-              Handled Abundance by your host.
-            </div>
-          </section>
-        )}
-
-        {/* Question board */}
-        <main className={styles.questionBoard}>
-          <div className={styles.boardLabel}>SELECT INTENT</div>
-          <h2 className={styles.questionTitle}>What kind of tour do you need right now?</h2>
-          
-          <div className={styles.categoryGrid}>
-            {CATEGORIES.slice(1).map((cat) => (
-              <button 
-                key={cat.id} 
-                className={`${styles.categoryBtn} ${activeCategory === cat.id ? styles.categoryBtnActive : ""}`}
-                onClick={() => {
-                  setActiveCategory(prev => prev === cat.id ? "all" : cat.id);
-                  setSelectedListing(null);
-                }}
-              >
-                <span className={styles.categoryBtnIcon}>{cat.icon}</span>
-                <span className={styles.categoryBtnText}>{cat.label}</span>
-              </button>
-            ))}
           </div>
-        </main>
+          <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
+            <button onClick={() => { setActiveCategory("swamp"); }} className="hover:text-emerald-600 transition-colors">Swamps</button>
+            <button onClick={() => { setActiveCategory("history"); }} className="hover:text-emerald-600 transition-colors">French Quarter</button>
+            <button onClick={() => { setActiveCategory("food"); }} className="hover:text-emerald-600 transition-colors">Food & Drink</button>
+            <button onClick={() => { setActiveCategory("cruise"); }} className="hover:text-emerald-600 transition-colors">River Cruises</button>
+          </nav>
+        </div>
+      </header>
 
-        {/* Filters Hud */}
-        <div style={{ display: "flex", gap: "8px", marginBottom: "20px", flexWrap: "wrap" }}>
-          <button 
-            className={`${styles.actionBtn} ${activeFilters.pickup ? styles.actionBtnPrimary : ""}`}
-            style={{ fontSize: "10px", padding: "6px 10px" }}
-            onClick={() => setActiveFilters(prev => ({ ...prev, pickup: !prev.pickup }))}
-          >
-            🚌 Hotel Pickup
-          </button>
-          <button 
-            className={`${styles.actionBtn} ${activeFilters.late ? styles.actionBtnPrimary : ""}`}
-            style={{ fontSize: "10px", padding: "6px 10px" }}
-            onClick={() => setActiveFilters(prev => ({ ...prev, late: !prev.late }))}
-          >
-            🌙 Late (Open past 9 PM)
-          </button>
-          <button 
-            className={`${styles.actionBtn} ${activeFilters.kids ? styles.actionBtnPrimary : ""}`}
-            style={{ fontSize: "10px", padding: "6px 10px" }}
-            onClick={() => setActiveFilters(prev => ({ ...prev, kids: !prev.kids }))}
-          >
-            👶 Kid Friendly
-          </button>
-          {(activeFilters.pickup || activeFilters.late || activeFilters.kids) && (
-            <button 
-              className={styles.actionBtn} 
-              style={{ fontSize: "10px", padding: "6px 10px", borderColor: "var(--accent-red)", color: "var(--accent-red)" }}
-              onClick={() => setActiveFilters({ pickup: false, late: false, kids: false })}
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-emerald-900 to-slate-950 text-white py-16 px-6 text-center">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl text-white uppercase">
+            New Orleans tours that fit your trip.
+          </h2>
+          <p className="mt-6 text-lg text-emerald-100 max-w-2xl mx-auto leading-relaxed">
+            Compare swamp tours, French Quarter walks, food tours, river cruises, and more with clear timing and booking links.
+          </p>
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <a 
+              href="#decision-board" 
+              className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-xl transition-colors text-sm uppercase tracking-wider"
             >
-              Reset Filters
+              Start with a tour type
+            </a>
+            <a 
+              href="#tours-grid" 
+              className="bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-xl transition-colors border border-white/20 text-sm uppercase tracking-wider"
+            >
+              Browse tours
+            </a>
+            <button 
+              onClick={() => {
+                setActiveCategory("swamp");
+                document.getElementById("tours-grid")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="bg-emerald-500/25 hover:bg-emerald-500/40 text-emerald-300 font-bold py-3 px-6 rounded-xl transition-colors text-sm uppercase tracking-wider"
+            >
+              Find swamp tours
             </button>
-          )}
+          </div>
+        </div>
+      </section>
+
+      {/* Category Links Grid */}
+      <section className="max-w-6xl mx-auto py-12 px-6">
+        <h3 className="text-xl font-extrabold text-slate-900 uppercase tracking-wider mb-6 text-center">
+          Explore Tour Types
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => {
+                setActiveCategory(cat.id);
+                document.getElementById("tours-grid")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className={`p-4 rounded-2xl border text-center transition-all ${
+                activeCategory === cat.id 
+                  ? "border-emerald-600 bg-emerald-50/50 shadow-sm" 
+                  : "border-slate-200 bg-white hover:border-slate-300"
+              }`}
+            >
+              <span className="block text-3xl mb-2">{cat.icon}</span>
+              <span className="block text-xs font-bold text-slate-700 leading-tight">{cat.label}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Decision Board (Trip-Fit Filter) */}
+      <section id="decision-board" className="max-w-6xl mx-auto px-6 mb-12">
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 shadow-sm">
+          <h3 className="text-lg font-bold text-slate-900 uppercase tracking-wider mb-6 flex items-center gap-2">
+            ⚜️ Tour Decision Helper
+          </h3>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            
+            {/* Vessel Type */}
+            <div>
+              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Water vs Land</label>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setSelectedVessel("all")} 
+                  className={`flex-1 text-xs font-bold py-2 rounded-xl transition-all ${selectedVessel === "all" ? "bg-slate-900 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                >
+                  All
+                </button>
+                <button 
+                  onClick={() => setSelectedVessel("boat")} 
+                  className={`flex-1 text-xs font-bold py-2 rounded-xl transition-all ${selectedVessel === "boat" ? "bg-slate-900 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                >
+                  Boat
+                </button>
+                <button 
+                  onClick={() => setSelectedVessel("land")} 
+                  className={`flex-1 text-xs font-bold py-2 rounded-xl transition-all ${selectedVessel === "land" ? "bg-slate-900 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                >
+                  Land
+                </button>
+              </div>
+            </div>
+
+            {/* Hotel Pickup */}
+            <div>
+              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Hotel Pickup</label>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setSelectedPickup("all")} 
+                  className={`flex-1 text-xs font-bold py-2 rounded-xl transition-all ${selectedPickup === "all" ? "bg-slate-900 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                >
+                  All
+                </button>
+                <button 
+                  onClick={() => setSelectedPickup("pickup")} 
+                  className={`flex-1 text-xs font-bold py-2 rounded-xl transition-all ${selectedPickup === "pickup" ? "bg-slate-900 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                >
+                  Shuttle
+                </button>
+                <button 
+                  onClick={() => setSelectedPickup("meet")} 
+                  className={`flex-1 text-xs font-bold py-2 rounded-xl transition-all ${selectedPickup === "meet" ? "bg-slate-900 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                >
+                  Meet there
+                </button>
+              </div>
+            </div>
+
+            {/* Time of Day */}
+            <div>
+              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Departure Window</label>
+              <div className="flex gap-1.5">
+                <button 
+                  onClick={() => setSelectedTimeOfDay("all")} 
+                  className={`flex-1 text-xs font-bold py-2 rounded-xl transition-all ${selectedTimeOfDay === "all" ? "bg-slate-900 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                >
+                  Any
+                </button>
+                <button 
+                  onClick={() => setSelectedTimeOfDay("morning")} 
+                  className={`flex-1 text-[10px] font-bold py-2 rounded-xl transition-all ${selectedTimeOfDay === "morning" ? "bg-slate-900 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                >
+                  Morning
+                </button>
+                <button 
+                  onClick={() => setSelectedTimeOfDay("afternoon")} 
+                  className={`flex-1 text-[10px] font-bold py-2 rounded-xl transition-all ${selectedTimeOfDay === "afternoon" ? "bg-slate-900 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                >
+                  PM
+                </button>
+                <button 
+                  onClick={() => setSelectedTimeOfDay("evening")} 
+                  className={`flex-1 text-[10px] font-bold py-2 rounded-xl transition-all ${selectedTimeOfDay === "evening" ? "bg-slate-900 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                >
+                  Night
+                </button>
+              </div>
+            </div>
+
+            {/* Walking Intensity */}
+            <div>
+              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Walking Level</label>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setSelectedIntensity("all")} 
+                  className={`flex-1 text-xs font-bold py-2 rounded-xl transition-all ${selectedIntensity === "all" ? "bg-slate-900 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                >
+                  All
+                </button>
+                <button 
+                  onClick={() => setSelectedIntensity("low")} 
+                  className={`flex-1 text-xs font-bold py-2 rounded-xl transition-all ${selectedIntensity === "low" ? "bg-slate-900 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                >
+                  Light / Boat
+                </button>
+                <button 
+                  onClick={() => setSelectedIntensity("moderate")} 
+                  className={`flex-1 text-xs font-bold py-2 rounded-xl transition-all ${selectedIntensity === "moderate" ? "bg-slate-900 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"}`}
+                >
+                  Walking
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* Tours Grid */}
+      <section id="tours-grid" className="max-w-6xl mx-auto px-6 mb-16">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-2xl font-black text-slate-900">
+            {activeCategory === "all" ? "Live New Orleans Excursions" : CATEGORIES.find(c => c.id === activeCategory)?.label}
+          </h3>
+          <span className="text-xs font-bold text-slate-400 bg-slate-200/50 px-2.5 py-1 rounded-lg">
+            {filteredListings.length} matching tours
+          </span>
         </div>
 
-        {/* Results list */}
-        <section className={styles.resultsPanel}>
-          <div className={styles.resultsHeader}>
-            <div className={styles.resultsHeaderTitle}>
-              {activeCategory === "all" ? "All Telemetry Logs" : CATEGORIES.find(c => c.id === activeCategory)?.label}
-            </div>
-            <div className={styles.resultsHeaderCount}>
-              {sortedListings.length} LOCATIONS ROUTED
-            </div>
-          </div>
-
-          <div className={styles.listingsContainer}>
-            {sortedListings.length > 0 ? (
-              sortedListings.map((item) => {
-                const status = getListingStatus(item);
-                const isFav = hostFavorites.includes(item.id);
-                return (
-                  <div key={item.id} className={`${styles.listingCard} ${isFav ? styles.listingCardFav : ""}`}>
-                    <div className={styles.listingHeader}>
-                      <div>
-                        <h3 className={`${styles.listingTitle} ${isFav ? styles.listingTitleFav : ""}`}>
-                          {isFav && "★ "} {item.name}
-                        </h3>
-                        <div className={styles.listingVibe}>{item.vibe}</div>
-                        {item.rating && (
-                          <div className={styles.listingRating}>
-                            <span>★ {item.rating.toFixed(1)}</span>
-                            <span style={{ color: "var(--text-secondary)" }}>({item.reviewsCount} reviews)</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className={styles.listingMeta}>
-                        <span className={`${styles.statusBadge} ${status.type}`}>
-                          {status.text}
-                        </span>
-                        {item.price && (
-                          <div className={styles.listingPrice}>
-                            {item.price}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className={styles.listingLogistics}>
-                      <div className={styles.logisticsRow}>
-                        <span className={styles.logisticsKey}>Location</span>
-                        <span className={styles.logisticsVal}>{item.location}</span>
-                      </div>
-                      {Object.entries(item.logistics).map(([k, v]) => (
-                        <div key={k} className={styles.logisticsRow}>
-                          <span className={styles.logisticsKey}>{k}</span>
-                          <span className={styles.logisticsVal}>{v}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className={styles.listingActions}>
-                      <button 
-                        className={`${styles.actionBtn} ${styles.actionBtnPrimary}`}
-                        onClick={() => setSelectedListing(item)}
-                      >
-                        [ Details & Reports ]
-                      </button>
-                      <a 
-                        href={item.menuUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.actionBtn}
-                      >
-                        [ Book Tour ]
-                      </a>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div style={{ textAlign: "center", color: "var(--text-secondary)", padding: "30px", fontSize: "13px", fontFamily: "var(--font-mono)" }}>
-                NO DIRECTORY MATCHES REGISTERED IN ZONE.
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Time Simulator Panel */}
-        {isDebug && (
-          <div className={styles.timeshiftDebugBar}>
-            <div className={styles.timeshiftLabel}>⚡️ SIMULATE SYSTEM CLOCK DECK</div>
-            <div className={styles.timeshiftBtns}>
-              <button 
-                className={`${styles.timeshiftBtn} ${simulatedTime === "normal" ? styles.timeshiftBtnActive : ""}`}
-                onClick={() => setSimulatedTime("normal")}
-              >
-                REAL CLOCK
-              </button>
-              <button 
-                className={`${styles.timeshiftBtn} ${simulatedTime === "friday" ? styles.timeshiftBtnActive : ""}`}
-                onClick={() => setSimulatedTime("friday")}
-              >
-                FRIDAY NIGHT GHOSTS (6 PM)
-              </button>
-              <button 
-                className={`${styles.timeshiftBtn} ${simulatedTime === "sunday" ? styles.timeshiftBtnActive : ""}`}
-                onClick={() => setSimulatedTime("sunday")}
-              >
-                SUNDAY SWAMPS (9 AM)
-              </button>
-              <button 
-                className={`${styles.timeshiftBtn} ${simulatedTime === "happy" ? styles.timeshiftBtnActive : ""}`}
-                onClick={() => setSimulatedTime("happy")}
-              >
-                MON-THU TASTINGS (4 PM)
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Host portal link */}
-        {!hostName && (
-          <footer className={styles.utilityRow}>
-            <button 
-              className={styles.hostPortalTrigger}
-              onClick={() => {
-                setHostPortalOpen(true);
-                const initialChecked: Record<string, boolean> = {};
-                DIRECTORY_DATA.forEach(d => {
-                  initialChecked[d.id] = hostFavorites.includes(d.id);
-                });
-                setHostFavsChecked(initialChecked);
-                setHostCabinName(hostName);
-              }}
-            >
-              ⚜️ STR Host Welcome Book Portal
-            </button>
-          </footer>
-        )}
-
-        {/* Info / Comment details drawer */}
-        {selectedListing && (
-          <div className={styles.infoDrawer}>
-            <div className={styles.drawerPanel}>
-              <div className={styles.drawerHeader}>
-                <div>
-                  <div className={styles.drawerCategory}>{selectedListing.category.toUpperCase()}</div>
-                  <h2 className={styles.drawerTitle}>{selectedListing.name}</h2>
-                  <div className={styles.drawerVibe}>{selectedListing.vibe}</div>
-                </div>
-                <button className={styles.drawerClose} onClick={() => setSelectedListing(null)}>&times;</button>
-              </div>
-
-              <div className={styles.drawerBody}>
-                <div className={styles.drawerMetaRow}>
-                  <span className={styles.drawerLocation}>
-                    📍 {selectedListing.location}
-                  </span>
-                </div>
-
-                <div className={styles.drawerSection}>
-                  <div className={styles.sectionTitle}>Curated Live Telemetry</div>
-                  <div className={styles.drawerLogisticsGrid} style={{ background: "var(--color-bg-darkest)", border: "1px solid var(--color-border-dim)", padding: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                    {Object.entries(selectedListing.logistics).map(([k, v]) => (
-                      <div key={k} style={{ display: "flex", fontSize: "12px" }}>
-                        <span style={{ width: "120px", fontFamily: "var(--font-mono)", color: "var(--text-secondary)" }}>{k}</span>
-                        <span style={{ flex: 1, color: "var(--text-primary)" }}>{v}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Comments / Reports section */}
-                <div className={styles.drawerSection} style={{ borderTop: "1px solid var(--color-border-dim)", paddingTop: "16px", marginTop: "16px" }}>
-                  <div className={styles.sectionTitle}>Local Transmissions (Comments)</div>
-                  
-                  <div className={styles.commentsList} style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px", maxHeight: "200px", overflowY: "auto" }}>
-                    {(comments[selectedListing.id] || []).length > 0 ? (
-                      (comments[selectedListing.id] || []).map((c, i) => (
-                        <div key={i} className={styles.transmissionLog}>
-                          <div className={styles.transmissionHeader}>
-                            <span>LOG // ID: {c.initials}</span>
-                            <span>{c.time}</span>
-                          </div>
-                          <div style={{ color: "var(--text-primary)" }}>{c.text}</div>
-                        </div>
-                      ))
-                    ) : (
-                      <div style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--text-secondary)", opacity: 0.6 }}>
-                        NO REPORTS RECEIVED FROM THE FIELD.
-                      </div>
+        {filteredListings.length > 0 ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredListings.map((item) => (
+              <article key={item.id} className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between hover:border-emerald-500/50 transition-colors">
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                      {item.price ? `${item.price}` : "Book Excursion"}
+                    </span>
+                    {item.rating && (
+                      <span className="text-xs font-bold text-slate-500">
+                        ★ {item.rating} ({item.reviewsCount} reviews)
+                      </span>
                     )}
                   </div>
-
-                  {/* Add report form */}
-                  <form onSubmit={handleCommentSubmit} className={styles.commentForm}>
-                    <input 
-                      type="text" 
-                      placeholder="CALLSIGN (INITIALS)"
-                      value={commentInitialsInput}
-                      onChange={(e) => setCommentInitialsInput(e.target.value)}
-                      maxLength={15}
-                      required 
-                      className={styles.commentInput} 
-                      style={{ fontSize: "11px", marginBottom: "6px", width: "120px" }}
-                    />
-                    <div style={{ display: "flex", gap: "8px" }}>
-                      <input 
-                        type="text" 
-                        placeholder="TRANSMIT LOCAL STATUS UPDATE..."
-                        value={commentTextInput}
-                        onChange={(e) => setCommentTextInput(e.target.value)}
-                        required 
-                        className={styles.commentInput} 
-                        style={{ flex: 1, fontSize: "11px" }}
-                      />
-                      <button 
-                        type="submit" 
-                        className={`${styles.actionBtn} ${styles.actionBtnPrimary}`}
-                        style={{ padding: "6px 12px", flex: "none", fontSize: "11px" }}
-                      >
-                        SEND
-                      </button>
+                  <h4 className="text-xl font-bold text-slate-900 mb-2">{item.name}</h4>
+                  <p className="text-xs text-slate-400 font-bold mb-4 uppercase tracking-wider">{item.vibe}</p>
+                  
+                  <div className="border-t border-slate-100 pt-4 space-y-2 text-xs text-slate-600">
+                    {item.logistics["Duration"] && (
+                      <div className="flex justify-between">
+                        <span className="font-medium text-slate-400">Duration:</span>
+                        <span>{item.logistics["Duration"]}</span>
+                      </div>
+                    )}
+                    {item.logistics["Hotel Pickup"] && (
+                      <div className="flex justify-between">
+                        <span className="font-medium text-slate-400">Hotel Pickup:</span>
+                        <span>{item.logistics["Hotel Pickup"]}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="font-medium text-slate-400">Location:</span>
+                      <span>{item.location}</span>
                     </div>
-                  </form>
+                  </div>
                 </div>
-
-                <div className={styles.drawerActions} style={{ marginTop: "20px" }}>
+                
+                <div className="p-6 border-t border-slate-100 bg-slate-50/50">
                   <a 
-                    href={selectedListing.menuUrl} 
+                    href={item.menuUrl} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className={`${styles.actionBtn} ${styles.actionBtnPrimary}`}
-                    style={{ width: "100%", display: "block" }}
+                    className="block w-full text-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-sm transition-colors uppercase tracking-wider"
                   >
-                    DISPATCH TO OFFICIAL BOOKING PATH
+                    Book Tour →
                   </a>
                 </div>
-              </div>
-            </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center max-w-lg mx-auto">
+            <span className="text-4xl block mb-4">🐊</span>
+            <h4 className="text-lg font-bold text-slate-900 mb-2">No matching tours found</h4>
+            <p className="text-sm text-slate-500 mb-6">Try resetting some filters (like Hotel Pickup or Walking Level) to view more New Orleans excursions.</p>
+            <button 
+              onClick={() => {
+                setSelectedVessel("all");
+                setSelectedPickup("all");
+                setSelectedTimeOfDay("all");
+                setSelectedIntensity("all");
+                setActiveCategory("all");
+              }}
+              className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 px-6 rounded-xl text-xs transition-colors"
+            >
+              Reset All Filters
+            </button>
           </div>
         )}
+      </section>
 
-        {/* Host Welcome book portal Modal */}
-        {hostPortalOpen && (
-          <div className={styles.modalOverlay}>
-            <div className={styles.modalContent}>
-              <div className={styles.modalHeader}>
-                <h2 className={styles.modalTitle}>STR Welcome Book Portal</h2>
-                <button className={styles.modalClose} onClick={() => setHostPortalOpen(false)}>&times;</button>
-              </div>
-
-              <div className={styles.modalBody}>
-                <p style={{ fontSize: "12px", color: "var(--text-secondary)", lineHeight: "1.4", margin: 0 }}>
-                  Create guestbook convenience. Generate a custom welcome link featuring your property name and checked recommendations.
-                </p>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Property / STR Cabin Name</label>
-                  <input 
-                    type="text" 
-                    className={styles.formInput} 
-                    value={hostCabinName} 
-                    onChange={(e) => setHostCabinName(e.target.value)}
-                    placeholder="e.g. Hotel Monteleone, Place d'Armes STR"
-                  />
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Select Recommended Spots</label>
-                  <div className={styles.selectionList}>
-                    {DIRECTORY_DATA.filter(d => d.category !== "essentials" && d.category !== "living-here").map((d) => (
-                      <label key={d.id} className={styles.selectionItem}>
-                        <input 
-                          type="checkbox" 
-                          className={styles.selectionCheckbox}
-                          checked={!!hostFavsChecked[d.id]}
-                          onChange={(e) => {
-                            const val = e.target.checked;
-                            setHostFavsChecked(prev => ({ ...prev, [d.id]: val }));
-                          }}
-                        />
-                        <span className={styles.selectionName}>{d.name} ({d.vibe})</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Pre-Filters for Guest View</label>
-                  <div style={{ background: "var(--color-bg-darkest)", border: "1px solid var(--color-border-dim)", padding: "10px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <label className={styles.selectionItem} style={{ padding: 0 }}>
-                      <input 
-                        type="checkbox" 
-                        className={styles.selectionCheckbox}
-                        checked={hostFiltersChecked.pickup}
-                        onChange={(e) => {
-                          const val = e.target.checked;
-                          setHostFiltersChecked(prev => ({ ...prev, pickup: val }));
-                        }}
-                      />
-                      <span className={styles.selectionName}>Show only locations with hotel pickup</span>
-                    </label>
-                    <label className={styles.selectionItem} style={{ padding: 0 }}>
-                      <input 
-                        type="checkbox" 
-                        className={styles.selectionCheckbox}
-                        checked={hostFiltersChecked.late}
-                        onChange={(e) => {
-                          const val = e.target.checked;
-                          setHostFiltersChecked(prev => ({ ...prev, late: val }));
-                        }}
-                      />
-                      <span className={styles.selectionName}>Show only late-night open spots</span>
-                    </label>
-                    <label className={styles.selectionItem} style={{ padding: 0 }}>
-                      <input 
-                        type="checkbox" 
-                        className={styles.selectionCheckbox}
-                        checked={hostFiltersChecked.kids}
-                        onChange={(e) => {
-                          const val = e.target.checked;
-                          setHostFiltersChecked(prev => ({ ...prev, kids: val }));
-                        }}
-                      />
-                      <span className={styles.selectionName}>Show only kid-friendly activities</span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Generated result */}
-                <div className={styles.linkGeneratorResult}>
-                  <label className={styles.formLabel} style={{ color: "var(--accent-green)" }}>Custom Guest URL</label>
-                  <div className={styles.outputLinkBox}>
-                    {generatedLink}
-                  </div>
-                  {hostCabinName.trim() && (
-                    <button 
-                      className={`${styles.actionBtn} ${styles.actionBtnPrimary}`}
-                      onClick={copyToClipboard}
-                    >
-                      {copyConfirm ? "COPIED TO CLIPBOARD" : "COPY GUEST LINK"}
-                    </button>
-                  )}
-                </div>
-
-                {/* Share by email */}
-                <form onSubmit={handleEmailSend} className={styles.formGroup} style={{ borderTop: "1px solid var(--color-border-dim)", paddingTop: "12px" }}>
-                  <label className={styles.formLabel}>Email Welcome Kit</label>
-                  <div style={{ display: "flex", gap: "6px" }}>
-                    <input 
-                      type="email" 
-                      className={styles.formInput} 
-                      placeholder="e.g. host@example.com" 
-                      value={emailInput}
-                      onChange={(e) => setEmailInput(e.target.value)}
-                      required
-                      style={{ flex: 1 }}
-                    />
-                    <button type="submit" className={styles.actionBtn} style={{ flex: "none" }}>
-                      SEND KIT
-                    </button>
-                  </div>
-                  {emailStatus && (
-                    <div style={{ fontSize: "10px", fontFamily: "var(--font-mono)", color: "var(--accent-green)", marginTop: "4px" }}>
-                      {emailStatus}
-                    </div>
-                  )}
-                </form>
-
-                {/* QR code printing */}
-                {qrCodeUrl && (
-                  <div className={styles.qrContainer}>
-                    <div className={styles.qrCodeBox}>
-                      <img src={qrCodeUrl} alt="Welcome QR Code" style={{ width: "100%", height: "100%" }} />
-                    </div>
-                    <button 
-                      className={styles.actionBtn} 
-                      onClick={executePrint}
-                      style={{ color: "var(--accent-orange)", borderColor: "var(--accent-orange)", width: "100%" }}
-                    >
-                      Print Welcome Counter Card
-                    </button>
-                  </div>
-                )}
-              </div>
+      {/* Guide / Decision Layer Links */}
+      <section className="max-w-6xl mx-auto px-6 mb-16">
+        <h3 className="text-xl font-extrabold text-slate-900 uppercase tracking-wider mb-6 text-center">
+          New Orleans Excursion Guides
+        </h3>
+        <div className="grid gap-6 sm:grid-cols-2">
+          
+          {/* Guide 1 */}
+          <article className="bg-white rounded-3xl border border-slate-200 p-6 flex flex-col justify-between shadow-sm">
+            <div>
+              <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-2">Excursion Advice</span>
+              <h4 className="text-lg font-bold text-slate-900 mb-2">How to Choose the Best New Orleans Swamp Tour</h4>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                Compare covered pontoon cruises with high-speed airboats. Learn what fits your travel group, family, or physical needs.
+              </p>
             </div>
-          </div>
-        )}
+            <div className="mt-6">
+              <Link 
+                href="/guides/best-new-orleans-swamp-tour" 
+                className="inline-flex items-center text-sm font-bold text-emerald-600 hover:text-emerald-700"
+              >
+                Read Swamp Tour Guide →
+              </Link>
+            </div>
+          </article>
 
-        {/* Crawlable structural SEO Footer */}
-        <footer className={styles.consoleFooter}>
-          <div className={styles.footerGrid}>
-            <div className={styles.footerCol}>
-              <h4>NEW ORLEANS SWAMP & BAYOU</h4>
-              <p>Compare high-speed airboats, covered tour boats, and hotel-pickup swamp excursions departing Decatur St or CBD zones.</p>
+          {/* Guide 2 */}
+          <article className="bg-white rounded-3xl border border-slate-200 p-6 flex flex-col justify-between shadow-sm">
+            <div>
+              <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-2">Timing Advice</span>
+              <h4 className="text-lg font-bold text-slate-900 mb-2">French Quarter Tour Timing Guide</h4>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                Timing walks, food tours, ghost legends, and river cruises block-by-block. Avoid the heavy heat and align with daylight profiles.
+              </p>
             </div>
-            <div className={styles.footerCol}>
-              <h4>GHOSTS & FRENCH QUARTER HIST</h4>
-              <p>Locate nighttime ghost walks, voodoo legend routes, St. Louis Cemetery guides, and architectural promenades across NOLA.</p>
+            <div className="mt-6">
+              <Link 
+                href="/guides/french-quarter-tour-timing" 
+                className="inline-flex items-center text-sm font-bold text-emerald-600 hover:text-emerald-700"
+              >
+                Read Timing Guide →
+              </Link>
             </div>
-            <div className={styles.footerCol}>
-              <h4>LOCAL LIFE SUPPORT & INTAKE</h4>
-              <p>Direct coordinates for FQ pharmacies, Tulane emergency medical centers, local taxi lines, and late-night amenities.</p>
-            </div>
-          </div>
-          <div className={styles.footerCopyright}>
-            <span>© 2026 NEW ORLEANS TOURS OUTPOST. ALL DATA VERIFIED FOR REAL-TIME ACCURACY.</span>
-            {isDebug && (
-              <span style={{ fontSize: "8px", fontFamily: "var(--font-mono)", opacity: 0.5, letterSpacing: "0.5px" }}>
-                [ SEARCH ENGINE CRAWLER SYNC: ACTIVE. STRUCTURAL DATA IS COMPILED AND VALIDATED TO PREVENT CRAWLER MAP MISALIGNMENT. ]
-              </span>
-            )}
-          </div>
-        </footer>
+          </article>
 
-        {/* Hidden card layout for printer stylesheet */}
-        <div ref={printAreaRef} className={styles.printWelcomeCard}>
-          <div className={styles.printTitle}>Welcome, Guests!</div>
-          <div className={styles.printSub}>
-            We've set up a customized local directory of our favorite New Orleans tours, restaurants, ghost walks, and swamp excursions for you.
-            <br /><br />
-            Scan the QR code below to access the live command-center and check real-time open status:
-          </div>
-          {qrCodeUrl && (
-            <img className={styles.printQr} src={qrCodeUrl} alt="Guest Welcome QR Code" />
-          )}
-          <div className={styles.printInstructions}>
-            Provided by the hosts of <strong>{hostCabinName || hostName || "Your Guest Room"}</strong>.
-            <br />
-            Scan. Decide. Explore.
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-900 text-slate-400 py-12 px-6 border-t border-slate-800 text-center">
+        <div className="max-w-4xl mx-auto">
+          <p className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
+            ⚜️ Welcome To New Orleans Tours
+          </p>
+          <p className="text-xs leading-relaxed max-w-xl mx-auto">
+            Bookings are handled in association with authorized Viator and local tour operator partners. Tour availability, pricing, and timing fluctuate seasonally depending on delta river conditions and festival calendars.
+          </p>
+          <div className="mt-6 text-[10px] text-slate-500 uppercase tracking-wider">
+            © 2026 Welcome To New Orleans Tours. All rights reserved.
           </div>
         </div>
+      </footer>
 
-      </div>
     </div>
   );
 }
