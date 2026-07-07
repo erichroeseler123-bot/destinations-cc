@@ -87,23 +87,7 @@ function PlanCard({
         <div className="wts-card-topline">{eyebrow}</div>
         <h3>{title}</h3>
         {operatorName ? <p className="wts-operator-name" style={{ margin: 0, fontWeight: 700, color: "#0f8f68", fontSize: "11px" }}>{operatorName}</p> : null}
-        
-        <div className="wts-spec-grid">
-          <div className="wts-spec-item">
-            <span className="wts-spec-label">Duration</span>
-            <span className="wts-spec-value">Check details</span>
-          </div>
-          <div className="wts-spec-item">
-            <span className="wts-spec-label">From Price</span>
-            <span className="wts-spec-value">See provider</span>
-          </div>
-          <div className="wts-spec-item">
-            <span className="wts-spec-label">Availability</span>
-            <span className="wts-spec-value">Check dates</span>
-          </div>
-        </div>
-
-        <p>{body}</p>
+        <p className="wts-tour-description" style={{ fontSize: "13px", color: "#475569", margin: "4px 0 12px 0", lineHeight: "1.5" }}>{body}</p>
         <Link
           href={href}
           className={classes}
@@ -121,15 +105,15 @@ function PlanCard({
 const getProductImage = (productId: string) => {
   switch (productId) {
     case "ragincajun-airboat":
-      return { src: "/images/boat-chooser/airboat-swamp.png", alt: "Ragin Cajun airboat swamp tour" };
+      return { src: "/images/boat-chooser/airboat-swamp.png", alt: "Airboat Tour" };
     case "ragincajun-covered-boat":
-      return { src: "/images/boat-chooser/covered-boat-swamp.png", alt: "Ragin Cajun covered swamp boat tour" };
+      return { src: "/images/boat-chooser/covered-boat-swamp.png", alt: "Covered Swamp Boat" };
     case "ragincajun-private-boat":
-      return { src: "/images/boat-chooser/swamp-boat.png", alt: "Ragin Cajun private covered tour" };
+      return { src: "/images/boat-chooser/swamp-boat.png", alt: "Private Covered Tour" };
     case "southernstyle-swamp":
-      return { src: "/images/boat-chooser/hotel-pickup-swamp-boat.png", alt: "Southern Style swamp tour with hotel pickup" };
+      return { src: "/images/boat-chooser/hotel-pickup-swamp-boat.png", alt: "Plantation Tour" };
     case "southernstyle-city-tour":
-      return { src: "/images/boat-chooser/french-quarter-street.jpg", alt: "Southern Style New Orleans city tour" };
+      return { src: "/images/boat-chooser/french-quarter-street.jpg", alt: "City Tour" };
     default:
       return undefined;
   }
@@ -174,23 +158,7 @@ function AvailabilityWidgetCard({
         </div>
         <h3>{title}</h3>
         {operatorName ? <p className="wts-operator-name" style={{ margin: 0, fontWeight: 700, color: "#0f8f68", fontSize: "11px" }}>{operatorName}</p> : null}
-
-        <div className="wts-spec-grid">
-          <div className="wts-spec-item">
-            <span className="wts-spec-label">Duration</span>
-            <span className="wts-spec-value">Check details</span>
-          </div>
-          <div className="wts-spec-item">
-            <span className="wts-spec-label">From Price</span>
-            <span className="wts-spec-value">See provider</span>
-          </div>
-          <div className="wts-spec-item">
-            <span className="wts-spec-label">Availability</span>
-            <span className="wts-spec-value">Check dates</span>
-          </div>
-        </div>
-
-        <p>{body}</p>
+        <p className="wts-tour-description" style={{ fontSize: "13px", color: "#475569", margin: "4px 0 12px 0", lineHeight: "1.5" }}>{body}</p>
         <div data-warm-transfer-click={trackingId}>
           {companyShortname ? (
             <FareHarborWidget

@@ -23,8 +23,8 @@ export const SITE_CONFIG = {
       id: "ragincajun-airboat",
       companyShortname: "ragincajuntours",
       flowId: "940162",
-      title: "Ragin Cajun Airboat Tour",
-      description: "Use this if speed, wind, and a louder, high-energy ride are the point of the trip.",
+      title: "Airboat Tour",
+      description: "Fast, open-air swamp ride for travelers who want the most action and wind-in-your-face energy.",
       eyebrow: "Speed-first option",
       type: "airboat"
     },
@@ -33,8 +33,8 @@ export const SITE_CONFIG = {
       companyShortname: "ragincajuntours",
       itemId: "590176",
       flowId: "392449",
-      title: "Ragin Cajun Covered Swamp Boat",
-      description: "Better fit for shade, calmer pacing, and easier conversation on the water.",
+      title: "Covered Swamp Boat",
+      description: "A calmer swamp ride with shade and easier conversation, good for families and laid-back groups.",
       eyebrow: "Comfort-first option",
       type: "boat"
     },
@@ -43,8 +43,8 @@ export const SITE_CONFIG = {
       companyShortname: "ragincajuntours",
       itemId: "603090",
       flowId: "392449",
-      title: "Ragin Cajun Private Covered Tour",
-      description: "A private shaded excursion tailored for family and friend groups.",
+      title: "Private Covered Tour",
+      description: "A private swamp option for groups that want more control over timing, space, and pace.",
       eyebrow: "Private group option",
       type: "boat"
     },
@@ -53,9 +53,9 @@ export const SITE_CONFIG = {
       companyShortname: "southernstyletours",
       itemId: "83002",
       flowId: "4344",
-      title: "Southern Style Swamp Tour",
-      description: "Classic New Orleans swamp excursion with optional French Quarter pickup.",
-      eyebrow: "Pickup-friendly option",
+      title: "Plantation Tour",
+      description: "A history-focused tour outside the city for visitors who want to see more of Louisiana beyond New Orleans.",
+      eyebrow: "Plantation Tour",
       type: "boat"
     },
     {
@@ -63,9 +63,9 @@ export const SITE_CONFIG = {
       companyShortname: "southernstyletours",
       itemId: "51942",
       flowId: "4344",
-      title: "Southern Style New Orleans City Tour",
-      description: "Explore the French Quarter, Garden District, and historic landmarks with local guides.",
-      eyebrow: "City exploration",
+      title: "City Tour",
+      description: "A simple New Orleans overview for first-time visitors who want the city layout before or after other tours.",
+      eyebrow: "City Tour",
       type: "city"
     }
   ] as SwampFareHarborProduct[],

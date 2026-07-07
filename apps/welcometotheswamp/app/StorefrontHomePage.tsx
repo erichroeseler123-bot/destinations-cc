@@ -5,6 +5,7 @@ import type {
   ProviderDisclosureConfig,
   TrustStripConfig,
 } from "@/app/components/network/types";
+import Link from "next/link";
 
 function StorefrontLink({
   href,
@@ -17,6 +18,14 @@ function StorefrontLink({
   className: string;
   external?: boolean;
 }) {
+  const isInternal = href.startsWith("/");
+  if (isInternal) {
+    return (
+      <Link href={href} className={className}>
+        {label}
+      </Link>
+    );
+  }
   return (
     <a
       href={href}
@@ -75,31 +84,7 @@ function TourCard({ card }: { card: CommercialCardConfig }) {
         <div className="wts-card-topline">{card.category}</div>
         <h3>{card.title}</h3>
         {card.subtitle ? <p className="wts-operator-name" style={{ margin: 0, fontWeight: 700, color: "#0f8f68", fontSize: "11px" }}>{card.subtitle}</p> : null}
-        
-        <div className="wts-spec-grid">
-          <div className="wts-spec-item">
-            <span className="wts-spec-label">Duration</span>
-            <span className="wts-spec-value">Check details</span>
-          </div>
-          <div className="wts-spec-item">
-            <span className="wts-spec-label">From Price</span>
-            <span className="wts-spec-value">See provider</span>
-          </div>
-          <div className="wts-spec-item">
-            <span className="wts-spec-label">Availability</span>
-            <span className="wts-spec-value">Check dates</span>
-          </div>
-        </div>
-
-        {card.decisionReason ? <div className="wts-best-for">{card.decisionReason}</div> : null}
-        {card.tags?.length ? (
-          <div className="wts-chip-row">
-            {card.tags.map((tag) => (
-              <span key={tag}>{tag}</span>
-            ))}
-          </div>
-        ) : null}
-        <p className="wts-provider-note">{card.disclosure}</p>
+        <p className="wts-tour-description" style={{ fontSize: "13px", color: "#475569", margin: "4px 0 12px 0", lineHeight: "1.5" }}>{card.disclosure}</p>
         <StorefrontLink
           href={card.cta.href}
           label={card.cta.label}
