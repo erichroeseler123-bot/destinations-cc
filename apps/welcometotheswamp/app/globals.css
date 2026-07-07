@@ -2594,6 +2594,9 @@ body {
 
 /* Responsive adjustments */
 @media (max-width: 899px) {
+  .nav-links {
+    display: none !important;
+  }
   .wts-hero {
     min-height: auto !important;
     background: #0f172a !important;
