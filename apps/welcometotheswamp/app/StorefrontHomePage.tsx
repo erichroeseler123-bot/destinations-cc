@@ -44,12 +44,31 @@ function TrustBadges({ config }: { config?: TrustStripConfig }) {
   );
 }
 
+const getProductImage = (productId: string) => {
+  switch (productId) {
+    case "ragincajun-airboat":
+      return { src: "/images/boat-chooser/airboat-swamp.png", alt: "Ragin Cajun airboat swamp tour" };
+    case "ragincajun-covered-boat":
+      return { src: "/images/boat-chooser/covered-boat-swamp.png", alt: "Ragin Cajun covered swamp boat tour" };
+    case "ragincajun-private-boat":
+      return { src: "/images/boat-chooser/swamp-boat.png", alt: "Ragin Cajun private covered tour" };
+    case "southernstyle-swamp":
+      return { src: "/images/boat-chooser/hotel-pickup-swamp-boat.png", alt: "Southern Style swamp tour with hotel pickup" };
+    case "southernstyle-city-tour":
+      return { src: "/images/boat-chooser/french-quarter-street.jpg", alt: "Southern Style New Orleans city tour" };
+    default:
+      return undefined;
+  }
+};
+
 function TourCard({ card }: { card: CommercialCardConfig }) {
+  const image = getProductImage(card.id);
+
   return (
     <article className="wts-tour-card">
-      {card.image ? (
+      {image ? (
         <div className="wts-tour-image">
-          <img src={card.image.src} alt={card.image.alt} loading="lazy" />
+          <img src={image.src} alt={image.alt} loading="lazy" />
         </div>
       ) : null}
       <div className="wts-tour-copy">

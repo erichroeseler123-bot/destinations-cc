@@ -118,7 +118,25 @@ function PlanCard({
   );
 }
 
+const getProductImage = (productId: string) => {
+  switch (productId) {
+    case "ragincajun-airboat":
+      return { src: "/images/boat-chooser/airboat-swamp.png", alt: "Ragin Cajun airboat swamp tour" };
+    case "ragincajun-covered-boat":
+      return { src: "/images/boat-chooser/covered-boat-swamp.png", alt: "Ragin Cajun covered swamp boat tour" };
+    case "ragincajun-private-boat":
+      return { src: "/images/boat-chooser/swamp-boat.png", alt: "Ragin Cajun private covered tour" };
+    case "southernstyle-swamp":
+      return { src: "/images/boat-chooser/hotel-pickup-swamp-boat.png", alt: "Southern Style swamp tour with hotel pickup" };
+    case "southernstyle-city-tour":
+      return { src: "/images/boat-chooser/french-quarter-street.jpg", alt: "Southern Style New Orleans city tour" };
+    default:
+      return undefined;
+  }
+};
+
 function AvailabilityWidgetCard({
+  id,
   title,
   body,
   tourUrl,
@@ -129,6 +147,7 @@ function AvailabilityWidgetCard({
   itemId,
   flowId,
 }: {
+  id: string;
   title: string;
   body: string;
   tourUrl: string;
@@ -140,9 +159,15 @@ function AvailabilityWidgetCard({
   flowId?: string | number;
 }) {
   const operatorName = companyShortname === "southernstyletours" ? "Southern Style Tours" : (companyShortname === "ragincajuntours" ? "Ragin Cajun Tours" : null);
+  const image = getProductImage(id);
 
   return (
     <article className="wts-tour-card">
+      {image ? (
+        <div className="wts-tour-image">
+          <img src={image.src} alt={image.alt} loading="lazy" />
+        </div>
+      ) : null}
       <div className="wts-tour-copy">
         <div className="wts-card-topline">
           {companyShortname ? "Live FareHarbor availability" : "Live GetYourGuide availability"}
@@ -317,6 +342,7 @@ export default async function SwampPlanPage({
               {products.map((product) => (
                 <AvailabilityWidgetCard
                   key={product.id}
+                  id={product.id}
                   title={product.title}
                   body={product.description}
                   tourUrl=""
@@ -333,6 +359,7 @@ export default async function SwampPlanPage({
                <div className="wts-tour-grid">
                  {airboatAvailabilityTourUrl ? (
                    <AvailabilityWidgetCard
+                     id="ragincajun-airboat"
                      title="Airboat swamp tour"
                      body="Use this if speed, wind, and a louder ride are the point of the trip."
                      tourUrl={airboatAvailabilityTourUrl}
@@ -342,6 +369,7 @@ export default async function SwampPlanPage({
                  ) : null}
                  {boatAvailabilityTourUrl ? (
                    <AvailabilityWidgetCard
+                     id="ragincajun-covered-boat"
                      title="Covered swamp boat"
                      body="Use this if shade, slower water, and a calmer ride are the better fit."
                      tourUrl={boatAvailabilityTourUrl}
