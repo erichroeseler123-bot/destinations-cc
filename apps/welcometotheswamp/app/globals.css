@@ -2596,14 +2596,18 @@ body {
 @media (max-width: 899px) {
   .wts-hero {
     min-height: auto !important;
+    background: #0f172a !important;
   }
   .wts-hero-media {
-    position: relative !important;
-    min-height: 240px !important;
+    display: none !important;
   }
   .wts-hero-copy {
-    margin: 16px !important;
+    margin: 0 !important;
     padding: 24px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
   }
 }
 
