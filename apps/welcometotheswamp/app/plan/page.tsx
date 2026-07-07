@@ -74,7 +74,6 @@ function PlanCard({
 }) {
   const isFareHarbor = href.includes("fareharbor.com/embeds/book/");
   const classes = isFareHarbor ? "wts-button wts-button-card fh-book" : "wts-button wts-button-card";
-  const duration = title.toLowerCase().includes("city") ? "3 Hours" : "2 Hours";
   const operatorName = href.includes("southernstyletours") ? "Southern Style Tours" : (href.includes("ragincajuntours") ? "Ragin Cajun Tours" : null);
 
   return (
@@ -92,15 +91,15 @@ function PlanCard({
         <div className="wts-spec-grid">
           <div className="wts-spec-item">
             <span className="wts-spec-label">Duration</span>
-            <span className="wts-spec-value">{duration}</span>
+            <span className="wts-spec-value">Check details</span>
           </div>
           <div className="wts-spec-item">
             <span className="wts-spec-label">From Price</span>
-            <span className="wts-spec-value">Check Dates</span>
+            <span className="wts-spec-value">See provider</span>
           </div>
           <div className="wts-spec-item">
             <span className="wts-spec-label">Availability</span>
-            <span className="wts-spec-value" style={{ color: "#166534" }}>Live Dates</span>
+            <span className="wts-spec-value">Check dates</span>
           </div>
         </div>
 
@@ -140,7 +139,6 @@ function AvailabilityWidgetCard({
   itemId?: string | number;
   flowId?: string | number;
 }) {
-  const duration = title.toLowerCase().includes("city") ? "3 Hours" : "2 Hours";
   const operatorName = companyShortname === "southernstyletours" ? "Southern Style Tours" : (companyShortname === "ragincajuntours" ? "Ragin Cajun Tours" : null);
 
   return (
@@ -155,15 +153,15 @@ function AvailabilityWidgetCard({
         <div className="wts-spec-grid">
           <div className="wts-spec-item">
             <span className="wts-spec-label">Duration</span>
-            <span className="wts-spec-value">{duration}</span>
+            <span className="wts-spec-value">Check details</span>
           </div>
           <div className="wts-spec-item">
             <span className="wts-spec-label">From Price</span>
-            <span className="wts-spec-value">Check Dates</span>
+            <span className="wts-spec-value">See provider</span>
           </div>
           <div className="wts-spec-item">
             <span className="wts-spec-label">Availability</span>
-            <span className="wts-spec-value" style={{ color: "#166534" }}>Live Dates</span>
+            <span className="wts-spec-value">Check dates</span>
           </div>
         </div>
 

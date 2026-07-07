@@ -45,8 +45,6 @@ function TrustBadges({ config }: { config?: TrustStripConfig }) {
 }
 
 function TourCard({ card }: { card: CommercialCardConfig }) {
-  const duration = card.id.includes("city-tour") ? "3 Hours" : "2 Hours";
-
   return (
     <article className="wts-tour-card">
       {card.image ? (
@@ -62,15 +60,15 @@ function TourCard({ card }: { card: CommercialCardConfig }) {
         <div className="wts-spec-grid">
           <div className="wts-spec-item">
             <span className="wts-spec-label">Duration</span>
-            <span className="wts-spec-value">{duration}</span>
+            <span className="wts-spec-value">Check details</span>
           </div>
           <div className="wts-spec-item">
             <span className="wts-spec-label">From Price</span>
-            <span className="wts-spec-value">Check Dates</span>
+            <span className="wts-spec-value">See provider</span>
           </div>
           <div className="wts-spec-item">
             <span className="wts-spec-label">Availability</span>
-            <span className="wts-spec-value" style={{ color: "#166534" }}>Live Dates</span>
+            <span className="wts-spec-value">Check dates</span>
           </div>
         </div>
 
