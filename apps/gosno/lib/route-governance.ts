@@ -2791,6 +2791,46 @@ const GOSNO_ROUTE_GOVERNANCE = [
     priority: 0.6,
     changeFrequency: "weekly",
   },
+  {
+    path: "/colorado-ski-resort-transportation",
+    publishState: "indexable",
+    networkRole: "satellite",
+    handoffPolicy: "bidirectional",
+    priority: 0.9,
+    changeFrequency: "weekly",
+  },
+  {
+    path: "/denver-airport-to-colorado-ski-resorts",
+    publishState: "indexable",
+    networkRole: "satellite",
+    handoffPolicy: "bidirectional",
+    priority: 0.9,
+    changeFrequency: "weekly",
+  },
+  {
+    path: "/colorado-springs-airport-to-colorado-ski-resorts",
+    publishState: "indexable",
+    networkRole: "satellite",
+    handoffPolicy: "bidirectional",
+    priority: 0.9,
+    changeFrequency: "weekly",
+  },
+  {
+    path: "/private-ski-shuttle-colorado",
+    publishState: "indexable",
+    networkRole: "satellite",
+    handoffPolicy: "bidirectional",
+    priority: 0.9,
+    changeFrequency: "weekly",
+  },
+  {
+    path: "/denver-airport-ski-shuttle-with-gear",
+    publishState: "indexable",
+    networkRole: "satellite",
+    handoffPolicy: "bidirectional",
+    priority: 0.9,
+    changeFrequency: "weekly",
+  },
 ] as const satisfies readonly RouteGovernanceEntry[];
 
 const GOSNO_ROUTE_GOVERNANCE_INDEX = createRouteGovernanceIndex(GOSNO_ROUTE_GOVERNANCE);
