@@ -69,6 +69,7 @@ These brands are responsible for their own customer-facing execution paths, oper
 | **shuttletosomersetamphitheater.com** | `www.shuttletosomersetamphitheater.com` | Direct-Service | Somerset private shuttle | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `needs-owner-decision` | `proposed` | `unverified` | `code-supports-host-aware-sitemap / live-unverified` | Private group lead form | Alias shift unverified | `not-live-verified` |
 | **ectomsp.com** | `ectomsp.com` | Direct-Service | Eau Claire to MSP airport ride | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `needs-owner-decision` | `proposed` | `unverified` | `unverified` | Airport transport booking | Spelling: ectomsp.com / ectoMSP | `not-live-verified` |
 | **bluehillsoutpost.com** | `bluehillsoutpost.com` | Local Drop | Outpost supply booking | `unverified` | `unverified` | `unverified` | `unverified` | `unverified` | `parked-or-unresolved` | `proposed` | `unverified` | `unverified` | Manual booking / local drop | Non-travel classification | `not-live-verified` |
+| **cruisepromenade.com / www.cruisepromenade.com** | `cruisepromenade.com` | Satellite Market | Social cruise planning & excursions | `cruisepromenade` | `unverified` | `unverified` | `cruisepromenade` | `/home/erichroeseler123/.gemini/antigravity/scratch/cruisepromenade` | `live-verified-native` | `vercel-project-metadata` | Static sitemap URL | dynamic sitemap | Direct detail routing / roster | None | 2026-07-08 |
 
 ## Governance Rule
 
