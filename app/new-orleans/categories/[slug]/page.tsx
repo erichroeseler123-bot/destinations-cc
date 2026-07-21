@@ -110,6 +110,10 @@ export default async function CategoryPage({ params }: Props) {
 
   const products = DIRECTORY_DATA.filter(config.filterFn);
 
+  if (products.length === 0) {
+    notFound();
+  }
+
   return (
     <>
       <JsonLd
