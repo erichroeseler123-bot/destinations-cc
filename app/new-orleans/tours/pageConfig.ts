@@ -26,7 +26,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     flowId: "4344",
     title: "City Tour Of New Orleans",
     category: "City Tours",
-    operatorName: "Southern Style",
+    operatorName: "Southern Style Tours",
     description: "A comprehensive overview of New Orleans covering the French Quarter, Garden District, and more.",
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg"
   },
@@ -37,9 +37,9 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     flowId: "4344",
     title: "Oak Alley Or Laura Plantation Tour",
     category: "Plantation Tours",
-    operatorName: "Southern Style",
+    operatorName: "Southern Style Tours",
     description: "Journey outside the city to explore historic Louisiana plantations and learn their complex history.",
-    imageUrl: "/images/travel-markets/new-orleans/swamp-plantation-combo.png"
+    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg"
   },
   {
     id: "ragincajun-covered-boat",
@@ -59,7 +59,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     title: "Ragin Cajun Airboat Options",
     category: "Airboat Rides",
     operatorName: "Ragin Cajun Tours",
-    description: "A high-speed, thrilling open-air ride into the shallow marshes for close wildlife encounters.",
+    description: "Explore Louisiana wetlands aboard an airboat and review the available tour options.",
     imageUrl: "/images/travel-markets/new-orleans/airboat-swamp.png",
     ctaLabel: "View Airboat Options →"
   }
