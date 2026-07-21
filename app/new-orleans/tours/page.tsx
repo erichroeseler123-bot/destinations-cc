@@ -6,7 +6,7 @@ import {
   buildCollectionPageJsonLd,
   buildWebPageJsonLd,
 } from "@/lib/dcc/jsonld";
-import { NEW_ORLEANS_TOURS_PATH, METADATA, CATEGORIES } from "./pageConfig";
+import { NEW_ORLEANS_TOURS_PATH, METADATA, STOREFRONT_PRODUCTS } from "./pageConfig";
 
 import { headers } from "next/headers";
 
@@ -32,10 +32,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 function JsonLdGraph() {
-  const categoryItems = CATEGORIES.slice(1).map((item) => ({
-    name: item.label,
-    description: `Browse tours under the ${item.label} category in New Orleans.`,
-    url: `${NEW_ORLEANS_TOURS_PATH}?category=${item.id}`,
+  const productItems = STOREFRONT_PRODUCTS.map((item) => ({
+    name: item.title,
+    description: item.description,
+    url: `${NEW_ORLEANS_TOURS_PATH}#${item.id}`,
   }));
 
   return (
@@ -46,8 +46,7 @@ function JsonLdGraph() {
           buildWebPageJsonLd({
             path: NEW_ORLEANS_TOURS_PATH,
             name: "Welcome To New Orleans Tours",
-            description:
-              "Compare and book New Orleans swamp tours, airboat runs, French Quarter history walks, food crawls, ghost stories, and riverboat cruises.",
+            description: METADATA.description,
             dateModified: "2026-06-29",
             isPartOfPath: "/new-orleans",
           }),
@@ -57,10 +56,9 @@ function JsonLdGraph() {
           ]),
           buildCollectionPageJsonLd({
             path: NEW_ORLEANS_TOURS_PATH,
-            name: "Welcome To New Orleans Tour Categories",
-            description:
-              "Welcome To New Orleans tour categories and visitor experiences.",
-            items: categoryItems,
+            name: "Welcome To New Orleans Tours",
+            description: METADATA.description,
+            items: productItems,
           }),
         ],
       }}
