@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node ./scripts/check-env.js --mode=dev && next dev",
     "start": "next start",
-    "prebuild": "node ./scripts/check-env.js --mode=build && tsx scripts/check-required-deploy-env.ts",
+    "prebuild": "node ./scripts/check-env.js --mode=build",
     "build": "next build",
     "clean": "rm -rf .next out .turbo",
     "rebuild": "npm run clean && npm run build",

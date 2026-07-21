@@ -6,7 +6,11 @@ const path = require("node:path");
 const root = process.cwd();
 const contractPath = path.join(root, "docs", "env-contract.json");
 const modeArg = process.argv.find((arg) => arg.startsWith("--mode="));
-const mode = (modeArg ? modeArg.split("=")[1] : "dev").toLowerCase();
+let mode = (modeArg ? modeArg.split("=")[1] : "dev").toLowerCase();
+
+if (mode === "build" && process.env.VERCEL_ENV === "production") {
+  mode = "prod";
+}
 const modeLevels = {
   build: new Set(["CRITICAL"]),
   dev: new Set(["CRITICAL", "LOCAL_SMOKE"]),
