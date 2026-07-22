@@ -11,7 +11,7 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "heroTitle": "City Tours of New Orleans",
     "heroSubtitle": "Discover the French Quarter, Garden District, and beyond.",
     "openingAnswer": "A city tour is the perfect way to get your bearings in New Orleans. Whether you want to explore the architecture, the history, or the culture, local guides bring the city to life.",
-    "topCta": null,
+    "topCta": "/tours/city-tour-of-new-orleans",
     "secondaryCta": null,
     "whoItIsFor": "City tours are great for first-time visitors, history buffs, and anyone wanting to see the major landmarks without navigating traffic.",
     "whoShouldChooseSomethingElse": null,
@@ -34,12 +34,21 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "relatedAreaIds": [],
     "disclosure": "We are an independent marketplace. The city tours listed here are operated by verified local partners.",
     "faqs": [],
-    "metadata": null,
+    "metadata": {
+      "title": "City Tours of New Orleans | Local Expert Guides",
+      "description": "Explore the architecture, history, and culture of New Orleans with a comprehensive city tour.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/city-tours",
+      "robots": "index, follow",
+      "openGraphTitle": "City Tours of New Orleans | Local Expert Guides",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/city-tours",
+      "twitterTitle": "City Tours of New Orleans | Local Expert Guides"
+    },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
+
 },
   "swamp-tours": {
     "id": "swamp-tours",
@@ -51,7 +60,7 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "heroTitle": "New Orleans Swamp Tours",
     "heroSubtitle": "Experience the wild side of Louisiana.",
     "openingAnswer": "Just a short drive from the French Quarter lies a completely different world. Swamp tours take you deep into the bayous where alligators, wild boars, and exotic birds thrive.",
-    "topCta": null,
+    "topCta": "/swamp-tours",
     "secondaryCta": null,
     "whoItIsFor": "Nature lovers, families, and anyone looking for a thrilling adventure outside the city.",
     "whoShouldChooseSomethingElse": null,
@@ -75,12 +84,21 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "relatedAreaIds": [],
     "disclosure": "We partner directly with swamp operators to bring you authentic bayou experiences.",
     "faqs": [],
-    "metadata": null,
+    "metadata": {
+      "title": "New Orleans Swamp Tours | Explore the Bayou",
+      "description": "Venture into the Louisiana bayou to see alligators, wild boars, and exotic birds in their natural habitat.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/swamp-tours",
+      "robots": "index, follow",
+      "openGraphTitle": "New Orleans Swamp Tours | Explore the Bayou",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/swamp-tours",
+      "twitterTitle": "New Orleans Swamp Tours | Explore the Bayou"
+    },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
+
 },
   "airboat-tours": {
     "id": "airboat-tours",
@@ -92,7 +110,7 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "heroTitle": "New Orleans Airboat Tours",
     "heroSubtitle": "Feel the rush of the bayou.",
     "openingAnswer": "Airboats offer a high-speed, thrilling way to explore the Louisiana swamps. You'll cover more ground and access shallow areas that traditional boats can't reach.",
-    "topCta": null,
+    "topCta": "/swamp-tours",
     "secondaryCta": null,
     "whoItIsFor": "Thrill-seekers and those wanting an intimate, fast-paced encounter with the swamp.",
     "whoShouldChooseSomethingElse": null,
@@ -116,12 +134,21 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "relatedAreaIds": [],
     "disclosure": "Airboat tours are operated by our verified local partners.",
     "faqs": [],
-    "metadata": null,
+    "metadata": {
+      "title": "New Orleans Airboat Tours | Fast-Paced Adventure",
+      "description": "Experience a thrilling, high-speed ride deep into the shallow marshes surrounding New Orleans.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/airboat-tours",
+      "robots": "index, follow",
+      "openGraphTitle": "New Orleans Airboat Tours | Fast-Paced Adventure",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/airboat-tours",
+      "twitterTitle": "New Orleans Airboat Tours | Fast-Paced Adventure"
+    },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
+
 },
   "covered-swamp-boat-tours": {
     "id": "covered-swamp-boat-tours",
@@ -133,7 +160,7 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "heroTitle": "Covered Swamp Boat Tours",
     "heroSubtitle": "A comfortable, relaxed journey into nature.",
     "openingAnswer": "Covered boats offer a relaxed, shaded, and slower-paced swamp experience, perfect for photography and taking in the serene bayou ecosystem.",
-    "topCta": null,
+    "topCta": "/swamp-tours",
     "secondaryCta": null,
     "whoItIsFor": "Families with young children, elderly visitors, and anyone who prefers a shaded, quiet ride.",
     "whoShouldChooseSomethingElse": null,
@@ -157,12 +184,21 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "relatedAreaIds": [],
     "disclosure": "Covered boat tours are operated by our verified local partners.",
     "faqs": [],
-    "metadata": null,
+    "metadata": {
+      "title": "Covered Swamp Boat Tours | Relaxing Nature Cruise",
+      "description": "Enjoy a comfortable and shaded ride through the serene bayou ecosystem, perfect for wildlife photography.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/covered-swamp-boat-tours",
+      "robots": "index, follow",
+      "openGraphTitle": "Covered Swamp Boat Tours | Relaxing Nature Cruise",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/covered-swamp-boat-tours",
+      "twitterTitle": "Covered Swamp Boat Tours | Relaxing Nature Cruise"
+    },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
+
 },
   "plantation-tours": {
     "id": "plantation-tours",
@@ -174,7 +210,7 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "heroTitle": "Louisiana Plantation Tours",
     "heroSubtitle": "Journey into the complex history of the Old South.",
     "openingAnswer": "A short drive up the Great River Road brings you to the historic plantations of Louisiana, offering deep insights into the region's antebellum history and the lives of those enslaved there.",
-    "topCta": null,
+    "topCta": "/tours/oak-alley-or-laura-plantation-tour",
     "secondaryCta": null,
     "whoItIsFor": "History enthusiasts, students, and visitors wanting to understand the full story of Louisiana.",
     "whoShouldChooseSomethingElse": null,
@@ -197,12 +233,21 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "relatedAreaIds": [],
     "disclosure": "We are an independent marketplace. Plantation tours are operated by local partners.",
     "faqs": [],
-    "metadata": null,
+    "metadata": {
+      "title": "Louisiana Plantation Tours | Antebellum History",
+      "description": "Gain deep insights into the region's complex antebellum history and the lives of those enslaved there.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/plantation-tours",
+      "robots": "index, follow",
+      "openGraphTitle": "Louisiana Plantation Tours | Antebellum History",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/plantation-tours",
+      "twitterTitle": "Louisiana Plantation Tours | Antebellum History"
+    },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
+
 },
   "ghost-tours": {
     "id": "ghost-tours",
@@ -632,13 +677,13 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "heroTitle": "Airboat vs. Covered Boat",
     "heroSubtitle": null,
     "openingAnswer": "Choose an airboat for a high-speed thrill and access to shallow marshes. Choose a covered boat for a relaxed, shaded, and family-friendly cruise.",
-    "topCta": null,
+    "topCta": "/swamp-tours",
     "secondaryCta": null,
     "whoItIsFor": "Thrill-seekers, older children, and those wanting a fast-paced adventure.",
     "whoShouldChooseSomethingElse": "Families with infants, anyone pregnant, or those wanting a quiet, shaded photography tour.",
     "decisionFactors": ["Airboats are fast and loud.","Covered boats provide shade and a steady pace.","Airboats can access shallower waters.","Covered boats are better for young children."],
-    "comparisonColumns": [],
-    "comparisonRows": [],
+    "comparisonColumns": [{"id":"feature","header":"Feature"}, {"id":"airboat","header":"Airboat"}, {"id":"covered","header":"Covered Boat"}],
+    "comparisonRows": [{"label":"Ride style","values":["faster/open-air","slower/covered"]},{"label":"Exposure","values":["more open to weather","more sheltered"]},{"label":"Booking details","values":["verify operator options","verify operator options"]}],
     "recommendedChoiceGuidance": null,
     "planningConsiderations": "Both options offer great chances to see alligators, but the experience of the ride is completely different.",
     "transportationNotes": null,
@@ -656,12 +701,21 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "relatedAreaIds": [],
     "disclosure": "We are an independent marketplace comparing local operator options.",
     "faqs": [],
-    "metadata": null,
+    "metadata": {
+      "title": "Airboat vs. Covered Boat Tours in New Orleans",
+      "description": "Compare high-speed airboats against relaxed, covered boat tours to choose the right swamp experience for your group.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/swamp-tours/airboat-vs-covered-boat",
+      "robots": "index, follow",
+      "openGraphTitle": "Airboat vs. Covered Boat Tours in New Orleans",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/swamp-tours/airboat-vs-covered-boat",
+      "twitterTitle": "Airboat vs. Covered Boat Tours in New Orleans"
+    },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
+
 },
   "swamp-tours-small-vs-large-airboat": {
     "id": "swamp-tours-small-vs-large-airboat",
@@ -673,13 +727,13 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "heroTitle": "Small vs. Large Airboat",
     "heroSubtitle": null,
     "openingAnswer": "Small airboats (6-9 passengers) offer a more intimate, personalized experience. Large airboats (15-20+ passengers) are generally more budget-friendly and offer a slightly smoother ride.",
-    "topCta": null,
+    "topCta": "/swamp-tours",
     "secondaryCta": null,
     "whoItIsFor": "Those wanting a very personal experience, closer access to the guide, and deeper swamp penetration.",
     "whoShouldChooseSomethingElse": "Large groups wanting to sit together, or those looking for a more economical option.",
     "decisionFactors": ["Small boats are more expensive but intimate.","Large boats are cheaper and hold bigger groups.","Small boats can navigate slightly tighter channels."],
-    "comparisonColumns": [],
-    "comparisonRows": [],
+    "comparisonColumns": [{"id":"feature","header":"Feature"}, {"id":"small","header":"Small Airboat"}, {"id":"large","header":"Large Airboat"}],
+    "comparisonRows": [{"label":"Group format","values":["smaller-format option","larger-format option"]},{"label":"Exact capacity","values":["verify during checkout","verify during checkout"]}],
     "recommendedChoiceGuidance": null,
     "planningConsiderations": "Book small airboats well in advance, as their limited seats sell out quickly.",
     "transportationNotes": null,
@@ -697,12 +751,21 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "relatedAreaIds": [],
     "disclosure": "We compare local airboat operators.",
     "faqs": [],
-    "metadata": null,
+    "metadata": {
+      "title": "Small vs. Large Airboat Tours in New Orleans",
+      "description": "Compare small, intimate airboats against larger, budget-friendly options to plan your Louisiana swamp tour.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/swamp-tours/small-vs-large-airboat",
+      "robots": "index, follow",
+      "openGraphTitle": "Small vs. Large Airboat Tours in New Orleans",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/swamp-tours/small-vs-large-airboat",
+      "twitterTitle": "Small vs. Large Airboat Tours in New Orleans"
+    },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
+
 },
   "swamp-tours-pickup-vs-self-drive": {
     "id": "swamp-tours-pickup-vs-self-drive",
@@ -714,13 +777,13 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "heroTitle": "Hotel Pickup vs. Self-Drive",
     "heroSubtitle": null,
     "openingAnswer": "Hotel pickup offers convenience and relaxation without the stress of navigating. Self-driving offers flexibility and often saves money if you already have a rental car.",
-    "topCta": null,
+    "topCta": "/swamp-tours",
     "secondaryCta": null,
     "whoItIsFor": "Visitors staying in the French Quarter without a rental car.",
     "whoShouldChooseSomethingElse": "Those who already rented a car and want to explore other areas (like plantations) on the same day.",
     "decisionFactors": ["Pickup adds about 1-1.5 hours to the total trip time.","Self-driving requires navigating to remote launch sites.","Pickup is highly convenient if you plan to drink in the city later."],
-    "comparisonColumns": [],
-    "comparisonRows": [],
+    "comparisonColumns": [{"id":"feature","header":"Feature"}, {"id":"pickup","header":"Hotel Pickup"}, {"id":"drive","header":"Self-Drive"}],
+    "comparisonRows": [{"label":"Transportation","values":["operator-arranged option","traveler-arranged transportation"]},{"label":"Pickup availability","values":["verify during checkout","verify during checkout"]}],
     "recommendedChoiceGuidance": null,
     "planningConsiderations": "If you choose pickup, confirm your hotel is within the operator's pickup zone.",
     "transportationNotes": null,
@@ -738,12 +801,21 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "relatedAreaIds": [],
     "disclosure": "Transportation options depend on the local operator.",
     "faqs": [],
-    "metadata": null,
+    "metadata": {
+      "title": "Hotel Pickup vs. Self-Drive for Swamp Tours",
+      "description": "Evaluate the convenience of hotel pickup against the flexibility of driving yourself to a New Orleans swamp tour.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/swamp-tours/pickup-vs-self-drive",
+      "robots": "index, follow",
+      "openGraphTitle": "Hotel Pickup vs. Self-Drive for Swamp Tours",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/swamp-tours/pickup-vs-self-drive",
+      "twitterTitle": "Hotel Pickup vs. Self-Drive for Swamp Tours"
+    },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
+
 },
   "swamp-tours-honey-island-vs-jean-lafitte": {
     "id": "swamp-tours-honey-island-vs-jean-lafitte",
@@ -837,13 +909,13 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "heroTitle": "Oak Alley vs. Laura Plantation",
     "heroSubtitle": "Choose the best historical tour for you.",
     "openingAnswer": "Oak Alley is famous for its iconic alley of 300-year-old oak trees and grand architecture, focusing heavily on the aesthetics of the antebellum south. Laura Plantation is a Creole plantation with a deep, story-driven tour focused heavily on the real, complex history of the enslaved people and the Creole owners.",
-    "topCta": null,
+    "topCta": "/tours/oak-alley-or-laura-plantation-tour",
     "secondaryCta": null,
     "whoItIsFor": null,
     "whoShouldChooseSomethingElse": null,
     "decisionFactors": [],
-    "comparisonColumns": [],
-    "comparisonRows": [],
+    "comparisonColumns": [{"id":"feature","header":"Feature"}, {"id":"oak","header":"Oak Alley"}, {"id":"laura","header":"Laura"}],
+    "comparisonRows": [{"label":"Experience emphasis","values":["compare each site's current tour description","compare interpretation focus during booking"]}],
     "recommendedChoiceGuidance": null,
     "planningConsiderations": null,
     "transportationNotes": null,
@@ -860,12 +932,21 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "relatedAreaIds": [],
     "disclosure": null,
     "faqs": [],
-    "metadata": null,
+    "metadata": {
+      "title": "Oak Alley vs. Laura Plantation Tours",
+      "description": "Compare the aesthetic focus of Oak Alley with the deep Creole history of Laura Plantation to decide on your tour.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/plantation-tours/oak-alley-vs-laura",
+      "robots": "index, follow",
+      "openGraphTitle": "Oak Alley vs. Laura Plantation Tours",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/plantation-tours/oak-alley-vs-laura",
+      "twitterTitle": "Oak Alley vs. Laura Plantation Tours"
+    },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
+
 },
   "plantation-tours-oak-alley-vs-whitney": {
     "id": "plantation-tours-oak-alley-vs-whitney",
@@ -1299,7 +1380,7 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "heroTitle": "Tours for First-Time Visitors",
     "heroSubtitle": null,
     "openingAnswer": "For your first visit, a comprehensive city tour and a classic swamp tour will give you the best overview of New Orleans and its surrounding environment.",
-    "topCta": null,
+    "topCta": "/tours",
     "secondaryCta": null,
     "whoItIsFor": "Anyone visiting New Orleans for the first time who wants to see the highlights before exploring on their own.",
     "whoShouldChooseSomethingElse": "Returning visitors who already know the French Quarter and want to explore niche neighborhoods or specific historical topics.",
@@ -1325,12 +1406,21 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "relatedAreaIds": [],
     "disclosure": "We are an independent marketplace. These recommendations are based on verified local inventory.",
     "faqs": [],
-    "metadata": null,
+    "metadata": {
+      "title": "Best New Orleans Tours for First-Time Visitors",
+      "description": "Get the perfect overview of the city and its surrounding environment with these highly recommended first-time tours.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/tours-for/first-time-visitors",
+      "robots": "index, follow",
+      "openGraphTitle": "Best New Orleans Tours for First-Time Visitors",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/tours-for/first-time-visitors",
+      "twitterTitle": "Best New Orleans Tours for First-Time Visitors"
+    },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
+
 },
   "tours-for-families": {
     "id": "tours-for-families",
@@ -1874,7 +1964,7 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "heroTitle": "How Far Are Swamp Tours From New Orleans?",
     "heroSubtitle": "Travel times and transportation options.",
     "openingAnswer": "Most swamp tours are located about 35 to 45 minutes south or west of downtown New Orleans. If you choose hotel pickup, expect the total transit time to be closer to an hour each way as the bus picks up other passengers.",
-    "topCta": null,
+    "topCta": "/swamp-tours",
     "secondaryCta": null,
     "whoItIsFor": null,
     "whoShouldChooseSomethingElse": null,
@@ -1898,12 +1988,21 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "relatedAreaIds": [],
     "disclosure": null,
     "faqs": [],
-    "metadata": null,
+    "metadata": {
+      "title": "How Far Are Swamp Tours From New Orleans?",
+      "description": "Learn about travel times, transportation options, and what to expect when commuting to a Louisiana swamp tour.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/guides/how-far-are-swamp-tours-from-new-orleans",
+      "robots": "index, follow",
+      "openGraphTitle": "How Far Are Swamp Tours From New Orleans?",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/guides/how-far-are-swamp-tours-from-new-orleans",
+      "twitterTitle": "How Far Are Swamp Tours From New Orleans?"
+    },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
+
 },
   "guides-how-long-does-a-swamp-tour-take": {
     "id": "guides-how-long-does-a-swamp-tour-take",
@@ -1915,7 +2014,7 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "heroTitle": "How Long Does a Swamp Tour Take?",
     "heroSubtitle": "Duration and schedules.",
     "openingAnswer": "The boat ride itself typically lasts between 1.5 and 2 hours. If you add in hotel pickup and drop-off, expect the entire experience to take about 3.5 to 4 hours round-trip.",
-    "topCta": null,
+    "topCta": "/swamp-tours",
     "secondaryCta": null,
     "whoItIsFor": null,
     "whoShouldChooseSomethingElse": null,
@@ -1939,12 +2038,21 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "relatedAreaIds": [],
     "disclosure": null,
     "faqs": [],
-    "metadata": null,
+    "metadata": {
+      "title": "How Long Does a Swamp Tour Take in New Orleans?",
+      "description": "Plan your itinerary with details on boat ride durations and round-trip transit times from downtown New Orleans.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/guides/how-long-does-a-swamp-tour-take",
+      "robots": "index, follow",
+      "openGraphTitle": "How Long Does a Swamp Tour Take in New Orleans?",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/guides/how-long-does-a-swamp-tour-take",
+      "twitterTitle": "How Long Does a Swamp Tour Take in New Orleans?"
+    },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
+
 },
   "guides-what-to-wear-on-a-swamp-tour": {
     "id": "guides-what-to-wear-on-a-swamp-tour",
@@ -2374,7 +2482,7 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "heroTitle": "The French Quarter",
     "heroSubtitle": "The historic heart of New Orleans.",
     "openingAnswer": "The French Quarter is the oldest neighborhood in New Orleans, famous for its vibrant nightlife, colorful architecture, and deep history. Most city tours start or end here, and almost all swamp tours offer pickup from French Quarter hotels.",
-    "topCta": null,
+    "topCta": "/tours/city-tour-of-new-orleans",
     "secondaryCta": null,
     "whoItIsFor": null,
     "whoShouldChooseSomethingElse": null,
@@ -2397,12 +2505,21 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "relatedAreaIds": [],
     "disclosure": null,
     "faqs": [],
-    "metadata": null,
+    "metadata": {
+      "title": "French Quarter Tours | The Historic Heart of NOLA",
+      "description": "Discover the oldest neighborhood in New Orleans and find tours offering pickup from French Quarter hotels.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/areas/french-quarter",
+      "robots": "index, follow",
+      "openGraphTitle": "French Quarter Tours | The Historic Heart of NOLA",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/areas/french-quarter",
+      "twitterTitle": "French Quarter Tours | The Historic Heart of NOLA"
+    },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
+
 },
   "areas-garden-district": {
     "id": "areas-garden-district",
