@@ -101,19 +101,35 @@ export default function NewOrleansToursStorefront() {
               <article className="group cursor-pointer flex flex-col mt-12 md:mt-24">
                 <a href={`/tours/${plantationTour.slug}`} className="block flex-grow focus:outline-none focus:ring-2 focus:ring-[#C5A059]">
                   <div className="relative aspect-[4/5] md:aspect-[3/4] overflow-hidden bg-[#1a1a1a]">
-                    <img
-                      src={plantationTour.imageUrl}
-                      alt={plantationTour.title}
-                      className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent opacity-80" />
-                    <div className="absolute top-6 left-6 bg-[#FDFBF7] text-[#1a1a1a] px-3 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                      {plantationTour.category}
-                    </div>
-                    <div className="absolute bottom-6 left-6 right-6">
-                      <h4 className="text-3xl font-[var(--font-accent)] text-[#FDFBF7] mb-2">{plantationTour.title}</h4>
-                      <p className="text-[11px] font-bold text-[#C5A059] uppercase tracking-widest">Operated by {plantationTour.operatorName}</p>
-                    </div>
+                    {plantationTour.imagePresentation === "editorial" ? (
+                      <div className="w-full h-full bg-[#FDFBF7] flex flex-col justify-center items-center p-8 border-[6px] border-[#1a1a1a] text-center relative group-hover:bg-[#F4F1EB] transition-colors duration-500">
+                        <div className="absolute top-6 left-6 bg-[#1a1a1a] text-[#FDFBF7] px-3 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm">
+                          {plantationTour.category}
+                        </div>
+                        <div className="w-full h-full border border-[#C5A059] flex flex-col justify-center items-center p-6">
+                          <span className="text-[10px] font-bold text-[#0B3B24] uppercase tracking-widest mb-4 block">Plantation history experience</span>
+                          <h4 className="text-3xl font-[var(--font-accent)] text-[#1a1a1a] mb-4 leading-tight">{plantationTour.title}</h4>
+                          <div className="w-12 h-[2px] bg-[#C5A059] mb-4"></div>
+                          <p className="text-[11px] font-bold text-[#666] uppercase tracking-widest">Operated by {plantationTour.operatorName}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <img
+                          src={plantationTour.imageUrl}
+                          alt={plantationTour.title}
+                          className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent opacity-80" />
+                        <div className="absolute top-6 left-6 bg-[#FDFBF7] text-[#1a1a1a] px-3 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm">
+                          {plantationTour.category}
+                        </div>
+                        <div className="absolute bottom-6 left-6 right-6">
+                          <h4 className="text-3xl font-[var(--font-accent)] text-[#FDFBF7] mb-2">{plantationTour.title}</h4>
+                          <p className="text-[11px] font-bold text-[#C5A059] uppercase tracking-widest">Operated by {plantationTour.operatorName}</p>
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className="pt-6 flex flex-col justify-between flex-grow">
                     <p className="text-[#444] leading-relaxed mb-4">{plantationTour.description}</p>

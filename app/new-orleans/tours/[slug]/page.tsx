@@ -37,20 +37,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: product.metaDescription,
       url: canonical,
       type: "website",
-      images: [
-        {
-          url: product.imageUrl,
-          width: 1200,
-          height: 630,
-          alt: product.title,
-        },
-      ],
+      ...(product.imagePresentation !== "editorial" && {
+        images: [
+          {
+            url: product.imageUrl,
+            width: 1200,
+            height: 630,
+            alt: product.title,
+          },
+        ],
+      }),
     },
     twitter: {
       card: "summary_large_image",
       title: product.detailPageTitle,
       description: product.metaDescription,
-      images: [product.imageUrl],
+      ...(product.imagePresentation !== "editorial" && {
+        images: [product.imageUrl],
+      }),
     },
   };
 }
@@ -69,7 +73,7 @@ export default async function TourDetailPage({ params }: Props) {
   const hostHeader = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "";
   const host = hostHeader.split(":")[0];
   const isWto = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
-  
+
   const basePath = isWto ? "" : NEW_ORLEANS_TOURS_PATH;
   const pagePath = `${basePath}/tours/${slug}`;
 
@@ -126,13 +130,26 @@ export default async function TourDetailPage({ params }: Props) {
         <main>
           {/* Immersive Hero */}
           <div className="relative w-full h-[60vh] min-h-[400px] max-h-[600px] overflow-hidden bg-[#1a1a1a]">
-            <img
-              src={product.imageUrl}
-              alt={product.title}
-              className="w-full h-full object-cover opacity-60"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/40 to-transparent" />
-            
+            {product.imagePresentation === "editorial" ? (
+              <>
+                <div className="absolute inset-0 bg-[#0B3B24] overflow-hidden">
+                   {/* Abstract CSS texture / linework */}
+                   <div className="absolute inset-0 opacity-10" style={{ backgroundSize: '20px 20px', backgroundImage: 'radial-gradient(circle at center, #C5A059 1px, transparent 1px)' }} />
+                </div>
+                <div className="absolute top-1/2 left-0 w-full h-[1px] bg-[#C5A059] opacity-30 transform -translate-y-1/2"></div>
+                <div className="absolute left-1/2 top-0 h-full w-[1px] bg-[#C5A059] opacity-30 transform -translate-x-1/2"></div>
+              </>
+            ) : (
+              <>
+                <img
+                  src={product.imageUrl}
+                  alt={product.title}
+                  className="w-full h-full object-cover opacity-60"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/40 to-transparent" />
+              </>
+            )}
+
             <div className="absolute inset-0 flex items-end">
               <div className="max-w-4xl mx-auto w-full px-6 pb-12 md:pb-16 text-center md:text-left">
                 <div className="mb-4">
@@ -159,10 +176,10 @@ export default async function TourDetailPage({ params }: Props) {
 
           <div className="max-w-4xl mx-auto px-6 py-12 md:py-20">
             <div className="grid md:grid-cols-12 gap-12 md:gap-16">
-              
+
               {/* Editorial Content */}
               <div className="md:col-span-7 space-y-16">
-                
+
                 <section>
                   {product.bestFor && (
                     <div className="mb-6 border-l-4 border-[#C5A059] pl-4">
@@ -179,7 +196,7 @@ export default async function TourDetailPage({ params }: Props) {
 
                 <section className="bg-[#F4F1EB] p-8">
                   <h3 className="text-xl font-[var(--font-accent)] font-bold text-[#1a1a1a] mb-4 border-b border-[#E5E0D8] pb-4">Practical Details</h3>
-                  
+
                   <div className="space-y-6">
                     {(product.durationLabel || product.transportationSummary || product.pickupSummary) && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -203,7 +220,7 @@ export default async function TourDetailPage({ params }: Props) {
                         )}
                       </div>
                     )}
-                    
+
                     {product.highlights && product.highlights.length > 0 && (
                       <div>
                         <h4 className="text-[10px] font-bold text-[#1a1a1a] uppercase tracking-widest mb-2">Highlights</h4>
@@ -221,7 +238,7 @@ export default async function TourDetailPage({ params }: Props) {
                         <p className="text-[#666] text-sm leading-relaxed">{product.bookingNote}</p>
                       </div>
                     )}
-                    
+
                     {!product.durationLabel && !product.transportationSummary && !product.pickupSummary && (!product.highlights || product.highlights.length === 0) && !product.bookingNote && (
                       <p className="text-[#666] leading-relaxed text-sm">
                         Current schedules, tour duration, meeting or pickup locations, pricing, and available capacity are managed directly by {product.operatorName} and will be confirmed during the booking process.
@@ -229,7 +246,7 @@ export default async function TourDetailPage({ params }: Props) {
                     )}
                   </div>
                 </section>
-                
+
               </div>
 
               {/* Booking Sidebar */}
@@ -239,7 +256,7 @@ export default async function TourDetailPage({ params }: Props) {
                     <span className="text-[10px] font-bold text-[#C5A059] uppercase tracking-widest block mb-2">Secure Booking</span>
                     <h3 className="text-2xl font-[var(--font-accent)] font-bold text-[#1a1a1a]">Reserve Your Spot</h3>
                   </div>
-                  
+
                   <div className="mb-6 text-sm text-[#666] leading-relaxed text-center bg-[#FDFBF7] p-4 border border-[#E5E0D8]">
                     <p>
                       <strong>Welcome to New Orleans Tours</strong> is an independent curated storefront. Booking opens through the official FareHarbor checkout for {product.operatorName}.
@@ -268,15 +285,23 @@ export default async function TourDetailPage({ params }: Props) {
                     Also Consider
                   </h3>
                 </div>
-                
+
                 <Link href={`/tours/${relatedProduct.slug}`} className="block group">
                   <div className="bg-[#FDFBF7] border border-[#E5E0D8] overflow-hidden hover:border-[#C5A059] transition-colors flex flex-col md:flex-row shadow-lg">
                     <div className="md:w-2/5 aspect-[16/9] md:aspect-auto relative overflow-hidden bg-[#1a1a1a]">
-                      <img 
-                        src={relatedProduct.imageUrl} 
-                        alt={relatedProduct.title}
-                        className="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700"
-                      />
+                      {relatedProduct.imagePresentation === "editorial" ? (
+                        <div className="w-full h-full bg-[#0B3B24] flex items-center justify-center p-8 border-[4px] border-[#FDFBF7]">
+                          <div className="w-full h-full border border-[#C5A059] flex items-center justify-center p-4">
+                            <span className="text-[10px] font-bold text-[#C5A059] uppercase tracking-widest text-center">Plantation history experience</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <img
+                          src={relatedProduct.imageUrl}
+                          alt={relatedProduct.title}
+                          className="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700"
+                        />
+                      )}
                     </div>
                     <div className="p-8 md:w-3/5 flex flex-col justify-center">
                       <p className="text-[10px] font-bold text-[#C5A059] uppercase tracking-widest mb-2">

@@ -12,6 +12,7 @@ export interface NolaFareHarborProduct {
   duration?: string;
   price?: string;
   imageUrl: string;
+  imagePresentation?: "photo" | "editorial";
   ctaLabel?: string;
   bestFor?: string;
   slug: string;
@@ -85,6 +86,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     description: "Journey outside the city to explore historic Louisiana plantations and learn their complex history.",
     bestFor: "Best for a longer day trip",
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    imagePresentation: "editorial",
     slug: "oak-alley-or-laura-plantation-tour",
     relatedTourSlug: "city-tour-of-new-orleans",
     detailPageTitle: "Oak Alley Or Laura Plantation Tour | Welcome to New Orleans Tours",
