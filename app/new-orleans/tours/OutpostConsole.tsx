@@ -37,7 +37,7 @@ export default function NewOrleansToursStorefront() {
                 Welcome To New Orleans Tours
               </h1>
               <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-                Premium Sightseeing & Swamp Tours
+                Curated local tours
               </span>
             </div>
           </div>
@@ -73,7 +73,6 @@ export default function NewOrleansToursStorefront() {
               />
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-left">
                 <p className="text-xs font-bold text-white uppercase tracking-wider">Royal Street, French Quarter</p>
-                <p className="text-[10px] text-slate-300">Verified storefront exit path active</p>
               </div>
             </div>
           </div>
@@ -111,18 +110,16 @@ export default function NewOrleansToursStorefront() {
                 <div>
                   <h4 className="text-xl font-bold text-slate-900 mb-1">{item.title}</h4>
                   <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3">Operator: {item.operatorName}</p>
-                  <p className="text-sm text-slate-600 mb-4 leading-relaxed">{item.description}</p>
+                  <p className="text-sm text-slate-600 mb-2 leading-relaxed">{item.description}</p>
+                  {item.bestFor && (
+                    <p className="text-xs font-semibold text-slate-700 bg-slate-100 inline-block px-2 py-1 rounded">
+                      {item.bestFor}
+                    </p>
+                  )}
                 </div>
                 
-                <div className="border-t border-slate-100 pt-4 space-y-2 text-xs text-slate-600">
-                  <div className="flex justify-between">
-                    <span className="font-medium text-slate-400">Duration:</span>
-                    <span className="font-semibold">{item.duration ? item.duration : "Varies by flow"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium text-slate-400">Price:</span>
-                    <span className="font-semibold text-emerald-600">See current pricing</span>
-                  </div>
+                <div className="border-t border-slate-100 pt-4 text-xs text-slate-600">
+                  <p className="font-medium leading-relaxed">Choose a date to view current departure times, duration, and pricing.</p>
                 </div>
               </div>
               
@@ -139,9 +136,16 @@ export default function NewOrleansToursStorefront() {
         </div>
       </section>
 
-      {/* DCC Network Verification Strip */}
-      <div className="pt-4 pb-12 max-w-6xl mx-auto px-6">
-        <WnoNetworkStrip />
+      {/* Trust Block */}
+      <div className="pt-4 pb-12 max-w-4xl mx-auto px-6">
+        <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-6 sm:p-8 text-center shadow-sm">
+          <h4 className="font-bold text-slate-900 mb-3 uppercase tracking-wider text-sm">About Welcome to New Orleans Tours</h4>
+          <p className="text-sm text-slate-600 leading-relaxed max-w-2xl mx-auto">
+            Welcome to New Orleans Tours is an independent, curated tour storefront. Each experience is operated by the local company shown on the tour card, and booking opens through that operator’s FareHarbor checkout.
+            <br /><br />
+            Current pricing, schedules, availability, meeting details, cancellation policies, and reservation support are provided by the operator during booking. Welcome to New Orleans Tours is not affiliated with the City of New Orleans or an official tourism authority.
+          </p>
+        </div>
       </div>
 
       {/* Footer */}
@@ -151,7 +155,7 @@ export default function NewOrleansToursStorefront() {
             ⚜️ Welcome To New Orleans Tours
           </p>
           <p className="text-xs leading-relaxed max-w-xl mx-auto font-medium">
-            Bookings are handled in association with authorized local tour operator partners. Tour availability, pricing, and timing fluctuate seasonally depending on delta river conditions and festival calendars.
+            Tours are operated and fulfilled by the local providers shown on each listing. Pricing, schedules, availability, meeting details, and cancellation policies are confirmed during booking. Welcome to New Orleans Tours is an independent curated storefront.
           </p>
           <div className="mt-6 text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
             © 2026 Welcome To New Orleans Tours. All rights reserved.

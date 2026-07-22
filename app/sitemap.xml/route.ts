@@ -68,10 +68,6 @@ export async function GET() {
       "/tours",
       "/categories/swamp-tours",
       "/categories/airboat-tours",
-      "/categories/french-quarter-tours",
-      "/categories/food-and-cocktail-tours",
-      "/categories/ghost-and-cemetery-tours",
-      "/categories/riverboat-cruises",
       "/guides/best-new-orleans-swamp-tour",
       "/guides/french-quarter-tour-timing",
     ];

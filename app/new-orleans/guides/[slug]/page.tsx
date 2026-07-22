@@ -56,8 +56,8 @@ const GUIDES_MAP: Record<string, GuideConfig> = {
       },
     ],
     extendedText: "New Orleans walking tours cover substantial ground, usually 1 to 2 miles. Historic sidewalks in the French Quarter are made of uneven brick and flagstone, so comfortable walking shoes are mandatory. Afternoon rain showers are extremely common in summer, so carry a travel umbrella.",
-    relatedCategorySlug: "french-quarter-tours",
-    relatedCategoryName: "French Quarter Walking Tours",
+    relatedCategorySlug: "",
+    relatedCategoryName: "All New Orleans Tours",
   },
 };
 
@@ -147,7 +147,7 @@ export default async function GuidePage({ params }: Props) {
               <p className="text-sm text-slate-500 mt-1">Browse verified tours matching this guide.</p>
             </div>
             <Link 
-              href={`/categories/${config.relatedCategorySlug}`}
+              href={config.relatedCategorySlug ? `/categories/${config.relatedCategorySlug}` : "/"}
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-colors"
             >
               View {config.relatedCategoryName} →

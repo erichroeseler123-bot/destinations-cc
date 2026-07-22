@@ -13,6 +13,7 @@ export interface NolaFareHarborProduct {
   price?: string;
   imageUrl: string;
   ctaLabel?: string;
+  bestFor?: string;
 }
 
 export const NEW_ORLEANS_TOURS_PATH = "/new-orleans/tours";
@@ -28,6 +29,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "City Tours",
     operatorName: "Southern Style Tours",
     description: "A comprehensive overview of New Orleans covering the French Quarter, Garden District, and more.",
+    bestFor: "Best for first-time visitors",
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg"
   },
   {
@@ -39,6 +41,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Plantation Tours",
     operatorName: "Southern Style Tours",
     description: "Journey outside the city to explore historic Louisiana plantations and learn their complex history.",
+    bestFor: "Best for a longer day trip",
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg"
   },
   {
@@ -50,6 +53,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Swamp Tours",
     operatorName: "Ragin Cajun Tours",
     description: "A shaded, family-friendly pontoon boat ride through authentic Louisiana bayous.",
+    bestFor: "Best for shade and a relaxed ride",
     imageUrl: "/images/travel-markets/new-orleans/covered-boat-swamp.png"
   },
   {
@@ -60,6 +64,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Airboat Rides",
     operatorName: "Ragin Cajun Tours",
     description: "Explore Louisiana wetlands aboard an airboat and review the available tour options.",
+    bestFor: "Best for speed and a more active ride",
     imageUrl: "/images/travel-markets/new-orleans/airboat-swamp.png",
     ctaLabel: "View Airboat Options →"
   }

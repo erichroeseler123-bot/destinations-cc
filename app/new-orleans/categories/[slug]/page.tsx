@@ -35,42 +35,6 @@ const CATEGORIES_MAP: Record<string, CategoryConfig> = {
     timingNote: "Small-group boats (6-8 passengers) get closer to alligators than larger airboats",
     filterFn: (item) => item.category === "swamp" && item.name.toLowerCase().includes("airboat"),
   },
-  "french-quarter-tours": {
-    id: "french-quarter-tours",
-    title: "French Quarter Walking Tours",
-    description: "Walk the historic streets of the Vieux Carré. Discover Spanish architecture, Creole culture, and local jazz history.",
-    goodFor: "History buffs, couples, architectural enthusiasts",
-    watchOut: "Requires 1.5 to 2 miles of walking on uneven historic sidewalks",
-    timingNote: "Book morning walks to avoid the intense midday heat",
-    filterFn: (item) => item.category === "history",
-  },
-  "food-and-cocktail-tours": {
-    id: "food-and-cocktail-tours",
-    title: "New Orleans Food & Cocktail Tours",
-    description: "Sample NOLA classics like gumbo, jambalaya, beignets, and historic cocktails like the Sazerac in historic dining rooms.",
-    goodFor: "Foodies, social groups, history lovers",
-    watchOut: "Arrive hungry—tastings equivalent to a full heavy lunch",
-    timingNote: "Most culinary crawls operate between 11:00 AM and 3:00 PM",
-    filterFn: (item) => item.category === "food",
-  },
-  "ghost-and-cemetery-tours": {
-    id: "ghost-and-cemetery-tours",
-    title: "New Orleans Ghost & Voodoo Tours",
-    description: "Nighttime candlelit walks through haunted gates, historic mansions, and mysterious voodoo history sites.",
-    goodFor: "Mystery lovers, families with teens, late-night explorers",
-    watchOut: "Walking after dark; standard tours do not enter cemeteries at night due to city laws",
-    timingNote: "Tours typically start at 6:00 PM or 8:00 PM and last 2 hours",
-    filterFn: (item) => item.category === "ghost",
-  },
-  "riverboat-cruises": {
-    id: "riverboat-cruises",
-    title: "Mississippi Riverboat Cruises",
-    description: "Step aboard an authentic paddlewheel steamboat. Enjoy Dixieland jazz, city skyline views, and buffet dining on the river.",
-    goodFor: "Sightseeing, live jazz lovers, dining on the water",
-    watchOut: "The vessel cruises in the river corridor; boarding starts 30-45 minutes before departure",
-    timingNote: "Dinner cruises offer gorgeous sunset and illuminated skyline views",
-    filterFn: (item) => item.category === "cruise",
-  },
 };
 
 type Props = {
