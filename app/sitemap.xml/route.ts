@@ -66,6 +66,10 @@ export async function GET() {
     const wtoPaths = [
       "/",
       "/tours",
+      "/tours/city-tour-of-new-orleans",
+      "/tours/oak-alley-or-laura-plantation-tour",
+      "/tours/covered-tour-boat",
+      "/tours/ragin-cajun-airboat-options",
       "/categories/swamp-tours",
       "/categories/airboat-tours",
       "/guides/best-new-orleans-swamp-tour",

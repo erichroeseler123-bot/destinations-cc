@@ -12,6 +12,7 @@ type GuideConfig = {
   extendedText: string;
   relatedCategorySlug: string;
   relatedCategoryName: string;
+  featuredTours?: { name: string; url: string }[];
 };
 
 const GUIDES_MAP: Record<string, GuideConfig> = {
@@ -36,6 +37,10 @@ const GUIDES_MAP: Record<string, GuideConfig> = {
     extendedText: "Louisiana bayous are home to a fragile and beautiful ecosystem. Shaded pontoon tours are led by local captains who narrate the history of Cajuns and wetlands preservation. Airboat excursions, while louder, offer access to areas that regular boats cannot reach, making them popular for wildlife photography and adrenaline seekers.",
     relatedCategorySlug: "swamp-tours",
     relatedCategoryName: "Swamp Tours",
+    featuredTours: [
+      { name: "Covered Tour Boat Swamp Ride", url: "/tours/covered-tour-boat" },
+      { name: "Ragin Cajun Airboat Options", url: "/tours/ragin-cajun-airboat-options" }
+    ]
   },
   "french-quarter-tour-timing": {
     id: "french-quarter-tour-timing",
@@ -58,6 +63,9 @@ const GUIDES_MAP: Record<string, GuideConfig> = {
     extendedText: "New Orleans walking tours cover substantial ground, usually 1 to 2 miles. Historic sidewalks in the French Quarter are made of uneven brick and flagstone, so comfortable walking shoes are mandatory. Afternoon rain showers are extremely common in summer, so carry a travel umbrella.",
     relatedCategorySlug: "",
     relatedCategoryName: "All New Orleans Tours",
+    featuredTours: [
+      { name: "City Tour Of New Orleans", url: "/tours/city-tour-of-new-orleans" }
+    ]
   },
 };
 
@@ -158,6 +166,20 @@ export default async function GuidePage({ params }: Props) {
           <section className="prose prose-slate max-w-none text-sm text-slate-600 leading-relaxed border-t border-slate-200 pt-8">
             <h3 className="text-lg font-bold text-slate-900 mb-4">Additional Local Context</h3>
             <p>{config.extendedText}</p>
+            {config.featuredTours && config.featuredTours.length > 0 && (
+              <div className="mt-6">
+                <h4 className="text-md font-bold text-slate-800 mb-3">Featured Tours for this Guide</h4>
+                <ul className="space-y-2">
+                  {config.featuredTours.map((tour, idx) => (
+                    <li key={idx}>
+                      <Link href={tour.url} className="text-emerald-600 hover:text-emerald-700 font-medium">
+                        {tour.name} →
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </section>
         </div>
       </main>

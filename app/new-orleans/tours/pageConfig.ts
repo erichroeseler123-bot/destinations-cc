@@ -14,10 +14,28 @@ export interface NolaFareHarborProduct {
   imageUrl: string;
   ctaLabel?: string;
   bestFor?: string;
+  slug: string;
+  relatedTourSlug: string;
+  detailPageTitle: string;
+  metaDescription: string;
 }
 
 export const NEW_ORLEANS_TOURS_PATH = "/new-orleans/tours";
 export const FAREHARBOR_ASN = "aktourcenter";
+
+export const getFareHarborUrl = (companyShortname: string, itemId?: string | number, flowId?: string | number) => {
+  let url = `https://fareharbor.com/embeds/book/${companyShortname}/`;
+  if (itemId) {
+    url += `items/${itemId}/`;
+  }
+  const params = new URLSearchParams();
+  params.append("asn", FAREHARBOR_ASN);
+  if (flowId) {
+    params.append("flow", String(flowId));
+  }
+  params.append("full-items", "yes");
+  return `${url}?${params.toString()}`;
+};
 
 export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
   {
@@ -30,7 +48,11 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "Southern Style Tours",
     description: "A comprehensive overview of New Orleans covering the French Quarter, Garden District, and more.",
     bestFor: "Best for first-time visitors",
-    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg"
+    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    slug: "city-tour-of-new-orleans",
+    relatedTourSlug: "oak-alley-or-laura-plantation-tour",
+    detailPageTitle: "City Tour Of New Orleans | Welcome to New Orleans Tours",
+    metaDescription: "A comprehensive overview of New Orleans covering the French Quarter, Garden District, and more. Best for first-time visitors.",
   },
   {
     id: "southernstyle-plantation",
@@ -42,7 +64,11 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "Southern Style Tours",
     description: "Journey outside the city to explore historic Louisiana plantations and learn their complex history.",
     bestFor: "Best for a longer day trip",
-    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg"
+    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    slug: "oak-alley-or-laura-plantation-tour",
+    relatedTourSlug: "city-tour-of-new-orleans",
+    detailPageTitle: "Oak Alley Or Laura Plantation Tour | Welcome to New Orleans Tours",
+    metaDescription: "Journey outside the city to explore historic Louisiana plantations and learn their complex history. Best for a longer day trip.",
   },
   {
     id: "ragincajun-covered-boat",
@@ -54,7 +80,11 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "Ragin Cajun Tours",
     description: "A shaded, family-friendly pontoon boat ride through authentic Louisiana bayous.",
     bestFor: "Best for shade and a relaxed ride",
-    imageUrl: "/images/travel-markets/new-orleans/covered-boat-swamp.png"
+    imageUrl: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
+    slug: "covered-tour-boat",
+    relatedTourSlug: "ragin-cajun-airboat-options",
+    detailPageTitle: "Covered Tour Boat Swamp Ride | Welcome to New Orleans Tours",
+    metaDescription: "A shaded, family-friendly pontoon boat ride through authentic Louisiana bayous. Best for shade and a relaxed ride.",
   },
   {
     id: "ragincajun-airboat",
@@ -66,7 +96,11 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     description: "Explore Louisiana wetlands aboard an airboat and review the available tour options.",
     bestFor: "Best for speed and a more active ride",
     imageUrl: "/images/travel-markets/new-orleans/airboat-swamp.png",
-    ctaLabel: "View Airboat Options →"
+    ctaLabel: "View Airboat Options →",
+    slug: "ragin-cajun-airboat-options",
+    relatedTourSlug: "covered-tour-boat",
+    detailPageTitle: "Ragin Cajun Airboat Options | Welcome to New Orleans Tours",
+    metaDescription: "Explore Louisiana wetlands aboard an airboat and review the available tour options. Best for speed and a more active ride.",
   }
 ];
 

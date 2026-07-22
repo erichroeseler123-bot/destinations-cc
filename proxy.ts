@@ -108,6 +108,15 @@ function getWtonotHostRewrite(request: NextRequest) {
     return url;
   }
 
+  // Tour detail pages
+  if (pathname.startsWith("/tours/")) {
+    const slug = pathname.slice(7);
+    if (slug) {
+      url.pathname = `/new-orleans/tours/${slug}`;
+      return url;
+    }
+  }
+
   // Categories mapping
   const allowedCategories = new Set([
     "swamp-tours",

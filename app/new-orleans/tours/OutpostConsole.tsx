@@ -1,31 +1,10 @@
 "use client";
 
-import Script from "next/script";
-import { STOREFRONT_PRODUCTS, FAREHARBOR_ASN } from "./pageConfig";
-import WnoNetworkStrip from "@/components/WnoNetworkStrip";
+import { STOREFRONT_PRODUCTS } from "./pageConfig";
 
 export default function NewOrleansToursStorefront() {
-  const getFareHarborUrl = (companyShortname: string, itemId?: string | number, flowId?: string | number) => {
-    // Build the correct FareHarbor link with the asn=aktourcenter ref
-    let url = `https://fareharbor.com/embeds/book/${companyShortname}/`;
-    if (itemId) {
-      url += `items/${itemId}/`;
-    }
-    const params = new URLSearchParams();
-    params.append("asn", FAREHARBOR_ASN);
-    if (flowId) {
-      params.append("flow", String(flowId));
-    }
-    params.append("full-items", "yes");
-    return `${url}?${params.toString()}`;
-  };
-
   return (
-    <div className="bg-slate-50 min-h-screen text-slate-800 font-sans">
-      <Script
-        src="https://fareharbor.com/embeds/api/v1/?autolightframe=yes"
-        strategy="afterInteractive"
-      />
+    <div id="main-content" className="bg-slate-50 min-h-screen text-slate-800 font-sans">
       
       {/* Brand Header */}
       <header className="border-b border-slate-200 bg-white py-4 px-6 shadow-sm sticky top-0 z-50">
@@ -125,10 +104,10 @@ export default function NewOrleansToursStorefront() {
               
               <div className="p-6 border-t border-slate-100 bg-slate-50/50">
                 <a 
-                  href={getFareHarborUrl(item.companyShortname, item.itemId, item.flowId)} 
+                  href={`/tours/${item.slug}`}
                   className="block w-full text-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-sm transition-colors uppercase tracking-wider"
                 >
-                  {item.ctaLabel || "Check Availability →"}
+                  View Tour Details
                 </a>
               </div>
             </article>
