@@ -100,127 +100,157 @@ export default async function TourDetailPage({ params }: Props) {
           ],
         }}
       />
-      <div id="main-content" className="bg-slate-50 min-h-screen text-slate-800 font-sans pb-16">
+      <div id="main-content" className="bg-[#FDFBF7] min-h-screen text-[#1a1a1a] font-[var(--font-sans)] pb-16">
         <Script src="https://fareharbor.com/embeds/api/v1/?autolightframe=yes" strategy="afterInteractive" />
 
         {/* Brand Header */}
-        <header className="border-b border-slate-200 bg-white py-4 px-6 shadow-sm sticky top-0 z-50">
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
+        <header className="border-b border-[#E5E0D8] bg-[#FDFBF7] py-5 px-6 sticky top-0 z-50">
+          <div className="max-w-6xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-2xl">⚜️</span>
               <div>
-                <h1 className="text-lg font-black text-slate-900 tracking-tight leading-none uppercase">
+                <h1 className="text-xl font-[var(--font-accent)] font-bold text-[#1a1a1a] tracking-tight leading-none uppercase">
                   Welcome To New Orleans Tours
                 </h1>
-                <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-                  Curated local tours
+                <span className="text-[10px] font-bold text-[#C5A059] tracking-widest uppercase">
+                  A Curated Destination Marketplace
                 </span>
               </div>
             </div>
+            <Link href="/" className="hidden md:inline-flex text-xs font-bold text-[#1a1a1a] uppercase tracking-widest hover:text-[#C5A059] transition-colors border-b-2 border-transparent hover:border-[#C5A059] pb-1">
+              ← View All Tours
+            </Link>
           </div>
         </header>
 
-        <main className="max-w-4xl mx-auto px-6 py-8">
-          {/* Back link */}
-          <div className="mb-6">
-            <Link href="/" className="text-sm font-bold text-emerald-600 hover:text-emerald-700 inline-flex items-center gap-1 uppercase tracking-wider">
-              ← All New Orleans Tours
-            </Link>
-          </div>
-
-          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            {/* Hero Section */}
-            <div className="relative aspect-[16/9] md:aspect-[21/9] w-full overflow-hidden">
-              <img
-                src={product.imageUrl}
-                alt={product.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
-              <div className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                {product.category}
-              </div>
-              <div className="absolute bottom-6 left-6 right-6">
-                <h2 className="text-3xl md:text-4xl font-black text-white mb-2 leading-tight">
+        <main>
+          {/* Immersive Hero */}
+          <div className="relative w-full h-[60vh] min-h-[400px] max-h-[600px] overflow-hidden bg-[#1a1a1a]">
+            <img
+              src={product.imageUrl}
+              alt={product.title}
+              className="w-full h-full object-cover opacity-60"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/40 to-transparent" />
+            
+            <div className="absolute inset-0 flex items-end">
+              <div className="max-w-4xl mx-auto w-full px-6 pb-12 md:pb-16 text-center md:text-left">
+                <div className="mb-4">
+                  <span className="inline-block bg-[#FDFBF7] text-[#1a1a1a] px-3 py-1 text-[10px] font-bold uppercase tracking-widest shadow-sm">
+                    {product.category}
+                  </span>
+                </div>
+                <h2 className="text-4xl md:text-6xl font-[var(--font-accent)] font-bold text-[#FDFBF7] mb-4 leading-tight">
                   {product.title}
                 </h2>
-                <p className="text-sm font-bold text-emerald-400 uppercase tracking-wider">
-                  Operator: {product.operatorName}
+                <p className="text-sm md:text-base font-bold text-[#C5A059] uppercase tracking-widest">
+                  Operated by {product.operatorName}
                 </p>
               </div>
             </div>
+          </div>
 
-            <div className="p-6 md:p-8 space-y-8">
-              {/* Overview */}
-              <div>
-                {product.bestFor && (
-                  <div className="mb-4">
-                    <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg inline-block">
-                      {product.bestFor}
-                    </span>
+          {/* Mobile Back Link */}
+          <div className="md:hidden px-6 py-6 border-b border-[#E5E0D8]">
+            <Link href="/" className="text-xs font-bold text-[#1a1a1a] uppercase tracking-widest flex items-center gap-2">
+              ← View All Tours
+            </Link>
+          </div>
+
+          <div className="max-w-4xl mx-auto px-6 py-12 md:py-20">
+            <div className="grid md:grid-cols-12 gap-12 md:gap-16">
+              
+              {/* Editorial Content */}
+              <div className="md:col-span-7 space-y-16">
+                
+                <section>
+                  {product.bestFor && (
+                    <div className="mb-6 border-l-4 border-[#C5A059] pl-4">
+                      <span className="text-sm font-bold text-[#1a1a1a] uppercase tracking-widest">
+                        {product.bestFor}
+                      </span>
+                    </div>
+                  )}
+                  <h3 className="text-3xl font-[var(--font-accent)] font-bold text-[#1a1a1a] mb-6">The Experience</h3>
+                  <p className="text-[#444] leading-relaxed text-lg font-light">
+                    {product.description}
+                  </p>
+                </section>
+
+                <section className="bg-[#F4F1EB] p-8">
+                  <h3 className="text-xl font-[var(--font-accent)] font-bold text-[#1a1a1a] mb-4 border-b border-[#E5E0D8] pb-4">Practical Details</h3>
+                  <p className="text-[#666] leading-relaxed text-sm">
+                    Current schedules, tour duration, meeting or pickup locations, pricing, and available capacity are managed directly by {product.operatorName} and will be confirmed during the booking process.
+                  </p>
+                </section>
+                
+              </div>
+
+              {/* Booking Sidebar */}
+              <div className="md:col-span-5">
+                <div className="sticky top-32 bg-white border border-[#E5E0D8] p-8 shadow-xl">
+                  <div className="text-center mb-6">
+                    <span className="text-[10px] font-bold text-[#C5A059] uppercase tracking-widest block mb-2">Secure Booking</span>
+                    <h3 className="text-2xl font-[var(--font-accent)] font-bold text-[#1a1a1a]">Reserve Your Spot</h3>
                   </div>
-                )}
-                <h3 className="text-xl font-bold text-slate-900 mb-3">About this tour</h3>
-                <p className="text-slate-600 leading-relaxed text-base">
-                  {product.description}
-                </p>
+                  
+                  <div className="mb-6 text-sm text-[#666] leading-relaxed text-center bg-[#FDFBF7] p-4 border border-[#E5E0D8]">
+                    <p>
+                      <strong>Welcome to New Orleans Tours</strong> is an independent curated storefront. Booking opens through the official FareHarbor checkout for {product.operatorName}.
+                    </p>
+                  </div>
+
+                  <a
+                    href={getFareHarborUrl(product.companyShortname, product.itemId, product.flowId)}
+                    className="flex items-center justify-center w-full min-h-[80px] bg-[#0B3B24] hover:bg-[#1a1a1a] text-[#FDFBF7] font-bold px-6 py-4 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
+                  >
+                    Check Dates & Pricing
+                  </a>
+                </div>
               </div>
 
-              {/* Logistics & Fallback */}
-              <div className="bg-emerald-50 rounded-2xl p-6 border border-emerald-100">
-                <h3 className="text-lg font-bold text-slate-900 mb-3">Practical details</h3>
-                <p className="text-emerald-800 text-sm leading-relaxed font-medium">
-                  Current schedules, duration, pickup options, pricing, and availability are confirmed during booking.
-                </p>
-              </div>
-
-              {/* Independent Storefront Clarification */}
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-sm text-slate-600 leading-relaxed">
-                <p>
-                  <strong>Welcome to New Orleans Tours is an independent curated storefront.</strong> Booking opens through the operator’s FareHarbor checkout.
-                </p>
-              </div>
-
-              {/* CTA */}
-              <div className="pt-4 border-t border-slate-100">
-                <a
-                  href={getFareHarborUrl(product.companyShortname, product.itemId, product.flowId)}
-                  className="block w-full text-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-6 rounded-xl text-base transition-colors uppercase tracking-wider"
-                >
-                  Check Dates, Pricing & Availability
-                </a>
-              </div>
             </div>
           </div>
 
           {/* Related Tour */}
           {relatedProduct && (
-            <div className="mt-12">
-              <h3 className="text-xl font-black text-slate-900 mb-6 uppercase tracking-wider text-center">
-                Also Consider
-              </h3>
-              <Link href={`/tours/${relatedProduct.slug}`} className="block group">
-                <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:border-emerald-500/50 transition-colors flex flex-col md:flex-row max-w-3xl mx-auto">
-                  <div className="md:w-1/3 aspect-[4/3] md:aspect-auto relative overflow-hidden">
-                    <img 
-                      src={relatedProduct.imageUrl} 
-                      alt={relatedProduct.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <div className="p-6 md:w-2/3 flex flex-col justify-center">
-                    <h4 className="text-lg font-bold text-slate-900 mb-1 group-hover:text-emerald-600 transition-colors">
-                      {relatedProduct.title}
-                    </h4>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                      {relatedProduct.operatorName}
-                    </p>
-                    <p className="text-sm text-slate-600 leading-relaxed line-clamp-2">
-                      {relatedProduct.description}
-                    </p>
-                  </div>
+            <div className="bg-[#1a1a1a] py-20 px-6 border-t border-[#333]">
+              <div className="max-w-4xl mx-auto">
+                <div className="mb-10 text-center">
+                  <span className="text-[#C5A059] text-2xl mb-4 block">⚜️</span>
+                  <h3 className="text-2xl md:text-3xl font-[var(--font-accent)] font-bold text-[#FDFBF7] uppercase tracking-widest">
+                    Also Consider
+                  </h3>
                 </div>
-              </Link>
+                
+                <Link href={`/tours/${relatedProduct.slug}`} className="block group">
+                  <div className="bg-[#FDFBF7] border border-[#E5E0D8] overflow-hidden hover:border-[#C5A059] transition-colors flex flex-col md:flex-row shadow-lg">
+                    <div className="md:w-2/5 aspect-[16/9] md:aspect-auto relative overflow-hidden bg-[#1a1a1a]">
+                      <img 
+                        src={relatedProduct.imageUrl} 
+                        alt={relatedProduct.title}
+                        className="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700"
+                      />
+                    </div>
+                    <div className="p-8 md:w-3/5 flex flex-col justify-center">
+                      <p className="text-[10px] font-bold text-[#C5A059] uppercase tracking-widest mb-2">
+                        Operated by {relatedProduct.operatorName}
+                      </p>
+                      <h4 className="text-2xl font-[var(--font-accent)] font-bold text-[#1a1a1a] mb-4 group-hover:text-[#0B3B24] transition-colors">
+                        {relatedProduct.title}
+                      </h4>
+                      <p className="text-sm text-[#666] leading-relaxed line-clamp-2 mb-6">
+                        {relatedProduct.description}
+                      </p>
+                      <div>
+                        <span className="inline-block border-b-2 border-[#1a1a1a] text-[#1a1a1a] font-bold pb-1 text-xs uppercase tracking-widest group-hover:text-[#C5A059] group-hover:border-[#C5A059] transition-colors">
+                          View Details →
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </div>
             </div>
           )}
         </main>
