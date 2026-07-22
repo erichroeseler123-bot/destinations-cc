@@ -117,36 +117,46 @@ function getWtonotHostRewrite(request: NextRequest) {
     }
   }
 
-  // Categories mapping
+  // New Orleans Marketplace Top-Level Routes
   const allowedCategories = new Set([
+    "city-tours",
     "swamp-tours",
     "airboat-tours",
-    "french-quarter-tours",
-    "food-and-cocktail-tours",
-    "ghost-and-cemetery-tours",
+    "covered-swamp-boat-tours",
+    "plantation-tours",
+    "ghost-tours",
+    "cemetery-tours",
+    "cooking-classes",
     "riverboat-cruises",
+    "food-tours",
+    "walking-tours",
+    "private-tours",
+    "night-tours"
   ]);
 
-  if (pathname.startsWith("/categories/")) {
-    const slug = pathname.slice(12);
-    if (allowedCategories.has(slug)) {
-      url.pathname = `/new-orleans/categories/${slug}`;
-      return url;
-    }
+  // Handle /category or /category/comparison
+  const pathParts = pathname.split('/').filter(Boolean);
+  if (pathParts.length >= 1 && pathParts.length <= 2 && allowedCategories.has(pathParts[0])) {
+    url.pathname = `/new-orleans/marketplace-category${pathname}`;
+    return url;
   }
 
-  // Guides mapping
-  const allowedGuides = new Set([
-    "best-new-orleans-swamp-tour",
-    "french-quarter-tour-timing",
-  ]);
+  // Areas
+  if (pathname.startsWith("/areas/")) {
+    url.pathname = `/new-orleans${pathname}`;
+    return url;
+  }
 
+  // Traveler Fit
+  if (pathname.startsWith("/tours-for/")) {
+    url.pathname = `/new-orleans${pathname}`;
+    return url;
+  }
+
+  // Guides
   if (pathname.startsWith("/guides/")) {
-    const slug = pathname.slice(8);
-    if (allowedGuides.has(slug)) {
-      url.pathname = `/new-orleans/guides/${slug}`;
-      return url;
-    }
+    url.pathname = `/new-orleans${pathname}`;
+    return url;
   }
 
   // Block all other DCC/admin/operator pages on New Orleans tours domain by rewriting to /not-found

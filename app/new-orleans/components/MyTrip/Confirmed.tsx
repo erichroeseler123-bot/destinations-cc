@@ -1,0 +1,1 @@
+export default function Confirmed() { return <div>Confirmed</div>; }

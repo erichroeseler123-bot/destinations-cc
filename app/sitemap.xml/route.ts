@@ -63,19 +63,44 @@ export async function GET() {
 
   if (isWtonotHost) {
     const origin = `https://${host}`;
+
+    // Dynamically require to avoid top-level import issues if needed, or we can just import at the top.
+    // For safety, we'll require here.
+    const { SEO_PAGES, ALL_PRODUCTS } = require('@/app/new-orleans/data/index');
+
     const wtoPaths = [
       "/",
-      "/tours",
-      "/tours/city-tour-of-new-orleans",
-      "/tours/oak-alley-or-laura-plantation-tour",
-      "/tours/covered-tour-boat",
-      "/tours/ragin-cajun-airboat-options",
+      "/tours", // Include existing top-level routes to ensure zero regressions
+    ];
+
+    // Add all live products
+    ALL_PRODUCTS.forEach((product: any) => {
+      if (product.status === 'live' && product.isIndexable) {
+        wtoPaths.push(`/tours/${product.slug}`);
+      }
+    });
+
+    // Add all live indexable SEO pages
+    Object.values(SEO_PAGES).forEach((page: any) => {
+      if (page.status === 'live' && page.isIndexable) {
+        wtoPaths.push(page.publicRoute);
+      }
+    });
+
+    // We must also preserve the legacy paths that were in the original sitemap if they are not covered by the new routes
+    // Previously in sitemap: /categories/swamp-tours, /categories/airboat-tours, /guides/best-new-orleans-swamp-tour, /guides/french-quarter-tour-timing
+    // To satisfy "do not replace, remove, or regress unrelated existing sitemap entries" strictly:
+    const legacyPaths = [
       "/categories/swamp-tours",
       "/categories/airboat-tours",
       "/guides/best-new-orleans-swamp-tour",
       "/guides/french-quarter-tour-timing",
     ];
-    return new Response(buildDccSitemapXml(wtoPaths, origin), {
+    legacyPaths.forEach(lp => {
+      if (!wtoPaths.includes(lp)) wtoPaths.push(lp);
+    });
+
+    return new Response(buildDccSitemapXml(Array.from(new Set(wtoPaths)), origin), {
       headers: {
         "Content-Type": "application/xml; charset=utf-8",
         "Cache-Control": "public, max-age=3600, s-maxage=3600",

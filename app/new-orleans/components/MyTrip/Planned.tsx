@@ -1,0 +1,1 @@
+export default function Planned() { return <div>Planned List</div>; }

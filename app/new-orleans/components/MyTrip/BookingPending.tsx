@@ -1,0 +1,1 @@
+export default function BookingPending() { return <div>Booking Pending</div>; }

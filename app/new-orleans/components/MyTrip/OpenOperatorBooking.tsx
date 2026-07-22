@@ -1,0 +1,1 @@
+export default function OpenOperatorBooking() { return <button disabled>Open Booking</button>; }

@@ -1,0 +1,1 @@
+export default function SaveToMyTrip() { return <button disabled className="bg-gray-200 p-2 rounded">Save to My Trip (Coming Soon)</button>; }

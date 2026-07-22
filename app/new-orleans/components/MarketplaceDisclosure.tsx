@@ -1,0 +1,1 @@
+export default function MarketplaceDisclosure() { return <p className="text-xs text-gray-500 italic">Welcome to New Orleans Tours is an independent marketplace. Local providers operate each experience. Operator policies may differ.</p>; }

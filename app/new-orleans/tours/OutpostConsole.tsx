@@ -1,230 +1,256 @@
-"use client";
+import React from 'react';
+import Link from 'next/link';
+import MarketplaceDisclosure from '../components/MarketplaceDisclosure';
+import MarketplaceSearch from '../components/MarketplaceSearch';
+import ProductCard from '../components/ProductCard';
+import { ALL_PRODUCTS, LiveProductAdapter } from '../data/index';
+import { CATEGORIES, AREAS, SEO_PAGES, PROVIDERS } from '../data/index';
 
-import { STOREFRONT_PRODUCTS } from "./pageConfig";
+export default function OutpostConsole() {
 
-export default function NewOrleansToursStorefront() {
-  const cityTour = STOREFRONT_PRODUCTS.find(p => p.id === "southernstyle-city-tour");
-  const plantationTour = STOREFRONT_PRODUCTS.find(p => p.id === "southernstyle-plantation");
-  const coveredBoat = STOREFRONT_PRODUCTS.find(p => p.id === "ragincajun-covered-boat");
-  const airboat = STOREFRONT_PRODUCTS.find(p => p.id === "ragincajun-airboat");
+  const liveCategories = Object.values(CATEGORIES).filter(c => c.status === "live");
+  const liveAreas = Object.values(AREAS).filter(a => a.status === "live");
+  const liveGuides = Object.values(SEO_PAGES).filter(p => p.status === "live" && p.variant === "guide");
+
+  const liveProducts = ALL_PRODUCTS.filter(p => p.status === "live") as LiveProductAdapter[];
+  const cityTour = liveProducts.find(p => p.id === "southernstyle-city-tour");
+  const plantationTour = liveProducts.find(p => p.id === "southernstyle-plantation");
+  const coveredBoat = liveProducts.find(p => p.id === "ragincajun-covered-boat");
+  const airboat = liveProducts.find(p => p.id === "ragincajun-airboat");
+
+  const searchItems = [
+    ...liveProducts.map(p => {
+      const provider = p.providerId ? PROVIDERS[p.providerId]?.publicAttributionName : undefined;
+      const catId = p.categoryIds && p.categoryIds.length > 0 ? p.categoryIds[0] : '';
+      return {
+        id: p.id,
+        type: 'product' as const,
+        title: p.title,
+        description: p.description,
+        href: `/new-orleans/tours/${p.slug}`,
+        keywords: [p.title, p.slug, provider || ''],
+        operator: provider,
+        tags: [catId === 'city-tours' ? 'City' : catId === 'swamp-tours' ? 'Swamp' : 'Plantation', 'Tour'],
+      }
+    }),
+    ...liveCategories.map(c => ({
+      id: c.id,
+      type: 'category' as const,
+      title: c.title,
+      description: c.title, // Category doesn't have description in type
+      href: `/${c.slug}`,
+      keywords: [c.title, c.slug],
+      tags: ['Category']
+    })),
+    ...liveAreas.map(a => ({
+      id: a.id,
+      type: 'area' as const,
+      title: a.title,
+      description: a.visitorSummary || a.title,
+      href: `/areas/${a.slug}`,
+      keywords: [a.title, a.slug],
+      tags: ['Area']
+    })),
+    ...liveGuides.map(g => ({
+      id: g.id,
+      type: 'guide' as const,
+      title: g.heroTitle,
+      description: g.openingAnswer || g.heroTitle,
+      href: g.publicRoute,
+      keywords: [g.heroTitle, g.id],
+      tags: ['Guide']
+    }))
+  ];
 
   return (
-    <div id="main-content" className="bg-[#FDFBF7] min-h-screen text-[#1a1a1a] font-[var(--font-sans)]">
-      
-      {/* Brand Header */}
-      <header className="border-b border-[#E5E0D8] bg-[#FDFBF7] py-5 px-6 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">⚜️</span>
-            <div>
-              <h1 className="text-xl font-[var(--font-accent)] font-bold text-[#1a1a1a] tracking-tight leading-none uppercase">
-                Welcome To New Orleans Tours
-              </h1>
-              <span className="text-[10px] font-bold text-[#C5A059] tracking-widest uppercase">
-                A Curated Destination Marketplace
-              </span>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <header className="relative bg-[#1a1a1a] text-[#FDFBF7] py-24 md:py-32 px-6 overflow-hidden">
-        <div className="absolute inset-0 opacity-40">
-           <img 
-              src="/images/travel-markets/new-orleans/french-quarter-street.jpg" 
-              alt="New Orleans French Quarter" 
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/60 to-transparent" />
-        </div>
-        <div className="max-w-4xl mx-auto relative z-10 text-center">
-          <span className="inline-flex border border-[#C5A059] px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#C5A059] mb-8">
-            The Excursion Desk
-          </span>
-          <h2 className="text-4xl md:text-6xl font-[var(--font-accent)] font-bold tracking-tight leading-tight mb-6">
-            Find and Book<br />New Orleans Tours
-          </h2>
-          <p className="text-lg md:text-xl text-[#E5E0D8] font-light leading-relaxed max-w-2xl mx-auto">
-            Compare city tours, plantation experiences, swamp tours and airboat rides from our curated selection of local New Orleans operators.
-          </p>
-        </div>
-      </header>
-
-      {/* Editorial Collection */}
-      <main id="tours-grid" className="max-w-6xl mx-auto px-6 py-20 space-y-24">
-        
-        {/* City & History Collection */}
-        <section>
-          <div className="mb-12 border-b border-[#E5E0D8] pb-4">
-             <h3 className="text-3xl font-[var(--font-accent)] font-bold text-[#1a1a1a]">City & History</h3>
-             <p className="text-[#666] mt-2">Essential New Orleans experiences operated by Southern Style Tours.</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-10">
-            {/* City Tour Featured */}
-            {cityTour && (
-              <article className="group cursor-pointer flex flex-col">
-                <a href={`/tours/${cityTour.slug}`} className="block flex-grow focus:outline-none focus:ring-2 focus:ring-[#C5A059]">
-                  <div className="relative aspect-[4/5] md:aspect-[3/4] overflow-hidden bg-[#1a1a1a]">
-                    <img
-                      src={cityTour.imageUrl}
-                      alt={cityTour.title}
-                      className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent opacity-80" />
-                    <div className="absolute top-6 left-6 bg-[#FDFBF7] text-[#1a1a1a] px-3 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                      {cityTour.category}
-                    </div>
-                    <div className="absolute bottom-6 left-6 right-6">
-                      <h4 className="text-3xl font-[var(--font-accent)] text-[#FDFBF7] mb-2">{cityTour.title}</h4>
-                      <p className="text-[11px] font-bold text-[#C5A059] uppercase tracking-widest">Operated by {cityTour.operatorName}</p>
-                    </div>
-                  </div>
-                  <div className="pt-6 flex flex-col justify-between flex-grow">
-                    <p className="text-[#444] leading-relaxed mb-4">{cityTour.description}</p>
-                    {cityTour.bestFor && (
-                      <span className="text-xs font-bold text-[#0B3B24] uppercase tracking-wider">{cityTour.bestFor}</span>
-                    )}
-                  </div>
-                </a>
-                <div className="pt-6">
-                  <a href={`/tours/${cityTour.slug}`} className="inline-block border-b-2 border-[#0B3B24] text-[#0B3B24] font-bold pb-1 text-sm hover:text-[#1a1a1a] hover:border-[#1a1a1a] transition-colors uppercase tracking-widest">
-                    View Tour Details →
-                  </a>
-                </div>
-              </article>
-            )}
-
-            {/* Plantation Tour Featured */}
-            {plantationTour && (
-              <article className="group cursor-pointer flex flex-col mt-12 md:mt-24">
-                <a href={`/tours/${plantationTour.slug}`} className="block flex-grow focus:outline-none focus:ring-2 focus:ring-[#C5A059]">
-                  <div className="relative aspect-[4/5] md:aspect-[3/4] overflow-hidden bg-[#1a1a1a]">
-                    {plantationTour.imagePresentation === "editorial" ? (
-                      <div className="w-full h-full bg-[#FDFBF7] flex flex-col justify-center items-center p-8 border-[6px] border-[#1a1a1a] text-center relative group-hover:bg-[#F4F1EB] transition-colors duration-500">
-                        <div className="absolute top-6 left-6 bg-[#1a1a1a] text-[#FDFBF7] px-3 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                          {plantationTour.category}
-                        </div>
-                        <div className="w-full h-full border border-[#C5A059] flex flex-col justify-center items-center p-6">
-                          <span className="text-[10px] font-bold text-[#0B3B24] uppercase tracking-widest mb-4 block">Plantation history experience</span>
-                          <h4 className="text-3xl font-[var(--font-accent)] text-[#1a1a1a] mb-4 leading-tight">{plantationTour.title}</h4>
-                          <div className="w-12 h-[2px] bg-[#C5A059] mb-4"></div>
-                          <p className="text-[11px] font-bold text-[#666] uppercase tracking-widest">Operated by {plantationTour.operatorName}</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <img
-                          src={plantationTour.imageUrl}
-                          alt={plantationTour.title}
-                          className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent opacity-80" />
-                        <div className="absolute top-6 left-6 bg-[#FDFBF7] text-[#1a1a1a] px-3 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                          {plantationTour.category}
-                        </div>
-                        <div className="absolute bottom-6 left-6 right-6">
-                          <h4 className="text-3xl font-[var(--font-accent)] text-[#FDFBF7] mb-2">{plantationTour.title}</h4>
-                          <p className="text-[11px] font-bold text-[#C5A059] uppercase tracking-widest">Operated by {plantationTour.operatorName}</p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  <div className="pt-6 flex flex-col justify-between flex-grow">
-                    <p className="text-[#444] leading-relaxed mb-4">{plantationTour.description}</p>
-                    {plantationTour.bestFor && (
-                      <span className="text-xs font-bold text-[#0B3B24] uppercase tracking-wider">{plantationTour.bestFor}</span>
-                    )}
-                  </div>
-                </a>
-                <div className="pt-6">
-                  <a href={`/tours/${plantationTour.slug}`} className="inline-block border-b-2 border-[#0B3B24] text-[#0B3B24] font-bold pb-1 text-sm hover:text-[#1a1a1a] hover:border-[#1a1a1a] transition-colors uppercase tracking-widest">
-                    View Tour Details →
-                  </a>
-                </div>
-              </article>
-            )}
-          </div>
-        </section>
-
-        {/* Wetlands Comparison */}
-        <section className="bg-[#F4F1EB] -mx-6 px-6 py-20 md:px-12 md:mx-0 md:rounded-[2rem]">
-          <div className="mb-12 text-center max-w-2xl mx-auto">
-             <span className="text-[#C5A059] text-3xl mb-4 block">🐊</span>
-             <h3 className="text-3xl font-[var(--font-accent)] font-bold text-[#1a1a1a] mb-4">Louisiana Wetlands</h3>
-             <p className="text-[#666]">Explore the bayous with Ragin Cajun Tours. Choose between a relaxed covered pontoon or a high-speed airboat ride.</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {coveredBoat && (
-              <article className="bg-[#FDFBF7] p-6 shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-between border border-[#E5E0D8]">
-                <div>
-                  <div className="aspect-[16/9] overflow-hidden mb-6 bg-[#1a1a1a]">
-                    <img src={coveredBoat.imageUrl} alt={coveredBoat.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100" />
-                  </div>
-                  <h4 className="text-2xl font-[var(--font-accent)] text-[#1a1a1a] mb-1">{coveredBoat.title}</h4>
-                  <p className="text-[10px] font-bold text-[#666] uppercase tracking-widest mb-4">Operated by {coveredBoat.operatorName}</p>
-                  <p className="text-[#444] text-sm leading-relaxed mb-4">{coveredBoat.description}</p>
-                  {coveredBoat.bestFor && (
-                    <div className="mb-6"><span className="text-xs font-bold text-[#0B3B24] bg-[#0B3B24]/5 px-2 py-1">{coveredBoat.bestFor}</span></div>
-                  )}
-                </div>
-                <a href={`/tours/${coveredBoat.slug}`} className="block w-full text-center border border-[#0B3B24] text-[#0B3B24] hover:bg-[#0B3B24] hover:text-[#FDFBF7] transition-colors font-bold py-3 text-xs uppercase tracking-widest">
-                  View Tour Details
-                </a>
-              </article>
-            )}
-
-            {airboat && (
-              <article className="bg-[#FDFBF7] p-6 shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-between border border-[#E5E0D8]">
-                <div>
-                  <div className="aspect-[16/9] overflow-hidden mb-6 bg-[#1a1a1a]">
-                    <img src={airboat.imageUrl} alt={airboat.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100" />
-                  </div>
-                  <h4 className="text-2xl font-[var(--font-accent)] text-[#1a1a1a] mb-1">{airboat.title}</h4>
-                  <p className="text-[10px] font-bold text-[#666] uppercase tracking-widest mb-4">Operated by {airboat.operatorName}</p>
-                  <p className="text-[#444] text-sm leading-relaxed mb-4">{airboat.description}</p>
-                  {airboat.bestFor && (
-                    <div className="mb-6"><span className="text-xs font-bold text-[#0B3B24] bg-[#0B3B24]/5 px-2 py-1">{airboat.bestFor}</span></div>
-                  )}
-                </div>
-                <a href={`/tours/${airboat.slug}`} className="block w-full text-center border border-[#0B3B24] text-[#0B3B24] hover:bg-[#0B3B24] hover:text-[#FDFBF7] transition-colors font-bold py-3 text-xs uppercase tracking-widest">
-                  View Tour Details
-                </a>
-              </article>
-            )}
-          </div>
-        </section>
-      </main>
-
-      {/* Trust Block */}
-      <section className="border-t border-[#E5E0D8] bg-[#FDFBF7] py-16 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <h4 className="font-bold text-[#1a1a1a] mb-4 uppercase tracking-widest text-xs">About Welcome to New Orleans Tours</h4>
-          <p className="text-sm text-[#666] leading-relaxed">
-            Welcome to New Orleans Tours is an independent, curated tour storefront. Each experience is operated by the local company shown on the tour listing, and booking opens through that operator’s FareHarbor checkout.
-            <br /><br />
-            Current pricing, schedules, availability, meeting details, cancellation policies, and reservation support are provided by the operator during booking. Welcome to New Orleans Tours is not affiliated with the City of New Orleans or an official tourism authority.
-          </p>
+    <main className="w-full min-h-screen bg-nola-ivory text-nola-charcoal font-sans selection:bg-nola-brass selection:text-nola-ivory">
+      {/* 1. Marketplace Hero */}
+      <section className="relative w-full py-28 px-6 flex flex-col items-center justify-center text-center bg-nola-charcoal text-nola-ivory">
+        <div className="absolute inset-0 opacity-10 bg-[url('/noise.png')] mix-blend-overlay pointer-events-none"></div>
+        <h1 className="relative text-5xl md:text-6xl lg:text-7xl font-serif mb-6 tracking-tight drop-shadow-sm text-nola-paper">Welcome to New Orleans</h1>
+        <p className="relative text-xl md:text-2xl max-w-2xl text-nola-paper/80 font-light leading-relaxed mb-10">
+          Compare authentic city tours, plantation experiences, and swamp excursions from local operators.
+        </p>
+        <div className="relative flex flex-col sm:flex-row gap-4">
+          <Link href="#search" className="px-8 py-4 bg-nola-brass text-nola-charcoal font-bold uppercase tracking-widest text-sm rounded-sm hover:bg-nola-ivory transition-colors">
+            Explore New Orleans Tours
+          </Link>
+          <Link href="/tours-for/first-time-visitors" className="px-8 py-4 bg-transparent border border-nola-brass text-nola-brass font-bold uppercase tracking-widest text-sm rounded-sm hover:bg-nola-brass/10 transition-colors">
+            Help Me Choose
+          </Link>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[#1a1a1a] text-[#888] py-16 px-6 text-center">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-sm font-[var(--font-accent)] text-[#FDFBF7] mb-6 uppercase tracking-widest">
-            ⚜️ Welcome To New Orleans Tours
-          </p>
-          <p className="text-xs leading-relaxed max-w-xl mx-auto">
-            Tours are operated and fulfilled by the local providers shown on each listing. Pricing, schedules, availability, meeting details, and cancellation policies are confirmed during booking.
-          </p>
-          <div className="mt-8 text-[10px] uppercase tracking-widest">
-            © 2026 Welcome To New Orleans Tours. All rights reserved.
+      {/* 2. Choose How You Want to Experience New Orleans */}
+      <section className="max-w-6xl mx-auto px-6 py-20">
+        <h2 className="text-3xl font-serif mb-12 text-center text-nola-shutter">Choose How You Want to Experience New Orleans</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+          {[
+            { href: "/city-tours", label: "City Tours" },
+            { href: "/swamp-tours", label: "Swamp & Bayou" },
+            { href: "/plantation-tours", label: "Plantations" }
+          ].map(link => (
+            <Link key={link.href} href={link.href} className="group relative block p-8 bg-white border border-nola-amber/50 rounded-sm text-center transition-all duration-300 hover:border-nola-brass hover:shadow-md hover:-translate-y-1">
+              <span className="absolute top-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-nola-brass transition-all duration-300 group-hover:w-full"></span>
+              <h3 className="font-serif text-lg text-nola-charcoal group-hover:text-nola-shutter transition-colors">{link.label}</h3>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* 3. Help Me Choose */}
+      <section className="max-w-6xl mx-auto px-6 py-12">
+        <div className="bg-nola-shutter p-10 md:p-14 rounded-sm shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-nola-brass opacity-10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+          <div className="relative z-10 max-w-xl">
+            <h2 className="text-3xl font-serif text-nola-ivory mb-4">Overwhelmed by choices?</h2>
+            <p className="text-nola-ivory/80 font-light text-lg">Read our guides for first-time visitors or dive into detailed comparisons between specific tours to find your perfect fit.</p>
+          </div>
+          <div className="relative z-10 flex flex-col sm:flex-row gap-4 w-full md:w-auto shrink-0">
+             <Link href="/tours-for/first-time-visitors" className="px-6 py-3 bg-nola-ivory text-nola-shutter text-center font-bold uppercase tracking-widest text-xs rounded-sm hover:bg-nola-paper transition-colors">First-Time Visitors</Link>
+             <Link href="/swamp-tours/airboat-vs-covered-boat" className="px-6 py-3 bg-transparent border border-nola-ivory/30 text-nola-ivory text-center font-bold uppercase tracking-widest text-xs rounded-sm hover:bg-nola-ivory/10 transition-colors">Compare Swamp Tours</Link>
           </div>
         </div>
-      </footer>
+      </section>
 
-    </div>
+      {/* 4. Featured Experiences */}
+      <section className="max-w-6xl mx-auto px-6 py-20">
+        <div className="text-center mb-16">
+          <h2 className="text-sm font-bold tracking-widest uppercase text-nola-brass mb-4">Live Inventory</h2>
+          <h3 className="text-4xl font-serif text-nola-charcoal">Featured Experiences</h3>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+          {cityTour && <ProductCard product={cityTour} />}
+          {plantationTour && <ProductCard product={plantationTour} />}
+          {coveredBoat && <ProductCard product={coveredBoat} />}
+          {airboat && <ProductCard product={airboat} />}
+        </div>
+      </section>
+
+      {/* 5. New Orleans After Dark */}
+      <section id="after-dark" className="bg-nola-charcoal text-nola-ivory py-24 px-6 border-t-[8px] border-nola-oxblood">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+            <div className="max-w-2xl">
+              <span className="text-nola-oxblood font-bold tracking-widest text-sm uppercase block mb-3">Evening Experiences</span>
+              <h2 className="text-4xl md:text-5xl font-serif text-nola-paper">New Orleans After Dark</h2>
+            </div>
+            <p className="text-lg opacity-80 max-w-md font-light leading-relaxed">Discover the city when the sun goes down. Additional after-dark experiences will be added as local operator inventory is verified.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+             <div className="p-8 border border-nola-ivory/10 rounded-sm bg-nola-charcoal/80">
+               <h3 className="font-serif text-2xl mb-3 text-nola-paper">Historical Night Tours</h3>
+               <p className="opacity-70 text-sm font-light leading-relaxed">Explore the darker side of history in the French Quarter. (Inventory coming soon)</p>
+             </div>
+             <div className="p-8 border border-nola-ivory/10 rounded-sm bg-nola-charcoal/80">
+               <h3 className="font-serif text-2xl mb-3 text-nola-paper">Dinner Cruises</h3>
+               <p className="opacity-70 text-sm font-light leading-relaxed">Mississippi River evening experiences with local cuisine. (Inventory coming soon)</p>
+             </div>
+             <div className="p-8 border border-nola-ivory/10 rounded-sm bg-nola-charcoal/80">
+               <h3 className="font-serif text-2xl mb-3 text-nola-paper">Live Music</h3>
+               <p className="opacity-70 text-sm font-light leading-relaxed">Authentic jazz and cultural experiences in historic venues. (Inventory coming soon)</p>
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 8. Browse New Orleans Tours (Search) */}
+      <section id="search" className="max-w-6xl mx-auto px-6 py-24 border-t border-nola-amber/30">
+        <h2 className="text-3xl font-serif mb-10 text-nola-shutter text-center">Browse New Orleans Tours</h2>
+        <MarketplaceSearch items={searchItems} />
+      </section>
+
+      {/* 6. Build Your New Orleans Day */}
+      <section className="bg-nola-amber/10 py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-sm font-bold tracking-widest uppercase text-nola-brass mb-4">Itineraries</h2>
+            <h3 className="text-4xl font-serif text-nola-charcoal">Build Your Day</h3>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="p-8 lg:p-12 bg-white border border-nola-amber/50 shadow-sm rounded-sm hover:shadow-md transition-shadow">
+              <h3 className="text-2xl font-serif mb-4 text-nola-shutter">The Classic First Day</h3>
+              <p className="mb-6 text-nola-charcoal/80 font-light leading-relaxed text-lg">Combine a morning city orientation with an afternoon swamp adventure to hit the essential New Orleans highlights.</p>
+              <div className="space-y-3 mb-6">
+                 {cityTour && <Link href={`/new-orleans/tours/${cityTour.slug}`} className="block text-nola-brass hover:underline font-bold text-sm uppercase tracking-widest">{cityTour.title} &rarr;</Link>}
+                 {airboat && <Link href={`/new-orleans/tours/${airboat.slug}`} className="block text-nola-brass hover:underline font-bold text-sm uppercase tracking-widest">{airboat.title} &rarr;</Link>}
+              </div>
+              <div className="p-4 bg-nola-ivory border-l-2 border-nola-brass">
+                <p className="text-[11px] text-nola-charcoal/60 uppercase tracking-widest leading-relaxed">Note: These experiences are operated independently and require separate checkouts.</p>
+              </div>
+            </div>
+            <div className="p-8 lg:p-12 bg-white border border-nola-amber/50 shadow-sm rounded-sm hover:shadow-md transition-shadow">
+              <h3 className="text-2xl font-serif mb-4 text-nola-shutter">Plantations & River</h3>
+              <p className="mb-6 text-nola-charcoal/80 font-light leading-relaxed text-lg">A journey outside the city limits into Louisiana's complex history along the Great River Road.</p>
+              <div className="space-y-3 mb-6">
+                 {plantationTour && <Link href={`/new-orleans/tours/${plantationTour.slug}`} className="block text-nola-brass hover:underline font-bold text-sm uppercase tracking-widest">{plantationTour.title} &rarr;</Link>}
+              </div>
+              <div className="p-4 bg-nola-ivory border-l-2 border-nola-brass">
+                <p className="text-[11px] text-nola-charcoal/60 uppercase tracking-widest leading-relaxed">Note: Flexible timing. Operator policies differ.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. Why Book Here */}
+      <section className="bg-nola-tobacco text-nola-ivory py-24 px-6 text-center">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-sm font-bold tracking-widest uppercase text-nola-paper mb-12">The Marketplace Standard</h2>
+          <div className="grid md:grid-cols-3 gap-12 lg:gap-16">
+             <div>
+               <div className="text-3xl mb-4 text-nola-paper">&#10003;</div>
+               <h3 className="font-serif text-xl mb-4">Local Operators</h3>
+               <p className="text-sm text-nola-ivory/90 font-light leading-relaxed">Every experience is hosted by verified, authentic New Orleans providers.</p>
+             </div>
+             <div>
+               <div className="text-3xl mb-4 text-nola-paper">&#10003;</div>
+               <h3 className="font-serif text-xl mb-4">Independent Checkout</h3>
+               <p className="text-sm text-nola-ivory/90 font-light leading-relaxed">You book directly with the operator. Availability is verified during their checkout.</p>
+             </div>
+             <div>
+               <div className="text-3xl mb-4 text-nola-paper">&#10003;</div>
+               <h3 className="font-serif text-xl mb-4">Direct Support</h3>
+               <p className="text-sm text-nola-ivory/90 font-light leading-relaxed">We clearly identify the operator responsible for your booking support and cancellation policies.</p>
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 9. Explore by Area */}
+      <section className="bg-white py-20 px-6 border-t border-nola-amber/30">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-2xl font-serif mb-8 text-nola-shutter text-center">Explore by Area</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-center">
+            {liveAreas.map(area => (
+              <Link key={area.id} href={`/areas/${area.slug}`} className="group block p-8 border border-nola-amber/50 bg-nola-ivory text-center hover:border-nola-brass transition-colors rounded-sm shadow-sm hover:shadow-md">
+                <span className="font-serif text-nola-charcoal group-hover:text-nola-shutter text-lg">{area.title}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 10. Planning Guides */}
+      <section className="max-w-6xl mx-auto px-6 py-20 border-t border-nola-amber/30">
+        <h2 className="text-2xl font-serif mb-10 text-nola-shutter">Planning Guides</h2>
+        <ul className="grid md:grid-cols-2 gap-x-12 gap-y-6">
+          {liveGuides.map(guide => (
+            <li key={guide.id} className="border-b border-nola-amber/30 pb-4 border-dashed">
+              <Link href={guide.publicRoute} className="group flex items-center justify-between text-nola-charcoal hover:text-nola-brass transition-colors">
+                <span className="font-serif text-lg">{guide.heroTitle}</span>
+                <span className="font-serif transform group-hover:translate-x-1 transition-transform">&rarr;</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* 11. Independent Marketplace Disclosure */}
+      <section className="max-w-6xl mx-auto px-6 py-12 border-t border-nola-amber/30">
+        <MarketplaceDisclosure />
+      </section>
+
+    </main>
   );
 }

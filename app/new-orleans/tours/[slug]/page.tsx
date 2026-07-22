@@ -290,10 +290,14 @@ export default async function TourDetailPage({ params }: Props) {
                   <div className="bg-[#FDFBF7] border border-[#E5E0D8] overflow-hidden hover:border-[#C5A059] transition-colors flex flex-col md:flex-row shadow-lg">
                     <div className="md:w-2/5 aspect-[16/9] md:aspect-auto relative overflow-hidden bg-[#1a1a1a]">
                       {relatedProduct.imagePresentation === "editorial" ? (
-                        <div className="w-full h-full bg-[#0B3B24] flex items-center justify-center p-8 border-[4px] border-[#FDFBF7]">
-                          <div className="w-full h-full border border-[#C5A059] flex items-center justify-center p-4">
-                            <span className="text-[10px] font-bold text-[#C5A059] uppercase tracking-widest text-center">Plantation history experience</span>
-                          </div>
+                        <div className="w-full h-full bg-[#0a1510] flex flex-col items-center justify-center p-8 group-hover:bg-[#1a1a1a] transition-colors duration-700 relative overflow-hidden">
+                          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.05] via-transparent to-black/[0.3]"></div>
+                          <div className="absolute inset-4 border border-[#C5A059]/10"></div>
+                          <div className="absolute top-4 left-4 w-6 h-6 border-t border-l border-[#C5A059]/40 rounded-tl-xl"></div>
+                          <div className="absolute top-4 right-4 w-6 h-6 border-t border-r border-[#C5A059]/40 rounded-tr-xl"></div>
+                          <div className="absolute bottom-4 left-4 w-6 h-6 border-b border-l border-[#C5A059]/40 rounded-bl-xl"></div>
+                          <div className="absolute bottom-4 right-4 w-6 h-6 border-b border-r border-[#C5A059]/40 rounded-br-xl"></div>
+                          <span className="relative z-10 text-[11px] font-bold text-[#C5A059] uppercase tracking-[0.3em] text-center">Plantation History</span>
                         </div>
                       ) : (
                         <img
