@@ -179,9 +179,55 @@ export default async function TourDetailPage({ params }: Props) {
 
                 <section className="bg-[#F4F1EB] p-8">
                   <h3 className="text-xl font-[var(--font-accent)] font-bold text-[#1a1a1a] mb-4 border-b border-[#E5E0D8] pb-4">Practical Details</h3>
-                  <p className="text-[#666] leading-relaxed text-sm">
-                    Current schedules, tour duration, meeting or pickup locations, pricing, and available capacity are managed directly by {product.operatorName} and will be confirmed during the booking process.
-                  </p>
+                  
+                  <div className="space-y-6">
+                    {(product.durationLabel || product.transportationSummary || product.pickupSummary) && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {product.durationLabel && (
+                          <div>
+                            <h4 className="text-[10px] font-bold text-[#1a1a1a] uppercase tracking-widest mb-1">Duration</h4>
+                            <p className="text-[#666] text-sm leading-relaxed">{product.durationLabel}</p>
+                          </div>
+                        )}
+                        {product.transportationSummary && (
+                          <div>
+                            <h4 className="text-[10px] font-bold text-[#1a1a1a] uppercase tracking-widest mb-1">Transportation</h4>
+                            <p className="text-[#666] text-sm leading-relaxed">{product.transportationSummary}</p>
+                          </div>
+                        )}
+                        {product.pickupSummary && (
+                          <div className="md:col-span-2">
+                            <h4 className="text-[10px] font-bold text-[#1a1a1a] uppercase tracking-widest mb-1">Pickup</h4>
+                            <p className="text-[#666] text-sm leading-relaxed">{product.pickupSummary}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {product.highlights && product.highlights.length > 0 && (
+                      <div>
+                        <h4 className="text-[10px] font-bold text-[#1a1a1a] uppercase tracking-widest mb-2">Highlights</h4>
+                        <ul className="list-disc list-inside text-[#666] text-sm leading-relaxed space-y-1">
+                          {product.highlights.map((highlight, idx) => (
+                            <li key={idx}>{highlight}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {product.bookingNote && (
+                      <div className="border-t border-[#E5E0D8] pt-4 mt-4">
+                        <h4 className="text-[10px] font-bold text-[#1a1a1a] uppercase tracking-widest mb-1">Booking Note</h4>
+                        <p className="text-[#666] text-sm leading-relaxed">{product.bookingNote}</p>
+                      </div>
+                    )}
+                    
+                    {!product.durationLabel && !product.transportationSummary && !product.pickupSummary && (!product.highlights || product.highlights.length === 0) && !product.bookingNote && (
+                      <p className="text-[#666] leading-relaxed text-sm">
+                        Current schedules, tour duration, meeting or pickup locations, pricing, and available capacity are managed directly by {product.operatorName} and will be confirmed during the booking process.
+                      </p>
+                    )}
+                  </div>
                 </section>
                 
               </div>
