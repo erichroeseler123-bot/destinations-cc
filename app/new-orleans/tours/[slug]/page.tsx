@@ -77,12 +77,12 @@ export default async function TourDetailPage({ params }: Props) {
 
   const basePath = isWto ? "" : NEW_ORLEANS_TOURS_PATH;
   const pagePath = `${basePath}/tours/${slug}`;
-  const isAirboat = slug === "ragin-cajun-airboat";
+  const isAirboat = slug === "ragin-cajun-airboat-options";
   const refCodeMap: Record<string, string> = {
-    "city-tour": "WTONOT-DETAIL-CITY",
-    "oak-alley-laura-plantation": "WTONOT-DETAIL-PLANTATION",
+    "city-tour-of-new-orleans": "WTONOT-DETAIL-CITY",
+    "oak-alley-or-laura-plantation-tour": "WTONOT-DETAIL-PLANTATION",
     "covered-tour-boat": "WTONOT-DETAIL-COVERED",
-    "ragin-cajun-airboat": "WTONOT-DETAIL-AIRBOAT"
+    "ragin-cajun-airboat-options": "WTONOT-DETAIL-AIRBOAT"
   };
   const refCode = refCodeMap[slug] || "WTONOT-DETAIL-UNKNOWN";
   const fallbackHref = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
