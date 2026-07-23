@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import OutpostConsole from "./OutpostConsole";
+import { HeaderNav, FooterNav } from "../components/MarketplaceNavigation";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -92,7 +93,9 @@ export default async function NewOrleansToursPage() {
           ],
         }}
       />
+      <HeaderNav />
       <OutpostConsole />
+      <FooterNav />
     </>
   );
 }
