@@ -3,6 +3,7 @@ import Link from 'next/link';
 import MarketplaceDisclosure from '../components/MarketplaceDisclosure';
 import MarketplaceSearch from '../components/MarketplaceSearch';
 import ProductCard from '../components/ProductCard';
+import PhoneCta from '../components/PhoneCta';
 import { ALL_PRODUCTS, LiveProductAdapter } from '../data/index';
 import { CATEGORIES, AREAS, SEO_PAGES, PROVIDERS } from '../data/index';
 
@@ -79,6 +80,12 @@ export default function OutpostConsole() {
             Help Me Choose
           </Link>
         </div>
+        <div className="relative mt-8 pt-8 border-t border-nola-ivory/10 flex flex-col items-center">
+          <p className="text-nola-paper/80 font-light text-sm mb-2">Planning a group or not sure which tour fits?</p>
+          <PhoneCta placement="WTONOT-HERO-PHONE" isGroup className="text-nola-brass font-bold text-lg hover:text-nola-ivory transition-colors">
+            Call 504-484-9687
+          </PhoneCta>
+        </div>
       </section>
 
       {/* 2. Choose How You Want to Experience New Orleans */}
@@ -104,7 +111,13 @@ export default function OutpostConsole() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-nola-brass opacity-10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
           <div className="relative z-10 max-w-xl">
             <h2 className="text-3xl font-serif text-nola-ivory mb-4">Overwhelmed by choices?</h2>
-            <p className="text-nola-ivory/80 font-light text-lg">Read our guides for first-time visitors or dive into detailed comparisons between specific tours to find your perfect fit.</p>
+            <p className="text-nola-ivory/80 font-light text-lg mb-6">Read our guides for first-time visitors or dive into detailed comparisons between specific tours to find your perfect fit.</p>
+            <div className="bg-nola-charcoal/30 p-5 rounded-sm border border-nola-ivory/10">
+               <p className="text-nola-ivory/90 font-bold text-sm mb-1">Prefer to talk to someone?</p>
+               <PhoneCta placement="WTONOT-HELP-PHONE" className="text-nola-brass hover:text-nola-ivory transition-colors text-sm">
+                 Call 504-484-9687 for help comparing tours.
+               </PhoneCta>
+            </div>
           </div>
           <div className="relative z-10 flex flex-col sm:flex-row gap-4 w-full md:w-auto shrink-0">
              <Link href="/tours-for/first-time-visitors" className="px-6 py-3 bg-nola-ivory text-nola-shutter text-center font-bold uppercase tracking-widest text-xs rounded-sm hover:bg-nola-paper transition-colors">First-Time Visitors</Link>
@@ -158,6 +171,19 @@ export default function OutpostConsole() {
       <section id="search" className="max-w-6xl mx-auto px-6 py-24 border-t border-nola-amber/30">
         <h2 className="text-3xl font-serif mb-10 text-nola-shutter text-center">Browse New Orleans Tours</h2>
         <MarketplaceSearch items={searchItems} />
+      </section>
+
+      {/* Group Call Band */}
+      <section className="bg-nola-charcoal text-nola-ivory py-16 px-6 border-y-4 border-nola-brass text-center">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-3xl font-serif text-nola-paper mb-4">Planning a New Orleans group outing?</h2>
+          <p className="text-lg font-light text-nola-ivory/80 leading-relaxed mb-8">
+            Call 504-484-9687 for help with tour options, group rates, and operator availability.
+          </p>
+          <PhoneCta placement="WTONOT-GROUP-PHONE" isGroup className="inline-block px-8 py-4 bg-nola-brass text-nola-charcoal font-bold uppercase tracking-widest text-sm rounded-sm hover:bg-nola-ivory transition-colors">
+            Call About My Group
+          </PhoneCta>
+        </div>
       </section>
 
       {/* 6. Build Your New Orleans Day */}

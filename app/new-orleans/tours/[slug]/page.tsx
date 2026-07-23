@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import FareHarborLightframeLoader from "../../components/FareHarborLightframeLoader";
 import FareHarborBookingButton from "../../components/FareHarborBookingButton";
+import PhoneCta from "../../components/PhoneCta";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { STOREFRONT_PRODUCTS, getFareHarborUrl, NEW_ORLEANS_TOURS_PATH } from "../pageConfig";
@@ -86,7 +87,23 @@ export default async function TourDetailPage({ params }: Props) {
   };
   const refCode = refCodeMap[slug] || "WTONOT-DETAIL-UNKNOWN";
   const fallbackHref = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
-  const ctaText = isAirboat ? "View Details" : "Check Dates & Prices";
+  const ctaText = isAirboat ? "View Operator Options" : "Check Dates & Prices";
+
+  const phoneMessages: Record<string, string> = {
+    "city-tour-of-new-orleans": "Questions about pickup or group arrangements?",
+    "oak-alley-or-laura-plantation-tour": "Need help choosing Oak Alley or Laura Plantation?",
+    "covered-tour-boat": "Questions about transportation, timing, or groups?",
+    "ragin-cajun-airboat-options": "Need help choosing an airboat option?"
+  };
+  const productPhoneMessage = phoneMessages[slug] || "Questions before booking?";
+
+  const phonePlacementMap: Record<string, string> = {
+    "city-tour-of-new-orleans": "WTONOT-DETAIL-CITY-PHONE",
+    "oak-alley-or-laura-plantation-tour": "WTONOT-DETAIL-PLANTATION-PHONE",
+    "covered-tour-boat": "WTONOT-DETAIL-COVERED-PHONE",
+    "ragin-cajun-airboat-options": "WTONOT-DETAIL-AIRBOAT-PHONE"
+  };
+  const phonePlacement = phonePlacementMap[slug] || "WTONOT-DETAIL-UNKNOWN-PHONE";
 
 
   return (
@@ -305,6 +322,20 @@ export default async function TourDetailPage({ params }: Props) {
                       Availability and final pricing are confirmed in the operator’s secure checkout.
                     </p>
                   )}
+
+                  <div className="mt-8 pt-6 border-t border-[#E5E0D8] text-center">
+                    <p className="text-[#1a1a1a] font-bold text-sm mb-1">{productPhoneMessage}</p>
+                    <PhoneCta placement={phonePlacement} productId={product.itemId ? String(product.itemId) : undefined} productSlug={product.slug} className="text-[#C5A059] hover:text-[#1a1a1a] font-bold transition-colors">
+                      Call 504-484-9687
+                    </PhoneCta>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-[#E5E0D8]/50 text-center">
+                    <p className="text-[#666] text-sm mb-1">Planning for a group?</p>
+                    <PhoneCta isGroup placement={phonePlacement} productId={product.itemId ? String(product.itemId) : undefined} productSlug={product.slug} className="text-[#C5A059] hover:text-[#1a1a1a] font-bold text-sm transition-colors">
+                      Call for group rates and availability.
+                    </PhoneCta>
+                  </div>
                 </div>
               </div>
 
@@ -366,30 +397,35 @@ export default async function TourDetailPage({ params }: Props) {
           )}
 
           {/* Sticky Mobile CTA */}
-          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E0D8] p-4 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-            {isAirboat ? (
-              <a
-                href={fallbackHref}
-                className="flex items-center justify-center w-full min-h-[60px] bg-[#0B3B24] hover:bg-[#1a1a1a] text-[#FDFBF7] font-bold px-4 py-3 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
-              >
-                {ctaText}
-              </a>
-            ) : (
-              <FareHarborBookingButton
-                productTitle={product.title}
-                productSlug={product.slug}
-                shortname={product.companyShortname}
-                itemId={product.itemId}
-                flowId={product.flowId}
-                asn="aktourcenter"
-                refCode={refCode}
-                fallbackHref={fallbackHref}
-                placement="mobile-sticky"
-                className="flex items-center justify-center w-full min-h-[60px] bg-[#0B3B24] hover:bg-[#1a1a1a] text-[#FDFBF7] font-bold px-4 py-3 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
-              >
-                {ctaText}
-              </FareHarborBookingButton>
-            )}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E0D8] p-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+             <div className="flex gap-2">
+               <PhoneCta placement="WTONOT-MOBILE-PHONE" productId={product.itemId ? String(product.itemId) : undefined} productSlug={product.slug} className="flex-1 flex items-center justify-center min-h-[50px] border-2 border-[#0B3B24] text-[#0B3B24] bg-white font-bold text-[11px] uppercase tracking-widest text-center transition-colors">
+                 Call With<br/>Questions
+               </PhoneCta>
+               {isAirboat ? (
+                 <a
+                   href={fallbackHref}
+                   className="flex-1 flex items-center justify-center min-h-[50px] bg-[#0B3B24] hover:bg-[#1a1a1a] text-[#FDFBF7] font-bold px-2 text-[11px] transition-colors uppercase tracking-widest text-center"
+                 >
+                   {ctaText}
+                 </a>
+               ) : (
+                 <FareHarborBookingButton
+                   productTitle={product.title}
+                   productSlug={product.slug}
+                   shortname={product.companyShortname}
+                   itemId={product.itemId}
+                   flowId={product.flowId}
+                   asn="aktourcenter"
+                   refCode={refCode}
+                   fallbackHref={fallbackHref}
+                   placement="mobile-sticky"
+                   className="flex-1 flex items-center justify-center min-h-[50px] bg-[#0B3B24] hover:bg-[#1a1a1a] text-[#FDFBF7] font-bold px-2 text-[11px] transition-colors uppercase tracking-widest text-center"
+                 >
+                   {ctaText}
+                 </FareHarborBookingButton>
+               )}
+             </div>
           </div>
 
         </main>
