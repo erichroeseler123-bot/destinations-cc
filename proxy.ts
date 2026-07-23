@@ -46,6 +46,7 @@ const SOMERSET_HOSTS = new Set([
 const WTONOT_HOSTS = new Set([
   "welcometoneworleanstours.com",
   "www.welcometoneworleanstours.com",
+  "destinations-cc-new-orleans-preview.vercel.app",
 ]);
 
 const LFSE_HOSTS = new Set([
