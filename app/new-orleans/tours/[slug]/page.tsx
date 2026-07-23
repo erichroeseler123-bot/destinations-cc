@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import Script from "next/script";
+import FareHarborLightframeLoader from "../../components/FareHarborLightframeLoader";
+import FareHarborBookingButton from "../../components/FareHarborBookingButton";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { STOREFRONT_PRODUCTS, getFareHarborUrl, NEW_ORLEANS_TOURS_PATH } from "../pageConfig";
@@ -76,6 +77,17 @@ export default async function TourDetailPage({ params }: Props) {
 
   const basePath = isWto ? "" : NEW_ORLEANS_TOURS_PATH;
   const pagePath = `${basePath}/tours/${slug}`;
+  const isAirboat = slug === "ragin-cajun-airboat";
+  const refCodeMap: Record<string, string> = {
+    "city-tour": "WTONOT-DETAIL-CITY",
+    "oak-alley-laura-plantation": "WTONOT-DETAIL-PLANTATION",
+    "covered-tour-boat": "WTONOT-DETAIL-COVERED",
+    "ragin-cajun-airboat": "WTONOT-DETAIL-AIRBOAT"
+  };
+  const refCode = refCodeMap[slug] || "WTONOT-DETAIL-UNKNOWN";
+  const fallbackHref = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
+  const ctaText = isAirboat ? "View Details" : "Check Dates & Prices";
+
 
   return (
     <>
@@ -105,7 +117,7 @@ export default async function TourDetailPage({ params }: Props) {
         }}
       />
       <div id="main-content" className="bg-[#FDFBF7] min-h-screen text-[#1a1a1a] font-[var(--font-sans)] pb-16">
-        <Script src="https://fareharbor.com/embeds/api/v1/?autolightframe=yes" strategy="afterInteractive" />
+        <FareHarborLightframeLoader />
 
         {/* Brand Header */}
         <header className="border-b border-[#E5E0D8] bg-[#FDFBF7] py-5 px-6 sticky top-0 z-50">
@@ -178,7 +190,7 @@ export default async function TourDetailPage({ params }: Props) {
             <div className="grid md:grid-cols-12 gap-12 md:gap-16">
 
               {/* Editorial Content */}
-              <div className="md:col-span-7 space-y-16">
+              <div className="md:col-span-7 space-y-16 pb-24 md:pb-0">
 
                 <section>
                   {product.bestFor && (
@@ -263,12 +275,36 @@ export default async function TourDetailPage({ params }: Props) {
                     </p>
                   </div>
 
-                  <a
-                    href={getFareHarborUrl(product.companyShortname, product.itemId, product.flowId)}
-                    className="flex items-center justify-center w-full min-h-[80px] bg-[#0B3B24] hover:bg-[#1a1a1a] text-[#FDFBF7] font-bold px-6 py-4 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
-                  >
-                    Check Dates & Pricing
-                  </a>
+                  {/* Airboat Lightframe disabled pending dedicated item IDs or an airboat-only FareHarbor flow. */}
+                  {isAirboat ? (
+                    <a
+                      href={fallbackHref}
+                      className="flex items-center justify-center w-full min-h-[80px] bg-[#0B3B24] hover:bg-[#1a1a1a] text-[#FDFBF7] font-bold px-6 py-4 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
+                    >
+                      {ctaText}
+                    </a>
+                  ) : (
+                    <FareHarborBookingButton
+                      productTitle={product.title}
+                      productSlug={product.slug}
+                      shortname={product.companyShortname}
+                      itemId={product.itemId}
+                      flowId={product.flowId}
+                      asn="aktourcenter"
+                      refCode={refCode}
+                      fallbackHref={fallbackHref}
+                      placement="desktop-sidebar"
+                      className="flex items-center justify-center w-full min-h-[80px] bg-[#0B3B24] hover:bg-[#1a1a1a] text-[#FDFBF7] font-bold px-6 py-4 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
+                    >
+                      {ctaText}
+                    </FareHarborBookingButton>
+                  )}
+
+                  {!isAirboat && (
+                    <p className="mt-4 text-[11px] text-center text-[#666] leading-relaxed">
+                      Availability and final pricing are confirmed in the operator’s secure checkout.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -328,6 +364,34 @@ export default async function TourDetailPage({ params }: Props) {
               </div>
             </div>
           )}
+
+          {/* Sticky Mobile CTA */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E0D8] p-4 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+            {isAirboat ? (
+              <a
+                href={fallbackHref}
+                className="flex items-center justify-center w-full min-h-[60px] bg-[#0B3B24] hover:bg-[#1a1a1a] text-[#FDFBF7] font-bold px-4 py-3 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
+              >
+                {ctaText}
+              </a>
+            ) : (
+              <FareHarborBookingButton
+                productTitle={product.title}
+                productSlug={product.slug}
+                shortname={product.companyShortname}
+                itemId={product.itemId}
+                flowId={product.flowId}
+                asn="aktourcenter"
+                refCode={refCode}
+                fallbackHref={fallbackHref}
+                placement="mobile-sticky"
+                className="flex items-center justify-center w-full min-h-[60px] bg-[#0B3B24] hover:bg-[#1a1a1a] text-[#FDFBF7] font-bold px-4 py-3 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
+              >
+                {ctaText}
+              </FareHarborBookingButton>
+            )}
+          </div>
+
         </main>
       </div>
     </>
