@@ -50,13 +50,13 @@ export default function FareHarborBookingButton({
       flowId,
       ref: refCode,
     };
-    
+
     if (typeof window !== "undefined") {
       // Dispatch custom event for our own listener if needed
       window.dispatchEvent(
         new CustomEvent(eventName, { detail: eventData })
       );
-      
+
       // Push to dataLayer if present
       const dataLayer = (window as any).dataLayer || [];
       dataLayer.push({
@@ -69,7 +69,7 @@ export default function FareHarborBookingButton({
   useEffect(() => {
     // Intersection Observer to track "seen"
     if (!buttonRef.current) return;
-    
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
@@ -79,9 +79,9 @@ export default function FareHarborBookingButton({
       },
       { threshold: 0.1 }
     );
-    
+
     observer.observe(buttonRef.current);
-    
+
     return () => observer.disconnect();
   }, [productSlug, placement]);
 
@@ -112,7 +112,7 @@ export default function FareHarborBookingButton({
     if (itemId) {
       fhOptions.view = { item: String(itemId) };
     }
-    
+
     if (flowId) {
       fhOptions.flow = String(flowId);
     }
