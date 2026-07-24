@@ -28,8 +28,8 @@ export default function WelcomeStopPage() {
               <h2 className="text-xl font-bold text-[#137333] mb-2">Call for today's location</h2>
               <p className="text-[#1a1a1a] font-medium">Location and availability vary by day. Call before visiting.</p>
               <div className="mt-4">
-                <a href="tel:+15045550199" className="inline-block bg-[#137333] text-white px-6 py-3 rounded font-bold hover:bg-[#0d5224] transition-colors">
-                  (504) 555-0199
+                <a href="tel:+15044849687" className="inline-block bg-[#137333] text-white px-6 py-3 rounded font-bold hover:bg-[#0d5224] transition-colors">
+                  504-484-9687
                 </a>
               </div>
             </div>
