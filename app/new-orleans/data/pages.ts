@@ -35,13 +35,13 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "disclosure": "We are an independent marketplace. The city tours listed here are operated by verified local partners.",
     "faqs": [],
     "metadata": {
-      "title": "City Tours of New Orleans | Local Expert Guides",
+      "title": "City Tours of New Orleans | Welcome to New Orleans Tours",
       "description": "Explore the architecture, history, and culture of New Orleans with a comprehensive city tour.",
       "canonicalRoute": "https://www.welcometoneworleanstours.com/city-tours",
       "robots": "index, follow",
-      "openGraphTitle": "City Tours of New Orleans | Local Expert Guides",
+      "openGraphTitle": "City Tours of New Orleans | Welcome to New Orleans Tours",
       "openGraphUrl": "https://www.welcometoneworleanstours.com/city-tours",
-      "twitterTitle": "City Tours of New Orleans | Local Expert Guides"
+      "twitterTitle": "City Tours of New Orleans | Welcome to New Orleans Tours"
     },
     "schemaEligibility": null,
     "visualMood": null,
@@ -85,13 +85,13 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "disclosure": "We partner directly with swamp operators to bring you authentic bayou experiences.",
     "faqs": [],
     "metadata": {
-      "title": "New Orleans Swamp Tours | Explore the Bayou",
+      "title": "New Orleans Swamp Tours | Welcome to New Orleans Tours",
       "description": "Venture into the Louisiana bayou to see alligators, wild boars, and exotic birds in their natural habitat.",
       "canonicalRoute": "https://www.welcometoneworleanstours.com/swamp-tours",
       "robots": "index, follow",
-      "openGraphTitle": "New Orleans Swamp Tours | Explore the Bayou",
+      "openGraphTitle": "New Orleans Swamp Tours | Welcome to New Orleans Tours",
       "openGraphUrl": "https://www.welcometoneworleanstours.com/swamp-tours",
-      "twitterTitle": "New Orleans Swamp Tours | Explore the Bayou"
+      "twitterTitle": "New Orleans Swamp Tours | Welcome to New Orleans Tours"
     },
     "schemaEligibility": null,
     "visualMood": null,
@@ -135,13 +135,13 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "disclosure": "Airboat tours are operated by our verified local partners.",
     "faqs": [],
     "metadata": {
-      "title": "New Orleans Airboat Tours | Fast-Paced Adventure",
+      "title": "New Orleans Airboat Tours | Welcome to New Orleans Tours",
       "description": "Experience a thrilling, high-speed ride deep into the shallow marshes surrounding New Orleans.",
       "canonicalRoute": "https://www.welcometoneworleanstours.com/airboat-tours",
       "robots": "index, follow",
-      "openGraphTitle": "New Orleans Airboat Tours | Fast-Paced Adventure",
+      "openGraphTitle": "New Orleans Airboat Tours | Welcome to New Orleans Tours",
       "openGraphUrl": "https://www.welcometoneworleanstours.com/airboat-tours",
-      "twitterTitle": "New Orleans Airboat Tours | Fast-Paced Adventure"
+      "twitterTitle": "New Orleans Airboat Tours | Welcome to New Orleans Tours"
     },
     "schemaEligibility": null,
     "visualMood": null,
@@ -185,13 +185,13 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "disclosure": "Covered boat tours are operated by our verified local partners.",
     "faqs": [],
     "metadata": {
-      "title": "Covered Swamp Boat Tours | Relaxing Nature Cruise",
+      "title": "Covered Swamp Boat Tours | Welcome to New Orleans Tours",
       "description": "Enjoy a comfortable and shaded ride through the serene bayou ecosystem, perfect for wildlife photography.",
       "canonicalRoute": "https://www.welcometoneworleanstours.com/covered-swamp-boat-tours",
       "robots": "index, follow",
-      "openGraphTitle": "Covered Swamp Boat Tours | Relaxing Nature Cruise",
+      "openGraphTitle": "Covered Swamp Boat Tours | Welcome to New Orleans Tours",
       "openGraphUrl": "https://www.welcometoneworleanstours.com/covered-swamp-boat-tours",
-      "twitterTitle": "Covered Swamp Boat Tours | Relaxing Nature Cruise"
+      "twitterTitle": "Covered Swamp Boat Tours | Welcome to New Orleans Tours"
     },
     "schemaEligibility": null,
     "visualMood": null,
@@ -234,13 +234,13 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "disclosure": "We are an independent marketplace. Plantation tours are operated by local partners.",
     "faqs": [],
     "metadata": {
-      "title": "Louisiana Plantation Tours | Antebellum History",
+      "title": "Louisiana Plantation Tours | Welcome to New Orleans Tours",
       "description": "Gain deep insights into the region's complex antebellum history and the lives of those enslaved there.",
       "canonicalRoute": "https://www.welcometoneworleanstours.com/plantation-tours",
       "robots": "index, follow",
-      "openGraphTitle": "Louisiana Plantation Tours | Antebellum History",
+      "openGraphTitle": "Louisiana Plantation Tours | Welcome to New Orleans Tours",
       "openGraphUrl": "https://www.welcometoneworleanstours.com/plantation-tours",
-      "twitterTitle": "Louisiana Plantation Tours | Antebellum History"
+      "twitterTitle": "Louisiana Plantation Tours | Welcome to New Orleans Tours"
     },
     "schemaEligibility": null,
     "visualMood": null,
@@ -702,13 +702,13 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "disclosure": "We are an independent marketplace comparing local operator options.",
     "faqs": [],
     "metadata": {
-      "title": "Airboat vs. Covered Boat Tours in New Orleans",
+      "title": "Airboat vs. Covered Boat Tours in New Orleans | Welcome to New Orleans Tours",
       "description": "Compare high-speed airboats against relaxed, covered boat tours to choose the right swamp experience for your group.",
       "canonicalRoute": "https://www.welcometoneworleanstours.com/swamp-tours/airboat-vs-covered-boat",
       "robots": "index, follow",
-      "openGraphTitle": "Airboat vs. Covered Boat Tours in New Orleans",
+      "openGraphTitle": "Airboat vs. Covered Boat Tours in New Orleans | Welcome to New Orleans Tours",
       "openGraphUrl": "https://www.welcometoneworleanstours.com/swamp-tours/airboat-vs-covered-boat",
-      "twitterTitle": "Airboat vs. Covered Boat Tours in New Orleans"
+      "twitterTitle": "Airboat vs. Covered Boat Tours in New Orleans | Welcome to New Orleans Tours"
     },
     "schemaEligibility": null,
     "visualMood": null,
@@ -936,7 +936,7 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
       "title": "Oak Alley vs. Laura Plantation Tours",
       "description": "Compare the aesthetic focus of Oak Alley with the deep Creole history of Laura Plantation to decide on your tour.",
       "canonicalRoute": "https://www.welcometoneworleanstours.com/plantation-tours/oak-alley-vs-laura",
-      "robots": "index, follow",
+      "robots": "noindex, nofollow",
       "openGraphTitle": "Oak Alley vs. Laura Plantation Tours",
       "openGraphUrl": "https://www.welcometoneworleanstours.com/plantation-tours/oak-alley-vs-laura",
       "twitterTitle": "Oak Alley vs. Laura Plantation Tours"
@@ -944,8 +944,8 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
-    "status": "live",
-    "isIndexable": true
+    "status": "draft",
+    "isIndexable": false
 
 },
   "plantation-tours-oak-alley-vs-whitney": {

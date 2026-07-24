@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import PhoneCta from './PhoneCta';
+import FrenchQuarterBoothBonus from './FrenchQuarterBoothBonus';
 import styles from '../tours/outpost.module.css';
 
 interface HelpMeChooseDrawerProps {
@@ -88,6 +89,7 @@ export default function HelpMeChooseDrawer({ isOpen, onClose }: HelpMeChooseDraw
                 504-484-9687
               </span>
             </PhoneCta>
+            <FrenchQuarterBoothBonus variant="short" />
           </div>
         </div>
       </div>

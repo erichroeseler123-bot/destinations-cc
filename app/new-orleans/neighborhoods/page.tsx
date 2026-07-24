@@ -5,7 +5,7 @@ import { NEW_ORLEANS_GUIDE_PAGES } from "@/src/data/new-orleans-city-site";
 const page = NEW_ORLEANS_GUIDE_PAGES.neighborhoods;
 
 export const metadata: Metadata = {
-  title: "New Orleans Neighborhood Guide | Destination Command Center",
+  title: "New Orleans Neighborhood Guide | Welcome to New Orleans Tours",
   description: page.description,
   keywords: [
     "new orleans neighborhoods",

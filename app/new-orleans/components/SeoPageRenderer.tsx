@@ -3,10 +3,13 @@ import Link from 'next/link';
 import type { SeoPageRecord } from '../data/types';
 import { getProductById } from '../data/index';
 import ProductCard from './ProductCard';
+import ComparisonMatrix from './ComparisonMatrix';
+import JsonLd from '@/app/components/dcc/JsonLd';
+import { generateCategorySchemaGraph } from '../lib/schema';
 
 export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
   const products = page.liveProductIds.map(id => getProductById(id)).filter(Boolean);
-  
+
   const moodClasses: Record<string, string> = {
     "after-dark": "bg-nola-charcoal text-nola-ivory",
     "warm": "bg-nola-ivory text-nola-charcoal",
@@ -47,12 +50,25 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
   const wrapperClass = "max-w-5xl mx-auto px-6 pb-20";
 
   if (page.variant === "category") {
+    const schemaGraph = generateCategorySchemaGraph({
+      urlPath: page.publicRoute,
+      name: page.heroTitle,
+      description: page.heroSubtitle || "",
+      items: products.map(p => ({
+        slug: p!.slug,
+        name: p!.title,
+        description: p!.description || "",
+        providerName: p!.providerId ? p!.providerId : "Unknown" // We can improve provider name lookup if needed
+      }))
+    });
+
     return (
       <main className="w-full bg-nola-ivory font-sans selection:bg-nola-brass selection:text-nola-ivory min-h-screen">
+        <JsonLd data={schemaGraph} />
         {renderHero()}
         <div className={wrapperClass}>
           {page.openingAnswer && <section className="my-12 text-xl md:text-2xl font-serif text-nola-charcoal text-center max-w-3xl mx-auto leading-relaxed">{page.openingAnswer}</section>}
-          
+
           <div className="grid md:grid-cols-12 gap-8 my-16">
             <div className="md:col-span-8">
               {page.whoItIsFor && (
@@ -76,7 +92,7 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
                 </div>
               )}
             </div>
-            
+
             {(page.planningConsiderations || page.transportationNotes) && (
               <div className="md:col-span-4">
                 <div className="bg-nola-tobacco p-8 text-nola-ivory sticky top-8 rounded-sm">
@@ -87,9 +103,9 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
               </div>
             )}
           </div>
-          
+
           {renderProducts("Available Inventory")}
-          
+
           {page.topCta && (
             <div className="my-16 text-center">
               <Link href={page.topCta} className="inline-block bg-nola-shutter text-nola-ivory px-8 py-4 text-sm font-bold uppercase tracking-widest hover:bg-nola-charcoal transition-colors rounded-sm shadow-md">
@@ -97,7 +113,7 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
               </Link>
             </div>
           )}
-          
+
           {renderDisclosure()}
         </div>
       </main>
@@ -129,7 +145,7 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
               </div>
             </section>
           )}
-          
+
           {(page.whoItIsFor || page.whoShouldChooseSomethingElse) && (
             <div className="grid md:grid-cols-2 gap-8 my-16">
               {page.whoItIsFor && (
@@ -153,7 +169,15 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
              </div>
           )}
 
-          {renderProducts("Compare Inventory")}
+          {products.length > 0 && (
+            <section className="my-16">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl font-serif text-nola-charcoal">Compare Inventory</h2>
+              </div>
+              <ComparisonMatrix slugs={products.map(p => p!.slug)} />
+            </section>
+          )}
+
           {renderDisclosure()}
         </div>
       </main>
@@ -170,7 +194,7 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
             {page.openingAnswer}
             <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-6xl text-nola-amber/50 font-serif leading-none">&rdquo;</span>
           </section>}
-          
+
           {(page.whoItIsFor || page.planningConsiderations) && (
             <div className="grid md:grid-cols-2 gap-12 my-24 bg-white p-8 md:p-12 border border-nola-amber/50 shadow-sm">
               {page.whoItIsFor && (
@@ -187,9 +211,9 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
               )}
             </div>
           )}
-          
+
           {renderProducts("Experiences in this Area")}
-          
+
           {page.topCta && (
             <div className="my-16 text-center">
               <Link href={page.topCta} className="inline-flex items-center text-nola-shutter font-bold text-sm uppercase tracking-widest hover:text-nola-brass transition-colors group">
@@ -216,16 +240,16 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
               <p className="text-nola-ivory/90 font-light leading-relaxed text-lg max-w-2xl mx-auto">{page.whoItIsFor}</p>
             </div>
           )}
-          
+
           {page.openingAnswer && <section className="my-16 text-xl font-serif text-nola-charcoal max-w-3xl mx-auto leading-relaxed border-l-4 border-nola-brass pl-8">{page.openingAnswer}</section>}
-          
+
           {page.whoShouldChooseSomethingElse && (
              <div className="my-16 p-8 md:p-10 bg-white border border-nola-amber/50">
                <h3 className="font-serif text-2xl text-nola-shutter mb-4">Tradeoffs & Alternatives</h3>
                <p className="text-nola-charcoal/80 font-light leading-relaxed text-lg">{page.whoShouldChooseSomethingElse}</p>
              </div>
           )}
-          
+
           {renderProducts()}
           {renderDisclosure()}
         </div>
@@ -238,10 +262,10 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
       <main className="w-full bg-nola-ivory font-sans selection:bg-nola-brass selection:text-nola-ivory min-h-screen">
         {renderHero()}
         <div className="max-w-3xl mx-auto px-6 pb-20">
-          
+
           <article className="my-16 text-nola-charcoal font-light text-lg leading-relaxed">
             {page.openingAnswer && <p className="text-2xl font-serif mb-10 text-center leading-relaxed">{page.openingAnswer}</p>}
-            
+
             {page.planningConsiderations && (
               <div className="mb-12">
                 <h3 className="text-3xl font-serif mt-12 mb-6">Practical Explanation</h3>
@@ -250,7 +274,7 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
                 </div>
               </div>
             )}
-            
+
             {page.decisionFactors.length > 0 && (
               <div className="bg-white p-8 md:p-10 border border-nola-amber/50 my-12">
                 <h3 className="text-2xl font-serif mb-6">Implications for Booking</h3>
@@ -265,7 +289,7 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
               </div>
             )}
           </article>
-          
+
           {page.topCta && (
             <div className="my-16 text-center">
               <Link href={page.topCta} className="inline-flex items-center text-nola-shutter font-bold text-sm uppercase tracking-widest hover:text-nola-brass transition-colors group">
@@ -274,7 +298,7 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
               </Link>
             </div>
           )}
-          
+
           {renderProducts()}
           {renderDisclosure()}
         </div>

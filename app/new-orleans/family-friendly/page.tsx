@@ -5,7 +5,7 @@ import { NEW_ORLEANS_GUIDE_PAGES } from "@/src/data/new-orleans-city-site";
 const page = NEW_ORLEANS_GUIDE_PAGES["family-friendly"];
 
 export const metadata: Metadata = {
-  title: "Family-Friendly New Orleans | Destination Command Center",
+  title: "Family-Friendly New Orleans | Welcome to New Orleans Tours",
   description: page.description,
   alternates: { canonical: "/new-orleans/family-friendly" },
 };

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { LiveProductAdapter } from '../data/index';
 import styles from '../tours/outpost.module.css';
 import { PROVIDERS } from '../data/index';
+import { PRODUCT_IMAGES } from '../data/imageRegistry';
 import Image from 'next/image';
 
 interface TourSliderProps {
@@ -78,8 +79,9 @@ export default function TourSlider({ products, basePath }: TourSliderProps) {
         {products.map((product) => {
           const provider = product.providerId ? PROVIDERS[product.providerId]?.publicAttributionName : undefined;
 
-          // Image-led for specific ones based on previous data
-          const isImageLed = product.id === 'southernstyle-city-tour' || product.id === 'ragincajun-covered-boat' || product.id === 'ragincajun-airboat';
+          // Image-led for specific ones based on previous data, and only if verified
+          const imgRecord = PRODUCT_IMAGES[product.slug];
+          const isImageLed = (product.id === 'southernstyle-city-tour' || product.id === 'ragincajun-covered-boat' || product.id === 'ragincajun-airboat') && imgRecord?.verifiedRights;
 
           return (
             <Link

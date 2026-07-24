@@ -1,12 +1,17 @@
 import React from 'react';
 import Link from 'next/link';
 import { ProductCardProps } from '../data/types';
-import AvailabilityBadge from './AvailabilityBadge';
+import { PRODUCT_CLAIMS } from '../data/verifiedClaims';
+import { PRODUCT_IMAGES } from '../data/imageRegistry';
+import { VerifiedBadge, generateBadgesFromClaims } from './VerifiedBadge';
 
 export default function ProductCard({ product }: ProductCardProps) {
   // @ts-ignore - categoryIds exists on product
   const categoryId = product.categoryId || (product.categoryIds && product.categoryIds[0]);
-  const isImageFree = !product.imageUrl || categoryId === 'plantation-tours';
+  const imgRecord = PRODUCT_IMAGES[product.slug];
+  const isImageFree = !product.imageUrl || categoryId === 'plantation-tours' || (imgRecord && !imgRecord.verifiedRights);
+  const claims = PRODUCT_CLAIMS[product.slug];
+  const badges = claims ? generateBadgesFromClaims(claims) : [];
 
   return (
     <div className="border border-nola-amber/50 bg-white flex flex-col h-full shadow-sm hover:shadow-lg transition-shadow hover:border-nola-brass group rounded-sm overflow-hidden">
@@ -49,12 +54,13 @@ export default function ProductCard({ product }: ProductCardProps) {
         </p>
 
         <div className="mt-auto pt-6 border-t border-nola-amber/30">
-          <div className="mb-4">
-             <AvailabilityBadge product={product} />
+          <div className="mb-4 flex flex-wrap">
+             {badges.map(b => <VerifiedBadge key={b} label={b} />)}
           </div>
           {product.isBookable ? 
             <Link 
-              href={`/new-orleans/tours/${product.slug}`} 
+              href={`/tours/${product.slug}`}
+
               className="block w-full text-center border border-nola-charcoal bg-transparent text-nola-charcoal hover:bg-nola-charcoal hover:text-nola-ivory transition-colors font-bold py-3.5 text-xs uppercase tracking-widest rounded-sm"
             >
               View Details

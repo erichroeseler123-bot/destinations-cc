@@ -5,7 +5,7 @@ import { NEW_ORLEANS_GUIDE_PAGES } from "@/src/data/new-orleans-city-site";
 const page = NEW_ORLEANS_GUIDE_PAGES["things-to-do"];
 
 export const metadata: Metadata = {
-  title: "Things to Do in New Orleans | Destination Command Center",
+  title: "Things to Do in New Orleans | Welcome to New Orleans Tours",
   description: page.description,
   keywords: [
     "things to do in new orleans",

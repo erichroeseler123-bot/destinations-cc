@@ -9,7 +9,7 @@ import {
 } from "@/lib/dcc/jsonld";
 import { NEW_ORLEANS_TOURS_PATH, METADATA, STOREFRONT_PRODUCTS } from "./pageConfig";
 import { headers } from "next/headers";
-
+import { generateCategorySchemaGraph } from "../lib/schema";
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
   const hostHeader = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "";
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const isWto = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
   const origin = isWto ? "https://www.welcometoneworleanstours.com" : "https://destinationcommandcenter.com";
 
-  const canonical = isWto ? "/" : NEW_ORLEANS_TOURS_PATH;
+  const canonical = isWto ? "/tours" : NEW_ORLEANS_TOURS_PATH;
 
   return {
     applicationName: "Welcome to New Orleans Tours",
@@ -32,20 +32,11 @@ export async function generateMetadata(): Promise<Metadata> {
       description: METADATA.description,
       url: canonical,
       type: "website",
-      images: [
-        {
-          url: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
-          width: 1200,
-          height: 630,
-          alt: "Welcome to New Orleans Tours",
-        },
-      ],
     },
     twitter: {
       card: "summary_large_image",
       title: METADATA.title,
       description: METADATA.description,
-      images: ["/images/travel-markets/new-orleans/french-quarter-street.jpg"],
     },
   };
 }
@@ -62,6 +53,8 @@ export default async function NewOrleansToursPage() {
     name: item.title,
     description: item.description,
     url: `${basePath}/tours/${item.slug}`,
+    slug: item.slug,
+    providerName: item.operatorName,
   }));
 
   return (
@@ -71,25 +64,30 @@ export default async function NewOrleansToursPage() {
           "@context": "https://schema.org",
           "@graph": [
             buildWebPageJsonLd({
-              path: isWto ? "/" : NEW_ORLEANS_TOURS_PATH,
+              path: isWto ? "/tours" : NEW_ORLEANS_TOURS_PATH,
               name: "Welcome To New Orleans Tours",
               description: METADATA.description,
               isPartOfPath: isWto ? undefined : "/new-orleans",
             }),
             buildBreadcrumbJsonLd(
               isWto
-                ? [ { name: "New Orleans Tours", item: "/" } ]
+                ? [ { name: "New Orleans Tours", item: "/tours" } ]
                 : [
                     { name: "New Orleans", item: "/new-orleans" },
                     { name: "Tours", item: NEW_ORLEANS_TOURS_PATH },
                   ]
             ),
-            buildCollectionPageJsonLd({
-              path: isWto ? "/" : NEW_ORLEANS_TOURS_PATH,
+            ...generateCategorySchemaGraph({
+              urlPath: isWto ? "/tours" : NEW_ORLEANS_TOURS_PATH,
               name: "Welcome To New Orleans Tours",
               description: METADATA.description,
-              items: productItems,
-            }),
+              items: productItems.map((p: any) => ({
+                slug: p.slug,
+                name: p.name,
+                description: p.description,
+                providerName: p.providerName
+              })),
+            })["@graph"],
           ],
         }}
       />

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import PhoneCta from './PhoneCta';
+import FrenchQuarterBoothBonus from './FrenchQuarterBoothBonus';
 import styles from '../tours/outpost.module.css';
 
 export function HeaderNav() {
@@ -141,7 +142,8 @@ export function FooterNav() {
           </div>
         </div>
       </div>
-      <div className="bg-black/50 py-6 text-center text-xs font-sans font-light text-white/50">
+      <FrenchQuarterBoothBonus variant="oneline" />
+      <div className="bg-black/50 py-6 text-center text-xs font-sans font-light text-white/50 mt-4">
         &copy; {new Date().getFullYear()} Welcome to New Orleans Tours. All rights reserved.
       </div>
     </footer>

@@ -148,6 +148,12 @@ function getWtonotHostRewrite(request: NextRequest) {
     return url;
   }
 
+  // Welcome Stop
+  if (pathname === "/french-quarter-welcome-stop") {
+    url.pathname = `/new-orleans${pathname}`;
+    return url;
+  }
+
   // Traveler Fit
   if (pathname.startsWith("/tours-for/")) {
     url.pathname = `/new-orleans${pathname}`;

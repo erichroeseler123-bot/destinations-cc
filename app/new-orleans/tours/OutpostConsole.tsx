@@ -5,7 +5,9 @@ import MarketplaceDisclosure from '../components/MarketplaceDisclosure';
 import MarketplaceSearch from '../components/MarketplaceSearch';
 import PhoneCta from '../components/PhoneCta';
 import TourSlider from '../components/TourSlider';
+import FrenchQuarterBoothBonus from '../components/FrenchQuarterBoothBonus';
 import HelpMeChooseDrawer from '../components/HelpMeChooseDrawer';
+import TourMatchChooser from '../components/TourMatchChooser';
 import { ALL_PRODUCTS, LiveProductAdapter } from '../data/index';
 import { CATEGORIES, AREAS, SEO_PAGES, PROVIDERS } from '../data/index';
 import styles from './outpost.module.css';
@@ -84,7 +86,7 @@ export default function OutpostConsole() {
             <span className={styles.nolaBrass}>REAL GOOD TIMES.</span>
           </h1>
           <p className="text-xl md:text-2xl font-light text-white/90 max-w-2xl mb-12">
-            Compare authentic city tours, plantation experiences, and swamp excursions from local New Orleans operators.
+            Compare local city, plantation and swamp tours, get help choosing, and unlock free local advice and a quick French Quarter orientation when you book through our site.
           </p>
           <div className="flex flex-col sm:flex-row gap-6">
             <button
@@ -110,11 +112,7 @@ export default function OutpostConsole() {
         <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="flex flex-col items-center text-center gap-2">
             <span className={`text-2xl ${styles.nolaBrass}`}>&#10003;</span>
-            <span className="font-sans text-xs font-bold uppercase tracking-widest text-white/80">Local Operators</span>
-          </div>
-          <div className="flex flex-col items-center text-center gap-2">
-            <span className={`text-2xl ${styles.nolaBrass}`}>&#10003;</span>
-            <span className="font-sans text-xs font-bold uppercase tracking-widest text-white/80">Help Choosing</span>
+            <span className="font-sans text-xs font-bold uppercase tracking-widest text-white/80">Local Providers</span>
           </div>
           <div className="flex flex-col items-center text-center gap-2">
             <span className={`text-2xl ${styles.nolaBrass}`}>&#10003;</span>
@@ -122,7 +120,11 @@ export default function OutpostConsole() {
           </div>
           <div className="flex flex-col items-center text-center gap-2">
             <span className={`text-2xl ${styles.nolaBrass}`}>&#10003;</span>
-            <span className="font-sans text-xs font-bold uppercase tracking-widest text-white/80">Questions or Groups</span>
+            <span className="font-sans text-xs font-bold uppercase tracking-widest text-white/80">Compare & Choose</span>
+          </div>
+          <div className="flex flex-col items-center text-center gap-2">
+            <span className={`text-2xl ${styles.nolaBrass}`}>&#10003;</span>
+            <span className="font-sans text-xs font-bold uppercase tracking-widest text-white/80">Welcome Stop Benefit</span>
           </div>
         </div>
       </section>
@@ -131,6 +133,14 @@ export default function OutpostConsole() {
       <section id="slider-section" className="bg-[#151515]">
         <TourSlider products={sliderProducts} basePath="" />
       </section>
+
+      {/* Tour Match Chooser */}
+      <section className={`max-w-7xl mx-auto px-6 py-12`}>
+        <TourMatchChooser />
+      </section>
+
+      {/* French Quarter Booth Bonus */}
+      <FrenchQuarterBoothBonus variant="prominent" />
 
       {/* 4. Explore Section (Signboard-style) */}
       <section className={`max-w-7xl mx-auto px-6 py-24 border-t ${styles.nolaBorder}`}>

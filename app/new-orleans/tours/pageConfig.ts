@@ -26,6 +26,7 @@ export interface NolaFareHarborProduct {
   bookingNote?: string;
 }
 
+export const NEW_ORLEANS_ORIGIN = "https://www.welcometoneworleanstours.com";
 export const NEW_ORLEANS_TOURS_PATH = "/new-orleans/tours";
 export const FAREHARBOR_ASN = "aktourcenter";
 
@@ -182,7 +183,7 @@ export const DIRECTORY_DATA: ListingNode[] = STOREFRONT_PRODUCTS.map(p => ({
 }));
 
 export const METADATA = {
-  title: "Find and Book New Orleans Tours | Local Operators",
+  title: "Find and Book New Orleans Tours | Welcome to New Orleans Tours",
   description: "Compare city tours, plantation experiences, swamp tours and airboat rides from local New Orleans operators.",
   keywords: ["new orleans tours", "new orleans city tour", "plantation tours new orleans", "cajun swamp tour", "airboat rides"]
 };

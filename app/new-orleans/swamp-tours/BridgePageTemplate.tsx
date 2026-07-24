@@ -19,12 +19,12 @@ function buildPlanHref(page: SwampBridgePage) {
 export function buildBridgePageMetadata(slug: keyof typeof SWAMP_BRIDGE_PAGES): Metadata {
   const page = SWAMP_BRIDGE_PAGES[slug];
   return {
-    title: `${page.title} | Destination Command Center`,
+    title: `${page.title} | Welcome to New Orleans Tours`,
     description: page.description,
     alternates: { canonical: page.path },
     keywords: [...page.keywords],
     openGraph: {
-      title: `${page.title} | Destination Command Center`,
+      title: `${page.title} | Welcome to New Orleans Tours`,
       description: page.description,
       url: `https://destinationcommandcenter.com${page.path}`,
       type: "article",
@@ -32,7 +32,7 @@ export function buildBridgePageMetadata(slug: keyof typeof SWAMP_BRIDGE_PAGES): 
   };
 }
 
-export default function BridgePageTemplate({ slug }: { slug: keyof typeof SWAMP_BRIDGE_PAGES }) {
+export default function BridgePageTemplate({ slug, children }: { slug: keyof typeof SWAMP_BRIDGE_PAGES, children?: React.ReactNode }) {
   const page = SWAMP_BRIDGE_PAGES[slug];
   const planHref = buildPlanHref(page);
 
@@ -134,6 +134,8 @@ export default function BridgePageTemplate({ slug }: { slug: keyof typeof SWAMP_
             ))}
           </div>
         </section>
+
+        {children}
 
         <PageIntentRouter
           intent={page.pageIntent}

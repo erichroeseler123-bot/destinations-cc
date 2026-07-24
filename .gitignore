@@ -18,3 +18,7 @@ out/
 *.bak
 *.bak.*
 data/sources/geonames/
+scratch/chrome/
+scratch/*.mjs
+vercel_output*.txt
+dev.pid

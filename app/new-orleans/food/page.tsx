@@ -5,7 +5,7 @@ import { NEW_ORLEANS_GUIDE_PAGES } from "@/src/data/new-orleans-city-site";
 const page = NEW_ORLEANS_GUIDE_PAGES.food;
 
 export const metadata: Metadata = {
-  title: "New Orleans Food Guide | Destination Command Center",
+  title: "New Orleans Food Guide | Welcome to New Orleans Tours",
   description: page.description,
   keywords: [
     "new orleans food guide",

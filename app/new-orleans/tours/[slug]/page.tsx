@@ -8,6 +8,7 @@ import { headers } from "next/headers";
 import { STOREFRONT_PRODUCTS, getFareHarborUrl, NEW_ORLEANS_TOURS_PATH } from "../pageConfig";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import { buildBreadcrumbJsonLd, buildWebPageJsonLd } from "@/lib/dcc/jsonld";
+import { PRODUCT_IMAGES } from "../../data/imageRegistry";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -19,6 +20,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!product) {
     return {};
   }
+
+  const imgRecord = PRODUCT_IMAGES[slug];
+  const canUseImage = product.imagePresentation !== "editorial" && imgRecord?.verifiedRights;
 
   const requestHeaders = await headers();
   const hostHeader = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "";
@@ -39,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: product.metaDescription,
       url: canonical,
       type: "website",
-      ...(product.imagePresentation !== "editorial" && {
+      ...(canUseImage && {
         images: [
           {
             url: product.imageUrl,
@@ -54,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title: product.detailPageTitle,
       description: product.metaDescription,
-      ...(product.imagePresentation !== "editorial" && {
+      ...(canUseImage && {
         images: [product.imageUrl],
       }),
     },
@@ -105,6 +109,9 @@ export default async function TourDetailPage({ params }: Props) {
   };
   const phonePlacement = phonePlacementMap[slug] || "WTONOT-DETAIL-UNKNOWN-PHONE";
 
+  const imgRecord = PRODUCT_IMAGES[slug];
+  const canUseImage = product.imagePresentation !== "editorial" && imgRecord?.verifiedRights;
+
 
   return (
     <>
@@ -130,6 +137,12 @@ export default async function TourDetailPage({ params }: Props) {
                     { name: product.title, item: pagePath },
                   ]
             ),
+            ...require("../../lib/schema").generateProductSchemaGraph({
+              slug,
+              name: product.title,
+              description: product.description,
+              providerName: product.operatorName
+            })["@graph"]
           ],
         }}
       />
@@ -159,7 +172,7 @@ export default async function TourDetailPage({ params }: Props) {
         <main>
           {/* Immersive Hero */}
           <div className="relative w-full h-[60vh] min-h-[400px] max-h-[600px] overflow-hidden bg-[#1a1a1a]">
-            {product.imagePresentation === "editorial" ? (
+            {!canUseImage ? (
               <>
                 <div className="absolute inset-0 bg-[#0B3B24] overflow-hidden">
                    {/* Abstract CSS texture / linework */}
@@ -356,7 +369,7 @@ export default async function TourDetailPage({ params }: Props) {
                 <Link href={`/tours/${relatedProduct.slug}`} className="block group">
                   <div className="bg-[#FDFBF7] border border-[#E5E0D8] overflow-hidden hover:border-[#C5A059] transition-colors flex flex-col md:flex-row shadow-lg">
                     <div className="md:w-2/5 aspect-[16/9] md:aspect-auto relative overflow-hidden bg-[#1a1a1a]">
-                      {relatedProduct.imagePresentation === "editorial" ? (
+                      {!(relatedProduct.imagePresentation !== "editorial" && PRODUCT_IMAGES[relatedProduct.slug]?.verifiedRights) ? (
                         <div className="w-full h-full bg-[#0a1510] flex flex-col items-center justify-center p-8 group-hover:bg-[#1a1a1a] transition-colors duration-700 relative overflow-hidden">
                           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.05] via-transparent to-black/[0.3]"></div>
                           <div className="absolute inset-4 border border-[#C5A059]/10"></div>
@@ -364,7 +377,7 @@ export default async function TourDetailPage({ params }: Props) {
                           <div className="absolute top-4 right-4 w-6 h-6 border-t border-r border-[#C5A059]/40 rounded-tr-xl"></div>
                           <div className="absolute bottom-4 left-4 w-6 h-6 border-b border-l border-[#C5A059]/40 rounded-bl-xl"></div>
                           <div className="absolute bottom-4 right-4 w-6 h-6 border-b border-r border-[#C5A059]/40 rounded-br-xl"></div>
-                          <span className="relative z-10 text-[11px] font-bold text-[#C5A059] uppercase tracking-[0.3em] text-center">Plantation History</span>
+                          <span className="relative z-10 text-[11px] font-bold text-[#C5A059] uppercase tracking-[0.3em] text-center">{relatedProduct.category || "Tour"}</span>
                         </div>
                       ) : (
                         <img
