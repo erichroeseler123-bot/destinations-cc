@@ -48,7 +48,7 @@ export default function NewOrleansHomePage() {
               Explore Tours
             </Link>
             <Link
-              href="/new-orleans/tours-for/first-time-visitors"
+              href="/new-orleans/help-me-choose"
               className="w-full sm:w-auto px-8 py-4 border border-[#d4af37] text-[#d4af37] font-bold uppercase tracking-widest text-sm hover:bg-[#d4af37]/10 transition-colors rounded-sm"
             >
               Help Me Choose
@@ -149,7 +149,7 @@ export default function NewOrleansHomePage() {
               and we will point you to the right tour formats.
             </p>
             <Link
-              href="/new-orleans/tours-for/first-time-visitors"
+              href="/new-orleans/help-me-choose"
               className="inline-block border border-[#d4af37] text-[#d4af37] px-8 py-4 font-bold uppercase tracking-widest text-xs hover:bg-[#d4af37] hover:text-[#151515] transition-colors relative z-10"
             >
               Start the Chooser
@@ -295,7 +295,11 @@ function CategoryCard({
 
   if (disabled || !href) {
     return (
-      <div className="group relative h-80 overflow-hidden rounded-sm border border-[#2a2a2a] block opacity-80 cursor-default">
+      <div
+        className="group relative h-80 overflow-hidden rounded-sm border border-[#2a2a2a] block opacity-80 cursor-default"
+        role="group"
+        aria-label={`${title} - Guide Coming Soon`}
+      >
         {content}
       </div>
     );

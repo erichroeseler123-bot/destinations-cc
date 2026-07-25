@@ -21,6 +21,7 @@ interface FareHarborBookingButtonProps {
   fallbackHref: string;
   placement: string;
   className?: string;
+  onBookingClick?: () => void;
   children: React.ReactNode;
 }
 
@@ -35,6 +36,7 @@ export default function FareHarborBookingButton({
   fallbackHref,
   placement,
   className = "",
+  onBookingClick,
   children,
 }: FareHarborBookingButtonProps) {
   const buttonRef = useRef<HTMLAnchorElement>(null);
@@ -87,6 +89,7 @@ export default function FareHarborBookingButton({
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     trackEvent("fareharbor_cta_clicked");
+    if (onBookingClick) onBookingClick();
 
     // Let the browser handle modified clicks (Ctrl, Shift, Meta, Alt) normally
     if (e.ctrlKey || e.shiftKey || e.metaKey || e.altKey || buttonRef.current?.target === "_blank") {
