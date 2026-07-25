@@ -1,23 +1,39 @@
-// New Orleans Tours Outpost - FareHarbor Storefront Configuration
-
 export interface NolaFareHarborProduct {
   id: string;
-  companyShortname: string;
-  itemId?: string | number;
-  flowId?: string | number;
   title: string;
   category: string;
   operatorName: string;
   description: string;
-  duration?: string;
-  price?: string;
+  bestFor?: string;
   imageUrl: string;
   imageAlt?: string;
-  imagePresentation?: "photo" | "editorial";
+  imagePresentation?: "standard" | "editorial";
   ctaLabel?: string;
-  bestFor?: string;
   slug: string;
   relatedTourSlug: string;
+
+  // New optional detail fields for Step 4
+  detailSummary?: string;
+  bestFit?: string[];
+  confirmedInclusions?: string[];
+  bookingConfirmations?: string[];
+  physicalFormat?: {
+    walking?: string;
+    riding?: string;
+    seating?: string;
+    exposure?: string;
+  };
+  logistics?: {
+    meetingPoint?: string;
+    pickup?: string;
+    transportation?: string;
+  };
+  historicalContextNote?: string;
+
+  companyShortname: string;
+  itemId?: string;
+  flowId?: string;
+
   detailPageTitle: string;
   metaDescription: string;
   durationLabel?: string;
@@ -47,10 +63,6 @@ export const getFareHarborUrl = (companyShortname: string, itemId?: string | num
   return `${url}?${params.toString()}`;
 };
 
-// Data Sources:
-// City Tour & Plantation Tour: southernstyletours.com & FareHarbor Flow 4344
-// Covered Boat: ragincajunairboattours.com & FareHarbor Flow 392449
-// Airboat Options: ragincajunairboattours.com & FareHarbor Flow 940162
 export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
   {
     id: "southernstyle-city-tour",
@@ -79,6 +91,23 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
       "Metairie Cemetery",
       "Warehouse District"
     ],
+    detailSummary: "A broad city overview offered through Southern Style Tours.",
+    bestFit: [
+      "First-time visitors seeking a broad introduction"
+    ],
+    confirmedInclusions: [],
+    bookingConfirmations: [
+      "Current itinerary and route",
+      "Exact schedule and departure time",
+      "Transportation format",
+      "Pickup availability and zones"
+    ],
+    physicalFormat: {
+      riding: "A riding-focused city overview offered through the participating operator."
+    },
+    logistics: {
+      transportation: "Transportation format and availability are confirmed during booking."
+    },
   },
   {
     id: "southernstyle-plantation",
@@ -106,7 +135,27 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
       "The history of slavery represented at these locations"
     ],
     wikimediaId: "oak-alley-front",
-    representativeCaption: "Representative image: Oak Alley Plantation. Tour selection may include Oak Alley or Laura Plantation."
+    representativeCaption: "Representative image: Oak Alley Plantation. Tour selection may include Oak Alley or Laura Plantation.",
+    detailSummary: "A historic-site excursion to Oak Alley or Laura Plantation, with the selected site and current logistics confirmed during booking.",
+    bestFit: [
+      "Visitors interested in a historic-site excursion",
+      "Visitors preparing for a longer outing outside the city"
+    ],
+    confirmedInclusions: [],
+    bookingConfirmations: [
+      "Available plantation options (Oak Alley or Laura)",
+      "Exact schedule and departure time",
+      "Transportation format",
+      "Walking and standing requirements"
+    ],
+    physicalFormat: {
+      walking: "Confirm the current format and participation requirements during booking.",
+      riding: "Extended travel time to and from the sites"
+    },
+    logistics: {
+      transportation: "Transportation and return timing are confirmed during booking."
+    },
+    historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor. The depth and focus of historical interpretation vary by site. We encourage visitors to review the selected plantation’s specific historical program and educational approach."
   },
   {
     id: "ragincajun-covered-boat",
@@ -116,23 +165,37 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     title: "Covered Tour Boat",
     category: "Swamp Tours",
     operatorName: "Ragin Cajun Tours",
-    description: "A shaded, family-friendly pontoon boat ride through authentic Louisiana bayous.",
-    bestFor: "Best for shade and a relaxed ride",
+    description: "A covered tour-boat experience offered through Ragin Cajun Tours.",
+    bestFor: "Covered tour boat",
     imageUrl: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
-    imageAlt: "Covered pontoon boat in a Louisiana swamp",
+    imageAlt: "Covered tour boat in a Louisiana swamp",
     slug: "covered-tour-boat",
     relatedTourSlug: "ragin-cajun-airboat-options",
     detailPageTitle: "Covered Tour Boat Swamp Ride | Welcome to New Orleans Tours",
-    metaDescription: "A shaded, family-friendly pontoon boat ride through authentic Louisiana bayous. Best for shade and a relaxed ride.",
+    metaDescription: "A covered tour-boat experience offered through Ragin Cajun Tours.",
     durationLabel: "Duration confirmed during booking.",
-    transportationSummary: "Covered pontoon boat",
+    transportationSummary: "Covered boat format",
     pickupSummary: "Transportation options are confirmed during booking.",
     highlights: [
-      "Louisiana swamp and bayou scenery",
-      "Stories and commentary from the captain",
-      "Opportunities to observe Louisiana wildlife, including alligators",
-      "A covered-boat format suited to guests seeking a calmer swamp experience"
+      "A covered-boat format"
     ],
+    detailSummary: "A covered tour-boat experience.",
+    bestFit: [
+      "Visitors comparing a covered boat with an airboat"
+    ],
+    confirmedInclusions: [],
+    bookingConfirmations: [
+      "Exact departure time",
+      "Meeting or transportation location",
+      "Weather conditions and cancellation policy",
+      "Accessibility and age policies"
+    ],
+    physicalFormat: {
+      exposure: "Covered boat format"
+    },
+    logistics: {
+      transportation: "Transportation options are confirmed during booking."
+    },
   },
   {
     id: "ragincajun-airboat",
@@ -141,29 +204,42 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     title: "Ragin Cajun Airboat Options",
     category: "Airboat Rides",
     operatorName: "Ragin Cajun Tours",
-    description: "Explore Louisiana wetlands aboard an airboat and review the available tour options.",
-    bestFor: "Best for speed and a more active ride",
+    description: "A booking flow for the airboat options currently offered by Ragin Cajun Tours.",
+    bestFor: "Airboat options",
     imageUrl: "/images/travel-markets/new-orleans/airboat-swamp.png",
-    imageAlt: "Airboat speeding through a Louisiana swamp",
+    imageAlt: "Airboat traveling through a Louisiana swamp",
     ctaLabel: "View Airboat Options →",
     slug: "ragin-cajun-airboat-options",
     relatedTourSlug: "covered-tour-boat",
     detailPageTitle: "Ragin Cajun Airboat Options | Welcome to New Orleans Tours",
-    metaDescription: "Explore Louisiana wetlands aboard an airboat and review the available tour options. Best for speed and a more active ride.",
+    metaDescription: "A booking flow for the airboat options currently offered by Ragin Cajun Tours.",
     durationLabel: "Duration confirmed during booking.",
     transportationSummary: "Boat formats confirmed during booking.",
     pickupSummary: "Transportation options confirmed during booking.",
-    bookingNote: "Current boat format, capacity, departure time, pickup option and availability are shown during booking.",
+    bookingNote: "Confirm the current format and participation requirements during booking.",
     highlights: [
-      "High-speed travel through Louisiana swamps and bayous",
-      "A smaller, more open boat format than the covered tour",
-      "Wildlife-viewing opportunities that vary by season and conditions",
       "The operator describes the route as traveling through privately accessed swamp property"
     ],
+    detailSummary: "A booking flow for the airboat options currently offered by Ragin Cajun Tours.",
+    bestFit: [
+      "Visitors comparing available airboat formats within the operator’s flow"
+    ],
+    confirmedInclusions: [],
+    bookingConfirmations: [
+      "Confirm the current format and participation requirements during booking.",
+      "Meeting or transportation location",
+      "Weather conditions and cancellation policy"
+    ],
+    physicalFormat: {
+      riding: "Airboat ride",
+      exposure: "Open-air exposure"
+    },
+    logistics: {
+      transportation: "Transportation options confirmed during booking."
+    },
   }
 ];
 
-// Reintroduce legacy interfaces for category routes compatibility
 export interface ListingNode {
   id: string;
   name: string;
@@ -187,7 +263,7 @@ export const DIRECTORY_DATA: ListingNode[] = STOREFRONT_PRODUCTS.map(p => ({
   description: p.description,
   verification_status: "verified_active",
   menuUrl: `/new-orleans/tours#${p.id}`,
-  logistics: p.duration ? { "Duration": p.duration } as Record<string, string> : {} as Record<string, string>,
+  logistics: p.durationLabel ? { "Duration": p.durationLabel } as Record<string, string> : {} as Record<string, string>,
 }));
 
 export const METADATA = {

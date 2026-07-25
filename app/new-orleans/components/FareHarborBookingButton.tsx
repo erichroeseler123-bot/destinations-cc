@@ -10,16 +10,16 @@ declare global {
   }
 }
 
-interface FareHarborBookingButtonProps {
-  productTitle: string;
-  productSlug: string;
+export interface FareHarborBookingButtonProps {
+  productTitle?: string;
+  productSlug?: string;
   shortname: string;
   itemId?: string | number;
   flowId?: string | number;
   asn: string;
-  refCode: string;
+  refCode?: string;
   fallbackHref: string;
-  placement: string;
+  placement?: string;
   className?: string;
   onBookingClick?: () => void;
   children: React.ReactNode;
