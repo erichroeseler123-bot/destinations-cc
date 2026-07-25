@@ -4,6 +4,15 @@ import { buildRuntimeRedirects } from "./src/data/runtime-redirects.mjs";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  outputFileTracingExcludes: {
+    "/*": [
+      "./scratch/**/*",
+      "./apps/**/*",
+      "./assets/raw/**/*",
+      "./public/images/**/*",
+      "./data/memory/snapshots/**/*",
+    ],
+  },
   generateBuildId: async () => {
     return "build-" + Date.now();
   },
