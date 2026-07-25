@@ -5,6 +5,8 @@ import { getProductById } from '../data/index';
 import ProductCard from './ProductCard';
 import ComparisonMatrix from './ComparisonMatrix';
 import SwampRideComparison from './SwampRideComparison';
+import HauntedTaxonomyRenderer from './HauntedTaxonomyRenderer';
+import VoodooContextBlock from './VoodooContextBlock';
 import JsonLd from '@/app/components/dcc/JsonLd';
 import { generateCategorySchemaGraph } from '../lib/schema';
 import { SEO_PAGES } from '../data/pages';
@@ -27,8 +29,19 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
     page.disclosure && <p className="text-xs text-[#aaaaaa] mt-16 pt-8 border-t border-[#2a2a2a] italic max-w-4xl mx-auto text-center">{page.disclosure}</p>
   );
 
-  const renderProducts = (title = "Relevant Tours") => (
-    products.length > 0 && (
+  const renderProducts = (title = "Relevant Tours") => {
+    if (page.inventoryNotice && products.length === 0) {
+      return (
+        <section className="my-16 max-w-3xl mx-auto text-center">
+          <div className="bg-[#1a1a1a] p-8 border border-[#2a2a2a] shadow-sm">
+            <h2 className="text-3xl font-serif text-[#fdfbf7] mb-4">Inventory Status</h2>
+            <p className="text-[#aaaaaa] font-light leading-relaxed text-lg">{page.inventoryNotice}</p>
+          </div>
+        </section>
+      );
+    }
+
+    return products.length > 0 && (
       <section className="my-16">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-serif text-[#fdfbf7]">{title}</h2>
@@ -39,8 +52,8 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
           ))}
         </div>
       </section>
-    )
-  );
+    );
+  };
 
   const renderFaqs = () => (
     page.faqs && page.faqs.length > 0 && (
@@ -63,6 +76,24 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
     )
   );
 
+
+  const getCustomAnchorText = (id: string) => {
+    switch (id) {
+      case "haunted-cemetery-tours-types-explained":
+        return "Understand the different haunted-tour types";
+      case "haunted-cemetery-tours-ghost-tour-vs-cemetery-tour":
+        return "Compare ghost tours with cemetery tours";
+      case "haunted-cemetery-tours-walking-vs-riding":
+        return "Compare walking, bus, van, and carriage formats";
+      case "haunted-cemetery-tours-night-cemetery-access-explained":
+        return "Understand night cemetery access";
+      case "haunted-cemetery-tours":
+        return "Return to Haunted & Cemetery Tours main guide";
+      default:
+        return null;
+    }
+  };
+
   const renderRelatedLinks = () => {
     return (
       <section className="my-16 max-w-3xl mx-auto border-t border-[#2a2a2a] pt-16">
@@ -70,11 +101,11 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
         <div className="space-y-4">
           {relatedPages.map(p => (
             <Link key={p.id} href={p.publicRoute} className="block text-[#d4af37] hover:text-[#fdfbf7] transition-colors">
-              &rarr; {p.heroTitle || p.id}
+              &rarr; {getCustomAnchorText(p.id) || p.heroTitle || p.id}
             </Link>
           ))}
           <Link href="/french-quarter-welcome-stop" className="block text-[#d4af37] hover:text-[#fdfbf7] transition-colors">
-            &rarr; Need in-person help? Visit our French Quarter Welcome Stop
+            &rarr; Visit the French Quarter Welcome Stop
           </Link>
         </div>
       </section>
@@ -106,6 +137,9 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
 
             <div className="grid md:grid-cols-12 gap-8 my-16">
               <div className="md:col-span-8">
+                {page.hauntedTaxonomy && <HauntedTaxonomyRenderer taxonomy={page.hauntedTaxonomy} />}
+                {(page.id === "haunted-cemetery-tours" || page.id === "haunted-cemetery-tours-types-explained") && <VoodooContextBlock />}
+
                 {page.whoItIsFor && (
                   <div className="bg-[#1a1a1a] p-8 md:p-10 border border-[#2a2a2a] shadow-sm relative mb-8">
                     <div className="absolute top-0 left-0 w-1 h-full bg-[#d4af37]"></div>

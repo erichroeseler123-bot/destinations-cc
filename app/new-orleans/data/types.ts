@@ -140,7 +140,94 @@ export interface AreaRecord {
   isIndexable: boolean;
 }
 
+export type HauntedPrimaryTheme =
+  | "Haunted history"
+  | "Ghost stories"
+  | "Cemetery history"
+  | "Vampire legends"
+  | "True crime and dark history"
+  | "Voodoo history and culture"
+  | "Mixed themes";
+
+export type HauntedTourFormat =
+  | "Walking"
+  | "Bus"
+  | "Van"
+  | "Carriage"
+  | "Self-guided";
+
+export type HauntedCemeteryAccess =
+  | "No cemetery component"
+  | "Cemetery stories only"
+  | "Exterior cemetery stop"
+  | "Daytime cemetery entry"
+  | "After-dark cemetery entry"
+  | "Access not confirmed";
+
+export type HauntedTimeOfDay =
+  | "Daytime"
+  | "Evening"
+  | "After dark"
+  | "Multiple departure times";
+
+export type HauntedTone =
+  | "History-focused"
+  | "Family-spooky"
+  | "Theatrical"
+  | "Paranormal-focused"
+  | "Adults-only dark history"
+  | "Cultural and educational";
+
+export type HauntedAgePositioning =
+  | "Family-friendly"
+  | "Recommended for older children"
+  | "Adults-only"
+  | "Age policy confirmed during booking";
+
+export type HauntedWalkingLevel =
+  | "Minimal walking"
+  | "Moderate walking"
+  | "Extended walking"
+  | "Riding format"
+  | "Walking level not confirmed";
+
+export type HauntedAlcoholComponent =
+  | "None"
+  | "Optional bar stop"
+  | "Cocktail component"
+  | "Pub crawl"
+  | "Alcohol details not confirmed";
+
+export type HauntedHistoricalFocus =
+  | "Primarily documented history"
+  | "History and folklore"
+  | "Primarily legends and paranormal stories"
+  | "Cultural history"
+  | "Focus not confirmed";
+
+export interface HauntedTaxonomy {
+  primaryTheme?: HauntedPrimaryTheme;
+  secondaryThemes?: HauntedPrimaryTheme[];
+  tourFormats?: HauntedTourFormat[];
+  primaryAreas?: string[];
+  cemeteryAccess?: HauntedCemeteryAccess;
+  timeOfDay?: HauntedTimeOfDay;
+  tones?: HauntedTone[];
+  agePositioning?: HauntedAgePositioning;
+  walkingLevel?: HauntedWalkingLevel;
+  alcoholComponent?: HauntedAlcoholComponent;
+  historicalFocus?: HauntedHistoricalFocus;
+}
+
 export type SeoPageVariant = "category" | "comparison" | "area" | "traveler-fit" | "guide";
+
+export interface EditorialSource {
+  claim: string;
+  sourceOrganization: string;
+  sourceUrl: string;
+  sourceType: string;
+  reviewedDate: string;
+}
 
 export interface SeoPageRecord {
   id: string;
@@ -179,6 +266,9 @@ export interface SeoPageRecord {
   imageAttributionIds: string[];
   status: "live" | "draft";
   isIndexable: boolean;
+  hauntedTaxonomy?: HauntedTaxonomy;
+  inventoryNotice?: string;
+  editorialSources?: EditorialSource[];
 }
 
 export interface ComparisonPage extends SeoPageRecord {

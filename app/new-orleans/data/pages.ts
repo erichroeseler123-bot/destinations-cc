@@ -1,6 +1,559 @@
 import { SeoPageRecord } from './types';
 
 export const SEO_PAGES: Record<string, SeoPageRecord> = {
+    "haunted-cemetery-tours": {
+    "id": "haunted-cemetery-tours",
+    "publicRoute": "/haunted-cemetery-tours",
+    "variant": "category",
+    "pageIntent": "haunted, cemetery, and dark history tours overview",
+    "canonicalRoute": "https://www.welcometoneworleanstours.com/haunted-cemetery-tours",
+    "heroEyebrow": "Dark History",
+    "heroTitle": "New Orleans Haunted, Cemetery & Dark History Tours",
+    "heroSubtitle": "Explore the stories, legends, and history that come alive after dark.",
+    "inventoryNotice": "We are building this guide before adding bookable haunted and cemetery tours. Participating operator options will appear here as inventory is verified.",
+    "openingAnswer": "New Orleans night tours often combine several themes in one product. Understanding whether a tour focuses on documented history, theatrical entertainment, cemetery access, or folklore will help you choose the best experience.",
+    "topCta": null,
+    "secondaryCta": null,
+    "whoItIsFor": null,
+    "whoShouldChooseSomethingElse": null,
+    "decisionFactors": [
+      "Themes vs. Formats: A tour's theme (ghosts, vampires, Voodoo history) is separate from its format (walking, bus, carriage). Consider both when selecting an operator.",
+      "Walking, Bus, Van, and Carriage: Walking tours can concentrate on a smaller area, while vehicle tours may cover more distance depending on the route.",
+      "Cemetery Access Uncertainty: Some tours visit cemetery exteriors, while others only tell stories nearby. Confirm verified entry directly with operators.",
+      "History vs. Theatrical Storytelling: Tours vary from strictly documented historical accounts to paranormal-focused theatrical performances.",
+      "Family-friendly vs. Adults-only: Age policies vary. Some operators design spooky, family-friendly routes, while true-crime and dark history tours may enforce age restrictions."
+    ],
+    "planningConsiderations": "Review our specialized guides below to understand the differences in formats, themes, and access before booking.",
+    "transportationNotes": null,
+    "relatedPageIds": [
+      "haunted-cemetery-tours-types-explained",
+      "haunted-cemetery-tours-ghost-tour-vs-cemetery-tour",
+      "haunted-cemetery-tours-walking-vs-riding",
+      "haunted-cemetery-tours-night-cemetery-access-explained",
+      "french-quarter-welcome-stop"
+    ],
+    "liveProductIds": [],
+    "faqs": [
+      {
+        "question": "What is the difference between a ghost tour and a haunted-history tour?",
+        "answer": "Ghost tours often lean toward paranormal folklore and theatrical storytelling, while haunted-history tours focus more on documented historical events that have darker themes."
+      },
+      {
+        "question": "Is a cemetery tour always a ghost tour?",
+        "answer": "No. Some daytime cemetery tours are architectural and historical, focusing on burial practices rather than paranormal stories."
+      },
+      {
+        "question": "Do New Orleans night tours enter cemeteries?",
+        "answer": "Depending on the operator and route, some may enter, but others only stop outside the gates or pass by."
+      },
+      {
+        "question": "What is the difference between a walking and bus haunted tour?",
+        "answer": "Walking tours can concentrate on a smaller area, while vehicle tours may cover more distance depending on the route."
+      },
+      {
+        "question": "Are vampire tours different from ghost tours?",
+        "answer": "Yes. Vampire tours can focus on specific local legends and literary history associated with vampire lore, rather than hauntings."
+      },
+      {
+        "question": "Is Voodoo part of every haunted tour?",
+        "answer": "No. While some combination tours include mentions, dedicated Voodoo tours focus specifically on the religion's history and culture."
+      },
+      {
+        "question": "Are haunted tours suitable for children?",
+        "answer": "Confirm during booking. Family suitability depends on the operator's tone, as some tours feature graphic true-crime details."
+      },
+      {
+        "question": "Are these tours historically accurate?",
+        "answer": "Accuracy varies by operator. Some meticulously research documented history, while others prioritize entertaining folklore."
+      }
+    ],
+    "hauntedTaxonomy": {
+      "primaryTheme": "Mixed themes",
+      "secondaryThemes": [
+        "Haunted history",
+        "Ghost stories",
+        "Cemetery history",
+        "Vampire legends",
+        "True crime and dark history",
+        "Voodoo history and culture"
+      ],
+      "tourFormats": [
+        "Walking",
+        "Bus",
+        "Van",
+        "Carriage"
+      ],
+      "primaryAreas": [
+        "French Quarter",
+        "Cemetery",
+        "Multiple neighborhoods"
+      ],
+      "cemeteryAccess": "Access not confirmed",
+      "timeOfDay": "Multiple departure times",
+      "tones": [
+        "History-focused",
+        "Family-spooky",
+        "Theatrical",
+        "Paranormal-focused",
+        "Adults-only dark history",
+        "Cultural and educational"
+      ],
+      "agePositioning": "Age policy confirmed during booking",
+      "walkingLevel": "Walking level not confirmed",
+      "alcoholComponent": "Alcohol details not confirmed",
+      "historicalFocus": "Focus not confirmed"
+    },
+    "disclosure": null,
+    "editorialSources": [],
+    "metadata": {
+      "title": "New Orleans Haunted, Cemetery & Dark History Tours",
+      "description": "Compare New Orleans ghost, cemetery, true crime, and Voodoo tours. Understand the themes, access rules, and differences before you book.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/haunted-cemetery-tours",
+      "robots": "noindex, nofollow",
+      "openGraphTitle": "New Orleans Haunted & Cemetery Tours",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/haunted-cemetery-tours",
+      "twitterTitle": "New Orleans Haunted & Cemetery Tours"
+    },
+    "schemaEligibility": null,
+    "visualMood": "Dark",
+    "imageAttributionIds": [
+      "french-quarter-night"
+    ],
+    "comparisonColumns": [],
+    "comparisonRows": [],
+    "recommendedChoiceGuidance": null,
+    "durationNotes": null,
+    "ageNotes": null,
+    "mobilityNotes": null,
+    "weatherNotes": null,
+    "itineraryCombinations": [],
+    "futureProductCategoryIds": [],
+    "relatedAreaIds": [],
+    "status": "draft",
+    "isIndexable": false
+  },
+
+  "haunted-cemetery-tours-types-explained": {
+    "id": "haunted-cemetery-tours-types-explained",
+    "publicRoute": "/haunted-cemetery-tours/types-explained",
+    "variant": "guide",
+    "pageIntent": "Explain the different themes and types of haunted tours.",
+    "canonicalRoute": "https://www.welcometoneworleanstours.com/haunted-cemetery-tours/types-explained",
+    "heroEyebrow": "Tour Types",
+    "heroTitle": "Types of New Orleans Dark History Tours",
+    "heroSubtitle": "From ghosts to true crime, understand what each tour covers.",
+    "inventoryNotice": "We are building this guide before adding bookable haunted and cemetery tours. Participating operator options will appear here as inventory is verified.",
+    "openingAnswer": "Tours fall into distinct categories that operators sometimes combine.",
+    "topCta": null,
+    "secondaryCta": null,
+    "whoItIsFor": null,
+    "whoShouldChooseSomethingElse": null,
+    "decisionFactors": [
+      "Haunted History Tour: Focuses on documented historical events with dark or macabre themes.",
+      "Ghost Tour: Blends history with paranormal folklore and theatrical storytelling.",
+      "Cemetery History Tour: Primarily architectural and historical, focusing on above-ground burial practices.",
+      "Haunted Cemetery Tour: A specific evening route that may include cemetery folklore.",
+      "Vampire Legends Tour: Explores literary history and local folklore regarding vampires.",
+      "Voodoo History Tour: Focuses on the cultural and religious history of Louisiana Voodoo.",
+      "True-Crime Tour: Covers graphic historical crimes and may enforce age restrictions.",
+      "Haunted Walking Tour: Explores a neighborhood on foot.",
+      "Haunted Bus or Van Tour: Covers multiple neighborhoods via a riding format.",
+      "After-Dark Cemetery Tour: Refers specifically to tours operating in or around cemeteries during the evening."
+    ],
+    "planningConsiderations": "If you want an in-depth look at a specific topic, look for a specialized tour rather than a combination tour.",
+    "transportationNotes": null,
+    "relatedPageIds": [
+      "haunted-cemetery-tours",
+      "haunted-cemetery-tours-ghost-tour-vs-cemetery-tour",
+      "haunted-cemetery-tours-walking-vs-riding",
+      "haunted-cemetery-tours-night-cemetery-access-explained",
+      "french-quarter-welcome-stop"
+    ],
+    "liveProductIds": [],
+    "faqs": [
+      {
+        "question": "What is the difference between a ghost tour and a true crime tour?",
+        "answer": "Ghost tours feature paranormal legends, while true crime tours focus on documented criminal history."
+      },
+      {
+        "question": "Why do tour names combine ghosts, vampires, Voodoo, and cemeteries?",
+        "answer": "Operators combine themes to appeal to a broader audience; however, the actual focus may skew heavily toward one topic over the others."
+      },
+      {
+        "question": "What does “haunted history” mean?",
+        "answer": "It refers to blending documented events with paranormal legends or ghost stories, emphasizing actual events over pure folklore."
+      },
+      {
+        "question": "What does “after dark” actually confirm?",
+        "answer": "It confirms the time of day, but it does not automatically guarantee interior cemetery access."
+      },
+      {
+        "question": "Is a true-crime tour paranormal?",
+        "answer": "No, true-crime tours focus on documented historical crimes, though some operators may add paranormal storytelling."
+      },
+      {
+        "question": "Is a cemetery tour necessarily at night?",
+        "answer": "No. Some cemetery tours take place during the day to focus on architecture and history."
+      }
+    ],
+    "hauntedTaxonomy": {
+      "primaryTheme": "Mixed themes",
+      "tourFormats": [
+        "Walking",
+        "Bus",
+        "Van",
+        "Carriage"
+      ],
+      "cemeteryAccess": "Access not confirmed",
+      "timeOfDay": "Multiple departure times",
+      "tones": [
+        "History-focused",
+        "Theatrical",
+        "Cultural and educational"
+      ]
+    },
+    "disclosure": null,
+    "editorialSources": [],
+    "metadata": {
+      "title": "Types of Haunted & Dark History Tours in New Orleans",
+      "description": "Understand the difference between ghost tours, true crime, vampire legends, and Voodoo history.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/haunted-cemetery-tours/types-explained",
+      "robots": "noindex, nofollow",
+      "openGraphTitle": "Types of New Orleans Haunted Tours",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/haunted-cemetery-tours/types-explained",
+      "twitterTitle": "Types of New Orleans Haunted Tours"
+    },
+    "schemaEligibility": null,
+    "visualMood": "Dark",
+    "imageAttributionIds": [
+      "lalaurie-mansion-1906"
+    ],
+    "comparisonColumns": [],
+    "comparisonRows": [],
+    "recommendedChoiceGuidance": null,
+    "durationNotes": null,
+    "ageNotes": null,
+    "mobilityNotes": null,
+    "weatherNotes": null,
+    "itineraryCombinations": [],
+    "futureProductCategoryIds": [],
+    "relatedAreaIds": [],
+    "status": "draft",
+    "isIndexable": false
+  },
+
+  "haunted-cemetery-tours-ghost-tour-vs-cemetery-tour": {
+    "id": "haunted-cemetery-tours-ghost-tour-vs-cemetery-tour",
+    "publicRoute": "/haunted-cemetery-tours/ghost-tour-vs-cemetery-tour",
+    "variant": "comparison",
+    "pageIntent": "Compare ghost tours and cemetery tours.",
+    "canonicalRoute": "https://www.welcometoneworleanstours.com/haunted-cemetery-tours/ghost-tour-vs-cemetery-tour",
+    "heroEyebrow": "Comparison",
+    "heroTitle": "Ghost Tour vs Cemetery Tour",
+    "heroSubtitle": "Which dark history experience is right for you?",
+    "inventoryNotice": "We are building this guide before adding bookable haunted and cemetery tours. Participating operator options will appear here as inventory is verified.",
+    "openingAnswer": "While they both explore dark history, ghost tours and cemetery tours offer distinctly different experiences.",
+    "topCta": null,
+    "secondaryCta": null,
+    "whoItIsFor": "Choose based on whether you want evening entertainment and paranormal stories, or architectural appreciation and burial traditions.",
+    "whoShouldChooseSomethingElse": null,
+    "decisionFactors": [],
+    "planningConsiderations": "Confirm exact itineraries with your chosen operator.",
+    "transportationNotes": null,
+    "relatedPageIds": [
+      "haunted-cemetery-tours",
+      "haunted-cemetery-tours-types-explained",
+      "haunted-cemetery-tours-night-cemetery-access-explained",
+      "french-quarter-welcome-stop"
+    ],
+    "liveProductIds": [],
+    "faqs": [
+      {
+        "question": "Are there any tours that do both?",
+        "answer": "Some operators offer combination tours, but check whether they actually enter a cemetery or just stand outside."
+      }
+    ],
+    "hauntedTaxonomy": {
+      "primaryTheme": "Mixed themes",
+      "secondaryThemes": [
+        "Ghost stories",
+        "Cemetery history"
+      ],
+      "cemeteryAccess": "Access not confirmed",
+      "timeOfDay": "Multiple departure times",
+      "tourFormats": [
+        "Walking",
+        "Bus",
+        "Van",
+        "Carriage"
+      ]
+    },
+    "disclosure": null,
+    "editorialSources": [],
+    "metadata": {
+      "title": "Ghost Tour vs Cemetery Tour | New Orleans Dark History",
+      "description": "Compare ghost tours and cemetery tours in New Orleans to decide which experience is right for your group.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/haunted-cemetery-tours/ghost-tour-vs-cemetery-tour",
+      "robots": "noindex, nofollow",
+      "openGraphTitle": "Ghost Tour vs Cemetery Tour",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/haunted-cemetery-tours/ghost-tour-vs-cemetery-tour",
+      "twitterTitle": "Ghost Tour vs Cemetery Tour"
+    },
+    "schemaEligibility": null,
+    "visualMood": "Dark",
+    "imageAttributionIds": [
+      "above-ground-tomb"
+    ],
+    "comparisonColumns": [
+      {
+        "id": "ghost_tour",
+        "header": "Ghost Tour"
+      },
+      {
+        "id": "cemetery_tour",
+        "header": "Cemetery Tour"
+      }
+    ],
+    "comparisonRows": [
+      {
+        "label": "Primary Subject",
+        "values": [
+          "Paranormal legends and haunted history",
+          "Above-ground burial practices and architecture"
+        ]
+      },
+      {
+        "label": "Typical Location",
+        "values": [
+          "French Quarter streets",
+          "Specific burial grounds"
+        ]
+      },
+      {
+        "label": "Cemetery Entry",
+        "values": [
+          "Depending on the operator, some do not enter",
+          "May include entry when the cemetery and operator permit it; verify the specific itinerary."
+        ]
+      },
+      {
+        "label": "History vs Folklore",
+        "values": [
+          "Can lean heavily into theatrical folklore",
+          "May focus on documented history"
+        ]
+      },
+      {
+        "label": "Format",
+        "values": [
+          "Walking, bus, or carriage",
+          "Walking within the cemetery when permitted"
+        ]
+      },
+      {
+        "label": "Time of Day",
+        "values": [
+          "Evening or night depending on operator",
+          "Daytime depending on operator"
+        ]
+      },
+      {
+        "label": "Best Fit",
+        "values": [
+          "Entertainment seekers",
+          "History buffs and photographers"
+        ]
+      },
+      {
+        "label": "Operator Variation",
+        "values": [
+          "Variation in tone and age policy",
+          "Can offer an educational tone"
+        ]
+      }
+    ],
+    "recommendedChoiceGuidance": null,
+    "durationNotes": null,
+    "ageNotes": null,
+    "mobilityNotes": null,
+    "weatherNotes": null,
+    "itineraryCombinations": [],
+    "futureProductCategoryIds": [],
+    "relatedAreaIds": [],
+    "status": "draft",
+    "isIndexable": false
+  },
+
+  "haunted-cemetery-tours-walking-vs-riding": {
+    "id": "haunted-cemetery-tours-walking-vs-riding",
+    "publicRoute": "/haunted-cemetery-tours/walking-vs-riding",
+    "variant": "comparison",
+    "pageIntent": "Compare walking and riding formats for haunted tours.",
+    "canonicalRoute": "https://www.welcometoneworleanstours.com/haunted-cemetery-tours/walking-vs-riding",
+    "heroEyebrow": "Format Comparison",
+    "heroTitle": "Walking vs Riding Haunted Tours",
+    "heroSubtitle": "How to choose the best format for your group.",
+    "inventoryNotice": "We are building this guide before adding bookable haunted and cemetery tours. Participating operator options will appear here as inventory is verified.",
+    "openingAnswer": "A bus, van, or carriage format may reduce continuous walking, but it does not by itself confirm wheelchair accessibility, step-free boarding, seating availability at stops, or suitability for limited mobility.",
+    "topCta": null,
+    "secondaryCta": null,
+    "whoItIsFor": null,
+    "whoShouldChooseSomethingElse": null,
+    "decisionFactors": [
+      "Walking: Up-close access to historic architecture.",
+      "Bus: Depending on the operator, may offer climate control and cover a broader area.",
+      "Van: Similar to buses but may feature smaller groups.",
+      "Carriage: Can provide an open-air riding experience; check the route with the operator.",
+      "Walking Distance: Varies by operator; verify distance when booking.",
+      "Neighborhood Detail & Geographic Coverage: Walking tours can concentrate on a smaller area, while vehicle tours may cover more distance depending on the route.",
+      "Weather Exposure & Seating: Some vehicles offer enclosed seating, but confirm climate control directly with the operator.",
+      "Accessibility Confirmation: Accessibility varies by operator, vehicle, route, and stop. Confirm step-free boarding, wheelchair space, seating, walking distance, and standing time directly with the operator.",
+      "Ending Location: Confirm where the tour concludes, as it may differ from the starting point.",
+      "Group Considerations: Consider the mobility and comfort levels of your entire group."
+    ],
+    "planningConsiderations": "Verify accessibility details with the operator.",
+    "transportationNotes": null,
+    "relatedPageIds": [
+      "haunted-cemetery-tours",
+      "haunted-cemetery-tours-types-explained",
+      "french-quarter-welcome-stop"
+    ],
+    "liveProductIds": [],
+    "faqs": [
+      {
+        "question": "Do carriage ghost tours stop and let you out?",
+        "answer": "Some tours may offer stops, but confirm with the operator."
+      }
+    ],
+    "hauntedTaxonomy": {
+      "primaryTheme": "Mixed themes",
+      "tourFormats": [
+        "Walking",
+        "Bus",
+        "Van",
+        "Carriage"
+      ],
+      "cemeteryAccess": "Access not confirmed",
+      "timeOfDay": "Multiple departure times"
+    },
+    "disclosure": null,
+    "editorialSources": [],
+    "metadata": {
+      "title": "Walking vs Riding Haunted Tours in New Orleans",
+      "description": "Should you take a walking ghost tour, a bus tour, or a carriage ride? Compare the options.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/haunted-cemetery-tours/walking-vs-riding",
+      "robots": "noindex, nofollow",
+      "openGraphTitle": "Walking vs Riding Haunted Tours",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/haunted-cemetery-tours/walking-vs-riding",
+      "twitterTitle": "Walking vs Riding Haunted Tours"
+    },
+    "schemaEligibility": null,
+    "visualMood": "Dark",
+    "imageAttributionIds": [
+      "french-quarter-night"
+    ],
+    "comparisonColumns": [],
+    "comparisonRows": [],
+    "recommendedChoiceGuidance": null,
+    "durationNotes": null,
+    "ageNotes": null,
+    "mobilityNotes": null,
+    "weatherNotes": null,
+    "itineraryCombinations": [],
+    "futureProductCategoryIds": [],
+    "relatedAreaIds": [],
+    "status": "draft",
+    "isIndexable": false
+  },
+
+  "haunted-cemetery-tours-night-cemetery-access-explained": {
+    "id": "haunted-cemetery-tours-night-cemetery-access-explained",
+    "publicRoute": "/haunted-cemetery-tours/night-cemetery-access-explained",
+    "variant": "guide",
+    "pageIntent": "Explain the reality of night cemetery access in New Orleans.",
+    "canonicalRoute": "https://www.welcometoneworleanstours.com/haunted-cemetery-tours/night-cemetery-access-explained",
+    "heroEyebrow": "Access Guide",
+    "heroTitle": "Night Cemetery Access Explained",
+    "heroSubtitle": "The truth about visiting New Orleans cemeteries after dark.",
+    "inventoryNotice": "We are building this guide before adding bookable haunted and cemetery tours. Participating operator options will appear here as inventory is verified.",
+    "openingAnswer": "A tour title containing 'cemetery' or 'night cemetery' does not automatically mean guests enter a cemetery after dark.",
+    "topCta": null,
+    "secondaryCta": null,
+    "whoItIsFor": null,
+    "whoShouldChooseSomethingElse": null,
+    "decisionFactors": [
+      "Cemetery Stories Only: Some tours tell stories about cemeteries without visiting one.",
+      "Passing a Cemetery: A vehicle tour might drive past a cemetery without stopping.",
+      "Exterior Stop: The group may gather outside the cemetery gates.",
+      "Daytime Entry: Access during operating hours.",
+      "Verified After-Dark Entry: Confirm if the operator has secured legitimate after-hours access.",
+      "Access Not Confirmed: Always verify exact access levels before booking."
+    ],
+    "planningConsiderations": "Verify the access level directly with the operator.",
+    "transportationNotes": null,
+    "relatedPageIds": [
+      "haunted-cemetery-tours",
+      "haunted-cemetery-tours-ghost-tour-vs-cemetery-tour",
+      "french-quarter-welcome-stop"
+    ],
+    "liveProductIds": [],
+    "faqs": [
+      {
+        "question": "Can I go to St. Louis Cemetery No. 1 at night?",
+        "answer": "Access policies vary by cemetery and may change. Check the official property rules and the operator’s current itinerary before booking."
+      },
+      {
+        "question": "Does “night cemetery tour” guarantee entry?",
+        "answer": "No. Many tours only stop outside the gates or discuss cemetery folklore without going inside."
+      },
+      {
+        "question": "What is an exterior cemetery stop?",
+        "answer": "The guide leads the group to the gates or perimeter wall to tell stories, but does not enter."
+      },
+      {
+        "question": "Who confirms final cemetery access?",
+        "answer": "The tour operator is responsible for confirming whether they have secured legitimate access for your specific time slot."
+      },
+      {
+        "question": "Can access change because of city, property, weather, or operator rules?",
+        "answer": "Yes. Cemeteries can restrict entry unexpectedly due to weather, maintenance, or rule changes, affecting planned itineraries."
+      }
+    ],
+    "hauntedTaxonomy": {
+      "primaryTheme": "Cemetery history",
+      "cemeteryAccess": "Access not confirmed",
+      "timeOfDay": "After dark"
+    },
+    "disclosure": null,
+    "editorialSources": [],
+    "metadata": {
+      "title": "Night Cemetery Access in New Orleans | What to Know",
+      "description": "Can you visit New Orleans cemeteries at night? Understand the rules, closures, and which tours actually offer after-dark access.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/haunted-cemetery-tours/night-cemetery-access-explained",
+      "robots": "noindex, nofollow",
+      "openGraphTitle": "Night Cemetery Access in New Orleans",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/haunted-cemetery-tours/night-cemetery-access-explained",
+      "twitterTitle": "Night Cemetery Access in New Orleans"
+    },
+    "schemaEligibility": null,
+    "visualMood": "Dark",
+    "imageAttributionIds": [
+      "st-louis-cemetery-1-gates"
+    ],
+    "comparisonColumns": [],
+    "comparisonRows": [],
+    "recommendedChoiceGuidance": null,
+    "durationNotes": null,
+    "ageNotes": null,
+    "mobilityNotes": null,
+    "weatherNotes": null,
+    "itineraryCombinations": [],
+    "futureProductCategoryIds": [],
+    "relatedAreaIds": [],
+    "status": "draft",
+    "isIndexable": false
+  },
+
   "city-tours": {
     "id": "city-tours",
     "publicRoute": "/city-tours",
