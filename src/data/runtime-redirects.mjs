@@ -46,6 +46,36 @@ const DCC_RUNTIME_REDIRECTS = [
     destination: "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private",
     permanent: true,
   },
+  {
+    source: "/categories/french-quarter-tours",
+    destination: "/areas/french-quarter",
+    permanent: true,
+  },
+  {
+    source: "/categories/swamp-tours",
+    destination: "/swamp-tours",
+    permanent: true,
+  },
+  {
+    source: "/categories/airboat-tours",
+    destination: "/airboat-tours",
+    permanent: true,
+  },
+  {
+    source: "/categories/covered-swamp-boat-tours",
+    destination: "/covered-swamp-boat-tours",
+    permanent: true,
+  },
+  {
+    source: "/categories/plantation-tours",
+    destination: "/plantation-tours",
+    permanent: true,
+  },
+  {
+    source: "/categories/city-tours",
+    destination: "/city-tours",
+    permanent: true,
+  },
 ];
 
 export function buildRuntimeRedirects() {

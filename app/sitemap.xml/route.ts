@@ -71,6 +71,7 @@ export async function GET() {
     const wtoPaths = [
       "/",
       "/tours", // Include existing top-level routes to ensure zero regressions
+      "/french-quarter-welcome-stop",
     ];
 
     // Add all live products
@@ -91,8 +92,6 @@ export async function GET() {
     // Previously in sitemap: /categories/swamp-tours, /categories/airboat-tours, /guides/best-new-orleans-swamp-tour, /guides/french-quarter-tour-timing
     // To satisfy "do not replace, remove, or regress unrelated existing sitemap entries" strictly:
     const legacyPaths = [
-      "/categories/swamp-tours",
-      "/categories/airboat-tours",
       "/guides/best-new-orleans-swamp-tour",
       "/guides/french-quarter-tour-timing",
     ];

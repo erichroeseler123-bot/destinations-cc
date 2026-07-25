@@ -99,7 +99,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Script src={`/ga-init.js?id=${GA_MEASUREMENT_ID}`} strategy="afterInteractive" />
         <PartnerAnalyticsScript />
       </head>
-      <body className={`${headingFont.variable} ${accentFont.variable} ${sansFont.variable} ${monoFont.variable}`}>
+      <body className={`${headingFont.variable} ${accentFont.variable} ${sansFont.variable} ${monoFont.variable} ${isWtonotShell ? "bg-[#151515] text-[#fdfbf7]" : ""}`}>
         {isWtonotShell || isLfseShell || isHomepage ? (
           <>
             <a href="#main-content" className="dcc-skip-link">

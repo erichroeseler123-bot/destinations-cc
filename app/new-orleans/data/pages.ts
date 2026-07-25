@@ -1021,8 +1021,8 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
-    "status": "draft",
-    "isIndexable": false
+    "status": "live",
+    "isIndexable": true
 
 },
   "plantation-tours-oak-alley-vs-whitney": {
