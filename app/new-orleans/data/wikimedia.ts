@@ -110,4 +110,51 @@ export const WIKIMEDIA_IMAGES: Record<string, WikimediaImage> = {
     changesMade: "Downloaded from original source.",
     publicDomainRationale: "Published before 1929 in the United States (1906)."
   }
+,
+  "stew-cooking": {
+    id: "stew-cooking",
+    originalTitle: "Cooking on Xmas Eve 2006 New Orleans",
+    displayTitle: "Cooking in New Orleans",
+    url: "/images/wikimedia/originals/stew-cooking.jpg",
+    originalFileUrl: "https://upload.wikimedia.org/wikipedia/commons/2/2d/Cooking_on_Xmas_Eve_2006_New_Orleans.jpg",
+    author: "Bart Everson",
+    license: "CC BY 2.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Cooking_on_Xmas_Eve_2006_New_Orleans.jpg",
+    alt: "Hands stirring food in a pot during a New Orleans cooking scene",
+    caption: "A cooking scene in New Orleans",
+    attributionText: "Photo: Bart Everson, via Wikimedia Commons, CC BY 2.0. Downloaded from original source.",
+    changesMade: "Downloaded from original source."
+  },
+  "gumbo-dish": {
+    id: "gumbo-dish",
+    originalTitle: "New Orleans - Gumbo - 2018",
+    displayTitle: "New Orleans Gumbo",
+    url: "/images/wikimedia/originals/gumbo-dish.jpg",
+    originalFileUrl: "https://upload.wikimedia.org/wikipedia/commons/c/c8/New_Orleans_-_Gumbo_-_2018.jpg",
+    author: "Jeremy Thompson",
+    license: "CC BY 2.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:New_Orleans_-_Gumbo_-_2018.jpg",
+    alt: "A bowl of gumbo with rice and green onions",
+    caption: "A bowl of gumbo",
+    attributionText: "Photo: Jeremy Thompson, via Wikimedia Commons, CC BY 2.0. Downloaded from original source.",
+    changesMade: "Downloaded from original source."
+  },
+  "french-market-historic": {
+    id: "french-market-historic",
+    originalTitle: "French Market New Orleans with religious sisters June 1936 cropped",
+    displayTitle: "French Market in 1936",
+    url: "/images/wikimedia/originals/french-market-historic.jpg",
+    originalFileUrl: "https://upload.wikimedia.org/wikipedia/commons/b/ba/French_Market_New_Orleans_with_religious_sisters_June_1936_cropped.jpg",
+    author: "Carl Mydans",
+    license: "Public domain",
+    licenseUrl: "https://en.wikipedia.org/wiki/Public_domain",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:French_Market_New_Orleans_with_religious_sisters_June_1936_cropped.jpg",
+    alt: "Historic 1936 photo of the French Market with religious sisters",
+    caption: "The French Market in 1936",
+    attributionText: "Photo: Carl Mydans, via Wikimedia Commons, Public domain. Downloaded from original source.",
+    changesMade: "Downloaded from original source.",
+    publicDomainRationale: "Created by Carl Mydans for the U.S. Farm Security Administration in 1936; treated as a public-domain U.S. federal government work according to the Wikimedia Commons file record."
+  }
 };

@@ -219,6 +219,74 @@ export interface HauntedTaxonomy {
   historicalFocus?: HauntedHistoricalFocus;
 }
 
+
+
+export type CulinaryExperienceType =
+  | "Food tour"
+  | "Cooking demonstration"
+  | "Hands-on cooking class"
+  | "Market tour"
+  | "Cocktail tour"
+  | "Mixed culinary experience";
+
+export type CulinaryParticipation =
+  | "Observation"
+  | "Guided tasting"
+  | "Hands-on cooking"
+  | "Mixed participation"
+  | "Participation not confirmed";
+
+export type CulinaryFoodAmount =
+  | "Samples"
+  | "Multiple tastings"
+  | "Light meal"
+  | "Full meal"
+  | "Food amount not confirmed";
+
+export type CulinaryAlcohol =
+  | "No alcohol included"
+  | "Alcohol included"
+  | "Alcohol available separately"
+  | "Cocktail-focused"
+  | "Alcohol details not confirmed";
+
+export type CulinaryDietaryHandling =
+  | "Accommodations available"
+  | "Limited accommodations"
+  | "Not suitable for some dietary needs"
+  | "Confirm during booking";
+
+export type CulinaryWalkingLevel =
+  | "Minimal walking"
+  | "Moderate walking"
+  | "Extended walking"
+  | "Seated experience"
+  | "Walking level not confirmed";
+
+export type CulinaryAgeGuidance =
+  | "Family-friendly"
+  | "Recommended for older children"
+  | "Adults-only"
+  | "Age policy confirmed during booking";
+
+export type CulinaryDurationType =
+  | "Short experience"
+  | "Half-day experience"
+  | "Extended experience"
+  | "Duration varies by operator"
+  | "Duration not confirmed";
+
+export interface CulinaryTaxonomy {
+  experienceType?: CulinaryExperienceType;
+  participation?: CulinaryParticipation;
+  foodAmount?: CulinaryFoodAmount;
+  neighborhoods?: string[];
+  walkingLevel?: CulinaryWalkingLevel;
+  alcohol?: CulinaryAlcohol;
+  dietaryHandling?: CulinaryDietaryHandling;
+  ageGuidance?: CulinaryAgeGuidance;
+  durationType?: CulinaryDurationType;
+}
 export type SeoPageVariant = "category" | "comparison" | "area" | "traveler-fit" | "guide";
 
 export interface EditorialSource {
@@ -267,6 +335,7 @@ export interface SeoPageRecord {
   status: "live" | "draft";
   isIndexable: boolean;
   hauntedTaxonomy?: HauntedTaxonomy;
+  culinaryTaxonomy?: CulinaryTaxonomy;
   inventoryNotice?: string;
   editorialSources?: EditorialSource[];
 }

@@ -6,6 +6,7 @@ import ProductCard from './ProductCard';
 import ComparisonMatrix from './ComparisonMatrix';
 import SwampRideComparison from './SwampRideComparison';
 import HauntedTaxonomyRenderer from './HauntedTaxonomyRenderer';
+import CulinaryTaxonomyRenderer from './CulinaryTaxonomyRenderer';
 import VoodooContextBlock from './VoodooContextBlock';
 import JsonLd from '@/app/components/dcc/JsonLd';
 import { generateCategorySchemaGraph } from '../lib/schema';
@@ -89,6 +90,19 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
         return "Understand night cemetery access";
       case "haunted-cemetery-tours":
         return "Return to Haunted & Cemetery Tours main guide";
+
+      // Phase 4 - Culinary Tours
+      case "food-tours-cooking-classes-food-tour-vs-cooking-class":
+        return "Compare food tours with cooking classes";
+      case "food-tours-cooking-classes-demonstration-vs-hands-on":
+        return "Compare cooking demonstrations with hands-on classes";
+      case "food-tours-cooking-classes-tastings-vs-full-meal":
+        return "Understand tastings versus a full meal";
+      case "food-tours-cooking-classes-dietary-needs-explained":
+        return "Plan for dietary needs and food allergies";
+      case "food-tours-cooking-classes":
+        return "Return to New Orleans Food Tours & Cooking Classes";
+
       default:
         return null;
     }
@@ -138,6 +152,7 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
             <div className="grid md:grid-cols-12 gap-8 my-16">
               <div className="md:col-span-8">
                 {page.hauntedTaxonomy && <HauntedTaxonomyRenderer taxonomy={page.hauntedTaxonomy} />}
+            {page.culinaryTaxonomy && <CulinaryTaxonomyRenderer taxonomy={page.culinaryTaxonomy} />}
                 {(page.id === "haunted-cemetery-tours" || page.id === "haunted-cemetery-tours-types-explained") && <VoodooContextBlock />}
 
                 {page.whoItIsFor && (

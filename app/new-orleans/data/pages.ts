@@ -1,7 +1,477 @@
 import { SeoPageRecord } from './types';
 
 export const SEO_PAGES: Record<string, SeoPageRecord> = {
-    "haunted-cemetery-tours": {
+      "food-tours-cooking-classes": {
+    "id": "food-tours-cooking-classes",
+    "publicRoute": "/food-tours-cooking-classes",
+    "variant": "category",
+    "pageIntent": "High-level overview of food tours vs. cooking classes, walking vs. seated, demo vs. hands-on, food amounts, alcohol, dietary needs, and family policies.",
+    "canonicalRoute": "https://www.welcometoneworleanstours.com/food-tours-cooking-classes",
+    "heroEyebrow": "Culinary Tours",
+    "heroTitle": "New Orleans Food Tours & Cooking Classes",
+    "heroSubtitle": "Understand formats, tasting amounts, and participation before booking.",
+    "inventoryNotice": "We are building this guide before adding bookable food tours and cooking classes. Participating operator options will appear here as inventory is verified.",
+    "openingAnswer": "New Orleans culinary experiences may feature Creole, Cajun, seafood, baking, market, and neighborhood food traditions. Specific historical and cultural claims will be added as sources are verified.",
+    "topCta": null,
+    "secondaryCta": null,
+    "whoItIsFor": null,
+    "whoShouldChooseSomethingElse": null,
+    "decisionFactors": [
+      "Food Tour vs Cooking Class: Decide whether you want to eat at multiple locations on a walking tour, or sit and prepare food in a kitchen.",
+      "Demonstration vs Hands-on: Not all cooking classes let you cook. Clarify whether you will watch an instructor or prepare your own dish.",
+      "Samples vs Full Meal: Food amounts vary. Some tours offer a light taste at each stop, while others add up to a full meal.",
+      "Neighborhood Focus: Food tours often center on the French Quarter, but some explore other districts.",
+      "Dietary Accommodations: Accommodations vary. Those with strict medical diets must verify cross-contact protocols directly with the operator.",
+      "Alcohol Inclusion: Some tours include cocktails, while others are strictly food-focused."
+    ],
+    "planningConsiderations": "Review our specialized culinary guides below to understand the differences in formats, food amounts, and participation before booking.",
+    "transportationNotes": null,
+    "durationNotes": null,
+    "ageNotes": null,
+    "mobilityNotes": null,
+    "weatherNotes": null,
+    "relatedPageIds": [
+      "food-tours-cooking-classes-food-tour-vs-cooking-class",
+      "food-tours-cooking-classes-demonstration-vs-hands-on",
+      "food-tours-cooking-classes-tastings-vs-full-meal",
+      "food-tours-cooking-classes-dietary-needs-explained",
+      "french-quarter-welcome-stop"
+    ],
+    "liveProductIds": [],
+    "futureProductCategoryIds": [],
+    "relatedAreaIds": [],
+    "faqs": [
+      {
+        "question": "Is all New Orleans food Cajun?",
+        "answer": "No. New Orleans cuisine reflects Creole, Cajun, African, Caribbean, French, Spanish, Indigenous, and immigrant influences."
+      }
+    ],
+    "culinaryTaxonomy": {
+      "experienceType": "Mixed culinary experience",
+      "participation": "Mixed participation",
+      "foodAmount": "Food amount not confirmed",
+      "neighborhoods": [
+        "French Quarter",
+        "Multiple neighborhoods"
+      ],
+      "walkingLevel": "Walking level not confirmed",
+      "alcohol": "Alcohol details not confirmed",
+      "dietaryHandling": "Confirm during booking",
+      "ageGuidance": "Age policy confirmed during booking",
+      "durationType": "Duration varies by operator"
+    },
+    "disclosure": null,
+    "editorialSources": [],
+    "metadata": {
+      "title": "New Orleans Food Tours & Cooking Classes",
+      "description": "Compare New Orleans food tours, culinary walking tours, and cooking classes. Understand formats and food amounts before you book.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/food-tours-cooking-classes",
+      "robots": "noindex, nofollow",
+      "openGraphTitle": "New Orleans Food Tours & Cooking Classes",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/food-tours-cooking-classes",
+      "twitterTitle": "New Orleans Food Tours & Cooking Classes"
+    },
+    "schemaEligibility": null,
+    "visualMood": "Warm",
+    "imageAttributionIds": [
+      "french-market-historic"
+    ],
+    "comparisonColumns": [],
+    "comparisonRows": [],
+    "recommendedChoiceGuidance": null,
+    "itineraryCombinations": [],
+    "status": "draft",
+    "isIndexable": false
+  },
+
+  "food-tours-cooking-classes-food-tour-vs-cooking-class": {
+    "id": "food-tours-cooking-classes-food-tour-vs-cooking-class",
+    "publicRoute": "/food-tours-cooking-classes/food-tour-vs-cooking-class",
+    "variant": "comparison",
+    "pageIntent": "Detailed comparison of food tours and cooking classes.",
+    "canonicalRoute": "https://www.welcometoneworleanstours.com/food-tours-cooking-classes/food-tour-vs-cooking-class",
+    "heroEyebrow": "Format Comparison",
+    "heroTitle": "Food Tour vs Cooking Class",
+    "heroSubtitle": "Compare eating on the go with kitchen instruction.",
+    "inventoryNotice": "We are building this guide before adding bookable food tours and cooking classes. Participating operator options will appear here as inventory is verified.",
+    "openingAnswer": "Food tours and cooking classes provide entirely different ways to experience New Orleans cuisine. One focuses on neighborhood exploration, while the other centers on culinary technique.",
+    "topCta": null,
+    "secondaryCta": null,
+    "whoItIsFor": null,
+    "whoShouldChooseSomethingElse": null,
+    "decisionFactors": [],
+    "planningConsiderations": "Consider your group's mobility, as food tours require walking between stops in various weather conditions.",
+    "transportationNotes": null,
+    "durationNotes": null,
+    "ageNotes": null,
+    "mobilityNotes": null,
+    "weatherNotes": null,
+    "relatedPageIds": [
+      "food-tours-cooking-classes-demonstration-vs-hands-on",
+      "food-tours-cooking-classes-tastings-vs-full-meal",
+      "food-tours-cooking-classes",
+      "french-quarter-welcome-stop"
+    ],
+    "liveProductIds": [],
+    "futureProductCategoryIds": [],
+    "relatedAreaIds": [],
+    "faqs": [
+      {
+        "question": "Do all food tours provide a full meal?",
+        "answer": "No. Some food tours provide only light tastings at each stop. Verify the food amount with the operator."
+      }
+    ],
+    "culinaryTaxonomy": {
+      "experienceType": "Mixed culinary experience",
+      "participation": "Mixed participation",
+      "foodAmount": "Food amount not confirmed",
+      "walkingLevel": "Walking level not confirmed"
+    },
+    "disclosure": null,
+    "editorialSources": [],
+    "metadata": {
+      "title": "Food Tour vs Cooking Class | New Orleans",
+      "description": "Compare New Orleans food tours and cooking classes. Understand walking formats versus seated kitchen experiences.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/food-tours-cooking-classes/food-tour-vs-cooking-class",
+      "robots": "noindex, nofollow",
+      "openGraphTitle": "Food Tour vs Cooking Class",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/food-tours-cooking-classes/food-tour-vs-cooking-class",
+      "twitterTitle": "Food Tour vs Cooking Class"
+    },
+    "schemaEligibility": null,
+    "visualMood": "Warm",
+    "imageAttributionIds": [
+      "stew-cooking"
+    ],
+    "comparisonColumns": [
+      {
+        "id": "food_tour",
+        "header": "Food Tour"
+      },
+      {
+        "id": "cooking_class",
+        "header": "Cooking Class"
+      }
+    ],
+    "comparisonRows": [
+      {
+        "label": "Participation",
+        "values": [
+          "Guided tasting",
+          "Observation or hands-on cooking"
+        ]
+      },
+      {
+        "label": "Walking & Mobility",
+        "values": [
+          "May involve walking between stops; distance and terrain vary by operator.",
+          "Seated or standing in one kitchen"
+        ]
+      },
+      {
+        "label": "Number of Locations",
+        "values": [
+          "Multiple restaurants or vendor stops",
+          "Often one kitchen, classroom, or demonstration space."
+        ]
+      },
+      {
+        "label": "Food Quantity",
+        "values": [
+          "Varies from light samples to a full meal",
+          "May include a tasting or meal; confirm the food amount."
+        ]
+      },
+      {
+        "label": "Neighborhood Context",
+        "values": [
+          "Explores neighborhood history on foot",
+          "Focuses on the kitchen environment"
+        ]
+      },
+      {
+        "label": "Cooking Instruction",
+        "values": [
+          "May include food history and tasting guidance, but usually not cooking practice.",
+          "Instruction varies from demonstration to hands-on preparation."
+        ]
+      },
+      {
+        "label": "Weather Exposure",
+        "values": [
+          "Exposed to rain and heat between stops",
+          "Often indoors, though venue conditions vary."
+        ]
+      },
+      {
+        "label": "Best Fit",
+        "values": [
+          "Explorers wanting to sample multiple venues",
+          "Culinary enthusiasts wanting to learn techniques"
+        ]
+      }
+    ],
+    "recommendedChoiceGuidance": null,
+    "itineraryCombinations": [],
+    "status": "draft",
+    "isIndexable": false
+  },
+
+  "food-tours-cooking-classes-demonstration-vs-hands-on": {
+    "id": "food-tours-cooking-classes-demonstration-vs-hands-on",
+    "publicRoute": "/food-tours-cooking-classes/demonstration-vs-hands-on",
+    "variant": "comparison",
+    "pageIntent": "Clarify participation levels in cooking classes.",
+    "canonicalRoute": "https://www.welcometoneworleanstours.com/food-tours-cooking-classes/demonstration-vs-hands-on",
+    "heroEyebrow": "Class Types",
+    "heroTitle": "Cooking Demonstration vs Hands-On Class",
+    "heroSubtitle": "Understand your level of participation before booking.",
+    "inventoryNotice": "We are building this guide before adding bookable food tours and cooking classes. Participating operator options will appear here as inventory is verified.",
+    "openingAnswer": "Cooking classes in New Orleans range from purely observational demonstrations to fully immersive hands-on workshops.",
+    "topCta": null,
+    "secondaryCta": null,
+    "whoItIsFor": null,
+    "whoShouldChooseSomethingElse": null,
+    "decisionFactors": [
+      "Watching an Instructor: Demonstrations involve watching a chef prepare the meal from a seated area.",
+      "Helping with Selected Steps: Some classes invite volunteers to assist briefly.",
+      "Cooking an Individual Dish: True hands-on classes allow you to prepare your own dish.",
+      "Shared Group Preparation: Other formats involve the group cooking a large meal together.",
+      "Kitchen Safety & Age Requirements: Hands-on classes may have stricter age limits due to knives and hot surfaces.",
+      "Accessibility: Demonstrations are generally seated and accessible; hands-on classes may require standing."
+    ],
+    "planningConsiderations": "Confirm exactly how much you will actually cook versus observe.",
+    "transportationNotes": null,
+    "durationNotes": null,
+    "ageNotes": null,
+    "mobilityNotes": null,
+    "weatherNotes": null,
+    "relatedPageIds": [
+      "food-tours-cooking-classes-food-tour-vs-cooking-class",
+      "food-tours-cooking-classes",
+      "french-quarter-welcome-stop"
+    ],
+    "liveProductIds": [],
+    "futureProductCategoryIds": [],
+    "relatedAreaIds": [],
+    "faqs": [
+      {
+        "question": "Is a demonstration considered a hands-on class?",
+        "answer": "No. You should not assume a demonstration is hands-on unless the operator confirms participants actively prepare food."
+      },
+      {
+        "question": "Are recipes provided?",
+        "answer": "Some classes provide recipes; confirm what materials are included."
+      }
+    ],
+    "culinaryTaxonomy": {
+      "experienceType": "Cooking demonstration",
+      "participation": "Mixed participation",
+      "foodAmount": "Food amount not confirmed",
+      "walkingLevel": "Seated experience"
+    },
+    "disclosure": null,
+    "editorialSources": [],
+    "metadata": {
+      "title": "Cooking Demonstration vs Hands-On Class | New Orleans",
+      "description": "Compare New Orleans cooking demonstrations and hands-on classes to understand your participation level.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/food-tours-cooking-classes/demonstration-vs-hands-on",
+      "robots": "noindex, nofollow",
+      "openGraphTitle": "Cooking Demonstration vs Hands-On Class",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/food-tours-cooking-classes/demonstration-vs-hands-on",
+      "twitterTitle": "Cooking Demonstration vs Hands-On Class"
+    },
+    "schemaEligibility": null,
+    "visualMood": "Warm",
+    "imageAttributionIds": [
+      "stew-cooking"
+    ],
+    "comparisonColumns": [
+      {
+        "id": "demonstration",
+        "header": "Demonstration"
+      },
+      {
+        "id": "hands_on",
+        "header": "Hands-On Class"
+      }
+    ],
+    "comparisonRows": [
+      {
+        "label": "Participation",
+        "values": [
+          "Observing the instructor",
+          "Actively preparing ingredients"
+        ]
+      },
+      {
+        "label": "Mobility",
+        "values": [
+          "Primarily seated",
+          "Requires standing at a workstation"
+        ]
+      },
+      {
+        "label": "Safety Limits",
+        "values": [
+          "Fewer restrictions, often family-friendly",
+          "May enforce age restrictions for safety"
+        ]
+      }
+    ],
+    "recommendedChoiceGuidance": null,
+    "itineraryCombinations": [],
+    "status": "draft",
+    "isIndexable": false
+  },
+
+  "food-tours-cooking-classes-tastings-vs-full-meal": {
+    "id": "food-tours-cooking-classes-tastings-vs-full-meal",
+    "publicRoute": "/food-tours-cooking-classes/tastings-vs-full-meal",
+    "variant": "comparison",
+    "pageIntent": "Manage expectations around food volume.",
+    "canonicalRoute": "https://www.welcometoneworleanstours.com/food-tours-cooking-classes/tastings-vs-full-meal",
+    "heroEyebrow": "Food Volume",
+    "heroTitle": "Tastings vs a Full Meal",
+    "heroSubtitle": "How much food to expect on a New Orleans culinary tour.",
+    "inventoryNotice": "We are building this guide before adding bookable food tours and cooking classes. Participating operator options will appear here as inventory is verified.",
+    "openingAnswer": "Food volume varies drastically between tours. Do not assume multiple tastings equate to a full meal without operator confirmation.",
+    "topCta": null,
+    "secondaryCta": null,
+    "whoItIsFor": null,
+    "whoShouldChooseSomethingElse": null,
+    "decisionFactors": [
+      "Sample Sizes: Some tours provide small bite-sized portions.",
+      "Number of Stops: More stops can mean more food, but portion size matters.",
+      "Pacing: Eating small bites over several hours may not feel like a complete meal.",
+      "Pre-Tour Planning: Consider eating a light snack beforehand if a tour only promises samples.",
+      "Beverage Inclusion: Clarify if water, tea, or alcohol are included with tastings.",
+      "Seated vs Standing Service: Some stops offer seated dining, while others require eating on the go."
+    ],
+    "planningConsiderations": "Verify the expected food amount with the operator to plan your dining schedule.",
+    "transportationNotes": null,
+    "durationNotes": null,
+    "ageNotes": null,
+    "mobilityNotes": null,
+    "weatherNotes": null,
+    "relatedPageIds": [
+      "food-tours-cooking-classes-dietary-needs-explained",
+      "food-tours-cooking-classes",
+      "french-quarter-welcome-stop"
+    ],
+    "liveProductIds": [],
+    "futureProductCategoryIds": [],
+    "relatedAreaIds": [],
+    "faqs": [
+      {
+        "question": "Will I need dinner after a food tour?",
+        "answer": "It depends on the tour. Some operators serve enough food to replace a meal, while others only offer light samples."
+      }
+    ],
+    "culinaryTaxonomy": {
+      "experienceType": "Food tour",
+      "participation": "Guided tasting",
+      "foodAmount": "Food amount not confirmed",
+      "walkingLevel": "Walking level not confirmed"
+    },
+    "disclosure": null,
+    "editorialSources": [],
+    "metadata": {
+      "title": "Tastings vs Full Meal on New Orleans Food Tours",
+      "description": "Understand food portions on New Orleans food tours. Learn the difference between sample tastings and tours that provide a full meal.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/food-tours-cooking-classes/tastings-vs-full-meal",
+      "robots": "noindex, nofollow",
+      "openGraphTitle": "Tastings vs Full Meal on New Orleans Food Tours",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/food-tours-cooking-classes/tastings-vs-full-meal",
+      "twitterTitle": "Tastings vs Full Meal on Food Tours"
+    },
+    "schemaEligibility": null,
+    "visualMood": "Warm",
+    "imageAttributionIds": [
+      "gumbo-dish"
+    ],
+    "comparisonColumns": [],
+    "comparisonRows": [],
+    "recommendedChoiceGuidance": null,
+    "itineraryCombinations": [],
+    "status": "draft",
+    "isIndexable": false
+  },
+
+  "food-tours-cooking-classes-dietary-needs-explained": {
+    "id": "food-tours-cooking-classes-dietary-needs-explained",
+    "publicRoute": "/food-tours-cooking-classes/dietary-needs-explained",
+    "variant": "guide",
+    "pageIntent": "Detail dietary accommodations across culinary tours.",
+    "canonicalRoute": "https://www.welcometoneworleanstours.com/food-tours-cooking-classes/dietary-needs-explained",
+    "heroEyebrow": "Dietary Guide",
+    "heroTitle": "Dietary Needs & Food Allergies on Culinary Tours",
+    "heroSubtitle": "How to plan for restrictions on New Orleans food tours.",
+    "inventoryNotice": "We are building this guide before adding bookable food tours and cooking classes. Participating operator options will appear here as inventory is verified.",
+    "openingAnswer": "A tour mentioning dietary accommodations does not automatically guarantee an allergen-free kitchen or protection from cross-contact. Guests with serious allergies or medical dietary requirements should confirm ingredients, preparation areas, shared equipment, and emergency procedures directly with the operator before booking.",
+    "topCta": null,
+    "secondaryCta": null,
+    "whoItIsFor": null,
+    "whoShouldChooseSomethingElse": null,
+    "decisionFactors": [
+      "Vegetarian & Vegan: Some operators offer plant-based substitutes, but New Orleans cuisine relies heavily on meat and seafood.",
+      "Gluten-Free: Recipes and preparation methods vary. Ask the operator about ingredients, thickeners, shared equipment, and cross-contact.",
+      "Shellfish & Nut Allergies: Some tour stops may handle seafood, nuts, dairy, wheat, or other common allergens; cross-contact may be possible in shared kitchens.",
+      "Dairy Restrictions: Butter and cream are common in Creole and French-influenced dishes.",
+      "Religious Dietary Requirements: Availability of religious dietary accommodations varies by operator and venue.",
+      "Advance Notice Required: Advance notice may be required. Ask the operator what they can and cannot accommodate."
+    ],
+    "planningConsiderations": "Always verify safety protocols directly with the operator if you have a medical allergy.",
+    "transportationNotes": null,
+    "durationNotes": null,
+    "ageNotes": null,
+    "mobilityNotes": null,
+    "weatherNotes": null,
+    "relatedPageIds": [
+      "food-tours-cooking-classes",
+      "food-tours-cooking-classes-food-tour-vs-cooking-class",
+      "french-quarter-welcome-stop"
+    ],
+    "liveProductIds": [],
+    "futureProductCategoryIds": [],
+    "relatedAreaIds": [],
+    "faqs": [
+      {
+        "question": "Can food tours accommodate severe allergies?",
+        "answer": "A tour mentioning dietary accommodations does not automatically guarantee an allergen-free kitchen or protection from cross-contact. Ask the operator what they can and cannot accommodate, including possible cross-contact."
+      }
+    ],
+    "culinaryTaxonomy": {
+      "experienceType": "Mixed culinary experience",
+      "participation": "Participation not confirmed",
+      "foodAmount": "Food amount not confirmed",
+      "dietaryHandling": "Confirm during booking"
+    },
+    "disclosure": null,
+    "editorialSources": [],
+    "metadata": {
+      "title": "Dietary Needs & Allergies on New Orleans Food Tours",
+      "description": "How to navigate food allergies, vegetarian, vegan, and gluten-free diets on New Orleans food tours and cooking classes.",
+      "canonicalRoute": "https://www.welcometoneworleanstours.com/food-tours-cooking-classes/dietary-needs-explained",
+      "robots": "noindex, nofollow",
+      "openGraphTitle": "Dietary Needs on New Orleans Food Tours",
+      "openGraphUrl": "https://www.welcometoneworleanstours.com/food-tours-cooking-classes/dietary-needs-explained",
+      "twitterTitle": "Dietary Needs on Food Tours"
+    },
+    "schemaEligibility": null,
+    "visualMood": "Warm",
+    "imageAttributionIds": [
+      "gumbo-dish"
+    ],
+    "comparisonColumns": [],
+    "comparisonRows": [],
+    "recommendedChoiceGuidance": null,
+    "itineraryCombinations": [],
+    "status": "draft",
+    "isIndexable": false
+  },
+
+"haunted-cemetery-tours": {
     "id": "haunted-cemetery-tours",
     "publicRoute": "/haunted-cemetery-tours",
     "variant": "category",
