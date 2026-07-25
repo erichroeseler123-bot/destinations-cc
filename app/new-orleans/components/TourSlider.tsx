@@ -90,7 +90,7 @@ export default function TourSlider({ products, basePath }: TourSliderProps) {
               className={`${styles.sliderCard} group flex flex-col bg-[#1a1a1a] border border-[#2a2a2a] overflow-hidden hover:border-[#d4af37] transition-colors`}
             >
               {isImageLed ? (
-                <div className="relative w-full h-64 overflow-hidden bg-[#0a0a0a]">
+                <div className="relative w-full aspect-[4/3] overflow-hidden bg-[#0a0a0a]">
                   <Image
                     src={product.imageUrl || ''}
                     alt={product.title}
@@ -105,7 +105,7 @@ export default function TourSlider({ products, basePath }: TourSliderProps) {
                   </div>
                 </div>
               ) : (
-                <div className="relative w-full h-64 bg-[#2a2a2a] flex flex-col justify-end p-6 border-b border-[#1a1a1a]">
+                <div className="relative w-full aspect-[4/3] bg-[#2a2a2a] flex flex-col justify-end p-6 border-b border-[#1a1a1a]">
                   <span className="text-[10px] font-bold font-sans uppercase tracking-[0.2em] text-[#d4af37]">
                     {product.categoryIds?.[0]?.replace('-', ' ')}
                   </span>
@@ -126,7 +126,7 @@ export default function TourSlider({ products, basePath }: TourSliderProps) {
                 </p>
                 <div className="mt-auto pt-4 border-t border-[#2a2a2a] flex justify-between items-center">
                   <span className="text-xs font-sans font-light text-[#fdfbf7]/50">
-                    By {provider || 'Local Operator'}
+                    By {(product as any).operatorName || product.operatorAttribution || provider || 'Local Operator'}
                   </span>
                   <span className="text-[#d4af37] font-bold group-hover:translate-x-1 transition-transform">
                     &rarr;

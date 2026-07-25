@@ -146,7 +146,10 @@ export default function OutpostConsole() {
       <section className={`max-w-7xl mx-auto px-6 py-24 border-t ${styles.nolaBorder}`}>
         <div className="text-center mb-16">
           <h2 className="font-sans text-sm font-bold uppercase tracking-widest text-white/50 mb-2">Discover</h2>
-          <h3 className={`font-serif text-4xl md:text-5xl font-bold ${styles.nolaBrass}`}>Explore By Area</h3>
+          <h3 className={`font-serif text-4xl md:text-5xl font-bold ${styles.nolaBrass}`}>Explore Our Tours</h3>
+          <p className="mt-4 text-[#aaaaaa] font-sans text-lg max-w-2xl mx-auto">
+            A carefully selected starting collection from participating local operators.
+          </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[

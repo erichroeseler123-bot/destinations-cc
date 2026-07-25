@@ -15,11 +15,16 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "secondaryCta": null,
     "whoItIsFor": "City tours are great for first-time visitors, history buffs, and anyone wanting to see the major landmarks without navigating traffic.",
     "whoShouldChooseSomethingElse": null,
-    "decisionFactors": ["Air-conditioned buses offer relief from the summer heat.","Most tours cover multiple neighborhoods in a short time.","Great way to identify places you want to return to later."],
+    "decisionFactors": [
+      "Riding Tours: Comfortable, air-conditioned bus tours covering large areas like the Garden District and cemeteries.",
+      "Walking Tours: Best for deeply exploring specific neighborhoods like the French Quarter on foot.",
+      "Hop-on/Hop-off Tours: Flexible double-decker bus tours to explore at your own pace.",
+      "Private Tours: Customized itineraries with a dedicated guide for your group."
+    ],
     "comparisonColumns": [],
     "comparisonRows": [],
     "recommendedChoiceGuidance": null,
-    "planningConsiderations": "Morning tours are highly recommended to beat the heat and avoid afternoon showers in the summer.",
+    "planningConsiderations": "Morning tours are highly recommended to beat the heat and avoid afternoon showers in the summer. First-time visitors should prioritize a riding tour to learn the city layout before doing specialized walking tours.",
     "transportationNotes": null,
     "durationNotes": null,
     "ageNotes": null,
@@ -30,10 +35,27 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
         "southernstyle-city-tour"
     ],
     "futureProductCategoryIds": [],
-    "relatedPageIds": [],
+    "relatedPageIds": ["tours-for-first-time-visitors"],
     "relatedAreaIds": [],
     "disclosure": "We are an independent marketplace. The city tours listed here are operated by verified local partners.",
-    "faqs": [],
+    "faqs": [
+      {
+        "question": "What parts of the city do you cover?",
+        "answer": "Most comprehensive city tours cover the French Quarter, Jackson Square, the Garden District, St. Charles Avenue, and one of the historic above-ground cemeteries."
+      },
+      {
+        "question": "Do city tours include hotel pickup?",
+        "answer": "Yes, our participating operator typically offers complimentary pickup from most major hotels in the downtown and French Quarter areas. You will confirm your pickup location during checkout."
+      },
+      {
+        "question": "Is there walking involved?",
+        "answer": "While most of the tour is conducted on a comfortable, air-conditioned minibus, there may be short stops where you can get off and walk around, such as at a cemetery or city park."
+      },
+      {
+        "question": "How long do city tours last?",
+        "answer": "A standard New Orleans city tour generally lasts between 2.5 and 3 hours, making it easy to fit into a morning or afternoon itinerary."
+      }
+    ],
     "metadata": {
       "title": "City Tours of New Orleans | Welcome to New Orleans Tours",
       "description": "Explore the architecture, history, and culture of New Orleans with a comprehensive city tour.",
@@ -80,10 +102,23 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
         "ragincajun-airboat"
     ],
     "futureProductCategoryIds": [],
-    "relatedPageIds": [],
+    "relatedPageIds": ["swamp-tours-airboat-vs-covered-boat"],
     "relatedAreaIds": [],
     "disclosure": "We partner directly with swamp operators to bring you authentic bayou experiences.",
-    "faqs": [],
+    "faqs": [
+      {
+        "question": "What is the difference between an airboat and a covered boat?",
+        "answer": "An airboat offers a high-speed thrill ride that can access shallow marshes, but is loud and open to the elements. A covered boat provides a slower, shaded, family-friendly cruise that is quieter and better for photography."
+      },
+      {
+        "question": "Are alligator sightings guaranteed?",
+        "answer": "While alligators are wild animals, sightings are highly likely during the warmer months (April to October). In the winter, they are less active, but you'll still see other wildlife like wild boars and exotic birds."
+      },
+      {
+        "question": "How do I get to the swamp from the French Quarter?",
+        "answer": "You can either book a tour that includes hotel pickup (usually an additional fee) or drive yourself if you have a rental car. The swamps are typically 35-45 minutes from downtown New Orleans."
+      }
+    ],
     "metadata": {
       "title": "New Orleans Swamp Tours | Welcome to New Orleans Tours",
       "description": "Venture into the Louisiana bayou to see alligators, wild boars, and exotic birds in their natural habitat.",
@@ -214,7 +249,13 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "secondaryCta": null,
     "whoItIsFor": "History enthusiasts, students, and visitors wanting to understand the full story of Louisiana.",
     "whoShouldChooseSomethingElse": null,
-    "decisionFactors": ["Most tours require a half-day commitment.","Tours focus heavily on history, architecture, and the realities of slavery.","Transportation from New Orleans is usually included."],
+    "decisionFactors": [
+      "Transportation: Round-trip bus transit from downtown New Orleans is usually included.",
+      "Admission: Your tour ticket typically includes the formal admission costs for the properties.",
+      "Guided Site Access: Upon arrival, you'll join a structured, property-led guided tour of the main historical areas.",
+      "Grounds: You generally have free time to explore the gardens, exhibits, and grounds independently.",
+      "Historical Focus: Tours address the realities of slavery and the complex antebellum history of the region."
+    ],
     "comparisonColumns": [],
     "comparisonRows": [],
     "recommendedChoiceGuidance": null,
@@ -229,10 +270,31 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
         "southernstyle-plantation"
     ],
     "futureProductCategoryIds": [],
-    "relatedPageIds": [],
+    "relatedPageIds": ["plantation-tours-oak-alley-vs-laura"],
     "relatedAreaIds": [],
     "disclosure": "We are an independent marketplace. Plantation tours are operated by local partners.",
-    "faqs": [],
+    "faqs": [
+      {
+        "question": "Which plantation should I visit?",
+        "answer": "Oak Alley is famous for its stunning 300-year-old oak trees and traditional antebellum architecture. Laura Plantation offers a deep dive into Creole culture and a very detailed, historically rich narrative. Some tours allow you to visit both or choose one on the day."
+      },
+      {
+        "question": "Is transportation provided?",
+        "answer": "Yes, our participating operator offers comfortable round-trip bus transportation from New Orleans, so you don't need to rent a car."
+      },
+      {
+        "question": "How long is the drive?",
+        "answer": "The drive from New Orleans to the plantations along the Great River Road takes about 1 hour to 1 hour and 15 minutes each way."
+      },
+      {
+        "question": "How much walking is involved?",
+        "answer": "Expect a moderate amount of walking. You'll be touring large houses and expansive grounds, primarily outdoors and often on uneven terrain."
+      },
+      {
+        "question": "Do the tours discuss slavery?",
+        "answer": "Yes. Both Oak Alley and Laura Plantation explicitly address the history of the enslaved people who lived and labored on the properties through dedicated exhibits, memorials, and guided narratives."
+      }
+    ],
     "metadata": {
       "title": "Louisiana Plantation Tours | Welcome to New Orleans Tours",
       "description": "Gain deep insights into the region's complex antebellum history and the lives of those enslaved there.",
@@ -681,9 +743,17 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "secondaryCta": null,
     "whoItIsFor": "Thrill-seekers, older children, and those wanting a fast-paced adventure.",
     "whoShouldChooseSomethingElse": "Families with infants, anyone pregnant, or those wanting a quiet, shaded photography tour.",
-    "decisionFactors": ["Airboats are fast and loud.","Covered boats provide shade and a steady pace.","Airboats can access shallower waters.","Covered boats are better for young children."],
+    "decisionFactors": [
+      "Airboats (Flat-bottomed fan boats): High-speed, loud, open to elements, access shallow wetlands. Hearing protection required.",
+      "Covered Boats (Pontoon-style): Steady pace, sheltered from sun/rain, quieter, easy to walk around. Excellent for photography.",
+      "Transportation: Both options typically offer downtown hotel pickup or self-drive meeting points."
+    ],
     "comparisonColumns": [{"id":"feature","header":"Feature"}, {"id":"airboat","header":"Airboat"}, {"id":"covered","header":"Covered Boat"}],
-    "comparisonRows": [{"label":"Ride style","values":["faster/open-air","slower/covered"]},{"label":"Exposure","values":["more open to weather","more sheltered"]},{"label":"Booking details","values":["verify operator options","verify operator options"]}],
+    "comparisonRows": [
+      {"label":"Ride Pace","values":["Fast and thrilling","Relaxed and steady"]},
+      {"label":"Shade & Exposure","values":["Open to the sun and wind","Covered roof, open sides"]},
+      {"label":"Noise Level","values":["Very loud (ear protection provided)","Moderate (guide speaks over microphone)"]}
+    ],
     "recommendedChoiceGuidance": null,
     "planningConsiderations": "Both options offer great chances to see alligators, but the experience of the ride is completely different.",
     "transportationNotes": null,
@@ -908,16 +978,23 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "heroEyebrow": "Compare Plantations",
     "heroTitle": "Oak Alley vs. Laura Plantation",
     "heroSubtitle": "Choose the best historical tour for you.",
-    "openingAnswer": "Oak Alley is famous for its iconic alley of 300-year-old oak trees and grand architecture, focusing heavily on the aesthetics of the antebellum south. Laura Plantation is a Creole plantation with a deep, story-driven tour focused heavily on the real, complex history of the enslaved people and the Creole owners.",
+    "openingAnswer": "Both properties provide vital perspectives on Louisiana's past. Oak Alley focuses on a historic estate interpretation involving its architecture, landscape, and exhibits. Laura Plantation centers on Creole family history, archival storytelling, and plantation operations.",
     "topCta": "/tours/oak-alley-or-laura-plantation-tour",
     "secondaryCta": null,
-    "whoItIsFor": null,
-    "whoShouldChooseSomethingElse": null,
-    "decisionFactors": [],
-    "comparisonColumns": [{"id":"feature","header":"Feature"}, {"id":"oak","header":"Oak Alley"}, {"id":"laura","header":"Laura"}],
-    "comparisonRows": [{"label":"Experience emphasis","values":["compare each site's current tour description","compare interpretation focus during booking"]}],
+    "whoItIsFor": "Visitors looking for iconic antebellum architecture and the famous 300-year-old oak tree avenue often prefer Oak Alley.",
+    "whoShouldChooseSomethingElse": "Visitors wanting a deep dive into the 250-year history of a Creole family and the lives of the enslaved people within Creole Louisiana often prefer Laura.",
+    "decisionFactors": [
+      "Oak Alley: Known for its 1839 Greek Revival \"Big House\" and the expansive alley of Virginia Live Oaks. Includes exhibits on the history of the people who lived and labored on the property.",
+      "Laura: A Creole sugarcane plantation (established 1805) featuring brightly colored historic structures. The tour heavily emphasizes the personal memoirs of Laura Locoul and archival storytelling."
+    ],
+    "comparisonColumns": [{"id":"feature","header":"Feature"}, {"id":"oak","header":"Oak Alley"}, {"id":"laura","header":"Laura Plantation"}],
+    "comparisonRows": [
+      {"label":"Primary Interpretive Focus","values":["Architecture, landscape, and estate history","Creole family history, archival storytelling, and plantation operations"]},
+      {"label":"Architectural Style","values":["Greek Revival (1839)","Creole architecture (established 1805)"]},
+      {"label":"Lives of Enslaved People","values":["Dedicated exhibits and reconstructed cabins","Integrated deeply into the guided narrative and original cabins"]}
+    ],
     "recommendedChoiceGuidance": null,
-    "planningConsiderations": null,
+    "planningConsiderations": "You don't necessarily have to choose just one; some combination tours visit both properties in a single day.",
     "transportationNotes": null,
     "durationNotes": null,
     "ageNotes": null,

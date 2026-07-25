@@ -85,6 +85,8 @@ export interface ProductBase {
   status: ProductStatus;
   isIndexable: boolean;
   isBookable: boolean;
+  wikimediaId?: string;
+  representativeCaption?: string;
 }
 
 export interface DraftProduct extends ProductBase {
@@ -103,6 +105,7 @@ export interface LiveProductAdapter extends ProductBase {
   detailPageTitle: string;
   metaDescription: string;
   bookingUrl: string;
+  ctaLabel?: string | null;
   // Specific live overrides
   bestFor: string;
   status: "live";

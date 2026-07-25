@@ -12,6 +12,7 @@ export interface NolaFareHarborProduct {
   duration?: string;
   price?: string;
   imageUrl: string;
+  imageAlt?: string;
   imagePresentation?: "photo" | "editorial";
   ctaLabel?: string;
   bestFor?: string;
@@ -22,6 +23,8 @@ export interface NolaFareHarborProduct {
   durationLabel?: string;
   transportationSummary?: string;
   pickupSummary?: string;
+  wikimediaId?: string;
+  representativeCaption?: string;
   highlights?: string[];
   bookingNote?: string;
 }
@@ -60,6 +63,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     description: "A comprehensive overview of New Orleans covering the French Quarter, Garden District, and more.",
     bestFor: "Best for first-time visitors",
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    imageAlt: "French Quarter street in New Orleans",
     slug: "city-tour-of-new-orleans",
     relatedTourSlug: "oak-alley-or-laura-plantation-tour",
     detailPageTitle: "City Tour Of New Orleans | Welcome to New Orleans Tours",
@@ -101,6 +105,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
       "The lives of people connected to the plantation sites",
       "The history of slavery represented at these locations"
     ],
+    wikimediaId: "oak-alley-front",
+    representativeCaption: "Representative image: Oak Alley Plantation. Tour selection may include Oak Alley or Laura Plantation."
   },
   {
     id: "ragincajun-covered-boat",
@@ -113,6 +119,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     description: "A shaded, family-friendly pontoon boat ride through authentic Louisiana bayous.",
     bestFor: "Best for shade and a relaxed ride",
     imageUrl: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
+    imageAlt: "Covered pontoon boat in a Louisiana swamp",
     slug: "covered-tour-boat",
     relatedTourSlug: "ragin-cajun-airboat-options",
     detailPageTitle: "Covered Tour Boat Swamp Ride | Welcome to New Orleans Tours",
@@ -137,6 +144,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     description: "Explore Louisiana wetlands aboard an airboat and review the available tour options.",
     bestFor: "Best for speed and a more active ride",
     imageUrl: "/images/travel-markets/new-orleans/airboat-swamp.png",
+    imageAlt: "Airboat speeding through a Louisiana swamp",
     ctaLabel: "View Airboat Options →",
     slug: "ragin-cajun-airboat-options",
     relatedTourSlug: "covered-tour-boat",

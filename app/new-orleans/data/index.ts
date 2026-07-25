@@ -61,6 +61,7 @@ const LIVE_PRODUCTS: LiveProductAdapter[] = STOREFRONT_PRODUCTS.map(p => ({
   metaDescription: (p as any).metaDescription || null,
   bookingUrl: (p as any).bookingUrl || null,
   bestFor: (p as any).bestFor || null,
+  ctaLabel: (p as any).ctaLabel || null,
   bookingPlatform: (p as any).bookingPlatform || null
 
 }));
