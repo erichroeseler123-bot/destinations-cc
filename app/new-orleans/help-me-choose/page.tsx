@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { trackEvent } from "@/lib/analytics";
-import { Pinyon_Script, Rye } from "next/font/google";
 import {
   CategoryId,
   PreferenceId,
@@ -14,19 +13,6 @@ import {
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 import FareHarborBookingButton from "../components/FareHarborBookingButton";
 import styles from "./chooser.module.css";
-
-const pinyonScript = Pinyon_Script({
-  weight: "400",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const rye = Rye({
-  weight: "400",
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-heading",
-});
 
 const SwampIllustration = () => (
   <svg className={styles.illustration} width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -161,7 +147,7 @@ export default function HelpMeChoosePage() {
   const product = recommendation?.primaryProductId ? STOREFRONT_PRODUCTS.find((p) => p.id === recommendation.primaryProductId) : null;
 
   return (
-    <div className={`${styles.container} ${rye.variable}`}>
+    <div className={styles.container}>
       <div className={styles.background}></div>
       <div className={styles.overlay}></div>
 
@@ -174,26 +160,10 @@ export default function HelpMeChoosePage() {
 
         {view === "initial" && (
           <div aria-live="polite" className="w-full flex flex-col items-center">
-            <span className={styles.eyebrow}>
-              <span className={styles.flourish}>~</span>
-              Let's find your
-              <span className={styles.flourish}>~</span>
-            </span>
             <h1 className={styles.headline}>
-              PERFECT
-              <span className={`${styles.scriptAccent} ${pinyonScript.className}`}>New Orleans</span>
-              ADVENTURE
+              LET’S FIND YOUR <br />
+              PERFECT NEW ORLEANS ADVENTURE
             </h1>
-
-            <div className={styles.divider}>
-              <div className={styles.dividerLine}></div>
-              <svg className={styles.fleurDeLis} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M12 2C12 2 15 5 15 8C15 10 13.5 11.5 12 12.5C10.5 11.5 9 10 9 8C9 5 12 2 12 2Z" fill="currentColor"/>
-                <path d="M12 13C10.5 14 7 14 5 12C5 12 7 16 9 17C10.5 17.5 12 20 12 20C12 20 13.5 17.5 15 17C17 16 19 12 19 12C17 14 13.5 14 12 13Z" fill="currentColor"/>
-                <path d="M9 18.5C10 19 12 22 12 22C12 22 14 19 15 18.5C14 18 10 18 9 18.5Z" fill="currentColor"/>
-              </svg>
-              <div className={styles.dividerLine}></div>
-            </div>
 
             <div className={styles.decisionBoardContainer}>
               <div className={styles.promptBanner}>
@@ -208,7 +178,6 @@ export default function HelpMeChoosePage() {
                     <p className={styles.cardCopy}>Wild, untamed, and full of Louisiana character. Choose between a covered boat and an airboat.</p>
                     <span className={styles.cardCta}>Take me to the swamp</span>
                   </button>
-                  <div className={styles.orMedallion}>OR</div>
                 </div>
 
                 <div className={styles.panelWrapper}>
@@ -218,7 +187,6 @@ export default function HelpMeChoosePage() {
                     <p className={styles.cardCopy}>History, neighborhoods, architecture, stories, and the essential New Orleans overview.</p>
                     <span className={styles.cardCta}>Show me the city</span>
                   </button>
-                  <div className={styles.orMedallion}>OR</div>
                 </div>
 
                 <div className={styles.panelWrapper}>
@@ -228,7 +196,6 @@ export default function HelpMeChoosePage() {
                     <p className={styles.cardCopy}>Historic homes, landscapes, and Louisiana history outside the city.</p>
                     <span className={styles.cardCta}>Take me back</span>
                   </button>
-                  <div className={styles.orMedallion}>OR</div>
                 </div>
 
                 <div className={styles.panelWrapper}>
@@ -248,8 +215,8 @@ export default function HelpMeChoosePage() {
         {view === "swamp-second" && (
           <div aria-live="polite" className="w-full flex flex-col items-center">
             <h1 className={styles.secondaryTitle}>How do you want to explore the swamp?</h1>
-            <div className={styles.decisionBoardContainer} style={{ maxWidth: '800px' }}>
-              <div className={styles.decisionBoard}>
+            <div className={styles.decisionBoardContainer}>
+              <div className={styles.decisionBoardTwoCols}>
                 <div className={styles.panelWrapper}>
                   <button
                     onClick={() => handleSwampPreference("swamp-calm")}
@@ -261,7 +228,6 @@ export default function HelpMeChoosePage() {
                     </p>
                     <span className={styles.cardCta}>Select</span>
                   </button>
-                  <div className={styles.orMedallion}>OR</div>
                 </div>
                 <div className={styles.panelWrapper}>
                   <button
@@ -296,7 +262,6 @@ export default function HelpMeChoosePage() {
                       <p className={styles.cardCopy}>{cat.description}</p>
                       <span className={styles.cardCta}>Select</span>
                     </button>
-                    {i < CHOOSER_CATEGORIES.length - 1 && <div className={styles.orMedallion}>OR</div>}
                   </div>
                 ))}
               </div>
@@ -308,8 +273,8 @@ export default function HelpMeChoosePage() {
           <div aria-live="polite" className="w-full flex flex-col items-center">
             <h1 className={styles.secondaryTitle}>Narrow it down</h1>
             <p className={styles.supportingLine}>What kind of {currentCategory.title.toLowerCase()} experience are you looking for?</p>
-            <div className={styles.decisionBoardContainer} style={{ maxWidth: '800px' }}>
-              <div className={styles.decisionBoard}>
+            <div className={styles.decisionBoardContainer}>
+              <div className={styles.decisionBoardTwoCols}>
                 {preferences.map((pref, i) => (
                   <div className={styles.panelWrapper} key={pref.id}>
                     <button
@@ -320,7 +285,6 @@ export default function HelpMeChoosePage() {
                       <h2 className={styles.cardTitle}>{pref.title}</h2>
                       <span className={styles.cardCta}>Select</span>
                     </button>
-                    {i < preferences.length - 1 && <div className={styles.orMedallion}>OR</div>}
                   </div>
                 ))}
               </div>
@@ -338,7 +302,7 @@ export default function HelpMeChoosePage() {
                 <div className={styles.matchControls}>
                   <Link
                     href="/new-orleans/tours"
-                    className="border border-[#d4af37] bg-[#d4af37] text-[#1a1a1a] hover:bg-transparent hover:text-[#d4af37] transition-colors font-bold py-3.5 px-8 text-xs uppercase tracking-widest rounded-sm"
+                    className="inline-block border border-[#d4af37] bg-[#d4af37] text-[#1a1a1a] hover:bg-transparent hover:text-[#d4af37] transition-colors font-bold py-4 px-10 text-sm uppercase tracking-widest rounded-sm"
                   >
                     Explore Bookable Tours
                   </Link>
