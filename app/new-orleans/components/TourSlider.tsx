@@ -6,6 +6,7 @@ import styles from '../tours/outpost.module.css';
 import { PROVIDERS } from '../data/index';
 import Image from 'next/image';
 import { resolveProductImage } from '../lib/imageResolver';
+import WikimediaImageCredit from './WikimediaImageCredit';
 
 interface TourSliderProps {
   products: LiveProductAdapter[];
@@ -133,6 +134,11 @@ export default function TourSlider({ products, basePath }: TourSliderProps) {
                     &rarr;
                   </span>
                 </div>
+                {resolvedImage?.attribution && (
+                  <div className="mt-2 pt-2 border-t border-[#2a2a2a] relative z-20" onClick={(e) => e.stopPropagation()}>
+                    <WikimediaImageCredit image={resolvedImage.attribution as any} />
+                  </div>
+                )}
               </div>
             </Link>
           );
