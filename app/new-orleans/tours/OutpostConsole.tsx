@@ -9,6 +9,7 @@ import FrenchQuarterBoothBonus from '../components/FrenchQuarterBoothBonus';
 import TourMatchChooser from '../components/TourMatchChooser';
 import { ALL_PRODUCTS, LiveProductAdapter } from '../data/index';
 import { CATEGORIES, AREAS, SEO_PAGES, PROVIDERS } from '../data/index';
+import { getMarketplaceSearchItems } from '../data/searchHelper';
 import styles from './outpost.module.css';
 
 export default function OutpostConsole() {
@@ -26,49 +27,7 @@ export default function OutpostConsole() {
   // Only include defined products in the slider array
   const sliderProducts = [cityTour, plantationTour, coveredBoat, airboat].filter(Boolean) as LiveProductAdapter[];
 
-  const searchItems = [
-    ...liveProducts.map(p => {
-      const provider = p.providerId ? PROVIDERS[p.providerId]?.publicAttributionName : undefined;
-      const catId = p.categoryIds && p.categoryIds.length > 0 ? p.categoryIds[0] : '';
-      return {
-        id: p.id,
-        type: 'product' as const,
-        title: p.title,
-        description: p.description,
-        href: `/tours/${p.slug}`,
-        keywords: [p.title, p.slug, provider || ''],
-        operator: provider,
-        tags: [catId === 'city-tours' ? 'City' : catId === 'swamp-tours' ? 'Swamp' : 'Plantation', 'Tour'],
-      }
-    }),
-    ...liveCategories.map(c => ({
-      id: c.id,
-      type: 'category' as const,
-      title: c.title,
-      description: c.title,
-      href: `/${c.slug}`,
-      keywords: [c.title, c.slug],
-      tags: ['Category']
-    })),
-    ...liveAreas.map(a => ({
-      id: a.id,
-      type: 'area' as const,
-      title: a.title,
-      description: a.visitorSummary || a.title,
-      href: `/areas/${a.slug}`,
-      keywords: [a.title, a.slug],
-      tags: ['Area']
-    })),
-    ...liveGuides.map(g => ({
-      id: g.id,
-      type: 'guide' as const,
-      title: g.heroTitle,
-      description: g.openingAnswer || g.heroTitle,
-      href: g.publicRoute,
-      keywords: [g.heroTitle, g.id],
-      tags: ['Guide']
-    }))
-  ];
+  const searchItems = getMarketplaceSearchItems();
 
   return (
     <main className={`w-full min-h-screen ${styles.bgNolaCharcoal} ${styles.nolaIvory} font-sans selection:bg-[#d4af37] selection:text-[#1a1a1a]`}>

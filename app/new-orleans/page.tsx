@@ -3,6 +3,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { getProductById } from "./data";
 import ProductCard from "./components/ProductCard";
+import MarketplaceSearch from "./components/MarketplaceSearch";
+import { getMarketplaceSearchItems } from "./data/searchHelper";
+import styles from "./home.module.css";
 
 export const metadata = {
   title: "New Orleans Tours | Discover and Book Real Local Experiences",
@@ -15,11 +18,12 @@ export default function NewOrleansHomePage() {
   const southernStylePlantation = getProductById("southernstyle-plantation");
   const raginCajun = getProductById("ragincajun-covered-boat");
   const raginCajunAirboat = getProductById("ragincajun-airboat");
+  const searchItems = getMarketplaceSearchItems();
 
   return (
     <div className="bg-[#151515] text-[#fdfbf7] font-sans overflow-hidden">
       {/* 1. Hero */}
-      <section className="relative h-[85vh] min-h-[600px] w-full flex items-center justify-center">
+      <section className={styles.hero}>
         <div className="absolute inset-0 z-0">
           <Image
             src="/images/new-orleans/hero-french-quarter-balcony.jpg"
@@ -28,160 +32,103 @@ export default function NewOrleansHomePage() {
             className="object-cover object-center"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#151515] via-[#151515]/60 to-[#151515]/20"></div>
+          <div className={styles.heroOverlay}></div>
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center mt-16">
-          <h1 className="font-serif text-5xl md:text-7xl font-bold mb-6 text-[#fdfbf7] tracking-tight">
-            Discover the Real <br />
-            <span className="text-[#d4af37]">New Orleans</span>
+        <div className={styles.heroContent}>
+          <h1 className={styles.heroTitle}>
+            <span>REAL NEW ORLEANS.</span>
+            <span className={styles.heroTitleHighlight}>REAL GOOD TIMES.</span>
           </h1>
           <p className="text-lg md:text-xl text-[#fdfbf7]/80 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
-            Compare participating New Orleans tours, book participating
-            experiences, and get help choosing the right fit for your trip.
+            Compare participating New Orleans tours, book experiences, and get help choosing the right fit.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/new-orleans/tours"
-              className="w-full sm:w-auto px-8 py-4 bg-[#d4af37] text-[#151515] font-bold uppercase tracking-widest text-sm hover:bg-[#b8952c] transition-colors rounded-sm"
-            >
+          <div className={styles.heroActions}>
+            <Link href="/new-orleans/tours" className={styles.heroCta}>
               Explore Tours
             </Link>
-            <Link
-              href="/new-orleans/help-me-choose"
-              className="w-full sm:w-auto px-8 py-4 border border-[#d4af37] text-[#d4af37] font-bold uppercase tracking-widest text-sm hover:bg-[#d4af37]/10 transition-colors rounded-sm"
-            >
+            <Link href="/new-orleans/help-me-choose" className={styles.heroCta}>
               Help Me Choose
             </Link>
           </div>
         </div>
       </section>
 
-      {/* 2. Bookable experiences */}
-      <section className="py-20 px-6 max-w-7xl mx-auto border-t border-white/5">
+      {/* 2. Four primary choice cards */}
+      <section className="py-24 bg-[#151515] relative z-10 -mt-10">
+        <div className={styles.choiceGrid}>
+          <ChoiceCard
+            title="CITY TOURS"
+            desc="See the neighborhoods, architecture, history, and stories that define New Orleans."
+            href="/new-orleans/city-tours"
+            iconClass={styles.iconCity}
+            iconPath="M3 21h18 M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16 M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4 M10 9h.01 M14 9h.01 M10 13h.01 M14 13h.01"
+            cta="EXPLORE CITY TOURS"
+          />
+          <ChoiceCard
+            title="SWAMP TOURS"
+            desc="Choose a covered boat or airboat experience through Louisiana’s bayous."
+            href="/new-orleans/swamp-tours"
+            iconClass={styles.iconSwamp}
+            iconPath="M2 12h20 M4 12v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4 M12 12v-6l-3 3 M12 6l3 3"
+            cta="EXPLORE SWAMP TOURS"
+          />
+          <ChoiceCard
+            title="PLANTATION TOURS"
+            desc="Explore historic homes, landscapes, and Louisiana history outside the city."
+            href="/new-orleans/plantation-tours"
+            iconClass={styles.iconPlantation}
+            iconPath="M3 21h18 M5 21V7l7-4 7 4v14 M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"
+            cta="EXPLORE PLANTATION TOURS"
+          />
+          <ChoiceCard
+            title="NOT SURE?"
+            desc="Answer a few quick questions and we’ll point you toward the best fit."
+            href="/new-orleans/help-me-choose"
+            iconClass={styles.iconNotSure}
+            iconPath="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3 M12 17h.01"
+            hasCircle={true}
+            cta="HELP ME CHOOSE"
+          />
+        </div>
+      </section>
+
+      {/* 3. Featured Experiences */}
+      <section className="py-20 px-6 max-w-7xl mx-auto border-t border-[#2a2a2a]">
         <div className="mb-12">
           <h2 className="font-serif text-3xl md:text-4xl text-[#d4af37] mb-4">
-            Book Participating Tours
+            Featured Experiences
           </h2>
           <p className="text-[#fdfbf7]/70 font-light max-w-2xl text-lg">
-            Directly book participating local operators, with clear descriptions
-            and direct access to inventory.
+            Directly book participating local operators, with clear descriptions and direct access to inventory.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
           {southernStyle && <ProductCard product={southernStyle as any} />}
-          {southernStylePlantation && (
-            <ProductCard product={southernStylePlantation as any} />
-          )}
+          {southernStylePlantation && <ProductCard product={southernStylePlantation as any} />}
           {raginCajun && <ProductCard product={raginCajun as any} />}
-          {raginCajunAirboat && (
-            <ProductCard product={raginCajunAirboat as any} />
-          )}
+          {raginCajunAirboat && <ProductCard product={raginCajunAirboat as any} />}
         </div>
       </section>
 
-      {/* 3. Explore by experience (Category System) */}
-      <section className="py-24 bg-[#1a1a1a] border-y border-white/5">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-16 text-center">
+      {/* 4. Compact Find a Tour */}
+      <section className="bg-[#1a1a1a] border-y border-[#2a2a2a] py-20 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
             <h2 className="font-serif text-3xl md:text-4xl text-[#fdfbf7] mb-4">
-              Explore by Experience
+              Find a Tour
             </h2>
-            <div className="w-16 h-[1px] bg-[#d4af37] mx-auto"></div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <CategoryCard
-              title="Swamp & Airboat"
-              desc="Venture into the Louisiana bayou."
-              image="/images/travel-markets/new-orleans/louisiana-bayou-swamp.jpg"
-              href="/new-orleans/swamp-tours"
-            />
-            <CategoryCard
-              title="City Highlights"
-              desc="Explore the history and architecture."
-              image="/images/travel-markets/new-orleans/french-quarter-street.jpg"
-              href="/new-orleans/areas/french-quarter"
-            />
-            <CategoryCard
-              title="Plantations & History"
-              desc="Step back into the historic River Road."
-              image="/images/wikimedia/originals/oak-alley-front.jpg"
-              disabled={true}
-            />
-            <CategoryCard
-              title="Haunted & After Dark"
-              desc="Discover ghosts, voodoo, and vampires."
-              image="/images/wikimedia/originals/french-quarter-night.jpg"
-              disabled={true}
-            />
-            <CategoryCard
-              title="Food & Cooking"
-              desc="Taste the city's culinary heritage."
-              image="/images/wikimedia/originals/gumbo-dish.jpg"
-              disabled={true}
-            />
-            <CategoryCard
-              title="River & Music"
-              desc="Experience jazz and the Mississippi."
-              image="/images/travel-markets/new-orleans/steamboat-natchez.jpg"
-              href="/new-orleans/music"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Help Me Choose teaser & 5. Why book here */}
-      <section className="py-24 px-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div className="bg-[#101010] border border-[#2a2a2a] p-10 md:p-14 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-8 opacity-10">
-              <svg width="120" height="120" viewBox="0 0 24 24" fill="#d4af37">
-                <path d="M12 2L2 22h20L12 2zm0 4.5l6.5 13h-13L12 6.5z" />
-              </svg>
-            </div>
-            <h3 className="font-serif text-3xl md:text-4xl text-[#d4af37] mb-4 relative z-10">
-              Overwhelmed?
-            </h3>
-            <p className="text-[#fdfbf7]/80 text-lg mb-10 relative z-10 font-light leading-relaxed">
-              Answer a few questions about your group, schedule, and interests,
-              and we will point you to the right tour formats.
+            <p className="text-[#aaaaaa] font-light text-lg">
+              Search by operator, theme, or neighborhood to find your ideal New Orleans experience.
             </p>
-            <Link
-              href="/new-orleans/help-me-choose"
-              className="inline-block border border-[#d4af37] text-[#d4af37] px-8 py-4 font-bold uppercase tracking-widest text-xs hover:bg-[#d4af37] hover:text-[#151515] transition-colors relative z-10"
-            >
-              Start the Chooser
-            </Link>
           </div>
-
-          <div className="pl-0 lg:pl-10">
-            <h3 className="font-serif text-3xl mb-8">Why Book Here</h3>
-            <ul className="space-y-8">
-              <TrustItem
-                title="Verified Inventory"
-                desc="We display participating operators with current booking availability provided through participating operators and clear format details."
-              />
-              <TrustItem
-                title="Clear Comparisons"
-                desc="Understand the difference between a walking tour and a bus tour before you commit."
-              />
-              <TrustItem
-                title="Direct Booking"
-                desc="Book through the participating operator’s FareHarbor checkout."
-              />
-              <TrustItem
-                title="Independent Assistance"
-                desc="We help you plan the right itinerary without hiding operator identities."
-              />
-            </ul>
-          </div>
+          <MarketplaceSearch items={searchItems} />
         </div>
       </section>
 
-      {/* 6. French Quarter Welcome Stop & 8. Group planning */}
-      <section className="py-24 bg-[#101010] border-t border-[#2a2a2a]">
+      {/* 5. Welcome Stop & Group Planning */}
+      <section className="py-24 bg-[#101010] border-b border-[#2a2a2a]">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12">
           <div className="border border-[#2a2a2a] bg-[#151515] p-10 flex flex-col items-start">
             <div className="text-[10px] text-[#d4af37] uppercase tracking-widest font-bold mb-4">
@@ -191,8 +138,7 @@ export default function NewOrleansHomePage() {
               French Quarter Welcome Stop
             </h3>
             <p className="text-[#fdfbf7]/70 font-light leading-relaxed mb-8 flex-grow">
-              Stop by for local orientation, help choosing a tour, and practical
-              visitor assistance.
+              Stop by for local orientation, help choosing a tour, and practical visitor assistance.
             </p>
             <Link
               href="/new-orleans/french-quarter-welcome-stop"
@@ -208,8 +154,7 @@ export default function NewOrleansHomePage() {
             </div>
             <h3 className="font-serif text-3xl mb-4">Group Planning</h3>
             <p className="text-[#fdfbf7]/70 font-light leading-relaxed mb-8 flex-grow">
-              Planning a family, wedding, or corporate group? Contact us to
-              discuss available tour options.
+              Planning a family, wedding, or corporate group? Contact us to discuss available tour options.
             </p>
             <Link
               href="/contact"
@@ -221,7 +166,7 @@ export default function NewOrleansHomePage() {
         </div>
       </section>
 
-      {/* 7. Planning guides */}
+      {/* 6. Editorial Guides */}
       <section className="py-20 px-6 max-w-7xl mx-auto">
         <div className="mb-12">
           <h2 className="font-serif text-2xl text-[#fdfbf7] mb-2">
@@ -254,75 +199,37 @@ export default function NewOrleansHomePage() {
   );
 }
 
-function CategoryCard({
+function ChoiceCard({
   title,
   desc,
-  image,
   href,
-  disabled,
+  iconClass,
+  iconPath,
+  hasCircle,
+  cta
 }: {
   title: string;
   desc: string;
-  image: string;
-  href?: string;
-  disabled?: boolean;
+  href: string;
+  iconClass: string;
+  iconPath: string;
+  hasCircle?: boolean;
+  cta: string;
 }) {
-  const content = (
-    <>
-      <Image
-        src={image}
-        alt={title}
-        fill
-        className="object-cover transition-transform duration-700 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#101010] via-[#101010]/60 to-transparent"></div>
-      <div className="absolute bottom-0 left-0 p-8 w-full">
-        <h3 className="font-serif text-2xl text-[#fdfbf7] mb-2 group-hover:text-[#d4af37] transition-colors flex items-center justify-between">
-          {title}
-        </h3>
-        <p className="text-sm text-[#aaaaaa] font-light">
-          {disabled ? (
-            <span className="inline-block mt-1 text-[10px] uppercase tracking-widest font-bold text-[#b8952c] border border-[#b8952c]/50 bg-[#b8952c]/10 px-2 py-1 rounded-sm">
-              Guide Coming Soon
-            </span>
-          ) : (
-            desc
-          )}
-        </p>
-      </div>
-    </>
-  );
-
-  if (disabled || !href) {
-    return (
-      <div
-        className="group relative h-80 overflow-hidden rounded-sm border border-[#2a2a2a] block opacity-80 cursor-default"
-        role="group"
-        aria-label={`${title} - Guide Coming Soon`}
-      >
-        {content}
-      </div>
-    );
-  }
-
   return (
-    <Link
-      href={href}
-      className="group relative h-80 overflow-hidden rounded-sm border border-[#2a2a2a] hover:border-[#d4af37] transition-colors block"
-    >
-      {content}
+    <Link href={href} className={styles.choiceCard} aria-label={`${title} - ${desc}`}>
+      <div className={`${styles.choiceIcon} ${iconClass}`}>
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+          {hasCircle && <circle cx="12" cy="12" r="10"></circle>}
+          {iconPath.split(' M').map((pathSegment, i) => (
+            <path key={i} d={i === 0 ? pathSegment : `M${pathSegment}`}></path>
+          ))}
+        </svg>
+      </div>
+      <h3 className={styles.choiceTitle}>{title}</h3>
+      <p className={styles.choiceCopy}>{desc}</p>
+      <span className={styles.choiceCta}>{cta}</span>
     </Link>
-  );
-}
-
-function TrustItem({ title, desc }: { title: string; desc: string }) {
-  return (
-    <div>
-      <h4 className="font-bold text-[#fdfbf7] tracking-wide mb-1 uppercase text-sm">
-        {title}
-      </h4>
-      <p className="text-[#aaaaaa] font-light leading-relaxed">{desc}</p>
-    </div>
   );
 }
 
