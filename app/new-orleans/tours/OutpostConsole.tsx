@@ -1,19 +1,17 @@
 'use client';
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import MarketplaceDisclosure from '../components/MarketplaceDisclosure';
 import MarketplaceSearch from '../components/MarketplaceSearch';
 import PhoneCta from '../components/PhoneCta';
 import TourSlider from '../components/TourSlider';
 import FrenchQuarterBoothBonus from '../components/FrenchQuarterBoothBonus';
-import HelpMeChooseDrawer from '../components/HelpMeChooseDrawer';
 import TourMatchChooser from '../components/TourMatchChooser';
 import { ALL_PRODUCTS, LiveProductAdapter } from '../data/index';
 import { CATEGORIES, AREAS, SEO_PAGES, PROVIDERS } from '../data/index';
 import styles from './outpost.module.css';
 
 export default function OutpostConsole() {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const liveCategories = Object.values(CATEGORIES).filter(c => c.status === "live");
   const liveAreas = Object.values(AREAS).filter(a => a.status === "live");
@@ -97,12 +95,12 @@ export default function OutpostConsole() {
             >
               Explore Tours
             </button>
-            <button
-              onClick={() => setIsDrawerOpen(true)}
+            <Link
+              href="/help-me-choose"
               className={styles.nolaButtonOutline}
             >
               Help Me Choose
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -168,7 +166,7 @@ export default function OutpostConsole() {
           ))}
 
           <Link
-            href="/tours-for/first-time-visitors"
+            href="/help-me-choose"
             className={`group flex flex-col items-center justify-center p-12 border ${styles.nolaBorder} bg-black/40 hover:border-[#d4af37] transition-all duration-300`}
           >
             <h4 className="font-serif text-3xl text-white group-hover:text-[#d4af37] transition-colors mb-2">First-Time</h4>
@@ -240,7 +238,6 @@ export default function OutpostConsole() {
         <MarketplaceDisclosure />
       </section>
 
-      <HelpMeChooseDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
     </main>
   );
 }

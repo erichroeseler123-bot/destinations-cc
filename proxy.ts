@@ -154,6 +154,12 @@ function getWtonotHostRewrite(request: NextRequest) {
     return url;
   }
 
+  // Help Me Choose
+  if (pathname === "/help-me-choose") {
+    url.pathname = `/new-orleans${pathname}`;
+    return url;
+  }
+
   // Traveler Fit
   if (pathname.startsWith("/tours-for/")) {
     url.pathname = `/new-orleans${pathname}`;
