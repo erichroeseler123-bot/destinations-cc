@@ -1,4 +1,20 @@
-/* 1. Core Primitives & Typography */
+/* 1. Core Primitives, Typography, & Design Tokens */
+:root {
+  --nola-bg-black: #0c0b0f;
+  --nola-bg-charcoal: #151318;
+  --nola-surface: rgba(17, 14, 20, 0.85);
+  --nola-surface-strong: rgba(30, 15, 25, 0.95);
+  --nola-gold: #d4af37;
+  --nola-gold-muted: #b5952f;
+  --nola-ivory: #fdfbf7;
+  --nola-text-muted: #aaaaaa;
+  --nola-border: rgba(212, 175, 55, 0.2);
+  --nola-swamp: #6b705c;
+  --nola-city: #5c6b73;
+  --nola-history: #5c4d5c;
+  --nola-help: #b75d31;
+}
+
 .displayFont {
   font-family: var(--font-new-orleans-display), var(--font-accent), serif;
 }
@@ -20,11 +36,12 @@
   position: relative;
   min-height: 100vh;
   width: 100%;
-  background-color: #110e14;
-  color: #FDFBF7;
+  background-color: var(--nola-bg-black);
+  color: var(--nola-ivory);
   overflow-x: hidden;
 }
 
+/* Layer 1: Base architectural image */
 .heroBackground {
   position: absolute;
   top: 0;
@@ -37,7 +54,7 @@
   background-position: center 20%;
 }
 
-/* Darker central overlay, warmer amber side lighting, subtle plum tint in shadows */
+/* Layer 2 & 3 & 4 & 5: Overlays */
 .heroOverlay {
   position: absolute;
   top: 0;
@@ -45,14 +62,28 @@
   width: 100%;
   height: 100%;
   z-index: 1;
-  background: radial-gradient(circle at center 35%, rgba(17, 14, 20, 0.4) 0%, rgba(30, 15, 25, 0.7) 60%),
-              linear-gradient(to top, #110e14 0%, rgba(17, 14, 20, 0.9) 40%, rgba(17, 14, 20, 0.6) 100%),
-              linear-gradient(to right, rgba(201, 106, 50, 0.15) 0%, rgba(0,0,0,0) 25%, rgba(0,0,0,0) 75%, rgba(201, 106, 50, 0.15) 100%);
+  /* 
+   * Layering breakdown:
+   * 1. Edge-preserving central darkening (radial gradient)
+   * 2. Left-to-right central column (linear gradient)
+   * 3. Bottom transition gradient blending into --nola-bg-charcoal
+   * 4. Subtle side amber lighting highlights
+   */
+  background: 
+    /* Central column darkening */
+    linear-gradient(to right, transparent 0%, rgba(12, 11, 15, 0.7) 20%, rgba(12, 11, 15, 0.9) 50%, rgba(12, 11, 15, 0.7) 80%, transparent 100%),
+    /* Bottom transition */
+    linear-gradient(to top, var(--nola-bg-charcoal) 0%, rgba(21, 19, 24, 0.9) 20%, transparent 100%),
+    /* Radial vignette */
+    radial-gradient(circle at center 35%, rgba(17, 14, 20, 0.5) 0%, rgba(20, 10, 15, 0.8) 100%),
+    /* Side architectural amber/brass highlights */
+    linear-gradient(to right, rgba(201, 106, 50, 0.15) 0%, transparent 20%, transparent 80%, rgba(201, 106, 50, 0.15) 100%);
 }
 
 .heroContent {
   position: relative;
   z-index: 10;
+  width: 100%;
   max-width: 1440px;
   margin: 0 auto;
   padding: 4rem 1.5rem;
@@ -61,7 +92,111 @@
   align-items: center;
 }
 
-/* 3. Typography Styles */
+/* 3. Recommendation Panels & Surfaces */
+.surfacePanel {
+  background: var(--nola-surface);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--nola-border);
+  color: var(--nola-ivory);
+  box-shadow: inset 0 0 40px rgba(17, 14, 20, 0.5), 0 8px 32px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 42rem; /* matches max-w-2xl roughly */
+  margin: 0 auto;
+}
+
+/* Fallback for no backdrop-filter */
+@supports not (backdrop-filter: blur(8px)) {
+  .surfacePanel {
+    background: var(--nola-surface-strong);
+  }
+}
+
+.surfacePanelResult {
+  max-width: 56rem; /* max-w-4xl */
+}
+
+/* 4. Choice Buttons */
+.choiceButton {
+  width: 100%;
+  text-align: left;
+  background: rgba(17, 14, 20, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.1);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  color: var(--nola-text-muted);
+}
+
+.choiceButton:hover {
+  background: rgba(212, 175, 55, 0.05);
+  border-color: rgba(212, 175, 55, 0.4);
+  color: var(--nola-ivory);
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 20px rgba(212, 175, 55, 0.05);
+}
+
+.choiceButton:focus-visible {
+  outline: 2px solid var(--nola-gold);
+  outline-offset: 2px;
+}
+
+.choiceButton[aria-pressed="true"],
+.choiceButton.selected {
+  border-color: var(--nola-gold);
+  background: rgba(212, 175, 55, 0.1);
+  color: var(--nola-ivory);
+}
+
+.choiceIcon {
+  color: var(--nola-gold);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.choiceButton:hover .choiceIcon,
+.choiceButton[aria-pressed="true"] .choiceIcon,
+.choiceButton.selected .choiceIcon {
+  opacity: 1;
+}
+
+/* 5. Transitions */
+.fadeStep {
+  animation: fadeUp 0.2s ease forwards;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fadeStep {
+    animation: none;
+  }
+  .choiceButton {
+    transition: none;
+  }
+}
+
+/* 6. Typography Overrides for Panels */
+.stepTitle {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--nola-ivory);
+  line-height: 1.2;
+}
+
+/* 7. Typography Styles */
 .headline {
   text-align: center;
   margin-bottom: 2rem;

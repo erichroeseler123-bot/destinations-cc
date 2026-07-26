@@ -23,7 +23,7 @@ export default function NewOrleansHomePage() {
   const searchItems = getMarketplaceSearchItems();
 
   return (
-    <div className="bg-[#151515] text-[#fdfbf7] font-sans overflow-hidden">
+    <div className="bg-[var(--nola-bg-charcoal)] text-[var(--nola-ivory)] font-sans overflow-hidden">
       {/* 1. Hero / Chooser */}
       <NewOrleansRecommendationFlow />
 
