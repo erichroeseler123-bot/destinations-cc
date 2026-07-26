@@ -3,16 +3,18 @@ import { WIKIMEDIA_IMAGES, WikimediaImage } from '../data/wikimedia';
 import type { LiveProductAdapter } from '../data/types';
 import type { NolaFareHarborProduct } from '../tours/pageConfig';
 
+export type ResolvedAttribution = {
+  creator: string;
+  license: string;
+  licenseUrl?: string;
+  sourceUrl?: string;
+};
+
 export type ResolvedProductImage = {
   src: string;
   alt: string;
   source: "operator" | "wikimedia" | "local";
-  attribution?: {
-    creator: string;
-    license: string;
-    sourceUrl: string;
-    originalTitle?: string;
-  };
+  attribution?: ResolvedAttribution;
 };
 
 export function resolveProductImage(product: LiveProductAdapter | NolaFareHarborProduct | undefined | null): ResolvedProductImage | null {
@@ -41,10 +43,10 @@ export function resolveProductImage(product: LiveProductAdapter | NolaFareHarbor
         alt: wikiRecord.alt,
         source: "wikimedia",
         attribution: {
-          creator: wikiRecord.author || wikiRecord.attributionText,
-          license: wikiRecord.license,
-          sourceUrl: wikiRecord.sourceUrl,
-          originalTitle: wikiRecord.originalTitle
+          creator: wikiRecord.author || (wikiRecord as any).attributionText || "Unknown",
+          license: wikiRecord.license || "",
+          licenseUrl: wikiRecord.licenseUrl || "",
+          sourceUrl: wikiRecord.sourceUrl || ""
         }
       };
     }
@@ -59,6 +61,7 @@ export function resolveProductImage(product: LiveProductAdapter | NolaFareHarbor
       attribution: imgRecord.source === "Wikimedia Commons" ? {
         creator: imgRecord.author || "",
         license: imgRecord.license || "",
+        licenseUrl: imgRecord.licenseUrl || "",
         sourceUrl: imgRecord.sourceUrl || ""
       } : undefined
     };

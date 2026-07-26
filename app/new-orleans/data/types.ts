@@ -85,8 +85,8 @@ export interface ProductBase {
   status: ProductStatus;
   isIndexable: boolean;
   isBookable: boolean;
-  wikimediaId?: string;
-  representativeCaption?: string;
+  wikimediaId?: string | null;
+  representativeCaption?: string | null;
 }
 
 export interface DraftProduct extends ProductBase {

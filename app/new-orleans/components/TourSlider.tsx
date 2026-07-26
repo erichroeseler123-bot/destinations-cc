@@ -76,7 +76,7 @@ export default function TourSlider({ products, basePath }: TourSliderProps) {
         className={styles.sliderContainer}
         onScroll={checkScroll}
       >
-        {products.map((product) => {
+        {products.map((product, index) => {
           const provider = product.providerId ? PROVIDERS[product.providerId]?.publicAttributionName : undefined;
 
           // Image-led if we have a resolved image
@@ -94,6 +94,7 @@ export default function TourSlider({ products, basePath }: TourSliderProps) {
                     src={resolvedImage.src}
                     alt={resolvedImage.alt}
                     fill
+                    priority={index === 0}
                     className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] to-transparent"></div>
