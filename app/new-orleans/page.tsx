@@ -44,10 +44,10 @@ export default function NewOrleansHomePage() {
             Compare participating New Orleans tours, book experiences, and get help choosing the right fit.
           </p>
           <div className={styles.heroActions}>
-            <Link href="/new-orleans/tours" className={styles.heroCta}>
+            <Link href="/tours" className={styles.heroCta}>
               Explore Tours
             </Link>
-            <Link href="/new-orleans/help-me-choose" className={styles.heroCta}>
+            <Link href="/help-me-choose" className={styles.heroCta}>
               Help Me Choose
             </Link>
           </div>
@@ -60,7 +60,7 @@ export default function NewOrleansHomePage() {
           <ChoiceCard
             title="CITY TOURS"
             desc="See the neighborhoods, architecture, history, and stories that define New Orleans."
-            href="/new-orleans/city-tours"
+            href="/city-tours"
             iconClass={styles.iconCity}
             iconPath="M3 21h18 M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16 M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4 M10 9h.01 M14 9h.01 M10 13h.01 M14 13h.01"
             cta="EXPLORE CITY TOURS"
@@ -68,7 +68,7 @@ export default function NewOrleansHomePage() {
           <ChoiceCard
             title="SWAMP TOURS"
             desc="Choose a covered boat or airboat experience through Louisiana’s bayous."
-            href="/new-orleans/swamp-tours"
+            href="/swamp-tours"
             iconClass={styles.iconSwamp}
             iconPath="M2 12h20 M4 12v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4 M12 12v-6l-3 3 M12 6l3 3"
             cta="EXPLORE SWAMP TOURS"
@@ -76,7 +76,7 @@ export default function NewOrleansHomePage() {
           <ChoiceCard
             title="PLANTATION TOURS"
             desc="Explore historic homes, landscapes, and Louisiana history outside the city."
-            href="/new-orleans/plantation-tours"
+            href="/plantation-tours"
             iconClass={styles.iconPlantation}
             iconPath="M3 21h18 M5 21V7l7-4 7 4v14 M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"
             cta="EXPLORE PLANTATION TOURS"
@@ -84,7 +84,7 @@ export default function NewOrleansHomePage() {
           <ChoiceCard
             title="NOT SURE?"
             desc="Answer a few quick questions and we’ll point you toward the best fit."
-            href="/new-orleans/help-me-choose"
+            href="/help-me-choose"
             iconClass={styles.iconNotSure}
             iconPath="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3 M12 17h.01"
             hasCircle={true}
@@ -141,7 +141,7 @@ export default function NewOrleansHomePage() {
               Stop by for local orientation, help choosing a tour, and practical visitor assistance.
             </p>
             <Link
-              href="/new-orleans/french-quarter-welcome-stop"
+              href="/french-quarter-welcome-stop"
               className="text-xs text-[#fdfbf7] font-bold uppercase tracking-widest border-b border-[#d4af37] pb-1 hover:text-[#d4af37] transition-colors"
             >
               View Location & Hours
@@ -178,19 +178,19 @@ export default function NewOrleansHomePage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <GuideLink
-            href="/new-orleans/swamp-tours/types"
+            href="/swamp-tours/types"
             title="Compare Swamp Tour Formats"
           />
           <GuideLink
-            href="/new-orleans/swamp-tours/best-time"
+            href="/swamp-tours/best-time"
             title="When to Visit the Swamp"
           />
           <GuideLink
-            href="/new-orleans/swamp-tours/transportation"
+            href="/swamp-tours/transportation"
             title="Swamp Tour Transportation"
           />
           <GuideLink
-            href="/new-orleans/swamp-tours/with-kids"
+            href="/swamp-tours/with-kids"
             title="Swamp Tours with Kids"
           />
         </div>
