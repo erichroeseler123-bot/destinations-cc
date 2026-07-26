@@ -12,10 +12,12 @@ import {
 } from "./recommendationRules";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 import FareHarborBookingButton from "../components/FareHarborBookingButton";
+import { NewOrleansHeroFrame, NewOrleansChoiceCard, DecorativeDivider } from "../components/NewOrleansVisual";
+import visualStyles from "../components/newOrleansVisual.module.css";
 import styles from "./chooser.module.css";
 
 const SwampIllustration = () => (
-  <svg className={styles.illustration} width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <path d="M10 50C15 48 20 49 25 47C30 45 35 48 40 47C45 46 50 48 55 46" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
     <path d="M15 48V25C15 20 25 15 32 15C39 15 49 20 49 25V47" stroke="currentColor" strokeWidth="2"/>
     <path d="M32 15V47" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4"/>
@@ -26,7 +28,7 @@ const SwampIllustration = () => (
 );
 
 const CityIllustration = () => (
-  <svg className={styles.illustration} width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <path d="M32 10L24 25H40L32 10Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
     <rect x="24" y="25" width="16" height="20" stroke="currentColor" strokeWidth="2"/>
     <path d="M28 25V45M36 25V45M24 35H40" stroke="currentColor" strokeWidth="2"/>
@@ -36,7 +38,7 @@ const CityIllustration = () => (
 );
 
 const PlantationIllustration = () => (
-  <svg className={styles.illustration} width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <path d="M8 55H56" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
     <rect x="20" y="35" width="24" height="20" stroke="currentColor" strokeWidth="2"/>
     <path d="M15 35L32 20L49 35" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
@@ -46,7 +48,7 @@ const PlantationIllustration = () => (
 );
 
 const NotSureIllustration = () => (
-  <svg className={styles.illustration} width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <path d="M20 15L32 35L44 15H20Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
     <path d="M32 35V55M22 55H42" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
     <circle cx="38" cy="20" r="3" fill="currentColor"/>
@@ -147,200 +149,191 @@ export default function HelpMeChoosePage() {
   const product = recommendation?.primaryProductId ? STOREFRONT_PRODUCTS.find((p) => p.id === recommendation.primaryProductId) : null;
 
   return (
-    <div className={styles.container}>
-      <div className={styles.background}></div>
-      <div className={styles.overlay}></div>
+    <NewOrleansHeroFrame>
+      {view !== "initial" && view !== "recommendation" && (
+        <button onClick={handleBack} className={styles.backButton} aria-label="Go back to previous step">
+          &larr; Back
+        </button>
+      )}
 
-      <div className={styles.content}>
-        {view !== "initial" && view !== "recommendation" && (
-          <button onClick={handleBack} className={styles.backButton} aria-label="Go back to previous step">
-            &larr; Back
-          </button>
-        )}
+      {view === "initial" && (
+        <div aria-live="polite" className="w-full flex flex-col items-center">
+          <h1 className={`${visualStyles.headline} ${visualStyles.displayFont}`}>
+            LET’S FIND YOUR
+            <span className={`${visualStyles.scriptAccent} ${visualStyles.scriptFont}`}>New Orleans</span>
+            PERFECT ADVENTURE
+          </h1>
+          <DecorativeDivider />
 
-        {view === "initial" && (
-          <div aria-live="polite" className="w-full flex flex-col items-center">
-            <h1 className={styles.headline}>
-              LET’S FIND YOUR <br />
-              PERFECT NEW ORLEANS ADVENTURE
-            </h1>
-
-            <div className={styles.decisionBoardContainer}>
-              <div className={styles.promptBanner}>
-                What kind of adventure are you after?
-              </div>
-              <div className={styles.decisionBoard}>
-
-                <div className={styles.panelWrapper}>
-                  <button onClick={() => handleInitialChoice("swamp")} className={`${styles.choiceCard} ${styles.cardSwamp}`}>
-                    <SwampIllustration />
-                    <h2 className={styles.cardTitle}>THE SWAMP</h2>
-                    <p className={styles.cardCopy}>Wild, untamed, and full of Louisiana character. Choose between a covered boat and an airboat.</p>
-                    <span className={styles.cardCta}>Take me to the swamp</span>
-                  </button>
-                </div>
-
-                <div className={styles.panelWrapper}>
-                  <button onClick={() => handleInitialChoice("city")} className={`${styles.choiceCard} ${styles.cardCity}`}>
-                    <CityIllustration />
-                    <h2 className={styles.cardTitle}>THE CITY</h2>
-                    <p className={styles.cardCopy}>History, neighborhoods, architecture, stories, and the essential New Orleans overview.</p>
-                    <span className={styles.cardCta}>Show me the city</span>
-                  </button>
-                </div>
-
-                <div className={styles.panelWrapper}>
-                  <button onClick={() => handleInitialChoice("plantation")} className={`${styles.choiceCard} ${styles.cardPlantation}`}>
-                    <PlantationIllustration />
-                    <h2 className={styles.cardTitle}>THE PLANTATION</h2>
-                    <p className={styles.cardCopy}>Historic homes, landscapes, and Louisiana history outside the city.</p>
-                    <span className={styles.cardCta}>Take me back</span>
-                  </button>
-                </div>
-
-                <div className={styles.panelWrapper}>
-                  <button onClick={() => handleInitialChoice("notsure")} className={`${styles.choiceCard} ${styles.cardNotSure}`}>
-                    <NotSureIllustration />
-                    <h2 className={styles.cardTitle}>NOT SURE?</h2>
-                    <p className={styles.cardCopy}>No problem. Answer a few simple questions and we'll narrow it down together.</p>
-                    <span className={styles.cardCta}>Help me decide</span>
-                  </button>
-                </div>
-
-              </div>
+          <div className={visualStyles.boardContainer}>
+            <div className={visualStyles.promptBanner}>
+              What kind of adventure are you after?
+            </div>
+            <div className={visualStyles.boardGrid}>
+              <NewOrleansChoiceCard
+                mode="action"
+                onClick={() => handleInitialChoice("city")}
+                iconType="city"
+                illustration={<CityIllustration />}
+                title="THE CITY"
+                desc="History, neighborhoods, architecture, stories, and the essential New Orleans overview."
+                cta="SHOW ME THE CITY"
+              />
+              <NewOrleansChoiceCard
+                mode="action"
+                onClick={() => handleInitialChoice("swamp")}
+                iconType="swamp"
+                illustration={<SwampIllustration />}
+                title="THE SWAMP"
+                desc="Wild, untamed, and full of Louisiana character. Choose between a covered boat and an airboat."
+                cta="TAKE ME TO THE SWAMP"
+              />
+              <NewOrleansChoiceCard
+                mode="action"
+                onClick={() => handleInitialChoice("plantation")}
+                iconType="plantation"
+                illustration={<PlantationIllustration />}
+                title="THE PLANTATION"
+                desc="Historic homes, landscapes, and Louisiana history outside the city."
+                cta="TAKE ME BACK"
+              />
+              <NewOrleansChoiceCard
+                mode="action"
+                onClick={() => handleInitialChoice("notsure")}
+                iconType="notsure"
+                illustration={<NotSureIllustration />}
+                title="NOT SURE?"
+                desc="No problem. Answer a few simple questions and we'll narrow it down together."
+                cta="HELP ME DECIDE"
+              />
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {view === "swamp-second" && (
-          <div aria-live="polite" className="w-full flex flex-col items-center">
-            <h1 className={styles.secondaryTitle}>How do you want to explore the swamp?</h1>
-            <div className={styles.decisionBoardContainer}>
-              <div className={styles.decisionBoardTwoCols}>
-                <div className={styles.panelWrapper}>
-                  <button
-                    onClick={() => handleSwampPreference("swamp-calm")}
-                    className={`${styles.choiceCard} ${styles.cardSwamp}`}
-                  >
-                    <h2 className={styles.cardTitle}>COVERED & CALMER</h2>
-                    <p className={styles.cardCopy}>
-                      A relaxed, shaded boat ride suitable for all ages. Perfect for photography and taking it slow.
-                    </p>
-                    <span className={styles.cardCta}>Select</span>
-                  </button>
-                </div>
-                <div className={styles.panelWrapper}>
-                  <button
-                    onClick={() => handleSwampPreference("swamp-active")}
-                    className={`${styles.choiceCard} ${styles.cardSwamp}`}
-                  >
-                    <h2 className={styles.cardTitle}>FASTER & ACTIVE</h2>
-                    <p className={styles.cardCopy}>
-                      An exhilarating airboat experience. Feel the wind and get up close to the wildlife.
-                    </p>
-                    <span className={styles.cardCta}>Select</span>
-                  </button>
-                </div>
-              </div>
+      {view === "swamp-second" && (
+        <div aria-live="polite" className="w-full flex flex-col items-center">
+          <h1 className={styles.secondaryTitle}>How do you want to explore the swamp?</h1>
+          <div className={visualStyles.boardContainer}>
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-[800px] mx-auto`}>
+              <NewOrleansChoiceCard
+                mode="action"
+                onClick={() => handleSwampPreference("swamp-calm")}
+                iconType="swamp"
+                illustration={<SwampIllustration />}
+                title="COVERED & CALMER"
+                desc="A relaxed, shaded boat ride suitable for all ages. Perfect for photography and taking it slow."
+                cta="SELECT"
+              />
+              <NewOrleansChoiceCard
+                mode="action"
+                onClick={() => handleSwampPreference("swamp-active")}
+                iconType="swamp"
+                illustration={<SwampIllustration />}
+                title="FASTER & ACTIVE"
+                desc="An exhilarating airboat experience. Feel the wind and get up close to the wildlife."
+                cta="SELECT"
+              />
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {view === "guided-categories" && (
-          <div aria-live="polite" className="w-full flex flex-col items-center">
-            <h1 className={styles.secondaryTitle}>What sounds best?</h1>
-            <div className={styles.decisionBoardContainer}>
-              <div className={styles.decisionBoard}>
-                {CHOOSER_CATEGORIES.map((cat, i) => (
-                  <div className={styles.panelWrapper} key={cat.id}>
-                    <button
-                      onClick={() => handleGuidedCategorySelect(cat.id)}
-                      aria-pressed={categoryId === cat.id}
-                      className={`${styles.choiceCard} ${styles.cardNotSure}`}
-                    >
-                      <h2 className={styles.cardTitle}>{cat.title}</h2>
-                      <p className={styles.cardCopy}>{cat.description}</p>
-                      <span className={styles.cardCta}>Select</span>
-                    </button>
-                  </div>
-                ))}
-              </div>
+      {view === "guided-categories" && (
+        <div aria-live="polite" className="w-full flex flex-col items-center">
+          <h1 className={styles.secondaryTitle}>What sounds best?</h1>
+          <div className={visualStyles.boardContainer}>
+            <div className={visualStyles.boardGrid}>
+              {CHOOSER_CATEGORIES.map((cat, i) => (
+                <NewOrleansChoiceCard
+                  key={cat.id}
+                  mode="action"
+                  onClick={() => handleGuidedCategorySelect(cat.id)}
+                  isActive={categoryId === cat.id}
+                  iconType="notsure"
+                  illustration={<NotSureIllustration />}
+                  title={cat.title.toUpperCase()}
+                  desc={cat.description}
+                  cta="SELECT"
+                />
+              ))}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {view === "guided-preferences" && currentCategory && (
-          <div aria-live="polite" className="w-full flex flex-col items-center">
-            <h1 className={styles.secondaryTitle}>Narrow it down</h1>
-            <p className={styles.supportingLine}>What kind of {currentCategory.title.toLowerCase()} experience are you looking for?</p>
-            <div className={styles.decisionBoardContainer}>
-              <div className={styles.decisionBoardTwoCols}>
-                {preferences.map((pref, i) => (
-                  <div className={styles.panelWrapper} key={pref.id}>
-                    <button
-                      onClick={() => handleGuidedPreferenceSelect(pref.id)}
-                      aria-pressed={preferenceId === pref.id}
-                      className={`${styles.choiceCard} ${styles.cardNotSure}`}
-                    >
-                      <h2 className={styles.cardTitle}>{pref.title}</h2>
-                      <span className={styles.cardCta}>Select</span>
-                    </button>
-                  </div>
-                ))}
-              </div>
+      {view === "guided-preferences" && currentCategory && (
+        <div aria-live="polite" className="w-full flex flex-col items-center">
+          <h1 className={styles.secondaryTitle}>Narrow it down</h1>
+          <p className={styles.supportingLine}>What kind of {currentCategory.title.toLowerCase()} experience are you looking for?</p>
+          <div className={visualStyles.boardContainer}>
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-[800px] mx-auto`}>
+              {preferences.map((pref, i) => (
+                <NewOrleansChoiceCard
+                  key={pref.id}
+                  mode="action"
+                  onClick={() => handleGuidedPreferenceSelect(pref.id)}
+                  isActive={preferenceId === pref.id}
+                  iconType="notsure"
+                  illustration={<NotSureIllustration />}
+                  title={pref.title.toUpperCase()}
+                  desc=""
+                  cta="SELECT"
+                />
+              ))}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {view === "recommendation" && recommendation && (
-          <div aria-live="polite" className="w-full flex flex-col items-center">
-            {recommendation.fallbackMessage || !product ? (
-              <div className={styles.matchContainer}>
-                <span className={styles.matchLabel}>Coming Soon</span>
-                <h1 className={styles.matchTitle}>More Options on the Way</h1>
-                <p className={styles.matchReason}>{recommendation.fallbackMessage || "This category guide is being prepared."}</p>
-                <div className={styles.matchControls}>
-                  <Link
-                    href="/new-orleans/tours"
-                    className="inline-block border border-[#d4af37] bg-[#d4af37] text-[#1a1a1a] hover:bg-transparent hover:text-[#d4af37] transition-colors font-bold py-4 px-10 text-sm uppercase tracking-widest rounded-sm"
-                  >
-                    Explore Bookable Tours
-                  </Link>
-                  <button onClick={handleRestart} className="text-[#aaaaaa] hover:text-[#d4af37] transition-colors text-xs font-bold uppercase tracking-widest mt-4">
-                    Try Again
-                  </button>
-                </div>
+      {view === "recommendation" && recommendation && (
+        <div aria-live="polite" className="w-full flex flex-col items-center">
+          {recommendation.fallbackMessage || !product ? (
+            <div className={styles.matchContainer}>
+              <span className={styles.matchLabel}>Coming Soon</span>
+              <h1 className={styles.matchTitle}>More Options on the Way</h1>
+              <p className={styles.matchReason}>{recommendation.fallbackMessage || "This category guide is being prepared."}</p>
+              <div className={styles.matchControls}>
+                <Link
+                  href="/tours"
+                  className={`${visualStyles.buttonPrimary} ${visualStyles.sansFont}`}
+                >
+                  Explore Bookable Tours
+                </Link>
+                <button onClick={handleRestart} className="text-[#aaaaaa] hover:text-[#d4af37] transition-colors text-xs font-bold uppercase tracking-widest mt-4">
+                  Try Again
+                </button>
               </div>
-            ) : (
-              <div className={styles.matchContainer}>
-                <span className={styles.matchLabel}>Your New Orleans Match</span>
-                <h1 className={styles.matchTitle}>{product.title}</h1>
-                <p className={styles.matchReason}>{recommendation.explanation}</p>
-                <div className={styles.matchControls}>
-                  <FareHarborBookingButton
-                    productTitle={product.title}
-                    productSlug={product.slug}
-                    shortname={product.companyShortname}
-                    itemId={product.itemId}
-                    flowId={product.flowId}
-                    asn="aktourcenter"
-                    refCode="chooser"
-                    fallbackHref={`/tours/${product.slug}`}
-                    placement="chooser_recommendation"
-                    className="inline-block border border-[#d4af37] bg-[#d4af37] text-[#1a1a1a] hover:bg-transparent hover:text-[#d4af37] transition-colors font-bold py-4 px-10 text-sm uppercase tracking-widest rounded-sm"
-                    onBookingClick={handleProductSelect}
-                  >
-                    View This Tour
-                  </FareHarborBookingButton>
-                  <button onClick={handleRestart} className="text-[#aaaaaa] hover:text-[#d4af37] transition-colors text-xs font-bold uppercase tracking-widest mt-4">
-                    Try Again
-                  </button>
-                </div>
+            </div>
+          ) : (
+            <div className={styles.matchContainer}>
+              <span className={styles.matchLabel}>Your New Orleans Match</span>
+              <h1 className={styles.matchTitle}>{product.title}</h1>
+              <p className={styles.matchReason}>{recommendation.explanation}</p>
+              <div className={styles.matchControls}>
+                <FareHarborBookingButton
+                  productTitle={product.title}
+                  productSlug={product.slug}
+                  shortname={product.companyShortname}
+                  itemId={product.itemId}
+                  flowId={product.flowId}
+                  asn="aktourcenter"
+                  refCode="chooser"
+                  fallbackHref={`/tours/${product.slug}`}
+                  placement="chooser_recommendation"
+                  className={`${visualStyles.buttonPrimary} ${visualStyles.sansFont}`}
+                  onBookingClick={handleProductSelect}
+                >
+                  View This Tour
+                </FareHarborBookingButton>
+                <button onClick={handleRestart} className="text-[#aaaaaa] hover:text-[#d4af37] transition-colors text-xs font-bold uppercase tracking-widest mt-4">
+                  Try Again
+                </button>
               </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+            </div>
+          )}
+        </div>
+      )}
+    </NewOrleansHeroFrame>
   );
 }

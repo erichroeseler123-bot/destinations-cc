@@ -1,17 +1,42 @@
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { getProductById } from "./data";
 import ProductCard from "./components/ProductCard";
 import MarketplaceSearch from "./components/MarketplaceSearch";
 import { getMarketplaceSearchItems } from "./data/searchHelper";
-import styles from "./home.module.css";
+import { NewOrleansHeroFrame, NewOrleansChoiceCard, DecorativeDivider } from "./components/NewOrleansVisual";
+import visualStyles from "./components/newOrleansVisual.module.css";
+import homeStyles from "./home.module.css";
 
 export const metadata = {
   title: "New Orleans Tours | Discover and Book Real Local Experiences",
   description:
     "Compare New Orleans tours, find real participating experiences, and get local help choosing.",
 };
+
+const CityIllustration = () => (
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 21h18" /><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" /><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4" /><path d="M10 9h.01" /><path d="M14 9h.01" /><path d="M10 13h.01" /><path d="M14 13h.01" />
+  </svg>
+);
+
+const SwampIllustration = () => (
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 12h20" /><path d="M4 12v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" /><path d="M12 12v-6l-3 3" /><path d="M12 6l3 3" />
+  </svg>
+);
+
+const PlantationIllustration = () => (
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 21h18" /><path d="M5 21V7l7-4 7 4v14" /><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4" />
+  </svg>
+);
+
+const NotSureIllustration = () => (
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" />
+  </svg>
+);
 
 export default function NewOrleansHomePage() {
   const southernStyle = getProductById("southernstyle-city-tour");
@@ -23,83 +48,76 @@ export default function NewOrleansHomePage() {
   return (
     <div className="bg-[#151515] text-[#fdfbf7] font-sans overflow-hidden">
       {/* 1. Hero */}
-      <section className={styles.hero}>
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="/images/new-orleans/hero-french-quarter-balcony.jpg"
-            alt="French Quarter Balcony in New Orleans"
-            fill
-            className="object-cover object-center"
-            priority
-          />
-          <div className={styles.heroOverlay}></div>
+      <NewOrleansHeroFrame>
+        <h1 className={`${visualStyles.headline} ${visualStyles.displayFont}`}>
+          <span>REAL NEW ORLEANS.</span>
+          <span className="text-[#D4AF37]">REAL GOOD TIMES.</span>
+        </h1>
+        <DecorativeDivider />
+        <p className="text-lg md:text-xl text-[#fdfbf7]/80 mb-10 max-w-2xl mx-auto font-light leading-relaxed text-center">
+          Compare participating New Orleans tours, book experiences, and get help choosing the right fit.
+        </p>
+        <div className={homeStyles.heroActions}>
+          <Link href="/tours" className={`${visualStyles.buttonPrimary} ${visualStyles.sansFont}`}>
+            Explore Tours
+          </Link>
+          <Link href="/help-me-choose" className={`${visualStyles.buttonPrimary} ${visualStyles.sansFont}`}>
+            Help Me Choose
+          </Link>
         </div>
-
-        <div className={styles.heroContent}>
-          <h1 className={styles.heroTitle}>
-            <span>REAL NEW ORLEANS.</span>
-            <span className={styles.heroTitleHighlight}>REAL GOOD TIMES.</span>
-          </h1>
-          <p className="text-lg md:text-xl text-[#fdfbf7]/80 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
-            Compare participating New Orleans tours, book experiences, and get help choosing the right fit.
-          </p>
-          <div className={styles.heroActions}>
-            <Link href="/tours" className={styles.heroCta}>
-              Explore Tours
-            </Link>
-            <Link href="/help-me-choose" className={styles.heroCta}>
-              Help Me Choose
-            </Link>
-          </div>
-        </div>
-      </section>
+      </NewOrleansHeroFrame>
 
       {/* 2. Four primary choice cards */}
       <section className="py-24 bg-[#151515] relative z-10 -mt-10">
-        <div className={styles.choiceGrid}>
-          <ChoiceCard
-            title="CITY TOURS"
-            desc="See the neighborhoods, architecture, history, and stories that define New Orleans."
-            href="/city-tours"
-            iconClass={styles.iconCity}
-            iconPath="M3 21h18 M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16 M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4 M10 9h.01 M14 9h.01 M10 13h.01 M14 13h.01"
-            cta="EXPLORE CITY TOURS"
-          />
-          <ChoiceCard
-            title="SWAMP TOURS"
-            desc="Choose a covered boat or airboat experience through Louisiana’s bayous."
-            href="/swamp-tours"
-            iconClass={styles.iconSwamp}
-            iconPath="M2 12h20 M4 12v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4 M12 12v-6l-3 3 M12 6l3 3"
-            cta="EXPLORE SWAMP TOURS"
-          />
-          <ChoiceCard
-            title="PLANTATION TOURS"
-            desc="Explore historic homes, landscapes, and Louisiana history outside the city."
-            href="/plantation-tours"
-            iconClass={styles.iconPlantation}
-            iconPath="M3 21h18 M5 21V7l7-4 7 4v14 M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"
-            cta="EXPLORE PLANTATION TOURS"
-          />
-          <ChoiceCard
-            title="NOT SURE?"
-            desc="Answer a few quick questions and we’ll point you toward the best fit."
-            href="/help-me-choose"
-            iconClass={styles.iconNotSure}
-            iconPath="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3 M12 17h.01"
-            hasCircle={true}
-            cta="HELP ME CHOOSE"
-          />
+        <div className={visualStyles.boardContainer}>
+          <div className={visualStyles.boardGrid}>
+            <NewOrleansChoiceCard
+              mode="link"
+              title="CITY TOURS"
+              desc="See the neighborhoods, architecture, history, and stories that define New Orleans."
+              href="/city-tours"
+              iconType="city"
+              illustration={<CityIllustration />}
+              cta="EXPLORE CITY TOURS"
+            />
+            <NewOrleansChoiceCard
+              mode="link"
+              title="SWAMP TOURS"
+              desc="Choose a covered boat or airboat experience through Louisiana’s bayous."
+              href="/swamp-tours"
+              iconType="swamp"
+              illustration={<SwampIllustration />}
+              cta="EXPLORE SWAMP TOURS"
+            />
+            <NewOrleansChoiceCard
+              mode="link"
+              title="PLANTATION TOURS"
+              desc="Explore historic homes, landscapes, and Louisiana history outside the city."
+              href="/plantation-tours"
+              iconType="plantation"
+              illustration={<PlantationIllustration />}
+              cta="EXPLORE PLANTATION TOURS"
+            />
+            <NewOrleansChoiceCard
+              mode="link"
+              title="NOT SURE?"
+              desc="Answer a few quick questions and we’ll point you toward the best fit."
+              href="/help-me-choose"
+              iconType="notsure"
+              illustration={<NotSureIllustration />}
+              cta="HELP ME CHOOSE"
+            />
+          </div>
         </div>
       </section>
 
       {/* 3. Featured Experiences */}
       <section className="py-20 px-6 max-w-7xl mx-auto border-t border-[#2a2a2a]">
-        <div className="mb-12">
-          <h2 className="font-serif text-3xl md:text-4xl text-[#d4af37] mb-4">
+        <div className="mb-12 text-center">
+          <h2 className={`font-serif text-3xl md:text-4xl text-[#d4af37] mb-4 ${visualStyles.accentFont}`}>
             Featured Experiences
           </h2>
-          <p className="text-[#fdfbf7]/70 font-light max-w-2xl text-lg">
+          <p className="text-[#fdfbf7]/70 font-light max-w-2xl mx-auto text-lg">
             Directly book participating local operators, with clear descriptions and direct access to inventory.
           </p>
         </div>
@@ -116,7 +134,7 @@ export default function NewOrleansHomePage() {
       <section className="bg-[#1a1a1a] border-y border-[#2a2a2a] py-20 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="font-serif text-3xl md:text-4xl text-[#fdfbf7] mb-4">
+            <h2 className={`font-serif text-3xl md:text-4xl text-[#fdfbf7] mb-4 ${visualStyles.accentFont}`}>
               Find a Tour
             </h2>
             <p className="text-[#aaaaaa] font-light text-lg">
@@ -134,7 +152,7 @@ export default function NewOrleansHomePage() {
             <div className="text-[10px] text-[#d4af37] uppercase tracking-widest font-bold mb-4">
               In-Person Help
             </div>
-            <h3 className="font-serif text-3xl mb-4">
+            <h3 className={`font-serif text-3xl mb-4 ${visualStyles.accentFont}`}>
               French Quarter Welcome Stop
             </h3>
             <p className="text-[#fdfbf7]/70 font-light leading-relaxed mb-8 flex-grow">
@@ -152,7 +170,7 @@ export default function NewOrleansHomePage() {
             <div className="text-[10px] text-[#b8952c] uppercase tracking-widest font-bold mb-4">
               Private Parties
             </div>
-            <h3 className="font-serif text-3xl mb-4">Group Planning</h3>
+            <h3 className={`font-serif text-3xl mb-4 ${visualStyles.accentFont}`}>Group Planning</h3>
             <p className="text-[#fdfbf7]/70 font-light leading-relaxed mb-8 flex-grow">
               Planning a family, wedding, or corporate group? Contact us to discuss available tour options.
             </p>
@@ -169,7 +187,7 @@ export default function NewOrleansHomePage() {
       {/* 6. Editorial Guides */}
       <section className="py-20 px-6 max-w-7xl mx-auto">
         <div className="mb-12">
-          <h2 className="font-serif text-2xl text-[#fdfbf7] mb-2">
+          <h2 className={`font-serif text-2xl text-[#fdfbf7] mb-2 ${visualStyles.accentFont}`}>
             Editorial Guides
           </h2>
           <p className="text-[#aaaaaa] font-light text-sm">
@@ -199,47 +217,13 @@ export default function NewOrleansHomePage() {
   );
 }
 
-function ChoiceCard({
-  title,
-  desc,
-  href,
-  iconClass,
-  iconPath,
-  hasCircle,
-  cta
-}: {
-  title: string;
-  desc: string;
-  href: string;
-  iconClass: string;
-  iconPath: string;
-  hasCircle?: boolean;
-  cta: string;
-}) {
-  return (
-    <Link href={href} className={styles.choiceCard} aria-label={`${title} - ${desc}`}>
-      <div className={`${styles.choiceIcon} ${iconClass}`}>
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-          {hasCircle && <circle cx="12" cy="12" r="10"></circle>}
-          {iconPath.split(' M').map((pathSegment, i) => (
-            <path key={i} d={i === 0 ? pathSegment : `M${pathSegment}`}></path>
-          ))}
-        </svg>
-      </div>
-      <h3 className={styles.choiceTitle}>{title}</h3>
-      <p className={styles.choiceCopy}>{desc}</p>
-      <span className={styles.choiceCta}>{cta}</span>
-    </Link>
-  );
-}
-
 function GuideLink({ href, title }: { href: string; title: string }) {
   return (
     <Link
       href={href}
       className="block p-6 border border-[#2a2a2a] bg-[#1a1a1a] hover:border-[#d4af37] transition-colors group"
     >
-      <h4 className="font-serif text-lg text-[#fdfbf7] mb-4 group-hover:text-[#d4af37]">
+      <h4 className={`font-serif text-lg text-[#fdfbf7] mb-4 group-hover:text-[#d4af37] ${visualStyles.accentFont}`}>
         {title}
       </h4>
       <span className="text-[10px] uppercase tracking-widest font-bold text-[#aaaaaa] group-hover:text-[#fdfbf7]">

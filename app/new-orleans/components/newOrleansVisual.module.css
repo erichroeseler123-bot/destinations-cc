@@ -1,0 +1,245 @@
+/* 1. Core Primitives & Typography */
+.displayFont {
+  font-family: var(--font-new-orleans-display), var(--font-accent), serif;
+}
+
+.scriptFont {
+  font-family: var(--font-new-orleans-script), cursive;
+}
+
+.accentFont {
+  font-family: var(--font-accent), serif;
+}
+
+.sansFont {
+  font-family: var(--font-sans), sans-serif;
+}
+
+/* 2. Hero Frame (Shared for Homepage & Chooser) */
+.heroContainer {
+  position: relative;
+  min-height: 100vh; /* Will be overridden via inline styles or specific pages if needed, but defaults to full viewport height for chooser */
+  width: 100%;
+  background-color: #151515;
+  color: #FDFBF7;
+  overflow-x: hidden;
+}
+
+.heroBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background-image: url('/images/new-orleans/hero-french-quarter-balcony.jpg');
+  background-size: cover;
+  background-position: center top;
+}
+
+/* Deeper side shadows and warmer lantern lighting via gradient */
+.heroOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background: radial-gradient(circle at center 40%, rgba(212, 175, 55, 0.05) 0%, rgba(0,0,0,0) 50%),
+              linear-gradient(to top, #110e14 0%, rgba(21, 17, 24, 0.8) 50%, rgba(21, 17, 24, 0.4) 100%),
+              linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 80%, rgba(0,0,0,0.6) 100%);
+}
+
+.heroContent {
+  position: relative;
+  z-index: 10;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 3. Typography Styles */
+.headline {
+  font-size: 3rem;
+  font-weight: 400; /* Rye is regular weight */
+  line-height: 1.1;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #FDFBF7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-transform: uppercase;
+}
+@media (min-width: 768px) {
+  .headline { font-size: 4.5rem; }
+}
+
+.scriptAccent {
+  display: block;
+  font-size: 4rem;
+  line-height: 0.8;
+  color: #D4AF37;
+  text-transform: none;
+  font-weight: 400;
+  margin: 0;
+}
+@media (min-width: 768px) {
+  .scriptAccent { font-size: 6rem; line-height: 0.8; }
+}
+
+/* 4. Decorative Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 300px;
+  margin-bottom: 3rem;
+  color: #D4AF37;
+}
+
+.dividerLine {
+  height: 1px;
+  flex-grow: 1;
+  background: #D4AF37;
+  opacity: 0.5;
+}
+
+.fleurDeLis {
+  opacity: 0.8;
+}
+
+/* 5. Board Grid & Containers */
+.boardContainer {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto 4rem;
+}
+
+.boardGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .boardGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1440px) {
+  .boardGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.promptBanner {
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #D4AF37;
+  margin-bottom: 2rem;
+}
+
+/* 6. Choice Card Shared Styles */
+.choiceCardWrapper {
+  display: flex;
+  height: 100%;
+}
+
+.choiceCard {
+  background: rgba(21, 17, 24, 0.85); /* Plum-black tint */
+  border: 1px solid #332b38;
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  backdrop-filter: blur(4px);
+}
+
+.choiceCard:hover, .choiceCard:focus-visible {
+  border-color: #D4AF37;
+  outline: none;
+  background: rgba(30, 24, 34, 0.95);
+}
+
+.illustration {
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+  transition: transform 0.4s ease;
+}
+
+.choiceCard:hover .illustration {
+  transform: scale(1.05);
+}
+
+.cardCity .illustration { color: #8da6bd; }
+.cardSwamp .illustration { color: #8c9e6e; }
+.cardPlantation .illustration { color: #ab799a; }
+.cardNotSure .illustration { color: #c98b61; }
+
+.cardTitle {
+  font-size: 1.75rem;
+  font-weight: 400;
+  margin-bottom: 1rem;
+  color: #fdfbf7;
+}
+
+.cardCopy {
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 300;
+  color: rgba(253, 251, 247, 0.8);
+  margin-bottom: 2rem;
+  flex-grow: 1;
+}
+
+/* 7. Shared Button Contract */
+.buttonPrimary {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid #d4af37;
+  color: #d4af37;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.5rem;
+  transition: all 0.3s ease;
+  width: 100%;
+  background: transparent;
+  text-decoration: none;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.choiceCard:hover .buttonPrimary,
+.buttonPrimary:hover,
+.buttonPrimary:focus-visible {
+  background: #d4af37;
+  color: #110e14;
+  outline: none;
+}
+
+@media (min-width: 600px) {
+  .buttonPrimary.inline {
+    width: auto;
+  }
+}
+
