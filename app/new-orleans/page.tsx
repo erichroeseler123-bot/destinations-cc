@@ -4,7 +4,7 @@ import { getProductById } from "./data";
 import ProductCard from "./components/ProductCard";
 import MarketplaceSearch from "./components/MarketplaceSearch";
 import { getMarketplaceSearchItems } from "./data/searchHelper";
-import { NewOrleansHeroFrame, NewOrleansChoiceCard, DecorativeDivider } from "./components/NewOrleansVisual";
+import { NewOrleansHeroFrame, NewOrleansChoiceCard, DecorativeDivider, ConnectedBoard } from "./components/NewOrleansVisual";
 import visualStyles from "./components/newOrleansVisual.module.css";
 import homeStyles from "./home.module.css";
 
@@ -15,26 +15,43 @@ export const metadata = {
 };
 
 const CityIllustration = () => (
-  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 21h18" /><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" /><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4" /><path d="M10 9h.01" /><path d="M14 9h.01" /><path d="M10 13h.01" /><path d="M14 13h.01" />
+  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M32 10L24 25H40L32 10Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+    <rect x="24" y="25" width="16" height="20" stroke="currentColor" strokeWidth="2"/>
+    <path d="M28 25V45M36 25V45M24 35H40" stroke="currentColor" strokeWidth="2"/>
+    <path d="M32 45V60M25 60H39" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M32 5L32 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
   </svg>
 );
 
 const SwampIllustration = () => (
-  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M2 12h20" /><path d="M4 12v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" /><path d="M12 12v-6l-3 3" /><path d="M12 6l3 3" />
+  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M10 50C15 48 20 49 25 47C30 45 35 48 40 47C45 46 50 48 55 46" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M15 48V25C15 20 25 15 32 15C39 15 49 20 49 25V47" stroke="currentColor" strokeWidth="2"/>
+    <path d="M32 15V47" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4"/>
+    <path d="M10 40C12 38 18 38 20 40" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M45 42C48 40 52 40 55 42" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="32" cy="30" r="5" stroke="currentColor" strokeWidth="2"/>
   </svg>
 );
 
 const PlantationIllustration = () => (
-  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 21h18" /><path d="M5 21V7l7-4 7 4v14" /><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4" />
+  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M8 55H56" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <rect x="20" y="35" width="24" height="20" stroke="currentColor" strokeWidth="2"/>
+    <path d="M15 35L32 20L49 35" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+    <rect x="28" y="45" width="8" height="10" stroke="currentColor" strokeWidth="2"/>
+    <path d="M12 55V25C12 15 20 10 32 10C44 10 52 15 52 25V55" stroke="currentColor" strokeWidth="2" strokeDasharray="2 4"/>
   </svg>
 );
 
 const NotSureIllustration = () => (
-  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" />
+  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M20 15L32 35L44 15H20Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+    <path d="M32 35V55M22 55H42" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="38" cy="20" r="3" fill="currentColor"/>
+    <path d="M25 20H40" stroke="currentColor" strokeWidth="1"/>
+    <path d="M15 25C12 25 10 20 15 15C20 10 35 5 45 10C55 15 50 30 40 25" stroke="currentColor" strokeWidth="1" strokeDasharray="2 4"/>
   </svg>
 );
 
@@ -49,9 +66,10 @@ export default function NewOrleansHomePage() {
     <div className="bg-[#151515] text-[#fdfbf7] font-sans overflow-hidden">
       {/* 1. Hero */}
       <NewOrleansHeroFrame>
-        <h1 className={`${visualStyles.headline} ${visualStyles.displayFont}`}>
-          <span>REAL NEW ORLEANS.</span>
-          <span className="text-[#D4AF37]">REAL GOOD TIMES.</span>
+        <h1 className={visualStyles.headline}>
+          <span className={`${visualStyles.headlineLine1} ${visualStyles.accentFont}`}>REAL</span>
+          <span className={`${visualStyles.scriptAccent} ${visualStyles.scriptFont}`}>New Orleans.</span>
+          <span className={`${visualStyles.headlineLine2} ${visualStyles.displayFont}`}>REAL GOOD TIMES.</span>
         </h1>
         <DecorativeDivider />
         <p className="text-lg md:text-xl text-[#fdfbf7]/80 mb-10 max-w-2xl mx-auto font-light leading-relaxed text-center">
@@ -69,46 +87,44 @@ export default function NewOrleansHomePage() {
 
       {/* 2. Four primary choice cards */}
       <section className="py-24 bg-[#151515] relative z-10 -mt-10">
-        <div className={visualStyles.boardContainer}>
-          <div className={visualStyles.boardGrid}>
-            <NewOrleansChoiceCard
-              mode="link"
-              title="CITY TOURS"
-              desc="See the neighborhoods, architecture, history, and stories that define New Orleans."
-              href="/city-tours"
-              iconType="city"
-              illustration={<CityIllustration />}
-              cta="EXPLORE CITY TOURS"
-            />
-            <NewOrleansChoiceCard
-              mode="link"
-              title="SWAMP TOURS"
-              desc="Choose a covered boat or airboat experience through Louisiana’s bayous."
-              href="/swamp-tours"
-              iconType="swamp"
-              illustration={<SwampIllustration />}
-              cta="EXPLORE SWAMP TOURS"
-            />
-            <NewOrleansChoiceCard
-              mode="link"
-              title="PLANTATION TOURS"
-              desc="Explore historic homes, landscapes, and Louisiana history outside the city."
-              href="/plantation-tours"
-              iconType="plantation"
-              illustration={<PlantationIllustration />}
-              cta="EXPLORE PLANTATION TOURS"
-            />
-            <NewOrleansChoiceCard
-              mode="link"
-              title="NOT SURE?"
-              desc="Answer a few quick questions and we’ll point you toward the best fit."
-              href="/help-me-choose"
-              iconType="notsure"
-              illustration={<NotSureIllustration />}
-              cta="HELP ME CHOOSE"
-            />
-          </div>
-        </div>
+        <ConnectedBoard promptBanner="CHOOSE YOUR NEW ORLEANS EXPERIENCE">
+          <NewOrleansChoiceCard
+            mode="link"
+            title="CITY TOURS"
+            desc="See the neighborhoods, architecture, history, and stories that define New Orleans."
+            href="/city-tours"
+            iconType="city"
+            illustration={<CityIllustration />}
+            cta="EXPLORE CITY TOURS"
+          />
+          <NewOrleansChoiceCard
+            mode="link"
+            title="SWAMP TOURS"
+            desc="Choose a covered boat or airboat experience through Louisiana’s bayous."
+            href="/swamp-tours"
+            iconType="swamp"
+            illustration={<SwampIllustration />}
+            cta="EXPLORE SWAMP TOURS"
+          />
+          <NewOrleansChoiceCard
+            mode="link"
+            title="PLANTATION TOURS"
+            desc="Explore historic homes, landscapes, and Louisiana history outside the city."
+            href="/plantation-tours"
+            iconType="plantation"
+            illustration={<PlantationIllustration />}
+            cta="EXPLORE PLANTATION TOURS"
+          />
+          <NewOrleansChoiceCard
+            mode="link"
+            title="NOT SURE?"
+            desc="Answer a few quick questions and we’ll point you toward the best fit."
+            href="/help-me-choose"
+            iconType="notsure"
+            illustration={<NotSureIllustration />}
+            cta="HELP ME CHOOSE"
+          />
+        </ConnectedBoard>
       </section>
 
       {/* 3. Featured Experiences */}

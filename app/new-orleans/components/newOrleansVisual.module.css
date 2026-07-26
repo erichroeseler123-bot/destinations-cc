@@ -18,9 +18,9 @@
 /* 2. Hero Frame (Shared for Homepage & Chooser) */
 .heroContainer {
   position: relative;
-  min-height: 100vh; /* Will be overridden via inline styles or specific pages if needed, but defaults to full viewport height for chooser */
+  min-height: 100vh;
   width: 100%;
-  background-color: #151515;
+  background-color: #110e14;
   color: #FDFBF7;
   overflow-x: hidden;
 }
@@ -34,10 +34,10 @@
   z-index: 0;
   background-image: url('/images/new-orleans/hero-french-quarter-balcony.jpg');
   background-size: cover;
-  background-position: center top;
+  background-position: center 20%;
 }
 
-/* Deeper side shadows and warmer lantern lighting via gradient */
+/* Increased warm lantern depth, preserved deep black shadows */
 .heroOverlay {
   position: absolute;
   top: 0;
@@ -45,9 +45,9 @@
   width: 100%;
   height: 100%;
   z-index: 1;
-  background: radial-gradient(circle at center 40%, rgba(212, 175, 55, 0.05) 0%, rgba(0,0,0,0) 50%),
-              linear-gradient(to top, #110e14 0%, rgba(21, 17, 24, 0.8) 50%, rgba(21, 17, 24, 0.4) 100%),
-              linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 80%, rgba(0,0,0,0.6) 100%);
+  background: radial-gradient(circle at center 35%, rgba(212, 140, 55, 0.15) 0%, rgba(0,0,0,0) 60%),
+              linear-gradient(to top, #110e14 0%, rgba(17, 14, 20, 0.85) 40%, rgba(17, 14, 20, 0.5) 100%),
+              linear-gradient(to right, rgba(17, 14, 20, 0.9) 0%, rgba(0,0,0,0) 25%, rgba(0,0,0,0) 75%, rgba(17, 14, 20, 0.9) 100%);
 }
 
 .heroContent {
@@ -63,32 +63,48 @@
 
 /* 3. Typography Styles */
 .headline {
-  font-size: 3rem;
-  font-weight: 400; /* Rye is regular weight */
-  line-height: 1.1;
   text-align: center;
   margin-bottom: 2rem;
   color: #FDFBF7;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-transform: uppercase;
+}
+
+.headlineLine1 {
+  font-size: 2rem;
+  letter-spacing: 0.1em;
+  font-weight: 300;
+  color: #fdfbf7;
+  margin-bottom: 0.25rem;
 }
 @media (min-width: 768px) {
-  .headline { font-size: 4.5rem; }
+  .headlineLine1 { font-size: 2.5rem; }
+}
+
+.headlineLine2 {
+  font-size: 3rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  color: #fdfbf7;
+  line-height: 1.1;
+}
+@media (min-width: 768px) {
+  .headlineLine2 { font-size: 5rem; }
 }
 
 .scriptAccent {
   display: block;
-  font-size: 4rem;
-  line-height: 0.8;
+  font-size: 4.5rem;
+  line-height: 0.6;
   color: #D4AF37;
   text-transform: none;
   font-weight: 400;
-  margin: 0;
+  margin: 0.5rem 0;
+  transform: rotate(-2deg);
 }
 @media (min-width: 768px) {
-  .scriptAccent { font-size: 6rem; line-height: 0.8; }
+  .scriptAccent { font-size: 6.5rem; }
 }
 
 /* 4. Decorative Divider */
@@ -99,7 +115,7 @@
   gap: 1rem;
   width: 100%;
   max-width: 300px;
-  margin-bottom: 3rem;
+  margin: 1rem auto 3rem;
   color: #D4AF37;
 }
 
@@ -114,51 +130,62 @@
   opacity: 0.8;
 }
 
-/* 5. Board Grid & Containers */
+/* 5. Connected Board Container & Grid */
 .boardContainer {
   position: relative;
   width: 100%;
   max-width: 1200px;
-  margin: 0 auto 4rem;
+  margin: 2rem auto 4rem;
+  padding-top: 1.5rem; /* space for integrated banner */
+}
+
+.promptBanner {
+  position: absolute;
+  top: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #110e14;
+  border: 1px solid #d4af37;
+  color: #d4af37;
+  padding: 0.5rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  z-index: 20;
+  white-space: nowrap;
 }
 
 .boardGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
   width: 100%;
+  background: rgba(17, 14, 20, 0.85); /* unified background surface */
+  border: 1px solid #332b38;
+  backdrop-filter: blur(8px);
+  position: relative;
 }
+
 @media (min-width: 768px) {
   .boardGrid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-@media (min-width: 1440px) {
+@media (min-width: 1024px) {
   .boardGrid {
     grid-template-columns: repeat(4, 1fr);
   }
-}
-
-.promptBanner {
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: #D4AF37;
-  margin-bottom: 2rem;
 }
 
 /* 6. Choice Card Shared Styles */
 .choiceCardWrapper {
   display: flex;
   height: 100%;
+  position: relative;
 }
 
 .choiceCard {
-  background: rgba(21, 17, 24, 0.85); /* Plum-black tint */
-  border: 1px solid #332b38;
-  padding: 3rem 2rem;
+  padding: 3rem 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -168,19 +195,81 @@
   width: 100%;
   height: 100%;
   text-decoration: none;
-  backdrop-filter: blur(4px);
+  background: transparent;
+  border: none;
+  position: relative;
+}
+
+/* Internal vertical dividers for the connected board */
+.choiceCardWrapper:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.3), transparent);
+}
+@media (min-width: 768px) {
+  .choiceCardWrapper:not(:last-child)::after {
+    width: 1px;
+    height: 100%;
+    top: 0;
+    background: linear-gradient(to bottom, transparent, rgba(212, 175, 55, 0.3), transparent);
+  }
+  /* Remove right divider on the 2nd card in 2-col layout */
+  .boardGrid > .choiceCardWrapper:nth-child(2n)::after {
+    display: none;
+  }
+}
+@media (min-width: 1024px) {
+  /* Restore right divider for 4-col layout */
+  .boardGrid > .choiceCardWrapper:nth-child(2n)::after {
+    display: block;
+  }
+  .boardGrid > .choiceCardWrapper:last-child::after {
+    display: none;
+  }
+}
+
+/* OR markers for chooser */
+.orMarker {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #110e14;
+  border: 1px solid #d4af37;
+  color: #d4af37;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-radius: 50%;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans), sans-serif;
+}
+@media (min-width: 768px) {
+  .orMarker {
+    top: 50%;
+    left: 100%;
+  }
 }
 
 .choiceCard:hover, .choiceCard:focus-visible {
-  border-color: #D4AF37;
   outline: none;
-  background: rgba(30, 24, 34, 0.95);
+  background: rgba(212, 175, 55, 0.05); /* subtle hover state that doesn't break the board */
 }
 
 .illustration {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   opacity: 0.9;
   transition: transform 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .choiceCard:hover .illustration {
@@ -193,10 +282,12 @@
 .cardNotSure .illustration { color: #c98b61; }
 
 .cardTitle {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 400;
   margin-bottom: 1rem;
   color: #fdfbf7;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .cardCopy {
@@ -242,4 +333,3 @@
     width: auto;
   }
 }
-

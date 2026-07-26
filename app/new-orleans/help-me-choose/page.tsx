@@ -12,9 +12,19 @@ import {
 } from "./recommendationRules";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 import FareHarborBookingButton from "../components/FareHarborBookingButton";
-import { NewOrleansHeroFrame, NewOrleansChoiceCard, DecorativeDivider } from "../components/NewOrleansVisual";
+import { NewOrleansHeroFrame, NewOrleansChoiceCard, DecorativeDivider, ConnectedBoard } from "../components/NewOrleansVisual";
 import visualStyles from "../components/newOrleansVisual.module.css";
 import styles from "./chooser.module.css";
+
+const CityIllustration = () => (
+  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M32 10L24 25H40L32 10Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+    <rect x="24" y="25" width="16" height="20" stroke="currentColor" strokeWidth="2"/>
+    <path d="M28 25V45M36 25V45M24 35H40" stroke="currentColor" strokeWidth="2"/>
+    <path d="M32 45V60M25 60H39" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M32 5L32 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
 
 const SwampIllustration = () => (
   <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -24,16 +34,6 @@ const SwampIllustration = () => (
     <path d="M10 40C12 38 18 38 20 40" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
     <path d="M45 42C48 40 52 40 55 42" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
     <circle cx="32" cy="30" r="5" stroke="currentColor" strokeWidth="2"/>
-  </svg>
-);
-
-const CityIllustration = () => (
-  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <path d="M32 10L24 25H40L32 10Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-    <rect x="24" y="25" width="16" height="20" stroke="currentColor" strokeWidth="2"/>
-    <path d="M28 25V45M36 25V45M24 35H40" stroke="currentColor" strokeWidth="2"/>
-    <path d="M32 45V60M25 60H39" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M32 5L32 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
   </svg>
 );
 
@@ -158,131 +158,126 @@ export default function HelpMeChoosePage() {
 
       {view === "initial" && (
         <div aria-live="polite" className="w-full flex flex-col items-center">
-          <h1 className={`${visualStyles.headline} ${visualStyles.displayFont}`}>
-            LET’S FIND YOUR
+          <h1 className={visualStyles.headline}>
+            <span className={`${visualStyles.headlineLine1} ${visualStyles.accentFont}`}>LET’S FIND YOUR</span>
             <span className={`${visualStyles.scriptAccent} ${visualStyles.scriptFont}`}>New Orleans</span>
-            PERFECT ADVENTURE
+            <span className={`${visualStyles.headlineLine2} ${visualStyles.displayFont}`}>PERFECT ADVENTURE</span>
           </h1>
           <DecorativeDivider />
 
-          <div className={visualStyles.boardContainer}>
-            <div className={visualStyles.promptBanner}>
-              What kind of adventure are you after?
-            </div>
-            <div className={visualStyles.boardGrid}>
-              <NewOrleansChoiceCard
-                mode="action"
-                onClick={() => handleInitialChoice("city")}
-                iconType="city"
-                illustration={<CityIllustration />}
-                title="THE CITY"
-                desc="History, neighborhoods, architecture, stories, and the essential New Orleans overview."
-                cta="SHOW ME THE CITY"
-              />
-              <NewOrleansChoiceCard
-                mode="action"
-                onClick={() => handleInitialChoice("swamp")}
-                iconType="swamp"
-                illustration={<SwampIllustration />}
-                title="THE SWAMP"
-                desc="Wild, untamed, and full of Louisiana character. Choose between a covered boat and an airboat."
-                cta="TAKE ME TO THE SWAMP"
-              />
-              <NewOrleansChoiceCard
-                mode="action"
-                onClick={() => handleInitialChoice("plantation")}
-                iconType="plantation"
-                illustration={<PlantationIllustration />}
-                title="THE PLANTATION"
-                desc="Historic homes, landscapes, and Louisiana history outside the city."
-                cta="TAKE ME BACK"
-              />
-              <NewOrleansChoiceCard
-                mode="action"
-                onClick={() => handleInitialChoice("notsure")}
-                iconType="notsure"
-                illustration={<NotSureIllustration />}
-                title="NOT SURE?"
-                desc="No problem. Answer a few simple questions and we'll narrow it down together."
-                cta="HELP ME DECIDE"
-              />
-            </div>
-          </div>
+          <ConnectedBoard promptBanner="WHAT KIND OF ADVENTURE ARE YOU AFTER?">
+            <NewOrleansChoiceCard
+              mode="action"
+              onClick={() => handleInitialChoice("city")}
+              iconType="city"
+              illustration={<CityIllustration />}
+              title="THE CITY"
+              desc="History, neighborhoods, architecture, stories, and the essential New Orleans overview."
+              cta="SHOW ME THE CITY"
+              showOrMarker={true}
+            />
+            <NewOrleansChoiceCard
+              mode="action"
+              onClick={() => handleInitialChoice("swamp")}
+              iconType="swamp"
+              illustration={<SwampIllustration />}
+              title="THE SWAMP"
+              desc="Wild, untamed, and full of Louisiana character. Choose between a covered boat and an airboat."
+              cta="TAKE ME TO THE SWAMP"
+              showOrMarker={true}
+            />
+            <NewOrleansChoiceCard
+              mode="action"
+              onClick={() => handleInitialChoice("plantation")}
+              iconType="plantation"
+              illustration={<PlantationIllustration />}
+              title="THE PLANTATION"
+              desc="Historic homes, landscapes, and Louisiana history outside the city."
+              cta="TAKE ME BACK"
+              showOrMarker={true}
+            />
+            <NewOrleansChoiceCard
+              mode="action"
+              onClick={() => handleInitialChoice("notsure")}
+              iconType="notsure"
+              illustration={<NotSureIllustration />}
+              title="NOT SURE?"
+              desc="No problem. Answer a few simple questions and we'll narrow it down together."
+              cta="HELP ME DECIDE"
+            />
+          </ConnectedBoard>
         </div>
       )}
 
       {view === "swamp-second" && (
-        <div aria-live="polite" className="w-full flex flex-col items-center">
+        <div aria-live="polite" className="w-full flex flex-col items-center mt-12">
           <h1 className={styles.secondaryTitle}>How do you want to explore the swamp?</h1>
-          <div className={visualStyles.boardContainer}>
-            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-[800px] mx-auto`}>
-              <NewOrleansChoiceCard
-                mode="action"
-                onClick={() => handleSwampPreference("swamp-calm")}
-                iconType="swamp"
-                illustration={<SwampIllustration />}
-                title="COVERED & CALMER"
-                desc="A relaxed, shaded boat ride suitable for all ages. Perfect for photography and taking it slow."
-                cta="SELECT"
-              />
-              <NewOrleansChoiceCard
-                mode="action"
-                onClick={() => handleSwampPreference("swamp-active")}
-                iconType="swamp"
-                illustration={<SwampIllustration />}
-                title="FASTER & ACTIVE"
-                desc="An exhilarating airboat experience. Feel the wind and get up close to the wildlife."
-                cta="SELECT"
-              />
-            </div>
-          </div>
+          <ConnectedBoard>
+            <NewOrleansChoiceCard
+              mode="action"
+              onClick={() => handleSwampPreference("swamp-calm")}
+              iconType="swamp"
+              illustration={<SwampIllustration />}
+              title="COVERED & CALMER"
+              desc="A relaxed, shaded boat ride suitable for all ages. Perfect for photography and taking it slow."
+              cta="SELECT"
+              showOrMarker={true}
+            />
+            <NewOrleansChoiceCard
+              mode="action"
+              onClick={() => handleSwampPreference("swamp-active")}
+              iconType="swamp"
+              illustration={<SwampIllustration />}
+              title="FASTER & ACTIVE"
+              desc="An exhilarating airboat experience. Feel the wind and get up close to the wildlife."
+              cta="SELECT"
+            />
+          </ConnectedBoard>
         </div>
       )}
 
       {view === "guided-categories" && (
-        <div aria-live="polite" className="w-full flex flex-col items-center">
+        <div aria-live="polite" className="w-full flex flex-col items-center mt-12">
           <h1 className={styles.secondaryTitle}>What sounds best?</h1>
-          <div className={visualStyles.boardContainer}>
-            <div className={visualStyles.boardGrid}>
-              {CHOOSER_CATEGORIES.map((cat, i) => (
-                <NewOrleansChoiceCard
-                  key={cat.id}
-                  mode="action"
-                  onClick={() => handleGuidedCategorySelect(cat.id)}
-                  isActive={categoryId === cat.id}
-                  iconType="notsure"
-                  illustration={<NotSureIllustration />}
-                  title={cat.title.toUpperCase()}
-                  desc={cat.description}
-                  cta="SELECT"
-                />
-              ))}
-            </div>
-          </div>
+          <ConnectedBoard>
+            {CHOOSER_CATEGORIES.map((cat, i) => (
+              <NewOrleansChoiceCard
+                key={cat.id}
+                mode="action"
+                onClick={() => handleGuidedCategorySelect(cat.id)}
+                isActive={categoryId === cat.id}
+                iconType="notsure"
+                illustration={<NotSureIllustration />}
+                title={cat.title.toUpperCase()}
+                desc={cat.description}
+                cta="SELECT"
+                showOrMarker={i < CHOOSER_CATEGORIES.length - 1}
+              />
+            ))}
+          </ConnectedBoard>
         </div>
       )}
 
       {view === "guided-preferences" && currentCategory && (
-        <div aria-live="polite" className="w-full flex flex-col items-center">
+        <div aria-live="polite" className="w-full flex flex-col items-center mt-12">
           <h1 className={styles.secondaryTitle}>Narrow it down</h1>
           <p className={styles.supportingLine}>What kind of {currentCategory.title.toLowerCase()} experience are you looking for?</p>
-          <div className={visualStyles.boardContainer}>
-            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-[800px] mx-auto`}>
-              {preferences.map((pref, i) => (
-                <NewOrleansChoiceCard
-                  key={pref.id}
-                  mode="action"
-                  onClick={() => handleGuidedPreferenceSelect(pref.id)}
-                  isActive={preferenceId === pref.id}
-                  iconType="notsure"
-                  illustration={<NotSureIllustration />}
-                  title={pref.title.toUpperCase()}
-                  desc=""
-                  cta="SELECT"
-                />
-              ))}
-            </div>
-          </div>
+          <ConnectedBoard>
+            {preferences.map((pref, i) => (
+              <NewOrleansChoiceCard
+                key={pref.id}
+                mode="action"
+                onClick={() => handleGuidedPreferenceSelect(pref.id)}
+                isActive={preferenceId === pref.id}
+                iconType="notsure"
+                illustration={<NotSureIllustration />}
+                title={pref.title.toUpperCase()}
+                desc=""
+                cta="SELECT"
+                showOrMarker={i < preferences.length - 1}
+              />
+            ))}
+          </ConnectedBoard>
         </div>
       )}
 

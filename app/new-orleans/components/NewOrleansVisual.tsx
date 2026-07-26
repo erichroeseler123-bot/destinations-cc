@@ -29,6 +29,27 @@ export function DecorativeDivider() {
   );
 }
 
+export function ConnectedBoard({
+  children,
+  promptBanner
+}: {
+  children: React.ReactNode;
+  promptBanner?: string;
+}) {
+  return (
+    <div className={styles.boardContainer}>
+      {promptBanner && (
+        <div className={styles.promptBanner}>
+          {promptBanner}
+        </div>
+      )}
+      <div className={styles.boardGrid}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 type ChoiceCardProps =
   | {
       mode: "link";
@@ -40,6 +61,7 @@ type ChoiceCardProps =
       iconType: "city" | "swamp" | "plantation" | "notsure";
       illustration: React.ReactNode;
       isActive?: boolean;
+      showOrMarker?: boolean;
     }
   | {
       mode: "action";
@@ -51,6 +73,7 @@ type ChoiceCardProps =
       iconType: "city" | "swamp" | "plantation" | "notsure";
       illustration: React.ReactNode;
       isActive?: boolean;
+      showOrMarker?: boolean;
     };
 
 export function NewOrleansChoiceCard(props: ChoiceCardProps) {
@@ -73,25 +96,24 @@ export function NewOrleansChoiceCard(props: ChoiceCardProps) {
     </>
   );
 
-  if (props.mode === "link") {
-    return (
-      <div className={styles.choiceCardWrapper}>
+  return (
+    <div className={styles.choiceCardWrapper}>
+      {props.mode === "link" ? (
         <Link href={props.href} className={cardClass} aria-label={`${props.title} - ${props.desc}`}>
           {innerContent}
         </Link>
-      </div>
-    );
-  }
-
-  return (
-    <div className={styles.choiceCardWrapper}>
-      <button 
-        onClick={props.onClick} 
-        className={cardClass}
-        aria-pressed={props.isActive}
-      >
-        {innerContent}
-      </button>
+      ) : (
+        <button
+          onClick={props.onClick}
+          className={cardClass}
+          aria-pressed={props.isActive}
+        >
+          {innerContent}
+        </button>
+      )}
+      {props.showOrMarker && (
+        <div className={styles.orMarker}>OR</div>
+      )}
     </div>
   );
 }
