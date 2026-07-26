@@ -15,6 +15,8 @@ export interface NolaFareHarborProduct {
   // New optional detail fields for Step 4
   detailSummary?: string;
   bestFit?: string[];
+  notIdealFor?: string[];
+  childrenConsiderations?: string[];
   confirmedInclusions?: string[];
   bookingConfirmations?: string[];
   physicalFormat?: {
@@ -93,7 +95,15 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     ],
     detailSummary: "A broad city overview offered through Southern Style Tours.",
     bestFit: [
-      "First-time visitors seeking a broad introduction"
+      "First-time visitors seeking a broad introduction",
+      "Groups with roughly three hours available"
+    ],
+    notIdealFor: [
+      "Those looking for deep dives into single historical sites",
+      "Visitors wanting a highly active or outdoor-only experience"
+    ],
+    childrenConsiderations: [
+      "A balanced, lower-complexity first activity that works for most ages."
     ],
     confirmedInclusions: [],
     bookingConfirmations: [
@@ -141,6 +151,13 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
       "Visitors interested in a historic-site excursion",
       "Visitors preparing for a longer outing outside the city"
     ],
+    notIdealFor: [
+      "Visitors with less than half a day available",
+      "Those looking for a fast-paced or strictly outdoor nature experience"
+    ],
+    childrenConsiderations: [
+      "Suitable for children, but better for older children or teens with some historical interest. The long travel time and serious historical focus may not engage younger children."
+    ],
     confirmedInclusions: [],
     bookingConfirmations: [
       "Available plantation options (Oak Alley or Laura)",
@@ -181,7 +198,14 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     ],
     detailSummary: "A covered tour-boat experience.",
     bestFit: [
-      "Visitors comparing a covered boat with an airboat"
+      "Visitors seeking a relaxed, comfortable ride",
+      "Groups wanting shade and a lower-intensity travel experience"
+    ],
+    notIdealFor: [
+      "Those looking for high speeds or thrills"
+    ],
+    childrenConsiderations: [
+      "Generally a better fit for mixed-age groups and younger children compared to an airboat. Verify specific age policies during checkout."
     ],
     confirmedInclusions: [],
     bookingConfirmations: [
@@ -204,7 +228,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     title: "Ragin Cajun Airboat Options",
     category: "Airboat Rides",
     operatorName: "Ragin Cajun Tours",
-    description: "A booking flow for the airboat options currently offered by Ragin Cajun Tours.",
+    description: "The faster, more adventurous, open-air swamp format.",
     bestFor: "Airboat options",
     imageUrl: "/images/travel-markets/new-orleans/airboat-swamp.png",
     imageAlt: "Airboat traveling through a Louisiana swamp",
@@ -212,7 +236,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     slug: "ragin-cajun-airboat-options",
     relatedTourSlug: "covered-tour-boat",
     detailPageTitle: "Ragin Cajun Airboat Options | Welcome to New Orleans Tours",
-    metaDescription: "A booking flow for the airboat options currently offered by Ragin Cajun Tours.",
+    metaDescription: "The faster, more adventurous, open-air swamp format offered by Ragin Cajun Tours.",
     durationLabel: "Duration confirmed during booking.",
     transportationSummary: "Boat formats confirmed during booking.",
     pickupSummary: "Transportation options confirmed during booking.",
@@ -220,9 +244,17 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     highlights: [
       "The operator describes the route as traveling through privately accessed swamp property"
     ],
-    detailSummary: "A booking flow for the airboat options currently offered by Ragin Cajun Tours.",
+    detailSummary: "This is the faster, more adventurous, open-air swamp format. Current airboat configurations and available options are selected directly in the operator checkout. Eligibility, duration, transportation options, group format, and live pricing must all be verified during checkout.",
     bestFit: [
-      "Visitors comparing available airboat formats within the operator’s flow"
+      "Visitors looking for a fast, adventurous ride",
+      "Those who prefer an open-air outdoor experience"
+    ],
+    notIdealFor: [
+      "Groups wanting a quiet, relaxed, or shaded environment",
+      "Visitors sensitive to loud noises"
+    ],
+    childrenConsiderations: [
+      "Verify age minimums and child eligibility directly in the operator checkout before booking."
     ],
     confirmedInclusions: [],
     bookingConfirmations: [

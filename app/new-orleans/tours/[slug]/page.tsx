@@ -13,9 +13,14 @@ import WikimediaImageCredit from "../../components/WikimediaImageCredit";
 import TourDetailAnalytics from "./TourDetailAnalytics";
 import RelatedTourLink from "./RelatedTourLink";
 import { resolveProductImage } from "../../lib/imageResolver";
+import RecommendationCallout from "./RecommendationCallout";
+import { getRecommendation, CHOOSER_CATEGORIES, CHOOSER_PREFERENCES, CategoryId } from "../../help-me-choose/recommendationRules";
+import TourLogisticsSummary from "../../components/TourLogisticsSummary";
+import { TOUR_RECORDS } from "../../lib/tourRecommendationRules";
 
 interface Props {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -68,7 +73,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function TourDetailPage({ params }: Props) {
+export default async function TourDetailPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const product = STOREFRONT_PRODUCTS.find((p) => p.slug === slug);
 
@@ -96,6 +101,25 @@ export default async function TourDetailPage({ params }: Props) {
   const ctaText = product.ctaLabel || "Check Dates & Prices";
 
   const resolvedImage = resolveProductImage(product);
+
+  const resolvedSearchParams = await searchParams;
+  const recommendedParam = resolvedSearchParams.recommended as string;
+  let recommendationExplanation = "";
+  if (recommendedParam) {
+    const isCategory = CHOOSER_CATEGORIES.some(c => c.id === recommendedParam);
+    const pref = CHOOSER_PREFERENCES.find(p => p.id === recommendedParam);
+
+    let recResult = null;
+    if (isCategory) {
+      recResult = getRecommendation(recommendedParam as CategoryId);
+    } else if (pref) {
+      recResult = getRecommendation(pref.categoryId, pref.id);
+    }
+
+    if (recResult && recResult.primaryProductId === product.id) {
+      recommendationExplanation = recResult.explanation;
+    }
+  }
 
   return (
     <div className="bg-[#151515] min-h-screen text-[#fdfbf7] font-[var(--font-sans)]">
@@ -220,8 +244,54 @@ export default async function TourDetailPage({ params }: Props) {
           <div className="grid md:grid-cols-12 gap-12 md:gap-16">
 
             <div className="md:col-span-7 space-y-12">
-              {/* 2. What this experience is */}
+              
+              {/* 1. Best for & 2. Not ideal for */}
+              <section className="grid sm:grid-cols-2 gap-8">
+                <div>
+                  <h2 className="text-xl font-[var(--font-accent)] font-bold text-[#fdfbf7] mb-4 border-b border-[#2a2a2a] pb-4">
+                    Best For
+                  </h2>
+                  {product.bestFit && product.bestFit.length > 0 ? (
+                    <ul className="space-y-3">
+                      {product.bestFit.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3 text-sm text-[#cccccc] leading-relaxed">
+                          <span className="text-[#d4af37] mt-0.5">✓</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-[#aaaaaa]">Suitable for most visitors.</p>
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-xl font-[var(--font-accent)] font-bold text-[#fdfbf7] mb-4 border-b border-[#2a2a2a] pb-4">
+                    Not Ideal For
+                  </h2>
+                  {product.notIdealFor && product.notIdealFor.length > 0 ? (
+                    <ul className="space-y-3">
+                      {product.notIdealFor.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3 text-sm text-[#cccccc] leading-relaxed">
+                          <span className="text-[#aaaaaa] mt-0.5">✕</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-[#aaaaaa]">Review accessibility and requirements in checkout.</p>
+                  )}
+                </div>
+              </section>
+
+              {/* 3. What this experience is */}
               <section>
+                {recommendationExplanation && (
+                  <RecommendationCallout
+                    explanation={recommendationExplanation}
+                    productId={product.id}
+                    contextId={recommendedParam}
+                  />
+                )}
                 <h2 className="text-2xl md:text-3xl font-[var(--font-accent)] font-bold text-[#fdfbf7] mb-6">
                   What This Experience Is
                 </h2>
@@ -238,120 +308,45 @@ export default async function TourDetailPage({ params }: Props) {
                 )}
               </section>
 
-              {/* 3. Best fit */}
+              {/* 4. Logistics summary */}
+              <TourLogisticsSummary tourRecord={TOUR_RECORDS[product.slug]} />
+
+              {/* 5. Children and group considerations */}
               <section className="bg-[#1a1a1a] p-8 border border-[#2a2a2a]">
                 <h2 className="text-xl font-[var(--font-accent)] font-bold text-[#fdfbf7] mb-4 border-b border-[#2a2a2a] pb-4">
-                  Is this the right fit?
+                  Children & Group Considerations
                 </h2>
-                {product.bestFit && product.bestFit.length > 0 ? (
-                  <>
-                    <p className="text-[#aaaaaa] text-sm mb-4">This option may be a good fit for:</p>
-                    <ul className="list-disc list-inside text-[#cccccc] space-y-2 text-sm leading-relaxed">
-                      {product.bestFit.map((item, idx) => (
-                        <li key={idx}>{item}</li>
-                      ))}
-                    </ul>
-                  </>
+                {product.childrenConsiderations && product.childrenConsiderations.length > 0 ? (
+                  <ul className="list-disc list-inside text-[#cccccc] space-y-2 text-sm leading-relaxed">
+                    {product.childrenConsiderations.map((inc, idx) => (
+                      <li key={idx}>{inc}</li>
+                    ))}
+                  </ul>
                 ) : (
-                  <p className="text-[#aaaaaa] text-sm leading-relaxed">
-                    Confirm physical requirements, age policies, and accessibility accommodations during booking.
+                  <p className="text-sm text-[#cccccc] leading-relaxed">
+                    Verify age minimums, child eligibility, and accessibility options directly in the operator checkout.
                   </p>
                 )}
               </section>
 
-              {/* 4. Time and physical format */}
-              <section className="bg-[#1a1a1a] p-8 border border-[#2a2a2a]">
-                <h2 className="text-xl font-[var(--font-accent)] font-bold text-[#fdfbf7] mb-4 border-b border-[#2a2a2a] pb-4">
-                  Time & Format
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="text-[10px] font-bold text-[#fdfbf7] uppercase tracking-widest mb-2">Duration</h3>
-                    <p className="text-[#cccccc] text-sm leading-relaxed">
-                      {product.durationLabel || "Confirm timing during booking."}
-                    </p>
-                  </div>
-                  {product.physicalFormat?.walking && (
-                    <div>
-                      <h3 className="text-[10px] font-bold text-[#fdfbf7] uppercase tracking-widest mb-2">Walking</h3>
-                      <p className="text-[#cccccc] text-sm leading-relaxed">{product.physicalFormat.walking}</p>
-                    </div>
-                  )}
-                  {product.physicalFormat?.riding && (
-                    <div>
-                      <h3 className="text-[10px] font-bold text-[#fdfbf7] uppercase tracking-widest mb-2">Riding</h3>
-                      <p className="text-[#cccccc] text-sm leading-relaxed">{product.physicalFormat.riding}</p>
-                    </div>
-                  )}
-                  {product.physicalFormat?.seating && (
-                    <div>
-                      <h3 className="text-[10px] font-bold text-[#fdfbf7] uppercase tracking-widest mb-2">Seating</h3>
-                      <p className="text-[#cccccc] text-sm leading-relaxed">{product.physicalFormat.seating}</p>
-                    </div>
-                  )}
-                  {product.physicalFormat?.exposure && (
-                    <div>
-                      <h3 className="text-[10px] font-bold text-[#fdfbf7] uppercase tracking-widest mb-2">Exposure</h3>
-                      <p className="text-[#cccccc] text-sm leading-relaxed">{product.physicalFormat.exposure}</p>
-                    </div>
-                  )}
-                </div>
-                {(!product.durationLabel && !product.physicalFormat) && (
-                  <p className="text-[#aaaaaa] text-sm leading-relaxed mt-2">
-                    Confirm timing and physical requirements during booking.
-                  </p>
-                )}
-              </section>
-
-              {/* 5. What may be included */}
-              <section className="bg-[#1a1a1a] p-8 border border-[#2a2a2a]">
-                <h2 className="text-xl font-[var(--font-accent)] font-bold text-[#fdfbf7] mb-4 border-b border-[#2a2a2a] pb-4">
-                  What’s Included
-                </h2>
-                {product.confirmedInclusions && product.confirmedInclusions.length > 0 ? (
+              {/* Preserved: What may be included (if present) */}
+              {product.confirmedInclusions && product.confirmedInclusions.length > 0 && (
+                <section className="bg-[#1a1a1a] p-8 border border-[#2a2a2a]">
+                  <h2 className="text-xl font-[var(--font-accent)] font-bold text-[#fdfbf7] mb-4 border-b border-[#2a2a2a] pb-4">
+                    What’s Included
+                  </h2>
                   <ul className="list-disc list-inside text-[#cccccc] space-y-2 text-sm leading-relaxed mb-4">
                     {product.confirmedInclusions.map((inc, idx) => (
                       <li key={idx}>{inc}</li>
                     ))}
                   </ul>
-                ) : null}
-                <div className="bg-[#151515] p-4 border border-[#2a2a2a]">
-                  <p className="text-[#aaaaaa] text-sm leading-relaxed">
-                    <strong>Note:</strong> Review the operator’s current inclusions in the FareHarbor checkout before completing your purchase.
-                  </p>
-                </div>
-              </section>
-
-              {/* 6. Logistics */}
-              <section className="bg-[#1a1a1a] p-8 border border-[#2a2a2a]">
-                <h2 className="text-xl font-[var(--font-accent)] font-bold text-[#fdfbf7] mb-4 border-b border-[#2a2a2a] pb-4">
-                  Logistics
-                </h2>
-                {product.logistics && (product.logistics.meetingPoint || product.logistics.pickup || product.logistics.transportation) ? (
-                  <div className="space-y-4">
-                    {product.logistics.pickup && (
-                      <div>
-                        <span className="block text-xs font-bold text-[#d4af37] uppercase tracking-wider mb-1">Transportation</span>
-                        <span className="text-sm text-[#cccccc]">{product.logistics.pickup}</span>
-                      </div>
-                    )}
-                    {product.logistics.meetingPoint && (
-                      <div>
-                        <span className="block text-xs font-bold text-[#d4af37] uppercase tracking-wider mb-1">Meeting Point</span>
-                        <span className="text-sm text-[#cccccc]">{product.logistics.meetingPoint}</span>
-                      </div>
-                    )}
-                    {product.logistics.transportation && (
-                      <div>
-                        <span className="block text-xs font-bold text-[#d4af37] uppercase tracking-wider mb-1">Transportation</span>
-                        <span className="text-sm text-[#cccccc]">{product.logistics.transportation}</span>
-                      </div>
-                    )}
+                  <div className="bg-[#151515] p-4 border border-[#2a2a2a]">
+                    <p className="text-[#aaaaaa] text-sm leading-relaxed">
+                      <strong>Note:</strong> Review the operator’s current inclusions in the FareHarbor checkout before completing your purchase.
+                    </p>
                   </div>
-                ) : (
-                  <p className="text-sm text-[#aaaaaa] leading-relaxed">Meeting and transportation details are provided or confirmed through the operator’s booking flow.</p>
-                )}
-              </section>
+                </section>
+              )}
             </div>
 
             {/* Right Column: 7 and 8 */}

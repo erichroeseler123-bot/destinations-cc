@@ -5,7 +5,7 @@ import ProductCard from "./components/ProductCard";
 import MarketplaceSearch from "./components/MarketplaceSearch";
 import { getMarketplaceSearchItems } from "./data/searchHelper";
 import visualStyles from "./components/newOrleansVisual.module.css";
-import NewOrleansChooser from "./components/NewOrleansChooser";
+import NewOrleansRecommendationFlow from "./components/NewOrleansRecommendationFlow";
 
 export const metadata = {
   title: "New Orleans Tours | Discover and Book Real Local Experiences",
@@ -25,7 +25,7 @@ export default function NewOrleansHomePage() {
   return (
     <div className="bg-[#151515] text-[#fdfbf7] font-sans overflow-hidden">
       {/* 1. Hero / Chooser */}
-      <NewOrleansChooser surface="homepage" />
+      <NewOrleansRecommendationFlow />
 
       {/* 2. Featured Experiences */}
       <section className="py-20 px-6 max-w-7xl mx-auto border-t border-[#2a2a2a]">
