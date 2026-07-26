@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert";
-import { 
-  evaluateRecommendation, 
-  RecommendationInputs 
+import {
+  evaluateRecommendation,
+  RecommendationInputs
 } from "../../app/new-orleans/lib/tourRecommendationRules";
 
 test("New Orleans Tour Recommendations", async (t) => {
@@ -86,7 +86,7 @@ test("New Orleans Tour Recommendations", async (t) => {
     // If available time is about 3 hours, plantation and swamp tours are incompatible.
     // Group style is relaxed, so airboat is incompatible.
     // Mixed ages yes.
-    // Since it's relaxed, City Tour is eligible but wait, City Tour is balanced. 
+    // Since it's relaxed, City Tour is eligible but wait, City Tour is balanced.
     // Is City tour eligible for "Relaxed"? Yes, it only gets excluded for "Fast and adventurous".
     const inputs: RecommendationInputs = {
       planningWindow: "Something for tomorrow",
@@ -116,7 +116,7 @@ test("New Orleans Tour Recommendations", async (t) => {
 
     const result1 = evaluateRecommendation(inputs);
     const result2 = evaluateRecommendation(inputs);
-    
+
     assert.deepStrictEqual(result1, result2);
   });
 

@@ -103,7 +103,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
       "Visitors wanting a highly active or outdoor-only experience"
     ],
     childrenConsiderations: [
-      "A balanced, lower-complexity first activity that works for most ages."
+      "Often a better match for groups prioritizing a calmer format."
     ],
     confirmedInclusions: [],
     bookingConfirmations: [
@@ -156,7 +156,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
       "Those looking for a fast-paced or strictly outdoor nature experience"
     ],
     childrenConsiderations: [
-      "Suitable for children, but better for older children or teens with some historical interest. The long travel time and serious historical focus may not engage younger children."
+      "Often a better match for older children or teens with historical interest. Verify child eligibility and age requirements in checkout."
     ],
     confirmedInclusions: [],
     bookingConfirmations: [
@@ -205,7 +205,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
       "Those looking for high speeds or thrills"
     ],
     childrenConsiderations: [
-      "Generally a better fit for mixed-age groups and younger children compared to an airboat. Verify specific age policies during checkout."
+      "Often a better match for groups prioritizing a calmer format. Verify child eligibility and age requirements in checkout."
     ],
     confirmedInclusions: [],
     bookingConfirmations: [
@@ -215,7 +215,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
       "Accessibility and age policies"
     ],
     physicalFormat: {
-      exposure: "Covered boat format"
+      exposure: "Covered-boat format; exact vessel configuration is confirmed by the operator."
     },
     logistics: {
       transportation: "Transportation options are confirmed during booking."
@@ -244,7 +244,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     highlights: [
       "The operator describes the route as traveling through privately accessed swamp property"
     ],
-    detailSummary: "This is the faster, more adventurous, open-air swamp format. Current airboat configurations and available options are selected directly in the operator checkout. Eligibility, duration, transportation options, group format, and live pricing must all be verified during checkout.",
+    detailSummary: "An open-air format. Current airboat configurations and available options are selected directly in the operator checkout. Eligibility, duration, transportation options, group format, and live pricing must all be verified during checkout.",
     bestFit: [
       "Visitors looking for a fast, adventurous ride",
       "Those who prefer an open-air outdoor experience"

@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { 
-  evaluateRecommendation, 
-  RecommendationInputs, 
-  RecommendationResult, 
+import React, { useState, useEffect, useRef } from "react";
+import {
+  evaluateRecommendation,
+  RecommendationInputs,
+  RecommendationResult,
   TOUR_RECORDS,
   PlanningWindow,
   AvailableTime,
@@ -83,13 +83,13 @@ export default function NewOrleansRecommendationFlow() {
   const [answers, setAnswers] = useState<Partial<RecommendationInputs>>({});
   const [result, setResult] = useState<RecommendationResult | null>(null);
   const [flowStarted, setFlowStarted] = useState(false);
-  const [resultShownTracked, setResultShownTracked] = useState(false);
+  const resultShownTrackedRef = useRef(false);
 
   const currentStepId = STEPS[stepIndex] as keyof RecommendationInputs;
   const currentQuestion = QUESTIONS[currentStepId];
 
   useEffect(() => {
-    if (result && !resultShownTracked) {
+    if (result && !resultShownTrackedRef.current) {
       trackEvent("recommendation_result_shown", {
         surface: "new_orleans_homepage",
         planning_window: answers.planningWindow,
@@ -100,9 +100,9 @@ export default function NewOrleansRecommendationFlow() {
         historical_interest: answers.historicalInterest,
         recommended_tour_slug: result.primary?.slug,
       });
-      setResultShownTracked(true);
+      resultShownTrackedRef.current = true;
     }
-  }, [result, resultShownTracked, answers]);
+  }, [result, answers]);
 
   const handleSelect = (option: string) => {
     if (!flowStarted) {
@@ -124,7 +124,7 @@ export default function NewOrleansRecommendationFlow() {
     } else {
       const evaluation = evaluateRecommendation(newAnswers as RecommendationInputs);
       setResult(evaluation);
-      setResultShownTracked(false);
+      resultShownTrackedRef.current = false;
     }
   };
 
@@ -133,7 +133,7 @@ export default function NewOrleansRecommendationFlow() {
     setAnswers({});
     setResult(null);
     setFlowStarted(false);
-    setResultShownTracked(false);
+    resultShownTrackedRef.current = false;
   };
 
   const handlePrimaryClick = (slug: string, operator: string) => {
@@ -173,17 +173,17 @@ export default function NewOrleansRecommendationFlow() {
           <div className="bg-[#1a1a1a] p-8 md:p-12 border border-[#2a2a2a] text-center">
             <h3 className="text-2xl font-bold text-[#fdfbf7] mb-6">No Strong Fit</h3>
             <p className="text-[#cccccc] text-lg leading-relaxed mb-8">
-              None of our four current bookable experiences is a strong match for what you selected. 
+              None of our four current bookable experiences is a strong match for what you selected.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link 
-                href="/contact" 
+              <Link
+                href="/contact"
                 onClick={handleHelpRequested}
                 className="bg-[#d4af37] text-[#151515] font-bold py-4 px-8 uppercase tracking-widest text-sm hover:bg-[#fdfbf7] transition-colors shadow-md"
               >
                 Call or text for help
               </Link>
-              <button 
+              <button
                 onClick={handleRestart}
                 className="bg-[#101010] border border-[#2a2a2a] text-[#fdfbf7] font-bold py-4 px-8 uppercase tracking-widest text-sm hover:border-[#d4af37] hover:text-[#d4af37] transition-colors"
               >
@@ -198,7 +198,6 @@ export default function NewOrleansRecommendationFlow() {
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#d4af37] text-[#151515] px-6 py-2 font-bold uppercase tracking-widest text-xs shadow-md">
                 Best fit for your group
               </div>
-              
               <div className="mt-6 text-center mb-8">
                 <h3 className={`text-3xl font-bold text-[#fdfbf7] mb-2 ${visualStyles.accentFont}`}>
                   {TOUR_RECORDS[result.primary.slug].experienceType}
@@ -249,7 +248,7 @@ export default function NewOrleansRecommendationFlow() {
               </div>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center pt-8 border-t border-[#2a2a2a]">
-                <Link 
+                <Link
                   href={`/new-orleans/tours/${result.primary.slug}`}
                   onClick={() => handlePrimaryClick(result.primary!.slug, TOUR_RECORDS[result.primary!.slug].operator)}
                   className="bg-[#d4af37] text-[#151515] font-bold py-4 px-8 uppercase tracking-widest text-sm text-center hover:bg-[#fdfbf7] transition-colors shadow-md w-full sm:w-auto"
@@ -274,17 +273,17 @@ export default function NewOrleansRecommendationFlow() {
                     Operated by {TOUR_RECORDS[result.secondary.slug].operator}
                   </p>
                 </div>
-                
+
                 <div className="mb-6">
                   {result.secondary.reasons.map((reason, idx) => (
                     <p key={idx} className="text-sm text-[#cccccc] leading-relaxed text-center italic">
-                      "{reason}"
+                      &quot;{reason}&quot;
                     </p>
                   ))}
                 </div>
 
                 <div className="flex justify-center">
-                  <Link 
+                  <Link
                     href={`/new-orleans/tours/${result.secondary.slug}`}
                     onClick={() => handleSecondaryClick(result.secondary!.slug, TOUR_RECORDS[result.secondary!.slug].operator)}
                     className="border border-[#d4af37] text-[#d4af37] font-bold py-3 px-6 uppercase tracking-widest text-xs text-center hover:bg-[#d4af37] hover:text-[#151515] transition-colors w-full sm:w-auto"
@@ -303,8 +302,8 @@ export default function NewOrleansRecommendationFlow() {
           <p className="text-sm text-[#cccccc] max-w-md mx-auto mb-6 leading-relaxed">
             Tell us your group size, where you are staying, and when you are free. We’ll help you narrow it down.
           </p>
-          <Link 
-            href="/contact" 
+          <Link
+            href="/contact"
             onClick={handleHelpRequested}
             className="inline-block border-b border-[#d4af37] text-[#d4af37] font-bold uppercase tracking-widest text-xs pb-1 hover:text-[#fdfbf7] hover:border-[#fdfbf7] transition-all"
           >
@@ -325,8 +324,8 @@ export default function NewOrleansRecommendationFlow() {
           </h2>
           <div className="mt-6 flex justify-center items-center gap-2">
             {STEPS.map((_, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className={`h-1 rounded-full transition-all duration-300 ${idx === stepIndex ? 'w-8 bg-[#d4af37]' : idx < stepIndex ? 'w-4 bg-[#aaaaaa]' : 'w-4 bg-[#2a2a2a]'}`}
               />
             ))}
@@ -349,10 +348,10 @@ export default function NewOrleansRecommendationFlow() {
             </button>
           ))}
         </div>
-        
+
         {stepIndex > 0 && (
           <div className="mt-8 text-center">
-            <button 
+            <button
               onClick={() => setStepIndex(stepIndex - 1)}
               className="text-xs font-bold text-[#aaaaaa] uppercase tracking-widest hover:text-[#d4af37] transition-colors"
             >
