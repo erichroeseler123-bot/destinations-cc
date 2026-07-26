@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { trackEvent } from "@/lib/analytics";
+import { Pinyon_Script } from "next/font/google";
 import {
   CategoryId,
   PreferenceId,
@@ -12,24 +13,89 @@ import {
 } from "./recommendationRules";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 import FareHarborBookingButton from "../components/FareHarborBookingButton";
+import styles from "./chooser.module.css";
 
-function RecommendationCard({
-  productId,
-  isAlternative = false,
-  explanation,
-  categoryId,
-  preferenceId,
-}: {
-  productId: string;
-  isAlternative?: boolean;
-  explanation?: string;
-  categoryId: CategoryId;
-  preferenceId?: PreferenceId | null;
-}) {
-  const product = STOREFRONT_PRODUCTS.find((p) => p.id === productId);
-  if (!product) return null;
+const pinyonScript = Pinyon_Script({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+export default function HelpMeChoosePage() {
+  const [view, setView] = useState<"initial" | "swamp-second" | "guided-categories" | "guided-preferences" | "recommendation">("initial");
+
+  const [categoryId, setCategoryId] = useState<CategoryId | null>(null);
+  const [preferenceId, setPreferenceId] = useState<PreferenceId | null>(null);
+
+  useEffect(() => {
+    trackEvent("chooser_started", { surface: "new_orleans_chooser" });
+  }, []);
+
+  const handleInitialChoice = (choice: "swamp" | "city" | "plantation" | "notsure") => {
+    if (choice === "swamp") {
+      setCategoryId("swamp-airboat");
+      trackEvent("chooser_category_selected", { surface: "new_orleans_chooser", category_id: "swamp-airboat" });
+      setView("swamp-second");
+    } else if (choice === "city") {
+      setCategoryId("city-highlights");
+      trackEvent("chooser_category_selected", { surface: "new_orleans_chooser", category_id: "city-highlights" });
+      setView("recommendation");
+      trackEvent("chooser_results_viewed", { surface: "new_orleans_chooser", category_id: "city-highlights" });
+    } else if (choice === "plantation") {
+      setCategoryId("plantations-history");
+      trackEvent("chooser_category_selected", { surface: "new_orleans_chooser", category_id: "plantations-history" });
+      setView("recommendation");
+      trackEvent("chooser_results_viewed", { surface: "new_orleans_chooser", category_id: "plantations-history" });
+    } else if (choice === "notsure") {
+      setView("guided-categories");
+    }
+  };
+
+  const handleSwampPreference = (pref: PreferenceId) => {
+    setPreferenceId(pref);
+    trackEvent("chooser_preferences_selected", { surface: "new_orleans_chooser", preference_id: pref });
+    setView("recommendation");
+    trackEvent("chooser_results_viewed", { surface: "new_orleans_chooser", category_id: "swamp-airboat", preference_id: pref });
+  };
+
+  const handleGuidedCategorySelect = (id: CategoryId) => {
+    setCategoryId(id);
+    trackEvent("chooser_category_selected", { surface: "new_orleans_chooser", category_id: id });
+    const prefs = getPreferencesForCategory(id);
+    const cat = CHOOSER_CATEGORIES.find((c) => c.id === id);
+    if (cat?.skipPreferences || prefs.length === 0) {
+      setView("recommendation");
+      trackEvent("chooser_results_viewed", { surface: "new_orleans_chooser", category_id: id });
+    } else {
+      setView("guided-preferences");
+    }
+  };
+
+  const handleGuidedPreferenceSelect = (id: PreferenceId) => {
+    setPreferenceId(id);
+    trackEvent("chooser_preferences_selected", { surface: "new_orleans_chooser", preference_id: id });
+    setView("recommendation");
+    trackEvent("chooser_results_viewed", { surface: "new_orleans_chooser", category_id: categoryId, preference_id: id });
+  };
+
+  const handleRestart = () => {
+    setView("initial");
+    setCategoryId(null);
+    setPreferenceId(null);
+  };
+
+  const handleBack = () => {
+    if (view === "swamp-second" || view === "guided-categories") {
+      setView("initial");
+      setCategoryId(null);
+    } else if (view === "guided-preferences") {
+      setView("guided-categories");
+      setPreferenceId(null);
+    }
+  };
 
   const handleProductSelect = () => {
+    if (!product || !categoryId) return;
     const props: any = {
       surface: "new_orleans_chooser",
       category_id: categoryId,
@@ -41,242 +107,198 @@ function RecommendationCard({
     trackEvent("chooser_product_selected", props);
   };
 
-  return (
-    <div className={`border ${isAlternative ? 'border-[#2a2a2a]' : 'border-[#d4af37]'} bg-[#1a1a1a] p-6 rounded-sm mb-6 flex flex-col md:flex-row gap-6`}>
-      <div className="md:w-1/3">
-        <img
-          src={product.imageUrl}
-          alt={product.imageAlt || product.title}
-          className="w-full h-48 md:h-full object-cover rounded-sm"
-        />
-      </div>
-      <div className="md:w-2/3 flex flex-col">
-        {!isAlternative && <h3 className="text-[#d4af37] text-[10px] uppercase tracking-widest font-bold mb-2">Recommended for you</h3>}
-        {isAlternative && <h3 className="text-[#aaaaaa] text-[10px] uppercase tracking-widest font-bold mb-2">Alternative Option</h3>}
-        <h4 className="font-serif text-2xl text-[#fdfbf7] mb-2">{product.title}</h4>
-        <p className="text-[10px] font-bold text-[#aaaaaa] uppercase tracking-widest mb-4">
-          Operated by {product.operatorName}
-        </p>
-
-        {explanation && !isAlternative && (
-          <div className="mb-6">
-            <h5 className="text-[#fdfbf7] text-sm font-bold mb-1">Why it fits</h5>
-            <p className="text-sm text-[#aaaaaa] leading-relaxed">{explanation}</p>
-          </div>
-        )}
-
-        <div className="mb-8">
-          <ul className="text-sm text-[#aaaaaa] space-y-2">
-            {product.transportationSummary && <li>• {product.transportationSummary}</li>}
-            {product.durationLabel && <li>• {product.durationLabel}</li>}
-          </ul>
-        </div>
-
-        <div className="mt-auto">
-          <FareHarborBookingButton
-            productTitle={product.title}
-            productSlug={product.slug}
-            shortname={product.companyShortname}
-            itemId={product.itemId}
-            flowId={product.flowId}
-            asn="aktourcenter"
-            refCode="chooser"
-            fallbackHref={`/new-orleans/tours/${product.slug}`}
-            placement="chooser_recommendation"
-            className={`inline-block text-center border ${isAlternative ? 'border-[#2a2a2a] bg-[#1a1a1a] text-[#fdfbf7] hover:border-[#d4af37]' : 'border-[#d4af37] bg-[#d4af37] text-[#1a1a1a] hover:bg-transparent hover:text-[#d4af37]'} transition-colors font-bold py-3.5 px-8 text-xs uppercase tracking-widest rounded-sm`}
-            onBookingClick={handleProductSelect}
-          >
-            {product.ctaLabel || "Book Now"}
-          </FareHarborBookingButton>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function HelpMeChoosePage() {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [categoryId, setCategoryId] = useState<CategoryId | null>(null);
-  const [preferenceId, setPreferenceId] = useState<PreferenceId | null>(null);
-
-  useEffect(() => {
-    trackEvent("chooser_started", { surface: "new_orleans_chooser" });
-  }, []);
-
-  const handleCategorySelect = (id: CategoryId) => {
-    setCategoryId(id);
-    trackEvent("chooser_category_selected", { surface: "new_orleans_chooser", category_id: id });
-    const prefs = getPreferencesForCategory(id);
-    const cat = CHOOSER_CATEGORIES.find((c) => c.id === id);
-    if (cat?.skipPreferences || prefs.length === 0) {
-      setStep(3);
-      trackEvent("chooser_results_viewed", { surface: "new_orleans_chooser", category_id: id });
-    } else {
-      setStep(2);
-    }
-  };
-
-  const handlePreferenceSelect = (id: PreferenceId) => {
-    setPreferenceId(id);
-    trackEvent("chooser_preferences_selected", { surface: "new_orleans_chooser", preference_id: id });
-    setStep(3);
-    trackEvent("chooser_results_viewed", { surface: "new_orleans_chooser", category_id: categoryId, preference_id: id });
-  };
-
-  const handleRestart = () => {
-    setStep(1);
-    setCategoryId(null);
-    setPreferenceId(null);
-  };
-
-  const handleBack = () => {
-    if (step === 3) {
-      const cat = CHOOSER_CATEGORIES.find((c) => c.id === categoryId);
-      const prefs = categoryId ? getPreferencesForCategory(categoryId) : [];
-      if (cat?.skipPreferences || prefs.length === 0) {
-        setStep(1);
-        setCategoryId(null);
-      } else {
-        setStep(2);
-        setPreferenceId(null);
-      }
-    } else if (step === 2) {
-      setStep(1);
-      setCategoryId(null);
-    }
-  };
-
   const currentCategory = CHOOSER_CATEGORIES.find((c) => c.id === categoryId);
   const preferences = categoryId ? getPreferencesForCategory(categoryId) : [];
   const recommendation = categoryId ? getRecommendation(categoryId, preferenceId || undefined) : null;
+  const product = recommendation?.primaryProductId ? STOREFRONT_PRODUCTS.find((p) => p.id === recommendation.primaryProductId) : null;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-[#fdfbf7] py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header / Nav */}
-        <div className="flex justify-between items-center mb-12">
-          {step > 1 ? (
-            <button
-              onClick={handleBack}
-              className="text-[#aaaaaa] hover:text-[#d4af37] transition-colors text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 p-2 -ml-2 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
-              aria-label="Go back to previous step"
-            >
-              &larr; Back
-            </button>
-          ) : (
-            <Link
-              href="/new-orleans"
-              className="text-[#aaaaaa] hover:text-[#d4af37] transition-colors text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 p-2 -ml-2 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
-            >
-              &larr; Exit
-            </Link>
-          )}
-          <button
-            onClick={handleRestart}
-            className="text-[#aaaaaa] hover:text-[#d4af37] transition-colors text-[10px] font-bold uppercase tracking-widest p-2 -mr-2 focus:outline-none focus:ring-2 focus:ring-[#d4af37]"
-            aria-label="Restart chooser"
-          >
-            Restart
-          </button>
-        </div>
+    <div className={styles.container}>
+      <div className={styles.background}></div>
+      <div className={styles.overlay}></div>
 
-        {/* Step 1: Category */}
-        {step === 1 && (
-          <div aria-live="polite">
-            <h1 className="text-3xl md:text-5xl font-serif text-center mb-4">What sounds best?</h1>
-            <p className="text-center text-[#aaaaaa] mb-12">Select an experience to get started.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className={styles.content}>
+        {view !== "initial" && view !== "recommendation" && (
+          <button onClick={handleBack} className={styles.backButton} aria-label="Go back to previous step">
+            &larr; Back
+          </button>
+        )}
+
+        {view === "initial" && (
+          <div aria-live="polite" className="w-full flex flex-col items-center">
+            <span className={styles.eyebrow}>Let's find your</span>
+            <h1 className={styles.headline}>
+              Perfect
+              <span className={`${styles.scriptAccent} ${pinyonScript.className}`}>New Orleans</span>
+              Adventure
+            </h1>
+            <p className={styles.supportingLine}>
+              Answer a few quick questions and we'll point you toward the best tour for you and your group.
+            </p>
+            <p className={styles.prompt}>
+              What kind of adventure are you after?
+            </p>
+
+            <div className={styles.choicesGrid}>
+              <button
+                onClick={() => handleInitialChoice("swamp")}
+                className={`${styles.choiceCard} ${styles.cardSwamp}`}
+              >
+                <h2 className={styles.cardTitle}>THE SWAMP</h2>
+                <p className={styles.cardCopy}>
+                  Wild, untamed, and full of Louisiana character. Choose between a covered boat and an airboat.
+                </p>
+                <span className={styles.cardCta}>Take me to the swamp</span>
+              </button>
+
+              <button
+                onClick={() => handleInitialChoice("city")}
+                className={`${styles.choiceCard} ${styles.cardCity}`}
+              >
+                <h2 className={styles.cardTitle}>THE CITY</h2>
+                <p className={styles.cardCopy}>
+                  History, neighborhoods, architecture, stories, and the essential New Orleans overview.
+                </p>
+                <span className={styles.cardCta}>Show me the city</span>
+              </button>
+
+              <button
+                onClick={() => handleInitialChoice("plantation")}
+                className={`${styles.choiceCard} ${styles.cardPlantation}`}
+              >
+                <h2 className={styles.cardTitle}>THE PLANTATION</h2>
+                <p className={styles.cardCopy}>
+                  Historic homes, landscapes, and Louisiana history outside the city.
+                </p>
+                <span className={styles.cardCta}>Take me back</span>
+              </button>
+
+              <button
+                onClick={() => handleInitialChoice("notsure")}
+                className={`${styles.choiceCard} ${styles.cardNotSure}`}
+              >
+                <h2 className={styles.cardTitle}>NOT SURE?</h2>
+                <p className={styles.cardCopy}>
+                  No problem. Answer a few simple questions and we'll narrow it down together.
+                </p>
+                <span className={styles.cardCta}>Help me decide</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {view === "swamp-second" && (
+          <div aria-live="polite" className="w-full flex flex-col items-center">
+            <h1 className={styles.secondaryTitle}>How do you want to explore the swamp?</h1>
+            <div className={`${styles.choicesGrid} max-w-[800px] mx-auto`}>
+              <button
+                onClick={() => handleSwampPreference("swamp-calm")}
+                className={`${styles.choiceCard} ${styles.cardSwamp}`}
+              >
+                <h2 className={styles.cardTitle}>COVERED & CALMER</h2>
+                <p className={styles.cardCopy}>
+                  A relaxed, shaded boat ride suitable for all ages. Perfect for photography and taking it slow.
+                </p>
+                <span className={styles.cardCta}>Select</span>
+              </button>
+              <button
+                onClick={() => handleSwampPreference("swamp-active")}
+                className={`${styles.choiceCard} ${styles.cardSwamp}`}
+              >
+                <h2 className={styles.cardTitle}>FASTER & ACTIVE</h2>
+                <p className={styles.cardCopy}>
+                  An exhilarating airboat experience. Feel the wind and get up close to the wildlife.
+                </p>
+                <span className={styles.cardCta}>Select</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {view === "guided-categories" && (
+          <div aria-live="polite" className="w-full flex flex-col items-center">
+            <h1 className={styles.secondaryTitle}>What sounds best?</h1>
+            <div className={styles.choicesGrid}>
               {CHOOSER_CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
-                  onClick={() => handleCategorySelect(cat.id)}
+                  onClick={() => handleGuidedCategorySelect(cat.id)}
                   aria-pressed={categoryId === cat.id}
-                  className="relative h-48 overflow-hidden group border border-[#2a2a2a] hover:border-[#d4af37] transition-colors rounded-sm flex items-end p-6 focus:outline-none focus:ring-2 focus:ring-[#d4af37] w-full"
+                  className={`${styles.choiceCard} ${styles.cardNotSure}`}
                 >
-                  <img
-                    src={cat.image}
-                    alt=""
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent"></div>
-                  <div className="relative z-10 text-left w-full">
-                    <h2 className="text-xl font-serif text-[#fdfbf7]">{cat.title}</h2>
-                  </div>
+                  <h2 className={styles.cardTitle}>{cat.title}</h2>
+                  <p className={styles.cardCopy}>{cat.description}</p>
+                  <span className={styles.cardCta}>Select</span>
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Step 2: Preferences */}
-        {step === 2 && currentCategory && (
-          <div aria-live="polite">
-            <h1 className="text-3xl md:text-5xl font-serif text-center mb-4">Narrow it down</h1>
-            <p className="text-center text-[#aaaaaa] mb-12">What kind of {currentCategory.title.toLowerCase()} experience are you looking for?</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+        {view === "guided-preferences" && currentCategory && (
+          <div aria-live="polite" className="w-full flex flex-col items-center">
+            <h1 className={styles.secondaryTitle}>Narrow it down</h1>
+            <p className={styles.supportingLine}>What kind of {currentCategory.title.toLowerCase()} experience are you looking for?</p>
+            <div className={`${styles.choicesGrid} max-w-[800px] mx-auto`}>
               {preferences.map((pref) => (
                 <button
                   key={pref.id}
-                  onClick={() => handlePreferenceSelect(pref.id)}
+                  onClick={() => handleGuidedPreferenceSelect(pref.id)}
                   aria-pressed={preferenceId === pref.id}
-                  className="border border-[#2a2a2a] hover:border-[#d4af37] bg-[#1a1a1a] p-8 text-center transition-colors rounded-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37] w-full"
+                  className={`${styles.choiceCard} ${styles.cardNotSure}`}
                 >
-                  <span className="text-lg text-[#fdfbf7] block">{pref.title}</span>
+                  <h2 className={styles.cardTitle}>{pref.title}</h2>
+                  <span className={styles.cardCta}>Select</span>
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Step 3: Recommendation */}
-        {step === 3 && recommendation && (
-          <div aria-live="polite">
-            {recommendation.fallbackMessage ? (
-              <div className="text-center max-w-2xl mx-auto py-12 border border-[#2a2a2a] bg-[#1a1a1a] p-8 rounded-sm">
-                <h1 className="text-3xl md:text-4xl font-serif mb-6 text-[#d4af37]">Coming Soon</h1>
-                <p className="text-lg text-[#aaaaaa] mb-12 leading-relaxed">{recommendation.fallbackMessage}</p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        {view === "recommendation" && recommendation && (
+          <div aria-live="polite" className="w-full flex flex-col items-center">
+            {recommendation.fallbackMessage || !product ? (
+              <div className={styles.matchContainer}>
+                <span className={styles.matchLabel}>Coming Soon</span>
+                <h1 className={styles.matchTitle}>More Options on the Way</h1>
+                <p className={styles.matchReason}>{recommendation.fallbackMessage || "This category guide is being prepared."}</p>
+                <div className={styles.matchControls}>
                   <Link
                     href="/new-orleans/tours"
-                    className="border border-[#d4af37] bg-[#d4af37] text-[#1a1a1a] hover:bg-transparent hover:text-[#d4af37] transition-colors font-bold py-3.5 px-8 text-[10px] uppercase tracking-widest rounded-sm"
+                    className="border border-[#d4af37] bg-[#d4af37] text-[#1a1a1a] hover:bg-transparent hover:text-[#d4af37] transition-colors font-bold py-3.5 px-8 text-xs uppercase tracking-widest rounded-sm"
                   >
                     Explore Bookable Tours
                   </Link>
-                  <Link
-                    href="/contact"
-                    className="border border-[#2a2a2a] bg-[#1a1a1a] text-[#fdfbf7] hover:border-[#d4af37] transition-colors font-bold py-3.5 px-8 text-[10px] uppercase tracking-widest rounded-sm"
-                  >
-                    Contact Us for Help
-                  </Link>
+                  <button onClick={handleRestart} className="text-[#aaaaaa] hover:text-[#d4af37] transition-colors text-xs font-bold uppercase tracking-widest mt-4">
+                    Try Again
+                  </button>
                 </div>
               </div>
             ) : (
-              <div>
-                <h1 className="text-3xl md:text-5xl font-serif text-center mb-12">Here is our recommendation</h1>
-
-                {recommendation.primaryProductId && (
-                  <RecommendationCard
-                    productId={recommendation.primaryProductId}
-                    explanation={recommendation.explanation}
-                    categoryId={categoryId as CategoryId}
-                    preferenceId={preferenceId}
-                  />
-                )}
-
-                {recommendation.alternativeProductIds && recommendation.alternativeProductIds.length > 0 && (
-                  <div className="mt-16">
-                    <h2 className="text-xl font-serif mb-6 text-center text-[#aaaaaa]">Also Consider</h2>
-                    {recommendation.alternativeProductIds.map(id => (
-                      <RecommendationCard
-                        key={id}
-                        productId={id}
-                        isAlternative={true}
-                        categoryId={categoryId as CategoryId}
-                        preferenceId={preferenceId}
-                      />
-                    ))}
-                  </div>
-                )}
+              <div className={styles.matchContainer}>
+                <span className={styles.matchLabel}>Your New Orleans Match</span>
+                <h1 className={styles.matchTitle}>{product.title}</h1>
+                <p className={styles.matchReason}>{recommendation.explanation}</p>
+                <div className={styles.matchControls}>
+                  <FareHarborBookingButton
+                    productTitle={product.title}
+                    productSlug={product.slug}
+                    shortname={product.companyShortname}
+                    itemId={product.itemId}
+                    flowId={product.flowId}
+                    asn="aktourcenter"
+                    refCode="chooser"
+                    fallbackHref={`/tours/${product.slug}`}
+                    placement="chooser_recommendation"
+                    className="inline-block border border-[#d4af37] bg-[#d4af37] text-[#1a1a1a] hover:bg-transparent hover:text-[#d4af37] transition-colors font-bold py-4 px-10 text-sm uppercase tracking-widest rounded-sm"
+                    onBookingClick={handleProductSelect}
+                  >
+                    View This Tour
+                  </FareHarborBookingButton>
+                  <button onClick={handleRestart} className="text-[#aaaaaa] hover:text-[#d4af37] transition-colors text-xs font-bold uppercase tracking-widest mt-4">
+                    Try Again
+                  </button>
+                </div>
               </div>
             )}
           </div>

@@ -1,0 +1,315 @@
+.container {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #050308;
+  color: #FDFBF7;
+  overflow-x: hidden;
+}
+
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background-image: url('/images/new-orleans/hero-french-quarter-balcony.jpg');
+  background-size: cover;
+  background-position: center top;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgba(20, 10, 30, 0.85) 0%,
+    rgba(15, 10, 15, 0.95) 100%
+  );
+}
+
+.content {
+  position: relative;
+  z-index: 10;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.eyebrow {
+  font-family: var(--font-sans), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #D4AF37;
+  margin-bottom: 1rem;
+}
+
+.headline {
+  font-family: var(--font-heading), serif;
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+}
+@media (max-width: 768px) {
+  .headline { font-size: 2.5rem; }
+}
+
+.scriptAccent {
+  display: block;
+  font-size: 4rem;
+  line-height: 0.8;
+  color: #D4AF37;
+  text-transform: none;
+  margin: 0.5rem 0;
+  font-weight: 400;
+}
+@media (max-width: 768px) {
+  .scriptAccent { font-size: 3rem; }
+}
+
+.supportingLine {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 1.125rem;
+  color: rgba(253, 251, 247, 0.8);
+  max-width: 600px;
+  text-align: center;
+  margin-bottom: 3rem;
+  line-height: 1.6;
+}
+
+.prompt {
+  font-family: var(--font-sans), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #FDFBF7;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* Card Grid Layout */
+.choicesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1200px;
+}
+
+@media (min-width: 768px) {
+  .choicesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .choicesGrid {
+    grid-template-columns: repeat(4, 1fr);
+    align-items: stretch;
+  }
+}
+
+/* Base Card Styling - Sign Inspired */
+.choiceCard {
+  background: rgba(10, 5, 15, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+/* Tasteful engraved motif (pseudo-element corners) */
+.choiceCard::before, .choiceCard::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+  opacity: 0.3;
+}
+
+.choiceCard::before {
+  top: 8px;
+  left: 8px;
+  border-top-color: currentColor;
+  border-left-color: currentColor;
+}
+.choiceCard::after {
+  bottom: 8px;
+  right: 8px;
+  border-bottom-color: currentColor;
+  border-right-color: currentColor;
+}
+
+.choiceCard:hover, .choiceCard:focus-visible {
+  background: rgba(20, 10, 25, 0.9);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  outline: none;
+}
+
+.choiceCard:hover::before, .choiceCard:hover::after,
+.choiceCard:focus-visible::before, .choiceCard:focus-visible::after {
+  opacity: 1;
+}
+
+/* Accents per card type */
+.cardSwamp {
+  border-color: rgba(110, 125, 80, 0.5);
+  color: #8c9e6e;
+}
+.cardSwamp:hover, .cardSwamp:focus-visible { border-color: #8c9e6e; color: #a9bc8d; }
+
+.cardCity {
+  border-color: rgba(90, 120, 150, 0.5);
+  color: #8da6bd;
+}
+.cardCity:hover, .cardCity:focus-visible { border-color: #8da6bd; color: #b1cbe3; }
+
+.cardPlantation {
+  border-color: rgba(120, 70, 100, 0.5);
+  color: #ab799a;
+}
+.cardPlantation:hover, .cardPlantation:focus-visible { border-color: #ab799a; color: #cc9fbe; }
+
+.cardNotSure {
+  border-color: rgba(180, 100, 50, 0.5);
+  color: #c98b61;
+}
+.cardNotSure:hover, .cardNotSure:focus-visible { border-color: #c98b61; color: #eba678; }
+
+/* Typography inside card */
+.cardTitle {
+  font-family: var(--font-heading), serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+  color: #FDFBF7;
+}
+
+.cardCopy {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: rgba(253, 251, 247, 0.8);
+  margin-bottom: 2rem;
+  flex-grow: 1;
+}
+
+.cardCta {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  border: 1px solid currentColor;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.choiceCard:hover .cardCta, .choiceCard:focus-visible .cardCta {
+  background: currentColor;
+  color: #050308;
+}
+
+/* Secondary flow */
+.secondaryTitle {
+  font-family: var(--font-heading), serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #FDFBF7;
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+/* Recommendation Result Styling */
+.matchContainer {
+  max-width: 800px;
+  width: 100%;
+  background: rgba(10, 5, 15, 0.85);
+  border: 1px solid #D4AF37;
+  padding: 3rem 2rem;
+  text-align: center;
+  border-radius: 2px;
+  margin-top: 2rem;
+}
+
+.matchLabel {
+  font-family: var(--font-sans), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #D4AF37;
+  margin-bottom: 1rem;
+}
+
+.matchTitle {
+  font-family: var(--font-heading), serif;
+  font-size: 3rem;
+  color: #FDFBF7;
+  margin-bottom: 1rem;
+}
+
+.matchReason {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(253, 251, 247, 0.8);
+  margin-bottom: 2.5rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.matchControls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* General Layout Utils */
+.backButton {
+  background: transparent;
+  border: none;
+  color: rgba(253, 251, 247, 0.6);
+  font-family: var(--font-sans), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.2s ease;
+  align-self: flex-start;
+  margin-bottom: 2rem;
+}
+
+.backButton:hover, .backButton:focus-visible {
+  color: #D4AF37;
+  outline: none;
+}
