@@ -91,9 +91,7 @@ export default async function NewOrleansToursPage() {
           ],
         }}
       />
-      <HeaderNav />
       <OutpostConsole />
-      <FooterNav />
     </>
   );
 }
