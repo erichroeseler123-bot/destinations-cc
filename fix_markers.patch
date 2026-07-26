@@ -1,0 +1,32 @@
+--- app/new-orleans/components/newOrleansVisual.module.css
++++ app/new-orleans/components/newOrleansVisual.module.css
+@@ -255,23 +255,16 @@
+   justify-content: center;
+ }
+ @media (min-width: 768px) {
+-  .markerIndex0 {
++  .orMarker {
+     top: 50%;
+     left: 100%;
+   }
+-  .markerIndex1 {
++  .choiceCardWrapper:nth-child(2n) .orMarker {
+     top: 100%;
+     left: 0%;
+   }
+-  .markerIndex2 {
+-    top: 50%;
+-    left: 100%;
+-  }
+ }
+ @media (min-width: 1024px) {
+-  .markerIndex1 {
++  .choiceCardWrapper:nth-child(2n) .orMarker {
+     top: 50%;
+     left: 100%;
+   }
++  .choiceCardWrapper:nth-child(4n) .orMarker {
++    top: 100%;
++    left: -100%;
++  }
+ }

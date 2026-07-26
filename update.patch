@@ -1,0 +1,35 @@
+--- app/new-orleans/components/NewOrleansChooser.tsx
++++ app/new-orleans/components/NewOrleansChooser.tsx
+@@ -181,6 +181,7 @@
+               cta="EXPLORE THE CITY"
+               iconType="city"
+               showOrMarker={true}
++              markerIndex={0}
+               illustration={<CityIllustration />}
+             />
+             <NewOrleansChoiceCard
+@@ -192,7 +193,6 @@
+               iconType="swamp"
+               illustration={<SwampIllustration />}
+               showOrMarker={true}
+-              markerIndex={0}
++              markerIndex={1}
+             />
+             <NewOrleansChoiceCard
+               mode="action"
+@@ -202,6 +202,7 @@
+               cta="VISIT THE PLANTATION"
+               iconType="plantation"
+               showOrMarker={true}
++              markerIndex={2}
+               illustration={<PlantationIllustration />}
+             />
+             <NewOrleansChoiceCard
+@@ -229,6 +230,7 @@
+               iconType="swamp"
+               illustration={<SwampBoatIllustration />}
+               showOrMarker={true}
++              markerIndex={0}
+             />
+             <NewOrleansChoiceCard
+               mode="action"

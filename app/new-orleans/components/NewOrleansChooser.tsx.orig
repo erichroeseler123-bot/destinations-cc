@@ -165,9 +165,8 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
         <div aria-live="polite" className="w-full flex flex-col items-center">
           <h1 className={visualStyles.headline}>
             <span className={`${visualStyles.headlineLine1} ${visualStyles.accentFont}`}>LET’S FIND YOUR</span>
-            <span className={`${visualStyles.headlineLine2} ${visualStyles.displayFont}`}>PERFECT</span>
             <span className={`${visualStyles.scriptAccent} ${visualStyles.scriptFont}`}>New Orleans</span>
-            <span className={`${visualStyles.headlineLine2} ${visualStyles.displayFont}`}>ADVENTURE</span>
+            <span className={`${visualStyles.headlineLine2} ${visualStyles.displayFont}`}>PERFECT ADVENTURE</span>
           </h1>
           <DecorativeDivider />
 
@@ -217,7 +216,7 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
 
       {view === "swamp-second" && (
         <div aria-live="polite" className="w-full flex flex-col items-center mt-12">
-          <h1 className={`${styles.secondaryTitle} ${visualStyles.accentFont}`}>How do you want to explore the swamp?</h1>
+          <h1 className={styles.secondaryTitle}>How do you want to explore the swamp?</h1>
           <ConnectedBoard>
             <NewOrleansChoiceCard
               mode="action"
@@ -244,7 +243,7 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
 
       {view === "guided-categories" && (
         <div aria-live="polite" className="w-full flex flex-col items-center mt-12">
-          <h1 className={`${styles.secondaryTitle} ${visualStyles.accentFont}`}>What sounds best?</h1>
+          <h1 className={styles.secondaryTitle}>What sounds best?</h1>
           <ConnectedBoard>
             {CHOOSER_CATEGORIES.map((cat, i) => (
               <NewOrleansChoiceCard
@@ -266,8 +265,8 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
 
       {view === "guided-preferences" && currentCategory && (
         <div aria-live="polite" className="w-full flex flex-col items-center mt-12">
-          <h1 className={`${styles.secondaryTitle} ${visualStyles.accentFont}`}>Narrow it down</h1>
-          <p className={`${styles.supportingLine} ${visualStyles.sansFont}`}>What kind of {currentCategory.title.toLowerCase()} experience are you looking for?</p>
+          <h1 className={styles.secondaryTitle}>Narrow it down</h1>
+          <p className={styles.supportingLine}>What kind of {currentCategory.title.toLowerCase()} experience are you looking for?</p>
           <ConnectedBoard>
             {preferences.map((pref, i) => (
               <NewOrleansChoiceCard
@@ -292,8 +291,8 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
           {recommendation.fallbackMessage || !product ? (
             <div className={styles.matchContainer}>
               <span className={styles.matchLabel}>Coming Soon</span>
-              <h1 className={`${styles.matchTitle} ${visualStyles.accentFont}`}>More Options on the Way</h1>
-              <p className={`${styles.matchReason} ${visualStyles.sansFont}`}>{recommendation.fallbackMessage || "This category guide is being prepared."}</p>
+              <h1 className={styles.matchTitle}>More Options on the Way</h1>
+              <p className={styles.matchReason}>{recommendation.fallbackMessage || "This category guide is being prepared."}</p>
               <div className={styles.matchControls}>
                 <Link
                   href="/tours"
@@ -309,8 +308,8 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
           ) : (
             <div className={styles.matchContainer}>
               <span className={styles.matchLabel}>Your New Orleans Match</span>
-              <h1 className={`${styles.matchTitle} ${visualStyles.accentFont}`}>{product.title}</h1>
-              <p className={`${styles.matchReason} ${visualStyles.sansFont}`}>{recommendation.explanation}</p>
+              <h1 className={styles.matchTitle}>{product.title}</h1>
+              <p className={styles.matchReason}>{recommendation.explanation}</p>
               <div className={styles.matchControls}>
                 <FareHarborBookingButton
                   productTitle={product.title}

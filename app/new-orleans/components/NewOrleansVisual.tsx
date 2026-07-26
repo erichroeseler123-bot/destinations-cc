@@ -39,7 +39,7 @@ export function ConnectedBoard({
   return (
     <div className={styles.boardContainer}>
       {promptBanner && (
-        <div className={styles.promptBanner}>
+        <div className={`${styles.promptBanner} ${styles.accentFont}`}>
           {promptBanner}
         </div>
       )}
@@ -90,7 +90,7 @@ export function NewOrleansChoiceCard(props: ChoiceCardProps) {
   const innerContent = (
     <>
       <div className={styles.illustration}>{props.illustration}</div>
-      <h2 className={`${styles.cardTitle} ${styles.accentFont}`}>{props.title}</h2>
+      <h2 className={`${styles.cardTitle} ${styles.displayFont}`}>{props.title}</h2>
       <p className={`${styles.cardCopy} ${styles.sansFont}`}>{props.desc}</p>
       <span className={`${styles.buttonPrimary} ${styles.sansFont}`}>{props.cta}</span>
     </>

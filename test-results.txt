@@ -1,0 +1,705 @@
+
+
+--- STATE: initial ---
+1440px: {
+  "width": 1440,
+  "cards": 4,
+  "orMarkers": [
+    {
+      "index": 0,
+      "x": 415.5,
+      "y": 1036.9609375,
+      "right": 449.5,
+      "bottom": 1062.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 1
+    },
+    {
+      "index": 1,
+      "x": 703,
+      "y": 1036.9609375,
+      "right": 737,
+      "bottom": 1062.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 2
+    },
+    {
+      "index": 2,
+      "x": 990.5,
+      "y": 1036.9609375,
+      "right": 1024.5,
+      "bottom": 1062.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 3
+    }
+  ],
+  "overflow": {
+    "innerWidth": 1440,
+    "docScrollWidth": 1440,
+    "bodyScrollWidth": 1440,
+    "board": {
+      "left": 144,
+      "right": 1296
+    },
+    "banner": {
+      "left": 522.03125,
+      "right": 917.96875
+    }
+  }
+}
+768px: {
+  "width": 768,
+  "cards": 4,
+  "orMarkers": [
+    {
+      "index": 0,
+      "x": 367,
+      "y": 1083.5703125,
+      "right": 401,
+      "bottom": 1109.1796875,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 1
+    },
+    {
+      "index": 1,
+      "x": 367,
+      "y": 1298.9609375,
+      "right": 401,
+      "bottom": 1324.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 2
+    },
+    {
+      "index": 2,
+      "x": 367,
+      "y": 1514.3515625,
+      "right": 401,
+      "bottom": 1539.9609375,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 3
+    }
+  ],
+  "overflow": {
+    "innerWidth": 768,
+    "docScrollWidth": 768,
+    "bodyScrollWidth": 768,
+    "board": {
+      "left": 40,
+      "right": 728
+    },
+    "banner": {
+      "left": 186.03125,
+      "right": 581.96875
+    }
+  }
+}
+390px: {
+  "width": 390,
+  "cards": 4,
+  "orMarkers": [
+    {
+      "index": 0,
+      "x": 178,
+      "y": 1213.3671875,
+      "right": 212,
+      "bottom": 1238.9765625,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 1
+    },
+    {
+      "index": 1,
+      "x": 178,
+      "y": 1669.7421875,
+      "right": 212,
+      "bottom": 1695.3515625,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 2
+    },
+    {
+      "index": 2,
+      "x": 178,
+      "y": 2116.9296875,
+      "right": 212,
+      "bottom": 2142.5390625,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 3
+    }
+  ],
+  "overflow": {
+    "innerWidth": 390,
+    "docScrollWidth": 390,
+    "bodyScrollWidth": 390,
+    "board": {
+      "left": 40,
+      "right": 350
+    },
+    "banner": {
+      "left": -2.96875,
+      "right": 392.96875
+    }
+  }
+}
+
+
+--- STATE: guided-preferences: swamp-airboat ---
+1440px: {
+  "width": 1440,
+  "cards": 4,
+  "orMarkers": [
+    {
+      "index": 0,
+      "x": 415.5,
+      "y": 1036.9609375,
+      "right": 449.5,
+      "bottom": 1062.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 1
+    },
+    {
+      "index": 1,
+      "x": 703,
+      "y": 1036.9609375,
+      "right": 737,
+      "bottom": 1062.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 2
+    },
+    {
+      "index": 2,
+      "x": 990.5,
+      "y": 1036.9609375,
+      "right": 1024.5,
+      "bottom": 1062.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 3
+    }
+  ],
+  "overflow": {
+    "innerWidth": 1440,
+    "docScrollWidth": 1440,
+    "bodyScrollWidth": 1440,
+    "board": {
+      "left": 144,
+      "right": 1296
+    },
+    "banner": {
+      "left": 522.03125,
+      "right": 917.96875
+    }
+  }
+}
+768px: {
+  "width": 768,
+  "cards": 4,
+  "orMarkers": [
+    {
+      "index": 0,
+      "x": 367,
+      "y": 1083.5703125,
+      "right": 401,
+      "bottom": 1109.1796875,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 1
+    },
+    {
+      "index": 1,
+      "x": 367,
+      "y": 1298.9609375,
+      "right": 401,
+      "bottom": 1324.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 2
+    },
+    {
+      "index": 2,
+      "x": 367,
+      "y": 1514.3515625,
+      "right": 401,
+      "bottom": 1539.9609375,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 3
+    }
+  ],
+  "overflow": {
+    "innerWidth": 768,
+    "docScrollWidth": 768,
+    "bodyScrollWidth": 768,
+    "board": {
+      "left": 40,
+      "right": 728
+    },
+    "banner": {
+      "left": 186.03125,
+      "right": 581.96875
+    }
+  }
+}
+390px: {
+  "width": 390,
+  "cards": 4,
+  "orMarkers": [
+    {
+      "index": 0,
+      "x": 178,
+      "y": 1213.3671875,
+      "right": 212,
+      "bottom": 1238.9765625,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 1
+    },
+    {
+      "index": 1,
+      "x": 178,
+      "y": 1669.7421875,
+      "right": 212,
+      "bottom": 1695.3515625,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 2
+    },
+    {
+      "index": 2,
+      "x": 178,
+      "y": 2116.9296875,
+      "right": 212,
+      "bottom": 2142.5390625,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 3
+    }
+  ],
+  "overflow": {
+    "innerWidth": 390,
+    "docScrollWidth": 390,
+    "bodyScrollWidth": 390,
+    "board": {
+      "left": 40,
+      "right": 350
+    },
+    "banner": {
+      "left": -2.96875,
+      "right": 392.96875
+    }
+  }
+}
+
+
+--- STATE: guided-categories ---
+1440px: {
+  "width": 1440,
+  "cards": 4,
+  "orMarkers": [
+    {
+      "index": 0,
+      "x": 415.5,
+      "y": 1036.9609375,
+      "right": 449.5,
+      "bottom": 1062.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 1
+    },
+    {
+      "index": 1,
+      "x": 703,
+      "y": 1036.9609375,
+      "right": 737,
+      "bottom": 1062.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 2
+    },
+    {
+      "index": 2,
+      "x": 990.5,
+      "y": 1036.9609375,
+      "right": 1024.5,
+      "bottom": 1062.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 3
+    }
+  ],
+  "overflow": {
+    "innerWidth": 1440,
+    "docScrollWidth": 1440,
+    "bodyScrollWidth": 1440,
+    "board": {
+      "left": 144,
+      "right": 1296
+    },
+    "banner": {
+      "left": 522.03125,
+      "right": 917.96875
+    }
+  }
+}
+768px: {
+  "width": 768,
+  "cards": 4,
+  "orMarkers": [
+    {
+      "index": 0,
+      "x": 367,
+      "y": 1083.5703125,
+      "right": 401,
+      "bottom": 1109.1796875,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 1
+    },
+    {
+      "index": 1,
+      "x": 367,
+      "y": 1298.9609375,
+      "right": 401,
+      "bottom": 1324.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 2
+    },
+    {
+      "index": 2,
+      "x": 367,
+      "y": 1514.3515625,
+      "right": 401,
+      "bottom": 1539.9609375,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 3
+    }
+  ],
+  "overflow": {
+    "innerWidth": 768,
+    "docScrollWidth": 768,
+    "bodyScrollWidth": 768,
+    "board": {
+      "left": 40,
+      "right": 728
+    },
+    "banner": {
+      "left": 186.03125,
+      "right": 581.96875
+    }
+  }
+}
+390px: {
+  "width": 390,
+  "cards": 4,
+  "orMarkers": [
+    {
+      "index": 0,
+      "x": 178,
+      "y": 1213.3671875,
+      "right": 212,
+      "bottom": 1238.9765625,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 1
+    },
+    {
+      "index": 1,
+      "x": 178,
+      "y": 1669.7421875,
+      "right": 212,
+      "bottom": 1695.3515625,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 2
+    },
+    {
+      "index": 2,
+      "x": 178,
+      "y": 2116.9296875,
+      "right": 212,
+      "bottom": 2142.5390625,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 3
+    }
+  ],
+  "overflow": {
+    "innerWidth": 390,
+    "docScrollWidth": 390,
+    "bodyScrollWidth": 390,
+    "board": {
+      "left": 40,
+      "right": 350
+    },
+    "banner": {
+      "left": -2.96875,
+      "right": 392.96875
+    }
+  }
+}
+
+
+--- STATE: guided-preferences: haunted-after-dark ---
+1440px: {
+  "width": 1440,
+  "cards": 4,
+  "orMarkers": [
+    {
+      "index": 0,
+      "x": 415.5,
+      "y": 1036.9609375,
+      "right": 449.5,
+      "bottom": 1062.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 1
+    },
+    {
+      "index": 1,
+      "x": 703,
+      "y": 1036.9609375,
+      "right": 737,
+      "bottom": 1062.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 2
+    },
+    {
+      "index": 2,
+      "x": 990.5,
+      "y": 1036.9609375,
+      "right": 1024.5,
+      "bottom": 1062.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 3
+    }
+  ],
+  "overflow": {
+    "innerWidth": 1440,
+    "docScrollWidth": 1440,
+    "bodyScrollWidth": 1440,
+    "board": {
+      "left": 144,
+      "right": 1296
+    },
+    "banner": {
+      "left": 522.03125,
+      "right": 917.96875
+    }
+  }
+}
+768px: {
+  "width": 768,
+  "cards": 4,
+  "orMarkers": [
+    {
+      "index": 0,
+      "x": 367,
+      "y": 1083.5703125,
+      "right": 401,
+      "bottom": 1109.1796875,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 1
+    },
+    {
+      "index": 1,
+      "x": 367,
+      "y": 1298.9609375,
+      "right": 401,
+      "bottom": 1324.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 2
+    },
+    {
+      "index": 2,
+      "x": 367,
+      "y": 1514.3515625,
+      "right": 401,
+      "bottom": 1539.9609375,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 3
+    }
+  ],
+  "overflow": {
+    "innerWidth": 768,
+    "docScrollWidth": 768,
+    "bodyScrollWidth": 768,
+    "board": {
+      "left": 40,
+      "right": 728
+    },
+    "banner": {
+      "left": 186.03125,
+      "right": 581.96875
+    }
+  }
+}
+390px: {
+  "width": 390,
+  "cards": 4,
+  "orMarkers": [
+    {
+      "index": 0,
+      "x": 178,
+      "y": 1213.3671875,
+      "right": 212,
+      "bottom": 1238.9765625,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 1
+    },
+    {
+      "index": 1,
+      "x": 178,
+      "y": 1669.7421875,
+      "right": 212,
+      "bottom": 1695.3515625,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 2
+    },
+    {
+      "index": 2,
+      "x": 178,
+      "y": 2116.9296875,
+      "right": 212,
+      "bottom": 2142.5390625,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 3
+    }
+  ],
+  "overflow": {
+    "innerWidth": 390,
+    "docScrollWidth": 390,
+    "bodyScrollWidth": 390,
+    "board": {
+      "left": 40,
+      "right": 350
+    },
+    "banner": {
+      "left": -2.96875,
+      "right": 392.96875
+    }
+  }
+}
+
+
+--- STATE: guided-preferences: food-cooking ---
+1440px: {
+  "width": 1440,
+  "cards": 4,
+  "orMarkers": [
+    {
+      "index": 0,
+      "x": 415.5,
+      "y": 1036.9609375,
+      "right": 449.5,
+      "bottom": 1062.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 1
+    },
+    {
+      "index": 1,
+      "x": 703,
+      "y": 1036.9609375,
+      "right": 737,
+      "bottom": 1062.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 2
+    },
+    {
+      "index": 2,
+      "x": 990.5,
+      "y": 1036.9609375,
+      "right": 1024.5,
+      "bottom": 1062.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 3
+    }
+  ],
+  "overflow": {
+    "innerWidth": 1440,
+    "docScrollWidth": 1440,
+    "bodyScrollWidth": 1440,
+    "board": {
+      "left": 144,
+      "right": 1296
+    },
+    "banner": {
+      "left": 522.03125,
+      "right": 917.96875
+    }
+  }
+}
+768px: {
+  "width": 768,
+  "cards": 4,
+  "orMarkers": [
+    {
+      "index": 0,
+      "x": 367,
+      "y": 1083.5703125,
+      "right": 401,
+      "bottom": 1109.1796875,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 1
+    },
+    {
+      "index": 1,
+      "x": 367,
+      "y": 1298.9609375,
+      "right": 401,
+      "bottom": 1324.5703125,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 2
+    },
+    {
+      "index": 2,
+      "x": 367,
+      "y": 1514.3515625,
+      "right": 401,
+      "bottom": 1539.9609375,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 3
+    }
+  ],
+  "overflow": {
+    "innerWidth": 768,
+    "docScrollWidth": 768,
+    "bodyScrollWidth": 768,
+    "board": {
+      "left": 40,
+      "right": 728
+    },
+    "banner": {
+      "left": 186.03125,
+      "right": 581.96875
+    }
+  }
+}
+390px: {
+  "width": 390,
+  "cards": 4,
+  "orMarkers": [
+    {
+      "index": 0,
+      "x": 178,
+      "y": 1213.3671875,
+      "right": 212,
+      "bottom": 1238.9765625,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 1
+    },
+    {
+      "index": 1,
+      "x": 178,
+      "y": 1669.7421875,
+      "right": 212,
+      "bottom": 1695.3515625,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 2
+    },
+    {
+      "index": 2,
+      "x": 178,
+      "y": 2116.9296875,
+      "right": 212,
+      "bottom": 2142.5390625,
+      "className": "newOrleansVisual-module__qrcqaa__orMarker",
+      "containingCard": 3
+    }
+  ],
+  "overflow": {
+    "innerWidth": 390,
+    "docScrollWidth": 390,
+    "bodyScrollWidth": 390,
+    "board": {
+      "left": 40,
+      "right": 350
+    },
+    "banner": {
+      "left": -2.96875,
+      "right": 392.96875
+    }
+  }
+}

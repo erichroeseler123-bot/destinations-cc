@@ -1,0 +1,45 @@
+--- app/new-orleans/components/newOrleansVisual.module.css
++++ app/new-orleans/components/newOrleansVisual.module.css
+@@ -253,16 +253,30 @@
+   display: flex;
+   align-items: center;
+   justify-content: center;
++  top: 100%;
++  left: 50%;
+ }
++
+ @media (min-width: 768px) {
+-  .orMarker {
++  .markerIndex0 {
+     top: 50%;
+     left: 100%;
+   }
++  .markerIndex1 {
++    top: 100%;
++    left: 0%;
++  }
++  .markerIndex2 {
++    top: 50%;
++    left: 100%;
++  }
++}
++@media (min-width: 1024px) {
++  .markerIndex1 {
++    top: 50%;
++    left: 100%;
++  }
+ }
+ 
+ .choiceCard:hover, .choiceCard:focus-visible {
+@@ -289,6 +303,11 @@
+ .cardPlantation .illustration { color: #5c4d5c; }
+ .cardNotSure .illustration { color: #b75d31; }
+ 
++.cardCity .cardTitle { color: #8ca4b8; }
++.cardSwamp .cardTitle { color: #939e7c; }
++.cardPlantation .cardTitle { color: #967496; }
++.cardNotSure .cardTitle { color: #e0854d; }
++
+ .cardTitle {
+   font-size: 1.75rem;
+   font-weight: 400;
