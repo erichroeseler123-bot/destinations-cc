@@ -12,6 +12,7 @@ import { WIKIMEDIA_IMAGES } from "../../data/wikimedia";
 import WikimediaImageCredit from "../../components/WikimediaImageCredit";
 import TourDetailAnalytics from "./TourDetailAnalytics";
 import RelatedTourLink from "./RelatedTourLink";
+import { resolveProductImage } from "../../lib/imageResolver";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -24,9 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {};
   }
 
-  const imgRecord = PRODUCT_IMAGES[slug];
-  const wikimediaImage = product.wikimediaId ? require("../../data/wikimedia").WIKIMEDIA_IMAGES[product.wikimediaId] : null;
-  const canUseImage = wikimediaImage || (product.imagePresentation !== "editorial" && imgRecord?.verifiedRights);
+  const resolvedImage = resolveProductImage(product);
 
   const requestHeaders = await headers();
   const hostHeader = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "";
@@ -47,13 +46,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: product.metaDescription,
       url: canonical,
       type: "website",
-      ...(canUseImage && {
+      ...(resolvedImage && {
         images: [
           {
-            url: wikimediaImage ? wikimediaImage.url : product.imageUrl,
+            url: resolvedImage.src,
             width: 1200,
             height: 630,
-            alt: wikimediaImage ? wikimediaImage.alt : (product.imageAlt || product.title),
+            alt: resolvedImage.alt,
           },
         ],
       }),
@@ -62,8 +61,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title: product.detailPageTitle,
       description: product.metaDescription,
-      ...(canUseImage && {
-        images: [wikimediaImage ? wikimediaImage.url : product.imageUrl],
+      ...(resolvedImage && {
+        images: [resolvedImage.src],
       }),
     },
   };
@@ -96,9 +95,7 @@ export default async function TourDetailPage({ params }: Props) {
   const fallbackHref = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
   const ctaText = product.ctaLabel || "Check Dates & Prices";
 
-  const imgRecord = PRODUCT_IMAGES[slug];
-  const wikimediaImage = product.wikimediaId ? WIKIMEDIA_IMAGES[product.wikimediaId] : null;
-  const canUseImage = wikimediaImage || (product.imagePresentation !== "editorial" && imgRecord?.verifiedRights);
+  const resolvedImage = resolveProductImage(product);
 
   return (
     <div className="bg-[#151515] min-h-screen text-[#fdfbf7] font-[var(--font-sans)]">
@@ -139,7 +136,7 @@ export default async function TourDetailPage({ params }: Props) {
 
       <main id="main-content">
         {/* 1. Hero Section */}
-        {!canUseImage ? (
+        {!resolvedImage ? (
           <div className="w-full bg-[#1a1a1a] border-b border-[#2a2a2a] pt-12 pb-12 px-6">
             <div className="max-w-4xl mx-auto flex flex-col items-center md:items-start text-center md:text-left gap-4">
               <span className="inline-block bg-[#2a2a2a] text-[#fdfbf7] px-3 py-1 text-[10px] font-bold uppercase tracking-widest shadow-sm border border-[#333]">
@@ -172,8 +169,8 @@ export default async function TourDetailPage({ params }: Props) {
         ) : (
           <div className="relative w-full h-[70vh] min-h-[500px] max-h-[700px] overflow-hidden bg-[#1a1a1a]">
             <img
-              src={wikimediaImage ? wikimediaImage.url : product.imageUrl!}
-              alt={wikimediaImage ? wikimediaImage.alt : (product.imageAlt || product.title)}
+              src={resolvedImage.src}
+              alt={resolvedImage.alt}
               className="w-full h-full object-cover opacity-60"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#151515] via-[#151515]/60 to-[#151515]/20" />
@@ -206,12 +203,12 @@ export default async function TourDetailPage({ params }: Props) {
                     className="inline-block w-full md:w-auto bg-[#d4af37] hover:bg-[#fdfbf7] text-[#1a1a1a] font-bold px-8 py-4 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
                   />
                 </div>
-                {wikimediaImage && (
+                {resolvedImage.attribution && (
                   <div className="mt-8 text-left">
                     {product.representativeCaption && (
                       <p className="text-xs text-[#aaaaaa] mb-1">{product.representativeCaption}</p>
                     )}
-                    <WikimediaImageCredit image={wikimediaImage} />
+                    <WikimediaImageCredit image={resolvedImage.attribution as any} />
                   </div>
                 )}
               </div>

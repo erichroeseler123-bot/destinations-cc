@@ -111,23 +111,26 @@ export default function MarketplaceSearch({ items }: { items: SearchItem[] }) {
 
       {/* Results */}
       {filteredItems.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="flex flex-col gap-3">
           {filteredItems.map(item => (
-            <Link key={item.id} href={item.href} className="group flex flex-col justify-between p-6 bg-white border border-nola-amber/30 rounded-sm hover:border-nola-brass hover:shadow-md transition-all">
-              <div>
-                <div className="flex justify-between items-start mb-3">
-                  <span className="inline-block px-2.5 py-0.5 bg-nola-ivory border border-nola-amber text-nola-tobacco text-[10px] font-bold uppercase tracking-widest rounded-sm font-sans">
+            <Link key={item.id} href={item.href} className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-nola-amber/30 rounded-sm hover:border-nola-brass hover:shadow-sm transition-all gap-4">
+              <div className="flex-grow">
+                <div className="flex items-center gap-3 mb-1">
+                  <span className="inline-block px-2 py-0.5 bg-nola-ivory border border-nola-amber text-nola-tobacco text-[9px] font-bold uppercase tracking-widest rounded-sm font-sans">
                     {item.type}
                   </span>
+                  {item.operator && (
+                    <span className="text-[10px] font-semibold text-nola-charcoal/50 uppercase tracking-widest font-sans">
+                      {item.operator}
+                    </span>
+                  )}
                 </div>
-                <h3 className="font-serif text-xl text-nola-charcoal mb-2 group-hover:text-nola-shutter transition-colors">{item.title}</h3>
-                <p className="text-sm text-nola-charcoal/70 line-clamp-2 leading-relaxed font-sans">{item.description}</p>
+                <h3 className="font-serif text-lg text-nola-charcoal group-hover:text-nola-shutter transition-colors">{item.title}</h3>
+                <p className="text-xs text-nola-charcoal/70 line-clamp-1 font-sans mt-1">{item.description}</p>
               </div>
-              {item.operator && (
-                <div className="mt-6 pt-4 border-t border-nola-amber/20 text-xs font-semibold text-nola-charcoal/50 uppercase tracking-widest font-sans">
-                  By {item.operator}
-                </div>
-              )}
+              <div className="hidden sm:block">
+                <span className="text-nola-brass font-bold group-hover:translate-x-1 transition-transform inline-block">&rarr;</span>
+              </div>
             </Link>
           ))}
         </div>

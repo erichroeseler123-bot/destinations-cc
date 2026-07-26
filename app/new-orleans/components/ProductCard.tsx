@@ -6,6 +6,7 @@ import { PRODUCT_IMAGES } from '../data/imageRegistry';
 import { VerifiedBadge, generateBadgesFromClaims } from './VerifiedBadge';
 import { WIKIMEDIA_IMAGES } from '../data/wikimedia';
 import WikimediaImageCredit from './WikimediaImageCredit';
+import { resolveProductImage } from '../lib/imageResolver';
 
 export default function ProductCard({ product }: ProductCardProps) {
   // @ts-ignore - categoryIds exists on product
@@ -13,40 +14,30 @@ export default function ProductCard({ product }: ProductCardProps) {
   const imgRecord = PRODUCT_IMAGES[product.slug];
   const claims = PRODUCT_CLAIMS[product.slug];
   const badges = claims ? generateBadgesFromClaims(claims) : [];
-  const wikimediaImage = product.wikimediaId ? WIKIMEDIA_IMAGES[product.wikimediaId] : null;
-  const isImageFree = !product.imageUrl && !wikimediaImage && (categoryId === 'plantation-tours' || (imgRecord && !imgRecord.verifiedRights));
+  const resolvedImage = resolveProductImage(product);
 
   return (
     <div className="border border-[#2a2a2a] bg-[#1a1a1a] flex flex-col h-full shadow-sm hover:shadow-lg transition-shadow hover:border-[#d4af37] group rounded-sm overflow-hidden">
 
       {/* Media Section */}
-      {wikimediaImage ? (
+      {resolvedImage ? (
         <div className="relative h-64 w-full bg-[#151515] overflow-hidden flex flex-col">
            <div className="relative flex-grow">
              <img
-               src={wikimediaImage.url}
-               alt={wikimediaImage.alt}
+               src={resolvedImage.src}
+               alt={resolvedImage.alt}
                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
              />
              <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a]/80 to-transparent"></div>
            </div>
-           <div className="px-4 py-2 bg-[#1a1a1a] border-b border-[#2a2a2a]">
-             {product.representativeCaption && (
-               <p className="text-[10px] text-[#d4af37] mb-1">{product.representativeCaption}</p>
-             )}
-             <WikimediaImageCredit image={wikimediaImage} />
-           </div>
-        </div>
-      ) : !isImageFree ? (
-        <div className="relative h-48 w-full bg-[#151515] overflow-hidden">
-           {/* Fallback pattern underneath the image */}
-           <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-multiply"></div>
-           <img
-             src={product.imageUrl!}
-             alt={product.imageAlt || product.title}
-             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-           />
-           <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a]/80 to-transparent"></div>
+           {resolvedImage.attribution && (
+             <div className="px-4 py-2 bg-[#1a1a1a] border-b border-[#2a2a2a]">
+               {product.representativeCaption && (
+                 <p className="text-[10px] text-[#d4af37] mb-1">{product.representativeCaption}</p>
+               )}
+               <WikimediaImageCredit image={resolvedImage.attribution as any} />
+             </div>
+           )}
         </div>
       ) : (
         <div className="relative h-48 w-full bg-[#101010] flex flex-col items-center justify-center p-6 text-center border-b border-[#2a2a2a]">

@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { LiveProductAdapter } from '../data/index';
 import styles from '../tours/outpost.module.css';
 import { PROVIDERS } from '../data/index';
-import { PRODUCT_IMAGES } from '../data/imageRegistry';
 import Image from 'next/image';
+import { resolveProductImage } from '../lib/imageResolver';
 
 interface TourSliderProps {
   products: LiveProductAdapter[];
@@ -79,9 +79,8 @@ export default function TourSlider({ products, basePath }: TourSliderProps) {
         {products.map((product) => {
           const provider = product.providerId ? PROVIDERS[product.providerId]?.publicAttributionName : undefined;
 
-          // Image-led for specific ones based on previous data, and only if verified
-          const imgRecord = PRODUCT_IMAGES[product.slug];
-          const isImageLed = (product.id === 'southernstyle-city-tour' || product.id === 'ragincajun-covered-boat' || product.id === 'ragincajun-airboat') && imgRecord?.verifiedRights;
+          // Image-led if we have a resolved image
+          const resolvedImage = resolveProductImage(product);
 
           return (
             <Link
@@ -89,11 +88,11 @@ export default function TourSlider({ products, basePath }: TourSliderProps) {
               href={`/tours/${product.slug}`}
               className={`${styles.sliderCard} group flex flex-col bg-[#1a1a1a] border border-[#2a2a2a] overflow-hidden hover:border-[#d4af37] transition-colors`}
             >
-              {isImageLed ? (
+              {resolvedImage ? (
                 <div className="relative w-full aspect-[4/3] overflow-hidden bg-[#0a0a0a]">
                   <Image
-                    src={product.imageUrl || ''}
-                    alt={product.title}
+                    src={resolvedImage.src}
+                    alt={resolvedImage.alt}
                     fill
                     className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                   />
@@ -106,6 +105,7 @@ export default function TourSlider({ products, basePath }: TourSliderProps) {
                 </div>
               ) : (
                 <div className="relative w-full aspect-[4/3] bg-[#2a2a2a] flex flex-col justify-end p-6 border-b border-[#1a1a1a]">
+                   {/* Fallback styling */}
                   <span className="text-[10px] font-bold font-sans uppercase tracking-[0.2em] text-[#d4af37]">
                     {product.categoryIds?.[0]?.replace('-', ' ')}
                   </span>
@@ -116,7 +116,7 @@ export default function TourSlider({ products, basePath }: TourSliderProps) {
               )}
 
               <div className="p-6 flex flex-col flex-grow">
-                {isImageLed && (
+                {resolvedImage && (
                   <h3 className="text-2xl font-serif text-[#fdfbf7] mb-3 group-hover:text-[#d4af37] transition-colors line-clamp-2">
                     {product.title}
                   </h3>

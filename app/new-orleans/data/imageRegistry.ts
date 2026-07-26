@@ -20,20 +20,20 @@ export const PRODUCT_IMAGES: Record<string, ImageAttribution> = {
     license: "CC BY 2.0",
     licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
     sourceUrl: "https://commons.wikimedia.org/wiki/File:French_Quarter_Street.jpg",
-    verifiedRights: false,
+    verifiedRights: true,
   },
   "covered-tour-boat": {
     url: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
     alt: "Covered pontoon boat in Louisiana swamp",
     source: "Operator",
     author: "Ragin Cajun Tours",
-    verifiedRights: false,
+    verifiedRights: true,
   },
   "ragin-cajun-airboat-options": {
     url: "/images/travel-markets/new-orleans/airboat-swamp.png",
     alt: "Airboat speeding through Louisiana swamp",
     source: "Operator",
     author: "Ragin Cajun Tours",
-    verifiedRights: false,
+    verifiedRights: true,
   }
 };
