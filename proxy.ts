@@ -103,8 +103,14 @@ function getWtonotHostRewrite(request: NextRequest) {
 
   const url = request.nextUrl.clone();
 
-  // Root or /tours -> /new-orleans/tours
-  if (pathname === "/" || pathname === "/tours") {
+  // Root -> /new-orleans
+  if (pathname === "/") {
+    url.pathname = "/new-orleans";
+    return url;
+  }
+
+  // /tours -> /new-orleans/tours
+  if (pathname === "/tours") {
     url.pathname = "/new-orleans/tours";
     return url;
   }
