@@ -119,7 +119,7 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
             </Link>
           ))}
           <Link href="/french-quarter-welcome-stop" className="block text-[#d4af37] hover:text-[#fdfbf7] transition-colors">
-            &rarr; Visit the French Quarter Welcome Stop
+            &rarr; Learn about the New Orleans Tour Concierge
           </Link>
         </div>
       </section>
