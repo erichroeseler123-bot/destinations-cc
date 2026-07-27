@@ -72,7 +72,7 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
 
   useEffect(() => {
     trackEvent("chooser_started", { surface: analyticsSurface });
-  }, []);
+  }, [analyticsSurface]);
 
   const handleRecommendationRedirect = (categoryId: CategoryId, preferenceId?: PreferenceId) => {
     const recResult = getRecommendation(categoryId, preferenceId);
