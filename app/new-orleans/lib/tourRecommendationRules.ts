@@ -117,6 +117,38 @@ export const TOUR_RECORDS: Record<string, TourRecord> = {
     estimatedTotalCommitmentMinutes: null,
     verifiedDurationLabel: "Duration confirmed during booking.",
     verifiedTimeCommitmentLabel: "Complete time commitment varies with the selected option and transportation. Confirm during checkout."
+  },
+  "all-day-city-plantation-combo": {
+    slug: "all-day-city-plantation-combo",
+    id: "southernstyle-city-plantation-combo",
+    operator: "Southern Style Tours",
+    experienceType: "City and Plantation Combo",
+    pace: "Full-day combination",
+    familyFit: "Ages 4 and older",
+    transportationAvailable: "Morning pickup included",
+    historicalDepth: "City and plantation history",
+    weatherExposure: "Varies by itinerary segment",
+    noiseLevel: "Confirm with operator",
+    estimatedExperienceMinutes: 480,
+    estimatedTotalCommitmentMinutes: 480,
+    verifiedDurationLabel: "8 hours",
+    verifiedTimeCommitmentLabel: "Plan for the full 8-hour combined experience."
+  },
+  "covered-boat-plantation-combo": {
+    slug: "covered-boat-plantation-combo",
+    id: "ragincajun-covered-plantation-combo",
+    operator: "Ragin Cajun Airboat Tours",
+    experienceType: "Covered Boat and Plantation Combo",
+    pace: "Full-day combination",
+    familyFit: "Ages 5 and older; adult and child pricing types are available",
+    transportationAvailable: "Transportation and pickup included",
+    historicalDepth: "Plantation history and swamp experience",
+    weatherExposure: "Varies by itinerary segment",
+    noiseLevel: "Confirm with operator",
+    estimatedExperienceMinutes: 420,
+    estimatedTotalCommitmentMinutes: 420,
+    verifiedDurationLabel: "Approximately 7 hours",
+    verifiedTimeCommitmentLabel: "Plan for approximately 7 hours."
   }
 };
 

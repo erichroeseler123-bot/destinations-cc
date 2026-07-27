@@ -269,6 +269,118 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     logistics: {
       transportation: "Transportation options confirmed during booking."
     },
+  },
+  {
+    id: "southernstyle-city-plantation-combo",
+    companyShortname: "southernstyletours",
+    itemId: "51953",
+    flowId: "4344",
+    title: "All-Day City + Plantation",
+    category: "Combo Tours",
+    operatorName: "Southern Style Tours",
+    description: "An 8-hour combination of a New Orleans city tour and either Oak Alley or Laura Plantation.",
+    bestFor: "City and plantation in one day",
+    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    imageAlt: "French Quarter street in New Orleans",
+    slug: "all-day-city-plantation-combo",
+    relatedTourSlug: "oak-alley-or-laura-plantation-tour",
+    detailPageTitle: "All-Day City + Plantation Combo | Welcome to New Orleans Tours",
+    metaDescription: "Combine a New Orleans city tour with Oak Alley or Laura Plantation in an 8-hour experience operated by Southern Style Tours.",
+    durationLabel: "8 hours",
+    transportationSummary: "Morning pickup is included",
+    pickupSummary: "The operator describes a morning pickup window of 8:00–8:30 a.m.",
+    highlights: [
+      "New Orleans city tour",
+      "Oak Alley or Laura Plantation",
+      "An 8-hour combined experience"
+    ],
+    detailSummary: "An 8-hour combination of a New Orleans city tour and either Oak Alley or Laura Plantation, with a morning pickup window described by the operator as 8:00–8:30 a.m.",
+    bestFit: [
+      "Visitors who want a city tour and plantation experience in one day",
+      "Groups prepared for an 8-hour outing"
+    ],
+    notIdealFor: [
+      "Visitors with less than a full day available",
+      "Children younger than 4"
+    ],
+    childrenConsiderations: [
+      "The operator lists this experience for ages 4 and older."
+    ],
+    confirmedInclusions: [
+      "New Orleans city tour",
+      "Oak Alley or Laura Plantation"
+    ],
+    bookingConfirmations: [
+      "Available plantation option",
+      "Live departure availability",
+      "Current pickup details",
+      "Current pricing"
+    ],
+    physicalFormat: {
+      riding: "A combined city and plantation outing."
+    },
+    logistics: {
+      pickup: "The operator describes a morning pickup window of 8:00–8:30 a.m.",
+      transportation: "Transportation is part of the combined itinerary."
+    },
+    historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor. The depth and focus of historical interpretation vary by site. We encourage visitors to review the selected plantation’s specific historical program and educational approach."
+  },
+  {
+    id: "ragincajun-covered-plantation-combo",
+    companyShortname: "ragincajuntours",
+    itemId: "603090",
+    flowId: "392449",
+    title: "Covered Boat + Plantation",
+    category: "Combo Tours",
+    operatorName: "Ragin Cajun Airboat Tours",
+    description: "A covered boat and plantation combination lasting approximately 7 hours.",
+    bestFor: "Covered boat and plantation in one outing",
+    imageUrl: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
+    imageAlt: "Covered tour boat in a Louisiana swamp",
+    slug: "covered-boat-plantation-combo",
+    relatedTourSlug: "covered-tour-boat",
+    detailPageTitle: "Covered Boat + Plantation Combo | Welcome to New Orleans Tours",
+    metaDescription: "Combine a covered boat tour with Oak Alley or Laura Plantation in an approximately 7-hour experience with transportation.",
+    durationLabel: "Approximately 7 hours",
+    transportationSummary: "Transportation and pickup included",
+    pickupSummary: "Pickup is included as described by the operator.",
+    highlights: [
+      "Covered boat tour",
+      "Oak Alley or Laura Plantation",
+      "Transportation and pickup"
+    ],
+    detailSummary: "An approximately 7-hour combination of a covered boat tour and either Oak Alley or Laura Plantation, with transportation and pickup included as described by the operator.",
+    bestFit: [
+      "Visitors who want a covered boat tour and plantation experience in one outing",
+      "Groups prepared for an approximately 7-hour experience"
+    ],
+    notIdealFor: [
+      "Visitors with less than a full day available",
+      "Children younger than 5"
+    ],
+    childrenConsiderations: [
+      "The operator lists adult and child pricing types and an age minimum of 5."
+    ],
+    confirmedInclusions: [
+      "Covered boat tour",
+      "Oak Alley or Laura Plantation",
+      "Transportation and pickup as described by the operator"
+    ],
+    bookingConfirmations: [
+      "Available plantation option",
+      "Live departure availability",
+      "Current pickup details",
+      "Adult and child pricing",
+      "Current pricing"
+    ],
+    physicalFormat: {
+      riding: "A covered boat and plantation combination."
+    },
+    logistics: {
+      pickup: "Pickup is included as described by the operator.",
+      transportation: "Transportation is included as described by the operator."
+    },
+    historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor. The depth and focus of historical interpretation vary by site. We encourage visitors to review the selected plantation’s specific historical program and educational approach."
   }
 ];
 

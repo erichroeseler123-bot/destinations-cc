@@ -12,6 +12,8 @@ const LIVE_PRODUCT_IDS = [
   'southernstyle-plantation',
   'ragincajun-covered-boat',
   'ragincajun-airboat',
+  'southernstyle-city-plantation-combo',
+  'ragincajun-covered-plantation-combo',
 ] as const;
 
 export default function OutpostConsole() {
@@ -35,7 +37,7 @@ export default function OutpostConsole() {
             New Orleans Tours
           </h1>
           <p className="max-w-2xl mx-auto text-base md:text-lg text-white/70 font-light leading-relaxed">
-            Compare our four currently available experiences from participating local operators,
+            Compare our six currently available experiences from participating local operators,
             then open a tour page for suitability details and live operator availability.
           </p>
         </div>
@@ -45,10 +47,10 @@ export default function OutpostConsole() {
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-10">
           <div>
             <h2 id="live-tours-heading" className="font-serif text-3xl md:text-4xl text-[#d4af37] mb-3">
-              Four Live Tour Options
+              Six Live Tour Options
             </h2>
             <p className="text-white/65 font-light">
-              City, plantation, covered swamp boat, and airboat experiences.
+              City, plantation, swamp, airboat, and all-day combination experiences.
             </p>
           </div>
           <Link
