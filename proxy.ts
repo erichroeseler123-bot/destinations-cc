@@ -83,7 +83,7 @@ function getSomersetHostRewrite(request: NextRequest) {
   return url;
 }
 
-function getWtonotHostRewrite(request: NextRequest) {
+export function getWtonotHostRewrite(request: NextRequest) {
   const hostHeader = request.headers.get("x-forwarded-host") || request.nextUrl.hostname;
   const host = hostHeader.split(":")[0];
   if (!WTONOT_HOSTS.has(host)) return null;
@@ -106,6 +106,11 @@ function getWtonotHostRewrite(request: NextRequest) {
   // Root -> /new-orleans
   if (pathname === "/") {
     url.pathname = "/new-orleans";
+    return url;
+  }
+
+  // Contact
+  if (pathname === "/contact") {
     return url;
   }
 
