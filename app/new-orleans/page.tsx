@@ -1,6 +1,5 @@
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { getProductById } from "./data";
 import ProductCard from "./components/ProductCard";
 import MarketplaceSearch from "./components/MarketplaceSearch";
@@ -23,50 +22,55 @@ export default function NewOrleansHomePage() {
 
   return (
     <div className="bg-[var(--nola-bg-charcoal)] text-[var(--nola-ivory)] font-sans overflow-hidden">
-      {/* 1. Hero */}
-      <section className="relative h-[85vh] min-h-[600px] w-full flex items-center justify-center">
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="/images/new-orleans/hero-french-quarter-balcony.jpg"
-            alt="French Quarter Balcony in New Orleans"
-            fill
-            className="object-cover object-center"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[var(--nola-bg-charcoal)] via-[var(--nola-bg-charcoal)]/60 to-[var(--nola-bg-charcoal)]/20"></div>
-        </div>
+      {/* 1. Integrated hero and chooser */}
+      <section className={visualStyles.homeHero}>
+        <Link href="#chooser" className="sr-only">
+          Help Me Choose
+        </Link>
+        <div className={visualStyles.homeHeroBackground} aria-hidden="true" />
+        <div className={visualStyles.homeHeroOverlay} aria-hidden="true" />
+        <div className={visualStyles.homeHeroContent}>
+          <div className={visualStyles.homeHeroIntro}>
+            <h1 className={visualStyles.homeHeadline}>
+              <span className={`${visualStyles.homeHeadlineLead} ${visualStyles.accentFont}`}>
+                Let&apos;s find your
+              </span>
+              <span className={`${visualStyles.homeHeadlineDisplay} ${visualStyles.displayFont}`}>
+                Perfect
+              </span>
+              <span className={`${visualStyles.homeHeadlineScript} ${visualStyles.scriptFont}`}>
+                New Orleans
+              </span>
+              <span className={`${visualStyles.homeHeadlineDisplay} ${visualStyles.displayFont}`}>
+                Adventure
+              </span>
+            </h1>
+            <div className={visualStyles.homeDivider} aria-hidden="true">
+              <span />
+              <span className={visualStyles.homeFleur}>⚜</span>
+              <span />
+            </div>
+            <p className={visualStyles.homeHeroCopy}>
+              Answer a few quick questions and we&apos;ll point you to the best tours for you and your crew.
+            </p>
+          </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center mt-16">
-          <h1 className={`font-serif text-5xl md:text-7xl font-bold mb-6 text-[var(--nola-ivory)] tracking-tight ${visualStyles.accentFont}`}>
-            Discover the Real <br />
-            <span className="text-[var(--nola-gold)]">New Orleans</span>
-          </h1>
-          <p className="text-lg md:text-xl text-[var(--nola-ivory)]/80 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
-            Compare participating New Orleans tours, book experiences, and get help choosing the right fit for your trip.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/tours"
-              className="w-full sm:w-auto px-8 py-4 bg-[var(--nola-gold)] text-[var(--nola-bg-black)] font-bold uppercase tracking-widest text-sm hover:bg-[var(--nola-ivory)] transition-colors rounded-sm"
-            >
-              Explore Tours
-            </Link>
-            <Link
-              href="#chooser"
-              className="w-full sm:w-auto px-8 py-4 border border-[var(--nola-gold)] text-[var(--nola-gold)] font-bold uppercase tracking-widest text-sm hover:bg-[var(--nola-gold)]/10 transition-colors rounded-sm"
-            >
-              Help Me Choose
-            </Link>
+          <div id="chooser" className={visualStyles.homeChooserAnchor}>
+            <NewOrleansChooser surface="homepage" />
+          </div>
+          <div className={visualStyles.homeQuestionBar}>
+            <span className={`${visualStyles.scriptFont} ${visualStyles.homeQuestionScript}`}>
+              Still have questions?
+            </span>
+            <a href="tel:+15044849687" className={visualStyles.homePhoneAction}>
+              <span aria-hidden="true">☎</span>
+              Let&apos;s talk&nbsp; 504-484-9687
+            </a>
           </div>
         </div>
       </section>
 
-      {/* 2. Chooser */}
-      <div id="chooser">
-        <NewOrleansChooser surface="homepage" />
-      </div>
-
-      {/* 3. Featured Experiences */}
+      {/* 2. Featured Experiences */}
       <section className="py-20 px-6 max-w-7xl mx-auto border-t border-[var(--nola-border)]">
         <div className="mb-12 text-center">
           <h2 className={`font-serif text-3xl md:text-4xl text-[var(--nola-gold)] mb-4 ${visualStyles.accentFont}`}>
@@ -75,6 +79,12 @@ export default function NewOrleansHomePage() {
           <p className="text-[var(--nola-ivory)]/70 font-light max-w-2xl mx-auto text-lg">
             Directly book participating local operators, with clear descriptions and direct access to inventory.
           </p>
+          <Link
+            href="/tours"
+            className="mt-5 inline-block text-xs font-bold uppercase tracking-[0.16em] text-[var(--nola-gold)] hover:text-[var(--nola-ivory)]"
+          >
+            Explore All Tours
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">

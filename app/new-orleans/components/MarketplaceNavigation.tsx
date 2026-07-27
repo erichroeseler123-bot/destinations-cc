@@ -4,6 +4,7 @@ import Link from 'next/link';
 import PhoneCta from './PhoneCta';
 import FrenchQuarterBoothBonus from './FrenchQuarterBoothBonus';
 import styles from '../tours/outpost.module.css';
+import visualStyles from './newOrleansVisual.module.css';
 
 export function HeaderNav() {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,36 +22,44 @@ export function HeaderNav() {
 
   return (
     <>
-      <header className={`bg-[#110e14] text-[#fdfbf7] border-b border-[#d4af37]/30 sticky top-0 z-40`}>
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <Link href="/" className="flex flex-col">
-            <span className={`font-serif text-2xl md:text-3xl font-bold tracking-tight text-[#d4af37]`}>
+      <header className={visualStyles.marketHeader}>
+        <div className={visualStyles.marketHeaderInner}>
+          <Link href="/" className={visualStyles.marketBrand}>
+            <span className={`${visualStyles.marketBrandWelcome} ${visualStyles.scriptFont}`}>
               Welcome to
             </span>
-            <span className="font-sans text-[10px] md:text-xs tracking-[0.2em] uppercase font-bold text-[#fdfbf7]/80">
-              New Orleans Tours
+            <span className={`${visualStyles.marketBrandCity} ${visualStyles.accentFont}`}>
+              New Orleans
+            </span>
+            <span className={visualStyles.marketBrandTours}>
+              Tours
             </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-8 font-sans font-bold text-sm tracking-widest uppercase text-[#fdfbf7]/80">
-            <Link href="/city-tours" className="hover:text-[#d4af37] transition-colors">City</Link>
-            <Link href="/swamp-tours" className="hover:text-[#d4af37] transition-colors">Swamps</Link>
-            <Link href="/plantation-tours" className="hover:text-[#d4af37] transition-colors">Plantations</Link>
-            <Link href="/tours-for/first-time-visitors" className="hover:text-[#d4af37] transition-colors">Plan Your Trip</Link>
+          <nav className={visualStyles.marketDesktopNav}>
+            <Link href="/city-tours">City Tours</Link>
+            <Link href="/swamp-tours">Swamp Tours</Link>
+            <Link href="/plantation-tours">Plantation Tours</Link>
+            <Link href="/tours-for/first-time-visitors">Plan Your Trip</Link>
           </nav>
 
-          <div className="hidden md:flex items-center gap-6">
-            <PhoneCta placement="WTONOT-HEADER-PHONE" isGroup className="flex flex-col items-end group">
-              <span className={`text-[10px] font-bold uppercase tracking-widest text-[#fdfbf7]/60 group-hover:text-[#fdfbf7] transition-colors`}>
-                Questions or Groups?
+          <div className={visualStyles.marketPhoneWrap}>
+            <PhoneCta placement="WTONOT-HEADER-PHONE" isGroup className={visualStyles.marketPhone}>
+              <span className={visualStyles.marketPhoneLabel}>
+                Questions? Call or text
               </span>
-              <span className={`text-lg font-bold text-[#d4af37] group-hover:text-[#fdfbf7] transition-colors`}>
-                504-484-9687
+              <span className={visualStyles.marketPhoneNumber}>
+                <span aria-hidden="true">☎</span> 504-484-9687
               </span>
             </PhoneCta>
           </div>
 
-          <button onClick={toggle} className="md:hidden flex flex-col gap-1.5 p-2" aria-label="Toggle menu">
+          <button
+            onClick={toggle}
+            className={visualStyles.marketMenuButton}
+            aria-label="Toggle menu"
+            aria-expanded={isOpen}
+          >
             <div className={`w-6 h-0.5 bg-[#d4af37]`}></div>
             <div className={`w-6 h-0.5 bg-[#d4af37]`}></div>
             <div className={`w-6 h-0.5 bg-[#d4af37]`}></div>

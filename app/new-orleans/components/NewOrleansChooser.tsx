@@ -190,28 +190,9 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
               </h1>
               <DecorativeDivider />
             </>
-          ) : (
-            <div className="mb-12 text-center w-full max-w-4xl px-4">
-              <h2 id="new-orleans-experience-heading" className={`font-serif text-3xl md:text-4xl text-[var(--nola-gold)] mb-4 ${visualStyles.accentFont}`}>
-                What kind of New Orleans experience sounds right?
-              </h2>
-              <p className="text-[var(--nola-ivory)]/70 font-light max-w-2xl mx-auto text-lg">
-                Explore the city, head into the swamp, visit a historic plantation, or let us help you decide.
-              </p>
-            </div>
-          )}
+          ) : null}
 
-          <ConnectedBoard promptBanner={surface === "standalone" ? "WHAT KIND OF ADVENTURE ARE YOU AFTER?" : undefined}>
-            <NewOrleansChoiceCard
-              mode="action"
-              onClick={() => handleInitialChoice("city")}
-              iconType="city"
-              illustration={<CityIllustration />}
-              title="THE CITY"
-              desc="History, neighborhoods, architecture, stories, and the essential New Orleans overview."
-              cta="SHOW ME THE CITY"
-              showOrMarker={true}
-            />
+          <ConnectedBoard promptBanner="WHAT KIND OF ADVENTURE ARE YOU AFTER?">
             <NewOrleansChoiceCard
               mode="action"
               onClick={() => handleInitialChoice("swamp")}
@@ -220,6 +201,16 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
               title="THE SWAMP"
               desc="Wild, untamed, and full of Louisiana character. Choose between a covered boat and an airboat."
               cta="TAKE ME TO THE SWAMP"
+              showOrMarker={true}
+            />
+            <NewOrleansChoiceCard
+              mode="action"
+              onClick={() => handleInitialChoice("city")}
+              iconType="city"
+              illustration={<CityIllustration />}
+              title="THE CITY"
+              desc="History, neighborhoods, architecture, stories, and the essential New Orleans overview."
+              cta="SHOW ME THE CITY"
               showOrMarker={true}
             />
             <NewOrleansChoiceCard
@@ -370,7 +361,7 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
 
   if (surface === "homepage") {
     return (
-      <section aria-labelledby="new-orleans-experience-heading" className="py-20 bg-[var(--nola-bg-charcoal)] border-t border-[var(--nola-border)] relative z-10 w-full flex flex-col items-center justify-center">
+      <section aria-label="New Orleans tour chooser" className={visualStyles.homeChooserSection}>
         {content}
       </section>
     );
