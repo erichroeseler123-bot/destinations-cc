@@ -46,13 +46,13 @@ export default function NewOrleansHomePage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/new-orleans/tours"
+              href="/tours"
               className="w-full sm:w-auto px-8 py-4 bg-[var(--nola-gold)] text-[var(--nola-bg-black)] font-bold uppercase tracking-widest text-sm hover:bg-[var(--nola-ivory)] transition-colors rounded-sm"
             >
               Explore Tours
             </Link>
             <Link
-              href="/new-orleans/help-me-choose"
+              href="#chooser"
               className="w-full sm:w-auto px-8 py-4 border border-[var(--nola-gold)] text-[var(--nola-gold)] font-bold uppercase tracking-widest text-sm hover:bg-[var(--nola-gold)]/10 transition-colors rounded-sm"
             >
               Help Me Choose
@@ -62,7 +62,9 @@ export default function NewOrleansHomePage() {
       </section>
 
       {/* 2. Chooser */}
-      <NewOrleansChooser surface="homepage" />
+      <div id="chooser">
+        <NewOrleansChooser surface="homepage" />
+      </div>
 
       {/* 3. Featured Experiences */}
       <section className="py-20 px-6 max-w-7xl mx-auto border-t border-[var(--nola-border)]">
@@ -149,20 +151,20 @@ export default function NewOrleansHomePage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <GuideLink
-            href="/swamp-tours/types"
+            href="/swamp-tours/airboat-vs-covered-boat"
             title="Compare Swamp Tour Formats"
           />
           <GuideLink
-            href="/swamp-tours/best-time"
-            title="When to Visit the Swamp"
+            href="/guides/how-far-are-swamp-tours-from-new-orleans"
+            title="How Far Are Swamp Tours From New Orleans?"
           />
           <GuideLink
-            href="/swamp-tours/transportation"
+            href="/swamp-tours/pickup-vs-self-drive"
             title="Swamp Tour Transportation"
           />
           <GuideLink
-            href="/swamp-tours/with-kids"
-            title="Swamp Tours with Kids"
+            href="/guides/how-long-does-a-swamp-tour-take"
+            title="How Long Does a Swamp Tour Take?"
           />
         </div>
       </section>

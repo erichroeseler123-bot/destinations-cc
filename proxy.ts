@@ -111,6 +111,7 @@ export function getWtonotHostRewrite(request: NextRequest) {
 
   // Contact
   if (pathname === "/contact") {
+    url.pathname = "/new-orleans/contact";
     return url;
   }
 
