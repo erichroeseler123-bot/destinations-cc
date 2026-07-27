@@ -1,202 +1,107 @@
 'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import MarketplaceDisclosure from '../components/MarketplaceDisclosure';
-import MarketplaceSearch from '../components/MarketplaceSearch';
-import PhoneCta from '../components/PhoneCta';
-import TourSlider from '../components/TourSlider';
-import FrenchQuarterBoothBonus from '../components/FrenchQuarterBoothBonus';
-import TourMatchChooser from '../components/TourMatchChooser';
+import ProductCard from '../components/ProductCard';
 import { ALL_PRODUCTS, LiveProductAdapter } from '../data/index';
-import { CATEGORIES, AREAS, SEO_PAGES, PROVIDERS } from '../data/index';
-import { getMarketplaceSearchItems } from '../data/searchHelper';
 import styles from './outpost.module.css';
 
+const LIVE_PRODUCT_IDS = [
+  'southernstyle-city-tour',
+  'southernstyle-plantation',
+  'ragincajun-covered-boat',
+  'ragincajun-airboat',
+] as const;
+
 export default function OutpostConsole() {
-
-  const liveCategories = Object.values(CATEGORIES).filter(c => c.status === "live");
-  const liveAreas = Object.values(AREAS).filter(a => a.status === "live");
-  const liveGuides = Object.values(SEO_PAGES).filter(p => p.status === "live" && p.variant === "guide");
-
-  const liveProducts = ALL_PRODUCTS.filter(p => p.status === "live") as LiveProductAdapter[];
-  const cityTour = liveProducts.find(p => p.id === "southernstyle-city-tour");
-  const plantationTour = liveProducts.find(p => p.id === "southernstyle-plantation");
-  const coveredBoat = liveProducts.find(p => p.id === "ragincajun-covered-boat");
-  const airboat = liveProducts.find(p => p.id === "ragincajun-airboat");
-
-  // Only include defined products in the slider array
-  const sliderProducts = [cityTour, plantationTour, coveredBoat, airboat].filter(Boolean) as LiveProductAdapter[];
-
-  const searchItems = getMarketplaceSearchItems();
+  const liveProducts = LIVE_PRODUCT_IDS
+    .map((id) => ALL_PRODUCTS.find((product) => product.id === id))
+    .filter(
+      (product): product is LiveProductAdapter =>
+        Boolean(product && product.status === 'live'),
+    );
 
   return (
-    <main className={`w-full min-h-screen ${styles.bgNolaCharcoal} ${styles.nolaIvory} font-sans selection:bg-[#d4af37] selection:text-[#1a1a1a]`}>
-
-      {/* 1. Marketplace Hero */}
-      <section className={`relative w-full min-h-[80vh] flex flex-col justify-end pb-24 px-6 md:px-12 lg:px-24 ${styles.heroBackground}`}>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/80 to-transparent"></div>
-        <div className="absolute inset-0 bg-black/30 mix-blend-multiply pointer-events-none"></div>
-
-        <div className="relative z-10 max-w-4xl mt-32">
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold leading-none mb-6 drop-shadow-lg text-white">
-            REAL NEW ORLEANS.<br/>
-            <span className={styles.nolaBrass}>REAL GOOD TIMES.</span>
+    <main
+      className={`w-full min-h-screen ${styles.bgNolaCharcoal} ${styles.nolaIvory} font-sans selection:bg-[#d4af37] selection:text-[#1a1a1a]`}
+    >
+      <section className="px-6 py-14 md:py-20 border-b border-[#2a2a2a] bg-[#101010]">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.24em] text-[#d4af37] mb-4">
+            Browse All Live Experiences
+          </p>
+          <h1 className="font-serif text-4xl md:text-6xl text-white mb-5">
+            New Orleans Tours
           </h1>
-          <p className="text-xl md:text-2xl font-light text-white/90 max-w-2xl mb-12">
-            Compare local city, plantation and swamp tours, get help choosing, and unlock free local advice and a quick French Quarter orientation when you book through our site.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-6">
-            <button
-              onClick={() => {
-                document.getElementById('slider-section')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className={styles.nolaButton}
-            >
-              Explore Tours
-            </button>
-            <Link
-              href="/help-me-choose"
-              className={styles.nolaButtonOutline}
-            >
-              Help Me Choose
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. Trust Strip */}
-      <section className={`border-y ${styles.nolaBorder} bg-black/20`}>
-        <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div className="flex flex-col items-center text-center gap-2">
-            <span className={`text-2xl ${styles.nolaBrass}`}>&#10003;</span>
-            <span className="font-sans text-xs font-bold uppercase tracking-widest text-white/80">Local Providers</span>
-          </div>
-          <div className="flex flex-col items-center text-center gap-2">
-            <span className={`text-2xl ${styles.nolaBrass}`}>&#10003;</span>
-            <span className="font-sans text-xs font-bold uppercase tracking-widest text-white/80">Operator Checkout</span>
-          </div>
-          <div className="flex flex-col items-center text-center gap-2">
-            <span className={`text-2xl ${styles.nolaBrass}`}>&#10003;</span>
-            <span className="font-sans text-xs font-bold uppercase tracking-widest text-white/80">Compare & Choose</span>
-          </div>
-          <div className="flex flex-col items-center text-center gap-2">
-            <span className={`text-2xl ${styles.nolaBrass}`}>&#10003;</span>
-            <span className="font-sans text-xs font-bold uppercase tracking-widest text-white/80">Welcome Stop Benefit</span>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Featured Experiences Slider */}
-      <section id="slider-section" className="bg-[#151515]">
-        <TourSlider products={sliderProducts} basePath="" />
-      </section>
-
-      {/* Tour Match Chooser */}
-      <section className={`max-w-7xl mx-auto px-6 py-12`}>
-        <TourMatchChooser />
-      </section>
-
-      {/* French Quarter Booth Bonus */}
-      <FrenchQuarterBoothBonus variant="prominent" />
-
-      {/* 4. Explore Section (Signboard-style) */}
-      <section className={`max-w-7xl mx-auto px-6 py-24 border-t ${styles.nolaBorder}`}>
-        <div className="text-center mb-16">
-          <h2 className="font-sans text-sm font-bold uppercase tracking-widest text-white/50 mb-2">Discover</h2>
-          <h3 className={`font-serif text-4xl md:text-5xl font-bold ${styles.nolaBrass}`}>Explore Our Tours</h3>
-          <p className="mt-4 text-[#aaaaaa] font-sans text-lg max-w-2xl mx-auto">
-            A carefully selected starting collection from participating local operators.
+          <p className="max-w-2xl mx-auto text-base md:text-lg text-white/70 font-light leading-relaxed">
+            Compare our four currently available experiences from participating local operators,
+            then open a tour page for suitability details and live operator availability.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[
-            { href: "/city-tours", label: "City Tours", sub: "French Quarter & Beyond" },
-            { href: "/swamp-tours", label: "Swamp & Bayou", sub: "Airboats & Covered Boats" },
-            { href: "/plantation-tours", label: "Plantations", sub: "Historic River Road" }
-          ].map(link => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`group flex flex-col items-center justify-center p-12 border ${styles.nolaBorder} bg-[#1a1a1a] hover:border-[#d4af37] transition-all duration-300`}
-            >
-              <h4 className="font-serif text-3xl text-white group-hover:text-[#d4af37] transition-colors mb-2">{link.label}</h4>
-              <span className="font-sans text-xs uppercase tracking-[0.2em] text-white/50">{link.sub}</span>
-            </Link>
-          ))}
+      </section>
 
+      <section aria-labelledby="live-tours-heading" className="max-w-7xl mx-auto px-6 py-14 md:py-20">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-10">
+          <div>
+            <h2 id="live-tours-heading" className="font-serif text-3xl md:text-4xl text-[#d4af37] mb-3">
+              Four Live Tour Options
+            </h2>
+            <p className="text-white/65 font-light">
+              City, plantation, covered swamp boat, and airboat experiences.
+            </p>
+          </div>
           <Link
-            href="/help-me-choose"
-            className={`group flex flex-col items-center justify-center p-12 border ${styles.nolaBorder} bg-black/40 hover:border-[#d4af37] transition-all duration-300`}
+            href="/#chooser"
+            className="inline-flex items-center justify-center border border-[#d4af37] px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-[#d4af37] hover:bg-[#d4af37] hover:text-[#151515] transition-colors"
           >
-            <h4 className="font-serif text-3xl text-white group-hover:text-[#d4af37] transition-colors mb-2">First-Time</h4>
-            <span className="font-sans text-xs uppercase tracking-[0.2em] text-white/50">Visitor Recommendations</span>
+            Help Me Choose
           </Link>
+        </div>
 
-          {liveAreas.slice(0,2).map(area => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
+          {liveProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-[#2a2a2a] bg-[#101010] px-6 py-12">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37] mb-3">
+            New Orleans Tour Concierge
+          </p>
+          <h2 className="font-serif text-3xl text-white mb-4">Schedule Tour Help</h2>
+          <p className="max-w-2xl mx-auto text-white/70 font-light leading-relaxed mb-7">
+            Already in New Orleans? Arrange a relaxed tour-planning conversation at an agreed
+            hotel, French Quarter, or nearby public meeting location. Availability varies.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-3">
             <Link
-              key={area.id}
-              href={`/areas/${area.slug}`}
-              className={`group flex flex-col items-center justify-center p-12 border ${styles.nolaBorder} bg-black/40 hover:border-[#d4af37] transition-all duration-300`}
+              href="/french-quarter-welcome-stop"
+              className="border border-[#d4af37] bg-[#d4af37] px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-[#151515] hover:bg-white transition-colors"
             >
-              <h4 className="font-serif text-3xl text-white group-hover:text-[#d4af37] transition-colors mb-2">{area.title}</h4>
-              <span className="font-sans text-xs uppercase tracking-[0.2em] text-white/50">Area Guide</span>
+              Schedule Tour Help
             </Link>
-          ))}
+            <a
+              href="tel:+15044849687"
+              className="border border-[#d4af37] px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-[#d4af37] hover:bg-[#d4af37] hover:text-[#151515] transition-colors"
+            >
+              Call 504-484-9687
+            </a>
+            <a
+              href="sms:+15044849687"
+              className="border border-[#2a2a2a] px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-white hover:border-[#d4af37] hover:text-[#d4af37] transition-colors"
+            >
+              Text Us
+            </a>
+          </div>
         </div>
       </section>
 
-      {/* 5. Browse (Search) */}
-      <section className={`max-w-6xl mx-auto px-6 py-24 border-t ${styles.nolaBorder}`}>
-        <h2 className={`text-4xl font-serif mb-12 text-center font-bold ${styles.nolaBrass}`}>Find a Tour</h2>
-        <div className="bg-black/20 p-6 border border-[#2a2a2a]">
-          <MarketplaceSearch items={searchItems} />
-        </div>
-      </section>
-
-      {/* 6. Planning Guides */}
-      <section className={`max-w-7xl mx-auto px-6 py-20 border-t ${styles.nolaBorder}`}>
-        <h2 className={`text-3xl font-serif font-bold mb-10 ${styles.nolaBrass}`}>Planning Guides</h2>
-        <ul className="grid md:grid-cols-2 gap-x-12 gap-y-6">
-          {liveGuides.map(guide => (
-            <li key={guide.id} className="border-b border-white/10 pb-4 border-dashed">
-              <Link href={guide.publicRoute} className="group flex items-center justify-between text-white hover:text-[#d4af37] transition-colors">
-                <span className="font-serif text-xl">{guide.heroTitle}</span>
-                <span className="font-sans font-bold transform group-hover:translate-x-1 transition-transform">&rarr;</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* 7. Group Call Section */}
-      <section className={`bg-[#0a0a0a] py-24 px-6 border-y ${styles.nolaBorder} text-center relative overflow-hidden`}>
-        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
-        <div className="max-w-3xl mx-auto relative z-10">
-          <h2 className="text-4xl font-serif font-bold text-white mb-6">PLANNING SOMETHING FOR YOUR GROUP?</h2>
-          <p className="text-lg font-light text-white/80 leading-relaxed mb-10">
-            Call 504-484-9687 for help with tour options, group rates, and operator availability. We'll help you find the right fit for your party.
-          </p>
-          <PhoneCta placement="WTONOT-GROUP-PHONE" isGroup className={styles.nolaButton}>
-            Call About My Group
-          </PhoneCta>
-        </div>
-      </section>
-
-      {/* 8. After Dark Teaser */}
-      <section className="bg-black py-20 px-6 text-center border-b border-[#2a2a2a]">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="font-serif text-3xl text-white font-bold mb-4">NEW ORLEANS AFTER DARK</h2>
-          <p className="font-sans font-light text-white/60 leading-relaxed text-sm">
-            We are adding carefully selected ghost, cemetery, music and evening experiences. Check back as we verify local operator inventory.
-          </p>
-        </div>
-      </section>
-
-      {/* 9. Independent Marketplace Disclosure */}
       <section className="max-w-6xl mx-auto px-6 py-12">
         <MarketplaceDisclosure />
       </section>
-
     </main>
   );
 }

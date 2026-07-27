@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Contact & Group Planning | Welcome To New Orleans Tours",
-  description: "Contact us for tour selection help, group planning, or in-person assistance at our French Quarter Welcome Stop.",
+  description: "Contact us for tour selection help, group planning, or a scheduled New Orleans Tour Concierge conversation.",
 };
 
 export default function NewOrleansContactPage() {
@@ -42,13 +42,21 @@ export default function NewOrleansContactPage() {
           <div className="border border-[var(--nola-border)] bg-[var(--nola-surface-strong)] p-8 md:col-span-2">
             <div className="flex flex-col md:flex-row md:items-center gap-8">
               <div className="flex-1">
-                <h2 className="font-serif text-2xl text-[var(--nola-gold)] mb-4">French Quarter Welcome Stop</h2>
+                <h2 className="font-serif text-2xl text-[var(--nola-gold)] mb-4">New Orleans Tour Concierge</h2>
                 <p className="text-[var(--nola-ivory)]/70 font-light mb-4">
-                  Prefer to talk in person? Stop by for local orientation, help choosing a tour, and practical visitor assistance.
+                  Already in New Orleans? Schedule a relaxed tour-planning conversation at a convenient hotel, French Quarter, or nearby public meeting location.
                 </p>
-                <p className="text-[var(--nola-ivory)]/70 font-light">
-                  Think of it as a hotel-bar or meet-for-a-drink consultation concept—relaxed, local, and genuinely helpful.
+                <p className="text-[var(--nola-ivory)]/70 font-light mb-6">
+                  Meetings are arranged in advance, the location is agreed upon before the meeting, and availability varies.
                 </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <a href="tel:+15044849687" className="bg-[var(--nola-gold)] text-[var(--nola-bg-black)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-center">
+                    Call to Schedule
+                  </a>
+                  <a href="sms:+15044849687" className="border border-[var(--nola-gold)] text-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-center">
+                    Text to Schedule
+                  </a>
+                </div>
               </div>
             </div>
           </div>

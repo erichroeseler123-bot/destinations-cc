@@ -110,24 +110,25 @@ export default function NewOrleansHomePage() {
         </div>
       </section>
 
-      {/* 5. Welcome Stop & Group Planning */}
+      {/* 5. Tour Concierge & Group Planning */}
       <section className="py-24 bg-[var(--nola-bg-black)] border-b border-[var(--nola-border)]">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12">
           <div className="border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)] p-10 flex flex-col items-start">
             <div className="text-[10px] text-[var(--nola-gold)] uppercase tracking-widest font-bold mb-4">
-              In-Person Help
+              Scheduled Planning Help
             </div>
             <h3 className={`font-serif text-3xl mb-4 ${visualStyles.accentFont}`}>
-              French Quarter Welcome Stop
+              New Orleans Tour Concierge
             </h3>
             <p className="text-[var(--nola-ivory)]/70 font-light leading-relaxed mb-8 flex-grow">
-              Stop by for local orientation, help choosing a tour, and practical visitor assistance.
+              Already in New Orleans? Arrange a tour-planning conversation at an agreed hotel,
+              French Quarter, or nearby public meeting location. Availability varies.
             </p>
             <Link
               href="/french-quarter-welcome-stop"
               className="text-xs text-[var(--nola-ivory)] font-bold uppercase tracking-widest border-b border-[var(--nola-gold)] pb-1 hover:text-[var(--nola-gold)] transition-colors"
             >
-              View Location & Hours
+              Schedule Tour Help
             </Link>
           </div>
 
