@@ -94,7 +94,9 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
     "city-tour-of-new-orleans": "WTONOT-DETAIL-CITY",
     "oak-alley-or-laura-plantation-tour": "WTONOT-DETAIL-PLANTATION",
     "covered-tour-boat": "WTONOT-DETAIL-COVERED",
-    "ragin-cajun-airboat-options": "WTONOT-DETAIL-AIRBOAT"
+    "ragin-cajun-airboat-options": "WTONOT-DETAIL-AIRBOAT",
+    "all-day-city-plantation-combo": "WTONOT-DETAIL-CITY-PLANTATION-COMBO",
+    "covered-boat-plantation-combo": "WTONOT-DETAIL-COVERED-PLANTATION-COMBO"
   };
   const refCode = refCodeMap[slug] || "WTONOT-DETAIL-UNKNOWN";
   const fallbackHref = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
