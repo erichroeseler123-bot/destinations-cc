@@ -1,19 +1,18 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { getProductById } from "./data";
 import ProductCard from "./components/ProductCard";
 import MarketplaceSearch from "./components/MarketplaceSearch";
 import { getMarketplaceSearchItems } from "./data/searchHelper";
 import visualStyles from "./components/newOrleansVisual.module.css";
-import NewOrleansRecommendationFlow from "./components/NewOrleansRecommendationFlow";
+import NewOrleansChooser from "./components/NewOrleansChooser";
 
 export const metadata = {
   title: "New Orleans Tours | Discover and Book Real Local Experiences",
   description:
     "Compare New Orleans tours, find real participating experiences, and get local help choosing.",
 };
-
-
 
 export default function NewOrleansHomePage() {
   const southernStyle = getProductById("southernstyle-city-tour");
@@ -24,16 +23,54 @@ export default function NewOrleansHomePage() {
 
   return (
     <div className="bg-[var(--nola-bg-charcoal)] text-[var(--nola-ivory)] font-sans overflow-hidden">
-      {/* 1. Hero / Chooser */}
-      <NewOrleansRecommendationFlow />
+      {/* 1. Hero */}
+      <section className="relative h-[85vh] min-h-[600px] w-full flex items-center justify-center">
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/images/new-orleans/hero-french-quarter-balcony.jpg"
+            alt="French Quarter Balcony in New Orleans"
+            fill
+            className="object-cover object-center"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--nola-bg-charcoal)] via-[var(--nola-bg-charcoal)]/60 to-[var(--nola-bg-charcoal)]/20"></div>
+        </div>
 
-      {/* 2. Featured Experiences */}
-      <section className="py-20 px-6 max-w-7xl mx-auto border-t border-[#2a2a2a]">
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center mt-16">
+          <h1 className={`font-serif text-5xl md:text-7xl font-bold mb-6 text-[var(--nola-ivory)] tracking-tight ${visualStyles.accentFont}`}>
+            Discover the Real <br />
+            <span className="text-[var(--nola-gold)]">New Orleans</span>
+          </h1>
+          <p className="text-lg md:text-xl text-[var(--nola-ivory)]/80 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
+            Compare participating New Orleans tours, book experiences, and get help choosing the right fit for your trip.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/new-orleans/tours"
+              className="w-full sm:w-auto px-8 py-4 bg-[var(--nola-gold)] text-[var(--nola-bg-black)] font-bold uppercase tracking-widest text-sm hover:bg-[var(--nola-ivory)] transition-colors rounded-sm"
+            >
+              Explore Tours
+            </Link>
+            <Link
+              href="/new-orleans/help-me-choose"
+              className="w-full sm:w-auto px-8 py-4 border border-[var(--nola-gold)] text-[var(--nola-gold)] font-bold uppercase tracking-widest text-sm hover:bg-[var(--nola-gold)]/10 transition-colors rounded-sm"
+            >
+              Help Me Choose
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. Chooser */}
+      <NewOrleansChooser surface="homepage" />
+
+      {/* 3. Featured Experiences */}
+      <section className="py-20 px-6 max-w-7xl mx-auto border-t border-[var(--nola-border)]">
         <div className="mb-12 text-center">
-          <h2 className={`font-serif text-3xl md:text-4xl text-[#d4af37] mb-4 ${visualStyles.accentFont}`}>
+          <h2 className={`font-serif text-3xl md:text-4xl text-[var(--nola-gold)] mb-4 ${visualStyles.accentFont}`}>
             Featured Experiences
           </h2>
-          <p className="text-[#fdfbf7]/70 font-light max-w-2xl mx-auto text-lg">
+          <p className="text-[var(--nola-ivory)]/70 font-light max-w-2xl mx-auto text-lg">
             Directly book participating local operators, with clear descriptions and direct access to inventory.
           </p>
         </div>
@@ -47,13 +84,13 @@ export default function NewOrleansHomePage() {
       </section>
 
       {/* 4. Compact Find a Tour */}
-      <section className="bg-[#1a1a1a] border-y border-[#2a2a2a] py-20 px-6">
+      <section className="bg-[var(--nola-surface-subtle)] border-y border-[var(--nola-border)] py-20 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className={`font-serif text-3xl md:text-4xl text-[#fdfbf7] mb-4 ${visualStyles.accentFont}`}>
+            <h2 className={`font-serif text-3xl md:text-4xl text-[var(--nola-ivory)] mb-4 ${visualStyles.accentFont}`}>
               Find a Tour
             </h2>
-            <p className="text-[#aaaaaa] font-light text-lg">
+            <p className="text-[var(--nola-text-muted)] font-light text-lg">
               Search by operator, theme, or neighborhood to find your ideal New Orleans experience.
             </p>
           </div>
@@ -62,37 +99,37 @@ export default function NewOrleansHomePage() {
       </section>
 
       {/* 5. Welcome Stop & Group Planning */}
-      <section className="py-24 bg-[#101010] border-b border-[#2a2a2a]">
+      <section className="py-24 bg-[var(--nola-bg-black)] border-b border-[var(--nola-border)]">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12">
-          <div className="border border-[#2a2a2a] bg-[#151515] p-10 flex flex-col items-start">
-            <div className="text-[10px] text-[#d4af37] uppercase tracking-widest font-bold mb-4">
+          <div className="border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)] p-10 flex flex-col items-start">
+            <div className="text-[10px] text-[var(--nola-gold)] uppercase tracking-widest font-bold mb-4">
               In-Person Help
             </div>
             <h3 className={`font-serif text-3xl mb-4 ${visualStyles.accentFont}`}>
               French Quarter Welcome Stop
             </h3>
-            <p className="text-[#fdfbf7]/70 font-light leading-relaxed mb-8 flex-grow">
+            <p className="text-[var(--nola-ivory)]/70 font-light leading-relaxed mb-8 flex-grow">
               Stop by for local orientation, help choosing a tour, and practical visitor assistance.
             </p>
             <Link
               href="/french-quarter-welcome-stop"
-              className="text-xs text-[#fdfbf7] font-bold uppercase tracking-widest border-b border-[#d4af37] pb-1 hover:text-[#d4af37] transition-colors"
+              className="text-xs text-[var(--nola-ivory)] font-bold uppercase tracking-widest border-b border-[var(--nola-gold)] pb-1 hover:text-[var(--nola-gold)] transition-colors"
             >
               View Location & Hours
             </Link>
           </div>
 
-          <div className="border border-[#2a2a2a] bg-[#1a1423] p-10 flex flex-col items-start">
-            <div className="text-[10px] text-[#b8952c] uppercase tracking-widest font-bold mb-4">
+          <div className="border border-[var(--nola-border)] bg-[var(--nola-surface-strong)] p-10 flex flex-col items-start">
+            <div className="text-[10px] text-[var(--nola-gold-muted)] uppercase tracking-widest font-bold mb-4">
               Private Parties
             </div>
             <h3 className={`font-serif text-3xl mb-4 ${visualStyles.accentFont}`}>Group Planning</h3>
-            <p className="text-[#fdfbf7]/70 font-light leading-relaxed mb-8 flex-grow">
+            <p className="text-[var(--nola-ivory)]/70 font-light leading-relaxed mb-8 flex-grow">
               Planning a family, wedding, or corporate group? Contact us to discuss available tour options.
             </p>
             <Link
               href="/contact"
-              className="text-xs text-[#fdfbf7] font-bold uppercase tracking-widest border-b border-[#b8952c] pb-1 hover:text-[#d4af37] transition-colors"
+              className="text-xs text-[var(--nola-ivory)] font-bold uppercase tracking-widest border-b border-[var(--nola-gold-muted)] pb-1 hover:text-[var(--nola-gold)] transition-colors"
             >
               Inquire About Groups
             </Link>
@@ -103,10 +140,10 @@ export default function NewOrleansHomePage() {
       {/* 6. Editorial Guides */}
       <section className="py-20 px-6 max-w-7xl mx-auto">
         <div className="mb-12">
-          <h2 className={`font-serif text-2xl text-[#fdfbf7] mb-2 ${visualStyles.accentFont}`}>
+          <h2 className={`font-serif text-2xl text-[var(--nola-ivory)] mb-2 ${visualStyles.accentFont}`}>
             Editorial Guides
           </h2>
-          <p className="text-[#aaaaaa] font-light text-sm">
+          <p className="text-[var(--nola-text-muted)] font-light text-sm">
             Dig deeper before you decide.
           </p>
         </div>
@@ -137,12 +174,12 @@ function GuideLink({ href, title }: { href: string; title: string }) {
   return (
     <Link
       href={href}
-      className="block p-6 border border-[#2a2a2a] bg-[#1a1a1a] hover:border-[#d4af37] transition-colors group"
+      className="block p-6 border border-[var(--nola-border)] bg-[var(--nola-surface-subtle)] hover:border-[var(--nola-gold)] transition-colors group"
     >
-      <h4 className={`font-serif text-lg text-[#fdfbf7] mb-4 group-hover:text-[#d4af37] ${visualStyles.accentFont}`}>
+      <h4 className={`font-serif text-lg text-[var(--nola-ivory)] mb-4 group-hover:text-[var(--nola-gold)] ${visualStyles.accentFont}`}>
         {title}
       </h4>
-      <span className="text-[10px] uppercase tracking-widest font-bold text-[#aaaaaa] group-hover:text-[#fdfbf7]">
+      <span className="text-[10px] uppercase tracking-widest font-bold text-[var(--nola-text-muted)] group-hover:text-[var(--nola-ivory)]">
         Read Guide →
       </span>
     </Link>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { trackEvent } from "@/lib/analytics";
 import {
   CategoryId,
@@ -62,6 +63,7 @@ type NewOrleansChooserProps = {
 };
 
 export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
+  const router = useRouter();
   const analyticsSurface = surface === "homepage" ? "new_orleans_homepage_chooser" : "new_orleans_standalone_chooser";
   const [view, setView] = useState<"initial" | "swamp-second" | "guided-categories" | "guided-preferences" | "recommendation">("initial");
 
@@ -72,6 +74,24 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
     trackEvent("chooser_started", { surface: analyticsSurface });
   }, []);
 
+  const handleRecommendationRedirect = (categoryId: CategoryId, preferenceId?: PreferenceId) => {
+    const recResult = getRecommendation(categoryId, preferenceId);
+
+    if (recResult.primaryProductId) {
+      const product = STOREFRONT_PRODUCTS.find((p) => p.id === recResult.primaryProductId);
+      if (product && product.slug) {
+        trackEvent("chooser_results_viewed", { surface: analyticsSurface, category_id: categoryId, preference_id: preferenceId });
+        trackEvent("chooser_product_selected", { surface: analyticsSurface, category_id: categoryId, product_id: product.id, preference_id: preferenceId });
+        const contextId = preferenceId || categoryId;
+        router.push(`/tours/${product.slug}?recommended=${contextId}`);
+        return;
+      }
+    }
+
+    setView("recommendation");
+    trackEvent("chooser_results_viewed", { surface: analyticsSurface, category_id: categoryId, preference_id: preferenceId });
+  };
+
   const handleInitialChoice = (choice: "swamp" | "city" | "plantation" | "notsure") => {
     if (choice === "swamp") {
       setCategoryId("swamp-airboat");
@@ -80,13 +100,11 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
     } else if (choice === "city") {
       setCategoryId("city-highlights");
       trackEvent("chooser_category_selected", { surface: analyticsSurface, category_id: "city-highlights" });
-      setView("recommendation");
-      trackEvent("chooser_results_viewed", { surface: analyticsSurface, category_id: "city-highlights" });
+      handleRecommendationRedirect("city-highlights");
     } else if (choice === "plantation") {
       setCategoryId("plantations-history");
       trackEvent("chooser_category_selected", { surface: analyticsSurface, category_id: "plantations-history" });
-      setView("recommendation");
-      trackEvent("chooser_results_viewed", { surface: analyticsSurface, category_id: "plantations-history" });
+      handleRecommendationRedirect("plantations-history");
     } else if (choice === "notsure") {
       setView("guided-categories");
     }
@@ -95,8 +113,7 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
   const handleSwampPreference = (pref: PreferenceId) => {
     setPreferenceId(pref);
     trackEvent("chooser_preferences_selected", { surface: analyticsSurface, preference_id: pref });
-    setView("recommendation");
-    trackEvent("chooser_results_viewed", { surface: analyticsSurface, category_id: "swamp-airboat", preference_id: pref });
+    handleRecommendationRedirect("swamp-airboat", pref);
   };
 
   const handleGuidedCategorySelect = (id: CategoryId) => {
@@ -105,8 +122,7 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
     const prefs = getPreferencesForCategory(id);
     const cat = CHOOSER_CATEGORIES.find((c) => c.id === id);
     if (cat?.skipPreferences || prefs.length === 0) {
-      setView("recommendation");
-      trackEvent("chooser_results_viewed", { surface: analyticsSurface, category_id: id });
+      handleRecommendationRedirect(id);
     } else {
       setView("guided-preferences");
     }
@@ -115,8 +131,9 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
   const handleGuidedPreferenceSelect = (id: PreferenceId) => {
     setPreferenceId(id);
     trackEvent("chooser_preferences_selected", { surface: analyticsSurface, preference_id: id });
-    setView("recommendation");
-    trackEvent("chooser_results_viewed", { surface: analyticsSurface, category_id: categoryId, preference_id: id });
+    if (categoryId) {
+      handleRecommendationRedirect(categoryId, id);
+    }
   };
 
   const handleRestart = () => {
@@ -153,8 +170,8 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
   const recommendation = categoryId ? getRecommendation(categoryId, preferenceId || undefined) : null;
   const product = recommendation?.primaryProductId ? STOREFRONT_PRODUCTS.find((p) => p.id === recommendation.primaryProductId) : null;
 
-  return (
-    <NewOrleansHeroFrame>
+  const content = (
+    <>
       {view !== "initial" && view !== "recommendation" && (
         <button onClick={handleBack} className={styles.backButton} aria-label="Go back to previous step">
           &larr; Back
@@ -163,15 +180,28 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
 
       {view === "initial" && (
         <div aria-live="polite" className="w-full flex flex-col items-center">
-          <h1 className={visualStyles.headline}>
-            <span className={`${visualStyles.headlineLine1} ${visualStyles.accentFont}`}>LET’S FIND YOUR</span>
-            <span className={`${visualStyles.headlineLine2} ${visualStyles.displayFont}`}>PERFECT</span>
-            <span className={`${visualStyles.scriptAccent} ${visualStyles.scriptFont}`}>New Orleans</span>
-            <span className={`${visualStyles.headlineLine2} ${visualStyles.displayFont}`}>ADVENTURE</span>
-          </h1>
-          <DecorativeDivider />
+          {surface === "standalone" ? (
+            <>
+              <h1 className={visualStyles.headline}>
+                <span className={`${visualStyles.headlineLine1} ${visualStyles.accentFont}`}>LET’S FIND YOUR</span>
+                <span className={`${visualStyles.headlineLine2} ${visualStyles.displayFont}`}>PERFECT</span>
+                <span className={`${visualStyles.scriptAccent} ${visualStyles.scriptFont}`}>New Orleans</span>
+                <span className={`${visualStyles.headlineLine2} ${visualStyles.displayFont}`}>ADVENTURE</span>
+              </h1>
+              <DecorativeDivider />
+            </>
+          ) : (
+            <div className="mb-12 text-center w-full max-w-4xl px-4">
+              <h2 id="new-orleans-experience-heading" className={`font-serif text-3xl md:text-4xl text-[var(--nola-gold)] mb-4 ${visualStyles.accentFont}`}>
+                What kind of New Orleans experience sounds right?
+              </h2>
+              <p className="text-[var(--nola-ivory)]/70 font-light max-w-2xl mx-auto text-lg">
+                Explore the city, head into the swamp, visit a historic plantation, or let us help you decide.
+              </p>
+            </div>
+          )}
 
-          <ConnectedBoard promptBanner="WHAT KIND OF ADVENTURE ARE YOU AFTER?">
+          <ConnectedBoard promptBanner={surface === "standalone" ? "WHAT KIND OF ADVENTURE ARE YOU AFTER?" : undefined}>
             <NewOrleansChoiceCard
               mode="action"
               onClick={() => handleInitialChoice("city")}
@@ -335,6 +365,16 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
           )}
         </div>
       )}
-    </NewOrleansHeroFrame>
+    </>
   );
+
+  if (surface === "homepage") {
+    return (
+      <section aria-labelledby="new-orleans-experience-heading" className="py-20 bg-[var(--nola-bg-charcoal)] border-t border-[var(--nola-border)] relative z-10 w-full flex flex-col items-center justify-center">
+        {content}
+      </section>
+    );
+  }
+
+  return <NewOrleansHeroFrame>{content}</NewOrleansHeroFrame>;
 }
