@@ -76,8 +76,8 @@ test("Analytics Lifecycle Behavior (Extracted Harness)", async (t) => {
   await t.test("6. Going back, changing an answer, and completing a different result fires one new result event", () => {
     clearEvents();
     tracker.resetResultTracking();
-    tracker.trackAnswerSelected("Next week");
-    tracker.trackResultShown(dummyResult, { planningWindow: "Next week" }, "new_orleans_homepage");
+    tracker.trackAnswerSelected("Something for today");
+    tracker.trackResultShown(dummyResult, { planningWindow: "Something for today" }, "new_orleans_homepage");
     
     assert.strictEqual(getEvents('recommendation_result_shown').length, 1);
   });
@@ -106,7 +106,7 @@ test("Analytics Lifecycle Behavior (Extracted Harness)", async (t) => {
     
     tracker.trackFlowStarted("new_orleans_homepage");
     tracker.trackAnswerSelected("Swamp");
-    tracker.trackResultShown(dummyResult, { planningWindow: "Next week" }, "new_orleans_homepage");
+    tracker.trackResultShown(dummyResult, { planningWindow: "Something for today" }, "new_orleans_homepage");
 
     assert.strictEqual(getEvents('recommendation_flow_started').length, 1);
     assert.strictEqual(getEvents('recommendation_result_shown').length, 1);
