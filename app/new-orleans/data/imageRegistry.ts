@@ -35,5 +35,22 @@ export const PRODUCT_IMAGES: Record<string, ImageAttribution> = {
     source: "Operator",
     author: "Ragin Cajun Tours",
     verifiedRights: true,
+  },
+  "all-day-city-plantation-combo": {
+    url: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    alt: "Historic French Quarter street lined with Creole buildings in New Orleans",
+    source: "Wikimedia Commons",
+    author: "Flickr user 'infrogmation'",
+    license: "CC BY 2.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:French_Quarter_Street.jpg",
+    verifiedRights: true,
+  },
+  "covered-boat-plantation-combo": {
+    url: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
+    alt: "Covered pontoon tour boat carrying passengers through a Louisiana swamp",
+    source: "Operator",
+    author: "Ragin Cajun Tours",
+    verifiedRights: true,
   }
 };

@@ -8,6 +8,7 @@ import {
   getRecommendation,
   PreferenceId,
 } from "../../app/new-orleans/help-me-choose/recommendationRules";
+import { resolveProductImage } from "../../app/new-orleans/lib/imageResolver";
 
 const originalProductMappings = [
   ["city-tour-of-new-orleans", "southernstyletours", "51942", "4344"],
@@ -84,6 +85,64 @@ test("New Orleans combo-tour routes and catalog", async (t) => {
     assert.ok(catalog.includes("'southernstyle-city-plantation-combo'"));
     assert.ok(catalog.includes("'ragincajun-covered-plantation-combo'"));
     assert.ok(catalog.includes("Six Live Tour Options"));
+  });
+
+  await t.test("all six catalog cards resolve verified images", () => {
+    const expectedOriginalImages = new Map([
+      [
+        "city-tour-of-new-orleans",
+        "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+      ],
+      [
+        "oak-alley-or-laura-plantation-tour",
+        "/images/wikimedia/originals/oak-alley-front.jpg",
+      ],
+      [
+        "covered-tour-boat",
+        "/images/travel-markets/new-orleans/covered-boat-swamp.png",
+      ],
+      [
+        "ragin-cajun-airboat-options",
+        "/images/travel-markets/new-orleans/airboat-swamp.png",
+      ],
+    ]);
+
+    for (const [slug, expectedUrl] of expectedOriginalImages) {
+      const product = STOREFRONT_PRODUCTS.find((candidate) => candidate.slug === slug);
+      assert.ok(product, `${slug} must remain configured`);
+      assert.strictEqual(resolveProductImage(product)?.src, expectedUrl);
+    }
+
+    const cityCombo = STOREFRONT_PRODUCTS.find(
+      (product) => product.slug === "all-day-city-plantation-combo",
+    );
+    const coveredCombo = STOREFRONT_PRODUCTS.find(
+      (product) => product.slug === "covered-boat-plantation-combo",
+    );
+    assert.ok(cityCombo);
+    assert.ok(coveredCombo);
+
+    assert.deepStrictEqual(resolveProductImage(cityCombo), {
+      src: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+      alt: "Historic French Quarter street lined with Creole buildings in New Orleans",
+      source: "wikimedia",
+      attribution: {
+        creator: "Flickr user 'infrogmation'",
+        license: "CC BY 2.0",
+        licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+        sourceUrl: "https://commons.wikimedia.org/wiki/File:French_Quarter_Street.jpg",
+      },
+    });
+    assert.deepStrictEqual(resolveProductImage(coveredCombo), {
+      src: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
+      alt: "Covered pontoon tour boat carrying passengers through a Louisiana swamp",
+      source: "operator",
+    });
+
+    assert.ok(
+      STOREFRONT_PRODUCTS.every((product) => resolveProductImage(product) !== null),
+      "every current catalog card must use its verified image branch",
+    );
   });
 
   await t.test("combo records cannot enter either recommendation system", () => {
