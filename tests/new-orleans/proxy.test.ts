@@ -13,11 +13,11 @@ test("getWtonotHostRewrite - WTONOT host rules", async (t) => {
     });
   };
 
-  await t.test("allows /contact to pass through unchanged", () => {
+  await t.test("rewrites /contact to the New Orleans contact page", () => {
     const req = buildRequest("welcometoneworleanstours.com", "/contact");
     const result = getWtonotHostRewrite(req);
     assert.ok(result);
-    assert.strictEqual(result.pathname, "/contact");
+    assert.strictEqual(result.pathname, "/new-orleans/contact");
   });
 
   await t.test("rewrites unsupported path to /not-found", () => {
