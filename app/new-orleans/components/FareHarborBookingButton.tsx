@@ -1,6 +1,10 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import {
+  buildFareHarborLightframeOptions,
+  type FareHarborSource,
+} from "../lib/fareHarborAttribution";
 
 declare global {
   interface Window {
@@ -17,7 +21,7 @@ export interface FareHarborBookingButtonProps {
   itemId?: string | number;
   flowId?: string | number;
   asn: string;
-  refCode?: string;
+  refCode: FareHarborSource;
   fallbackHref: string;
   placement?: string;
   className?: string;
@@ -106,19 +110,13 @@ export default function FareHarborBookingButton({
 
     trackEvent("fareharbor_open_attempted");
 
-    const fhOptions: any = {
+    const fhOptions = buildFareHarborLightframeOptions({
       shortname,
       asn,
-      ref: refCode,
-    };
-
-    if (itemId) {
-      fhOptions.view = { item: String(itemId) };
-    }
-
-    if (flowId) {
-      fhOptions.flow = String(flowId);
-    }
+      itemId,
+      flowId,
+      source: refCode,
+    });
 
     const opened = window.FH.open(fhOptions);
 

@@ -6,6 +6,7 @@ import MarketplaceDisclosure from '../components/MarketplaceDisclosure';
 import ProductCard from '../components/ProductCard';
 import { ALL_PRODUCTS, LiveProductAdapter } from '../data/index';
 import styles from './outpost.module.css';
+import { FAREHARBOR_SOURCES } from '../lib/fareHarborAttribution';
 
 const LIVE_PRODUCT_IDS = [
   'southernstyle-city-tour',
@@ -64,7 +65,11 @@ export default function OutpostConsole() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
           {liveProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              attributionSource={FAREHARBOR_SOURCES.tours}
+            />
           ))}
         </div>
       </section>

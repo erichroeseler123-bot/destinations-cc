@@ -16,6 +16,11 @@ import FareHarborBookingButton from "./FareHarborBookingButton";
 import { NewOrleansHeroFrame, NewOrleansChoiceCard, DecorativeDivider, ConnectedBoard } from "./NewOrleansVisual";
 import visualStyles from "./newOrleansVisual.module.css";
 import styles from "../help-me-choose/chooser.module.css";
+import {
+  buildAttributedTourHref,
+  FAREHARBOR_SOURCES,
+  isApprovedProductSlug,
+} from "../lib/fareHarborAttribution";
 
 const CityIllustration = () => (
   <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -65,6 +70,10 @@ type NewOrleansChooserProps = {
 export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
   const router = useRouter();
   const analyticsSurface = surface === "homepage" ? "new_orleans_homepage_chooser" : "new_orleans_standalone_chooser";
+  const attributionSource =
+    surface === "homepage"
+      ? FAREHARBOR_SOURCES.homeChooser
+      : FAREHARBOR_SOURCES.helpChooser;
   const [view, setView] = useState<"initial" | "swamp-second" | "guided-categories" | "guided-preferences" | "recommendation">("initial");
 
   const [categoryId, setCategoryId] = useState<CategoryId | null>(null);
@@ -83,7 +92,11 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
         trackEvent("chooser_results_viewed", { surface: analyticsSurface, category_id: categoryId, preference_id: preferenceId });
         trackEvent("chooser_product_selected", { surface: analyticsSurface, category_id: categoryId, product_id: product.id, preference_id: preferenceId });
         const contextId = preferenceId || categoryId;
-        router.push(`/tours/${product.slug}?recommended=${contextId}`);
+        if (isApprovedProductSlug(product.slug)) {
+          router.push(buildAttributedTourHref(product.slug, attributionSource, contextId));
+        } else {
+          router.push(`/tours/${product.slug}?recommended=${contextId}`);
+        }
         return;
       }
     }
@@ -340,8 +353,12 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
                   itemId={product.itemId}
                   flowId={product.flowId}
                   asn="aktourcenter"
-                  refCode="chooser"
-                  fallbackHref={`/tours/${product.slug}`}
+                  refCode={attributionSource}
+                  fallbackHref={
+                    isApprovedProductSlug(product.slug)
+                      ? buildAttributedTourHref(product.slug, attributionSource)
+                      : `/tours/${product.slug}`
+                  }
                   placement="chooser_recommendation"
                   className={`${visualStyles.buttonPrimary} ${visualStyles.sansFont}`}
                   onBookingClick={handleProductSelect}

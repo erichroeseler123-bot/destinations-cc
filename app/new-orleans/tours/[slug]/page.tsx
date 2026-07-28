@@ -17,6 +17,10 @@ import RecommendationCallout from "./RecommendationCallout";
 import { getRecommendation, CHOOSER_CATEGORIES, CHOOSER_PREFERENCES, CategoryId } from "../../help-me-choose/recommendationRules";
 import TourLogisticsSummary from "../../components/TourLogisticsSummary";
 import { TOUR_RECORDS } from "../../lib/tourRecommendationRules";
+import {
+  isApprovedProductSlug,
+  resolveFareHarborSource,
+} from "../../lib/fareHarborAttribution";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -90,22 +94,16 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
 
   const basePath = isWto ? "" : NEW_ORLEANS_TOURS_PATH;
   const pagePath = `${basePath}/tours/${slug}`;
-  const refCodeMap: Record<string, string> = {
-    "city-tour-of-new-orleans": "WTONOT-DETAIL-CITY",
-    "oak-alley-or-laura-plantation-tour": "WTONOT-DETAIL-PLANTATION",
-    "covered-tour-boat": "WTONOT-DETAIL-COVERED",
-    "ragin-cajun-airboat-options": "WTONOT-DETAIL-AIRBOAT",
-    "all-day-city-plantation-combo": "WTONOT-DETAIL-CITY-PLANTATION-COMBO",
-    "covered-boat-plantation-combo": "WTONOT-DETAIL-COVERED-PLANTATION-COMBO"
-  };
-  const refCode = refCodeMap[slug] || "WTONOT-DETAIL-UNKNOWN";
   const fallbackHref = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
   const ctaText = product.ctaLabel || "Check Dates & Prices";
 
   const resolvedImage = resolveProductImage(product);
 
   const resolvedSearchParams = await searchParams;
-  const recommendedParam = resolvedSearchParams.recommended as string;
+  const recommendedParam =
+    typeof resolvedSearchParams.recommended === "string"
+      ? resolvedSearchParams.recommended
+      : "";
   let recommendationExplanation = "";
   if (recommendedParam) {
     const isCategory = CHOOSER_CATEGORIES.some(c => c.id === recommendedParam);
@@ -122,6 +120,20 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
       recommendationExplanation = recResult.explanation;
     }
   }
+
+  if (!isApprovedProductSlug(slug)) {
+    notFound();
+  }
+
+  const requestedSource =
+    typeof resolvedSearchParams.src === "string"
+      ? resolvedSearchParams.src
+      : undefined;
+  const refCode = resolveFareHarborSource({
+    productSlug: slug,
+    requestedSource,
+    hasValidRecommendation: Boolean(recommendationExplanation),
+  });
 
   return (
     <div className="bg-[#151515] min-h-screen text-[#fdfbf7] font-[var(--font-sans)]">

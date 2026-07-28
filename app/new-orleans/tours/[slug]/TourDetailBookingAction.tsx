@@ -3,10 +3,11 @@
 import React from "react";
 import FareHarborBookingButton from "../../components/FareHarborBookingButton";
 import { trackEvent } from "@/lib/analytics";
+import type { FareHarborSource } from "../../lib/fareHarborAttribution";
 
 interface Props {
   product: any;
-  refCode: string;
+  refCode: FareHarborSource;
   fallbackHref: string;
   ctaText: string;
   className?: string;
@@ -19,6 +20,7 @@ export default function TourDetailBookingAction({ product, refCode, fallbackHref
       itemId={product.itemId}
       flowId={product.flowId}
       asn="aktourcenter"
+      refCode={refCode}
       fallbackHref={fallbackHref}
       className={`${className} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1a1a]`}
       onBookingClick={() => {

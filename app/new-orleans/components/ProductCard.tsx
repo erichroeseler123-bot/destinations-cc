@@ -7,14 +7,30 @@ import { VerifiedBadge, generateBadgesFromClaims } from './VerifiedBadge';
 import { WIKIMEDIA_IMAGES } from '../data/wikimedia';
 import WikimediaImageCredit from './WikimediaImageCredit';
 import { resolveProductImage } from '../lib/imageResolver';
+import {
+  buildAttributedTourHref,
+  FAREHARBOR_SOURCES,
+  isApprovedProductSlug,
+  type FareHarborSource,
+} from '../lib/fareHarborAttribution';
 
-export default function ProductCard({ product }: ProductCardProps) {
+type AttributedProductCardProps = ProductCardProps & {
+  attributionSource?: FareHarborSource;
+};
+
+export default function ProductCard({
+  product,
+  attributionSource = FAREHARBOR_SOURCES.guide,
+}: AttributedProductCardProps) {
   // @ts-ignore - categoryIds exists on product
   const categoryId = product.categoryId || (product.categoryIds && product.categoryIds[0]);
   const imgRecord = PRODUCT_IMAGES[product.slug];
   const claims = PRODUCT_CLAIMS[product.slug];
   const badges = claims ? generateBadgesFromClaims(claims) : [];
   const resolvedImage = resolveProductImage(product);
+  const detailHref = isApprovedProductSlug(product.slug)
+    ? buildAttributedTourHref(product.slug, attributionSource)
+    : `/tours/${product.slug}`;
 
   return (
     <div className="border border-[#2a2a2a] bg-[#1a1a1a] flex flex-col h-full shadow-sm hover:shadow-lg transition-shadow hover:border-[#d4af37] group rounded-sm overflow-hidden">
@@ -76,7 +92,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
           {product.isBookable || product.ctaLabel ?
             <Link
-              href={`/tours/${product.slug}`}
+              href={detailHref}
 
               className="block w-full text-center border border-[#d4af37] bg-transparent text-[#d4af37] hover:bg-[#d4af37] hover:text-[#1a1a1a] transition-colors font-bold py-3.5 text-xs uppercase tracking-widest rounded-sm"
             >

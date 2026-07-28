@@ -6,6 +6,7 @@ import MarketplaceSearch from "./components/MarketplaceSearch";
 import { getMarketplaceSearchItems } from "./data/searchHelper";
 import visualStyles from "./components/newOrleansVisual.module.css";
 import NewOrleansChooser from "./components/NewOrleansChooser";
+import { FAREHARBOR_SOURCES } from "./lib/fareHarborAttribution";
 
 export const metadata = {
   title: "New Orleans Tours | Discover and Book Real Local Experiences",
@@ -93,10 +94,10 @@ export default function NewOrleansHomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-          {southernStyle && <ProductCard product={southernStyle as any} />}
-          {southernStylePlantation && <ProductCard product={southernStylePlantation as any} />}
-          {raginCajun && <ProductCard product={raginCajun as any} />}
-          {raginCajunAirboat && <ProductCard product={raginCajunAirboat as any} />}
+          {southernStyle && <ProductCard product={southernStyle as any} attributionSource={FAREHARBOR_SOURCES.home} />}
+          {southernStylePlantation && <ProductCard product={southernStylePlantation as any} attributionSource={FAREHARBOR_SOURCES.home} />}
+          {raginCajun && <ProductCard product={raginCajun as any} attributionSource={FAREHARBOR_SOURCES.home} />}
+          {raginCajunAirboat && <ProductCard product={raginCajunAirboat as any} attributionSource={FAREHARBOR_SOURCES.home} />}
         </div>
       </section>
 
