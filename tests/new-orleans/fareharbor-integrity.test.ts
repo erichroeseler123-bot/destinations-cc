@@ -12,10 +12,10 @@ test("FareHarbor Product Identities and Links", async (t) => {
     assert.strictEqual(product.flowId, "4344");
     
     const url = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
-    assert.ok(url.includes("asn=aktourcenter"), "URL should include ASN");
-    assert.ok(url.includes("items/51942"), "URL should include item ID");
-    assert.ok(url.includes("flow=4344"), "URL should include flow ID");
-    assert.ok(url.startsWith("https://fareharbor.com/embeds/book/southernstyletours/items/51942/"));
+    assert.strictEqual(
+      url,
+      "https://fareharbor.com/embeds/book/southernstyletours/items/51942/?asn=aktourcenter&flow=4344&full-items=yes",
+    );
   });
 
   await t.test("Oak Alley Or Laura Plantation Tour", () => {
@@ -25,10 +25,10 @@ test("FareHarbor Product Identities and Links", async (t) => {
     assert.strictEqual(product.flowId, "4344");
     
     const url = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
-    assert.ok(url.includes("asn=aktourcenter"), "URL should include ASN");
-    assert.ok(url.includes("items/83002"), "URL should include item ID");
-    assert.ok(url.includes("flow=4344"), "URL should include flow ID");
-    assert.ok(url.startsWith("https://fareharbor.com/embeds/book/southernstyletours/items/83002/"));
+    assert.strictEqual(
+      url,
+      "https://fareharbor.com/embeds/book/southernstyletours/items/83002/?asn=aktourcenter&flow=4344&full-items=yes",
+    );
   });
 
   await t.test("Covered Tour Boat", () => {
@@ -38,10 +38,10 @@ test("FareHarbor Product Identities and Links", async (t) => {
     assert.strictEqual(product.flowId, "392449");
     
     const url = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
-    assert.ok(url.includes("asn=aktourcenter"), "URL should include ASN");
-    assert.ok(url.includes("items/590176"), "URL should include item ID");
-    assert.ok(url.includes("flow=392449"), "URL should include flow ID");
-    assert.ok(url.startsWith("https://fareharbor.com/embeds/book/ragincajuntours/items/590176/"));
+    assert.strictEqual(
+      url,
+      "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/?asn=aktourcenter&flow=392449&full-items=yes",
+    );
   });
 
   await t.test("Airboat Options", () => {
@@ -51,10 +51,10 @@ test("FareHarbor Product Identities and Links", async (t) => {
     assert.strictEqual(product.flowId, "940162");
     
     const url = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
-    assert.ok(url.includes("asn=aktourcenter"), "URL should include ASN");
-    assert.ok(!url.includes("items/"), "URL should NOT include an item ID for multi-item flow");
-    assert.ok(url.includes("flow=940162"), "URL should include flow ID");
-    assert.ok(url.startsWith("https://fareharbor.com/embeds/book/ragincajuntours/"));
+    assert.strictEqual(
+      url,
+      "https://fareharbor.com/embeds/book/ragincajuntours/?asn=aktourcenter&flow=940162&full-items=yes",
+    );
   });
 
   await t.test("All-Day City + Plantation", () => {

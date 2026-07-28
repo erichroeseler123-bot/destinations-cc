@@ -11,6 +11,10 @@ import WelcomeStopPage, {
   metadata as conciergeMetadata,
 } from "../../app/new-orleans/french-quarter-welcome-stop/page";
 import { STOREFRONT_PRODUCTS } from "../../app/new-orleans/tours/pageConfig";
+import {
+  buildAttributedTourHref,
+  FAREHARBOR_SOURCES,
+} from "../../app/new-orleans/lib/fareHarborAttribution";
 
 const testRequire = createRequire(import.meta.url);
 (testRequire as typeof testRequire & {
@@ -91,7 +95,10 @@ test("/tours is a compact six-product secondary catalog", async () => {
 
   for (const slug of APPROVED_PRODUCT_SLUGS) {
     assert.strictEqual(
-      countOccurrences(markup, `href="/tours/${slug}"`),
+      countOccurrences(
+        markup,
+        `href="${buildAttributedTourHref(slug, FAREHARBOR_SOURCES.tours).replaceAll("&", "&amp;")}"`,
+      ),
       1,
       `${slug} must appear exactly once in the rendered catalog`,
     );
