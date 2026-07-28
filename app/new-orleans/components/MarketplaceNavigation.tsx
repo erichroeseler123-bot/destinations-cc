@@ -47,6 +47,7 @@ export function HeaderNav() {
             <Link href="/swamp-tours">Swamp Tours</Link>
             <Link href="/plantation-tours">Plantation Tours</Link>
             <Link href="/tours-for/first-time-visitors">Plan Your Trip</Link>
+            <Link href="/help-me-choose">Help Me Choose</Link>
           </nav>
 
           <div className={visualStyles.marketPhoneWrap}>
@@ -86,6 +87,7 @@ export function HeaderNav() {
               <Link href="/swamp-tours" onClick={toggle} className="hover:text-[#d4af37]">Swamp Tours</Link>
               <Link href="/plantation-tours" onClick={toggle} className="hover:text-[#d4af37]">Plantations</Link>
               <Link href="/tours-for/first-time-visitors" onClick={toggle} className="hover:text-[#d4af37]">Plan Your Trip</Link>
+              <Link href="/help-me-choose" onClick={toggle} className="hover:text-[#d4af37]">Help Me Choose</Link>
             </nav>
 
             <div className="mt-auto pt-8 border-t border-white/10">

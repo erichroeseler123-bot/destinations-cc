@@ -56,7 +56,7 @@ export default function OutpostConsole() {
             </p>
           </div>
           <Link
-            href="/#chooser"
+            href="/help-me-choose"
             className="inline-flex items-center justify-center border border-[#d4af37] px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-[#d4af37] hover:bg-[#d4af37] hover:text-[#151515] transition-colors"
           >
             Help Me Choose
