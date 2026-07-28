@@ -11,6 +11,11 @@ export const metadata = {
   title: "New Orleans Tours | Discover and Book Real Local Experiences",
   description:
     "Compare New Orleans tours, find real participating experiences, and get local help choosing.",
+  openGraph: {
+    title: "New Orleans Tours | Discover and Book Real Local Experiences",
+    description:
+      "Compare New Orleans tours, use the tour chooser, and schedule New Orleans Tour Concierge help.",
+  },
 };
 
 export default function NewOrleansHomePage() {
@@ -121,8 +126,9 @@ export default function NewOrleansHomePage() {
               New Orleans Tour Concierge
             </h3>
             <p className="text-[var(--nola-ivory)]/70 font-light leading-relaxed mb-8 flex-grow">
-              Already in New Orleans? Arrange a tour-planning conversation at an agreed hotel,
-              French Quarter, or nearby public meeting location. Availability varies.
+              Schedule a relaxed tour-planning conversation at an agreed hotel, French Quarter,
+              or nearby public meeting location. Meetings are arranged in advance, and availability
+              varies. We help individuals, families, and groups compare available tour options.
             </p>
             <Link
               href="/french-quarter-welcome-stop"

@@ -5,6 +5,10 @@ import { NEW_ORLEANS_ORIGIN } from '../tours/pageConfig';
 export const metadata: Metadata = {
   title: 'New Orleans Tour Concierge | Welcome to New Orleans Tours',
   description: 'Schedule an in-person tour-planning conversation at an agreed New Orleans meeting location. Call or text in advance; availability varies.',
+  openGraph: {
+    title: 'New Orleans Tour Concierge | Welcome to New Orleans Tours',
+    description: 'Schedule New Orleans tour-planning help in advance at an agreed meeting location. Availability varies.',
+  },
   alternates: {
     canonical: `${NEW_ORLEANS_ORIGIN}/french-quarter-welcome-stop`
   }
@@ -27,13 +31,13 @@ export default function WelcomeStopPage() {
           </p>
 
           <div className="bg-[#101010] border-l-4 border-[#d4af37] p-6 md:p-8 mb-10">
-            <h2 className="text-xl font-bold text-[#d4af37] mb-2 font-[var(--font-accent)]">Arrange the meeting in advance</h2>
+            <h2 className="text-xl font-bold text-[#d4af37] mb-2 font-[var(--font-accent)]">Schedule Tour Help</h2>
             <p className="text-[#fdfbf7] font-light mb-4">
-              The meeting location is agreed upon before the conversation. Availability varies, so
-              please call or text before making plans.
+              Meetings are arranged in advance, and the meeting location is agreed upon before the
+              appointment. Availability varies, so visitors should call or text to schedule.
             </p>
             <p className="text-[#aaaaaa] font-light mb-6 text-sm">
-              This is a scheduled concierge conversation, not a permanent storefront or walk-in visitor center.
+              The service helps individuals, families, and groups compare available tour options.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <a href="tel:+15044849687" className="inline-block bg-[#d4af37] text-[#1a1a1a] px-8 py-4 font-bold uppercase tracking-widest text-sm text-center hover:bg-[#fdfbf7] transition-colors">

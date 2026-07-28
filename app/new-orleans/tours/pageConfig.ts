@@ -411,7 +411,7 @@ export const DIRECTORY_DATA: ListingNode[] = STOREFRONT_PRODUCTS.map(p => ({
 }));
 
 export const METADATA = {
-  title: "Find and Book New Orleans Tours | Welcome to New Orleans Tours",
-  description: "Compare city tours, plantation experiences, swamp tours and airboat rides from local New Orleans operators.",
+  title: "Browse New Orleans Tours | Welcome to New Orleans Tours",
+  description: "Browse six current city, plantation, swamp, airboat, and full-day combination experiences from participating New Orleans operators.",
   keywords: ["new orleans tours", "new orleans city tour", "plantation tours new orleans", "cajun swamp tour", "airboat rides"]
 };
