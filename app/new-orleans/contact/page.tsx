@@ -3,6 +3,11 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Contact & Group Planning | Welcome To New Orleans Tours",
   description: "Contact us for tour selection help, group planning, or a scheduled New Orleans Tour Concierge conversation.",
+  openGraph: {
+    title: "Contact & Group Planning | Welcome to New Orleans Tours",
+    description:
+      "Call or text to schedule New Orleans Tour Concierge help for individuals, families, and groups.",
+  },
 };
 
 export default function NewOrleansContactPage() {
@@ -44,14 +49,15 @@ export default function NewOrleansContactPage() {
               <div className="flex-1">
                 <h2 className="font-serif text-2xl text-[var(--nola-gold)] mb-4">New Orleans Tour Concierge</h2>
                 <p className="text-[var(--nola-ivory)]/70 font-light mb-4">
-                  Already in New Orleans? Schedule a relaxed tour-planning conversation at a convenient hotel, French Quarter, or nearby public meeting location.
+                  Schedule a relaxed tour-planning conversation at an agreed hotel, French Quarter,
+                  or nearby public meeting location. Meetings are arranged in advance, and availability varies.
                 </p>
                 <p className="text-[var(--nola-ivory)]/70 font-light mb-6">
-                  Meetings are arranged in advance, the location is agreed upon before the meeting, and availability varies.
+                  The service helps individuals, families, and groups compare available tour options.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <a href="tel:+15044849687" className="bg-[var(--nola-gold)] text-[var(--nola-bg-black)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-center">
-                    Call to Schedule
+                    Schedule Tour Help
                   </a>
                   <a href="sms:+15044849687" className="border border-[var(--nola-gold)] text-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-center">
                     Text to Schedule

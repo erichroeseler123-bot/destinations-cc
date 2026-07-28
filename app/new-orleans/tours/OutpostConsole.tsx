@@ -34,11 +34,12 @@ export default function OutpostConsole() {
             Browse All Live Experiences
           </p>
           <h1 className="font-serif text-4xl md:text-6xl text-white mb-5">
-            New Orleans Tours
+            Browse New Orleans Tours
           </h1>
           <p className="max-w-2xl mx-auto text-base md:text-lg text-white/70 font-light leading-relaxed">
-            Compare our six currently available experiences from participating local operators,
-            then open a tour page for suitability details and live operator availability.
+            Compare our current city, swamp, plantation, airboat, and full-day combination
+            experiences from participating local operators. Not sure which option fits your group?
+            Use the tour chooser for a personalized recommendation.
           </p>
         </div>
       </section>
@@ -75,8 +76,11 @@ export default function OutpostConsole() {
           </p>
           <h2 className="font-serif text-3xl text-white mb-4">Schedule Tour Help</h2>
           <p className="max-w-2xl mx-auto text-white/70 font-light leading-relaxed mb-7">
-            Already in New Orleans? Arrange a relaxed tour-planning conversation at an agreed
-            hotel, French Quarter, or nearby public meeting location. Availability varies.
+            Schedule a relaxed tour-planning conversation at an agreed hotel, French Quarter,
+            or nearby public meeting location. Meetings are arranged in advance, and availability varies.
+          </p>
+          <p className="max-w-2xl mx-auto text-white/60 text-sm font-light leading-relaxed mb-7">
+            The service helps individuals, families, and groups compare available tour options.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3">
             <Link

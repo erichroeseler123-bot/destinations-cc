@@ -24,13 +24,19 @@ export function HeaderNav() {
     <>
       <header className={visualStyles.marketHeader}>
         <div className={visualStyles.marketHeaderInner}>
-          <Link href="/" className={visualStyles.marketBrand}>
+          <Link
+            href="/"
+            className={visualStyles.marketBrand}
+            aria-label="Welcome to New Orleans Tours"
+          >
             <span className={`${visualStyles.marketBrandWelcome} ${visualStyles.scriptFont}`}>
               Welcome to
             </span>
+            {' '}
             <span className={`${visualStyles.marketBrandCity} ${visualStyles.accentFont}`}>
               New Orleans
             </span>
+            {' '}
             <span className={visualStyles.marketBrandTours}>
               Tours
             </span>
