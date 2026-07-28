@@ -196,7 +196,9 @@ export default function SeoPageRenderer({ page }: { page: SeoPageRecord }) {
             {page.topCta && (
               <div className="my-16 text-center">
                 <Link href={page.topCta} className="inline-block bg-[#d4af37] text-[#1a1a1a] px-8 py-4 text-sm font-bold uppercase tracking-widest hover:bg-[#fdfbf7] transition-colors rounded-sm shadow-md">
-                  View All Options
+                  {["city-tours", "swamp-tours", "plantation-tours"].includes(page.id)
+                    ? "Browse All Tours"
+                    : "View All Options"}
                 </Link>
               </div>
             )}
