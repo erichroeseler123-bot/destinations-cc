@@ -76,6 +76,22 @@ test("FareHarbor Lightframe attribution", async (t) => {
     assert.strictEqual(
       resolveFareHarborSource({
         productSlug: "city-tour-of-new-orleans",
+        requestedSource: FAREHARBOR_SOURCES.recommendation,
+        hasValidRecommendation: true,
+      }),
+      FAREHARBOR_SOURCES.recommendation,
+    );
+    assert.strictEqual(
+      resolveFareHarborSource({
+        productSlug: "city-tour-of-new-orleans",
+        requestedSource: FAREHARBOR_SOURCES.recommendation,
+        hasValidRecommendation: false,
+      }),
+      FAREHARBOR_SOURCES.detailCity,
+    );
+    assert.strictEqual(
+      resolveFareHarborSource({
+        productSlug: "city-tour-of-new-orleans",
         requestedSource: "uncontrolled-source",
         hasValidRecommendation: true,
       }),
