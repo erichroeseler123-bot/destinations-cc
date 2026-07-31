@@ -182,27 +182,31 @@ test("New Orleans combo-tour routes and catalog", async (t) => {
     }> = [
       {
         category: "city-highlights",
-        primary: "southernstyle-city-tour",
-        recommendedValue: "city-highlights",
+        preference: "city-sightseeing",
+        primary: "city-cemetery-garden-district-tour",
+        alternatives: ["city-tour-of-new-orleans"],
+        recommendedValue: "city-sightseeing",
       },
       {
         category: "plantations-history",
-        primary: "southernstyle-plantation",
-        recommendedValue: "plantations-history",
+        preference: "plantation-oak-alley",
+        primary: "oak-alley-plantation-tour-grey-line",
+        alternatives: ["oak-alley-or-laura-plantation-tour"],
+        recommendedValue: "plantation-oak-alley",
       },
       {
         category: "swamp-airboat",
-        preference: "swamp-calm",
-        primary: "ragincajun-covered-boat",
-        alternatives: ["ragincajun-airboat"],
-        recommendedValue: "swamp-calm",
+        preference: "swamp-covered",
+        primary: "swamp-bayou-tour",
+        alternatives: ["covered-tour-boat"],
+        recommendedValue: "swamp-covered",
       },
       {
         category: "swamp-airboat",
-        preference: "swamp-active",
-        primary: "ragincajun-airboat",
-        alternatives: ["ragincajun-covered-boat"],
-        recommendedValue: "swamp-active",
+        preference: "swamp-small-airboat",
+        primary: "small-airboat-swamp-adventure",
+        alternatives: ["ragin-cajun-airboat-options"],
+        recommendedValue: "swamp-small-airboat",
       },
     ];
 

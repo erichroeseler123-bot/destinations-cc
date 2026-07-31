@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import JsonLd from "@/app/components/dcc/JsonLd";
-import OutpostConsole from "./OutpostConsole";
 import { HeaderNav, FooterNav } from "../components/MarketplaceNavigation";
+import ProductCard from "../components/ProductCard";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -91,7 +91,60 @@ export default async function NewOrleansToursPage() {
           ],
         }}
       />
-      <OutpostConsole />
+      <main className="w-full min-h-screen bg-[#151515] text-[#fdfbf7] font-[var(--font-sans)]">
+        <section className="px-6 py-14 md:py-20 border-b border-[#2a2a2a] bg-[#101010]">
+          <div className="max-w-4xl mx-auto text-center">
+            <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.24em] text-[#d4af37] mb-4">
+              Browse All Live Experiences
+            </p>
+            <h1 className="font-[var(--font-accent)] text-4xl md:text-6xl text-[#fdfbf7] mb-5 font-bold">
+              New Orleans Tours
+            </h1>
+            <p className="max-w-2xl mx-auto text-base md:text-lg text-[#cccccc] font-light leading-relaxed">
+              Explore our curated selection of river cruises, swamp adventures, plantation history, and walking tours.
+              Each experience is carefully verified for quality.
+            </p>
+          </div>
+        </section>
+
+        <div className="max-w-7xl mx-auto px-6 py-12 md:py-20 space-y-20">
+          {[
+            { id: "River Cruises", title: "River Cruises" },
+            { id: "Swamp Tours", title: "Swamp Adventures" },
+            { id: "Airboat Rides", title: "Airboat Adventures" },
+            { id: "Plantation Tours", title: "Plantation History" },
+            { id: "Combo Tours", title: "Combination Tours" },
+            { id: "City Tours", title: "City Highlights" },
+            { id: "Walking Tours", title: "Walking Tours (Food, Cocktails & Ghosts)" }
+          ].map(section => {
+            // Find products matching this section's category
+            const sectionProducts = STOREFRONT_PRODUCTS.filter(p => p.category === section.id);
+
+            if (sectionProducts.length === 0) return null;
+
+            return (
+              <section key={section.id} className="space-y-8">
+                <div className="border-b border-[#2a2a2a] pb-4">
+                  <h2 className="text-3xl font-[var(--font-accent)] font-bold text-[#d4af37]">{section.title}</h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {sectionProducts.map(product => (
+                    <ProductCard
+                      key={product.id}
+                      product={{
+                        ...product,
+                        operatorAttribution: product.operatorName,
+                        isBookable: true,
+                        ctaLabel: "View Details"
+                      } as any}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      </main>
     </>
   );
 }

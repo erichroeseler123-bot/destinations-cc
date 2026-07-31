@@ -12,6 +12,14 @@ export interface NolaFareHarborProduct {
   slug: string;
   relatedTourSlug: string;
 
+  // Booking variants for multi-option products
+  bookingVariants?: {
+    label: string;
+    itemId: string;
+    flowId: string;
+    bookingUrl: string;
+  }[];
+
   // New optional detail fields for Step 4
   detailSummary?: string;
   bestFit?: string[];
@@ -381,6 +389,460 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
       transportation: "Transportation is included as described by the operator."
     },
     historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor. The depth and focus of historical interpretation vary by site. We encourage visitors to review the selected plantation’s specific historical program and educational approach."
+  },
+  {
+    id: "evening-jazz-cruise",
+    companyShortname: "neworleanssteamboatcompany",
+    title: "Evening Jazz Cruise",
+    category: "River Cruises",
+    operatorName: "New Orleans Steamboat Company",
+    description: "Experience the Mississippi River at night with live jazz and stunning city views.",
+    imageUrl: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
+    slug: "evening-jazz-cruise",
+    relatedTourSlug: "daytime-jazz-cruise",
+    detailPageTitle: "Evening Jazz Cruise | Welcome to New Orleans Tours",
+    metaDescription: "Experience the Mississippi River at night with live jazz. Choose from dinner seatings or sightseeing-only options.",
+    detailSummary: "A classic evening steamboat cruise featuring live jazz and spectacular views of the New Orleans skyline.",
+    bestFit: [
+      "Visitors looking for a classic New Orleans evening on the river",
+      "Couples and groups wanting live music and dining in one experience"
+    ],
+    notIdealFor: [
+      "Those who prefer a fast-paced or highly active evening"
+    ],
+    childrenConsiderations: [
+      "Children are welcome. Verify child pricing and seating options during checkout."
+    ],
+    bookingConfirmations: [
+      "Selected seating time (Sightseeing, Early Dinner, Late Dinner)",
+      "Exact departure time and boarding location",
+      "Menu and inclusions"
+    ],
+    bookingVariants: [
+      {
+        label: "CHECK SIGHTSEEING AVAILABILITY",
+        itemId: "560825",
+        flowId: "1621291",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621291"
+      },
+      {
+        label: "CHECK EARLY DINNER (6:00 PM)",
+        itemId: "560778",
+        flowId: "1621291",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560778/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621291"
+      },
+      {
+        label: "CHECK LATE DINNER (7:45 PM)",
+        itemId: "560822",
+        flowId: "1621291",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560822/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621291"
+      },
+      {
+        label: "CHECK SEASONAL PARTY PACKAGE",
+        itemId: "560827",
+        flowId: "1621291",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560827/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621291"
+      }
+    ]
+  },
+  {
+    id: "daytime-jazz-cruise",
+    companyShortname: "neworleanssteamboatcompany",
+    title: "Daytime Jazz Cruise",
+    category: "River Cruises",
+    operatorName: "New Orleans Steamboat Company",
+    description: "Enjoy a relaxing daytime cruise on the Mississippi River with live jazz.",
+    imageUrl: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
+    slug: "daytime-jazz-cruise",
+    relatedTourSlug: "evening-jazz-cruise",
+    detailPageTitle: "Daytime Jazz Cruise | Welcome to New Orleans Tours",
+    metaDescription: "Enjoy a relaxing daytime cruise on the Mississippi River with live jazz. Multiple lunch seatings available.",
+    detailSummary: "A daytime steamboat excursion on the Mississippi River, featuring live jazz and historical narration.",
+    bestFit: [
+      "Families and visitors looking for a daytime river activity",
+      "Those who want to combine lunch and a tour"
+    ],
+    childrenConsiderations: [
+      "Children are welcome. Verify child pricing and seating options during checkout."
+    ],
+    bookingConfirmations: [
+      "Selected seating time (Sightseeing or Lunch)",
+      "Exact departure time and boarding location"
+    ],
+    bookingVariants: [
+      {
+        label: "CHECK SIGHTSEEING AVAILABILITY",
+        itemId: "561220",
+        flowId: "1621342",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561220/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
+      },
+      {
+        label: "CHECK 11:00 AM LUNCH SEATING",
+        itemId: "561185",
+        flowId: "1621342",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561185/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
+      },
+      {
+        label: "CHECK 12:15 PM LUNCH SEATING",
+        itemId: "561216",
+        flowId: "1621342",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561216/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
+      },
+      {
+        label: "CHECK 2:00 PM LUNCH SEATING",
+        itemId: "566787",
+        flowId: "1621342",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/566787/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
+      },
+      {
+        label: "CHECK 3:15 PM LUNCH SEATING",
+        itemId: "566794",
+        flowId: "1621342",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/566794/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
+      },
+      {
+        label: "CHECK SEASONAL PARTY PACKAGE",
+        itemId: "561392",
+        flowId: "1621342",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561392/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621342"
+      }
+    ]
+  },
+  {
+    id: "sunday-jazz-brunch-cruise",
+    companyShortname: "neworleanssteamboatcompany",
+    title: "Sunday Jazz Brunch Cruise",
+    category: "River Cruises",
+    operatorName: "New Orleans Steamboat Company",
+    description: "A festive Sunday morning on the river featuring a jazz brunch.",
+    imageUrl: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
+    slug: "sunday-jazz-brunch-cruise",
+    relatedTourSlug: "daytime-jazz-cruise",
+    detailPageTitle: "Sunday Jazz Brunch Cruise | Welcome to New Orleans Tours",
+    metaDescription: "A festive Sunday morning on the river featuring a jazz brunch. Choose from brunch seatings or sightseeing options.",
+    detailSummary: "A traditional Sunday jazz brunch experience aboard a classic riverboat.",
+    bestFit: [
+      "Weekend visitors seeking a traditional New Orleans brunch experience"
+    ],
+    childrenConsiderations: [
+      "Verify child pricing and availability during checkout."
+    ],
+    bookingConfirmations: [
+      "Selected option (Sightseeing or Brunch)",
+      "Departure time"
+    ],
+    bookingVariants: [
+      {
+        label: "CHECK SIGHTSEEING AVAILABILITY",
+        itemId: "561369",
+        flowId: "1621326",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561369/?ref=WelcomeToNewOrelansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621326"
+      },
+      {
+        label: "CHECK BRUNCH AVAILABILITY",
+        itemId: "561390",
+        flowId: "1621326",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561390/?ref=WelcomeToNewOrelansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621326"
+      },
+      {
+        label: "CHECK SEASONAL PARTY PACKAGE",
+        itemId: "561403",
+        flowId: "1621326",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561403/?ref=WelcomeToNewOrelansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621326"
+      }
+    ]
+  },
+  {
+    id: "oak-alley-plantation-tour-grey-line",
+    companyShortname: "neworleanssteamboatcompany",
+    itemId: "561477",
+    flowId: "1578687",
+    title: "Oak Alley Plantation Tour",
+    category: "Plantation Tours",
+    operatorName: "Grey Line",
+    description: "Explore the iconic Oak Alley Plantation with its famous canopy of southern live oak trees.",
+    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    slug: "oak-alley-plantation-tour-grey-line",
+    relatedTourSlug: "whitney-plantation-tour",
+    detailPageTitle: "Oak Alley Plantation Tour by Grey Line | Welcome to New Orleans Tours",
+    metaDescription: "Explore the iconic Oak Alley Plantation with its famous canopy of southern live oak trees on this Grey Line tour.",
+    detailSummary: "A guided tour to Oak Alley Plantation operated by Grey Line.",
+    historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor. The depth and focus of historical interpretation vary by site. We encourage visitors to review the selected plantation’s specific historical program and educational approach.",
+    bookingVariants: [
+      {
+        label: "CHECK AVAILABILITY",
+        itemId: "561477",
+        flowId: "1578687",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561477/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1578687"
+      }
+    ]
+  },
+  {
+    id: "whitney-plantation-tour",
+    companyShortname: "neworleanssteamboatcompany",
+    itemId: "561539",
+    flowId: "1578687",
+    title: "Whitney Plantation Tour",
+    category: "Plantation Tours",
+    operatorName: "Grey Line",
+    description: "Visit the Whitney Plantation, dedicated entirely to understanding the facts of slavery in Louisiana.",
+    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    slug: "whitney-plantation-tour",
+    relatedTourSlug: "oak-alley-plantation-tour-grey-line",
+    detailPageTitle: "Whitney Plantation Tour | Welcome to New Orleans Tours",
+    metaDescription: "Visit the Whitney Plantation, dedicated entirely to understanding the facts of slavery in Louisiana.",
+    detailSummary: "A guided visit to the Whitney Plantation, with an exclusive focus on the lives of enslaved people.",
+    historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor. The Whitney Plantation focuses exclusively on the history and experiences of the enslaved population.",
+    bookingVariants: [
+      {
+        label: "CHECK AVAILABILITY",
+        itemId: "561539",
+        flowId: "1578687",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561539/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1578687"
+      }
+    ]
+  },
+  {
+    id: "swamp-bayou-tour",
+    companyShortname: "neworleanssteamboatcompany",
+    itemId: "561484",
+    flowId: "1220421",
+    title: "Swamp & Bayou Tour",
+    category: "Swamp Tours",
+    operatorName: "Grey Line",
+    description: "A classic boat tour exploring the Louisiana swamp and bayou ecosystem.",
+    imageUrl: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
+    slug: "swamp-bayou-tour",
+    relatedTourSlug: "small-airboat-swamp-adventure",
+    detailPageTitle: "Swamp & Bayou Tour | Welcome to New Orleans Tours",
+    metaDescription: "A classic boat tour exploring the Louisiana swamp and bayou ecosystem with Grey Line.",
+    detailSummary: "A guided boat tour into the Louisiana swamps and bayous.",
+    bookingVariants: [
+      {
+        label: "CHECK AVAILABILITY",
+        itemId: "561484",
+        flowId: "1220421",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561484/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1220421"
+      }
+    ]
+  },
+  {
+    id: "small-airboat-swamp-adventure",
+    companyShortname: "neworleanssteamboatcompany",
+    itemId: "561547",
+    flowId: "1220421",
+    title: "Small Airboat Swamp Adventure",
+    category: "Airboat Rides",
+    operatorName: "Grey Line",
+    description: "An intimate and high-speed airboat ride through the Louisiana swamps.",
+    imageUrl: "/images/travel-markets/new-orleans/airboat-swamp.png",
+    slug: "small-airboat-swamp-adventure",
+    relatedTourSlug: "large-airboat-swamp-adventure",
+    detailPageTitle: "Small Airboat Swamp Adventure | Welcome to New Orleans Tours",
+    metaDescription: "An intimate and high-speed airboat ride through the Louisiana swamps with Grey Line.",
+    detailSummary: "A fast-paced small airboat tour in the Louisiana bayou.",
+    bookingVariants: [
+      {
+        label: "CHECK AVAILABILITY",
+        itemId: "561547",
+        flowId: "1220421",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561547/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1220421"
+      }
+    ]
+  },
+  {
+    id: "large-airboat-swamp-adventure",
+    companyShortname: "neworleanssteamboatcompany",
+    itemId: "562175",
+    flowId: "1220421",
+    title: "Large Airboat Swamp Adventure",
+    category: "Airboat Rides",
+    operatorName: "Grey Line",
+    description: "A fast-paced airboat ride on a larger vessel through the Louisiana swamps.",
+    imageUrl: "/images/travel-markets/new-orleans/airboat-swamp.png",
+    slug: "large-airboat-swamp-adventure",
+    relatedTourSlug: "small-airboat-swamp-adventure",
+    detailPageTitle: "Large Airboat Swamp Adventure | Welcome to New Orleans Tours",
+    metaDescription: "A fast-paced airboat ride on a larger vessel through the Louisiana swamps with Grey Line.",
+    detailSummary: "A fast-paced large airboat tour in the Louisiana bayou.",
+    bookingVariants: [
+      {
+        label: "CHECK AVAILABILITY",
+        itemId: "562175",
+        flowId: "1220421",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/562175/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1220421"
+      }
+    ]
+  },
+  {
+    id: "swamp-boat-oak-alley-combo",
+    companyShortname: "neworleanssteamboatcompany",
+    itemId: "562191",
+    flowId: "1220421",
+    title: "Swamp Boat and Oak Alley Combination",
+    category: "Combo Tours",
+    operatorName: "Grey Line",
+    description: "Experience both a Louisiana swamp boat tour and the historic Oak Alley Plantation in one trip.",
+    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    slug: "swamp-boat-oak-alley-combo",
+    relatedTourSlug: "swamp-boat-whitney-combo",
+    detailPageTitle: "Swamp Boat and Oak Alley Combination | Welcome to New Orleans Tours",
+    metaDescription: "Experience both a Louisiana swamp boat tour and the historic Oak Alley Plantation in one trip with Grey Line.",
+    detailSummary: "A full-day combination tour featuring Oak Alley Plantation and a swamp boat ride.",
+    historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor.",
+    bookingVariants: [
+      {
+        label: "CHECK AVAILABILITY",
+        itemId: "562191",
+        flowId: "1220421",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/562191/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1220421"
+      }
+    ]
+  },
+  {
+    id: "swamp-boat-whitney-combo",
+    companyShortname: "neworleanssteamboatcompany",
+    itemId: "670738",
+    flowId: "1220421",
+    title: "Swamp Boat and Whitney Combination",
+    category: "Combo Tours",
+    operatorName: "Grey Line",
+    description: "Experience both a Louisiana swamp boat tour and the historic Whitney Plantation.",
+    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    slug: "swamp-boat-whitney-combo",
+    relatedTourSlug: "swamp-boat-oak-alley-combo",
+    detailPageTitle: "Swamp Boat and Whitney Combination | Welcome to New Orleans Tours",
+    metaDescription: "Experience both a Louisiana swamp boat tour and the historic Whitney Plantation with Grey Line.",
+    detailSummary: "A full-day combination tour featuring Whitney Plantation and a swamp boat ride.",
+    historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor.",
+    bookingVariants: [
+      {
+        label: "CHECK AVAILABILITY",
+        itemId: "670738",
+        flowId: "1220421",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/670738/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1220421"
+      }
+    ]
+  },
+  {
+    id: "cocktail-walking-tour",
+    companyShortname: "neworleanssteamboatcompany",
+    itemId: "682856",
+    flowId: "1578708",
+    title: "Cocktail Walking Tour",
+    category: "Walking Tours",
+    operatorName: "Grey Line",
+    description: "A walking tour exploring New Orleans' historic cocktail culture.",
+    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    slug: "cocktail-walking-tour",
+    relatedTourSlug: "craft-cocktail-walking-tour",
+    detailPageTitle: "Cocktail Walking Tour | Welcome to New Orleans Tours",
+    metaDescription: "A walking tour exploring New Orleans' historic cocktail culture.",
+    detailSummary: "A guided walking tour focusing on New Orleans' famous cocktails.",
+    bookingVariants: [
+      {
+        label: "CHECK AVAILABILITY",
+        itemId: "682856",
+        flowId: "1578708",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/682856/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1578708"
+      }
+    ]
+  },
+  {
+    id: "craft-cocktail-walking-tour",
+    companyShortname: "neworleanssteamboatcompany",
+    itemId: "562204",
+    flowId: "1578708",
+    title: "Craft Cocktail Walking Tour",
+    category: "Walking Tours",
+    operatorName: "Grey Line",
+    description: "Discover the craft cocktail scene and history in the French Quarter.",
+    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    slug: "craft-cocktail-walking-tour",
+    relatedTourSlug: "cocktail-walking-tour",
+    detailPageTitle: "Craft Cocktail Walking Tour | Welcome to New Orleans Tours",
+    metaDescription: "Discover the craft cocktail scene and history in the French Quarter.",
+    detailSummary: "A guided walking tour focusing on craft cocktails and history.",
+    bookingVariants: [
+      {
+        label: "CHECK AVAILABILITY",
+        itemId: "562204",
+        flowId: "1578708",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/562204/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1578708"
+      }
+    ]
+  },
+  {
+    id: "ghosts-spirits-walking-tour",
+    companyShortname: "neworleanssteamboatcompany",
+    itemId: "562250",
+    flowId: "1578708",
+    title: "Ghosts & Spirits Walking Tour",
+    category: "Walking Tours",
+    operatorName: "Grey Line",
+    description: "An interactive evening walking tour through the haunted history of New Orleans.",
+    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    slug: "ghosts-spirits-walking-tour",
+    relatedTourSlug: "craft-cocktail-walking-tour",
+    detailPageTitle: "Ghosts & Spirits Walking Tour | Welcome to New Orleans Tours",
+    metaDescription: "An interactive evening walking tour through the haunted history of New Orleans.",
+    detailSummary: "A guided walking tour exploring the spooky side of the city.",
+    bookingVariants: [
+      {
+        label: "CHECK AVAILABILITY",
+        itemId: "562250",
+        flowId: "1578708",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/562250/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1578708"
+      }
+    ]
+  },
+  {
+    id: "city-cemetery-garden-district-tour",
+    companyShortname: "neworleanssteamboatcompany",
+    itemId: "564661",
+    flowId: "1578708",
+    title: "City, Cemetery and Garden District Tour",
+    category: "City Tours",
+    operatorName: "Grey Line",
+    description: "A comprehensive tour covering the city's highlights, historic cemeteries, and the Garden District.",
+    imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    slug: "city-cemetery-garden-district-tour",
+    relatedTourSlug: "city-of-new-orleans-riverboat-cruise",
+    detailPageTitle: "City, Cemetery and Garden District Tour | Welcome to New Orleans Tours",
+    metaDescription: "A comprehensive tour covering the city's highlights, historic cemeteries, and the Garden District with Grey Line.",
+    detailSummary: "A guided city overview including the Garden District and a cemetery stop.",
+    bookingVariants: [
+      {
+        label: "CHECK AVAILABILITY",
+        itemId: "564661",
+        flowId: "1578708",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/564661/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1578708"
+      }
+    ]
+  },
+  {
+    id: "city-of-new-orleans-riverboat-cruise",
+    companyShortname: "neworleanssteamboatcompany",
+    itemId: "694782",
+    flowId: "1621347",
+    title: "CITY of NEW ORLEANS Riverboat Cruise",
+    category: "River Cruises",
+    operatorName: "New Orleans Steamboat Company",
+    description: "A 75-minute riverboat cruise offering a quick and scenic tour of the Mississippi River.",
+    imageUrl: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
+    slug: "city-of-new-orleans-riverboat-cruise",
+    relatedTourSlug: "daytime-jazz-cruise",
+    detailPageTitle: "75-Minute CITY of NEW ORLEANS Riverboat Cruise | Welcome to New Orleans Tours",
+    metaDescription: "A 75-minute riverboat cruise offering a quick and scenic tour of the Mississippi River.",
+    detailSummary: "A shorter, 75-minute riverboat experience on the Mississippi.",
+    bookingVariants: [
+      {
+        label: "CHECK AVAILABILITY",
+        itemId: "694782",
+        flowId: "1621347",
+        bookingUrl: "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/694782/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621347"
+      }
+    ]
   }
 ];
 

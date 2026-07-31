@@ -55,10 +55,7 @@ test("New Orleans Homepage Action Corrections", async (t) => {
     // Plantation route is correct
     assert.ok(content.includes('setCategoryId("plantations-history")'));
     // Swamp opens the secondary state
-    assert.ok(content.includes('setView("swamp-second")'));
-    // Covered Boat / Airboat handled via handleSwampPreference
-    assert.ok(content.includes('handleSwampPreference("swamp-calm")'));
-    assert.ok(content.includes('handleSwampPreference("swamp-active")'));
+    assert.ok(content.includes('setView("guided-preferences")'));
     // Not Sure opens the guided flow
     assert.ok(content.includes('setView("guided-categories")'));
   });

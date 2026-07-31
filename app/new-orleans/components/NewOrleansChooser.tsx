@@ -74,7 +74,7 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
     surface === "homepage"
       ? FAREHARBOR_SOURCES.homeChooser
       : FAREHARBOR_SOURCES.helpChooser;
-  const [view, setView] = useState<"initial" | "swamp-second" | "guided-categories" | "guided-preferences" | "recommendation">("initial");
+  const [view, setView] = useState<"initial" | "guided-categories" | "guided-preferences" | "recommendation">("initial");
 
   const [categoryId, setCategoryId] = useState<CategoryId | null>(null);
   const [preferenceId, setPreferenceId] = useState<PreferenceId | null>(null);
@@ -109,25 +109,21 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
     if (choice === "swamp") {
       setCategoryId("swamp-airboat");
       trackEvent("chooser_category_selected", { surface: analyticsSurface, category_id: "swamp-airboat" });
-      setView("swamp-second");
+      setView("guided-preferences");
     } else if (choice === "city") {
       setCategoryId("city-highlights");
       trackEvent("chooser_category_selected", { surface: analyticsSurface, category_id: "city-highlights" });
-      handleRecommendationRedirect("city-highlights");
+      setView("guided-preferences");
     } else if (choice === "plantation") {
       setCategoryId("plantations-history");
       trackEvent("chooser_category_selected", { surface: analyticsSurface, category_id: "plantations-history" });
-      handleRecommendationRedirect("plantations-history");
+      setView("guided-preferences");
     } else if (choice === "notsure") {
       setView("guided-categories");
     }
   };
 
-  const handleSwampPreference = (pref: PreferenceId) => {
-    setPreferenceId(pref);
-    trackEvent("chooser_preferences_selected", { surface: analyticsSurface, preference_id: pref });
-    handleRecommendationRedirect("swamp-airboat", pref);
-  };
+
 
   const handleGuidedCategorySelect = (id: CategoryId) => {
     setCategoryId(id);
@@ -156,12 +152,16 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
   };
 
   const handleBack = () => {
-    if (view === "swamp-second" || view === "guided-categories") {
+    if (view === "guided-categories") {
       setView("initial");
       setCategoryId(null);
     } else if (view === "guided-preferences") {
-      setView("guided-categories");
+      // If they came from notsure, they have a categoryId selected but view was guided-categories
+      // Wait, let's just go to initial if they came from homepage direct click, or guided-categories otherwise.
+      // Easiest is to go to initial always from guided-preferences if we want to simplify, but let's go back to initial.
+      setView("initial");
       setPreferenceId(null);
+      setCategoryId(null);
     }
   };
 
@@ -249,32 +249,7 @@ export default function NewOrleansChooser({ surface }: NewOrleansChooserProps) {
         </div>
       )}
 
-      {view === "swamp-second" && (
-        <div aria-live="polite" className="w-full flex flex-col items-center mt-12">
-          <h1 className={`${styles.secondaryTitle} ${visualStyles.accentFont}`}>How do you want to explore the swamp?</h1>
-          <ConnectedBoard>
-            <NewOrleansChoiceCard
-              mode="action"
-              onClick={() => handleSwampPreference("swamp-calm")}
-              iconType="swamp"
-              illustration={<SwampIllustration />}
-              title="COVERED & CALMER"
-              desc="A relaxed, shaded boat ride suitable for all ages. Perfect for photography and taking it slow."
-              cta="SELECT"
-              showOrMarker={true}
-            />
-            <NewOrleansChoiceCard
-              mode="action"
-              onClick={() => handleSwampPreference("swamp-active")}
-              iconType="swamp"
-              illustration={<SwampIllustration />}
-              title="FASTER & ACTIVE"
-              desc="An exhilarating airboat experience. Feel the wind and get up close to the wildlife."
-              cta="SELECT"
-            />
-          </ConnectedBoard>
-        </div>
-      )}
+
 
       {view === "guided-categories" && (
         <div aria-live="polite" className="w-full flex flex-col items-center mt-12">

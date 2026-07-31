@@ -21,8 +21,10 @@ export interface FareHarborBookingButtonProps {
   itemId?: string | number;
   flowId?: string | number;
   asn: string;
-  refCode: FareHarborSource;
+  refCode: FareHarborSource | string;
   fallbackHref: string;
+  scheduleUuid?: string;
+  fullItems?: string;
   placement?: string;
   className?: string;
   onBookingClick?: () => void;
@@ -38,6 +40,8 @@ export default function FareHarborBookingButton({
   asn,
   refCode,
   fallbackHref,
+  scheduleUuid,
+  fullItems,
   placement,
   className = "",
   onBookingClick,
@@ -55,6 +59,7 @@ export default function FareHarborBookingButton({
       itemId,
       flowId,
       ref: refCode,
+      bookingUrl: fallbackHref,
     };
 
     if (typeof window !== "undefined") {
@@ -116,6 +121,8 @@ export default function FareHarborBookingButton({
       itemId,
       flowId,
       source: refCode,
+      scheduleUuid,
+      fullItems,
     });
 
     const opened = window.FH.open(fhOptions);

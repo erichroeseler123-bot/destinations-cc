@@ -193,14 +193,30 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
                   </span>
                 </div>
               )}
-              <div className="mt-6 w-full md:w-auto">
-                <TourDetailBookingAction
-                  product={product}
-                  refCode={refCode}
-                  fallbackHref={fallbackHref}
-                  ctaText={ctaText}
-                  className="inline-block w-full md:w-auto bg-[#d4af37] hover:bg-[#fdfbf7] text-[#1a1a1a] font-bold px-8 py-4 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
-                />
+              <div className="mt-6 w-full md:w-auto flex flex-col gap-3">
+                {product.bookingVariants && product.bookingVariants.length > 0 ? (
+                  product.bookingVariants.map((variant: any, idx: number) => (
+                    <TourDetailBookingAction
+                      key={idx}
+                      product={product}
+                      refCode={refCode}
+                      fallbackHref={variant.bookingUrl || fallbackHref}
+                      ctaText={variant.label}
+                      variantLabel={variant.label}
+                      itemId={variant.itemId}
+                      flowId={variant.flowId}
+                      className="inline-block w-full bg-[#d4af37] hover:bg-[#fdfbf7] text-[#1a1a1a] font-bold px-8 py-4 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
+                    />
+                  ))
+                ) : (
+                  <TourDetailBookingAction
+                    product={product}
+                    refCode={refCode}
+                    fallbackHref={fallbackHref}
+                    ctaText={ctaText}
+                    className="inline-block w-full md:w-auto bg-[#d4af37] hover:bg-[#fdfbf7] text-[#1a1a1a] font-bold px-8 py-4 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -232,14 +248,30 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
                     </span>
                   </div>
                 )}
-                <div className="w-full md:w-auto flex justify-center md:justify-start">
-                  <TourDetailBookingAction
-                    product={product}
-                    refCode={refCode}
-                    fallbackHref={fallbackHref}
-                    ctaText={ctaText}
-                    className="inline-block w-full md:w-auto bg-[#d4af37] hover:bg-[#fdfbf7] text-[#1a1a1a] font-bold px-8 py-4 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
-                  />
+                <div className="w-full md:w-auto flex flex-col justify-center md:justify-start gap-3">
+                  {product.bookingVariants && product.bookingVariants.length > 0 ? (
+                    product.bookingVariants.map((variant: any, idx: number) => (
+                      <TourDetailBookingAction
+                        key={idx}
+                        product={product}
+                        refCode={refCode}
+                        fallbackHref={variant.bookingUrl || fallbackHref}
+                        ctaText={variant.label}
+                        variantLabel={variant.label}
+                        itemId={variant.itemId}
+                        flowId={variant.flowId}
+                        className="inline-block w-full bg-[#d4af37] hover:bg-[#fdfbf7] text-[#1a1a1a] font-bold px-8 py-4 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
+                      />
+                    ))
+                  ) : (
+                    <TourDetailBookingAction
+                      product={product}
+                      refCode={refCode}
+                      fallbackHref={fallbackHref}
+                      ctaText={ctaText}
+                      className="inline-block w-full md:w-auto bg-[#d4af37] hover:bg-[#fdfbf7] text-[#1a1a1a] font-bold px-8 py-4 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
+                    />
+                  )}
                 </div>
                 {resolvedImage.attribution && (
                   <div className="mt-8 text-left">
@@ -381,13 +413,31 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
                     </p>
                   </div>
 
-                  <TourDetailBookingAction
-                    product={product}
-                    refCode={refCode}
-                    fallbackHref={fallbackHref}
-                    ctaText={ctaText}
-                    className="flex items-center justify-center w-full min-h-[60px] bg-[#d4af37] hover:bg-[#fdfbf7] text-[#1a1a1a] font-bold px-6 py-4 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
-                  />
+                  <div className="space-y-3">
+                    {product.bookingVariants && product.bookingVariants.length > 0 ? (
+                      product.bookingVariants.map((variant: any, idx: number) => (
+                        <TourDetailBookingAction
+                          key={idx}
+                          product={product}
+                          refCode={refCode}
+                          fallbackHref={variant.bookingUrl || fallbackHref}
+                          ctaText={variant.label}
+                          variantLabel={variant.label}
+                          itemId={variant.itemId}
+                          flowId={variant.flowId}
+                          className="flex items-center justify-center w-full min-h-[60px] bg-[#d4af37] hover:bg-[#fdfbf7] text-[#1a1a1a] font-bold px-6 py-4 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
+                        />
+                      ))
+                    ) : (
+                      <TourDetailBookingAction
+                        product={product}
+                        refCode={refCode}
+                        fallbackHref={fallbackHref}
+                        ctaText={ctaText}
+                        className="flex items-center justify-center w-full min-h-[60px] bg-[#d4af37] hover:bg-[#fdfbf7] text-[#1a1a1a] font-bold px-6 py-4 text-sm transition-colors uppercase tracking-widest text-center shadow-md"
+                      />
+                    )}
+                  </div>
 
                   <div className="mt-4 text-[11px] text-center text-[#aaaaaa] leading-relaxed space-y-2">
                     <p>

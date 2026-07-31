@@ -23,6 +23,21 @@ export const APPROVED_PRODUCT_SLUGS = [
   "ragin-cajun-airboat-options",
   "all-day-city-plantation-combo",
   "covered-boat-plantation-combo",
+  "evening-jazz-cruise",
+  "daytime-jazz-cruise",
+  "sunday-jazz-brunch-cruise",
+  "oak-alley-plantation-tour-grey-line",
+  "whitney-plantation-tour",
+  "swamp-bayou-tour",
+  "small-airboat-swamp-adventure",
+  "large-airboat-swamp-adventure",
+  "swamp-boat-oak-alley-combo",
+  "swamp-boat-whitney-combo",
+  "cocktail-walking-tour",
+  "craft-cocktail-walking-tour",
+  "ghosts-spirits-walking-tour",
+  "city-cemetery-garden-district-tour",
+  "city-of-new-orleans-riverboat-cruise",
 ] as const;
 
 export type ApprovedProductSlug = (typeof APPROVED_PRODUCT_SLUGS)[number];
@@ -37,6 +52,21 @@ const DEFAULT_DETAIL_SOURCE_BY_SLUG: Record<ApprovedProductSlug, FareHarborSourc
   "ragin-cajun-airboat-options": FAREHARBOR_SOURCES.detailAirboat,
   "all-day-city-plantation-combo": FAREHARBOR_SOURCES.detailCityPlantation,
   "covered-boat-plantation-combo": FAREHARBOR_SOURCES.detailCoveredPlantation,
+  "evening-jazz-cruise": FAREHARBOR_SOURCES.tours,
+  "daytime-jazz-cruise": FAREHARBOR_SOURCES.tours,
+  "sunday-jazz-brunch-cruise": FAREHARBOR_SOURCES.tours,
+  "oak-alley-plantation-tour-grey-line": FAREHARBOR_SOURCES.tours,
+  "whitney-plantation-tour": FAREHARBOR_SOURCES.tours,
+  "swamp-bayou-tour": FAREHARBOR_SOURCES.tours,
+  "small-airboat-swamp-adventure": FAREHARBOR_SOURCES.tours,
+  "large-airboat-swamp-adventure": FAREHARBOR_SOURCES.tours,
+  "swamp-boat-oak-alley-combo": FAREHARBOR_SOURCES.tours,
+  "swamp-boat-whitney-combo": FAREHARBOR_SOURCES.tours,
+  "cocktail-walking-tour": FAREHARBOR_SOURCES.tours,
+  "craft-cocktail-walking-tour": FAREHARBOR_SOURCES.tours,
+  "ghosts-spirits-walking-tour": FAREHARBOR_SOURCES.tours,
+  "city-cemetery-garden-district-tour": FAREHARBOR_SOURCES.tours,
+  "city-of-new-orleans-riverboat-cruise": FAREHARBOR_SOURCES.tours,
 };
 
 const RECOMMENDATION_ONLY_SOURCES = new Set<FareHarborSource>([
@@ -95,23 +125,25 @@ export function buildFareHarborLightframeOptions({
   itemId,
   flowId,
   source,
+  scheduleUuid,
+  fullItems,
 }: {
   shortname: string;
   asn: string;
   itemId?: string | number;
   flowId?: string | number;
-  source: FareHarborSource;
+  source: FareHarborSource | string;
+  scheduleUuid?: string;
+  fullItems?: string;
 }) {
-  if (!isFareHarborSource(source)) {
-    throw new Error("Unsupported FareHarbor source");
-  }
-
   const options: {
     shortname: string;
     asn: string;
-    ref: FareHarborSource;
+    ref: FareHarborSource | string;
     view?: { item: string };
     flow?: string;
+    scheduleUuid?: string;
+    fullItems?: string;
   } = {
     shortname,
     asn,
@@ -123,6 +155,12 @@ export function buildFareHarborLightframeOptions({
   }
   if (flowId) {
     options.flow = String(flowId);
+  }
+  if (scheduleUuid) {
+    options.scheduleUuid = scheduleUuid; // Note: if the widget doesn't use this, it doesn't hurt, but the fallback href preserves it.
+  }
+  if (fullItems) {
+    options.fullItems = fullItems;
   }
 
   return options;

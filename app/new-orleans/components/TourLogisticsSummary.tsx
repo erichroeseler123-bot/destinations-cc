@@ -2,10 +2,24 @@ import React from "react";
 import { TourRecord } from "../lib/tourRecommendationRules";
 
 interface Props {
-  tourRecord: TourRecord;
+  tourRecord?: TourRecord;
 }
 
 export default function TourLogisticsSummary({ tourRecord }: Props) {
+  if (!tourRecord) {
+    return (
+      <div className="bg-[#1a1a1a] p-8 border border-[#2a2a2a]">
+        <h2 className="text-xl font-[var(--font-accent)] font-bold text-[#fdfbf7] mb-4 border-b border-[#2a2a2a] pb-4">
+          Logistics & Format
+        </h2>
+        <div className="text-sm text-[#cccccc] leading-relaxed">
+          <p className="mb-4">Logistics details are currently being verified for this experience.</p>
+          <p>Please review duration, transportation, accessibility, and other logistics directly in the operator checkout.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#1a1a1a] p-8 border border-[#2a2a2a]">
       <h2 className="text-xl font-[var(--font-accent)] font-bold text-[#fdfbf7] mb-4 border-b border-[#2a2a2a] pb-4">
