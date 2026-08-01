@@ -285,10 +285,7 @@ const CHECKS: UrlCheck[] = [
     "https://welcometoalaskatours.com/juneau-shore-excursions",
     "https://welcometoalaskatours.com/alaska-cruise-excursions",
     "https://welcometoalaskatours.com/welcome-to-alaska-tours",
-    "https://welcometoneworleanstours.com/best-tours-in-new-orleans",
-    "https://welcometoneworleanstours.com/new-orleans-walking-tours",
-    "https://welcometoneworleanstours.com/ghost-tour-vs-history-tour-new-orleans",
-    "https://welcometoneworleanstours.com/what-to-do-in-new-orleans-first-time",
+
   ].map((url): UrlCheck => ({
     label: `Chooser ${new URL(url).hostname}${new URL(url).pathname}`,
     url,

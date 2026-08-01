@@ -77,6 +77,7 @@ export const CHOOSER_CATEGORIES: ChooserCategory[] = [
     title: "Food & Cooking",
     description: "Taste the city's culinary heritage.",
     image: "/images/wikimedia/originals/gumbo-dish.jpg",
+    skipPreferences: true,
   },
   {
     id: "river-music",
@@ -156,6 +157,13 @@ export function getRecommendation(
         return { primaryProductId: "swamp-boat-whitney-combo", alternativeProductIds: ["all-day-city-plantation-combo"], explanation: "A full day combining two iconic experiences." };
       }
       return { explanation: "Explore our plantation options.", fallbackMessage: "Please choose a specific plantation experience." };
+
+    case "food-cooking":
+      return {
+        primaryProductId: "craft-cocktail-walking-tour",
+        alternativeProductIds: ["cocktail-walking-tour"],
+        explanation: "Experience the city's culinary and cocktail heritage."
+      };
 
     default:
       return {

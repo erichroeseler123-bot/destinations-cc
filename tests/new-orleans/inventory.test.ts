@@ -11,10 +11,10 @@ describe("New Orleans Inventory Integrity", () => {
       (p.bookingVariants || []).map(v => ({ ...v, slug: p.slug }))
     );
 
-    assert.strictEqual(allVariants.length, 25, "Exactly 25 Grey Line URLs");
+    assert.strictEqual(allVariants.length, 25, "Exactly 25 Gray Line URLs");
 
     const itemIds = allVariants.map(v => v.itemId);
-    assert.strictEqual(itemIds.length, 25, "Exactly 25 Grey Line item IDs");
+    assert.strictEqual(itemIds.length, 25, "Exactly 25 Gray Line item IDs");
 
     for (const approved of APPROVED_SUPPLIED_URLS) {
       const implemented = allVariants.find(v => v.slug === approved.slug && v.itemId === approved.itemId);
@@ -25,9 +25,9 @@ describe("New Orleans Inventory Integrity", () => {
     }
   });
 
-  test("Exactly 15 Grey Line parent products and 21 total storefront products", () => {
-    const greyLineProducts = STOREFRONT_PRODUCTS.filter(p => p.bookingVariants !== undefined);
-    assert.strictEqual(greyLineProducts.length, 15, "Exactly 15 Grey Line parent products");
+  test("Exactly 15 Gray Line parent products and 21 total storefront products", () => {
+    const grayLineProducts = STOREFRONT_PRODUCTS.filter(p => p.bookingVariants !== undefined);
+    assert.strictEqual(grayLineProducts.length, 15, "Exactly 15 Gray Line parent products");
     assert.strictEqual(STOREFRONT_PRODUCTS.length, 21, "Exactly 21 total storefront products");
   });
 
@@ -46,7 +46,7 @@ describe("New Orleans Inventory Integrity", () => {
 
   test("Specific incorrect IDs are absent and corrected IDs are present", () => {
     const allVariants = STOREFRONT_PRODUCTS.flatMap(p => p.bookingVariants || []);
-    const greyLineVariantIds = allVariants.map(v => v.itemId);
+    const grayLineVariantIds = allVariants.map(v => v.itemId);
 
     // Explicitly assert corrected values
     const cityCemetery = allVariants.find(v => v.itemId === "564661");
@@ -57,8 +57,8 @@ describe("New Orleans Inventory Integrity", () => {
     assert.ok(riverboat, "Riverboat corrected item ID must be present");
     assert.strictEqual(riverboat.flowId, "1621347", "Riverboat corrected flow ID must be present");
 
-    // Explicitly ban incorrect values from Grey Line inventory
-    assert.ok(!greyLineVariantIds.includes("562164"), "Incorrect item ID 562164 must be completely absent from Grey Line");
-    assert.ok(!greyLineVariantIds.includes("562260"), "Incorrect item ID 562260 must be completely absent from Grey Line");
+    // Explicitly ban incorrect values from Gray Line inventory
+    assert.ok(!grayLineVariantIds.includes("562164"), "Incorrect item ID 562164 must be completely absent from Gray Line");
+    assert.ok(!grayLineVariantIds.includes("562260"), "Incorrect item ID 562260 must be completely absent from Gray Line");
   });
 });
