@@ -2,8 +2,23 @@ import { INDEXABLE_SURFACE_PATHS } from "@/src/data/indexable-surface";
 import { headers } from "next/headers";
 import { SITE_IDENTITY } from "@/src/data/site-identity";
 import { SOMERSET_PAGE_PATHS } from "@/lib/dcc/corridors/somersetPages";
+import { ALL_PRODUCTS, SEO_PAGES } from "@/app/new-orleans/data";
 
 export const dynamic = "force-dynamic";
+
+export const WTONOT_ORIGIN = "https://welcometoneworleanstours.com";
+
+export const WTONOT_SUPPORT_PATHS = [
+  "/contact",
+  "/about",
+  "/faq",
+  "/booking-help",
+  "/privacy",
+  "/terms",
+  "/cancellation-policy",
+  "/affiliate-disclosure",
+  "/accessibility",
+] as const;
 
 function xmlEscape(value: string): string {
   return value
@@ -36,6 +51,37 @@ export function buildDccSitemapXml(
   ].join("\n");
 }
 
+export function buildWtonotSitemapPaths() {
+  const wtoPaths = [
+    "/",
+    "/tours",
+    "/french-quarter-welcome-stop",
+    ...WTONOT_SUPPORT_PATHS,
+  ];
+
+  ALL_PRODUCTS.forEach((product: any) => {
+    if (product.status === "live" && product.isIndexable) {
+      wtoPaths.push(`/tours/${product.slug}`);
+    }
+  });
+
+  Object.values(SEO_PAGES).forEach((page: any) => {
+    if (page.status === "live" && page.isIndexable) {
+      wtoPaths.push(page.publicRoute);
+    }
+  });
+
+  const legacyPaths = [
+    "/guides/best-new-orleans-swamp-tour",
+    "/guides/french-quarter-tour-timing",
+  ];
+  legacyPaths.forEach((legacyPath) => {
+    if (!wtoPaths.includes(legacyPath)) wtoPaths.push(legacyPath);
+  });
+
+  return Array.from(new Set(wtoPaths));
+}
+
 export async function GET() {
   const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
   const host = hostHeader.split(":")[0];
@@ -62,44 +108,7 @@ export async function GET() {
   }
 
   if (isWtonotHost) {
-    const origin = `https://${host}`;
-
-    // Dynamically require to avoid top-level import issues if needed, or we can just import at the top.
-    // For safety, we'll require here.
-    const { SEO_PAGES, ALL_PRODUCTS } = require('@/app/new-orleans/data/index');
-
-    const wtoPaths = [
-      "/",
-      "/tours", // Include existing top-level routes to ensure zero regressions
-      "/french-quarter-welcome-stop",
-    ];
-
-    // Add all live products
-    ALL_PRODUCTS.forEach((product: any) => {
-      if (product.status === 'live' && product.isIndexable) {
-        wtoPaths.push(`/tours/${product.slug}`);
-      }
-    });
-
-    // Add all live indexable SEO pages
-    Object.values(SEO_PAGES).forEach((page: any) => {
-      if (page.status === 'live' && page.isIndexable) {
-        wtoPaths.push(page.publicRoute);
-      }
-    });
-
-    // We must also preserve the legacy paths that were in the original sitemap if they are not covered by the new routes
-    // Previously in sitemap: /categories/swamp-tours, /categories/airboat-tours, /guides/best-new-orleans-swamp-tour, /guides/french-quarter-tour-timing
-    // To satisfy "do not replace, remove, or regress unrelated existing sitemap entries" strictly:
-    const legacyPaths = [
-      "/guides/best-new-orleans-swamp-tour",
-      "/guides/french-quarter-tour-timing",
-    ];
-    legacyPaths.forEach(lp => {
-      if (!wtoPaths.includes(lp)) wtoPaths.push(lp);
-    });
-
-    return new Response(buildDccSitemapXml(Array.from(new Set(wtoPaths)), origin), {
+    return new Response(buildDccSitemapXml(buildWtonotSitemapPaths(), WTONOT_ORIGIN), {
       headers: {
         "Content-Type": "application/xml; charset=utf-8",
         "Cache-Control": "public, max-age=3600, s-maxage=3600",

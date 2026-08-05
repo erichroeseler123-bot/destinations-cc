@@ -1,4 +1,5 @@
 import { Rye, Pinyon_Script } from 'next/font/google';
+import type { Metadata } from "next";
 import { HeaderNav, FooterNav } from "./components/MarketplaceNavigation";
 
 const newOrleansDisplayFont = Rye({
@@ -14,6 +15,14 @@ const newOrleansScriptFont = Pinyon_Script({
   display: 'swap',
   variable: '--font-new-orleans-script',
 });
+
+export const metadata: Metadata = {
+  metadataBase: new URL("https://welcometoneworleanstours.com"),
+  applicationName: "Welcome to New Orleans Tours",
+  verification: {
+    google: process.env.WTONOT_GOOGLE_SITE_VERIFICATION || undefined,
+  },
+};
 
 export default function NewOrleansLayout({
   children,

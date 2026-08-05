@@ -115,6 +115,22 @@ export function getWtonotHostRewrite(request: NextRequest) {
     return url;
   }
 
+  const supportRoutes = new Set([
+    "/privacy",
+    "/terms",
+    "/cancellation-policy",
+    "/affiliate-disclosure",
+    "/accessibility",
+    "/booking-help",
+    "/faq",
+    "/about",
+  ]);
+
+  if (supportRoutes.has(pathname)) {
+    url.pathname = `/new-orleans${pathname}`;
+    return url;
+  }
+
   // /tours -> /new-orleans/tours
   if (pathname === "/tours") {
     url.pathname = "/new-orleans/tours";
