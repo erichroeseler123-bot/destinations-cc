@@ -6,6 +6,17 @@ import FrenchQuarterBoothBonus from './FrenchQuarterBoothBonus';
 import styles from '../tours/outpost.module.css';
 import visualStyles from './newOrleansVisual.module.css';
 
+const supportLinks = [
+  { href: "/about", label: "About" },
+  { href: "/faq", label: "FAQ" },
+  { href: "/booking-help", label: "Booking Help" },
+  { href: "/privacy", label: "Privacy" },
+  { href: "/terms", label: "Terms" },
+  { href: "/cancellation-policy", label: "Cancellation Policy" },
+  { href: "/affiliate-disclosure", label: "Affiliate Disclosure" },
+  { href: "/accessibility", label: "Accessibility" },
+];
+
 export function HeaderNav() {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -139,8 +150,10 @@ export function FooterNav() {
         <div>
           <h4 className={`font-serif text-2xl mb-6 text-[#d4af37]`}>Marketplace</h4>
           <div className="flex flex-col gap-4 font-sans font-light text-[#fdfbf7]/80 mb-8">
-            <div>Independent Marketplace Disclosure</div>
-            <div>Local Operator Responsibility</div>
+            <div>
+              Independent recommendation site. We may earn a commission from bookings made through our links.
+            </div>
+            <div>Independent operators provide the tours and control their own booking policies.</div>
             <div className="text-xs">
               <span className="font-bold">Image Credit:</span><br/>
               Photo by Miguel Discart, CC BY-SA 2.0 via Wikimedia Commons.
@@ -160,8 +173,15 @@ export function FooterNav() {
         </div>
       </div>
       <FrenchQuarterBoothBonus variant="oneline" />
-      <div className="bg-black/50 py-6 text-center text-xs font-sans font-light text-white/50 mt-4">
-        &copy; {new Date().getFullYear()} Welcome to New Orleans Tours. All rights reserved.
+      <div className="bg-black/50 px-6 py-6 text-center text-xs font-sans font-light text-white/50 mt-4">
+        <nav className="mx-auto mb-4 flex max-w-5xl flex-wrap justify-center gap-x-4 gap-y-2" aria-label="Support and policy links">
+          {supportLinks.map((link) => (
+            <Link key={link.href} href={link.href} className="hover:text-[#d4af37] transition-colors">
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+        <div>&copy; {new Date().getFullYear()} Welcome to New Orleans Tours. All rights reserved.</div>
       </div>
     </footer>
   );
