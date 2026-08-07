@@ -38,6 +38,13 @@ test("New Orleans Homepage Action Corrections", async (t) => {
     // Help Me Choose reaches the homepage chooser without navigation failure
     assert.ok(content.includes('href="#chooser"'), "Help Me Choose must link to #chooser");
     assert.ok(content.includes('id="chooser"'), "Chooser must have id chooser");
+    assert.ok(content.includes("Already know what you want?"));
+    assert.ok(content.includes("Already here and still deciding?"));
+    assert.ok(content.includes('href="/french-quarter-welcome-stop"'));
+    assert.ok(content.includes('href: "/swamp-tours"'));
+    assert.ok(content.includes('href: "/city-tours"'));
+    assert.ok(content.includes('href: "/plantation-tours"'));
+    assert.ok(!content.includes("carefully verified for quality"));
 
     // every homepage guide href maps to an existing route
     assert.ok(content.includes('href="/swamp-tours/airboat-vs-covered-boat"'));

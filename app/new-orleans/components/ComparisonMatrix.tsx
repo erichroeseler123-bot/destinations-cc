@@ -1,7 +1,5 @@
 import React from "react";
-import { PRODUCT_CLAIMS } from "../data/verifiedClaims";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
-import { VerifiedBadge, generateBadgesFromClaims } from "./VerifiedBadge";
 import Link from "next/link";
 
 export default function ComparisonMatrix({ slugs }: { slugs: string[] }) {
@@ -29,19 +27,15 @@ export default function ComparisonMatrix({ slugs }: { slugs: string[] }) {
             ))}
           </tr>
           <tr>
-            <td className="p-4 border-b border-[#e5e5e5] font-semibold text-[#1a1a1a]">Verified Claims</td>
-            {products.map(product => {
-              const claims = PRODUCT_CLAIMS[product.slug];
-              if (!claims) return <td key={product.slug} className="p-4 border-b border-[#e5e5e5]">-</td>;
-              const badges = generateBadgesFromClaims(claims);
-              return (
-                <td key={product.slug} className="p-4 border-b border-[#e5e5e5]">
-                  <div className="flex flex-wrap">
-                    {badges.map(b => <VerifiedBadge key={b} label={b} />)}
-                  </div>
-                </td>
-              );
-            })}
+            <td className="p-4 border-b border-[#e5e5e5] font-semibold text-[#1a1a1a]">Useful Details</td>
+            {products.map(product => (
+              <td key={product.slug} className="p-4 border-b border-[#e5e5e5] text-sm">
+                {[product.durationLabel, product.transportationSummary || product.pickupSummary, product.physicalFormat?.walking]
+                  .filter(Boolean)
+                  .slice(0, 3)
+                  .join(" • ") || "See full details"}
+              </td>
+            ))}
           </tr>
           <tr>
             <td className="p-4 border-b border-[#e5e5e5] font-semibold text-[#1a1a1a]">Description</td>

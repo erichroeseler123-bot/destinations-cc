@@ -1,9 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ProductCardProps } from '../data/types';
-import { PRODUCT_CLAIMS } from '../data/verifiedClaims';
-import { PRODUCT_IMAGES } from '../data/imageRegistry';
-import { VerifiedBadge, generateBadgesFromClaims } from './VerifiedBadge';
+import { STOREFRONT_PRODUCTS } from '../tours/pageConfig';
 import { WIKIMEDIA_IMAGES } from '../data/wikimedia';
 import WikimediaImageCredit from './WikimediaImageCredit';
 import { resolveProductImage } from '../lib/imageResolver';
@@ -24,9 +22,13 @@ export default function ProductCard({
 }: AttributedProductCardProps) {
   // @ts-ignore - categoryIds exists on product
   const categoryId = product.categoryId || (product.categoryIds && product.categoryIds[0]);
-  const imgRecord = PRODUCT_IMAGES[product.slug];
-  const claims = PRODUCT_CLAIMS[product.slug];
-  const badges = claims ? generateBadgesFromClaims(claims) : [];
+  const sourceProduct = STOREFRONT_PRODUCTS.find((item) => item.slug === product.slug);
+  const cues = [
+    sourceProduct?.durationLabel,
+    sourceProduct?.pickupSummary || sourceProduct?.transportationSummary,
+    sourceProduct?.physicalFormat?.walking,
+    sourceProduct?.physicalFormat?.exposure,
+  ].filter((cue): cue is string => Boolean(cue)).slice(0, 4);
   const resolvedImage = resolveProductImage(product);
   const detailHref = isApprovedProductSlug(product.slug)
     ? buildAttributedTourHref(product.slug, attributionSource)
@@ -37,8 +39,8 @@ export default function ProductCard({
 
       {/* Media Section */}
       {resolvedImage ? (
-        <div className="relative h-64 w-full bg-[#151515] overflow-hidden flex flex-col">
-           <div className="relative flex-grow">
+        <div className="relative aspect-[16/10] w-full bg-[#151515] overflow-hidden flex flex-col">
+           <div className="relative flex-1">
              <img
                src={resolvedImage.src}
                alt={resolvedImage.alt}
@@ -78,7 +80,7 @@ export default function ProductCard({
 
         {product.bestFor && (
           <p className="text-xs font-semibold text-[#d4af37] mb-4 bg-[#d4af37]/10 inline-block px-2 py-1 rounded-sm w-fit">
-            {product.bestFor}
+            Good fit: {product.bestFor.replace(/^Best for\s*/i, "")}
           </p>
         )}
 
@@ -87,9 +89,15 @@ export default function ProductCard({
         </p>
 
         <div className="mt-auto pt-6 border-t border-[#2a2a2a]">
-          <div className="mb-4 flex flex-wrap">
-             {badges.map(b => <VerifiedBadge key={b} label={b} />)}
-          </div>
+          {cues.length > 0 && (
+            <div className="mb-4 flex flex-wrap gap-2" aria-label="Tour details">
+              {cues.map((cue) => (
+                <span key={cue} className="border border-[#3a3a3a] px-2 py-1 text-[10px] uppercase tracking-wider text-[#c8c8c8]">
+                  {cue}
+                </span>
+              ))}
+            </div>
+          )}
           {product.isBookable || product.ctaLabel ?
             <Link
               href={detailHref}

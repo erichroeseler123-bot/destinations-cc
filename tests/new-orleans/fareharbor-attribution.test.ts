@@ -150,14 +150,10 @@ test("FareHarbor Lightframe attribution", async (t) => {
     assert.ok(actual.every((url) => !url.includes("src=") && !url.includes("ref=")));
   });
 
-  await t.test("wires homepage, catalog, chooser, guide, and detail sources", () => {
+  await t.test("wires catalog, chooser, guide, and detail sources", () => {
     const read = (relativePath: string) =>
       fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
 
-    assert.match(
-      read("app/new-orleans/page.tsx"),
-      /attributionSource=\{FAREHARBOR_SOURCES\.home\}/,
-    );
     assert.match(
       read("app/new-orleans/components/ProductCard.tsx"),
       /attributionSource = FAREHARBOR_SOURCES\.guide/,

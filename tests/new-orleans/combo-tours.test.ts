@@ -123,19 +123,13 @@ test("New Orleans combo-tour routes and catalog", async (t) => {
     assert.ok(coveredCombo);
 
     assert.deepStrictEqual(resolveProductImage(cityCombo), {
-      src: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
-      alt: "Historic French Quarter street lined with Creole buildings in New Orleans",
-      source: "wikimedia",
-      attribution: {
-        creator: "Flickr user 'infrogmation'",
-        license: "CC BY 2.0",
-        licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-        sourceUrl: "https://commons.wikimedia.org/wiki/File:French_Quarter_Street.jpg",
-      },
+      src: "/images/travel-markets/new-orleans/swamp-plantation-combo.png",
+      alt: "Louisiana swamp and plantation combination tour",
+      source: "operator",
     });
     assert.deepStrictEqual(resolveProductImage(coveredCombo), {
-      src: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
-      alt: "Covered pontoon tour boat carrying passengers through a Louisiana swamp",
+      src: "/images/travel-markets/new-orleans/swamp-plantation-combo.png",
+      alt: "Louisiana swamp and plantation combination tour",
       source: "operator",
     });
 

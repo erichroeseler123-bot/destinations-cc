@@ -101,8 +101,8 @@ export default async function NewOrleansToursPage() {
               New Orleans Tours
             </h1>
             <p className="max-w-2xl mx-auto text-base md:text-lg text-[#cccccc] font-light leading-relaxed">
-              Explore our curated selection of river cruises, swamp adventures, plantation history, and walking tours.
-              Each experience is carefully verified for quality.
+              Compare river cruises, swamp adventures, plantation history, and walking tours from participating local operators.
+              Practical details help you choose the right fit for your group.
             </p>
           </div>
         </section>

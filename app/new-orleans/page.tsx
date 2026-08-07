@@ -1,12 +1,8 @@
 import React from "react";
 import Link from "next/link";
-import { getProductById } from "./data";
-import ProductCard from "./components/ProductCard";
-import MarketplaceSearch from "./components/MarketplaceSearch";
-import { getMarketplaceSearchItems } from "./data/searchHelper";
 import visualStyles from "./components/newOrleansVisual.module.css";
 import NewOrleansChooser from "./components/NewOrleansChooser";
-import { FAREHARBOR_SOURCES } from "./lib/fareHarborAttribution";
+import { CHOOSER_CATEGORIES } from "./help-me-choose/recommendationRules";
 
 export const metadata = {
   title: "New Orleans Tours | Discover and Book Real Local Experiences",
@@ -20,36 +16,28 @@ export const metadata = {
 };
 
 export default function NewOrleansHomePage() {
-  const southernStyle = getProductById("southernstyle-city-tour");
-  const southernStylePlantation = getProductById("southernstyle-plantation");
-  const raginCajun = getProductById("ragincajun-covered-boat");
-  const raginCajunAirboat = getProductById("ragincajun-airboat");
-  const searchItems = getMarketplaceSearchItems();
+  const categoryLinks = [
+    { id: "swamp-airboat", href: "/swamp-tours", label: "Swamp", text: "Covered boats and airboats beyond the city." },
+    { id: "city-highlights", href: "/city-tours", label: "City", text: "History, neighborhoods, and local landmarks." },
+    { id: "plantations-history", href: "/plantation-tours", label: "Plantation", text: "Louisiana history with transportation options." },
+    { id: "haunted-after-dark", href: "/tours/ghosts-spirits-walking-tour", label: "Ghosts & Spirits", text: "After-dark stories through the historic city." },
+    { id: "food-cooking", href: "/tours/craft-cocktail-walking-tour", label: "Food & Cocktails", text: "Taste and walk your way through New Orleans." },
+    { id: "river-music", href: "/tours/evening-jazz-cruise", label: "River Cruise", text: "Mississippi views with live New Orleans music." },
+  ];
 
   return (
     <div className="bg-[var(--nola-bg-charcoal)] text-[var(--nola-ivory)] font-sans overflow-hidden">
-      {/* 1. Integrated hero and chooser */}
+      {/* 1. Hero */}
       <section className={visualStyles.homeHero}>
-        <Link href="#chooser" className="sr-only">
-          Help Me Choose
-        </Link>
         <div className={visualStyles.homeHeroBackground} aria-hidden="true" />
         <div className={visualStyles.homeHeroOverlay} aria-hidden="true" />
         <div className={visualStyles.homeHeroContent}>
           <div className={visualStyles.homeHeroIntro}>
             <h1 className={visualStyles.homeHeadline}>
-              <span className={`${visualStyles.homeHeadlineLead} ${visualStyles.accentFont}`}>
-                Let&apos;s find your
-              </span>
-              <span className={`${visualStyles.homeHeadlineDisplay} ${visualStyles.displayFont}`}>
-                Perfect
-              </span>
-              <span className={`${visualStyles.homeHeadlineScript} ${visualStyles.scriptFont}`}>
-                New Orleans
-              </span>
-              <span className={`${visualStyles.homeHeadlineDisplay} ${visualStyles.displayFont}`}>
-                Adventure
-              </span>
+              <span className={`${visualStyles.homeHeadlineLead} ${visualStyles.accentFont}`}>Find the right</span>
+              <span className={`${visualStyles.homeHeadlineDisplay} ${visualStyles.displayFont}`}>New Orleans</span>
+              <span className={`${visualStyles.homeHeadlineScript} ${visualStyles.scriptFont}`}>experience</span>
+              <span className={`${visualStyles.homeHeadlineDisplay} ${visualStyles.displayFont}`}>for your group</span>
             </h1>
             <div className={visualStyles.homeDivider} aria-hidden="true">
               <span />
@@ -57,12 +45,16 @@ export default function NewOrleansHomePage() {
               <span />
             </div>
             <p className={visualStyles.homeHeroCopy}>
-              Answer a few quick questions and we&apos;ll point you to the best tours for you and your crew.
+              Tell us what kind of day you want and we&apos;ll help you compare participating local experiences.
             </p>
-          </div>
-
-          <div id="chooser" className={visualStyles.homeChooserAnchor}>
-            <NewOrleansChooser surface="homepage" />
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <a href="#chooser" className="border border-[var(--nola-gold)] bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[var(--nola-ivory)]">
+                Help Me Choose
+              </a>
+              <Link href="/tours" className="border border-[var(--nola-ivory)]/50 px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-ivory)] hover:border-[var(--nola-gold)] hover:text-[var(--nola-gold)]">
+                Browse All Tours
+              </Link>
+            </div>
           </div>
           <div className={visualStyles.homeQuestionBar}>
             <span className={`${visualStyles.scriptFont} ${visualStyles.homeQuestionScript}`}>
@@ -76,48 +68,50 @@ export default function NewOrleansHomePage() {
         </div>
       </section>
 
-      {/* 2. Featured Experiences */}
-      <section className="py-20 px-6 max-w-7xl mx-auto border-t border-[var(--nola-border)]">
-        <div className="mb-12 text-center">
-          <h2 className={`font-serif text-3xl md:text-4xl text-[var(--nola-gold)] mb-4 ${visualStyles.accentFont}`}>
-            Featured Experiences
-          </h2>
-          <p className="text-[var(--nola-ivory)]/70 font-light max-w-2xl mx-auto text-lg">
-            Directly book participating local operators, with clear descriptions and direct access to inventory.
-          </p>
-          <Link
-            href="/tours"
-            className="mt-5 inline-block text-xs font-bold uppercase tracking-[0.16em] text-[var(--nola-gold)] hover:text-[var(--nola-ivory)]"
-          >
-            Explore All Tours
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-          {southernStyle && <ProductCard product={southernStyle as any} attributionSource={FAREHARBOR_SOURCES.home} />}
-          {southernStylePlantation && <ProductCard product={southernStylePlantation as any} attributionSource={FAREHARBOR_SOURCES.home} />}
-          {raginCajun && <ProductCard product={raginCajun as any} attributionSource={FAREHARBOR_SOURCES.home} />}
-          {raginCajunAirboat && <ProductCard product={raginCajunAirboat as any} attributionSource={FAREHARBOR_SOURCES.home} />}
+      {/* 2. Primary chooser */}
+      <section id="chooser" className="border-y border-[var(--nola-border)] bg-[var(--nola-bg-black)] px-6 py-20">
+        <div className="mx-auto max-w-4xl text-center">
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]">Start here</p>
+          <h2 className={`mb-4 font-serif text-3xl text-[var(--nola-ivory)] md:text-5xl ${visualStyles.accentFont}`}>Help Me Choose</h2>
+          <p className="mx-auto mb-10 max-w-2xl text-lg font-light leading-relaxed text-[var(--nola-text-muted)]">No plan yet? A few answers can narrow the field to experiences that fit your group, pace, and appetite for adventure.</p>
+          <NewOrleansChooser surface="homepage" />
         </div>
       </section>
 
-      {/* 4. Compact Find a Tour */}
-      <section className="bg-[var(--nola-surface-subtle)] border-y border-[var(--nola-border)] py-20 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className={`font-serif text-3xl md:text-4xl text-[var(--nola-ivory)] mb-4 ${visualStyles.accentFont}`}>
-              Find a Tour
-            </h2>
-            <p className="text-[var(--nola-text-muted)] font-light text-lg">
-              Search by operator, theme, or neighborhood to find your ideal New Orleans experience.
-            </p>
+      {/* 3. Curated category paths */}
+      <section className="mx-auto max-w-7xl px-6 py-20">
+        <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]">Choose by experience</p>
+            <h2 className={`font-serif text-3xl text-[var(--nola-ivory)] md:text-4xl ${visualStyles.accentFont}`}>What kind of day sounds right?</h2>
           </div>
-          <MarketplaceSearch items={searchItems} />
+          <Link href="/tours" className="text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)] hover:text-[var(--nola-ivory)]">See the full catalog</Link>
         </div>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {categoryLinks.map((category) => {
+            const image = CHOOSER_CATEGORIES.find((item) => item.id === category.id)?.image;
+            return <Link key={category.id} href={category.href} className="group border border-[var(--nola-border)] bg-[var(--nola-surface-subtle)] transition-colors hover:border-[var(--nola-gold)]">
+              <div className="relative aspect-[16/10] overflow-hidden bg-[#101010]">
+                <img src={image} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              </div>
+              <div className="p-5">
+                <h3 className={`mb-2 font-serif text-2xl text-[var(--nola-ivory)] group-hover:text-[var(--nola-gold)] ${visualStyles.accentFont}`}>{category.label}</h3>
+                <p className="text-sm font-light leading-relaxed text-[var(--nola-text-muted)]">{category.text}</p>
+              </div>
+            </Link>;
+          })}
+        </div>
+      </section>
+
+      {/* 4. Full catalog path */}
+      <section className="border-y border-[var(--nola-border)] bg-[var(--nola-surface-subtle)] px-6 py-16 text-center">
+        <h2 className={`mb-3 font-serif text-3xl text-[var(--nola-ivory)] ${visualStyles.accentFont}`}>Already know what you want?</h2>
+        <p className="mb-6 text-[var(--nola-text-muted)]">Compare the full selection of current tours and booking options.</p>
+        <Link href="/tours" className="inline-block border border-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)] hover:bg-[var(--nola-gold)] hover:text-[#171717]">Browse All Tours</Link>
       </section>
 
       {/* 5. Tour Concierge & Group Planning */}
-      <section className="py-24 bg-[var(--nola-bg-black)] border-b border-[var(--nola-border)]">
+      <section className="border-b border-[var(--nola-border)] bg-[var(--nola-bg-black)] py-24">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12">
           <div className="border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)] p-10 flex flex-col items-start">
             <div className="text-[10px] text-[var(--nola-gold)] uppercase tracking-widest font-bold mb-4">
@@ -127,15 +121,15 @@ export default function NewOrleansHomePage() {
               New Orleans Tour Concierge
             </h3>
             <p className="text-[var(--nola-ivory)]/70 font-light leading-relaxed mb-8 flex-grow">
-              Schedule a relaxed tour-planning conversation at an agreed hotel, French Quarter,
-              or nearby public meeting location. Meetings are arranged in advance, and availability
-              varies. We help individuals, families, and groups compare available tour options.
+              Already here and still deciding? We can arrange a relaxed conversation at an agreed hotel lobby or bar,
+              French Quarter location, or another convenient public meeting place. Meetings are arranged in advance,
+              availability varies, and we help families and groups compare their options.
             </p>
             <Link
               href="/french-quarter-welcome-stop"
               className="text-xs text-[var(--nola-ivory)] font-bold uppercase tracking-widest border-b border-[var(--nola-gold)] pb-1 hover:text-[var(--nola-gold)] transition-colors"
             >
-              Schedule Tour Help
+              Talk Through Your Options
             </Link>
           </div>
 
