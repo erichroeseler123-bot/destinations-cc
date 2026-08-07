@@ -13,12 +13,17 @@ const nextConfig = {
     root: __dirname,
   },
   outputFileTracingExcludes: {
-    "/*": [
+    "*": [
       "./scratch/**/*",
       "./apps/**/*",
       "./assets/raw/**/*",
       "./public/images/**/*",
       "./data/memory/snapshots/**/*",
+      "./docs/**/*",
+      "./tests/**/*",
+      "./legacy_vault/**/*",
+      "./*.log",
+      "./tsconfig.tsbuildinfo",
     ],
   },
   generateBuildId: async () => {
