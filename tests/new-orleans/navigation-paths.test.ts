@@ -38,4 +38,27 @@ test("New Orleans navigation paths", async (t) => {
     );
     assert.match(renderer, /"Browse All Tours"/);
   });
+
+  await t.test("New Orleans public TSX does not contain empty or no-op hrefs", () => {
+    const root = path.join(process.cwd(), "app/new-orleans");
+    const offenders: string[] = [];
+
+    function visit(dir: string) {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          visit(fullPath);
+          continue;
+        }
+        if (!entry.name.endsWith(".tsx")) continue;
+        const content = fs.readFileSync(fullPath, "utf8");
+        if (/href=\{\s*["']\s*["']\s*\}|href=["']\s*["']|href=\{\s*["']#["']\s*\}|href=["']#["']/.test(content)) {
+          offenders.push(path.relative(process.cwd(), fullPath));
+        }
+      }
+    }
+
+    visit(root);
+    assert.deepStrictEqual(offenders, []);
+  });
 });

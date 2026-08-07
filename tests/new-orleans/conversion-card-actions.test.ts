@@ -62,6 +62,7 @@ test("Conversion Card Actions & Mobile Sticky CTA Suite", async (t) => {
   await t.test("5. ghosts-spirits-walking-tour item ID is verified as 562250 without discrepancy", () => {
     const ghostsProduct = STOREFRONT_PRODUCTS.find((p) => p.slug === "ghosts-spirits-walking-tour");
     assert.ok(ghostsProduct, "ghosts-spirits-walking-tour must exist");
+    assert.ok(ghostsProduct.bookingVariants?.length, "ghosts-spirits-walking-tour must have a booking variant");
     const v0 = ghostsProduct.bookingVariants[0];
     assert.strictEqual(v0.itemId, "562250", "ghosts-spirits-walking-tour item ID must be 562250");
     assert.strictEqual(v0.flowId, "1578708", "ghosts-spirits-walking-tour flow ID must be 1578708");

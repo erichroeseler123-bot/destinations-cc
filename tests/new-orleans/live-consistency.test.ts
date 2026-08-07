@@ -4,6 +4,7 @@ import test from "node:test";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import FrenchQuarterBoothBonus from "../../app/new-orleans/components/FrenchQuarterBoothBonus";
+import WikimediaImageCredit from "../../app/new-orleans/components/WikimediaImageCredit";
 import NewOrleansContactPage, {
   metadata as contactMetadata,
 } from "../../app/new-orleans/contact/page";
@@ -148,4 +149,31 @@ test("header exposes the correctly spaced accessible brand name", async () => {
   assert.match(markup, />Welcome to</);
   assert.match(markup, />New Orleans</);
   assert.match(markup, />Tours</);
+});
+
+test("Wikimedia image credits never render empty source hrefs", () => {
+  const withoutSource = renderToStaticMarkup(
+    React.createElement(WikimediaImageCredit, {
+      image: {
+        creator: "Unknown",
+        license: "CC BY 2.0",
+        licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+        sourceUrl: "",
+      },
+    }),
+  );
+  assert.ok(!withoutSource.includes('href=""'));
+  assert.match(withoutSource, /Wikimedia Commons/);
+
+  const withSource = renderToStaticMarkup(
+    React.createElement(WikimediaImageCredit, {
+      image: {
+        creator: "Known",
+        license: "CC BY 2.0",
+        licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+        sourceUrl: "https://commons.wikimedia.org/wiki/File:Example.jpg",
+      },
+    }),
+  );
+  assert.match(withSource, /href="https:\/\/commons\.wikimedia\.org\/wiki\/File:Example\.jpg"/);
 });
