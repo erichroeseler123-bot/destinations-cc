@@ -31,11 +31,11 @@ export default function NewOrleansHomePage() {
   ];
 
   const curatedSections = [
-    { title: "Popular ways to experience New Orleans", slugs: ["city-tour-of-new-orleans", "evening-jazz-cruise", "covered-tour-boat"] },
-    { title: "Great for first-time visitors", slugs: ["city-tour-of-new-orleans", "daytime-jazz-cruise", "oak-alley-or-laura-plantation-tour"] },
-    { title: "Something different tonight", slugs: ["evening-jazz-cruise", "craft-cocktail-walking-tour", "ghosts-spirits-walking-tour"] },
-    { title: "Get outside the city", slugs: ["covered-tour-boat", "ragin-cajun-airboat-options", "whitney-plantation-tour"] },
-    { title: "Make a whole day of it", slugs: ["all-day-city-plantation-combo", "covered-boat-plantation-combo", "swamp-boat-oak-alley-combo"] },
+    { eyebrow: "Start with the classics", title: "Popular ways to experience New Orleans", script: "The good stuff, curated.", slugs: ["city-tour-of-new-orleans", "evening-jazz-cruise", "covered-tour-boat"] },
+    { eyebrow: "First visit? Start here", title: "First time in New Orleans?", script: "Start with these.", slugs: ["city-tour-of-new-orleans", "daytime-jazz-cruise", "oak-alley-or-laura-plantation-tour"] },
+    { eyebrow: "After the sun goes down", title: "Tonight in the city", script: "Something fun after dark.", slugs: ["evening-jazz-cruise", "craft-cocktail-walking-tour", "ghosts-spirits-walking-tour"] },
+    { eyebrow: "Beyond the streetcar line", title: "Get out of town", script: "Swamps, plantations & bayou country.", slugs: ["covered-tour-boat", "ragin-cajun-airboat-options", "whitney-plantation-tour"] },
+    { eyebrow: "Make the day count", title: "Make a day of it", script: "When one stop is not enough.", slugs: ["all-day-city-plantation-combo", "covered-boat-plantation-combo", "swamp-boat-oak-alley-combo"] },
   ];
 
   const alreadyHereLinks = [
@@ -81,52 +81,63 @@ export default function NewOrleansHomePage() {
       </section>
 
       {/* 2. Primary chooser */}
-      <section id="chooser" className="border-y border-[var(--nola-border)] bg-[var(--nola-bg-black)] px-6 py-20">
-        <div className="mx-auto max-w-4xl text-center">
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]">Start here</p>
-          <h2 className={`mb-4 font-serif text-3xl text-[var(--nola-ivory)] md:text-5xl ${visualStyles.accentFont}`}>Help Me Choose</h2>
-          <p className="mx-auto mb-10 max-w-2xl text-lg font-light leading-relaxed text-[var(--nola-text-muted)]">No plan yet? A few answers can narrow the field to experiences that fit your group, pace, and appetite for adventure.</p>
+      {/* 3. Curated category paths */}
+      <section id="category-paths" className={visualStyles.homeCategorySection}>
+        <div className={visualStyles.homeSectionInner}>
+          <div className={visualStyles.homeSectionHeading}>
+            <div>
+              <p className={visualStyles.homeSectionEyebrow}>Choose your mood</p>
+              <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>What sounds good?</h2>
+              <p className={`${visualStyles.homeSectionScript} ${visualStyles.scriptFont}`}>Pick your kind of New Orleans.</p>
+            </div>
+            <Link href="/tours" className={visualStyles.homeSectionLink}>See the full catalog <span aria-hidden="true">↗</span></Link>
+          </div>
+          <div className={visualStyles.homeCategoryGrid}>
+            {categoryLinks.map((category) => {
+              return <Link key={category.label} href={category.href} className={visualStyles.homeCategoryCard}>
+                <div className={visualStyles.homeCategoryMedia}>
+                  <img src={category.image} alt="" />
+                  <span className={visualStyles.homeCategoryIndex} aria-hidden="true">{String(categoryLinks.indexOf(category) + 1).padStart(2, "0")}</span>
+                  <span className={visualStyles.homeCategoryArrow} aria-hidden="true">↗</span>
+                </div>
+                <div className={visualStyles.homeCategoryBody}>
+                  <h3 className={visualStyles.homeCategoryTitle}>{category.label}</h3>
+                  <p>{category.label === "Explore the City" ? "Neighborhoods, stories & landmarks." : category.label === "Swamps & Airboats" ? "Get out into the bayou." : category.label === "River Cruises" ? "Jazz, brunch & Mississippi views." : category.label === "Plantations" ? "History beneath the oaks." : category.label === "Food & Cocktails" ? "Taste your way through the Quarter." : category.label === "Ghosts & Spirits" ? "Strange stories after dark." : category.label === "Full-Day Combos" ? "More of Louisiana in one day." : "A better answer starts here."}</p>
+                </div>
+              </Link>;
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Primary chooser */}
+      <section id="chooser" className={visualStyles.homeChooserSection}>
+        <div className={visualStyles.homeChooserInner}>
+          <p className={visualStyles.homeSectionEyebrow}>Not sure where to start?</p>
+          <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>Help Me Choose</h2>
+          <p className={visualStyles.homeChooserCopy}>No plan yet? A few answers can narrow the field to experiences that fit your group, pace, and appetite for adventure.</p>
           <NewOrleansRecommendationFlow />
         </div>
       </section>
 
-      {/* 3. Curated category paths */}
-      <section className="mx-auto max-w-7xl px-6 py-20">
-        <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]">Choose by experience</p>
-            <h2 className={`font-serif text-3xl text-[var(--nola-ivory)] md:text-4xl ${visualStyles.accentFont}`}>What kind of day sounds right?</h2>
-          </div>
-          <Link href="/tours" className="text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)] hover:text-[var(--nola-ivory)]">See the full catalog</Link>
-        </div>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {categoryLinks.map((category) => {
-            return <Link key={category.label} href={category.href} className="group border border-[var(--nola-border)] bg-[var(--nola-surface-subtle)] transition-colors hover:border-[var(--nola-gold)]">
-              <div className="relative aspect-[16/10] overflow-hidden bg-[#101010]">
-                <img src={category.image} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-              </div>
-              <div className="p-5">
-                <h3 className={`mb-2 font-serif text-2xl text-[var(--nola-ivory)] group-hover:text-[var(--nola-gold)] ${visualStyles.accentFont}`}>{category.label}</h3>
-                <p className="text-sm font-light leading-relaxed text-[var(--nola-text-muted)]">{category.text}</p>
-              </div>
-            </Link>;
-          })}
-        </div>
-      </section>
-
       {/* 4. Spontaneous planning */}
-      <section className="border-y border-[var(--nola-border)] bg-[var(--nola-bg-black)] px-6 py-20">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-10 max-w-2xl">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]">For plans taking shape now</p>
-            <h2 className={`font-serif text-3xl text-[var(--nola-ivory)] md:text-4xl ${visualStyles.accentFont}`}>Already in New Orleans?</h2>
-            <p className="mt-3 text-base font-light leading-relaxed text-[var(--nola-text-muted)]">Looking for something to do today or tonight? Check times and availability with the participating operator during checkout.</p>
+      <section className={visualStyles.homeAlreadyHereSection}>
+        <div className={visualStyles.homeSectionInner}>
+          <div className={visualStyles.homeAlreadyHereIntro}>
+            <p className={visualStyles.homeSectionEyebrow}>For plans taking shape now</p>
+            <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>Already here?</h2>
+            <p className={`${visualStyles.homeSectionScript} ${visualStyles.scriptFont}`}>No plans? Perfect.</p>
+            <p className={visualStyles.homeAlreadyHereCopy}>Tell us who you&apos;re with and what kind of mood you&apos;re in. We&apos;ll help you find something worth doing today.</p>
+            <div className={visualStyles.homeAlreadyHereActions}>
+              <Link href="#chooser" className={visualStyles.homeGoldButton}>Find something to do</Link>
+              <Link href="/french-quarter-welcome-stop" className={visualStyles.homeTextButton}>Talk to a tour concierge</Link>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+          <div className={visualStyles.homeAlreadyHereGrid}>
             {alreadyHereLinks.map((item) => (
-              <Link key={item.title} href={item.href} className="group border border-[var(--nola-border)] bg-[var(--nola-surface-subtle)]">
-                <div className="aspect-[4/3] overflow-hidden bg-[#101010]"><img src={item.image} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" /></div>
-                <div className="p-4"><h3 className={`font-serif text-lg leading-tight text-[var(--nola-ivory)] group-hover:text-[var(--nola-gold)] ${visualStyles.accentFont}`}>{item.title}</h3><span className="mt-3 block text-[10px] font-bold uppercase tracking-widest text-[var(--nola-gold)]">Check times &amp; availability</span></div>
+              <Link key={item.title} href={item.href} className={visualStyles.homeMomentCard}>
+                <div className={visualStyles.homeMomentMedia}><img src={item.image} alt="" /></div>
+                <div className={visualStyles.homeMomentBody}><h3>{item.title}</h3><span>Check times &amp; availability</span></div>
               </Link>
             ))}
           </div>
@@ -134,80 +145,83 @@ export default function NewOrleansHomePage() {
       </section>
 
       {/* 5. Curated merchandising */}
-      <section className="mx-auto max-w-7xl space-y-20 px-6 py-20">
-        {curatedSections.map((section) => {
+      <section className={visualStyles.homeCuratedSection}>
+        <div className={visualStyles.homeSectionInner}>
+        {curatedSections.map((section, index) => {
           const products = section.slugs.map(productBySlug).filter(Boolean);
-          return <section key={section.title}>
-            <div className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-[var(--nola-border)] pb-4">
-              <h2 className={`font-serif text-3xl text-[var(--nola-ivory)] ${visualStyles.accentFont}`}>{section.title}</h2>
-              <Link href="/tours" className="text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)] hover:text-[var(--nola-ivory)]">See all tours</Link>
+          return <section key={section.title} className={`${visualStyles.homeCuratedBlock} ${index % 2 === 1 ? visualStyles.homeCuratedBlockAlt : ""}`}>
+            <div className={visualStyles.homeCuratedHeading}>
+              <div><p className={visualStyles.homeSectionEyebrow}>{section.eyebrow}</p><h2 className={`${visualStyles.homeCuratedTitle} ${visualStyles.displayFont}`}>{section.title}</h2><p className={`${visualStyles.homeCuratedScript} ${visualStyles.scriptFont}`}>{section.script}</p></div>
+              <Link href="/tours" className={visualStyles.homeSectionLink}>See all tours <span aria-hidden="true">↗</span></Link>
             </div>
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className={visualStyles.homeProductGrid}>
               {products.map((product) => product && <ProductCard key={product.id} product={{ ...product, operatorAttribution: product.operatorName, isBookable: true, ctaLabel: "View Details" } as any} />)}
             </div>
           </section>;
         })}
+        </div>
       </section>
 
       {/* 6. Full catalog path */}
-      <section className="border-y border-[var(--nola-border)] bg-[var(--nola-surface-subtle)] px-6 py-16 text-center">
-        <h2 className={`mb-3 font-serif text-3xl text-[var(--nola-ivory)] ${visualStyles.accentFont}`}>Already know what you want?</h2>
-        <p className="mb-6 text-[var(--nola-text-muted)]">Compare the full selection of current tours and booking options.</p>
-        <Link href="/tours" className="inline-block border border-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)] hover:bg-[var(--nola-gold)] hover:text-[#171717]">Browse All Tours</Link>
+      <section className={visualStyles.homeCatalogCta}>
+        <p className={visualStyles.homeSectionEyebrow}>The complete collection</p>
+        <h2 className={`${visualStyles.homeCatalogTitle} ${visualStyles.displayFont}`}>Already know what you want?</h2>
+        <p>Compare the full selection of current tours and booking options.</p>
+        <Link href="/tours" className={visualStyles.homeGoldButton}>Browse all tours</Link>
       </section>
 
       {/* 7. Tour Concierge & Group Planning */}
-      <section className="border-b border-[var(--nola-border)] bg-[var(--nola-bg-black)] py-24">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12">
-          <div className="border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)] p-10 flex flex-col items-start">
-            <div className="text-[10px] text-[var(--nola-gold)] uppercase tracking-widest font-bold mb-4">
+      <section className={visualStyles.homeConciergeSection}>
+        <div className={visualStyles.homeSectionInner}>
+          <div className={visualStyles.homeConciergeGrid}>
+          <div className={visualStyles.homeConciergePanel}>
+            <div className={visualStyles.homeSectionEyebrow}>
               Scheduled Planning Help
             </div>
-            <h3 className={`font-serif text-3xl mb-4 ${visualStyles.accentFont}`}>
+            <h3 className={`${visualStyles.homePanelTitle} ${visualStyles.displayFont}`}>
               New Orleans Tour Concierge
             </h3>
-            <p className="text-[var(--nola-ivory)]/70 font-light leading-relaxed mb-8 flex-grow">
+            <p className={visualStyles.homePanelCopy}>
               Already here and still deciding? We can arrange a relaxed conversation at an agreed hotel lobby or bar,
               French Quarter location, or another convenient public meeting place. Meetings are arranged in advance,
               availability varies, and we help families and groups compare their options.
             </p>
             <Link
               href="/french-quarter-welcome-stop"
-              className="text-xs text-[var(--nola-ivory)] font-bold uppercase tracking-widest border-b border-[var(--nola-gold)] pb-1 hover:text-[var(--nola-gold)] transition-colors"
+              className={visualStyles.homeTextButton}
             >
               Talk Through Your Options
             </Link>
           </div>
 
-          <div className="border border-[var(--nola-border)] bg-[var(--nola-surface-strong)] p-10 flex flex-col items-start">
-            <div className="text-[10px] text-[var(--nola-gold-muted)] uppercase tracking-widest font-bold mb-4">
+          <div className={visualStyles.homeConciergePanelAlt}>
+            <div className={visualStyles.homeSectionEyebrow}>
               Private Parties
             </div>
-            <h3 className={`font-serif text-3xl mb-4 ${visualStyles.accentFont}`}>Group Planning</h3>
-            <p className="text-[var(--nola-ivory)]/70 font-light leading-relaxed mb-8 flex-grow">
+            <h3 className={`${visualStyles.homePanelTitle} ${visualStyles.displayFont}`}>Group Planning</h3>
+            <p className={visualStyles.homePanelCopy}>
               Planning a family, wedding, or corporate group? Contact us to discuss available tour options.
             </p>
             <Link
               href="/contact"
-              className="text-xs text-[var(--nola-ivory)] font-bold uppercase tracking-widest border-b border-[var(--nola-gold-muted)] pb-1 hover:text-[var(--nola-gold)] transition-colors"
+              className={visualStyles.homeTextButton}
             >
               Inquire About Groups
             </Link>
+          </div>
           </div>
         </div>
       </section>
 
       {/* 6. Editorial Guides */}
-      <section className="py-20 px-6 max-w-7xl mx-auto">
-        <div className="mb-12">
-          <h2 className={`font-serif text-2xl text-[var(--nola-ivory)] mb-2 ${visualStyles.accentFont}`}>
-            Editorial Guides
-          </h2>
-          <p className="text-[var(--nola-text-muted)] font-light text-sm">
-            Dig deeper before you decide.
-          </p>
+      <section className={visualStyles.homeGuidesSection}>
+        <div className={visualStyles.homeSectionInner}>
+        <div className={visualStyles.homeGuidesHeading}>
+          <p className={visualStyles.homeSectionEyebrow}>Before you decide</p>
+          <h2 className={`${visualStyles.homeCatalogTitle} ${visualStyles.displayFont}`}>Field notes from New Orleans</h2>
+          <p className={`${visualStyles.homeSectionScript} ${visualStyles.scriptFont}`}>A little context goes a long way.</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className={visualStyles.homeGuideGrid}>
           <GuideLink
             href="/swamp-tours/airboat-vs-covered-boat"
             title="Compare Swamp Tour Formats"
@@ -224,6 +238,7 @@ export default function NewOrleansHomePage() {
             href="/guides/how-long-does-a-swamp-tour-take"
             title="How Long Does a Swamp Tour Take?"
           />
+        </div>
         </div>
       </section>
     </div>
