@@ -68,7 +68,7 @@ export function HeaderNav() {
                 Questions? Call or text
               </span>
               <span className={visualStyles.marketPhoneNumber}>
-                <span aria-hidden="true">☎</span> 504-484-9687
+                504-484-9687
               </span>
             </PhoneCta>
           </div>

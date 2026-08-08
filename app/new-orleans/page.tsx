@@ -68,23 +68,14 @@ export default function NewOrleansHomePage() {
             <p className={visualStyles.homeHeroCopy}>
               Tell us what kind of day you want and we&apos;ll help you compare participating local experiences.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <a href="#chooser" className="border border-[var(--nola-gold)] bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[var(--nola-ivory)]">
+            <div className={visualStyles.homeHeroActions}>
+              <a href="#chooser" className="border border-[var(--nola-gold)] bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[var(--nola-ivory)]">
                 Help Me Choose
               </a>
-              <Link href="/tours" className="border border-[var(--nola-ivory)]/50 px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-ivory)] hover:border-[var(--nola-gold)] hover:text-[var(--nola-gold)]">
-                Browse All Tours
-              </Link>
+              <a href="tel:+15044849687" className={visualStyles.homeHeroPhoneAction}>
+                Let&apos;s talk&nbsp; 504-484-9687
+              </a>
             </div>
-          </div>
-          <div className={visualStyles.homeQuestionBar}>
-            <span className={`${visualStyles.scriptFont} ${visualStyles.homeQuestionScript}`}>
-              Still have questions?
-            </span>
-            <a href="tel:+15044849687" className={visualStyles.homePhoneAction}>
-              <span aria-hidden="true">☎</span>
-              Let&apos;s talk&nbsp; 504-484-9687
-            </a>
           </div>
         </div>
       </section>
