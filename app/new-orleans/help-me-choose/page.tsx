@@ -1,5 +1,5 @@
 import React from "react";
-import NewOrleansChooser from "../components/NewOrleansChooser";
+import NewOrleansRecommendationFlow from "../components/NewOrleansRecommendationFlow";
 
 export const metadata = {
   title: "Help Me Choose | New Orleans Tours",
@@ -7,5 +7,5 @@ export const metadata = {
 };
 
 export default function HelpMeChoosePage() {
-  return <NewOrleansChooser surface="standalone" />;
+  return <NewOrleansRecommendationFlow />;
 }

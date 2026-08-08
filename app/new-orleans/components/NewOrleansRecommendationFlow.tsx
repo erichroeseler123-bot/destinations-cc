@@ -17,6 +17,7 @@ import {
 import { trackEvent } from "@/lib/analytics";
 import { RecommendationAnalyticsTracker } from "../lib/useRecommendationAnalytics";
 import visualStyles from "./newOrleansVisual.module.css";
+import { buildAttributedTourHref, FAREHARBOR_SOURCES, isApprovedProductSlug } from "../lib/fareHarborAttribution";
 
 const STEPS = [
   "planningWindow",
@@ -151,6 +152,11 @@ export default function NewOrleansRecommendationFlow() {
     tracker.trackSecondarySelected();
   };
 
+  const getTourHref = (slug: string) =>
+    isApprovedProductSlug(slug)
+      ? buildAttributedTourHref(slug, FAREHARBOR_SOURCES.recommendation, slug)
+      : `/tours/${slug}`;
+
   return (
     <div className={visualStyles.heroContainer}>
       <div className={visualStyles.heroBackground} />
@@ -255,7 +261,7 @@ export default function NewOrleansRecommendationFlow() {
 
                   <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center pt-8 border-t border-[var(--nola-border)]">
                     <Link
-                      href={`/new-orleans/tours/${result.primary.slug}`}
+                      href={getTourHref(result.primary.slug)}
                       onClick={handlePrimaryClick}
                       className="bg-[var(--nola-gold)] text-[var(--nola-bg-black)] font-bold py-4 px-8 uppercase tracking-widest text-sm text-center hover:bg-[var(--nola-ivory)] transition-colors shadow-md w-full sm:w-auto"
                     >
@@ -289,7 +295,7 @@ export default function NewOrleansRecommendationFlow() {
 
                     <div className="flex justify-center">
                       <Link
-                        href={`/new-orleans/tours/${result.secondary.slug}`}
+                        href={getTourHref(result.secondary.slug)}
                         onClick={handleSecondaryClick}
                         className="border border-[var(--nola-gold)] text-[var(--nola-gold)] font-bold py-3 px-6 uppercase tracking-widest text-xs text-center hover:bg-[var(--nola-gold)] hover:text-[var(--nola-bg-black)] transition-colors w-full sm:w-auto"
                       >

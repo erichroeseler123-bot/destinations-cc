@@ -123,7 +123,7 @@ export default async function NewOrleansToursPage() {
             if (sectionProducts.length === 0) return null;
 
             return (
-              <section key={section.id} className="space-y-8">
+              <section id={section.id.toLowerCase().replace(/\s+/g, "-")} key={section.id} className="space-y-8 scroll-mt-28">
                 <div className="border-b border-[#2a2a2a] pb-4">
                   <h2 className="text-3xl font-[var(--font-accent)] font-bold text-[#d4af37]">{section.title}</h2>
                 </div>

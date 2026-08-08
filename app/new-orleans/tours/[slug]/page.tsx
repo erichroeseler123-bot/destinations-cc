@@ -409,7 +409,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
 
                   <div className="mb-6 text-sm text-[#aaaaaa] leading-relaxed text-center bg-[#151515] p-4 border border-[#2a2a2a]">
                     <p>
-                      <strong>Welcome to New Orleans Tours</strong> is an independent planning and booking-assistance site. Booking and payment are completed through the participating operator’s FareHarbor checkout.
+                      <strong>Welcome to New Orleans Tours</strong> is an independent planning and booking-assistance site. Booking and payment are completed through the participating operator’s FareHarbor checkout. Exact times, availability, inclusions, restrictions, and operator terms are confirmed during checkout.
                     </p>
                   </div>
 
@@ -441,7 +441,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
 
                   <div className="mt-4 text-[11px] text-center text-[#aaaaaa] leading-relaxed space-y-2">
                     <p>
-                      Review the operator’s cancellation and participation policies before completing your purchase. Operator terms and policies apply. We are not the tour operator.
+                      Operator terms and policies apply. We are not the tour operator.
                     </p>
                   </div>
                 </div>

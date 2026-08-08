@@ -836,8 +836,16 @@
   }
 
   .homeHeroContent {
-    width: min(100% - 1rem, 430px);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
     padding-top: 1.5rem;
+  }
+
+  .homeHeadline {
+    width: 100%;
   }
 
   .homeHeadlineLead {
@@ -845,14 +853,19 @@
   }
 
   .homeHeadlineDisplay {
-    font-size: clamp(2.55rem, 12.8vw, 3.2rem);
+    max-width: 100%;
+    font-size: clamp(1.75rem, 9.5vw, 2.25rem);
+    letter-spacing: 0.01em;
     line-height: 0.98;
+    overflow-wrap: anywhere;
   }
 
   .homeHeadlineScript {
     margin: 0.01em 0 0.06em;
-    font-size: clamp(3.5rem, 16.5vw, 4.35rem);
+    max-width: 100%;
+    font-size: clamp(2.5rem, 12.5vw, 3.2rem);
     line-height: 0.75;
+    overflow-wrap: anywhere;
   }
 
   .homeDivider {
@@ -860,8 +873,19 @@
   }
 
   .homeHeroCopy {
+    width: 100%;
     max-width: 330px;
+    padding: 0 0.35rem;
     font-size: 0.85rem;
+  }
+
+  .homeHeroIntro > .flex {
+    width: 100%;
+    padding: 0 0.35rem;
+  }
+
+  .homeHeroIntro > .flex a {
+    flex: 1 1 135px;
   }
 
   .boardContainer {
@@ -903,18 +927,22 @@
   }
 
   .homeQuestionBar {
-    margin-top: -1.5rem;
+    margin-top: 1rem;
     padding-bottom: 1.2rem;
     flex-direction: column;
     gap: 0.6rem;
   }
 
   .homeQuestionScript {
-    font-size: 1.55rem;
+    font-size: 1.35rem;
   }
 
   .homePhoneAction {
     min-width: min(100%, 290px);
+    max-width: 100%;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    letter-spacing: 0.04em;
   }
 }
 

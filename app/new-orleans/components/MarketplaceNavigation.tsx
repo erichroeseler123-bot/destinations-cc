@@ -54,11 +54,12 @@ export function HeaderNav() {
           </Link>
 
           <nav className={visualStyles.marketDesktopNav}>
-            <Link href="/city-tours">City Tours</Link>
-            <Link href="/swamp-tours">Swamp Tours</Link>
-            <Link href="/plantation-tours">Plantation Tours</Link>
-            <Link href="/tours-for/first-time-visitors">Plan Your Trip</Link>
+            <Link href="/tours">Tours</Link>
             <Link href="/help-me-choose">Help Me Choose</Link>
+            <Link href="/swamp-tours">Swamp</Link>
+            <Link href="/tours#river-cruises">River Cruises</Link>
+            <Link href="/city-tours">City &amp; Walking</Link>
+            <Link href="/french-quarter-welcome-stop">Concierge</Link>
           </nav>
 
           <div className={visualStyles.marketPhoneWrap}>
@@ -94,11 +95,12 @@ export function HeaderNav() {
             </div>
 
             <nav className="flex flex-col gap-6 font-sans font-bold text-lg tracking-widest uppercase mb-10 text-[#fdfbf7]/80">
-              <Link href="/city-tours" onClick={toggle} className="hover:text-[#d4af37]">City Tours</Link>
-              <Link href="/swamp-tours" onClick={toggle} className="hover:text-[#d4af37]">Swamp Tours</Link>
-              <Link href="/plantation-tours" onClick={toggle} className="hover:text-[#d4af37]">Plantations</Link>
-              <Link href="/tours-for/first-time-visitors" onClick={toggle} className="hover:text-[#d4af37]">Plan Your Trip</Link>
+              <Link href="/tours" onClick={toggle} className="hover:text-[#d4af37]">Tours</Link>
               <Link href="/help-me-choose" onClick={toggle} className="hover:text-[#d4af37]">Help Me Choose</Link>
+              <Link href="/swamp-tours" onClick={toggle} className="hover:text-[#d4af37]">Swamp</Link>
+              <Link href="/tours#river-cruises" onClick={toggle} className="hover:text-[#d4af37]">River Cruises</Link>
+              <Link href="/city-tours" onClick={toggle} className="hover:text-[#d4af37]">City &amp; Walking</Link>
+              <Link href="/french-quarter-welcome-stop" onClick={toggle} className="hover:text-[#d4af37]">Concierge</Link>
             </nav>
 
             <div className="mt-auto pt-8 border-t border-white/10">
