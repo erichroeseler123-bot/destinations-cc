@@ -17,15 +17,9 @@ export type ResolvedProductImage = {
   attribution?: ResolvedAttribution;
 };
 
-// These products currently have registry/fallback images that are legally usable
-// but semantically misleading for a shopping card. A text-only card is safer than
-// implying the wrong property, vessel, tour or modern experience while exact
-// commerce photography is still being cleared.
+// Combined products stay text-only until we have an image that accurately
+// represents the combined experience rather than just one unrelated segment.
 const COMMERCE_IMAGE_BLOCKLIST = new Set([
-  "cocktail-walking-tour",
-  "craft-cocktail-walking-tour",
-  "whitney-plantation-tour",
-  "city-of-new-orleans-riverboat-cruise",
   "all-day-city-plantation-combo",
   "covered-boat-plantation-combo",
   "swamp-boat-oak-alley-combo",
@@ -68,7 +62,10 @@ export function resolveProductImage(product: LiveProductAdapter | NolaFareHarbor
     }
   }
 
-  // 3. Approved intentional local fallback
+  // 3. Approved rights-cleared registry image. Most are local assets; a small
+  // number of Wikimedia originals are intentionally referenced directly when
+  // an exact, licensed subject image is available and a local binary copy has
+  // not yet been added to the repository.
   if (imgRecord && imgRecord.verifiedRights && imgRecord.source !== "Operator") {
     return {
       src: imgRecord.url,
