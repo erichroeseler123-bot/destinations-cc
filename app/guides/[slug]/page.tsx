@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PRE_SITE_GUIDES, getPreSiteGuide } from "@/src/data/pre-site-guides";
+import { PUBLISHED_DECISION_GUIDES, getPublishedDecisionGuide } from "@/src/data/published-decision-guides";
 import { getDecisionCategory, relatedDecisionGuides } from "@/src/data/decision-taxonomy";
 
 const ORIGIN = "https://www.destinationcommandcenter.com";
@@ -11,12 +11,12 @@ type Props = {
 };
 
 export function generateStaticParams() {
-  return PRE_SITE_GUIDES.map((guide) => ({ slug: guide.slug }));
+  return PUBLISHED_DECISION_GUIDES.map((guide) => ({ slug: guide.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const guide = getPreSiteGuide(slug);
+  const guide = getPublishedDecisionGuide(slug);
   if (!guide) return {};
 
   const title = `${guide.title} | Destination Command Center`;
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PreSiteGuidePage({ params }: Props) {
   const { slug } = await params;
-  const guide = getPreSiteGuide(slug);
+  const guide = getPublishedDecisionGuide(slug);
   if (!guide) notFound();
 
   const category = getDecisionCategory(guide.category);
