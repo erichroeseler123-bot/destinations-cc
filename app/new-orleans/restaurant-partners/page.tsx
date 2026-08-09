@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import RestaurantOrientationAd from "../components/RestaurantOrientationAd";
 import { DEFAULT_SEATED_GUEST_FEE_USD } from "../data/diningPartners";
 
 export const metadata: Metadata = {
@@ -22,6 +23,10 @@ export default function RestaurantPartnersPage() {
         <p className="text-lg text-[#cccccc] leading-relaxed max-w-3xl mb-10">
           We help New Orleans visitors choose where to eat based on party size, timing, neighborhood, and what they are doing before or after dinner. The pilot has no upfront listing fee.
         </p>
+
+        <div className="mb-12">
+          <RestaurantOrientationAd />
+        </div>
 
         <section className="grid md:grid-cols-3 gap-4 mb-12">
           <div className="border border-[#2a2a2a] bg-[#1a1a1a] p-6">
@@ -95,6 +100,10 @@ export default function RestaurantPartnersPage() {
             </a>
           </div>
         </section>
+
+        <div className="mb-10">
+          <RestaurantOrientationAd />
+        </div>
 
         <p className="text-xs text-[#888888] leading-relaxed mb-8">
           Pilot terms are subject to a restaurant-specific agreement. Restaurants remain responsible for their own reservations, service, guest policies, pricing, taxes, and fulfillment. Paid partner status is disclosed to visitors.
