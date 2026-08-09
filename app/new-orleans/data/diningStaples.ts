@@ -119,3 +119,12 @@ export const DINING_STAPLES: DiningStaple[] = [
 
 export const DINING_STAPLES_DISCLOSURE =
   "New Orleans Staple — included as independent editorial guidance. This restaurant is not shown here because it paid us, and we do not receive a referral fee from this listing.";
+
+// Compatibility exports used by the Welcome to New Orleans dining page.
+export const NEW_ORLEANS_STAPLES = DINING_STAPLES.map((restaurant) => ({
+  ...restaurant,
+  officialUrl: restaurant.websiteUrl,
+  planningNote: restaurant.reservationNote,
+}));
+
+export const STAPLE_DISCLOSURE = DINING_STAPLES_DISCLOSURE;
