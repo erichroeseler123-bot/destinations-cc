@@ -18,18 +18,18 @@ export const COMPARISON_OPPORTUNITIES: ComparisonOpportunity[] = [
     title: "Whitney Plantation vs Oak Alley: Which New Orleans Plantation Tour Fits You?",
     queryIntent: "Choose between two plantation experiences before booking.",
     primaryTourSlugs: ["whitney-plantation-tour", "oak-alley-plantation-tour-grey-line"],
-    status: "READY_FOR_RESEARCH",
-    requiredFacts: ["total time", "transportation", "walking", "accessibility", "historical emphasis", "tour format", "current price", "departure schedule"],
-    decisionQuestions: ["Which is more focused on slavery history?", "Which is easier for limited mobility?", "How long does each take door-to-door?", "Which is better for a first-time visitor?"]
+    status: "READY_TO_PUBLISH",
+    requiredFacts: ["total time", "transportation", "walking", "accessibility", "historical emphasis", "tour format"],
+    decisionQuestions: ["Which is more focused on slavery history?", "Which is easier for limited mobility?", "How long does each take?", "Which format fits me better?"]
   },
   {
     slug: "covered-swamp-boat-vs-airboat",
     title: "Covered Swamp Boat vs Airboat in New Orleans: Which Should You Book?",
     queryIntent: "Choose the right swamp-tour format.",
-    primaryTourSlugs: ["covered-tour-boat", "ragin-cajun-airboat-options"],
-    status: "READY_FOR_RESEARCH",
-    requiredFacts: ["noise", "shade", "speed", "age restrictions", "boat capacity", "ride duration", "transportation", "weather exposure"],
-    decisionQuestions: ["Which is better with kids or grandparents?", "Which is quieter?", "Which has more shade?", "Which feels more adventurous?"]
+    primaryTourSlugs: ["swamp-bayou-tour", "small-airboat-swamp-adventure", "large-airboat-swamp-adventure"],
+    status: "READY_TO_PUBLISH",
+    requiredFacts: ["noise", "shade", "speed", "age restrictions", "boat capacity", "total duration", "transportation", "weather exposure", "mobility restrictions"],
+    decisionQuestions: ["Which is better with kids or grandparents?", "Which is calmer?", "Which has more weather protection?", "Which feels more adventurous?"]
   },
   {
     slug: "small-vs-large-airboat",
