@@ -54,6 +54,31 @@ const planningGuides = [
     title: "Tours without spending all day on a bus",
     description: "Shorter city, river, walking, and swamp choices for visitors who do not want a seven- or eight-hour excursion day.",
   },
+  {
+    href: "/guides/new-orleans-tours-near-french-quarter",
+    title: "Tours near the French Quarter",
+    description: "Compare downtown meeting points, walking tours, river cruises, and transported swamp options when you do not want a car.",
+  },
+  {
+    href: "/guides/best-new-orleans-tours-with-kids-under-6",
+    title: "Best tours with kids under 6",
+    description: "Age rules, total outing time, noise, seating, and all-ages alternatives for families with toddlers and preschoolers.",
+  },
+  {
+    href: "/guides/new-orleans-tours-with-minimal-walking",
+    title: "Tours with minimal walking",
+    description: "Seated river, vehicle, and plantation options with the stairs, boarding, pavement, and wheelchair details that still matter.",
+  },
+  {
+    href: "/guides/new-orleans-tours-under-50-dollars",
+    title: "New Orleans tours under $50",
+    description: "Current budget examples with the transportation, age, and time tradeoffs that can make a cheap ticket more complicated.",
+  },
+  {
+    href: "/guides/new-orleans-tours-that-fit-before-dinner",
+    title: "Tours that fit before dinner",
+    description: "Shorter afternoon formats with realistic check-in, boarding, finish-time, and travel buffers before a dinner reservation.",
+  },
 ];
 
 export default function CompareToursPage() {
