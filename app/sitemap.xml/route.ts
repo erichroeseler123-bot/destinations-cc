@@ -16,31 +16,18 @@ export const WTONOT_SUPPORT_PATHS = [
 ] as const;
 
 const WTONOT_DECISION_GUIDES = [
-  "/guides/new-orleans-swamp-tour-without-a-car",
-  "/guides/can-kids-ride-airboats-new-orleans",
-  "/guides/whitney-plantation-vs-oak-alley-history-focus",
-  "/guides/new-orleans-tours-for-grandparents-and-kids",
-  "/guides/new-orleans-tours-limited-mobility",
-  "/guides/best-new-orleans-tours-if-you-arrive-at-noon",
-  "/guides/best-new-orleans-tours-for-a-rainy-day",
-  "/guides/best-new-orleans-tours-under-4-or-6-hours",
-  "/guides/new-orleans-tours-without-an-all-day-bus-ride",
-  "/guides/new-orleans-tours-near-french-quarter",
-  "/guides/best-new-orleans-tours-with-kids-under-6",
-  "/guides/new-orleans-tours-with-minimal-walking",
-  "/guides/new-orleans-tours-under-50-dollars",
-  "/guides/new-orleans-tours-that-fit-before-dinner",
+  "/guides/new-orleans-swamp-tour-without-a-car", "/guides/can-kids-ride-airboats-new-orleans",
+  "/guides/whitney-plantation-vs-oak-alley-history-focus", "/guides/new-orleans-tours-for-grandparents-and-kids",
+  "/guides/new-orleans-tours-limited-mobility", "/guides/best-new-orleans-tours-if-you-arrive-at-noon",
+  "/guides/best-new-orleans-tours-for-a-rainy-day", "/guides/best-new-orleans-tours-under-4-or-6-hours",
+  "/guides/new-orleans-tours-without-an-all-day-bus-ride", "/guides/new-orleans-tours-near-french-quarter",
+  "/guides/best-new-orleans-tours-with-kids-under-6", "/guides/new-orleans-tours-with-minimal-walking",
+  "/guides/new-orleans-tours-under-50-dollars", "/guides/new-orleans-tours-that-fit-before-dinner",
 ] as const;
 
-const WTONOT_SUPERSEDED_SEO_PATHS = new Set([
-  "/swamp-tours/airboat-vs-covered-boat",
-  "/swamp-tours/small-vs-large-airboat",
-  "/swamp-tours/pickup-vs-self-drive",
-]);
+const WTONOT_SUPERSEDED_SEO_PATHS = new Set(["/swamp-tours/airboat-vs-covered-boat", "/swamp-tours/small-vs-large-airboat", "/swamp-tours/pickup-vs-self-drive"]);
 
-function xmlEscape(value: string): string {
-  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;");
-}
+function xmlEscape(value: string): string { return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;"); }
 function toAbsoluteUrl(pathname: string, origin: string = SITE_IDENTITY.siteUrl): string { return `${origin}${pathname}`; }
 
 export function buildDccSitemapXml(paths: readonly string[] = INDEXABLE_SURFACE_PATHS, origin: string = SITE_IDENTITY.siteUrl, includeLastmod: boolean = true): string {
@@ -50,16 +37,9 @@ export function buildDccSitemapXml(paths: readonly string[] = INDEXABLE_SURFACE_
 }
 
 export function buildWtonotSitemapPaths() {
-  const wtoPaths = [
-    "/", "/tours", "/compare", "/french-quarter-welcome-stop",
-    "/guides/french-quarter-orientation", "/guides/visitor-rewards",
-    ...WTONOT_DECISION_GUIDES,
-    ...WTONOT_SUPPORT_PATHS,
-  ];
+  const wtoPaths = ["/", "/tours", "/compare", "/french-quarter-welcome-stop", "/guides/french-quarter-orientation", "/guides/visitor-rewards", ...WTONOT_DECISION_GUIDES, ...WTONOT_SUPPORT_PATHS];
   ALL_PRODUCTS.forEach((product: any) => { if (product.status === "live" && product.isIndexable) wtoPaths.push(`/tours/${product.slug}`); });
-  Object.values(SEO_PAGES).forEach((page: any) => {
-    if (page.status === "live" && page.isIndexable && !WTONOT_SUPERSEDED_SEO_PATHS.has(page.publicRoute)) wtoPaths.push(page.publicRoute);
-  });
+  Object.values(SEO_PAGES).forEach((page: any) => { if (page.status === "live" && page.isIndexable && !WTONOT_SUPERSEDED_SEO_PATHS.has(page.publicRoute)) wtoPaths.push(page.publicRoute); });
   COMPARISON_OPPORTUNITIES.forEach((comparison) => { if (comparison.status === "READY_TO_PUBLISH") wtoPaths.push(`/compare/${comparison.slug}`); });
   ["/guides/best-new-orleans-swamp-tour", "/guides/french-quarter-tour-timing"].forEach((legacyPath) => { if (!wtoPaths.includes(legacyPath)) wtoPaths.push(legacyPath); });
   return Array.from(new Set(wtoPaths));
@@ -75,37 +55,13 @@ export async function GET() {
   const isJfdHost = host === "juneauflightdeck.com" || host === "www.juneauflightdeck.com";
   const isDellsHost = host === "welcometothedells.com" || host === "www.welcometothedells.com";
 
-  if (isJfdHost) {
-    return new Response(buildDccSitemapXml(["/", "/helicopter"], "https://juneauflightdeck.com", false), {
-      headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" },
-    });
-  }
+  if (isJfdHost) return new Response(buildDccSitemapXml(["/", "/helicopter"], "https://juneauflightdeck.com", false), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
+  if (isDellsHost) return new Response(buildDccSitemapXml(["/"], "https://welcometothedells.com", false), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
+  if (isLfseHost) return new Response(buildDccSitemapXml(["/", "/tours", "/ports", "/ports/juneau", "/ports/skagway", "/ports/ketchikan"], "https://www.lastfrontiershoreexcursions.com"), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
+  if (isWtonotHost) return new Response(buildDccSitemapXml(buildWtonotSitemapPaths(), WTONOT_ORIGIN, false), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
 
-  if (isDellsHost) {
-    return new Response(buildDccSitemapXml(["/"], "https://welcometothedells.com", false), {
-      headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" },
-    });
-  }
-
-  if (isLfseHost) {
-    const origin = `https://www.lastfrontiershoreexcursions.com`;
-    const lfsePaths = ["/", "/tours", "/ports", "/ports/juneau", "/ports/skagway", "/ports/ketchikan"];
-    return new Response(buildDccSitemapXml(lfsePaths, origin), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
-  }
-  if (isWtonotHost) {
-    return new Response(buildDccSitemapXml(buildWtonotSitemapPaths(), WTONOT_ORIGIN, false), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
-  }
   const origin = isSomersetHost ? `https://${host}` : SITE_IDENTITY.siteUrl;
-  const preSiteGuidePaths = [
-    "/guides",
-    "/vibe-around",
-    "/shuttleya",
-    "/juneau-flightseeing",
-    "/french-quarter-orientation",
-    "/new-orleans-swamp-tours",
-    ...DECISION_CATEGORIES.map((category) => `/guides/category/${category.slug}`),
-    ...PUBLISHED_DECISION_GUIDES.map((guide) => `/guides/${guide.slug}`),
-  ];
+  const preSiteGuidePaths = ["/guides", "/ask", "/vibe-around", "/shuttleya", "/juneau-flightseeing", "/french-quarter-orientation", "/new-orleans-swamp-tours", ...DECISION_CATEGORIES.map((category) => `/guides/category/${category.slug}`), ...PUBLISHED_DECISION_GUIDES.map((guide) => `/guides/${guide.slug}`)];
   const dccPaths = [...new Set([...INDEXABLE_SURFACE_PATHS, ...SOMERSET_PAGE_PATHS, ...preSiteGuidePaths])];
   const body = isSomersetHost ? buildDccSitemapXml(SOMERSET_PAGE_PATHS, origin) : buildDccSitemapXml(dccPaths);
   return new Response(body, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
