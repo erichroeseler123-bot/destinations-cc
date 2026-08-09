@@ -13,6 +13,12 @@ export const WTONOT_SUPPORT_PATHS = [
   "/cancellation-policy", "/affiliate-disclosure", "/accessibility",
 ] as const;
 
+const WTONOT_DECISION_GUIDES = [
+  "/guides/new-orleans-swamp-tour-without-a-car",
+  "/guides/can-kids-ride-airboats-new-orleans",
+  "/guides/whitney-plantation-vs-oak-alley-history-focus",
+] as const;
+
 const WTONOT_SUPERSEDED_SEO_PATHS = new Set([
   "/swamp-tours/airboat-vs-covered-boat",
   "/swamp-tours/small-vs-large-airboat",
@@ -34,6 +40,7 @@ export function buildWtonotSitemapPaths() {
   const wtoPaths = [
     "/", "/tours", "/compare", "/french-quarter-welcome-stop",
     "/guides/french-quarter-orientation", "/guides/visitor-rewards",
+    ...WTONOT_DECISION_GUIDES,
     ...WTONOT_SUPPORT_PATHS,
   ];
   ALL_PRODUCTS.forEach((product: any) => { if (product.status === "live" && product.isIndexable) wtoPaths.push(`/tours/${product.slug}`); });
