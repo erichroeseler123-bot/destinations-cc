@@ -4,7 +4,8 @@ export type CategoryId =
   | "plantations-history"
   | "haunted-after-dark"
   | "food-cooking"
-  | "river-music";
+  | "river-music"
+  | "full-day-combos";
 
 export type PreferenceId =
   | "swamp-covered"
@@ -41,7 +42,7 @@ export interface ChooserPreference {
 }
 
 export interface RecommendationResult {
-  primaryProductId?: string; // If live inventory exists
+  primaryProductId?: string;
   alternativeProductIds?: string[];
   explanation: string;
   fallbackMessage?: string;
@@ -69,40 +70,45 @@ export const CHOOSER_CATEGORIES: ChooserCategory[] = [
   {
     id: "haunted-after-dark",
     title: "Haunted & After Dark",
-    description: "Discover ghosts, voodoo, and vampires.",
+    description: "Discover ghosts, legends, and nighttime New Orleans.",
     image: "/images/wikimedia/originals/french-quarter-night.jpg",
+    skipPreferences: true,
   },
   {
     id: "food-cooking",
-    title: "Food & Cooking",
-    description: "Taste the city's culinary heritage.",
+    title: "Food & Cocktails",
+    description: "Taste the city's culinary and cocktail heritage.",
     image: "/images/wikimedia/originals/gumbo-dish.jpg",
     skipPreferences: true,
   },
   {
     id: "river-music",
-    title: "River & Music",
-    description: "Experience jazz and the Mississippi.",
+    title: "River Cruises",
+    description: "Experience jazz and the Mississippi River.",
     image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
+    skipPreferences: true,
+  },
+  {
+    id: "full-day-combos",
+    title: "Full-Day Combos",
+    description: "Combine major New Orleans experiences in one longer outing.",
+    image: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
     skipPreferences: true,
   },
 ];
 
 export const CHOOSER_PREFERENCES: ChooserPreference[] = [
-  // Swamp
   { id: "swamp-covered", categoryId: "swamp-airboat", title: "Covered swamp boat" },
   { id: "swamp-small-airboat", categoryId: "swamp-airboat", title: "Small airboat" },
   { id: "swamp-large-airboat", categoryId: "swamp-airboat", title: "Large airboat" },
   { id: "swamp-plantation", categoryId: "swamp-airboat", title: "Swamp plus plantation" },
-  // City
   { id: "city-sightseeing", categoryId: "city-highlights", title: "City sightseeing" },
   { id: "city-river", categoryId: "city-highlights", title: "River cruise" },
   { id: "city-cocktails", categoryId: "city-highlights", title: "Cocktails and food" },
   { id: "city-ghosts", categoryId: "city-highlights", title: "Ghosts and spirits" },
-  // Plantation
   { id: "plantation-oak-alley", categoryId: "plantations-history", title: "Oak Alley" },
   { id: "plantation-whitney", categoryId: "plantations-history", title: "Whitney" },
-  { id: "plantation-swamp", categoryId: "plantations-history", title: "Plantation plus swamp" }
+  { id: "plantation-swamp", categoryId: "plantations-history", title: "Plantation plus swamp" },
 ];
 
 export function getPreferencesForCategory(
@@ -148,21 +154,42 @@ export function getRecommendation(
 
     case "plantations-history":
       if (preferenceId === "plantation-oak-alley") {
-        return { primaryProductId: "oak-alley-plantation-tour-grey-line", alternativeProductIds: ["oak-alley-or-laura-plantation-tour"], explanation: "Visit the iconic Oak Alley." };
+        return { primaryProductId: "oak-alley-plantation-tour-grey-line", alternativeProductIds: ["oak-alley-or-laura-plantation-tour"], explanation: "Visit Oak Alley and compare the available historic-site options." };
       }
       if (preferenceId === "plantation-whitney") {
-        return { primaryProductId: "whitney-plantation-tour", explanation: "Focus on the history of the enslaved." };
+        return { primaryProductId: "whitney-plantation-tour", explanation: "Choose an experience centered on Whitney Plantation." };
       }
       if (preferenceId === "plantation-swamp") {
-        return { primaryProductId: "swamp-boat-whitney-combo", alternativeProductIds: ["all-day-city-plantation-combo"], explanation: "A full day combining two iconic experiences." };
+        return { primaryProductId: "swamp-boat-whitney-combo", alternativeProductIds: ["swamp-boat-oak-alley-combo"], explanation: "Combine a plantation visit with a swamp experience." };
       }
       return { explanation: "Explore our plantation options.", fallbackMessage: "Please choose a specific plantation experience." };
+
+    case "haunted-after-dark":
+      return {
+        primaryProductId: "ghosts-spirits-walking-tour",
+        alternativeProductIds: ["craft-cocktail-walking-tour"],
+        explanation: "Explore New Orleans after dark with a ghosts-and-spirits walking experience."
+      };
 
     case "food-cooking":
       return {
         primaryProductId: "craft-cocktail-walking-tour",
         alternativeProductIds: ["cocktail-walking-tour"],
-        explanation: "Experience the city's culinary and cocktail heritage."
+        explanation: "Experience the city's cocktail and culinary heritage."
+      };
+
+    case "river-music":
+      return {
+        primaryProductId: "evening-jazz-cruise",
+        alternativeProductIds: ["daytime-jazz-cruise", "sunday-jazz-brunch-cruise", "city-of-new-orleans-riverboat-cruise"],
+        explanation: "See New Orleans from the Mississippi with a river-cruise experience."
+      };
+
+    case "full-day-combos":
+      return {
+        primaryProductId: "all-day-city-plantation-combo",
+        alternativeProductIds: ["covered-boat-plantation-combo", "swamp-boat-oak-alley-combo", "swamp-boat-whitney-combo"],
+        explanation: "Use a longer day to combine major New Orleans experiences in one outing."
       };
 
     default:
