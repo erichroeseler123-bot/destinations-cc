@@ -2,8 +2,8 @@ import { SupportPageShell, buildSupportMetadata } from "../supportPages";
 
 export const metadata = buildSupportMetadata(
   "/booking-help",
-  "Booking Help | Welcome to New Orleans Tours",
-  "Pre-booking and post-booking support guidance for Welcome to New Orleans Tours.",
+  "Booking Help | New Orleans Concierge Desk",
+  "Pre-booking and post-booking support guidance from New Orleans Concierge Desk.",
 );
 
 export default function BookingHelpPage() {
@@ -11,7 +11,7 @@ export default function BookingHelpPage() {
     <SupportPageShell
       eyebrow="Support"
       title="Booking Help"
-      intro="Use this page to understand who to contact before and after booking a New Orleans tour through this storefront."
+      intro="Use this page to understand who to contact before and after booking a New Orleans tour through New Orleans Concierge Desk."
       sections={[
         {
           title: "Before you book",
@@ -23,8 +23,14 @@ export default function BookingHelpPage() {
         {
           title: "After you book",
           body: [
-            "After booking, use the operator and FareHarbor details in your confirmation email for changes, cancellations, refunds, weather updates, late arrivals, pickup questions, and day-of-tour support.",
-            "Welcome to New Orleans Tours can help you identify where to look in your confirmation, but the operator generally manages the confirmed booking.",
+            "After booking a third-party tour, use the operator and FareHarbor details in your confirmation email for changes, cancellations, refunds, weather updates, late arrivals, pickup questions, and day-of-tour support.",
+            "New Orleans Concierge Desk can help you identify where to look in your confirmation, but the participating operator generally manages the confirmed booking.",
+          ],
+        },
+        {
+          title: "$5 French Quarter Orientation",
+          body: [
+            "The orientation is a New Orleans Concierge Desk offering rather than a partner tour. Until online checkout is connected, call or text the Desk to reserve an 8:00 AM or 9:30 AM spot and pay $5 per person at check-in.",
           ],
         },
         {
