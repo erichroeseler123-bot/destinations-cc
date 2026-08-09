@@ -131,6 +131,12 @@ export function getWtonotHostRewrite(request: NextRequest) {
     return url;
   }
 
+  // Decision comparison hub and detail pages
+  if (pathname === "/compare" || pathname.startsWith("/compare/")) {
+    url.pathname = `/new-orleans${pathname}`;
+    return url;
+  }
+
   // /tours -> /new-orleans/tours
   if (pathname === "/tours") {
     url.pathname = "/new-orleans/tours";
