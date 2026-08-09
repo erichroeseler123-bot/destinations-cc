@@ -36,12 +36,8 @@ test("every chooser path resolves to live storefront inventory", () => {
   }
 });
 
-test("known semantically misleading commerce images stay suppressed", () => {
+test("only unresolved combination products remain in the image replacement queue", () => {
   const blockedSlugs = [
-    "cocktail-walking-tour",
-    "craft-cocktail-walking-tour",
-    "whitney-plantation-tour",
-    "city-of-new-orleans-riverboat-cruise",
     "all-day-city-plantation-combo",
     "covered-boat-plantation-combo",
     "swamp-boat-oak-alley-combo",
@@ -62,12 +58,34 @@ test("known semantically misleading commerce images stay suppressed", () => {
   }
 });
 
+test("Whitney cocktail and CITY riverboat use rights-cleared subject images", () => {
+  const expected = [
+    "whitney-plantation-tour",
+    "cocktail-walking-tour",
+    "craft-cocktail-walking-tour",
+    "city-of-new-orleans-riverboat-cruise",
+  ];
+
+  for (const slug of expected) {
+    const product = STOREFRONT_PRODUCTS.find((candidate) => candidate.slug === slug);
+    assert.ok(product, `${slug} must exist in storefront inventory`);
+    const resolved = resolveProductImage(product);
+    assert.ok(resolved, `${slug} must now resolve an image`);
+    assert.strictEqual(resolved.source, "wikimedia");
+    assert.ok(resolved.attribution?.license, `${slug} must carry a license`);
+    assert.ok(resolved.attribution?.sourceUrl?.includes("commons.wikimedia.org"), `${slug} must link to its Commons source`);
+  }
+});
+
 test("every displayed commerce image has explicit rights approval and useful alt text", () => {
   for (const product of STOREFRONT_PRODUCTS) {
     const resolved = resolveProductImage(product);
     if (!resolved) continue;
 
-    assert.ok(resolved.src.startsWith("/images/"), `${product.slug} image must use a controlled local asset`);
+    const controlledLocal = resolved.src.startsWith("/images/");
+    const licensedCommonsOriginal =
+      resolved.source === "wikimedia" && resolved.src.startsWith("https://upload.wikimedia.org/");
+    assert.ok(controlledLocal || licensedCommonsOriginal, `${product.slug} image must use a controlled asset or licensed Wikimedia original`);
     assert.ok(resolved.alt.trim().length >= 8, `${product.slug} image must have descriptive alt text`);
     assert.ok(
       resolved.source === "operator" || resolved.source === "wikimedia" || resolved.source === "local",
