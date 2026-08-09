@@ -6,6 +6,11 @@ import {
   getRecommendation,
 } from "../../app/new-orleans/help-me-choose/recommendationRules";
 import { resolveProductImage } from "../../app/new-orleans/lib/imageResolver";
+import {
+  PRODUCT_IMAGE_REPLACEMENT_QUEUE,
+  PRODUCT_IMAGES,
+} from "../../app/new-orleans/data/imageRegistry";
+import { OFFICIAL_TOUR_FACTS } from "../../app/new-orleans/data/officialTourFacts";
 import { STOREFRONT_PRODUCTS } from "../../app/new-orleans/tours/pageConfig";
 
 test("every chooser path resolves to live storefront inventory", () => {
@@ -43,9 +48,12 @@ test("known semantically misleading commerce images stay suppressed", () => {
     "swamp-boat-whitney-combo",
   ];
 
+  assert.deepStrictEqual([...PRODUCT_IMAGE_REPLACEMENT_QUEUE].sort(), [...blockedSlugs].sort());
+
   for (const slug of blockedSlugs) {
     const product = STOREFRONT_PRODUCTS.find((candidate) => candidate.slug === slug);
     assert.ok(product, `${slug} must exist in storefront inventory`);
+    assert.strictEqual(PRODUCT_IMAGES[slug], undefined, `${slug} must not retain a misleading registry assignment`);
     assert.strictEqual(
       resolveProductImage(product),
       null,
@@ -65,5 +73,27 @@ test("every displayed commerce image has explicit rights approval and useful alt
       resolved.source === "operator" || resolved.source === "wikimedia" || resolved.source === "local",
       `${product.slug} image must have an approved source type`,
     );
+  }
+});
+
+test("operator-verified logistics cover high-traffic newer tour pages", () => {
+  const expected = [
+    "whitney-plantation-tour",
+    "craft-cocktail-walking-tour",
+    "ghosts-spirits-walking-tour",
+    "city-cemetery-garden-district-tour",
+    "swamp-bayou-tour",
+    "small-airboat-swamp-adventure",
+    "large-airboat-swamp-adventure",
+  ];
+
+  for (const slug of expected) {
+    const product = STOREFRONT_PRODUCTS.find((candidate) => candidate.slug === slug);
+    assert.ok(product, `${slug} must exist in storefront inventory`);
+    const facts = OFFICIAL_TOUR_FACTS[slug];
+    assert.ok(facts, `${slug} must have current operator logistics`);
+    assert.ok(facts.duration.length > 2, `${slug} duration must be populated`);
+    assert.ok(facts.transportation.length > 10, `${slug} transportation guidance must be populated`);
+    assert.ok(facts.sourceLabel.includes("Gray Line"), `${slug} must identify its operator source`);
   }
 });
