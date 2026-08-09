@@ -1,0 +1,164 @@
+"use client";
+
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+
+type ChatMessage = { role: "user" | "assistant"; content: string };
+type AskResponse = {
+  answer: string;
+  mode: "graph" | "ai";
+  confidence: "high" | "medium" | "low";
+  sources: Array<{ slug: string; title: string; href: string; category: string }>;
+  handoff: null | { siteId: string; siteName: string; href: string; reason: string; terminal: boolean };
+};
+
+const STARTERS = [
+  "Can we do whales and a helicopter in Juneau?",
+  "How should 7 people get from DEN to Vail?",
+  "What should we do with 8 hours in St. Thomas?",
+  "Airboat or covered boat with kids?",
+  "How do we get to Red Rocks without driving?",
+];
+
+export default function AskDccClient() {
+  const params = useSearchParams();
+  const initialQuestion = params.get("q")?.trim() || "";
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState(initialQuestion);
+  const [result, setResult] = useState<AskResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const sentInitial = useRef(false);
+
+  const canSubmit = useMemo(() => input.trim().length > 2 && !loading, [input, loading]);
+
+  async function ask(question: string) {
+    const clean = question.trim();
+    if (!clean || loading) return;
+    const nextMessages: ChatMessage[] = [...messages, { role: "user", content: clean }];
+    setMessages(nextMessages);
+    setInput("");
+    setLoading(true);
+    setResult(null);
+
+    try {
+      const response = await fetch("/api/ask-dcc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: nextMessages }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error || "Ask DCC could not answer that.");
+      setResult(data);
+      setMessages((current) => [...current, { role: "assistant", content: data.answer }]);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Ask DCC could not answer that.";
+      setMessages((current) => [...current, { role: "assistant", content: message }]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (initialQuestion && !sentInitial.current) {
+      sentInitial.current = true;
+      void ask(initialQuestion);
+    }
+    // initial URL query is intentionally submitted once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuestion]);
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    if (canSubmit) void ask(input);
+  }
+
+  return (
+    <div className="mx-auto w-full max-w-5xl px-5 pb-20 sm:px-8">
+      <div className="rounded-[2rem] border border-cyan-900/70 bg-[#0d131d] p-4 shadow-[0_30px_90px_rgba(0,0,0,.35)] sm:p-6">
+        <div className="min-h-[280px] space-y-4 rounded-2xl border border-slate-800 bg-[#080c12] p-4 sm:p-6">
+          {messages.length === 0 ? (
+            <div className="py-7 text-center">
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-300">Ask a real trip question</p>
+              <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-slate-400">
+                DCC searches its published decision graph first, then uses AI to explain the answer. It does not invent a booking destination outside the governed network.
+              </p>
+              <div className="mx-auto mt-7 flex max-w-3xl flex-wrap justify-center gap-2">
+                {STARTERS.map((starter) => (
+                  <button key={starter} type="button" onClick={() => void ask(starter)} className="rounded-full border border-slate-700 px-4 py-2 text-left text-sm text-slate-300 transition hover:border-cyan-600 hover:text-white">
+                    {starter}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            messages.map((message, index) => (
+              <div key={`${message.role}-${index}`} className={message.role === "user" ? "ml-auto max-w-3xl" : "mr-auto max-w-3xl"}>
+                <div className={message.role === "user" ? "rounded-2xl bg-cyan-950/70 px-5 py-4 text-cyan-50" : "rounded-2xl border border-slate-800 bg-slate-900/70 px-5 py-4 text-slate-200"}>
+                  <p className="whitespace-pre-wrap text-sm leading-7 sm:text-base">{message.content}</p>
+                </div>
+              </div>
+            ))
+          )}
+          {loading && <p className="animate-pulse text-sm font-bold text-cyan-300">DCC is tracing the decision graph…</p>}
+        </div>
+
+        <form onSubmit={submit} className="mt-4 flex flex-col gap-3 sm:flex-row">
+          <textarea
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                if (canSubmit) void ask(input);
+              }
+            }}
+            rows={2}
+            placeholder="What are you trying to figure out?"
+            className="min-h-[58px] flex-1 resize-none rounded-2xl border border-slate-700 bg-[#080c12] px-4 py-3 text-base text-white outline-none placeholder:text-slate-500 focus:border-cyan-500"
+          />
+          <button disabled={!canSubmit} className="rounded-2xl bg-cyan-300 px-7 py-3 text-sm font-black text-[#061017] transition enabled:hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-40">
+            Ask DCC
+          </button>
+        </form>
+      </div>
+
+      {result && (
+        <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_.9fr]">
+          <section className="rounded-3xl border border-slate-800 bg-[#0d131d] p-6">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-black text-white">Research used</h2>
+              <span className="rounded-full border border-slate-700 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">{result.confidence} match</span>
+            </div>
+            <div className="mt-4 space-y-3">
+              {result.sources.length ? result.sources.map((source) => (
+                <Link key={source.slug} href={source.href} className="block rounded-2xl border border-slate-800 p-4 transition hover:border-cyan-700">
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">{source.category}</p>
+                  <p className="mt-2 text-sm font-bold leading-6 text-white">{source.title}</p>
+                </Link>
+              )) : <p className="text-sm leading-6 text-slate-400">No strong published DCC match yet. Add more trip context and ask again.</p>}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-amber-900/40 bg-amber-950/10 p-6">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">Next best action</p>
+            {result.handoff ? (
+              <>
+                <h2 className="mt-3 text-2xl font-black text-white">{result.handoff.siteName}</h2>
+                <p className="mt-3 text-sm leading-6 text-slate-300">{result.handoff.reason}</p>
+                <a href={result.handoff.href} className="mt-5 inline-flex rounded-xl bg-amber-300 px-5 py-3 text-sm font-black text-[#17110a]">
+                  Continue with the decision resolved ↗
+                </a>
+              </>
+            ) : (
+              <>
+                <h2 className="mt-3 text-xl font-black text-white">Stay in research mode.</h2>
+                <p className="mt-3 text-sm leading-6 text-slate-400">DCC has not justified a commercial handoff yet. Ask a follow-up instead of being pushed into a booking page too early.</p>
+              </>
+            )}
+          </section>
+        </div>
+      )}
+    </div>
+  );
+}
