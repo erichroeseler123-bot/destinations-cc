@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PRE_SITE_GUIDES } from "@/src/data/pre-site-guides";
+import { PUBLISHED_DECISION_GUIDES } from "@/src/data/published-decision-guides";
 import { DECISION_CATEGORIES, guidesForCategory } from "@/src/data/decision-taxonomy";
 
 const ORIGIN = "https://www.destinationcommandcenter.com";
@@ -84,7 +84,7 @@ export default function GuidesPage() {
           <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300">
             Category pages create a clear crawl hierarchy. Individual decisions link laterally only when another question can materially change the same trip. Commercial handoffs stay at the end of the research path.
           </p>
-          <p className="mt-4 text-sm text-slate-500">Current published decision nodes: {PRE_SITE_GUIDES.length}</p>
+          <p className="mt-4 text-sm text-slate-500">Current published decision nodes: {PUBLISHED_DECISION_GUIDES.length}</p>
         </section>
       </section>
     </main>
