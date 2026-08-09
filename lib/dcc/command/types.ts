@@ -64,6 +64,41 @@ export type CommandEntrySurfaceCardModel = {
   state?: string;
 };
 
+export type CommandSiteNetworkSiteModel = {
+  id: string;
+  name: string;
+  domain: string;
+  role: string;
+  promotionStatus: string;
+  monetizationMode: string;
+  terminal: boolean;
+  ownedIntents: string[];
+  inboundCount: number;
+  outboundCount: number;
+};
+
+export type CommandSiteNetworkHandoffModel = {
+  id: string;
+  fromId: string;
+  fromName: string;
+  toId: string;
+  toName: string;
+  reason: string;
+  context: string[];
+  terminal: boolean;
+};
+
+export type CommandSiteNetworkModel = {
+  siteCount: number;
+  intentCount: number;
+  handoffCount: number;
+  terminalCount: number;
+  orphanedSiteCount: number;
+  nonMonetizedEndpointCount: number;
+  sites: CommandSiteNetworkSiteModel[];
+  handoffs: CommandSiteNetworkHandoffModel[];
+};
+
 export type DestinationStatusCardModel = {
   slug: string;
   name: string;
@@ -100,6 +135,7 @@ export type CommandEventModel = {
 export type CommandViewPayload = {
   generatedAt: string;
   networkStatus: CommandNetworkStatus;
+  siteNetwork: CommandSiteNetworkModel;
   entrySurfaces: CommandEntrySurfaceCardModel[];
   mapData: {
     destinations: CommandMapDestination[];

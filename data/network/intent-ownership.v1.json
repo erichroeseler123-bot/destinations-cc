@@ -1,0 +1,27 @@
+{
+  "version": "dcc-intent-ownership-v1",
+  "updatedAt": "2026-08-09T23:13:00Z",
+  "rules": {
+    "one_primary_owner_per_exact_intent": true,
+    "secondary_sites_may_support_but_not_duplicate_primary_job": true,
+    "dcc_may_route_any_intent_but_should_not_displace_a_specialist_owner": true,
+    "intent_changes_require_registry_review": true
+  },
+  "intents": [
+    {"intent_id":"dcc:intent:travel-decision-routing","primary_owner":"dcc:site:destination-command-center","supporting_sites":[],"stage":"decision"},
+    {"intent_id":"dcc:intent:cruise-planning","primary_owner":"dcc:site:cruise-promenade","supporting_sites":["dcc:site:destination-command-center"],"stage":"planning"},
+    {"intent_id":"dcc:intent:private-cruise-port-driver","primary_owner":"dcc:site:vibe-around-town","supporting_sites":["dcc:site:cruise-promenade","dcc:site:destination-command-center"],"stage":"transaction"},
+    {"intent_id":"dcc:intent:colorado-airport-resort-transfer","primary_owner":"dcc:site:gosno","supporting_sites":["dcc:site:destination-command-center","dcc:site:shuttleya"],"stage":"transaction"},
+    {"intent_id":"dcc:intent:new-orleans-tours","primary_owner":"dcc:site:welcome-new-orleans-tours","supporting_sites":["dcc:site:destination-command-center","dcc:site:french-quarter-orientation"],"stage":"transaction"},
+    {"intent_id":"dcc:intent:new-orleans-swamp-tour-choice","primary_owner":"dcc:site:welcome-to-the-swamp","supporting_sites":["dcc:site:welcome-new-orleans-tours","dcc:site:destination-command-center"],"stage":"narrowing"},
+    {"intent_id":"dcc:intent:alaska-tour-discovery","primary_owner":"dcc:site:welcome-to-alaska-tours","supporting_sites":["dcc:site:destination-command-center","dcc:site:last-frontier-shore-excursions"],"stage":"narrowing"},
+    {"intent_id":"dcc:intent:alaska-shore-excursions","primary_owner":"dcc:site:last-frontier-shore-excursions","supporting_sites":["dcc:site:welcome-to-alaska-tours","dcc:site:cruise-promenade","dcc:site:destination-command-center"],"stage":"commercial_research"},
+    {"intent_id":"dcc:intent:juneau-flightseeing","primary_owner":"dcc:site:juneau-flight-deck","supporting_sites":["dcc:site:last-frontier-shore-excursions","dcc:site:welcome-to-alaska-tours","dcc:site:destination-command-center"],"stage":"narrowing"},
+    {"intent_id":"dcc:intent:red-rocks-group-transport","primary_owner":"dcc:site:party-at-red-rocks","supporting_sites":["dcc:site:destination-command-center","dcc:site:red-rocks-fast-pass"],"stage":"transaction"},
+    {"intent_id":"dcc:intent:red-rocks-fast-action","primary_owner":"dcc:site:red-rocks-fast-pass","supporting_sites":["dcc:site:destination-command-center","dcc:site:party-at-red-rocks"],"stage":"transaction"},
+    {"intent_id":"dcc:intent:general-shuttle-corridor-execution","primary_owner":"dcc:site:shuttleya","supporting_sites":["dcc:site:destination-command-center"],"stage":"transaction"},
+    {"intent_id":"dcc:intent:denver-420-airport-pickup","primary_owner":"dcc:site:420-friendly-airport-pickup","supporting_sites":["dcc:site:destination-command-center","dcc:site:shuttleya"],"stage":"transaction"},
+    {"intent_id":"dcc:intent:french-quarter-arrival-orientation","primary_owner":"dcc:site:french-quarter-orientation","supporting_sites":["dcc:site:welcome-new-orleans-tours","dcc:site:destination-command-center"],"stage":"entry"},
+    {"intent_id":"dcc:intent:wisconsin-dells-discovery","primary_owner":"dcc:site:welcome-to-the-dells","supporting_sites":["dcc:site:destination-command-center"],"stage":"entry"}
+  ]
+}

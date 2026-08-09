@@ -1,0 +1,32 @@
+{
+  "version": "dcc-handoffs-v1",
+  "updatedAt": "2026-08-09T23:13:00Z",
+  "rules": {
+    "dcc_decides": true,
+    "satellite_narrows_once": true,
+    "operator_executes": true,
+    "never_chain_satellites": true,
+    "preserve_known_context": true,
+    "every_cross_domain_handoff_requires_attribution": true
+  },
+  "handoffs": [
+    {"handoff_id":"dcc:handoff:dcc-to-cruise-promenade","from":"dcc:site:destination-command-center","to":"dcc:site:cruise-promenade","when":"traveler needs whole-cruise or port-day planning","context":["ship","sailing_date","port","port_date","party_size"],"terminal":false},
+    {"handoff_id":"dcc:handoff:dcc-to-vibe-around-town","from":"dcc:site:destination-command-center","to":"dcc:site:vibe-around-town","when":"traveler wants a flexible private local cruise-port experience","context":["port","port_date","arrival_time","departure_time","ship","party_size"],"terminal":true},
+    {"handoff_id":"dcc:handoff:cruise-promenade-to-vibe-around-town","from":"dcc:site:cruise-promenade","to":"dcc:site:vibe-around-town","when":"a planned port day resolves to a private local driver","context":["ship","sailing_date","port","port_date","arrival_time","departure_time","party_size"],"terminal":true},
+    {"handoff_id":"dcc:handoff:dcc-to-gosno","from":"dcc:site:destination-command-center","to":"dcc:site:gosno","when":"Colorado airport-to-resort transfer intent is clear","context":["airport","destination","date","party_size","vehicle_type"],"terminal":true},
+    {"handoff_id":"dcc:handoff:dcc-to-wtnot","from":"dcc:site:destination-command-center","to":"dcc:site:welcome-new-orleans-tours","when":"New Orleans tour intent is broad but commercially ready","context":["destination","planning_stage","party_size","available_time"],"terminal":true},
+    {"handoff_id":"dcc:handoff:french-quarter-to-wtnot","from":"dcc:site:french-quarter-orientation","to":"dcc:site:welcome-new-orleans-tours","when":"already-here visitor wants a tour or activity","context":["destination","planning_stage","available_time","party_size"],"terminal":true},
+    {"handoff_id":"dcc:handoff:dcc-to-wts","from":"dcc:site:destination-command-center","to":"dcc:site:welcome-to-the-swamp","when":"swamp-tour intent needs one narrowing decision","context":["destination","party_size","pickup_need","thrill_preference","mobility_need"],"terminal":false},
+    {"handoff_id":"dcc:handoff:wts-to-wtnot","from":"dcc:site:welcome-to-the-swamp","to":"dcc:site:welcome-new-orleans-tours","when":"swamp decision resolves into a bookable New Orleans tour path","context":["tour_type","party_size","pickup_need"],"terminal":true,"exception_reason":"commercial execution handoff; must not trigger another narrowing step"},
+    {"handoff_id":"dcc:handoff:dcc-to-wta","from":"dcc:site:destination-command-center","to":"dcc:site:welcome-to-alaska-tours","when":"Alaska activity intent is broad or ambiguous","context":["port","port_date","ship","available_time","interest"],"terminal":false},
+    {"handoff_id":"dcc:handoff:dcc-to-last-frontier","from":"dcc:site:destination-command-center","to":"dcc:site:last-frontier-shore-excursions","when":"Alaska shore-excursion comparison intent is explicit","context":["port","port_date","ship","available_time"],"terminal":false},
+    {"handoff_id":"dcc:handoff:cruise-promenade-to-last-frontier","from":"dcc:site:cruise-promenade","to":"dcc:site:last-frontier-shore-excursions","when":"an Alaska port day needs shore-excursion options","context":["ship","sailing_date","port","port_date","arrival_time","departure_time","party_size"],"terminal":false},
+    {"handoff_id":"dcc:handoff:dcc-to-juneau-flight-deck","from":"dcc:site:destination-command-center","to":"dcc:site:juneau-flight-deck","when":"Juneau flightseeing or helicopter intent needs narrowing","context":["port","port_date","ship","available_time","party_size"],"terminal":false},
+    {"handoff_id":"dcc:handoff:dcc-to-parr","from":"dcc:site:destination-command-center","to":"dcc:site:party-at-red-rocks","when":"Red Rocks group transport intent is clear","context":["event_date","party_size","origin","return_need"],"terminal":true},
+    {"handoff_id":"dcc:handoff:dcc-to-red-rocks-fast-pass","from":"dcc:site:destination-command-center","to":"dcc:site:red-rocks-fast-pass","when":"Red Rocks fast-action route is the selected execution lane","context":["event_date","party_size","origin"],"terminal":true},
+    {"handoff_id":"dcc:handoff:dcc-to-shuttleya","from":"dcc:site:destination-command-center","to":"dcc:site:shuttleya","when":"a supported transport corridor resolves to direct action","context":["origin","destination","date","party_size","corridor_id"],"terminal":true},
+    {"handoff_id":"dcc:handoff:dcc-to-420","from":"dcc:site:destination-command-center","to":"dcc:site:420-friendly-airport-pickup","when":"Denver 420-friendly airport pickup intent is explicit","context":["airport","destination","date","party_size"],"terminal":true},
+    {"handoff_id":"dcc:handoff:dcc-to-french-quarter-orientation","from":"dcc:site:destination-command-center","to":"dcc:site:french-quarter-orientation","when":"visitor is already in the French Quarter and needs orientation before choosing","context":["destination","planning_stage","available_time"],"terminal":false},
+    {"handoff_id":"dcc:handoff:dcc-to-dells","from":"dcc:site:destination-command-center","to":"dcc:site:welcome-to-the-dells","when":"Wisconsin Dells destination discovery is the next useful narrowing surface","context":["destination","dates","party_size","interests"],"terminal":false}
+  ]
+}

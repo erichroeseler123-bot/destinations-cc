@@ -6,6 +6,7 @@ import { listPlaceGraphSummaries } from "@/lib/dcc/graph/placeActionGraph";
 import { listRecentSatelliteEvents } from "@/lib/dcc/satelliteHandoffs";
 import { COMMAND_CORRIDORS, getCorridorById, type GoldCorridorTemplate } from "@/lib/dcc/command/corridors";
 import { getCommandEntrySurfaces } from "@/src/data/entry-surfaces";
+import { getCommandSiteNetwork } from "@/lib/dcc/command/siteNetwork";
 import {
   COMMAND_ALERTS,
   COMMAND_BEST_MOVES,
@@ -48,23 +49,23 @@ function hasMapGeometry(corridor: CommandCorridorDefinition | null): corridor is
 
 function buildCorridorMapFeatures(corridors: ScoredCorridorState[]): CorridorMapFeature[] {
   return corridors.reduce<CorridorMapFeature[]>((features, entry) => {
-      const template = getCorridorById(entry.definition.id);
-      if (!hasMapGeometry(template)) return features;
+    const template = getCorridorById(entry.definition.id);
+    if (!hasMapGeometry(template)) return features;
 
-      features.push({
-        id: entry.definition.id,
-        tier: entry.definition.tier,
-        name: entry.definition.name,
-        center: template.map.center,
-        path: template.map.path,
-        status: entry.card.status,
-        trend: entry.analysis.trend,
-        pressureLabel: entry.card.pressureLabel,
-        bestMove: entry.card.bestMove,
-      });
+    features.push({
+      id: entry.definition.id,
+      tier: entry.definition.tier,
+      name: entry.definition.name,
+      center: template.map.center,
+      path: template.map.path,
+      status: entry.card.status,
+      trend: entry.analysis.trend,
+      pressureLabel: entry.card.pressureLabel,
+      bestMove: entry.card.bestMove,
+    });
 
-      return features;
-    }, []);
+    return features;
+  }, []);
 }
 
 function formatTimestamp(input: string): string {
@@ -266,6 +267,7 @@ export async function getCommandViewData(): Promise<CommandViewPayload> {
       recentEvents,
       portsMonitored: getPortSlugs().length,
     },
+    siteNetwork: getCommandSiteNetwork(),
     entrySurfaces: buildEntrySurfaceCards(),
     mapData: {
       destinations: COMMAND_MAP_DESTINATIONS.map((destination) => {
