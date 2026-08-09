@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import sitesRegistry from "@/data/network/sites.v1.json";
 import { normalizeAskSessionId, recordAskDccEvent } from "@/lib/dcc/ask/telemetry";
 
 export const runtime = "nodejs";
@@ -15,6 +16,12 @@ function routeTargetFromHref(href: string) {
   try { return new URL(href).hostname.replace(/^www\./, ""); } catch { return null; }
 }
 
+function isGovernedTarget(href: string) {
+  const hostname = routeTargetFromHref(href);
+  if (!hostname) return false;
+  return sitesRegistry.sites.some((site) => site.domain.replace(/^www\./, "") === hostname);
+}
+
 export async function POST(request: NextRequest) {
   let body: unknown;
   try { body = await request.json(); } catch { return NextResponse.json({ ok: false }, { status: 400 }); }
@@ -22,6 +29,8 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) return NextResponse.json({ ok: false }, { status: 400 });
 
   const { sessionId, siteName, href, sourceSlugs } = parsed.data;
+  if (!isGovernedTarget(href)) return NextResponse.json({ ok: false, error: "ungoverned_target" }, { status: 400 });
+
   await recordAskDccEvent({
     eventName: "recommendation_clicked",
     sessionId: normalizeAskSessionId(sessionId),
