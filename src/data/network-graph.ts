@@ -1,4 +1,5 @@
 import { PRE_SITE_GUIDES } from "@/src/data/pre-site-guides";
+import { DECISION_CATEGORIES, relatedDecisionGuides } from "@/src/data/decision-taxonomy";
 
 export const SUITE_SITES = [
   { id: "dcc", name: "Destination Command Center", url: "https://www.destinationcommandcenter.com", role: "research_authority" },
@@ -22,13 +23,62 @@ function specialistIdForHref(href: string) {
   return SUITE_SITES.find((site) => href.startsWith(site.url))?.id ?? null;
 }
 
+const categoryNodes = DECISION_CATEGORIES.map((category) => ({
+  id: `dcc:category:${category.slug}`,
+  url: `https://www.destinationcommandcenter.com/guides/category/${category.slug}`,
+  type: "research_category",
+  label: category.label,
+  promise: category.promise,
+  scope: category.scope,
+}));
+
+const guideNodes = PRE_SITE_GUIDES.map((guide) => ({
+  id: `dcc:guide:${guide.slug}`,
+  url: `https://www.destinationcommandcenter.com/guides/${guide.slug}`,
+  type: "decision_guide",
+  category: guide.category,
+  title: guide.title,
+  description: guide.description,
+}));
+
+const hierarchyEdges = PRE_SITE_GUIDES.map((guide) => ({
+  from: `dcc:category:${guide.category}`,
+  to: `dcc:guide:${guide.slug}`,
+  relation: "contains_decision",
+}));
+
+const lateralEdges = PRE_SITE_GUIDES.flatMap((guide) =>
+  relatedDecisionGuides(guide.slug, 4).map((related) => ({
+    from: `dcc:guide:${guide.slug}`,
+    to: `dcc:guide:${related.slug}`,
+    relation: related.category === guide.category ? "related_decision" : "cross_category_constraint",
+  })),
+);
+
+const categoryBridgeEdges = DECISION_CATEGORIES.flatMap((category) =>
+  category.bridgeCategories.map((bridge) => ({
+    from: `dcc:category:${category.slug}`,
+    to: `dcc:category:${bridge}`,
+    relation: "traveler_constraint_bridge",
+  })),
+);
+
 export const NETWORK_GRAPH = {
-  version: "2026-08-09",
+  version: "2026-08-09-v2",
   principle: "UNDERSTAND -> CHOOSE -> BUY_OR_RESERVE -> PLAN",
   hub: "dcc",
+  topology: {
+    entry: "dcc:/guides",
+    hierarchy: "hub -> category -> decision -> related decision -> specialist",
+    rule: "A DCC page must answer the traveler problem before an outbound commercial handoff appears.",
+  },
   sites: SUITE_SITES,
+  researchNodes: [...categoryNodes, ...guideNodes],
+  hierarchyEdges,
+  categoryBridgeEdges,
+  lateralEdges,
   guideEdges: PRE_SITE_GUIDES.map((guide) => ({
-    from: `dcc:/guides/${guide.slug}`,
+    from: `dcc:guide:${guide.slug}`,
     to: specialistIdForHref(guide.nextStep.href),
     href: guide.nextStep.href,
     relation: "next_action_after_research",
