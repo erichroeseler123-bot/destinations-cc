@@ -7,7 +7,7 @@ import { NEW_ORLEANS_STAPLES, STAPLE_DISCLOSURE } from "../data/diningStaples";
 export const metadata: Metadata = {
   title: "Where Should We Eat in New Orleans? | New Orleans Concierge Desk",
   description:
-    "Get practical New Orleans dining help based on your group, timing, neighborhood, and plans before or after tours and river cruises.",
+    "Get practical New Orleans dining help based on your group, timing, neighborhood, and plans before or after tours, shows, games and river cruises.",
   keywords: [
     "where to eat in new orleans",
     "new orleans restaurant concierge",
@@ -24,7 +24,7 @@ const diningSituations = [
   "Romantic dinner",
   "Large group",
   "Before or after a river cruise",
-  "Before a ghost or walking tour",
+  "Before a concert, game or show",
   "Near the French Quarter",
   "First New Orleans meal",
 ];
@@ -57,7 +57,23 @@ export default function NewOrleansFoodPage() {
           ))}
         </section>
 
-        <section className="mb-12">
+        <section className="border border-[#d4af37]/40 bg-[#1a1a1a] p-7 md:p-9 mb-12">
+          <p className="text-[#d4af37] text-xs font-bold uppercase tracking-[0.18em] mb-2">Dinner + something</p>
+          <h2 className="font-[var(--font-accent)] text-2xl md:text-3xl font-bold">What’s happening after dinner?</h2>
+          <p className="text-[#cccccc] mt-3 max-w-3xl leading-relaxed">
+            You may be in New Orleans for the city and have no idea a concert, game, comedy show, theater performance or other live event is happening while you are here. Check the live city feed before you lock in the rest of your night.
+          </p>
+          <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            <Link href="/new-orleans/tonight" className="inline-flex justify-center bg-[#d4af37] text-[#151515] font-bold px-6 py-4 uppercase tracking-wider text-sm">
+              See what’s happening tonight
+            </Link>
+            <Link href="/new-orleans/this-weekend" className="inline-flex justify-center border border-[#d4af37] text-[#d4af37] font-bold px-6 py-4 uppercase tracking-wider text-sm">
+              This weekend
+            </Link>
+          </div>
+        </section>
+
+        <section id="new-orleans-staples" className="mb-12 scroll-mt-24">
           <div className="mb-5">
             <p className="text-[#d4af37] text-xs font-bold uppercase tracking-[0.18em] mb-2">New Orleans Staples</p>
             <h2 className="font-[var(--font-accent)] text-2xl md:text-3xl font-bold">Places visitors should know about</h2>
