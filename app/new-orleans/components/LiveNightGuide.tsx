@@ -1,5 +1,5 @@
 import Link from "next/link";
-import DiningOrientationPromo from "./DiningOrientationPromo";
+import RestaurantOrientationAd from "./RestaurantOrientationAd";
 import {
   eventCategory,
   formatLiveEventDate,
@@ -134,7 +134,7 @@ export default async function LiveNightGuide({
               Browse evening-friendly tours
             </Link>
           </div>
-          <DiningOrientationPromo placement="live-events" />
+          <RestaurantOrientationAd />
         </section>
       </div>
     </main>
