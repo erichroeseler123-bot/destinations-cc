@@ -54,17 +54,17 @@ export const COMPARISON_OPPORTUNITIES: ComparisonOpportunity[] = [
     title: "New Orleans Swamp Tours With Pickup vs Driving Yourself",
     queryIntent: "Choose transportation format and understand the real time commitment.",
     primaryTourSlugs: ["covered-tour-boat", "ragin-cajun-airboat-options", "swamp-bayou-tour", "small-airboat-swamp-adventure", "large-airboat-swamp-adventure"],
-    status: "READY_FOR_RESEARCH",
-    requiredFacts: ["pickup area", "pickup lead time", "drive time", "parking", "return window", "tour-only duration", "total commitment"],
-    decisionQuestions: ["How much time does pickup add?", "Is driving yourself faster?", "Where do I park?", "Which option is easiest from the French Quarter?"]
+    status: "READY_TO_PUBLISH",
+    requiredFacts: ["departure point", "advance check-in", "self-drive meeting point", "parking", "ride-share limitations", "tour-only duration", "transport-included duration"],
+    decisionQuestions: ["How much time does transportation add?", "Is driving yourself faster?", "Where do I park?", "Which option is easiest from the French Quarter?"]
   },
   {
     slug: "best-new-orleans-tour-if-you-only-have-3-hours",
     title: "Best New Orleans Tours If You Only Have About 3 Hours",
     queryIntent: "Find a bookable tour that fits a hard short-time constraint.",
     primaryTourSlugs: ["city-tour-of-new-orleans", "cocktail-walking-tour", "craft-cocktail-walking-tour", "ghosts-spirits-walking-tour"],
-    status: "READY_FOR_RESEARCH",
-    requiredFacts: ["scheduled duration", "check-in lead time", "starting location", "ending location", "transportation", "typical overrun risk"],
-    decisionQuestions: ["Can I really finish in 3 hours?", "Do I need hotel pickup?", "Will I end where I started?", "What is safest before dinner or a flight?"]
+    status: "READY_TO_PUBLISH",
+    requiredFacts: ["published duration", "advance check-in", "meeting point", "age restrictions", "walking requirements", "schedule buffer"],
+    decisionQuestions: ["Can I really finish in 3 hours?", "Which option leaves the most buffer?", "Which works best from the French Quarter?", "What should I avoid before a hard deadline?"]
   }
 ];
