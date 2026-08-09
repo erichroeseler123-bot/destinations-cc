@@ -1,0 +1,24 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "New Orleans Tours Under $50: Current Budget-Friendly Options",
+  description:
+    "See current New Orleans tour options under $50, including a riverboat cruise, ghost walk, cocktail tour, and self-drive swamp boat, with important tradeoffs.",
+  alternates: { canonical: "/guides/new-orleans-tours-under-50-dollars" },
+};
+
+export default function ToursUnderFiftyGuide() {
+  return (
+    <article className="min-h-screen bg-[#151515] text-[#fdfbf7]">
+      <header className="border-b border-[#2a2a2a] bg-[#101010] px-6 py-14 md:py-20"><div className="mx-auto max-w-5xl"><p className="text-xs font-bold uppercase tracking-[0.24em] text-[#d4af37]">Budget decision guide</p><h1 className="mt-4 max-w-4xl font-[var(--font-accent)] text-4xl font-bold leading-tight md:text-6xl">New Orleans tours under $50</h1><p className="mt-6 max-w-3xl text-lg leading-relaxed text-[#ccc]">A lower ticket price can still hide a transportation or time tradeoff. These are current adult-price examples we checked directly with the operator, not permanent price guarantees.</p><p className="mt-5 text-xs uppercase tracking-[0.16em] text-[#888]">Prices and operator facts last checked August 9, 2026</p></div></header>
+      <div className="mx-auto max-w-5xl space-y-12 px-6 py-12 md:py-16">
+        <section className="overflow-x-auto"><table className="w-full min-w-[760px] border-collapse text-left text-sm"><thead><tr className="border-b border-[#444] text-[#d4af37]"><th className="p-3">Experience</th><th className="p-3">Current adult price</th><th className="p-3">Main tradeoff</th></tr></thead><tbody className="text-[#ccc]"><tr className="border-b border-[#333]"><td className="p-3 font-bold text-white">75-minute CITY riverboat</td><td className="p-3">$25.75</td><td className="p-3">Short sightseeing format; arrive 30 minutes before boarding.</td></tr><tr className="border-b border-[#333]"><td className="p-3 font-bold text-white">Ghosts & Spirits walk</td><td className="p-3">$27</td><td className="p-3">Two hours on foot in the French Quarter.</td></tr><tr className="border-b border-[#333]"><td className="p-3 font-bold text-white">Craft cocktail walk</td><td className="p-3">$28</td><td className="p-3">21+ only; one cocktail included, extras cost more.</td></tr><tr><td className="p-3 font-bold text-white">Self-drive flat-boat swamp cruise</td><td className="p-3">$35</td><td className="p-3">No transportation; meets in Lafitte and the operator warns Lyft/Uber do not service the area.</td></tr></tbody></table></section>
+        <section className="border-l-4 border-[#d4af37] bg-[#1b1b1b] p-6"><h2 className="text-2xl font-bold">Cheapest ticket is not always cheapest outing</h2><p className="mt-4 text-[#ccc]">The $35 self-drive swamp ticket can be excellent if you already have a car. If you do not, transportation becomes the problem. By contrast, downtown walking tours and the riverboat begin near the French Quarter.</p></section>
+        <section><h2 className="font-[var(--font-accent)] text-3xl font-bold">Compare what is included</h2><p className="mt-4 leading-relaxed text-[#ccc]">Look at age rules, drinks or food, transportation, check-in time, and total outing length before comparing prices. Operators can change prices and schedules, so always verify the live booking page before paying.</p></section>
+        <section className="border-t border-[#333] pt-8"><h2 className="text-lg font-bold">Official sources checked</h2><div className="mt-4 flex flex-wrap gap-4 text-sm"><a className="text-[#d4af37] underline" href="https://www.graylineneworleans.com/riverboat-cruises/75-minute-city-of-new-orleans-riverboat-cruise/" target="_blank" rel="noopener noreferrer">CITY riverboat</a><a className="text-[#d4af37] underline" href="https://www.graylineneworleans.com/ghosts-spirits/" target="_blank" rel="noopener noreferrer">Ghosts & Spirits</a><a className="text-[#d4af37] underline" href="https://www.graylineneworleans.com/food-drinks-tours/new-orleans-craft-cocktail-walking-tour-2/" target="_blank" rel="noopener noreferrer">Cocktail tour</a><a className="text-[#d4af37] underline" href="https://www.graylineneworleans.com/swamp-tours/self-drive-flat-boat-swamp-cruise-no-transportation/" target="_blank" rel="noopener noreferrer">Self-drive swamp</a></div></section>
+        <nav className="border-t border-[#333] pt-8 text-sm flex flex-wrap gap-5"><Link className="text-[#d4af37] underline" href="/guides/new-orleans-tours-near-french-quarter">Tours near the French Quarter</Link><Link className="text-[#d4af37] underline" href="/guides/new-orleans-swamp-tour-without-a-car">Swamp tours without a car</Link><Link className="text-[#d4af37] underline" href="/tours">Browse tours</Link></nav>
+      </div>
+    </article>
+  );
+}
