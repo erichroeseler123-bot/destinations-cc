@@ -9,6 +9,7 @@ import { CorridorHealthGrid } from "@/app/components/dcc/command/CorridorHealthG
 import { DestinationStatusStack } from "@/app/components/dcc/command/DestinationStatusStack";
 import { LiveEventStream } from "@/app/components/dcc/command/LiveEventStream";
 import { NetworkPulsePanel } from "@/app/components/dcc/command/NetworkPulsePanel";
+import { SiteNetworkControlPlane } from "@/app/components/dcc/command/SiteNetworkControlPlane";
 import type { CommandViewPayload } from "@/lib/dcc/command/types";
 
 const CORRIDOR_TO_DESTINATION: Record<string, string> = {
@@ -58,6 +59,7 @@ export function CommandViewShell({ data }: { data: CommandViewPayload }) {
   return (
     <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 py-12 lg:grid-cols-12">
       <div className="space-y-10 lg:col-span-8">
+        <SiteNetworkControlPlane data={data.siteNetwork} />
         <CommandEntrySurfaceGrid entries={data.entrySurfaces} />
         <CommandMapCard
           data={data.mapData}
