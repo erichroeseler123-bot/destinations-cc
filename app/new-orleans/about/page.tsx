@@ -2,16 +2,16 @@ import { SupportPageShell, buildSupportMetadata } from "../supportPages";
 
 export const metadata = buildSupportMetadata(
   "/about",
-  "About | Welcome to New Orleans Tours",
-  "About the Welcome to New Orleans Tours recommendation storefront and its independent-operator booking model.",
+  "About | New Orleans Concierge Desk",
+  "About New Orleans Concierge Desk, an independent New Orleans visitor-help and tour recommendation site.",
 );
 
 export default function AboutPage() {
   return (
     <SupportPageShell
       eyebrow="About"
-      title="About Welcome to New Orleans Tours"
-      intro="Welcome to New Orleans Tours helps travelers compare local tour options and continue to participating operator booking paths."
+      title="About New Orleans Concierge Desk"
+      intro="New Orleans Concierge Desk helps visitors compare local tour options, plan their time, and continue to participating operator booking paths."
       sections={[
         {
           title: "What we do",
@@ -23,15 +23,15 @@ export default function AboutPage() {
         {
           title: "How booking works",
           body: [
-            "When a traveler chooses a tour, the booking path typically opens through FareHarbor for the participating operator. The operator provides the tour and controls the confirmed booking details.",
-            "Welcome to New Orleans Tours may receive affiliate compensation when bookings are completed through site links.",
+            "When a traveler chooses a third-party tour, the booking path typically opens through FareHarbor for the participating operator. The operator provides the tour and controls the confirmed booking details.",
+            "New Orleans Concierge Desk may receive affiliate compensation when bookings are completed through site links.",
           ],
         },
         {
-          title: "Local-tour focus",
+          title: "Local visitor help",
           body: [
-            "The storefront focuses on New Orleans experiences and practical planning questions: tour format, transportation, group fit, weather exposure, mobility, and what to verify before purchase.",
-            "We do not claim to operate partner tours unless a page specifically says otherwise.",
+            "The Concierge Desk focuses on New Orleans experiences and practical planning questions: tour format, transportation, group fit, weather exposure, mobility, timing, and what to verify before purchase.",
+            "We also offer our own $5 French Quarter Morning Orientation. We do not claim to operate partner tours unless a page specifically says otherwise.",
           ],
         },
       ]}
