@@ -1,9 +1,11 @@
 # DCC Network Layer (v1)
 
-This directory defines the DCC Network Layer contract using two registries:
+This directory defines the governed DCC Network Layer.
 
-- `nodes.v1.json` (Node Registry)
-- `edges.v1.json` (Edge Registry)
+## Core graph registries
+
+- `nodes.v1.json` (travel/entity Node Registry)
+- `edges.v1.json` (entity Edge Registry)
 - `pipeline-ownership.v1.json` (Pipeline ownership policy)
 - `field-ownership.v1.json` (Field mutation policy)
 - `confidence-policy.v1.json` (Operational confidence thresholds)
@@ -11,6 +13,23 @@ This directory defines the DCC Network Layer contract using two registries:
 - `merge-policy.v1.json` (Schema-aware merge precedence policy)
 - `promotion-policy.v1.json` (Surface promotion gate policy)
 - `staleness-policy.v1.json` (Freshness windows and review/block rules)
+
+## Full-suite control-plane registries
+
+The site layer is intentionally separate from the travel/entity graph. A website is a routing surface, not a city, port, attraction, or operator entity.
+
+- `sites.v1.json` — canonical identity, role, promotion state, monetization mode, and terminal behavior for every site in the suite
+- `intent-ownership.v1.json` — one primary owner for each exact user intent, with optional supporting surfaces
+- `handoffs.v1.json` — explicit allowed cross-domain handoffs and the context fields that should survive each transition
+
+Network doctrine:
+
+- DCC decides
+- a satellite may narrow once
+- execution surfaces fulfill
+- never chain satellites
+- preserve known traveler context instead of asking again
+- every cross-domain handoff must be attributable
 
 ## Node Registry fields
 
@@ -62,19 +81,19 @@ Each edge includes:
 
 ## Validation
 
-Run:
+Core graph validation:
 
 ```bash
 npm run dcc:network:validate
 ```
 
-This validates schema correctness and referential integrity between nodes and edges.
-It also validates ownership constraints against `pipeline-ownership.v1.json`.
-Validator output now includes severity classes:
+Full-suite site/intent/handoff validation:
 
-- `errors`
-- `warnings`
-- `infos`
+```bash
+npx tsx scripts/dcc/validate-site-network.ts
+```
+
+The suite validator checks unique site/domain/intent/handoff identities, referential integrity, self-routes, owner/support references, terminal-target coherence, and explicit handoff context.
 
 ## Governed exports
 
