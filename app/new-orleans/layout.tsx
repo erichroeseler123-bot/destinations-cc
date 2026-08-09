@@ -16,21 +16,21 @@ const newOrleansScriptFont = Pinyon_Script({
   variable: '--font-new-orleans-script',
 });
 
-const socialDescription = "Compare New Orleans tours, find participating experiences, and get help choosing the right fit for your trip.";
+const socialDescription = "New Orleans concierge help, tour comparisons, a $5 French Quarter morning orientation, and practical planning for your trip.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://welcometoneworleanstours.com"),
-  applicationName: "Welcome to New Orleans Tours",
+  applicationName: "New Orleans Concierge Desk",
   openGraph: {
-    title: "Welcome to New Orleans Tours",
+    title: "New Orleans Concierge Desk",
     description: socialDescription,
     url: "https://welcometoneworleanstours.com",
-    siteName: "Welcome to New Orleans Tours",
+    siteName: "New Orleans Concierge Desk",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Welcome to New Orleans Tours",
+    title: "New Orleans Concierge Desk",
     description: socialDescription,
   },
   verification: {
