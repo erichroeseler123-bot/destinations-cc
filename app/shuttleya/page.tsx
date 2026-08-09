@@ -1,68 +1,78 @@
-import React from 'react';
-import Link from 'next/link';
+import type { Metadata } from "next";
+import Link from "next/link";
 
-export const metadata = {
-  title: 'Shuttleya | Mighty Argo Cable Car Logistics',
-  description: 'Direct 9AM shuttle relay from Denver to the Mighty Argo Cable Car.',
+const SPECIALIST = "https://shuttleya.com";
+
+const DECISIONS = [
+  ["No car", "How do you get from Denver to Idaho Springs without driving?", "/guides/denver-to-idaho-springs-without-driving"],
+  ["Worth the trip?", "Is Mighty Argo worth using half a day from Denver?", "/guides/is-mighty-argo-worth-a-half-day-from-denver"],
+  ["Drive or shuttle", "Should you drive or take a shuttle?", "/guides/drive-vs-shuttle-denver-to-idaho-springs"],
+  ["Timing", "How much time should you allow for the day trip?", "/guides/how-much-time-for-idaho-springs-day-trip-from-denver"],
+  ["I-70", "What if I-70 disrupts the mountain day?", "/guides/what-if-i70-closes-on-denver-day-trip"],
+] as const;
+
+export const metadata: Metadata = {
+  title: "Denver to Idaho Springs Day Trip | Shuttle Decision Guide",
+  description:
+    "Decide whether an Idaho Springs day trip fits, whether to drive or shuttle, how much time to protect, and what to consider about I-70 before booking transportation.",
+  alternates: { canonical: "/shuttleya" },
 };
 
-export default function ShuttleyaLogisticsNode() {
+export default function ShuttleyaDecisionCenter() {
   return (
-    <main className="h-screen w-full bg-zinc-950 text-zinc-100 overflow-hidden flex flex-col items-center justify-center p-4 font-mono">
-      {/* Outer Industrial Frame */}
-      <div className="w-full max-w-md bg-zinc-900 border-4 border-zinc-700 shadow-[12px_12px_0px_theme(colors.amber.500)] p-6 flex flex-col gap-8 relative">
-        
-        {/* Telemetry Header */}
-        <div className="flex justify-between items-start border-b-2 border-zinc-700 pb-4">
+    <main className="min-h-screen bg-[#0c1015] text-[#f6f2e8]">
+      <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 md:py-24">
+        <p className="text-xs font-black uppercase tracking-[0.24em] text-sky-300">
+          DCC · Colorado pre-site
+        </p>
+        <h1 className="mt-5 max-w-4xl text-5xl font-black tracking-[-0.05em] sm:text-6xl">
+          Decide the Idaho Springs day trip before buying the ride.
+        </h1>
+        <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
+          Start with the questions that determine whether transportation is even the right purchase: is the outing worth the time, do you need a car, drive or shuttle, how much margin does the day need, and what happens if I-70 changes the plan. Once those are solved, ShuttleYa becomes the direct-service next step.
+        </p>
+
+        <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {DECISIONS.map(([eyebrow, title, href]) => (
+            <Link
+              key={href}
+              href={href}
+              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 transition hover:-translate-y-1 hover:border-sky-300/50"
+            >
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-300">{eyebrow}</p>
+              <h2 className="mt-3 text-xl font-black leading-7 text-white">{title}</h2>
+              <span className="mt-6 inline-block text-sm font-bold text-slate-200">Resolve this question →</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-white/10 bg-[#111821]">
+        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 sm:px-8 lg:grid-cols-[1.1fr_.9fr]">
           <div>
-            <h1 className="text-3xl font-black tracking-tighter uppercase text-amber-400">
-              Shuttleya
-            </h1>
-            <p className="text-xs tracking-widest text-zinc-400 mt-1">
-              STATUS: ACTIVE // ROUTE: DENVER ⇄ ARGO
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-sky-300">The handoff boundary</p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-white">
+              DCC answers the trip question. ShuttleYa sells the scheduled ride.
+            </h2>
+            <p className="mt-4 max-w-2xl leading-7 text-slate-300">
+              Destination Command Center should not duplicate ShuttleYa checkout or pretend to be the transportation operator. DCC owns comparison and trip-fit reasoning. ShuttleYa owns its current schedule, pickup details, fare, operating rules, disruption policy, and booking flow.
             </p>
           </div>
-          <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse mt-2"></div>
-        </div>
 
-        {/* Tactical Decision Deck */}
-        <div className="flex flex-col gap-2">
-          <div className="bg-zinc-950 border-2 border-zinc-800 p-4 shadow-[4px_4px_0px_#000]">
-            <h2 className="text-xl font-bold uppercase text-white">
-              Mighty Argo Cable Car
-            </h2>
-            <ul className="mt-4 space-y-2 text-sm text-zinc-300">
-              <li className="flex justify-between">
-                <span>DEPARTURE:</span>
-                <span className="text-amber-400 font-bold">9:00 AM</span>
-              </li>
-              <li className="flex justify-between">
-                <span>ORIGIN:</span>
-                <span className="text-white">Denver, CO</span>
-              </li>
-              <li className="flex justify-between border-t border-zinc-800 pt-2 mt-2">
-                <span>FARE (ROUND-TRIP):</span>
-                <span className="text-emerald-400 font-black">$35.00</span>
-              </li>
-            </ul>
+          <div className="rounded-3xl border border-sky-300/20 bg-sky-300/[0.06] p-6">
+            <p className="text-sm font-black text-white">A scheduled shuttle fits the day?</p>
+            <p className="mt-2 text-sm leading-6 text-slate-300">
+              Move downstream when the question changes from “how should we do this?” to “show me ShuttleYa's current ride and booking details.”
+            </p>
+            <a
+              href={SPECIALIST}
+              className="mt-5 inline-flex rounded-xl bg-sky-300 px-5 py-3 text-sm font-black text-[#081018]"
+            >
+              Continue to ShuttleYa ↗
+            </a>
           </div>
         </div>
-
-        {/* Square Payment Gateway Trigger */}
-        <Link 
-          href={process.env.NEXT_PUBLIC_SQUARE_ARGO_LINK || "#"}
-          className="block w-full text-center bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black text-lg py-4 border-2 border-amber-600 shadow-[6px_6px_0px_#000] hover:shadow-[2px_2px_0px_#000] hover:translate-x-[4px] hover:translate-y-[4px] transition-all uppercase tracking-wide"
-        >
-          Initiate $35 Checkout
-        </Link>
-
-        {/* Operational Footer */}
-        <div className="text-center">
-          <p className="text-[10px] text-zinc-600 uppercase tracking-widest">
-            Fast Checkout / Single-Tap Auth
-          </p>
-        </div>
-      </div>
+      </section>
     </main>
   );
 }
