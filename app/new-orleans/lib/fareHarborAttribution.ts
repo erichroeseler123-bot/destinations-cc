@@ -45,6 +45,14 @@ export type ApprovedProductSlug = (typeof APPROVED_PRODUCT_SLUGS)[number];
 const SOURCE_VALUES = new Set<string>(Object.values(FAREHARBOR_SOURCES));
 const APPROVED_SLUG_VALUES = new Set<string>(APPROVED_PRODUCT_SLUGS);
 
+const EXPECTED_ASN_BY_SHORTNAME: Record<string, string> = {
+  southernstyletours: "aktourcenter",
+  ragincajuntours: "aktourcenter",
+  neworleanssteamboatcompany: "welcometoneworleanstours",
+};
+
+const CANONICAL_STEAMBOAT_REF = "WelcomeToNewOrleansTours";
+
 const DEFAULT_DETAIL_SOURCE_BY_SLUG: Record<ApprovedProductSlug, FareHarborSource> = {
   "city-tour-of-new-orleans": FAREHARBOR_SOURCES.detailCity,
   "oak-alley-or-laura-plantation-tour": FAREHARBOR_SOURCES.detailPlantation,
@@ -85,6 +93,37 @@ export function isApprovedProductSlug(value: string): value is ApprovedProductSl
 
 export function getDefaultDetailSource(productSlug: ApprovedProductSlug): FareHarborSource {
   return DEFAULT_DETAIL_SOURCE_BY_SLUG[productSlug];
+}
+
+export function getExpectedFareHarborAsn(shortname: string, requestedAsn: string): string {
+  return EXPECTED_ASN_BY_SHORTNAME[shortname] || requestedAsn;
+}
+
+export function normalizeFareHarborFallbackHref({
+  href,
+  shortname,
+  requestedAsn,
+}: {
+  href: string;
+  shortname: string;
+  requestedAsn: string;
+}): string {
+  try {
+    const url = new URL(href);
+    if (url.hostname !== "fareharbor.com" && url.hostname !== "www.fareharbor.com") {
+      return href;
+    }
+
+    url.searchParams.set("asn", getExpectedFareHarborAsn(shortname, requestedAsn));
+
+    if (shortname === "neworleanssteamboatcompany") {
+      url.searchParams.set("ref", CANONICAL_STEAMBOAT_REF);
+    }
+
+    return url.toString();
+  } catch {
+    return href;
+  }
 }
 
 export function buildAttributedTourHref(
@@ -146,7 +185,7 @@ export function buildFareHarborLightframeOptions({
     fullItems?: string;
   } = {
     shortname,
-    asn,
+    asn: getExpectedFareHarborAsn(shortname, asn),
     ref: source,
   };
 
@@ -157,7 +196,7 @@ export function buildFareHarborLightframeOptions({
     options.flow = String(flowId);
   }
   if (scheduleUuid) {
-    options.scheduleUuid = scheduleUuid; // Note: if the widget doesn't use this, it doesn't hurt, but the fallback href preserves it.
+    options.scheduleUuid = scheduleUuid;
   }
   if (fullItems) {
     options.fullItems = fullItems;
