@@ -1,91 +1,110 @@
 import test from "node:test";
 import assert from "node:assert";
-import React from "react";
+import fs from "node:fs";
+import path from "node:path";
 import { STOREFRONT_PRODUCTS, getFareHarborUrl } from "../../app/new-orleans/tours/pageConfig";
-import { APPROVED_SUPPLIED_URLS } from "./inventory-fixture";
-import ProductCard from "../../app/new-orleans/components/ProductCard";
-import StickyMobileBookingBar from "../../app/new-orleans/components/StickyMobileBookingBar";
+import { normalizeFareHarborFallbackHref } from "../../app/new-orleans/lib/fareHarborAttribution";
 
 test("Conversion Card Actions & Mobile Sticky CTA Suite", async (t) => {
-
-  await t.test("1. View Details remains available on all 21 storefront products", () => {
+  await t.test("1. All 21 storefront products have unique detail routes", () => {
     assert.strictEqual(STOREFRONT_PRODUCTS.length, 21);
-    STOREFRONT_PRODUCTS.forEach((product) => {
-      const slug = product.slug || product.id;
-      assert.ok(slug, `Product ${product.id} must have a valid slug`);
-    });
+    const slugs = new Set<string>();
+    for (const product of STOREFRONT_PRODUCTS) {
+      assert.ok(product.slug, `Product ${product.id} must have a valid slug`);
+      assert.ok(!slugs.has(product.slug), `Duplicate storefront slug: ${product.slug}`);
+      assert.ok(product.operatorName, `${product.slug} must identify its operator`);
+      slugs.add(product.slug);
+    }
   });
 
-  await t.test("2. Exactly 18 products are classified A. DIRECT BOOK NOW and 3 as B. VIEW OPTIONS", () => {
-    const directBookNowProducts = STOREFRONT_PRODUCTS.filter((p) => {
+  await t.test("2. Exactly 18 products are direct-book and 3 are multi-variant", () => {
+    const direct = STOREFRONT_PRODUCTS.filter((p) => {
       const variants = p.bookingVariants || [];
-      return (Array.isArray(variants) && variants.length === 1) || (!variants.length && (p.itemId || p.flowId));
+      return variants.length === 1 || (!variants.length && (p.itemId || p.flowId));
     });
-
-    const viewOptionsProducts = STOREFRONT_PRODUCTS.filter((p) => {
-      const variants = p.bookingVariants || [];
-      return Array.isArray(variants) && variants.length > 1;
-    });
-
-    assert.strictEqual(directBookNowProducts.length, 18, "Must have exactly 18 direct book now products");
-    assert.strictEqual(viewOptionsProducts.length, 3, "Must have exactly 3 multi-variant products");
+    const multi = STOREFRONT_PRODUCTS.filter((p) => (p.bookingVariants || []).length > 1);
+    assert.strictEqual(direct.length, 18);
+    assert.strictEqual(multi.length, 3);
   });
 
-  await t.test("3. Multi-variant products are explicitly identified as the 3 Steamboat Cruises", () => {
+  await t.test("3. Multi-variant products are the three river-cruise selectors", () => {
     const multiVariantSlugs = STOREFRONT_PRODUCTS
       .filter((p) => (p.bookingVariants || []).length > 1)
-      .map((p) => p.slug || p.id);
-
-    assert.deepStrictEqual(multiVariantSlugs.sort(), [
+      .map((p) => p.slug)
+      .sort();
+    assert.deepStrictEqual(multiVariantSlugs, [
       "daytime-jazz-cruise",
       "evening-jazz-cruise",
       "sunday-jazz-brunch-cruise",
     ].sort());
   });
 
-  await t.test("4. Every direct action uses the exact approved URL, ASN, item ID, flow ID, and ref code", () => {
-    STOREFRONT_PRODUCTS.forEach((product) => {
-      const variants = product.bookingVariants || [];
-      if (variants.length === 1) {
-        const v0 = variants[0];
-        assert.ok(v0.bookingUrl, `Product ${product.id} variant must have bookingUrl`);
-        assert.ok(v0.itemId, `Product ${product.id} variant must have itemId`);
-        assert.ok(v0.flowId, `Product ${product.id} variant must have flowId`);
-        assert.ok(v0.bookingUrl.includes("asn=welcometoneworleanstours"), `Product ${product.id} must keep approved ASN`);
-      } else if (variants.length === 0) {
-        const url = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
-        assert.ok(url.includes("asn=aktourcenter"), `Product ${product.id} must keep approved ASN aktourcenter`);
+  await t.test("4. Every literal variant URL matches its declared item and flow", () => {
+    for (const product of STOREFRONT_PRODUCTS) {
+      for (const variant of product.bookingVariants || []) {
+        const url = new URL(variant.bookingUrl);
+        assert.ok(url.hostname.endsWith("fareharbor.com"), `${product.slug} must link to FareHarbor`);
+        assert.ok(url.pathname.includes(`/items/${variant.itemId}/`), `${product.slug}/${variant.label} item mismatch`);
+        assert.strictEqual(url.searchParams.get("flow"), variant.flowId, `${product.slug}/${variant.label} flow mismatch`);
       }
-    });
+    }
   });
 
-  await t.test("5. ghosts-spirits-walking-tour item ID is verified as 562250 without discrepancy", () => {
-    const ghostsProduct = STOREFRONT_PRODUCTS.find((p) => p.slug === "ghosts-spirits-walking-tour");
-    assert.ok(ghostsProduct, "ghosts-spirits-walking-tour must exist");
-    assert.ok(ghostsProduct.bookingVariants?.length, "ghosts-spirits-walking-tour must have a booking variant");
-    const v0 = ghostsProduct.bookingVariants[0];
-    assert.strictEqual(v0.itemId, "562250", "ghosts-spirits-walking-tour item ID must be 562250");
-    assert.strictEqual(v0.flowId, "1578708", "ghosts-spirits-walking-tour flow ID must be 1578708");
-    assert.ok(v0.bookingUrl.includes("/items/562250/"), "Literal URL must include item 562250");
+  await t.test("5. Every customer-facing checkout normalizes to the approved operator ASN", () => {
+    for (const product of STOREFRONT_PRODUCTS) {
+      const variants = product.bookingVariants || [];
+      const hrefs = variants.length
+        ? variants.map((variant) => variant.bookingUrl)
+        : [getFareHarborUrl(product.companyShortname, product.itemId, product.flowId)];
+
+      for (const href of hrefs) {
+        const normalized = normalizeFareHarborFallbackHref({
+          href,
+          shortname: product.companyShortname,
+          requestedAsn: new URL(href).searchParams.get("asn") || "",
+        });
+        const url = new URL(normalized);
+        const expectedAsn = product.companyShortname === "neworleanssteamboatcompany"
+          ? "welcometoneworleanstours"
+          : "aktourcenter";
+        assert.strictEqual(url.searchParams.get("asn"), expectedAsn, `${product.slug} ASN mismatch`);
+        if (product.companyShortname === "neworleanssteamboatcompany") {
+          assert.strictEqual(url.searchParams.get("ref"), "WelcomeToNewOrleansTours", `${product.slug} referral code mismatch`);
+        }
+      }
+    }
   });
 
-  await t.test("6. ProductCard produces valid dual CTA structures for direct vs variant products", () => {
-    const directProduct = STOREFRONT_PRODUCTS.find((p) => p.slug === "swamp-bayou-tour");
-    const variantProduct = STOREFRONT_PRODUCTS.find((p) => p.slug === "evening-jazz-cruise");
-
-    assert.ok(directProduct);
-    assert.ok(variantProduct);
+  await t.test("6. Sunday Jazz Brunch malformed raw ref is repaired before customer navigation", () => {
+    const sunday = STOREFRONT_PRODUCTS.find((p) => p.slug === "sunday-jazz-brunch-cruise");
+    assert.ok(sunday);
+    assert.strictEqual(sunday.bookingVariants?.length, 3);
+    for (const variant of sunday.bookingVariants || []) {
+      const normalized = normalizeFareHarborFallbackHref({
+        href: variant.bookingUrl,
+        shortname: sunday.companyShortname,
+        requestedAsn: "welcometoneworleanstours",
+      });
+      assert.strictEqual(new URL(normalized).searchParams.get("ref"), "WelcomeToNewOrleansTours");
+    }
   });
 
-  await t.test("7. StickyMobileBookingBar is scoped to mobile viewports via md:hidden class", () => {
-    const directProduct = STOREFRONT_PRODUCTS.find((p) => p.slug === "swamp-bayou-tour");
-    assert.ok(directProduct);
+  await t.test("7. Ghosts & Spirits keeps verified item 562250 / flow 1578708", () => {
+    const ghosts = STOREFRONT_PRODUCTS.find((p) => p.slug === "ghosts-spirits-walking-tour");
+    assert.ok(ghosts?.bookingVariants?.length);
+    const variant = ghosts.bookingVariants![0];
+    assert.strictEqual(variant.itemId, "562250");
+    assert.strictEqual(variant.flowId, "1578708");
+    assert.ok(variant.bookingUrl.includes("/items/562250/"));
   });
 
-  await t.test("8. No price or duration numbers are hardcoded or invented in product cards", () => {
-    STOREFRONT_PRODUCTS.forEach((product) => {
-      assert.ok(product.title, "Title must be present");
-    });
+  await t.test("8. Catalog detail cues contain an explicit text separator", () => {
+    const card = fs.readFileSync(path.join(process.cwd(), "app/new-orleans/components/ProductCard.tsx"), "utf8");
+    assert.match(card, /index < cues\.length - 1 \? ' ' : null/);
   });
 
+  await t.test("9. Mobile sticky booking control remains mobile-scoped", () => {
+    const sticky = fs.readFileSync(path.join(process.cwd(), "app/new-orleans/components/StickyMobileBookingBar.tsx"), "utf8");
+    assert.ok(sticky.includes("md:hidden"));
+  });
 });
