@@ -14,6 +14,15 @@ export type CorridorCatalogEntry = {
 
 export const LIVE_CORRIDOR_CATALOG: CorridorCatalogEntry[] = [
   {
+    corridorId: "ask-dcc",
+    corridorName: "Ask DCC",
+    family: "decision-engine",
+    appPath: "app/ask + app/api/ask-dcc",
+    status: "live",
+    continuityLevel: "state-execution",
+    patternFamily: "jfd",
+  },
+  {
     corridorId: "lastfrontier-alaska",
     corridorName: "Last Frontier Shore Excursions",
     family: "decision-engine",
