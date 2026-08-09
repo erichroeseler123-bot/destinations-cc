@@ -1,0 +1,179 @@
+{
+  "version": "dcc-sites-v1",
+  "updatedAt": "2026-08-09T23:13:00Z",
+  "rules": {
+    "site_ids_are_identity": true,
+    "domains_are_routing_surfaces": true,
+    "dcc_is_canonical_router": true,
+    "satellites_narrow_once": true,
+    "never_chain_satellites": true,
+    "execution_surfaces_may_terminate": true
+  },
+  "sites": [
+    {
+      "site_id": "dcc:site:destination-command-center",
+      "name": "Destination Command Center",
+      "domain": "destinationcommandcenter.com",
+      "role": "decision_router",
+      "network_status": "registered",
+      "promotion_status": "active",
+      "primary_jobs": ["understand_intent", "route_next_best_action", "preserve_context", "measure_handoffs"],
+      "monetization_mode": "network_attribution",
+      "terminal": false
+    },
+    {
+      "site_id": "dcc:site:cruise-promenade",
+      "name": "Cruise Promenade",
+      "domain": "cruisepromenade.com",
+      "role": "planner",
+      "network_status": "registered",
+      "promotion_status": "candidate",
+      "primary_jobs": ["cruise_planning", "sailing_context", "port_day_planning", "group_plan_sharing"],
+      "monetization_mode": "handoff",
+      "terminal": false
+    },
+    {
+      "site_id": "dcc:site:vibe-around-town",
+      "name": "Vibing Around",
+      "domain": "vibearoundtown.com",
+      "role": "transaction_marketplace",
+      "network_status": "registered",
+      "promotion_status": "candidate",
+      "primary_jobs": ["private_cruise_port_driver", "flexible_local_tour", "driver_marketplace"],
+      "monetization_mode": "reservation_fee",
+      "terminal": true
+    },
+    {
+      "site_id": "dcc:site:gosno",
+      "name": "GoSno",
+      "domain": "gosno.co",
+      "role": "operator_execution",
+      "network_status": "registered",
+      "promotion_status": "active",
+      "primary_jobs": ["colorado_airport_transfer", "private_resort_transfer"],
+      "monetization_mode": "direct_booking",
+      "terminal": true
+    },
+    {
+      "site_id": "dcc:site:welcome-new-orleans-tours",
+      "name": "Welcome to New Orleans Tours",
+      "domain": "welcometoneworleanstours.com",
+      "role": "transaction_storefront",
+      "network_status": "registered",
+      "promotion_status": "candidate",
+      "primary_jobs": ["new_orleans_tour_discovery", "tour_recommendation", "fareharbor_booking_handoff"],
+      "monetization_mode": "affiliate_commission",
+      "terminal": true
+    },
+    {
+      "site_id": "dcc:site:welcome-to-the-swamp",
+      "name": "Welcome to the Swamp",
+      "domain": "welcometotheswamp.com",
+      "role": "satellite_narrower",
+      "network_status": "registered",
+      "promotion_status": "active",
+      "primary_jobs": ["new_orleans_swamp_tour_choice", "airboat_vs_boat", "swamp_booking_handoff"],
+      "monetization_mode": "affiliate_handoff",
+      "terminal": false
+    },
+    {
+      "site_id": "dcc:site:welcome-to-alaska-tours",
+      "name": "Welcome to Alaska Tours",
+      "domain": "welcometoalaskatours.com",
+      "role": "satellite_narrower",
+      "network_status": "registered",
+      "promotion_status": "active",
+      "primary_jobs": ["alaska_tour_discovery", "shore_excursion_narrowing", "port_decision_support"],
+      "monetization_mode": "affiliate_handoff",
+      "terminal": false
+    },
+    {
+      "site_id": "dcc:site:last-frontier-shore-excursions",
+      "name": "Last Frontier Shore Excursions",
+      "domain": "lastfrontiershoreexcursions.com",
+      "role": "satellite_commercial",
+      "network_status": "registered",
+      "promotion_status": "candidate",
+      "primary_jobs": ["alaska_shore_excursion_comparison", "cruise_port_excursion_intent"],
+      "monetization_mode": "affiliate_handoff",
+      "terminal": false
+    },
+    {
+      "site_id": "dcc:site:juneau-flight-deck",
+      "name": "Juneau Flight Deck",
+      "domain": "juneauflightdeck.com",
+      "role": "satellite_narrower",
+      "network_status": "registered",
+      "promotion_status": "candidate",
+      "primary_jobs": ["juneau_flightseeing_choice", "helicopter_tour_decision", "flightseeing_booking_handoff"],
+      "monetization_mode": "affiliate_handoff",
+      "terminal": false
+    },
+    {
+      "site_id": "dcc:site:party-at-red-rocks",
+      "name": "Party at Red Rocks",
+      "domain": "partyatredrocks.com",
+      "role": "execution_surface",
+      "network_status": "registered",
+      "promotion_status": "active",
+      "primary_jobs": ["red_rocks_group_transport", "red_rocks_event_execution"],
+      "monetization_mode": "direct_booking",
+      "terminal": true
+    },
+    {
+      "site_id": "dcc:site:red-rocks-fast-pass",
+      "name": "Red Rocks Fast Pass",
+      "domain": "redrocksfastpass.com",
+      "role": "selective_execution",
+      "network_status": "registered",
+      "promotion_status": "selective",
+      "primary_jobs": ["red_rocks_fast_action", "red_rocks_transport_handoff"],
+      "monetization_mode": "direct_or_handoff",
+      "terminal": true
+    },
+    {
+      "site_id": "dcc:site:shuttleya",
+      "name": "ShuttleYa",
+      "domain": "shuttleya.com",
+      "role": "transport_execution",
+      "network_status": "registered",
+      "promotion_status": "active",
+      "primary_jobs": ["transport_action", "shuttle_booking", "corridor_execution"],
+      "monetization_mode": "direct_booking",
+      "terminal": true
+    },
+    {
+      "site_id": "dcc:site:420-friendly-airport-pickup",
+      "name": "420 Friendly Airport Pickup",
+      "domain": "420friendlyairportpickup.com",
+      "role": "transport_execution",
+      "network_status": "registered",
+      "promotion_status": "active",
+      "primary_jobs": ["denver_420_airport_pickup", "specialized_airport_transfer"],
+      "monetization_mode": "direct_booking",
+      "terminal": true
+    },
+    {
+      "site_id": "dcc:site:french-quarter-orientation",
+      "name": "French Quarter Orientation",
+      "domain": "frenchquarterorientation.com",
+      "role": "entry_surface",
+      "network_status": "registered",
+      "promotion_status": "candidate",
+      "primary_jobs": ["new_orleans_arrival_orientation", "already_here_intake", "local_next_step"],
+      "monetization_mode": "handoff",
+      "terminal": false
+    },
+    {
+      "site_id": "dcc:site:welcome-to-the-dells",
+      "name": "Welcome to the Dells",
+      "domain": "welcometothedells.com",
+      "role": "destination_entry_surface",
+      "network_status": "registered",
+      "promotion_status": "review",
+      "primary_jobs": ["wisconsin_dells_discovery", "dells_activity_intake"],
+      "monetization_mode": "handoff",
+      "terminal": false
+    }
+  ]
+}
