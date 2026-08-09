@@ -7,13 +7,13 @@ import { STOREFRONT_PRODUCTS } from "./tours/pageConfig";
 import { buildAttributedTourHref, FAREHARBOR_SOURCES } from "./lib/fareHarborAttribution";
 
 export const metadata = {
-  title: "New Orleans Tours | Discover and Book Real Local Experiences",
+  title: "New Orleans Tours & Visitor Help | New Orleans Concierge Desk",
   description:
-    "Compare New Orleans tours, find real participating experiences, and get local help choosing.",
+    "Compare New Orleans tours, get local visitor help, reserve the $5 French Quarter orientation, and find experiences that fit your group.",
   openGraph: {
-    title: "New Orleans Tours | Discover and Book Real Local Experiences",
+    title: "New Orleans Tours & Visitor Help | New Orleans Concierge Desk",
     description:
-      "Compare New Orleans tours, use the tour chooser, and schedule New Orleans Tour Concierge help.",
+      "Compare New Orleans tours, use the tour chooser, and get help from New Orleans Concierge Desk.",
   },
 };
 
@@ -48,7 +48,6 @@ export default function NewOrleansHomePage() {
 
   return (
     <div className="bg-[var(--nola-bg-charcoal)] text-[var(--nola-ivory)] font-sans overflow-hidden">
-      {/* 1. Hero */}
       <section className={visualStyles.homeHero}>
         <div className={visualStyles.homeHeroBackground} aria-hidden="true" />
         <div className={visualStyles.homeHeroOverlay} aria-hidden="true" />
@@ -60,203 +59,61 @@ export default function NewOrleansHomePage() {
               <span className={`${visualStyles.homeHeadlineScript} ${visualStyles.scriptFont}`}>experience</span>
               <span className={`${visualStyles.homeHeadlineDisplay} ${visualStyles.displayFont}`}>for your group</span>
             </h1>
-            <div className={visualStyles.homeDivider} aria-hidden="true">
-              <span />
-              <span className={visualStyles.homeFleur}>⚜</span>
-              <span />
-            </div>
-            <p className={visualStyles.homeHeroCopy}>
-              Tell us what kind of day you want and we&apos;ll help you compare participating local experiences.
-            </p>
+            <div className={visualStyles.homeDivider} aria-hidden="true"><span /><span className={visualStyles.homeFleur}>⚜</span><span /></div>
+            <p className={visualStyles.homeHeroCopy}>Tell us what kind of day you want and we&apos;ll help you compare participating local experiences.</p>
             <div className={visualStyles.homeHeroActions}>
-              <a href="#chooser" className="border border-[var(--nola-gold)] bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[var(--nola-ivory)]">
-                Help Me Choose
-              </a>
-              <a href="tel:+15044849687" className={visualStyles.homeHeroPhoneAction}>
-                Let&apos;s talk&nbsp; 504-484-9687
-              </a>
+              <a href="#chooser" className="border border-[var(--nola-gold)] bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[var(--nola-ivory)]">Help Me Choose</a>
+              <a href="tel:+15044849687" className={visualStyles.homeHeroPhoneAction}>Let&apos;s talk&nbsp; 504-484-9687</a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. Primary chooser */}
-      {/* 3. Curated category paths */}
       <section id="category-paths" className={visualStyles.homeCategorySection}>
         <div className={visualStyles.homeSectionInner}>
           <div className={visualStyles.homeSectionHeading}>
-            <div>
-              <p className={visualStyles.homeSectionEyebrow}>Choose your mood</p>
-              <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>What sounds good?</h2>
-              <p className={`${visualStyles.homeSectionScript} ${visualStyles.scriptFont}`}>Pick your kind of New Orleans.</p>
-            </div>
+            <div><p className={visualStyles.homeSectionEyebrow}>Choose your mood</p><h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>What sounds good?</h2><p className={`${visualStyles.homeSectionScript} ${visualStyles.scriptFont}`}>Pick your kind of New Orleans.</p></div>
             <Link href="/tours" className={visualStyles.homeSectionLink}>See the full catalog <span aria-hidden="true">↗</span></Link>
           </div>
           <div className={visualStyles.homeCategoryGrid}>
-            {categoryLinks.map((category) => {
-              return <Link key={category.label} href={category.href} className={visualStyles.homeCategoryCard}>
-                <div className={visualStyles.homeCategoryMedia}>
-                  <img src={category.image} alt="" />
-                  <span className={visualStyles.homeCategoryIndex} aria-hidden="true">{String(categoryLinks.indexOf(category) + 1).padStart(2, "0")}</span>
-                  <span className={visualStyles.homeCategoryArrow} aria-hidden="true">↗</span>
-                </div>
-                <div className={visualStyles.homeCategoryBody}>
-                  <h3 className={visualStyles.homeCategoryTitle}>{category.label}</h3>
-                  <p>{category.label === "Explore the City" ? "Neighborhoods, stories & landmarks." : category.label === "Swamps & Airboats" ? "Get out into the bayou." : category.label === "River Cruises" ? "Jazz, brunch & Mississippi views." : category.label === "Plantations" ? "History beneath the oaks." : category.label === "Food & Cocktails" ? "Taste your way through the Quarter." : category.label === "Ghosts & Spirits" ? "Strange stories after dark." : category.label === "Full-Day Combos" ? "More of Louisiana in one day." : "A better answer starts here."}</p>
-                </div>
-              </Link>;
-            })}
+            {categoryLinks.map((category) => <Link key={category.label} href={category.href} className={visualStyles.homeCategoryCard}>
+              <div className={visualStyles.homeCategoryMedia}><img src={category.image} alt="" /><span className={visualStyles.homeCategoryIndex} aria-hidden="true">{String(categoryLinks.indexOf(category) + 1).padStart(2, "0")}</span><span className={visualStyles.homeCategoryArrow} aria-hidden="true">↗</span></div>
+              <div className={visualStyles.homeCategoryBody}><h3 className={visualStyles.homeCategoryTitle}>{category.label}</h3><p>{category.label === "Explore the City" ? "Neighborhoods, stories & landmarks." : category.label === "Swamps & Airboats" ? "Get out into the bayou." : category.label === "River Cruises" ? "Jazz, brunch & Mississippi views." : category.label === "Plantations" ? "History beneath the oaks." : category.label === "Food & Cocktails" ? "Taste your way through the Quarter." : category.label === "Ghosts & Spirits" ? "Strange stories after dark." : category.label === "Full-Day Combos" ? "More of Louisiana in one day." : "A better answer starts here."}</p></div>
+            </Link>)}
           </div>
         </div>
       </section>
 
-      {/* 3. Primary chooser */}
       <section id="chooser" className={visualStyles.homeChooserSection}>
-        <div className={visualStyles.homeChooserInner}>
-          <p className={visualStyles.homeSectionEyebrow}>Not sure where to start?</p>
-          <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>Help Me Choose</h2>
-          <p className={visualStyles.homeChooserCopy}>No plan yet? A few answers can narrow the field to experiences that fit your group, pace, and appetite for adventure.</p>
-          <NewOrleansRecommendationFlow />
-        </div>
+        <div className={visualStyles.homeChooserInner}><p className={visualStyles.homeSectionEyebrow}>Not sure where to start?</p><h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>Help Me Choose</h2><p className={visualStyles.homeChooserCopy}>No plan yet? A few answers can narrow the field to experiences that fit your group, pace, and appetite for adventure.</p><NewOrleansRecommendationFlow /></div>
       </section>
 
-      {/* 4. Spontaneous planning */}
       <section className={visualStyles.homeAlreadyHereSection}>
         <div className={visualStyles.homeSectionInner}>
-          <div className={visualStyles.homeAlreadyHereIntro}>
-            <p className={visualStyles.homeSectionEyebrow}>For plans taking shape now</p>
-            <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>Already here?</h2>
-            <p className={`${visualStyles.homeSectionScript} ${visualStyles.scriptFont}`}>No plans? Perfect.</p>
-            <p className={visualStyles.homeAlreadyHereCopy}>Tell us who you&apos;re with and what kind of mood you&apos;re in. We&apos;ll help you find something worth doing today.</p>
-            <div className={visualStyles.homeAlreadyHereActions}>
-              <Link href="#chooser" className={visualStyles.homeGoldButton}>Find something to do</Link>
-              <Link href="/french-quarter-welcome-stop" className={visualStyles.homeTextButton}>Talk to a tour concierge</Link>
-            </div>
-          </div>
-          <div className={visualStyles.homeAlreadyHereGrid}>
-            {alreadyHereLinks.map((item) => (
-              <Link key={item.title} href={item.href} className={visualStyles.homeMomentCard}>
-                <div className={visualStyles.homeMomentMedia}><img src={item.image} alt="" /></div>
-                <div className={visualStyles.homeMomentBody}><h3>{item.title}</h3><span>Check times &amp; availability</span></div>
-              </Link>
-            ))}
-          </div>
+          <div className={visualStyles.homeAlreadyHereIntro}><p className={visualStyles.homeSectionEyebrow}>For plans taking shape now</p><h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>Already here?</h2><p className={`${visualStyles.homeSectionScript} ${visualStyles.scriptFont}`}>No plans? Perfect.</p><p className={visualStyles.homeAlreadyHereCopy}>Tell us who you&apos;re with and what kind of mood you&apos;re in. We&apos;ll help you find something worth doing today.</p><div className={visualStyles.homeAlreadyHereActions}><Link href="#chooser" className={visualStyles.homeGoldButton}>Find something to do</Link><Link href="/french-quarter-welcome-stop" className={visualStyles.homeTextButton}>Ask the Concierge Desk</Link></div></div>
+          <div className={visualStyles.homeAlreadyHereGrid}>{alreadyHereLinks.map((item) => <Link key={item.title} href={item.href} className={visualStyles.homeMomentCard}><div className={visualStyles.homeMomentMedia}><img src={item.image} alt="" /></div><div className={visualStyles.homeMomentBody}><h3>{item.title}</h3><span>Check times &amp; availability</span></div></Link>)}</div>
         </div>
       </section>
 
-      {/* 5. Curated merchandising */}
-      <section className={visualStyles.homeCuratedSection}>
-        <div className={visualStyles.homeSectionInner}>
-        {curatedSections.map((section, index) => {
-          const products = section.slugs.map(productBySlug).filter(Boolean);
-          return <section key={section.title} className={`${visualStyles.homeCuratedBlock} ${index % 2 === 1 ? visualStyles.homeCuratedBlockAlt : ""}`}>
-            <div className={visualStyles.homeCuratedHeading}>
-              <div><p className={visualStyles.homeSectionEyebrow}>{section.eyebrow}</p><h2 className={`${visualStyles.homeCuratedTitle} ${visualStyles.displayFont}`}>{section.title}</h2><p className={`${visualStyles.homeCuratedScript} ${visualStyles.scriptFont}`}>{section.script}</p></div>
-              <Link href="/tours" className={visualStyles.homeSectionLink}>See all tours <span aria-hidden="true">↗</span></Link>
-            </div>
-            <div className={visualStyles.homeProductGrid}>
-              {products.map((product) => product && <ProductCard key={product.id} product={{ ...product, operatorAttribution: product.operatorName, isBookable: true, ctaLabel: "View Details" } as any} />)}
-            </div>
-          </section>;
-        })}
-        </div>
-      </section>
+      <section className={visualStyles.homeCuratedSection}><div className={visualStyles.homeSectionInner}>{curatedSections.map((section, index) => {
+        const products = section.slugs.map(productBySlug).filter(Boolean);
+        return <section key={section.title} className={`${visualStyles.homeCuratedBlock} ${index % 2 === 1 ? visualStyles.homeCuratedBlockAlt : ""}`}><div className={visualStyles.homeCuratedHeading}><div><p className={visualStyles.homeSectionEyebrow}>{section.eyebrow}</p><h2 className={`${visualStyles.homeCuratedTitle} ${visualStyles.displayFont}`}>{section.title}</h2><p className={`${visualStyles.homeCuratedScript} ${visualStyles.scriptFont}`}>{section.script}</p></div><Link href="/tours" className={visualStyles.homeSectionLink}>See all tours <span aria-hidden="true">↗</span></Link></div><div className={visualStyles.homeProductGrid}>{products.map((product) => product && <ProductCard key={product.id} product={{ ...product, operatorAttribution: product.operatorName, isBookable: true, ctaLabel: "View Details" } as any} />)}</div></section>;
+      })}</div></section>
 
-      {/* 6. Full catalog path */}
-      <section className={visualStyles.homeCatalogCta}>
-        <p className={visualStyles.homeSectionEyebrow}>The complete collection</p>
-        <h2 className={`${visualStyles.homeCatalogTitle} ${visualStyles.displayFont}`}>Already know what you want?</h2>
-        <p>Compare the full selection of current tours and booking options.</p>
-        <Link href="/tours" className={visualStyles.homeGoldButton}>Browse all tours</Link>
-      </section>
+      <section className={visualStyles.homeCatalogCta}><p className={visualStyles.homeSectionEyebrow}>The complete collection</p><h2 className={`${visualStyles.homeCatalogTitle} ${visualStyles.displayFont}`}>Already know what you want?</h2><p>Compare the full selection of current tours and booking options.</p><Link href="/tours" className={visualStyles.homeGoldButton}>Browse all tours</Link></section>
 
-      {/* 7. Tour Concierge & Group Planning */}
       <section className={visualStyles.homeConciergeSection}>
-        <div className={visualStyles.homeSectionInner}>
-          <div className={visualStyles.homeConciergeGrid}>
-          <div className={visualStyles.homeConciergePanel}>
-            <div className={visualStyles.homeSectionEyebrow}>
-              Scheduled Planning Help
-            </div>
-            <h3 className={`${visualStyles.homePanelTitle} ${visualStyles.displayFont}`}>
-              New Orleans Tour Concierge
-            </h3>
-            <p className={visualStyles.homePanelCopy}>
-              Already here and still deciding? We can arrange a relaxed conversation at an agreed hotel lobby or bar,
-              French Quarter location, or another convenient public meeting place. Meetings are arranged in advance,
-              availability varies, and we help families and groups compare their options.
-            </p>
-            <Link
-              href="/french-quarter-welcome-stop"
-              className={visualStyles.homeTextButton}
-            >
-              Talk Through Your Options
-            </Link>
-          </div>
-
-          <div className={visualStyles.homeConciergePanelAlt}>
-            <div className={visualStyles.homeSectionEyebrow}>
-              Private Parties
-            </div>
-            <h3 className={`${visualStyles.homePanelTitle} ${visualStyles.displayFont}`}>Group Planning</h3>
-            <p className={visualStyles.homePanelCopy}>
-              Planning a family, wedding, or corporate group? Contact us to discuss available tour options.
-            </p>
-            <Link
-              href="/contact"
-              className={visualStyles.homeTextButton}
-            >
-              Inquire About Groups
-            </Link>
-          </div>
-          </div>
-        </div>
+        <div className={visualStyles.homeSectionInner}><div className={visualStyles.homeConciergeGrid}>
+          <div className={visualStyles.homeConciergePanel}><div className={visualStyles.homeSectionEyebrow}>Local Visitor Help</div><h3 className={`${visualStyles.homePanelTitle} ${visualStyles.displayFont}`}>New Orleans Concierge Desk</h3><p className={visualStyles.homePanelCopy}>Already here and still deciding? Call or text the Desk for help comparing tours, timing, transportation, and what fits your group. You can also start your morning with our $5 French Quarter Orientation.</p><Link href="/french-quarter-welcome-stop" className={visualStyles.homeTextButton}>Visit the Concierge Desk</Link></div>
+          <div className={visualStyles.homeConciergePanelAlt}><div className={visualStyles.homeSectionEyebrow}>Private Parties</div><h3 className={`${visualStyles.homePanelTitle} ${visualStyles.displayFont}`}>Group Planning</h3><p className={visualStyles.homePanelCopy}>Planning a family, wedding, or corporate group? Contact us to discuss available tour options.</p><Link href="/contact" className={visualStyles.homeTextButton}>Inquire About Groups</Link></div>
+        </div></div>
       </section>
 
-      {/* 6. Editorial Guides */}
-      <section className={visualStyles.homeGuidesSection}>
-        <div className={visualStyles.homeSectionInner}>
-        <div className={visualStyles.homeGuidesHeading}>
-          <p className={visualStyles.homeSectionEyebrow}>Before you decide</p>
-          <h2 className={`${visualStyles.homeCatalogTitle} ${visualStyles.displayFont}`}>Field notes from New Orleans</h2>
-          <p className={`${visualStyles.homeSectionScript} ${visualStyles.scriptFont}`}>A little context goes a long way.</p>
-        </div>
-        <div className={visualStyles.homeGuideGrid}>
-          <GuideLink
-            href="/swamp-tours/airboat-vs-covered-boat"
-            title="Compare Swamp Tour Formats"
-          />
-          <GuideLink
-            href="/guides/how-far-are-swamp-tours-from-new-orleans"
-            title="How Far Are Swamp Tours From New Orleans?"
-          />
-          <GuideLink
-            href="/swamp-tours/pickup-vs-self-drive"
-            title="Swamp Tour Transportation"
-          />
-          <GuideLink
-            href="/guides/how-long-does-a-swamp-tour-take"
-            title="How Long Does a Swamp Tour Take?"
-          />
-        </div>
-        </div>
-      </section>
+      <section className={visualStyles.homeGuidesSection}><div className={visualStyles.homeSectionInner}><div className={visualStyles.homeGuidesHeading}><p className={visualStyles.homeSectionEyebrow}>Before you decide</p><h2 className={`${visualStyles.homeCatalogTitle} ${visualStyles.displayFont}`}>Field notes from New Orleans</h2><p className={`${visualStyles.homeSectionScript} ${visualStyles.scriptFont}`}>A little context goes a long way.</p></div><div className={visualStyles.homeGuideGrid}><GuideLink href="/compare/covered-swamp-boat-vs-airboat" title="Compare Swamp Tour Formats" /><GuideLink href="/guides/how-far-are-swamp-tours-from-new-orleans" title="How Far Are Swamp Tours From New Orleans?" /><GuideLink href="/compare/swamp-tour-with-vs-without-transportation" title="Swamp Tour Transportation" /><GuideLink href="/guides/how-long-does-a-swamp-tour-take" title="How Long Does a Swamp Tour Take?" /></div></div></section>
     </div>
   );
 }
 
 function GuideLink({ href, title }: { href: string; title: string }) {
-  return (
-    <Link
-      href={href}
-      className="block p-6 border border-[var(--nola-border)] bg-[var(--nola-surface-subtle)] hover:border-[var(--nola-gold)] transition-colors group"
-    >
-      <h4 className={`font-serif text-lg text-[var(--nola-ivory)] mb-4 group-hover:text-[var(--nola-gold)] ${visualStyles.accentFont}`}>
-        {title}
-      </h4>
-      <span className="text-[10px] uppercase tracking-widest font-bold text-[var(--nola-text-muted)] group-hover:text-[var(--nola-ivory)]">
-        Read Guide →
-      </span>
-    </Link>
-  );
+  return <Link href={href} className="block p-6 border border-[var(--nola-border)] bg-[var(--nola-surface-subtle)] hover:border-[var(--nola-gold)] transition-colors group"><h4 className={`font-serif text-lg text-[var(--nola-ivory)] mb-4 group-hover:text-[var(--nola-gold)] ${visualStyles.accentFont}`}>{title}</h4><span className="text-[10px] uppercase tracking-widest font-bold text-[var(--nola-text-muted)] group-hover:text-[var(--nola-ivory)]">Read Guide →</span></Link>;
 }

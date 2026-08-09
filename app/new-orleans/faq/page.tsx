@@ -2,8 +2,8 @@ import { SupportPageShell, buildSupportMetadata } from "../supportPages";
 
 export const metadata = buildSupportMetadata(
   "/faq",
-  "FAQ | Welcome to New Orleans Tours",
-  "General booking, operator, cancellation, accessibility, and affiliate questions for Welcome to New Orleans Tours.",
+  "FAQ | New Orleans Concierge Desk",
+  "General booking, operator, cancellation, accessibility, orientation, and affiliate questions for New Orleans Concierge Desk.",
 );
 
 export default function FaqPage() {
@@ -11,22 +11,28 @@ export default function FaqPage() {
     <SupportPageShell
       eyebrow="FAQ"
       title="Frequently Asked Questions"
-      intro="General answers for travelers using Welcome to New Orleans Tours. Specific tour terms may differ, so always check the tour page and checkout terms before booking."
+      intro="General answers for visitors using New Orleans Concierge Desk. Specific third-party tour terms may differ, so always check the tour page and checkout terms before booking."
       sections={[
         {
-          title: "Does Welcome to New Orleans Tours operate the tours?",
+          title: "Does New Orleans Concierge Desk operate the tours?",
           body: [
-            "No. Welcome to New Orleans Tours is an affiliate and recommendation storefront. Independent operators provide the tours and generally manage the customer experience after purchase.",
+            "We offer our own $5 French Quarter Morning Orientation. The other tours displayed on the site are provided by independent participating operators, which generally manage the customer experience after purchase.",
           ],
         },
         {
-          title: "Where do I book?",
+          title: "Where do I book tours?",
           body: [
-            "Tour pages link to FareHarbor booking paths or lightframes. Review the live checkout details before completing a purchase.",
+            "Third-party tour pages link to FareHarbor booking paths or lightframes. Review the live checkout details before completing a purchase.",
           ],
         },
         {
-          title: "Can I change or cancel a booking?",
+          title: "How do I reserve the $5 French Quarter Orientation?",
+          body: [
+            "The orientation runs daily at 8:00 AM and 9:30 AM. Until online checkout is connected, call or text the Concierge Desk to reserve and pay $5 per person at check-in.",
+          ],
+        },
+        {
+          title: "Can I change or cancel a third-party tour booking?",
           body: [
             "Policies vary by tour and operator. The policy shown in checkout and your confirmation controls. After booking, use the operator details in your confirmation email.",
           ],
@@ -34,19 +40,19 @@ export default function FaqPage() {
         {
           title: "Are prices, times, and durations guaranteed on this site?",
           body: [
-            "No. Prices, availability, schedules, durations, inclusions, and restrictions may change. Treat the operator checkout and confirmation as the final source.",
+            "No. Third-party prices, availability, schedules, durations, inclusions, and restrictions may change. Treat the operator checkout and confirmation as the final source.",
           ],
         },
         {
           title: "Do you receive a commission?",
           body: [
-            "This site may receive compensation or commission from bookings made through links or booking tools on the site.",
+            "This site may receive compensation or commission from third-party bookings made through links or booking tools on the site.",
           ],
         },
         {
           title: "How do I ask about accessibility or group needs?",
           body: [
-            "Before booking, contact us for planning help or review the operator checkout. For specific accommodation commitments, confirm directly with the operator.",
+            "Before booking, contact the Concierge Desk for planning help or review the operator checkout. For specific accommodation commitments on partner tours, confirm directly with the operator.",
           ],
         },
       ]}
