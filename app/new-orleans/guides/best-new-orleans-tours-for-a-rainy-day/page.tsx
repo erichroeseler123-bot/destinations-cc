@@ -1,0 +1,23 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Best New Orleans Tours for a Rainy Day",
+  description: "Compare New Orleans rainy-day tour options using current operator weather policies, covered-boat details, indoor seating, and walking exposure.",
+  alternates: { canonical: "/guides/best-new-orleans-tours-for-a-rainy-day" },
+};
+
+export default function RainyDayGuide() {
+  return (
+    <article className="min-h-screen bg-[#151515] text-[#fdfbf7]">
+      <header className="border-b border-[#2a2a2a] bg-[#101010] px-6 py-14 md:py-20"><div className="mx-auto max-w-5xl"><p className="text-xs font-bold uppercase tracking-[0.24em] text-[#d4af37]">Weather decision guide</p><h1 className="mt-4 max-w-4xl font-[var(--font-accent)] text-4xl font-bold leading-tight md:text-6xl">Best New Orleans tours for a rainy day</h1><p className="mt-6 max-w-3xl text-lg leading-relaxed text-[#ccc]">Rain does not automatically cancel a New Orleans tour, but it changes which format is comfortable. Covered swamp boats and riverboats with indoor seating are stronger starting points than exposed airboats or walking-heavy itineraries.</p><p className="mt-5 text-xs uppercase tracking-[0.16em] text-[#888]">Weather policies last checked August 9, 2026</p></div></header>
+      <div className="mx-auto max-w-5xl space-y-12 px-6 py-12 md:py-16">
+        <section className="grid gap-6 md:grid-cols-3"><div className="border border-[#333] bg-[#1a1a1a] p-6"><h2 className="text-2xl font-bold">Covered swamp boat</h2><p className="mt-4 text-[#ccc]">Gray Line says its swamp tours operate rain or shine and covered swamp boats make touring in rain possible. Extreme weather can still cancel or change operations.</p></div><div className="border border-[#333] bg-[#1a1a1a] p-6"><h2 className="text-2xl font-bold">Riverboat cruise</h2><p className="mt-4 text-[#ccc]">The checked CITY of NEW ORLEANS sightseeing cruise has indoor and outdoor seating, so a rainy day does not mean the entire experience must be outside.</p></div><div className="border border-[#333] bg-[#1a1a1a] p-6"><h2 className="text-2xl font-bold">Airboat</h2><p className="mt-4 text-[#ccc]">Airboats are open-air. The operator warns guests they may get wet and says bad weather can shorten, postpone, or substitute the tour with a covered boat.</p></div></section>
+        <section><h2 className="font-[var(--font-accent)] text-3xl font-bold">Rainy-day tradeoffs</h2><div className="mt-6 space-y-4 text-[#ccc]"><p><strong className="text-white">Walking tours:</strong> two hours can sound short, but uneven sidewalks and steady rain can make them feel much longer.</p><p><strong className="text-white">Plantations:</strong> some exhibits are indoors, but grounds and walking remain part of the experience.</p><p><strong className="text-white">Covered does not mean weather-proof:</strong> lightning, flooding, wind, or other severe conditions can still affect departures.</p></div></section>
+        <section className="border-l-4 border-[#d4af37] bg-[#1b1b1b] p-6"><h2 className="text-2xl font-bold">Best planning move</h2><p className="mt-4 text-[#ccc]">Choose the format with the least weather exposure, then re-check the exact operator departure before leaving your hotel. Do not assume “rain or shine” means every departure will operate unchanged.</p></section>
+        <section className="border-t border-[#333] pt-8"><h2 className="text-lg font-bold">Official sources checked</h2><div className="mt-4 flex flex-wrap gap-4 text-sm"><a className="text-[#d4af37] underline" href="https://www.graylineneworleans.com/swamp-tours/swamp-boat-cruise-oak-alley-plantation-tour-new-orleans/" target="_blank" rel="noopener noreferrer">Covered swamp boat weather policy</a><a className="text-[#d4af37] underline" href="https://www.graylineneworleans.com/swamp-tours/small-airboat-swamp-adventure-tour/" target="_blank" rel="noopener noreferrer">Airboat weather policy</a><a className="text-[#d4af37] underline" href="https://www.graylineneworleans.com/riverboat-cruises/75-minute-city-of-new-orleans-riverboat-cruise/" target="_blank" rel="noopener noreferrer">Riverboat seating</a></div></section>
+        <nav className="border-t border-[#333] pt-8 text-sm flex flex-wrap gap-5"><Link className="text-[#d4af37] underline" href="/compare/covered-swamp-boat-vs-airboat">Covered boat vs airboat</Link><Link className="text-[#d4af37] underline" href="/guides/new-orleans-tours-limited-mobility">Limited mobility</Link><Link className="text-[#d4af37] underline" href="/help-me-choose">Help Me Choose</Link></nav>
+      </div>
+    </article>
+  );
+}

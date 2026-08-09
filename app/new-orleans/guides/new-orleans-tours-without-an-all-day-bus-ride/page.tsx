@@ -1,0 +1,23 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "New Orleans Tours Without Spending All Day on a Bus",
+  description: "Find New Orleans tours that avoid an all-day bus itinerary, with current duration and transportation details for river, city, swamp, walking, and plantation options.",
+  alternates: { canonical: "/guides/new-orleans-tours-without-an-all-day-bus-ride" },
+};
+
+export default function NoAllDayBusGuide() {
+  return (
+    <article className="min-h-screen bg-[#151515] text-[#fdfbf7]">
+      <header className="border-b border-[#2a2a2a] bg-[#101010] px-6 py-14 md:py-20"><div className="mx-auto max-w-5xl"><p className="text-xs font-bold uppercase tracking-[0.24em] text-[#d4af37]">Pace and transportation guide</p><h1 className="mt-4 max-w-4xl font-[var(--font-accent)] text-4xl font-bold leading-tight md:text-6xl">New Orleans tours without spending all day on a bus</h1><p className="mt-6 max-w-3xl text-lg leading-relaxed text-[#ccc]">If you do not want a seven- or eight-hour combination day, you still have plenty of choices: river cruises, city sightseeing, walking tours, and shorter swamp options can give you a real experience without turning the day into a long transport itinerary.</p><p className="mt-5 text-xs uppercase tracking-[0.16em] text-[#888]">Operator facts last checked August 9, 2026</p></div></header>
+      <div className="mx-auto max-w-5xl space-y-12 px-6 py-12 md:py-16">
+        <section className="grid gap-6 md:grid-cols-2"><div className="border border-[#333] bg-[#1a1a1a] p-6"><h2 className="text-2xl font-bold">Stay in or near the French Quarter</h2><p className="mt-4 text-[#ccc]">The 75-minute CITY riverboat, two-hour NATCHEZ sightseeing cruise, two-hour Ghosts & Spirits walk, and two- to 2.5-hour cocktail walks keep the outing concentrated downtown.</p></div><div className="border border-[#333] bg-[#1a1a1a] p-6"><h2 className="text-2xl font-bold">Leave town without giving up the whole day</h2><p className="mt-4 text-[#ccc]">Transported swamp options are listed around 3 hours 45 minutes. Self-drive swamp products can be shorter at the attraction itself, but you must provide your own transportation to Lafitte.</p></div></section>
+        <section><h2 className="font-[var(--font-accent)] text-3xl font-bold">What counts as an “all-day” tour here?</h2><p className="mt-4 text-[#ccc]">The current Gray Line swamp + plantation combination is listed at 7 hours 45 minutes. Southern Style’s city + plantation combination on our catalog is about eight hours. Those are valid choices when you want a full excursion day, but they are not the only way to see Louisiana beyond the Quarter.</p></section>
+        <section className="border-l-4 border-[#d4af37] bg-[#1b1b1b] p-6"><h2 className="text-2xl font-bold">Best compromise for many visitors</h2><p className="mt-4 text-[#ccc]">Pick one substantial experience instead of combining two: either a swamp outing, a plantation visit, or a city tour. That usually preserves enough of the day for meals, wandering, music, and the unplanned parts of New Orleans that are easy to lose when every hour is scheduled.</p></section>
+        <section className="border-t border-[#333] pt-8"><h2 className="text-lg font-bold">Official sources checked</h2><div className="mt-4 flex flex-wrap gap-4 text-sm"><a className="text-[#d4af37] underline" href="https://www.graylineneworleans.com/swamp-tours/large-airboat-swamp-adventure/" target="_blank" rel="noopener noreferrer">Transported swamp duration</a><a className="text-[#d4af37] underline" href="https://www.graylineneworleans.com/swamp-tours/self-drive-large-airboat-tour-no-transportation/" target="_blank" rel="noopener noreferrer">Self-drive swamp</a><a className="text-[#d4af37] underline" href="https://www.graylineneworleans.com/swamp-tours/swamp-boat-cruise-oak-alley-plantation-tour-new-orleans/" target="_blank" rel="noopener noreferrer">Swamp + Oak Alley duration</a><a className="text-[#d4af37] underline" href="https://www.graylineneworleans.com/" target="_blank" rel="noopener noreferrer">Current shorter-tour durations</a></div></section>
+        <nav className="border-t border-[#333] pt-8 text-sm flex flex-wrap gap-5"><Link className="text-[#d4af37] underline" href="/guides/best-new-orleans-tours-under-4-or-6-hours">Tours under 4 or 6 hours</Link><Link className="text-[#d4af37] underline" href="/compare/swamp-tour-with-vs-without-transportation">Swamp transport vs self-drive</Link><Link className="text-[#d4af37] underline" href="/help-me-choose">Help Me Choose</Link></nav>
+      </div>
+    </article>
+  );
+}
