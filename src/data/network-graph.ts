@@ -41,6 +41,27 @@ const guideNodes = PUBLISHED_DECISION_GUIDES.map((guide) => ({
   description: guide.description,
 }));
 
+const frenchQuarterGuideSlugs = new Set([
+  "how-to-get-oriented-in-the-french-quarter-first-hour",
+  "french-quarter-bourbon-street-vs-royal-street-first-visit",
+  "how-not-to-get-lost-in-french-quarter-new-orleans",
+  "new-orleans-french-quarter-first-day-mistakes",
+  "is-a-french-quarter-orientation-worth-it",
+  "french-quarter-group-meeting-point-strategy",
+]);
+
+const preSiteHubNodes = [
+  {
+    id: "dcc:pre-site:french-quarter-orientation",
+    url: "https://www.destinationcommandcenter.com/french-quarter-orientation",
+    type: "pre_site_decision_center",
+    specialist: "fqo",
+    category: "new-orleans",
+    label: "French Quarter Orientation Decision Center",
+    purpose: "Resolve first-hour, navigation, regrouping, and orientation-fit questions before the specialist experience.",
+  },
+];
+
 const hierarchyEdges = PUBLISHED_DECISION_GUIDES.map((guide) => ({
   from: `dcc:category:${guide.category}`,
   to: `dcc:guide:${guide.slug}`,
@@ -63,18 +84,37 @@ const categoryBridgeEdges = DECISION_CATEGORIES.flatMap((category) =>
   })),
 );
 
+const preSiteHubEdges = [
+  {
+    from: "dcc:category:new-orleans",
+    to: "dcc:pre-site:french-quarter-orientation",
+    relation: "specialist_research_lane",
+  },
+  ...PUBLISHED_DECISION_GUIDES.filter((guide) => frenchQuarterGuideSlugs.has(guide.slug)).map((guide) => ({
+    from: "dcc:pre-site:french-quarter-orientation",
+    to: `dcc:guide:${guide.slug}`,
+    relation: "contains_specialist_decision",
+  })),
+  {
+    from: "dcc:pre-site:french-quarter-orientation",
+    to: "fqo",
+    relation: "resolved_research_handoff",
+  },
+];
+
 export const NETWORK_GRAPH = {
-  version: "2026-08-09-v3",
+  version: "2026-08-09-v4",
   principle: "UNDERSTAND -> CHOOSE -> BUY_OR_RESERVE -> PLAN",
   hub: "dcc",
   topology: {
     entry: "dcc:/guides",
-    hierarchy: "hub -> category -> decision -> related decision -> specialist",
+    hierarchy: "hub -> category -> pre-site decision center -> decision -> related decision -> specialist",
     rule: "A DCC page must answer the traveler problem before an outbound commercial handoff appears.",
   },
   sites: SUITE_SITES,
-  researchNodes: [...categoryNodes, ...guideNodes],
+  researchNodes: [...categoryNodes, ...preSiteHubNodes, ...guideNodes],
   hierarchyEdges,
+  preSiteHubEdges,
   categoryBridgeEdges,
   lateralEdges,
   guideEdges: PUBLISHED_DECISION_GUIDES.map((guide) => ({
