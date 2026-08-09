@@ -35,22 +35,10 @@ export function HeaderNav() {
     <>
       <header className={visualStyles.marketHeader}>
         <div className={visualStyles.marketHeaderInner}>
-          <Link
-            href="/"
-            className={visualStyles.marketBrand}
-            aria-label="Welcome to New Orleans Tours"
-          >
-            <span className={`${visualStyles.marketBrandWelcome} ${visualStyles.scriptFont}`}>
-              Welcome to
-            </span>
-            {' '}
-            <span className={`${visualStyles.marketBrandCity} ${visualStyles.accentFont}`}>
-              New Orleans
-            </span>
-            {' '}
-            <span className={visualStyles.marketBrandTours}>
-              Tours
-            </span>
+          <Link href="/" className={visualStyles.marketBrand} aria-label="Welcome to New Orleans Tours">
+            <span className={`${visualStyles.marketBrandWelcome} ${visualStyles.scriptFont}`}>Welcome to</span>{' '}
+            <span className={`${visualStyles.marketBrandCity} ${visualStyles.accentFont}`}>New Orleans</span>{' '}
+            <span className={visualStyles.marketBrandTours}>Tours</span>
           </Link>
 
           <nav className={visualStyles.marketDesktopNav}>
@@ -64,21 +52,12 @@ export function HeaderNav() {
 
           <div className={visualStyles.marketPhoneWrap}>
             <PhoneCta placement="WTONOT-HEADER-PHONE" isGroup className={visualStyles.marketPhone}>
-              <span className={visualStyles.marketPhoneLabel}>
-                Questions? Call or text
-              </span>
-              <span className={visualStyles.marketPhoneNumber}>
-                504-484-9687
-              </span>
+              <span className={visualStyles.marketPhoneLabel}>Questions? Call or text</span>
+              <span className={visualStyles.marketPhoneNumber}>504-484-9687</span>
             </PhoneCta>
           </div>
 
-          <button
-            onClick={toggle}
-            className={visualStyles.marketMenuButton}
-            aria-label="Toggle menu"
-            aria-expanded={isOpen}
-          >
+          <button onClick={toggle} className={visualStyles.marketMenuButton} aria-label="Toggle menu" aria-expanded={isOpen}>
             <div className={`w-6 h-0.5 bg-[#d4af37]`}></div>
             <div className={`w-6 h-0.5 bg-[#d4af37]`}></div>
             <div className={`w-6 h-0.5 bg-[#d4af37]`}></div>
@@ -105,12 +84,8 @@ export function HeaderNav() {
 
             <div className="mt-auto pt-8 border-t border-white/10">
               <PhoneCta placement="WTONOT-HEADER-PHONE" isGroup className="flex flex-col gap-2">
-                <span className="text-xs font-bold uppercase tracking-widest text-[#fdfbf7]/60">
-                  Questions or Groups?
-                </span>
-                <span className={`text-2xl font-bold text-[#d4af37]`}>
-                  504-484-9687
-                </span>
+                <span className="text-xs font-bold uppercase tracking-widest text-[#fdfbf7]/60">Questions or Groups?</span>
+                <span className={`text-2xl font-bold text-[#d4af37]`}>504-484-9687</span>
               </PhoneCta>
             </div>
           </div>
@@ -144,6 +119,7 @@ export function FooterNav() {
         <div>
           <h4 className={`font-serif text-2xl mb-6 text-[#d4af37]`}>Planning Guides</h4>
           <nav className="flex flex-col gap-4 font-sans font-light text-[#fdfbf7]/80">
+            <Link href="/compare" className="hover:text-[#d4af37] transition-colors">Compare Tours</Link>
             <Link href="/guides/how-far-are-swamp-tours-from-new-orleans" className="hover:text-[#d4af37] transition-colors">Distance to Swamps</Link>
             <Link href="/guides/how-long-does-a-swamp-tour-take" className="hover:text-[#d4af37] transition-colors">Swamp Tour Duration</Link>
           </nav>
@@ -152,9 +128,7 @@ export function FooterNav() {
         <div>
           <h4 className={`font-serif text-2xl mb-6 text-[#d4af37]`}>Marketplace</h4>
           <div className="flex flex-col gap-4 font-sans font-light text-[#fdfbf7]/80 mb-8">
-            <div>
-              Independent recommendation site. We may earn a commission from bookings made through our links.
-            </div>
+            <div>Independent recommendation site. We may earn a commission from bookings made through our links.</div>
             <div>Independent operators provide the tours and control their own booking policies.</div>
             <div className="text-xs">
               <span className="font-bold">Image Credit:</span><br/>
@@ -164,12 +138,8 @@ export function FooterNav() {
 
           <div className={`pt-8 border-t border-white/10`}>
             <PhoneCta placement="WTONOT-FOOTER-PHONE" isGroup className="flex flex-col gap-2 group">
-              <span className={`text-[10px] font-bold uppercase tracking-widest text-[#d4af37]`}>
-                Tour Questions & Group Rates
-              </span>
-              <span className="text-xl font-bold text-[#fdfbf7] group-hover:text-[#fdfbf7]/80 transition-colors">
-                504-484-9687
-              </span>
+              <span className={`text-[10px] font-bold uppercase tracking-widest text-[#d4af37]`}>Tour Questions & Group Rates</span>
+              <span className="text-xl font-bold text-[#fdfbf7] group-hover:text-[#fdfbf7]/80 transition-colors">504-484-9687</span>
             </PhoneCta>
           </div>
         </div>
@@ -178,9 +148,7 @@ export function FooterNav() {
       <div className="bg-black/50 px-6 py-6 text-center text-xs font-sans font-light text-white/50 mt-4">
         <nav className="mx-auto mb-4 flex max-w-5xl flex-wrap justify-center gap-x-4 gap-y-2" aria-label="Support and policy links">
           {supportLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="hover:text-[#d4af37] transition-colors">
-              {link.label}
-            </Link>
+            <Link key={link.href} href={link.href} className="hover:text-[#d4af37] transition-colors">{link.label}</Link>
           ))}
         </nav>
         <div>&copy; {new Date().getFullYear()} Welcome to New Orleans Tours. All rights reserved.</div>
