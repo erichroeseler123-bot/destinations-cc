@@ -21,21 +21,38 @@ function one(value: string | string[] | undefined) {
 function vibeContextQuery(params: SearchParams) {
   const query = new URLSearchParams();
   query.set("from", "vibe");
-  for (const key of ["island", "cruiseCallId", "groupSize", "shipName"] as const) {
+  for (const key of ["island", "cruiseCallId", "groupSize", "shipName", "entry", "driverSlug"] as const) {
     const value = one(params[key]);
     if (value) query.set(key, value);
   }
   return query;
 }
 
-function vibeReturnHref(params: SearchParams) {
+function vibeReturnHref(params: SearchParams, guideSlug: string) {
   const query = new URLSearchParams();
   for (const key of ["island", "cruiseCallId", "groupSize", "shipName"] as const) {
     const value = one(params[key]);
     if (value) query.set(key, value);
   }
-  const suffix = query.toString();
-  return suffix ? `${VIBE_ORIGIN}/search?${suffix}` : `${VIBE_ORIGIN}/`;
+
+  query.set("dccAssisted", "1");
+  query.set("dccEntry", one(params.entry) || "dcc-guide");
+  query.set("dccGuide", guideSlug);
+
+  const driverSlug = one(params.driverSlug);
+  if (driverSlug) {
+    query.set("dccDriver", driverSlug);
+    return `${VIBE_ORIGIN}/drivers/${encodeURIComponent(driverSlug)}?${query.toString()}`;
+  }
+
+  return `${VIBE_ORIGIN}/search?${query.toString()}`;
+}
+
+function vibeHubHref(params: SearchParams, carryQuery: string) {
+  const island = one(params.island);
+  return island
+    ? `/vibe-around/${encodeURIComponent(island)}?${carryQuery}`
+    : `/vibe-around?${carryQuery}`;
 }
 
 export function generateStaticParams() {
@@ -68,11 +85,12 @@ export default async function PreSiteGuidePage({ params, searchParams }: Props) 
   if (!category) notFound();
 
   const cameFromVibe = one(queryParams.from) === "vibe";
-  const returnToVibe = vibeReturnHref(queryParams);
+  const returnToVibe = vibeReturnHref(queryParams, guide.slug);
   const carryQuery = vibeContextQuery(queryParams).toString();
   const url = `${ORIGIN}/guides/${guide.slug}`;
   const categoryUrl = `${ORIGIN}/guides/category/${category.slug}`;
   const relatedGuides = relatedDecisionGuides(guide.slug, 4);
+  const driverSlug = one(queryParams.driverSlug);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -118,10 +136,14 @@ export default async function PreSiteGuidePage({ params, searchParams }: Props) 
             <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-xl font-black text-white">You came here to answer one question, not restart the trip.</h2>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">Your Vibe context is being carried through these research pages. When you have the answer, return to the matching driver search.</p>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+                  {driverSlug
+                    ? "Your driver profile and cruise context are being carried through these research pages. When you have the answer, return to the same person."
+                    : "Your Vibe context is being carried through these research pages. When you have the answer, return to the matching driver search."}
+                </p>
               </div>
               <a href={returnToVibe} className="shrink-0 rounded-xl bg-white px-4 py-3 text-sm font-black text-slate-950 transition hover:bg-slate-200">
-                Back to Vibe drivers ↗
+                {driverSlug ? "Back to the same driver ↗" : "Back to Vibe drivers ↗"}
               </a>
             </div>
           </section>
@@ -197,11 +219,15 @@ export default async function PreSiteGuidePage({ params, searchParams }: Props) 
         {cameFromVibe ? (
           <section className="mt-14 rounded-3xl border border-emerald-900/70 bg-[#0d1815] p-7 sm:p-9">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300">Decision made?</p>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-white">Go back to the people who can make the day happen.</h2>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-white">
+              {driverSlug ? "Return to the person you were considering." : "Go back to the people who can make the day happen."}
+            </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">DCC handled the research. Vibe Around handles the local-driver choice and reservation request.</p>
-            <a href={returnToVibe} className="mt-7 inline-flex rounded-xl bg-white px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-slate-200">I’m ready — show me local drivers ↗</a>
+            <a href={returnToVibe} className="mt-7 inline-flex rounded-xl bg-white px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-slate-200">
+              {driverSlug ? "I’m ready — back to this driver ↗" : "I’m ready — show me local drivers ↗"}
+            </a>
             <div className="mt-5">
-              <Link href={`/vibe-around?${carryQuery}`} className="text-sm font-bold text-emerald-200 hover:text-white">Back to the Vibe decision center</Link>
+              <Link href={vibeHubHref(queryParams, carryQuery)} className="text-sm font-bold text-emerald-200 hover:text-white">Back to the Vibe decision center</Link>
             </div>
           </section>
         ) : (
