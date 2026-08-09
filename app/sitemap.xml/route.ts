@@ -100,6 +100,7 @@ export async function GET() {
     "/guides",
     "/vibe-around",
     "/juneau-flightseeing",
+    "/french-quarter-orientation",
     ...DECISION_CATEGORIES.map((category) => `/guides/category/${category.slug}`),
     ...PUBLISHED_DECISION_GUIDES.map((guide) => `/guides/${guide.slug}`),
   ];
