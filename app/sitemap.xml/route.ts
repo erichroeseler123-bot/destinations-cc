@@ -21,6 +21,12 @@ export const WTONOT_SUPPORT_PATHS = [
   "/accessibility",
 ] as const;
 
+const WTONOT_SUPERSEDED_SEO_PATHS = new Set([
+  "/swamp-tours/airboat-vs-covered-boat",
+  "/swamp-tours/small-vs-large-airboat",
+  "/swamp-tours/pickup-vs-self-drive",
+]);
+
 function xmlEscape(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -70,7 +76,11 @@ export function buildWtonotSitemapPaths() {
   });
 
   Object.values(SEO_PAGES).forEach((page: any) => {
-    if (page.status === "live" && page.isIndexable) {
+    if (
+      page.status === "live" &&
+      page.isIndexable &&
+      !WTONOT_SUPERSEDED_SEO_PATHS.has(page.publicRoute)
+    ) {
       wtoPaths.push(page.publicRoute);
     }
   });
