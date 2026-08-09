@@ -1,6 +1,12 @@
 import test from "node:test";
 import assert from "node:assert";
 import { STOREFRONT_PRODUCTS, getFareHarborUrl } from "../../app/new-orleans/tours/pageConfig";
+import { APPROVED_SUPPLIED_URLS } from "./inventory-fixture";
+
+const expectedAsnForShortname = (shortname: string) =>
+  shortname === "neworleanssteamboatcompany"
+    ? "welcometoneworleanstours"
+    : "aktourcenter";
 
 function assertFareHarborUrl({
   url,
@@ -25,10 +31,10 @@ function assertFareHarborUrl({
   if (flowId) {
     assert.strictEqual(parsed.searchParams.get("flow"), String(flowId), `${url} must preserve flow ${flowId}`);
   }
-  assert.ok(
-    parsed.searchParams.get("asn") === "aktourcenter" ||
-      parsed.searchParams.get("asn") === "welcometoneworleanstours",
-    `${url} must preserve approved FareHarbor attribution`,
+  assert.strictEqual(
+    parsed.searchParams.get("asn"),
+    expectedAsnForShortname(shortname),
+    `${url} must preserve the approved ASN for ${shortname}`,
   );
   assert.strictEqual(parsed.searchParams.get("full-items"), "yes", `${url} must preserve full-items=yes`);
 }
@@ -41,12 +47,8 @@ test("FareHarbor Product Identities and Links", async (t) => {
     assert.ok(product, "Product should exist");
     assert.strictEqual(product.itemId, "51942");
     assert.strictEqual(product.flowId, "4344");
-    
     const url = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
-    assert.strictEqual(
-      url,
-      "https://fareharbor.com/embeds/book/southernstyletours/items/51942/?asn=aktourcenter&flow=4344&full-items=yes",
-    );
+    assert.strictEqual(url, "https://fareharbor.com/embeds/book/southernstyletours/items/51942/?asn=aktourcenter&flow=4344&full-items=yes");
   });
 
   await t.test("Oak Alley Or Laura Plantation Tour", () => {
@@ -54,12 +56,8 @@ test("FareHarbor Product Identities and Links", async (t) => {
     assert.ok(product, "Product should exist");
     assert.strictEqual(product.itemId, "83002");
     assert.strictEqual(product.flowId, "4344");
-    
     const url = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
-    assert.strictEqual(
-      url,
-      "https://fareharbor.com/embeds/book/southernstyletours/items/83002/?asn=aktourcenter&flow=4344&full-items=yes",
-    );
+    assert.strictEqual(url, "https://fareharbor.com/embeds/book/southernstyletours/items/83002/?asn=aktourcenter&flow=4344&full-items=yes");
   });
 
   await t.test("Covered Tour Boat", () => {
@@ -67,12 +65,8 @@ test("FareHarbor Product Identities and Links", async (t) => {
     assert.ok(product, "Product should exist");
     assert.strictEqual(product.itemId, "590176");
     assert.strictEqual(product.flowId, "392449");
-    
     const url = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
-    assert.strictEqual(
-      url,
-      "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/?asn=aktourcenter&flow=392449&full-items=yes",
-    );
+    assert.strictEqual(url, "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/?asn=aktourcenter&flow=392449&full-items=yes");
   });
 
   await t.test("Airboat Options", () => {
@@ -80,12 +74,8 @@ test("FareHarbor Product Identities and Links", async (t) => {
     assert.ok(product, "Product should exist");
     assert.strictEqual(product.itemId, undefined);
     assert.strictEqual(product.flowId, "940162");
-    
     const url = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
-    assert.strictEqual(
-      url,
-      "https://fareharbor.com/embeds/book/ragincajuntours/?asn=aktourcenter&flow=940162&full-items=yes",
-    );
+    assert.strictEqual(url, "https://fareharbor.com/embeds/book/ragincajuntours/?asn=aktourcenter&flow=940162&full-items=yes");
   });
 
   await t.test("All-Day City + Plantation", () => {
@@ -94,12 +84,8 @@ test("FareHarbor Product Identities and Links", async (t) => {
     assert.strictEqual(product.companyShortname, "southernstyletours");
     assert.strictEqual(product.itemId, "51953");
     assert.strictEqual(product.flowId, "4344");
-
     const url = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
-    assert.strictEqual(
-      url,
-      "https://fareharbor.com/embeds/book/southernstyletours/items/51953/?asn=aktourcenter&flow=4344&full-items=yes",
-    );
+    assert.strictEqual(url, "https://fareharbor.com/embeds/book/southernstyletours/items/51953/?asn=aktourcenter&flow=4344&full-items=yes");
   });
 
   await t.test("Covered Boat + Plantation", () => {
@@ -108,16 +94,12 @@ test("FareHarbor Product Identities and Links", async (t) => {
     assert.strictEqual(product.companyShortname, "ragincajuntours");
     assert.strictEqual(product.itemId, "603090");
     assert.strictEqual(product.flowId, "392449");
-
     const url = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
-    assert.strictEqual(
-      url,
-      "https://fareharbor.com/embeds/book/ragincajuntours/items/603090/?asn=aktourcenter&flow=392449&full-items=yes",
-    );
+    assert.strictEqual(url, "https://fareharbor.com/embeds/book/ragincajuntours/items/603090/?asn=aktourcenter&flow=392449&full-items=yes");
   });
 });
 
-test("all New Orleans booking CTAs preserve approved FareHarbor source data", () => {
+test("all New Orleans booking CTAs preserve operator-specific FareHarbor source data", () => {
   for (const product of STOREFRONT_PRODUCTS) {
     if (product.bookingVariants?.length) {
       for (const variant of product.bookingVariants) {
@@ -132,6 +114,12 @@ test("all New Orleans booking CTAs preserve approved FareHarbor source data", ()
       continue;
     }
 
+    assert.notStrictEqual(
+      product.companyShortname,
+      "neworleanssteamboatcompany",
+      `${product.slug} must use its literal supplied FareHarbor URL instead of rebuilding a New Orleans Steamboat Company URL`,
+    );
+
     const url = getFareHarborUrl(product.companyShortname, product.itemId, product.flowId);
     assertFareHarborUrl({
       url,
@@ -142,9 +130,20 @@ test("all New Orleans booking CTAs preserve approved FareHarbor source data", ()
   }
 });
 
+test("all supplied New Orleans Steamboat Company URLs remain byte-for-byte approved", () => {
+  for (const approved of APPROVED_SUPPLIED_URLS) {
+    const product = STOREFRONT_PRODUCTS.find((candidate) => candidate.slug === approved.slug);
+    assert.ok(product, `${approved.slug} must exist in storefront inventory`);
+    const variant = product.bookingVariants?.find((candidate) => candidate.label === approved.label);
+    assert.ok(variant, `${approved.slug} / ${approved.label} must exist as a booking variant`);
+    assert.strictEqual(variant.itemId, approved.itemId);
+    assert.strictEqual(variant.flowId, approved.flowId);
+    assert.strictEqual(variant.bookingUrl, approved.url);
+  }
+});
+
 test("all New Orleans related tour slugs resolve to live products", () => {
   const slugs = new Set(STOREFRONT_PRODUCTS.map((product) => product.slug));
-
   for (const product of STOREFRONT_PRODUCTS) {
     assert.ok(slugs.has(product.relatedTourSlug), `${product.slug} related tour ${product.relatedTourSlug} must resolve`);
   }
