@@ -5,10 +5,38 @@ import { PUBLISHED_DECISION_GUIDES, getPublishedDecisionGuide } from "@/src/data
 import { getDecisionCategory, relatedDecisionGuides } from "@/src/data/decision-taxonomy";
 
 const ORIGIN = "https://www.destinationcommandcenter.com";
+const VIBE_ORIGIN = "https://vibearoundtown.com";
+
+type SearchParams = Record<string, string | string[] | undefined>;
 
 type Props = {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<SearchParams>;
 };
+
+function one(value: string | string[] | undefined) {
+  return typeof value === "string" ? value : undefined;
+}
+
+function vibeContextQuery(params: SearchParams) {
+  const query = new URLSearchParams();
+  query.set("from", "vibe");
+  for (const key of ["island", "cruiseCallId", "groupSize", "shipName"] as const) {
+    const value = one(params[key]);
+    if (value) query.set(key, value);
+  }
+  return query;
+}
+
+function vibeReturnHref(params: SearchParams) {
+  const query = new URLSearchParams();
+  for (const key of ["island", "cruiseCallId", "groupSize", "shipName"] as const) {
+    const value = one(params[key]);
+    if (value) query.set(key, value);
+  }
+  const suffix = query.toString();
+  return suffix ? `${VIBE_ORIGIN}/search?${suffix}` : `${VIBE_ORIGIN}/`;
+}
 
 export function generateStaticParams() {
   return PUBLISHED_DECISION_GUIDES.map((guide) => ({ slug: guide.slug }));
@@ -30,14 +58,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PreSiteGuidePage({ params }: Props) {
+export default async function PreSiteGuidePage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const queryParams = searchParams ? await searchParams : {};
   const guide = getPublishedDecisionGuide(slug);
   if (!guide) notFound();
 
   const category = getDecisionCategory(guide.category);
   if (!category) notFound();
 
+  const cameFromVibe = one(queryParams.from) === "vibe";
+  const returnToVibe = vibeReturnHref(queryParams);
+  const carryQuery = vibeContextQuery(queryParams).toString();
   const url = `${ORIGIN}/guides/${guide.slug}`;
   const categoryUrl = `${ORIGIN}/guides/category/${category.slug}`;
   const relatedGuides = relatedDecisionGuides(guide.slug, 4);
@@ -79,6 +111,21 @@ export default async function PreSiteGuidePage({ params }: Props) {
           <Link href={`/guides/category/${category.slug}`} className="hover:text-white">{category.label}</Link><span className="mx-2">/</span>
           <span className="text-slate-300">{guide.eyebrow}</span>
         </nav>
+
+        {cameFromVibe && (
+          <section className="mb-10 rounded-3xl border border-emerald-900/70 bg-[#0d1815] p-5 sm:p-6">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300">Vibe Around research bridge</p>
+            <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-black text-white">You came here to answer one question, not restart the trip.</h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">Your Vibe context is being carried through these research pages. When you have the answer, return to the matching driver search.</p>
+              </div>
+              <a href={returnToVibe} className="shrink-0 rounded-xl bg-white px-4 py-3 text-sm font-black text-slate-950 transition hover:bg-slate-200">
+                Back to Vibe drivers ↗
+              </a>
+            </div>
+          </section>
+        )}
 
         <header className="max-w-4xl">
           <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300">{guide.eyebrow}</p>
@@ -133,7 +180,11 @@ export default async function PreSiteGuidePage({ params }: Props) {
             <h2 className="mt-3 text-2xl font-black text-white">Related decisions that can change this answer.</h2>
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               {relatedGuides.map((related) => (
-                <Link key={related.slug} href={`/guides/${related.slug}`} className="rounded-2xl border border-slate-800 bg-[#0d131d] p-5 transition hover:border-cyan-700">
+                <Link
+                  key={related.slug}
+                  href={cameFromVibe ? `/guides/${related.slug}?${carryQuery}` : `/guides/${related.slug}`}
+                  className="rounded-2xl border border-slate-800 bg-[#0d131d] p-5 transition hover:border-cyan-700"
+                >
                   <span className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">{related.eyebrow}</span>
                   <h3 className="mt-2 text-base font-black leading-6 text-white">{related.title}</h3>
                   <span className="mt-4 inline-block text-sm font-bold text-cyan-200">Read decision guide →</span>
@@ -143,13 +194,25 @@ export default async function PreSiteGuidePage({ params }: Props) {
           </section>
         )}
 
-        <section className="mt-14 rounded-3xl border border-emerald-900/70 bg-[#0d1815] p-7 sm:p-9">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300">Ready to move from research to action?</p>
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-white">{guide.nextStep.label}</h2>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">{guide.nextStep.body}</p>
-          <a href={guide.nextStep.href} rel="noopener" className="mt-7 inline-flex rounded-xl bg-white px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-slate-200">Continue to the specialist site ↗</a>
-          <p className="mt-4 text-xs leading-5 text-slate-500">DCC is the research layer. Current prices, availability, booking terms, and transaction details belong to the specialist or provider site.</p>
-        </section>
+        {cameFromVibe ? (
+          <section className="mt-14 rounded-3xl border border-emerald-900/70 bg-[#0d1815] p-7 sm:p-9">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300">Decision made?</p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-white">Go back to the people who can make the day happen.</h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">DCC handled the research. Vibe Around handles the local-driver choice and reservation request.</p>
+            <a href={returnToVibe} className="mt-7 inline-flex rounded-xl bg-white px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-slate-200">I’m ready — show me local drivers ↗</a>
+            <div className="mt-5">
+              <Link href={`/vibe-around?${carryQuery}`} className="text-sm font-bold text-emerald-200 hover:text-white">Back to the Vibe decision center</Link>
+            </div>
+          </section>
+        ) : (
+          <section className="mt-14 rounded-3xl border border-emerald-900/70 bg-[#0d1815] p-7 sm:p-9">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300">Ready to move from research to action?</p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-white">{guide.nextStep.label}</h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">{guide.nextStep.body}</p>
+            <a href={guide.nextStep.href} rel="noopener" className="mt-7 inline-flex rounded-xl bg-white px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-slate-200">Continue to the specialist site ↗</a>
+            <p className="mt-4 text-xs leading-5 text-slate-500">DCC is the research layer. Current prices, availability, booking terms, and transaction details belong to the specialist or provider site.</p>
+          </section>
+        )}
 
         <div className="mt-12 flex flex-wrap gap-4 border-t border-slate-800 pt-8">
           <Link href={`/guides/category/${category.slug}`} className="text-sm font-bold text-slate-300 hover:text-white">← Back to {category.label}</Link>

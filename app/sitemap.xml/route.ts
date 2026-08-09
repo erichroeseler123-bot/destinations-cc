@@ -83,6 +83,7 @@ export async function GET() {
   const origin = isSomersetHost ? `https://${host}` : SITE_IDENTITY.siteUrl;
   const preSiteGuidePaths = [
     "/guides",
+    "/vibe-around",
     ...DECISION_CATEGORIES.map((category) => `/guides/category/${category.slug}`),
     ...PUBLISHED_DECISION_GUIDES.map((guide) => `/guides/${guide.slug}`),
   ];
