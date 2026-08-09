@@ -9,107 +9,25 @@ import {
   DCC_WEBSITE_ID,
 } from "@/lib/dcc/networkEntityJsonLd";
 import { listDccCruisePortEntrypoints } from "@/lib/dcc/cruisePortAuthority";
+import { NETWORK_GRAPH, SUITE_SITES } from "@/src/data/network-graph";
 
-const NETWORK_DOMAINS = [
-  {
-    domain: "partyatredrocks.com",
-    href: "https://www.partyatredrocks.com",
-    role: "Operator execution",
-    note: "Red Rocks transportation execution for travelers who have decided to book.",
-  },
-  {
-    domain: "shuttleya.com",
-    href: "https://shuttleya.com",
-    role: "Operator execution",
-    note: "Shuttle and route-specific transportation execution, including Argo and Red Rocks shuttle surfaces.",
-  },
-  {
-    domain: "welcometotheswamp.com",
-    href: "https://welcometotheswamp.com",
-    role: "Satellite decision surface",
-    note: "New Orleans swamp-tour narrowing before a traveler moves into a booking fit.",
-  },
-  {
-    domain: "welcometoneworleanstours.com",
-    href: "https://welcometoneworleanstours.com",
-    role: "Satellite decision surface",
-    note: "New Orleans tour narrowing for walking, ghost, history, food, and first-time visitor choices.",
-  },
-  {
-    domain: "juneauflightdeck.com",
-    href: "https://juneauflightdeck.com",
-    role: "Satellite decision surface",
-    note: "Juneau excursion and flightseeing decisions for cruise and independent travelers.",
-  },
-  {
-    domain: "welcometoalaskatours.com",
-    href: "https://welcometoalaskatours.com",
-    role: "Satellite decision surface",
-    note: "Alaska shore-excursion planning and port decision support.",
-  },
-  {
-    domain: "lastfrontiershoreexcursions.com",
-    href: "https://lastfrontiershoreexcursions.com",
-    role: "Satellite decision surface",
-    note: "Alaska shore-excursion decision path for travelers comparing port-day options.",
-  },
-  {
-    domain: "feastlyspread.com",
-    href: "https://feastlyspread.com",
-    role: "Experimental satellite",
-    note: "Experimental group-dining and private-chef decision surface.",
-  },
-] as const;
+const ROLE_LABELS: Record<string, string> = {
+  research_authority: "Research authority",
+  specialist_commerce: "Specialist choice + commerce",
+  specialist_experience: "Specialist experience",
+  planning_tool: "Planning tool",
+  marketplace: "Local marketplace",
+  transportation_commerce: "Transportation execution",
+};
 
 const CRUISE_PORT_AUTHORITY_QUEUE = listDccCruisePortEntrypoints();
-
-const SATELLITE_FULFILLMENT_CARDS = [
-  {
-    name: "Juneau Flight Deck",
-    travelerProblem:
-      "Cruise travelers have a fixed port window and need to know what they can safely book before the ship leaves.",
-    decisionCompressed:
-      "What fits inside the port window, and what happens if weather affects the trip.",
-    fulfillment: "Approved excursion handoff for the Juneau lane.",
-  },
-  {
-    name: "Welcome to the Swamp",
-    travelerProblem:
-      "New Orleans visitors need to separate swamp-tour fit, pickup constraints, and timing before choosing.",
-    decisionCompressed:
-      "Which swamp-tour lane fits the traveler before execution moves to an approved handoff.",
-    fulfillment:
-      "Approved swamp-tour operator handoff or affiliate handoff, depending on the lane configuration.",
-  },
-  {
-    name: "GoSno",
-    travelerProblem:
-      "Mountain travelers need transfer timing and route fit resolved before committing to a ride.",
-    decisionCompressed: "Which transfer path and operator flow match the trip constraints.",
-    fulfillment: "Owned/operator transfer booking flow.",
-  },
-  {
-    name: "Party at Red Rocks",
-    travelerProblem:
-      "Concert travelers need a transportation choice that fits show timing and group logistics.",
-    decisionCompressed: "Whether the traveler is ready for Red Rocks shuttle execution.",
-    fulfillment: "Owned checkout and shuttle execution.",
-  },
-  {
-    name: "Shuttleya",
-    travelerProblem:
-      "Travelers need route-specific shuttle execution after the corridor decision is already made.",
-    decisionCompressed: "The Mighty Argo shuttle lane and other route-specific transport handoffs.",
-    fulfillment: "Operator handoff for the Mighty Argo shuttle lane.",
-  },
-] as const;
 
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
-  title: "Destination Command Center Network",
+  title: "Destination Command Center Network | How the Travel Suite Fits Together",
   description:
-    "How Destination Command Center, satellite decision sites, and operator execution sites fit together as one governed travel decision network.",
+    "See how Destination Command Center acts as the upstream research layer for a network of focused travel, cruise, tour, and transportation sites.",
   alternates: { canonical: "/network" },
 };
 
@@ -117,25 +35,25 @@ export default function NetworkPage() {
   const itemList = {
     "@type": "ItemList",
     "@id": "https://www.destinationcommandcenter.com/network#network-domains",
-    name: "Destination Command Center network domains",
-    itemListElement: NETWORK_DOMAINS.map((item, index) => ({
+    name: "Destination Command Center travel network",
+    itemListElement: SUITE_SITES.map((item, index) => ({
       "@type": "ListItem",
       position: index + 1,
       item: {
         "@type": "WebSite",
-        name: item.domain,
-        url: item.href,
-        description: item.note,
-        isPartOf: { "@id": DCC_WEBSITE_ID },
+        name: item.name,
+        url: item.url,
+        additionalType: item.role,
+        isPartOf: item.id === "dcc" ? undefined : { "@id": DCC_WEBSITE_ID },
       },
     })),
   };
 
   const service = buildNetworkServiceJsonLd("https://www.destinationcommandcenter.com", {
     id: "https://www.destinationcommandcenter.com/network#service",
-    name: "Governed travel decision and execution routing network",
+    name: "Travel research, decision, specialist, and execution network",
     description:
-      "Destination Command Center decides, satellite surfaces narrow, and operator surfaces execute travel actions where a traveler is ready to move.",
+      "Destination Command Center answers upstream travel questions and hands travelers to focused specialist, booking, marketplace, transportation, or planning surfaces when the next action is clear.",
     providerId: DCC_ORGANIZATION_ID,
   });
 
@@ -151,21 +69,30 @@ export default function NetworkPage() {
       <div className="mx-auto max-w-6xl space-y-8 px-6 py-8 md:py-12">
         <section className="rounded-[2rem] border border-white/10 bg-[#0b1017] p-6 md:p-8">
           <div className="text-[11px] font-black uppercase tracking-[0.28em] text-[#f5b34b]">
-            DCC network
+            The suite map
           </div>
-          <h1 className="mt-4 max-w-3xl text-4xl font-black uppercase tracking-[-0.04em] md:text-6xl">
-            Destination Command Center Network
+          <h1 className="mt-4 max-w-4xl text-4xl font-black uppercase tracking-[-0.04em] md:text-6xl">
+            One research layer. Many specialist destinations.
           </h1>
           <p className="mt-5 max-w-3xl text-base leading-8 text-white/72 md:text-lg">
-            DCC is the governed decision layer. It decides what problem a traveler is trying to solve, routes them into a narrower satellite surface when the choice needs more local shape, and sends ready travelers to an operator surface when execution is the next step.
+            Destination Command Center sits before the transaction. It answers the question, compares the tradeoffs, and preserves the context. When the traveler is ready to choose, reserve, book, or plan, the relevant specialist site takes over.
           </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/guides" className="rounded-xl bg-white px-4 py-3 text-sm font-black text-black">
+              Browse decision guides
+            </Link>
+            <a href="/network/graph.json" className="rounded-xl border border-white/15 px-4 py-3 text-sm font-bold text-white/80 hover:text-white">
+              Machine-readable network graph
+            </a>
+          </div>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-3">
+        <section className="grid gap-4 md:grid-cols-4">
           {[
-            ["DCC decides", "The main DCC site frames the travel decision, removes bad-fit options, and preserves context."],
-            ["Satellite sites narrow", "Focused sites handle a city, tour type, or route when the traveler needs a smaller decision surface."],
-            ["Operators execute", "Execution sites handle the booking, route, or operational task when the choice is ready."],
+            ["1 · Understand", "DCC owns questions, research, comparisons, logistics, constraints, and pre-purchase decisions."],
+            ["2 · Choose", "Focused destination and excursion sites narrow the actual experience or route."],
+            ["3 · Buy / reserve", "Transaction and marketplace sites handle current price, availability, terms, and execution."],
+            ["4 · Plan", "Where useful, Cruise Promenade turns selected cruise choices into a shared group plan."],
           ].map(([title, copy]) => (
             <div key={title} className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-5">
               <h2 className="text-lg font-black uppercase tracking-[0.08em]">{title}</h2>
@@ -175,90 +102,61 @@ export default function NetworkPage() {
         </section>
 
         <section className="rounded-[2rem] border border-white/10 bg-[#0b1017] p-6 md:p-8">
-          <div className="text-[11px] font-black uppercase tracking-[0.28em] text-[#f5b34b]">
-            Layer 04 Fulfillment
+          <div className="text-[11px] font-black uppercase tracking-[0.28em] text-cyan-300">
+            Network contract
           </div>
           <h2 className="mt-3 text-2xl font-black uppercase tracking-[-0.03em]">
-            Fulfillment is replaceable
+            {NETWORK_GRAPH.principle}
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-white/68">
-            Fulfillment is where the accepted decision turns into an action:
-            owned checkout, direct operator handoff, FareHarbor, Rezdy,
-            GetYourGuide, lead forms, or another approved partner for that
-            lane. The provider can change. The corridor, decision logic, and
-            routing record stay with DCC and Earth OS.
+            A DCC page should solve the research problem on its own. Outbound links are the next action, not the reason the page exists. The specialist site owns its own commercial truth. We do not duplicate transaction pages across domains.
           </p>
         </section>
 
         <section className="rounded-[2rem] border border-white/10 bg-[#0b1017] p-6 md:p-8">
-          <h2 className="text-2xl font-black uppercase tracking-[-0.03em]">
-            Satellite sites
-          </h2>
+          <h2 className="text-2xl font-black uppercase tracking-[-0.03em]">The 15-site suite</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-white/68">
+            Each domain has one primary job. That separation is what lets the network become interconnected without becoming duplicate content.
+          </p>
           <div className="mt-5 grid gap-3">
-            {SATELLITE_FULFILLMENT_CARDS.map((item) => (
-              <div
-                key={item.name}
-                className="grid gap-2 rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4 md:grid-cols-[220px_1fr_1fr_1fr]"
+            {SUITE_SITES.map((item) => (
+              <a
+                key={item.id}
+                href={item.url}
+                className="grid gap-2 rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4 transition hover:border-[#f5b34b]/45 hover:bg-white/[0.06] md:grid-cols-[260px_240px_1fr]"
               >
                 <span className="font-black text-white">{item.name}</span>
-                <span className="text-sm leading-6 text-white/68">
-                  <span className="font-semibold text-white">Traveler problem:</span>{" "}
-                  {item.travelerProblem}
-                </span>
-                <span className="text-sm leading-6 text-white/68">
-                  <span className="font-semibold text-white">Decision compressed:</span>{" "}
-                  {item.decisionCompressed}
-                </span>
-                <span className="text-sm leading-6 text-white/68">
-                  <span className="font-semibold text-white">Fulfillment:</span>{" "}
-                  {item.fulfillment}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-[2rem] border border-white/10 bg-[#0b1017] p-6 md:p-8">
-          <h2 className="text-2xl font-black uppercase tracking-[-0.03em]">Active domains</h2>
-          <div className="mt-5 grid gap-3">
-            {NETWORK_DOMAINS.map((item) => (
-              <a
-                key={item.domain}
-                href={item.href}
-                className="grid gap-2 rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4 transition hover:border-[#f5b34b]/45 hover:bg-white/[0.06] md:grid-cols-[220px_180px_1fr]"
-              >
-                <span className="font-black text-white">{item.domain}</span>
-                <span className="text-sm font-semibold text-[#f5b34b]">{item.role}</span>
-                <span className="text-sm leading-6 text-white/68">{item.note}</span>
+                <span className="text-sm font-semibold text-[#f5b34b]">{ROLE_LABELS[item.role] || item.role}</span>
+                <span className="text-sm leading-6 text-white/68">{item.url.replace(/^https?:\/\//, "")}</span>
               </a>
             ))}
           </div>
         </section>
 
         <section className="rounded-[2rem] border border-white/10 bg-[#0b1017] p-6 md:p-8">
-          <h2 className="text-2xl font-black uppercase tracking-[-0.03em]">Useful handoffs</h2>
+          <h2 className="text-2xl font-black uppercase tracking-[-0.03em]">Live DCC → specialist handoffs</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-white/68">
+            These edges are generated from the same registry that renders the decision-guide pages, so the public site and the machine-readable topology cannot quietly drift apart.
+          </p>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
-            <Link href="/red-rocks-transportation" className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4 hover:bg-white/[0.06]">
-              Red Rocks decision hub to Party at Red Rocks and Shuttleya
-            </Link>
-            <Link href="/mighty-argo-shuttle" className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4 hover:bg-white/[0.06]">
-              Argo shuttle hub to Shuttleya
-            </Link>
-            <Link href="/juneau/best-excursion-in-juneau-alaska" className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4 hover:bg-white/[0.06]">
-              Juneau and Alaska pages to WTA and Juneau Flight Deck
-            </Link>
-            <Link href="/new-orleans/best-swamp-tour" className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4 hover:bg-white/[0.06]">
-              New Orleans swamp pages to Welcome to the Swamp
-            </Link>
+            {NETWORK_GRAPH.guideEdges.map((edge) => (
+              <Link
+                key={edge.from}
+                href={edge.from.replace("dcc:", "")}
+                className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4 hover:bg-white/[0.06]"
+              >
+                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">{edge.category}</span>
+                <div className="mt-2 font-black text-white">{edge.title}</div>
+                <div className="mt-2 text-sm text-white/55">Research → {edge.to || edge.href}</div>
+              </Link>
+            ))}
           </div>
         </section>
 
         <section className="rounded-[2rem] border border-white/10 bg-[#0b1017] p-6 md:p-8">
           <h2 className="text-2xl font-black uppercase tracking-[-0.03em]">Cruise-port authority queue</h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-white/68">
-            These DCC authority entries define the next cruise-port TravelMarket builds.
-            They are not public booking surfaces until approved imagery, real inventory,
-            provider URLs, and detail routes pass the launch gate.
+            These are upstream authority opportunities. They are not automatically booking pages: DCC earns the search visit first by answering the port-day decision.
           </p>
           <div className="mt-5 grid gap-3">
             {CRUISE_PORT_AUTHORITY_QUEUE.map((entrypoint) => (
@@ -268,12 +166,8 @@ export default function NetworkPage() {
                 className="grid gap-2 rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-4 transition hover:border-[#f5b34b]/45 hover:bg-white/[0.06] md:grid-cols-[260px_180px_1fr]"
               >
                 <span className="font-black text-white">{entrypoint.portName}</span>
-                <span className="text-sm font-semibold text-[#f5b34b]">
-                  {entrypoint.providerMode}
-                </span>
-                <span className="text-sm leading-6 text-white/68">
-                  {entrypoint.completionStatus} / {entrypoint.productLanes.slice(0, 3).join(", ")}
-                </span>
+                <span className="text-sm font-semibold text-[#f5b34b]">{entrypoint.providerMode}</span>
+                <span className="text-sm leading-6 text-white/68">{entrypoint.completionStatus} / {entrypoint.productLanes.slice(0, 3).join(", ")}</span>
               </Link>
             ))}
           </div>
