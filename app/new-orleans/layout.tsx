@@ -19,6 +19,15 @@ const newOrleansScriptFont = Pinyon_Script({
 export const metadata: Metadata = {
   metadataBase: new URL("https://welcometoneworleanstours.com"),
   applicationName: "Welcome to New Orleans Tours",
+  openGraph: {
+    siteName: "Welcome to New Orleans Tours",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Welcome to New Orleans Tours",
+    description: "Compare New Orleans tours, find participating experiences, and get help choosing the right fit for your trip.",
+  },
   verification: {
     google: process.env.WTONOT_GOOGLE_SITE_VERIFICATION || undefined,
   },
