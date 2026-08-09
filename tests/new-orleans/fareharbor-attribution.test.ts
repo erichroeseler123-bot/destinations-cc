@@ -8,7 +8,9 @@ import {
   buildFareHarborLightframeOptions,
   FAREHARBOR_SOURCES,
   getDefaultDetailSource,
+  getExpectedFareHarborAsn,
   isFareHarborSource,
+  normalizeFareHarborFallbackHref,
   resolveFareHarborSource,
 } from "../../app/new-orleans/lib/fareHarborAttribution";
 import {
@@ -46,7 +48,6 @@ test("FareHarbor Lightframe attribution", async (t) => {
     for (const slug of APPROVED_PRODUCT_SLUGS) {
       assert.strictEqual(getDefaultDetailSource(slug), expectedDefaults[slug]);
     }
-
     assert.strictEqual(isFareHarborSource("wtonot-home"), true);
     assert.strictEqual(isFareHarborSource("customer@example.com"), false);
     assert.strictEqual(isFareHarborSource("wtonot-home?customer=1"), false);
@@ -55,70 +56,56 @@ test("FareHarbor Lightframe attribution", async (t) => {
 
   await t.test("propagates approved internal sources deterministically", () => {
     assert.strictEqual(
-      buildAttributedTourHref(
-        "city-tour-of-new-orleans",
-        FAREHARBOR_SOURCES.home,
-      ),
+      buildAttributedTourHref("city-tour-of-new-orleans", FAREHARBOR_SOURCES.home),
       "/tours/city-tour-of-new-orleans?src=wtonot-home",
     );
     assert.strictEqual(
-      buildAttributedTourHref(
-        "covered-tour-boat",
-        FAREHARBOR_SOURCES.homeChooser,
-        "swamp-calm",
-      ),
+      buildAttributedTourHref("covered-tour-boat", FAREHARBOR_SOURCES.homeChooser, "swamp-calm"),
       "/tours/covered-tour-boat?recommended=swamp-calm&src=wtonot-home-chooser",
     );
   });
 
   await t.test("accepts chooser sources only for valid recommendation context", () => {
+    assert.strictEqual(resolveFareHarborSource({ productSlug: "covered-tour-boat", requestedSource: FAREHARBOR_SOURCES.homeChooser, hasValidRecommendation: true }), FAREHARBOR_SOURCES.homeChooser);
+    assert.strictEqual(resolveFareHarborSource({ productSlug: "covered-tour-boat", requestedSource: FAREHARBOR_SOURCES.helpChooser, hasValidRecommendation: false }), FAREHARBOR_SOURCES.detailCovered);
+    assert.strictEqual(resolveFareHarborSource({ productSlug: "city-tour-of-new-orleans", requestedSource: FAREHARBOR_SOURCES.recommendation, hasValidRecommendation: true }), FAREHARBOR_SOURCES.recommendation);
+    assert.strictEqual(resolveFareHarborSource({ productSlug: "city-tour-of-new-orleans", requestedSource: FAREHARBOR_SOURCES.recommendation, hasValidRecommendation: false }), FAREHARBOR_SOURCES.detailCity);
+    assert.strictEqual(resolveFareHarborSource({ productSlug: "city-tour-of-new-orleans", requestedSource: "uncontrolled-source", hasValidRecommendation: true }), FAREHARBOR_SOURCES.detailCity);
+  });
+
+  await t.test("enforces operator-specific ASN for every checkout path", () => {
+    assert.strictEqual(getExpectedFareHarborAsn("southernstyletours", "wrong"), "aktourcenter");
+    assert.strictEqual(getExpectedFareHarborAsn("ragincajuntours", "wrong"), "aktourcenter");
+    assert.strictEqual(getExpectedFareHarborAsn("neworleanssteamboatcompany", "wrong"), "welcometoneworleanstours");
+  });
+
+  await t.test("normalizes malformed steamboat fallback attribution before navigation", () => {
+    const malformed = "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/561369/?ref=WelcomeToNewOrelansTours&asn=wrong&flow=1621326&full-items=yes";
+    const normalized = normalizeFareHarborFallbackHref({
+      href: malformed,
+      shortname: "neworleanssteamboatcompany",
+      requestedAsn: "wrong",
+    });
+    const parsed = new URL(normalized);
+    assert.strictEqual(parsed.searchParams.get("ref"), "WelcomeToNewOrleansTours");
+    assert.strictEqual(parsed.searchParams.get("asn"), "welcometoneworleanstours");
+    assert.strictEqual(parsed.searchParams.get("flow"), "1621326");
+    assert.ok(parsed.pathname.includes("/items/561369/"));
+  });
+
+  await t.test("does not rewrite non-FareHarbor links", () => {
+    const href = "https://example.com/?asn=wrong&ref=wrong";
     assert.strictEqual(
-      resolveFareHarborSource({
-        productSlug: "covered-tour-boat",
-        requestedSource: FAREHARBOR_SOURCES.homeChooser,
-        hasValidRecommendation: true,
-      }),
-      FAREHARBOR_SOURCES.homeChooser,
-    );
-    assert.strictEqual(
-      resolveFareHarborSource({
-        productSlug: "covered-tour-boat",
-        requestedSource: FAREHARBOR_SOURCES.helpChooser,
-        hasValidRecommendation: false,
-      }),
-      FAREHARBOR_SOURCES.detailCovered,
-    );
-    assert.strictEqual(
-      resolveFareHarborSource({
-        productSlug: "city-tour-of-new-orleans",
-        requestedSource: FAREHARBOR_SOURCES.recommendation,
-        hasValidRecommendation: true,
-      }),
-      FAREHARBOR_SOURCES.recommendation,
-    );
-    assert.strictEqual(
-      resolveFareHarborSource({
-        productSlug: "city-tour-of-new-orleans",
-        requestedSource: FAREHARBOR_SOURCES.recommendation,
-        hasValidRecommendation: false,
-      }),
-      FAREHARBOR_SOURCES.detailCity,
-    );
-    assert.strictEqual(
-      resolveFareHarborSource({
-        productSlug: "city-tour-of-new-orleans",
-        requestedSource: "uncontrolled-source",
-        hasValidRecommendation: true,
-      }),
-      FAREHARBOR_SOURCES.detailCity,
+      normalizeFareHarborFallbackHref({ href, shortname: "neworleanssteamboatcompany", requestedAsn: "wrong" }),
+      href,
     );
   });
 
-  await t.test("passes only validated source data to FH.open options", () => {
+  await t.test("passes only controlled ASN data to FH.open options", () => {
     assert.deepStrictEqual(
       buildFareHarborLightframeOptions({
         shortname: "southernstyletours",
-        asn: FAREHARBOR_ASN,
+        asn: "wrong",
         itemId: "51942",
         flowId: "4344",
         source: FAREHARBOR_SOURCES.home,
@@ -131,10 +118,9 @@ test("FareHarbor Lightframe attribution", async (t) => {
         flow: "4344",
       },
     );
-
   });
 
-  await t.test("keeps all six raw fallback URLs byte-for-byte unchanged", () => {
+  await t.test("keeps the six legacy generated raw URLs unchanged", () => {
     const expected = [
       "https://fareharbor.com/embeds/book/southernstyletours/items/51942/?asn=aktourcenter&flow=4344&full-items=yes",
       "https://fareharbor.com/embeds/book/southernstyletours/items/83002/?asn=aktourcenter&flow=4344&full-items=yes",
@@ -150,43 +136,25 @@ test("FareHarbor Lightframe attribution", async (t) => {
     assert.ok(actual.every((url) => !url.includes("src=") && !url.includes("ref=")));
   });
 
-  await t.test("wires catalog, chooser, guide, and detail sources", () => {
-    const read = (relativePath: string) =>
-      fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
-
-    assert.match(
-      read("app/new-orleans/components/ProductCard.tsx"),
-      /attributionSource = FAREHARBOR_SOURCES\.guide/,
-    );
-
+  await t.test("wires catalog, chooser, guide, detail, and normalized booking sources", () => {
+    const read = (relativePath: string) => fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
+    assert.match(read("app/new-orleans/components/ProductCard.tsx"), /attributionSource = FAREHARBOR_SOURCES\.guide/);
     const chooser = read("app/new-orleans/components/NewOrleansChooser.tsx");
     assert.match(chooser, /FAREHARBOR_SOURCES\.homeChooser/);
     assert.match(chooser, /FAREHARBOR_SOURCES\.helpChooser/);
     assert.match(chooser, /buildAttributedTourHref\(product\.slug, attributionSource, contextId\)/);
-
     const detailPage = read("app/new-orleans/tours/[slug]/page.tsx");
     assert.match(detailPage, /resolveFareHarborSource\(\{/);
     assert.match(detailPage, /hasValidRecommendation: Boolean\(recommendationExplanation\)/);
+    const bookingButton = read("app/new-orleans/components/FareHarborBookingButton.tsx");
+    assert.match(bookingButton, /normalizeFareHarborFallbackHref/);
+    assert.match(bookingButton, /href=\{effectiveFallbackHref\}/);
   });
 
   await t.test("preserves existing booking analytics event names", () => {
-    const bookingButton = fs.readFileSync(
-      path.join(process.cwd(), "app/new-orleans/components/FareHarborBookingButton.tsx"),
-      "utf8",
-    );
-    const detailAction = fs.readFileSync(
-      path.join(process.cwd(), "app/new-orleans/tours/[slug]/TourDetailBookingAction.tsx"),
-      "utf8",
-    );
-
-    for (const eventName of [
-      "fareharbor_cta_seen",
-      "fareharbor_cta_clicked",
-      "fareharbor_direct_fallback_used",
-      "fareharbor_script_failed",
-      "fareharbor_open_attempted",
-      "fareharbor_open_succeeded",
-    ]) {
+    const bookingButton = fs.readFileSync(path.join(process.cwd(), "app/new-orleans/components/FareHarborBookingButton.tsx"), "utf8");
+    const detailAction = fs.readFileSync(path.join(process.cwd(), "app/new-orleans/tours/[slug]/TourDetailBookingAction.tsx"), "utf8");
+    for (const eventName of ["fareharbor_cta_seen", "fareharbor_cta_clicked", "fareharbor_direct_fallback_used", "fareharbor_script_failed", "fareharbor_open_attempted", "fareharbor_open_succeeded"]) {
       assert.ok(bookingButton.includes(`"${eventName}"`));
     }
     assert.ok(detailAction.includes('"tour_detail_booking_selected"'));
