@@ -19,12 +19,8 @@ export interface ImageAttribution {
 export const PRODUCT_IMAGE_REPLACEMENT_QUEUE = [
   "all-day-city-plantation-combo",
   "covered-boat-plantation-combo",
-  "whitney-plantation-tour",
   "swamp-boat-oak-alley-combo",
   "swamp-boat-whitney-combo",
-  "cocktail-walking-tour",
-  "craft-cocktail-walking-tour",
-  "city-of-new-orleans-riverboat-cruise",
 ] as const;
 
 export const PRODUCT_IMAGES: Record<string, ImageAttribution> = {
@@ -81,6 +77,16 @@ export const PRODUCT_IMAGES: Record<string, ImageAttribution> = {
     license: "CC BY-SA 3.0",
     verifiedRights: true,
   },
+  "whitney-plantation-tour": {
+    url: "https://upload.wikimedia.org/wikipedia/commons/3/30/The_Big_House_-_Whitney_Plantation%2C_Louisiana.jpg",
+    alt: "The Big House at Whitney Plantation in Louisiana",
+    source: "Wikimedia Commons",
+    author: "bvi4092",
+    license: "CC BY 2.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:The_Big_House_-_Whitney_Plantation,_Louisiana.jpg",
+    verifiedRights: true,
+  },
   "swamp-bayou-tour": {
     url: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
     alt: "Covered pontoon boat in Louisiana swamp",
@@ -102,6 +108,26 @@ export const PRODUCT_IMAGES: Record<string, ImageAttribution> = {
     author: "Gray Line / Cajun Pride",
     verifiedRights: true,
   },
+  "cocktail-walking-tour": {
+    url: "https://upload.wikimedia.org/wikipedia/commons/f/fc/SazeracCocktail.jpg",
+    alt: "Sazerac cocktail in New Orleans",
+    source: "Wikimedia Commons",
+    author: "Gtandersson",
+    license: "CC BY 4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:SazeracCocktail.jpg",
+    verifiedRights: true,
+  },
+  "craft-cocktail-walking-tour": {
+    url: "https://upload.wikimedia.org/wikipedia/commons/f/fc/SazeracCocktail.jpg",
+    alt: "Sazerac cocktail in New Orleans",
+    source: "Wikimedia Commons",
+    author: "Gtandersson",
+    license: "CC BY 4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:SazeracCocktail.jpg",
+    verifiedRights: true,
+  },
   "ghosts-spirits-walking-tour": {
     url: "/images/wikimedia/originals/lalaurie-mansion-1906.jpg",
     alt: "LaLaurie Mansion in New Orleans in 1906",
@@ -116,6 +142,16 @@ export const PRODUCT_IMAGES: Record<string, ImageAttribution> = {
     source: "Wikimedia Commons",
     author: "Tom Hilton",
     license: "CC BY 2.0",
+    verifiedRights: true,
+  },
+  "city-of-new-orleans-riverboat-cruise": {
+    url: "https://upload.wikimedia.org/wikipedia/commons/c/cf/Riverboat_-_Mississippi_River_at_New_Orleans%2C_February_2021.jpg",
+    alt: "City of New Orleans riverboat on the Mississippi River",
+    source: "Wikimedia Commons",
+    author: "David Brossard",
+    license: "CC BY-SA 2.0",
+    licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Riverboat_-_Mississippi_River_at_New_Orleans,_February_2021.jpg",
     verifiedRights: true,
   },
 };
