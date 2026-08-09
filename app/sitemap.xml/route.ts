@@ -98,6 +98,7 @@ export async function GET() {
   const origin = isSomersetHost ? `https://${host}` : SITE_IDENTITY.siteUrl;
   const preSiteGuidePaths = [
     "/guides",
+    "/ask",
     "/vibe-around",
     "/shuttleya",
     "/juneau-flightseeing",
