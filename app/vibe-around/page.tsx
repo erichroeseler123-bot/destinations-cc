@@ -13,6 +13,12 @@ type BridgeGuide = {
   body: string;
 };
 
+const ISLAND_CENTERS = [
+  { slug: "st-thomas", name: "St. Thomas", body: "Port-day timing, flexibility, and driver-format decisions before you choose the person." },
+  { slug: "st-croix", name: "St. Croix", body: "Decide what needs a hard commitment and what can stay open for the local day." },
+  { slug: "st-john", name: "St. John", body: "Choose the shape of the day first, then decide whether a flexible local-driver experience fits." },
+] as const;
+
 const BRIDGE_GUIDES: BridgeGuide[] = [
   {
     slug: "independent-cruise-port-driver-vs-bus-tour",
@@ -61,7 +67,7 @@ function buildContextQuery(params: SearchParams) {
   const query = new URLSearchParams();
   query.set("from", "vibe");
 
-  for (const key of ["island", "cruiseCallId", "groupSize", "shipName"] as const) {
+  for (const key of ["island", "cruiseCallId", "groupSize", "shipName", "entry", "driverSlug"] as const) {
     const value = one(params[key]);
     if (value) query.set(key, value);
   }
@@ -76,8 +82,15 @@ function buildVibeReturnHref(params: SearchParams) {
     if (value) query.set(key, value);
   }
 
-  const suffix = query.toString();
-  return suffix ? `${VIBE_ORIGIN}/search?${suffix}` : `${VIBE_ORIGIN}/`;
+  query.set("dccAssisted", "1");
+  query.set("dccEntry", one(params.entry) || "vibe-decision-center");
+  const driverSlug = one(params.driverSlug);
+  if (driverSlug) {
+    query.set("dccDriver", driverSlug);
+    return `${VIBE_ORIGIN}/drivers/${encodeURIComponent(driverSlug)}?${query.toString()}`;
+  }
+
+  return `${VIBE_ORIGIN}/search?${query.toString()}`;
 }
 
 export default async function VibeAroundDecisionHub({
@@ -91,6 +104,7 @@ export default async function VibeAroundDecisionHub({
   const island = one(params.island);
   const groupSize = one(params.groupSize);
   const shipName = one(params.shipName);
+  const driverSlug = one(params.driverSlug);
 
   const contextBits = [shipName, island, groupSize ? `${groupSize} guests` : undefined].filter(Boolean);
 
@@ -145,16 +159,37 @@ export default async function VibeAroundDecisionHub({
               </p>
             )}
             <p className="mt-4 text-sm leading-6 text-slate-400">
-              When the decision is clear, this return path takes you back to Vibe Around instead of restarting the trip search.
+              {driverSlug
+                ? "When the decision is clear, this return path takes you back to the same driver profile."
+                : "When the decision is clear, this return path takes you back to Vibe Around instead of restarting the trip search."}
             </p>
             <a
               href={vibeReturnHref}
               className="mt-6 inline-flex rounded-xl bg-white px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-slate-200"
             >
-              I’m ready — show me local drivers ↗
+              {driverSlug ? "I’m ready — back to this driver ↗" : "I’m ready — show me local drivers ↗"}
             </a>
           </aside>
         </div>
+
+        <section className="mt-14">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">Island decision centers</p>
+          <h2 className="mt-3 text-3xl font-black tracking-tight text-white">Start with the island if that is what you know.</h2>
+          <div className="mt-7 grid gap-5 md:grid-cols-3">
+            {ISLAND_CENTERS.map((center) => (
+              <Link
+                key={center.slug}
+                href={`/vibe-around/${center.slug}?${contextQuery.toString()}`}
+                className="rounded-3xl border border-slate-800 bg-[#0d131d] p-6 transition hover:-translate-y-1 hover:border-cyan-800"
+              >
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">U.S. Virgin Islands</p>
+                <h3 className="mt-3 text-2xl font-black text-white">{center.name}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-400">{center.body}</p>
+                <span className="mt-5 inline-block text-sm font-bold text-cyan-200">Open island decision center →</span>
+              </Link>
+            ))}
+          </div>
+        </section>
 
         <section className="mt-14">
           <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">Choose the uncertainty</p>
