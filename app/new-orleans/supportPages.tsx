@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const WTONOT_SITE_NAME = "Welcome to New Orleans Tours";
+export const WTONOT_SITE_NAME = "New Orleans Concierge Desk";
 export const WTONOT_ORIGIN = "https://welcometoneworleanstours.com";
 export const WTONOT_SUPPORT_EMAIL = "help@welcometoneworleanstours.com";
 export const WTONOT_SUPPORT_PHONE = "504-484-9687";
@@ -57,7 +57,7 @@ export function SupportPageShell({ eyebrow, title, intro, sections, updated }: S
             {intro}
           </p>
           <p className="mt-4 text-sm text-[var(--nola-ivory)]/60">
-            {WTONOT_SITE_NAME} is an independent affiliate and recommendation site.
+            {WTONOT_SITE_NAME} is an independent visitor-help, tour recommendation, and affiliate site.
           </p>
           {updated ? (
             <p className="mt-5 text-xs text-[var(--nola-ivory)]/55">Last updated: {updated}</p>
