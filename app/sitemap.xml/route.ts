@@ -84,6 +84,9 @@ export async function GET() {
   const preSiteGuidePaths = [
     "/guides",
     "/vibe-around",
+    "/vibe-around/st-thomas",
+    "/vibe-around/st-croix",
+    "/vibe-around/st-john",
     ...DECISION_CATEGORIES.map((category) => `/guides/category/${category.slug}`),
     ...PUBLISHED_DECISION_GUIDES.map((guide) => `/guides/${guide.slug}`),
   ];
