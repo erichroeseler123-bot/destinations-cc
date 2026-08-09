@@ -5,16 +5,35 @@ export const runtime = "nodejs";
 
 const EVENT_NAMES = new Set(["handoff_viewed", "booking_started", "booking_completed", "booking_failed"]);
 
-export async function POST(request: NextRequest) {
+function verifyNetworkToken(request: NextRequest) {
   const expected = String(process.env.DCC_NETWORK_ATTRIBUTION_TOKEN || "").trim();
   if (!expected) {
-    return NextResponse.json({ ok: false, error: "network_attribution_not_configured" }, { status: 503 });
+    return { ok: false as const, response: NextResponse.json({ ok: false, error: "network_attribution_not_configured" }, { status: 503 }) };
   }
 
   const provided = request.headers.get("x-dcc-network-token") || "";
   if (provided !== expected) {
-    return NextResponse.json({ ok: false, error: "invalid_network_token" }, { status: 401 });
+    return { ok: false as const, response: NextResponse.json({ ok: false, error: "invalid_network_token" }, { status: 401 }) };
   }
+
+  return { ok: true as const };
+}
+
+export async function GET(request: NextRequest) {
+  const auth = verifyNetworkToken(request);
+  if (!auth.ok) return auth.response;
+
+  return NextResponse.json({
+    ok: true,
+    service: "dcc-network-attribution",
+    mode: "health_check",
+    writes: false,
+  });
+}
+
+export async function POST(request: NextRequest) {
+  const auth = verifyNetworkToken(request);
+  if (!auth.ok) return auth.response;
 
   const body = (await request.json().catch(() => null)) as NetworkAttributionEvent | null;
   if (
