@@ -17,6 +17,12 @@ const WTONOT_DECISION_GUIDES = [
   "/guides/new-orleans-swamp-tour-without-a-car",
   "/guides/can-kids-ride-airboats-new-orleans",
   "/guides/whitney-plantation-vs-oak-alley-history-focus",
+  "/guides/new-orleans-tours-for-grandparents-and-kids",
+  "/guides/new-orleans-tours-limited-mobility",
+  "/guides/best-new-orleans-tours-if-you-arrive-at-noon",
+  "/guides/best-new-orleans-tours-for-a-rainy-day",
+  "/guides/best-new-orleans-tours-under-4-or-6-hours",
+  "/guides/new-orleans-tours-without-an-all-day-bus-ride",
 ] as const;
 
 const WTONOT_SUPERSEDED_SEO_PATHS = new Set([
