@@ -1,9 +1,10 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { permanentRedirect } from "next/navigation";
 import Script from "next/script";
 import { JetBrains_Mono, Montserrat, Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
-import './globals.css'; // your global styles
+import './globals.css';
 import SiteHeader from "@/app/components/dcc/SiteHeader";
 import SiteBreadcrumbs from "@/app/components/dcc/SiteBreadcrumbs";
 import SiteFooter from "@/app/components/dcc/SiteFooter";
@@ -41,6 +42,11 @@ const monoFont = JetBrains_Mono({
 
 const GA_MEASUREMENT_ID = "G-S6JEJVWVDT";
 
+const JFD_HOSTS = new Set(["juneauflightdeck.com", "www.juneauflightdeck.com"]);
+const DELLS_HOSTS = new Set(["welcometothedells.com", "www.welcometothedells.com"]);
+const JFD_PUBLIC_PATHS = new Set(["/", "/helicopter", "/juneau/helicopter"]);
+const DELLS_PUBLIC_PATHS = new Set(["/"]);
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_IDENTITY.siteUrl),
   applicationName: SITE_IDENTITY.name,
@@ -75,21 +81,35 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const requestHeaders = await headers();
-  const host =
+  const host = (
     requestHeaders.get("x-forwarded-host") ||
     requestHeaders.get("host") ||
-    "";
+    ""
+  ).split(":")[0].toLowerCase();
   const brandShell = requestHeaders.get("x-dcc-brand-shell") || "";
   const isWtonotShell = brandShell === "wtonot";
   const isLfseShell = brandShell === "lfse";
   const pathname = requestHeaders.get("x-pathname") || "";
   const isHomepage = pathname === "/";
+  const isJfdHost = JFD_HOSTS.has(host);
+  const isDellsHost = DELLS_HOSTS.has(host);
+  const isSpecialistHost = isJfdHost || isDellsHost;
+
+  // The Juneau and Dells custom domains currently resolve through this monolith.
+  // Do not let stale DCC routes leak onto specialist domains. Known legacy Juneau
+  // URLs are handled explicitly; everything else collapses to the specialist root.
+  if (isJfdHost && pathname && !JFD_PUBLIC_PATHS.has(pathname)) {
+    permanentRedirect("/");
+  }
+  if (isDellsHost && pathname && !DELLS_PUBLIC_PATHS.has(pathname)) {
+    permanentRedirect("/");
+  }
 
   return (
     <html lang="en">
       <head>
-        <link rel="alternate" type="application/json" href="/agent.json" />
-        <link rel="alternate" type="text/plain" href="/llms.txt" />
+        {!isSpecialistHost ? <link rel="alternate" type="application/json" href="/agent.json" /> : null}
+        {!isSpecialistHost ? <link rel="alternate" type="text/plain" href="/llms.txt" /> : null}
         <link rel="preconnect" href="https://sentry.avs.io" crossOrigin="" />
         <link rel="preconnect" href="https://widget.getyourguide.com" crossOrigin="" />
         <Script
@@ -100,12 +120,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <PartnerAnalyticsScript />
       </head>
       <body className={`${headingFont.variable} ${accentFont.variable} ${sansFont.variable} ${monoFont.variable} ${isWtonotShell ? "bg-[#151515] text-[#fdfbf7]" : ""}`}>
-        {isWtonotShell || isLfseShell || isHomepage ? (
+        {isWtonotShell || isLfseShell || isHomepage || isSpecialistHost ? (
           <>
             <a href="#main-content" className="dcc-skip-link">
               Skip to main content
             </a>
-            {children}
+            <div id="main-content">{children}</div>
           </>
         ) : (
           <>
