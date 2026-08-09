@@ -66,11 +66,26 @@ export function buildWtonotSitemapPaths() {
 }
 
 export async function GET() {
-  const hostHeader = (await headers()).get("x-forwarded-host") || (await headers()).get("host") || "";
-  const host = hostHeader.split(":")[0];
+  const h = await headers();
+  const hostHeader = h.get("x-forwarded-host") || h.get("host") || "";
+  const host = hostHeader.split(":")[0].toLowerCase();
   const isWtonotHost = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
   const isSomersetHost = host === "shuttletosomersetamphitheater.com" || host === "www.shuttletosomersetamphitheater.com";
   const isLfseHost = host === "lastfrontiershoreexcursions.com" || host === "www.lastfrontiershoreexcursions.com";
+  const isJfdHost = host === "juneauflightdeck.com" || host === "www.juneauflightdeck.com";
+  const isDellsHost = host === "welcometothedells.com" || host === "www.welcometothedells.com";
+
+  if (isJfdHost) {
+    return new Response(buildDccSitemapXml(["/", "/helicopter"], "https://juneauflightdeck.com", false), {
+      headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" },
+    });
+  }
+
+  if (isDellsHost) {
+    return new Response(buildDccSitemapXml(["/"], "https://welcometothedells.com", false), {
+      headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" },
+    });
+  }
 
   if (isLfseHost) {
     const origin = `https://www.lastfrontiershoreexcursions.com`;
@@ -84,6 +99,7 @@ export async function GET() {
   const preSiteGuidePaths = [
     "/guides",
     "/vibe-around",
+    "/juneau-flightseeing",
     ...DECISION_CATEGORIES.map((category) => `/guides/category/${category.slug}`),
     ...PUBLISHED_DECISION_GUIDES.map((guide) => `/guides/${guide.slug}`),
   ];
