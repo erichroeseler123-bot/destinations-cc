@@ -50,6 +50,15 @@ const frenchQuarterGuideSlugs = new Set([
   "french-quarter-group-meeting-point-strategy",
 ]);
 
+const swampGuideSlugs = new Set([
+  "new-orleans-airboat-vs-covered-swamp-boat",
+  "new-orleans-swamp-tour-with-kids",
+  "new-orleans-swamp-tour-pickup-vs-self-drive",
+  "new-orleans-small-vs-large-airboat",
+  "best-time-of-day-for-new-orleans-swamp-tour",
+  "is-a-new-orleans-swamp-tour-worth-it",
+]);
+
 const preSiteHubNodes = [
   {
     id: "dcc:pre-site:french-quarter-orientation",
@@ -59,6 +68,15 @@ const preSiteHubNodes = [
     category: "new-orleans",
     label: "French Quarter Orientation Decision Center",
     purpose: "Resolve first-hour, navigation, regrouping, and orientation-fit questions before the specialist experience.",
+  },
+  {
+    id: "dcc:pre-site:new-orleans-swamp-tours",
+    url: "https://www.destinationcommandcenter.com/new-orleans-swamp-tours",
+    type: "pre_site_decision_center",
+    specialist: "swamp",
+    category: "new-orleans",
+    label: "New Orleans Swamp Tour Decision Center",
+    purpose: "Resolve worth-it, ride-style, family-fit, timing, boat-size, and transportation questions before the swamp storefront.",
   },
 ];
 
@@ -100,10 +118,25 @@ const preSiteHubEdges = [
     to: "fqo",
     relation: "resolved_research_handoff",
   },
+  {
+    from: "dcc:category:new-orleans",
+    to: "dcc:pre-site:new-orleans-swamp-tours",
+    relation: "specialist_research_lane",
+  },
+  ...PUBLISHED_DECISION_GUIDES.filter((guide) => swampGuideSlugs.has(guide.slug)).map((guide) => ({
+    from: "dcc:pre-site:new-orleans-swamp-tours",
+    to: `dcc:guide:${guide.slug}`,
+    relation: "contains_specialist_decision",
+  })),
+  {
+    from: "dcc:pre-site:new-orleans-swamp-tours",
+    to: "swamp",
+    relation: "resolved_research_handoff",
+  },
 ];
 
 export const NETWORK_GRAPH = {
-  version: "2026-08-09-v4",
+  version: "2026-08-09-v5",
   principle: "UNDERSTAND -> CHOOSE -> BUY_OR_RESERVE -> PLAN",
   hub: "dcc",
   topology: {

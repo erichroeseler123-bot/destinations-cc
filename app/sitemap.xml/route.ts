@@ -101,6 +101,7 @@ export async function GET() {
     "/vibe-around",
     "/juneau-flightseeing",
     "/french-quarter-orientation",
+    "/new-orleans-swamp-tours",
     ...DECISION_CATEGORIES.map((category) => `/guides/category/${category.slug}`),
     ...PUBLISHED_DECISION_GUIDES.map((guide) => `/guides/${guide.slug}`),
   ];
