@@ -23,6 +23,11 @@ const WTONOT_DECISION_GUIDES = [
   "/guides/best-new-orleans-tours-for-a-rainy-day",
   "/guides/best-new-orleans-tours-under-4-or-6-hours",
   "/guides/new-orleans-tours-without-an-all-day-bus-ride",
+  "/guides/new-orleans-tours-near-french-quarter",
+  "/guides/best-new-orleans-tours-with-kids-under-6",
+  "/guides/new-orleans-tours-with-minimal-walking",
+  "/guides/new-orleans-tours-under-50-dollars",
+  "/guides/new-orleans-tours-that-fit-before-dinner",
 ] as const;
 
 const WTONOT_SUPERSEDED_SEO_PATHS = new Set([
