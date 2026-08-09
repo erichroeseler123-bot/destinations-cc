@@ -36,18 +36,18 @@ export const COMPARISON_OPPORTUNITIES: ComparisonOpportunity[] = [
     title: "Small vs Large Airboat Tours in New Orleans: What Actually Changes?",
     queryIntent: "Understand whether paying for a smaller airboat changes the experience.",
     primaryTourSlugs: ["small-airboat-swamp-adventure", "large-airboat-swamp-adventure"],
-    status: "READY_FOR_RESEARCH",
-    requiredFacts: ["capacity", "ride duration", "route flexibility", "noise", "age restrictions", "price", "transportation"],
-    decisionQuestions: ["Is the smaller boat worth it?", "Does group size change wildlife viewing?", "Are age rules different?", "How much more does the small boat cost?"]
+    status: "READY_TO_PUBLISH",
+    requiredFacts: ["capacity", "duration", "speed", "age restrictions", "price", "transportation", "weather exposure", "health restrictions"],
+    decisionQuestions: ["Is the smaller boat worth it?", "How many people are on each boat?", "Are age rules different?", "How much more does the small boat cost?"]
   },
   {
     slug: "natchez-vs-city-of-new-orleans-riverboat",
     title: "Steamboat NATCHEZ vs Riverboat CITY of NEW ORLEANS: What's the Difference?",
     queryIntent: "Choose a Mississippi River cruise and understand the vessel/product difference.",
     primaryTourSlugs: ["daytime-jazz-cruise", "evening-jazz-cruise", "city-of-new-orleans-riverboat-cruise"],
-    status: "READY_FOR_RESEARCH",
-    requiredFacts: ["vessel used", "cruise duration", "jazz offering", "meal options", "departure times", "boarding location", "substitution policy"],
-    decisionQuestions: ["Which boat will I actually ride?", "Which has live jazz?", "Which is better during the day vs evening?", "Can the operator substitute vessels?"]
+    status: "READY_TO_PUBLISH",
+    requiredFacts: ["vessel identity", "cruise duration", "jazz offering", "meal options", "boarding location", "narration"],
+    decisionQuestions: ["Which boat will I actually ride?", "Which has live jazz?", "Which is shorter?", "Which meal options are available?"]
   },
   {
     slug: "swamp-tour-with-vs-without-transportation",
