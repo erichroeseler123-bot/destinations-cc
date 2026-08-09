@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { SITE_IDENTITY } from "@/src/data/site-identity";
 import { SOMERSET_PAGE_PATHS } from "@/lib/dcc/corridors/somersetPages";
 import { ALL_PRODUCTS, SEO_PAGES } from "@/app/new-orleans/data";
+import { COMPARISON_OPPORTUNITIES } from "@/app/new-orleans/data/comparisonRegistry";
 
 export const dynamic = "force-dynamic";
 
@@ -36,16 +37,18 @@ function toAbsoluteUrl(pathname: string, origin: string = SITE_IDENTITY.siteUrl)
 export function buildDccSitemapXml(
   paths: readonly string[] = INDEXABLE_SURFACE_PATHS,
   origin: string = SITE_IDENTITY.siteUrl,
+  includeLastmod: boolean = true,
 ): string {
-  const lastmod = new Date().toISOString();
+  const lastmod = includeLastmod ? new Date().toISOString() : null;
   const urls = [...paths].map((pathname) => toAbsoluteUrl(pathname, origin)).sort();
 
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...urls.map(
-      (url) =>
-        `  <url><loc>${xmlEscape(url)}</loc><lastmod>${xmlEscape(lastmod)}</lastmod></url>`,
+    ...urls.map((url) =>
+      lastmod
+        ? `  <url><loc>${xmlEscape(url)}</loc><lastmod>${xmlEscape(lastmod)}</lastmod></url>`
+        : `  <url><loc>${xmlEscape(url)}</loc></url>`,
     ),
     "</urlset>",
   ].join("\n");
@@ -55,6 +58,7 @@ export function buildWtonotSitemapPaths() {
   const wtoPaths = [
     "/",
     "/tours",
+    "/compare",
     "/french-quarter-welcome-stop",
     ...WTONOT_SUPPORT_PATHS,
   ];
@@ -68,6 +72,12 @@ export function buildWtonotSitemapPaths() {
   Object.values(SEO_PAGES).forEach((page: any) => {
     if (page.status === "live" && page.isIndexable) {
       wtoPaths.push(page.publicRoute);
+    }
+  });
+
+  COMPARISON_OPPORTUNITIES.forEach((comparison) => {
+    if (comparison.status === "READY_TO_PUBLISH") {
+      wtoPaths.push(`/compare/${comparison.slug}`);
     }
   });
 
@@ -108,7 +118,7 @@ export async function GET() {
   }
 
   if (isWtonotHost) {
-    return new Response(buildDccSitemapXml(buildWtonotSitemapPaths(), WTONOT_ORIGIN), {
+    return new Response(buildDccSitemapXml(buildWtonotSitemapPaths(), WTONOT_ORIGIN, false), {
       headers: {
         "Content-Type": "application/xml; charset=utf-8",
         "Cache-Control": "public, max-age=3600, s-maxage=3600",
