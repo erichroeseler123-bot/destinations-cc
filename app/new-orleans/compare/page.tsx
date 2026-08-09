@@ -24,6 +24,36 @@ const planningGuides = [
     title: "Whitney vs Oak Alley for history",
     description: "Choose based on slavery-history focus, house and grounds, walking, accessibility, and visitor amenities.",
   },
+  {
+    href: "/guides/new-orleans-tours-for-grandparents-and-kids",
+    title: "Tours for grandparents and kids together",
+    description: "Mixed-age choices based on age rules, noise, walking, accessibility, and how long the day really is.",
+  },
+  {
+    href: "/guides/new-orleans-tours-limited-mobility",
+    title: "New Orleans tours for limited mobility",
+    description: "Compare buses, riverboats, plantations, walking, stairs, gravel, wheelchair rules, and advance accommodation requests.",
+  },
+  {
+    href: "/guides/best-new-orleans-tours-if-you-arrive-at-noon",
+    title: "Best tours if you arrive at noon",
+    description: "Afternoon options with realistic check-in and travel buffers instead of pretending arrival time equals free time.",
+  },
+  {
+    href: "/guides/best-new-orleans-tours-for-a-rainy-day",
+    title: "Best New Orleans tours for a rainy day",
+    description: "Covered boats, indoor seating, airboat weather exposure, and what rain-or-shine policies actually mean.",
+  },
+  {
+    href: "/guides/best-new-orleans-tours-under-4-or-6-hours",
+    title: "Best tours under 4 or 6 hours",
+    description: "Compare real scheduled durations from 75 minutes through roughly five and a half hours.",
+  },
+  {
+    href: "/guides/new-orleans-tours-without-an-all-day-bus-ride",
+    title: "Tours without spending all day on a bus",
+    description: "Shorter city, river, walking, and swamp choices for visitors who do not want a seven- or eight-hour excursion day.",
+  },
 ];
 
 export default function CompareToursPage() {
