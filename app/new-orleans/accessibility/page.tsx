@@ -2,8 +2,8 @@ import { SupportPageShell, buildSupportMetadata } from "../supportPages";
 
 export const metadata = buildSupportMetadata(
   "/accessibility",
-  "Accessibility Statement | Welcome to New Orleans Tours",
-  "Accessibility commitment and support contact information for Welcome to New Orleans Tours.",
+  "Accessibility Statement | New Orleans Concierge Desk",
+  "Accessibility commitment and support contact information for New Orleans Concierge Desk.",
 );
 
 export default function AccessibilityPage() {
@@ -11,8 +11,8 @@ export default function AccessibilityPage() {
     <SupportPageShell
       eyebrow="Accessibility"
       title="Accessibility Statement"
-      updated="August 5, 2026"
-      intro="Welcome to New Orleans Tours aims to make its storefront usable for as many travelers as practical and to provide clear ways to ask for help."
+      updated="August 9, 2026"
+      intro="New Orleans Concierge Desk aims to make its visitor-help and tour recommendation site usable for as many travelers as practical and to provide clear ways to ask for help."
       sections={[
         {
           title: "Our commitment",
@@ -32,7 +32,7 @@ export default function AccessibilityPage() {
           title: "Report an accessibility issue",
           body: [
             "If you have trouble using this site or need help finding a booking path, contact us with the page URL, the issue you encountered, and the assistive technology or browser you are using if relevant.",
-            "We will use the information to respond and improve the storefront where practical.",
+            "We will use the information to respond and improve the site where practical.",
           ],
         },
       ]}
