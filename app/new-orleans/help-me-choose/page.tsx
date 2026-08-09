@@ -1,11 +1,19 @@
 import React from "react";
 import NewOrleansRecommendationFlow from "../components/NewOrleansRecommendationFlow";
+import ExpandedChooserEntry from "./ExpandedChooserEntry";
 
 export const metadata = {
   title: "Help Me Choose | New Orleans Tours",
-  description: "Answer a few simple questions and we'll point you toward the best New Orleans experience for your interests.",
+  description: "Choose from city tours, swamps, river cruises, plantations, cocktails, ghosts and full-day combinations—or answer a few simple questions for a recommendation.",
 };
 
 export default function HelpMeChoosePage() {
-  return <NewOrleansRecommendationFlow />;
+  return (
+    <>
+      <ExpandedChooserEntry />
+      <div id="guided-planner" className="scroll-mt-20">
+        <NewOrleansRecommendationFlow />
+      </div>
+    </>
+  );
 }
