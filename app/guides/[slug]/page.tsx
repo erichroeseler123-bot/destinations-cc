@@ -37,17 +37,49 @@ export default async function PreSiteGuidePage({ params }: Props) {
   const guide = getPreSiteGuide(slug);
   if (!guide) notFound();
 
+  const url = `https://www.destinationcommandcenter.com/guides/${guide.slug}`;
+  const relatedGuides = PRE_SITE_GUIDES.filter(
+    (candidate) => candidate.category === guide.category && candidate.slug !== guide.slug,
+  ).slice(0, 3);
+
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: guide.title,
-    description: guide.description,
-    mainEntityOfPage: `https://www.destinationcommandcenter.com/guides/${guide.slug}`,
-    publisher: {
-      "@type": "Organization",
-      name: "Destination Command Center",
-      url: "https://www.destinationcommandcenter.com",
-    },
+    "@graph": [
+      {
+        "@type": "Article",
+        "@id": `${url}#article`,
+        headline: guide.title,
+        description: guide.description,
+        mainEntityOfPage: { "@id": url },
+        publisher: { "@id": "https://www.destinationcommandcenter.com/#organization" },
+        isPartOf: { "@id": "https://www.destinationcommandcenter.com/#website" },
+        about: guide.matters.map((name) => ({ "@type": "Thing", name })),
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Destination Command Center",
+            item: "https://www.destinationcommandcenter.com/",
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Decision Guides",
+            item: "https://www.destinationcommandcenter.com/guides",
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: guide.title,
+            item: url,
+          },
+        ],
+      },
+    ],
   };
 
   return (
@@ -119,12 +151,33 @@ export default async function PreSiteGuidePage({ params }: Props) {
           </ol>
         </section>
 
+        {relatedGuides.length > 0 && (
+          <section className="mt-14 border-t border-slate-800 pt-10">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">Stay in the research layer</p>
+            <h2 className="mt-3 text-2xl font-black text-white">Related decisions before you book.</h2>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {relatedGuides.map((related) => (
+                <Link
+                  key={related.slug}
+                  href={`/guides/${related.slug}`}
+                  className="rounded-2xl border border-slate-800 bg-[#0d131d] p-5 transition hover:border-cyan-700"
+                >
+                  <span className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">{related.eyebrow}</span>
+                  <h3 className="mt-2 text-base font-black leading-6 text-white">{related.title}</h3>
+                  <span className="mt-4 inline-block text-sm font-bold text-cyan-200">Read decision guide →</span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className="mt-14 rounded-3xl border border-emerald-900/70 bg-[#0d1815] p-7 sm:p-9">
           <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300">Ready to move from research to action?</p>
           <h2 className="mt-3 text-3xl font-black tracking-tight text-white">{guide.nextStep.label}</h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">{guide.nextStep.body}</p>
           <a
             href={guide.nextStep.href}
+            rel="noopener"
             className="mt-7 inline-flex rounded-xl bg-white px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-slate-200"
           >
             Continue to the specialist site ↗
