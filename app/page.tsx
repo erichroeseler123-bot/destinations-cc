@@ -92,6 +92,12 @@ export default function HomePage() {
           <span className="rounded-full border border-slate-700 px-3 py-2">Transportation decisions</span>
           <span className="rounded-full border border-slate-700 px-3 py-2">Weather & backup plans</span>
         </div>
+        <Link
+          href="/guides"
+          className="mt-7 inline-flex w-fit rounded-xl border border-cyan-800 bg-cyan-950/30 px-5 py-3 text-sm font-black text-cyan-100 transition hover:border-cyan-500 hover:bg-cyan-950/60"
+        >
+          Browse the decision-guide library →
+        </Link>
       </section>
 
       <section className="border-y border-slate-800 bg-[#0d131d]">

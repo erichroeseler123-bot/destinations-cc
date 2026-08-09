@@ -1,4 +1,5 @@
 import { INDEXABLE_SURFACE_PATHS } from "@/src/data/indexable-surface";
+import { PRE_SITE_GUIDES } from "@/src/data/pre-site-guides";
 import { headers } from "next/headers";
 import { SITE_IDENTITY } from "@/src/data/site-identity";
 import { SOMERSET_PAGE_PATHS } from "@/lib/dcc/corridors/somersetPages";
@@ -79,7 +80,8 @@ export async function GET() {
     return new Response(buildDccSitemapXml(buildWtonotSitemapPaths(), WTONOT_ORIGIN, false), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
   }
   const origin = isSomersetHost ? `https://${host}` : SITE_IDENTITY.siteUrl;
-  const dccPaths = [...new Set([...INDEXABLE_SURFACE_PATHS, ...SOMERSET_PAGE_PATHS])];
+  const preSiteGuidePaths = ["/guides", ...PRE_SITE_GUIDES.map((guide) => `/guides/${guide.slug}`)];
+  const dccPaths = [...new Set([...INDEXABLE_SURFACE_PATHS, ...SOMERSET_PAGE_PATHS, ...preSiteGuidePaths])];
   const body = isSomersetHost ? buildDccSitemapXml(SOMERSET_PAGE_PATHS, origin) : buildDccSitemapXml(dccPaths);
   return new Response(body, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
 }
