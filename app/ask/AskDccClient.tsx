@@ -44,6 +44,19 @@ export default function AskDccClient() {
     return sessionId.current;
   }
 
+  function attributedHandoffHref(href: string) {
+    try {
+      const url = new URL(href);
+      url.searchParams.set("dcc_handoff_id", getSessionId());
+      url.searchParams.set("decision_corridor", "ask-dcc");
+      url.searchParams.set("decision_action", "ask_dcc_handoff");
+      url.searchParams.set("source_url", window.location.href);
+      return url.toString();
+    } catch {
+      return href;
+    }
+  }
+
   async function ask(raw: string) {
     const question = raw.trim();
     if (!question || loading) return;
@@ -64,11 +77,11 @@ export default function AskDccClient() {
     } finally { setLoading(false); }
   }
 
-  function recordHandoffClick(handoff: NonNullable<Result["handoff"]>, sources: Result["sources"]) {
+  function recordHandoffClick(handoff: NonNullable<Result["handoff"]>, sources: Result["sources"], destinationHref: string) {
     const payload = JSON.stringify({
       sessionId: getSessionId(),
       siteName: handoff.siteName,
-      href: handoff.href,
+      href: destinationHref,
       sourceSlugs: sources.map((source) => source.slug),
     });
     if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
@@ -89,6 +102,8 @@ export default function AskDccClient() {
   }, [initial]);
 
   function submit(event: FormEvent) { event.preventDefault(); void ask(input); }
+
+  const handoffHref = result?.handoff ? attributedHandoffHref(result.handoff.href) : null;
 
   return (
     <div className="mx-auto w-full max-w-5xl px-5 pb-20 sm:px-8">
@@ -128,7 +143,7 @@ export default function AskDccClient() {
           </section>
           <section className="rounded-3xl border border-amber-900/40 bg-amber-950/10 p-6">
             <p className="text-xs font-black uppercase tracking-wider text-amber-300">Next best action</p>
-            {result.handoff ? <><h2 className="mt-3 text-2xl font-black text-white">{result.handoff.siteName}</h2><p className="mt-3 text-sm leading-6 text-slate-300">{result.handoff.reason}</p><a href={result.handoff.href} onClick={() => recordHandoffClick(result.handoff!, result.sources)} className="mt-5 inline-flex rounded-xl bg-amber-300 px-5 py-3 text-sm font-black text-[#17110a]">Continue with the decision resolved ↗</a></> : <><h2 className="mt-3 text-xl font-black text-white">Stay in research mode.</h2><p className="mt-3 text-sm text-slate-400">DCC has not justified a commercial handoff yet. Ask a follow-up instead.</p></>}
+            {result.handoff && handoffHref ? <><h2 className="mt-3 text-2xl font-black text-white">{result.handoff.siteName}</h2><p className="mt-3 text-sm leading-6 text-slate-300">{result.handoff.reason}</p><a href={handoffHref} onClick={() => recordHandoffClick(result.handoff!, result.sources, handoffHref)} className="mt-5 inline-flex rounded-xl bg-amber-300 px-5 py-3 text-sm font-black text-[#17110a]">Continue with the decision resolved ↗</a></> : <><h2 className="mt-3 text-xl font-black text-white">Stay in research mode.</h2><p className="mt-3 text-sm text-slate-400">DCC has not justified a commercial handoff yet. Ask a follow-up instead.</p></>}
           </section>
         </div>
       )}
