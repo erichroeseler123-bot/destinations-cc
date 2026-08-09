@@ -59,6 +59,14 @@ const swampGuideSlugs = new Set([
   "is-a-new-orleans-swamp-tour-worth-it",
 ]);
 
+const shuttleyaGuideSlugs = new Set([
+  "denver-to-idaho-springs-without-driving",
+  "is-mighty-argo-worth-a-half-day-from-denver",
+  "drive-vs-shuttle-denver-to-idaho-springs",
+  "how-much-time-for-idaho-springs-day-trip-from-denver",
+  "what-if-i70-closes-on-denver-day-trip",
+]);
+
 const preSiteHubNodes = [
   {
     id: "dcc:pre-site:french-quarter-orientation",
@@ -77,6 +85,15 @@ const preSiteHubNodes = [
     category: "new-orleans",
     label: "New Orleans Swamp Tour Decision Center",
     purpose: "Resolve worth-it, ride-style, family-fit, timing, boat-size, and transportation questions before the swamp storefront.",
+  },
+  {
+    id: "dcc:pre-site:shuttleya",
+    url: "https://www.destinationcommandcenter.com/shuttleya",
+    type: "pre_site_decision_center",
+    specialist: "shuttleya",
+    category: "colorado",
+    label: "Denver to Idaho Springs Shuttle Decision Center",
+    purpose: "Resolve trip-fit, drive-versus-shuttle, timing, return-plan, and I-70 questions before the direct ShuttleYa service page.",
   },
 ];
 
@@ -133,10 +150,30 @@ const preSiteHubEdges = [
     to: "swamp",
     relation: "resolved_research_handoff",
   },
+  {
+    from: "dcc:category:colorado",
+    to: "dcc:pre-site:shuttleya",
+    relation: "specialist_research_lane",
+  },
+  {
+    from: "dcc:category:transportation",
+    to: "dcc:pre-site:shuttleya",
+    relation: "specialist_research_lane",
+  },
+  ...PUBLISHED_DECISION_GUIDES.filter((guide) => shuttleyaGuideSlugs.has(guide.slug)).map((guide) => ({
+    from: "dcc:pre-site:shuttleya",
+    to: `dcc:guide:${guide.slug}`,
+    relation: "contains_specialist_decision",
+  })),
+  {
+    from: "dcc:pre-site:shuttleya",
+    to: "shuttleya",
+    relation: "resolved_research_handoff",
+  },
 ];
 
 export const NETWORK_GRAPH = {
-  version: "2026-08-09-v5",
+  version: "2026-08-09-v6",
   principle: "UNDERSTAND -> CHOOSE -> BUY_OR_RESERVE -> PLAN",
   hub: "dcc",
   topology: {

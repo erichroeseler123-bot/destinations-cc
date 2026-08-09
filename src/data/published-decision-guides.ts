@@ -3,6 +3,7 @@ import { PRE_SITE_GUIDES_WAVE2 } from "@/src/data/pre-site-guides-wave2";
 import { PRE_SITE_GUIDES_JUNEAU } from "@/src/data/pre-site-guides-juneau";
 import { PRE_SITE_GUIDES_FRENCH_QUARTER } from "@/src/data/pre-site-guides-french-quarter";
 import { PRE_SITE_GUIDES_SWAMP } from "@/src/data/pre-site-guides-swamp";
+import { PRE_SITE_GUIDES_SHUTTLEYA } from "@/src/data/pre-site-guides-shuttleya";
 
 export const PUBLISHED_DECISION_GUIDES = [
   ...PRE_SITE_GUIDES,
@@ -10,6 +11,7 @@ export const PUBLISHED_DECISION_GUIDES = [
   ...PRE_SITE_GUIDES_JUNEAU,
   ...PRE_SITE_GUIDES_FRENCH_QUARTER,
   ...PRE_SITE_GUIDES_SWAMP,
+  ...PRE_SITE_GUIDES_SHUTTLEYA,
 ];
 
 export function getPublishedDecisionGuide(slug: string) {

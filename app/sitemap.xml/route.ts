@@ -99,6 +99,7 @@ export async function GET() {
   const preSiteGuidePaths = [
     "/guides",
     "/vibe-around",
+    "/shuttleya",
     "/juneau-flightseeing",
     "/french-quarter-orientation",
     "/new-orleans-swamp-tours",
