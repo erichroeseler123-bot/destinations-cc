@@ -1,4 +1,4 @@
-import { PRE_SITE_GUIDES } from "@/src/data/pre-site-guides";
+import { PUBLISHED_DECISION_GUIDES } from "@/src/data/published-decision-guides";
 import { DECISION_CATEGORIES, relatedDecisionGuides } from "@/src/data/decision-taxonomy";
 
 export const SUITE_SITES = [
@@ -32,7 +32,7 @@ const categoryNodes = DECISION_CATEGORIES.map((category) => ({
   scope: category.scope,
 }));
 
-const guideNodes = PRE_SITE_GUIDES.map((guide) => ({
+const guideNodes = PUBLISHED_DECISION_GUIDES.map((guide) => ({
   id: `dcc:guide:${guide.slug}`,
   url: `https://www.destinationcommandcenter.com/guides/${guide.slug}`,
   type: "decision_guide",
@@ -41,13 +41,13 @@ const guideNodes = PRE_SITE_GUIDES.map((guide) => ({
   description: guide.description,
 }));
 
-const hierarchyEdges = PRE_SITE_GUIDES.map((guide) => ({
+const hierarchyEdges = PUBLISHED_DECISION_GUIDES.map((guide) => ({
   from: `dcc:category:${guide.category}`,
   to: `dcc:guide:${guide.slug}`,
   relation: "contains_decision",
 }));
 
-const lateralEdges = PRE_SITE_GUIDES.flatMap((guide) =>
+const lateralEdges = PUBLISHED_DECISION_GUIDES.flatMap((guide) =>
   relatedDecisionGuides(guide.slug, 4).map((related) => ({
     from: `dcc:guide:${guide.slug}`,
     to: `dcc:guide:${related.slug}`,
@@ -64,7 +64,7 @@ const categoryBridgeEdges = DECISION_CATEGORIES.flatMap((category) =>
 );
 
 export const NETWORK_GRAPH = {
-  version: "2026-08-09-v2",
+  version: "2026-08-09-v3",
   principle: "UNDERSTAND -> CHOOSE -> BUY_OR_RESERVE -> PLAN",
   hub: "dcc",
   topology: {
@@ -77,7 +77,7 @@ export const NETWORK_GRAPH = {
   hierarchyEdges,
   categoryBridgeEdges,
   lateralEdges,
-  guideEdges: PRE_SITE_GUIDES.map((guide) => ({
+  guideEdges: PUBLISHED_DECISION_GUIDES.map((guide) => ({
     from: `dcc:guide:${guide.slug}`,
     to: specialistIdForHref(guide.nextStep.href),
     href: guide.nextStep.href,

@@ -1,5 +1,5 @@
 import { INDEXABLE_SURFACE_PATHS } from "@/src/data/indexable-surface";
-import { PRE_SITE_GUIDES } from "@/src/data/pre-site-guides";
+import { PUBLISHED_DECISION_GUIDES } from "@/src/data/published-decision-guides";
 import { DECISION_CATEGORIES } from "@/src/data/decision-taxonomy";
 import { headers } from "next/headers";
 import { SITE_IDENTITY } from "@/src/data/site-identity";
@@ -84,7 +84,7 @@ export async function GET() {
   const preSiteGuidePaths = [
     "/guides",
     ...DECISION_CATEGORIES.map((category) => `/guides/category/${category.slug}`),
-    ...PRE_SITE_GUIDES.map((guide) => `/guides/${guide.slug}`),
+    ...PUBLISHED_DECISION_GUIDES.map((guide) => `/guides/${guide.slug}`),
   ];
   const dccPaths = [...new Set([...INDEXABLE_SURFACE_PATHS, ...SOMERSET_PAGE_PATHS, ...preSiteGuidePaths])];
   const body = isSomersetHost ? buildDccSitemapXml(SOMERSET_PAGE_PATHS, origin) : buildDccSitemapXml(dccPaths);

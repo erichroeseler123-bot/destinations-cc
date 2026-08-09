@@ -1,6 +1,6 @@
-import { PRE_SITE_GUIDES } from "@/src/data/pre-site-guides";
+import { PUBLISHED_DECISION_GUIDES } from "@/src/data/published-decision-guides";
 
-export type DecisionCategory = (typeof PRE_SITE_GUIDES)[number]["category"];
+export type DecisionCategory = (typeof PUBLISHED_DECISION_GUIDES)[number]["category"];
 
 export type DecisionCategoryDefinition = {
   slug: DecisionCategory;
@@ -67,18 +67,18 @@ export function getDecisionCategory(slug: string) {
 }
 
 export function guidesForCategory(category: DecisionCategory) {
-  return PRE_SITE_GUIDES.filter((guide) => guide.category === category);
+  return PUBLISHED_DECISION_GUIDES.filter((guide) => guide.category === category);
 }
 
 export function relatedDecisionGuides(slug: string, limit = 4) {
-  const guide = PRE_SITE_GUIDES.find((item) => item.slug === slug);
+  const guide = PUBLISHED_DECISION_GUIDES.find((item) => item.slug === slug);
   if (!guide) return [];
 
   const category = getDecisionCategory(guide.category);
-  const sameCategory = PRE_SITE_GUIDES.filter(
+  const sameCategory = PUBLISHED_DECISION_GUIDES.filter(
     (candidate) => candidate.slug !== slug && candidate.category === guide.category,
   );
-  const bridges = PRE_SITE_GUIDES.filter(
+  const bridges = PUBLISHED_DECISION_GUIDES.filter(
     (candidate) =>
       candidate.slug !== slug &&
       candidate.category !== guide.category &&
