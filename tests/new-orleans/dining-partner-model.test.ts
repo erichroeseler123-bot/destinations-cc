@@ -10,6 +10,10 @@ import {
   buildDiningReferralUrl,
   type DiningPartner,
 } from "../../app/new-orleans/data/diningPartners";
+import {
+  DINING_STAPLES,
+  DINING_STAPLES_DISCLOSURE,
+} from "../../app/new-orleans/data/diningStaples";
 
 test("New Orleans dining partner referral MVP", async (t) => {
   await t.test("uses the $5 confirmed-seated-guest pilot fee", () => {
@@ -47,11 +51,36 @@ test("New Orleans dining partner referral MVP", async (t) => {
     assert.strictEqual(url.searchParams.get("wtono_src"), "food-page");
   });
 
-  await t.test("food page exposes concierge help and the partner program without claiming partners exist", () => {
+  await t.test("publishes a substantive independent staple layer", () => {
+    assert.strictEqual(DINING_STAPLES.length, 9);
+    const names = DINING_STAPLES.map((restaurant) => restaurant.name);
+    for (const required of [
+      "Café du Monde — French Market",
+      "Central Grocery & Deli",
+      "Antoine's Restaurant",
+      "Brennan's",
+      "Galatoire's",
+      "Commander's Palace",
+      "Acme Oyster House — French Quarter",
+      "Dooky Chase's Restaurant",
+      "Parkway Bakery & Tavern",
+    ]) {
+      assert.ok(names.includes(required), `Missing staple: ${required}`);
+    }
+    assert.ok(DINING_STAPLES.every((restaurant) => restaurant.editorialLabel === "New Orleans Staple"));
+    assert.ok(DINING_STAPLES.every((restaurant) => restaurant.websiteUrl.startsWith("https://")));
+    assert.match(DINING_STAPLES_DISCLOSURE, /not shown here because it paid us/i);
+    assert.match(DINING_STAPLES_DISCLOSURE, /do not receive a referral fee/i);
+  });
+
+  await t.test("food page clearly separates free staples from paid partners", () => {
     const foodPage = fs.readFileSync(path.join(process.cwd(), "app/new-orleans/food/page.tsx"), "utf8");
     assert.ok(foodPage.includes("Where should we eat?"));
     assert.ok(foodPage.includes("504-484-9687"));
-    assert.ok(foodPage.includes("Partner dining recommendations are being added carefully."));
+    assert.ok(foodPage.includes("New Orleans staples"));
+    assert.ok(foodPage.includes("Not sponsored"));
+    assert.ok(foodPage.includes("No paid Dining Partners yet."));
+    assert.ok(foodPage.includes("DINING_STAPLES_DISCLOSURE"));
     assert.ok(foodPage.includes("/new-orleans/restaurant-partners"));
   });
 
