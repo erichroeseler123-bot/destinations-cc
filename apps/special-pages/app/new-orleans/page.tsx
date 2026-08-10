@@ -8,16 +8,17 @@ export const metadata: Metadata = {
 };
 
 const WNO = "https://welcometoneworleanstours.com";
+const withSource = (path: string) => `${WNO}${path}?src=dcc-new-orleans`;
 
 const DECISION_PATHS = [
-  ["Need something now", `${WNO}/things-to-do-in-new-orleans-today`, "Things to do in New Orleans today"],
-  ["Tonight", `${WNO}/new-orleans-tours-tonight`, "Tours and experiences for tonight"],
-  ["Short visit", `${WNO}/4-hours-in-new-orleans`, "What fits if you only have about four hours"],
-  ["First visit", `${WNO}/first-time-new-orleans-tours`, "Good starting points for first-time visitors"],
-  ["Families", `${WNO}/new-orleans-tours-for-families`, "Tour formats to compare for families"],
-  ["Transportation", `${WNO}/new-orleans-tours-with-transportation`, "Tours where transportation is part of the decision"],
-  ["Before a cruise", `${WNO}/things-to-do-before-a-cruise-new-orleans`, "Ideas that fit before embarkation"],
-  ["After a cruise", `${WNO}/things-to-do-after-a-cruise-new-orleans`, "Ideas that fit after disembarkation"],
+  ["Need something now", withSource("/things-to-do-in-new-orleans-today"), "Things to do in New Orleans today"],
+  ["Tonight", withSource("/new-orleans-tours-tonight"), "Tours and experiences for tonight"],
+  ["Short visit", withSource("/guides/4-hours-in-new-orleans"), "What fits if you only have about four hours"],
+  ["First visit", withSource("/guides/first-time-new-orleans-tours"), "Good starting points for first-time visitors"],
+  ["Families", withSource("/guides/new-orleans-tours-for-families"), "Tour formats to compare for families"],
+  ["Transportation", withSource("/guides/new-orleans-tours-with-transportation"), "Tours where transportation is part of the decision"],
+  ["Before a cruise", withSource("/guides/things-to-do-before-a-cruise-new-orleans"), "Ideas that fit before embarkation"],
+  ["After a cruise", withSource("/guides/things-to-do-after-a-cruise-new-orleans"), "Ideas that fit after disembarkation"],
 ] as const;
 
 export default function NewOrleansPage() {
@@ -40,7 +41,7 @@ export default function NewOrleansPage() {
         <div className="card" style={{ marginTop: 8 }}>
           <strong>Want the full decision map?</strong>
           <p>Welcome to New Orleans Tours groups the major buying decisions in one place instead of forcing you through a giant attraction list.</p>
-          <a href={`${WNO}/high-intent-tours`}>Open the New Orleans tour decision hub ↗</a>
+          <a href={withSource("/guides/plan-new-orleans-tours")}>Open the New Orleans tour decision hub ↗</a>
         </div>
 
         <div className="grid grid-2" style={{ marginTop: 8 }}>
