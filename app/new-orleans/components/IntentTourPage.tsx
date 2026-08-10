@@ -14,6 +14,26 @@ type IntentTourPageProps = {
   relatedLinks?: IntentLink[];
 };
 
+const GOVERNED_INTENT_PATHS = new Set([
+  "/high-intent-tours",
+  "/things-to-do-in-new-orleans-today",
+  "/new-orleans-tours-tonight",
+  "/4-hours-in-new-orleans",
+  "/first-time-new-orleans-tours",
+  "/new-orleans-tours-for-families",
+  "/best-swamp-tour-with-transportation",
+  "/new-orleans-tours-with-transportation",
+  "/new-orleans-plantation-and-swamp-tour",
+  "/things-to-do-before-a-cruise-new-orleans",
+  "/things-to-do-after-a-cruise-new-orleans",
+]);
+
+function publicIntentHref(href: string) {
+  if (!GOVERNED_INTENT_PATHS.has(href)) return href;
+  if (href === "/high-intent-tours") return "/guides/plan-new-orleans-tours";
+  return `/guides${href}`;
+}
+
 export default function IntentTourPage({
   eyebrow,
   title,
@@ -72,7 +92,7 @@ export default function IntentTourPage({
           <div className="border-t border-[var(--nola-border)] pt-8">
             <h2 className="font-serif text-2xl">Keep narrowing it down</h2>
             <div className="mt-5 flex flex-wrap gap-3">
-              {relatedLinks.map((link) => <Link key={link.href} href={link.href} className="border border-[var(--nola-border)] px-4 py-2 text-sm hover:border-[var(--nola-gold)]">{link.label}</Link>)}
+              {relatedLinks.map((link) => <Link key={link.href} href={publicIntentHref(link.href)} className="border border-[var(--nola-border)] px-4 py-2 text-sm hover:border-[var(--nola-gold)]">{link.label}</Link>)}
             </div>
           </div>
         </section>

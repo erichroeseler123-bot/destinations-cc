@@ -69,9 +69,9 @@ export default function FrenchQuarterOrientationDecisionCenter() {
         <h2 className="mt-3 text-3xl font-black text-white">Turn “where am I?” into “what should we do?”</h2>
         <p className="mt-4 max-w-3xl leading-7 text-stone-300">Once the Quarter makes sense, the next useful decision is often what fits your remaining time, group, transportation needs, or cruise schedule.</p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <a href={`${WNO}/things-to-do-in-new-orleans-today`} className="rounded-xl border border-amber-300/40 px-5 py-3 text-sm font-black">Things to do today ↗</a>
-          <a href={`${WNO}/4-hours-in-new-orleans`} className="rounded-xl border border-white/15 px-5 py-3 text-sm font-black">Only have four hours? ↗</a>
-          <a href={`${WNO}/high-intent-tours`} className="rounded-xl border border-white/15 px-5 py-3 text-sm font-black">Plan tours by need ↗</a>
+          <a href={`${WNO}/things-to-do-in-new-orleans-today?src=dcc-fqo`} className="rounded-xl border border-amber-300/40 px-5 py-3 text-sm font-black">Things to do today ↗</a>
+          <a href={`${WNO}/guides/4-hours-in-new-orleans?src=dcc-fqo`} className="rounded-xl border border-white/15 px-5 py-3 text-sm font-black">Only have four hours? ↗</a>
+          <a href={`${WNO}/guides/plan-new-orleans-tours?src=dcc-fqo`} className="rounded-xl border border-white/15 px-5 py-3 text-sm font-black">Plan tours by need ↗</a>
         </div>
       </section>
     </main>

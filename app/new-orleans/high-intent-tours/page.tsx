@@ -6,16 +6,16 @@ export const metadata = {
 };
 
 const links = [
-  ["/things-to-do-in-new-orleans-today", "Things to do today"],
-  ["/new-orleans-tours-tonight", "Tours tonight"],
-  ["/4-hours-in-new-orleans", "Only have about four hours"],
-  ["/first-time-new-orleans-tours", "First-time visitors"],
-  ["/new-orleans-tours-for-families", "Tours for families"],
-  ["/best-swamp-tour-with-transportation", "Swamp tours with transportation"],
-  ["/new-orleans-tours-with-transportation", "Tours where transportation matters"],
-  ["/new-orleans-plantation-and-swamp-tour", "Plantation + swamp combinations"],
-  ["/things-to-do-before-a-cruise-new-orleans", "Before a cruise"],
-  ["/things-to-do-after-a-cruise-new-orleans", "After a cruise"],
+  ["/guides/things-to-do-in-new-orleans-today", "Things to do today"],
+  ["/guides/new-orleans-tours-tonight", "Tours tonight"],
+  ["/guides/4-hours-in-new-orleans", "Only have about four hours"],
+  ["/guides/first-time-new-orleans-tours", "First-time visitors"],
+  ["/guides/new-orleans-tours-for-families", "Tours for families"],
+  ["/guides/best-swamp-tour-with-transportation", "Swamp tours with transportation"],
+  ["/guides/new-orleans-tours-with-transportation", "Tours where transportation matters"],
+  ["/guides/new-orleans-plantation-and-swamp-tour", "Plantation + swamp combinations"],
+  ["/guides/things-to-do-before-a-cruise-new-orleans", "Before a cruise"],
+  ["/guides/things-to-do-after-a-cruise-new-orleans", "After a cruise"],
 ] as const;
 
 export default function Page() {

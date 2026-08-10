@@ -4,6 +4,7 @@ import React from "react";
 import FareHarborBookingButton from "../../components/FareHarborBookingButton";
 import { trackEvent } from "@/lib/analytics";
 import type { FareHarborSource } from "../../lib/fareHarborAttribution";
+import { getWnoFunnelContext, sendWnoTelemetry } from "../../components/WnoFunnelTracker";
 
 interface Props {
   product: any;
@@ -44,6 +45,7 @@ export default function TourDetailBookingAction({ product, refCode, fallbackHref
       fallbackHref={fallbackHref}
       className={`${className} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1a1a]`}
       onBookingClick={() => {
+        const context = getWnoFunnelContext();
         trackEvent("tour_detail_booking_selected", {
           surface: "new_orleans_tour_detail",
           product_id: product.id,
@@ -51,6 +53,8 @@ export default function TourDetailBookingAction({ product, refCode, fallbackHref
           variant_label: variantLabel,
           item_id: itemId || product.itemId,
           flow_id: finalFlow,
+          entry_source: context?.source,
+          entry_path: context?.landingPath,
         });
         trackEvent("fareharbor_checkout_opened", {
           surface: "new_orleans_tour_detail",
@@ -59,6 +63,18 @@ export default function TourDetailBookingAction({ product, refCode, fallbackHref
           flow_id: finalFlow,
           item_id: itemId || product.itemId,
           variant_label: variantLabel,
+          entry_source: context?.source,
+          entry_path: context?.landingPath,
+        });
+        sendWnoTelemetry({
+          eventName: "booking_opened",
+          sourcePage: context?.source,
+          targetPath: window.location.pathname,
+          productSlug: product.slug,
+          operatorId: product.companyShortname,
+          variantLabel,
+          itemId: String(itemId || product.itemId || ""),
+          flowId: String(finalFlow || ""),
         });
       }}
     >

@@ -26,17 +26,17 @@ const WTONOT_DECISION_GUIDES = [
 ] as const;
 
 const WTONOT_HIGH_INTENT_PATHS = [
-  "/high-intent-tours",
+  "/guides/plan-new-orleans-tours",
   "/things-to-do-in-new-orleans-today",
   "/new-orleans-tours-tonight",
-  "/4-hours-in-new-orleans",
-  "/first-time-new-orleans-tours",
-  "/new-orleans-tours-for-families",
-  "/best-swamp-tour-with-transportation",
-  "/new-orleans-tours-with-transportation",
-  "/new-orleans-plantation-and-swamp-tour",
-  "/things-to-do-before-a-cruise-new-orleans",
-  "/things-to-do-after-a-cruise-new-orleans",
+  "/guides/4-hours-in-new-orleans",
+  "/guides/first-time-new-orleans-tours",
+  "/guides/new-orleans-tours-for-families",
+  "/guides/best-swamp-tour-with-transportation",
+  "/guides/new-orleans-tours-with-transportation",
+  "/guides/new-orleans-plantation-and-swamp-tour",
+  "/guides/things-to-do-before-a-cruise-new-orleans",
+  "/guides/things-to-do-after-a-cruise-new-orleans",
 ] as const;
 
 const WTONOT_SUPERSEDED_SEO_PATHS = new Set(["/swamp-tours/airboat-vs-covered-boat", "/swamp-tours/small-vs-large-airboat", "/swamp-tours/pickup-vs-self-drive"]);

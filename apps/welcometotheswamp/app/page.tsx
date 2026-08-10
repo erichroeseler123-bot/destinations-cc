@@ -41,9 +41,9 @@ export default function HomePage() {
           <h2 className="mt-3 text-2xl font-black">Put the swamp tour into the rest of your day.</h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-300">If your real question is transportation, family fit, how much time you have, or what to do before or after a cruise, continue into the broader New Orleans tour-planning layer.</p>
           <div className="mt-5 flex flex-wrap gap-3">
-            <a className="rounded-xl border border-amber-300/40 px-4 py-3 text-sm font-bold" href="https://welcometoneworleanstours.com/best-swamp-tour-with-transportation">Swamp tours with transportation ↗</a>
-            <a className="rounded-xl border border-white/15 px-4 py-3 text-sm font-bold" href="https://welcometoneworleanstours.com/new-orleans-plantation-and-swamp-tour">Plantation + swamp combinations ↗</a>
-            <a className="rounded-xl border border-white/15 px-4 py-3 text-sm font-bold" href="https://welcometoneworleanstours.com/high-intent-tours">Plan the rest of New Orleans ↗</a>
+            <a className="rounded-xl border border-amber-300/40 px-4 py-3 text-sm font-bold" href="https://welcometoneworleanstours.com/guides/best-swamp-tour-with-transportation?src=welcome-to-the-swamp">Swamp tours with transportation ↗</a>
+            <a className="rounded-xl border border-white/15 px-4 py-3 text-sm font-bold" href="https://welcometoneworleanstours.com/guides/new-orleans-plantation-and-swamp-tour?src=welcome-to-the-swamp">Plantation + swamp combinations ↗</a>
+            <a className="rounded-xl border border-white/15 px-4 py-3 text-sm font-bold" href="https://welcometoneworleanstours.com/guides/plan-new-orleans-tours?src=welcome-to-the-swamp">Plan the rest of New Orleans ↗</a>
           </div>
         </div>
       </section>
