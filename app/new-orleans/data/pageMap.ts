@@ -1,9 +1,16 @@
 // Consolidates route validation logic
 import { SEO_PAGES } from './pages';
+import { COMMERCIAL_CATEGORY_PAGES } from './commercialCategoryPages';
 
 export function getSeoPageBySlug(slug: string) {
-  const matchingKey = Object.keys(SEO_PAGES).find(key => {
-    return SEO_PAGES[key].publicRoute === `/${slug}`;
+  const publicRoute = `/${slug}`;
+  const commercial = Object.values(COMMERCIAL_CATEGORY_PAGES).find(
+    (page) => page.publicRoute === publicRoute,
+  );
+  if (commercial) return commercial;
+
+  const matchingKey = Object.keys(SEO_PAGES).find((key) => {
+    return SEO_PAGES[key].publicRoute === publicRoute;
   });
   if (!matchingKey) return null;
   return SEO_PAGES[matchingKey];
