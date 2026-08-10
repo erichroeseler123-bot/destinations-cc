@@ -7,7 +7,7 @@ export const metadata = {
   title: "Things to Do in New Orleans Today | Tours & Last-Minute Ideas",
   description:
     "Already in New Orleans? Compare tours, river cruises, swamp trips, city sightseeing and evening experiences, then check current times and availability with the operator.",
-  alternates: { canonical: "/things-to-do-in-new-orleans-today" },
+  alternates: { canonical: "/guides/things-to-do-in-new-orleans-today" },
 };
 
 const sameDaySlugs = [
@@ -36,7 +36,7 @@ export default function ThingsToDoTodayPage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a href="#options" className="bg-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#171717]">See tour options</a>
-            <Link href="/new-orleans-tours-tonight" className="border border-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#fdfbf7]">Looking for tonight?</Link>
+            <Link href="/guides/new-orleans-tours-tonight" className="border border-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#fdfbf7]">Looking for tonight?</Link>
             <Link href="/help-me-choose" className="border border-white/20 px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#fdfbf7]">Help me choose</Link>
           </div>
         </div>
