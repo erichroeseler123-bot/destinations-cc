@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Playfair_Display, Pinyon_Script } from 'next/font/google';
 import type { Metadata } from "next";
 import JsonLd from "@/app/components/dcc/JsonLd";
@@ -62,7 +63,9 @@ export default function NewOrleansLayout({
       </main>
       <ContextualPlanningPaths />
       <FooterNav />
-      <WnoMobileConversionMount />
+      <Suspense fallback={null}>
+        <WnoMobileConversionMount />
+      </Suspense>
     </div>
   );
 }
