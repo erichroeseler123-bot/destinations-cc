@@ -3,13 +3,18 @@ import { notFound } from 'next/navigation';
 
 import { getSeoPageBySlug } from '../../data/pageMap';
 import { getIntentSeoPage } from '../../data/intentSeoPages';
+import { getAudienceIntentSeoPage } from '../../data/audienceIntentSeoPages';
 import SeoPageRenderer from '../../components/SeoPageRenderer';
 import IntentSeoLanding from '../../components/IntentSeoLanding';
 import { buildSeoMetadata } from '../../lib/buildSeoMetadata';
 
+function getGovernedIntentPage(slug: string) {
+  return getIntentSeoPage(slug) || getAudienceIntentSeoPage(slug);
+}
+
 export default async function GuidePage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
-  const intentPage = getIntentSeoPage(resolvedParams.slug);
+  const intentPage = getGovernedIntentPage(resolvedParams.slug);
   if (intentPage) return <IntentSeoLanding config={intentPage.config} />;
 
   const record = getSeoPageBySlug(`guides/${resolvedParams.slug}`);
@@ -21,7 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
   const p = await params;
   if (!p.slug) return notFound();
 
-  const intentPage = getIntentSeoPage(p.slug);
+  const intentPage = getGovernedIntentPage(p.slug);
   if (intentPage) {
     const canonical = `https://welcometoneworleanstours.com/guides/${intentPage.slug}`;
     return {
