@@ -36,28 +36,46 @@ export function HeaderNav() {
             <span className={visualStyles.marketBrandTours}>Tours</span>
           </Link>
           <nav className={visualStyles.marketDesktopNav}>
-            <Link href="/tours">Tours</Link><Link href="/guides/plan-new-orleans-tours">Plan by Need</Link><Link href="/guides/things-to-do-in-new-orleans-today">Today</Link><Link href="/guides/new-orleans-tours-tonight">Tonight</Link><Link href="/help-me-choose">Help Me Choose</Link><Link href="/guides/french-quarter-orientation">$5 Orientation</Link><Link href="/compare">Compare</Link><Link href="/french-quarter-welcome-stop">Concierge</Link>
+            <Link href="/tours">Tours</Link>
+            <Link href="/help-me-choose">Help Me Choose</Link>
+            <Link href="/guides/things-to-do-in-new-orleans-today">Today</Link>
+            <Link href="/guides/new-orleans-tours-tonight">Tonight</Link>
+            <Link href="/compare">Compare</Link>
+            <Link href="/french-quarter-welcome-stop">Concierge</Link>
           </nav>
-          <div className={visualStyles.marketPhoneWrap}><PhoneCta placement="WTONOT-HEADER-PHONE" isGroup className={visualStyles.marketPhone}><span className={visualStyles.marketPhoneLabel}>Questions? Call or text</span><span className={visualStyles.marketPhoneNumber}>504-484-9687</span></PhoneCta></div>
-          <button onClick={toggle} className={visualStyles.marketMenuButton} aria-label="Toggle menu" aria-expanded={isOpen}><div className="w-6 h-0.5 bg-[#d4af37]"></div><div className="w-6 h-0.5 bg-[#d4af37]"></div><div className="w-6 h-0.5 bg-[#d4af37]"></div></button>
+          <div className={visualStyles.marketPhoneWrap}>
+            <PhoneCta placement="WTONOT-HEADER-PHONE" isGroup className={visualStyles.marketPhone}>
+              <span className={visualStyles.marketPhoneLabel}>Call or text</span>
+              <span className={visualStyles.marketPhoneNumber}>504-484-9687</span>
+            </PhoneCta>
+          </div>
+          <button onClick={toggle} className={visualStyles.marketMenuButton} aria-label="Toggle menu" aria-expanded={isOpen}>
+            <div className="w-6 h-px bg-[#c7a96b]"></div>
+            <div className="w-6 h-px bg-[#c7a96b]"></div>
+            <div className="w-6 h-px bg-[#c7a96b]"></div>
+          </button>
         </div>
       </header>
-      {isOpen && <div className={`md:hidden ${styles.overlayDrawer}`} onClick={toggle}><div className={styles.drawerPanel} onClick={e => e.stopPropagation()}><div className="flex justify-between items-center mb-10"><span className="font-serif text-2xl font-bold text-[#d4af37]">Menu</span><button onClick={toggle} className="text-2xl text-[#d4af37]" aria-label="Close menu">&times;</button></div><nav className="flex flex-col gap-6 font-sans font-bold text-lg tracking-widest uppercase mb-10 text-[#fdfbf7]/80"><Link href="/tours" onClick={toggle}>Tours</Link><Link href="/guides/plan-new-orleans-tours" onClick={toggle}>Plan By Need</Link><Link href="/guides/things-to-do-in-new-orleans-today" onClick={toggle}>Things To Do Today</Link><Link href="/guides/new-orleans-tours-tonight" onClick={toggle}>Tours Tonight</Link><Link href="/help-me-choose" onClick={toggle}>Help Me Choose</Link><Link href="/guides/french-quarter-orientation" onClick={toggle}>$5 Orientation</Link><Link href="/compare" onClick={toggle}>Compare Tours</Link><Link href="/french-quarter-welcome-stop" onClick={toggle}>Concierge</Link></nav><div className="mt-auto pt-8 border-t border-white/10"><PhoneCta placement="WTONOT-HEADER-PHONE" isGroup className="flex flex-col gap-2"><span className="text-xs font-bold uppercase tracking-widest text-[#fdfbf7]/60">Questions or Groups?</span><span className="text-2xl font-bold text-[#d4af37]">504-484-9687</span></PhoneCta></div></div></div>}
+      {isOpen && <div className={`md:hidden ${styles.overlayDrawer}`} onClick={toggle}><div className={styles.drawerPanel} onClick={e => e.stopPropagation()}><div className="flex justify-between items-center mb-10"><span className="font-serif text-2xl font-medium text-[#c7a96b]">Menu</span><button onClick={toggle} className="text-2xl text-[#c7a96b]" aria-label="Close menu">&times;</button></div><nav className="flex flex-col gap-6 font-sans font-semibold text-base tracking-[0.12em] uppercase mb-10 text-[#fdfbf7]/80"><Link href="/tours" onClick={toggle}>Tours</Link><Link href="/help-me-choose" onClick={toggle}>Help Me Choose</Link><Link href="/guides/things-to-do-in-new-orleans-today" onClick={toggle}>Things To Do Today</Link><Link href="/guides/new-orleans-tours-tonight" onClick={toggle}>Tours Tonight</Link><Link href="/compare" onClick={toggle}>Compare Tours</Link><Link href="/french-quarter-welcome-stop" onClick={toggle}>Concierge</Link><Link href="/guides/french-quarter-orientation" onClick={toggle}>$5 Orientation</Link><Link href="/guides/plan-new-orleans-tours" onClick={toggle}>Plan By Need</Link></nav><div className="mt-auto pt-8 border-t border-white/10"><PhoneCta placement="WTONOT-HEADER-PHONE" isGroup className="flex flex-col gap-2"><span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#fdfbf7]/50">Questions or groups</span><span className="text-2xl font-medium text-[#c7a96b]">504-484-9687</span></PhoneCta></div></div></div>}
     </>
   );
 }
 
 export function FooterNav() {
   return (
-    <footer className="bg-[#110e14] text-[#fdfbf7] border-t-4 border-[#d4af37]">
-      <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
-        <div><h4 className="font-serif text-2xl mb-6 text-[#d4af37]">Explore</h4><nav className="flex flex-col gap-4 font-sans font-light text-[#fdfbf7]/80"><Link href="/tours">All Tours</Link><Link href="/guides/plan-new-orleans-tours">Plan Tours By Need</Link><Link href="/guides/things-to-do-in-new-orleans-today">Things To Do Today</Link><Link href="/guides/new-orleans-tours-tonight">Tours Tonight</Link><Link href="/swamp-tours">Swamp Tours</Link><Link href="/plantation-tours">Plantations</Link><Link href="/compare">Compare Tours</Link></nav></div>
-        <div><h4 className="font-serif text-2xl mb-6 text-[#d4af37]">Concierge Desk</h4><nav className="flex flex-col gap-4 font-sans font-light text-[#fdfbf7]/80"><Link href="/guides/french-quarter-orientation">$5 French Quarter Orientation</Link><Link href="/french-quarter-welcome-stop">Planning Help</Link><Link href="/guides/visitor-rewards">Visitor Rewards</Link><Link href="/guides/first-time-new-orleans-tours">First-Time Visitors</Link><Link href="/guides/new-orleans-tours-for-families">Families</Link></nav></div>
-        <div><h4 className="font-serif text-2xl mb-6 text-[#d4af37]">Planning Guides</h4><nav className="flex flex-col gap-4 font-sans font-light text-[#fdfbf7]/80"><Link href="/guides/best-swamp-tour-with-transportation">Swamp Tours With Transportation</Link><Link href="/guides/4-hours-in-new-orleans">Only Have Four Hours?</Link><Link href="/guides/things-to-do-before-a-cruise-new-orleans">Before a Cruise</Link><Link href="/guides/things-to-do-after-a-cruise-new-orleans">After a Cruise</Link><Link href="/guides/how-far-are-swamp-tours-from-new-orleans">Distance to Swamps</Link></nav></div>
-        <div><h4 className="font-serif text-2xl mb-6 text-[#d4af37]">About</h4><div className="flex flex-col gap-4 font-sans font-light text-[#fdfbf7]/80 mb-8"><div>Welcome to New Orleans Tours is an independent tour comparison and visitor-help site.</div><div>The New Orleans Concierge Desk is our visitor-help service. Participating operators control their own pricing, availability, pickup details, and cancellation policies.</div></div><div className="pt-8 border-t border-white/10"><PhoneCta placement="WTONOT-FOOTER-PHONE" isGroup className="flex flex-col gap-2 group"><span className="text-[10px] font-bold uppercase tracking-widest text-[#d4af37]">Questions & Group Help</span><span className="text-xl font-bold text-[#fdfbf7]">504-484-9687</span></PhoneCta></div></div>
+    <footer className="bg-[#151116] text-[#f6f1e8] border-t border-[#c7a96b]/35">
+      <div className="max-w-7xl mx-auto px-6 py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.1fr_1fr_1fr_1.2fr] gap-14 lg:gap-10">
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.2em] text-[#c7a96b] mb-5">Welcome to New Orleans Tours</div>
+          <h4 className="font-serif text-3xl font-medium leading-tight mb-5">A better way to choose your New Orleans experience.</h4>
+          <p className="font-sans font-light leading-relaxed text-[#f6f1e8]/60 max-w-sm">Independent tour comparison and visitor help, with current booking options from participating local operators.</p>
+        </div>
+        <div><h4 className="font-serif text-xl mb-6 text-[#e1c98f] font-medium">Explore</h4><nav className="flex flex-col gap-3.5 font-sans font-light text-sm text-[#f6f1e8]/70"><Link href="/tours">All Tours</Link><Link href="/guides/things-to-do-in-new-orleans-today">Things To Do Today</Link><Link href="/guides/new-orleans-tours-tonight">Tours Tonight</Link><Link href="/swamp-tours">Swamp Tours</Link><Link href="/plantation-tours">Plantations</Link><Link href="/compare">Compare Tours</Link></nav></div>
+        <div><h4 className="font-serif text-xl mb-6 text-[#e1c98f] font-medium">Concierge</h4><nav className="flex flex-col gap-3.5 font-sans font-light text-sm text-[#f6f1e8]/70"><Link href="/french-quarter-welcome-stop">Planning Help</Link><Link href="/guides/french-quarter-orientation">$5 French Quarter Orientation</Link><Link href="/guides/first-time-new-orleans-tours">First-Time Visitors</Link><Link href="/guides/new-orleans-tours-for-families">Families</Link><Link href="/guides/plan-new-orleans-tours">Plan By Need</Link></nav></div>
+        <div><h4 className="font-serif text-xl mb-6 text-[#e1c98f] font-medium">Talk to a person</h4><p className="font-sans font-light text-sm leading-relaxed text-[#f6f1e8]/60 mb-7">Need help comparing timing, pickup options, or what works for your group? Call or text the Concierge Desk.</p><PhoneCta placement="WTONOT-FOOTER-PHONE" isGroup className="inline-flex flex-col gap-1.5 group"><span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#c7a96b]">Call or text</span><span className="text-2xl font-medium text-[#f6f1e8]">504-484-9687</span></PhoneCta></div>
       </div>
       <FrenchQuarterBoothBonus variant="oneline" />
-      <div className="bg-black/50 px-6 py-6 text-center text-xs font-sans font-light text-white/50 mt-4"><nav className="mx-auto mb-4 flex max-w-5xl flex-wrap justify-center gap-x-4 gap-y-2" aria-label="Support and policy links">{supportLinks.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}</nav><div>&copy; {new Date().getFullYear()} Welcome to New Orleans Tours. All rights reserved.</div></div>
+      <div className="border-t border-white/8 px-6 py-7 text-center text-[11px] font-sans font-light text-white/40"><nav className="mx-auto mb-4 flex max-w-5xl flex-wrap justify-center gap-x-5 gap-y-2" aria-label="Support and policy links">{supportLinks.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}</nav><div>&copy; {new Date().getFullYear()} Welcome to New Orleans Tours. All rights reserved.</div></div>
     </footer>
   );
 }
