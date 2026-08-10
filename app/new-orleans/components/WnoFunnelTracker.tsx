@@ -98,6 +98,9 @@ export default function WnoFunnelTracker() {
       const anchor = target.closest<HTMLAnchorElement>("a[href]");
       if (!anchor) return;
 
+      // Managed CTA components emit the canonical event themselves with richer context.
+      if (anchor.dataset.wnoManagedClick) return;
+
       const href = anchor.getAttribute("href") || "";
       const eventName = classifyClick(href);
       if (!eventName) return;
