@@ -22,10 +22,10 @@ export default function NewOrleansHomePage() {
   const categoryLinks = [
     { href: "/city-tours", label: "Explore the City", text: "History, neighborhoods, architecture, and local landmarks.", image: "/images/travel-markets/new-orleans/french-quarter-street.jpg" },
     { href: "/swamp-tours", label: "Swamps & Airboats", text: "Covered boats and airboats beyond the city.", image: "/images/travel-markets/new-orleans/airboat-swamp.png" },
-    { href: "/tours#river-cruises", label: "River Cruises", text: "Mississippi views, jazz, brunch, and riverboat options.", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg" },
+    { href: "/riverboat-cruises", label: "River Cruises", text: "Mississippi views, jazz, brunch, and riverboat options.", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg" },
     { href: "/plantation-tours", label: "Plantations", text: "Louisiana history and historic sites outside the city.", image: "/images/wikimedia/originals/oak-alley-front.jpg" },
-    { href: buildAttributedTourHref("craft-cocktail-walking-tour", FAREHARBOR_SOURCES.home), label: "Food & Cocktails", text: "Taste and walk your way through New Orleans culture.", image: "/images/wikimedia/originals/gumbo-dish.jpg" },
-    { href: buildAttributedTourHref("ghosts-spirits-walking-tour", FAREHARBOR_SOURCES.home), label: "Ghosts & Spirits", text: "After-dark stories through the historic city.", image: "/images/wikimedia/originals/lalaurie-mansion-1906.jpg" },
+    { href: "/food-tours", label: "Food & Cocktails", text: "Taste and walk your way through New Orleans culture.", image: "/images/wikimedia/originals/gumbo-dish.jpg" },
+    { href: "/ghost-tours", label: "Ghosts & Spirits", text: "After-dark stories through the historic city.", image: "/images/wikimedia/originals/lalaurie-mansion-1906.jpg" },
     { href: "/tours#combo-tours", label: "Full-Day Combos", text: "Pair the city, plantations, and swamps in one outing.", image: "/images/travel-markets/new-orleans/swamp-plantation-combo.png" },
     { href: "/help-me-choose", label: "Help Me Choose", text: "Answer six quick traveler questions and get a best fit plus an alternative.", image: "/images/new-orleans/hero-french-quarter-balcony.jpg" },
   ];
@@ -39,9 +39,9 @@ export default function NewOrleansHomePage() {
   ];
 
   const alreadyHereLinks = [
-    { href: "/things-to-do-in-new-orleans-today", title: "Things to do today", image: "/images/travel-markets/new-orleans/french-quarter-street.jpg" },
-    { href: "/new-orleans-tours-tonight", title: "Tours tonight", image: "/images/wikimedia/originals/french-quarter-night.jpg" },
-    { href: "/tours#river-cruises", title: "River cruises", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg" },
+    { href: "/guides/things-to-do-in-new-orleans-today", title: "Things to do today", image: "/images/travel-markets/new-orleans/french-quarter-street.jpg" },
+    { href: "/guides/new-orleans-tours-tonight", title: "Tours tonight", image: "/images/wikimedia/originals/french-quarter-night.jpg" },
+    { href: "/riverboat-cruises", title: "River cruises", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg" },
     { href: buildAttributedTourHref("craft-cocktail-walking-tour", FAREHARBOR_SOURCES.home), title: "Cocktail walking tours", image: "/images/wikimedia/originals/gumbo-dish.jpg" },
     { href: "/french-quarter-welcome-stop", title: "Concierge help choosing", image: "/images/wikimedia/originals/french-quarter-night.jpg" },
   ];
@@ -62,7 +62,7 @@ export default function NewOrleansHomePage() {
             <div className={visualStyles.homeDivider} aria-hidden="true"><span /><span className={visualStyles.homeFleur}>⚜</span><span /></div>
             <p className={visualStyles.homeHeroCopy}>Compare participating local tours and experiences, check current times and prices, or tell us what kind of day you want and we&apos;ll help narrow the choices.</p>
             <div className={visualStyles.homeHeroActions}>
-              <Link href="/things-to-do-in-new-orleans-today" className="border border-[var(--nola-gold)] bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[var(--nola-ivory)]">Find Something Today</Link>
+              <Link href="/guides/things-to-do-in-new-orleans-today" className="border border-[var(--nola-gold)] bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[var(--nola-ivory)]">Find Something Today</Link>
               <a href="#chooser" className="border border-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-ivory)]">Help Me Choose</a>
               <a href="tel:+15044849687" className={visualStyles.homeHeroPhoneAction}>Let&apos;s talk&nbsp; 504-484-9687</a>
             </div>
@@ -91,7 +91,7 @@ export default function NewOrleansHomePage() {
 
       <section className={visualStyles.homeAlreadyHereSection}>
         <div className={visualStyles.homeSectionInner}>
-          <div className={visualStyles.homeAlreadyHereIntro}><p className={visualStyles.homeSectionEyebrow}>For plans taking shape now</p><h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>Already here?</h2><p className={`${visualStyles.homeSectionScript} ${visualStyles.scriptFont}`}>No plans? Perfect.</p><p className={visualStyles.homeAlreadyHereCopy}>Skip the giant catalog. Start with what makes sense for today or tonight, then check live operator availability.</p><div className={visualStyles.homeAlreadyHereActions}><Link href="/things-to-do-in-new-orleans-today" className={visualStyles.homeGoldButton}>Things to do today</Link><Link href="/new-orleans-tours-tonight" className={visualStyles.homeTextButton}>Find something tonight</Link><Link href="/french-quarter-welcome-stop" className={visualStyles.homeTextButton}>Ask the Concierge Desk</Link></div></div>
+          <div className={visualStyles.homeAlreadyHereIntro}><p className={visualStyles.homeSectionEyebrow}>For plans taking shape now</p><h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>Already here?</h2><p className={`${visualStyles.homeSectionScript} ${visualStyles.scriptFont}`}>No plans? Perfect.</p><p className={visualStyles.homeAlreadyHereCopy}>Skip the giant catalog. Start with what makes sense for today or tonight, then check live operator availability.</p><div className={visualStyles.homeAlreadyHereActions}><Link href="/guides/things-to-do-in-new-orleans-today" className={visualStyles.homeGoldButton}>Things to do today</Link><Link href="/guides/new-orleans-tours-tonight" className={visualStyles.homeTextButton}>Find something tonight</Link><Link href="/french-quarter-welcome-stop" className={visualStyles.homeTextButton}>Ask the Concierge Desk</Link></div></div>
           <div className={visualStyles.homeAlreadyHereGrid}>{alreadyHereLinks.map((item) => <Link key={item.title} href={item.href} className={visualStyles.homeMomentCard}><div className={visualStyles.homeMomentMedia}><img src={item.image} alt="" /></div><div className={visualStyles.homeMomentBody}><h3>{item.title}</h3><span>Check times &amp; availability</span></div></Link>)}</div>
         </div>
       </section>
