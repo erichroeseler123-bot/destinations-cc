@@ -45,6 +45,29 @@ export function buildWnoSiteGraph() {
   };
 }
 
+export function buildWnoWebPageJsonLd({
+  path,
+  name,
+  description,
+}: {
+  path: string;
+  name: string;
+  description: string;
+}) {
+  const url = absolute(path);
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${url}#webpage`,
+    url,
+    name,
+    description,
+    isPartOf: { "@id": WNO_WEBSITE_ID },
+    about: { "@id": WNO_ORGANIZATION_ID },
+    inLanguage: "en-US",
+  };
+}
+
 export function buildWnoBreadcrumbJsonLd(items: WnoBreadcrumbItem[]) {
   return {
     "@context": "https://schema.org",
