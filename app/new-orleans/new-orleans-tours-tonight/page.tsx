@@ -7,7 +7,7 @@ export const metadata = {
   title: "New Orleans Tours Tonight | Evening Cruises, Cocktails & Ghosts",
   description:
     "Compare New Orleans evening experiences including jazz cruises, cocktail walks and ghost tours, then check current times, prices and operator availability.",
-  alternates: { canonical: "/new-orleans-tours-tonight" },
+  alternates: { canonical: "/guides/new-orleans-tours-tonight" },
 };
 
 const tonightSlugs = [
@@ -32,7 +32,7 @@ export default function NewOrleansToursTonightPage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a href="#tonight-options" className="bg-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#171717]">Check tonight&apos;s options</a>
-            <Link href="/things-to-do-in-new-orleans-today" className="border border-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#fdfbf7]">Need a daytime plan?</Link>
+            <Link href="/guides/things-to-do-in-new-orleans-today" className="border border-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#fdfbf7]">Need a daytime plan?</Link>
           </div>
         </div>
       </section>
