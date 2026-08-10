@@ -133,4 +133,14 @@ test("Conversion Card Actions & Booking Integrity Suite", async (t) => {
     assert.strictEqual(collection.hasPart[0].provider.name, "New Orleans Steamboat Company");
     assert.notStrictEqual(collection.hasPart[0].provider.name, "Unknown");
   });
+
+  await t.test("11. WNO tour details use WNO identity builders and absolute branded titles", () => {
+    const tourPage = fs.readFileSync(path.join(process.cwd(), "app/new-orleans/tours/[slug]/page.tsx"), "utf8");
+    assert.match(tourPage, /buildWnoWebPageJsonLd/);
+    assert.match(tourPage, /buildWnoBreadcrumbJsonLd/);
+    assert.match(tourPage, /title: isWto \? \{ absolute: product\.detailPageTitle \}/);
+    assert.match(tourPage, /const identityGraph = isWto/);
+    assert.match(tourPage, /\{ name: "Home", path: "\/" \}/);
+    assert.match(tourPage, /\{ name: "New Orleans Tours", path: "\/tours" \}/);
+  });
 });
