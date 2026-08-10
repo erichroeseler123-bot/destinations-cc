@@ -2,6 +2,7 @@ import { Rye, Pinyon_Script } from 'next/font/google';
 import type { Metadata } from "next";
 import { HeaderNav, FooterNav } from "./components/MarketplaceNavigation";
 import WnoFunnelTracker from "./components/WnoFunnelTracker";
+import ContextualPlanningPaths from "./components/ContextualPlanningPaths";
 
 const newOrleansDisplayFont = Rye({
   subsets: ['latin'],
@@ -55,6 +56,7 @@ export default function NewOrleansLayout({
       <main className="flex-1 w-full relative">
         {children}
       </main>
+      <ContextualPlanningPaths />
       <FooterNav />
     </div>
   );
