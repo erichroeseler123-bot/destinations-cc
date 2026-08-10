@@ -23,6 +23,15 @@ export const LIVE_CORRIDOR_CATALOG: CorridorCatalogEntry[] = [
     patternFamily: "jfd",
   },
   {
+    corridorId: "wno-commerce",
+    corridorName: "Welcome to New Orleans Tours Commerce",
+    family: "marketplace",
+    appPath: "app/new-orleans + app/api/wno/telemetry",
+    status: "live",
+    continuityLevel: "checkout-continuity",
+    patternFamily: "swamp",
+  },
+  {
     corridorId: "lastfrontier-alaska",
     corridorName: "Last Frontier Shore Excursions",
     family: "decision-engine",
