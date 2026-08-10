@@ -27,8 +27,8 @@ const WTONOT_DECISION_GUIDES = [
 
 const WTONOT_HIGH_INTENT_PATHS = [
   "/guides/plan-new-orleans-tours",
-  "/things-to-do-in-new-orleans-today",
-  "/new-orleans-tours-tonight",
+  "/guides/things-to-do-in-new-orleans-today",
+  "/guides/new-orleans-tours-tonight",
   "/guides/4-hours-in-new-orleans",
   "/guides/first-time-new-orleans-tours",
   "/guides/new-orleans-tours-for-families",
