@@ -4,6 +4,7 @@ import JsonLd from "@/app/components/dcc/JsonLd";
 import { HeaderNav, FooterNav } from "./components/MarketplaceNavigation";
 import WnoFunnelTracker from "./components/WnoFunnelTracker";
 import ContextualPlanningPaths from "./components/ContextualPlanningPaths";
+import WnoMobileConversionMount from "./components/WnoMobileConversionMount";
 import { buildWnoSiteGraph } from "./lib/structuredData";
 
 const newOrleansDisplayFont = Playfair_Display({
@@ -61,6 +62,7 @@ export default function NewOrleansLayout({
       </main>
       <ContextualPlanningPaths />
       <FooterNav />
+      <WnoMobileConversionMount />
     </div>
   );
 }
