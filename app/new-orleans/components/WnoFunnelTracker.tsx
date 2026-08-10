@@ -33,13 +33,11 @@ function classifyClick(href: string) {
 }
 
 function ctaLocation(anchor: HTMLAnchorElement) {
-  return (
-    anchor.dataset.ctaLocation ||
-    anchor.closest<HTMLElement>("[data-cta-location]")?.dataset.ctaLocation ||
-    anchor.closest("header") ? "header" :
-    anchor.closest("footer") ? "footer" :
-    "page"
-  );
+  const explicit = anchor.dataset.ctaLocation || anchor.closest<HTMLElement>("[data-cta-location]")?.dataset.ctaLocation;
+  if (explicit) return explicit;
+  if (anchor.closest("header")) return "header";
+  if (anchor.closest("footer")) return "footer";
+  return "page";
 }
 
 export function getWnoFunnelContext() {
