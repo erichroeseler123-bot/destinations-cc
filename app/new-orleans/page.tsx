@@ -7,13 +7,13 @@ import { STOREFRONT_PRODUCTS } from "./tours/pageConfig";
 import { buildAttributedTourHref, FAREHARBOR_SOURCES } from "./lib/fareHarborAttribution";
 
 export const metadata = {
-  title: "New Orleans Tours & Visitor Help | New Orleans Concierge Desk",
+  title: "New Orleans Tours, Cruises & Experiences | Welcome to New Orleans Tours",
   description:
-    "Compare New Orleans tours, get local visitor help, reserve the $5 French Quarter orientation, and find experiences that fit your group.",
+    "Compare New Orleans tours, river cruises, swamp trips, plantation tours and evening experiences. Get visitor help and check current times and prices with participating operators.",
   openGraph: {
-    title: "New Orleans Tours & Visitor Help | New Orleans Concierge Desk",
+    title: "Welcome to New Orleans Tours | Tours & Concierge Help",
     description:
-      "Compare New Orleans tours, use the tour chooser, and get help from New Orleans Concierge Desk.",
+      "Compare New Orleans experiences, use the tour chooser, and get visitor help from the New Orleans Concierge Desk.",
   },
 };
 
@@ -39,10 +39,10 @@ export default function NewOrleansHomePage() {
   ];
 
   const alreadyHereLinks = [
+    { href: "/things-to-do-in-new-orleans-today", title: "Things to do today", image: "/images/travel-markets/new-orleans/french-quarter-street.jpg" },
+    { href: "/new-orleans-tours-tonight", title: "Tours tonight", image: "/images/wikimedia/originals/french-quarter-night.jpg" },
     { href: "/tours#river-cruises", title: "River cruises", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg" },
     { href: buildAttributedTourHref("craft-cocktail-walking-tour", FAREHARBOR_SOURCES.home), title: "Cocktail walking tours", image: "/images/wikimedia/originals/gumbo-dish.jpg" },
-    { href: buildAttributedTourHref("ghosts-spirits-walking-tour", FAREHARBOR_SOURCES.home), title: "Ghost tours", image: "/images/wikimedia/originals/lalaurie-mansion-1906.jpg" },
-    { href: "/city-tours", title: "City sightseeing", image: "/images/travel-markets/new-orleans/french-quarter-street.jpg" },
     { href: "/french-quarter-welcome-stop", title: "Concierge help choosing", image: "/images/wikimedia/originals/french-quarter-night.jpg" },
   ];
 
@@ -60,9 +60,10 @@ export default function NewOrleansHomePage() {
               <span className={`${visualStyles.homeHeadlineDisplay} ${visualStyles.displayFont}`}>for your group</span>
             </h1>
             <div className={visualStyles.homeDivider} aria-hidden="true"><span /><span className={visualStyles.homeFleur}>⚜</span><span /></div>
-            <p className={visualStyles.homeHeroCopy}>Tell us what kind of day you want and we&apos;ll help you compare participating local experiences.</p>
+            <p className={visualStyles.homeHeroCopy}>Compare participating local tours and experiences, check current times and prices, or tell us what kind of day you want and we&apos;ll help narrow the choices.</p>
             <div className={visualStyles.homeHeroActions}>
-              <a href="#chooser" className="border border-[var(--nola-gold)] bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[var(--nola-ivory)]">Help Me Choose</a>
+              <Link href="/things-to-do-in-new-orleans-today" className="border border-[var(--nola-gold)] bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[var(--nola-ivory)]">Find Something Today</Link>
+              <a href="#chooser" className="border border-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-ivory)]">Help Me Choose</a>
               <a href="tel:+15044849687" className={visualStyles.homeHeroPhoneAction}>Let&apos;s talk&nbsp; 504-484-9687</a>
             </div>
           </div>
@@ -90,21 +91,21 @@ export default function NewOrleansHomePage() {
 
       <section className={visualStyles.homeAlreadyHereSection}>
         <div className={visualStyles.homeSectionInner}>
-          <div className={visualStyles.homeAlreadyHereIntro}><p className={visualStyles.homeSectionEyebrow}>For plans taking shape now</p><h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>Already here?</h2><p className={`${visualStyles.homeSectionScript} ${visualStyles.scriptFont}`}>No plans? Perfect.</p><p className={visualStyles.homeAlreadyHereCopy}>Tell us who you&apos;re with and what kind of mood you&apos;re in. We&apos;ll help you find something worth doing today.</p><div className={visualStyles.homeAlreadyHereActions}><Link href="#chooser" className={visualStyles.homeGoldButton}>Find something to do</Link><Link href="/french-quarter-welcome-stop" className={visualStyles.homeTextButton}>Ask the Concierge Desk</Link></div></div>
+          <div className={visualStyles.homeAlreadyHereIntro}><p className={visualStyles.homeSectionEyebrow}>For plans taking shape now</p><h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>Already here?</h2><p className={`${visualStyles.homeSectionScript} ${visualStyles.scriptFont}`}>No plans? Perfect.</p><p className={visualStyles.homeAlreadyHereCopy}>Skip the giant catalog. Start with what makes sense for today or tonight, then check live operator availability.</p><div className={visualStyles.homeAlreadyHereActions}><Link href="/things-to-do-in-new-orleans-today" className={visualStyles.homeGoldButton}>Things to do today</Link><Link href="/new-orleans-tours-tonight" className={visualStyles.homeTextButton}>Find something tonight</Link><Link href="/french-quarter-welcome-stop" className={visualStyles.homeTextButton}>Ask the Concierge Desk</Link></div></div>
           <div className={visualStyles.homeAlreadyHereGrid}>{alreadyHereLinks.map((item) => <Link key={item.title} href={item.href} className={visualStyles.homeMomentCard}><div className={visualStyles.homeMomentMedia}><img src={item.image} alt="" /></div><div className={visualStyles.homeMomentBody}><h3>{item.title}</h3><span>Check times &amp; availability</span></div></Link>)}</div>
         </div>
       </section>
 
       <section className={visualStyles.homeCuratedSection}><div className={visualStyles.homeSectionInner}>{curatedSections.map((section, index) => {
         const products = section.slugs.map(productBySlug).filter(Boolean);
-        return <section key={section.title} className={`${visualStyles.homeCuratedBlock} ${index % 2 === 1 ? visualStyles.homeCuratedBlockAlt : ""}`}><div className={visualStyles.homeCuratedHeading}><div><p className={visualStyles.homeSectionEyebrow}>{section.eyebrow}</p><h2 className={`${visualStyles.homeCuratedTitle} ${visualStyles.displayFont}`}>{section.title}</h2><p className={`${visualStyles.homeCuratedScript} ${visualStyles.scriptFont}`}>{section.script}</p></div><Link href="/tours" className={visualStyles.homeSectionLink}>See all tours <span aria-hidden="true">↗</span></Link></div><div className={visualStyles.homeProductGrid}>{products.map((product) => product && <ProductCard key={product.id} product={{ ...product, operatorAttribution: product.operatorName, isBookable: true, ctaLabel: "View Details" } as any} />)}</div></section>;
+        return <section key={section.title} className={`${visualStyles.homeCuratedBlock} ${index % 2 === 1 ? visualStyles.homeCuratedBlockAlt : ""}`}><div className={visualStyles.homeCuratedHeading}><div><p className={visualStyles.homeSectionEyebrow}>{section.eyebrow}</p><h2 className={`${visualStyles.homeCuratedTitle} ${visualStyles.displayFont}`}>{section.title}</h2><p className={`${visualStyles.homeCuratedScript} ${visualStyles.scriptFont}`}>{section.script}</p></div><Link href="/tours" className={visualStyles.homeSectionLink}>See all tours <span aria-hidden="true">↗</span></Link></div><div className={visualStyles.homeProductGrid}>{products.map((product) => product && <ProductCard key={product.id} attributionSource={FAREHARBOR_SOURCES.home} product={{ ...product, operatorAttribution: product.operatorName, isBookable: true, ctaLabel: "Check Times & Prices" } as any} />)}</div></section>;
       })}</div></section>
 
       <section className={visualStyles.homeCatalogCta}><p className={visualStyles.homeSectionEyebrow}>The complete collection</p><h2 className={`${visualStyles.homeCatalogTitle} ${visualStyles.displayFont}`}>Already know what you want?</h2><p>Compare the full selection of current tours and booking options.</p><Link href="/tours" className={visualStyles.homeGoldButton}>Browse all tours</Link></section>
 
       <section className={visualStyles.homeConciergeSection}>
         <div className={visualStyles.homeSectionInner}><div className={visualStyles.homeConciergeGrid}>
-          <div className={visualStyles.homeConciergePanel}><div className={visualStyles.homeSectionEyebrow}>Local Visitor Help</div><h3 className={`${visualStyles.homePanelTitle} ${visualStyles.displayFont}`}>New Orleans Concierge Desk</h3><p className={visualStyles.homePanelCopy}>Already here and still deciding? Call or text the Desk for help comparing tours, timing, transportation, and what fits your group. You can also start your morning with our $5 French Quarter Orientation.</p><Link href="/french-quarter-welcome-stop" className={visualStyles.homeTextButton}>Visit the Concierge Desk</Link></div>
+          <div className={visualStyles.homeConciergePanel}><div className={visualStyles.homeSectionEyebrow}>Welcome to New Orleans Tours</div><h3 className={`${visualStyles.homePanelTitle} ${visualStyles.displayFont}`}>New Orleans Concierge Desk</h3><p className={visualStyles.homePanelCopy}>The Concierge Desk is our visitor-help side: already here and still deciding? Call or text for help comparing tours, timing, transportation, and what fits your group. You can also start your morning with our $5 French Quarter Orientation.</p><Link href="/french-quarter-welcome-stop" className={visualStyles.homeTextButton}>Visit the Concierge Desk</Link></div>
           <div className={visualStyles.homeConciergePanelAlt}><div className={visualStyles.homeSectionEyebrow}>Private Parties</div><h3 className={`${visualStyles.homePanelTitle} ${visualStyles.displayFont}`}>Group Planning</h3><p className={visualStyles.homePanelCopy}>Planning a family, wedding, or corporate group? Contact us to discuss available tour options.</p><Link href="/contact" className={visualStyles.homeTextButton}>Inquire About Groups</Link></div>
         </div></div>
       </section>
