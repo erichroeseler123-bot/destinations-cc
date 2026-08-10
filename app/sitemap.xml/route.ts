@@ -7,6 +7,7 @@ import { SOMERSET_PAGE_PATHS } from "@/lib/dcc/corridors/somersetPages";
 import { ALL_PRODUCTS, SEO_PAGES } from "@/app/new-orleans/data";
 import { COMPARISON_OPPORTUNITIES } from "@/app/new-orleans/data/comparisonRegistry";
 import { INTENT_SEO_PAGES } from "@/app/new-orleans/data/intentSeoPages";
+import { AUDIENCE_INTENT_SEO_PAGES } from "@/app/new-orleans/data/audienceIntentSeoPages";
 
 export const dynamic = "force-dynamic";
 export const WTONOT_ORIGIN = "https://welcometoneworleanstours.com";
@@ -53,7 +54,8 @@ export function buildDccSitemapXml(paths: readonly string[] = INDEXABLE_SURFACE_
 
 export function buildWtonotSitemapPaths() {
   const intentPaths = INTENT_SEO_PAGES.map((page) => `/guides/${page.slug}`);
-  const wtoPaths = ["/", "/tours", "/compare", "/french-quarter-welcome-stop", "/guides/french-quarter-orientation", "/guides/visitor-rewards", ...WTONOT_HIGH_INTENT_PATHS, ...intentPaths, ...WTONOT_DECISION_GUIDES, ...WTONOT_SUPPORT_PATHS];
+  const audienceIntentPaths = AUDIENCE_INTENT_SEO_PAGES.map((page) => `/guides/${page.slug}`);
+  const wtoPaths = ["/", "/tours", "/compare", "/french-quarter-welcome-stop", "/guides/french-quarter-orientation", "/guides/visitor-rewards", ...WTONOT_HIGH_INTENT_PATHS, ...intentPaths, ...audienceIntentPaths, ...WTONOT_DECISION_GUIDES, ...WTONOT_SUPPORT_PATHS];
   ALL_PRODUCTS.forEach((product: any) => { if (product.status === "live" && product.isIndexable) wtoPaths.push(`/tours/${product.slug}`); });
   Object.values(SEO_PAGES).forEach((page: any) => { if (page.status === "live" && page.isIndexable && !WTONOT_SUPERSEDED_SEO_PATHS.has(page.publicRoute)) wtoPaths.push(page.publicRoute); });
   COMPARISON_OPPORTUNITIES.forEach((comparison) => { if (comparison.status === "READY_TO_PUBLISH") wtoPaths.push(`/compare/${comparison.slug}`); });
