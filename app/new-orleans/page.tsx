@@ -22,10 +22,10 @@ export default function NewOrleansHomePage() {
   const categoryLinks = [
     { href: "/city-tours", label: "Explore the City", text: "History, neighborhoods, architecture, and local landmarks.", image: "/images/travel-markets/new-orleans/french-quarter-street.jpg" },
     { href: "/swamp-tours", label: "Swamps & Airboats", text: "Covered boats and airboats beyond the city.", image: "/images/travel-markets/new-orleans/airboat-swamp.png" },
-    { href: "/riverboat-cruises", label: "River Cruises", text: "Mississippi views, jazz, brunch, and riverboat options.", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg" },
+    { href: "/tours#river-cruises", label: "River Cruises", text: "Mississippi views, jazz, brunch, and riverboat options.", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg" },
     { href: "/plantation-tours", label: "Plantations", text: "Louisiana history and historic sites outside the city.", image: "/images/wikimedia/originals/oak-alley-front.jpg" },
-    { href: "/food-tours", label: "Food & Cocktails", text: "Taste and walk your way through New Orleans culture.", image: "/images/wikimedia/originals/gumbo-dish.jpg" },
-    { href: "/ghost-tours", label: "Ghosts & Spirits", text: "After-dark stories through the historic city.", image: "/images/wikimedia/originals/lalaurie-mansion-1906.jpg" },
+    { href: buildAttributedTourHref("craft-cocktail-walking-tour", FAREHARBOR_SOURCES.home), label: "Food & Cocktails", text: "Taste and walk your way through New Orleans culture.", image: "/images/wikimedia/originals/gumbo-dish.jpg" },
+    { href: buildAttributedTourHref("ghosts-spirits-walking-tour", FAREHARBOR_SOURCES.home), label: "Ghosts & Spirits", text: "After-dark stories through the historic city.", image: "/images/wikimedia/originals/lalaurie-mansion-1906.jpg" },
     { href: "/tours#combo-tours", label: "Full-Day Combos", text: "Pair the city, plantations, and swamps in one outing.", image: "/images/travel-markets/new-orleans/swamp-plantation-combo.png" },
     { href: "/help-me-choose", label: "Help Me Choose", text: "Answer six quick traveler questions and get a best fit plus an alternative.", image: "/images/new-orleans/hero-french-quarter-balcony.jpg" },
   ];
@@ -41,7 +41,7 @@ export default function NewOrleansHomePage() {
   const alreadyHereLinks = [
     { href: "/guides/things-to-do-in-new-orleans-today", title: "Things to do today", image: "/images/travel-markets/new-orleans/french-quarter-street.jpg" },
     { href: "/guides/new-orleans-tours-tonight", title: "Tours tonight", image: "/images/wikimedia/originals/french-quarter-night.jpg" },
-    { href: "/riverboat-cruises", title: "River cruises", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg" },
+    { href: "/tours#river-cruises", title: "River cruises", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg" },
     { href: buildAttributedTourHref("craft-cocktail-walking-tour", FAREHARBOR_SOURCES.home), title: "Cocktail walking tours", image: "/images/wikimedia/originals/gumbo-dish.jpg" },
     { href: "/french-quarter-welcome-stop", title: "Concierge help choosing", image: "/images/wikimedia/originals/french-quarter-night.jpg" },
   ];
