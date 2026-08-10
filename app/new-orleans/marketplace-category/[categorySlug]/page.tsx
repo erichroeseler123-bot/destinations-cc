@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
-import { SEO_PAGES } from '../../data/index';
 import { notFound } from 'next/navigation';
 
 import { getSeoPageBySlug } from '../../data/pageMap';
 import SeoPageRenderer from '../../components/SeoPageRenderer';
+import WnoBreadcrumbs from '../../components/WnoBreadcrumbs';
+import { buildSeoMetadata } from '../../lib/buildSeoMetadata';
 
 export default async function CategoryPage({ params }: { params: Promise<{ categorySlug: string }> }) {
   const resolvedParams = await params;
@@ -11,9 +12,20 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
   if (!record || record.status === "draft") {
     notFound();
   }
-  return <SeoPageRenderer page={record} />;
+
+  return (
+    <>
+      <WnoBreadcrumbs
+        items={[
+          { name: "Home", path: "/" },
+          { name: "New Orleans Tours", path: "/tours" },
+          { name: record.heroTitle, path: record.publicRoute },
+        ]}
+      />
+      <SeoPageRenderer page={record} />
+    </>
+  );
 }
-import { buildSeoMetadata } from '../../lib/buildSeoMetadata';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug?: string, categorySlug?: string, comparisonSlug?: string }> }): Promise<Metadata> {
   const p = await params;
@@ -29,4 +41,3 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
   if (!record) return notFound();
   return buildSeoMetadata(record);
 }
-
