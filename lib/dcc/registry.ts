@@ -8,6 +8,8 @@ type BySlugClassIndex = Record<string, StringToStringOrArray>;
 
 const ROOT = process.cwd();
 const INDEX_DIR = path.join(ROOT, "data", "index");
+const REGISTRY_DIR = path.join(ROOT, "data", "registry");
+const REGISTRY_PREFIX = "data/registry/";
 
 function loadJson<T>(filename: string): T {
   const full = path.join(INDEX_DIR, filename);
@@ -35,8 +37,19 @@ export function loadByClassIndex(): Record<string, string[]> {
 }
 
 export function readNodeByPointer(pointer: DccRegistryPointer): DccNode | null {
-  const fullPath = path.join(ROOT, pointer.file);
+  const normalizedPointerFile = pointer.file.replaceAll("\\", "/");
+  if (!normalizedPointerFile.startsWith(REGISTRY_PREFIX)) return null;
+
+  const registryRelativePath = normalizedPointerFile.slice(REGISTRY_PREFIX.length);
+  const fullPath = path.resolve(REGISTRY_DIR, registryRelativePath);
+  const registryRoot = `${path.resolve(REGISTRY_DIR)}${path.sep}`;
+
+  // Keep registry reads confined to data/registry. Besides preventing traversal,
+  // the statically scoped base path lets Vercel/Turbopack trace only registry
+  // data instead of treating the entire repository as a possible dependency.
+  if (!fullPath.startsWith(registryRoot)) return null;
   if (!fs.existsSync(fullPath)) return null;
+
   const lines = fs.readFileSync(fullPath, "utf8").split("\n");
   const raw = lines[pointer.line - 1];
   if (!raw || !raw.trim()) return null;
