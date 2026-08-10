@@ -19,6 +19,11 @@ import {
   isApprovedProductSlug,
   resolveFareHarborSource,
 } from "../../lib/fareHarborAttribution";
+import {
+  buildWnoBreadcrumbJsonLd,
+  buildWnoWebPageJsonLd,
+  generateProductSchemaGraph,
+} from "../../lib/structuredData";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -40,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     applicationName: "Welcome to New Orleans Tours",
-    title: product.detailPageTitle,
+    title: isWto ? { absolute: product.detailPageTitle } : product.detailPageTitle,
     description: product.metaDescription,
     alternates: { canonical },
     metadataBase: new URL(origin),
@@ -132,31 +137,41 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
       />
     );
 
+  const identityGraph = isWto
+    ? [
+        buildWnoWebPageJsonLd({
+          path: pagePath,
+          name: product.detailPageTitle,
+          description: product.metaDescription,
+        }),
+        buildWnoBreadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "New Orleans Tours", path: "/tours" },
+          { name: product.title, path: pagePath },
+        ]),
+      ]
+    : [
+        buildWebPageJsonLd({
+          path: pagePath,
+          name: product.detailPageTitle,
+          description: product.metaDescription,
+          isPartOfPath: "/new-orleans",
+        }),
+        buildBreadcrumbJsonLd([
+          { name: "New Orleans", item: "/new-orleans" },
+          { name: "Tours", item: NEW_ORLEANS_TOURS_PATH },
+          { name: product.title, item: pagePath },
+        ]),
+      ];
+
   return (
     <div className="bg-[#151515] min-h-screen text-[#fdfbf7] font-[var(--font-sans)]">
       <JsonLd
         data={{
           "@context": "https://schema.org",
           "@graph": [
-            buildWebPageJsonLd({
-              path: pagePath,
-              name: product.detailPageTitle,
-              description: product.metaDescription,
-              isPartOfPath: isWto ? undefined : "/new-orleans",
-            }),
-            buildBreadcrumbJsonLd(
-              isWto
-                ? [
-                    { name: "New Orleans Tours", item: "/" },
-                    { name: product.title, item: pagePath },
-                  ]
-                : [
-                    { name: "New Orleans", item: "/new-orleans" },
-                    { name: "Tours", item: NEW_ORLEANS_TOURS_PATH },
-                    { name: product.title, item: pagePath },
-                  ]
-            ),
-            ...require("../../lib/schema").generateProductSchemaGraph({
+            ...identityGraph,
+            ...generateProductSchemaGraph({
               slug,
               name: product.title,
               description: product.detailSummary || product.description,
