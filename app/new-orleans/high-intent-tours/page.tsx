@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export const metadata = {
   title: "Plan New Orleans Tours by Time, Group & Transportation",
-  description: "Choose New Orleans tours based on the decision you actually need to make: time available, family format, transportation, cruise timing, swamp format or combination day trips.",
+  description: "Choose New Orleans tours based on the decision you actually need to make: time available, family or group format, transportation, cruise timing, swamp format or combination day trips.",
   alternates: { canonical: "/guides/plan-new-orleans-tours" },
 };
 
@@ -15,6 +15,9 @@ const links = [
   ["/guides/4-hours-in-new-orleans", "Only have about four hours"],
   ["/guides/first-time-new-orleans-tours", "First-time visitors"],
   ["/guides/new-orleans-tours-for-families", "Tours for families"],
+  ["/guides/new-orleans-tours-for-couples", "Tours for couples"],
+  ["/guides/new-orleans-bachelorette-party-tours", "Bachelorette party tour ideas"],
+  ["/guides/new-orleans-tours-for-solo-travelers", "Tours for solo travelers"],
   ["/guides/best-swamp-tour-with-transportation", "Swamp tours with transportation"],
   ["/guides/new-orleans-tours-with-transportation", "Tours where transportation matters"],
   ["/guides/city-tour-vs-swamp-tour-new-orleans", "City tour vs swamp tour"],
