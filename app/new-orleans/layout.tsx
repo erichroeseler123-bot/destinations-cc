@@ -1,4 +1,4 @@
-import { Rye, Pinyon_Script } from 'next/font/google';
+import { Playfair_Display, Pinyon_Script } from 'next/font/google';
 import type { Metadata } from "next";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import { HeaderNav, FooterNav } from "./components/MarketplaceNavigation";
@@ -6,9 +6,9 @@ import WnoFunnelTracker from "./components/WnoFunnelTracker";
 import ContextualPlanningPaths from "./components/ContextualPlanningPaths";
 import { buildWnoSiteGraph } from "./lib/structuredData";
 
-const newOrleansDisplayFont = Rye({
+const newOrleansDisplayFont = Playfair_Display({
   subsets: ['latin'],
-  weight: ['400'],
+  weight: ['400', '500', '600'],
   display: 'swap',
   variable: '--font-new-orleans-display',
 });
