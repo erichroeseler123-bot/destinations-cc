@@ -5,7 +5,7 @@ import path from "node:path";
 import { STOREFRONT_PRODUCTS, getFareHarborUrl } from "../../app/new-orleans/tours/pageConfig";
 import { normalizeFareHarborFallbackHref } from "../../app/new-orleans/lib/fareHarborAttribution";
 
-test("Conversion Card Actions & Mobile Sticky CTA Suite", async (t) => {
+test("Conversion Card Actions & Booking Integrity Suite", async (t) => {
   await t.test("1. All 21 storefront products have unique detail routes", () => {
     assert.strictEqual(STOREFRONT_PRODUCTS.length, 21);
     const slugs = new Set<string>();
@@ -103,8 +103,22 @@ test("Conversion Card Actions & Mobile Sticky CTA Suite", async (t) => {
     assert.match(card, /index < cues\.length - 1 \? ' ' : null/);
   });
 
-  await t.test("9. Mobile sticky booking control remains mobile-scoped", () => {
-    const sticky = fs.readFileSync(path.join(process.cwd(), "app/new-orleans/components/StickyMobileBookingBar.tsx"), "utf8");
-    assert.ok(sticky.includes("md:hidden"));
+  await t.test("9. Legacy StickyMobileBookingBar is parked, not mounted as a live conversion surface", () => {
+    const detailPage = fs.readFileSync(
+      path.join(process.cwd(), "app/new-orleans/tours/[slug]/page.tsx"),
+      "utf8",
+    );
+    const toursPage = fs.readFileSync(
+      path.join(process.cwd(), "app/new-orleans/tours/page.tsx"),
+      "utf8",
+    );
+    const homepage = fs.readFileSync(
+      path.join(process.cwd(), "app/new-orleans/page.tsx"),
+      "utf8",
+    );
+
+    assert.ok(!detailPage.includes("StickyMobileBookingBar"));
+    assert.ok(!toursPage.includes("StickyMobileBookingBar"));
+    assert.ok(!homepage.includes("StickyMobileBookingBar"));
   });
 });

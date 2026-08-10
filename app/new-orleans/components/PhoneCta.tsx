@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import { sendWnoTelemetry } from "./WnoFunnelTracker";
 
 interface PhoneCtaProps {
   placement: string;
@@ -31,8 +32,9 @@ export default function PhoneCta({
     };
 
     if (typeof window !== "undefined") {
+      sendWnoTelemetry({ eventName, ...eventData });
       window.dispatchEvent(new CustomEvent(eventName, { detail: eventData }));
-      const dataLayer = (window as any).dataLayer || [];
+      const dataLayer = ((window as any).dataLayer ||= []);
       dataLayer.push({
         event: eventName,
         ...eventData,
@@ -49,14 +51,14 @@ export default function PhoneCta({
           observer.disconnect();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
     observer.observe(linkRef.current);
     return () => observer.disconnect();
   }, [placement]);
 
   const handleClick = () => {
-    trackEvent("phone_cta_clicked");
+    trackEvent("phone_click");
     if (isGroup) {
       trackEvent("group_rates_cta_clicked");
     }
@@ -67,6 +69,8 @@ export default function PhoneCta({
       ref={linkRef}
       href="tel:+15044849687"
       onClick={handleClick}
+      data-wno-managed-click="phone"
+      data-cta-location={placement}
       className={`focus:outline-none focus:ring-2 focus:ring-[#C5A059] focus:ring-offset-2 ${className}`}
       aria-label="Call 504-484-9687"
     >

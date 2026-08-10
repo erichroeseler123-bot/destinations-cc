@@ -228,19 +228,25 @@ test("New Orleans combo-tour routes and catalog", async (t) => {
       );
     }
 
-    const chooserPath = path.join(
+    const expandedChooserPath = path.join(
       process.cwd(),
       "app",
       "new-orleans",
-      "components",
-      "NewOrleansChooser.tsx",
+      "help-me-choose",
+      "ExpandedChooserEntry.tsx",
     );
-    const chooserSource = fs.readFileSync(chooserPath, "utf8");
+    const expandedChooserSource = fs.readFileSync(expandedChooserPath, "utf8");
     assert.ok(
-      chooserSource.includes(
-        "router.push(`/tours/${product.slug}?recommended=${contextId}`)",
+      expandedChooserSource.includes(
+        "buildAttributedTourHref(product.slug, FAREHARBOR_SOURCES.helpChooser, contextId)",
       ),
-      "recommended= must continue to use the existing chooser context ID",
+      "approved live products must preserve chooser attribution context",
+    );
+    assert.ok(
+      expandedChooserSource.includes(
+        "`/tours/${product.slug}?recommended=${contextId}`",
+      ),
+      "non-approved fallback products must preserve the chooser context ID",
     );
   });
 

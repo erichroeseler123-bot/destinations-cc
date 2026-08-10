@@ -136,13 +136,18 @@ test("FareHarbor Lightframe attribution", async (t) => {
     assert.ok(actual.every((url) => !url.includes("src=") && !url.includes("ref=")));
   });
 
-  await t.test("wires catalog, chooser, guide, detail, and normalized booking sources", () => {
+  await t.test("wires catalog, live chooser surfaces, detail, and normalized booking sources", () => {
     const read = (relativePath: string) => fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
     assert.match(read("app/new-orleans/components/ProductCard.tsx"), /attributionSource = FAREHARBOR_SOURCES\.guide/);
-    const chooser = read("app/new-orleans/components/NewOrleansChooser.tsx");
-    assert.match(chooser, /FAREHARBOR_SOURCES\.homeChooser/);
-    assert.match(chooser, /FAREHARBOR_SOURCES\.helpChooser/);
-    assert.match(chooser, /buildAttributedTourHref\(product\.slug, attributionSource, contextId\)/);
+
+    const expandedChooser = read("app/new-orleans/help-me-choose/ExpandedChooserEntry.tsx");
+    assert.match(expandedChooser, /FAREHARBOR_SOURCES\.helpChooser/);
+    assert.match(expandedChooser, /buildAttributedTourHref\(product\.slug, FAREHARBOR_SOURCES\.helpChooser, contextId\)/);
+
+    const guidedPlanner = read("app/new-orleans/components/NewOrleansRecommendationFlow.tsx");
+    assert.match(guidedPlanner, /FAREHARBOR_SOURCES\.recommendation/);
+    assert.match(guidedPlanner, /buildAttributedTourHref\(slug, FAREHARBOR_SOURCES\.recommendation, slug\)/);
+
     const detailPage = read("app/new-orleans/tours/[slug]/page.tsx");
     assert.match(detailPage, /resolveFareHarborSource\(\{/);
     assert.match(detailPage, /hasValidRecommendation: Boolean\(recommendationExplanation\)/);

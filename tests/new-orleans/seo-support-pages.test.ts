@@ -49,6 +49,14 @@ const SUPPORT_PAGE_COMPONENTS = [
   AboutPage,
 ];
 
+const LIVE_CITY_PATHS = [
+  "/guides/whats-happening",
+  "/guides/tonight",
+  "/guides/this-weekend",
+  "/guides/where-to-eat",
+  "/guides/restaurant-partners",
+] as const;
+
 function buildRequest(pathname: string) {
   return new NextRequest(`https://welcometoneworleanstours.com${pathname}`, {
     headers: {
@@ -81,6 +89,13 @@ test("New Orleans sitemap and support-page coverage", async (t) => {
 
     for (const path of WTONOT_SUPPORT_PATHS) {
       assert.ok(paths.includes(path), `missing support route ${path}`);
+    }
+  });
+
+  await t.test("sitemap includes stable live-city planning surfaces", () => {
+    const paths = buildWtonotSitemapPaths();
+    for (const path of LIVE_CITY_PATHS) {
+      assert.ok(paths.includes(path), `missing live-city planning route ${path}`);
     }
   });
 
