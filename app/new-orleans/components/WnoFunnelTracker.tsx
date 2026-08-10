@@ -25,6 +25,23 @@ function labelForEntry(pathname: string, explicitSource: string | null, referrer
   return `wtonot-entry-${clean}`.slice(0, 80);
 }
 
+function classifyClick(href: string) {
+  if (href.startsWith("tel:")) return "phone_click";
+  if (href.startsWith("sms:")) return "sms_click";
+  if (href.includes("fareharbor.com")) return "fareharbor_click";
+  return null;
+}
+
+function ctaLocation(anchor: HTMLAnchorElement) {
+  return (
+    anchor.dataset.ctaLocation ||
+    anchor.closest<HTMLElement>("[data-cta-location]")?.dataset.ctaLocation ||
+    anchor.closest("header") ? "header" :
+    anchor.closest("footer") ? "footer" :
+    "page"
+  );
+}
+
 export function getWnoFunnelContext() {
   if (typeof window === "undefined") return null;
   let sessionId = sessionStorage.getItem(SESSION_KEY);
@@ -76,6 +93,28 @@ export default function WnoFunnelTracker() {
         targetPath: window.location.pathname,
       });
     }
+
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const anchor = target.closest<HTMLAnchorElement>("a[href]");
+      if (!anchor) return;
+
+      const href = anchor.getAttribute("href") || "";
+      const eventName = classifyClick(href);
+      if (!eventName) return;
+
+      sendWnoTelemetry({
+        eventName,
+        sourcePage: window.location.pathname,
+        targetPath: href,
+        ctaLocation: ctaLocation(anchor),
+        ctaLabel: (anchor.textContent || "").trim().replace(/\s+/g, " ").slice(0, 120),
+      });
+    };
+
+    document.addEventListener("click", handleClick, { capture: true });
+    return () => document.removeEventListener("click", handleClick, { capture: true });
   }, []);
 
   return null;
