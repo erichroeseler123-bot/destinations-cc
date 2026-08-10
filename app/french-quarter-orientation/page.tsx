@@ -3,6 +3,7 @@ import Link from "next/link";
 
 const PAGE_PATH = "/french-quarter-orientation";
 const SPECIALIST = "https://frenchquarterorientation.com";
+const WNO = "https://welcometoneworleanstours.com";
 
 const DECISIONS = [
   ["First hour", "How should you use your first hour in the French Quarter?", "/guides/how-to-get-oriented-in-the-french-quarter-first-hour"],
@@ -47,19 +48,30 @@ export default function FrenchQuarterOrientationDecisionCenter() {
           <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-300">The handoff boundary</p>
           <div className="mt-4 grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
             <div>
-              <h2 className="text-3xl font-black tracking-tight text-white">DCC answers whether and why. The specialist handles the orientation.</h2>
+              <h2 className="text-3xl font-black tracking-tight text-white">DCC answers whether and why. The specialists handle the next action.</h2>
               <p className="mt-4 max-w-2xl leading-7 text-stone-300">
-                DCC should not duplicate a walking experience, a welcome briefing, or later tour-shopping surfaces. Its job is to resolve uncertainty first. French Quarter Orientation then owns the short orientation layer; full tours, swamp excursions, and other bookings remain with their respective specialist sites.
+                DCC should not duplicate a walking experience, a welcome briefing, or later tour-shopping surfaces. Its job is to resolve uncertainty first. French Quarter Orientation owns the short orientation layer; Welcome to New Orleans Tours owns broader tour comparison and booking paths.
               </p>
             </div>
             <div className="rounded-3xl border border-amber-300/20 bg-amber-300/[0.06] p-6">
               <p className="text-sm font-black text-white">Ready for the practical first step?</p>
-              <p className="mt-2 text-sm leading-6 text-stone-300">Move into French Quarter Orientation when your question is no longer “what do I need to understand?” and becomes “show me the short orientation experience.”</p>
+              <p className="mt-2 text-sm leading-6 text-stone-300">Move into French Quarter Orientation when your question becomes “show me the short orientation experience.”</p>
               <a href={SPECIALIST} className="mt-5 inline-flex rounded-xl bg-amber-300 px-5 py-3 text-sm font-black text-[#17110a]">
                 Continue to French Quarter Orientation ↗
               </a>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8">
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-300">After you are oriented</p>
+        <h2 className="mt-3 text-3xl font-black text-white">Turn “where am I?” into “what should we do?”</h2>
+        <p className="mt-4 max-w-3xl leading-7 text-stone-300">Once the Quarter makes sense, the next useful decision is often what fits your remaining time, group, transportation needs, or cruise schedule.</p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <a href={`${WNO}/things-to-do-in-new-orleans-today`} className="rounded-xl border border-amber-300/40 px-5 py-3 text-sm font-black">Things to do today ↗</a>
+          <a href={`${WNO}/4-hours-in-new-orleans`} className="rounded-xl border border-white/15 px-5 py-3 text-sm font-black">Only have four hours? ↗</a>
+          <a href={`${WNO}/high-intent-tours`} className="rounded-xl border border-white/15 px-5 py-3 text-sm font-black">Plan tours by need ↗</a>
         </div>
       </section>
     </main>

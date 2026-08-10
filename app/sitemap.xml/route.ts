@@ -25,6 +25,20 @@ const WTONOT_DECISION_GUIDES = [
   "/guides/new-orleans-tours-under-50-dollars", "/guides/new-orleans-tours-that-fit-before-dinner",
 ] as const;
 
+const WTONOT_HIGH_INTENT_PATHS = [
+  "/high-intent-tours",
+  "/things-to-do-in-new-orleans-today",
+  "/new-orleans-tours-tonight",
+  "/4-hours-in-new-orleans",
+  "/first-time-new-orleans-tours",
+  "/new-orleans-tours-for-families",
+  "/best-swamp-tour-with-transportation",
+  "/new-orleans-tours-with-transportation",
+  "/new-orleans-plantation-and-swamp-tour",
+  "/things-to-do-before-a-cruise-new-orleans",
+  "/things-to-do-after-a-cruise-new-orleans",
+] as const;
+
 const WTONOT_SUPERSEDED_SEO_PATHS = new Set(["/swamp-tours/airboat-vs-covered-boat", "/swamp-tours/small-vs-large-airboat", "/swamp-tours/pickup-vs-self-drive"]);
 
 function xmlEscape(value: string): string { return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;"); }
@@ -37,7 +51,7 @@ export function buildDccSitemapXml(paths: readonly string[] = INDEXABLE_SURFACE_
 }
 
 export function buildWtonotSitemapPaths() {
-  const wtoPaths = ["/", "/tours", "/compare", "/french-quarter-welcome-stop", "/guides/french-quarter-orientation", "/guides/visitor-rewards", ...WTONOT_DECISION_GUIDES, ...WTONOT_SUPPORT_PATHS];
+  const wtoPaths = ["/", "/tours", "/compare", "/french-quarter-welcome-stop", "/guides/french-quarter-orientation", "/guides/visitor-rewards", ...WTONOT_HIGH_INTENT_PATHS, ...WTONOT_DECISION_GUIDES, ...WTONOT_SUPPORT_PATHS];
   ALL_PRODUCTS.forEach((product: any) => { if (product.status === "live" && product.isIndexable) wtoPaths.push(`/tours/${product.slug}`); });
   Object.values(SEO_PAGES).forEach((page: any) => { if (page.status === "live" && page.isIndexable && !WTONOT_SUPERSEDED_SEO_PATHS.has(page.publicRoute)) wtoPaths.push(page.publicRoute); });
   COMPARISON_OPPORTUNITIES.forEach((comparison) => { if (comparison.status === "READY_TO_PUBLISH") wtoPaths.push(`/compare/${comparison.slug}`); });
