@@ -1,9 +1,11 @@
+import { Suspense } from "react";
 import { Playfair_Display, Pinyon_Script } from 'next/font/google';
 import type { Metadata } from "next";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import { HeaderNav, FooterNav } from "./components/MarketplaceNavigation";
 import WnoFunnelTracker from "./components/WnoFunnelTracker";
 import ContextualPlanningPaths from "./components/ContextualPlanningPaths";
+import WnoMobileConversionMount from "./components/WnoMobileConversionMount";
 import { buildWnoSiteGraph } from "./lib/structuredData";
 
 const newOrleansDisplayFont = Playfair_Display({
@@ -61,6 +63,9 @@ export default function NewOrleansLayout({
       </main>
       <ContextualPlanningPaths />
       <FooterNav />
+      <Suspense fallback={null}>
+        <WnoMobileConversionMount />
+      </Suspense>
     </div>
   );
 }

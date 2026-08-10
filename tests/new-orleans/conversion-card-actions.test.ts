@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { STOREFRONT_PRODUCTS, getFareHarborUrl } from "../../app/new-orleans/tours/pageConfig";
 import { normalizeFareHarborFallbackHref } from "../../app/new-orleans/lib/fareHarborAttribution";
+import { generateCategorySchemaGraph } from "../../app/new-orleans/lib/structuredData";
 
 test("Conversion Card Actions & Booking Integrity Suite", async (t) => {
   await t.test("1. All 21 storefront products have unique detail routes", () => {
@@ -103,22 +104,33 @@ test("Conversion Card Actions & Booking Integrity Suite", async (t) => {
     assert.match(card, /index < cues\.length - 1 \? ' ' : null/);
   });
 
-  await t.test("9. Legacy StickyMobileBookingBar is parked, not mounted as a live conversion surface", () => {
-    const detailPage = fs.readFileSync(
-      path.join(process.cwd(), "app/new-orleans/tours/[slug]/page.tsx"),
-      "utf8",
-    );
-    const toursPage = fs.readFileSync(
-      path.join(process.cwd(), "app/new-orleans/tours/page.tsx"),
-      "utf8",
-    );
-    const homepage = fs.readFileSync(
-      path.join(process.cwd(), "app/new-orleans/page.tsx"),
-      "utf8",
-    );
+  await t.test("9. Mobile conversion bar is mounted globally but only activates on approved tour-detail paths", () => {
+    const layout = fs.readFileSync(path.join(process.cwd(), "app/new-orleans/layout.tsx"), "utf8");
+    const mount = fs.readFileSync(path.join(process.cwd(), "app/new-orleans/components/WnoMobileConversionMount.tsx"), "utf8");
+    const bar = fs.readFileSync(path.join(process.cwd(), "app/new-orleans/components/StickyMobileBookingBar.tsx"), "utf8");
 
-    assert.ok(!detailPage.includes("StickyMobileBookingBar"));
-    assert.ok(!toursPage.includes("StickyMobileBookingBar"));
-    assert.ok(!homepage.includes("StickyMobileBookingBar"));
+    assert.match(layout, /WnoMobileConversionMount/);
+    assert.match(mount, /\^\\\/tours\\\/\(\[\^\/\]\+\)/);
+    assert.match(mount, /isApprovedProductSlug/);
+    assert.match(bar, /WTONOT-MOBILE-TOUR-CALL/);
+    assert.match(bar, /mobile_sticky_bar/);
+    assert.ok(!bar.includes('href={`#booking-variants`}'));
+  });
+
+  await t.test("10. Category schema resolves the visible storefront operator instead of Unknown", () => {
+    const graph = generateCategorySchemaGraph({
+      urlPath: "/riverboat-cruises",
+      name: "New Orleans Riverboat Cruises",
+      description: "Test",
+      items: [{
+        slug: "evening-jazz-cruise",
+        name: "Evening Jazz Cruise",
+        description: "Test",
+        providerName: "Unknown",
+      }],
+    });
+    const collection = graph["@graph"][0] as any;
+    assert.strictEqual(collection.hasPart[0].provider.name, "New Orleans Steamboat Company");
+    assert.notStrictEqual(collection.hasPart[0].provider.name, "Unknown");
   });
 });
