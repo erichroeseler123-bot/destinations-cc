@@ -1,4 +1,5 @@
 import { PRODUCT_IMAGES } from "../data/imageRegistry";
+import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 
 export const WNO_ORIGIN = "https://welcometoneworleanstours.com";
 export const WNO_SITE_NAME = "Welcome to New Orleans Tours";
@@ -85,6 +86,11 @@ function brokerOrganization() {
   };
 }
 
+function resolveProviderName(slug: string, requestedName: string) {
+  const storefrontProduct = STOREFRONT_PRODUCTS.find((product) => product.slug === slug);
+  return storefrontProduct?.operatorName || (requestedName && requestedName !== "Unknown" ? requestedName : WNO_SITE_NAME);
+}
+
 export function generateProductSchemaGraph({
   slug,
   name,
@@ -99,7 +105,7 @@ export function generateProductSchemaGraph({
   const url = `${WNO_ORIGIN}/tours/${slug}`;
   const imageObj = PRODUCT_IMAGES[slug];
   const imageUrl = imageObj?.verifiedRights ? `${WNO_ORIGIN}${imageObj.url}` : undefined;
-  const provider = providerOrganization(providerName);
+  const provider = providerOrganization(resolveProviderName(slug, providerName));
   const broker = brokerOrganization();
 
   return {
@@ -158,7 +164,7 @@ export function generateCategorySchemaGraph({
           name: item.name,
           description: item.description,
           url: `${WNO_ORIGIN}/tours/${item.slug}`,
-          provider: providerOrganization(item.providerName),
+          provider: providerOrganization(resolveProviderName(item.slug, item.providerName)),
           broker: brokerOrganization(),
         })),
       },
