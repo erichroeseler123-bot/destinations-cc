@@ -76,6 +76,31 @@ const DCC_RUNTIME_REDIRECTS = [
     destination: "/city-tours",
     permanent: true,
   },
+  {
+    source: "/how-we-rank-tours",
+    destination: "/about",
+    permanent: true,
+  },
+  {
+    source: "/how-to-choose-the-best-new-orleans-swamp-tour",
+    destination: "/compare/covered-swamp-boat-vs-airboat",
+    permanent: true,
+  },
+  {
+    source: "/best-new-orleans-swamp-tour",
+    destination: "/swamp-tours",
+    permanent: true,
+  },
+  {
+    source: "/things-to-do-today",
+    destination: "/things-to-do-in-new-orleans-today",
+    permanent: true,
+  },
+  {
+    source: "/tours-tonight",
+    destination: "/new-orleans-tours-tonight",
+    permanent: true,
+  },
 ];
 
 export function buildRuntimeRedirects() {
