@@ -1,22 +1,39 @@
 import type { Metadata } from 'next';
-import { SEO_PAGES } from '../../data/index';
 import { notFound } from 'next/navigation';
 
 import { getSeoPageBySlug } from '../../data/pageMap';
+import { getIntentSeoPage } from '../../data/intentSeoPages';
 import SeoPageRenderer from '../../components/SeoPageRenderer';
+import IntentSeoLanding from '../../components/IntentSeoLanding';
+import { buildSeoMetadata } from '../../lib/buildSeoMetadata';
 
 export default async function GuidePage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
+  const intentPage = getIntentSeoPage(resolvedParams.slug);
+  if (intentPage) return <IntentSeoLanding config={intentPage.config} />;
+
   const record = getSeoPageBySlug(`guides/${resolvedParams.slug}`);
-  if (!record || record.status === "draft") {
-    notFound();
-  }
+  if (!record || record.status === "draft") notFound();
   return <SeoPageRenderer page={record} />;
 }
-import { buildSeoMetadata } from '../../lib/buildSeoMetadata';
 
-export async function generateMetadata({ params }: { params: Promise<{ slug?: string, categorySlug?: string, comparisonSlug?: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug?: string }> }): Promise<Metadata> {
   const p = await params;
+  if (!p.slug) return notFound();
+
+  const intentPage = getIntentSeoPage(p.slug);
+  if (intentPage) {
+    const canonical = `https://welcometoneworleanstours.com/guides/${intentPage.slug}`;
+    return {
+      title: intentPage.title,
+      description: intentPage.description,
+      alternates: { canonical },
+      robots: { index: true, follow: true },
+      openGraph: { title: intentPage.title, description: intentPage.description, url: canonical, type: 'website' },
+      twitter: { card: 'summary_large_image', title: intentPage.title, description: intentPage.description },
+    };
+  }
+
   const record = getSeoPageBySlug(`guides/${p.slug}`);
   if (!record) return notFound();
   return buildSeoMetadata(record);
