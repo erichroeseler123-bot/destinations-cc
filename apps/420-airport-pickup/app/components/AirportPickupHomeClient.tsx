@@ -6,22 +6,12 @@ import type { HandoffContext, InitialUiState } from "@/lib/handoff/types";
 
 type ResolutionDebug = {
   downgraded: boolean;
-  winners: Array<{
-    field: string;
-    confidence: number;
-    ruleId: string;
-    reason: string;
-  }>;
+  winners: Array<{ field: string; confidence: number; ruleId: string; reason: string }>;
 };
 
 const CHECKOUT_URL = "https://www.destinationcommandcenter.com/checkout";
 
-function buildCheckoutHref(
-  handoff: HandoffContext,
-  productSlug: string,
-  date: string,
-  dropoff: string,
-) {
+function buildCheckoutHref(handoff: HandoffContext, productSlug: string, date: string, dropoff: string) {
   const params = new URLSearchParams();
   params.set("route", "airport-420-pickup");
   params.set("product", productSlug);
@@ -31,24 +21,11 @@ function buildCheckoutHref(
   params.set("dropoff", dropoff);
   params.set("pickupTime", "Arrival-based");
   params.set("arrival_focus", productSlug);
-
   if (date) params.set("date", date);
   if (handoff.handoffId) params.set("dcc_handoff_id", handoff.handoffId);
   if (handoff.sourcePage) params.set("source_page", handoff.sourcePage);
-  if (handoff.decisionCorridor) params.set("decision_corridor", handoff.decisionCorridor);
-  if (handoff.decisionCta) params.set("decision_cta", handoff.decisionCta);
-  if (handoff.decisionAction) params.set("decision_action", handoff.decisionAction);
-  if (handoff.decisionOption) params.set("decision_option", handoff.decisionOption);
-  if (handoff.decisionEntry) params.set("decision_entry", handoff.decisionEntry);
-  if (handoff.decisionState) params.set("decision_state", handoff.decisionState);
-  if (handoff.requestedLane) params.set("requested_lane", handoff.requestedLane);
-  if (handoff.resolvedLane) params.set("resolved_lane", handoff.resolvedLane);
-  if (handoff.topic) params.set("topic", handoff.topic);
-  if (handoff.subtype) params.set("subtype", handoff.subtype);
-  if (handoff.port) params.set("port", handoff.port);
   params.set("decision_product", handoff.decisionProduct || productSlug);
   params.set("product_slug", handoff.decisionProduct || productSlug);
-
   return `${CHECKOUT_URL}?${params.toString()}`;
 }
 
@@ -64,43 +41,25 @@ export default function AirportPickupHomeClient({
   const [date, setDate] = useState(initialUiState.prefilledDate || "");
   const [dropoff, setDropoff] = useState("Denver metro drop-off");
   const checkoutProductSlug =
-    initialHandoffContext.decisionProduct ||
-    initialHandoffContext.productSlug ||
-    initialUiState.defaultCardSlug ||
-    "airport-pickup";
+    initialHandoffContext.decisionProduct || initialHandoffContext.productSlug || initialUiState.defaultCardSlug || "airport-pickup";
 
   const checkoutHref = useMemo(
     () => buildCheckoutHref(initialHandoffContext, checkoutProductSlug, date, dropoff),
     [checkoutProductSlug, date, dropoff, initialHandoffContext],
   );
 
-  function trackCheckout(stage: string, targetPath: string) {
+  function trackCheckout(stage: string) {
     trackAirport420Event("checkout_started", {
       corridor: "airport-420-pickup",
       page_type: "airport-home",
       source_page: initialHandoffContext.sourcePage || "/",
       handoff_id: initialHandoffContext.handoffId,
-      decision_corridor: initialHandoffContext.decisionCorridor || "airport-420-pickup",
-      decision_cta: initialHandoffContext.decisionCta,
-      decision_action: initialHandoffContext.decisionAction,
-      decision_option: initialHandoffContext.decisionOption,
-      decision_product: initialHandoffContext.decisionProduct || checkoutProductSlug,
-      decision_entry: initialHandoffContext.decisionEntry,
-      decision_state: initialHandoffContext.decisionState,
-      requested_lane: initialHandoffContext.requestedLane,
-      resolved_lane: initialHandoffContext.resolvedLane,
-      topic: initialHandoffContext.topic,
-      subtype: initialHandoffContext.subtype,
       date,
-      product_slug: initialHandoffContext.decisionProduct || checkoutProductSlug,
-      default_card_slug: initialUiState.defaultCardSlug,
-      fit_signal: initialUiState.fitSignal,
-      urgency: initialUiState.urgency,
+      product_slug: checkoutProductSlug,
       confidence_downgraded: initialResolutionDebug.downgraded,
       winning_rule_ids: initialResolutionDebug.winners.map((winner) => winner.ruleId),
       stage,
-      target_path: targetPath,
-      clicked_product_slug: initialHandoffContext.decisionProduct || checkoutProductSlug,
+      target_path: checkoutHref,
     });
   }
 
@@ -108,132 +67,103 @@ export default function AirportPickupHomeClient({
     <main className="stack">
       <section className="hero">
         <div>
-          <p className="eyebrow">420-friendly airport pickup</p>
-          <h1>420-Friendly Airport Pickup in Denver</h1>
-          <p className="arrival-line">
-            Private ride from DEN with a driver who understands the experience.
-          </p>
+          <p className="eyebrow">Private DEN arrival service · 21+</p>
+          <h1>Land in Denver. Start Colorado privately.</h1>
+          <p className="arrival-line">A discreet private airport pickup for adults who want the arrival handled before they land.</p>
           <p className="hero-copy">
-            This is a private airport pickup designed for riders who want a 420-friendly
-            experience without awkward rideshare situations or extra transport planning.
+            Go straight to your hotel or build an optional dispensary stop into the ride. No shared shuttle, no random rideshare match, and no need to explain the trip to a stranger.
           </p>
           <div className="cta-row">
-            <a
-              className="button"
-              href={checkoutHref}
-              onClick={() => trackCheckout("primary_booking_cta", checkoutHref)}
-            >
-              Book 420 Pickup
-            </a>
-            <a className="button-secondary" href="#pricing">
-              See Pricing
-            </a>
+            <a className="button" href={checkoutHref} onClick={() => trackCheckout("primary_booking_cta")}>Book private DEN pickup</a>
+            <a className="button-secondary" href="#options">See arrival options</a>
           </div>
         </div>
       </section>
 
-      <section className="panel">
-        <p className="eyebrow">What this is</p>
-        <h2>Private airport pickup built for the experience.</h2>
+      <section id="options" className="panel">
+        <p className="eyebrow">Choose your arrival</p>
+        <h2>One private ride. Two ways to start.</h2>
         <div className="trust-grid">
           <div className="trust-item">
-            <strong>Pickup at DEN</strong>
-            <p className="muted">Airport pickup starts at Denver International Airport.</p>
+            <strong>Direct private pickup</strong>
+            <p className="muted">DEN to your Denver hotel, home base, or agreed destination.</p>
           </div>
           <div className="trust-item">
-            <strong>Private vehicle</strong>
-            <p className="muted">No shared shuttle, no random rideshare match, no group confusion.</p>
+            <strong>Optional dispensary stop</strong>
+            <p className="muted">For adults 21+, a retail stop can be planned into the route where lawful and practical.</p>
           </div>
           <div className="trust-item">
-            <strong>Direct to your destination</strong>
-            <p className="muted">Go straight to your hotel, home base, or first stop.</p>
+            <strong>Onward Colorado</strong>
+            <p className="muted">Heading farther? Continue into dedicated Red Rocks or mountain transportation instead of forcing one ride to do everything.</p>
           </div>
         </div>
       </section>
 
       <section className="panel">
-        <p className="eyebrow">Why choose this</p>
-        <h2>Keep the arrival private, direct, and aligned.</h2>
+        <p className="eyebrow">Why this works</p>
+        <h2>Private, discreet, and built around arrival day.</h2>
         <ul>
-          <li>No awkward rideshare situations.</li>
-          <li>Driver is aligned with the experience.</li>
-          <li>Clean, private, direct ride from the airport.</li>
+          <li>Private vehicle only.</li>
+          <li>Arrival-focused pickup from Denver International Airport.</li>
+          <li>Optional 21+ stop planning without making cannabis use part of the ride itself.</li>
+          <li>Clear destination and pricing before payment.</li>
         </ul>
       </section>
 
       <section id="pricing" className="panel">
-        <p className="eyebrow">Pricing</p>
-        <h2>Private airport pickup pricing is shown before payment.</h2>
-        <p className="muted">
-          Final pricing depends on destination, timing, and trip details. You will see the live
-          price in checkout before you pay.
-        </p>
-
+        <p className="eyebrow">Book your arrival</p>
+        <h2>See the live price before you pay.</h2>
+        <p className="muted">Final price depends on destination, timing, and trip details.</p>
         <div className="form-grid" style={{ marginTop: 24 }}>
           <div className="field">
             <label htmlFor="arrival-date">Arrival date</label>
-            <input
-              id="arrival-date"
-              className="date-input"
-              type="date"
-              value={date}
-              onChange={(event) => setDate(event.target.value)}
-            />
+            <input id="arrival-date" className="date-input" type="date" value={date} onChange={(event) => setDate(event.target.value)} />
           </div>
-
           <div className="field">
             <label htmlFor="dropoff-location">Destination / drop-off</label>
-            <input
-              id="dropoff-location"
-              value={dropoff}
-              onChange={(event) => setDropoff(event.target.value)}
-            />
+            <input id="dropoff-location" value={dropoff} onChange={(event) => setDropoff(event.target.value)} />
           </div>
         </div>
-
         <div className="cta-row">
-          <a
-            className="button"
-            href={checkoutHref}
-            onClick={() => trackCheckout("pricing_section_booking_cta", checkoutHref)}
-          >
-            Book Your Ride
-          </a>
+          <a className="button" href={checkoutHref} onClick={() => trackCheckout("pricing_section_booking_cta")}>See price & book</a>
         </div>
       </section>
 
       <section className="panel">
-        <p className="eyebrow">How it works</p>
-        <h2>Direct from booking to pickup.</h2>
-        <ol>
-          <li>Book your pickup.</li>
-          <li>Land at DEN.</li>
-          <li>Meet your driver.</li>
-          <li>Ride directly to your destination.</li>
-        </ol>
+        <p className="eyebrow">Keep the rest of the trip clean</p>
+        <h2>Use the right transportation for the next leg.</h2>
+        <div className="trust-grid">
+          <div className="trust-item">
+            <strong>Denver arrival</strong>
+            <p className="muted">Use this site for the private airport arrival itself.</p>
+          </div>
+          <div className="trust-item">
+            <strong>Red Rocks</strong>
+            <p className="muted"><a href="https://partyatredrocks.com/">Private Red Rocks transportation</a> is the better fit for a concert day.</p>
+          </div>
+          <div className="trust-item">
+            <strong>Mountain resorts</strong>
+            <p className="muted"><a href="https://gosno.co/">GoSno</a> handles private airport-to-resort transportation for Colorado ski destinations.</p>
+          </div>
+        </div>
       </section>
 
       <section className="panel">
         <p className="eyebrow">Important</p>
-        <h2>Know the basics before you ride.</h2>
+        <h2>21+ means 21+. Transportation stays transportation.</h2>
         <ul>
-          <li>Must be 21+.</li>
-          <li>Follow local laws.</li>
-          <li>This is a private ride, not a shared shuttle.</li>
+          <li>Retail cannabis is for adults age 21 and older in Colorado.</li>
+          <li>Passengers are responsible for following all applicable state, local, property, and federal rules.</li>
+          <li>No public-use promise is made, and the vehicle is not presented as a consumption space.</li>
+          <li>This is private transportation, not a cannabis retailer or consumption venue.</li>
         </ul>
       </section>
 
       <section className="panel">
         <p className="eyebrow">Book now</p>
-        <h2>Ready to lock in the pickup?</h2>
+        <h2>Handle the arrival before you land.</h2>
         <div className="cta-row">
-          <a
-            className="button"
-            href={checkoutHref}
-            onClick={() => trackCheckout("final_booking_cta", checkoutHref)}
-          >
-            Book 420 Airport Pickup
-          </a>
+          <a className="button" href={checkoutHref} onClick={() => trackCheckout("final_booking_cta")}>Book private DEN pickup</a>
         </div>
       </section>
     </main>
