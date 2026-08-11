@@ -32,6 +32,14 @@ export function buildWnoSiteGraph() {
           "@type": "City",
           name: "New Orleans",
         },
+        knowsAbout: [
+          "New Orleans tours",
+          "New Orleans swamp tours",
+          "New Orleans river cruises",
+          "New Orleans plantation tours",
+          "New Orleans city tours",
+          "New Orleans visitor planning",
+        ],
       },
       {
         "@type": "WebSite",
@@ -114,6 +122,34 @@ function resolveProviderName(slug: string, requestedName: string) {
   return storefrontProduct?.operatorName || (requestedName && requestedName !== "Unknown" ? requestedName : WNO_SITE_NAME);
 }
 
+function buildProductIdentifiers(slug: string) {
+  const product = STOREFRONT_PRODUCTS.find((item) => item.slug === slug);
+  if (!product) return [];
+
+  const identifiers: Array<Record<string, string>> = [
+    {
+      "@type": "PropertyValue",
+      propertyID: "WNO slug",
+      value: product.slug,
+    },
+    {
+      "@type": "PropertyValue",
+      propertyID: "FareHarbor company",
+      value: product.companyShortname,
+    },
+  ];
+
+  if (product.itemId) {
+    identifiers.push({
+      "@type": "PropertyValue",
+      propertyID: "FareHarbor item ID",
+      value: String(product.itemId),
+    });
+  }
+
+  return identifiers;
+}
+
 export function generateProductSchemaGraph({
   slug,
   name,
@@ -127,9 +163,11 @@ export function generateProductSchemaGraph({
 }) {
   const url = `${WNO_ORIGIN}/tours/${slug}`;
   const imageObj = PRODUCT_IMAGES[slug];
-  const imageUrl = imageObj?.verifiedRights ? `${WNO_ORIGIN}${imageObj.url}` : undefined;
+  const imageUrl = imageObj?.verifiedRights ? (imageObj.url.startsWith("http") ? imageObj.url : `${WNO_ORIGIN}${imageObj.url}`) : undefined;
   const provider = providerOrganization(resolveProviderName(slug, providerName));
   const broker = brokerOrganization();
+  const identifiers = buildProductIdentifiers(slug);
+  const storefrontProduct = STOREFRONT_PRODUCTS.find((product) => product.slug === slug);
 
   return {
     "@context": "https://schema.org",
@@ -141,8 +179,11 @@ export function generateProductSchemaGraph({
         description,
         url,
         ...(imageUrl && { image: imageUrl }),
+        ...(storefrontProduct?.category && { category: storefrontProduct.category }),
+        ...(identifiers.length > 0 && { identifier: identifiers }),
         provider,
         broker,
+        mainEntityOfPage: { "@id": `${url}#webpage` },
       },
       {
         "@type": "TouristTrip",
@@ -151,9 +192,12 @@ export function generateProductSchemaGraph({
         description,
         url,
         ...(imageUrl && { image: imageUrl }),
+        ...(storefrontProduct?.category && { touristType: storefrontProduct.category }),
+        ...(identifiers.length > 0 && { identifier: identifiers }),
         provider,
         broker,
         itemOffered: { "@id": `${url}#service` },
+        mainEntityOfPage: { "@id": `${url}#webpage` },
       },
     ],
   };
@@ -171,6 +215,19 @@ export function generateCategorySchemaGraph({
   items: Array<{ slug: string; name: string; description: string; providerName: string }>;
 }) {
   const url = absolute(urlPath);
+  const itemList = items.map((item, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    item: {
+      "@type": "TouristTrip",
+      "@id": `${WNO_ORIGIN}/tours/${item.slug}#trip`,
+      name: item.name,
+      description: item.description,
+      url: `${WNO_ORIGIN}/tours/${item.slug}`,
+      provider: providerOrganization(resolveProviderName(item.slug, item.providerName)),
+      broker: brokerOrganization(),
+    },
+  }));
 
   return {
     "@context": "https://schema.org",
@@ -182,13 +239,12 @@ export function generateCategorySchemaGraph({
         name,
         description,
         isPartOf: { "@id": WNO_WEBSITE_ID },
+        mainEntity: {
+          "@type": "ItemList",
+          itemListElement: itemList,
+        },
         hasPart: items.map((item) => ({
-          "@type": "TouristTrip",
-          name: item.name,
-          description: item.description,
-          url: `${WNO_ORIGIN}/tours/${item.slug}`,
-          provider: providerOrganization(resolveProviderName(item.slug, item.providerName)),
-          broker: brokerOrganization(),
+          "@id": `${WNO_ORIGIN}/tours/${item.slug}#trip`,
         })),
       },
     ],
