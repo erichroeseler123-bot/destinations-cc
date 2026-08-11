@@ -2,6 +2,22 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+type ProviderSlot = {
+  available?: boolean;
+  sourceCount?: number;
+  realtime?: boolean;
+  apiConfigured?: boolean;
+  mode?: string;
+};
+
+type LiveSource = {
+  kind: string;
+  label: string;
+  provider: string;
+  href: string;
+  realtime?: boolean;
+};
+
 type LivePayload = {
   checkedAt?: string;
   weather?: {
@@ -23,7 +39,8 @@ type LivePayload = {
     provider?: string;
     events?: Array<{ id: string; name: string; url?: string; start?: string | null; venue?: string | null; category?: string | null }>;
   };
-  providerSlots?: Record<string, { available?: boolean; reason?: string }>;
+  providerSlots?: Record<string, ProviderSlot>;
+  officialLiveLinks?: LiveSource[];
 };
 
 function when(value?: string | null) {
@@ -31,6 +48,10 @@ function when(value?: string | null) {
   const d = new Date(value);
   if (!Number.isFinite(d.getTime())) return "";
   return d.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" });
+}
+
+function pretty(value: string) {
+  return value.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[-_]/g, " ");
 }
 
 export default function CityLiveReality({
@@ -75,6 +96,7 @@ export default function CityLiveReality({
 
   const weather = payload?.weather;
   const events = payload?.ticketmaster?.available ? payload.ticketmaster.events || [] : [];
+  const liveSources = payload?.officialLiveLinks || [];
   const connectedSlots = useMemo(() => Object.entries(payload?.providerSlots || {}).filter(([, value]) => value.available), [payload]);
   const liveCount = (weather?.available ? 1 : 0) + events.length + connectedSlots.length;
 
@@ -85,11 +107,11 @@ export default function CityLiveReality({
           <p className="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-200">{cityName} • Live Reality</p>
           <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] text-white sm:text-3xl">What the city is actually doing now</h2>
           <p className="mt-3 text-sm leading-6 text-white/66">
-            One city-agnostic live layer powers every destination. Weather and events are fetched from current providers by coordinates; traffic, transit, cruise, sports and live-view adapters plug into the same contract city by city. Dynamic observations are never stored as permanent destination content.
+            The same live contract powers every city. Coordinates drive weather and event discovery; verified city adapters add official transit, traffic, cruise and live-view sources. Dynamic observations are not stored as permanent destination content.
           </p>
         </div>
         <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white/66">
-          {state === "loading" ? "checking sources" : state === "live" ? `${liveCount} live observations` : "live sources unavailable"}
+          {state === "loading" ? "checking sources" : state === "live" ? `${liveCount} live signals/sources` : "live sources unavailable"}
         </span>
       </div>
 
@@ -139,11 +161,40 @@ export default function CityLiveReality({
       <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
         {Object.entries(payload?.providerSlots || {}).map(([name, slot]) => (
           <div key={name} className="rounded-xl border border-white/10 bg-white/[0.035] px-3 py-3">
-            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-white/55">{name}</p>
-            <p className="mt-1 text-xs text-white/35">{slot.available ? "live" : "adapter slot"}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-white/55">{pretty(name)}</p>
+            <p className="mt-1 text-xs text-white/35">
+              {slot.mode === "api" ? "API connected" : slot.available ? `${slot.sourceCount || 1} official source${(slot.sourceCount || 1) === 1 ? "" : "s"}` : "source not mapped"}
+            </p>
           </div>
         ))}
       </div>
+
+      {liveSources.length ? (
+        <div className="mt-5 border-t border-white/10 pt-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Official live portals</p>
+            <span className="text-[10px] uppercase tracking-[0.14em] text-white/30">verified city adapters</span>
+          </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {liveSources.map((source) => (
+              <a
+                key={`${source.kind}:${source.href}`}
+                href={source.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.06] px-4 py-3 transition hover:bg-cyan-300/[0.11]"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[9px] font-black uppercase tracking-[0.14em] text-cyan-200/65">{pretty(source.kind)}</span>
+                  {source.realtime ? <span className="text-[9px] font-black uppercase tracking-[0.12em] text-emerald-200/65">real-time</span> : null}
+                </div>
+                <p className="mt-2 text-sm font-semibold text-white">{source.label}</p>
+                <p className="mt-1 text-xs text-white/38">{source.provider}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs text-white/35">
         {payload?.checkedAt ? <span>Checked {new Date(payload.checkedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span> : null}
