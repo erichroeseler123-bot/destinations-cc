@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getOfficialLiveSources, getProviderSlotStatus } from "@/lib/dcc/liveCity/officialSources";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -143,6 +144,8 @@ export async function GET(request: NextRequest) {
     readGlobalWeather(lat, lng, timezone),
     readTicketmaster(lat, lng),
   ]);
+  const officialLiveLinks = getOfficialLiveSources(city);
+  const providerSlots = getProviderSlotStatus(city);
 
   return NextResponse.json(
     {
@@ -157,13 +160,8 @@ export async function GET(request: NextRequest) {
       },
       weather,
       ticketmaster,
-      providerSlots: {
-        traffic: { available: false, reason: "city-adapter-required" },
-        transit: { available: false, reason: "city-adapter-required" },
-        cruises: { available: false, reason: "city-adapter-required" },
-        liveViews: { available: false, reason: "city-adapter-required" },
-        sports: { available: false, reason: "city-adapter-required" },
-      },
+      providerSlots,
+      officialLiveLinks,
     },
     { status: 200, headers: { "Cache-Control": "no-store, max-age=0", "X-Robots-Tag": "noindex" } }
   );
