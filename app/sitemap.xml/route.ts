@@ -76,7 +76,6 @@ export function buildWtonotSitemapPaths() {
   ALL_PRODUCTS.forEach((product: any) => { if (product.status === "live" && product.isIndexable) wtoPaths.push(`/tours/${product.slug}`); });
   Object.values(SEO_PAGES).forEach((page: any) => { if (page.status === "live" && page.isIndexable && !WTONOT_SUPERSEDED_SEO_PATHS.has(page.publicRoute)) wtoPaths.push(page.publicRoute); });
   COMPARISON_OPPORTUNITIES.forEach((comparison) => { if (comparison.status === "READY_TO_PUBLISH") wtoPaths.push(`/compare/${comparison.slug}`); });
-  ["/guides/best-new-orleans-swamp-tour", "/guides/french-quarter-tour-timing"].forEach((legacyPath) => { if (!wtoPaths.includes(legacyPath)) wtoPaths.push(legacyPath); });
   return Array.from(new Set(wtoPaths));
 }
 
