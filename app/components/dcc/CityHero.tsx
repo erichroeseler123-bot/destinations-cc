@@ -4,6 +4,7 @@ import CityTimePanel from "@/app/components/dcc/CityTimePanel";
 import WeatherPanel from "@/app/components/dcc/WeatherPanel";
 import LiveCityPulse from "@/app/components/dcc/LiveCityPulse";
 import CityWatchPanel from "@/app/components/dcc/CityWatchPanel";
+import CityActivityFeed from "@/app/components/dcc/CityActivityFeed";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
 
 type CityHeroTint = "warm" | "cool" | "emerald";
@@ -155,6 +156,9 @@ export default function CityHero({
 
         <div className="mt-8">
           <CityWatchPanel citySlug={citySlug} cityName={cityName} />
+        </div>
+        <div className="mt-8">
+          <CityActivityFeed citySlug={citySlug} cityName={cityName} />
         </div>
       </div>
     </header>
