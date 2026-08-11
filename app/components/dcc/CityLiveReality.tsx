@@ -7,6 +7,8 @@ type ProviderSlot = {
   sourceCount?: number;
   realtime?: boolean;
   apiConfigured?: boolean;
+  machineReadable?: boolean;
+  liveItemCount?: number;
   mode?: string;
 };
 
@@ -16,6 +18,21 @@ type LiveSource = {
   provider: string;
   href: string;
   realtime?: boolean;
+};
+
+type MachineFeed = {
+  available?: boolean;
+  configured?: boolean;
+  provider: string;
+  kind: string;
+  mode: string;
+  items?: Array<{
+    id: string;
+    title: string;
+    description?: string | null;
+    severity?: string | null;
+    updatedAt?: string | null;
+  }>;
 };
 
 type LivePayload = {
@@ -39,6 +56,7 @@ type LivePayload = {
     provider?: string;
     events?: Array<{ id: string; name: string; url?: string; start?: string | null; venue?: string | null; category?: string | null }>;
   };
+  machineFeeds?: MachineFeed[];
   providerSlots?: Record<string, ProviderSlot>;
   officialLiveLinks?: LiveSource[];
 };
@@ -97,8 +115,10 @@ export default function CityLiveReality({
   const weather = payload?.weather;
   const events = payload?.ticketmaster?.available ? payload.ticketmaster.events || [] : [];
   const liveSources = payload?.officialLiveLinks || [];
+  const machineFeeds = (payload?.machineFeeds || []).filter((feed) => feed.available);
+  const machineItems = machineFeeds.flatMap((feed) => (feed.items || []).map((item) => ({ ...item, provider: feed.provider, kind: feed.kind, mode: feed.mode })));
   const connectedSlots = useMemo(() => Object.entries(payload?.providerSlots || {}).filter(([, value]) => value.available), [payload]);
-  const liveCount = (weather?.available ? 1 : 0) + events.length + connectedSlots.length;
+  const liveCount = (weather?.available ? 1 : 0) + events.length + machineItems.length;
 
   return (
     <section className="rounded-[30px] border border-emerald-300/15 bg-[linear-gradient(180deg,rgba(4,18,15,0.96),rgba(4,9,15,0.98))] p-6 sm:p-8">
@@ -107,11 +127,11 @@ export default function CityLiveReality({
           <p className="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-200">{cityName} • Live Reality</p>
           <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] text-white sm:text-3xl">What the city is actually doing now</h2>
           <p className="mt-3 text-sm leading-6 text-white/66">
-            The same live contract powers every city. Coordinates drive weather and event discovery; verified city adapters add official transit, traffic, cruise and live-view sources. Dynamic observations are not stored as permanent destination content.
+            The same live contract powers every city. Coordinates drive weather and event discovery; machine-readable adapters add live transit and traffic where an official feed is available, while verified official portals fill the remaining gaps. Dynamic observations are not stored as permanent destination content.
           </p>
         </div>
         <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white/66">
-          {state === "loading" ? "checking sources" : state === "live" ? `${liveCount} live signals/sources` : "live sources unavailable"}
+          {state === "loading" ? "checking sources" : state === "live" ? `${liveCount} live observations` : "live sources unavailable"}
         </span>
       </div>
 
@@ -158,12 +178,38 @@ export default function CityLiveReality({
         </article>
       </div>
 
+      {machineItems.length ? (
+        <div className="mt-5 rounded-[22px] border border-emerald-300/15 bg-emerald-300/[0.045] p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-200/75">Machine-readable city feed</p>
+              <p className="mt-1 text-sm text-white/55">Current official transit/traffic records pulled directly into DCC.</p>
+            </div>
+            <span className="rounded-full border border-emerald-300/15 bg-emerald-300/[0.08] px-3 py-1 text-[9px] font-black uppercase tracking-[0.13em] text-emerald-100">{machineItems.length} current</span>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {machineItems.slice(0, 9).map((item) => (
+              <article key={`${item.provider}:${item.id}`} className="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
+                <div className="flex flex-wrap items-center gap-2 text-[9px] font-black uppercase tracking-[0.13em] text-emerald-200/65">
+                  <span>{pretty(item.kind)}</span>
+                  <span>•</span>
+                  <span>{item.mode === "api-key" ? "API" : "public feed"}</span>
+                </div>
+                <p className="mt-2 text-sm font-semibold leading-5 text-white">{item.title}</p>
+                {item.description ? <p className="mt-1 line-clamp-3 text-xs leading-5 text-white/45">{item.description}</p> : null}
+                <p className="mt-2 text-[10px] text-white/30">{item.provider}{item.updatedAt ? ` • ${when(item.updatedAt)}` : ""}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
         {Object.entries(payload?.providerSlots || {}).map(([name, slot]) => (
           <div key={name} className="rounded-xl border border-white/10 bg-white/[0.035] px-3 py-3">
             <p className="text-[10px] font-black uppercase tracking-[0.14em] text-white/55">{pretty(name)}</p>
             <p className="mt-1 text-xs text-white/35">
-              {slot.mode === "api" ? "API connected" : slot.available ? `${slot.sourceCount || 1} official source${(slot.sourceCount || 1) === 1 ? "" : "s"}` : "source not mapped"}
+              {slot.machineReadable && slot.liveItemCount ? `${slot.liveItemCount} live records` : slot.mode === "api" || slot.mode === "api-key" ? "API connected" : slot.available ? `${slot.sourceCount || 1} official source${(slot.sourceCount || 1) === 1 ? "" : "s"}` : "source not mapped"}
             </p>
           </div>
         ))}
@@ -177,13 +223,7 @@ export default function CityLiveReality({
           </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {liveSources.map((source) => (
-              <a
-                key={`${source.kind}:${source.href}`}
-                href={source.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.06] px-4 py-3 transition hover:bg-cyan-300/[0.11]"
-              >
+              <a key={`${source.kind}:${source.href}`} href={source.href} target="_blank" rel="noopener noreferrer" className="rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.06] px-4 py-3 transition hover:bg-cyan-300/[0.11]">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-[9px] font-black uppercase tracking-[0.14em] text-cyan-200/65">{pretty(source.kind)}</span>
                   {source.realtime ? <span className="text-[9px] font-black uppercase tracking-[0.12em] text-emerald-200/65">real-time</span> : null}
