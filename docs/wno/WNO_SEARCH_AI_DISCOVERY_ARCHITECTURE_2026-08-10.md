@@ -41,7 +41,9 @@ Make WNO maximally understandable, crawlable, and citable by Google Search, Goog
 - operator/FareHarbor identifiers where known
 
 ### Public commerce catalog
-Expose a first-party JSON catalog on `/guides/tour-catalog.json` containing only public, factual storefront data:
+Expose a first-party JSON catalog on `/guides/tour-catalog/data.json` containing only public, factual storefront data. The nested static route avoids collision with the existing dynamic `/guides/[slug]` guide route.
+
+Catalog fields include:
 - slug
 - canonical URL
 - title
@@ -97,7 +99,7 @@ Track:
 
 Before merge:
 - robots output for WNO host
-- `/guides/tour-catalog.json` returns 200 and valid JSON
+- `/guides/tour-catalog/data.json` returns 200 and valid JSON
 - catalog product count matches live storefront inventory
 - catalog exposes decision context but no private commercial terms
 - no draft/nonbookable products leak into catalog
