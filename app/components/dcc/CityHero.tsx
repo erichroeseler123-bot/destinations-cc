@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import CityTimePanel from "@/app/components/dcc/CityTimePanel";
 import WeatherPanel from "@/app/components/dcc/WeatherPanel";
+import LiveCityPulse from "@/app/components/dcc/LiveCityPulse";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
 
 type CityHeroTint = "warm" | "cool" | "emerald";
@@ -68,6 +69,12 @@ function toneClass(tint: CityHeroTint) {
   };
 }
 
+function citySlugFromHref(primaryCtaHref: string, cityName: string) {
+  const firstSegment = primaryCtaHref.split("?")[0].split("/").filter(Boolean)[0];
+  if (firstSegment) return firstSegment;
+  return cityName.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
 export default function CityHero({
   cityName,
   eyebrow,
@@ -87,6 +94,7 @@ export default function CityHero({
   weatherLng,
 }: CityHeroProps) {
   const palette = toneClass(heroTint);
+  const citySlug = citySlugFromHref(primaryCtaHref, cityName);
 
   return (
     <header
@@ -129,10 +137,11 @@ export default function CityHero({
 
         <div className="space-y-4 lg:pl-8">
           <div className={`inline-flex rounded-full border px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] ${palette.chip}`}>
-            Travel guide • Local context • Experiences
+            Live city view • Current signals • Local context
           </div>
+          <LiveCityPulse citySlug={citySlug} cityName={cityName} />
           {(timezone || (typeof weatherLat === "number" && typeof weatherLng === "number")) ? (
-            <div className="grid gap-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
               {timezone ? <CityTimePanel cityName={cityName} timezone={timezone} showWeekday /> : null}
               {typeof weatherLat === "number" && typeof weatherLng === "number" ? (
                 <WeatherPanel locationLabel={cityName} lat={weatherLat} lng={weatherLng} />
