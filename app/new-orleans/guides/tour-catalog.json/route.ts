@@ -7,9 +7,10 @@ export const revalidate = 3600;
 
 export function buildPublicTourCatalog() {
   return {
-    schemaVersion: "1.0",
+    schemaVersion: "1.1",
     name: "Welcome to New Orleans Tours public tour catalog",
     canonicalSite: ORIGIN,
+    canonicalCatalogUrl: `${ORIGIN}/guides/tour-catalog.json`,
     role: "tour discovery, comparison, concierge assistance, and affiliate booking broker",
     bookingPlatform: "FareHarbor",
     generatedFrom: "live storefront registry",
@@ -38,6 +39,16 @@ export function buildPublicTourCatalog() {
         duration: product.durationLabel ?? null,
         transportation: product.transportationSummary ?? null,
         pickup: product.pickupSummary ?? null,
+        decisionContext: {
+          bestFit: product.bestFit ?? [],
+          notIdealFor: product.notIdealFor ?? [],
+          childrenConsiderations: product.childrenConsiderations ?? [],
+          highlights: product.highlights ?? [],
+          bookingConfirmations: product.bookingConfirmations ?? [],
+          physicalFormat: product.physicalFormat ?? null,
+          logistics: product.logistics ?? null,
+          historicalContextNote: product.historicalContextNote ?? null,
+        },
         image: image?.verifiedRights
           ? {
               url: image.url.startsWith("http") ? image.url : `${ORIGIN}${image.url}`,
@@ -56,6 +67,7 @@ export async function GET() {
     headers: {
       "Cache-Control": "public, max-age=3600, s-maxage=3600",
       "X-Robots-Tag": "index, follow",
+      "Link": `<${ORIGIN}/>; rel=canonical`,
     },
   });
 }
