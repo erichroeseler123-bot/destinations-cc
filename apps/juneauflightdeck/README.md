@@ -18,3 +18,7 @@ Standalone Juneau helicopter-tour satellite for `juneauflightdeck.com`.
 2. Add the production domain `juneauflightdeck.com`.
 3. Verify the DCC Juneau live-slot endpoint is returning real helicopter inventory.
 4. Replace any placeholder FareHarbor assumptions with real provider routing if needed.
+
+## Deployment verification
+
+Production should build from the `main` branch with Vercel Root Directory set to `apps/juneauflightdeck`. Use `/api/health` after each production deployment to confirm the standalone Juneau app is serving before assigning the public domain.
