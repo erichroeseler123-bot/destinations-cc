@@ -9,6 +9,15 @@ import { trackDellsEvent } from "@/lib/telemetry";
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1800&q=82";
 
+const BROWSE_BY_INTENT = [
+  { title: "Things to do", body: "Start with the kind of day you want instead of a giant attraction directory.", href: "/things-to-do" },
+  { title: "Boat tours & Ducks", body: "Compare the signature river experiences and go straight to current operator ticket paths.", href: "/boat-tours" },
+  { title: "Waterparks", body: "Indoor, outdoor, resort, and day-use planning without turning the whole trip into one long pool day.", href: "/waterparks" },
+  { title: "Rainy-day activities", body: "Keep the trip useful with indoor waterparks, shows, arcades, and low-weather-risk backups.", href: "/rainy-day" },
+  { title: "Adults & couples", body: "River scenery, dinner, nightlife, downtown, and a slower Dells weekend.", href: "/adults" },
+  { title: "Tonight", body: "Dinner, Ghost Boat, downtown, neon, and same-day after-dark ideas.", href: "/tonight" },
+] as const;
+
 const QUICK_DECISIONS = [
   { title: "First time here", body: "Start with the river, one signature attraction, and a simple downtown reset.", href: "/first-time" },
   { title: "Rainy day", body: "Indoor waterparks, shows, arcades, and low-weather-risk backups.", href: "/rainy-day" },
@@ -31,12 +40,29 @@ export default function DellsHomeClient() {
           <p className="eyebrow">Wisconsin Dells trip shortcut</p>
           <h1>Do the Dells without doing everything.</h1>
           <p>
-            Waterparks, ducks, boats, downtown, shows, giant attractions, and too many choices. Start with the kind of day you actually want and make one good decision at a time.
+            Waterparks, Ducks, boat tours, downtown, shows, giant attractions, and too many choices. Start with the kind of day you actually want, then make one good decision at a time.
           </p>
           <div className="hero-actions">
-            <a className="primary-button" href="#signature">Start with the classics</a>
-            <Link className="secondary-button" href="/rainy-day">Plan for rain</Link>
+            <Link className="primary-button" href="/things-to-do">Find things to do</Link>
+            <Link className="secondary-button" href="/boat-tours">Compare boat tours</Link>
           </div>
+        </div>
+      </section>
+
+      <section className="section-shell">
+        <div className="section-heading">
+          <p className="eyebrow">Browse the Dells</p>
+          <h2>Start with what you actually came here for.</h2>
+          <p>These are the fastest paths into the parts of Wisconsin Dells people most often need to decide between.</p>
+        </div>
+        <div className="action-grid">
+          {BROWSE_BY_INTENT.map((item) => (
+            <Link className="action-card" href={item.href} key={item.href}>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+              <span className="text-button">Explore this</span>
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -44,7 +70,7 @@ export default function DellsHomeClient() {
         <div className="section-heading">
           <p className="eyebrow">Pick your situation</p>
           <h2>What kind of Dells day are you trying to solve?</h2>
-          <p>Skip the giant attraction directory. Choose the problem in front of you.</p>
+          <p>Already know the problem? Jump straight into the plan that matches it.</p>
         </div>
         <div className="action-grid">
           {QUICK_DECISIONS.map((item) => (
@@ -59,11 +85,12 @@ export default function DellsHomeClient() {
 
       <section className="section-shell river-terminal" id="signature">
         <div className="section-heading">
-          <p className="eyebrow">The signature Dells experiences</p>
+          <p className="eyebrow">Book the signature Dells experiences</p>
           <h2>If it is your first trip, start with the river.</h2>
           <p>
-            Wisconsin Dells existed before the waterparks. The sandstone river scenery, ducks, boat tours, and after-dark canyon experiences are what make the destination different from every other family-entertainment town.
+            Wisconsin Dells existed before the waterparks. The sandstone river scenery, Ducks, boat tours, and after-dark canyon experiences are what make the destination different from every other family-entertainment town.
           </p>
+          <Link className="text-button" href="/boat-tours">Compare all river experiences</Link>
         </div>
         <div className="river-grid">
           {RIVER_OPS_TERMINAL.map((card) => (
