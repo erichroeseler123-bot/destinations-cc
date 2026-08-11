@@ -12,11 +12,13 @@ describe("WNO search and AI discovery", () => {
 
     assert.match(robots, /User-agent: OAI-SearchBot/);
     assert.match(robots, /User-agent: PerplexityBot/);
+    assert.match(robots, /User-agent: Claude-SearchBot/);
+    assert.match(robots, /User-agent: Claude-User/);
     assert.match(robots, /Sitemap: https:\/\/welcometoneworleanstours\.com\/sitemap\.xml/);
 
     for (const path of ["/admin/", "/api/", "/internal/", "/dashboard/", "/preview/"]) {
       const occurrences = robots.split(`Disallow: ${path}`).length - 1;
-      assert.ok(occurrences >= 3, `${path} remains blocked for generic and explicit search crawler groups`);
+      assert.ok(occurrences >= 5, `${path} remains blocked for generic and explicit search crawler groups`);
     }
   });
 
