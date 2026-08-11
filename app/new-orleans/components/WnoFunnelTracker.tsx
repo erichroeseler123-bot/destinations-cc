@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { classifyWnoEntrySource } from "../lib/trafficSource";
 
 const TELEMETRY_URL = "https://www.destinationcommandcenter.com/api/wno/telemetry";
 const SESSION_KEY = "wno_funnel_session";
@@ -10,19 +11,6 @@ const LANDING_SENT_KEY = "wno_landing_sent";
 
 function id() {
   return `wno_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function labelForEntry(pathname: string, explicitSource: string | null, referrer: string) {
-  if (explicitSource) return explicitSource.slice(0, 80);
-  try {
-    const host = referrer ? new URL(referrer).hostname : "";
-    if (host.includes("destinationcommandcenter.com")) return "dcc-new-orleans";
-    if (host.includes("welcometotheswamp.com")) return "welcome-to-the-swamp";
-    if (host.includes("frenchquarterorientation.com")) return "french-quarter-orientation";
-  } catch {}
-
-  const clean = pathname.replace(/^\/guides\//, "").replace(/^\//, "") || "home";
-  return `wtonot-entry-${clean}`.slice(0, 80);
 }
 
 function classifyClick(href: string) {
@@ -78,7 +66,12 @@ export default function WnoFunnelTracker() {
       sessionStorage.setItem(ENTRY_PATH_KEY, window.location.pathname);
       sessionStorage.setItem(
         ENTRY_SOURCE_KEY,
-        labelForEntry(window.location.pathname, params.get("src"), document.referrer),
+        classifyWnoEntrySource({
+          pathname: window.location.pathname,
+          explicitSource: params.get("src"),
+          utmSource: params.get("utm_source"),
+          referrer: document.referrer,
+        }),
       );
     }
 
