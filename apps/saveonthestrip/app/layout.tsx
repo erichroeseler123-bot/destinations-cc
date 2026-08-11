@@ -81,21 +81,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div className="footer-links">
                   <Link href="/tonight">What to do tonight</Link>
                   <Link href="/worth-it">What is worth it</Link>
-                  <Link href="/shows">Vegas shows</Link>
-                  <Link href="/tours">Vegas tours</Link>
-                  <Link href="/deals">Vegas deals</Link>
-                  <Link href="/free-things">Free things to do</Link>
-                  <Link href="/hotels">Vegas hotels</Link>
+                  <Link href="/under-100">Vegas under $100</Link>
+                  <Link href="/near-your-hotel">Things near your hotel</Link>
+                  <Link href="/four-hours-in-vegas">Four hours in Vegas</Link>
+                  <Link href="/before-a-late-flight">Before a late flight</Link>
+                  <Link href="/what-to-skip-in-las-vegas">What to skip</Link>
                 </div>
               </div>
 
               <div className="footer-block">
-                <div className="eyebrow">About</div>
+                <div className="eyebrow">Compare before you spend</div>
                 <div className="footer-links">
-                  <Link href="/about">About this site</Link>
-                  <Link href="/privacy">Privacy</Link>
-                  <Link href="/terms">Terms</Link>
-                  <Link href="/contact">Contact</Link>
+                  <Link href="/shows">Vegas shows</Link>
+                  <Link href="/tours">Vegas tours</Link>
+                  <Link href="/free-things">Free things to do</Link>
+                  <Link href="/compare/sphere-vs-vegas-show">Sphere vs a Vegas show</Link>
+                  <Link href="/compare/grand-canyon-vs-hoover-dam">Grand Canyon vs Hoover Dam</Link>
+                  <Link href="/hotels">Vegas hotels</Link>
+                  <Link href="/about">About</Link>
                 </div>
               </div>
             </div>
