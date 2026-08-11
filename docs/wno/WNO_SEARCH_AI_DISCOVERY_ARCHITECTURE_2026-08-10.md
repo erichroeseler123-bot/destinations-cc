@@ -39,7 +39,7 @@ Make WNO maximally understandable, crawlable, and citable by Google Search, Goog
 - operator/FareHarbor identifiers where known
 
 ### Public commerce catalog
-Expose a first-party JSON catalog on `/tour-catalog.json` containing only public, factual storefront data:
+Expose a first-party JSON catalog on `/guides/tour-catalog.json` containing only public, factual storefront data:
 - slug
 - canonical URL
 - title
@@ -89,7 +89,7 @@ Track:
 
 Before merge:
 - robots output for WNO host
-- `/tour-catalog.json` returns 200 and valid JSON
+- `/guides/tour-catalog.json` returns 200 and valid JSON
 - catalog product count matches live storefront inventory
 - no draft/nonbookable products leak into catalog
 - all catalog canonical URLs resolve under WNO host
