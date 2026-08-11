@@ -39,11 +39,14 @@ export function buildRobotsTxt(host: string) {
 
   const groups = [crawlerGroup("*")];
 
-  // Search/citation crawlers are explicit on WNO so discovery policy is
-  // auditable. These are search/indexing bots, not a blanket training policy.
+  // Search/citation and user-requested retrieval crawlers are explicit on WNO
+  // so discovery policy is auditable. This does not redefine the separate
+  // training/model-development crawler policy.
   if (isWno) {
     groups.push(crawlerGroup("OAI-SearchBot"));
     groups.push(crawlerGroup("PerplexityBot"));
+    groups.push(crawlerGroup("Claude-SearchBot"));
+    groups.push(crawlerGroup("Claude-User"));
   }
 
   return [...groups, `Sitemap: ${sitemapUrl}`].join("\n\n");
