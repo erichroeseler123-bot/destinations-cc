@@ -5,7 +5,7 @@ import WeatherPanel from "@/app/components/dcc/WeatherPanel";
 import LiveCityPulse from "@/app/components/dcc/LiveCityPulse";
 import CityWatchPanel from "@/app/components/dcc/CityWatchPanel";
 import CityActivityFeed from "@/app/components/dcc/CityActivityFeed";
-import NewOrleansLiveReality from "@/app/components/dcc/NewOrleansLiveReality";
+import CityLiveReality from "@/app/components/dcc/CityLiveReality";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
 
 type CityHeroTint = "warm" | "cool" | "emerald";
@@ -33,10 +33,8 @@ function toneClass(tint: CityHeroTint) {
   if (tint === "warm") {
     return {
       tone: "amber" as const,
-      shell:
-        "bg-[radial-gradient(circle_at_top_left,rgba(255,176,124,0.24),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(251,191,36,0.16),transparent_28%),linear-gradient(180deg,rgba(24,12,10,0.75),rgba(7,11,25,0.96))]",
-      overlay:
-        "bg-[linear-gradient(180deg,rgba(11,7,6,0.15),rgba(11,7,6,0.62)_45%,rgba(6,8,16,0.92)_100%)]",
+      shell: "bg-[radial-gradient(circle_at_top_left,rgba(255,176,124,0.24),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(251,191,36,0.16),transparent_28%),linear-gradient(180deg,rgba(24,12,10,0.75),rgba(7,11,25,0.96))]",
+      overlay: "bg-[linear-gradient(180deg,rgba(11,7,6,0.15),rgba(11,7,6,0.62)_45%,rgba(6,8,16,0.92)_100%)]",
       border: "border-amber-300/25",
       eyebrow: "text-amber-200",
       chip: "border-amber-300/20 bg-amber-400/10 text-amber-100",
@@ -47,10 +45,8 @@ function toneClass(tint: CityHeroTint) {
   if (tint === "emerald") {
     return {
       tone: "emerald" as const,
-      shell:
-        "bg-[radial-gradient(circle_at_top_left,rgba(74,222,128,0.18),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.12),transparent_28%),linear-gradient(180deg,rgba(10,18,15,0.74),rgba(7,11,25,0.96))]",
-      overlay:
-        "bg-[linear-gradient(180deg,rgba(6,10,8,0.18),rgba(6,10,8,0.58)_45%,rgba(6,8,16,0.92)_100%)]",
+      shell: "bg-[radial-gradient(circle_at_top_left,rgba(74,222,128,0.18),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.12),transparent_28%),linear-gradient(180deg,rgba(10,18,15,0.74),rgba(7,11,25,0.96))]",
+      overlay: "bg-[linear-gradient(180deg,rgba(6,10,8,0.18),rgba(6,10,8,0.58)_45%,rgba(6,8,16,0.92)_100%)]",
       border: "border-emerald-300/20",
       eyebrow: "text-emerald-200",
       chip: "border-emerald-300/20 bg-emerald-400/10 text-emerald-100",
@@ -60,10 +56,8 @@ function toneClass(tint: CityHeroTint) {
   }
   return {
     tone: "cyan" as const,
-    shell:
-      "bg-[radial-gradient(circle_at_top_left,rgba(143,208,255,0.18),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(61,243,255,0.12),transparent_26%),linear-gradient(180deg,rgba(15,23,42,0.74),rgba(7,11,25,0.96))]",
-    overlay:
-      "bg-[linear-gradient(180deg,rgba(4,9,18,0.18),rgba(4,9,18,0.56)_45%,rgba(6,8,16,0.92)_100%)]",
+    shell: "bg-[radial-gradient(circle_at_top_left,rgba(143,208,255,0.18),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(61,243,255,0.12),transparent_26%),linear-gradient(180deg,rgba(15,23,42,0.74),rgba(7,11,25,0.96))]",
+    overlay: "bg-[linear-gradient(180deg,rgba(4,9,18,0.18),rgba(4,9,18,0.56)_45%,rgba(6,8,16,0.92)_100%)]",
     border: "border-cyan-300/20",
     eyebrow: "text-cyan-200",
     chip: "border-cyan-300/20 bg-cyan-400/10 text-cyan-100",
@@ -98,29 +92,17 @@ export default function CityHero({
 }: CityHeroProps) {
   const palette = toneClass(heroTint);
   const citySlug = citySlugFromHref(primaryCtaHref, cityName);
-  const isNewOrleans = citySlug === "new-orleans";
+  const hasCoordinates = typeof weatherLat === "number" && typeof weatherLng === "number";
 
   return (
-    <header
-      className={`relative overflow-hidden rounded-[2rem] border ${palette.border} ${palette.shell} shadow-[0_28px_90px_rgba(0,0,0,0.45)]`}
-    >
+    <header className={`relative overflow-hidden rounded-[2rem] border ${palette.border} ${palette.shell} shadow-[0_28px_90px_rgba(0,0,0,0.45)]`}>
       {heroImage ? (
         <div className="absolute inset-0">
-          <Image
-            src={heroImage}
-            alt={heroImageAlt || `${cityName} travel scene`}
-            fill
-            sizes="100vw"
-            className="object-cover"
-            style={{ objectPosition: heroImagePosition || "center center" }}
-            priority
-          />
+          <Image src={heroImage} alt={heroImageAlt || `${cityName} travel scene`} fill sizes="100vw" className="object-cover" style={{ objectPosition: heroImagePosition || "center center" }} priority />
         </div>
       ) : null}
       <div className={`absolute inset-0 ${palette.overlay}`} />
-      {!heroImage ? (
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(255,255,255,0.08),transparent_24%),radial-gradient(circle_at_82%_16%,rgba(255,255,255,0.08),transparent_20%),linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:auto,auto,48px_48px,48px_48px]" />
-      ) : null}
+      {!heroImage ? <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(255,255,255,0.08),transparent_24%),radial-gradient(circle_at_82%_16%,rgba(255,255,255,0.08),transparent_20%),linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:auto,auto,48px_48px,48px_48px]" /> : null}
 
       <div className="relative px-8 py-10 md:px-10">
         <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
@@ -131,40 +113,32 @@ export default function CityHero({
             <p className="mt-4 max-w-3xl text-lg leading-8 text-white/86">{summary}</p>
             {trustLine ? <p className="mt-4 max-w-3xl text-sm leading-7 text-white/68">{trustLine}</p> : null}
             <div className="mt-7 flex flex-wrap gap-3">
-              <Link href={primaryCtaHref} className={`rounded-full px-6 py-3 text-xs font-black uppercase tracking-[0.16em] transition-colors ${palette.primary}`}>
-                {primaryCtaLabel}
-              </Link>
-              <Link href={secondaryCtaHref} className={`rounded-full border px-6 py-3 text-xs font-black uppercase tracking-[0.16em] transition-colors ${palette.secondary}`}>
-                {secondaryCtaLabel}
-              </Link>
+              <Link href={primaryCtaHref} className={`rounded-full px-6 py-3 text-xs font-black uppercase tracking-[0.16em] transition-colors ${palette.primary}`}>{primaryCtaLabel}</Link>
+              <Link href={secondaryCtaHref} className={`rounded-full border px-6 py-3 text-xs font-black uppercase tracking-[0.16em] transition-colors ${palette.secondary}`}>{secondaryCtaLabel}</Link>
             </div>
           </div>
 
           <div className="space-y-4 lg:pl-8">
-            <div className={`inline-flex rounded-full border px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] ${palette.chip}`}>
-              Live city view • Current signals • Local context
-            </div>
-            {!isNewOrleans ? <LiveCityPulse citySlug={citySlug} cityName={cityName} /> : null}
-            {(timezone || (typeof weatherLat === "number" && typeof weatherLng === "number")) ? (
+            <div className={`inline-flex rounded-full border px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] ${palette.chip}`}>Live city view • Current signals • Local context</div>
+            {!hasCoordinates ? <LiveCityPulse citySlug={citySlug} cityName={cityName} /> : null}
+            {(timezone || hasCoordinates) ? (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                 {timezone ? <CityTimePanel cityName={cityName} timezone={timezone} showWeekday /> : null}
-                {typeof weatherLat === "number" && typeof weatherLng === "number" ? (
-                  <WeatherPanel locationLabel={cityName} lat={weatherLat} lng={weatherLng} />
-                ) : null}
+                {hasCoordinates ? <WeatherPanel locationLabel={cityName} lat={weatherLat} lng={weatherLng} /> : null}
               </div>
             ) : null}
           </div>
         </div>
 
-        {isNewOrleans ? (
+        {hasCoordinates ? (
           <div className="mt-8">
-            <NewOrleansLiveReality />
+            <CityLiveReality citySlug={citySlug} cityName={cityName} lat={weatherLat} lng={weatherLng} timezone={timezone} />
           </div>
         ) : null}
         <div className="mt-8">
-          <CityWatchPanel citySlug={citySlug} cityName={cityName} suppressRepoSignals={isNewOrleans} />
+          <CityWatchPanel citySlug={citySlug} cityName={cityName} suppressRepoSignals={hasCoordinates} />
         </div>
-        {!isNewOrleans ? (
+        {!hasCoordinates ? (
           <div className="mt-8">
             <CityActivityFeed citySlug={citySlug} cityName={cityName} />
           </div>
