@@ -2,6 +2,7 @@ import { STOREFRONT_PRODUCTS } from "../../tours/pageConfig";
 import { PRODUCT_IMAGES } from "../../data/imageRegistry";
 
 const ORIGIN = "https://welcometoneworleanstours.com";
+const CATALOG_URL = `${ORIGIN}/guides/tour-catalog.json`;
 
 export const revalidate = 3600;
 
@@ -10,7 +11,7 @@ export function buildPublicTourCatalog() {
     schemaVersion: "1.1",
     name: "Welcome to New Orleans Tours public tour catalog",
     canonicalSite: ORIGIN,
-    canonicalCatalogUrl: `${ORIGIN}/guides/tour-catalog.json`,
+    canonicalCatalogUrl: CATALOG_URL,
     role: "tour discovery, comparison, concierge assistance, and affiliate booking broker",
     bookingPlatform: "FareHarbor",
     generatedFrom: "live storefront registry",
@@ -67,7 +68,7 @@ export async function GET() {
     headers: {
       "Cache-Control": "public, max-age=3600, s-maxage=3600",
       "X-Robots-Tag": "index, follow",
-      "Link": `<${ORIGIN}/>; rel=canonical`,
+      "Link": `<${CATALOG_URL}>; rel=canonical`,
     },
   });
 }
