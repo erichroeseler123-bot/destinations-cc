@@ -1,8 +1,8 @@
-import { STOREFRONT_PRODUCTS } from "../../tours/pageConfig";
-import { PRODUCT_IMAGES } from "../../data/imageRegistry";
+import { STOREFRONT_PRODUCTS } from "../../../tours/pageConfig";
+import { PRODUCT_IMAGES } from "../../../data/imageRegistry";
 
 const ORIGIN = "https://welcometoneworleanstours.com";
-const CATALOG_URL = `${ORIGIN}/guides/tour-catalog.json`;
+const CATALOG_URL = `${ORIGIN}/guides/tour-catalog/data.json`;
 
 export const revalidate = 3600;
 

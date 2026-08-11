@@ -51,7 +51,7 @@ const WTONOT_LIVE_CITY_PATHS = [
 ] as const;
 
 const WTONOT_MACHINE_DISCOVERY_PATHS = [
-  "/guides/tour-catalog.json",
+  "/guides/tour-catalog/data.json",
 ] as const;
 
 const WTONOT_COMMERCIAL_CATEGORY_PATHS = Object.values(COMMERCIAL_CATEGORY_PAGES)
