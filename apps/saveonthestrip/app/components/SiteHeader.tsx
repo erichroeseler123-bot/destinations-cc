@@ -24,19 +24,12 @@ export function SiteHeader() {
       ) : (
         <div className="brand-spacer" aria-hidden="true" />
       )}
-      <nav className="nav-links">
-        <Link href="/shows" className="pill">
-          Shows
-        </Link>
-        <Link href="/tours" className="pill">
-          Tours
-        </Link>
-        <Link href="/deals" className="pill">
-          Deals
-        </Link>
-        <Link href="/timeshares" className="pill">
-          Timeshares
-        </Link>
+      <nav className="nav-links" aria-label="Primary navigation">
+        <Link href="/tonight" className="pill">Tonight</Link>
+        <Link href="/worth-it" className="pill">Worth It</Link>
+        <Link href="/shows" className="pill">Shows</Link>
+        <Link href="/tours" className="pill">Tours</Link>
+        <Link href="/free-things" className="pill">Free</Link>
       </nav>
     </header>
   );
