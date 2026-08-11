@@ -3,14 +3,26 @@
 **Date:** 2026-08-10  
 **Goal:** Replace generic or weak commerce imagery with product-accurate, rights-cleared imagery while preserving truthful fallbacks and existing booking flows.
 
+## Confirmed operator permissions
+
+The site owner has confirmed image-use permission for these WNO operator relationships:
+
+- **Gray Line / New Orleans Steamboat Company** — approved for operator-direct commerce imagery.
+- **Ragin Cajun Tours / Ragin Randy** — approved for operator-direct commerce imagery.
+- **Southern Style Tours** — approved for operator-direct commerce imagery.
+
+These operators should no longer be treated as waiting on image-rights approval. Product-accurate assets from these approved operator sources may be added to the governed product image registry as they are collected and matched to the correct tour.
+
+FareHarbor also confirmed separately that FHDN affiliates may use images in the FareHarbor Marketplace. That is an additional rights path; it does not replace the direct operator permissions above.
+
 ## Source-of-truth policy
 
 Commercial product imagery must be governed at the product registry layer, never patched independently page-by-page.
 
 Allowed image sources:
 
-1. **FareHarbor Marketplace** — allowed only when WNO's applicable FHDN/affiliate relationship authorizes marketplace image use for the product.
-2. **Operator Direct** — allowed only when the operator has granted image usage rights or FareHarbor/operator partnership terms explicitly cover the image.
+1. **FareHarbor Marketplace** — allowed when WNO's applicable FHDN/affiliate relationship authorizes marketplace image use for the product.
+2. **Operator Direct** — allowed when the operator has granted image usage rights or FareHarbor/operator partnership terms explicitly cover the image. Gray Line/New Orleans Steamboat Company, Ragin Cajun Tours, and Southern Style Tours are currently confirmed approved operator-direct sources for WNO.
 3. **Wikimedia Commons / public-domain editorial** — allowed only when license/attribution requirements are satisfied and the image is accurate enough for the subject.
 4. **Local editorial asset** — allowed only when provenance/rights are known.
 5. **Text-only fallback** — required when no product-accurate rights-cleared image exists.
@@ -107,7 +119,7 @@ For every `STOREFRONT_PRODUCTS` item capture:
 - migration status
 - notes
 
-Do not mark a FareHarbor Marketplace image approved solely because an image exists in the marketplace. Approval requires the applicable affiliate/FHDN authorization to be in force for WNO.
+For Gray Line/New Orleans Steamboat Company, Ragin Cajun Tours, and Southern Style Tours, operator-rights status is already approved; the remaining work is product-to-image matching and asset intake, not permission collection.
 
 ## Page-by-page rollout
 
@@ -162,21 +174,21 @@ Update only after commerce surfaces are correct:
 
 Editorial hero imagery may remain broader than product imagery, but must never be presented as the exact bookable tour unless it is.
 
-## FareHarbor asset intake workflow
+## FareHarbor / operator asset intake workflow
 
 For each live product:
 
-1. locate the product in the authorized FareHarbor Marketplace/affiliate inventory
+1. locate the product in the approved operator/FareHarbor inventory
 2. record the operator + product/item identity
 3. select the strongest accurate image, prioritizing recognizable experience/vehicle/vessel/site imagery
 4. store or reference the asset using the site's approved asset pipeline
 5. add the image to `PRODUCT_IMAGES`
 6. set source and rights metadata
-7. mark approved only after authorization is confirmed
+7. for the three confirmed operators above, set direct operator imagery to approved once the asset is verified to belong to the correct product
 8. verify card + detail rendering
 9. verify booking attribution still points to the approved FareHarbor link
 
-Do not scrape arbitrary operator websites as an image source.
+Do not scrape arbitrary unrelated third-party sites as an image source.
 
 ## Visual quality rules
 
@@ -205,6 +217,7 @@ Add/extend tests so that:
 4. the four combo products remain text-only unless a product-accurate approved image is added
 5. every live product has either an approved image or an explicit migration/fallback status
 6. no product card bypasses `resolveProductImage`
+7. operator-direct assets for Gray Line/New Orleans Steamboat Company, Ragin Cajun Tours, and Southern Style Tours can be accepted without a redundant pending-rights state
 
 ## QA checklist
 
@@ -237,7 +250,7 @@ Check:
 1. land governance fields + tests
 2. migrate already-authorized operator images into the explicit schema
 3. inventory all 21 products
-4. add FareHarbor Marketplace assets as authorization is confirmed
+4. collect and map product-specific images from approved Gray Line, Ragin Cajun, Southern Style, and eligible FareHarbor Marketplace sources
 5. preview deploy
 6. perform visual + booking-path QA
 7. merge only after preview is READY
