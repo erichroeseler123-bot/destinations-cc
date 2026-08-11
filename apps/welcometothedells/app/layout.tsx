@@ -3,18 +3,18 @@ import { ACTION_CARDS, HUBS, SITE_URL } from "@/lib/content";
 import "./globals.css";
 
 const DESCRIPTION =
-  "Plan a Wisconsin Dells trip by what you actually want to do: river tours, ducks, waterparks, rainy-day ideas, family plans, adult weekends, downtown, Lake Delton, and large-group options.";
+  "Plan a Wisconsin Dells trip by what you actually want to do: boat tours, Ducks, waterparks, rainy-day activities, family plans, adult weekends, downtown, Lake Delton, and large-group options.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Welcome to the Dells | Wisconsin Dells Trip Planner",
+    default: "Welcome to the Dells | Wisconsin Dells Things to Do & Trip Planner",
     template: "%s | Welcome to the Dells",
   },
   description: DESCRIPTION,
   alternates: { canonical: SITE_URL },
   openGraph: {
-    title: "Welcome to the Dells | Wisconsin Dells Trip Planner",
+    title: "Welcome to the Dells | Wisconsin Dells Things to Do & Trip Planner",
     description: DESCRIPTION,
     url: SITE_URL,
     siteName: "Welcome to the Dells",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 function JsonLd() {
   const graph = [
     {
-      "@type": "TravelAgency",
+      "@type": "Organization",
       "@id": `${SITE_URL}/#organization`,
       name: "Welcome to the Dells",
       url: SITE_URL,
@@ -39,6 +39,7 @@ function JsonLd() {
       isPartOf: { "@id": "https://www.destinationcommandcenter.com/#organization" },
       knowsAbout: [
         "Wisconsin Dells",
+        "Things to do in Wisconsin Dells",
         "Wisconsin Dells attractions",
         "Wisconsin Dells waterparks",
         "Wisconsin Dells boat tours",
@@ -81,7 +82,7 @@ function JsonLd() {
           name: "What should first-time visitors do in Wisconsin Dells?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "A simple first trip can start with one signature river or duck experience, one major attraction or waterpark, and enough open time for downtown or a meal without crossing town repeatedly.",
+            text: "A simple first trip can start with one signature river or Duck experience, one major attraction or waterpark, and enough open time for downtown or a meal without crossing town repeatedly.",
           },
         },
         {
@@ -119,8 +120,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <JsonLd />
         {children}
         <footer className="network-footer">
-          <span>Part of the Destination Command Center network.</span>
-          <a href="https://www.destinationcommandcenter.com/network">Network doctrine</a>
+          <span>Welcome to the Dells — practical Wisconsin Dells trip planning.</span>
+          <a href="https://www.destinationcommandcenter.com/wisconsin-dells?utm_source=welcometothedells&utm_medium=referral&utm_campaign=dells-footer">Research Wisconsin Dells in Destination Command Center</a>
         </footer>
       </body>
     </html>
