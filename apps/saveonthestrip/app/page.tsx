@@ -1,207 +1,72 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getDccImageSet } from "@/lib/dccMedia";
-import { getVegasTours, groupVegasToursByArea } from "@/lib/fareharbor";
-import { getVegasShows, type VegasShow } from "@/lib/ticketmaster";
+import { getVegasTours } from "@/lib/fareharbor";
+import { getVegasShows } from "@/lib/ticketmaster";
 import { getVegasPhotoLibrary } from "@/lib/vegasPhotos";
 import { getVegasWhatsLiveFeed, type Next48BucketKey } from "@/lib/whatsLive";
 
-function pickFirstWithImage<T extends { imageUrl: string | null }>(items: T[]) {
-  return items.find((item) => item.imageUrl) || items[0] || null;
-}
+export const metadata: Metadata = {
+  title: "Save On The Strip | What Is Actually Worth It in Las Vegas",
+  description:
+    "Do not waste money in Vegas. Find what is worth doing tonight, which shows and tours deserve the spend, and where the free wins are.",
+  alternates: { canonical: "https://saveonthestrip.com/" },
+};
 
-function getLiveItemImage(
-  title: string,
-  photos: Awaited<ReturnType<typeof getVegasPhotoLibrary>>,
-) {
-  const lower = title.toLowerCase();
-
-  if (lower.includes("bellagio")) {
-    return photos.bellagio;
-  }
-
-  if (lower.includes("fremont")) {
-    return photos.fremont;
-  }
-
-  if (lower.includes("sphere")) {
-    return photos.sphere;
-  }
-
-  if (lower.includes("grand canyon")) {
-    return photos.grandCanyon;
-  }
-
-  return null;
-}
-
-function FillMediaImage({
-  src,
-  alt,
-  priority = false,
-}: {
-  src: string;
-  alt: string;
-  priority?: boolean;
-}) {
+function Media({ src, alt }: { src: string; alt: string }) {
   return (
     <img
       src={src}
       alt={alt}
-      loading={priority ? "eager" : "lazy"}
-      fetchPriority={priority ? "high" : undefined}
+      loading="lazy"
       decoding="async"
       className="media-image"
-      style={{
-        position: "absolute",
-        inset: 0,
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-      }}
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
     />
   );
 }
 
-export const metadata: Metadata = {
-  title: "Save On The Strip | Vegas Shows, Tours, Deals, and Hotel Moves",
-  description:
-    "Decision-first Vegas planning for shows, tours, free wins, hotel moves, and Strip logistics.",
-  alternates: { canonical: "https://saveonthestrip.com/" },
-  openGraph: {
-    title: "Save On The Strip | Vegas Shows, Tours, Deals, and Hotel Moves",
-    description:
-      "Use Save On The Strip to choose a better Vegas night, a worthwhile day trip, and the right low-friction backup plan.",
-    url: "https://saveonthestrip.com/",
-    type: "website",
-  },
-};
-
 export default async function HomePage() {
-  const [tourFeed, shows, hotelImageSet, whatsLive, photos] = await Promise.all([
+  const [tourFeed, shows, whatsLive, photos] = await Promise.all([
     getVegasTours().catch(() => ({ tours: [], companies: [], configured: false })),
     getVegasShows().catch(() => []),
-    getDccImageSet("hotel", "bellagio", {
-      hero: {
-        src: "/SOTS_HEADER_ENHANCED.jpg",
-        alt: "Las Vegas hotel at night",
-        source: "local",
-      },
-      card: {
-        src: "/SOTS_HEADER_ENHANCED.jpg",
-        alt: "Las Vegas hotel at night",
-        source: "local",
-      },
-      gallery: [],
-    }),
     getVegasWhatsLiveFeed().catch(() => null),
     getVegasPhotoLibrary(),
   ]);
 
-  const groupedTours = groupVegasToursByArea(tourFeed.tours);
-  const heroTour = pickFirstWithImage([
-    ...groupedTours.grandCanyon,
-    ...groupedTours.hooverDam,
-    ...groupedTours.redRock,
-    ...groupedTours.lasVegas,
-  ]);
-  const heroShow =
-    shows.find((show: VegasShow) => {
-      const haystack = [show.name, show.venueName, ...show.attractionNames].join(" ").toLowerCase();
-      return haystack.includes("sphere") || haystack.includes("wizard of oz");
-    }) || pickFirstWithImage(shows);
-  const rawFeaturedHotelImage = hotelImageSet?.hero || hotelImageSet?.card || null;
-  const featuredHotelImage =
-    rawFeaturedHotelImage && !rawFeaturedHotelImage.src.endsWith(".svg")
-      ? rawFeaturedHotelImage
-      : photos.luxuryHotel;
   const liveItems = whatsLive
     ? (["now", "tonight", "tomorrow", "later-48h"] as Next48BucketKey[])
         .flatMap((bucket) => whatsLive.feed.buckets[bucket] || [])
-        .slice(0, 4)
+        .slice(0, 6)
     : [];
-  const heroVisual = photos.bellagio.src;
-  const heroVisualAlt = photos.bellagio.alt;
-  const featuredLanes = [
-    {
-      title: "Shows",
-      copy: "Sphere, residencies, comedy, and one strong night out.",
-      href: "/shows",
-      cta: "Browse shows",
-      image: heroShow?.imageUrl || photos.sphere.src,
-      alt: heroShow?.name || photos.sphere.alt,
-      tone: "lane-card-pink",
-    },
-    {
-      title: "Deals",
-      copy: "Ticket pickup, value combos, and faster Vegas savings.",
-      href: "/deals",
-      cta: "Open deals",
-      image: photos.fremont.src,
-      alt: photos.fremont.alt,
-      tone: "lane-card-gold",
-    },
-    {
-      title: "Tours",
-      copy: "One big outing worth leaving the Strip for.",
-      href: "/tours",
-      cta: "Browse tours",
-      image: heroTour?.imageUrl || photos.grandCanyon.src,
-      alt: heroTour?.name || photos.grandCanyon.alt,
-      tone: "lane-card-blue",
-    },
-    {
-      title: "Free Wins",
-      copy: "Bellagio, Fremont, and zero-cost Vegas resets.",
-      href: "/free-things",
-      cta: "See free wins",
-      image: photos.bellagio.src,
-      alt: photos.bellagio.alt,
-      tone: "lane-card-green",
-    },
-  ] as const;
-  const heroStats = [
-    { label: "Shows tracked", value: String(shows.length || 0) },
-    { label: "Tours found", value: String(tourFeed.tours.length || 0) },
-    { label: "Live picks", value: String(liveItems.length || 0) },
-  ] as const;
-  const quickStartLanes = [
-    {
-      title: "Pick tonight",
-      copy: "Use this first if the main question is what to do after dinner and you only want one strong Vegas night.",
-      href: "/shows",
-      cta: "Start with shows",
-    },
-    {
-      title: "Leave the Strip once",
-      copy: "Use this when the trip needs one real outing instead of more casino wandering.",
-      href: "/tours",
-      cta: "Browse tours",
-    },
-    {
-      title: "Save money without killing the trip",
-      copy: "Use this for Bellagio, Fremont, and no-cost resets between bigger spends.",
-      href: "/free-things",
-      cta: "Open free wins",
-    },
-  ] as const;
 
-  const valueProps = [
+  const decisionLanes = [
     {
-      title: "Move fast",
-      copy: "Lock one strong night, one strong deal, and one strong daytime plan without wasting the trip on indecision.",
+      label: "Tonight",
+      title: "I need a plan for tonight.",
+      copy: "Skip the giant list. Start with what is happening soon and choose one strong night.",
+      href: "/tonight",
+      image: photos.sphere,
     },
     {
-      title: "Spend where it counts",
-      copy: "Put money into the nights and outings that actually feel like Vegas, then trim the rest.",
+      label: "Worth it?",
+      title: "Tell me what deserves the money.",
+      copy: "Use the Vegas value filter before spending on a show, attraction, upgrade, or day trip.",
+      href: "/worth-it",
+      image: photos.bellagio,
     },
     {
-      title: "Keep the trip easy",
-      copy: "Use simpler picks when timing, budget, or energy matters more than chasing every option.",
+      label: "Big outing",
+      title: "Leave the Strip once.",
+      copy: "Grand Canyon, Hoover Dam, Red Rock, or another outing that changes the whole trip.",
+      href: "/tours",
+      image: photos.grandCanyon,
     },
     {
-      title: "Balance the splurges",
-      copy: "Mix Sphere, Bellagio, Fremont, and one big outing so the trip feels full without feeling blown out.",
+      label: "Free",
+      title: "Spend nothing for a few hours.",
+      copy: "Use the free Vegas reset between the expensive parts of the trip.",
+      href: "/free-things",
+      image: photos.fremont,
     },
   ] as const;
 
@@ -209,76 +74,46 @@ export default async function HomePage() {
     <main>
       <section className="hero hero-home hero-home-bold">
         <div className="hero-home-visual">
-          <FillMediaImage src={heroVisual} alt={heroVisualAlt} priority />
+          <Media src={photos.vegasNight.src} alt={photos.vegasNight.alt} />
           <div className="hero-home-overlay" />
         </div>
         <div className="hero-home-content">
-          <div className="eyebrow">Las Vegas</div>
-          <h1>SAVE BIG ON THE LAS VEGAS STRIP</h1>
+          <div className="eyebrow">Las Vegas money filter</div>
+          <h1>DON&apos;T WASTE MONEY IN VEGAS.</h1>
           <p className="lead hero-home-lead">
-            Skip the overwhelm. Premium nights, best deals, free wins, and one big outing if you want it.
+            What is worth it tonight? What should you skip? Where should you splurge? Start there.
           </p>
           <div className="hero-primary-grid">
-            <Link href="/shows" className="hero-primary-card hero-primary-pink">
-              <span>Find tonight&apos;s shows</span>
-            </Link>
-            <Link href="/deals" className="hero-primary-card hero-primary-gold">
-              <span>Best deals now</span>
-            </Link>
-            <Link href="/tours" className="hero-primary-card hero-primary-blue">
-              <span>Epic tours</span>
-            </Link>
-            <Link href="/free-things" className="hero-primary-card hero-primary-green">
-              <span>Free Vegas wins</span>
-            </Link>
+            <Link href="/tonight" className="hero-primary-card hero-primary-pink"><span>What should I do tonight?</span></Link>
+            <Link href="/worth-it" className="hero-primary-card hero-primary-gold"><span>What is actually worth it?</span></Link>
+            <Link href="/shows" className="hero-primary-card hero-primary-blue"><span>Find a show</span></Link>
+            <Link href="/free-things" className="hero-primary-card hero-primary-green"><span>Find a free win</span></Link>
           </div>
           <div className="hero-stat-row">
-            {heroStats.map((item) => (
-              <div key={item.label} className="hero-stat-chip">
-                <strong>{item.value}</strong>
-                <span>{item.label}</span>
-              </div>
-            ))}
+            <div className="hero-stat-chip"><strong>{shows.length}</strong><span>shows tracked</span></div>
+            <div className="hero-stat-chip"><strong>{tourFeed.tours.length}</strong><span>tours found</span></div>
+            <div className="hero-stat-chip"><strong>{liveItems.length}</strong><span>live picks</span></div>
           </div>
-        </div>
-      </section>
-
-      <section className="panel panel-tight quick-start-panel">
-        <div className="eyebrow">Use the site right</div>
-        <div style={{ height: 10 }} />
-        <h2 className="detail-title">Make one good Vegas decision first.</h2>
-        <p className="lead quick-start-lead">
-          Save On The Strip works best when you solve one part of the trip at a time: tonight, one big outing, or the cheapest useful reset.
-        </p>
-        <div className="quick-start-grid">
-          {quickStartLanes.map((lane) => (
-            <Link href={lane.href} key={lane.title} className="quick-start-card">
-              <div className="eyebrow">{lane.title}</div>
-              <h3>{lane.title}</h3>
-              <p>{lane.copy}</p>
-              <span className="quick-start-cta">{lane.cta}</span>
-            </Link>
-          ))}
         </div>
       </section>
 
       <section className="panel panel-tight">
-        <div className="eyebrow">Start here</div>
+        <div className="eyebrow">Pick your problem</div>
         <div style={{ height: 10 }} />
-        <h2 className="detail-title">Big Vegas subjects. Faster decisions.</h2>
-        <div style={{ height: 18 }} />
+        <h2 className="detail-title">Vegas is easier when you stop trying to plan all of Vegas.</h2>
+        <p className="lead">Choose the decision you need to make next.</p>
         <div className="featured-lane-grid">
-          {featuredLanes.map((lane) => (
-            <Link href={lane.href} className={`featured-lane-card ${lane.tone}`} key={lane.title}>
+          {decisionLanes.map((lane) => (
+            <Link href={lane.href} className="featured-lane-card" key={lane.title}>
               <div className="featured-lane-media">
-                <FillMediaImage src={lane.image} alt={lane.alt} />
+                <Media src={lane.image.src} alt={lane.image.alt} />
                 <div className="featured-lane-overlay" />
               </div>
               <div className="featured-lane-copy">
-                <div className="eyebrow">{lane.title}</div>
+                <div className="eyebrow">{lane.label}</div>
                 <h3>{lane.title}</h3>
                 <p>{lane.copy}</p>
-                <span className="featured-lane-cta">{lane.cta}</span>
+                <span className="featured-lane-cta">Open this lane</span>
               </div>
             </Link>
           ))}
@@ -286,101 +121,65 @@ export default async function HomePage() {
       </section>
 
       <section className="panel">
-        <div className="eyebrow">What&apos;s live in Vegas</div>
+        <div className="eyebrow">Next 48 hours</div>
         <div style={{ height: 10 }} />
-        <h2>What looks worth doing in the next 48 hours</h2>
+        <h2>Vegas happening soon.</h2>
+        <p className="lead">A short live board is more useful than a giant directory.</p>
         <div style={{ height: 18 }} />
         {liveItems.length ? (
           <div className="grid">
-            {liveItems.map((item) => {
-              const liveItemImage = getLiveItemImage(item.title, photos);
-
-              return (
-                <article className="card whats-live-card" key={item.id}>
-                  {liveItemImage ? (
-                    <div className="inline-media-frame category-card-image">
-                      <FillMediaImage
-                        src={liveItemImage.src}
-                        alt={liveItemImage.alt}
-                      />
-                    </div>
-                  ) : null}
-                  <div className="eyebrow">{item.category}</div>
-                  <h2>{item.title}</h2>
-                  <p>
-                    {new Date(item.startAt).toLocaleString("en-US", {
-                      weekday: "short",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}{" "}
-                    • {item.venueOrArea}
-                  </p>
-                  <p>{item.whyItMatters}</p>
-                  <Link href={item.authorityCta.href} className="button button-secondary">
-                    {item.authorityCta.label}
-                  </Link>
-                </article>
-              );
-            })}
+            {liveItems.map((item) => (
+              <article className="card whats-live-card" key={item.id}>
+                <div className="eyebrow">{item.category}</div>
+                <h2>{item.title}</h2>
+                <p>
+                  {new Date(item.startAt).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" })}
+                  {" • "}{item.venueOrArea}
+                </p>
+                <p>{item.whyItMatters}</p>
+                <Link href={item.authorityCta.href} className="button button-secondary">{item.authorityCta.label}</Link>
+              </article>
+            ))}
           </div>
         ) : (
-          <p className="lead">Vegas live picks are refreshing right now.</p>
+          <div className="card">
+            <h2>No live feed right now.</h2>
+            <p>Use shows, tours, and free things instead of pretending stale inventory is live.</p>
+          </div>
         )}
       </section>
 
       <section className="panel panel-tight">
-        <div className="eyebrow">Keep the trip sharp</div>
+        <div className="eyebrow">The rule</div>
         <div style={{ height: 10 }} />
+        <h2 className="detail-title">Splurge once. Save twice. Skip the junk.</h2>
         <div className="value-prop-grid">
-          {valueProps.map((item) => (
-            <article className="value-prop-card" key={item.title}>
-              <strong>{item.title}</strong>
-              <p>{item.copy}</p>
-            </article>
-          ))}
+          <article className="value-prop-card"><strong>Splurge once</strong><p>Pick the one night or outing you would regret missing.</p></article>
+          <article className="value-prop-card"><strong>Save twice</strong><p>Use free attractions and smarter timing around the expensive parts.</p></article>
+          <article className="value-prop-card"><strong>Skip the junk</strong><p>Do not buy something just because Vegas put a flashing button in front of you.</p></article>
+          <article className="value-prop-card"><strong>Keep moving</strong><p>One good decision now beats another hour of research.</p></article>
         </div>
       </section>
 
       <section className="split">
         <div className="panel panel-tight">
-          <div className="eyebrow">More Vegas essentials</div>
-          <div style={{ height: 10 }} />
-          <h2>Keep the stay clean and the extras optional.</h2>
-          <div style={{ height: 18 }} />
-          <div className="grid">
-            <Link href="/hotels" className="card category-card">
-              {featuredHotelImage ? (
-                <div className="inline-media-frame category-card-image">
-                  <FillMediaImage src={featuredHotelImage.src} alt={featuredHotelImage.alt} />
-                </div>
-              ) : null}
-              <div className="eyebrow">Hotels</div>
-              <h2>Renovations and reopenings</h2>
-              <p>Check what changed before you lock the room.</p>
-            </Link>
-            <Link href="/timeshares" className="card category-card">
-              <div className="inline-media-frame category-card-image">
-                <FillMediaImage
-                  src={photos.vegasNight.src}
-                  alt={photos.vegasNight.alt}
-                />
-              </div>
-              <div className="eyebrow">Optional help</div>
-              <h2>Timeshares and side-by-side context</h2>
-              <p>Only use this if the offer actually improves the stay.</p>
-            </Link>
+          <div className="eyebrow">Spend</div>
+          <h2>Things worth comparing before you pay.</h2>
+          <div className="footer-links">
+            <Link href="/shows">Shows and residencies</Link>
+            <Link href="/tours">Grand Canyon, Hoover Dam, Red Rock and Vegas tours</Link>
+            <Link href="/hotels">Hotel moves and renovation reality</Link>
+            <Link href="/deals">Current deal lanes</Link>
           </div>
         </div>
-
         <div className="panel panel-tight">
-          <div className="eyebrow">Build the trip</div>
-          <div style={{ height: 10 }} />
-          <ul className="list">
-            <li>One premium night instead of endless show browsing.</li>
-            <li>One big outing instead of overplanning the whole trip.</li>
-            <li>Saving money without turning the trip into a coupon hunt.</li>
-            <li>Balancing premium Vegas with zero-cost resets.</li>
-          </ul>
+          <div className="eyebrow">Save</div>
+          <h2>Things you do not need to overpay for.</h2>
+          <div className="footer-links">
+            <Link href="/free-things">Free Vegas</Link>
+            <Link href="/tonight">A fast plan for tonight</Link>
+            <Link href="/worth-it">The worth-it filter</Link>
+          </div>
         </div>
       </section>
     </main>
