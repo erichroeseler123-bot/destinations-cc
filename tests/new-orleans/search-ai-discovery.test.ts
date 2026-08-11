@@ -2,7 +2,7 @@ import assert from "node:assert";
 import { describe, test } from "node:test";
 import { buildRobotsTxt } from "../../app/robots.txt/route";
 import { buildWtonotSitemapPaths } from "../../app/sitemap.xml/route";
-import { buildPublicTourCatalog } from "../../app/new-orleans/guides/tour-catalog/data.json/route";
+import { buildPublicTourCatalog } from "../../app/new-orleans/guides/tour-catalog/route";
 import { classifyWnoEntrySource } from "../../app/new-orleans/lib/trafficSource";
 import { STOREFRONT_PRODUCTS } from "../../app/new-orleans/tours/pageConfig";
 
@@ -24,8 +24,9 @@ describe("WNO search and AI discovery", () => {
 
   test("WNO sitemap exposes canonical commerce and machine-discovery surfaces only", () => {
     const paths = buildWtonotSitemapPaths();
-    assert.ok(paths.includes("/guides/tour-catalog/data.json"));
+    assert.ok(paths.includes("/guides/tour-catalog"));
     assert.ok(!paths.includes("/guides/tour-catalog.json"));
+    assert.ok(!paths.includes("/guides/tour-catalog/data.json"));
 
     const tourPaths = paths.filter((path) => path.startsWith("/tours/"));
     assert.strictEqual(tourPaths.length, STOREFRONT_PRODUCTS.length);
@@ -39,7 +40,7 @@ describe("WNO search and AI discovery", () => {
     const catalog = buildPublicTourCatalog();
     assert.strictEqual(catalog.products.length, STOREFRONT_PRODUCTS.length);
     assert.strictEqual(catalog.products.length, 21);
-    assert.strictEqual(catalog.canonicalCatalogUrl, "https://welcometoneworleanstours.com/guides/tour-catalog/data.json");
+    assert.strictEqual(catalog.canonicalCatalogUrl, "https://welcometoneworleanstours.com/guides/tour-catalog");
   });
 
   test("catalog exposes canonical public identity without private commercial terms", () => {
