@@ -98,6 +98,7 @@ export default function CityHero({
 }: CityHeroProps) {
   const palette = toneClass(heroTint);
   const citySlug = citySlugFromHref(primaryCtaHref, cityName);
+  const isNewOrleans = citySlug === "new-orleans";
 
   return (
     <header
@@ -143,7 +144,7 @@ export default function CityHero({
             <div className={`inline-flex rounded-full border px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] ${palette.chip}`}>
               Live city view • Current signals • Local context
             </div>
-            <LiveCityPulse citySlug={citySlug} cityName={cityName} />
+            {!isNewOrleans ? <LiveCityPulse citySlug={citySlug} cityName={cityName} /> : null}
             {(timezone || (typeof weatherLat === "number" && typeof weatherLng === "number")) ? (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                 {timezone ? <CityTimePanel cityName={cityName} timezone={timezone} showWeekday /> : null}
@@ -155,17 +156,19 @@ export default function CityHero({
           </div>
         </div>
 
-        {citySlug === "new-orleans" ? (
+        {isNewOrleans ? (
           <div className="mt-8">
             <NewOrleansLiveReality />
           </div>
         ) : null}
         <div className="mt-8">
-          <CityWatchPanel citySlug={citySlug} cityName={cityName} />
+          <CityWatchPanel citySlug={citySlug} cityName={cityName} suppressRepoSignals={isNewOrleans} />
         </div>
-        <div className="mt-8">
-          <CityActivityFeed citySlug={citySlug} cityName={cityName} />
-        </div>
+        {!isNewOrleans ? (
+          <div className="mt-8">
+            <CityActivityFeed citySlug={citySlug} cityName={cityName} />
+          </div>
+        ) : null}
       </div>
     </header>
   );
