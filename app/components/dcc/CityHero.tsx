@@ -5,6 +5,7 @@ import WeatherPanel from "@/app/components/dcc/WeatherPanel";
 import LiveCityPulse from "@/app/components/dcc/LiveCityPulse";
 import CityWatchPanel from "@/app/components/dcc/CityWatchPanel";
 import CityActivityFeed from "@/app/components/dcc/CityActivityFeed";
+import NewOrleansLiveReality from "@/app/components/dcc/NewOrleansLiveReality";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
 
 type CityHeroTint = "warm" | "cool" | "emerald";
@@ -154,6 +155,11 @@ export default function CityHero({
           </div>
         </div>
 
+        {citySlug === "new-orleans" ? (
+          <div className="mt-8">
+            <NewOrleansLiveReality />
+          </div>
+        ) : null}
         <div className="mt-8">
           <CityWatchPanel citySlug={citySlug} cityName={cityName} />
         </div>
