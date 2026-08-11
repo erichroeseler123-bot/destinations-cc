@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { trackAirport420Event } from "@/lib/telemetry";
 import type { HandoffContext, InitialUiState } from "@/lib/handoff/types";
+import { COLORADO_TRANSFERS } from "@/lib/coloradoTransfers";
 
 type ResolutionDebug = {
   downgraded: boolean;
@@ -67,83 +69,103 @@ export default function AirportPickupHomeClient({
     <main className="stack">
       <section className="hero">
         <div>
-          <p className="eyebrow">Private DEN arrival service · 21+</p>
-          <h1>Land in Denver. Start Colorado privately.</h1>
-          <p className="arrival-line">A discreet private airport pickup for adults who want the arrival handled before they land.</p>
+          <p className="eyebrow">Private Colorado airport transfers · adults 21+</p>
+          <h1>Land at DEN. Start Colorado your way.</h1>
+          <p className="arrival-line">
+            Private airport transportation to Denver and Colorado mountain destinations, with an optional dispensary stop included at no additional transportation charge.
+          </p>
           <p className="hero-copy">
-            Go straight to your hotel or build an optional dispensary stop into the ride. No shared shuttle, no random rideshare match, and no need to explain the trip to a stranger.
+            Go straight to your destination or build a legal retail stop into the route when practical. No shared shuttle, no random rideshare match, and no extra transportation fee for the optional stop.
           </p>
           <div className="cta-row">
-            <a className="button" href={checkoutHref} onClick={() => trackCheckout("primary_booking_cta")}>Book private DEN pickup</a>
-            <a className="button-secondary" href="#options">See arrival options</a>
+            <a className="button" href={checkoutHref} onClick={() => trackCheckout("primary_booking_cta")}>Book Denver pickup</a>
+            <Link className="button-secondary" href="/colorado">See mountain transfers</Link>
           </div>
+        </div>
+      </section>
+
+      <section className="panel">
+        <p className="eyebrow">Where are you headed?</p>
+        <h2>The 420-friendly option now goes beyond Denver.</h2>
+        <p className="muted">
+          These private airport-to-resort trips are fulfilled through GoSno. Choose a destination here and continue to the corresponding GoSno route for current availability, vehicle options, and final pricing.
+        </p>
+        <div className="trust-grid" style={{ marginTop: 24 }}>
+          {COLORADO_TRANSFERS.map((transfer) => (
+            <div className="trust-item" key={transfer.slug}>
+              <strong>DEN → {transfer.destination}</strong>
+              <p className="muted">Optional dispensary stop included at no additional transportation charge.</p>
+              <p><Link href={`/colorado/${transfer.slug}`}>View {transfer.destination} transfer</Link></p>
+            </div>
+          ))}
         </div>
       </section>
 
       <section id="options" className="panel">
         <p className="eyebrow">Choose your arrival</p>
-        <h2>One private ride. Two ways to start.</h2>
+        <h2>One private ride. Your destination. Optional 21+ stop.</h2>
         <div className="trust-grid">
           <div className="trust-item">
-            <strong>Direct private pickup</strong>
+            <strong>Denver private pickup</strong>
             <p className="muted">DEN to your Denver hotel, home base, or agreed destination.</p>
           </div>
           <div className="trust-item">
             <strong>Optional dispensary stop</strong>
-            <p className="muted">For adults 21+, a retail stop can be planned into the route where lawful and practical.</p>
+            <p className="muted">For adults 21+, a lawful retail stop can be included at no additional transportation charge when practical for the route and timing.</p>
           </div>
           <div className="trust-item">
-            <strong>Onward Colorado</strong>
-            <p className="muted">Heading farther? Continue into dedicated Red Rocks or mountain transportation instead of forcing one ride to do everything.</p>
+            <strong>Mountain resort transfer</strong>
+            <p className="muted">Continue privately to Colorado ski destinations through the GoSno transportation network.</p>
           </div>
         </div>
       </section>
 
       <section className="panel">
         <p className="eyebrow">Why this works</p>
-        <h2>Private, discreet, and built around arrival day.</h2>
+        <h2>Private transportation first. The 420-friendly stop is an amenity.</h2>
         <ul>
           <li>Private vehicle only.</li>
-          <li>Arrival-focused pickup from Denver International Airport.</li>
-          <li>Optional 21+ stop planning without making cannabis use part of the ride itself.</li>
-          <li>Clear destination and pricing before payment.</li>
+          <li>Pickup begins at Denver International Airport.</li>
+          <li>Optional dispensary stop included at no additional transportation charge when lawful and practical.</li>
+          <li>Passengers make any retail purchase independently from the retailer.</li>
+          <li>No cannabis consumption is permitted in the vehicle.</li>
         </ul>
       </section>
 
       <section id="pricing" className="panel">
-        <p className="eyebrow">Book your arrival</p>
-        <h2>See the live price before you pay.</h2>
-        <p className="muted">Final price depends on destination, timing, and trip details.</p>
+        <p className="eyebrow">Staying in Denver?</p>
+        <h2>See the live Denver-arrival price before you pay.</h2>
+        <p className="muted">For mountain resorts, use the destination pages above to continue into the matching GoSno route.</p>
         <div className="form-grid" style={{ marginTop: 24 }}>
           <div className="field">
             <label htmlFor="arrival-date">Arrival date</label>
             <input id="arrival-date" className="date-input" type="date" value={date} onChange={(event) => setDate(event.target.value)} />
           </div>
           <div className="field">
-            <label htmlFor="dropoff-location">Destination / drop-off</label>
+            <label htmlFor="dropoff-location">Denver destination / drop-off</label>
             <input id="dropoff-location" value={dropoff} onChange={(event) => setDropoff(event.target.value)} />
           </div>
         </div>
         <div className="cta-row">
-          <a className="button" href={checkoutHref} onClick={() => trackCheckout("pricing_section_booking_cta")}>See price & book</a>
+          <a className="button" href={checkoutHref} onClick={() => trackCheckout("pricing_section_booking_cta")}>See Denver price & book</a>
         </div>
       </section>
 
       <section className="panel">
-        <p className="eyebrow">Keep the rest of the trip clean</p>
-        <h2>Use the right transportation for the next leg.</h2>
+        <p className="eyebrow">Another Colorado day?</p>
+        <h2>Use the right private transportation for the trip.</h2>
         <div className="trust-grid">
           <div className="trust-item">
-            <strong>Denver arrival</strong>
-            <p className="muted">Use this site for the private airport arrival itself.</p>
+            <strong>Mountain resorts</strong>
+            <p className="muted"><Link href="/colorado">Browse 420-friendly private mountain transfers</Link> fulfilled through GoSno.</p>
           </div>
           <div className="trust-item">
             <strong>Red Rocks</strong>
-            <p className="muted"><a href="https://partyatredrocks.com/">Private Red Rocks transportation</a> is the better fit for a concert day.</p>
+            <p className="muted"><a href="https://partyatredrocks.com/">Party at Red Rocks</a> handles private concert transportation.</p>
           </div>
           <div className="trust-item">
-            <strong>Mountain resorts</strong>
-            <p className="muted"><a href="https://gosno.co/">GoSno</a> handles private airport-to-resort transportation for Colorado ski destinations.</p>
+            <strong>Denver arrival</strong>
+            <p className="muted">Use this site directly for the private airport arrival itself.</p>
           </div>
         </div>
       </section>
@@ -152,19 +174,12 @@ export default function AirportPickupHomeClient({
         <p className="eyebrow">Important</p>
         <h2>21+ means 21+. Transportation stays transportation.</h2>
         <ul>
-          <li>Retail cannabis is for adults age 21 and older in Colorado.</li>
+          <li>Retail cannabis purchases are for adults age 21 and older in Colorado.</li>
           <li>Passengers are responsible for following all applicable state, local, property, and federal rules.</li>
-          <li>No public-use promise is made, and the vehicle is not presented as a consumption space.</li>
-          <li>This is private transportation, not a cannabis retailer or consumption venue.</li>
+          <li>The transportation provider does not sell cannabis.</li>
+          <li>No public-use promise is made, and the vehicle is not a consumption space.</li>
+          <li>Road, weather, timing, retailer availability, and applicable law can affect whether a stop is practical.</li>
         </ul>
-      </section>
-
-      <section className="panel">
-        <p className="eyebrow">Book now</p>
-        <h2>Handle the arrival before you land.</h2>
-        <div className="cta-row">
-          <a className="button" href={checkoutHref} onClick={() => trackCheckout("final_booking_cta")}>Book private DEN pickup</a>
-        </div>
       </section>
     </main>
   );
