@@ -27,6 +27,8 @@ describe("WNO search and AI discovery", () => {
     assert.ok(paths.includes("/guides/tour-catalog"));
     assert.ok(!paths.includes("/guides/tour-catalog.json"));
     assert.ok(!paths.includes("/guides/tour-catalog/data.json"));
+    assert.ok(!paths.includes("/guides/best-new-orleans-swamp-tour"));
+    assert.ok(!paths.includes("/guides/french-quarter-tour-timing"));
 
     const tourPaths = paths.filter((path) => path.startsWith("/tours/"));
     assert.strictEqual(tourPaths.length, STOREFRONT_PRODUCTS.length);
