@@ -3,6 +3,7 @@ import Link from "next/link";
 import CityTimePanel from "@/app/components/dcc/CityTimePanel";
 import WeatherPanel from "@/app/components/dcc/WeatherPanel";
 import LiveCityPulse from "@/app/components/dcc/LiveCityPulse";
+import CityWatchPanel from "@/app/components/dcc/CityWatchPanel";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
 
 type CityHeroTint = "warm" | "cool" | "emerald";
@@ -118,36 +119,42 @@ export default function CityHero({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(255,255,255,0.08),transparent_24%),radial-gradient(circle_at_82%_16%,rgba(255,255,255,0.08),transparent_20%),linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:auto,auto,48px_48px,48px_48px]" />
       ) : null}
 
-      <div className="relative grid gap-8 px-8 py-10 md:px-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
-        <div>
-          <RouteHeroMark eyebrow="Destination Command Center" title={cityName.toUpperCase()} tone={palette.tone} />
-          <p className={`mt-5 text-xs uppercase tracking-[0.24em] ${palette.eyebrow}`}>{eyebrow}</p>
-          <h1 className="mt-4 max-w-4xl text-4xl font-black tracking-tight md:text-6xl">{title}</h1>
-          <p className="mt-4 max-w-3xl text-lg leading-8 text-white/86">{summary}</p>
-          {trustLine ? <p className="mt-4 max-w-3xl text-sm leading-7 text-white/68">{trustLine}</p> : null}
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Link href={primaryCtaHref} className={`rounded-full px-6 py-3 text-xs font-black uppercase tracking-[0.16em] transition-colors ${palette.primary}`}>
-              {primaryCtaLabel}
-            </Link>
-            <Link href={secondaryCtaHref} className={`rounded-full border px-6 py-3 text-xs font-black uppercase tracking-[0.16em] transition-colors ${palette.secondary}`}>
-              {secondaryCtaLabel}
-            </Link>
+      <div className="relative px-8 py-10 md:px-10">
+        <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+          <div>
+            <RouteHeroMark eyebrow="Destination Command Center" title={cityName.toUpperCase()} tone={palette.tone} />
+            <p className={`mt-5 text-xs uppercase tracking-[0.24em] ${palette.eyebrow}`}>{eyebrow}</p>
+            <h1 className="mt-4 max-w-4xl text-4xl font-black tracking-tight md:text-6xl">{title}</h1>
+            <p className="mt-4 max-w-3xl text-lg leading-8 text-white/86">{summary}</p>
+            {trustLine ? <p className="mt-4 max-w-3xl text-sm leading-7 text-white/68">{trustLine}</p> : null}
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link href={primaryCtaHref} className={`rounded-full px-6 py-3 text-xs font-black uppercase tracking-[0.16em] transition-colors ${palette.primary}`}>
+                {primaryCtaLabel}
+              </Link>
+              <Link href={secondaryCtaHref} className={`rounded-full border px-6 py-3 text-xs font-black uppercase tracking-[0.16em] transition-colors ${palette.secondary}`}>
+                {secondaryCtaLabel}
+              </Link>
+            </div>
+          </div>
+
+          <div className="space-y-4 lg:pl-8">
+            <div className={`inline-flex rounded-full border px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] ${palette.chip}`}>
+              Live city view • Current signals • Local context
+            </div>
+            <LiveCityPulse citySlug={citySlug} cityName={cityName} />
+            {(timezone || (typeof weatherLat === "number" && typeof weatherLng === "number")) ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                {timezone ? <CityTimePanel cityName={cityName} timezone={timezone} showWeekday /> : null}
+                {typeof weatherLat === "number" && typeof weatherLng === "number" ? (
+                  <WeatherPanel locationLabel={cityName} lat={weatherLat} lng={weatherLng} />
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </div>
 
-        <div className="space-y-4 lg:pl-8">
-          <div className={`inline-flex rounded-full border px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] ${palette.chip}`}>
-            Live city view • Current signals • Local context
-          </div>
-          <LiveCityPulse citySlug={citySlug} cityName={cityName} />
-          {(timezone || (typeof weatherLat === "number" && typeof weatherLng === "number")) ? (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-              {timezone ? <CityTimePanel cityName={cityName} timezone={timezone} showWeekday /> : null}
-              {typeof weatherLat === "number" && typeof weatherLng === "number" ? (
-                <WeatherPanel locationLabel={cityName} lat={weatherLat} lng={weatherLng} />
-              ) : null}
-            </div>
-          ) : null}
+        <div className="mt-8">
+          <CityWatchPanel citySlug={citySlug} cityName={cityName} />
         </div>
       </div>
     </header>
