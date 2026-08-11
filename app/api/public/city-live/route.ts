@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOfficialLiveSources, getProviderSlotStatus } from "@/lib/dcc/liveCity/officialSources";
+import { readMachineFeeds } from "@/lib/dcc/liveCity/machineFeeds";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -140,12 +141,25 @@ export async function GET(request: NextRequest) {
   }
 
   const checkedAt = new Date().toISOString();
-  const [weather, ticketmaster] = await Promise.all([
+  const [weather, ticketmaster, machineFeeds] = await Promise.all([
     readGlobalWeather(lat, lng, timezone),
     readTicketmaster(lat, lng),
+    readMachineFeeds(city, lat, lng),
   ]);
   const officialLiveLinks = getOfficialLiveSources(city);
   const providerSlots = getProviderSlotStatus(city);
+
+  for (const feed of machineFeeds) {
+    const slotName = feed.kind;
+    const existing = providerSlots[slotName] || {};
+    providerSlots[slotName] = {
+      ...existing,
+      available: feed.available || existing.available,
+      machineReadable: true,
+      liveItemCount: feed.items.length,
+      mode: feed.available ? feed.mode : existing.mode,
+    };
+  }
 
   return NextResponse.json(
     {
@@ -160,6 +174,7 @@ export async function GET(request: NextRequest) {
       },
       weather,
       ticketmaster,
+      machineFeeds,
       providerSlots,
       officialLiveLinks,
     },
