@@ -88,6 +88,10 @@ describe("WNO search and AI discovery", () => {
       "perplexity-search",
     );
     assert.strictEqual(
+      classifyWnoEntrySource({ pathname: "/tours", referrer: "https://claude.ai/new" }),
+      "claude-search",
+    );
+    assert.strictEqual(
       classifyWnoEntrySource({ pathname: "/tours", referrer: "https://www.google.com/search?q=new+orleans+tours" }),
       "google-search",
     );
