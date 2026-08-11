@@ -63,7 +63,15 @@ function signalIsCurrent(signal: Signal) {
   return !Number.isFinite(expires) || expires > Date.now();
 }
 
-export default function CityWatchPanel({ citySlug, cityName }: { citySlug: string; cityName: string }) {
+export default function CityWatchPanel({
+  citySlug,
+  cityName,
+  suppressRepoSignals = false,
+}: {
+  citySlug: string;
+  cityName: string;
+  suppressRepoSignals?: boolean;
+}) {
   const [payload, setPayload] = useState<LiveCityPayload | null>(null);
   const [checkedAt, setCheckedAt] = useState<Date | null>(null);
   const [status, setStatus] = useState<"loading" | "live" | "quiet">("loading");
@@ -101,10 +109,11 @@ export default function CityWatchPanel({ citySlug, cityName }: { citySlug: strin
   }, [citySlug]);
 
   const freshSignals = useMemo(() => {
+    if (suppressRepoSignals) return [];
     const freshDataset = stillFresh(payload?.freshness?.signals?.stale_after);
     if (!freshDataset) return [];
     return (payload?.bundle?.signals?.signals || []).filter(signalIsCurrent);
-  }, [payload]);
+  }, [payload, suppressRepoSignals]);
 
   const districtReads = useMemo(() => {
     const districts = payload?.bundle?.districts?.districts || [];
@@ -129,7 +138,7 @@ export default function CityWatchPanel({ citySlug, cityName }: { citySlug: strin
   );
 
   const liveViews = LIVE_VIEWS[citySlug] || [];
-  const fresh = stillFresh(payload?.freshness?.signals?.stale_after);
+  const fresh = !suppressRepoSignals && stillFresh(payload?.freshness?.signals?.stale_after);
 
   if (!districtReads.length && !liveViews.length && !streetViewDistricts.length) return null;
 
@@ -143,11 +152,11 @@ export default function CityWatchPanel({ citySlug, cityName }: { citySlug: strin
               Peek into {cityName} right now
             </h2>
             <p className="mt-3 text-sm leading-6 text-white/68">
-              Think of this as privacy-safe city stalking: public activity signals, districts, events and official live views — never individual tracking. Static neighborhood identity can persist; anything presented as current must still be fresh when you open the page.
+              Privacy-safe city stalking: permanent district identity and Street View handoffs can persist, while anything presented as current must come from a genuinely fresh source.
             </p>
           </div>
           <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white/64">
-            {status === "loading" ? "checking" : fresh ? "fresh public signals" : "no fresh signals"}
+            {suppressRepoSignals ? "district map • static structure" : status === "loading" ? "checking" : fresh ? "fresh public signals" : "no fresh signals"}
           </span>
         </div>
 
@@ -161,24 +170,28 @@ export default function CityWatchPanel({ citySlug, cityName }: { citySlug: strin
               >
                 <div className="flex items-center justify-between gap-3">
                   <h3 className="font-black uppercase tracking-[-0.02em] text-white">{district.name}</h3>
-                  <span className={`h-2.5 w-2.5 rounded-full ${signals.length ? "bg-emerald-300" : "bg-white/20"}`} />
+                  {!suppressRepoSignals ? <span className={`h-2.5 w-2.5 rounded-full ${signals.length ? "bg-emerald-300" : "bg-white/20"}`} /> : null}
                 </div>
                 {district.vibe_tags?.length ? (
                   <p className="mt-2 text-xs leading-5 text-white/48">{district.vibe_tags.slice(0, 3).join(" • ")}</p>
                 ) : null}
-                {signals.length ? (
-                  <div className="mt-4 space-y-2">
-                    {signals.map((signal) => (
-                      <div key={signal.id} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
-                        <p className="text-sm font-semibold text-white/88">{signal.title}</p>
-                        <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-cyan-200/70">
-                          {signal.impact_level || "current"} • {signal.provenance || "public signal"}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
+                {!suppressRepoSignals ? (
+                  signals.length ? (
+                    <div className="mt-4 space-y-2">
+                      {signals.map((signal) => (
+                        <div key={signal.id} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                          <p className="text-sm font-semibold text-white/88">{signal.title}</p>
+                          <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-cyan-200/70">
+                            {signal.impact_level || "current"} • {signal.provenance || "public signal"}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-4 text-sm leading-5 text-white/42">No verified fresh signal for this district right now.</p>
+                  )
                 ) : (
-                  <p className="mt-4 text-sm leading-5 text-white/42">No verified fresh signal for this district right now.</p>
+                  <p className="mt-4 text-sm leading-5 text-white/42">Open the district for its permanent identity, places and Street View. Live NOLA activity comes from the real-provider panel above.</p>
                 )}
                 <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-cyan-200/70 group-hover:text-cyan-100">
                   Stalk this district →
@@ -209,7 +222,7 @@ export default function CityWatchPanel({ citySlug, cityName }: { citySlug: strin
         ) : null}
 
         <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs text-white/38">
-          {payload?.freshness?.signals?.as_of ? <span>Signal source timestamp: {new Date(payload.freshness.signals.as_of).toLocaleString()}</span> : null}
+          {!suppressRepoSignals && payload?.freshness?.signals?.as_of ? <span>Signal source timestamp: {new Date(payload.freshness.signals.as_of).toLocaleString()}</span> : null}
           {checkedAt ? <span>Checked: {checkedAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span> : null}
           <span>Dynamic request: no-store</span>
         </div>
