@@ -2,70 +2,52 @@ import type { Metadata } from "next";
 import { ACTION_CARDS, HUBS, SITE_URL } from "@/lib/content";
 import "./globals.css";
 
+const DESCRIPTION =
+  "Plan a Wisconsin Dells trip by what you actually want to do: river tours, ducks, waterparks, rainy-day ideas, family plans, adult weekends, downtown, Lake Delton, and large-group options.";
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Welcome to the Dells | Wisconsin Dells Decision Surface",
-  description:
-    "A DCC satellite decision surface for Wisconsin Dells: River Ops first, Feastly food drops for rental-house groups, and fallback inventory only when needed.",
-  alternates: {
-    canonical: SITE_URL,
+  title: {
+    default: "Welcome to the Dells | Wisconsin Dells Trip Planner",
+    template: "%s | Welcome to the Dells",
   },
+  description: DESCRIPTION,
+  alternates: { canonical: SITE_URL },
   openGraph: {
-    title: "Welcome to the Dells",
-    description: "Narrow the Dells plan, preserve intent, and move into Feastly or controlled operator execution.",
+    title: "Welcome to the Dells | Wisconsin Dells Trip Planner",
+    description: DESCRIPTION,
     url: SITE_URL,
     siteName: "Welcome to the Dells",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Welcome to the Dells",
+    description: DESCRIPTION,
   },
 };
 
 function JsonLd() {
   const graph = [
     {
-      "@type": "Organization",
+      "@type": "TravelAgency",
       "@id": `${SITE_URL}/#organization`,
       name: "Welcome to the Dells",
       url: SITE_URL,
-      description:
-        "Welcome to the Dells is the Wisconsin Dells satellite decision surface in the Destination Command Center network.",
-      isPartOf: {
-        "@id": "https://www.destinationcommandcenter.com/#organization",
-      },
-      hasPart: {
-        "@id": "https://feastlyspread.com/#website",
-      },
+      description: DESCRIPTION,
+      areaServed: ["Wisconsin Dells, Wisconsin", "Lake Delton, Wisconsin"],
+      isPartOf: { "@id": "https://www.destinationcommandcenter.com/#organization" },
       knowsAbout: [
         "Wisconsin Dells",
-        "Wisconsin Dells Parkway",
+        "Wisconsin Dells attractions",
+        "Wisconsin Dells waterparks",
+        "Wisconsin Dells boat tours",
+        "Original Wisconsin Ducks",
+        "Wisconsin Dells rainy day activities",
+        "Wisconsin Dells family trips",
+        "Wisconsin Dells adults-only trips",
         "Downtown Wisconsin Dells",
         "Lake Delton",
-        "Wisconsin Dells decision compression",
-        "River Ops controlled execution",
-        "Feastly owned food-drop execution",
-        "family travel logistics",
-      ],
-      additionalProperty: [
-        {
-          "@type": "PropertyValue",
-          name: "parent_network",
-          value: "Destination Command Center",
-        },
-        {
-          "@type": "PropertyValue",
-          name: "dcc_network_role",
-          value: "satellite_decision_surface",
-        },
-        {
-          "@type": "PropertyValue",
-          name: "execution_tier",
-          value: "decision_surface",
-        },
-        {
-          "@type": "PropertyValue",
-          name: "continuity_contract",
-          value:
-            "DCC routes Dells intent; Welcome to the Dells narrows the local decision before execution handoff.",
-        },
       ],
     },
     {
@@ -74,45 +56,14 @@ function JsonLd() {
       name: "Welcome to the Dells",
       url: SITE_URL,
       publisher: { "@id": `${SITE_URL}/#organization` },
-      isPartOf: {
-        "@id": "https://www.destinationcommandcenter.com/#website",
-      },
-      hasPart: {
-        "@id": "https://feastlyspread.com/#website",
-      },
+      isPartOf: { "@id": "https://www.destinationcommandcenter.com/#website" },
       about: HUBS.map((hub) => hub.name),
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://feastlyspread.com/#website",
-      name: "FeastlySpread",
-      url: "https://feastlyspread.com",
-      isPartOf: {
-        "@id": "https://www.destinationcommandcenter.com/#website",
-      },
-      additionalProperty: [
-        {
-          "@type": "PropertyValue",
-          name: "dcc_network_role",
-          value: "owned_execution_operator",
-        },
-        {
-          "@type": "PropertyValue",
-          name: "execution_tier",
-          value: "owned_execution",
-        },
-        {
-          "@type": "PropertyValue",
-          name: "dcc_relationship",
-          value:
-            "Feastly executes resolved Wisconsin Dells large-group food logistics intent from Welcome to the Dells and DCC.",
-        },
-      ],
+      inLanguage: "en-US",
     },
     {
       "@type": "ItemList",
-      "@id": `${SITE_URL}/#next-stop-cards`,
-      name: "Wisconsin Dells Next Stop Cards",
+      "@id": `${SITE_URL}/#planning-options`,
+      name: "Wisconsin Dells trip-planning options",
       itemListElement: ACTION_CARDS.map((card, index) => ({
         "@type": "ListItem",
         position: index + 1,
@@ -121,17 +72,42 @@ function JsonLd() {
         url: card.href,
       })),
     },
+    {
+      "@type": "FAQPage",
+      "@id": `${SITE_URL}/#faq`,
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What should first-time visitors do in Wisconsin Dells?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "A simple first trip can start with one signature river or duck experience, one major attraction or waterpark, and enough open time for downtown or a meal without crossing town repeatedly.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What can you do in Wisconsin Dells when it rains?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Indoor waterparks, shows, arcades, indoor attractions, meals, and other low-weather-risk options can keep a Dells day useful when outdoor plans change.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Is Wisconsin Dells only for families with kids?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "No. Adults can build a Dells trip around river scenery, dinner, nightlife, downtown, scenic stops, and a slower resort or Lake Delton stay.",
+          },
+        },
+      ],
+    },
   ];
 
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify({
-          "@context": "https://schema.org",
-          "@graph": graph,
-        }),
-      }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@graph": graph }) }}
     />
   );
 }
