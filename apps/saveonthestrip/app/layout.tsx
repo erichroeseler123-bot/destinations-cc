@@ -10,12 +10,12 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Save On The Strip",
   description:
-    "Vegas-first trip planning and deal routing across shows, tours, hotels, and Strip logistics, connected back to Destination Command Center.",
+    "A faster way to decide what is actually worth your money in Las Vegas: tonight, shows, tours, free wins, hotel moves, and practical Strip planning.",
   alternates: { canonical: "https://saveonthestrip.com/" },
   openGraph: {
     title: "Save On The Strip",
     description:
-      "Vegas-first trip planning across shows, tours, deals, and practical Strip planning.",
+      "Do not waste money in Vegas. Find the nights, outings, and free wins that are actually worth it.",
     url: "https://saveonthestrip.com/",
     type: "website",
   },
@@ -71,46 +71,38 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="footer-block">
                 <div className="eyebrow">Save On The Strip</div>
                 <p>
-                  A mobile-first Vegas guide built to help people choose better show nights, day
-                  tours, hotel moves, and deal lanes without getting lost in junk pages.
+                  A Vegas decision guide for people who would rather make one good choice than scroll through 200 bad ones.
                 </p>
                 <SocialLinks brandKey={brandKey} mode="footer" showLabels className="mt-3" />
               </div>
 
               <div className="footer-block">
-                <div className="eyebrow">Popular pages</div>
+                <div className="eyebrow">Decide faster</div>
                 <div className="footer-links">
+                  <Link href="/tonight">What to do tonight</Link>
+                  <Link href="/worth-it">What is worth it</Link>
                   <Link href="/shows">Vegas shows</Link>
                   <Link href="/tours">Vegas tours</Link>
                   <Link href="/deals">Vegas deals</Link>
-                  <Link href="/hotels">Vegas hotels</Link>
                   <Link href="/free-things">Free things to do</Link>
-                  <Link href="/timeshares">Vegas timeshares</Link>
+                  <Link href="/hotels">Vegas hotels</Link>
+                </div>
+              </div>
+
+              <div className="footer-block">
+                <div className="eyebrow">About</div>
+                <div className="footer-links">
                   <Link href="/about">About this site</Link>
                   <Link href="/privacy">Privacy</Link>
                   <Link href="/terms">Terms</Link>
                   <Link href="/contact">Contact</Link>
                 </div>
               </div>
-
-              <div className="footer-block">
-                <div className="eyebrow">Start with</div>
-                <div className="footer-links">
-                  <Link href="/shows/sphere">Sphere shows</Link>
-                  <Link href="/deals">Free ticket pickup</Link>
-                  <Link href="/hotels/rio-las-vegas-renovation-update">Rio hotel guide</Link>
-                  <Link href="/hotels/hard-rock-las-vegas-construction-update">Hard Rock update</Link>
-                  <Link href="/free-things">Free attractions</Link>
-                  <Link href="/tours">Grand Canyon tours</Link>
-                  <Link href="/tours">Hoover Dam tours</Link>
-                </div>
-              </div>
             </div>
 
             <div className="footer-bottom">
               <p>
-                Use Save On The Strip for practical Vegas planning, comparisons, and useful next
-                steps. Call <a href="tel:+17025303081">702-530-3081</a> or{" "}
+                Prices, availability, schedules, and operator terms can change. Check the provider before purchase. Call <a href="tel:+17025303081">702-530-3081</a> or{" "}
                 <a href="mailto:contact@saveonthestrip.com">email us</a>.
               </p>
               <p>&copy; {new Date().getFullYear()} Save On The Strip</p>
