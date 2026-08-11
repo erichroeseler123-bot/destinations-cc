@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ProductCard from "../components/ProductCard";
+import { getProductById } from "../data";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 
 const FEATURED_SLUGS = [
@@ -14,6 +15,7 @@ const FEATURED_SLUGS = [
 
 const featuredProducts = FEATURED_SLUGS
   .map((slug) => STOREFRONT_PRODUCTS.find((product) => product.slug === slug))
+  .map((product) => product ? getProductById(product.id) : undefined)
   .filter(Boolean);
 
 const paths = [
