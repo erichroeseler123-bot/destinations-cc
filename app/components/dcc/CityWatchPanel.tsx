@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 type District = {
@@ -136,7 +137,11 @@ export default function CityWatchPanel({ citySlug, cityName }: { citySlug: strin
       {districtReads.length ? (
         <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {districtReads.map(({ district, signals }) => (
-            <article key={district.slug} className="rounded-[22px] border border-white/10 bg-white/[0.045] p-4">
+            <Link
+              key={district.slug}
+              href={`/${citySlug}/watch/${district.slug}`}
+              className="group rounded-[22px] border border-white/10 bg-white/[0.045] p-4 transition hover:-translate-y-0.5 hover:border-cyan-300/25 hover:bg-white/[0.07]"
+            >
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-black uppercase tracking-[-0.02em] text-white">{district.name}</h3>
                 <span className={`h-2.5 w-2.5 rounded-full ${signals.length ? "bg-emerald-300" : "bg-white/20"}`} />
@@ -158,7 +163,10 @@ export default function CityWatchPanel({ citySlug, cityName }: { citySlug: strin
               ) : (
                 <p className="mt-4 text-sm leading-5 text-white/42">No verified fresh signal for this district right now.</p>
               )}
-            </article>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-cyan-200/70 group-hover:text-cyan-100">
+                Stalk this district →
+              </p>
+            </Link>
           ))}
         </div>
       ) : null}
