@@ -39,7 +39,7 @@ describe("WNO search and AI discovery", () => {
     }
   });
 
-  test("catalog never exposes an image lacking verified rights", () => {
+  test("catalog only exposes rights-cleared images", () => {
     for (const product of buildPublicTourCatalog().products) {
       if (product.image) {
         assert.strictEqual(product.image.rightsStatus, "approved");
