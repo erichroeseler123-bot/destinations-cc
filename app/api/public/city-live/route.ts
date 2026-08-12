@@ -6,7 +6,7 @@ import { readNwpsWaterFeed } from "@/lib/dcc/liveCity/waterFeed";
 import { deriveCityNow } from "@/lib/dcc/liveCity/cityNow";
 import { deriveDistrictNow } from "@/lib/dcc/liveCity/districtNow";
 import { deriveDistrictIntents } from "@/lib/dcc/liveCity/districtIntent";
-import { getCityNetworkRoutes } from "@/lib/dcc/networkRoutes";
+import { getCityNetworkRoutesWithAffiliate } from "@/lib/dcc/networkRoutes";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -159,6 +159,7 @@ export async function GET(request: NextRequest) {
   const lng = validCoordinate(searchParams.get("lng"), -180, 180);
   const city = (searchParams.get("city") || "city").slice(0, 120);
   const timezone = (searchParams.get("timezone") || "auto").slice(0, 100);
+  const intent = (searchParams.get("intent") || "").slice(0, 80) || null;
 
   if (lat == null || lng == null) {
     return NextResponse.json({ ok: false, error: "Valid lat and lng are required." }, { status: 400, headers: { "Cache-Control": "no-store" } });
@@ -192,8 +193,9 @@ export async function GET(request: NextRequest) {
     };
   }
 
+  const cityName = displayCityName(city);
   const cityNow = deriveCityNow({
-    cityName: displayCityName(city),
+    cityName,
     weather,
     ticketmaster,
     machineFeeds,
@@ -213,7 +215,7 @@ export async function GET(request: NextRequest) {
   );
   const districtNow = deriveDistrictNow(city, geoMachineSignals, ticketmaster?.events || []);
   const districtIntents = deriveDistrictIntents(districtNow);
-  const networkRoutes = getCityNetworkRoutes(city);
+  const networkRoutes = getCityNetworkRoutesWithAffiliate(city, cityName, intent);
 
   return NextResponse.json(
     {
