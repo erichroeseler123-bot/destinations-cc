@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "networkName": "Destination Command Center travel network",
+  "domains": [
+    {"name":"Destination Command Center","url":"https://destinationcommandcenter.com","role":"network-authority","expectedHost":"destinationcommandcenter.com"},
+    {"name":"GoSno","url":"https://gosno.co","role":"direct-service","expectedHost":"gosno.co"},
+    {"name":"Party at Red Rocks","url":"https://www.partyatredrocks.com","role":"direct-service","expectedHost":"www.partyatredrocks.com","forbiddenPhrases":["$59 shuttle","$59 seats","shared shuttle"]},
+    {"name":"Welcome to Alaska Tours","url":"https://welcometoalaskatours.com","role":"tour-commerce","expectedHost":"welcometoalaskatours.com"},
+    {"name":"Welcome to New Orleans Tours","url":"https://www.welcometoneworleanstours.com","role":"tour-commerce","expectedHost":"www.welcometoneworleanstours.com"},
+    {"name":"Vibe Around Town","url":"https://www.vibearoundtown.com","role":"marketplace","expectedHost":"www.vibearoundtown.com"},
+    {"name":"Cruise Promenade","url":"https://cruisepromenade.com","role":"planner-platform","expectedHost":"cruisepromenade.com","forbiddenPhrases":["back-to-ship guarantee","save up to 60%","cheaper cruise excursions"]},
+    {"name":"Last Frontier Shore Excursions","url":"https://www.lastfrontiershoreexcursions.com","role":"seo-feeder","expectedHost":"www.lastfrontiershoreexcursions.com"},
+    {"name":"Welcome to the Swamp","url":"https://www.welcometotheswamp.com","role":"seo-feeder","expectedHost":"www.welcometotheswamp.com"},
+    {"name":"French Quarter Orientation","url":"https://www.frenchquarterorientation.com","role":"seo-feeder","expectedHost":"www.frenchquarterorientation.com"},
+    {"name":"420 Friendly Airport Pickup","url":"https://420friendlyairportpickup.com","role":"seo-feeder","expectedHost":"420friendlyairportpickup.com"},
+    {"name":"ShuttleYa","url":"https://shuttleya.com","role":"direct-service","expectedHost":"shuttleya.com"},
+    {"name":"Save on the Strip","url":"https://www.saveonthestrip.com","role":"seo-feeder","expectedHost":"www.saveonthestrip.com"},
+    {"name":"Welcome to the Dells","url":"https://www.welcometothedells.com","role":"seo-feeder","expectedHost":"www.welcometothedells.com","forbiddenPhrases":["travel decisions, routed correctly"]},
+    {"name":"Juneau Flight Deck","url":"https://juneauflightdeck.com","role":"seo-feeder","expectedHost":"juneauflightdeck.com","forbiddenPhrases":["travel decisions, routed correctly"]}
+  ]
+}
