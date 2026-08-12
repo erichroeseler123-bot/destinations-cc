@@ -72,35 +72,14 @@ function citySlugFromHref(primaryCtaHref: string, cityName: string) {
   return cityName.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-export default function CityHero({
-  cityName,
-  eyebrow,
-  title,
-  summary,
-  trustLine,
-  primaryCtaLabel,
-  primaryCtaHref,
-  secondaryCtaLabel,
-  secondaryCtaHref,
-  heroImage,
-  heroImageAlt,
-  heroImagePosition,
-  heroTint = "cool",
-  timezone,
-  weatherLat,
-  weatherLng,
-}: CityHeroProps) {
+export default function CityHero({ cityName, eyebrow, title, summary, trustLine, primaryCtaLabel, primaryCtaHref, secondaryCtaLabel, secondaryCtaHref, heroImage, heroImageAlt, heroImagePosition, heroTint = "cool", timezone, weatherLat, weatherLng }: CityHeroProps) {
   const palette = toneClass(heroTint);
   const citySlug = citySlugFromHref(primaryCtaHref, cityName);
   const hasCoordinates = typeof weatherLat === "number" && typeof weatherLng === "number";
 
   return (
     <header className={`relative overflow-hidden rounded-[2rem] border ${palette.border} ${palette.shell} shadow-[0_28px_90px_rgba(0,0,0,0.45)]`}>
-      {heroImage ? (
-        <div className="absolute inset-0">
-          <Image src={heroImage} alt={heroImageAlt || `${cityName} travel scene`} fill sizes="100vw" className="object-cover" style={{ objectPosition: heroImagePosition || "center center" }} priority />
-        </div>
-      ) : null}
+      {heroImage ? <div className="absolute inset-0"><Image src={heroImage} alt={heroImageAlt || `${cityName} travel scene`} fill sizes="100vw" className="object-cover" style={{ objectPosition: heroImagePosition || "center center" }} priority /></div> : null}
       <div className={`absolute inset-0 ${palette.overlay}`} />
       {!heroImage ? <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(255,255,255,0.08),transparent_24%),radial-gradient(circle_at_82%_16%,rgba(255,255,255,0.08),transparent_20%),linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:auto,auto,48px_48px,48px_48px]" /> : null}
 
@@ -121,28 +100,13 @@ export default function CityHero({
           <div className="space-y-4 lg:pl-8">
             <div className={`inline-flex rounded-full border px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] ${palette.chip}`}>Live city view • Current signals • Local context</div>
             {!hasCoordinates ? <LiveCityPulse citySlug={citySlug} cityName={cityName} /> : null}
-            {(timezone || hasCoordinates) ? (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                {timezone ? <CityTimePanel cityName={cityName} timezone={timezone} showWeekday /> : null}
-                {hasCoordinates ? <WeatherPanel locationLabel={cityName} lat={weatherLat} lng={weatherLng} /> : null}
-              </div>
-            ) : null}
+            {(timezone || hasCoordinates) ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">{timezone ? <CityTimePanel cityName={cityName} timezone={timezone} showWeekday /> : null}{hasCoordinates ? <WeatherPanel locationLabel={cityName} lat={weatherLat} lng={weatherLng} /> : null}</div> : null}
           </div>
         </div>
 
-        {hasCoordinates ? (
-          <div className="mt-8">
-            <CityLiveReality citySlug={citySlug} cityName={cityName} lat={weatherLat} lng={weatherLng} timezone={timezone} />
-          </div>
-        ) : null}
-        <div className="mt-8">
-          <CityWatchPanel citySlug={citySlug} cityName={cityName} suppressRepoSignals={hasCoordinates} />
-        </div>
-        {!hasCoordinates ? (
-          <div className="mt-8">
-            <CityActivityFeed citySlug={citySlug} cityName={cityName} />
-          </div>
-        ) : null}
+        {hasCoordinates ? <div className="mt-8"><CityLiveReality citySlug={citySlug} cityName={cityName} lat={weatherLat} lng={weatherLng} timezone={timezone} /></div> : null}
+        <div className="mt-8"><CityWatchPanel citySlug={citySlug} cityName={cityName} suppressRepoSignals={hasCoordinates} lat={weatherLat} lng={weatherLng} timezone={timezone} /></div>
+        {!hasCoordinates ? <div className="mt-8"><CityActivityFeed citySlug={citySlug} cityName={cityName} /></div> : null}
       </div>
     </header>
   );
