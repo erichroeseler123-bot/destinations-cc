@@ -104,6 +104,10 @@ export default function CityWatchPanel({ citySlug, cityName, suppressRepoSignals
   const liveViews = LIVE_VIEWS[citySlug] || [];
   if (!districtReads.length && !liveViews.length && !streetViewDistricts.length) return null;
 
+  const districtHref = (slug: string) => activeGroup
+    ? `/${citySlug}/watch/${slug}?lens=${encodeURIComponent(activeGroup.intent)}`
+    : `/${citySlug}/watch/${slug}`;
+
   return (
     <div className="space-y-6">
       <section className="rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(7,12,25,0.97),rgba(4,8,17,0.98))] p-6 sm:p-8">
@@ -138,7 +142,7 @@ export default function CityWatchPanel({ citySlug, cityName, suppressRepoSignals
                     <p className="mt-2 text-sm leading-6 text-white/60">{bestMatch.reasons.length ? bestMatch.reasons.join(" • ") : "Best current fit from district context and live activity."}</p>
                     <p className="mt-3 text-xs uppercase tracking-[0.12em] text-white/36">{bestMatch.liveLabel} • {bestMatch.eventCount} events • {bestMatch.signalCount} live signals</p>
                   </div>
-                  <Link href={`/${citySlug}/watch/${bestMatch.slug}`} className="rounded-full bg-emerald-300 px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-slate-950 transition hover:bg-emerald-200">
+                  <Link href={districtHref(bestMatch.slug)} className="rounded-full bg-emerald-300 px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-slate-950 transition hover:bg-emerald-200">
                     Open this district →
                   </Link>
                 </div>
@@ -148,7 +152,7 @@ export default function CityWatchPanel({ citySlug, cityName, suppressRepoSignals
             {activeGroup ? (
               <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {activeGroup.matches.length ? activeGroup.matches.slice(1, 4).map((match, index) => (
-                  <Link key={`${activeGroup.intent}:${match.slug}`} href={`/${citySlug}/watch/${match.slug}`} className="rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:border-cyan-300/25 hover:bg-white/[0.06]">
+                  <Link key={`${activeGroup.intent}:${match.slug}`} href={districtHref(match.slug)} className="rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:border-cyan-300/25 hover:bg-white/[0.06]">
                     <div className="flex items-center justify-between gap-3"><span className="text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200/65">Alternative #{index + 2}</span><span className="text-[9px] font-black uppercase tracking-[0.12em] text-emerald-200/65">{match.liveLabel}</span></div>
                     <h3 className="mt-2 text-lg font-black uppercase tracking-[-0.02em] text-white">{match.name}</h3>
                     <p className="mt-2 text-xs leading-5 text-white/50">{match.reasons.length ? match.reasons.join(" • ") : "Strong current fit from district context"}</p>
