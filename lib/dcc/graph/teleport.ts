@@ -1,6 +1,7 @@
 import { listPlaceGraphSummaries, type PlaceDiscoveryCard } from "@/lib/dcc/graph/placeActionGraph";
 
 export type TeleportActionFilter = "tours" | "cruises" | "transport" | "events";
+export type TeleportSortKey = "actionability" | "liveActivity" | "trend";
 
 export type TeleportQueryInput = {
   filters?: {
@@ -8,7 +9,7 @@ export type TeleportQueryInput = {
     trend?: "improving" | "normal" | "degrading";
     provider?: string;
   };
-  sort?: Array<"actionability" | "liveActivity" | "trend">;
+  sort?: TeleportSortKey[];
   limit?: number;
 };
 
@@ -17,21 +18,24 @@ export type TeleportResult = PlaceDiscoveryCard & {
   whySelected: string[];
 };
 
-function countActions(card: PlaceDiscoveryCard) {
+const DEFAULT_SORT: TeleportSortKey[] = ["actionability", "liveActivity", "trend"];
+
+function countActions(card: PlaceDiscoveryCard): number {
   return Object.values(card.action_counts).reduce((sum, value) => sum + Number(value || 0), 0);
 }
 
-function scoreCard(card: PlaceDiscoveryCard, sort: NonNullable<TeleportQueryInput["sort"]>) {
-  const actionability = countActions(card);
-  const liveActivity = Number(card.action_counts.events || 0) + Number(card.latest_event ? 1 : 0);
-  const trend = card.trend === "improving" ? 2 : card.trend === "degrading" ? 1 : 0;
-  const values = { actionability, liveActivity, trend };
+function scoreCard(card: PlaceDiscoveryCard, sort: TeleportSortKey[]): number {
+  const values: Record<TeleportSortKey, number> = {
+    actionability: countActions(card),
+    liveActivity: Number(card.action_counts.events || 0) + Number(Boolean(card.latest_event)),
+    trend: card.trend === "improving" ? 2 : card.trend === "degrading" ? 1 : 0,
+  };
   return sort.reduce((score, key, index) => score + values[key] * (sort.length - index) * 100, 0);
 }
 
 export function teleportQuery(input: TeleportQueryInput = {}): TeleportResult[] {
   const filters = input.filters || {};
-  const sort = input.sort?.length ? input.sort : ["actionability", "liveActivity", "trend"];
+  const sort: TeleportSortKey[] = input.sort && input.sort.length ? input.sort : DEFAULT_SORT;
   const limit = Math.max(1, Math.min(input.limit || 12, 100));
 
   return listPlaceGraphSummaries(1000)
@@ -41,7 +45,7 @@ export function teleportQuery(input: TeleportQueryInput = {}): TeleportResult[] 
         const needle = filters.provider.toLowerCase();
         if (!card.top_providers.some((provider) => provider.toLowerCase().includes(needle))) return false;
       }
-      if (filters.hasActions?.length) {
+      if (filters.hasActions) {
         for (const action of filters.hasActions) {
           if (Number(card.action_counts[action] || 0) <= 0) return false;
         }
@@ -49,8 +53,8 @@ export function teleportQuery(input: TeleportQueryInput = {}): TeleportResult[] 
       return true;
     })
     .map((card) => {
-      const whySelected: string[] = [];
       const totalActions = countActions(card);
+      const whySelected: string[] = [];
       if (totalActions > 0) whySelected.push(`${totalActions} actionable graph signal${totalActions === 1 ? "" : "s"}`);
       if (card.latest_event) whySelected.push(`latest event: ${card.latest_event}`);
       if (card.trend && card.trend !== "normal") whySelected.push(`${card.trend} trend`);
