@@ -68,6 +68,7 @@ export async function readNoaaWaterLevel(citySlug: string): Promise<CoastalMachi
     const rows = Array.isArray(data?.data) ? data.data : [];
     const latest = rows.length ? rows[rows.length - 1] : null;
     const value = latest?.v != null ? Number(latest.v) : null;
+    const hasFiniteValue = value !== null && Number.isFinite(value);
 
     return {
       available: true,
@@ -79,7 +80,7 @@ export async function readNoaaWaterLevel(citySlug: string): Promise<CoastalMachi
         ? [
             {
               id: `noaa-water-${station.id}-${latest.t || "latest"}`,
-              title: `${station.name} water level${Number.isFinite(value) ? ` • ${value.toFixed(2)} ft` : ""}`,
+              title: `${station.name} water level${hasFiniteValue ? ` • ${value.toFixed(2)} ft` : ""}`,
               description: `NOAA station ${station.id} • relative to MLLW`,
               kind: "water",
               provider: "NOAA CO-OPS",
