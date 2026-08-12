@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import cityRegistryJson from "@/data/cities/index.json";
+import { getCityNetworkRoutesWithAffiliate } from "@/lib/dcc/networkRoutes";
 
 type District = { slug: string; name: string; district_type?: string; vibe_tags?: string[]; center?: { lat?: number; lng?: number } };
 type Signal = { id: string; title: string; description?: string; impact_level?: string; provenance?: string; affected_district_slugs?: string[]; starts_at?: string; expires_at?: string; pro_tip?: string };
@@ -20,40 +22,6 @@ type DistrictNow = {
   events?: Array<{ id: string; name: string; venue?: string | null; category?: string | null; start?: string | null }>;
 };
 type PublicPayload = { districtNow?: DistrictNow[]; checkedAt?: string };
-type CommercialExit = { label: string; description: string; href: string; eyebrow: string };
-
-const COMMERCIAL_EXITS: Record<string, CommercialExit> = {
-  "new-orleans": {
-    label: "Explore New Orleans tours",
-    description: "Move from neighborhood research into bookable city, swamp, plantation, river and combination experiences.",
-    href: "https://welcometoneworleanstours.com/tours",
-    eyebrow: "Relevant booking path",
-  },
-  juneau: {
-    label: "Explore Juneau shore excursions",
-    description: "Continue from live Juneau context into shore-excursion options built for cruise visitors.",
-    href: "https://lastfrontiershoreexcursions.com/",
-    eyebrow: "Relevant booking path",
-  },
-  "wisconsin-dells": {
-    label: "Explore Wisconsin Dells",
-    description: "Continue into the dedicated Dells destination site for attractions and trip planning.",
-    href: "https://welcometothedells.com/",
-    eyebrow: "Destination handoff",
-  },
-  "las-vegas": {
-    label: "Explore Las Vegas options",
-    description: "Continue into the Strip-focused destination property when you are ready to compare things to do.",
-    href: "https://saveonthestrip.com/",
-    eyebrow: "Destination handoff",
-  },
-  denver: {
-    label: "Need private Colorado transportation?",
-    description: "GoSno handles private airport and resort transportation when getting there is the next problem to solve.",
-    href: "https://gosno.co/",
-    eyebrow: "Transportation handoff",
-  },
-};
 
 function freshUntil(value?: string) {
   if (!value) return false;
@@ -65,19 +33,25 @@ function notExpired(value?: string) {
   const t = new Date(value).getTime();
   return !Number.isFinite(t) || t > Date.now();
 }
+function pretty(value: string) {
+  return value.split("-").filter(Boolean).map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+}
 
 export default function DistrictWatchPage({ citySlug, districtSlug }: { citySlug: string; districtSlug: string }) {
+  const searchParams = useSearchParams();
+  const lens = (searchParams.get("lens") || "").slice(0, 80) || null;
   const [payload, setPayload] = useState<Payload | null>(null);
   const [publicPayload, setPublicPayload] = useState<PublicPayload | null>(null);
   const [checkedAt, setCheckedAt] = useState<Date | null>(null);
 
   const cityRecord = useMemo(() => cityRegistryJson.cities.find((city) => city.slug === citySlug) || null, [citySlug]);
+  const cityName = (cityRecord as any)?.name || pretty(citySlug);
 
   useEffect(() => {
     let cancelled = false;
     const refresh = async () => {
       const query = cityRecord?.centroid
-        ? new URLSearchParams({ city: citySlug, lat: String(cityRecord.centroid.lat), lng: String(cityRecord.centroid.lng), timezone: cityRecord.timezone || "auto" })
+        ? new URLSearchParams({ city: citySlug, lat: String(cityRecord.centroid.lat), lng: String(cityRecord.centroid.lng), timezone: cityRecord.timezone || "auto", ...(lens ? { intent: lens } : {}) })
         : null;
       const [internalResult, publicResult] = await Promise.allSettled([
         fetch(`/api/internal/live-city/${encodeURIComponent(citySlug)}`, { cache: "no-store", headers: { "x-dcc-surface": "district-watch" } }),
@@ -95,7 +69,7 @@ export default function DistrictWatchPage({ citySlug, districtSlug }: { citySlug
     refresh();
     const timer = window.setInterval(refresh, 60_000);
     return () => { cancelled = true; window.clearInterval(timer); };
-  }, [citySlug, cityRecord]);
+  }, [citySlug, cityRecord, lens]);
 
   const liveDistrict = useMemo(() => publicPayload?.districtNow?.find((item) => item.slug === districtSlug) || null, [publicPayload, districtSlug]);
   const internalDistrict = useMemo(() => payload?.bundle?.districts?.districts?.find((item) => item.slug === districtSlug) || null, [payload, districtSlug]);
@@ -120,7 +94,8 @@ export default function DistrictWatchPage({ citySlug, districtSlug }: { citySlug
   const streetViewHref = typeof district.center?.lat === "number" && typeof district.center?.lng === "number"
     ? `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${district.center.lat},${district.center.lng}`
     : null;
-  const commercialExit = COMMERCIAL_EXITS[citySlug] || null;
+  const networkRoutes = getCityNetworkRoutesWithAffiliate(citySlug, cityName, lens);
+  const commercialExit = networkRoutes.find((route) => route.kind === "book" || route.kind === "explore" || route.kind === "affiliate") || networkRoutes[0] || null;
   const liveEvents = liveDistrict?.events || [];
   const liveSignals = liveDistrict?.signals || [];
   const firstLiveEvent = liveEvents[0] || null;
@@ -134,7 +109,8 @@ export default function DistrictWatchPage({ citySlug, districtSlug }: { citySlug
         <section className="rounded-[32px] border border-cyan-300/20 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_34%),linear-gradient(180deg,rgba(9,16,31,0.98),rgba(4,8,17,0.99))] p-7 sm:p-9">
           <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-200">DCC District Watch</p>
           <h1 className="mt-3 text-4xl font-black uppercase tracking-[-0.04em] sm:text-5xl">{district.name}</h1>
-          {liveDistrict ? <p className="mt-3 text-sm font-black uppercase tracking-[0.16em] text-emerald-200">{liveDistrict.label}</p> : null}
+          {lens ? <p className="mt-3 text-xs font-black uppercase tracking-[0.16em] text-cyan-200/70">Recommended for your {lens} lens</p> : null}
+          {liveDistrict ? <p className="mt-2 text-sm font-black uppercase tracking-[0.16em] text-emerald-200">{liveDistrict.label}</p> : null}
           <p className="mt-4 max-w-3xl text-base leading-7 text-white/70">Permanent neighborhood identity underneath, current public activity layered on top only when DCC has a fresh geolocated source.</p>
           {character.length ? <div className="mt-5 flex flex-wrap gap-2">{character.map((tag) => <span key={tag} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70">{tag}</span>)}</div> : null}
         </section>
@@ -173,11 +149,12 @@ export default function DistrictWatchPage({ citySlug, districtSlug }: { citySlug
             </div>
 
             {commercialExit ? (
-              <a href={commercialExit.href} target="_blank" rel="noopener noreferrer" className="group rounded-[22px] border border-amber-300/15 bg-amber-300/[0.055] p-4 transition hover:border-amber-200/30 hover:bg-amber-300/[0.09]">
-                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-amber-200/70">{commercialExit.eyebrow}</p>
+              <a href={commercialExit.href} target="_blank" rel={commercialExit.affiliate ? "sponsored noopener noreferrer" : "noopener noreferrer"} className="group rounded-[22px] border border-amber-300/15 bg-amber-300/[0.055] p-4 transition hover:border-amber-200/30 hover:bg-amber-300/[0.09]">
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-amber-200/70">{commercialExit.affiliate ? "Affiliate booking fallback" : "Relevant network handoff"}</p>
                 <h2 className="mt-2 font-black text-white">{commercialExit.label}</h2>
-                <p className="mt-2 text-sm leading-5 text-white/52">{commercialExit.description}</p>
+                <p className="mt-2 text-sm leading-5 text-white/52">{commercialExit.reason}</p>
                 <p className="mt-4 text-xs font-black uppercase tracking-[0.12em] text-amber-100">Continue →</p>
+                {commercialExit.affiliate ? <p className="mt-3 text-[9px] leading-4 text-white/30">Affiliate link • DCC may earn a commission if you book, at no extra cost to you.</p> : null}
               </a>
             ) : null}
           </div>
