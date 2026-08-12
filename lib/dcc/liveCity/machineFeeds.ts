@@ -2,7 +2,7 @@ type LiveMachineItem = {
   id: string;
   title: string;
   description?: string | null;
-  kind: "transit" | "traffic" | "weather";
+  kind: "transit" | "traffic" | "weather" | "earth";
   provider: string;
   updatedAt?: string | null;
   severity?: string | null;
@@ -14,7 +14,7 @@ type LiveMachineFeed = {
   available: boolean;
   configured: boolean;
   provider: string;
-  kind: "transit" | "traffic" | "weather";
+  kind: "transit" | "traffic" | "weather" | "earth";
   mode: "public-feed" | "api-key";
   items: LiveMachineItem[];
   error?: string;
@@ -82,6 +82,43 @@ async function readNwsAlerts(lat: number, lng: number): Promise<LiveMachineFeed>
     return { available: true, configured: true, provider: "National Weather Service", kind: "weather", mode: "public-feed", items };
   } catch (error) {
     return { available: false, configured: true, provider: "National Weather Service", kind: "weather", mode: "public-feed", items: [], error: error instanceof Error ? error.message : "feed error" };
+  }
+}
+
+async function readUsgsEarthquakes(lat: number, lng: number): Promise<LiveMachineFeed> {
+  try {
+    const start = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const url = new URL("https://earthquake.usgs.gov/fdsnws/event/1/query");
+    url.searchParams.set("format", "geojson");
+    url.searchParams.set("starttime", start);
+    url.searchParams.set("latitude", String(lat));
+    url.searchParams.set("longitude", String(lng));
+    url.searchParams.set("maxradiuskm", "250");
+    url.searchParams.set("minmagnitude", "2.5");
+    url.searchParams.set("orderby", "time");
+    url.searchParams.set("limit", "15");
+    const data = await fetchJson(url.toString());
+    const features = Array.isArray(data?.features) ? data.features : [];
+    const items = features.map((feature: any, index: number) => {
+      const p = feature?.properties || {};
+      const coords = Array.isArray(feature?.geometry?.coordinates) ? feature.geometry.coordinates : [];
+      const magnitude = typeof p.mag === "number" ? p.mag : null;
+      const depthKm = typeof coords[2] === "number" ? coords[2] : null;
+      return {
+        id: String(feature?.id || `usgs-eq-${index}`),
+        title: `${magnitude != null ? `M${magnitude.toFixed(1)} ` : ""}${p.place || "earthquake near this city"}`,
+        description: [depthKm != null ? `${Math.round(depthKm)} km deep` : null, p.type || null].filter(Boolean).join(" • ") || null,
+        kind: "earth" as const,
+        provider: "U.S. Geological Survey",
+        severity: magnitude != null ? `M${magnitude.toFixed(1)}` : null,
+        updatedAt: typeof p.time === "number" ? new Date(p.time).toISOString() : null,
+        latitude: typeof coords[1] === "number" ? coords[1] : null,
+        longitude: typeof coords[0] === "number" ? coords[0] : null,
+      };
+    });
+    return { available: true, configured: true, provider: "U.S. Geological Survey", kind: "earth", mode: "public-feed", items };
+  } catch (error) {
+    return { available: false, configured: true, provider: "U.S. Geological Survey", kind: "earth", mode: "public-feed", items: [], error: error instanceof Error ? error.message : "feed error" };
   }
 }
 
@@ -233,7 +270,7 @@ async function readSeattleWsdot(lat: number, lng: number): Promise<LiveMachineFe
 }
 
 export async function readMachineFeeds(citySlug: string, lat: number, lng: number): Promise<LiveMachineFeed[]> {
-  const feeds: Array<Promise<LiveMachineFeed | null>> = [readNwsAlerts(lat, lng)];
+  const feeds: Array<Promise<LiveMachineFeed | null>> = [readNwsAlerts(lat, lng), readUsgsEarthquakes(lat, lng)];
   if (citySlug === "boston") feeds.push(readBostonMbtaAlerts());
   if (citySlug === "chicago") feeds.push(readChicagoAlerts());
   if (citySlug === "new-york-city") {
