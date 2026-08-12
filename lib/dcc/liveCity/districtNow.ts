@@ -6,6 +6,7 @@ import miamiDistricts from "@/data/cities/miami/districts.json";
 import nashvilleDistricts from "@/data/cities/nashville/districts.json";
 import newOrleansDistricts from "@/data/cities/new-orleans/districts.json";
 import newYorkDistricts from "@/data/cities/new-york-city/districts.json";
+import { DURABLE_DISTRICTS, type DurableDistrict } from "@/lib/dcc/liveCity/durableDistricts";
 
 type District = {
   slug: string;
@@ -37,6 +38,7 @@ type EventSignal = {
 };
 
 const DISTRICTS: Record<string, District[]> = {
+  ...DURABLE_DISTRICTS,
   austin: austinDistricts.districts,
   chicago: chicagoDistricts.districts,
   denver: denverDistricts.districts,
@@ -72,11 +74,19 @@ export function deriveDistrictNow(citySlug: string, machineSignals: GeoSignal[],
   const mapped = districts.map((district) => {
     const lat = district.center?.lat;
     const lng = district.center?.lng;
+    const base = {
+      slug: district.slug,
+      name: district.name,
+      center: typeof lat === "number" && typeof lng === "number" ? { lat, lng } : null,
+      radius_m: Number(district.radius_m) || 1400,
+      vibe_tags: district.vibe_tags || [],
+    };
+
     if (typeof lat !== "number" || typeof lng !== "number") {
-      return { slug: district.slug, name: district.name, label: "NO LIVE GEO SIGNAL", tone: "quiet", signalCount: 0, eventCount: 0, signals: [], events: [], ephemeral: true };
+      return { ...base, label: "NO LIVE GEO SIGNAL", tone: "quiet", signalCount: 0, eventCount: 0, signals: [], events: [], ephemeral: true };
     }
 
-    const radius = Math.max(800, Math.min(3500, Number(district.radius_m) || 1400));
+    const radius = Math.max(800, Math.min(6500, Number(district.radius_m) || 1400));
     const signals = machineSignals.filter((signal) =>
       typeof signal.latitude === "number" && typeof signal.longitude === "number" && distanceMeters(lat, lng, signal.latitude, signal.longitude) <= radius
     );
@@ -86,8 +96,7 @@ export function deriveDistrictNow(citySlug: string, machineSignals: GeoSignal[],
     const state = classify(signals.map((signal) => signal.kind), districtEvents.length);
 
     return {
-      slug: district.slug,
-      name: district.name,
+      ...base,
       label: state.label,
       tone: state.tone,
       signalCount: signals.length,
