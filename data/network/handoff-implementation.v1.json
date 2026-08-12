@@ -1,6 +1,6 @@
 {
   "version": "dcc-handoff-implementation-v1",
-  "updatedAt": "2026-08-12T21:40:00Z",
+  "updatedAt": "2026-08-12T21:42:00Z",
   "statusDefinitions": {
     "declared_only": "The network registry declares the lane, but no destination receiver was confirmed in this audit.",
     "context_handoff": "A real contextual/attribution handoff exists, but it is not the full signed DCC suite receiver flow.",
@@ -20,7 +20,7 @@
     {"handoff_id":"dcc:handoff:dcc-to-last-frontier","status":"context_handoff","evidence":["destinations-cc:PR#69","erichroeseler123-bot/last-frontier-shore-excursions:PR#1"]},
     {"handoff_id":"dcc:handoff:cruise-promenade-to-last-frontier","status":"declared_only","evidence":[]},
     {"handoff_id":"dcc:handoff:dcc-to-juneau-flight-deck","status":"declared_only","evidence":["destinations-cc:PR#10 notes missing JFD handoff modules"]},
-    {"handoff_id":"dcc:handoff:dcc-to-parr","status":"context_handoff","evidence":["erichroeseler123-bot/partyatredrocks:lib/dccSatellite.ts","destinations-cc:PR#63"]},
+    {"handoff_id":"dcc:handoff:dcc-to-parr","status":"receiver_confirmed","evidence":["erichroeseler123-bot/partyatredrocks:lib/handoff/readContext.ts","erichroeseler123-bot/partyatredrocks:lib/dccSatellite.ts","erichroeseler123-bot/partyatredrocks:lib/square.ts"]},
     {"handoff_id":"dcc:handoff:dcc-to-red-rocks-fast-pass","status":"receiver_confirmed","evidence":["destinations-cc:apps/redrocksfastpass/app/handoff/dcc/route.ts"]},
     {"handoff_id":"dcc:handoff:dcc-to-shuttleya","status":"declared_only","evidence":[]},
     {"handoff_id":"dcc:handoff:dcc-to-420","status":"receiver_confirmed","evidence":["destinations-cc:apps/420-airport-pickup/lib/handoff/readContext.ts"]},
