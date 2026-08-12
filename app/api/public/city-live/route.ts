@@ -5,6 +5,7 @@ import { readNoaaWaterLevel } from "@/lib/dcc/liveCity/coastalFeeds";
 import { readNwpsWaterFeed } from "@/lib/dcc/liveCity/waterFeed";
 import { deriveCityNow } from "@/lib/dcc/liveCity/cityNow";
 import { deriveDistrictNow } from "@/lib/dcc/liveCity/districtNow";
+import { deriveDistrictIntents } from "@/lib/dcc/liveCity/districtIntent";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -210,6 +211,7 @@ export async function GET(request: NextRequest) {
     }))
   );
   const districtNow = deriveDistrictNow(city, geoMachineSignals, ticketmaster?.events || []);
+  const districtIntents = deriveDistrictIntents(districtNow);
 
   return NextResponse.json(
     {
@@ -224,6 +226,7 @@ export async function GET(request: NextRequest) {
       },
       cityNow,
       districtNow,
+      districtIntents,
       weather,
       ticketmaster,
       machineFeeds,
