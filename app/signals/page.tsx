@@ -22,6 +22,12 @@ const SYSTEMS = [
     label: "Open alerts & trends",
   },
   {
+    title: "Historical memory",
+    body: "Dated snapshot and event history from DCC's existing place-memory system, explicitly separated from current conditions.",
+    href: "/signals/history",
+    label: "Open historical timeline",
+  },
+  {
     title: "Ports",
     body: "Port authority pages and cruise-day context built from DCC's port and cruise intelligence layers.",
     href: "/ports",
@@ -48,6 +54,9 @@ export default function SignalsPage() {
   const degrading = places.filter((row) => row.trend === "degrading").length;
   const improving = places.filter((row) => row.trend === "improving").length;
   const actionable = teleportQuery({ sort: ["actionability", "liveActivity", "trend"], limit: 6 });
+  const memoryGenerated = memory?.generated_at
+    ? new Date(memory.generated_at).toLocaleDateString("en-US", { dateStyle: "medium", timeZone: "UTC" })
+    : null;
 
   return (
     <main className="min-h-screen bg-[#090d13] text-slate-100">
@@ -113,7 +122,9 @@ export default function SignalsPage() {
             <a href="/agent.json" className="rounded-xl border border-slate-700 px-4 py-3 text-sm font-bold hover:border-cyan-600">Agent manifest</a>
             <a href="/llms.txt" className="rounded-xl border border-slate-700 px-4 py-3 text-sm font-bold hover:border-cyan-600">LLM guidance</a>
           </div>
-          <p className="mt-5 text-xs text-slate-500">Current memory-event count: {memory?.count ?? 0}. Live and historical signals are kept distinct from permanent destination facts.</p>
+          <p className="mt-5 text-xs text-slate-500">
+            Stored historical memory: {memory?.count ?? 0} events{memoryGenerated ? `; index generated ${memoryGenerated} UTC` : ""}. Historical memory is not presented as a live-condition claim.
+          </p>
         </section>
       </section>
     </main>

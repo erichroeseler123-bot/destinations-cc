@@ -1,6 +1,6 @@
 {
   "version": "dcc-handoff-implementation-v1",
-  "updatedAt": "2026-08-12T21:42:00Z",
+  "updatedAt": "2026-08-12T22:02:00Z",
   "statusDefinitions": {
     "declared_only": "The network registry declares the lane, but no destination receiver was confirmed in this audit.",
     "context_handoff": "A real contextual/attribution handoff exists, but it is not the full signed DCC suite receiver flow.",
@@ -8,18 +8,18 @@
     "end_to_end_verified": "Source, DCC transport, destination receiver, attribution persistence, and conversion callback are implemented and previously preview-validated."
   },
   "handoffs": [
-    {"handoff_id":"dcc:handoff:dcc-to-cruise-promenade","status":"declared_only","evidence":[]},
+    {"handoff_id":"dcc:handoff:dcc-to-cruise-promenade","status":"receiver_confirmed","evidence":["destinations-cc:app/go/dcc-to-cruise-promenade/route.ts","erichroeseler123-bot/cruisepromenade:PR#2"]},
     {"handoff_id":"dcc:handoff:dcc-to-vibe-around-town","status":"receiver_confirmed","evidence":["erichroeseler123-bot/vibing-around:src/app/handoff/dcc/route.ts","erichroeseler123-bot/vibing-around:PR#5"]},
     {"handoff_id":"dcc:handoff:cruise-promenade-to-vibe-around-town","status":"end_to_end_verified","evidence":["erichroeseler123-bot/cruisepromenade:PR#1","destinations-cc:app/go/cruise-promenade-to-vibe-around/route.ts","erichroeseler123-bot/vibing-around:PR#5"]},
-    {"handoff_id":"dcc:handoff:dcc-to-gosno","status":"declared_only","evidence":[]},
+    {"handoff_id":"dcc:handoff:dcc-to-gosno","status":"receiver_confirmed","evidence":["destinations-cc:app/go/dcc-to-gosno/route.ts","erichroeseler123-bot/gosno-production:PR#6"]},
     {"handoff_id":"dcc:handoff:dcc-to-wtnot","status":"context_handoff","evidence":["destinations-cc:PR#48"]},
     {"handoff_id":"dcc:handoff:french-quarter-to-wtnot","status":"context_handoff","evidence":["destinations-cc:PR#48"]},
     {"handoff_id":"dcc:handoff:dcc-to-wts","status":"context_handoff","evidence":["destinations-cc:PR#39"]},
     {"handoff_id":"dcc:handoff:wts-to-wtnot","status":"context_handoff","evidence":["destinations-cc:PR#48"]},
     {"handoff_id":"dcc:handoff:dcc-to-wta","status":"receiver_confirmed","evidence":["erichroeseler123-bot/wta-renderer:lib/handoff/dcc.ts"]},
-    {"handoff_id":"dcc:handoff:dcc-to-last-frontier","status":"context_handoff","evidence":["destinations-cc:PR#69","erichroeseler123-bot/last-frontier-shore-excursions:PR#1"]},
-    {"handoff_id":"dcc:handoff:cruise-promenade-to-last-frontier","status":"declared_only","evidence":[]},
-    {"handoff_id":"dcc:handoff:dcc-to-juneau-flight-deck","status":"declared_only","evidence":["destinations-cc:PR#10 notes missing JFD handoff modules"]},
+    {"handoff_id":"dcc:handoff:dcc-to-last-frontier","status":"receiver_confirmed","evidence":["destinations-cc:PR#69","erichroeseler123-bot/last-frontier-shore-excursions:feature/dcc-context-receiver"]},
+    {"handoff_id":"dcc:handoff:cruise-promenade-to-last-frontier","status":"context_handoff","evidence":["destinations-cc:app/go/cruise-promenade-to-last-frontier/route.ts","erichroeseler123-bot/last-frontier-shore-excursions:feature/dcc-context-receiver"]},
+    {"handoff_id":"dcc:handoff:dcc-to-juneau-flight-deck","status":"receiver_confirmed","evidence":["destinations-cc:app/go/dcc-to-juneau-flight-deck/route.ts","destinations-cc:apps/juneauflightdeck/app/handoff/dcc/route.ts"]},
     {"handoff_id":"dcc:handoff:dcc-to-parr","status":"receiver_confirmed","evidence":["erichroeseler123-bot/partyatredrocks:lib/handoff/readContext.ts","erichroeseler123-bot/partyatredrocks:lib/dccSatellite.ts","erichroeseler123-bot/partyatredrocks:lib/square.ts"]},
     {"handoff_id":"dcc:handoff:dcc-to-red-rocks-fast-pass","status":"receiver_confirmed","evidence":["destinations-cc:apps/redrocksfastpass/app/handoff/dcc/route.ts"]},
     {"handoff_id":"dcc:handoff:dcc-to-shuttleya","status":"declared_only","evidence":[]},
