@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOfficialLiveSources, getProviderSlotStatus } from "@/lib/dcc/liveCity/officialSources";
 import { readMachineFeeds } from "@/lib/dcc/liveCity/machineFeeds";
 import { readNoaaWaterLevel } from "@/lib/dcc/liveCity/coastalFeeds";
+import { readNwpsWaterFeed } from "@/lib/dcc/liveCity/waterFeed";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -152,13 +153,18 @@ export async function GET(request: NextRequest) {
   }
 
   const checkedAt = new Date().toISOString();
-  const [weather, ticketmaster, baseMachineFeeds, coastalFeed] = await Promise.all([
+  const [weather, ticketmaster, baseMachineFeeds, coastalFeed, nwpsFeed] = await Promise.all([
     readGlobalWeather(lat, lng, timezone),
     readTicketmaster(lat, lng),
     readMachineFeeds(city, lat, lng),
     readNoaaWaterLevel(city),
+    readNwpsWaterFeed(lat, lng),
   ]);
-  const machineFeeds = coastalFeed ? [...baseMachineFeeds, coastalFeed] : baseMachineFeeds;
+  const machineFeeds = [
+    ...baseMachineFeeds,
+    ...(coastalFeed ? [coastalFeed] : []),
+    nwpsFeed,
+  ];
   const officialLiveLinks = getOfficialLiveSources(city);
   const providerSlots: Record<string, ProviderSlotStatus> = getProviderSlotStatus(city);
 
