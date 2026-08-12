@@ -1,0 +1,41 @@
+name: Suite Health Check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 13 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  suite-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Scan portfolio
+        run: node scripts/suite-health.mjs
+
+      - name: Publish summary
+        if: always()
+        run: |
+          if [ -f artifacts/suite-health/latest.md ]; then
+            cat artifacts/suite-health/latest.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload health report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: suite-health-report
+          path: artifacts/suite-health/
+          if-no-files-found: warn
+          retention-days: 30
