@@ -16,7 +16,9 @@ type DistrictNowState = {
   signals?: Array<{ id: string; title: string; kind: string; provider: string }>;
   events?: Array<{ id: string; name: string; venue?: string | null; start?: string | null }>;
 };
-type PublicLivePayload = { districtNow?: DistrictNowState[] };
+type IntentMatch = { slug: string; name: string; liveLabel: string; reasons: string[]; eventCount: number; signalCount: number };
+type IntentGroup = { intent: string; label: string; matches: IntentMatch[] };
+type PublicLivePayload = { districtNow?: DistrictNowState[]; districtIntents?: { ephemeral?: boolean; method?: string; intents?: IntentGroup[] } };
 type LiveView = { label: string; href: string; source: string };
 
 const LIVE_VIEWS: Record<string, LiveView[]> = {
@@ -42,6 +44,7 @@ export default function CityWatchPanel({ citySlug, cityName, suppressRepoSignals
   const [publicLive, setPublicLive] = useState<PublicLivePayload | null>(null);
   const [checkedAt, setCheckedAt] = useState<Date | null>(null);
   const [status, setStatus] = useState<"loading" | "live" | "quiet">("loading");
+  const [activeIntent, setActiveIntent] = useState("lively");
 
   useEffect(() => {
     let cancelled = false;
@@ -95,6 +98,8 @@ export default function CityWatchPanel({ citySlug, cityName, suppressRepoSignals
     .map(({ district }) => ({ slug: district.slug, name: district.name, lat: district.center!.lat as number, lng: district.center!.lng as number, vibeTags: district.vibe_tags })),
   [districtReads]);
 
+  const intentGroups = publicLive?.districtIntents?.intents || [];
+  const activeGroup = intentGroups.find((group) => group.intent === activeIntent) || intentGroups[0] || null;
   const liveViews = LIVE_VIEWS[citySlug] || [];
   if (!districtReads.length && !liveViews.length && !streetViewDistricts.length) return null;
 
@@ -104,13 +109,39 @@ export default function CityWatchPanel({ citySlug, cityName, suppressRepoSignals
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-3xl">
             <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-200">City Watch</p>
-            <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] text-white sm:text-3xl">Where is the action in {cityName}?</h2>
-            <p className="mt-3 text-sm leading-6 text-white/68">Permanent district geography underneath; ephemeral live events and geolocated public signals on top. Citywide alerts stay citywide rather than being falsely pinned to one neighborhood.</p>
+            <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] text-white sm:text-3xl">Where should I go in {cityName} right now?</h2>
+            <p className="mt-3 text-sm leading-6 text-white/68">Pick the kind of city experience you want. DCC combines permanent district character with current geolocated activity, then shows why each district fits instead of hiding the answer behind a made-up buzz score.</p>
           </div>
           <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white/64">
             {status === "loading" ? "checking" : publicDistricts.length ? "district states live" : "district structure live"}
           </span>
         </div>
+
+        {intentGroups.length ? (
+          <div className="mt-6 rounded-[24px] border border-cyan-300/15 bg-cyan-300/[0.045] p-4 sm:p-5">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/75">Pick your lens</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {intentGroups.map((group) => (
+                <button key={group.intent} type="button" onClick={() => setActiveIntent(group.intent)} className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.12em] transition ${activeGroup?.intent === group.intent ? "border-cyan-200/40 bg-cyan-200 text-slate-950" : "border-white/10 bg-black/20 text-white/65 hover:bg-white/10"}`}>
+                  {group.label}
+                </button>
+              ))}
+            </div>
+            {activeGroup ? (
+              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {activeGroup.matches.length ? activeGroup.matches.slice(0, 3).map((match, index) => (
+                  <Link key={`${activeGroup.intent}:${match.slug}`} href={`/${citySlug}/watch/${match.slug}`} className="rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:border-cyan-300/25 hover:bg-white/[0.06]">
+                    <div className="flex items-center justify-between gap-3"><span className="text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200/65">#{index + 1} for {activeGroup.label}</span><span className="text-[9px] font-black uppercase tracking-[0.12em] text-emerald-200/65">{match.liveLabel}</span></div>
+                    <h3 className="mt-2 text-lg font-black uppercase tracking-[-0.02em] text-white">{match.name}</h3>
+                    <p className="mt-2 text-xs leading-5 text-white/50">{match.reasons.length ? match.reasons.join(" • ") : "Best current fit from district context"}</p>
+                    <p className="mt-3 text-[10px] uppercase tracking-[0.12em] text-white/35">{match.eventCount} events • {match.signalCount} live signals</p>
+                  </Link>
+                )) : <p className="text-sm text-white/45">No district has enough verified context for this lens right now.</p>}
+              </div>
+            ) : null}
+            <p className="mt-4 text-[10px] text-white/30">{publicLive?.districtIntents?.method || "District recommendations use durable context plus current live activity."}</p>
+          </div>
+        ) : null}
 
         <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {districtReads.map(({ district, liveState, signals }) => (
