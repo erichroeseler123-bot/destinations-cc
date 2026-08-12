@@ -35,8 +35,17 @@ type MachineFeed = {
   }>;
 };
 
+type CityNow = {
+  label: string;
+  summary: string;
+  signals?: Array<{ kind: string; label: string; source: string }>;
+  derivedAt?: string;
+  ephemeral?: boolean;
+};
+
 type LivePayload = {
   checkedAt?: string;
+  cityNow?: CityNow;
   weather?: {
     available?: boolean;
     provider?: string;
@@ -112,6 +121,7 @@ export default function CityLiveReality({
     };
   }, [citySlug, lat, lng, timezone]);
 
+  const cityNow = payload?.cityNow;
   const weather = payload?.weather;
   const events = payload?.ticketmaster?.available ? payload.ticketmaster.events || [] : [];
   const liveSources = payload?.officialLiveLinks || [];
@@ -127,13 +137,35 @@ export default function CityLiveReality({
           <p className="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-200">{cityName} • Live Reality</p>
           <h2 className="mt-2 text-2xl font-black uppercase tracking-[-0.03em] text-white sm:text-3xl">What the city is actually doing now</h2>
           <p className="mt-3 text-sm leading-6 text-white/66">
-            The same live contract powers every city. Coordinates drive weather and event discovery; machine-readable adapters add live transit and traffic where an official feed is available, while verified official portals fill the remaining gaps. Dynamic observations are not stored as permanent destination content.
+            Coordinates drive the live layer. Official machine feeds are interpreted into a temporary city state, while the underlying observations remain visible below. Dynamic observations and the derived state are not stored as permanent destination content.
           </p>
         </div>
         <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white/66">
           {state === "loading" ? "checking sources" : state === "live" ? `${liveCount} live observations` : "live sources unavailable"}
         </span>
       </div>
+
+      {cityNow ? (
+        <div className="mt-6 rounded-[24px] border border-cyan-300/20 bg-cyan-300/[0.07] p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-3xl">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200/70">CityNow • derived live state</p>
+              <h3 className="mt-2 text-xl font-black uppercase tracking-[-0.02em] text-white sm:text-2xl">{cityNow.label}</h3>
+              <p className="mt-2 text-sm leading-6 text-white/60">{cityNow.summary}</p>
+            </div>
+            <span className="rounded-full border border-cyan-200/15 bg-black/20 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-cyan-100/70">ephemeral • not stored</span>
+          </div>
+          {cityNow.signals?.length ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {cityNow.signals.map((signal, index) => (
+                <span key={`${signal.kind}:${index}`} className="rounded-full border border-white/10 bg-black/20 px-3 py-2 text-[10px] text-white/58">
+                  <strong className="uppercase tracking-[0.11em] text-cyan-100/70">{pretty(signal.kind)}</strong> • {signal.label}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mt-6 grid gap-3 lg:grid-cols-2">
         <article className="rounded-[22px] border border-white/10 bg-white/[0.045] p-5">
@@ -183,7 +215,7 @@ export default function CityLiveReality({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-200/75">Machine-readable city feed</p>
-              <p className="mt-1 text-sm text-white/55">Current official transit/traffic records pulled directly into DCC.</p>
+              <p className="mt-1 text-sm text-white/55">Current official records pulled directly into DCC.</p>
             </div>
             <span className="rounded-full border border-emerald-300/15 bg-emerald-300/[0.08] px-3 py-1 text-[9px] font-black uppercase tracking-[0.13em] text-emerald-100">{machineItems.length} current</span>
           </div>
@@ -191,9 +223,7 @@ export default function CityLiveReality({
             {machineItems.slice(0, 9).map((item) => (
               <article key={`${item.provider}:${item.id}`} className="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
                 <div className="flex flex-wrap items-center gap-2 text-[9px] font-black uppercase tracking-[0.13em] text-emerald-200/65">
-                  <span>{pretty(item.kind)}</span>
-                  <span>•</span>
-                  <span>{item.mode === "api-key" ? "API" : "public feed"}</span>
+                  <span>{pretty(item.kind)}</span><span>•</span><span>{item.mode === "api-key" ? "API" : "public feed"}</span>
                 </div>
                 <p className="mt-2 text-sm font-semibold leading-5 text-white">{item.title}</p>
                 {item.description ? <p className="mt-1 line-clamp-3 text-xs leading-5 text-white/45">{item.description}</p> : null}
@@ -238,9 +268,7 @@ export default function CityLiveReality({
 
       <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs text-white/35">
         {payload?.checkedAt ? <span>Checked {new Date(payload.checkedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span> : null}
-        <span>Refreshes every minute</span>
-        <span>No-store</span>
-        <span>Coordinates drive the live layer</span>
+        <span>Refreshes every minute</span><span>No-store</span><span>Coordinates drive the live layer</span><span>{connectedSlots.length} provider slots active</span>
       </div>
     </section>
   );
