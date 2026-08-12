@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getGraphHealth } from "@/lib/dcc/graph/health";
 import { listPlaceGraphSummaries } from "@/lib/dcc/graph/placeActionGraph";
+import { teleportQuery } from "@/lib/dcc/graph/teleport";
 import { getPlanetarySummary } from "@/lib/dcc/memory/resolve";
 
 export const dynamic = "force-static";
@@ -46,6 +47,7 @@ export default function SignalsPage() {
   const memory = getPlanetarySummary();
   const degrading = places.filter((row) => row.trend === "degrading").length;
   const improving = places.filter((row) => row.trend === "improving").length;
+  const actionable = teleportQuery({ sort: ["actionability", "liveActivity", "trend"], limit: 6 });
 
   return (
     <main className="min-h-screen bg-[#090d13] text-slate-100">
@@ -68,6 +70,24 @@ export default function SignalsPage() {
             Some graph data is currently marked stale. DCC exposes that condition instead of presenting old signals as live facts.
           </div>
         ) : null}
+
+        <section className="mt-14">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300">Teleport · first live consumer</p>
+          <h2 className="mt-3 text-3xl font-black tracking-tight text-white">Most actionable places in the current graph</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">These are ranked from the existing place-action index instead of a hand-written list. Teleport currently weights action inventory, live event activity, and trend, with stable deterministic tie-breaking.</p>
+          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {actionable.map((place) => (
+              <article key={place.place_id} className="rounded-2xl border border-slate-800 bg-[#0d131d] p-5">
+                <div className="text-xs font-black uppercase tracking-wider text-slate-500">{place.trend || "normal"} · score {place.score}</div>
+                <h3 className="mt-2 text-lg font-black text-white">{place.title}</h3>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-300">
+                  {Object.entries(place.action_counts).filter(([, count]) => Number(count) > 0).map(([kind, count]) => <span key={kind} className="rounded-full border border-slate-700 px-2.5 py-1">{kind}: {count}</span>)}
+                </div>
+                {place.whySelected.length ? <p className="mt-4 text-xs leading-5 text-slate-500">{place.whySelected.join(" · ")}</p> : null}
+              </article>
+            ))}
+          </div>
+        </section>
 
         <section className="mt-14">
           <h2 className="text-3xl font-black tracking-tight text-white">Use what is already built</h2>
