@@ -3,6 +3,7 @@ import { getOfficialLiveSources, getProviderSlotStatus } from "@/lib/dcc/liveCit
 import { readMachineFeeds } from "@/lib/dcc/liveCity/machineFeeds";
 import { readNoaaWaterLevel } from "@/lib/dcc/liveCity/coastalFeeds";
 import { readNwpsWaterFeed } from "@/lib/dcc/liveCity/waterFeed";
+import { deriveCityNow } from "@/lib/dcc/liveCity/cityNow";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -141,6 +142,14 @@ async function readTicketmaster(lat: number, lng: number) {
   }
 }
 
+function displayCityName(slug: string) {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const lat = validCoordinate(searchParams.get("lat"), -90, 90);
@@ -180,6 +189,13 @@ export async function GET(request: NextRequest) {
     };
   }
 
+  const cityNow = deriveCityNow({
+    cityName: displayCityName(city),
+    weather,
+    ticketmaster,
+    machineFeeds,
+  });
+
   return NextResponse.json(
     {
       ok: true,
@@ -191,6 +207,7 @@ export async function GET(request: NextRequest) {
         cache: "no-store",
         note: "Dynamic observations are fetched for this request and are not persisted as destination content.",
       },
+      cityNow,
       weather,
       ticketmaster,
       machineFeeds,
