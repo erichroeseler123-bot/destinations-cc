@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import DistrictWatchPage from "@/app/components/dcc/DistrictWatchPage";
 
 type Params = { city: string; district: string };
+type SearchParams = { lens?: string };
 
 function pretty(value: string) {
   return value.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   };
 }
 
-export default async function Page({ params }: { params: Promise<Params> }) {
-  const { city, district } = await params;
-  return <DistrictWatchPage citySlug={city} districtSlug={district} />;
+export default async function Page({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<SearchParams> }) {
+  const [{ city, district }, query] = await Promise.all([params, searchParams]);
+  return <DistrictWatchPage citySlug={city} districtSlug={district} lens={query.lens || undefined} />;
 }
