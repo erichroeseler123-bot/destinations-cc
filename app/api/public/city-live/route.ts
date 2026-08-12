@@ -6,6 +6,7 @@ import { readNwpsWaterFeed } from "@/lib/dcc/liveCity/waterFeed";
 import { deriveCityNow } from "@/lib/dcc/liveCity/cityNow";
 import { deriveDistrictNow } from "@/lib/dcc/liveCity/districtNow";
 import { deriveDistrictIntents } from "@/lib/dcc/liveCity/districtIntent";
+import { getCityNetworkRoutes } from "@/lib/dcc/networkRoutes";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -212,6 +213,7 @@ export async function GET(request: NextRequest) {
   );
   const districtNow = deriveDistrictNow(city, geoMachineSignals, ticketmaster?.events || []);
   const districtIntents = deriveDistrictIntents(districtNow);
+  const networkRoutes = getCityNetworkRoutes(city);
 
   return NextResponse.json(
     {
@@ -227,6 +229,7 @@ export async function GET(request: NextRequest) {
       cityNow,
       districtNow,
       districtIntents,
+      networkRoutes,
       weather,
       ticketmaster,
       machineFeeds,
