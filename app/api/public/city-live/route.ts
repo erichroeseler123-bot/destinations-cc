@@ -7,6 +7,16 @@ export const dynamic = "force-dynamic";
 
 const USER_AGENT = "DestinationCommandCenter/1.0 (https://destinationcommandcenter.com)";
 
+type ProviderSlotStatus = {
+  available?: boolean;
+  sourceCount?: number;
+  realtime?: boolean;
+  apiConfigured?: boolean;
+  mode?: string;
+  machineReadable?: boolean;
+  liveItemCount?: number;
+};
+
 async function fetchJson(url: string, init?: RequestInit) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 7000);
@@ -147,7 +157,7 @@ export async function GET(request: NextRequest) {
     readMachineFeeds(city, lat, lng),
   ]);
   const officialLiveLinks = getOfficialLiveSources(city);
-  const providerSlots = getProviderSlotStatus(city);
+  const providerSlots: Record<string, ProviderSlotStatus> = getProviderSlotStatus(city);
 
   for (const feed of machineFeeds) {
     const slotName = feed.kind;
