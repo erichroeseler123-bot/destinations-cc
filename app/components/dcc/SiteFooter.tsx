@@ -13,15 +13,17 @@ type FooterLink = {
 };
 
 const ENGINE_LINKS: FooterLink[] = [
-  { href: "/", label: "Core Index" },
-  { href: "/network", label: "Spatial Core" },
-  { href: "/command", label: "Drift Monitor" },
+  { href: "/ask", label: "Ask DCC" },
+  { href: "/signals", label: "Live Signals" },
+  { href: "/ports", label: "Ports" },
+  { href: "/guides", label: "Decision Guides" },
 ];
 
 const SYSTEM_LINKS: FooterLink[] = [
-  { href: "/operator/register", label: "Documentation" },
-  { href: "/agent.json", label: "API Node Spec" },
-  { href: "/llms.txt", label: "Security Base" },
+  { href: "/alerts", label: "Alerts & Trends" },
+  { href: "/api/public/network-feed", label: "Public Network Feed" },
+  { href: "/agent.json", label: "Agent Manifest" },
+  { href: "/llms.txt", label: "LLM Guidance" },
 ];
 
 const FOOTER_SATELLITES: Array<{
@@ -31,17 +33,17 @@ const FOOTER_SATELLITES: Array<{
 }> = [
   {
     id: "partyatredrocks",
-    label: "Red Rocks rides",
+    label: "Red Rocks private transportation",
     action: "open_red_rocks_transport_lane",
   },
   {
     id: "juneauflightdeck",
-    label: "Juneau excursions",
+    label: "Juneau flightseeing",
     action: "open_juneau_port_excursion_lane",
   },
   {
     id: "welcometotheswamp",
-    label: "New Orleans swamp tours",
+    label: "New Orleans tours",
     action: "open_new_orleans_swamp_lane",
   },
   {
@@ -72,13 +74,13 @@ export default function SiteFooter() {
             </Link>
             <p className="dcc-site-footer__brand-desc">
               {isConsoleView
-                ? "Planetary routing, network orchestration, and system governance modules."
-                : "A clean intent-based travel orchestration directory."}
+                ? "Destination intelligence, network governance, and travel-system diagnostics."
+                : "Travel decisions powered by live context, destination knowledge, and specialist handoffs."}
             </p>
           </div>
 
           <div className="dcc-site-footer__column">
-            <h5>{isConsoleView ? ".engine" : "Engine"}</h5>
+            <h5>{isConsoleView ? ".travel" : "Explore"}</h5>
             <ul>
               {ENGINE_LINKS.map((link) => (
                 <li key={link.href}>
@@ -89,7 +91,7 @@ export default function SiteFooter() {
           </div>
 
           <div className="dcc-site-footer__column">
-            <h5>{isConsoleView ? ".system" : "System"}</h5>
+            <h5>{isConsoleView ? ".data" : "DCC Data"}</h5>
             <ul>
               {SYSTEM_LINKS.map((link) => (
                 <li key={link.href}>
@@ -100,9 +102,9 @@ export default function SiteFooter() {
           </div>
 
           <div className="dcc-site-footer__column">
-            <h5>{isConsoleView ? ".connect" : "Connect"}</h5>
+            <h5>{isConsoleView ? ".network" : "Specialists"}</h5>
             <div className="dcc-site-footer__social-grid">
-              {FOOTER_SATELLITES.slice(0, 2).map((satellite) => (
+              {FOOTER_SATELLITES.map((satellite) => (
                 <a
                   key={satellite.id}
                   href={buildNetworkSatelliteHref(satellite.id, {
@@ -115,9 +117,7 @@ export default function SiteFooter() {
                   rel="noopener"
                   className="dcc-site-footer__social-tag"
                 >
-                  {isConsoleView
-                    ? (satellite.id === "partyatredrocks" ? "TERMINAL" : "DATABASE")
-                    : (satellite.id === "partyatredrocks" ? "Red Rocks Shuttle" : "Alaska Cruise Flight Deck")}
+                  {satellite.label}
                 </a>
               ))}
             </div>
@@ -127,7 +127,7 @@ export default function SiteFooter() {
         <div className="dcc-site-footer__basement">
           <div className="dcc-site-footer__copyright">© 2026 DCC. All rights reserved.</div>
           <div className="dcc-site-footer__legal-links">
-            <Link href="/privacy">Privacy Protocol</Link>
+            <Link href="/privacy">Privacy</Link>
             <span className="dcc-site-footer__divider">/</span>
             <Link href="/terms">Terms of Service</Link>
           </div>
