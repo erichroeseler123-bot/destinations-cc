@@ -61,6 +61,58 @@ function xmlTag(block: string, name: string) {
   return match ? decodeXml(match[1]) : "";
 }
 
+async function readBostonMbtaAlerts(): Promise<LiveMachineFeed> {
+  try {
+    const data = await fetchJson("https://api-v3.mbta.com/alerts?page%5Blimit%5D=20&sort=-updated_at");
+    const rows = Array.isArray(data?.data) ? data.data : [];
+    const now = Date.now();
+    const items = rows
+      .map((row: any, index: number) => {
+        const a = row?.attributes || {};
+        const periods = Array.isArray(a.active_period) ? a.active_period : [];
+        const active = !periods.length || periods.some((period: any) => {
+          const start = period?.start ? new Date(period.start).getTime() : -Infinity;
+          const end = period?.end ? new Date(period.end).getTime() : Infinity;
+          return now >= start && now <= end;
+        });
+        if (!active) return null;
+        return {
+          id: String(row?.id || `mbta-alert-${index}`),
+          title: a.header || a.short_header || a.service_effect || "MBTA service alert",
+          description: a.description || a.service_effect || null,
+          kind: "transit" as const,
+          provider: "Massachusetts Bay Transportation Authority",
+          severity: a.severity != null ? String(a.severity) : a.effect || null,
+          updatedAt: a.updated_at || a.created_at || null,
+        };
+      })
+      .filter((item: LiveMachineItem | null): item is LiveMachineItem => Boolean(item))
+      .slice(0, 15);
+    return { available: true, configured: true, provider: "Massachusetts Bay Transportation Authority", kind: "transit", mode: "public-feed", items };
+  } catch (error) {
+    return { available: false, configured: true, provider: "Massachusetts Bay Transportation Authority", kind: "transit", mode: "public-feed", items: [], error: error instanceof Error ? error.message : "feed error" };
+  }
+}
+
+async function readLosAngelesCanceledService(): Promise<LiveMachineFeed> {
+  try {
+    const data = await fetchJson("https://api.metro.net/canceled_service/all");
+    const rows = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : Array.isArray(data?.results) ? data.results : [];
+    const items = rows.slice(0, 20).map((row: any, index: number) => ({
+      id: String(row.trip_id || row.id || row.tripId || `lametro-cancel-${index}`),
+      title: row.route_code || row.route || row.line ? `Canceled Metro service • ${row.route_code || row.route || row.line}` : "Canceled LA Metro service",
+      description: row.stop_headsign || row.headsign || row.direction || row.description || null,
+      kind: "transit" as const,
+      provider: "Los Angeles County Metropolitan Transportation Authority",
+      severity: "canceled-service",
+      updatedAt: row.updated_at || row.timestamp || row.last_updated || null,
+    }));
+    return { available: true, configured: true, provider: "Los Angeles County Metropolitan Transportation Authority", kind: "transit", mode: "public-feed", items };
+  } catch (error) {
+    return { available: false, configured: true, provider: "Los Angeles County Metropolitan Transportation Authority", kind: "transit", mode: "public-feed", items: [], error: error instanceof Error ? error.message : "feed error" };
+  }
+}
+
 async function readChicagoAlerts(): Promise<LiveMachineFeed> {
   try {
     const xml = await fetchText("https://www.transitchicago.com/api/1.0/alerts.aspx?activeonly=true");
@@ -177,6 +229,8 @@ async function readSeattleWsdot(lat: number, lng: number): Promise<LiveMachineFe
 
 export async function readMachineFeeds(citySlug: string, lat: number, lng: number): Promise<LiveMachineFeed[]> {
   const feeds: Array<Promise<LiveMachineFeed | null>> = [];
+  if (citySlug === "boston") feeds.push(readBostonMbtaAlerts());
+  if (citySlug === "los-angeles") feeds.push(readLosAngelesCanceledService());
   if (citySlug === "chicago") feeds.push(readChicagoAlerts());
   if (citySlug === "new-york-city") {
     feeds.push(readNewYorkWorkZones(lat, lng));
