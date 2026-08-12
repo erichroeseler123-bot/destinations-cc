@@ -2,7 +2,7 @@ type LiveMachineItem = {
   id: string;
   title: string;
   description?: string | null;
-  kind: "transit" | "traffic";
+  kind: "transit" | "traffic" | "weather";
   provider: string;
   updatedAt?: string | null;
   severity?: string | null;
@@ -14,7 +14,7 @@ type LiveMachineFeed = {
   available: boolean;
   configured: boolean;
   provider: string;
-  kind: "transit" | "traffic";
+  kind: "transit" | "traffic" | "weather";
   mode: "public-feed" | "api-key";
   items: LiveMachineItem[];
   error?: string;
@@ -29,7 +29,7 @@ async function fetchText(url: string) {
     const response = await fetch(url, {
       cache: "no-store",
       signal: controller.signal,
-      headers: { "User-Agent": USER_AGENT },
+      headers: { "User-Agent": USER_AGENT, Accept: "application/geo+json, application/json, text/xml, */*" },
     });
     if (!response.ok) throw new Error(`${response.status} ${url}`);
     return await response.text();
@@ -59,6 +59,30 @@ function decodeXml(value: string) {
 function xmlTag(block: string, name: string) {
   const match = block.match(new RegExp(`<${name}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${name}>`, "i"));
   return match ? decodeXml(match[1]) : "";
+}
+
+async function readNwsAlerts(lat: number, lng: number): Promise<LiveMachineFeed> {
+  try {
+    const url = new URL("https://api.weather.gov/alerts/active");
+    url.searchParams.set("point", `${lat},${lng}`);
+    const data = await fetchJson(url.toString());
+    const features = Array.isArray(data?.features) ? data.features : [];
+    const items = features.slice(0, 15).map((feature: any, index: number) => {
+      const p = feature?.properties || {};
+      return {
+        id: String(feature?.id || p.id || `nws-alert-${index}`),
+        title: p.headline || p.event || "National Weather Service alert",
+        description: p.description || p.instruction || null,
+        kind: "weather" as const,
+        provider: "National Weather Service",
+        severity: p.severity || p.urgency || null,
+        updatedAt: p.sent || p.effective || p.onset || null,
+      };
+    });
+    return { available: true, configured: true, provider: "National Weather Service", kind: "weather", mode: "public-feed", items };
+  } catch (error) {
+    return { available: false, configured: true, provider: "National Weather Service", kind: "weather", mode: "public-feed", items: [], error: error instanceof Error ? error.message : "feed error" };
+  }
 }
 
 async function readBostonMbtaAlerts(): Promise<LiveMachineFeed> {
@@ -91,25 +115,6 @@ async function readBostonMbtaAlerts(): Promise<LiveMachineFeed> {
     return { available: true, configured: true, provider: "Massachusetts Bay Transportation Authority", kind: "transit", mode: "public-feed", items };
   } catch (error) {
     return { available: false, configured: true, provider: "Massachusetts Bay Transportation Authority", kind: "transit", mode: "public-feed", items: [], error: error instanceof Error ? error.message : "feed error" };
-  }
-}
-
-async function readLosAngelesCanceledService(): Promise<LiveMachineFeed> {
-  try {
-    const data = await fetchJson("https://api.metro.net/canceled_service/all");
-    const rows = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : Array.isArray(data?.results) ? data.results : [];
-    const items = rows.slice(0, 20).map((row: any, index: number) => ({
-      id: String(row.trip_id || row.id || row.tripId || `lametro-cancel-${index}`),
-      title: row.route_code || row.route || row.line ? `Canceled Metro service • ${row.route_code || row.route || row.line}` : "Canceled LA Metro service",
-      description: row.stop_headsign || row.headsign || row.direction || row.description || null,
-      kind: "transit" as const,
-      provider: "Los Angeles County Metropolitan Transportation Authority",
-      severity: "canceled-service",
-      updatedAt: row.updated_at || row.timestamp || row.last_updated || null,
-    }));
-    return { available: true, configured: true, provider: "Los Angeles County Metropolitan Transportation Authority", kind: "transit", mode: "public-feed", items };
-  } catch (error) {
-    return { available: false, configured: true, provider: "Los Angeles County Metropolitan Transportation Authority", kind: "transit", mode: "public-feed", items: [], error: error instanceof Error ? error.message : "feed error" };
   }
 }
 
@@ -228,9 +233,8 @@ async function readSeattleWsdot(lat: number, lng: number): Promise<LiveMachineFe
 }
 
 export async function readMachineFeeds(citySlug: string, lat: number, lng: number): Promise<LiveMachineFeed[]> {
-  const feeds: Array<Promise<LiveMachineFeed | null>> = [];
+  const feeds: Array<Promise<LiveMachineFeed | null>> = [readNwsAlerts(lat, lng)];
   if (citySlug === "boston") feeds.push(readBostonMbtaAlerts());
-  if (citySlug === "los-angeles") feeds.push(readLosAngelesCanceledService());
   if (citySlug === "chicago") feeds.push(readChicagoAlerts());
   if (citySlug === "new-york-city") {
     feeds.push(readNewYorkWorkZones(lat, lng));
