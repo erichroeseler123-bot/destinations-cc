@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { RIVER_OPS_TERMINAL, FEASTLY_DELLS_URL } from "@/lib/content";
 import { LandingTracker } from "./LandingTracker";
+import DellsLiveNow from "./DellsLiveNow";
 import { trackDellsEvent } from "@/lib/telemetry";
 
 const HERO_IMAGE =
@@ -48,6 +49,8 @@ export default function DellsHomeClient() {
           </div>
         </div>
       </section>
+
+      <DellsLiveNow />
 
       <section className="section-shell">
         <div className="section-heading">
