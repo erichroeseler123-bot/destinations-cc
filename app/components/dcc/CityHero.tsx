@@ -6,6 +6,7 @@ import LiveCityPulse from "@/app/components/dcc/LiveCityPulse";
 import CityWatchPanel from "@/app/components/dcc/CityWatchPanel";
 import CityActivityFeed from "@/app/components/dcc/CityActivityFeed";
 import CityLiveReality from "@/app/components/dcc/CityLiveReality";
+import CityNetworkHandoff from "@/app/components/dcc/CityNetworkHandoff";
 import RouteHeroMark from "@/app/components/dcc/RouteHeroMark";
 
 type CityHeroTint = "warm" | "cool" | "emerald";
@@ -106,6 +107,7 @@ export default function CityHero({ cityName, eyebrow, title, summary, trustLine,
 
         {hasCoordinates ? <div className="mt-8"><CityLiveReality citySlug={citySlug} cityName={cityName} lat={weatherLat} lng={weatherLng} timezone={timezone} /></div> : null}
         <div className="mt-8"><CityWatchPanel citySlug={citySlug} cityName={cityName} suppressRepoSignals={hasCoordinates} lat={weatherLat} lng={weatherLng} timezone={timezone} /></div>
+        <div className="mt-8"><CityNetworkHandoff citySlug={citySlug} cityName={cityName} /></div>
         {!hasCoordinates ? <div className="mt-8"><CityActivityFeed citySlug={citySlug} cityName={cityName} /></div> : null}
       </div>
     </header>
