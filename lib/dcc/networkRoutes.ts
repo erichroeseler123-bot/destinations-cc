@@ -1,4 +1,6 @@
-export type NetworkRouteKind = "book" | "plan" | "explore" | "transport" | "cruise";
+import { buildViatorDestinationUrl, buildViatorSearchUrl } from "@/lib/viator/links";
+
+export type NetworkRouteKind = "book" | "plan" | "explore" | "transport" | "cruise" | "affiliate";
 
 export type NetworkRoute = {
   id: string;
@@ -7,6 +9,7 @@ export type NetworkRoute = {
   kind: NetworkRouteKind;
   reason: string;
   site: string;
+  affiliate?: boolean;
 };
 
 const CITY_NETWORK_ROUTES: Record<string, NetworkRoute[]> = {
@@ -51,4 +54,32 @@ export function getCityNetworkRoutes(citySlug: string) {
 
 export function getPrimaryCityNetworkRoute(citySlug: string) {
   return getCityNetworkRoutes(citySlug)[0] || null;
+}
+
+function hasOwnedCommercialRoute(routes: NetworkRoute[]) {
+  return routes.some((route) => route.kind === "book" || route.kind === "explore");
+}
+
+export function buildViatorFallbackRoute(citySlug: string, cityName: string, intent?: string | null): NetworkRoute {
+  const campaign = ["dcc", citySlug, intent || "city", "affiliate-fallback"].filter(Boolean).join("-");
+  const query = intent && intent !== "lively"
+    ? `${cityName} ${intent} tours and activities`
+    : `${cityName} tours and activities`;
+  return {
+    id: `viator-${citySlug}-${intent || "city"}`,
+    label: intent ? `Browse ${cityName} ${intent} experiences` : `Browse ${cityName} tours and activities`,
+    href: intent
+      ? buildViatorSearchUrl(query, { campaign, medium: "link" })
+      : buildViatorDestinationUrl(cityName, { campaign, medium: "link" }),
+    kind: "affiliate",
+    reason: "Affiliate fallback when DCC does not have a stronger owned destination or booking path for this intent.",
+    site: "Viator",
+    affiliate: true,
+  };
+}
+
+export function getCityNetworkRoutesWithAffiliate(citySlug: string, cityName: string, intent?: string | null) {
+  const owned = getCityNetworkRoutes(citySlug);
+  if (hasOwnedCommercialRoute(owned)) return owned;
+  return [...owned, buildViatorFallbackRoute(citySlug, cityName, intent)];
 }
