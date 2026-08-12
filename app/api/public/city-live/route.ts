@@ -4,6 +4,7 @@ import { readMachineFeeds } from "@/lib/dcc/liveCity/machineFeeds";
 import { readNoaaWaterLevel } from "@/lib/dcc/liveCity/coastalFeeds";
 import { readNwpsWaterFeed } from "@/lib/dcc/liveCity/waterFeed";
 import { deriveCityNow } from "@/lib/dcc/liveCity/cityNow";
+import { deriveDistrictNow } from "@/lib/dcc/liveCity/districtNow";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -196,6 +197,20 @@ export async function GET(request: NextRequest) {
     machineFeeds,
   });
 
+  const geoMachineSignals = machineFeeds.flatMap((feed) =>
+    (feed.items || []).map((item: any) => ({
+      id: String(item.id),
+      title: String(item.title || "Live signal"),
+      kind: String(feed.kind),
+      provider: String(feed.provider),
+      latitude: typeof item.latitude === "number" ? item.latitude : null,
+      longitude: typeof item.longitude === "number" ? item.longitude : null,
+      severity: item.severity || null,
+      updatedAt: item.updatedAt || null,
+    }))
+  );
+  const districtNow = deriveDistrictNow(city, geoMachineSignals, ticketmaster?.events || []);
+
   return NextResponse.json(
     {
       ok: true,
@@ -208,6 +223,7 @@ export async function GET(request: NextRequest) {
         note: "Dynamic observations are fetched for this request and are not persisted as destination content.",
       },
       cityNow,
+      districtNow,
       weather,
       ticketmaster,
       machineFeeds,
