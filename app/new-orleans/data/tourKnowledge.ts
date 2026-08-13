@@ -47,6 +47,22 @@ export type TourKnowledge = {
   };
 };
 
+function inferSearchDemandIds(product: NolaFareHarborProduct): string[] {
+  const haystack = `${product.category} ${product.title}`.toLowerCase();
+  const ids = new Set<string>();
+
+  if (haystack.includes("city tour") || haystack.includes("city +")) ids.add("city-sightseeing");
+  if (haystack.includes("swamp") || haystack.includes("covered boat")) ids.add("swamp-bayou");
+  if (haystack.includes("airboat")) ids.add("airboat");
+  if (haystack.includes("plantation") || haystack.includes("oak alley") || haystack.includes("whitney") || haystack.includes("laura")) ids.add("plantations");
+  if (haystack.includes("ghost") || haystack.includes("haunted") || haystack.includes("spirits")) ids.add("ghost-haunted");
+  if (haystack.includes("food") || haystack.includes("culinary")) ids.add("food");
+  if (haystack.includes("cocktail") || haystack.includes("pub") || haystack.includes("bar")) ids.add("cocktails-bars");
+  if (haystack.includes("river") || haystack.includes("cruise") || haystack.includes("steamboat") || haystack.includes("jazz cruise")) ids.add("river-cruises");
+
+  return [...ids];
+}
+
 /**
  * Canonical WNO knowledge layer.
  *
@@ -92,7 +108,7 @@ function fromFareHarborProduct(product: NolaFareHarborProduct): TourKnowledge {
     neighborhoods: [],
     landmarks: [],
     experienceTraits: [],
-    searchDemandIds: [],
+    searchDemandIds: inferSearchDemandIds(product),
 
     confidence: {
       duration: product.durationLabel ? "operator-stated" : "unknown",
