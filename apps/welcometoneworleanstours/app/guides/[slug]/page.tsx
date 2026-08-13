@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { notFound } from "next/navigation";
+import CanonicalGuidePage, { generateMetadata } from "@/app/new-orleans/guides/[slug]/page";
 import FourHours from "@/app/new-orleans/guides/4-hours-in-new-orleans/page";
 import BestSwamp from "@/app/new-orleans/guides/best-new-orleans-swamp-tour/page";
 import RainyDay from "@/app/new-orleans/guides/best-new-orleans-tours-for-a-rainy-day/page";
@@ -11,6 +11,8 @@ import NoCar from "@/app/new-orleans/guides/new-orleans-swamp-tour-without-a-car
 import KidsAirboats from "@/app/new-orleans/guides/can-kids-ride-airboats-new-orleans/page";
 import Orientation from "@/app/new-orleans/guides/french-quarter-orientation/page";
 import VisitorRewards from "@/app/new-orleans/guides/visitor-rewards/page";
+
+export { generateMetadata };
 
 const pages = {
   "4-hours-in-new-orleans": FourHours,
@@ -29,6 +31,6 @@ const pages = {
 export default async function GuideBridgePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const Page = pages[slug as keyof typeof pages] as unknown as (() => ReactNode) | undefined;
-  if (!Page) notFound();
-  return <>{Page()}</>;
+  if (Page) return <>{Page()}</>;
+  return <CanonicalGuidePage params={Promise.resolve({ slug })} />;
 }
