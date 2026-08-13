@@ -105,6 +105,12 @@ const nextConfig = {
     const citySatelliteRedirects = buildCitySatelliteRedirects();
     const runtimeRedirects = buildRuntimeRedirects();
     return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.welcometoneworleanstours.com" }],
+        destination: "https://welcometoneworleanstours.com/:path*",
+        permanent: true,
+      },
       ...satelliteRedirects,
       ...citySatelliteRedirects,
       ...runtimeRedirects,
