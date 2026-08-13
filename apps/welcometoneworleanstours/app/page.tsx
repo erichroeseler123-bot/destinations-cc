@@ -1,3 +1,3 @@
-export default function RecoveryShellPage() {
-  return null;
-}
+import WnoHome from "../../../app/new-orleans/page";
+
+export default WnoHome;
