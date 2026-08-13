@@ -1,1 +1,1 @@
-export { default, generateMetadata } from "@/app/new-orleans/guides/[slug]/page";
+export { default, metadata } from "@/app/new-orleans/guides/french-quarter-orientation/page";
