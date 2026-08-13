@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import FourHours from "@/app/new-orleans/guides/4-hours-in-new-orleans/page";
 import BestSwamp from "@/app/new-orleans/guides/best-new-orleans-swamp-tour/page";
@@ -27,7 +28,7 @@ const pages = {
 
 export default async function GuideBridgePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const Page = pages[slug as keyof typeof pages];
+  const Page = pages[slug as keyof typeof pages] as unknown as (() => ReactNode) | undefined;
   if (!Page) notFound();
-  return <Page />;
+  return <>{Page()}</>;
 }
