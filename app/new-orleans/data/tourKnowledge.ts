@@ -75,9 +75,6 @@ export type TourKnowledge = {
   title: string;
   operatorName: string;
   category: string;
-
-  // Minimum viable fact model. These eight objects are the canonical inputs
-  // to recommendation, comparison, intent, situation and schema surfaces.
   duration: DurationFacts;
   transportation: TransportationFacts;
   mobility: MobilityFacts;
@@ -87,8 +84,6 @@ export type TourKnowledge = {
   cruise: CruiseFacts;
   fulfillment: FulfillmentFacts;
 
-  // Compatibility/readability fields retained while older WNO surfaces are
-  // migrated onto the eight canonical fact groups above.
   durationLabel?: string;
   transportationSummary?: string;
   pickupSummary?: string;
@@ -108,7 +103,6 @@ export type TourKnowledge = {
   highlights: string[];
   confirmedInclusions: string[];
   bookingConfirmations: string[];
-
   neighborhoods: string[];
   landmarks: string[];
   experienceTraits: string[];
@@ -125,7 +119,6 @@ export type TourKnowledge = {
 function inferSearchDemandIds(product: NolaFareHarborProduct): string[] {
   const haystack = `${product.category} ${product.title}`.toLowerCase();
   const ids = new Set<string>();
-
   if (haystack.includes("city tour") || haystack.includes("city +")) ids.add("city-sightseeing");
   if (haystack.includes("swamp") || haystack.includes("covered boat")) ids.add("swamp-bayou");
   if (haystack.includes("airboat")) ids.add("airboat");
@@ -134,13 +127,14 @@ function inferSearchDemandIds(product: NolaFareHarborProduct): string[] {
   if (haystack.includes("food") || haystack.includes("culinary")) ids.add("food");
   if (haystack.includes("cocktail") || haystack.includes("pub") || haystack.includes("bar")) ids.add("cocktails-bars");
   if (haystack.includes("river") || haystack.includes("cruise") || haystack.includes("steamboat") || haystack.includes("jazz cruise")) ids.add("river-cruises");
-
   return [...ids];
 }
 
 function parseDurationMinutes(label?: string): number | undefined {
   if (!label) return undefined;
   const normalized = label.toLowerCase();
+  const rangeMatch = normalized.match(/(\d+(?:\.\d+)?)\s*(?:-|to)\s*(\d+(?:\.\d+)?)\s*(?:hour|hr)/);
+  if (rangeMatch) return Math.round(Number(rangeMatch[2]) * 60);
   const hourMatch = normalized.match(/(\d+(?:\.\d+)?)\s*(?:hour|hr)/);
   if (hourMatch) return Math.round(Number(hourMatch[1]) * 60);
   const minuteMatch = normalized.match(/(\d+)\s*(?:minute|min)/);
@@ -155,23 +149,71 @@ function durationDayPart(minutes?: number): DurationFacts["dayPart"] {
   return "full-day";
 }
 
-/**
- * Canonical WNO knowledge layer.
- *
- * This adapter intentionally starts with only facts already present in the
- * live storefront registry. Unknown dimensions stay unknown until verified;
- * they must never be invented simply to satisfy search demand.
- *
- * Future enrichment should happen here (or in data feeding this file), not in
- * individual SEO pages, chooser components, comparison pages, or schema
- * helpers. Those surfaces should consume this shared factual layer.
- */
+function transportationMode(summary?: string, pickup?: string): TransportationMode {
+  const text = `${summary ?? ""} ${pickup ?? ""}`.toLowerCase();
+  if (!text.trim()) return "unknown";
+  if (text.includes("included")) return "included";
+  if (text.includes("pickup") || text.includes("pick-up")) return "pickup-available";
+  if (text.includes("self") && (text.includes("arriv") || text.includes("drive"))) return "self-arrival";
+  return "varies";
+}
+
+function explicitMinimumAge(product: NolaFareHarborProduct): number | undefined {
+  const text = (product.childrenConsiderations ?? []).join(" ");
+  const match = text.match(/(?:age|ages)\s*(\d+)\s*(?:and|\+|or)\s*(?:older|up)/i);
+  return match ? Number(match[1]) : undefined;
+}
+
+function applyConservativeClassifications(tour: TourKnowledge): TourKnowledge {
+  const text = `${tour.title} ${tour.category} ${tour.transportationSummary ?? ""} ${tour.walkingSummary ?? ""} ${tour.exposureSummary ?? ""}`.toLowerCase();
+
+  if (text.includes("covered") && (text.includes("boat") || text.includes("swamp"))) {
+    tour.weather.coveredOrIndoor = true;
+    tour.weather.rainFit = "possible";
+    tour.weather.suitability = "mixed";
+    tour.weather.heatExposure = "moderate";
+  }
+
+  if (text.includes("airboat")) {
+    tour.weather.coveredOrIndoor = false;
+    tour.weather.suitability = "weather-sensitive";
+    tour.weather.heatExposure = "high";
+  }
+
+  if (text.includes("walking tour") || text.includes("walking")) {
+    tour.mobility.walkingIntensity = "moderate";
+    tour.mobility.mobilityFit = "possible";
+  }
+
+  if (text.includes("minibus") || text.includes("city tour")) {
+    tour.mobility.walkingIntensity = tour.mobility.walkingIntensity === "unknown" ? "low" : tour.mobility.walkingIntensity;
+    tour.mobility.seating = "frequent";
+    tour.mobility.mobilityFit = tour.mobility.mobilityFit === "unknown" ? "possible" : tour.mobility.mobilityFit;
+  }
+
+  if (tour.family.minimumAge !== undefined) {
+    tour.family.kidsUnderSixFit = tour.family.minimumAge >= 6 ? "poor" : "possible";
+  }
+
+  if (tour.duration.minutes && tour.duration.minutes <= 240) {
+    tour.time.lateArrivalCompatible = tour.time.periods.includes("evening") || tour.time.periods.includes("night") ? true : "unknown";
+  }
+
+  tour.familyFit = tour.family.fit;
+  tour.mobilityFit = tour.mobility.mobilityFit;
+  tour.rainFit = tour.weather.rainFit;
+  tour.walkingIntensity = tour.mobility.walkingIntensity;
+  tour.timeOfDay = tour.time.periods;
+  return tour;
+}
+
 function fromFareHarborProduct(product: NolaFareHarborProduct): TourKnowledge {
   const durationMinutes = parseDurationMinutes(product.durationLabel);
   const transportationSummary = product.transportationSummary ?? product.logistics?.transportation;
   const pickupSummary = product.pickupSummary ?? product.logistics?.pickup;
   const walkingSummary = product.physicalFormat?.walking;
   const exposureSummary = product.physicalFormat?.exposure;
+  const minimumAge = explicitMinimumAge(product);
 
   const duration: DurationFacts = {
     label: product.durationLabel,
@@ -182,7 +224,7 @@ function fromFareHarborProduct(product: NolaFareHarborProduct): TourKnowledge {
   };
 
   const transportation: TransportationFacts = {
-    mode: transportationSummary ? "varies" : "unknown",
+    mode: transportationMode(transportationSummary, pickupSummary),
     summary: transportationSummary,
     pickupSummary,
     pickupZones: [],
@@ -198,10 +240,11 @@ function fromFareHarborProduct(product: NolaFareHarborProduct): TourKnowledge {
   };
 
   const family: FamilyFacts = {
-    fit: "unknown",
+    fit: (product.bestFit?.some((value) => /family|mixed-age/i.test(value)) ? "possible" : "unknown"),
+    minimumAge,
     strollerFriendly: "unknown",
-    mixedAgeFit: "unknown",
-    kidsUnderSixFit: "unknown",
+    mixedAgeFit: (product.bestFit?.some((value) => /family|mixed-age/i.test(value)) ? "possible" : "unknown"),
+    kidsUnderSixFit: minimumAge !== undefined && minimumAge >= 6 ? "poor" : "unknown",
     considerations: product.childrenConsiderations ?? [],
   };
 
@@ -233,7 +276,7 @@ function fromFareHarborProduct(product: NolaFareHarborProduct): TourKnowledge {
     bookingPath: `/tours/${product.slug}`,
   };
 
-  return {
+  return applyConservativeClassifications({
     slug: product.slug,
     title: product.title,
     operatorName: product.operatorName,
@@ -246,7 +289,6 @@ function fromFareHarborProduct(product: NolaFareHarborProduct): TourKnowledge {
     time,
     cruise,
     fulfillment,
-
     durationLabel: product.durationLabel,
     transportationSummary,
     pickupSummary,
@@ -259,29 +301,23 @@ function fromFareHarborProduct(product: NolaFareHarborProduct): TourKnowledge {
     cruisePassengerFit: cruise.fit,
     walkingIntensity: mobility.walkingIntensity,
     timeOfDay: time.periods,
-
     bestFit: product.bestFit ?? [],
     notIdealFor: product.notIdealFor ?? [],
     childrenConsiderations: product.childrenConsiderations ?? [],
     highlights: product.highlights ?? [],
     confirmedInclusions: product.confirmedInclusions ?? [],
     bookingConfirmations: product.bookingConfirmations ?? [],
-
     neighborhoods: [],
     landmarks: [],
     experienceTraits: [],
     searchDemandIds: inferSearchDemandIds(product),
-
     confidence: {
       duration: product.durationLabel ? "operator-stated" : "unknown",
       transportation: transportationSummary ? "operator-stated" : "unknown",
       pickup: pickupSummary ? "operator-stated" : "unknown",
-      suitability:
-        product.bestFit?.length || product.notIdealFor?.length || product.childrenConsiderations?.length
-          ? "editorial"
-          : "unknown",
+      suitability: product.bestFit?.length || product.notIdealFor?.length || product.childrenConsiderations?.length ? "editorial" : "unknown",
     },
-  };
+  });
 }
 
 export const TOUR_KNOWLEDGE: TourKnowledge[] = STOREFRONT_PRODUCTS.map(fromFareHarborProduct);
