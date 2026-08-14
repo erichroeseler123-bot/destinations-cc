@@ -4,22 +4,97 @@ export type KnowledgeConfidence = "verified" | "operator-stated" | "editorial" |
 export type FitLevel = "strong" | "possible" | "poor" | "unknown";
 export type IntensityLevel = "low" | "moderate" | "high" | "unknown";
 export type TimeOfDay = "morning" | "afternoon" | "evening" | "night" | "varies" | "unknown";
-export type FulfillmentSource = "fareharbor" | "viator" | "getyourguide" | "direct";
+export type FulfillmentAuthority = "fareharbor" | "approved-direct" | "viator" | "getyourguide" | "editorial-only";
+export type TransportationMode = "included" | "pickup-available" | "self-arrival" | "varies" | "unknown";
+export type WeatherSuitability = "rain-friendly" | "weather-sensitive" | "mixed" | "unknown";
+
+export type DurationFacts = {
+  label?: string;
+  minutes?: number;
+  approximate: boolean;
+  dayPart: "short" | "half-day" | "full-day" | "unknown";
+  fitsBeforeDinner: boolean | "unknown";
+};
+
+export type TransportationFacts = {
+  mode: TransportationMode;
+  summary?: string;
+  pickupSummary?: string;
+  pickupZones: string[];
+};
+
+export type MobilityFacts = {
+  walkingIntensity: IntensityLevel;
+  walkingSummary?: string;
+  stairs: "none" | "some" | "significant" | "unknown";
+  seating: "frequent" | "some" | "limited" | "unknown";
+  mobilityFit: FitLevel;
+  caveats: string[];
+};
+
+export type FamilyFacts = {
+  fit: FitLevel;
+  minimumAge?: number;
+  strollerFriendly: boolean | "unknown";
+  mixedAgeFit: FitLevel;
+  kidsUnderSixFit: FitLevel;
+  considerations: string[];
+};
+
+export type WeatherFacts = {
+  suitability: WeatherSuitability;
+  rainFit: FitLevel;
+  heatExposure: "low" | "moderate" | "high" | "unknown";
+  coveredOrIndoor: boolean | "partial" | "unknown";
+  exposureSummary?: string;
+};
+
+export type TimeFacts = {
+  periods: TimeOfDay[];
+  tonightCapable: boolean | "unknown";
+  lateArrivalCompatible: boolean | "unknown";
+};
+
+export type CruiseFacts = {
+  fit: FitLevel;
+  preCruise: FitLevel;
+  postCruise: FitLevel;
+  minimumPortWindowMinutes?: number;
+  luggageConsiderations: string[];
+  transportConsiderations: string[];
+};
+
+export type FulfillmentFacts = {
+  authority: FulfillmentAuthority;
+  transactional: boolean;
+  bookingPath?: string;
+};
 
 export type TourKnowledge = {
   slug: string;
   title: string;
   operatorName: string;
   category: string;
-  fulfillmentSource: FulfillmentSource;
 
+  // Minimum viable fact model. These eight objects are the canonical inputs
+  // to recommendation, comparison, intent, situation and schema surfaces.
+  duration: DurationFacts;
+  transportation: TransportationFacts;
+  mobility: MobilityFacts;
+  family: FamilyFacts;
+  weather: WeatherFacts;
+  time: TimeFacts;
+  cruise: CruiseFacts;
+  fulfillment: FulfillmentFacts;
+
+  // Compatibility/readability fields retained while older WNO surfaces are
+  // migrated onto the eight canonical fact groups above.
   durationLabel?: string;
   transportationSummary?: string;
   pickupSummary?: string;
   walkingSummary?: string;
   ridingSummary?: string;
   exposureSummary?: string;
-
   familyFit: FitLevel;
   mobilityFit: FitLevel;
   rainFit: FitLevel;
@@ -63,6 +138,23 @@ function inferSearchDemandIds(product: NolaFareHarborProduct): string[] {
   return [...ids];
 }
 
+function parseDurationMinutes(label?: string): number | undefined {
+  if (!label) return undefined;
+  const normalized = label.toLowerCase();
+  const hourMatch = normalized.match(/(\d+(?:\.\d+)?)\s*(?:hour|hr)/);
+  if (hourMatch) return Math.round(Number(hourMatch[1]) * 60);
+  const minuteMatch = normalized.match(/(\d+)\s*(?:minute|min)/);
+  if (minuteMatch) return Number(minuteMatch[1]);
+  return undefined;
+}
+
+function durationDayPart(minutes?: number): DurationFacts["dayPart"] {
+  if (!minutes) return "unknown";
+  if (minutes <= 180) return "short";
+  if (minutes <= 360) return "half-day";
+  return "full-day";
+}
+
 /**
  * Canonical WNO knowledge layer.
  *
@@ -75,28 +167,98 @@ function inferSearchDemandIds(product: NolaFareHarborProduct): string[] {
  * helpers. Those surfaces should consume this shared factual layer.
  */
 function fromFareHarborProduct(product: NolaFareHarborProduct): TourKnowledge {
+  const durationMinutes = parseDurationMinutes(product.durationLabel);
+  const transportationSummary = product.transportationSummary ?? product.logistics?.transportation;
+  const pickupSummary = product.pickupSummary ?? product.logistics?.pickup;
+  const walkingSummary = product.physicalFormat?.walking;
+  const exposureSummary = product.physicalFormat?.exposure;
+
+  const duration: DurationFacts = {
+    label: product.durationLabel,
+    minutes: durationMinutes,
+    approximate: Boolean(product.durationLabel?.toLowerCase().includes("approx")),
+    dayPart: durationDayPart(durationMinutes),
+    fitsBeforeDinner: durationMinutes ? durationMinutes <= 240 : "unknown",
+  };
+
+  const transportation: TransportationFacts = {
+    mode: transportationSummary ? "varies" : "unknown",
+    summary: transportationSummary,
+    pickupSummary,
+    pickupZones: [],
+  };
+
+  const mobility: MobilityFacts = {
+    walkingIntensity: "unknown",
+    walkingSummary,
+    stairs: "unknown",
+    seating: "unknown",
+    mobilityFit: "unknown",
+    caveats: [],
+  };
+
+  const family: FamilyFacts = {
+    fit: "unknown",
+    strollerFriendly: "unknown",
+    mixedAgeFit: "unknown",
+    kidsUnderSixFit: "unknown",
+    considerations: product.childrenConsiderations ?? [],
+  };
+
+  const weather: WeatherFacts = {
+    suitability: "unknown",
+    rainFit: "unknown",
+    heatExposure: "unknown",
+    coveredOrIndoor: "unknown",
+    exposureSummary,
+  };
+
+  const time: TimeFacts = {
+    periods: ["unknown"],
+    tonightCapable: "unknown",
+    lateArrivalCompatible: "unknown",
+  };
+
+  const cruise: CruiseFacts = {
+    fit: "unknown",
+    preCruise: "unknown",
+    postCruise: "unknown",
+    luggageConsiderations: [],
+    transportConsiderations: [],
+  };
+
+  const fulfillment: FulfillmentFacts = {
+    authority: "fareharbor",
+    transactional: true,
+    bookingPath: `/tours/${product.slug}`,
+  };
+
   return {
     slug: product.slug,
     title: product.title,
     operatorName: product.operatorName,
     category: product.category,
-    fulfillmentSource: "fareharbor",
+    duration,
+    transportation,
+    mobility,
+    family,
+    weather,
+    time,
+    cruise,
+    fulfillment,
 
     durationLabel: product.durationLabel,
-    transportationSummary: product.transportationSummary ?? product.logistics?.transportation,
-    pickupSummary: product.pickupSummary ?? product.logistics?.pickup,
-    walkingSummary: product.physicalFormat?.walking,
+    transportationSummary,
+    pickupSummary,
+    walkingSummary,
     ridingSummary: product.physicalFormat?.riding,
-    exposureSummary: product.physicalFormat?.exposure,
-
-    // Do not infer these from marketing copy. They remain unknown until the
-    // product has been deliberately classified against a verified rule set.
-    familyFit: "unknown",
-    mobilityFit: "unknown",
-    rainFit: "unknown",
-    cruisePassengerFit: "unknown",
-    walkingIntensity: "unknown",
-    timeOfDay: ["unknown"],
+    exposureSummary,
+    familyFit: family.fit,
+    mobilityFit: mobility.mobilityFit,
+    rainFit: weather.rainFit,
+    cruisePassengerFit: cruise.fit,
+    walkingIntensity: mobility.walkingIntensity,
+    timeOfDay: time.periods,
 
     bestFit: product.bestFit ?? [],
     notIdealFor: product.notIdealFor ?? [],
@@ -112,9 +274,8 @@ function fromFareHarborProduct(product: NolaFareHarborProduct): TourKnowledge {
 
     confidence: {
       duration: product.durationLabel ? "operator-stated" : "unknown",
-      transportation:
-        product.transportationSummary || product.logistics?.transportation ? "operator-stated" : "unknown",
-      pickup: product.pickupSummary || product.logistics?.pickup ? "operator-stated" : "unknown",
+      transportation: transportationSummary ? "operator-stated" : "unknown",
+      pickup: pickupSummary ? "operator-stated" : "unknown",
       suitability:
         product.bestFit?.length || product.notIdealFor?.length || product.childrenConsiderations?.length
           ? "editorial"
