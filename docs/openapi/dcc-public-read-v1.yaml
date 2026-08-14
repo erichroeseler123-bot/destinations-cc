@@ -41,6 +41,39 @@ paths:
       responses:
         '200':
           description: Live capability registry
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [destinationId, asOf, capabilities, sources]
+                properties:
+                  destinationId:
+                    type: string
+                  asOf:
+                    type: string
+                    format: date-time
+                  capabilities:
+                    type: array
+                    items:
+                      type: string
+                  sources:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, type, provider, status]
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
+                        provider:
+                          type: string
+                        cacheMinutes:
+                          type: integer
+                          nullable: true
+                        status:
+                          type: string
+                          enum: [configured]
         '404':
           description: Destination not found
   /v1/destinations/{slug}/events:
