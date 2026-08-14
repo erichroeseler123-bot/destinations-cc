@@ -12,10 +12,8 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        '200':
-          description: Canonical destination
-        '404':
-          description: Destination not found
+        '200': { description: Canonical destination }
+        '404': { description: Destination not found }
   /v1/destinations/{slug}/places:
     get:
       summary: Read stable graph places for a destination
@@ -25,10 +23,8 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        '200':
-          description: Stable place entities
-        '404':
-          description: Destination not found
+        '200': { description: Stable place entities }
+        '404': { description: Destination not found }
   /v1/destinations/{slug}/live:
     get:
       summary: Read configured live capabilities and source registry
@@ -47,35 +43,23 @@ paths:
                 type: object
                 required: [destinationId, asOf, capabilities, sources]
                 properties:
-                  destinationId:
-                    type: string
-                  asOf:
-                    type: string
-                    format: date-time
+                  destinationId: { type: string }
+                  asOf: { type: string, format: date-time }
                   capabilities:
                     type: array
-                    items:
-                      type: string
+                    items: { type: string }
                   sources:
                     type: array
                     items:
                       type: object
                       required: [id, type, provider, status]
                       properties:
-                        id:
-                          type: string
-                        type:
-                          type: string
-                        provider:
-                          type: string
-                        cacheMinutes:
-                          type: integer
-                          nullable: true
-                        status:
-                          type: string
-                          enum: [configured]
-        '404':
-          description: Destination not found
+                        id: { type: string }
+                        type: { type: string }
+                        provider: { type: string }
+                        cacheMinutes: { type: integer, nullable: true }
+                        status: { type: string, enum: [configured] }
+        '404': { description: Destination not found }
   /v1/destinations/{slug}/events:
     get:
       summary: Live Entertainment Near Me - next N hours
@@ -83,108 +67,70 @@ paths:
         - in: path
           name: slug
           required: true
-          schema:
-            type: string
-            example: new-orleans
+          schema: { type: string, example: new-orleans }
         - in: query
           name: lat
-          schema:
-            type: number
-            format: double
+          schema: { type: number, format: double }
           description: User latitude for radius search. Must be supplied with lng.
         - in: query
           name: lng
-          schema:
-            type: number
-            format: double
+          schema: { type: number, format: double }
           description: User longitude for radius search. Must be supplied with lat.
         - in: query
           name: radiusKm
-          schema:
-            type: number
-            default: 10
-            minimum: 0
-            maximum: 250
+          schema: { type: number, default: 10, minimum: 0, maximum: 250 }
           description: Search radius in km
         - in: query
           name: hours
-          schema:
-            type: integer
-            default: 48
-            minimum: 1
-            maximum: 168
+          schema: { type: integer, default: 48, minimum: 1, maximum: 168 }
           description: Lookahead window in hours
         - in: query
           name: category
           schema:
             type: string
             enum: [music, comedy, theater, nightclub, live-music, community]
-          description: Filter by category
         - in: query
           name: venueId
-          schema:
-            type: string
+          schema: { type: string }
           description: Filter by canonical graph venue id, for example new-orleans/preservation-hall
       responses:
         '200':
-          description: Events in window after at least one real adapter is connected
+          description: Normalized live events from a connected provider
           content:
             application/json:
               schema:
                 type: object
                 required: [destinationId, asOf, filters, events]
                 properties:
-                  destinationId:
-                    type: string
-                  asOf:
-                    type: string
-                    format: date-time
-                  filters:
-                    type: object
+                  destinationId: { type: string }
+                  asOf: { type: string, format: date-time }
+                  filters: { type: object }
                   events:
                     type: array
                     items:
                       type: object
                       required: [id, name, startDate, source, schemaType]
                       properties:
-                        id:
-                          type: string
-                          example: evt_tm_12345
-                        name:
-                          type: string
-                        startDate:
-                          type: string
-                          format: date-time
-                        endDate:
-                          type: string
-                          format: date-time
-                        venueId:
-                          type: string
-                        venueName:
-                          type: string
-                        lat:
-                          type: number
-                        lng:
-                          type: number
-                        distanceKm:
-                          type: number
-                        category:
-                          type: string
-                        source:
-                          type: string
-                          enum: [ticketmaster, eventbrite, city-calendar]
-                        sourceUrl:
-                          type: string
-                          format: uri
-                        ticketUrl:
-                          type: string
-                          format: uri
-                        schemaType:
-                          type: string
-                          enum: [Event]
-        '400':
-          description: Invalid filter combination or range
-        '404':
-          description: Destination not found or events unsupported
-        '501':
-          description: Contract is active but no real live-event adapter is connected yet
+                        id: { type: string, example: evt_tm_12345 }
+                        sourceEventId: { type: string }
+                        name: { type: string }
+                        startDate: { type: string }
+                        endDate: { type: string, nullable: true }
+                        timezone: { type: string }
+                        venueId: { type: string, nullable: true }
+                        venueName: { type: string, nullable: true }
+                        venueSameAs:
+                          type: array
+                          items: { type: string }
+                        lat: { type: number, nullable: true }
+                        lng: { type: number, nullable: true }
+                        distanceKm: { type: number, nullable: true }
+                        category: { type: string }
+                        source: { type: string, enum: [ticketmaster, eventbrite, city-calendar] }
+                        sourceUrl: { type: string, format: uri, nullable: true }
+                        ticketUrl: { type: string, format: uri, nullable: true }
+                        schemaType: { type: string, enum: [Event] }
+        '400': { description: Invalid filter combination or range }
+        '404': { description: Destination not found or events unsupported }
+        '501': { description: Contract is active but the destination/provider adapter is not configured }
+        '502': { description: Provider is configured but failed to return usable live data }
