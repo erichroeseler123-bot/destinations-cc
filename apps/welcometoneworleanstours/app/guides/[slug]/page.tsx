@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import CanonicalGuidePage, { generateMetadata } from "@/app/new-orleans/guides/[slug]/page";
+import { permanentRedirect } from "next/navigation";
+import CanonicalGuidePage, { generateMetadata as generateCanonicalMetadata } from "@/app/new-orleans/guides/[slug]/page";
 import FourHours from "@/app/new-orleans/guides/4-hours-in-new-orleans/page";
 import BestSwamp from "@/app/new-orleans/guides/best-new-orleans-swamp-tour/page";
 import RainyDay from "@/app/new-orleans/guides/best-new-orleans-tours-for-a-rainy-day/page";
@@ -17,7 +19,16 @@ import Tonight from "@/app/new-orleans/guides/tonight/page";
 import KidsUnderSix from "@/app/new-orleans/guides/best-new-orleans-tours-with-kids-under-6/page";
 import ArriveAtNoon from "@/app/new-orleans/guides/best-new-orleans-tours-if-you-arrive-at-noon/page";
 
-export { generateMetadata };
+const aliases = {
+  "french-quarter-tour-timing": "french-quarter-orientation",
+} as const;
+
+export async function generateMetadata({ params }: { params: Promise<{ slug?: string }> }): Promise<Metadata> {
+  const resolved = await params;
+  const slug = resolved.slug;
+  const canonicalSlug = slug && aliases[slug as keyof typeof aliases] ? aliases[slug as keyof typeof aliases] : slug;
+  return generateCanonicalMetadata({ params: Promise.resolve({ slug: canonicalSlug }) });
+}
 
 const pages = {
   "4-hours-in-new-orleans": FourHours,
@@ -40,6 +51,9 @@ const pages = {
 
 export default async function GuideBridgePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const aliasTarget = aliases[slug as keyof typeof aliases];
+  if (aliasTarget) permanentRedirect(`/guides/${aliasTarget}`);
+
   const Page = pages[slug as keyof typeof pages] as unknown as (() => ReactNode) | undefined;
   if (Page) return <>{Page()}</>;
   return <CanonicalGuidePage params={Promise.resolve({ slug })} />;
