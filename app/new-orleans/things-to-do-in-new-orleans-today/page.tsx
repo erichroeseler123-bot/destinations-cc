@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ProductCard from "../components/ProductCard";
+import CinematicPageHero from "../components/CinematicPageHero";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 import { FAREHARBOR_SOURCES } from "../lib/fareHarborAttribution";
 
@@ -26,23 +27,21 @@ export default function ThingsToDoTodayPage() {
     .filter(Boolean);
 
   return (
-    <div className="min-h-screen bg-[#151515] text-[#fdfbf7]">
-      <section className="border-b border-white/10 bg-[#110e14] px-6 py-16 md:py-24">
-        <div className="mx-auto max-w-5xl">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.22em] text-[#d4af37]">Already in New Orleans?</p>
-          <h1 className="max-w-4xl font-serif text-4xl leading-tight md:text-6xl">Things to do in New Orleans today</h1>
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-white/75">
-            Need a plan for the next few hours? Start with experiences that make sense for a same-day decision, then check live times, prices and availability with the tour operator before booking.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <a href="#options" className="bg-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#171717]">See tour options</a>
-            <Link href="/guides/new-orleans-tours-tonight" className="border border-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#fdfbf7]">Looking for tonight?</Link>
-            <Link href="/help-me-choose" className="border border-white/20 px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#fdfbf7]">Help me choose</Link>
-          </div>
-        </div>
-      </section>
+    <div className="min-h-screen bg-[#080708] text-[#fdfbf7]">
+      <CinematicPageHero
+        eyebrow="Already in New Orleans?"
+        title="Things to do in New Orleans today"
+        script="make today count"
+        intro="Need a plan for the next few hours? Start with experiences that make sense for a same-day decision, then check live times, prices and availability with the tour operator before booking."
+        image="/images/travel-markets/new-orleans/french-quarter-street.jpg"
+        actions={[
+          { href: "#options", label: "See Tour Options", detail: "Start with today's best fits", primary: true },
+          { href: "/guides/tonight", label: "Tonight", detail: "Evening experiences" },
+          { href: "/help-me-choose", label: "Help Me Choose", detail: "Answer a few questions" },
+        ]}
+      />
 
-      <section id="options" className="px-6 py-14 md:py-20">
+      <section id="options" className="px-6 py-14 md:py-20 bg-[radial-gradient(circle_at_50%_0%,rgba(132,82,18,.12),transparent_34%),#080708]">
         <div className="mx-auto max-w-7xl">
           <div className="mb-10 max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#d4af37]">Check current availability</p>
@@ -61,10 +60,11 @@ export default function ThingsToDoTodayPage() {
         </div>
       </section>
 
-      <section className="border-t border-white/10 bg-[#110e14] px-6 py-14">
+      <section className="border-t border-[#d4af37]/20 bg-[#0b090c] px-6 py-14">
         <div className="mx-auto max-w-5xl text-center">
-          <h2 className="font-serif text-3xl">Still deciding?</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-white/70">Tell us who is in your group and what kind of day you want. The chooser narrows the catalog instead of making you sort through everything.</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">Still deciding?</p>
+          <h2 className="font-serif text-3xl mt-3">Tell us what kind of day you want.</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-white/70">The chooser narrows the catalog around your group, timing and logistics instead of making you sort through everything.</p>
           <Link href="/help-me-choose" className="mt-7 inline-block bg-[#d4af37] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717]">Find my best fit</Link>
         </div>
       </section>
