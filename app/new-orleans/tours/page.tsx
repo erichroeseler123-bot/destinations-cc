@@ -6,6 +6,10 @@ import {
   buildBreadcrumbJsonLd,
   buildWebPageJsonLd,
 } from "@/lib/dcc/jsonld";
+import {
+  buildWnoBreadcrumbJsonLd,
+  buildWnoWebPageJsonLd,
+} from "../lib/structuredData";
 import { NEW_ORLEANS_TOURS_PATH, METADATA, STOREFRONT_PRODUCTS } from "./pageConfig";
 import { headers } from "next/headers";
 import { generateCategorySchemaGraph } from "../lib/schema";
@@ -48,14 +52,20 @@ export default async function NewOrleansToursPage() {
   const basePath = isWto ? "" : NEW_ORLEANS_TOURS_PATH;
 
   const productItems = STOREFRONT_PRODUCTS.map((item) => ({ name: item.title, description: item.description, url: `${basePath}/tours/${item.slug}`, slug: item.slug, providerName: item.operatorName }));
+  const pageSchema = isWto
+    ? buildWnoWebPageJsonLd({ path: "/tours", name: "Welcome To New Orleans Tours", description: METADATA.description })
+    : buildWebPageJsonLd({ path: NEW_ORLEANS_TOURS_PATH, name: "Welcome To New Orleans Tours", description: METADATA.description, isPartOfPath: "/new-orleans" });
+  const breadcrumbSchema = isWto
+    ? buildWnoBreadcrumbJsonLd([{ name: "New Orleans Tours", path: "/tours" }])
+    : buildBreadcrumbJsonLd([{ name: "New Orleans", item: "/new-orleans" }, { name: "Tours", item: NEW_ORLEANS_TOURS_PATH }]);
 
   return (
     <>
       <JsonLd data={{
         "@context": "https://schema.org",
         "@graph": [
-          buildWebPageJsonLd({ path: isWto ? "/tours" : NEW_ORLEANS_TOURS_PATH, name: "Welcome To New Orleans Tours", description: METADATA.description, isPartOfPath: isWto ? undefined : "/new-orleans" }),
-          buildBreadcrumbJsonLd(isWto ? [{ name: "New Orleans Tours", item: "/tours" }] : [{ name: "New Orleans", item: "/new-orleans" }, { name: "Tours", item: NEW_ORLEANS_TOURS_PATH }]),
+          pageSchema,
+          breadcrumbSchema,
           ...generateCategorySchemaGraph({ urlPath: isWto ? "/tours" : NEW_ORLEANS_TOURS_PATH, name: "Welcome To New Orleans Tours", description: METADATA.description, items: productItems.map((p: any) => ({ slug: p.slug, name: p.name, description: p.description, providerName: p.providerName })) })["@graph"],
         ],
       }} />
