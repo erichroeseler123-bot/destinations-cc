@@ -31,7 +31,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
   if ((lat === undefined) !== (lng === undefined)) {
     return NextResponse.json({ error: "lat_lng_must_be_supplied_together" }, { status: 400 });
   }
-  if (radiusKm <= 0 || radiusKm > 250) {
+  if (radiusKm < 0 || radiusKm > 250) {
     return NextResponse.json({ error: "radiusKm_out_of_range" }, { status: 400 });
   }
   if (!Number.isInteger(hours) || hours < 1 || hours > 168) {
