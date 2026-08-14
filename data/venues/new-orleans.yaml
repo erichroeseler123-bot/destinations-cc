@@ -8,4 +8,67 @@ fallbackPolicy:
   pattern: "new-orleans/venue-{provider-id-prefix}"
   promoteOnlyAfterReview: true
   guessedProviderIdsAllowed: false
-mappings: []
+mappings:
+  - ticketmaster_venue_id: "rZ7HnEZ174zuz"
+    ticketmaster_venue_name: "Snug Harbor Jazz Bistro"
+    graph_venue_id: "new-orleans/snug-harbor-jazz-bistro"
+    lat: 29.964167
+    lng: -90.057912
+    sameAs: "ticketmaster:rZ7HnEZ174zuz"
+    status: approved
+  - ticketmaster_venue_id: "ZFr9jZa7va"
+    ticketmaster_venue_name: "Le Petit Theatre"
+    graph_venue_id: "new-orleans/le-petit-theatre"
+    lat: 29.968
+    lng: -90.065002
+    sameAs: "ticketmaster:ZFr9jZa7va"
+    status: approved
+  - ticketmaster_venue_id: "rZ7HnEZ17aKef"
+    ticketmaster_venue_name: "Gasa Gasa"
+    graph_venue_id: "new-orleans/gasa-gasa"
+    lat: 29.937978
+    lng: -90.107145
+    sameAs: "ticketmaster:rZ7HnEZ17aKef"
+    status: approved
+  - ticketmaster_venue_id: "rZ7HnEZ17j_8N"
+    ticketmaster_venue_name: "NO DICE"
+    graph_venue_id: "new-orleans/no-dice"
+    lat: 29.9685473
+    lng: -90.0556928
+    sameAs: "ticketmaster:rZ7HnEZ17j_8N"
+    status: approved
+  - ticketmaster_venue_id: "rZ7HnEZadkE"
+    ticketmaster_venue_name: "Tipitina's"
+    graph_venue_id: "new-orleans/tipitinas"
+    lat: 29.9172719
+    lng: -90.1007669
+    sameAs: "ticketmaster:rZ7HnEZadkE"
+    status: approved
+  - ticketmaster_venue_id: "rZ7HnEZ17qkPV"
+    ticketmaster_venue_name: "Chickie Wah Wah"
+    graph_venue_id: "new-orleans/chickie-wah-wah"
+    lat: 29.9667574
+    lng: -90.0896109
+    sameAs: "ticketmaster:rZ7HnEZ17qkPV"
+    status: approved
+  - ticketmaster_venue_id: "rZ7HnEZ17a_FA"
+    ticketmaster_venue_name: "The Den at Howlin' Wolf"
+    graph_venue_id: "new-orleans/howlin-wolf-den"
+    lat: 29.946457
+    lng: -90.065947
+    sameAs: "ticketmaster:rZ7HnEZ17a_FA"
+    status: approved
+  - ticketmaster_venue_id: "KovZpZA6tdnA"
+    ticketmaster_venue_name: "Caesars Superdome"
+    graph_venue_id: "new-orleans/caesars-superdome"
+    lat: 29.950971
+    lng: -90.081091
+    sameAs: "ticketmaster:KovZpZA6tdnA"
+    status: approved
+  - ticketmaster_venue_id: "KovZpZAE6vtA"
+    ticketmaster_venue_name: "House of Blues New Orleans"
+    graph_venue_id: "new-orleans/house-of-blues-new-orleans"
+    lat: 29.9531499
+    lng: -90.0661687
+    sameAs: "ticketmaster:KovZpZAE6vtA"
+    status: approved
