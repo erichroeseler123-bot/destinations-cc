@@ -143,7 +143,7 @@ export const ticketmasterAdapter: ProviderAdapter<TicketmasterQuery, Ticketmaste
         data,
         diagnostics: {
           source: "ticketmaster_discovery",
-          cache_status: "revalidated",
+          cache_status: "fresh",
           stale: false,
           last_updated: now,
           fallback_reason: null,
