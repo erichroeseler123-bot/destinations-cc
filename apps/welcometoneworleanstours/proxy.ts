@@ -10,5 +10,8 @@ export function proxy(request: NextRequest) {
   if (request.nextUrl.pathname === "/guides/new-orleans-tours-tonight") {
     return NextResponse.redirect(new URL("/guides/tonight", request.url), 308);
   }
+  if (request.nextUrl.pathname === "/guides/new-orleans-tours-for-grandparents-and-kids") {
+    return NextResponse.redirect(new URL("/guides/new-orleans-tours-for-families", request.url), 308);
+  }
   return NextResponse.next();
 }
