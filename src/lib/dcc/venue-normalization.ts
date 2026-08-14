@@ -4,6 +4,18 @@ export type VenueResolution = {
   sameAs: string[];
 };
 
+const NEW_ORLEANS_TICKETMASTER_VENUE_IDS: Record<string, string> = {
+  rZ7HnEZ174zuz: "snug-harbor-jazz-bistro",
+  ZFr9jZa7va: "le-petit-theatre",
+  rZ7HnEZ17aKef: "gasa-gasa",
+  rZ7HnEZ17j_8N: "no-dice",
+  rZ7HnEZadkE: "tipitinas",
+  rZ7HnEZ17qkPV: "chickie-wah-wah",
+  rZ7HnEZ17a_FA: "howlin-wolf-den",
+  KovZpZA6tdnA: "caesars-superdome",
+  KovZpZAE6vtA: "house-of-blues-new-orleans",
+};
+
 const NEW_ORLEANS_VENUE_ALIASES: Record<string, string> = {
   "preservation hall": "preservation-hall",
   "saenger theatre-new orleans": "saenger-theatre",
@@ -24,11 +36,15 @@ const NEW_ORLEANS_VENUE_ALIASES: Record<string, string> = {
   "toulouse theatre": "toulouse-theatre",
   "maple leaf bar": "maple-leaf-bar",
   "snug harbor jazz bistro": "snug-harbor-jazz-bistro",
+  "le petit theatre": "le-petit-theatre",
+  "gasa gasa": "gasa-gasa",
+  "no dice": "no-dice",
   "blue nile": "blue-nile",
   "d.b.a.": "dba",
   "dba": "dba",
   "howlin' wolf": "howlin-wolf",
   "the howlin' wolf": "howlin-wolf",
+  "the den at howlin' wolf": "howlin-wolf-den",
   "broadside": "broadside",
   "chickie wah wah": "chickie-wah-wah",
 };
@@ -51,7 +67,12 @@ export function resolveVenueGraphId(args: {
   sourceVenueId?: string | null;
 }): VenueResolution {
   const { destinationId, venueName, source, sourceVenueId } = args;
-  if (!venueName) {
+  const exactTicketmasterSlug =
+    destinationId === "new-orleans" && source === "ticketmaster" && sourceVenueId
+      ? NEW_ORLEANS_TICKETMASTER_VENUE_IDS[sourceVenueId]
+      : undefined;
+
+  if (!venueName && !exactTicketmasterSlug) {
     return {
       venueId: null,
       venueName: null,
@@ -59,9 +80,9 @@ export function resolveVenueGraphId(args: {
     };
   }
 
-  const normalizedName = venueName.trim().toLowerCase();
+  const normalizedName = venueName?.trim().toLowerCase() ?? "";
   const alias = destinationId === "new-orleans" ? NEW_ORLEANS_VENUE_ALIASES[normalizedName] : undefined;
-  const slug = alias || slugifyVenueName(venueName);
+  const slug = exactTicketmasterSlug || alias || (venueName ? slugifyVenueName(venueName) : "");
 
   return {
     venueId: slug ? `${destinationId}/${slug}` : null,
