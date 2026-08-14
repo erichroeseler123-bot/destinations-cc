@@ -197,3 +197,52 @@ if (missing.length) {
 }
 
 console.log(`env check passed for ${contract.project || "project"} (${mode} mode).`);
+
+async function probeTicketmasterVenues() {
+  if (mode !== "build" || process.env.VERCEL_GIT_COMMIT_REF !== "dcc-system-engine") return;
+  const apiKey = process.env.TICKETMASTER_API_KEY;
+  if (!apiKey) {
+    console.log("DCC_TICKETMASTER_PROBE missing_api_key");
+    return;
+  }
+  try {
+    const start = new Date();
+    const end = new Date(start.getTime() + 48 * 60 * 60 * 1000);
+    const url = new URL("https://app.ticketmaster.com/discovery/v2/events.json");
+    url.searchParams.set("apikey", apiKey);
+    url.searchParams.set("city", "New Orleans");
+    url.searchParams.set("countryCode", "US");
+    url.searchParams.set("startDateTime", start.toISOString().replace(/\.\d{3}Z$/, "Z"));
+    url.searchParams.set("endDateTime", end.toISOString().replace(/\.\d{3}Z$/, "Z"));
+    url.searchParams.set("size", "50");
+    url.searchParams.set("sort", "date,asc");
+    const response = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!response.ok) {
+      console.log(`DCC_TICKETMASTER_PROBE http_${response.status}`);
+      return;
+    }
+    const payload = await response.json();
+    const events = payload?._embedded?.events || [];
+    const venues = new Map();
+    for (const event of events) {
+      const venue = event?._embedded?.venues?.[0];
+      if (!venue?.id) continue;
+      venues.set(venue.id, {
+        id: venue.id,
+        name: venue.name || null,
+        lat: venue.location?.latitude ? Number(venue.location.latitude) : null,
+        lng: venue.location?.longitude ? Number(venue.location.longitude) : null,
+        city: venue.city?.name || null,
+        eventCount: (venues.get(venue.id)?.eventCount || 0) + 1,
+      });
+    }
+    console.log(`DCC_TICKETMASTER_PROBE ok events=${events.length} venues=${venues.size}`);
+    for (const venue of [...venues.values()].sort((a, b) => b.eventCount - a.eventCount)) {
+      console.log(`DCC_TICKETMASTER_VENUE ${JSON.stringify(venue)}`);
+    }
+  } catch (error) {
+    console.log(`DCC_TICKETMASTER_PROBE fetch_failed ${error instanceof Error ? error.message : "unknown"}`);
+  }
+}
+
+probeTicketmasterVenues().catch(() => {});
