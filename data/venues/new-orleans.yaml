@@ -1,0 +1,11 @@
+version: 1
+destinationId: new-orleans
+canonicalIdPattern: "new-orleans/{venue-slug}"
+provider: ticketmaster
+sourceIdentityField: ticketmaster_venue_id
+fallbackPolicy:
+  strategy: deterministic
+  pattern: "new-orleans/venue-{provider-id-prefix}"
+  promoteOnlyAfterReview: true
+  guessedProviderIdsAllowed: false
+mappings: []
