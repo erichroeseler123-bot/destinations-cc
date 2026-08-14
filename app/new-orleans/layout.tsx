@@ -7,6 +7,7 @@ import WnoFunnelTracker from "./components/WnoFunnelTracker";
 import ContextualPlanningPaths from "./components/ContextualPlanningPaths";
 import WnoMobileConversionMount from "./components/WnoMobileConversionMount";
 import { buildWnoSiteGraph } from "./lib/structuredData";
+import siteTheme from "./components/siteWideTheme.module.css";
 
 const newOrleansDisplayFont = Playfair_Display({
   subsets: ['latin'],
@@ -54,11 +55,11 @@ export default function NewOrleansLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`flex flex-col min-h-screen bg-[#151515] text-[#fdfbf7] ${newOrleansDisplayFont.variable} ${newOrleansScriptFont.variable}`}>
+    <div className={`${siteTheme.siteShell} flex flex-col min-h-screen ${newOrleansDisplayFont.variable} ${newOrleansScriptFont.variable}`}>
       <JsonLd data={buildWnoSiteGraph()} />
       <WnoFunnelTracker />
       <HeaderNav />
-      <main className="flex-1 w-full relative">
+      <main className={`${siteTheme.pageWash} flex-1 w-full relative`}>
         {children}
       </main>
       <ContextualPlanningPaths />
