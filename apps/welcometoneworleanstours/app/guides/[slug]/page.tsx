@@ -12,6 +12,8 @@ import KidsAirboats from "@/app/new-orleans/guides/can-kids-ride-airboats-new-or
 import Orientation from "@/app/new-orleans/guides/french-quarter-orientation/page";
 import VisitorRewards from "@/app/new-orleans/guides/visitor-rewards/page";
 import WhitneyVsOakAlley from "@/app/new-orleans/guides/whitney-plantation-vs-oak-alley-history-focus/page";
+import ThisWeekend from "@/app/new-orleans/guides/this-weekend/page";
+import Tonight from "@/app/new-orleans/guides/tonight/page";
 
 export { generateMetadata };
 
@@ -28,6 +30,8 @@ const pages = {
   "french-quarter-orientation": Orientation,
   "visitor-rewards": VisitorRewards,
   "whitney-plantation-vs-oak-alley-history-focus": WhitneyVsOakAlley,
+  "this-weekend": ThisWeekend,
+  "tonight": Tonight,
 } as const;
 
 export default async function GuideBridgePage({ params }: { params: Promise<{ slug: string }> }) {
