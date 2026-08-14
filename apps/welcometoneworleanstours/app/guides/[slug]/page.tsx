@@ -19,14 +19,33 @@ import Tonight from "@/app/new-orleans/guides/tonight/page";
 import KidsUnderSix from "@/app/new-orleans/guides/best-new-orleans-tours-with-kids-under-6/page";
 import ArriveAtNoon from "@/app/new-orleans/guides/best-new-orleans-tours-if-you-arrive-at-noon/page";
 
-const aliases = {
+const guideAliases = {
   "french-quarter-tour-timing": "french-quarter-orientation",
+  "pre-cruise-new-orleans-tours": "new-orleans-tours-with-transportation",
+  "post-cruise-new-orleans-tours": "new-orleans-tours-with-transportation",
+} as const;
+
+const directAliases = {
+  "tour-planning": "/help-me-choose",
 } as const;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug?: string }> }): Promise<Metadata> {
   const resolved = await params;
   const slug = resolved.slug;
-  const canonicalSlug = slug && aliases[slug as keyof typeof aliases] ? aliases[slug as keyof typeof aliases] : slug;
+
+  if (slug && directAliases[slug as keyof typeof directAliases]) {
+    return {
+      title: "Help Me Choose a New Orleans Tour",
+      description: "Use the New Orleans tour chooser to narrow the best options for your group, schedule, pace, and interests.",
+      alternates: { canonical: directAliases[slug as keyof typeof directAliases] },
+      robots: { index: false, follow: true },
+    };
+  }
+
+  const canonicalSlug = slug && guideAliases[slug as keyof typeof guideAliases]
+    ? guideAliases[slug as keyof typeof guideAliases]
+    : slug;
+
   return generateCanonicalMetadata({ params: Promise.resolve({ slug: canonicalSlug }) });
 }
 
@@ -51,8 +70,12 @@ const pages = {
 
 export default async function GuideBridgePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const aliasTarget = aliases[slug as keyof typeof aliases];
-  if (aliasTarget) permanentRedirect(`/guides/${aliasTarget}`);
+
+  const directTarget = directAliases[slug as keyof typeof directAliases];
+  if (directTarget) permanentRedirect(directTarget);
+
+  const guideTarget = guideAliases[slug as keyof typeof guideAliases];
+  if (guideTarget) permanentRedirect(`/guides/${guideTarget}`);
 
   const Page = pages[slug as keyof typeof pages] as unknown as (() => ReactNode) | undefined;
   if (Page) return <>{Page()}</>;
