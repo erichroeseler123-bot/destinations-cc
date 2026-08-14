@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import CommercialActionPanel from "@/app/components/dcc/CommercialActionPanel";
+import EqualizerExperience from "@/app/components/dcc/EqualizerExperience";
 import { getDestinationConfig } from "@/src/data/destination-configs";
 import { getCapabilityMap } from "@/src/data/live-registry";
 import { resolveCommercialActions } from "@/src/lib/dcc/commercial-actions";
@@ -18,6 +19,15 @@ export default async function DestinationSystemPage({ params }: { params: Promis
         <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#8fd0ff]">Destination Command Center</div>
         <h1 className="mt-3 max-w-4xl text-4xl font-black uppercase tracking-[-0.04em] sm:text-6xl">{config.name}</h1>
         <p className="mt-4 max-w-3xl text-base leading-7 text-white/70">See what is live, understand the place, then move into the right commercial action only when your intent changes.</p>
+
+        {config.id === "st-thomas" ? (
+          <EqualizerExperience
+            destinationId={config.id}
+            destinationName={config.name}
+            lat={config.lat}
+            lng={config.lng}
+          />
+        ) : null}
 
         <section className="mt-8 rounded-[30px] border border-white/10 bg-[#0b1224] p-6 sm:p-8">
           <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#ffb07c]">Live capabilities</div>
