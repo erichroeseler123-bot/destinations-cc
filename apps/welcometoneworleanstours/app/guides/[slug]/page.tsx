@@ -15,6 +15,7 @@ import WhitneyVsOakAlley from "@/app/new-orleans/guides/whitney-plantation-vs-oa
 import ThisWeekend from "@/app/new-orleans/guides/this-weekend/page";
 import Tonight from "@/app/new-orleans/guides/tonight/page";
 import KidsUnderSix from "@/app/new-orleans/guides/best-new-orleans-tours-with-kids-under-6/page";
+import ArriveAtNoon from "@/app/new-orleans/guides/best-new-orleans-tours-if-you-arrive-at-noon/page";
 
 export { generateMetadata };
 
@@ -34,6 +35,7 @@ const pages = {
   "this-weekend": ThisWeekend,
   "tonight": Tonight,
   "best-new-orleans-tours-with-kids-under-6": KidsUnderSix,
+  "best-new-orleans-tours-if-you-arrive-at-noon": ArriveAtNoon,
 } as const;
 
 export default async function GuideBridgePage({ params }: { params: Promise<{ slug: string }> }) {
