@@ -32,7 +32,7 @@ function crawlerGroup(userAgent: string) {
 export function buildRobotsTxt(host: string) {
   const isWno = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
   const sitemapUrl = isWno
-    ? "https://welcometoneworleanstours.com/sitemap.xml"
+    ? "https://www.welcometoneworleanstours.com/sitemap.xml"
     : ALLOWED_HOSTS.has(host)
     ? `https://${host}/sitemap.xml`
     : "https://destinationcommandcenter.com/sitemap.xml";

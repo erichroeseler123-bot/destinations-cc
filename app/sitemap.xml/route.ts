@@ -11,7 +11,7 @@ import { INTENT_SEO_PAGES } from "@/app/new-orleans/data/intentSeoPages";
 import { AUDIENCE_INTENT_SEO_PAGES } from "@/app/new-orleans/data/audienceIntentSeoPages";
 
 export const dynamic = "force-dynamic";
-export const WTONOT_ORIGIN = "https://welcometoneworleanstours.com";
+export const WTONOT_ORIGIN = "https://www.welcometoneworleanstours.com";
 
 export const WTONOT_SUPPORT_PATHS = [
   "/contact", "/about", "/faq", "/booking-help", "/privacy", "/terms",
