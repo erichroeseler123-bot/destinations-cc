@@ -9,6 +9,7 @@ import IntentSeoLanding from '../../components/IntentSeoLanding';
 import { buildSeoMetadata } from '../../lib/buildSeoMetadata';
 import ConciergeQaChecklist from '../../admin/qa/ConciergeQaChecklist';
 import LiveRouteAudit from '../../admin/qa/LiveRouteAudit';
+import WnoWeeklyKpiDashboard from '../../admin/qa/WnoWeeklyKpiDashboard';
 import { STOREFRONT_PRODUCTS } from '../../tours/pageConfig';
 
 function getGovernedIntentPage(slug: string) {
@@ -27,6 +28,7 @@ function InternalQaDashboard() {
 
   return (
     <>
+      <WnoWeeklyKpiDashboard />
       <ConciergeQaChecklist tours={tours} />
       <LiveRouteAudit tours={tours} />
     </>
