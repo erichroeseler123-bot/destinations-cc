@@ -59,6 +59,70 @@ const QUESTIONS: Record<keyof RecommendationInputs, { title: string; options: st
 const CHOOSER_COMPLETED_AT = "wno_chooser_completed_at";
 const CHOOSER_RECOMMENDATION = "wno_chooser_recommendation";
 
+type BundleRecommendation = {
+  id: "city-jazz" | "swamp-plantation" | "food-ghosts";
+  title: string;
+  reason: string;
+  slugs: [string, string];
+};
+
+const BUNDLE_RECOMMENDATIONS: Record<BundleRecommendation["id"], BundleRecommendation> = {
+  "city-jazz": {
+    id: "city-jazz",
+    title: "City + Evening Jazz",
+    reason: "Use the city tour for context, then make the river the second chapter of the day.",
+    slugs: ["city-tour-of-new-orleans", "evening-jazz-cruise"],
+  },
+  "swamp-plantation": {
+    id: "swamp-plantation",
+    title: "Swamp + Plantation",
+    reason: "Pair wetlands with River Road history when you have enough time for a bigger Louisiana day.",
+    slugs: ["covered-tour-boat", "oak-alley-or-laura-plantation-tour"],
+  },
+  "food-ghosts": {
+    id: "food-ghosts",
+    title: "Cocktails + Ghosts",
+    reason: "Keep the evening walkable: start with cocktail culture, then shift into haunted New Orleans after dark.",
+    slugs: ["craft-cocktail-walking-tour", "ghosts-spirits-walking-tour"],
+  },
+};
+
+const CITY_SLUGS = new Set(["city-tour-of-new-orleans", "city-cemetery-garden-district-tour"]);
+const SWAMP_OR_PLANTATION_SLUGS = new Set([
+  "covered-tour-boat",
+  "swamp-bayou-tour",
+  "ragin-cajun-airboat-options",
+  "small-airboat-swamp-adventure",
+  "large-airboat-swamp-adventure",
+  "oak-alley-or-laura-plantation-tour",
+  "oak-alley-plantation-tour-grey-line",
+  "whitney-plantation-tour",
+]);
+const AFTER_DARK_SLUGS = new Set(["cocktail-walking-tour", "craft-cocktail-walking-tour", "ghosts-spirits-walking-tour"]);
+
+function chooseBundle(inputs: RecommendationInputs, result: RecommendationResult, liveContext: LiveRecommendationContext): BundleRecommendation | null {
+  if (!result.primary || inputs.availableTime === "About 3 hours") return null;
+
+  const primarySlug = result.primary.slug;
+  if (inputs.mixedAges === "No" && AFTER_DARK_SLUGS.has(primarySlug)) {
+    return BUNDLE_RECOMMENDATIONS["food-ghosts"];
+  }
+
+  if (inputs.availableTime === "Most of the day" && SWAMP_OR_PLANTATION_SLUGS.has(primarySlug)) {
+    return BUNDLE_RECOMMENDATIONS["swamp-plantation"];
+  }
+
+  if (CITY_SLUGS.has(primarySlug) && liveContext.period !== "evening") {
+    return BUNDLE_RECOMMENDATIONS["city-jazz"];
+  }
+
+  if (inputs.availableTime === "Most of the day" && inputs.mixedAges === "No") {
+    return BUNDLE_RECOMMENDATIONS["city-jazz"];
+  }
+
+  return null;
+}
+
 export default function NewOrleansRecommendationFlow() {
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState<Partial<RecommendationInputs>>({});
@@ -120,6 +184,7 @@ export default function NewOrleansRecommendationFlow() {
 
     const completedInputs = nextAnswers as RecommendationInputs;
     const nextResult = evaluateRecommendation(completedInputs, liveContext);
+    const bundle = chooseBundle(completedInputs, nextResult, liveContext);
     setResult(nextResult);
     const primarySlug = nextResult.primary?.slug || null;
     const secondarySlug = nextResult.secondary?.slug || null;
@@ -138,8 +203,17 @@ export default function NewOrleansRecommendationFlow() {
       live_outdoor_friendly: Boolean(liveContext.outdoorFriendly),
       primary_recommendation: primarySlug,
       secondary_recommendation: secondarySlug,
+      bundle_recommendation: bundle?.id || null,
+      bundle_products: bundle?.slugs.join(",") || null,
       no_fit: nextResult.isNoFit,
     });
+    if (bundle) {
+      emitChooserEvent("chooser_bundle_shown", {
+        bundle_id: bundle.id,
+        bundle_products: bundle.slugs.join(","),
+        primary_recommendation: primarySlug,
+      });
+    }
   };
 
   const restart = () => {
@@ -168,7 +242,19 @@ export default function NewOrleansRecommendationFlow() {
     });
   };
 
+  const handleBundleClick = (bundle: BundleRecommendation, slug: string, position: number) => {
+    emitChooserEvent("chooser_bundle_product_clicked", {
+      bundle_id: bundle.id,
+      bundle_products: bundle.slugs.join(","),
+      product_slug: slug,
+      bundle_position: position,
+    });
+  };
+
   if (result) {
+    const completedInputs = answers as RecommendationInputs;
+    const bundle = !result.isNoFit ? chooseBundle(completedInputs, result, liveContext) : null;
+
     return (
       <div className={`${visualStyles.surfacePanel} mt-8 p-6 md:p-10`}>
         <div className="text-center">
@@ -191,6 +277,13 @@ export default function NewOrleansRecommendationFlow() {
             <RecommendationCard slug={result.primary.slug} reasons={result.primary.reasons} cautions={result.primary.cautionReasons} primary href={getTourHref(result.primary.slug)} onClick={() => handleRecommendationClick(result.primary!.slug, "primary")} />
             {result.secondary && (
               <RecommendationCard slug={result.secondary.slug} reasons={result.secondary.reasons} cautions={[]} href={getTourHref(result.secondary.slug)} onClick={() => handleRecommendationClick(result.secondary!.slug, "secondary")} />
+            )}
+            {bundle && (
+              <BundleRecommendationCard
+                bundle={bundle}
+                getTourHref={getTourHref}
+                onProductClick={(slug, position) => handleBundleClick(bundle, slug, position)}
+              />
             )}
           </div>
         )}
@@ -251,5 +344,46 @@ function RecommendationCard({ slug, reasons, cautions, primary = false, href, on
       {cautions.length > 0 && <div className="mt-5 border-l-2 border-[var(--nola-gold)] pl-4"><p className="text-[10px] font-bold uppercase tracking-widest text-[var(--nola-gold)]">Good to know</p>{cautions.map((caution) => <p key={caution} className="mt-1 text-sm text-[var(--nola-text-muted)]">{caution}</p>)}</div>}
       <Link href={href} onClick={onClick} data-wno-event="chooser_see_availability_clicked" data-wno-product={slug} className={`mt-6 inline-block px-6 py-3 text-xs font-bold uppercase tracking-widest ${primary ? "bg-[var(--nola-gold)] text-[var(--nola-bg-black)]" : "border border-[var(--nola-gold)] text-[var(--nola-gold)]"}`}>See Availability →</Link>
     </div>
+  );
+}
+
+function BundleRecommendationCard({
+  bundle,
+  getTourHref,
+  onProductClick,
+}: {
+  bundle: BundleRecommendation;
+  getTourHref: (slug: string) => string;
+  onProductClick: (slug: string, position: number) => void;
+}) {
+  const products = bundle.slugs.map((slug) => ({ slug, tour: TOUR_RECORDS[slug] })).filter((item) => item.tour);
+  if (products.length !== 2) return null;
+
+  return (
+    <section className="border border-[var(--nola-gold)]/60 bg-[linear-gradient(180deg,rgba(197,160,89,.10),rgba(17,14,20,.92))] p-6 md:p-8">
+      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">Make more of the day</p>
+      <h4 className={`mt-3 text-3xl text-[var(--nola-ivory)] ${visualStyles.accentFont}`}>{bundle.title}</h4>
+      <p className="mt-3 text-sm leading-6 text-[var(--nola-text-muted)]">{bundle.reason}</p>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        {products.map(({ slug, tour }, index) => (
+          <div key={slug} className="border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)] p-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--nola-text-muted)]">{index === 0 ? "First idea" : "Pair it with"}</p>
+            <h5 className="mt-2 text-lg font-bold text-[var(--nola-ivory)]">{tour!.experienceType}</h5>
+            <p className="mt-2 text-xs leading-5 text-[var(--nola-text-muted)]">{tour!.verifiedDurationLabel}</p>
+            <Link
+              href={getTourHref(slug)}
+              onClick={() => onProductClick(slug, index + 1)}
+              data-wno-event="chooser_bundle_product_clicked"
+              data-wno-product={slug}
+              data-wno-bundle={bundle.id}
+              className="mt-4 inline-block text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)] underline underline-offset-4"
+            >
+              Check this experience →
+            </Link>
+          </div>
+        ))}
+      </div>
+      <p className="mt-5 text-xs leading-5 text-[var(--nola-text-muted)]">These are two separate experiences, not a packaged booking. Check each operator’s current schedule, travel time, eligibility and availability before booking both.</p>
+    </section>
   );
 }
