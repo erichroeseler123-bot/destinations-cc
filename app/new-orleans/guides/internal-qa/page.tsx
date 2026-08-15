@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ConciergeQaChecklist from "../../admin/qa/ConciergeQaChecklist";
+import LiveRouteAudit from "../../admin/qa/LiveRouteAudit";
 import { STOREFRONT_PRODUCTS } from "../../tours/pageConfig";
 
 export const metadata: Metadata = {
@@ -21,5 +22,10 @@ export default function NewOrleansInternalQaPage() {
     variantCount: product.bookingVariants?.length ?? 0,
   }));
 
-  return <ConciergeQaChecklist tours={tours} />;
+  return (
+    <>
+      <ConciergeQaChecklist tours={tours} />
+      <LiveRouteAudit tours={tours} />
+    </>
+  );
 }
