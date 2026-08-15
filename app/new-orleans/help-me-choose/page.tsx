@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import NewOrleansRecommendationFlow from "../components/NewOrleansRecommendationFlow";
 import CinematicPageHero from "../components/CinematicPageHero";
+import ChooserExitBriefPrompt from "../components/ChooserExitBriefPrompt";
 import ExpandedChooserEntry from "./ExpandedChooserEntry";
 
 export const metadata = {
@@ -12,6 +13,7 @@ export const metadata = {
 export default function HelpMeChoosePage() {
   return (
     <div className="bg-[#080708] text-[#fdfbf7] min-h-screen">
+      <ChooserExitBriefPrompt />
       <CinematicPageHero
         eyebrow="Your New Orleans decision desk"
         title="Tell us what kind of day you want"
