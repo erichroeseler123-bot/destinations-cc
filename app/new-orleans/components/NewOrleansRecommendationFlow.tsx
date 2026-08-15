@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { trackEvent } from "@/lib/analytics";
 import {
   evaluateRecommendation,
   LiveRecommendationContext,
@@ -11,6 +12,7 @@ import {
 } from "../lib/tourRecommendationRules";
 import visualStyles from "./newOrleansVisual.module.css";
 import { buildAttributedTourHref, FAREHARBOR_SOURCES, isApprovedProductSlug } from "../lib/fareHarborAttribution";
+import { getWnoFunnelContext, sendWnoTelemetry } from "./WnoFunnelTracker";
 
 const STEPS: (keyof RecommendationInputs)[] = [
   "planningWindow",
@@ -54,6 +56,9 @@ const QUESTIONS: Record<keyof RecommendationInputs, { title: string; options: st
   },
 };
 
+const CHOOSER_COMPLETED_AT = "wno_chooser_completed_at";
+const CHOOSER_RECOMMENDATION = "wno_chooser_recommendation";
+
 export default function NewOrleansRecommendationFlow() {
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState<Partial<RecommendationInputs>>({});
@@ -83,17 +88,62 @@ export default function NewOrleansRecommendationFlow() {
   const currentStepId = STEPS[stepIndex];
   const currentQuestion = QUESTIONS[currentStepId];
 
+  const emitChooserEvent = (eventName: string, extra: Record<string, unknown> = {}) => {
+    const context = getWnoFunnelContext();
+    const payload = {
+      surface: "wno_help_me_choose",
+      page: typeof window !== "undefined" ? window.location.pathname : undefined,
+      entry_source: context?.source,
+      entry_path: context?.landingPath,
+      ...extra,
+    };
+    trackEvent(eventName, payload);
+    sendWnoTelemetry({ eventName, sourcePage: typeof window !== "undefined" ? window.location.pathname : undefined, ...extra });
+  };
+
   const handleSelect = (answer: string) => {
     const nextAnswers = { ...answers, [currentStepId]: answer } as Partial<RecommendationInputs>;
+    if (stepIndex === 0) {
+      emitChooserEvent("chooser_started", { first_answer: answer });
+    }
+    emitChooserEvent("chooser_answered", {
+      question: currentStepId,
+      answer,
+      step_number: stepIndex + 1,
+    });
     setAnswers(nextAnswers);
+
     if (stepIndex < STEPS.length - 1) {
       setStepIndex(stepIndex + 1);
       return;
     }
-    setResult(evaluateRecommendation(nextAnswers as RecommendationInputs, liveContext));
+
+    const completedInputs = nextAnswers as RecommendationInputs;
+    const nextResult = evaluateRecommendation(completedInputs, liveContext);
+    setResult(nextResult);
+    const primarySlug = nextResult.primary?.slug || null;
+    const secondarySlug = nextResult.secondary?.slug || null;
+    try {
+      sessionStorage.setItem(CHOOSER_COMPLETED_AT, String(Date.now()));
+      if (primarySlug) sessionStorage.setItem(CHOOSER_RECOMMENDATION, primarySlug);
+      else sessionStorage.removeItem(CHOOSER_RECOMMENDATION);
+    } catch {
+      // Analytics state must never block the recommendation.
+    }
+    emitChooserEvent("chooser_completed", {
+      ...completedInputs,
+      live_period: liveContext.period,
+      live_rain_risk: liveContext.rainRisk,
+      live_music_signal: Boolean(liveContext.liveMusicSignal),
+      live_outdoor_friendly: Boolean(liveContext.outdoorFriendly),
+      primary_recommendation: primarySlug,
+      secondary_recommendation: secondarySlug,
+      no_fit: nextResult.isNoFit,
+    });
   };
 
   const restart = () => {
+    emitChooserEvent("chooser_restarted");
     setAnswers({});
     setStepIndex(0);
     setResult(null);
@@ -101,6 +151,7 @@ export default function NewOrleansRecommendationFlow() {
 
   const back = () => {
     if (stepIndex === 0) return;
+    emitChooserEvent("chooser_back_clicked", { from_step: stepIndex + 1, to_step: stepIndex });
     setStepIndex(stepIndex - 1);
     setResult(null);
   };
@@ -109,6 +160,13 @@ export default function NewOrleansRecommendationFlow() {
     isApprovedProductSlug(slug)
       ? buildAttributedTourHref(slug, FAREHARBOR_SOURCES.recommendation, slug)
       : `/tours/${slug}`;
+
+  const handleRecommendationClick = (slug: string, rank: "primary" | "secondary") => {
+    emitChooserEvent("chooser_recommendation_clicked", {
+      product_slug: slug,
+      recommendation_rank: rank,
+    });
+  };
 
   if (result) {
     return (
@@ -125,21 +183,21 @@ export default function NewOrleansRecommendationFlow() {
             <p className="mt-4 text-sm leading-6 text-[var(--nola-text-muted)]">None of the 21 curated experiences is a strong enough fit for that exact combination. Change an answer or let the Concierge Desk help with your timing and group.</p>
             <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
               <button onClick={restart} className="border border-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)]">Adjust answers</button>
-              <Link href="/contact" className="bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-bg-black)]">Ask the Concierge Desk</Link>
+              <Link href="/contact" data-wno-event="chooser_concierge_fallback_clicked" className="bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-bg-black)]">Ask the Concierge Desk</Link>
             </div>
           </div>
         ) : (
           <div className="mx-auto mt-10 max-w-3xl space-y-6">
-            <RecommendationCard slug={result.primary.slug} reasons={result.primary.reasons} cautions={result.primary.cautionReasons} primary href={getTourHref(result.primary.slug)} />
+            <RecommendationCard slug={result.primary.slug} reasons={result.primary.reasons} cautions={result.primary.cautionReasons} primary href={getTourHref(result.primary.slug)} onClick={() => handleRecommendationClick(result.primary!.slug, "primary")} />
             {result.secondary && (
-              <RecommendationCard slug={result.secondary.slug} reasons={result.secondary.reasons} cautions={[]} href={getTourHref(result.secondary.slug)} />
+              <RecommendationCard slug={result.secondary.slug} reasons={result.secondary.reasons} cautions={[]} href={getTourHref(result.secondary.slug)} onClick={() => handleRecommendationClick(result.secondary!.slug, "secondary")} />
             )}
           </div>
         )}
 
         <div className="mt-10 text-center">
           <p className="text-sm text-[var(--nola-text-muted)]">Still not sure? Tell us when you’re free, who is with you, and what kind of New Orleans you want.</p>
-          <Link href="/contact" className="mt-3 inline-block text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)]">Get planning help →</Link>
+          <Link href="/contact" data-wno-event="chooser_planning_help_clicked" className="mt-3 inline-block text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)]">Get planning help →</Link>
         </div>
       </div>
     );
@@ -172,7 +230,7 @@ export default function NewOrleansRecommendationFlow() {
   );
 }
 
-function RecommendationCard({ slug, reasons, cautions, primary = false, href }: { slug: string; reasons: string[]; cautions: string[]; primary?: boolean; href: string }) {
+function RecommendationCard({ slug, reasons, cautions, primary = false, href, onClick }: { slug: string; reasons: string[]; cautions: string[]; primary?: boolean; href: string; onClick: () => void }) {
   const tour = TOUR_RECORDS[slug];
   if (!tour) return null;
 
@@ -191,7 +249,7 @@ function RecommendationCard({ slug, reasons, cautions, primary = false, href }: 
         <div><span className="block text-[10px] font-bold uppercase tracking-widest text-[var(--nola-text-muted)]">Getting there</span><span className="mt-1 block text-[var(--nola-ivory)]">{tour.transportationAvailable}</span></div>
       </div>
       {cautions.length > 0 && <div className="mt-5 border-l-2 border-[var(--nola-gold)] pl-4"><p className="text-[10px] font-bold uppercase tracking-widest text-[var(--nola-gold)]">Good to know</p>{cautions.map((caution) => <p key={caution} className="mt-1 text-sm text-[var(--nola-text-muted)]">{caution}</p>)}</div>}
-      <Link href={href} className={`mt-6 inline-block px-6 py-3 text-xs font-bold uppercase tracking-widest ${primary ? "bg-[var(--nola-gold)] text-[var(--nola-bg-black)]" : "border border-[var(--nola-gold)] text-[var(--nola-gold)]"}`}>See Availability →</Link>
+      <Link href={href} onClick={onClick} data-wno-event="chooser_see_availability_clicked" data-wno-product={slug} className={`mt-6 inline-block px-6 py-3 text-xs font-bold uppercase tracking-widest ${primary ? "bg-[var(--nola-gold)] text-[var(--nola-bg-black)]" : "border border-[var(--nola-gold)] text-[var(--nola-gold)]"}`}>See Availability →</Link>
     </div>
   );
 }

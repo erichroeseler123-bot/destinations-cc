@@ -134,14 +134,14 @@ export default function LiveIntelligencePanel() {
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--nola-gold)]">Tomorrow</p>
         <h3 className="mt-2 text-xl font-semibold text-[var(--nola-ivory)]">{tomorrowEvent ? tomorrowEvent.title : "Tomorrow is being shaped more by weather and fit than by one featured event."}</h3>
         <p className="mt-2 text-sm leading-6 text-[var(--nola-text-muted)]">{eventCardCopy(tomorrowEvent, "No second current calendar item is strong enough to feature, so the chooser stays focused on your group and the weather.")}</p>
-        <a href={context.sources.events} target="_blank" rel="noreferrer" className="mt-4 inline-block text-[10px] font-bold uppercase tracking-widest text-[var(--nola-gold)]">Official event calendar ↗</a>
+        <a href={context.sources.events} target="_blank" rel="noreferrer" data-wno-event="live_intelligence_clicked" data-wno-signal="tomorrow_events" className="mt-4 inline-block text-[10px] font-bold uppercase tracking-widest text-[var(--nola-gold)]">Official event calendar ↗</a>
       </div>
 
       <div className="border border-[var(--nola-border)] bg-[var(--nola-surface)] p-5">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--nola-gold)]">Weather</p>
         <h3 className="mt-2 text-xl font-semibold text-[var(--nola-ivory)]">{context.outdoorFriendly ? "Outdoor conditions are getting a small boost." : "Weather-sensitive options are being scored more carefully."}</h3>
         <WeatherCopy context={context} />
-        <a href={context.sources.weather} target="_blank" rel="noreferrer" className="mt-4 inline-block text-[10px] font-bold uppercase tracking-widest text-[var(--nola-gold)]">National Weather Service ↗</a>
+        <a href={context.sources.weather} target="_blank" rel="noreferrer" data-wno-event="live_intelligence_clicked" data-wno-signal="weather" className="mt-4 inline-block text-[10px] font-bold uppercase tracking-widest text-[var(--nola-gold)]">National Weather Service ↗</a>
       </div>
 
       <LiveCard label="River" title={riverTitle} text={riverText} />
@@ -151,7 +151,7 @@ export default function LiveIntelligencePanel() {
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--nola-gold)]">Concierge Pick</p>
         <h3 className="mt-2 text-xl font-semibold text-[var(--nola-ivory)]">{context.conciergePick.title}</h3>
         <p className="mt-2 text-sm leading-6 text-[var(--nola-text-muted)]">{context.conciergePick.reason}</p>
-        <Link href={`/tours/${context.conciergePick.slug}`} className="mt-4 inline-block text-[10px] font-bold uppercase tracking-widest text-[var(--nola-gold)]">See why it fits →</Link>
+        <Link href={`/tours/${context.conciergePick.slug}`} data-wno-event="live_intelligence_clicked" data-wno-signal="concierge_pick" data-wno-product={context.conciergePick.slug} className="mt-4 inline-block text-[10px] font-bold uppercase tracking-widest text-[var(--nola-gold)]">See why it fits →</Link>
       </div>
     </div>
   );
