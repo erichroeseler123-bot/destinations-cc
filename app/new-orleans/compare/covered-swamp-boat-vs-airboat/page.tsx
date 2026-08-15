@@ -22,16 +22,8 @@ export default function CoveredBoatVsAirboatPage() {
         title="Covered swamp boat vs airboat: which New Orleans swamp tour fits you?"
         intro="Both formats get you into South Louisiana wetlands, but the ride itself is very different. The covered pontoon option is a slower, all-ages wildlife and bayou tour with round-trip transportation. The airboats are faster, louder, open-air rides with a minimum age of 5 and more physical restrictions."
         verdict="Choose the covered pontoon if you want the calmer, all-ages option with more shelter from the weather. Choose an airboat if speed and open-air adventure are the point of the outing and everyone in your group meets the age and health restrictions."
-        left={{
-          heading: "Covered pontoon",
-          href: "/tours/swamp-bayou-tour",
-          cta: "View covered swamp tour",
-        }}
-        right={{
-          heading: "Airboat",
-          href: "/tours/small-airboat-swamp-adventure",
-          cta: "View small airboat",
-        }}
+        left={{ heading: "Covered pontoon", href: "/tours/swamp-bayou-tour", cta: "View covered swamp tour" }}
+        right={{ heading: "Airboat", href: "/tours/small-airboat-swamp-adventure", cta: "View small airboat" }}
         rows={[
           { label: "Published duration", left: "3 hours 45 minutes with round-trip transportation", right: "3 hours 45 minutes with round-trip transportation for both small and large airboat options" },
           { label: "Age rule", left: "All ages", right: "Ages 5+; children cannot sit on a lap" },
@@ -44,22 +36,19 @@ export default function CoveredBoatVsAirboatPage() {
           { label: "Best fit", left: "Families, mixed-age groups, photographers and travelers who prefer a calmer ride", right: "Travelers who specifically want speed, open-air marsh access and a more adventurous ride" },
         ]}
         bestFit={{
-          left: [
-            "Your group includes young children or a wide range of ages.",
-            "You want a slower ride with more cover from sun or rain.",
-            "Wildlife, Cajun culture and wetlands interpretation matter more than speed.",
-          ],
-          right: [
-            "Everyone is at least 5 and meets the operator's health/boarding requirements.",
-            "You want the faster, louder, more adventurous swamp experience.",
-            "You care about boat size: choose small for 6–12 passengers or large for 15–27.",
-          ],
+          left: ["Your group includes young children or a wide range of ages.", "You want a slower ride with more cover from sun or rain.", "Wildlife, Cajun culture and wetlands interpretation matter more than speed."],
+          right: ["Everyone is at least 5 and meets the operator's health/boarding requirements.", "You want the faster, louder, more adventurous swamp experience.", "You care about boat size: choose small for 6–12 passengers or large for 15–27."],
         }}
         cautions={[
           "Wildlife sightings are never guaranteed on either format.",
           "Airboats are not recommended by the operator for pregnant travelers or people with neck, back or heart conditions.",
           "Weather can affect airboat operation; the operator may shorten, postpone or substitute a covered boat.",
           "The included-transportation versions leave from 400 Toulouse Street; separate self-drive swamp products have different meeting points and shorter published activity durations.",
+        ]}
+        faq={[
+          { question: "Is a covered swamp boat better than an airboat for families?", answer: "Usually for mixed-age groups or younger children. The covered pontoon is the calmer all-ages format, while the checked airboat options require riders to be at least 5 and have additional health and boarding restrictions." },
+          { question: "Will I see more wildlife on an airboat?", answer: "No format can guarantee wildlife. Airboats cover the wetlands differently and add speed, while covered boats emphasize a slower ride. Choose by ride style and group fit rather than assuming one guarantees better sightings." },
+          { question: "Which swamp tour is better if rain is possible?", answer: "A covered boat gives you more shelter and is the safer planning default in unsettled weather. Airboat operation can be shortened, postponed or substituted when conditions are poor, so confirm the current operator status before leaving." },
         ]}
         sources={[
           { label: "Gray Line: Swamp & Bayou pontoon tour", href: "https://www.graylineneworleans.com/swamp-tours/swamp-bayou-tour/" },
@@ -69,9 +58,7 @@ export default function CoveredBoatVsAirboatPage() {
         verifiedDate="August 9, 2026"
       />
       <section className="mx-auto -mt-6 max-w-5xl px-6 pb-16 text-sm text-[#aaa]">
-        <p>
-          Want the larger airboat instead? <Link href="/tours/large-airboat-swamp-adventure" className="text-[#d4af37] underline underline-offset-4">See the large-airboat option</Link>.
-        </p>
+        <p>Want the larger airboat instead? <Link href="/tours/large-airboat-swamp-adventure" className="text-[#d4af37] underline underline-offset-4">See the large-airboat option</Link>.</p>
       </section>
     </>
   );
