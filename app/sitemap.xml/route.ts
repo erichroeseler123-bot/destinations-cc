@@ -29,6 +29,7 @@ const WTONOT_DECISION_GUIDES = [
 ] as const;
 
 const WTONOT_HIGH_INTENT_PATHS = [
+  "/guides",
   "/guides/plan-new-orleans-tours",
   "/guides/things-to-do-in-new-orleans-today",
   "/guides/new-orleans-tours-tonight",
