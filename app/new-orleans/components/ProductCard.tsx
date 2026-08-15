@@ -19,8 +19,10 @@ type AttributedProductCardProps = ProductCardProps & {
 function discoveryDescription(description: string | undefined, operatorName: string | undefined, showOperator: boolean) {
   if (!description || !operatorName || showOperator) return description;
   return description
-    .replace(new RegExp(`\\s+offered through ${operatorName.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}\\.?`, 'i'), '.')
-    .replace(new RegExp(`\\s+operated by ${operatorName.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}\\.?`, 'i'), '.')
+    .replace(` offered through ${operatorName}.`, '.')
+    .replace(` operated by ${operatorName}.`, '.')
+    .replace(` offered through ${operatorName}`, '')
+    .replace(` operated by ${operatorName}`, '')
     .replace(/\.\./g, '.')
     .trim();
 }
