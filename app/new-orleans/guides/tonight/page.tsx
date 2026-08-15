@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import LiveNightGuide from "../../components/LiveNightGuide";
+import DailyBriefSignup from "../../components/DailyBriefSignup";
 
 export const metadata: Metadata = {
   title: "What to Do in New Orleans Tonight | Live Events & Evening Tours",
@@ -50,6 +51,9 @@ export default function TonightGuidePage() {
         eyebrow="Tonight in New Orleans"
         intro="Start with what is actually happening around town tonight, then build dinner and the rest of the evening around it."
       />
+
+      <DailyBriefSignup source="tonight" />
+
       <section className="border-t border-[#d4af37]/20 bg-[#0b090c] px-6 py-14 text-[#fdfbf7]">
         <div className="mx-auto max-w-6xl">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">Tonight, simplified</p>
