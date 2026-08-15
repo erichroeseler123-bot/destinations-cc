@@ -23,5 +23,10 @@ export default function Page() {
       { href: "/help-me-choose", label: "Help me choose" },
       { href: "/things-to-do-in-new-orleans-today", label: "Already here today?" }
     ]}
+    faq={[
+      { question: "What tour should a first-time visitor do first in New Orleans?", answer: "A city overview is usually the strongest first move when you want context for neighborhoods, history and landmarks before exploring on your own. If your main priority is the Mississippi or the wetlands, use that priority instead of forcing a city tour into the plan." },
+      { question: "Can I do two major New Orleans tours in one day?", answer: "Sometimes, but only when the departure times, travel time and return windows actually fit. A city experience plus an evening river cruise can be easier to combine than two out-of-city excursions." },
+      { question: "Should a first-time visitor choose a swamp tour or a plantation tour?", answer: "Choose the swamp when the wetlands and boat experience are the draw. Choose a plantation visit when historical interpretation is the stronger priority and you are comfortable giving more of the day to an out-of-city trip." },
+    ]}
   />;
 }
