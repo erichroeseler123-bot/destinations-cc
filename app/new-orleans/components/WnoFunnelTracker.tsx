@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { trackEvent } from "@/lib/analytics";
 import { classifyWnoEntrySource } from "../lib/trafficSource";
 
 const TELEMETRY_URL = "https://www.destinationcommandcenter.com/api/wno/telemetry";
@@ -91,10 +92,39 @@ export default function WnoFunnelTracker() {
       const anchor = target.closest<HTMLAnchorElement>("a[href]");
       if (!anchor) return;
 
+      const href = anchor.getAttribute("href") || "";
+      const customEventName = anchor.dataset.wnoEvent;
+      const label = anchor.dataset.wnoLabel || (anchor.textContent || "").trim().replace(/\s+/g, " ").slice(0, 120);
+      const productSlug = anchor.dataset.wnoProduct;
+      const signal = anchor.dataset.wnoSignal;
+
+      if (customEventName) {
+        const eventPayload = {
+          surface: "welcome_to_new_orleans_tours",
+          page: window.location.pathname,
+          target_path: href,
+          cta_location: ctaLocation(anchor),
+          cta_label: label,
+          product_slug: productSlug,
+          signal,
+          entry_source: context.source,
+          entry_path: context.landingPath,
+        };
+        trackEvent(customEventName, eventPayload);
+        sendWnoTelemetry({
+          eventName: customEventName,
+          sourcePage: window.location.pathname,
+          targetPath: href,
+          ctaLocation: ctaLocation(anchor),
+          ctaLabel: label,
+          productSlug,
+          signal,
+        });
+      }
+
       // Managed CTA components emit the canonical event themselves with richer context.
       if (anchor.dataset.wnoManagedClick) return;
 
-      const href = anchor.getAttribute("href") || "";
       const eventName = classifyClick(href);
       if (!eventName) return;
 
@@ -103,7 +133,7 @@ export default function WnoFunnelTracker() {
         sourcePage: window.location.pathname,
         targetPath: href,
         ctaLocation: ctaLocation(anchor),
-        ctaLabel: (anchor.textContent || "").trim().replace(/\s+/g, " ").slice(0, 120),
+        ctaLabel: label,
       });
     };
 
