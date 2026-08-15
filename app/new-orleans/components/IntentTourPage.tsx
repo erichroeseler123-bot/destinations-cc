@@ -73,9 +73,9 @@ export default function IntentTourPage({
 
       <section id="tour-options" className="mx-auto max-w-6xl px-6 py-14">
         <div className="mb-8">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--nola-gold)]">Current participating options</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--nola-gold)]">Current tour options</p>
           <h2 className="mt-3 font-serif text-3xl md:text-4xl">Tours worth comparing for this plan</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--nola-text-muted)]">Schedules, live pricing, pickup details, eligibility and availability are controlled by the participating operator and confirmed during booking.</p>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--nola-text-muted)]">Schedules, live pricing, pickup details, eligibility and availability are confirmed during booking and can change by operator and departure.</p>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => product && (
