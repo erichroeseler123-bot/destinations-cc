@@ -136,7 +136,7 @@ export default function NewOrleansHomePage() {
               const product = productBySlug(pick.slug);
               if (!product) return null;
               return (
-                <Link key={pick.slug} href={`/new-orleans/tours/${pick.slug}`} className="group block border border-[var(--nola-border)] bg-[var(--nola-surface)] p-6 transition hover:border-[var(--nola-gold)]">
+                <Link key={pick.slug} href={`/tours/${pick.slug}`} className="group block border border-[var(--nola-border)] bg-[var(--nola-surface)] p-6 transition hover:border-[var(--nola-gold)]">
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--nola-gold)]">{pick.kicker}</p>
                   <h3 className={`mt-3 text-2xl text-[var(--nola-ivory)] ${visualStyles.accentFont}`}>{product.title}</h3>
                   <p className="mt-3 text-sm leading-6 text-[var(--nola-text-muted)]">{pick.note}</p>
