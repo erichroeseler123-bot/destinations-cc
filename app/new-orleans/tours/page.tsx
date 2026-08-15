@@ -14,6 +14,9 @@ import { NEW_ORLEANS_TOURS_PATH, METADATA, STOREFRONT_PRODUCTS } from "./pageCon
 import { headers } from "next/headers";
 import { generateCategorySchemaGraph } from "../lib/schema";
 
+const CURRENT_TOURS_DESCRIPTION =
+  "Browse 21 curated New Orleans experiences across river cruises, city tours, swamps, airboats, plantation history, walking tours, and full-day combinations, with concierge help when you want it.";
+
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
   const hostHeader = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "";
@@ -25,12 +28,12 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     applicationName: "Welcome to New Orleans Tours",
     title: METADATA.title,
-    description: METADATA.description,
+    description: CURRENT_TOURS_DESCRIPTION,
     keywords: METADATA.keywords,
     metadataBase: new URL(origin),
     alternates: { canonical },
-    openGraph: { siteName: "Welcome to New Orleans Tours", title: METADATA.title, description: METADATA.description, url: canonical, type: "website" },
-    twitter: { card: "summary_large_image", title: METADATA.title, description: METADATA.description },
+    openGraph: { siteName: "Welcome to New Orleans Tours", title: METADATA.title, description: CURRENT_TOURS_DESCRIPTION, url: canonical, type: "website" },
+    twitter: { card: "summary_large_image", title: METADATA.title, description: CURRENT_TOURS_DESCRIPTION },
   };
 }
 
@@ -53,8 +56,8 @@ export default async function NewOrleansToursPage() {
 
   const productItems = STOREFRONT_PRODUCTS.map((item) => ({ name: item.title, description: item.description, url: `${basePath}/tours/${item.slug}`, slug: item.slug, providerName: item.operatorName }));
   const pageSchema = isWto
-    ? buildWnoWebPageJsonLd({ path: "/tours", name: "Welcome To New Orleans Tours", description: METADATA.description })
-    : buildWebPageJsonLd({ path: NEW_ORLEANS_TOURS_PATH, name: "Welcome To New Orleans Tours", description: METADATA.description, isPartOfPath: "/new-orleans" });
+    ? buildWnoWebPageJsonLd({ path: "/tours", name: "Welcome To New Orleans Tours", description: CURRENT_TOURS_DESCRIPTION })
+    : buildWebPageJsonLd({ path: NEW_ORLEANS_TOURS_PATH, name: "Welcome To New Orleans Tours", description: CURRENT_TOURS_DESCRIPTION, isPartOfPath: "/new-orleans" });
   const breadcrumbSchema = isWto
     ? buildWnoBreadcrumbJsonLd([{ name: "New Orleans Tours", path: "/tours" }])
     : buildBreadcrumbJsonLd([{ name: "New Orleans", item: "/new-orleans" }, { name: "Tours", item: NEW_ORLEANS_TOURS_PATH }]);
@@ -66,7 +69,7 @@ export default async function NewOrleansToursPage() {
         "@graph": [
           pageSchema,
           breadcrumbSchema,
-          ...generateCategorySchemaGraph({ urlPath: isWto ? "/tours" : NEW_ORLEANS_TOURS_PATH, name: "Welcome To New Orleans Tours", description: METADATA.description, items: productItems.map((p: any) => ({ slug: p.slug, name: p.name, description: p.description, providerName: p.providerName })) })["@graph"],
+          ...generateCategorySchemaGraph({ urlPath: isWto ? "/tours" : NEW_ORLEANS_TOURS_PATH, name: "Welcome To New Orleans Tours", description: CURRENT_TOURS_DESCRIPTION, items: productItems.map((p: any) => ({ slug: p.slug, name: p.name, description: p.description, providerName: p.providerName })) })["@graph"],
         ],
       }} />
 
