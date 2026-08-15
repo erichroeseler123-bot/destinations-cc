@@ -3,6 +3,10 @@
     {
       "path": "/api/internal/hydrate-pipeline?key=aeb135f629cda8158eb0a62c949d28e7",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/wno/daily-brief",
+      "schedule": "5 * * * *"
     }
   ]
 }
