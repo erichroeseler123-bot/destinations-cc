@@ -8,6 +8,7 @@ type AuditResult = {
   status: number | null;
   routeOk: boolean;
   bookingLinkPresent: boolean;
+  bookingLinkCount: number;
   mappingPresent: boolean;
   error?: string;
 };
@@ -26,17 +27,21 @@ export default function LiveRouteAudit({ tours }: { tours: QaTour[] }) {
             headers: { "x-wno-qa": "route-audit" },
           });
           const html = await response.text();
-          const bookingLinkPresent = html.includes("fareharbor.com/embeds/book/");
+          const bookingLinkCount = (html.match(/fareharbor\.com\/embeds\/book\//g) ?? []).length;
+          const bookingLinkPresent = bookingLinkCount > 0;
           const mappingPresent = tour.itemId
             ? html.includes(`/items/${tour.itemId}/`)
             : tour.flowId
               ? html.includes(`flow=${tour.flowId}`) || html.includes(`flow%3D${tour.flowId}`)
-              : false;
+              : tour.variantCount > 0
+                ? bookingLinkCount >= tour.variantCount
+                : false;
           return [tour.slug, {
             slug: tour.slug,
             status: response.status,
             routeOk: response.ok,
             bookingLinkPresent,
+            bookingLinkCount,
             mappingPresent,
           }];
         } catch (error) {
@@ -45,6 +50,7 @@ export default function LiveRouteAudit({ tours }: { tours: QaTour[] }) {
             status: null,
             routeOk: false,
             bookingLinkPresent: false,
+            bookingLinkCount: 0,
             mappingPresent: false,
             error: error instanceof Error ? error.message : "Fetch failed",
           }];
@@ -64,7 +70,7 @@ export default function LiveRouteAudit({ tours }: { tours: QaTour[] }) {
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#c9a86a]">Automated production probe</p>
           <h2 className="mt-2 font-serif text-2xl text-[#f3dfb3]">Live 21-route booking audit</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#9d9587]">Checks each live detail route, confirms a direct FareHarbor link is rendered in HTML without requiring JavaScript, and verifies the configured item or flow mapping appears on the page.</p>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#9d9587]">Checks each live detail route, confirms direct FareHarbor links are rendered in HTML without requiring JavaScript, and verifies the configured item, flow, or variant mapping appears on the page.</p>
         </div>
         <button type="button" disabled={running} onClick={runAudit} className="border border-[#c9a86a] bg-[#c9a86a] px-5 py-3 text-xs font-bold uppercase tracking-[0.15em] text-[#17130c] disabled:opacity-50">
           {running ? "Running 21 checks…" : "Run live audit"}
@@ -83,6 +89,7 @@ export default function LiveRouteAudit({ tours }: { tours: QaTour[] }) {
                   <div>
                     <p className="text-sm font-semibold text-[#eee3cc]">{tour.title}</p>
                     <p className="mt-1 text-[10px] text-[#81796d]">/tours/{tour.slug}</p>
+                    {result && result.bookingLinkCount > 0 && <p className="mt-1 text-[10px] text-[#81796d]">{result.bookingLinkCount} FareHarbor link{result.bookingLinkCount === 1 ? "" : "s"} rendered</p>}
                   </div>
                   <div className="text-right text-[10px] uppercase tracking-[0.12em]">
                     {!result ? <span className="text-[#81796d]">Not run</span> : ok ? (
