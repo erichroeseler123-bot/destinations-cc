@@ -6,7 +6,9 @@ import { getWnoFunnelContext } from "./WnoFunnelTracker";
 
 const TELEMETRY_URL = "https://www.destinationcommandcenter.com/api/wno/telemetry";
 
-export default function DailyBriefSignup({ source }: { source: "today" | "tonight" | "guides" }) {
+export type DailyBriefSignupSource = "today" | "tonight" | "guides" | "home-intents" | "chooser-exit";
+
+export default function DailyBriefSignup({ source }: { source: DailyBriefSignupSource }) {
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
