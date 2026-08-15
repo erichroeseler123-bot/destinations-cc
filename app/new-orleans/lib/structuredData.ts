@@ -27,7 +27,7 @@ export function buildWnoSiteGraph() {
         url: WNO_ORIGIN,
         telephone: WNO_PHONE,
         description:
-          "New Orleans tour discovery, comparison, concierge help, and booking assistance for visitors choosing local tours and experiences.",
+          "Curated New Orleans experience recommendations, timely local context, concierge help, and direct booking assistance for visitors choosing what fits their group.",
         areaServed: {
           "@type": "City",
           name: "New Orleans",
