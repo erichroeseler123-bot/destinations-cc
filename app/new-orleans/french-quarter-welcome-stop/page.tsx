@@ -7,7 +7,7 @@ import { NEW_ORLEANS_ORIGIN } from '../tours/pageConfig';
 export const metadata: Metadata = {
   title: 'New Orleans Concierge Desk | Local Tour & Trip Help',
   description: 'Get personal help comparing New Orleans tours, timing, transportation, and what to do next. Call or text the New Orleans Concierge Desk.',
-  openGraph: { title: 'New Orleans Concierge Desk', description: 'Personal New Orleans planning help, tour comparisons, and a $5 French Quarter morning orientation.' },
+  openGraph: { title: 'New Orleans Concierge Desk', description: 'Personal New Orleans planning help, a $5 French Quarter morning orientation, and in-person concierge visits when available.' },
   alternates: { canonical: `${NEW_ORLEANS_ORIGIN}/french-quarter-welcome-stop` }
 };
 
@@ -18,12 +18,12 @@ export default function WelcomeStopPage() {
         eyebrow="A real person when you want one"
         title="New Orleans Concierge Desk"
         script="local help, right now"
-        intro="Need help deciding what to do? Tell us who's traveling, how much time you have, and what sounds good. We'll help you compare tours, timing and transportation without making you decode every booking page yourself."
+        intro="Need help deciding what to do? Tell us who's traveling, how much time you have, and what sounds good. We'll help you compare tours, timing and transportation — and when available, we can come to you for an in-person concierge visit."
         image="/images/travel-markets/new-orleans/french-quarter-street.jpg"
         actions={[
           { href: "tel:+15044849687", label: "Call the Desk", detail: "504-484-9687", primary: true },
           { href: "sms:+15044849687", label: "Text Us", detail: "Ask a quick planning question" },
-          { href: "/guides/french-quarter-orientation", label: "$5 Orientation", detail: "Start your morning with us" },
+          { href: "/guides/french-quarter-orientation", label: "$5 Orientation", detail: "30 minutes · 8:00 AM or 9:30 AM" },
         ]}
       />
 
@@ -36,11 +36,18 @@ export default function WelcomeStopPage() {
             <Link href="/guides/french-quarter-orientation" className="inline-flex border border-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#d4af37] hover:bg-[#d4af37] hover:text-[#151515]">See orientation details</Link>
           </div>
           <div className="relative overflow-hidden bg-[linear-gradient(145deg,#171419,#0b0a0c)] border border-[#d4af37]/32 p-7 shadow-xl shadow-black/20">
-            <p className="text-xs font-bold uppercase tracking-widest text-[#d4af37] mb-2">Personal planning help</p>
-            <h2 className="text-3xl font-bold mb-3">Call or text the desk</h2>
-            <p className="text-[#bbb0a1] text-sm leading-relaxed mb-5">Two tours fit? Not sure whether to do a swamp or river cruise? Need something before dinner? This is the human fallback for the decision engine.</p>
-            <div className="flex gap-3"><a href="tel:+15044849687" className="bg-[#d4af37] text-[#151515] px-5 py-3 text-xs font-bold uppercase tracking-widest">Call</a><a href="sms:+15044849687" className="border border-[#d4af37] text-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest">Text</a></div>
+            <p className="text-xs font-bold uppercase tracking-widest text-[#d4af37] mb-2">We’ll come to you</p>
+            <h2 className="text-3xl font-bold mb-3">Concierge visit where you are</h2>
+            <p className="text-[#bbb0a1] text-sm leading-relaxed mb-5">Want a person to help you sort out the day without coming to the desk first? Call or text us. When an in-person concierge visit is available, we’ll confirm the location and timing with you directly.</p>
+            <div className="flex flex-col sm:flex-row gap-3"><a href="tel:+15044849687" className="bg-[#d4af37] text-[#151515] px-5 py-3 text-xs font-bold uppercase tracking-widest text-center">Call 504-484-9687</a><a href="sms:+15044849687" className="border border-[#d4af37] text-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest text-center">Text for a visit</a></div>
           </div>
+        </div>
+
+        <div className="relative overflow-hidden bg-[linear-gradient(145deg,#171419,#0b0a0c)] border border-[#d4af37]/32 p-7 shadow-xl shadow-black/20 mb-10">
+          <p className="text-xs font-bold uppercase tracking-widest text-[#d4af37] mb-2">Personal planning help</p>
+          <h2 className="text-3xl font-bold mb-3">Call or text the desk</h2>
+          <p className="text-[#bbb0a1] text-sm leading-relaxed mb-5">Two tours fit? Not sure whether to do a swamp or river cruise? Need something before dinner? This is the human fallback for the decision engine.</p>
+          <div className="flex gap-3"><a href="tel:+15044849687" className="bg-[#d4af37] text-[#151515] px-5 py-3 text-xs font-bold uppercase tracking-widest">Call</a><a href="sms:+15044849687" className="border border-[#d4af37] text-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest">Text</a></div>
         </div>
 
         <div className="bg-[radial-gradient(circle_at_90%_10%,rgba(151,92,16,.16),transparent_30%),#111014] border-l-4 border-[#d4af37] border-y border-r border-y-[#d4af37]/20 border-r-[#d4af37]/20 p-7 md:p-9 mb-10">
