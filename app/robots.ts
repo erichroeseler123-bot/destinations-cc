@@ -1,6 +1,12 @@
 import type { MetadataRoute } from "next";
 import { GET as getLegacyRobotsResponse } from "./robots.txt/route";
 
+type RobotsRule = {
+  userAgent: string;
+  allow?: string[];
+  disallow?: string[];
+};
+
 function parseRobotsTxt(text: string): MetadataRoute.Robots {
   const blocks = text
     .trim()
@@ -8,7 +14,7 @@ function parseRobotsTxt(text: string): MetadataRoute.Robots {
     .map((block) => block.trim())
     .filter(Boolean);
 
-  const rules: NonNullable<MetadataRoute.Robots["rules"]> extends readonly (infer T)[] ? T[] : never = [];
+  const rules: RobotsRule[] = [];
   let sitemap: string | undefined;
 
   for (const block of blocks) {
