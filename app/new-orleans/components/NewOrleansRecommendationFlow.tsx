@@ -60,7 +60,7 @@ const CHOOSER_COMPLETED_AT = "wno_chooser_completed_at";
 const CHOOSER_RECOMMENDATION = "wno_chooser_recommendation";
 
 type BundleRecommendation = {
-  id: "city-jazz" | "swamp-plantation" | "food-ghosts";
+  id: "city-jazz" | "swamp-plantation" | "food-ghosts" | "city-whitney";
   title: string;
   reason: string;
   slugs: [string, string];
@@ -85,6 +85,12 @@ const BUNDLE_RECOMMENDATIONS: Record<BundleRecommendation["id"], BundleRecommend
     reason: "Keep the evening walkable: start with cocktail culture, then shift into haunted New Orleans after dark.",
     slugs: ["craft-cocktail-walking-tour", "ghosts-spirits-walking-tour"],
   },
+  "city-whitney": {
+    id: "city-whitney",
+    title: "City + Whitney Plantation",
+    reason: "Start with New Orleans context, then give the history-focused part of the day to Whitney when the schedule can support both.",
+    slugs: ["city-tour-of-new-orleans", "whitney-plantation-tour"],
+  },
 };
 
 const CITY_SLUGS = new Set(["city-tour-of-new-orleans", "city-cemetery-garden-district-tour"]);
@@ -104,6 +110,14 @@ function chooseBundle(inputs: RecommendationInputs, result: RecommendationResult
   if (!result.primary || inputs.availableTime === "About 3 hours") return null;
 
   const primarySlug = result.primary.slug;
+  if (
+    inputs.historicalInterest === "Strong interest"
+    && inputs.availableTime === "Most of the day"
+    && (CITY_SLUGS.has(primarySlug) || inputs.planningWindow === "A first New Orleans experience")
+  ) {
+    return BUNDLE_RECOMMENDATIONS["city-whitney"];
+  }
+
   if (inputs.mixedAges === "No" && AFTER_DARK_SLUGS.has(primarySlug)) {
     return BUNDLE_RECOMMENDATIONS["food-ghosts"];
   }
