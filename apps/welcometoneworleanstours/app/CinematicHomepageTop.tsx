@@ -27,11 +27,11 @@ export default function CinematicHomepageTop() {
               for your group
             </h1>
             <div className={styles.divider}><span /><b>⚜</b><span /></div>
-            <p className={styles.lede}>Compare participating local tours and experiences, check current times and prices, or tell us what kind of day you want and we&apos;ll help narrow the choices.</p>
+            <p className={styles.lede}>New Orleans is better when you choose the right experience. Tell us who you’re traveling with and what kind of day you want. We’ll narrow the city down to the experiences that actually fit.</p>
           </div>
         </div>
         <div className={styles.actions}>
-          <Link href="/guides/things-to-do-in-new-orleans-today" className={`${styles.action} ${styles.goldAction}`}><span className={styles.actionIcon}>⚜</span><span><strong>Find Something Today</strong><small>See what&apos;s available now</small></span><b>›</b></Link>
+          <Link href="/guides/things-to-do-in-new-orleans-today" className={`${styles.action} ${styles.goldAction}`}><span className={styles.actionIcon}>⚜</span><span><strong>Find Something Today</strong><small>See what fits right now</small></span><b>›</b></Link>
           <Link href="/help-me-choose" className={styles.action}><span className={styles.actionIcon}>✥</span><span><strong>Help Me Choose</strong><small>Answer a few questions</small></span><b>›</b></Link>
           <a href="tel:+15044849687" className={styles.action}><span className={styles.actionIcon}>☎</span><span><strong>Call or Text</strong><small>504-484-9687</small></span><b>›</b></a>
         </div>
@@ -42,7 +42,7 @@ export default function CinematicHomepageTop() {
         <div className={styles.categoryGrid}>
           {categories.map((category) => (
             <Link href={category.href} className={styles.categoryCard} key={category.title}>
-              <div className={styles.categoryImage}><img src={category.image} alt="" /></div>
+              <div className={styles.categoryImage}><img src={category.image} alt="" loading="lazy" /></div>
               <span className={styles.categoryIcon}>{category.icon}</span>
               <div className={styles.categoryText}><h3>{category.title}</h3><p>{category.copy}</p></div>
             </Link>
