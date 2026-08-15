@@ -1,4 +1,4 @@
-import { OFFICIAL_TOUR_FACTS } from "../data/officialTourFacts";
+import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 
 export type PlanningWindow =
   | "Something for today"
@@ -7,21 +7,9 @@ export type PlanningWindow =
   | "A family or mixed-age group"
   | "A group that needs help deciding";
 
-export type AvailableTime =
-  | "About 3 hours"
-  | "About half a day"
-  | "Most of the day";
-
-export type TransportationNeed =
-  | "We need pickup or transportation"
-  | "We can drive ourselves"
-  | "Not sure";
-
-export type GroupStyle =
-  | "Relaxed and comfortable"
-  | "Balanced"
-  | "Fast and adventurous";
-
+export type AvailableTime = "About 3 hours" | "About half a day" | "Most of the day";
+export type TransportationNeed = "We need pickup or transportation" | "We can drive ourselves" | "Not sure";
+export type GroupStyle = "Relaxed and comfortable" | "Balanced" | "Fast and adventurous";
 export type ChildrenOrMixedAges = "Yes" | "No";
 export type HistoricalInterest = "Strong interest" | "Some interest" | "Not the priority";
 
@@ -34,11 +22,20 @@ export interface RecommendationInputs {
   historicalInterest: HistoricalInterest | null;
 }
 
+export interface LiveRecommendationContext {
+  period?: "morning" | "afternoon" | "evening";
+  rainRisk?: "low" | "elevated" | "high";
+  heatRisk?: "low" | "elevated" | "high";
+  liveMusicSignal?: boolean;
+  outdoorFriendly?: boolean;
+}
+
 export interface TourRecord {
   slug: string;
   id: string;
   operator: string;
   experienceType: string;
+  category: string;
   pace: string;
   familyFit: string;
   transportationAvailable: string;
@@ -51,126 +48,66 @@ export interface TourRecord {
   verifiedTimeCommitmentLabel: string;
 }
 
-const CORE_TOUR_RECORDS: Record<string, TourRecord> = {
-  "city-tour-of-new-orleans": {
-    slug: "city-tour-of-new-orleans",
-    id: "southernstyle-city-tour",
-    operator: "Southern Style Tours",
-    experienceType: "City Overview",
-    pace: "Balanced",
-    familyFit: "Suitable for most ages",
-    transportationAvailable: "Yes (minibus)",
-    historicalDepth: "Some interest",
-    weatherExposure: "Mostly enclosed",
-    noiseLevel: "Low",
-    estimatedExperienceMinutes: null,
-    estimatedTotalCommitmentMinutes: null,
-    verifiedDurationLabel: "Duration varies by traffic and route. Check estimates during booking.",
-    verifiedTimeCommitmentLabel: "Complete time commitment varies with traffic and pickup route. Confirm during checkout.",
-  },
-  "oak-alley-or-laura-plantation-tour": {
-    slug: "oak-alley-or-laura-plantation-tour",
-    id: "southernstyle-plantation",
-    operator: "Southern Style Tours",
-    experienceType: "Plantation Tour",
-    pace: "Balanced",
-    familyFit: "Older children and adults",
-    transportationAvailable: "Yes (minibus)",
-    historicalDepth: "Strong interest",
-    weatherExposure: "Mixed indoor/outdoor",
-    noiseLevel: "Low",
-    estimatedExperienceMinutes: null,
-    estimatedTotalCommitmentMinutes: null,
-    verifiedDurationLabel: "Tour duration varies. Exact schedule confirmed during booking.",
-    verifiedTimeCommitmentLabel: "Pickup and return timing may make the complete outing longer. Confirm during checkout.",
-  },
-  "covered-tour-boat": {
-    slug: "covered-tour-boat",
-    id: "ragincajun-covered-boat",
-    operator: "Ragin Cajun Tours",
-    experienceType: "Swamp Tour",
-    pace: "Relaxed and comfortable",
-    familyFit: "Suitable for mixed ages",
-    transportationAvailable: "Confirm in checkout",
-    historicalDepth: "Not the priority",
-    weatherExposure: "Shaded / Covered boat",
-    noiseLevel: "Moderate",
-    estimatedExperienceMinutes: null,
-    estimatedTotalCommitmentMinutes: null,
-    verifiedDurationLabel: "Duration confirmed during booking.",
-    verifiedTimeCommitmentLabel: "Complete time commitment varies with the selected option and transportation. Confirm during checkout.",
-  },
-  "ragin-cajun-airboat-options": {
-    slug: "ragin-cajun-airboat-options",
-    id: "ragincajun-airboat",
-    operator: "Ragin Cajun Tours",
-    experienceType: "Airboat Ride",
-    pace: "Fast and adventurous",
-    familyFit: "Confirm child eligibility during checkout",
-    transportationAvailable: "Confirm in checkout",
-    historicalDepth: "Not the priority",
-    weatherExposure: "Open-air exposure",
-    noiseLevel: "Loud",
-    estimatedExperienceMinutes: null,
-    estimatedTotalCommitmentMinutes: null,
-    verifiedDurationLabel: "Duration confirmed during booking.",
-    verifiedTimeCommitmentLabel: "Complete time commitment varies with the selected option and transportation. Confirm during checkout.",
-  },
-  "all-day-city-plantation-combo": {
-    slug: "all-day-city-plantation-combo",
-    id: "southernstyle-city-plantation-combo",
-    operator: "Southern Style Tours",
-    experienceType: "City and Plantation Combo",
-    pace: "Full-day combination",
-    familyFit: "Ages 4 and older",
-    transportationAvailable: "Morning pickup included",
-    historicalDepth: "City and plantation history",
-    weatherExposure: "Varies by itinerary segment",
-    noiseLevel: "Confirm with operator",
-    estimatedExperienceMinutes: 480,
-    estimatedTotalCommitmentMinutes: 480,
-    verifiedDurationLabel: "8 hours",
-    verifiedTimeCommitmentLabel: "Plan for the full 8-hour combined experience.",
-  },
-  "covered-boat-plantation-combo": {
-    slug: "covered-boat-plantation-combo",
-    id: "ragincajun-covered-plantation-combo",
-    operator: "Ragin Cajun Airboat Tours",
-    experienceType: "Covered Boat and Plantation Combo",
-    pace: "Full-day combination",
-    familyFit: "Ages 5 and older; adult and child pricing types are available",
-    transportationAvailable: "Transportation and pickup included",
-    historicalDepth: "Plantation history and swamp experience",
-    weatherExposure: "Varies by itinerary segment",
-    noiseLevel: "Confirm with operator",
-    estimatedExperienceMinutes: 420,
-    estimatedTotalCommitmentMinutes: 420,
-    verifiedDurationLabel: "Approximately 7 hours",
-    verifiedTimeCommitmentLabel: "Plan for approximately 7 hours.",
-  },
+type Profile = {
+  minutes?: number;
+  pace?: "relaxed" | "balanced" | "adventurous";
+  family?: "good" | "neutral" | "adult";
+  history?: "strong" | "some" | "low";
+  exposure?: "covered" | "mixed" | "outdoor" | "indoor";
+  evening?: boolean;
+  morning?: boolean;
+  fullDay?: boolean;
+  music?: boolean;
+  cocktails?: boolean;
+  transportation?: "included" | "available" | "self" | "unknown";
 };
 
-export const TOUR_RECORDS: Record<string, TourRecord> = { ...CORE_TOUR_RECORDS };
+const PROFILES: Record<string, Profile> = {
+  "city-tour-of-new-orleans": { minutes: 180, pace: "balanced", family: "good", history: "some", exposure: "covered", transportation: "included" },
+  "oak-alley-or-laura-plantation-tour": { minutes: 330, pace: "balanced", family: "neutral", history: "strong", exposure: "mixed", transportation: "included" },
+  "covered-tour-boat": { minutes: 210, pace: "relaxed", family: "good", history: "low", exposure: "covered", morning: true, transportation: "available" },
+  "ragin-cajun-airboat-options": { minutes: 210, pace: "adventurous", family: "neutral", history: "low", exposure: "outdoor", morning: true, transportation: "available" },
+  "all-day-city-plantation-combo": { minutes: 480, pace: "balanced", family: "neutral", history: "strong", exposure: "mixed", fullDay: true, transportation: "included" },
+  "covered-boat-plantation-combo": { minutes: 420, pace: "relaxed", family: "neutral", history: "strong", exposure: "mixed", fullDay: true, transportation: "included" },
+  "evening-jazz-cruise": { minutes: 150, pace: "relaxed", family: "good", history: "low", exposure: "mixed", evening: true, music: true, transportation: "self" },
+  "daytime-jazz-cruise": { minutes: 150, pace: "relaxed", family: "good", history: "low", exposure: "mixed", music: true, transportation: "self" },
+  "sunday-jazz-brunch-cruise": { minutes: 180, pace: "relaxed", family: "good", history: "low", exposure: "mixed", morning: true, music: true, transportation: "self" },
+  "oak-alley-plantation-tour-grey-line": { minutes: 330, pace: "balanced", family: "neutral", history: "strong", exposure: "mixed", transportation: "included" },
+  "whitney-plantation-tour": { minutes: 330, pace: "balanced", family: "neutral", history: "strong", exposure: "mixed", transportation: "included" },
+  "swamp-bayou-tour": { minutes: 240, pace: "relaxed", family: "good", history: "low", exposure: "covered", morning: true, transportation: "included" },
+  "small-airboat-swamp-adventure": { minutes: 240, pace: "adventurous", family: "neutral", history: "low", exposure: "outdoor", morning: true, transportation: "included" },
+  "large-airboat-swamp-adventure": { minutes: 240, pace: "adventurous", family: "neutral", history: "low", exposure: "outdoor", morning: true, transportation: "included" },
+  "swamp-boat-oak-alley-combo": { minutes: 480, pace: "balanced", family: "neutral", history: "strong", exposure: "mixed", fullDay: true, transportation: "included" },
+  "swamp-boat-whitney-combo": { minutes: 480, pace: "balanced", family: "neutral", history: "strong", exposure: "mixed", fullDay: true, transportation: "included" },
+  "cocktail-walking-tour": { minutes: 150, pace: "balanced", family: "adult", history: "some", exposure: "outdoor", evening: true, cocktails: true, transportation: "self" },
+  "craft-cocktail-walking-tour": { minutes: 150, pace: "balanced", family: "adult", history: "some", exposure: "outdoor", evening: true, cocktails: true, transportation: "self" },
+  "ghosts-spirits-walking-tour": { minutes: 120, pace: "balanced", family: "neutral", history: "some", exposure: "outdoor", evening: true, transportation: "self" },
+  "city-cemetery-garden-district-tour": { minutes: 180, pace: "balanced", family: "good", history: "strong", exposure: "mixed", transportation: "included" },
+  "city-of-new-orleans-riverboat-cruise": { minutes: 75, pace: "relaxed", family: "good", history: "low", exposure: "mixed", transportation: "self" },
+};
 
-for (const [slug, facts] of Object.entries(OFFICIAL_TOUR_FACTS)) {
-  if (TOUR_RECORDS[slug]) continue;
-  TOUR_RECORDS[slug] = {
-    slug,
-    id: `official-${slug}`,
-    operator: facts.sourceLabel.split(" — ")[0] || "Gray Line New Orleans",
-    experienceType: "Operator-published tour",
-    pace: facts.pace,
-    familyFit: "Verify current age and accessibility requirements in checkout",
-    transportationAvailable: facts.transportation,
-    historicalDepth: "Verify with operator",
-    weatherExposure: facts.weatherExposure,
-    noiseLevel: facts.noiseLevel,
-    estimatedExperienceMinutes: null,
-    estimatedTotalCommitmentMinutes: null,
-    verifiedDurationLabel: facts.duration,
-    verifiedTimeCommitmentLabel: facts.completeTime,
-  };
-}
+export const TOUR_RECORDS: Record<string, TourRecord> = Object.fromEntries(
+  STOREFRONT_PRODUCTS.map((product) => {
+    const profile = PROFILES[product.slug] || {};
+    return [product.slug, {
+      slug: product.slug,
+      id: product.id,
+      operator: product.operatorName,
+      experienceType: product.title,
+      category: product.category,
+      pace: profile.pace || "balanced",
+      familyFit: profile.family === "adult" ? "Best for adults" : profile.family === "good" ? "Good for mixed ages" : "Check age requirements",
+      transportationAvailable: profile.transportation === "included" ? "Transportation included or described by operator" : profile.transportation === "available" ? "Transportation may be available" : profile.transportation === "self" ? "Meet at departure point" : "Confirm during booking",
+      historicalDepth: profile.history || "some",
+      weatherExposure: profile.exposure || "mixed",
+      noiseLevel: profile.pace === "adventurous" ? "Higher" : "Moderate",
+      estimatedExperienceMinutes: profile.minutes || null,
+      estimatedTotalCommitmentMinutes: profile.minutes || null,
+      verifiedDurationLabel: product.durationLabel || (profile.minutes ? `About ${Math.round(profile.minutes / 60)} hours` : "Confirm during booking"),
+      verifiedTimeCommitmentLabel: profile.fullDay ? "Plan for most of the day." : "Confirm current departure and return timing before booking.",
+    } satisfies TourRecord];
+  })
+);
 
 export interface RecommendationResult {
   primary: { slug: string; reasons: string[]; cautionReasons: string[] } | null;
@@ -178,102 +115,108 @@ export interface RecommendationResult {
   isNoFit: boolean;
 }
 
-export function evaluateRecommendation(inputs: RecommendationInputs): RecommendationResult {
+export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveRecommendationContext = {}): RecommendationResult {
   if (!inputs.availableTime || !inputs.transportation || !inputs.groupStyle || !inputs.mixedAges || !inputs.historicalInterest) {
     return { primary: null, isNoFit: true };
   }
 
-  let cityEligible = true;
-  let plantationEligible = true;
-  let coveredBoatEligible = true;
-  let airboatEligible = true;
+  const maxMinutes = inputs.availableTime === "About 3 hours" ? 210 : inputs.availableTime === "About half a day" ? 360 : 600;
+  const tonight = inputs.planningWindow === "Something for today" && live.period === "evening";
 
-  if (inputs.availableTime === "About 3 hours") {
-    plantationEligible = false;
-    coveredBoatEligible = false;
-    airboatEligible = false;
-  }
-  if (inputs.availableTime === "About half a day") plantationEligible = false;
-  if (inputs.historicalInterest === "Strong interest") {
-    coveredBoatEligible = false;
-    airboatEligible = false;
-  }
-  if (inputs.groupStyle === "Fast and adventurous") {
-    cityEligible = false;
-    plantationEligible = false;
-    coveredBoatEligible = false;
-  }
-  if (inputs.groupStyle === "Relaxed and comfortable") airboatEligible = false;
+  const ranked = STOREFRONT_PRODUCTS.map((product) => {
+    const profile = PROFILES[product.slug] || {};
+    const reasons: string[] = [];
+    const cautions: string[] = [];
+    let score = 0;
+    let eligible = true;
 
-  let cityScore = 0;
-  let plantationScore = 0;
-  let coveredBoatScore = 0;
-  let airboatScore = 0;
+    if (profile.minutes && profile.minutes > maxMinutes) eligible = false;
+    if (inputs.availableTime !== "Most of the day" && profile.fullDay) eligible = false;
+    if (tonight && (product.category.includes("Plantation") || product.category.includes("Swamp") || product.category.includes("Airboat") || profile.fullDay)) eligible = false;
 
-  if (inputs.planningWindow === "A first New Orleans experience") cityScore += 2;
-  if (inputs.availableTime === "About 3 hours") cityScore += 3;
-  if (inputs.historicalInterest === "Some interest") cityScore += 2;
-  if (inputs.transportation === "We need pickup or transportation" || inputs.transportation === "Not sure") cityScore += 1;
-  if (inputs.groupStyle === "Balanced") cityScore += 2;
+    if (inputs.groupStyle === "Relaxed and comfortable") {
+      if (profile.pace === "relaxed") { score += 5; reasons.push("Matches your preference for a relaxed, comfortable pace."); }
+      if (profile.pace === "adventurous") score -= 5;
+    }
+    if (inputs.groupStyle === "Balanced" && profile.pace === "balanced") { score += 4; reasons.push("Fits the balanced pace you selected."); }
+    if (inputs.groupStyle === "Fast and adventurous") {
+      if (profile.pace === "adventurous") { score += 6; reasons.push("Matches your preference for something faster and more adventurous."); }
+      if (profile.pace === "relaxed") score -= 2;
+    }
 
-  if (inputs.historicalInterest === "Strong interest") plantationScore += 4;
-  if (inputs.availableTime === "Most of the day") plantationScore += 3;
-  if (inputs.availableTime === "About half a day") plantationScore += 1;
+    if (inputs.mixedAges === "Yes") {
+      if (profile.family === "good") { score += 4; reasons.push("A stronger fit for a family or mixed-age group."); }
+      if (profile.family === "adult" || profile.cocktails) { score -= 8; cautions.push("This is primarily an adult-oriented experience."); }
+    }
 
-  if (inputs.groupStyle === "Relaxed and comfortable") coveredBoatScore += 3;
-  if (inputs.mixedAges === "Yes") coveredBoatScore += 2;
-  if (inputs.historicalInterest === "Not the priority") coveredBoatScore += 1;
+    if (inputs.historicalInterest === "Strong interest") {
+      if (profile.history === "strong") { score += 7; reasons.push("Strongly matches your interest in New Orleans and Louisiana history."); }
+      if (profile.history === "low") score -= 4;
+    } else if (inputs.historicalInterest === "Some interest" && (profile.history === "some" || profile.history === "strong")) {
+      score += 3;
+      reasons.push("Includes meaningful historical context without making history the only focus.");
+    } else if (inputs.historicalInterest === "Not the priority" && profile.history === "low") {
+      score += 3;
+    }
 
-  if (inputs.groupStyle === "Fast and adventurous") airboatScore += 3;
-  if (inputs.mixedAges === "No") airboatScore += 2;
-  if (inputs.historicalInterest === "Not the priority") airboatScore += 1;
+    if (inputs.planningWindow === "A first New Orleans experience") {
+      if (["city-tour-of-new-orleans", "evening-jazz-cruise", "daytime-jazz-cruise", "city-cemetery-garden-district-tour"].includes(product.slug)) {
+        score += 5;
+        reasons.push("A strong first-visit introduction to New Orleans.");
+      }
+    }
 
-  const sorted = [
-    { slug: "city-tour-of-new-orleans", score: cityScore, eligible: cityEligible },
-    { slug: "oak-alley-or-laura-plantation-tour", score: plantationScore, eligible: plantationEligible },
-    { slug: "covered-tour-boat", score: coveredBoatScore, eligible: coveredBoatEligible },
-    { slug: "ragin-cajun-airboat-options", score: airboatScore, eligible: airboatEligible },
-  ].filter((item) => item.eligible).sort((a, b) => b.score - a.score);
+    if (inputs.availableTime === "About 3 hours" && profile.minutes && profile.minutes <= 180) {
+      score += 4;
+      reasons.push("Fits comfortably inside the time you have available.");
+    }
+    if (inputs.availableTime === "Most of the day" && profile.fullDay) {
+      score += 5;
+      reasons.push("Makes good use of the larger block of time you have available.");
+    }
 
-  if (sorted.length === 0 || sorted[0].score === 0) return { primary: null, isNoFit: true };
+    if (inputs.transportation === "We need pickup or transportation") {
+      if (profile.transportation === "included") { score += 4; reasons.push("Transportation is built into or described with this experience."); }
+      if (profile.transportation === "self") score -= 2;
+    }
 
-  const primarySlug = sorted[0].slug;
-  const reasons: string[] = [];
-  const cautions: string[] = [];
+    if (live.period === "evening") {
+      if (profile.evening) score += 5;
+      if (profile.morning) score -= 3;
+    }
+    if (live.period === "morning" && profile.morning) score += 4;
+    if (live.liveMusicSignal && profile.music) { score += 4; reasons.push("The current live-music context makes this especially timely."); }
+    if ((live.rainRisk === "high" || live.rainRisk === "elevated") && profile.exposure === "outdoor") {
+      score -= live.rainRisk === "high" ? 7 : 3;
+      cautions.push("Current rain risk makes this more weather-sensitive.");
+    }
+    if (live.rainRisk === "high" && profile.exposure === "covered") score += 3;
+    if (live.heatRisk === "high" && profile.exposure === "outdoor") {
+      score -= 3;
+      cautions.push("Heat may make this less comfortable at the current time of day.");
+    }
+    if (live.outdoorFriendly && (profile.exposure === "outdoor" || profile.exposure === "mixed")) score += 2;
 
-  if (primarySlug === "city-tour-of-new-orleans") {
-    reasons.push("A great balanced introduction to the city.");
-    if (inputs.availableTime === "About 3 hours") reasons.push("Fits within your roughly 3-hour window.");
-    if (inputs.historicalInterest === "Some interest") reasons.push("Provides engaging historical context without taking the whole day.");
-    cautions.push("Traffic can affect exact durations and pickup routes.");
-  } else if (primarySlug === "oak-alley-or-laura-plantation-tour") {
-    reasons.push("Directly answers your strong historical interest.");
-    if (inputs.availableTime === "Most of the day") reasons.push("Matches your available time for a longer commitment.");
-    cautions.push("Confirm the selected plantation site and return timing in checkout.");
-  } else if (primarySlug === "covered-tour-boat") {
-    reasons.push("Offers a relaxed, comfortable ride format.");
-    if (inputs.mixedAges === "Yes") reasons.push("Generally a better fit for mixed-age groups.");
-    cautions.push("Check the operator checkout for live availability and exact transportation options.");
-  } else {
-    reasons.push("Matches your fast and adventurous preference.");
-    cautions.push("Final option, group size, eligibility, duration, and transportation details must be confirmed in checkout.");
-    if (inputs.mixedAges === "Yes") cautions.push("Verify age minimums and child eligibility in checkout before booking.");
-  }
+    return { slug: product.slug, score, eligible, reasons, cautions };
+  })
+    .filter((item) => item.eligible)
+    .sort((a, b) => b.score - a.score);
 
-  let secondary: { slug: string; reasons: string[] } | undefined;
-  if (sorted.length > 1 && sorted[1].score > 0) {
-    const slug = sorted[1].slug;
-    const secondaryReasons: string[] = [];
-    if (slug === "city-tour-of-new-orleans") secondaryReasons.push("The city tour also fits your available time, but offers a broad introduction rather than an outdoor or specialized experience.");
-    if (slug === "oak-alley-or-laura-plantation-tour") secondaryReasons.push("The plantation tour also offers a longer excursion, but focuses heavily on historical sites rather than nature or city overview.");
-    if (slug === "covered-tour-boat") secondaryReasons.push("A covered boat is also available, providing a calmer, shaded swamp experience instead of a high-speed ride.");
-    if (slug === "ragin-cajun-airboat-options") secondaryReasons.push("Airboats are also an option if you prefer a louder, faster, open-air experience.");
-    secondary = { slug, reasons: secondaryReasons };
-  }
+  if (!ranked.length || ranked[0].score <= 0) return { primary: null, isNoFit: true };
+
+  const primary = ranked[0];
+  const secondary = ranked.find((item, index) => index > 0 && item.score > 0 && item.slug !== primary.slug);
 
   return {
-    primary: { slug: primarySlug, reasons, cautionReasons: cautions },
-    secondary,
+    primary: {
+      slug: primary.slug,
+      reasons: primary.reasons.slice(0, 3).length ? primary.reasons.slice(0, 3) : ["This is the strongest overall fit for the combination of answers you gave us."],
+      cautionReasons: primary.cautions.slice(0, 2),
+    },
+    secondary: secondary ? {
+      slug: secondary.slug,
+      reasons: secondary.reasons.slice(0, 2).length ? secondary.reasons.slice(0, 2) : ["A strong alternative if you want a slightly different pace or format."],
+    } : undefined,
     isNoFit: false,
   };
 }
