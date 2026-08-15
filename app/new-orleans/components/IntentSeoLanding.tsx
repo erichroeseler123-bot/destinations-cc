@@ -55,7 +55,7 @@ export default function IntentSeoLanding({ config }: { config: IntentSeoLandingC
               <ProductCard
                 key={product.id}
                 attributionSource={FAREHARBOR_SOURCES.guide}
-                product={{ ...product, operatorAttribution: product.operatorName, isBookable: true, ctaLabel: "Check Times & Prices" } as any}
+                product={{ ...product, operatorAttribution: undefined, isBookable: true, ctaLabel: "Check Times & Prices" } as any}
               />
             ))}
           </div>

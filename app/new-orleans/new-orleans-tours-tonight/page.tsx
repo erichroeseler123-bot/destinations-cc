@@ -49,7 +49,7 @@ export default function NewOrleansToursTonightPage() {
               <ProductCard
                 key={product.id}
                 attributionSource={FAREHARBOR_SOURCES.home}
-                product={{ ...product, operatorAttribution: product.operatorName, isBookable: true, ctaLabel: "Check Times & Prices" } as any}
+                product={{ ...product, operatorAttribution: undefined, isBookable: true, ctaLabel: "Check Times & Prices" } as any}
               />
             ))}
           </div>

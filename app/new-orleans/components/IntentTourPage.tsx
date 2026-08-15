@@ -81,7 +81,7 @@ export default function IntentTourPage({
           {products.map((product) => product && (
             <ProductCard
               key={product.id}
-              product={{ ...product, operatorAttribution: product.operatorName, isBookable: true, ctaLabel: "Check Times & Prices" } as any}
+              product={{ ...product, operatorAttribution: undefined, isBookable: true, ctaLabel: "Check Times & Prices" } as any}
             />
           ))}
         </div>
