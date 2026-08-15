@@ -3,6 +3,7 @@ import Link from "next/link";
 import visualStyles from "./components/newOrleansVisual.module.css";
 import NewOrleansRecommendationFlow from "./components/NewOrleansRecommendationFlow";
 import LiveIntelligencePanel from "./components/LiveIntelligencePanel";
+import DailyBriefSignup from "./components/DailyBriefSignup";
 import { STOREFRONT_PRODUCTS } from "./tours/pageConfig";
 
 export const metadata = {
@@ -53,9 +54,7 @@ export default function NewOrleansHomePage() {
               <span className={`${visualStyles.homeHeadlineDisplay} ${visualStyles.displayFont}`}>for your group</span>
             </h1>
             <div className={visualStyles.homeDivider} aria-hidden="true"><span /><span className={visualStyles.homeFleur}>⚜</span><span /></div>
-            <p className={visualStyles.homeHeroCopy}>
-              New Orleans is better when you choose the right experience. Tell us who you’re traveling with and what kind of day you want. We’ll narrow the city down to the experiences that actually fit.
-            </p>
+            <p className={visualStyles.homeHeroCopy}>New Orleans is better when you choose the right experience. Tell us who you’re traveling with and what kind of day you want. We’ll narrow the city down to the experiences that actually fit.</p>
             <div className={visualStyles.homeHeroActions}>
               <Link href="/guides/things-to-do-in-new-orleans-today" data-wno-event="hero_cta_clicked" data-wno-label="Find Something Today" className="border border-[var(--nola-gold)] bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[var(--nola-ivory)]">Find Something Today</Link>
               <a href="#chooser" data-wno-event="hero_cta_clicked" data-wno-label="Help Me Choose" className="border border-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-ivory)]">Help Me Choose</a>
@@ -99,6 +98,8 @@ export default function NewOrleansHomePage() {
           </div>
         </div>
       </section>
+
+      <DailyBriefSignup source="home-intents" />
 
       <section id="chooser" className={visualStyles.homeChooserSection}>
         <div className={visualStyles.homeChooserInner}>
