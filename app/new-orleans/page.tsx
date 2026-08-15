@@ -32,7 +32,7 @@ const editorialPicks = [
   { slug: "covered-tour-boat", kicker: "Our pick when you want swamp without the speed", note: "A calmer, shaded way to get into the bayou — especially good for mixed-age groups." },
   { slug: "whitney-plantation-tour", kicker: "Our pick for understanding plantation history", note: "A history-focused visit centered on the lives and experiences of enslaved people." },
   { slug: "city-tour-of-new-orleans", kicker: "Our pick for a first afternoon", note: "A broad introduction to the city when you want context before exploring on your own." },
-  { slug: "craft-cocktail-walking-tour", kicker: "Our pick for cocktails with context", note: "A French Quarter evening that combines New Orleans drinking culture with local history." },
+  { slug: "craft-cocktail-walking-tour", kicker: "Our pick for a local food crawl", note: "A French Quarter walking option built around New Orleans cocktail culture, local history, and the flavor of the neighborhood." },
   { slug: "all-day-city-plantation-combo", kicker: "Our pick for an easy full day", note: "A city overview plus a plantation visit when you want one plan to carry the day." },
 ];
 
@@ -112,7 +112,7 @@ export default function NewOrleansHomePage() {
       <section className="border-y border-[var(--nola-border)] bg-[#0b0b0c] py-16">
         <div className="mx-auto w-[min(1240px,calc(100%-3rem))]">
           <p className={visualStyles.homeSectionEyebrow}>Live concierge notes</p>
-          <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>What’s happening in the next 48 hours</h2>
+          <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>What’s happening in New Orleans — next 48 hours</h2>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--nola-text-muted)]">Timely music, weather, and city context changes what we recommend. These signals feed the chooser instead of sitting here as decorative copy.</p>
           <LiveIntelligencePanel />
           <div className="mt-8"><a href="#chooser" className={visualStyles.homeGoldButton}>Not sure what fits? Help Me Choose</a></div>
@@ -151,7 +151,7 @@ export default function NewOrleansHomePage() {
             <div className={visualStyles.homeConciergePanel}>
               <div className={visualStyles.homeSectionEyebrow}>Welcome to New Orleans Tours</div>
               <h3 className={`${visualStyles.homePanelTitle} ${visualStyles.displayFont}`}>New Orleans Concierge Desk</h3>
-              <p className={visualStyles.homePanelCopy}>Already here and still deciding? Call or text for help with timing, transportation, group fit, and what makes sense right now.</p>
+              <p className={visualStyles.homePanelCopy}>Already here and still deciding? Start with the $5 French Quarter Orientation, call or text for help, or ask about a concierge visit where you’re staying when available.</p>
               <Link href="/french-quarter-welcome-stop" className={visualStyles.homeTextButton}>Visit the Concierge Desk</Link>
             </div>
             <div className={visualStyles.homeConciergePanelAlt}>

@@ -158,6 +158,11 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
     if (inputs.historicalInterest === "Strong interest") {
       if (profile.history === "strong") { score += 7; reasons.push("Strongly matches your interest in New Orleans and Louisiana history."); }
       if (profile.history === "low") score -= 4;
+      if (product.slug === "whitney-plantation-tour") {
+        score += 3;
+        reasons.push("Whitney is especially strong when understanding plantation history is the priority.");
+      }
+      if (product.slug === "city-cemetery-garden-district-tour") score += 2;
     } else if (inputs.historicalInterest === "Some interest" && (profile.history === "some" || profile.history === "strong")) {
       score += 3;
       reasons.push("Includes meaningful historical context without making history the only focus.");
@@ -192,6 +197,10 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
     }
     if (live.period === "morning" && profile.morning) score += 4;
     if (live.liveMusicSignal && profile.music) { score += 4; reasons.push("The current live-music context makes this especially timely."); }
+    if (live.period === "evening" && live.liveMusicSignal && product.slug === "evening-jazz-cruise") {
+      score += 5;
+      reasons.push("Evening timing plus a live-music signal makes the jazz cruise especially timely.");
+    }
     if ((live.rainRisk === "high" || live.rainRisk === "elevated") && profile.exposure === "outdoor") {
       score -= live.rainRisk === "high" ? 7 : 3;
       cautions.push("Current rain risk makes this more weather-sensitive.");
@@ -202,6 +211,28 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
       cautions.push("Heat may make this less comfortable at the current time of day.");
     }
     if (live.outdoorFriendly && (profile.exposure === "outdoor" || profile.exposure === "mixed")) score += 2;
+
+    const clearEnoughForOutdoors = live.rainRisk === "low" || live.outdoorFriendly;
+    if (
+      product.slug === "covered-tour-boat" &&
+      live.period === "morning" &&
+      clearEnoughForOutdoors &&
+      inputs.groupStyle === "Relaxed and comfortable" &&
+      inputs.mixedAges === "Yes"
+    ) {
+      score += 6;
+      reasons.push("A clear morning plus a relaxed mixed-age group is an especially strong match for the covered swamp boat.");
+    }
+
+    if (
+      ["ragin-cajun-airboat-options", "small-airboat-swamp-adventure", "large-airboat-swamp-adventure"].includes(product.slug) &&
+      (live.period === "morning" || live.period === "afternoon") &&
+      clearEnoughForOutdoors &&
+      inputs.groupStyle === "Fast and adventurous"
+    ) {
+      score += 5;
+      reasons.push("Clear daytime conditions strengthen the fit for an adventurous airboat option.");
+    }
 
     return { slug: product.slug, score, eligible, reasons, cautions };
   })
