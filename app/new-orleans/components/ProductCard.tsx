@@ -16,6 +16,15 @@ type AttributedProductCardProps = ProductCardProps & {
   attributionSource?: FareHarborSource;
 };
 
+function discoveryDescription(description: string | undefined, operatorName: string | undefined, showOperator: boolean) {
+  if (!description || !operatorName || showOperator) return description;
+  return description
+    .replace(new RegExp(`\\s+offered through ${operatorName.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}\\.?`, 'i'), '.')
+    .replace(new RegExp(`\\s+operated by ${operatorName.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}\\.?`, 'i'), '.')
+    .replace(/\.\./g, '.')
+    .trim();
+}
+
 export default function ProductCard({
   product,
   attributionSource = FAREHARBOR_SOURCES.guide,
@@ -31,6 +40,11 @@ export default function ProductCard({
   const detailHref = isApprovedProductSlug(product.slug)
     ? buildAttributedTourHref(product.slug, attributionSource)
     : `/tours/${product.slug}`;
+  const description = discoveryDescription(
+    product.description || (product as any).experience?.summary,
+    sourceProduct?.operatorName,
+    Boolean(product.operatorAttribution),
+  );
 
   return (
     <div className={`${visualStyles.productCard} group`}>
@@ -78,7 +92,7 @@ export default function ProductCard({
         )}
 
         <p className={visualStyles.productCardDescription}>
-          {product.description || (product as any).experience?.summary}
+          {description}
         </p>
 
         <div className={visualStyles.productCardFooter}>
