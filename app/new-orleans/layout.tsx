@@ -23,7 +23,7 @@ const newOrleansScriptFont = Pinyon_Script({
   variable: '--font-new-orleans-script',
 });
 
-const socialDescription = "Welcome to New Orleans Tours helps visitors compare local tours, get concierge help, and choose experiences that fit their group.";
+const socialDescription = "Welcome to New Orleans Tours helps visitors choose curated local experiences with timely recommendations, concierge help, and direct booking when they are ready.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://welcometoneworleanstours.com"),
