@@ -146,7 +146,13 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
 
     if (inputs.mixedAges === "Yes") {
       if (profile.family === "good") { score += 4; reasons.push("A stronger fit for a family or mixed-age group."); }
-      if (profile.family === "adult" || profile.cocktails) { score -= 8; cautions.push("This is primarily an adult-oriented experience."); }
+      if (profile.family === "adult" || profile.cocktails) {
+        score -= 8;
+        cautions.push("This is primarily an adult-oriented experience.");
+      } else if (profile.evening && profile.family !== "good") {
+        score -= 3;
+        cautions.push("This after-dark format may be a weaker fit for a mixed-age group.");
+      }
     }
 
     if (inputs.historicalInterest === "Strong interest") {
