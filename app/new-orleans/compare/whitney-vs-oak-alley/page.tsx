@@ -20,16 +20,8 @@ export default function WhitneyVsOakAlleyPage() {
       title="Whitney Plantation vs Oak Alley: which one should you visit?"
       intro="Both tours leave New Orleans for a roughly five-and-a-half-hour plantation visit, but the experiences are meaningfully different. Whitney is centered on the history of slavery through a self-paced audio experience, memorials and first-person narratives. Oak Alley combines slavery interpretation with a guided Big House visit, reconstructed cabins, sugarcane exhibits, gardens and the famous oak allee."
       verdict="Choose Whitney if your priority is a slavery-focused museum experience built around the lives and testimony of enslaved people. Choose Oak Alley if you want a broader historic-property visit with a guided Big House component, grounds, exhibits and the iconic oak-lined approach."
-      left={{
-        heading: "Whitney Plantation",
-        href: "/tours/whitney-plantation-tour",
-        cta: "View Whitney tour",
-      }}
-      right={{
-        heading: "Oak Alley",
-        href: "/tours/oak-alley-plantation-tour-grey-line",
-        cta: "View Oak Alley tour",
-      }}
+      left={{ heading: "Whitney Plantation", href: "/tours/whitney-plantation-tour", cta: "View Whitney tour" }}
+      right={{ heading: "Oak Alley", href: "/tours/oak-alley-plantation-tour-grey-line", cta: "View Oak Alley tour" }}
       rows={[
         { label: "Published duration", left: "5 hours 25 minutes", right: "5 hours 25 minutes" },
         { label: "Transportation", left: "Round-trip transportation from New Orleans is included", right: "Round-trip transportation from New Orleans is included" },
@@ -41,22 +33,19 @@ export default function WhitneyVsOakAlleyPage() {
         { label: "Best fit", left: "Visitors who want the strongest slavery-centered historical interpretation", right: "Visitors who want a broader historic-estate experience with architecture, grounds and multiple exhibits" },
       ]}
       bestFit={{
-        left: [
-          "You want slavery history to be the central subject, not a side exhibit.",
-          "You prefer a self-paced museum-style experience.",
-          "First-person narratives, memorials and restored outbuildings matter most to you.",
-        ],
-        right: [
-          "You want to see the famous oak allee and Greek Revival Big House.",
-          "You like a mix of guided interpretation and time to explore exhibits on your own.",
-          "You want gardens, sugarcane history, reconstructed cabins and additional property exhibits in one visit.",
-        ],
+        left: ["You want slavery history to be the central subject, not a side exhibit.", "You prefer a self-paced museum-style experience.", "First-person narratives, memorials and restored outbuildings matter most to you."],
+        right: ["You want to see the famous oak allee and Greek Revival Big House.", "You like a mix of guided interpretation and time to explore exhibits on your own.", "You want gardens, sugarcane history, reconstructed cabins and additional property exhibits in one visit."],
       }}
       cautions={[
         "Both tours require a significant time commitment outside central New Orleans.",
         "Whitney's gravel paths can matter for travelers with mobility limitations.",
         "Oak Alley's second-floor Big House area requires stairs, though a video alternative is provided for guests who cannot climb them.",
         "Schedules, policies and accessibility details can change; confirm the live operator details before checkout.",
+      ]}
+      faq={[
+        { question: "Is Whitney Plantation better than Oak Alley for learning about slavery?", answer: "Whitney is the stronger fit when slavery history, first-person narratives and memorial interpretation are your main priority. Oak Alley includes slavery interpretation too, but the overall visit also emphasizes the Big House, grounds and broader estate history." },
+        { question: "Which plantation is better for architecture and scenery?", answer: "Oak Alley is the stronger fit if the oak-lined approach, Greek Revival Big House, gardens and historic-estate setting are central to what you want from the visit." },
+        { question: "Can I visit Whitney and Oak Alley in the same short New Orleans stay?", answer: "Possibly, but each is a substantial out-of-city time commitment. If your trip is short, pick the property that best matches your historical interest rather than sacrificing most of two days to transportation and repeated plantation outings." },
       ]}
       sources={[
         { label: "Gray Line: Whitney Plantation", href: "https://www.graylineneworleans.com/all/swamp-and-bayou-tour/whitney-plantation-tour/" },
