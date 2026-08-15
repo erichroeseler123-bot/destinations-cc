@@ -6,9 +6,10 @@ export default function HomePage() {
   return (
     <>
       <CinematicHomepageTop />
-      <div className={styles.legacyTopHidden}>
+      <div className={`${styles.legacyTopHidden} wno-legacy-home-below`}>
         <WnoHome />
       </div>
+      <style>{`.wno-legacy-home-below [class*="homeHero"] + section{display:none!important}`}</style>
     </>
   );
 }
