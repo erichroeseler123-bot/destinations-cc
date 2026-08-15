@@ -48,7 +48,7 @@ export const INTENT_SEO_PAGES: IntentSeoPage[] = [
       ],
       productSlugs: ["city-tour-of-new-orleans", "daytime-jazz-cruise", "covered-tour-boat", "craft-cocktail-walking-tour", "evening-jazz-cruise"],
       productHeading: "Afternoon and early-evening starting points",
-      productIntro: "Use these to narrow the catalog, then confirm the exact departure and return timing with the participating operator.",
+      productIntro: "Use these to narrow the catalog, then confirm the exact departure and return timing with the tour operator.",
       relatedLinks: [
         { href: "/guides/new-orleans-tours-that-fit-before-dinner", label: "Tours before dinner" },
         { href: "/guides/new-orleans-tours-tonight", label: "Tours tonight" },
@@ -78,6 +78,11 @@ export const INTENT_SEO_PAGES: IntentSeoPage[] = [
         { href: "/guides/first-time-new-orleans-tours", label: "First-time visitors" },
         { href: "/guides/4-hours-in-new-orleans", label: "Only have four hours" },
         { href: "/guides/things-to-do-before-a-cruise-new-orleans", label: "Before a cruise" }
+      ],
+      faq: [
+        { question: "What should I prioritize with one day in New Orleans?", answer: "Choose one anchor based on what matters most to you: city context, the Mississippi River, the wetlands or a longer history-focused outing. Add a second timed experience only after the first tour's total travel and return window are clear." },
+        { question: "Can I do a city tour and an evening jazz cruise in one day?", answer: "Often that is one of the cleaner two-experience combinations because the city tour can provide daytime context and the evening cruise can anchor the night. Confirm the exact departure and return times for your date before booking both." },
+        { question: "Can I do a swamp tour and a plantation in one day?", answer: "Yes when you intentionally choose a coordinated combination or when separate schedules leave enough travel and transition time. Do not assume two standalone departures will connect cleanly." },
       ]
     }
   },
