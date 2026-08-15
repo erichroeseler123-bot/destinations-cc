@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ProductCard from "../components/ProductCard";
 import CinematicPageHero from "../components/CinematicPageHero";
+import DailyBriefSignup from "../components/DailyBriefSignup";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 import { FAREHARBOR_SOURCES } from "../lib/fareHarborAttribution";
 
@@ -91,6 +92,8 @@ export default function ThingsToDoTodayPage() {
           </div>
         </div>
       </section>
+
+      <DailyBriefSignup source="today" />
 
       <section className="border-t border-[#d4af37]/20 bg-[#0b090c] px-6 py-14">
         <div className="mx-auto max-w-5xl">
