@@ -57,9 +57,9 @@ export default function NewOrleansHomePage() {
               New Orleans is better when you choose the right experience. Tell us who you’re traveling with and what kind of day you want. We’ll narrow the city down to the experiences that actually fit.
             </p>
             <div className={visualStyles.homeHeroActions}>
-              <Link href="/guides/things-to-do-in-new-orleans-today" className="border border-[var(--nola-gold)] bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[var(--nola-ivory)]">Find Something Today</Link>
-              <a href="#chooser" className="border border-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-ivory)]">Help Me Choose</a>
-              <a href="tel:+15044849687" className={visualStyles.homeHeroPhoneAction}>Call or Text&nbsp; 504-484-9687</a>
+              <Link href="/guides/things-to-do-in-new-orleans-today" data-wno-event="hero_cta_clicked" data-wno-label="Find Something Today" className="border border-[var(--nola-gold)] bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[var(--nola-ivory)]">Find Something Today</Link>
+              <a href="#chooser" data-wno-event="hero_cta_clicked" data-wno-label="Help Me Choose" className="border border-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-ivory)]">Help Me Choose</a>
+              <a href="tel:+15044849687" data-wno-event="hero_cta_clicked" data-wno-label="Call or Text 504-484-9687" className={visualStyles.homeHeroPhoneAction}>Call or Text&nbsp; 504-484-9687</a>
             </div>
           </div>
         </div>
@@ -84,9 +84,9 @@ export default function NewOrleansHomePage() {
           </div>
           <div className={visualStyles.homeCategoryGrid}>
             {categoryLinks.map((category, index) => (
-              <Link key={`${category.label}-${index}`} href={category.href} className={visualStyles.homeCategoryCard}>
+              <Link key={`${category.label}-${index}`} href={category.href} data-wno-event="intent_tile_clicked" data-wno-label={category.label} className={visualStyles.homeCategoryCard}>
                 <div className={visualStyles.homeCategoryMedia}>
-                  <img src={category.image} alt="" />
+                  <img src={category.image} alt="" loading={index < 4 ? "eager" : "lazy"} />
                   <span className={visualStyles.homeCategoryIndex} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
                   <span className={visualStyles.homeCategoryArrow} aria-hidden="true">↗</span>
                 </div>
@@ -115,7 +115,7 @@ export default function NewOrleansHomePage() {
           <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>What’s happening in New Orleans — next 48 hours</h2>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--nola-text-muted)]">Timely music, weather, and city context changes what we recommend. These signals feed the chooser instead of sitting here as decorative copy.</p>
           <LiveIntelligencePanel />
-          <div className="mt-8"><a href="#chooser" className={visualStyles.homeGoldButton}>Not sure what fits? Help Me Choose</a></div>
+          <div className="mt-8"><a href="#chooser" data-wno-event="live_intelligence_chooser_clicked" data-wno-label="Not sure what fits? Help Me Choose" className={visualStyles.homeGoldButton}>Not sure what fits? Help Me Choose</a></div>
         </div>
       </section>
 
@@ -133,7 +133,7 @@ export default function NewOrleansHomePage() {
               const product = productBySlug(pick.slug);
               if (!product) return null;
               return (
-                <Link key={pick.slug} href={`/tours/${pick.slug}`} className="group block border border-[var(--nola-border)] bg-[var(--nola-surface)] p-6 transition hover:border-[var(--nola-gold)]">
+                <Link key={pick.slug} href={`/tours/${pick.slug}`} data-wno-event="editorial_pick_clicked" data-wno-product={pick.slug} data-wno-label={pick.kicker} className="group block border border-[var(--nola-border)] bg-[var(--nola-surface)] p-6 transition hover:border-[var(--nola-gold)]">
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--nola-gold)]">{pick.kicker}</p>
                   <h3 className={`mt-3 text-2xl text-[var(--nola-ivory)] ${visualStyles.accentFont}`}>{product.title}</h3>
                   <p className="mt-3 text-sm leading-6 text-[var(--nola-text-muted)]">{pick.note}</p>
@@ -152,13 +152,13 @@ export default function NewOrleansHomePage() {
               <div className={visualStyles.homeSectionEyebrow}>Welcome to New Orleans Tours</div>
               <h3 className={`${visualStyles.homePanelTitle} ${visualStyles.displayFont}`}>New Orleans Concierge Desk</h3>
               <p className={visualStyles.homePanelCopy}>Already here and still deciding? Start with the $5 French Quarter Orientation, call or text for help, or ask about a concierge visit where you’re staying when available.</p>
-              <Link href="/french-quarter-welcome-stop" className={visualStyles.homeTextButton}>Visit the Concierge Desk</Link>
+              <Link href="/french-quarter-welcome-stop" data-wno-event="concierge_desk_clicked" className={visualStyles.homeTextButton}>Visit the Concierge Desk</Link>
             </div>
             <div className={visualStyles.homeConciergePanelAlt}>
               <div className={visualStyles.homeSectionEyebrow}>Private Parties</div>
               <h3 className={`${visualStyles.homePanelTitle} ${visualStyles.displayFont}`}>Group Planning</h3>
               <p className={visualStyles.homePanelCopy}>Planning a family, wedding, or corporate group? Tell us the group and timing and we’ll help narrow the options.</p>
-              <Link href="/contact" className={visualStyles.homeTextButton}>Inquire About Groups</Link>
+              <Link href="/contact" data-wno-event="group_planning_clicked" className={visualStyles.homeTextButton}>Inquire About Groups</Link>
             </div>
           </div>
         </div>
