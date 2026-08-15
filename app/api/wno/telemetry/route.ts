@@ -19,6 +19,14 @@ function cleanEmail(value: unknown) {
   return email;
 }
 
+function cleanBoolean(value: unknown) {
+  return typeof value === "boolean" ? value : undefined;
+}
+
+function cleanNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
 function mapEventName(eventName: string) {
   if (CANONICAL_EVENTS.has(eventName)) return eventName;
   if (eventName.includes("booking") || eventName.includes("fareharbor")) return "booking_opened";
@@ -82,6 +90,27 @@ export async function POST(request: NextRequest) {
         signup_source: clean(body.signupSource),
         consent: clean(body.consent, 80),
         email,
+        product_name: clean(body.productName),
+        chooser_recommendation: clean(body.chooserRecommendation || body.primary_recommendation),
+        recommendation_match: cleanBoolean(body.recommendationMatch ?? body.recommendation_match),
+        recommendation_rank: clean(body.recommendationRank || body.recommendation_rank, 32),
+        chooser_to_booking_ms: cleanNumber(body.chooserToBookingMs ?? body.chooser_to_booking_ms),
+        bundle_id: clean(body.bundleId || body.bundle_id, 64),
+        bundle_products: clean(body.bundleProducts || body.bundle_products, 320),
+        bundle_position: cleanNumber(body.bundlePosition ?? body.bundle_position),
+        planning_window: clean(body.planningWindow || body.planning_window),
+        available_time: clean(body.availableTime || body.available_time),
+        transportation: clean(body.transportation),
+        group_style: clean(body.groupStyle || body.group_style),
+        mixed_ages: clean(body.mixedAges || body.mixed_ages, 32),
+        historical_interest: clean(body.historicalInterest || body.historical_interest),
+        live_period: clean(body.livePeriod || body.live_period, 32),
+        live_rain_risk: clean(body.liveRainRisk || body.live_rain_risk, 32),
+        live_music_signal: cleanBoolean(body.liveMusicSignal ?? body.live_music_signal),
+        live_outdoor_friendly: cleanBoolean(body.liveOutdoorFriendly ?? body.live_outdoor_friendly),
+        primary_recommendation: clean(body.primaryRecommendation || body.primary_recommendation),
+        secondary_recommendation: clean(body.secondaryRecommendation || body.secondary_recommendation),
+        no_fit: cleanBoolean(body.noFit ?? body.no_fit),
       },
     });
 
