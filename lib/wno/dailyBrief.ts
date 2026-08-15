@@ -8,6 +8,8 @@ const WNO_BASE_URL = "https://www.welcometoneworleanstours.com";
 const DCC_BASE_URL = "https://www.destinationcommandcenter.com";
 const CORRIDOR_ID = "wno-commerce";
 const BRIEF_SUBTYPE = "wno_48_hour_brief";
+const UNSUBSCRIBE_SUBTYPE = "wno_48_hour_brief_unsubscribed";
+const SENT_SUBTYPE = "wno_48_hour_brief_sent";
 
 type LiveContext = {
   generatedAt?: string;
@@ -58,17 +60,19 @@ export async function listActiveSubscribers(): Promise<Subscriber[]> {
   const state = new Map<string, Subscriber | null>();
 
   for (const event of events) {
-    if (event.corridorId !== CORRIDOR_ID) continue;
-    if (event.eventName !== "lead_captured" && event.eventName !== "lead_unsubscribed") continue;
+    if (event.corridorId !== CORRIDOR_ID || event.eventName !== "lead_captured") continue;
     const email = metadataEmail(event.metadata);
     if (!email || state.has(email)) continue;
 
-    if (event.eventName === "lead_unsubscribed") {
+    if (event.subtype === UNSUBSCRIBE_SUBTYPE) {
       state.set(email, null);
       continue;
     }
 
     const metadata = (event.metadata || {}) as Record<string, unknown>;
+    const isBriefOptIn = event.subtype === BRIEF_SUBTYPE || metadata.consent === "daily_brief_email";
+    if (!isBriefOptIn) continue;
+
     state.set(email, {
       email,
       signupSource: typeof metadata.signup_source === "string" ? metadata.signup_source : undefined,
@@ -82,7 +86,7 @@ export async function alreadySentToday(email: string, date = new Date()) {
   const key = localDateKey(date);
   const events = await listRecentCorridorEvents(20000);
   return events.some((event) => {
-    if (event.corridorId !== CORRIDOR_ID || event.eventName !== "brief_sent") return false;
+    if (event.corridorId !== CORRIDOR_ID || event.eventName !== "page_viewed" || event.subtype !== SENT_SUBTYPE) return false;
     const metadata = (event.metadata || {}) as Record<string, unknown>;
     return metadataEmail(metadata) === email.toLowerCase() && metadata.local_date === key;
   });
@@ -108,8 +112,8 @@ export async function unsubscribe(email: string) {
   const normalized = email.trim().toLowerCase();
   await appendCorridorEventDurably({
     corridor_id: CORRIDOR_ID,
-    event_name: "lead_unsubscribed",
-    subtype: BRIEF_SUBTYPE,
+    event_name: "lead_captured",
+    subtype: UNSUBSCRIBE_SUBTYPE,
     metadata: {
       email: normalized,
       consent: "daily_brief_email_revoked",
@@ -217,8 +221,8 @@ export async function sendDailyBriefs() {
 
     await appendCorridorEventDurably({
       corridor_id: CORRIDOR_ID,
-      event_name: "brief_sent",
-      subtype: BRIEF_SUBTYPE,
+      event_name: "page_viewed",
+      subtype: SENT_SUBTYPE,
       metadata: {
         email: subscriber.email,
         local_date: dateKey,
