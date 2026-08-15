@@ -17,6 +17,8 @@ export type SourceLink = {
   href: string;
 };
 
+type ComparisonFaq = { question: string; answer: string };
+
 export default function DecisionComparison({
   eyebrow,
   title,
@@ -29,6 +31,7 @@ export default function DecisionComparison({
   cautions,
   sources,
   verifiedDate,
+  faq = [],
 }: {
   eyebrow: string;
   title: string;
@@ -41,15 +44,31 @@ export default function DecisionComparison({
   cautions: string[];
   sources: SourceLink[];
   verifiedDate: string;
+  faq?: ComparisonFaq[];
 }) {
+  const faqSchema = faq.length ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })),
+  } : null;
+
   return (
     <article className="bg-[#151515] text-[#fdfbf7] min-h-screen">
+      {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
       <header className="border-b border-[#2a2a2a] bg-[#101010] px-6 py-14 md:py-20">
         <div className="mx-auto max-w-5xl">
           <p className="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-[#d4af37]">{eyebrow}</p>
           <h1 className="max-w-4xl font-[var(--font-accent)] text-4xl font-bold leading-tight md:text-6xl">{title}</h1>
           <p className="mt-6 max-w-3xl text-lg leading-relaxed text-[#cccccc]">{intro}</p>
           <p className="mt-5 text-xs uppercase tracking-[0.16em] text-[#888]">Facts last checked {verifiedDate}</p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Link href="#compare-heading" className="bg-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#151515]">See the comparison</Link>
+            <Link href="/help-me-choose" className="border border-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#d4af37]">Help Me Choose</Link>
+          </div>
         </div>
       </header>
 
@@ -101,6 +120,21 @@ export default function DecisionComparison({
           </ul>
         </section>
 
+        {faq.length > 0 && (
+          <section className="border-y border-[#333] py-10">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">Quick answers</p>
+            <h2 className="mt-3 font-[var(--font-accent)] text-3xl font-bold">Questions people ask before choosing</h2>
+            <div className="mt-7 grid gap-5 md:grid-cols-3">
+              {faq.map((item) => (
+                <article key={item.question} className="border border-[#333] bg-[#1a1a1a] p-5">
+                  <h3 className="text-xl font-bold">{item.question}</h3>
+                  <p className="mt-3 text-sm leading-6 text-[#ccc]">{item.answer}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className="border-t border-[#333] pt-8">
           <h2 className="text-lg font-bold">How we checked this comparison</h2>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[#aaa]">We compare the operator's current published details rather than guessing from generic tour descriptions. Prices, schedules, restrictions and operating details can change, so final booking details should always be confirmed at checkout.</p>
@@ -109,8 +143,11 @@ export default function DecisionComparison({
           </div>
         </section>
 
-        <nav className="border-t border-[#2a2a2a] pt-8 text-sm">
+        <nav className="border-t border-[#2a2a2a] pt-8 text-sm flex flex-wrap gap-4">
           <Link href="/tours" className="text-[#d4af37] underline underline-offset-4">Browse all New Orleans tours</Link>
+          <Link href="/guides/things-to-do-in-new-orleans-today" className="text-[#d4af37] underline underline-offset-4">Things to do today</Link>
+          <Link href="/guides/tonight" className="text-[#d4af37] underline underline-offset-4">What to do tonight</Link>
+          <Link href="/help-me-choose" className="text-[#d4af37] underline underline-offset-4">Help Me Choose</Link>
         </nav>
       </div>
     </article>

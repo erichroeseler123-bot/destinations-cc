@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
 
   const intentPage = getGovernedIntentPage(p.slug);
   if (intentPage) {
-    const canonical = `https://welcometoneworleanstours.com/guides/${intentPage.slug}`;
+    const canonical = `https://www.welcometoneworleanstours.com/guides/${intentPage.slug}`;
     return {
       title: intentPage.title,
       description: intentPage.description,

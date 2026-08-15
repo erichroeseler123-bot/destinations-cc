@@ -23,5 +23,10 @@ export default function Page() {
       { href: "/new-orleans-tours-tonight", label: "Tours tonight" },
       { href: "/help-me-choose", label: "Help me choose" }
     ]}
+    faq={[
+      { question: "What is the best thing to do with four hours in New Orleans?", answer: "Pick one anchor experience rather than stacking several timed activities. A city overview, a river cruise that fits your window, or an evening walking experience can work well when the departure and return timing leave a real buffer." },
+      { question: "Can I do a swamp tour with only four hours?", answer: "Usually that is a tight choice once transportation outside the city, check-in and return time are included. Use the operator's total published commitment rather than only the time spent on the boat." },
+      { question: "How much buffer should I leave after a short New Orleans tour?", answer: "Leave enough time for traffic, walking to the meeting point, check-in and any fixed flight, cruise, dinner or hotel deadline. A plan that only works if every segment runs exactly on time is too tight." },
+    ]}
   />;
 }

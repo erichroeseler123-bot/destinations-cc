@@ -3,6 +3,7 @@ import ProductCard from "./ProductCard";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 
 type IntentLink = { href: string; label: string };
+type IntentFaq = { question: string; answer: string };
 
 type IntentTourPageProps = {
   eyebrow: string;
@@ -12,6 +13,7 @@ type IntentTourPageProps = {
   decisionPoints: string[];
   productSlugs: string[];
   relatedLinks?: IntentLink[];
+  faq?: IntentFaq[];
 };
 
 const GOVERNED_INTENT_PATHS = new Set([
@@ -42,13 +44,25 @@ export default function IntentTourPage({
   decisionPoints,
   productSlugs,
   relatedLinks = [],
+  faq = [],
 }: IntentTourPageProps) {
   const products = productSlugs
     .map((slug) => STOREFRONT_PRODUCTS.find((product) => product.slug === slug))
     .filter(Boolean);
 
+  const faqSchema = faq.length ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })),
+  } : null;
+
   return (
     <div className="bg-[var(--nola-bg-charcoal)] text-[var(--nola-ivory)] min-h-screen">
+      {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
       <section className="mx-auto max-w-6xl px-6 pb-12 pt-16 md:pt-24">
         <p className="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]">{eyebrow}</p>
         <h1 className="max-w-4xl font-serif text-4xl leading-tight md:text-6xl">{title}</h1>
@@ -87,16 +101,34 @@ export default function IntentTourPage({
         </div>
       </section>
 
-      {relatedLinks.length > 0 && (
-        <section className="mx-auto max-w-6xl px-6 pb-16">
-          <div className="border-t border-[var(--nola-border)] pt-8">
-            <h2 className="font-serif text-2xl">Keep narrowing it down</h2>
-            <div className="mt-5 flex flex-wrap gap-3">
-              {relatedLinks.map((link) => <Link key={link.href} href={publicIntentHref(link.href)} className="border border-[var(--nola-border)] px-4 py-2 text-sm hover:border-[var(--nola-gold)]">{link.label}</Link>)}
+      {faq.length > 0 && (
+        <section className="border-y border-[var(--nola-border)] bg-[var(--nola-surface-subtle)] px-6 py-14">
+          <div className="mx-auto max-w-6xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--nola-gold)]">Quick answers</p>
+            <h2 className="mt-3 font-serif text-3xl md:text-4xl">Questions people ask before choosing</h2>
+            <div className="mt-8 grid gap-5 md:grid-cols-3">
+              {faq.map((item) => (
+                <article key={item.question} className="border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)] p-5">
+                  <h3 className="font-serif text-xl">{item.question}</h3>
+                  <p className="mt-3 text-sm leading-6 text-[var(--nola-text-muted)]">{item.answer}</p>
+                </article>
+              ))}
             </div>
           </div>
         </section>
       )}
+
+      <section className="mx-auto max-w-6xl px-6 py-14">
+        <div className="border-t border-[var(--nola-border)] pt-8">
+          <h2 className="font-serif text-2xl">Keep narrowing it down</h2>
+          <div className="mt-5 flex flex-wrap gap-3">
+            {relatedLinks.map((link) => <Link key={link.href} href={publicIntentHref(link.href)} className="border border-[var(--nola-border)] px-4 py-2 text-sm hover:border-[var(--nola-gold)]">{link.label}</Link>)}
+            <Link href="/guides/things-to-do-in-new-orleans-today" className="border border-[var(--nola-border)] px-4 py-2 text-sm hover:border-[var(--nola-gold)]">Things to do today</Link>
+            <Link href="/guides/tonight" className="border border-[var(--nola-border)] px-4 py-2 text-sm hover:border-[var(--nola-gold)]">What to do tonight</Link>
+            <Link href="/help-me-choose" className="bg-[var(--nola-gold)] px-4 py-2 text-sm font-bold text-[#171717]">Help Me Choose</Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
