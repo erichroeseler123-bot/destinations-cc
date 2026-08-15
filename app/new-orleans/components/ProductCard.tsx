@@ -56,6 +56,8 @@ export default function ProductCard({
             <img
               src={resolvedImage.src}
               alt={resolvedImage.alt}
+              loading="lazy"
+              decoding="async"
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div className={visualStyles.productCardImageShade}></div>
