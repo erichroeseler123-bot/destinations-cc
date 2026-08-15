@@ -102,7 +102,7 @@ export default async function NewOrleansToursPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {sectionProducts.map((product) => (
-                    <ProductCard key={product.id} product={{ ...product, operatorAttribution: product.operatorName, isBookable: true, ctaLabel: "View Details" } as any} />
+                    <ProductCard key={product.id} product={{ ...product, operatorAttribution: undefined, isBookable: true, ctaLabel: "View Details" } as any} />
                   ))}
                 </div>
               </section>
