@@ -29,7 +29,7 @@ export function HeaderNav() {
   return (
     <>
       <header className={visualStyles.marketHeader}>
-        <div className={visualStyles.marketHeaderInner}>
+        <div className={`${visualStyles.marketHeaderInner} relative`}>
           <Link href="/" className={visualStyles.marketBrand} aria-label="Welcome to New Orleans Tours">
             <span className={`${visualStyles.marketBrandWelcome} ${visualStyles.scriptFont}`}>Welcome to</span>{' '}
             <span className={`${visualStyles.marketBrandCity} ${visualStyles.accentFont}`}>New Orleans</span>{' '}
@@ -49,6 +49,10 @@ export function HeaderNav() {
               <span className={visualStyles.marketPhoneNumber}>504-484-9687</span>
             </PhoneCta>
           </div>
+          <PhoneCta placement="WTONOT-HEADER-PHONE-MOBILE" isGroup className="md:hidden absolute right-14 top-1/2 -translate-y-1/2 flex flex-col items-end leading-none text-[#fdfbf7]">
+            <span className="text-[8px] font-bold uppercase tracking-[0.08em] text-[#fdfbf7]/70">Call or text</span>
+            <span className="mt-1 text-[11px] font-black tracking-[0.02em] text-[#e3a72f]">504-484-9687</span>
+          </PhoneCta>
           <button onClick={toggle} className={visualStyles.marketMenuButton} aria-label="Toggle menu" aria-expanded={isOpen}>
             <div className="w-6 h-px bg-[#c7a96b]"></div>
             <div className="w-6 h-px bg-[#c7a96b]"></div>
