@@ -2,19 +2,10 @@
 
 import React, { useEffect, useMemo, useRef } from "react";
 import {
-  buildFareHarborLightframeOptions,
   getExpectedFareHarborAsn,
   normalizeFareHarborFallbackHref,
   type FareHarborSource,
 } from "../lib/fareHarborAttribution";
-
-declare global {
-  interface Window {
-    FH?: {
-      open: (options: any) => boolean;
-    };
-  }
-}
 
 export interface FareHarborBookingButtonProps {
   productTitle?: string;
@@ -42,8 +33,6 @@ export default function FareHarborBookingButton({
   asn,
   refCode,
   fallbackHref,
-  scheduleUuid,
-  fullItems,
   placement,
   className = "",
   onBookingClick,
@@ -55,9 +44,9 @@ export default function FareHarborBookingButton({
     () => normalizeFareHarborFallbackHref({
       href: fallbackHref,
       shortname,
-      requestedAsn: asn,
+      requestedAsn: effectiveAsn,
     }),
-    [fallbackHref, shortname, asn],
+    [fallbackHref, shortname, effectiveAsn],
   );
 
   const trackEvent = (eventName: string) => {
@@ -74,15 +63,9 @@ export default function FareHarborBookingButton({
     };
 
     if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent(eventName, { detail: eventData })
-      );
-
+      window.dispatchEvent(new CustomEvent(eventName, { detail: eventData }));
       const dataLayer = (window as any).dataLayer || [];
-      dataLayer.push({
-        event: eventName,
-        ...eventData,
-      });
+      dataLayer.push({ event: eventName, ...eventData });
     }
   };
 
@@ -96,55 +79,25 @@ export default function FareHarborBookingButton({
           observer.disconnect();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     observer.observe(buttonRef.current);
-
     return () => observer.disconnect();
   }, [productSlug, placement, effectiveFallbackHref]);
 
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleClick = () => {
     trackEvent("fareharbor_cta_clicked");
+    trackEvent("fareharbor_direct_fallback_used");
     if (onBookingClick) onBookingClick();
-
-    if (e.ctrlKey || e.shiftKey || e.metaKey || e.altKey || buttonRef.current?.target === "_blank") {
-      trackEvent("fareharbor_direct_fallback_used");
-      return;
-    }
-
-    if (typeof window.FH === "undefined" || typeof window.FH.open !== "function") {
-      trackEvent("fareharbor_script_failed");
-      trackEvent("fareharbor_direct_fallback_used");
-      return;
-    }
-
-    trackEvent("fareharbor_open_attempted");
-
-    const fhOptions = buildFareHarborLightframeOptions({
-      shortname,
-      asn: effectiveAsn,
-      itemId,
-      flowId,
-      source: refCode,
-      scheduleUuid,
-      fullItems,
-    });
-
-    const opened = window.FH.open(fhOptions);
-
-    if (opened) {
-      e.preventDefault();
-      trackEvent("fareharbor_open_succeeded");
-    } else {
-      trackEvent("fareharbor_direct_fallback_used");
-    }
   };
 
   return (
     <a
       ref={buttonRef}
       href={effectiveFallbackHref}
+      target="_blank"
+      rel="noopener noreferrer"
       onClick={handleClick}
       className={className}
     >
