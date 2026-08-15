@@ -18,6 +18,9 @@ import ThisWeekend from "@/app/new-orleans/guides/this-weekend/page";
 import Tonight from "@/app/new-orleans/guides/tonight/page";
 import KidsUnderSix from "@/app/new-orleans/guides/best-new-orleans-tours-with-kids-under-6/page";
 import ArriveAtNoon from "@/app/new-orleans/guides/best-new-orleans-tours-if-you-arrive-at-noon/page";
+import PlanNewOrleans, { metadata as planNewOrleansMetadata } from "@/app/new-orleans/high-intent-tours/page";
+import BeforeCruise, { metadata as beforeCruiseMetadata } from "@/app/new-orleans/things-to-do-before-a-cruise-new-orleans/page";
+import AfterCruise, { metadata as afterCruiseMetadata } from "@/app/new-orleans/things-to-do-after-a-cruise-new-orleans/page";
 
 const guideAliases = {
   "french-quarter-tour-timing": "french-quarter-orientation",
@@ -28,6 +31,18 @@ const guideAliases = {
 const directAliases = {
   "tour-planning": "/help-me-choose",
 } as const;
+
+const bridgedMetadata: Record<string, Metadata> = {
+  "plan-new-orleans-tours": planNewOrleansMetadata,
+  "things-to-do-before-a-cruise-new-orleans": {
+    ...beforeCruiseMetadata,
+    alternates: { canonical: "/guides/things-to-do-before-a-cruise-new-orleans" },
+  },
+  "things-to-do-after-a-cruise-new-orleans": {
+    ...afterCruiseMetadata,
+    alternates: { canonical: "/guides/things-to-do-after-a-cruise-new-orleans" },
+  },
+};
 
 export async function generateMetadata({ params }: { params: Promise<{ slug?: string }> }): Promise<Metadata> {
   const resolved = await params;
@@ -41,6 +56,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug?: st
       robots: { index: false, follow: true },
     };
   }
+
+  if (slug && bridgedMetadata[slug]) return bridgedMetadata[slug];
 
   const canonicalSlug = slug && guideAliases[slug as keyof typeof guideAliases]
     ? guideAliases[slug as keyof typeof guideAliases]
@@ -66,6 +83,9 @@ const pages = {
   "tonight": Tonight,
   "best-new-orleans-tours-with-kids-under-6": KidsUnderSix,
   "best-new-orleans-tours-if-you-arrive-at-noon": ArriveAtNoon,
+  "plan-new-orleans-tours": PlanNewOrleans,
+  "things-to-do-before-a-cruise-new-orleans": BeforeCruise,
+  "things-to-do-after-a-cruise-new-orleans": AfterCruise,
 } as const;
 
 export default async function GuideBridgePage({ params }: { params: Promise<{ slug: string }> }) {
