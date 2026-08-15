@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import visualStyles from "./components/newOrleansVisual.module.css";
 import NewOrleansRecommendationFlow from "./components/NewOrleansRecommendationFlow";
+import LiveIntelligencePanel from "./components/LiveIntelligencePanel";
 import { STOREFRONT_PRODUCTS } from "./tours/pageConfig";
 
 export const metadata = {
@@ -112,12 +113,8 @@ export default function NewOrleansHomePage() {
         <div className="mx-auto w-[min(1240px,calc(100%-3rem))]">
           <p className={visualStyles.homeSectionEyebrow}>Live concierge notes</p>
           <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>What’s happening in the next 48 hours</h2>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--nola-text-muted)]">Timely music, weather, river, swamp, and city context belongs here because it can change what we recommend — not because you need another events calendar.</p>
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            <LiveNote label="Tonight" title="Build the evening around what’s actually happening." text="Live music and notable city events can move jazz, cocktails, ghosts, or river experiences higher in your recommendations." />
-            <LiveNote label="Weather" title="Conditions change the better choice." text="Heat and rain should change the balance between airboats, covered boats, walking tours, city rides, and river time." />
-            <LiveNote label="Concierge Pick" title="One recommendation, not a wall of listings." text="We’ll use the live context plus your answers to surface the best fit and one strong alternative." />
-          </div>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--nola-text-muted)]">Timely music, weather, and city context changes what we recommend. These signals feed the chooser instead of sitting here as decorative copy.</p>
+          <LiveIntelligencePanel />
           <div className="mt-8"><a href="#chooser" className={visualStyles.homeGoldButton}>Not sure what fits? Help Me Choose</a></div>
         </div>
       </section>
@@ -166,16 +163,6 @@ export default function NewOrleansHomePage() {
           </div>
         </div>
       </section>
-    </div>
-  );
-}
-
-function LiveNote({ label, title, text }: { label: string; title: string; text: string }) {
-  return (
-    <div className="border border-[var(--nola-border)] bg-[var(--nola-surface)] p-5">
-      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--nola-gold)]">{label}</p>
-      <h3 className="mt-2 text-xl font-semibold text-[var(--nola-ivory)]">{title}</h3>
-      <p className="mt-2 text-sm leading-6 text-[var(--nola-text-muted)]">{text}</p>
     </div>
   );
 }
