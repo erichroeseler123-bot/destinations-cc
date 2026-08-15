@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   evaluateRecommendation,
+  LiveRecommendationContext,
   RecommendationInputs,
   RecommendationResult,
   TOUR_RECORDS,
@@ -57,6 +58,27 @@ export default function NewOrleansRecommendationFlow() {
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState<Partial<RecommendationInputs>>({});
   const [result, setResult] = useState<RecommendationResult | null>(null);
+  const [liveContext, setLiveContext] = useState<LiveRecommendationContext>({});
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/live-context", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((value) => {
+        if (!active || !value) return;
+        setLiveContext({
+          period: value.period,
+          rainRisk: value.rainRisk,
+          heatRisk: value.heatRisk,
+          liveMusicSignal: Boolean(value.liveMusicSignal),
+          outdoorFriendly: Boolean(value.outdoorFriendly),
+        });
+      })
+      .catch(() => {
+        // Fail soft: the chooser remains usable from traveler answers alone.
+      });
+    return () => { active = false; };
+  }, []);
 
   const currentStepId = STEPS[stepIndex];
   const currentQuestion = QUESTIONS[currentStepId];
@@ -68,7 +90,7 @@ export default function NewOrleansRecommendationFlow() {
       setStepIndex(stepIndex + 1);
       return;
     }
-    setResult(evaluateRecommendation(nextAnswers as RecommendationInputs));
+    setResult(evaluateRecommendation(nextAnswers as RecommendationInputs, liveContext));
   };
 
   const restart = () => {
@@ -86,7 +108,7 @@ export default function NewOrleansRecommendationFlow() {
   const getTourHref = (slug: string) =>
     isApprovedProductSlug(slug)
       ? buildAttributedTourHref(slug, FAREHARBOR_SOURCES.recommendation, slug)
-      : `/new-orleans/tours/${slug}`;
+      : `/tours/${slug}`;
 
   if (result) {
     return (
