@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { trackEvent } from "@/lib/analytics";
+import { captureDccTravelerContext, getStoredDccTravelerContext } from "@/lib/dcc/travelerContext";
 import { classifyWnoEntrySource } from "../lib/trafficSource";
 
 const TELEMETRY_URL = "https://www.destinationcommandcenter.com/api/wno/telemetry";
@@ -40,6 +41,7 @@ export function getWnoFunnelContext() {
     sessionId,
     landingPath: sessionStorage.getItem(ENTRY_PATH_KEY) || window.location.pathname,
     source: sessionStorage.getItem(ENTRY_SOURCE_KEY) || "wtonot-unknown",
+    dccContext: getStoredDccTravelerContext(),
   };
 }
 
@@ -47,7 +49,7 @@ export function sendWnoTelemetry(event: Record<string, unknown>) {
   if (typeof window === "undefined") return;
   const context = getWnoFunnelContext();
   if (!context) return;
-  const body = JSON.stringify({ ...event, ...context });
+  const body = JSON.stringify({ ...event, ...context, dccContext: context.dccContext || undefined });
   fetch(TELEMETRY_URL, {
     method: "POST",
     mode: "no-cors",
@@ -60,6 +62,7 @@ export function sendWnoTelemetry(event: Record<string, unknown>) {
 export default function WnoFunnelTracker() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const inboundDccContext = captureDccTravelerContext(window.location.search);
     const context = getWnoFunnelContext();
     if (!context) return;
 
@@ -74,6 +77,14 @@ export default function WnoFunnelTracker() {
           referrer: document.referrer,
         }),
       );
+    }
+
+    if (inboundDccContext) {
+      sendWnoTelemetry({
+        eventName: "dcc_context_received",
+        sourcePage: window.location.pathname,
+        dccContext: inboundDccContext,
+      });
     }
 
     if (!sessionStorage.getItem(LANDING_SENT_KEY)) {
