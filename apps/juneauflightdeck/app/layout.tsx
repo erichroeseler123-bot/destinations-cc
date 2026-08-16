@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PartnerAnalyticsScript from "./components/PartnerAnalyticsScript";
 import SiteFooter from "./components/SiteFooter";
 import SiteHeader from "./components/SiteHeader";
+import DccNetworkBridge from "./components/DccNetworkBridge";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -69,6 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
+        <DccNetworkBridge />
         <PartnerAnalyticsScript />
         <script
           type="application/ld+json"
