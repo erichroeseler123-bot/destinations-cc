@@ -33,7 +33,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <h1 className="text-3xl font-black">Admin Unlock</h1>
           <p className="mt-2 text-zinc-300">Enter your admin access key to continue.</p>
           <form action="/admin/unlock" method="post" className="mt-6 space-y-3">
-            <input type="hidden" name="next" value="/admin/argo-waitlist" />
+            <input type="hidden" name="next" value="/admin/portfolio" />
             <input
               type="password"
               name="key"
@@ -56,11 +56,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <div>
       <div className="border-b border-white/10 bg-zinc-950/90 px-6 py-3 text-sm text-zinc-300">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <span>Admin area</span>
-            <Link href="/admin/argo-waitlist" className="text-zinc-200 hover:text-white">
-              Argo Waitlist
+            <Link href="/admin/portfolio" className="font-semibold text-[#f5c66c] hover:text-white">
+              Portfolio Desktop
             </Link>
             <Link href="/admin/live-pulse" className="text-zinc-200 hover:text-white">
               Live Pulse
@@ -68,8 +68,14 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <Link href="/admin/satellite-handoffs" className="text-zinc-200 hover:text-white">
               Satellite Handoffs
             </Link>
+            <Link href="/admin/argo-waitlist" className="text-zinc-200 hover:text-white">
+              Argo Waitlist
+            </Link>
+            <Link href="/command" className="text-zinc-200 hover:text-white">
+              Command View
+            </Link>
           </div>
-          <Link href="/admin/logout" className="text-zinc-200 hover:text-white">
+          <Link href="/admin/logout" className="shrink-0 text-zinc-200 hover:text-white">
             Log out
           </Link>
         </div>
