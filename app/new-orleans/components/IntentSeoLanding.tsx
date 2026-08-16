@@ -16,7 +16,13 @@ export type IntentSeoLandingConfig = {
   faq?: Array<{ question: string; answer: string }>;
 };
 
-export default function IntentSeoLanding({ config }: { config: IntentSeoLandingConfig }) {
+export default function IntentSeoLanding({
+  config,
+  showHero = true,
+}: {
+  config: IntentSeoLandingConfig;
+  showHero?: boolean;
+}) {
   const products = config.productSlugs
     .map((slug) => STOREFRONT_PRODUCTS.find((product) => product.slug === slug))
     .filter(Boolean);
@@ -34,17 +40,19 @@ export default function IntentSeoLanding({ config }: { config: IntentSeoLandingC
   return (
     <div className="min-h-screen bg-[#151515] text-[#fdfbf7]">
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
-      <section className="border-b border-white/10 bg-[#110e14] px-6 py-16 md:py-24">
-        <div className="mx-auto max-w-5xl">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.22em] text-[#d4af37]">{config.eyebrow}</p>
-          <h1 className="max-w-4xl font-serif text-4xl leading-tight md:text-6xl">{config.title}</h1>
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-white/75">{config.intro}</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <a href="#options" className="bg-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#171717]">Check tour options</a>
-            <Link href="/help-me-choose" className="border border-white/20 px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#fdfbf7]">Help me choose</Link>
+      {showHero && (
+        <section className="border-b border-white/10 bg-[#110e14] px-6 py-16 md:py-24">
+          <div className="mx-auto max-w-5xl">
+            <p className="mb-4 text-xs font-bold uppercase tracking-[0.22em] text-[#d4af37]">{config.eyebrow}</p>
+            <h1 className="max-w-4xl font-serif text-4xl leading-tight md:text-6xl">{config.title}</h1>
+            <p className="mt-6 max-w-3xl text-lg leading-8 text-white/75">{config.intro}</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a href="#options" className="bg-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#171717]">Check tour options</a>
+              <Link href="/help-me-choose" className="border border-white/20 px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#fdfbf7]">Help me choose</Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="px-6 py-12">
         <div className="mx-auto max-w-5xl rounded-2xl border border-white/10 bg-white/[0.04] p-6 md:p-8">
