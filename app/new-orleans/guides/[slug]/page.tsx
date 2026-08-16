@@ -4,8 +4,7 @@ import { notFound } from 'next/navigation';
 import { getSeoPageBySlug } from '../../data/pageMap';
 import { getIntentSeoPage } from '../../data/intentSeoPages';
 import { getAudienceIntentSeoPage } from '../../data/audienceIntentSeoPages';
-import SeoPageRenderer from '../../components/SeoPageRenderer';
-import IntentSeoLanding from '../../components/IntentSeoLanding';
+import { CinematicIntentGuide, CinematicSeoGuide } from '../../components/CinematicGuideLayer';
 import { buildSeoMetadata } from '../../lib/buildSeoMetadata';
 import ConciergeQaChecklist from '../../admin/qa/ConciergeQaChecklist';
 import LiveRouteAudit from '../../admin/qa/LiveRouteAudit';
@@ -41,11 +40,11 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   if (resolvedParams.slug === 'internal-qa') return <InternalQaDashboard />;
 
   const intentPage = getGovernedIntentPage(resolvedParams.slug);
-  if (intentPage) return <IntentSeoLanding config={intentPage.config} />;
+  if (intentPage) return <CinematicIntentGuide config={intentPage.config} />;
 
   const record = getSeoPageBySlug(`guides/${resolvedParams.slug}`);
   if (!record || record.status === "draft") notFound();
-  return <SeoPageRenderer page={record} />;
+  return <CinematicSeoGuide page={record} />;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug?: string }> }): Promise<Metadata> {
