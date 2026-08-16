@@ -23,6 +23,15 @@ export const LIVE_CORRIDOR_CATALOG: CorridorCatalogEntry[] = [
     patternFamily: "jfd",
   },
   {
+    corridorId: "portfolio-network",
+    corridorName: "DCC Portfolio Network",
+    family: "decision-engine",
+    appPath: "app/api/network/telemetry + connected portfolio sites",
+    status: "live",
+    continuityLevel: "state-execution",
+    patternFamily: "jfd",
+  },
+  {
     corridorId: "wno-commerce",
     corridorName: "Welcome to New Orleans Tours Commerce",
     family: "marketplace",
