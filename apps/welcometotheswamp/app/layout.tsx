@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
 import PartnerAnalyticsScript from "@/app/components/PartnerAnalyticsScript";
+import DccPortfolioBridge from "@/app/components/DccPortfolioBridge";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { SITE_CONFIG } from "@/app/site-config";
 import { buildNetworkEntityGraph } from "@/lib/dcc/networkEntityJsonLd";
@@ -70,6 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <DccPortfolioBridge site="welcome-to-the-swamp" />
         <div className="shell shell-chrome">
           <SiteHeader />
           {children}
@@ -92,9 +94,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
               <div className="footer-block">
                 <p className="eyebrow">What This Site Does</p>
-                <p>
-                  We help you choose the swamp tour style that fits your group before you open the booking page.
-                </p>
+                <p>We help you choose the swamp tour style that fits your group before you open the booking page.</p>
               </div>
               <div className="footer-block">
                 <p className="eyebrow">More</p>
