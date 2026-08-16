@@ -62,6 +62,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <Link href="/admin/portfolio" className="font-semibold text-[#f5c66c] hover:text-white">
               Portfolio Desktop
             </Link>
+            <Link href="/admin/portfolio/activity" className="text-zinc-200 hover:text-white">
+              Portfolio Activity
+            </Link>
             <Link href="/admin/live-pulse" className="text-zinc-200 hover:text-white">
               Live Pulse
             </Link>
