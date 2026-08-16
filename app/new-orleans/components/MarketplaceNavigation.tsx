@@ -2,17 +2,23 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import PhoneCta from './PhoneCta';
-import FrenchQuarterBoothBonus from './FrenchQuarterBoothBonus';
 import styles from '../tours/outpost.module.css';
 import visualStyles from './newOrleansVisual.module.css';
+import footerStyles from './marketplaceFooter.module.css';
 
-const supportLinks = [
-  { href: "/about", label: "About" },
+const usefulLinks = [
+  { href: "/guides", label: "Planning Guides" },
+  { href: "/guides/things-to-do-in-new-orleans-today", label: "Things To Do Today" },
+  { href: "/guides/tonight", label: "Tonight" },
   { href: "/faq", label: "FAQ" },
   { href: "/booking-help", label: "Booking Help" },
+  { href: "/about", label: "About" },
+];
+
+const policyLinks = [
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
-  { href: "/cancellation-policy", label: "Cancellation Policy" },
+  { href: "/cancellation-policy", label: "Cancellation" },
   { href: "/affiliate-disclosure", label: "Affiliate Disclosure" },
   { href: "/accessibility", label: "Accessibility" },
 ];
@@ -67,19 +73,41 @@ export function HeaderNav() {
 
 export function FooterNav() {
   return (
-    <footer className="bg-[#151116] text-[#f6f1e8] border-t border-[#c7a96b]/35">
-      <div className="max-w-7xl mx-auto px-6 py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.1fr_1fr_1fr_1.2fr] gap-14 lg:gap-10">
+    <footer className={footerStyles.footer}>
+      <div className={footerStyles.inner}>
         <div>
-          <div className="text-[10px] uppercase tracking-[0.2em] text-[#c7a96b] mb-5">Welcome to New Orleans Tours</div>
-          <h4 className="font-serif text-3xl font-medium leading-tight mb-5">A better way to choose your New Orleans experience.</h4>
-          <p className="font-sans font-light leading-relaxed text-[#f6f1e8]/60 max-w-sm">Curated New Orleans experiences, timely local context, and concierge help when you want a hand choosing what fits your group.</p>
+          <p className={footerStyles.brandKicker}>Welcome to New Orleans Tours</p>
+          <h4 className={footerStyles.brandTitle}>A better way to choose your New Orleans experience.</h4>
+          <p className={footerStyles.brandCopy}>Curated experiences, timely local context, and concierge help when you want a hand deciding what fits.</p>
         </div>
-        <div><h4 className="font-serif text-xl mb-6 text-[#e1c98f] font-medium">Explore</h4><nav className="flex flex-col gap-3.5 font-sans font-light text-sm text-[#f6f1e8]/70"><Link href="/tours">All Tours</Link><Link href="/compare">Compare Tours</Link><Link href="/riverboat-cruises">River Cruises</Link><Link href="/ghost-tours">Ghosts & Cemetery</Link><Link href="/food-tours">Food & Cocktails</Link><Link href="/guides/things-to-do-in-new-orleans-today">Things To Do Today</Link><Link href="/guides/tonight">Tonight</Link><Link href="/swamp-tours">Swamps & Airboats</Link><Link href="/plantation-tours">Plantation Experiences</Link></nav></div>
-        <div><h4 className="font-serif text-xl mb-6 text-[#e1c98f] font-medium">Concierge</h4><nav className="flex flex-col gap-3.5 font-sans font-light text-sm text-[#f6f1e8]/70"><Link href="/help-me-choose">Help Me Choose</Link><Link href="/french-quarter-welcome-stop">Planning Help</Link><Link href="/guides/french-quarter-orientation">$5 French Quarter Orientation</Link><Link href="/guides/first-time-new-orleans-tours">First-Time Visitors</Link><Link href="/guides/new-orleans-tours-for-families">Families</Link><Link href="/guides/plan-new-orleans-tours">Plan By Need</Link></nav></div>
-        <div><h4 className="font-serif text-xl mb-6 text-[#e1c98f] font-medium">Talk to a person</h4><p className="font-sans font-light text-sm leading-relaxed text-[#f6f1e8]/60 mb-7">Need help with timing, pickup options, group fit, or what makes sense right now? Call or text the Concierge Desk.</p><PhoneCta placement="WTONOT-FOOTER-PHONE" isGroup className="inline-flex flex-col gap-1.5 group"><span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#c7a96b]">Call or text</span><span className="text-2xl font-medium text-[#f6f1e8]">504-484-9687</span></PhoneCta></div>
+
+        <div>
+          <p className={footerStyles.label}>More information</p>
+          <nav className={footerStyles.links} aria-label="Visitor information links">
+            {usefulLinks.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
+          </nav>
+        </div>
+
+        <div>
+          <p className={footerStyles.label}>Need help?</p>
+          <PhoneCta placement="WTONOT-FOOTER-PHONE" isGroup className={footerStyles.phone}>
+            <small>Call or text</small>
+            <strong>504-484-9687</strong>
+          </PhoneCta>
+          <nav className={footerStyles.contactLinks} aria-label="Concierge links">
+            <Link href="/help-me-choose">Help Me Choose</Link>
+            <Link href="/french-quarter-welcome-stop">Concierge</Link>
+            <Link href="/guides/french-quarter-orientation">$5 Orientation</Link>
+          </nav>
+        </div>
       </div>
-      <FrenchQuarterBoothBonus variant="oneline" />
-      <div className="border-t border-white/8 px-6 py-7 text-center text-[11px] font-sans font-light text-white/40"><nav className="mx-auto mb-4 flex max-w-5xl flex-wrap justify-center gap-x-5 gap-y-2" aria-label="Support and policy links">{supportLinks.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}</nav><div>&copy; {new Date().getFullYear()} Welcome to New Orleans Tours. All rights reserved.</div></div>
+
+      <div className={footerStyles.bottom}>
+        <nav className={footerStyles.policyNav} aria-label="Support and policy links">
+          {policyLinks.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
+        </nav>
+        <div className={footerStyles.copyright}>&copy; {new Date().getFullYear()} Welcome to New Orleans Tours. All rights reserved.</div>
+      </div>
     </footer>
   );
 }
