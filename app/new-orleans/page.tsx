@@ -29,12 +29,18 @@ const categoryLinks = [
 ];
 
 const editorialPicks = [
-  { slug: "evening-jazz-cruise", kicker: "Our pick for a classic New Orleans night", note: "Live jazz, Mississippi views, and an easy evening plan for first-time visitors." },
-  { slug: "covered-tour-boat", kicker: "Our pick when you want swamp without the speed", note: "A calmer, shaded way to get into the bayou — especially good for mixed-age groups." },
-  { slug: "whitney-plantation-tour", kicker: "Our pick for understanding plantation history", note: "A history-focused visit centered on the lives and experiences of enslaved people." },
-  { slug: "city-tour-of-new-orleans", kicker: "Our pick for a first afternoon", note: "A broad introduction to the city when you want context before exploring on your own." },
-  { slug: "craft-cocktail-walking-tour", kicker: "Our pick for a local food crawl", note: "A French Quarter walking option built around New Orleans cocktail culture, local history, and the flavor of the neighborhood." },
-  { slug: "all-day-city-plantation-combo", kicker: "Our pick for an easy full day", note: "A city overview plus a plantation visit when you want one plan to carry the day." },
+  { slug: "evening-jazz-cruise", kicker: "Our pick for a classic night", note: "Live music on the river with skyline views." },
+  { slug: "covered-tour-boat", kicker: "Our pick for swamp without the speed", note: "Calm, shaded, and easy for mixed-age groups." },
+  { slug: "whitney-plantation-tour", kicker: "Our pick for plantation history", note: "Focused, respectful history outside the city." },
+  { slug: "city-tour-of-new-orleans", kicker: "Our pick for a first afternoon", note: "French Quarter, Garden District, and more." },
+  { slug: "craft-cocktail-walking-tour", kicker: "Our pick for a local food crawl", note: "History and tastings in the French Quarter." },
+  { slug: "all-day-city-plantation-combo", kicker: "Our pick for an easy full day", note: "Morning city highlights, then Oak Alley or Laura." },
+];
+
+const guideCards = [
+  { href: "/guides/things-to-do-in-new-orleans-today", title: "Things to do today", copy: "Same-day picks that fit your window." },
+  { href: "/guides/tonight", title: "What’s on tonight", copy: "Live music, dinner, and evening tours." },
+  { href: "/guides", title: "Plan by trip type", copy: "Families, couples, first timers, and cruise visitors." },
 ];
 
 export default function NewOrleansHomePage() {
@@ -76,9 +82,8 @@ export default function NewOrleansHomePage() {
         <div className={visualStyles.homeSectionInner}>
           <div className={visualStyles.homeSectionHeading}>
             <div>
-              <p className={visualStyles.homeSectionEyebrow}>Choose your mood</p>
-              <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>What sounds good?</h2>
-              <p className={`${visualStyles.homeSectionScript} ${visualStyles.scriptFont}`}>Pick your kind of New Orleans.</p>
+              <p className={visualStyles.homeSectionEyebrow}>Explore New Orleans Your Way</p>
+              <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>Handpicked experiences. Local help. Better decisions.</h2>
             </div>
           </div>
           <div className={visualStyles.homeCategoryGrid}>
@@ -103,9 +108,9 @@ export default function NewOrleansHomePage() {
 
       <section id="chooser" className={visualStyles.homeChooserSection}>
         <div className={visualStyles.homeChooserInner}>
-          <p className={visualStyles.homeSectionEyebrow}>Not sure where to start?</p>
+          <p className={visualStyles.homeSectionEyebrow}>Not sure?</p>
           <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>Help Me Choose</h2>
-          <p className={visualStyles.homeChooserCopy}>A few quick answers help us narrow 21 curated experiences to the ones that make sense for your time, group, pace, and interests.</p>
+          <p className={visualStyles.homeChooserCopy}>Answer a few questions. We’ll narrow the city to the experiences that fit.</p>
           <NewOrleansRecommendationFlow />
         </div>
       </section>
@@ -113,10 +118,9 @@ export default function NewOrleansHomePage() {
       <section className="border-y border-[var(--nola-border)] bg-[#0b0b0c] py-16">
         <div className="mx-auto w-[min(1240px,calc(100%-3rem))]">
           <p className={visualStyles.homeSectionEyebrow}>Live concierge notes</p>
-          <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>What’s happening in New Orleans — next 48 hours</h2>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--nola-text-muted)]">Timely music, weather, and city context changes what we recommend. These signals feed the chooser instead of sitting here as decorative copy.</p>
+          <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>What’s happening next 48 hours</h2>
           <LiveIntelligencePanel />
-          <div className="mt-8"><a href="#chooser" data-wno-event="live_intelligence_chooser_clicked" data-wno-label="Not sure what fits? Help Me Choose" className={visualStyles.homeGoldButton}>Not sure what fits? Help Me Choose</a></div>
+          <div className="mt-8"><a href="#chooser" data-wno-event="live_intelligence_chooser_clicked" data-wno-label="Not sure? Help Me Choose" className={visualStyles.homeGoldButton}>Not sure? Help Me Choose</a></div>
         </div>
       </section>
 
@@ -124,9 +128,8 @@ export default function NewOrleansHomePage() {
         <div className={visualStyles.homeSectionInner}>
           <div className={visualStyles.homeCuratedHeading}>
             <div>
-              <p className={visualStyles.homeSectionEyebrow}>Curated for real trips</p>
+              <p className={visualStyles.homeSectionEyebrow}>Curated picks</p>
               <h2 className={`${visualStyles.homeCuratedTitle} ${visualStyles.displayFont}`}>A few places we’d start</h2>
-              <p className={`${visualStyles.homeCuratedScript} ${visualStyles.scriptFont}`}>The inventory stays behind the recommendation.</p>
             </div>
           </div>
           <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -137,8 +140,8 @@ export default function NewOrleansHomePage() {
                 <Link key={pick.slug} href={`/tours/${pick.slug}`} data-wno-event="editorial_pick_clicked" data-wno-product={pick.slug} data-wno-label={pick.kicker} className="group block border border-[var(--nola-border)] bg-[var(--nola-surface)] p-6 transition hover:border-[var(--nola-gold)]">
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--nola-gold)]">{pick.kicker}</p>
                   <h3 className={`mt-3 text-2xl text-[var(--nola-ivory)] ${visualStyles.accentFont}`}>{product.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-[var(--nola-text-muted)]">{pick.note}</p>
-                  <span className="mt-5 inline-block text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)]">See Availability →</span>
+                  <p className="mt-2 text-sm leading-5 text-[var(--nola-text-muted)]">{pick.note}</p>
+                  <span className="mt-4 inline-block text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)]">See Availability →</span>
                 </Link>
               );
             })}
@@ -146,20 +149,30 @@ export default function NewOrleansHomePage() {
         </div>
       </section>
 
+      <section className="border-y border-[var(--nola-border)] bg-[#0b0b0c] py-16">
+        <div className="mx-auto w-[min(1240px,calc(100%-3rem))]">
+          <div className="grid gap-5 md:grid-cols-3">
+            {guideCards.map((card) => (
+              <Link key={card.href} href={card.href} data-wno-event="guide_summary_clicked" data-wno-label={card.title} className="group border border-[var(--nola-border)] bg-[var(--nola-surface)] p-6 transition hover:border-[var(--nola-gold)]">
+                <h3 className={`text-2xl text-[var(--nola-ivory)] ${visualStyles.accentFont}`}>{card.title}</h3>
+                <p className="mt-2 text-sm leading-5 text-[var(--nola-text-muted)]">{card.copy}</p>
+                <span className="mt-4 inline-block text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)]">Browse Guides →</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className={visualStyles.homeConciergeSection}>
         <div className={visualStyles.homeSectionInner}>
-          <div className={visualStyles.homeConciergeGrid}>
-            <div className={visualStyles.homeConciergePanel}>
-              <div className={visualStyles.homeSectionEyebrow}>Welcome to New Orleans Tours</div>
-              <h3 className={`${visualStyles.homePanelTitle} ${visualStyles.displayFont}`}>New Orleans Concierge Desk</h3>
-              <p className={visualStyles.homePanelCopy}>Already here and still deciding? Start with the $5 French Quarter Orientation, call or text for help, or ask about a concierge visit where you’re staying when available.</p>
-              <Link href="/french-quarter-welcome-stop" data-wno-event="concierge_desk_clicked" className={visualStyles.homeTextButton}>Visit the Concierge Desk</Link>
+          <div className="border border-[var(--nola-border)] bg-[var(--nola-surface)] p-6 md:flex md:items-center md:justify-between md:gap-8">
+            <div>
+              <p className={visualStyles.homeSectionEyebrow}>Concierge Desk</p>
+              <p className="mt-2 max-w-3xl text-base leading-6 text-[var(--nola-ivory)]">Want help now? Call or text 504-484-9687 or book a $5 French Quarter Orientation at 8:00 or 9:30 AM daily.</p>
             </div>
-            <div className={visualStyles.homeConciergePanelAlt}>
-              <div className={visualStyles.homeSectionEyebrow}>Private Parties</div>
-              <h3 className={`${visualStyles.homePanelTitle} ${visualStyles.displayFont}`}>Group Planning</h3>
-              <p className={visualStyles.homePanelCopy}>Planning a family, wedding, or corporate group? Tell us the group and timing and we’ll help narrow the options.</p>
-              <Link href="/contact" data-wno-event="group_planning_clicked" className={visualStyles.homeTextButton}>Inquire About Groups</Link>
+            <div className="mt-5 flex flex-wrap gap-3 md:mt-0">
+              <a href="tel:+15044849687" data-wno-event="concierge_phone_clicked" className={visualStyles.homeGoldButton}>Call or Text</a>
+              <Link href="/guides/french-quarter-orientation" data-wno-event="orientation_clicked" className={visualStyles.homeTextButton}>French Quarter Orientation</Link>
             </div>
           </div>
         </div>
