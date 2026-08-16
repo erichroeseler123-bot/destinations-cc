@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { trackEvent } from "@/lib/analytics";
+import { DccRecommendationOutcomeV1, DccTravelerContextV1, getStoredDccTravelerContext } from "@/lib/dcc/travelerContext";
 import {
   evaluateRecommendation,
   LiveRecommendationContext,
@@ -137,11 +138,165 @@ function chooseBundle(inputs: RecommendationInputs, result: RecommendationResult
   return null;
 }
 
+function isNewOrleansContext(context: DccTravelerContextV1 | null) {
+  if (!context) return false;
+  return ["new-orleans", "new orleans", "nola"].includes(context.destination.trim().toLowerCase());
+}
+
+function exactWnoChooserExtension(context: DccTravelerContextV1) {
+  const extension = context.destinationExtensions?.wnoChooser;
+  return extension && typeof extension === "object" && !Array.isArray(extension)
+    ? extension as Record<string, unknown>
+    : {};
+}
+
+function contextToRecommendationInputs(context: DccTravelerContextV1 | null): Partial<RecommendationInputs> {
+  if (!isNewOrleansContext(context) || !context) return {};
+  const extension = exactWnoChooserExtension(context);
+  const output: Partial<RecommendationInputs> = {};
+
+  const planningWindow = extension.planningWindow;
+  if (typeof planningWindow === "string" && QUESTIONS.planningWindow.options.includes(planningWindow)) {
+    output.planningWindow = planningWindow as RecommendationInputs["planningWindow"];
+  }
+
+  const duration = context.availableWindow?.durationMinutes;
+  if (typeof duration === "number") {
+    output.availableTime = duration <= 210 ? "About 3 hours" : duration <= 360 ? "About half a day" : "Most of the day";
+  } else if (typeof extension.availableTime === "string" && QUESTIONS.availableTime.options.includes(extension.availableTime)) {
+    output.availableTime = extension.availableTime as RecommendationInputs["availableTime"];
+  }
+
+  if (context.preferences?.transportationNeed === "needed") output.transportation = "We need pickup or transportation";
+  else if (context.preferences?.transportationNeed === "self") output.transportation = "We can drive ourselves";
+  else if (context.preferences?.transportationNeed === "unsure") output.transportation = "Not sure";
+  else if (typeof extension.transportation === "string" && QUESTIONS.transportation.options.includes(extension.transportation)) {
+    output.transportation = extension.transportation as RecommendationInputs["transportation"];
+  }
+
+  if (context.preferences?.pace === "relaxed") output.groupStyle = "Relaxed and comfortable";
+  else if (context.preferences?.pace === "balanced") output.groupStyle = "Balanced";
+  else if (context.preferences?.pace === "adventurous") output.groupStyle = "Fast and adventurous";
+  else if (typeof extension.groupStyle === "string" && QUESTIONS.groupStyle.options.includes(extension.groupStyle)) {
+    output.groupStyle = extension.groupStyle as RecommendationInputs["groupStyle"];
+  }
+
+  if (typeof context.group?.mixedAges === "boolean") output.mixedAges = context.group.mixedAges ? "Yes" : "No";
+  else if (typeof context.group?.children === "number") output.mixedAges = context.group.children > 0 ? "Yes" : "No";
+  else if (typeof extension.mixedAges === "string" && QUESTIONS.mixedAges.options.includes(extension.mixedAges)) {
+    output.mixedAges = extension.mixedAges as RecommendationInputs["mixedAges"];
+  }
+
+  if (context.preferences?.historicalInterest === "strong") output.historicalInterest = "Strong interest";
+  else if (context.preferences?.historicalInterest === "some") output.historicalInterest = "Some interest";
+  else if (context.preferences?.historicalInterest === "low") output.historicalInterest = "Not the priority";
+  else if (typeof extension.historicalInterest === "string" && QUESTIONS.historicalInterest.options.includes(extension.historicalInterest)) {
+    output.historicalInterest = extension.historicalInterest as RecommendationInputs["historicalInterest"];
+  }
+
+  return output;
+}
+
+function firstUnansweredStep(answers: Partial<RecommendationInputs>, startIndex = 0) {
+  for (let index = startIndex; index < STEPS.length; index += 1) {
+    if (!answers[STEPS[index]]) return index;
+  }
+  return -1;
+}
+
+function buildRecommendationOutcome(result: RecommendationResult, bundle: BundleRecommendation | null): DccRecommendationOutcomeV1 {
+  return {
+    version: 1,
+    destination: "new-orleans",
+    primaryProduct: result.primary?.slug || null,
+    secondaryProduct: result.secondary?.slug || null,
+    bundleId: bundle?.id || null,
+    bundleProducts: bundle ? [...bundle.slugs] : [],
+    noFit: result.isNoFit,
+    primaryReasons: result.primary?.reasons || [],
+    primaryCautions: result.primary?.cautionReasons || [],
+  };
+}
+
 export default function NewOrleansRecommendationFlow() {
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState<Partial<RecommendationInputs>>({});
   const [result, setResult] = useState<RecommendationResult | null>(null);
   const [liveContext, setLiveContext] = useState<LiveRecommendationContext>({});
+  const [dccPrefillCount, setDccPrefillCount] = useState(0);
+
+  const emitChooserEvent = (eventName: string, extra: Record<string, unknown> = {}) => {
+    const context = getWnoFunnelContext();
+    const payload = {
+      surface: "wno_help_me_choose",
+      page: typeof window !== "undefined" ? window.location.pathname : undefined,
+      entry_source: context?.source,
+      entry_path: context?.landingPath,
+      ...extra,
+    };
+    trackEvent(eventName, payload);
+    sendWnoTelemetry({ eventName, sourcePage: typeof window !== "undefined" ? window.location.pathname : undefined, ...extra });
+  };
+
+  const completeChooser = (completedInputs: RecommendationInputs, contextForDecision: LiveRecommendationContext = liveContext) => {
+    const nextResult = evaluateRecommendation(completedInputs, contextForDecision);
+    const bundle = chooseBundle(completedInputs, nextResult, contextForDecision);
+    setAnswers(completedInputs);
+    setResult(nextResult);
+    const primarySlug = nextResult.primary?.slug || null;
+    const secondarySlug = nextResult.secondary?.slug || null;
+    try {
+      sessionStorage.setItem(CHOOSER_COMPLETED_AT, String(Date.now()));
+      if (primarySlug) sessionStorage.setItem(CHOOSER_RECOMMENDATION, primarySlug);
+      else sessionStorage.removeItem(CHOOSER_RECOMMENDATION);
+    } catch {
+      // Analytics state must never block the recommendation.
+    }
+    emitChooserEvent("chooser_completed", {
+      ...completedInputs,
+      live_period: contextForDecision.period,
+      live_rain_risk: contextForDecision.rainRisk,
+      live_music_signal: Boolean(contextForDecision.liveMusicSignal),
+      live_outdoor_friendly: Boolean(contextForDecision.outdoorFriendly),
+      primary_recommendation: primarySlug,
+      secondary_recommendation: secondarySlug,
+      bundle_recommendation: bundle?.id || null,
+      bundle_products: bundle?.slugs.join(",") || null,
+      no_fit: nextResult.isNoFit,
+      chooserInput: completedInputs,
+      recommendationOutput: buildRecommendationOutcome(nextResult, bundle),
+      dcc_prefill_count: dccPrefillCount,
+    });
+    if (bundle) {
+      emitChooserEvent("chooser_bundle_shown", {
+        bundle_id: bundle.id,
+        bundle_products: bundle.slugs.join(","),
+        primary_recommendation: primarySlug,
+      });
+    }
+  };
+
+  useEffect(() => {
+    const dccContext = getStoredDccTravelerContext();
+    if (!isNewOrleansContext(dccContext)) return;
+    const prefilled = contextToRecommendationInputs(dccContext);
+    const count = Object.values(prefilled).filter(Boolean).length;
+    if (!count) return;
+
+    setDccPrefillCount(count);
+    setAnswers(prefilled);
+    const missingIndex = firstUnansweredStep(prefilled);
+    if (missingIndex >= 0) {
+      setStepIndex(missingIndex);
+      return;
+    }
+
+    const inboundLive: LiveRecommendationContext = dccContext?.liveContext || {};
+    setLiveContext(inboundLive);
+    completeChooser(prefilled as RecommendationInputs, inboundLive);
+    // The inbound handoff is consumed once on mount; later live updates should not re-run the chooser.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -166,73 +321,33 @@ export default function NewOrleansRecommendationFlow() {
   const currentStepId = STEPS[stepIndex];
   const currentQuestion = QUESTIONS[currentStepId];
 
-  const emitChooserEvent = (eventName: string, extra: Record<string, unknown> = {}) => {
-    const context = getWnoFunnelContext();
-    const payload = {
-      surface: "wno_help_me_choose",
-      page: typeof window !== "undefined" ? window.location.pathname : undefined,
-      entry_source: context?.source,
-      entry_path: context?.landingPath,
-      ...extra,
-    };
-    trackEvent(eventName, payload);
-    sendWnoTelemetry({ eventName, sourcePage: typeof window !== "undefined" ? window.location.pathname : undefined, ...extra });
-  };
-
   const handleSelect = (answer: string) => {
     const nextAnswers = { ...answers, [currentStepId]: answer } as Partial<RecommendationInputs>;
-    if (stepIndex === 0) {
-      emitChooserEvent("chooser_started", { first_answer: answer });
+    const answeredBefore = Object.values(answers).filter(Boolean).length;
+    if (answeredBefore === 0 || (dccPrefillCount > 0 && answeredBefore === dccPrefillCount)) {
+      emitChooserEvent("chooser_started", { first_answer: answer, dcc_prefill_count: dccPrefillCount });
     }
     emitChooserEvent("chooser_answered", {
       question: currentStepId,
       answer,
       step_number: stepIndex + 1,
+      dcc_prefill_count: dccPrefillCount,
     });
     setAnswers(nextAnswers);
 
-    if (stepIndex < STEPS.length - 1) {
-      setStepIndex(stepIndex + 1);
+    const nextIndex = firstUnansweredStep(nextAnswers, stepIndex + 1);
+    if (nextIndex >= 0) {
+      setStepIndex(nextIndex);
       return;
     }
 
-    const completedInputs = nextAnswers as RecommendationInputs;
-    const nextResult = evaluateRecommendation(completedInputs, liveContext);
-    const bundle = chooseBundle(completedInputs, nextResult, liveContext);
-    setResult(nextResult);
-    const primarySlug = nextResult.primary?.slug || null;
-    const secondarySlug = nextResult.secondary?.slug || null;
-    try {
-      sessionStorage.setItem(CHOOSER_COMPLETED_AT, String(Date.now()));
-      if (primarySlug) sessionStorage.setItem(CHOOSER_RECOMMENDATION, primarySlug);
-      else sessionStorage.removeItem(CHOOSER_RECOMMENDATION);
-    } catch {
-      // Analytics state must never block the recommendation.
-    }
-    emitChooserEvent("chooser_completed", {
-      ...completedInputs,
-      live_period: liveContext.period,
-      live_rain_risk: liveContext.rainRisk,
-      live_music_signal: Boolean(liveContext.liveMusicSignal),
-      live_outdoor_friendly: Boolean(liveContext.outdoorFriendly),
-      primary_recommendation: primarySlug,
-      secondary_recommendation: secondarySlug,
-      bundle_recommendation: bundle?.id || null,
-      bundle_products: bundle?.slugs.join(",") || null,
-      no_fit: nextResult.isNoFit,
-    });
-    if (bundle) {
-      emitChooserEvent("chooser_bundle_shown", {
-        bundle_id: bundle.id,
-        bundle_products: bundle.slugs.join(","),
-        primary_recommendation: primarySlug,
-      });
-    }
+    completeChooser(nextAnswers as RecommendationInputs);
   };
 
   const restart = () => {
     emitChooserEvent("chooser_restarted");
     setAnswers({});
+    setDccPrefillCount(0);
     setStepIndex(0);
     setResult(null);
   };
@@ -313,9 +428,14 @@ export default function NewOrleansRecommendationFlow() {
   return (
     <div className={`${visualStyles.surfacePanel} mt-8 p-6 md:p-10`}>
       <div className="mx-auto max-w-xl">
+        {dccPrefillCount > 0 && (
+          <p className="mb-5 text-center text-xs leading-5 text-[var(--nola-text-muted)]">
+            We carried {dccPrefillCount} detail{dccPrefillCount === 1 ? "" : "s"} from your trip context, so we’ll only ask what’s still missing.
+          </p>
+        )}
         <div className="mb-8 flex justify-center gap-2" aria-hidden="true">
-          {STEPS.map((_, index) => (
-            <span key={index} className={`h-[3px] ${index === stepIndex ? "w-8 bg-[var(--nola-gold)]" : index < stepIndex ? "w-4 bg-[var(--nola-gold-muted)]" : "w-4 bg-[var(--nola-border)]"}`} />
+          {STEPS.map((step, index) => (
+            <span key={step} className={`h-[3px] ${index === stepIndex ? "w-8 bg-[var(--nola-gold)]" : answers[step] ? "w-4 bg-[var(--nola-gold-muted)]" : "w-4 bg-[var(--nola-border)]"}`} />
           ))}
         </div>
         <p className="text-center text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">Question {stepIndex + 1} of {STEPS.length}</p>
