@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
+import PortfolioVisitLoader from "./PortfolioVisitLoader";
 import {
   ADMIN_SESSION_COOKIE,
   isAdminAccessConfigured,
@@ -83,6 +84,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </Link>
         </div>
       </div>
+      <PortfolioVisitLoader />
       {children}
     </div>
   );
