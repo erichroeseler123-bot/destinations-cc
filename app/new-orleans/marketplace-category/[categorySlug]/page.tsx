@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getSeoPageBySlug } from "../../data/pageMap";
-import { getProductById } from "../../data/index";
+import { getProductById, type LiveProductAdapter } from "../../data/index";
 import WnoBreadcrumbs from "../../components/WnoBreadcrumbs";
 import VisualEditorialCard from "../../components/VisualEditorialCard";
 import { buildSeoMetadata } from "../../lib/buildSeoMetadata";
@@ -29,6 +29,10 @@ function cardEyebrow(categorySlug: string, index: number) {
   return CARD_EYEBROWS[index % CARD_EYEBROWS.length];
 }
 
+function isLiveProduct(product: ReturnType<typeof getProductById>): product is LiveProductAdapter {
+  return Boolean(product && product.status === "live");
+}
+
 export default async function CategoryPage({ params }: { params: Promise<{ categorySlug: string }> }) {
   const resolvedParams = await params;
   const record = getSeoPageBySlug(resolvedParams.categorySlug);
@@ -36,8 +40,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
     notFound();
   }
 
-  const products = record.liveProductIds.map((id) => getProductById(id)).filter(Boolean);
-  const heroImage = products.find((product) => product?.imageUrl)?.imageUrl;
+  const products = record.liveProductIds.map((id) => getProductById(id)).filter(isLiveProduct);
+  const heroImage = products.find((product) => product.imageUrl)?.imageUrl;
 
   return (
     <div className="min-h-screen bg-[#0b0a09] text-[#f8f1e5]">
@@ -133,11 +137,11 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
             <div className="mt-9 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {products.map((product, index) => (
                 <VisualEditorialCard
-                  key={product!.id}
-                  title={product!.title}
-                  slug={product!.slug}
-                  description={product!.description}
-                  imageUrl={product!.imageUrl}
+                  key={product.id}
+                  title={product.title}
+                  slug={product.slug}
+                  description={product.description}
+                  imageUrl={product.imageUrl}
                   eyebrow={cardEyebrow(resolvedParams.categorySlug, index)}
                 />
               ))}
