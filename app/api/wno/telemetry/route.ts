@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { appendCorridorEventDurably } from "@/lib/dcc/telemetry/corridorEvents";
+import { sanitizeDccTravelerContext } from "@/lib/dcc/travelerContext";
 
 const MAX_TEXT = 160;
 const CANONICAL_EVENTS = new Set([
@@ -25,6 +26,43 @@ function cleanBoolean(value: unknown) {
 
 function cleanNumber(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function cleanStringArray(value: unknown, maxItems = 12) {
+  if (!Array.isArray(value)) return undefined;
+  const values = value.map((item) => clean(item, 160)).filter((item): item is string => Boolean(item)).slice(0, maxItems);
+  return values.length ? values : undefined;
+}
+
+function cleanChooserInput(value: unknown) {
+  if (!isRecord(value)) return undefined;
+  return {
+    planningWindow: clean(value.planningWindow),
+    availableTime: clean(value.availableTime),
+    transportation: clean(value.transportation),
+    groupStyle: clean(value.groupStyle),
+    mixedAges: clean(value.mixedAges, 32),
+    historicalInterest: clean(value.historicalInterest),
+  };
+}
+
+function cleanRecommendationOutput(value: unknown) {
+  if (!isRecord(value)) return undefined;
+  return {
+    version: cleanNumber(value.version),
+    destination: clean(value.destination, 80),
+    primaryProduct: clean(value.primaryProduct),
+    secondaryProduct: clean(value.secondaryProduct),
+    bundleId: clean(value.bundleId, 64),
+    bundleProducts: cleanStringArray(value.bundleProducts, 4),
+    noFit: cleanBoolean(value.noFit),
+    primaryReasons: cleanStringArray(value.primaryReasons, 4),
+    primaryCautions: cleanStringArray(value.primaryCautions, 3),
+  };
 }
 
 function mapEventName(eventName: string) {
@@ -111,6 +149,9 @@ export async function POST(request: NextRequest) {
         primary_recommendation: clean(body.primaryRecommendation || body.primary_recommendation),
         secondary_recommendation: clean(body.secondaryRecommendation || body.secondary_recommendation),
         no_fit: cleanBoolean(body.noFit ?? body.no_fit),
+        dcc_context: sanitizeDccTravelerContext(body.dccContext),
+        chooser_input: cleanChooserInput(body.chooserInput),
+        recommendation_output: cleanRecommendationOutput(body.recommendationOutput),
       },
     });
 
