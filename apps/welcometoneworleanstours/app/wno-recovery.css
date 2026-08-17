@@ -1,11 +1,161 @@
-/* Recovery-shell visual parity overrides. Keep this file small and temporary. */
+/* WNO-only visual polish.
+   Keep these overrides scoped to the standalone Welcome to New Orleans Tours app
+   so the shared Destination Command Center New Orleans components remain unchanged. */
 
+/* Homepage hero: keep the photo readable without washing out the typography. */
 div[class*="homeHeroBackground"] {
-  filter: brightness(1.12) saturate(0.95);
+  filter: brightness(1.08) saturate(0.98) contrast(1.02);
 }
 
 div[class*="homeHeroOverlay"] {
   background:
-    linear-gradient(90deg, rgba(8, 3, 12, 0.22), rgba(7, 7, 9, 0.62) 31%, rgba(7, 7, 9, 0.62) 69%, rgba(22, 10, 3, 0.2)),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(4, 3, 5, 0.18) 58%, rgba(8, 7, 9, 0.72)) !important;
+    linear-gradient(90deg, rgba(8, 3, 12, 0.28), rgba(7, 7, 9, 0.68) 28%, rgba(7, 7, 9, 0.68) 72%, rgba(22, 10, 3, 0.24)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.03), rgba(4, 3, 5, 0.2) 58%, rgba(8, 7, 9, 0.76)) !important;
+}
+
+/* Give homepage sections a clear editorial center instead of a left-heavy layout. */
+div[class*="homeSectionHeading"],
+div[class*="homeCuratedHeading"] {
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.85rem !important;
+  text-align: center !important;
+}
+
+[class*="homeSectionHeading"] > div,
+[class*="homeCuratedHeading"] > div {
+  width: 100%;
+  text-align: center;
+}
+
+[class*="homeSectionEyebrow"],
+[class*="homeSectionTitle"],
+[class*="homeCuratedTitle"],
+[class*="homeCatalogTitle"],
+[class*="homeSectionScript"],
+[class*="homeCuratedScript"] {
+  text-align: center !important;
+}
+
+[class*="homeSectionScript"],
+[class*="homeCuratedScript"] {
+  transform-origin: center center !important;
+}
+
+[class*="homeSectionLink"] {
+  margin-inline: auto;
+}
+
+/* The old 4:5 crop made the experience photography feel oversized and poster-like.
+   Use a consistent landscape editorial crop instead. */
+div[class*="homeCategoryMedia"] {
+  aspect-ratio: 16 / 10 !important;
+}
+
+/* Remove the alternating vertical stagger so the grid reads cleanly. */
+a[class*="homeCategoryCard"],
+[class*="homeCategoryCard"] {
+  transform: none !important;
+  border-radius: 14px;
+}
+
+[class*="homeCategoryCard"]:hover,
+[class*="homeCategoryCard"]:focus-visible {
+  transform: translateY(-5px) !important;
+}
+
+[class*="homeCategoryBody"] {
+  min-height: 0 !important;
+  text-align: center;
+}
+
+[class*="homeCategoryBody"] p {
+  margin-inline: auto;
+}
+
+/* Shared cinematic guide heroes are left aligned by default.
+   On WNO, make them feel like real destination landing pages. */
+section[class*="hero"] div[class*="inner"] {
+  text-align: center;
+}
+
+section[class*="hero"] [class*="eyebrow"],
+section[class*="hero"] [class*="title"],
+section[class*="hero"] [class*="intro"] {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  text-align: center !important;
+}
+
+section[class*="hero"] [class*="rule"] {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+section[class*="hero"] [class*="actions"] {
+  justify-content: center !important;
+}
+
+/* Make guide/category imagery feel intentional and consistent. */
+main article {
+  overflow: hidden;
+}
+
+main article img,
+main section img[class*="object-cover"] {
+  object-position: center center;
+}
+
+/* Add breathing room and visual grouping to content cards without changing copy. */
+main article,
+main details,
+main div[class*="border"][class*="bg-[#1a1a1a]"],
+main div[class*="border"][class*="bg-[#12110e]"] {
+  border-radius: 14px;
+}
+
+main details {
+  overflow: hidden;
+}
+
+/* Section headings should establish hierarchy; body copy stays left aligned for readability. */
+main section > h2,
+main section > div:first-child > h2 {
+  text-align: center;
+}
+
+main section > p[class*="uppercase"],
+main section > div:first-child > p[class*="uppercase"] {
+  text-align: center;
+}
+
+/* Softer content width and spacing on large screens. */
+main > div[class*="min-h-screen"] > div[class*="max-w-3xl"] {
+  max-width: 860px;
+}
+
+@media (max-width: 900px) {
+  div[class*="homeCategoryGrid"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  div[class*="homeCategoryGrid"] {
+    grid-template-columns: 1fr !important;
+    gap: 1.1rem !important;
+  }
+
+  div[class*="homeCategoryMedia"] {
+    aspect-ratio: 16 / 9 !important;
+  }
+
+  [class*="homeSectionInner"] {
+    width: min(100% - 1.5rem, 1240px) !important;
+  }
+
+  section[class*="hero"] div[class*="inner"] {
+    width: min(100% - 28px, 1180px) !important;
+  }
 }
