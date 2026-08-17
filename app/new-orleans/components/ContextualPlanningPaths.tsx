@@ -94,19 +94,24 @@ export default function ContextualPlanningPaths() {
   if (!links) return null;
 
   return (
-    <aside className="border-t border-white/10 bg-[#110e14] px-6 py-10 text-[#fdfbf7]" aria-label="Planning help">
+    <aside className="border-t border-[#3a2b17] bg-[linear-gradient(180deg,#120d12,#0c090c)] px-6 py-7 text-[#fdfbf7]" aria-label="Planning help">
       <div className="mx-auto max-w-6xl">
-        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#d4af37]">Still deciding?</p>
-            <h2 className="mt-2 font-serif text-2xl md:text-3xl">Use the decision guide that matches your trip</h2>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">Still deciding?</p>
+            <h2 className="mt-1 font-serif text-xl leading-tight md:text-2xl">Use the guide that matches your trip</h2>
           </div>
-          <Link href="/guides/plan-new-orleans-tours" className="text-sm font-bold text-[#d4af37] hover:text-white">See all planning paths →</Link>
+          <Link href="/guides/plan-new-orleans-tours" className="text-xs font-bold uppercase tracking-[0.08em] text-[#d4af37] hover:text-white">All planning paths →</Link>
         </div>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className={`mt-4 grid gap-2 ${links.length >= 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
           {links.map((link) => (
-            <Link key={link.href} href={link.href} className="border border-white/15 bg-white/[0.03] px-4 py-4 text-sm leading-5 hover:border-[#d4af37]">
-              {link.label} →
+            <Link
+              key={link.href}
+              href={link.href}
+              className="group flex min-h-14 items-center justify-between gap-3 border border-white/10 bg-white/[0.025] px-4 py-3 text-sm leading-5 transition hover:-translate-y-0.5 hover:border-[#d4af37]/70 hover:bg-[#d4af37]/[0.05]"
+            >
+              <span>{link.label}</span>
+              <span className="shrink-0 text-[#d4af37] transition group-hover:translate-x-0.5">→</span>
             </Link>
           ))}
         </div>
