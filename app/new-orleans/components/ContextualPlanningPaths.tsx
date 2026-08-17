@@ -6,9 +6,9 @@ import { usePathname } from "next/navigation";
 type PlanningLink = { href: string; label: string };
 
 const HOME_LINKS: PlanningLink[] = [
-  { href: "/guides/plan-new-orleans-tours", label: "Plan by time, group or transportation" },
-  { href: "/guides/things-to-do-in-new-orleans-today", label: "Things to do today" },
-  { href: "/guides/one-day-in-new-orleans-tours", label: "Only have one day" },
+  { href: "/guides/plan-new-orleans-tours", label: "Plan my trip" },
+  { href: "/guides/things-to-do-in-new-orleans-today", label: "Today" },
+  { href: "/guides/one-day-in-new-orleans-tours", label: "One day" },
   { href: "/guides/first-time-new-orleans-tours", label: "First visit" },
 ];
 
@@ -92,6 +92,30 @@ export default function ContextualPlanningPaths() {
   const pathname = usePathname();
   const links = resolveLinks(pathname);
   if (!links) return null;
+
+  if (pathname === "/") {
+    return (
+      <aside className="border-y border-[#3a2b17] bg-[#0d0a0d] px-6 py-4 text-[#fdfbf7]" aria-label="Planning help">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-baseline gap-3">
+            <p className="shrink-0 text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">Not sure yet?</p>
+            <p className="font-serif text-lg text-[#f3eadc]">Pick a planning shortcut.</p>
+          </div>
+          <nav className="flex flex-wrap gap-2" aria-label="Homepage planning shortcuts">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="inline-flex min-h-10 items-center gap-2 border border-white/10 bg-white/[0.025] px-4 py-2 text-xs font-semibold text-[#e8dfd0] transition hover:border-[#d4af37]/70 hover:bg-[#d4af37]/[0.05] hover:text-white"
+              >
+                {link.label}<span className="text-[#d4af37]">→</span>
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <aside className="border-t border-[#3a2b17] bg-[linear-gradient(180deg,#120d12,#0c090c)] px-6 py-7 text-[#fdfbf7]" aria-label="Planning help">
