@@ -1,9 +1,11 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { TourRecord } from "../lib/tourRecommendationRules";
 import { getGovernedExperienceGraphRecord } from "../data/experienceGraphGovernance";
+import { operatorSlug } from "../data/operatorRegistry";
 import type { Fact, TimeRange } from "../data/experienceGraphV2";
 
 interface Props {
@@ -84,8 +86,11 @@ export default function TourLogisticsSummary({ tourRecord }: Props) {
 
   return (
     <div className="bg-[#1a1a1a] p-8 border border-[#2a2a2a]">
-      <div className="flex flex-col gap-2 border-b border-[#2a2a2a] pb-4 sm:flex-row sm:items-end sm:justify-between">
-        <h2 className="text-xl font-[var(--font-accent)] font-bold text-[#fdfbf7]">Verified logistics & format</h2>
+      <div className="flex flex-col gap-3 border-b border-[#2a2a2a] pb-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-xl font-[var(--font-accent)] font-bold text-[#fdfbf7]">Verified logistics & format</h2>
+          <p className="mt-2 text-xs text-[#888]">Operated by <Link href={`/operators/${operatorSlug(graph.operator)}`} className="font-bold text-[#d4af37] underline underline-offset-4">{graph.operator}</Link></p>
+        </div>
         <span className={`text-[10px] font-bold uppercase tracking-widest ${graph.verificationStatus === "NEEDS_VERIFICATION" ? "text-[#b9a06b]" : "text-[#d4af37]"}`}>
           {graph.verificationStatus === "NEEDS_VERIFICATION" ? "Verification in progress" : "Governed Experience Graph"}
         </span>
@@ -114,6 +119,7 @@ export default function TourLogisticsSummary({ tourRecord }: Props) {
 
       <div className="mt-6 border-t border-[#2a2a2a] pt-4">
         <p className="text-[11px] italic leading-relaxed text-[#aaaaaa]">Current operator checkout remains controlling for live availability, selected variants, prices, schedules, policies and any operational changes.</p>
+        <Link href="/how-we-choose" className="mt-3 inline-block text-[11px] font-bold uppercase tracking-wider text-[#d4af37] underline underline-offset-4">How WNO verifies & recommends →</Link>
       </div>
     </div>
   );
