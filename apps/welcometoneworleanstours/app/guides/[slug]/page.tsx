@@ -4,10 +4,10 @@ import { permanentRedirect } from "next/navigation";
 import CanonicalGuidePage, { generateMetadata as generateCanonicalMetadata } from "@/app/new-orleans/guides/[slug]/page";
 import FourHours from "@/app/new-orleans/guides/4-hours-in-new-orleans/page";
 import BestSwamp from "@/app/new-orleans/guides/best-new-orleans-swamp-tour/page";
-import RainyDay from "@/app/new-orleans/guides/best-new-orleans-tours-for-a-rainy-day/page";
-import FirstTime from "@/app/new-orleans/guides/first-time-new-orleans-tours/page";
-import SwampTransport from "@/app/new-orleans/guides/best-swamp-tour-with-transportation/page";
-import NearQuarter from "@/app/new-orleans/guides/new-orleans-tours-near-french-quarter/page";
+import RainyDay, { metadata as rainyDayMetadata } from "@/app/new-orleans/guides/best-new-orleans-tours-for-a-rainy-day/page";
+import FirstTime, { metadata as firstTimeMetadata } from "@/app/new-orleans/guides/first-time-new-orleans-tours/page";
+import SwampTransport, { metadata as swampTransportMetadata } from "@/app/new-orleans/guides/best-swamp-tour-with-transportation/page";
+import NearQuarter, { metadata as nearQuarterMetadata } from "@/app/new-orleans/guides/new-orleans-tours-near-french-quarter/page";
 import UnderFifty from "@/app/new-orleans/guides/new-orleans-tours-under-50-dollars/page";
 import NoCar from "@/app/new-orleans/guides/new-orleans-swamp-tour-without-a-car/page";
 import KidsAirboats from "@/app/new-orleans/guides/can-kids-ride-airboats-new-orleans/page";
@@ -33,6 +33,10 @@ const directAliases = {
 } as const;
 
 const bridgedMetadata: Record<string, Metadata> = {
+  "best-new-orleans-tours-for-a-rainy-day": rainyDayMetadata,
+  "first-time-new-orleans-tours": firstTimeMetadata,
+  "best-swamp-tour-with-transportation": swampTransportMetadata,
+  "new-orleans-tours-near-french-quarter": nearQuarterMetadata,
   "plan-new-orleans-tours": planNewOrleansMetadata,
   "things-to-do-before-a-cruise-new-orleans": {
     ...beforeCruiseMetadata,
