@@ -11,6 +11,7 @@ const INTENTIONAL_TEXT_ONLY = new Set([
   "covered-boat-plantation-combo",
   "swamp-boat-oak-alley-combo",
   "swamp-boat-whitney-combo",
+  "city-cemetery-garden-district-tour",
 ]);
 
 export async function GET() {
@@ -70,13 +71,14 @@ export async function GET() {
   const duplicateImages = [...grouped.entries()]
     .filter(([, slugs]) => slugs.length > 1)
     .map(([imageUrl, slugs]) => ({ imageUrl, slugs }));
-  const broken = rendered.filter((row) => row.status !== 200);
+  const externalRateLimited = rendered.filter((row) => row.source === "wikimedia" && row.status === 429);
+  const broken = rendered.filter((row) => row.status !== 200 && !(row.source === "wikimedia" && row.status === 429));
   const missingAlt = rendered.filter((row) => !row.alt);
-  const oversized = rendered.filter((row) => row.bytes !== null && row.bytes >= 100_000);
+  const oversized = rendered.filter((row) => row.status === 200 && row.bytes !== null && row.bytes >= 100_000);
 
   return NextResponse.json({
     generatedAt: new Date().toISOString(),
-    definition: "Audits the image actually selected by resolveProductImage. Four combination products are intentionally text-only until an accurate rights-cleared combination image exists.",
+    definition: "Audits the image actually selected by resolveProductImage. Five products are intentionally text-only until an accurate rights-cleared image exists. Wikimedia HTTP 429 responses are reported separately from broken assets because the audit itself can trigger upstream rate limiting.",
     summary: {
       products: rows.length,
       renderedImages: rendered.length,
@@ -85,12 +87,14 @@ export async function GET() {
       uniqueRenderedImages: grouped.size,
       duplicateImageGroups: duplicateImages.length,
       brokenImages: broken.length,
+      externalRateLimited: externalRateLimited.length,
       missingAlt: missingAlt.length,
       oversized100Kb: oversized.length,
     },
     duplicateImages,
     textOnly: textOnly.map((row) => ({ slug: row.slug, intentional: row.intentionalTextOnly })),
     broken,
+    externalRateLimited: externalRateLimited.map((row) => ({ slug: row.slug, imageUrl: row.imageUrl, status: row.status })),
     missingAlt: missingAlt.map((row) => ({ slug: row.slug, imageUrl: row.imageUrl })),
     oversized: oversized.map((row) => ({ slug: row.slug, imageUrl: row.imageUrl, bytes: row.bytes })),
     results: rows,
