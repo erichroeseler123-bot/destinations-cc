@@ -46,6 +46,7 @@ function cleanChooserInput(value: unknown) {
     transportation: clean(value.transportation),
     groupStyle: clean(value.groupStyle),
     mixedAges: clean(value.mixedAges, 32),
+    airboatEligibility: clean(value.airboatEligibility, 80),
     historicalInterest: clean(value.historicalInterest),
   };
 }
@@ -141,6 +142,7 @@ export async function POST(request: NextRequest) {
         transportation: clean(body.transportation),
         group_style: clean(body.groupStyle || body.group_style),
         mixed_ages: clean(body.mixedAges || body.mixed_ages, 32),
+        airboat_eligibility: clean(body.airboatEligibility || body.airboat_eligibility, 80),
         historical_interest: clean(body.historicalInterest || body.historical_interest),
         live_period: clean(body.livePeriod || body.live_period, 32),
         live_rain_risk: clean(body.liveRainRisk || body.live_rain_risk, 32),
