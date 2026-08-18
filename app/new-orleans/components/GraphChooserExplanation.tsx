@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getExperienceGraphRecord } from "../data/experienceGraphV2";
+import { getGovernedExperienceGraphRecord } from "../data/experienceGraphGovernance";
 import { TOUR_RECORDS } from "../lib/tourRecommendationRules";
 
 const CHOOSER_RECOMMENDATION = "wno_chooser_recommendation";
@@ -11,6 +11,7 @@ type CapturedAnswers = {
   transportation?: string;
   groupStyle?: string;
   mixedAges?: string;
+  airboatEligibility?: string;
   historicalInterest?: string;
   planningWindow?: string;
 };
@@ -32,6 +33,11 @@ const ANSWER_MAP: Record<string, keyof CapturedAnswers> = {
   "Fast and adventurous": "groupStyle",
   "Yes": "mixedAges",
   "No": "mixedAges",
+  "No known airboat restrictions": "airboatEligibility",
+  "Child under 5 in the group": "airboatEligibility",
+  "Pregnancy in the group": "airboatEligibility",
+  "Neck or back condition in the group": "airboatEligibility",
+  "Not sure about airboat eligibility": "airboatEligibility",
   "Strong interest": "historicalInterest",
   "Some interest": "historicalInterest",
   "Not the priority": "historicalInterest",
@@ -45,7 +51,7 @@ function maxMinutes(answer?: string) {
 }
 
 function buildContextReasons(slug: string, answers: CapturedAnswers) {
-  const graph = getExperienceGraphRecord(slug);
+  const graph = getGovernedExperienceGraphRecord(slug);
   if (!graph) return [];
   const reasons: string[] = [];
   const timeLimit = maxMinutes(answers.availableTime);
@@ -64,14 +70,20 @@ function buildContextReasons(slug: string, answers: CapturedAnswers) {
 }
 
 function buildRuledOut(slug: string, answers: CapturedAnswers) {
-  const graph = getExperienceGraphRecord(slug);
+  const graph = getGovernedExperienceGraphRecord(slug);
   const alternativeSlug = graph?.alternativeSlug;
   if (!graph || !alternativeSlug) return null;
   const alternative = TOUR_RECORDS[alternativeSlug];
   if (!alternative) return null;
 
   let reason: string | null = null;
-  if (slug === "covered-tour-boat" && answers.groupStyle === "Relaxed and comfortable") {
+  const airboatRestricted = answers.airboatEligibility && answers.airboatEligibility !== "No known airboat restrictions";
+
+  if (slug === "covered-tour-boat" && airboatRestricted) {
+    reason = answers.airboatEligibility === "Not sure about airboat eligibility"
+      ? "the airboat was excluded because eligibility is uncertain; the operator's verified restrictions should be cleared before considering it."
+      : `the airboat was excluded because you selected “${answers.airboatEligibility},” which conflicts with verified operator restrictions.`;
+  } else if (slug === "covered-tour-boat" && answers.groupStyle === "Relaxed and comfortable") {
     reason = "the airboat is louder, more exposed and more thrill-oriented than the pace you selected.";
   } else if (slug === "ragin-cajun-airboat-options" && answers.groupStyle === "Fast and adventurous") {
     reason = "the covered boat is the calmer choice, so it is a weaker match for the adventurous pace you selected.";
@@ -122,11 +134,11 @@ export default function GraphChooserExplanation() {
     };
   }, []);
 
-  const graph = slug ? getExperienceGraphRecord(slug) : null;
+  const graph = slug ? getGovernedExperienceGraphRecord(slug) : null;
   const reasons = useMemo(() => (slug ? buildContextReasons(slug, answers) : []), [slug, answers]);
   const ruledOut = useMemo(() => (slug ? buildRuledOut(slug, answers) : null), [slug, answers]);
 
-  if (!slug || !graph) return null;
+  if (!slug || !graph || graph.verificationStatus === "NEEDS_VERIFICATION") return null;
   const fallbackReasons = graph.bestFor.slice(0, 2);
   const because = reasons.length ? reasons.slice(0, 4) : fallbackReasons;
   if (!because.length && !graph.tradeOff && !ruledOut) return null;
@@ -155,7 +167,7 @@ export default function GraphChooserExplanation() {
             <p className="mt-2 text-sm leading-6 text-[#bbb0a1]"><strong className="text-[#fdfbf7]">{ruledOut.title}</strong> — {ruledOut.reason}</p>
           </div>
         )}
-        <p className="mt-6 text-[11px] leading-5 text-white/45">This explanation only uses recommendation inputs and Experience Graph facts currently available to WNO. Variant-dependent details still must be confirmed during booking.</p>
+        <p className="mt-6 text-[11px] leading-5 text-white/45">This explanation only uses recommendation inputs and governed Experience Graph facts currently available to WNO. Variant-dependent details still must be confirmed during booking.</p>
       </div>
     </section>
   );
