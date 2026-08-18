@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { getSeoPageBySlug } from "../../data/pageMap";
 import { getProductById, type LiveProductAdapter } from "../../data/index";
+import ExperienceDecisionBlock from "../../components/ExperienceDecisionBlock";
 import WnoBreadcrumbs from "../../components/WnoBreadcrumbs";
 import VisualEditorialCard from "../../components/VisualEditorialCard";
 import { buildSeoMetadata } from "../../lib/buildSeoMetadata";
@@ -98,6 +99,11 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
             <p className="font-serif text-xl leading-9 text-[#eadfca] md:text-2xl">{record.openingAnswer}</p>
           </section>
         )}
+
+        <ExperienceDecisionBlock
+          slugs={products.map((product) => product.slug)}
+          categoryLabel={record.heroTitle}
+        />
 
         {(record.whoItIsFor || record.decisionFactors.length > 0) && (
           <section className="mt-12 grid gap-5 md:grid-cols-2">
