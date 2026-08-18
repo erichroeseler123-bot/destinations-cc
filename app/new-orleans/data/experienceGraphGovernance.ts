@@ -1,4 +1,5 @@
 import { WNO_EXPERIENCE_GRAPH_V2, type Fact, type TimeRange, type WnoExperienceGraphRecord } from "./experienceGraphV2";
+import { WNO_OFFICIAL_GRAPH_BACKFILL } from "./experienceGraphOfficialBackfill";
 import { TOUR_INTELLIGENCE } from "./tourIntelligence";
 
 function unknown<T>(note = "Needs operator or authoritative source verification."): Fact<T> {
@@ -47,14 +48,14 @@ function unverifiedShell(slug: string): WnoExperienceGraphRecord {
 /**
  * Governance layer for the complete WNO storefront inventory.
  *
- * Detailed v2 records win. Every remaining storefront product receives an
- * explicit unverified shell so "missing" can never be confused with
- * "verified" and no decision surface needs to invent a value to fill a gap.
+ * Detailed v2 records win, then current operator-source backfill records, then
+ * an explicit unverified shell. This preserves one rule across every decision
+ * surface: unknown facts stay unknown and are never filled by guesswork.
  */
 export const WNO_GOVERNED_EXPERIENCE_GRAPH: Record<string, WnoExperienceGraphRecord> = Object.fromEntries(
   Object.keys(TOUR_INTELLIGENCE).map((slug) => [
     slug,
-    WNO_EXPERIENCE_GRAPH_V2[slug] || unverifiedShell(slug),
+    WNO_EXPERIENCE_GRAPH_V2[slug] || WNO_OFFICIAL_GRAPH_BACKFILL[slug] || unverifiedShell(slug),
   ])
 );
 
