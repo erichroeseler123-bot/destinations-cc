@@ -68,6 +68,22 @@ const WTONOT_OPERATOR_PATHS = WNO_OPERATOR_ENTITIES.map((operator) => `/operator
 
 const WTONOT_SUPERSEDED_SEO_PATHS = new Set(["/swamp-tours/airboat-vs-covered-boat", "/swamp-tours/small-vs-large-airboat", "/swamp-tours/pickup-vs-self-drive"]);
 
+// These routes are intentionally not indexable or are known aliases/dead paths.
+// Keep them out of the sitemap even if an older registry still surfaces them.
+const WTONOT_NON_INDEXABLE_PATHS = new Set([
+  "/plantation-tours/oak-alley-vs-laura",
+  "/guides/4-hours-in-new-orleans",
+  "/guides/best-new-orleans-tours-if-you-arrive-at-noon",
+  "/guides/best-new-orleans-tours-with-kids-under-6",
+  "/guides/can-kids-ride-airboats-new-orleans",
+  "/guides/new-orleans-swamp-tour-without-a-car",
+  "/guides/new-orleans-tours-under-50-dollars",
+  "/guides/this-weekend",
+  "/guides/visitor-rewards",
+  "/guides/whitney-plantation-vs-oak-alley-history-focus",
+  "/guides/new-orleans-tours-tonight",
+]);
+
 function xmlEscape(value: string): string { return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;"); }
 function toAbsoluteUrl(pathname: string, origin: string = SITE_IDENTITY.siteUrl): string { return `${origin}${pathname}`; }
 
@@ -84,7 +100,7 @@ export function buildWtonotSitemapPaths() {
   ALL_PRODUCTS.forEach((product: any) => { if (product.status === "live" && product.isIndexable) wtoPaths.push(`/tours/${product.slug}`); });
   Object.values(SEO_PAGES).forEach((page: any) => { if (page.status === "live" && page.isIndexable && !WTONOT_SUPERSEDED_SEO_PATHS.has(page.publicRoute)) wtoPaths.push(page.publicRoute); });
   COMPARISON_OPPORTUNITIES.forEach((comparison) => { if (comparison.status === "READY_TO_PUBLISH") wtoPaths.push(`/compare/${comparison.slug}`); });
-  return Array.from(new Set(wtoPaths));
+  return Array.from(new Set(wtoPaths)).filter((path) => !WTONOT_NON_INDEXABLE_PATHS.has(path));
 }
 
 export async function GET() {
