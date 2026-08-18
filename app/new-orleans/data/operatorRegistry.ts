@@ -6,6 +6,8 @@ const OPERATOR_SLUG_ALIASES: Record<string, string> = {
   "gray line": "gray-line",
   "new orleans steamboat company / gray line": "new-orleans-steamboat-company",
   "new orleans steamboat company": "new-orleans-steamboat-company",
+  "ragin cajun airboat tours": "ragin-cajun-tours",
+  "ragin cajun tours": "ragin-cajun-tours",
 };
 
 export function operatorSlug(name: string) {
