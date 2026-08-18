@@ -21,6 +21,8 @@ const INTENT_TILE_PATHS = [
   "/plantation-tours",
   "/food-tours",
   "/ghost-tours",
+  "/garden-district-tours",
+  "/jazz-music-tours",
 ] as const;
 
 type TourAuditConfig = {
