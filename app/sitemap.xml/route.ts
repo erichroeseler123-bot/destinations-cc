@@ -6,6 +6,7 @@ import { SITE_IDENTITY } from "@/src/data/site-identity";
 import { SOMERSET_PAGE_PATHS } from "@/lib/dcc/corridors/somersetPages";
 import { ALL_PRODUCTS, SEO_PAGES } from "@/app/new-orleans/data";
 import { COMMERCIAL_CATEGORY_PAGES } from "@/app/new-orleans/data/commercialCategoryPages";
+import { ADDITIONAL_COMMERCIAL_CATEGORY_PAGES } from "@/app/new-orleans/data/additionalCommercialCategoryPages";
 import { COMPARISON_OPPORTUNITIES } from "@/app/new-orleans/data/comparisonRegistry";
 import { INTENT_SEO_PAGES } from "@/app/new-orleans/data/intentSeoPages";
 import { AUDIENCE_INTENT_SEO_PAGES } from "@/app/new-orleans/data/audienceIntentSeoPages";
@@ -55,7 +56,10 @@ const WTONOT_MACHINE_DISCOVERY_PATHS = [
   "/guides/tour-catalog",
 ] as const;
 
-const WTONOT_COMMERCIAL_CATEGORY_PATHS = Object.values(COMMERCIAL_CATEGORY_PAGES)
+const WTONOT_COMMERCIAL_CATEGORY_PATHS = [
+  ...Object.values(COMMERCIAL_CATEGORY_PAGES),
+  ...Object.values(ADDITIONAL_COMMERCIAL_CATEGORY_PAGES),
+]
   .filter((page) => page.status === "live" && page.isIndexable && page.publicRoute !== "/combo-tours")
   .map((page) => page.publicRoute);
 
