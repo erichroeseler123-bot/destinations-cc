@@ -9,6 +9,9 @@ export default function HeldProductPage() {
           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">Operator verification pending</p>
           <h1 className="mt-4 font-serif text-4xl leading-tight md:text-5xl">Covered Boat + Plantation</h1>
           <p className="mt-5 text-lg leading-8 text-white/80">{HELD_COMBO_BANNER}</p>
+          <p className="mt-4 text-sm text-white/55">
+            Operator record: <Link href="/operators/ragin-cajun-tours" className="font-bold text-[#d4af37] underline underline-offset-4">Ragin Cajun Tours</Link>
+          </p>
         </div>
 
         <section className="mt-8 border border-white/10 bg-white/[0.025] p-7 md:p-9">
