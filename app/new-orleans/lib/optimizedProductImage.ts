@@ -1,6 +1,6 @@
 export const WNO_PRODUCT_IMAGE_WIDTH = 828;
 export const WNO_PRODUCT_IMAGE_QUALITY = 45;
-export const WNO_SWAMP_IMAGE_QUALITY = 30;
+export const WNO_SWAMP_IMAGE_QUALITY = 15;
 
 export function optimizedProductImageUrl(src: string) {
   if (!src || src.startsWith("/_next/image?url=")) return src;
