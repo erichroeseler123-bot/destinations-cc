@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { HELD_COMBO_BANNER, HELD_COMBO_REASON, HELD_COMBO_SLUG } from "@/app/new-orleans/data/truthPolicy";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -40,7 +41,7 @@ const TOURS: TourAuditConfig[] = [
   { slug: "covered-tour-boat", itemId: "590176", flowId: "392449", expectedAsn: "aktourcenter" },
   { slug: "ragin-cajun-airboat-options", flowId: "940162", expectedAsn: "aktourcenter" },
   { slug: "all-day-city-plantation-combo", itemId: "51953", flowId: "4344", expectedAsn: "aktourcenter" },
-  { slug: "covered-boat-plantation-combo", itemId: "603090", flowId: "392449", expectedAsn: "aktourcenter" },
+  { slug: HELD_COMBO_SLUG, itemId: "603090", flowId: "392449", expectedAsn: "aktourcenter" },
   { slug: "evening-jazz-cruise", variantCount: 4, expectedAsn: "welcometoneworleanstours", expectedRef: "WelcomeToNewOrleansTours" },
   { slug: "daytime-jazz-cruise", variantCount: 6, expectedAsn: "welcometoneworleanstours", expectedRef: "WelcomeToNewOrleansTours" },
   { slug: "sunday-jazz-brunch-cruise", variantCount: 3, expectedAsn: "welcometoneworleanstours", expectedRef: "WelcomeToNewOrleansTours" },
@@ -122,10 +123,36 @@ export async function GET() {
     TOURS.map(async (config) => {
       const result = await fetchPath(`/tours/${config.slug}`);
       const links = extractFareHarborLinks(result.text);
+      const held = config.slug === HELD_COMBO_SLUG;
+
+      if (held) {
+        const bannerOk = result.text.includes(HELD_COMBO_BANNER);
+        const reasonOk = result.text.includes(HELD_COMBO_REASON);
+        const phoneOk = result.text.includes("tel:+15044849687") && result.text.includes("504-484-9687");
+        const noSelfService = links.length === 0;
+        return {
+          slug: config.slug,
+          mode: "manual_confirmation" as const,
+          status: result.status,
+          routeOk: result.ok,
+          fareHarborLinks: links.length,
+          bannerOk,
+          reasonOk,
+          phoneOk,
+          noSelfService,
+          mappingOk: null,
+          attributionOk: null,
+          expectedAsn: null,
+          expectedRef: null,
+          pass: Boolean(result.ok && bannerOk && reasonOk && phoneOk && noSelfService),
+        };
+      }
+
       const mapping = result.ok && mappingOk(config, result.text, links);
       const attribution = result.ok && attributionOk(config, links);
       return {
         slug: config.slug,
+        mode: "self_service" as const,
         status: result.status,
         routeOk: result.ok,
         fareHarborLinks: links.length,
@@ -140,6 +167,8 @@ export async function GET() {
 
   const routeFailures = routeResults.filter((result) => !result.ok).map(({ path, status, error }) => ({ path, status, error }));
   const tourFailures = tourResults.filter((result) => !result.pass);
+  const selfService = tourResults.filter((result) => result.mode === "self_service");
+  const heldManual = tourResults.filter((result) => result.mode === "manual_confirmation");
 
   return NextResponse.json({
     generatedAt: new Date().toISOString(),
@@ -154,10 +183,13 @@ export async function GET() {
     },
     bookingAudit: {
       checked: tourResults.length,
-      passed: tourResults.length - tourFailures.length,
+      governedPassed: tourResults.length - tourFailures.length,
+      selfServicePassed: selfService.filter((result) => result.pass).length,
+      manualConfirmationPassed: heldManual.filter((result) => result.pass).length,
       failed: tourFailures.length,
       failures: tourFailures,
       results: tourResults,
+      definition: "A product passes when it is either a valid attributed self-service FareHarbor route or an explicitly held manual-confirmation route with no FareHarbor self-service link.",
     },
     commission: {
       verified: false,
