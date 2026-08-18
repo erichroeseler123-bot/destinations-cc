@@ -1,6 +1,20 @@
+import type { Metadata } from "next";
 import "../../../app/globals.css";
 import "./wno-recovery.css";
 import CanonicalNewOrleansLayout from "@/app/new-orleans/layout";
+
+export const metadata: Metadata = {
+  metadataBase: new URL("https://www.welcometoneworleanstours.com"),
+  title: {
+    default: "Welcome to New Orleans Tours | Find the Right Experience",
+    template: "%s",
+  },
+  description: "Compare curated New Orleans tours and experiences by group fit, time, transportation, and practical constraints before checking live operator availability.",
+  openGraph: {
+    siteName: "Welcome to New Orleans Tours",
+    type: "website",
+  },
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
