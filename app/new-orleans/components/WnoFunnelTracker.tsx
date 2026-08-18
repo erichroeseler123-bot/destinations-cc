@@ -72,7 +72,10 @@ export default function WnoFunnelTracker() {
         ENTRY_SOURCE_KEY,
         classifyWnoEntrySource({
           pathname: window.location.pathname,
-          explicitSource: params.get("src"),
+          // `src` is the existing WNO convention. `source` is accepted too so
+          // QR cards, briefs, hotels and partner links can use readable tags
+          // such as ?source=str_card without losing attribution.
+          explicitSource: params.get("src") || params.get("source"),
           utmSource: params.get("utm_source"),
           referrer: document.referrer,
         }),
