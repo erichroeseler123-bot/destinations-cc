@@ -20,8 +20,11 @@ const CATEGORY_LINKS: Record<string, PlanningLink[]> = {
   ],
   "/swamp-tours": [
     { href: "/compare/covered-swamp-boat-vs-airboat", label: "Covered boat vs airboat" },
+    { href: "/airboat-tours", label: "Browse airboat tour formats" },
+    { href: "/covered-swamp-boat-tours", label: "Browse covered swamp boats" },
+    { href: "/guides/how-far-are-swamp-tours-from-new-orleans", label: "How far are the swamps?" },
+    { href: "/guides/new-orleans-without-a-car", label: "Planning without a car" },
     { href: "/guides/best-swamp-tour-with-transportation", label: "Swamp tours with transportation" },
-    { href: "/guides/city-tour-vs-swamp-tour-new-orleans", label: "City tour vs swamp tour" },
   ],
   "/plantation-tours": [
     { href: "/compare/whitney-vs-oak-alley", label: "Whitney vs Oak Alley" },
