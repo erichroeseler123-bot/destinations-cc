@@ -1,5 +1,12 @@
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 import { getGovernedExperienceGraphRecord } from "../data/experienceGraphGovernance";
+import {
+  getDecisionEligibility,
+  HELD_COMBO_REASON,
+  HELD_COMBO_SLUG,
+  SOUTHERN_STYLE_COMBO_DURATION_COPY,
+  SOUTHERN_STYLE_COMBO_SLUG,
+} from "../data/truthPolicy";
 
 export type PlanningWindow =
   | "Something for today"
@@ -75,8 +82,8 @@ const PROFILES: Record<string, Profile> = {
   "oak-alley-or-laura-plantation-tour": { minutes: 330, pace: "balanced", family: "neutral", history: "strong", exposure: "mixed", transportation: "included" },
   "covered-tour-boat": { minutes: 210, pace: "relaxed", family: "good", history: "low", exposure: "covered", morning: true, transportation: "available" },
   "ragin-cajun-airboat-options": { minutes: 210, pace: "adventurous", family: "neutral", history: "low", exposure: "outdoor", morning: true, transportation: "available" },
-  "all-day-city-plantation-combo": { minutes: 480, pace: "balanced", family: "neutral", history: "strong", exposure: "mixed", fullDay: true, transportation: "included" },
-  "covered-boat-plantation-combo": { minutes: 420, pace: "relaxed", family: "neutral", history: "strong", exposure: "mixed", fullDay: true, transportation: "included" },
+  "all-day-city-plantation-combo": { pace: "balanced", family: "neutral", history: "strong", exposure: "mixed", fullDay: true, transportation: "included" },
+  "covered-boat-plantation-combo": { pace: "relaxed", family: "neutral", history: "strong", exposure: "mixed", fullDay: true, transportation: "included" },
   "evening-jazz-cruise": { minutes: 150, pace: "relaxed", family: "good", history: "low", exposure: "mixed", evening: true, music: true, transportation: "self" },
   "daytime-jazz-cruise": { minutes: 150, pace: "relaxed", family: "good", history: "low", exposure: "mixed", music: true, transportation: "self" },
   "sunday-jazz-brunch-cruise": { minutes: 180, pace: "relaxed", family: "good", history: "low", exposure: "mixed", morning: true, music: true, transportation: "self" },
@@ -123,9 +130,16 @@ function governedCommitmentMinutes(slug: string, transportation: TransportationN
   return known.length ? Math.max(...known) : null;
 }
 
+export function getRecommendationEligibility(slug: string) {
+  return getDecisionEligibility(slug);
+}
+
 export const TOUR_RECORDS: Record<string, TourRecord> = Object.fromEntries(
   STOREFRONT_PRODUCTS.map((product) => {
     const profile = PROFILES[product.slug] || {};
+    const governed = governedCommitmentMinutes(product.slug, "Not sure");
+    const isSouthernFlexibleCombo = product.slug === SOUTHERN_STYLE_COMBO_SLUG;
+    const isHeldCombo = product.slug === HELD_COMBO_SLUG;
     return [product.slug, {
       slug: product.slug,
       id: product.id,
@@ -138,12 +152,20 @@ export const TOUR_RECORDS: Record<string, TourRecord> = Object.fromEntries(
       historicalDepth: profile.history || "some",
       weatherExposure: profile.exposure || "mixed",
       noiseLevel: profile.pace === "adventurous" ? "Higher" : "Moderate",
-      estimatedExperienceMinutes: profile.minutes || null,
-      estimatedTotalCommitmentMinutes: governedCommitmentMinutes(product.slug, "Not sure") ?? profile.minutes ?? null,
-      verifiedDurationLabel: product.durationLabel || (profile.minutes ? `About ${Math.round(profile.minutes / 60)} hours` : "Confirm during booking"),
-      verifiedTimeCommitmentLabel: governedCommitmentMinutes(product.slug, "Not sure")
-        ? `Use the governed door-to-door time for the transportation option you choose.`
-        : profile.fullDay ? "Plan for most of the day." : "Confirm current departure and return timing before booking.",
+      estimatedExperienceMinutes: isSouthernFlexibleCombo || isHeldCombo ? null : profile.minutes || null,
+      estimatedTotalCommitmentMinutes: isSouthernFlexibleCombo || isHeldCombo ? null : governed ?? profile.minutes ?? null,
+      verifiedDurationLabel: isSouthernFlexibleCombo
+        ? SOUTHERN_STYLE_COMBO_DURATION_COPY
+        : isHeldCombo
+          ? "Duration pending operator verification."
+          : product.durationLabel || (profile.minutes ? `About ${Math.round(profile.minutes / 60)} hours` : "Confirm during booking"),
+      verifiedTimeCommitmentLabel: isSouthernFlexibleCombo
+        ? SOUTHERN_STYLE_COMBO_DURATION_COPY
+        : isHeldCombo
+          ? HELD_COMBO_REASON
+          : governed
+            ? "Use the governed door-to-door time for the transportation option you choose."
+            : profile.fullDay ? "Plan for most of the day." : "Confirm current departure and return timing before booking.",
     } satisfies TourRecord];
   })
 );
@@ -166,11 +188,15 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
   const ranked = STOREFRONT_PRODUCTS.map((product) => {
     const profile = PROFILES[product.slug] || {};
     const governedMinutes = governedCommitmentMinutes(product.slug, inputs.transportation);
-    const commitmentMinutes = governedMinutes ?? profile.minutes ?? null;
+    const commitmentMinutes = product.slug === SOUTHERN_STYLE_COMBO_SLUG || product.slug === HELD_COMBO_SLUG
+      ? null
+      : governedMinutes ?? profile.minutes ?? null;
     const reasons: string[] = [];
     const cautions: string[] = [];
     let score = 0;
-    let eligible = true;
+    const truthEligibility = getDecisionEligibility(product.slug);
+    let eligible = truthEligibility.eligibility;
+    if (!eligible && truthEligibility.reason) cautions.push(truthEligibility.reason);
 
     // Hard constraints are applied before any preference scoring.
     if (AIRBOAT_SLUGS.has(product.slug) && !airboatEligible) eligible = false;
@@ -227,7 +253,7 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
         ? "The governed time commitment fits comfortably inside the time you selected."
         : "The published activity duration fits comfortably inside the time you selected; confirm the full door-to-door commitment before booking.");
     }
-    if (inputs.availableTime === "Most of the day" && profile.fullDay) {
+    if (inputs.availableTime === "Most of the day" && profile.fullDay && product.slug !== HELD_COMBO_SLUG) {
       score += 5;
       reasons.push("Makes good use of the larger block of time you have available.");
     }
@@ -237,7 +263,7 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
       if (profile.transportation === "self") score -= 2;
     }
 
-    if (!governedMinutes && inputs.availableTime !== "Most of the day") {
+    if (!governedMinutes && inputs.availableTime !== "Most of the day" && product.slug !== HELD_COMBO_SLUG) {
       cautions.push("Full door-to-door time is not yet verified; confirm the return window before booking around another timed plan.");
     }
 
