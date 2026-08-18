@@ -79,6 +79,8 @@ const WTONOT_NON_INDEXABLE_PATHS = new Set([
   "/guides/whitney-plantation-vs-oak-alley-history-focus",
   "/guides/new-orleans-tours-tonight",
   "/guides/tour-catalog",
+  "/guides/restaurant-partners",
+  "/guides/new-orleans-tours-for-grandparents-and-kids",
 ]);
 
 function xmlEscape(value: string): string { return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;"); }
