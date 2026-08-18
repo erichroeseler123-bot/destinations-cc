@@ -114,20 +114,27 @@ export const TOUR_INTELLIGENCE: Record<string, TourIntelligenceRecord> = {
     slug: "all-day-city-plantation-combo",
     operator: "Southern Style Tours",
     fareHarborItemId: "51953",
-    experienceType: "City + plantation combination",
+    experienceType: "Combination booking",
     decision: {
-      timeCommitment: "Approximately 8 hours.",
-      transportation: "Morning pickup included in the current product description.",
-      walking: "Mixed: vehicle sightseeing plus walking at the plantation site.",
-      weatherExposure: "Mixed indoor/outdoor exposure.",
-      noise: "Generally low to moderate.",
-      pace: "Full-day combination.",
-      familyFit: "Current product data lists ages 4+; reconfirm in checkout.",
-      historyFocus: "Broad city orientation plus plantation history.",
-      bestFor: ["Visitors with one full day", "Travelers wanting city and plantation experiences in one booking"],
-      cautions: ["Long day", "Plantation selection and exact return time should be confirmed"]
+      timeCommitment: "Duration depends on current itinerary. We can confirm details when you check availability.",
+      transportation: "Transportation details depend on the current selected itinerary; confirm them when checking availability.",
+      walking: "Walking requirements depend on the current component tours.",
+      weatherExposure: "Weather exposure depends on the current component tours.",
+      noise: "Noise level depends on the current component tours.",
+      pace: "Combination itinerary; sequencing and duration vary with the current component tours.",
+      familyFit: "Eligibility depends on the current component tours; confirm age and participation requirements before booking.",
+      historyFocus: "Historical focus depends on the current component tours.",
+      bestFor: ["Visitors who want to combine participating experiences and can confirm the current itinerary before booking"],
+      cautions: ["Do not publish a fixed eight-hour duration", "Current component tours, duration, pickup and return timing must be confirmed"]
     },
-    verification: { status: "PARTIAL", lastReviewed: REVIEW_DATE, notes: ["8-hour commitment recorded in existing recommendation data", "Reconfirm live age/pickup terms before publishing as evergreen fact"] }
+    verification: {
+      status: "PARTIAL",
+      lastReviewed: "2026-08-18",
+      notes: [
+        "Current Southern Style combo information does not support one fixed eight-hour duration.",
+        "Timing is review-needed/high-volatility and must remain null in governed door-to-door fields until current itinerary details are authoritative."
+      ]
+    }
   },
   "covered-boat-plantation-combo": {
     slug: "covered-boat-plantation-combo",
@@ -135,18 +142,22 @@ export const TOUR_INTELLIGENCE: Record<string, TourIntelligenceRecord> = {
     fareHarborItemId: "603090",
     experienceType: "Covered swamp boat + plantation",
     decision: {
-      timeCommitment: "Approximately 7 hours.",
-      transportation: "Transportation/pickup included in current product data.",
-      walking: "Minimal on swamp portion plus walking at plantation.",
-      weatherExposure: "Covered boat plus mixed indoor/outdoor plantation exposure.",
-      noise: "Moderate on swamp segment.",
-      pace: "Full-day combination.",
-      familyFit: "Current product data lists ages 5+; reconfirm in checkout.",
-      historyFocus: "Combination of swamp ecology and plantation history.",
-      bestFor: ["Travelers wanting two major out-of-city experiences in one day", "Mixed-interest groups"],
-      cautions: ["Long day", "Exact plantation and logistics should be confirmed"]
+      timeCommitment: "Needs operator verification.",
+      transportation: "Needs operator verification.",
+      walking: "Needs operator verification.",
+      weatherExposure: "Needs operator verification.",
+      noise: "Needs operator verification.",
+      pace: "Needs operator verification.",
+      familyFit: "Needs operator verification.",
+      historyFocus: "Needs operator verification.",
+      bestFor: [],
+      cautions: ["Booking configuration requires manual confirmation.", "Do not publish duration, pickup, eligibility or inclusion claims until re-verified."]
     },
-    verification: { status: "PARTIAL", lastReviewed: REVIEW_DATE, notes: ["Approximate 7-hour commitment exists in current recommendation data", "Live restrictions should be reconfirmed"] }
+    verification: {
+      status: "NEEDS_VERIFICATION",
+      lastReviewed: "2026-08-18",
+      notes: ["Held from chooser recommendations and self-service detail-page booking pending authoritative operator verification."]
+    }
   },
   "evening-jazz-cruise": unknownTour("evening-jazz-cruise", "New Orleans Steamboat Company", "560778/560822", "Evening jazz river cruise"),
   "daytime-jazz-cruise": unknownTour("daytime-jazz-cruise", "New Orleans Steamboat Company", "varies", "Daytime jazz river cruise"),
