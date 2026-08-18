@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import NewOrleansRecommendationFlow from "../components/NewOrleansRecommendationFlow";
+import GraphChooserExplanation from "../components/GraphChooserExplanation";
 import CinematicPageHero from "../components/CinematicPageHero";
 import ChooserExitBriefPrompt from "../components/ChooserExitBriefPrompt";
 import ExpandedChooserEntry from "./ExpandedChooserEntry";
@@ -31,6 +32,7 @@ export default function HelpMeChoosePage() {
       </div>
       <div id="guided-planner" className="scroll-mt-20 border-t border-[#d4af37]/20">
         <NewOrleansRecommendationFlow />
+        <GraphChooserExplanation />
       </div>
       <section className="border-t border-[#d4af37]/20 bg-[#111014] px-6 py-12">
         <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
