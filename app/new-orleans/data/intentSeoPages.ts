@@ -182,6 +182,68 @@ export const INTENT_SEO_PAGES: IntentSeoPage[] = [
         { href: "/compare/natchez-vs-city-of-new-orleans-riverboat", label: "Compare riverboats" }
       ]
     }
+  },
+  {
+    slug: "new-orleans-without-a-car",
+    title: "New Orleans Tours Without a Car | What Is Easy to Book",
+    description: "Choose New Orleans tours without a rental car by comparing walkable meeting points, included transportation and out-of-city experiences that offer shuttle options.",
+    config: {
+      eyebrow: "No-car planning",
+      title: "New Orleans tours that make sense when you do not have a car",
+      intro: "You do not need a rental car for many of the major New Orleans experiences, but the logistics are different by tour. Start by separating experiences you can reach on foot in the visitor core from out-of-city tours that need operator transportation or a shuttle option.",
+      decisionTitle: "Choose by transportation burden, not just the tour name",
+      decisionPoints: [
+        "River cruises are often the simplest no-car option because you meet near the riverfront rather than traveling outside the city.",
+        "A city tour can work well without a car when the operator provides the pickup or meeting arrangement for your departure.",
+        "For swamp experiences, choose an option with operator transportation if you do not want to arrange your own ride outside New Orleans.",
+        "Plantation and combination tours consume more total time, so confirm the meeting point, pickup arrangement and return window before planning another timed activity."
+      ],
+      productSlugs: ["city-tour-of-new-orleans", "daytime-jazz-cruise", "evening-jazz-cruise", "covered-tour-boat", "ragin-cajun-airboat-options", "whitney-plantation-tour"],
+      productHeading: "No-car starting points",
+      productIntro: "These options represent different transportation patterns. Confirm the current meeting point, shuttle or pickup details, departure time and return timing during booking.",
+      relatedLinks: [
+        { href: "/guides/new-orleans-tours-with-transportation", label: "Tours with transportation" },
+        { href: "/guides/best-swamp-tour-with-transportation", label: "Swamp tours with transportation" },
+        { href: "/guides/one-day-in-new-orleans-tours", label: "Planning one day" },
+        { href: "/help-me-choose", label: "Help me choose" }
+      ],
+      faq: [
+        { question: "Do I need a rental car for New Orleans tours?", answer: "No. Many city and river experiences can be reached without a rental car, while swamp and plantation trips may offer operator transportation. Confirm the current pickup or meeting point before booking." },
+        { question: "Can I do a swamp tour without a car?", answer: "Yes when you select a swamp product that offers transportation or a shuttle option for your date. Check the current pickup location and total trip time during booking." },
+        { question: "What should I check before booking without a car?", answer: "Confirm the exact meeting point or pickup zone, when you must be there, how long the full outing takes, and where you return before stacking another reservation afterward." }
+      ]
+    }
+  },
+  {
+    slug: "jazz-cruise-dinner-or-sightseeing",
+    title: "New Orleans Jazz Cruise: Dinner or Sightseeing? | How to Choose",
+    description: "Compare dinner and sightseeing-only jazz cruise options in New Orleans, including schedule fit, meal commitment and what to confirm before booking.",
+    config: {
+      eyebrow: "River cruise decision",
+      title: "Dinner or sightseeing-only jazz cruise: which option fits your night?",
+      intro: "The evening jazz cruise can be booked in different formats, and the important decision is whether you want dinner to be part of the cruise or whether you would rather keep the boat focused on the river, skyline and live jazz. The current operator checkout separates sightseeing and dinner seating options, so choose the experience first and then the available time.",
+      decisionTitle: "The trade-off is meal time versus flexibility",
+      decisionPoints: [
+        "Choose sightseeing-only when you want more flexibility to eat elsewhere before or after the cruise.",
+        "Choose a dinner seating when you want the meal and cruise to function as one planned evening instead of coordinating two separate reservations.",
+        "Dinner and sightseeing options can have different check-in or seating details even when they are tied to the same evening cruise product.",
+        "If skyline views and deck time are your top priority, review the current seating and boarding details before deciding whether a meal is worth adding."
+      ],
+      productSlugs: ["evening-jazz-cruise", "daytime-jazz-cruise", "city-of-new-orleans-riverboat-cruise"],
+      productHeading: "Cruise formats to compare",
+      productIntro: "Start with the evening jazz cruise, then use the operator checkout to choose sightseeing-only, early dinner, late dinner or any currently offered variant. The exact sailing, menu, seating and price are controlled by the operator.",
+      relatedLinks: [
+        { href: "/guides/daytime-vs-evening-jazz-cruise-new-orleans", label: "Daytime vs evening jazz cruise" },
+        { href: "/compare/natchez-vs-city-of-new-orleans-riverboat", label: "Compare the riverboats" },
+        { href: "/guides/new-orleans-tours-tonight", label: "Tours tonight" },
+        { href: "/riverboat-cruises", label: "All river cruises" }
+      ],
+      faq: [
+        { question: "Do I have to buy dinner on a New Orleans jazz cruise?", answer: "No. The current evening jazz cruise inventory includes a sightseeing-only option as well as dinner seating variants. Choose the format that matches how you want to structure the evening." },
+        { question: "Is dinner included in every jazz cruise ticket?", answer: "No. Meal inclusion depends on the specific booking variant. Read the selected FareHarbor option before checkout rather than assuming dinner is part of every ticket." },
+        { question: "Should I eat before the jazz cruise instead?", answer: "That is often the cleaner choice if restaurant flexibility matters more than combining dinner and the cruise. If convenience matters more, a dinner seating can turn the cruise into the main event of the evening." }
+      ]
+    }
   }
 ];
 
