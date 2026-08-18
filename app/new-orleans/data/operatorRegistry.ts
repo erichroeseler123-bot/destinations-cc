@@ -1,9 +1,18 @@
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 import { getGovernedExperienceGraphRecord } from "./experienceGraphGovernance";
 
+const OPERATOR_SLUG_ALIASES: Record<string, string> = {
+  "gray line new orleans": "gray-line",
+  "gray line": "gray-line",
+  "new orleans steamboat company / gray line": "new-orleans-steamboat-company",
+  "new orleans steamboat company": "new-orleans-steamboat-company",
+};
+
 export function operatorSlug(name: string) {
-  return name
-    .toLowerCase()
+  const normalized = name.trim().toLowerCase();
+  if (OPERATOR_SLUG_ALIASES[normalized]) return OPERATOR_SLUG_ALIASES[normalized];
+
+  return normalized
     .replace(/&/g, " and ")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
