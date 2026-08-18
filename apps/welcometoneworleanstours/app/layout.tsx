@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "../../../app/globals.css";
 import "./wno-recovery.css";
+import "@/app/new-orleans/data/truthLayerRuntime";
 import CanonicalNewOrleansLayout from "@/app/new-orleans/layout";
 
 export const metadata: Metadata = {
