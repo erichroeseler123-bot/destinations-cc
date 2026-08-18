@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getPublishableDecisionFacts } from "../data/experienceGraphV2";
+import { getGovernedPublishableDecisionFacts } from "../data/experienceGraphGovernance";
 
 type Props = {
   slugs: string[];
@@ -8,7 +8,7 @@ type Props = {
 
 export default function ExperienceDecisionBlock({ slugs, categoryLabel }: Props) {
   const records = slugs
-    .map((slug) => getPublishableDecisionFacts(slug))
+    .map((slug) => getGovernedPublishableDecisionFacts(slug))
     .filter((record): record is NonNullable<typeof record> => Boolean(record));
 
   if (!records.length) return null;
