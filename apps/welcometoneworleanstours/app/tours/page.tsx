@@ -1,3 +1,1 @@
-import ToursPage from "@/app/new-orleans/tours/page";
-
-export default ToursPage;
+export { default, generateMetadata } from "@/app/new-orleans/tours/page";
