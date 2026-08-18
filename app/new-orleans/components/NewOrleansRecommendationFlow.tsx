@@ -21,6 +21,7 @@ const STEPS: (keyof RecommendationInputs)[] = [
   "transportation",
   "groupStyle",
   "mixedAges",
+  "airboatEligibility",
   "historicalInterest",
 ];
 
@@ -50,6 +51,16 @@ const QUESTIONS: Record<keyof RecommendationInputs, { title: string; options: st
   mixedAges: {
     title: "Are there children or mixed ages in your group?",
     options: ["Yes", "No"],
+  },
+  airboatEligibility: {
+    title: "Before we consider airboats, does any of this apply to your group?",
+    options: [
+      "No known airboat restrictions",
+      "Child under 5 in the group",
+      "Pregnancy in the group",
+      "Neck or back condition in the group",
+      "Not sure about airboat eligibility",
+    ],
   },
   historicalInterest: {
     title: "How important is history for this activity?",
@@ -187,6 +198,10 @@ function contextToRecommendationInputs(context: DccTravelerContextV1 | null): Pa
     output.mixedAges = extension.mixedAges as RecommendationInputs["mixedAges"];
   }
 
+  if (typeof extension.airboatEligibility === "string" && QUESTIONS.airboatEligibility.options.includes(extension.airboatEligibility)) {
+    output.airboatEligibility = extension.airboatEligibility as RecommendationInputs["airboatEligibility"];
+  }
+
   if (context.preferences?.historicalInterest === "strong") output.historicalInterest = "Strong interest";
   else if (context.preferences?.historicalInterest === "some") output.historicalInterest = "Some interest";
   else if (context.preferences?.historicalInterest === "low") output.historicalInterest = "Not the priority";
@@ -270,7 +285,7 @@ export default function NewOrleansRecommendationFlow() {
     if (bundle) {
       emitChooserEvent("chooser_bundle_shown", {
         bundle_id: bundle.id,
-        bundle_products: bundle.slugs.join(","),
+        bundle_products: bundle.slugs.join(",") || null,
         primary_recommendation: primarySlug,
       });
     }
