@@ -17,13 +17,14 @@ export type ResolvedProductImage = {
   attribution?: ResolvedAttribution;
 };
 
-// Combined products stay text-only until we have an image that accurately
-// represents the combined experience rather than just one unrelated segment.
+// These products stay text-only until we have an image that accurately
+// represents the experience rather than a misleading or broken substitute.
 const COMMERCE_IMAGE_BLOCKLIST = new Set([
   "all-day-city-plantation-combo",
   "covered-boat-plantation-combo",
   "swamp-boat-oak-alley-combo",
   "swamp-boat-whitney-combo",
+  "city-cemetery-garden-district-tour",
 ]);
 
 export function resolveProductImage(product: LiveProductAdapter | NolaFareHarborProduct | undefined | null): ResolvedProductImage | null {
@@ -33,6 +34,16 @@ export function resolveProductImage(product: LiveProductAdapter | NolaFareHarbor
   if (COMMERCE_IMAGE_BLOCKLIST.has(slug)) return null;
 
   const imgRecord = PRODUCT_IMAGES[slug];
+
+  // The dedicated small-airboat binary is not currently present in the WNO
+  // deployment. Use the approved operator airboat image rather than emit a 404.
+  if (slug === "small-airboat-swamp-adventure" && imgRecord?.verifiedRights) {
+    return {
+      src: "/images/travel-markets/new-orleans/airboat-swamp.png",
+      alt: imgRecord.alt,
+      source: "operator",
+    };
+  }
 
   // 1. Verified operator/FareHarbor product image
   if (imgRecord && imgRecord.verifiedRights && imgRecord.source === "Operator") {
