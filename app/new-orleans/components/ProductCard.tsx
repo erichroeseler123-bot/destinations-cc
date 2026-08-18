@@ -5,6 +5,7 @@ import { STOREFRONT_PRODUCTS } from '../tours/pageConfig';
 import WikimediaImageCredit from './WikimediaImageCredit';
 import visualStyles from './newOrleansVisual.module.css';
 import { resolveProductImage } from '../lib/imageResolver';
+import { optimizedProductImageUrl } from '../lib/optimizedProductImage';
 import {
   buildAttributedTourHref,
   FAREHARBOR_SOURCES,
@@ -54,10 +55,12 @@ export default function ProductCard({
         <div className={visualStyles.productCardMedia}>
           <div className="relative flex-1 min-h-0">
             <img
-              src={resolvedImage.src}
+              src={optimizedProductImageUrl(resolvedImage.src)}
               alt={resolvedImage.alt}
               loading="lazy"
               decoding="async"
+              width={828}
+              height={518}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div className={visualStyles.productCardImageShade}></div>
