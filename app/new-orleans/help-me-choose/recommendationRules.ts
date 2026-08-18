@@ -133,7 +133,7 @@ export function getRecommendation(
         return { primaryProductId: "large-airboat-swamp-adventure", alternativeProductIds: ["ragin-cajun-airboat-options"], explanation: "A high-speed large airboat experience." };
       }
       if (preferenceId === "swamp-plantation") {
-        return { primaryProductId: "swamp-boat-oak-alley-combo", alternativeProductIds: ["covered-boat-plantation-combo"], explanation: "A full day exploring both." };
+        return { primaryProductId: "swamp-boat-oak-alley-combo", alternativeProductIds: ["swamp-boat-whitney-combo"], explanation: "A full day exploring both." };
       }
       return { explanation: "Explore our swamp options.", fallbackMessage: "Please choose a specific swamp experience." };
 
@@ -188,7 +188,7 @@ export function getRecommendation(
     case "full-day-combos":
       return {
         primaryProductId: "all-day-city-plantation-combo",
-        alternativeProductIds: ["covered-boat-plantation-combo", "swamp-boat-oak-alley-combo", "swamp-boat-whitney-combo"],
+        alternativeProductIds: ["swamp-boat-oak-alley-combo", "swamp-boat-whitney-combo"],
         explanation: "Use a longer day to combine major New Orleans experiences in one outing."
       };
 
