@@ -12,6 +12,12 @@ export type TransportationNeed = "We need pickup or transportation" | "We can dr
 export type GroupStyle = "Relaxed and comfortable" | "Balanced" | "Fast and adventurous";
 export type ChildrenOrMixedAges = "Yes" | "No";
 export type HistoricalInterest = "Strong interest" | "Some interest" | "Not the priority";
+export type AirboatEligibility =
+  | "No known airboat restrictions"
+  | "Child under 5 in the group"
+  | "Pregnancy in the group"
+  | "Neck or back condition in the group"
+  | "Not sure about airboat eligibility";
 
 export interface RecommendationInputs {
   planningWindow: PlanningWindow | null;
@@ -19,6 +25,7 @@ export interface RecommendationInputs {
   transportation: TransportationNeed | null;
   groupStyle: GroupStyle | null;
   mixedAges: ChildrenOrMixedAges | null;
+  airboatEligibility: AirboatEligibility | null;
   historicalInterest: HistoricalInterest | null;
 }
 
@@ -86,6 +93,12 @@ const PROFILES: Record<string, Profile> = {
   "city-of-new-orleans-riverboat-cruise": { minutes: 75, pace: "relaxed", family: "good", history: "low", exposure: "mixed", transportation: "self" },
 };
 
+const AIRBOAT_SLUGS = new Set([
+  "ragin-cajun-airboat-options",
+  "small-airboat-swamp-adventure",
+  "large-airboat-swamp-adventure",
+]);
+
 export const TOUR_RECORDS: Record<string, TourRecord> = Object.fromEntries(
   STOREFRONT_PRODUCTS.map((product) => {
     const profile = PROFILES[product.slug] || {};
@@ -116,12 +129,13 @@ export interface RecommendationResult {
 }
 
 export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveRecommendationContext = {}): RecommendationResult {
-  if (!inputs.availableTime || !inputs.transportation || !inputs.groupStyle || !inputs.mixedAges || !inputs.historicalInterest) {
+  if (!inputs.availableTime || !inputs.transportation || !inputs.groupStyle || !inputs.mixedAges || !inputs.airboatEligibility || !inputs.historicalInterest) {
     return { primary: null, isNoFit: true };
   }
 
   const maxMinutes = inputs.availableTime === "About 3 hours" ? 210 : inputs.availableTime === "About half a day" ? 360 : 600;
   const tonight = inputs.planningWindow === "Something for today" && live.period === "evening";
+  const airboatEligible = inputs.airboatEligibility === "No known airboat restrictions";
 
   const ranked = STOREFRONT_PRODUCTS.map((product) => {
     const profile = PROFILES[product.slug] || {};
@@ -130,6 +144,8 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
     let score = 0;
     let eligible = true;
 
+    // Hard constraints are applied before any preference scoring.
+    if (AIRBOAT_SLUGS.has(product.slug) && !airboatEligible) eligible = false;
     if (profile.minutes && profile.minutes > maxMinutes) eligible = false;
     if (inputs.availableTime !== "Most of the day" && profile.fullDay) eligible = false;
     if (tonight && (product.category.includes("Plantation") || product.category.includes("Swamp") || product.category.includes("Airboat") || profile.fullDay)) eligible = false;
@@ -225,7 +241,7 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
     }
 
     if (
-      ["ragin-cajun-airboat-options", "small-airboat-swamp-adventure", "large-airboat-swamp-adventure"].includes(product.slug) &&
+      AIRBOAT_SLUGS.has(product.slug) &&
       (live.period === "morning" || live.period === "afternoon") &&
       clearEnoughForOutdoors &&
       inputs.groupStyle === "Fast and adventurous"
