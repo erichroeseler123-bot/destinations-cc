@@ -8,8 +8,8 @@ const categories = [
   { href: "/plantation-tours", title: "Plantations", copy: "History beneath the oaks", image: "/images/wikimedia/originals/oak-alley-front.jpg", icon: "▥" },
   { href: "/food-tours", title: "Food & Cocktails", copy: "Savor the flavors of New Orleans", image: "/images/wikimedia/originals/gumbo-dish.jpg", icon: "✣" },
   { href: "/ghost-tours", title: "Ghosts & Cemetery", copy: "Haunted history. True stories.", image: "/images/wikimedia/originals/lalaurie-mansion-1906.jpg", icon: "✦" },
-  { href: "/tours/city-tour-of-new-orleans", title: "Garden District", copy: "Gorgeous homes. Timeless charm.", image: "/images/new-orleans/hero-french-quarter-balcony.jpg", icon: "❧" },
-  { href: "/tours/evening-jazz-cruise", title: "Jazz / Music", copy: "The soul of New Orleans", image: "/images/wikimedia/originals/french-quarter-night.jpg", icon: "♪" },
+  { href: "/garden-district-tours", title: "Garden District", copy: "Gorgeous homes. Timeless charm.", image: "/images/new-orleans/hero-french-quarter-balcony.jpg", icon: "❧" },
+  { href: "/jazz-music-tours", title: "Jazz / Music", copy: "The soul of New Orleans", image: "/images/wikimedia/originals/french-quarter-night.jpg", icon: "♪" },
 ];
 
 export default function CinematicHomepageTop() {
