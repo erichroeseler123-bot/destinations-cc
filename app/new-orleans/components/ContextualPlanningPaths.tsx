@@ -31,6 +31,12 @@ const CATEGORY_LINKS: Record<string, PlanningLink[]> = {
     { href: "/guides/whitney-plantation-tour-from-new-orleans", label: "Whitney from New Orleans" },
     { href: "/guides/oak-alley-plantation-tour-from-new-orleans", label: "Oak Alley from New Orleans" },
   ],
+  "/jazz-music-tours": [
+    { href: "/guides/jazz-cruise-dinner-or-sightseeing", label: "Dinner, jazz or sightseeing cruise?" },
+    { href: "/guides/daytime-vs-evening-jazz-cruise-new-orleans", label: "Daytime vs evening jazz cruise" },
+    { href: "/guides/tonight", label: "What fits tonight" },
+    { href: "/riverboat-cruises", label: "Compare river cruises" },
+  ],
   "/tours": [
     { href: "/guides/plan-new-orleans-tours", label: "Plan by need instead of browsing everything" },
     { href: "/guides/new-orleans-morning-tours", label: "Morning tour options" },
