@@ -5,6 +5,7 @@ import ProductCard from "./ProductCard";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 import { FAREHARBOR_SOURCES } from "../lib/fareHarborAttribution";
 import { getGovernedExperienceGraphRecord } from "../data/experienceGraphGovernance";
+import { HELD_COMBO_SLUG } from "../data/truthPolicy";
 
 type LiveContext = {
   generatedAt?: string;
@@ -79,6 +80,7 @@ export default function LiveTodayOptions() {
     const heatRisk = context?.heatRisk;
 
     return [...base]
+      .filter((candidate) => candidate.slug !== HELD_COMBO_SLUG)
       .map((candidate) => {
         const graph = getGovernedExperienceGraphRecord(candidate.slug);
         const exposed = graph?.rainExposure.value === "exposed" || graph?.heatExposure.value === "exposed";
@@ -134,7 +136,7 @@ export default function LiveTodayOptions() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {candidates.map((candidate) => {
             const product = STOREFRONT_PRODUCTS.find((item) => item.slug === candidate.slug);
-            if (!product) return null;
+            if (!product || product.slug === HELD_COMBO_SLUG) return null;
             return (
               <div key={candidate.slug} className="flex flex-col">
                 <ProductCard
