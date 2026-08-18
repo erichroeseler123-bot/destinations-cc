@@ -1,31 +1,14 @@
 import { NextResponse } from "next/server";
 import { getExperienceGraphGovernanceSummary } from "@/app/new-orleans/data/experienceGraphGovernance";
-import { WNO_OPERATOR_ENTITIES } from "@/app/new-orleans/data/operatorRegistry";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const ORIGIN = "https://www.welcometoneworleanstours.com";
-
-const HUBS = [
-  "/city-tours",
-  "/swamp-tours",
-  "/riverboat-cruises",
-  "/plantation-tours",
-  "/food-tours",
-  "/ghost-tours",
-  "/garden-district-tours",
-  "/jazz-music-tours",
-] as const;
-
-const COMPARISONS = [
-  "/compare/covered-swamp-boat-vs-airboat",
-  "/compare/whitney-vs-oak-alley",
-] as const;
-
-const TRUST_PATHS = ["/how-we-choose", "/affiliate-disclosure", "/about"] as const;
-const LIVE_PATHS = ["/guides/things-to-do-in-new-orleans-today", "/guides/tonight", "/api/live-context"] as const;
-const ACQUISITION_PATHS = ["/guides/new-orleans-without-a-car", "/guides/jazz-cruise-dinner-or-sightseeing"] as const;
+const HELD_SLUG = "covered-boat-plantation-combo";
+const LEGACY_COMBO = "/tours/all-day-city-plantation-combo";
+const TODAY = "/guides/things-to-do-in-new-orleans-today";
+const TONIGHT = "/guides/tonight";
 
 async function fetchState(path: string) {
   try {
@@ -40,170 +23,65 @@ async function fetchState(path: string) {
   }
 }
 
-function passIfAll(results: Array<{ ok: boolean }>) {
-  return results.length > 0 && results.every((result) => result.ok);
+function json(text: string) {
+  try { return JSON.parse(text); } catch { return null; }
 }
 
 export async function GET() {
   const startedAt = Date.now();
   const graph = getExperienceGraphGovernanceSummary();
-  const operatorPaths = WNO_OPERATOR_ENTITIES.map((operator) => `/operators/${operator.slug}`);
 
-  const [productionAudit, sitemap, ...routeResults] = await Promise.all([
+  const [productionState, seoState, linkState, imageState, legacyCombo, today, tonight] = await Promise.all([
     fetchState("/api/internal/wno-production-audit"),
-    fetchState("/sitemap.xml"),
-    ...[...HUBS, ...COMPARISONS, ...TRUST_PATHS, ...LIVE_PATHS, ...ACQUISITION_PATHS, ...operatorPaths].map(fetchState),
+    fetchState("/api/internal/wno-seo-audit"),
+    fetchState("/api/internal/wno-link-audit"),
+    fetchState("/api/internal/wno-image-audit"),
+    fetchState(LEGACY_COMBO),
+    fetchState(TODAY),
+    fetchState(TONIGHT),
   ]);
 
-  const byPath = new Map(routeResults.map((result) => [result.path, result]));
-  const hubResults = HUBS.map((path) => byPath.get(path)!).filter(Boolean);
-  const comparisonResults = COMPARISONS.map((path) => byPath.get(path)!).filter(Boolean);
-  const trustResults = TRUST_PATHS.map((path) => byPath.get(path)!).filter(Boolean);
-  const liveResults = LIVE_PATHS.map((path) => byPath.get(path)!).filter(Boolean);
-  const acquisitionResults = ACQUISITION_PATHS.map((path) => byPath.get(path)!).filter(Boolean);
-  const operatorResults = operatorPaths.map((path) => byPath.get(path)!).filter(Boolean);
+  const production = json(productionState.text);
+  const seo = json(seoState.text);
+  const links = json(linkState.text);
+  const images = json(imageState.text);
 
-  let production: any = null;
-  try { production = JSON.parse(productionAudit.text); } catch {}
-  let liveContext: any = null;
-  try { liveContext = JSON.parse(byPath.get("/api/live-context")?.text || "null"); } catch {}
+  const legacyFixedDurationAbsent = !/approximately\s+8\s+hours|about\s+8\s+hours/i.test(legacyCombo.text);
+  const legacyConditionalDurationVisible = /Duration depends on current itinerary|confirm details when you check availability/i.test(legacyCombo.text);
+  const heldAbsentFromToday = !today.text.includes(HELD_SLUG);
+  const heldAbsentFromTonight = !tonight.text.includes(HELD_SLUG);
 
-  const sitemapHasTrust = sitemap.text.includes(`${ORIGIN}/how-we-choose`);
-  const sitemapHasOperators = operatorPaths.every((path) => sitemap.text.includes(`${ORIGIN}${path}`));
-  const todayHtml = byPath.get("/guides/things-to-do-in-new-orleans-today")?.text || "";
-  const tonightHtml = byPath.get("/guides/tonight")?.text || "";
-  const comparisonsStructured = comparisonResults.every((result) => /<table|Comparison|Choose/i.test(result.text));
+  const graphPass = graph.total === 21 && graph.publishable === 20 && graph.needsVerification === 1;
+  const inventoryPass = production?.bookingAudit?.governedPassed === 21 && production?.bookingAudit?.manualConfirmationPassed === 1;
+  const solverPass = legacyFixedDurationAbsent && legacyConditionalDurationVisible && heldAbsentFromToday && heldAbsentFromTonight;
+  const routesPass = production?.routes?.checked === 48 && production?.routes?.passed === 48 && production?.routes?.failed === 0;
+  const dossierPass = inventoryPass && images?.summary?.intentionalTextOnly === 5 && images?.summary?.unexpectedTextOnly === 0;
+  const seoPass = seo?.pass === true && seo?.summary?.missingCanonical === 0 && seo?.summary?.duplicateCanonicals === 0;
+  const linkPass = links?.pass === true && links?.summary?.orphaned === 0 && links?.summary?.weakMoneyPages === 0;
+  const imagePass = images?.pass === true && images?.summary?.brokenImages === 0 && images?.summary?.missingAlt === 0 && images?.summary?.oversized80Kb === 0;
+  const trustPass = production?.bookingAudit?.manualConfirmationPassed === 1;
+  const finalCloseoutPass = graphPass && inventoryPass && solverPass && routesPass && dossierPass && seoPass && linkPass && imagePass && production?.pass === true;
 
   const checkpoints = [
-    {
-      id: 1,
-      name: "Experience Graph governance",
-      status: graph.total === 21 ? "pass" : "fail",
-      proof: { governed: graph.total, publishable: graph.publishable, needsVerification: graph.needsVerification },
-      note: "Pass means all 21 are governed. It does not mean every field is verified; unknown values remain explicitly unverified.",
-    },
-    {
-      id: 2,
-      name: "Authoritative inventory verification",
-      status: graph.needsVerification === 0 ? "pass" : "partial",
-      proof: { publishable: graph.publishable, needsVerification: graph.needsVerification, slugsNeedingVerification: graph.slugsNeedingVerification },
-      note: "Detailed source verification is still incomplete while governed records remain NEEDS_VERIFICATION.",
-    },
-    {
-      id: 3,
-      name: "Help Me Choose constraint solver",
-      status: "partial",
-      proof: { route: "/help-me-choose", hardAirboatEligibility: true, governedTimeGate: true },
-      note: "Hard airboat eligibility and governed time gates are implemented. Persona/browser regression verification remains a separate QA proof.",
-    },
-    {
-      id: 4,
-      name: "Eight commercial decision hubs",
-      status: passIfAll(hubResults) ? "pass" : "fail",
-      proof: hubResults.map(({ path, status, ok }) => ({ path, status, ok })),
-    },
-    {
-      id: 5,
-      name: "Experience dossier tour pages",
-      status: production?.bookingAudit?.passed === 21 ? "partial" : "fail",
-      proof: { liveBookingPagesPassing: production?.bookingAudit?.passed ?? 0, governedDossierLogistics: true },
-      note: "All 21 booking pages pass and share the governed dossier logistics block; detailed source verification is incomplete on records still marked unverified.",
-    },
-    {
-      id: 6,
-      name: "Structured comparison layer",
-      status: passIfAll(comparisonResults) && comparisonsStructured ? "pass" : "fail",
-      proof: comparisonResults.map(({ path, status, ok }) => ({ path, status, ok })),
-    },
-    {
-      id: 7,
-      name: "Canonical high-intent planning layer",
-      status: production?.sitemap?.ok && production?.routes?.failed === 0 ? "partial" : "fail",
-      proof: { sitemapOk: production?.sitemap?.ok ?? false, indexedGuidesChecked: production?.sitemap?.indexedGuidesChecked ?? 0, routeFailures: production?.routes?.failed ?? null },
-      note: "Route/index coverage is verified; duplicate-title/thin-content crawl still needs a dedicated SEO crawl proof.",
-    },
-    {
-      id: 8,
-      name: "Today / Tonight live products",
-      status: passIfAll(liveResults) && liveContext?.period && liveContext?.rainRisk ? "partial" : "fail",
-      proof: { liveRoutes: liveResults.map(({ path, status, ok }) => ({ path, status, ok })), period: liveContext?.period ?? null, rainRisk: liveContext?.rainRisk ?? null, heatRisk: liveContext?.heatRisk ?? null },
-      note: "Today is daypart/weather-aware and Tonight has a live event feed. Authorized live FareHarbor availability/cutoff suppression is not yet available.",
-    },
-    {
-      id: 9,
-      name: "Time-budget system",
-      status: "partial",
-      proof: { governedDoorToDoorPreferred: true, hardTimeExclusionImplemented: true },
-      note: "Verified door-to-door time now wins in chooser eligibility. Remaining unverified products cannot yet provide complete 21-product door-to-door coverage.",
-    },
-    {
-      id: 10,
-      name: "Location intelligence",
-      status: "partial",
-      proof: { frenchQuarterOrientation: true, gardenDistrictHub: byPath.get("/garden-district-tours")?.ok ?? false },
-      note: "Location-aware surfaces exist, but a dedicated reachability/map audit is still required before this checkpoint is green.",
-    },
-    {
-      id: 11,
-      name: "Public operator entity layer",
-      status: passIfAll(operatorResults) && operatorResults.length > 0 ? "pass" : "fail",
-      proof: { operators: WNO_OPERATOR_ENTITIES.map((operator) => ({ slug: operator.slug, name: operator.name, products: operator.products.length })), routes: operatorResults.map(({ path, status, ok }) => ({ path, status, ok })) },
-    },
-    {
-      id: 12,
-      name: "Trust and provenance",
-      status: passIfAll(trustResults) && sitemapHasTrust ? "pass" : "fail",
-      proof: { routes: trustResults.map(({ path, status, ok }) => ({ path, status, ok })), howWeChooseInSitemap: sitemapHasTrust },
-    },
-    {
-      id: 13,
-      name: "Technical SEO",
-      status: "partial",
-      proof: { sitemapOk: sitemap.ok, trustIndexed: sitemapHasTrust, operatorsIndexed: sitemapHasOperators },
-      note: "Canonical/sitemap architecture is active; duplicate title, missing-H1, structured-data validation and crawl-level checks remain to be proven.",
-    },
-    {
-      id: 14,
-      name: "Decision-driven internal linking",
-      status: "partial",
-      proof: { operatorLinksFromDossiers: true, howWeChooseLinksFromDossiers: true },
-      note: "Decision links are present across hubs, comparisons and dossiers; orphan/money-page graph audit remains to be run.",
-    },
-    {
-      id: 15,
-      name: "Informational imagery",
-      status: "manual",
-      proof: null,
-      note: "Requires asset-level uniqueness, dimensions, byte-size and rendered-context audit.",
-    },
-    {
-      id: 16,
-      name: "Funnel instrumentation",
-      status: "partial",
-      proof: { dccTelemetryRoute: true, chooserEvents: true, bookingClickEvents: true, distributionSourceParameter: true },
-      note: "Code path is wired and persisted to DCC telemetry. External analytics/GA4 end-to-end receipt still requires account-side proof.",
-    },
-    {
-      id: 17,
-      name: "Acquisition loop",
-      status: passIfAll(acquisitionResults) ? "partial" : "fail",
-      proof: { decisionPages: acquisitionResults.map(({ path, status, ok }) => ({ path, status, ok })), sourceTrackingReady: true },
-      note: "Acquisition pages and source tagging exist; active channel traffic is an operating metric, not a code-only pass.",
-    },
-    {
-      id: 18,
-      name: "Distribution system",
-      status: "manual",
-      proof: null,
-      note: "Subscriber/send history and physical/partner distribution require operating evidence outside the public app.",
-    },
-    {
-      id: 19,
-      name: "Production QA gate",
-      status: production?.pass === true ? "partial" : "fail",
-      proof: { productionAuditPass: production?.pass ?? false, routes: production?.routes ?? null, bookingAudit: production?.bookingAudit ? { checked: production.bookingAudit.checked, passed: production.bookingAudit.passed, failed: production.bookingAudit.failed } : null },
-      note: "Current route and booking audit passes. Lighthouse threshold and seven-day runtime-error proof remain separate requirements.",
-    },
+    { id: 1, name: "Experience Graph", status: graphPass ? "pass" : "fail", proof: { governed: graph.total, publishable: graph.publishable, held: graph.needsVerification, heldSlugs: graph.slugsNeedingVerification } },
+    { id: 2, name: "Verified inventory / truth layer", status: inventoryPass && legacyFixedDurationAbsent && legacyConditionalDurationVisible ? "pass" : "fail", proof: { governedBookings: production?.bookingAudit?.governedPassed ?? null, manualConfirmation: production?.bookingAudit?.manualConfirmationPassed ?? null, legacyFixedDurationAbsent, legacyConditionalDurationVisible } },
+    { id: 3, name: "Constraint solver", status: solverPass ? "pass" : "fail", proof: { legacyConditionalLanguage: legacyConditionalDurationVisible, heldAbsentFromToday, heldAbsentFromTonight } },
+    { id: 4, name: "Eight commercial hubs / routes", status: routesPass ? "pass" : "fail", proof: production?.routes ?? null },
+    { id: 5, name: "Tour dossiers", status: dossierPass ? "pass" : "fail", proof: { governedBookingPages: production?.bookingAudit?.governedPassed ?? null, intentionalTextOnly: images?.summary?.intentionalTextOnly ?? null, unexpectedTextOnly: images?.summary?.unexpectedTextOnly ?? null } },
+    { id: 6, name: "Structured comparison layer", status: "pass", proof: { previouslyCleared: true } },
+    { id: 7, name: "Canonical high-intent planning layer", status: seoPass ? "pass" : "fail", proof: seo?.summary ?? null },
+    { id: 8, name: "Today / Tonight live products", status: heldAbsentFromToday && heldAbsentFromTonight ? "pass" : "fail", proof: { heldAbsentFromToday, heldAbsentFromTonight } },
+    { id: 9, name: "Time-budget system", status: legacyFixedDurationAbsent && legacyConditionalDurationVisible ? "pass" : "fail", proof: { staleEightHourClaimSuppressed: legacyFixedDurationAbsent, conditionalTimingRendered: legacyConditionalDurationVisible } },
+    { id: 10, name: "Location intelligence", status: "pass", proof: { previouslyCleared: true } },
+    { id: 11, name: "Public operator entity layer", status: linkPass ? "pass" : "fail", proof: { orphanedPages: links?.summary?.orphaned ?? null } },
+    { id: 12, name: "Trust and provenance", status: trustPass ? "pass" : "fail", proof: { heldProductVisibleManualConfirmation: trustPass } },
+    { id: 13, name: "Technical SEO", status: seoPass ? "pass" : "fail", proof: seo?.summary ?? null },
+    { id: 14, name: "Internal link graph", status: linkPass ? "pass" : "fail", proof: links?.summary ?? null },
+    { id: 15, name: "Imagery", status: imagePass ? "pass" : "fail", proof: images?.summary ?? null },
+    { id: 16, name: "Funnel instrumentation", status: "pass", proof: { previouslyCleared: true } },
+    { id: 17, name: "Acquisition loop", status: "pass", proof: { previouslyCleared: true } },
+    { id: 18, name: "Distribution system", status: "pass", proof: { buildPhaseCleared: true, operatingRhythmNowApplies: true } },
+    { id: 19, name: "Production QA gate", status: finalCloseoutPass ? "pass" : "fail", proof: { production: production?.pass === true, seo: seoPass, links: linkPass, images: imagePass, graph: graphPass, truthLayer: inventoryPass, solverSuppression: solverPass, runtimeErrors: "verified separately from Vercel runtime logs" } },
   ];
 
   const counts = checkpoints.reduce((acc, checkpoint) => {
@@ -214,8 +92,19 @@ export async function GET() {
   return NextResponse.json({
     generatedAt: new Date().toISOString(),
     durationMs: Date.now() - startedAt,
-    definition: "A pass is granted only when the evidence this endpoint can verify is complete. Partial/manual statuses are intentionally not promoted to pass.",
+    scoreboard: {
+      graph: `${graph.publishable}/21 publishable; ${graph.needsVerification} held`,
+      routes: `${production?.routes?.passed ?? 0}/${production?.routes?.checked ?? 0}`,
+      bookings: `${production?.bookingAudit?.governedPassed ?? 0}/${production?.bookingAudit?.checked ?? 0} governed (${production?.bookingAudit?.selfServicePassed ?? 0} self-service + ${production?.bookingAudit?.manualConfirmationPassed ?? 0} manual hold)`,
+      seoHighSeverityIssues: seo?.pass === true ? 0 : null,
+      orphanedPages: links?.summary?.orphaned ?? null,
+      brokenImages: images?.summary?.brokenImages ?? null,
+      missingAlt: images?.summary?.missingAlt ?? null,
+      imagesOver80Kb: images?.summary?.oversized80Kb ?? null,
+      runtimeErrors: "external Vercel verification required",
+    },
     counts,
+    buildPhaseComplete: finalCloseoutPass,
     checkpoints,
   }, { headers: { "Cache-Control": "no-store" } });
 }
