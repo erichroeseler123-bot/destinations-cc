@@ -1,4 +1,5 @@
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
+import { getGovernedExperienceGraphRecord } from "../data/experienceGraphGovernance";
 
 export type PlanningWindow =
   | "Something for today"
@@ -99,6 +100,29 @@ const AIRBOAT_SLUGS = new Set([
   "large-airboat-swamp-adventure",
 ]);
 
+function bestRangeMinutes(value: { min: number | null; typical: number | null; max: number | null } | null) {
+  if (!value) return null;
+  return value.typical ?? value.max ?? value.min ?? null;
+}
+
+function governedCommitmentMinutes(slug: string, transportation: TransportationNeed | null) {
+  const graph = getGovernedExperienceGraphRecord(slug);
+  if (!graph || graph.verificationStatus === "NEEDS_VERIFICATION") return null;
+
+  if (transportation === "We need pickup or transportation") {
+    return bestRangeMinutes(graph.doorToDoorWithPickupMinutes.value);
+  }
+  if (transportation === "We can drive ourselves") {
+    return bestRangeMinutes(graph.doorToDoorSelfDriveMinutes.value) ?? bestRangeMinutes(graph.activityMinutes.value);
+  }
+
+  const pickup = bestRangeMinutes(graph.doorToDoorWithPickupMinutes.value);
+  const selfDrive = bestRangeMinutes(graph.doorToDoorSelfDriveMinutes.value);
+  const activity = bestRangeMinutes(graph.activityMinutes.value);
+  const known = [pickup, selfDrive, activity].filter((value): value is number => typeof value === "number");
+  return known.length ? Math.max(...known) : null;
+}
+
 export const TOUR_RECORDS: Record<string, TourRecord> = Object.fromEntries(
   STOREFRONT_PRODUCTS.map((product) => {
     const profile = PROFILES[product.slug] || {};
@@ -115,9 +139,11 @@ export const TOUR_RECORDS: Record<string, TourRecord> = Object.fromEntries(
       weatherExposure: profile.exposure || "mixed",
       noiseLevel: profile.pace === "adventurous" ? "Higher" : "Moderate",
       estimatedExperienceMinutes: profile.minutes || null,
-      estimatedTotalCommitmentMinutes: profile.minutes || null,
+      estimatedTotalCommitmentMinutes: governedCommitmentMinutes(product.slug, "Not sure") ?? profile.minutes ?? null,
       verifiedDurationLabel: product.durationLabel || (profile.minutes ? `About ${Math.round(profile.minutes / 60)} hours` : "Confirm during booking"),
-      verifiedTimeCommitmentLabel: profile.fullDay ? "Plan for most of the day." : "Confirm current departure and return timing before booking.",
+      verifiedTimeCommitmentLabel: governedCommitmentMinutes(product.slug, "Not sure")
+        ? `Use the governed door-to-door time for the transportation option you choose.`
+        : profile.fullDay ? "Plan for most of the day." : "Confirm current departure and return timing before booking.",
     } satisfies TourRecord];
   })
 );
@@ -139,6 +165,8 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
 
   const ranked = STOREFRONT_PRODUCTS.map((product) => {
     const profile = PROFILES[product.slug] || {};
+    const governedMinutes = governedCommitmentMinutes(product.slug, inputs.transportation);
+    const commitmentMinutes = governedMinutes ?? profile.minutes ?? null;
     const reasons: string[] = [];
     const cautions: string[] = [];
     let score = 0;
@@ -146,7 +174,7 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
 
     // Hard constraints are applied before any preference scoring.
     if (AIRBOAT_SLUGS.has(product.slug) && !airboatEligible) eligible = false;
-    if (profile.minutes && profile.minutes > maxMinutes) eligible = false;
+    if (commitmentMinutes && commitmentMinutes > maxMinutes) eligible = false;
     if (inputs.availableTime !== "Most of the day" && profile.fullDay) eligible = false;
     if (tonight && (product.category.includes("Plantation") || product.category.includes("Swamp") || product.category.includes("Airboat") || profile.fullDay)) eligible = false;
 
@@ -193,9 +221,11 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
       }
     }
 
-    if (inputs.availableTime === "About 3 hours" && profile.minutes && profile.minutes <= 180) {
+    if (inputs.availableTime === "About 3 hours" && commitmentMinutes && commitmentMinutes <= 180) {
       score += 4;
-      reasons.push("Fits comfortably inside the time you have available.");
+      reasons.push(governedMinutes
+        ? "The governed time commitment fits comfortably inside the time you selected."
+        : "The published activity duration fits comfortably inside the time you selected; confirm the full door-to-door commitment before booking.");
     }
     if (inputs.availableTime === "Most of the day" && profile.fullDay) {
       score += 5;
@@ -205,6 +235,10 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
     if (inputs.transportation === "We need pickup or transportation") {
       if (profile.transportation === "included") { score += 4; reasons.push("Transportation is built into or described with this experience."); }
       if (profile.transportation === "self") score -= 2;
+    }
+
+    if (!governedMinutes && inputs.availableTime !== "Most of the day") {
+      cautions.push("Full door-to-door time is not yet verified; confirm the return window before booking around another timed plan.");
     }
 
     if (live.period === "evening") {
