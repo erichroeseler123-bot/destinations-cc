@@ -1,1 +1,1 @@
-export { default } from "@/app/new-orleans/guides/things-to-do-in-new-orleans-today/page";
+export { metadata, default } from "@/app/new-orleans/guides/things-to-do-in-new-orleans-today/page";
