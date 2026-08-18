@@ -5,14 +5,14 @@ export const runtime = "nodejs";
 
 const FORWARD_TO = "erichroeseler123@gmail.com";
 const SUPPORT_ADDRESS = "hello@redrocksdd.com";
-const TOKEN = "pn_5yH48NQml7-furtZ6ZT5xcbQntohBvTObScsS9AM";
 
 export async function GET() {
   return NextResponse.json({ ok: true, service: "redrocksdd-inbound", forwardsTo: FORWARD_TO });
 }
 
 export async function POST(req: NextRequest) {
-  if (req.nextUrl.searchParams.get("token") !== TOKEN) {
+  const token = process.env.REDROCKSDD_INBOUND_TOKEN;
+  if (!token || req.nextUrl.searchParams.get("token") !== token) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
