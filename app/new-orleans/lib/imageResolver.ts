@@ -2,6 +2,7 @@ import { PRODUCT_IMAGES } from '../data/imageRegistry';
 import { WIKIMEDIA_IMAGES } from '../data/wikimedia';
 import type { LiveProductAdapter } from '../data/types';
 import type { NolaFareHarborProduct } from '../tours/pageConfig';
+import { optimizedProductImageUrl } from './optimizedProductImage';
 
 export type ResolvedAttribution = {
   creator: string;
@@ -27,6 +28,10 @@ const COMMERCE_IMAGE_BLOCKLIST = new Set([
   "city-cemetery-garden-district-tour",
 ]);
 
+function optimized(src: string) {
+  return optimizedProductImageUrl(src);
+}
+
 export function resolveProductImage(product: LiveProductAdapter | NolaFareHarborProduct | undefined | null): ResolvedProductImage | null {
   if (!product) return null;
 
@@ -39,7 +44,7 @@ export function resolveProductImage(product: LiveProductAdapter | NolaFareHarbor
   // deployment. Use the approved operator airboat image rather than emit a 404.
   if (slug === "small-airboat-swamp-adventure" && imgRecord?.verifiedRights) {
     return {
-      src: "/images/travel-markets/new-orleans/airboat-swamp.png",
+      src: optimized("/images/travel-markets/new-orleans/airboat-swamp.png"),
       alt: imgRecord.alt,
       source: "operator",
     };
@@ -48,7 +53,7 @@ export function resolveProductImage(product: LiveProductAdapter | NolaFareHarbor
   // 1. Verified operator/FareHarbor product image
   if (imgRecord && imgRecord.verifiedRights && imgRecord.source === "Operator") {
     return {
-      src: imgRecord.url,
+      src: optimized(imgRecord.url),
       alt: imgRecord.alt,
       source: "operator",
     };
@@ -60,7 +65,7 @@ export function resolveProductImage(product: LiveProductAdapter | NolaFareHarbor
     const wikiRecord = WIKIMEDIA_IMAGES[wikimediaId];
     if (wikiRecord) {
       return {
-        src: wikiRecord.url,
+        src: optimized(wikiRecord.url),
         alt: wikiRecord.alt,
         source: "wikimedia",
         attribution: {
@@ -74,12 +79,11 @@ export function resolveProductImage(product: LiveProductAdapter | NolaFareHarbor
   }
 
   // 3. Approved rights-cleared registry image. Most are local assets; a small
-  // number of Wikimedia originals are intentionally referenced directly when
-  // an exact, licensed subject image is available and a local binary copy has
-  // not yet been added to the repository.
+  // number of Wikimedia originals are optimized through the local Next image
+  // endpoint so visitors never download the multi-megabyte source binary.
   if (imgRecord && imgRecord.verifiedRights && imgRecord.source !== "Operator") {
     return {
-      src: imgRecord.url,
+      src: optimized(imgRecord.url),
       alt: imgRecord.alt,
       source: imgRecord.source === "Wikimedia Commons" ? "wikimedia" : "local",
       attribution: imgRecord.source === "Wikimedia Commons" ? {
