@@ -50,6 +50,26 @@ export function resolveProductImage(product: LiveProductAdapter | NolaFareHarbor
     };
   }
 
+  // The archival LaLaurie source scan is extremely large and does not optimize
+  // reliably in production. Use the existing rights-cleared French Quarter
+  // night image as an editorial ghost-tour visual instead of shipping ~27MB.
+  if (slug === "ghosts-spirits-walking-tour") {
+    const night = WIKIMEDIA_IMAGES["french-quarter-night"];
+    if (night) {
+      return {
+        src: optimized(night.url),
+        alt: "Historic French Quarter street at night",
+        source: "wikimedia",
+        attribution: {
+          creator: night.author || night.attributionText || "Unknown",
+          license: night.license || "",
+          licenseUrl: night.licenseUrl || "",
+          sourceUrl: night.sourceUrl || "",
+        },
+      };
+    }
+  }
+
   // 1. Verified operator/FareHarbor product image
   if (imgRecord && imgRecord.verifiedRights && imgRecord.source === "Operator") {
     return {
