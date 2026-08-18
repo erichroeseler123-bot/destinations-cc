@@ -53,10 +53,6 @@ const WTONOT_LIVE_CITY_PATHS = [
   "/guides/restaurant-partners",
 ] as const;
 
-const WTONOT_MACHINE_DISCOVERY_PATHS = [
-  "/guides/tour-catalog",
-] as const;
-
 const WTONOT_COMMERCIAL_CATEGORY_PATHS = [
   ...Object.values(COMMERCIAL_CATEGORY_PAGES),
   ...Object.values(ADDITIONAL_COMMERCIAL_CATEGORY_PAGES),
@@ -82,6 +78,7 @@ const WTONOT_NON_INDEXABLE_PATHS = new Set([
   "/guides/visitor-rewards",
   "/guides/whitney-plantation-vs-oak-alley-history-focus",
   "/guides/new-orleans-tours-tonight",
+  "/guides/tour-catalog",
 ]);
 
 function xmlEscape(value: string): string { return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;"); }
@@ -96,7 +93,7 @@ export function buildDccSitemapXml(paths: readonly string[] = INDEXABLE_SURFACE_
 export function buildWtonotSitemapPaths() {
   const intentPaths = INTENT_SEO_PAGES.map((page) => `/guides/${page.slug}`);
   const audienceIntentPaths = AUDIENCE_INTENT_SEO_PAGES.map((page) => `/guides/${page.slug}`);
-  const wtoPaths = ["/", "/tours", "/compare", "/french-quarter-welcome-stop", "/guides/french-quarter-orientation", "/guides/visitor-rewards", ...WTONOT_MACHINE_DISCOVERY_PATHS, ...WTONOT_HIGH_INTENT_PATHS, ...WTONOT_LIVE_CITY_PATHS, ...WTONOT_COMMERCIAL_CATEGORY_PATHS, ...WTONOT_OPERATOR_PATHS, ...intentPaths, ...audienceIntentPaths, ...WTONOT_DECISION_GUIDES, ...WTONOT_SUPPORT_PATHS];
+  const wtoPaths = ["/", "/tours", "/compare", "/french-quarter-welcome-stop", "/guides/french-quarter-orientation", "/guides/visitor-rewards", ...WTONOT_HIGH_INTENT_PATHS, ...WTONOT_LIVE_CITY_PATHS, ...WTONOT_COMMERCIAL_CATEGORY_PATHS, ...WTONOT_OPERATOR_PATHS, ...intentPaths, ...audienceIntentPaths, ...WTONOT_DECISION_GUIDES, ...WTONOT_SUPPORT_PATHS];
   ALL_PRODUCTS.forEach((product: any) => { if (product.status === "live" && product.isIndexable) wtoPaths.push(`/tours/${product.slug}`); });
   Object.values(SEO_PAGES).forEach((page: any) => { if (page.status === "live" && page.isIndexable && !WTONOT_SUPERSEDED_SEO_PATHS.has(page.publicRoute)) wtoPaths.push(page.publicRoute); });
   COMPARISON_OPPORTUNITIES.forEach((comparison) => { if (comparison.status === "READY_TO_PUBLISH") wtoPaths.push(`/compare/${comparison.slug}`); });
