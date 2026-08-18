@@ -1,1 +1,1 @@
-export { default } from "@/app/new-orleans/booking-help/page";
+export { default, metadata } from "@/app/new-orleans/booking-help/page";
