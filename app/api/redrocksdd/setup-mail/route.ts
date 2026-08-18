@@ -23,7 +23,7 @@ async function resend(path: string, init?: RequestInit) {
   return body;
 }
 
-export async function POST(req: NextRequest) {
+async function setup(req: NextRequest) {
   if (req.nextUrl.searchParams.get("token") !== TOKEN) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
@@ -83,3 +83,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : "setup_failed" }, { status: 500 });
   }
 }
+
+export async function GET(req: NextRequest) { return setup(req); }
+export async function POST(req: NextRequest) { return setup(req); }
