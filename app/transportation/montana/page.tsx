@@ -23,10 +23,10 @@ export default function Page() {
         <div className="mx-auto max-w-6xl px-6 py-20">
           <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300">Montana transportation</p>
           <h1 className="mt-4 max-w-4xl text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">Bozeman Airport to the Big Sky area</h1>
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-zinc-300">DCC narrows the route. GoSno handles the transportation product. The core Big Sky-area destinations below use the same published GoSno rate: $399 each way for a private Chevrolet Suburban.</p>
+          <p className="mt-6 max-w-3xl text-lg leading-8 text-zinc-300">DCC narrows the route. GoSno handles the transportation product. The core Big Sky-area destinations below use the same published GoSno rate: $299 each way for a private Chevrolet Suburban.</p>
           <div className="mt-7 flex flex-wrap gap-3 text-xs font-black uppercase tracking-[0.14em] text-zinc-200">
             <span className="rounded-full border border-white/12 bg-white/5 px-4 py-2">BZN origin</span>
-            <span className="rounded-full border border-white/12 bg-white/5 px-4 py-2">$399 each way</span>
+            <span className="rounded-full border border-white/12 bg-white/5 px-4 py-2">$299 each way</span>
             <span className="rounded-full border border-white/12 bg-white/5 px-4 py-2">Private Suburban</span>
             <span className="rounded-full border border-white/12 bg-white/5 px-4 py-2">One stop included</span>
           </div>
@@ -41,7 +41,7 @@ export default function Page() {
               <h2 className="mt-3 text-2xl font-bold">{name}</h2>
               <p className="mt-3 text-sm text-zinc-400">{duration}</p>
               <div className="mt-6 flex items-center justify-between gap-4 border-t border-white/10 pt-5">
-                <strong>$399 one way</strong>
+                <strong>$299 one way</strong>
                 <span className="text-sm text-cyan-200">Open route →</span>
               </div>
             </Link>
