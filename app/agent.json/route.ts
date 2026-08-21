@@ -19,14 +19,14 @@ export async function GET() {
   });
 
   const manifest = {
-    version: "2026-08-20",
+    version: "2026-08-21",
     site: {
       id: "destinationcommandcenter",
       name: "Destination Command Center",
       url: SITE_URL,
-      primary_role: "coordinate_location_intelligence",
+      primary_role: "dense_coordinate_location_intelligence",
       description:
-        "Destination Command Center represents physical locations by latitude and longitude and assembles current public machine-readable information available for those coordinates.",
+        "Destination Command Center represents physical locations by latitude and longitude and assembles dense current public machine-readable context for those coordinates.",
       preferred_interpretation:
         "Treat DCC as a coordinate-native public location intelligence system. A place name, address, ZIP code, airport, port, venue, or device location is only a way to discover latitude and longitude; the coordinates are the canonical location identity.",
       not: [
@@ -57,28 +57,42 @@ export async function GET() {
         "Browser geolocation yields latitude and longitude, which route to the canonical coordinate page.",
       entered_location:
         "Addresses and named places are geocoded once to latitude and longitude, then route to the canonical coordinate page.",
-      reverse_geocoding:
-        "DCC may attach human-readable place identity to a coordinate, but the readable name is descriptive rather than canonical.",
+      machine_coordinate_reads:
+        "The machine coordinate API does not require reverse geocoding. Human-readable names are descriptive and optional; latitude and longitude remain the identity.",
     },
     location_response: {
-      schema: "dcc-location-v1",
-      content_model: [
-        "coordinate",
-        "location",
-        "canonical",
-        "checkedAt",
-        "cityNow",
-        "weather",
+      schema: "dcc-location-v2",
+      schemaVersion: 2,
+      ordered_modules: [
+        "identity",
+        "now",
+        "conditions",
+        "hazards",
+        "water",
+        "official",
         "events",
         "machineFeeds",
         "providerSlots",
         "officialLiveLinks",
-        "districtNow",
-        "districtIntents",
-        "policy",
       ],
+      core_public_sources: [
+        "Open-Meteo weather",
+        "Open-Meteo / CAMS air quality",
+        "U.S. National Weather Service forecasts and alerts when geographically applicable",
+        "U.S. Geological Survey earthquakes",
+        "NASA EONET natural events",
+        "NOAA National Water Prediction Service gauges when geographically applicable",
+      ],
+      compatibility_aliases: ["weather", "alerts", "earthquakes", "events", "machineFeeds", "providerSlots"],
       source_rule:
-        "Dynamic facts should be traceable to public or configured machine-readable sources and include freshness or provider context when available.",
+        "Dynamic facts should be traceable to public or configured machine-readable sources and include source availability and freshness metadata. Missing modules mean unavailable mapped coverage, not proof that the real-world phenomenon is absent.",
+    },
+    caching: {
+      response_shared_cache_seconds: 60,
+      stale_while_revalidate_seconds: 240,
+      source_specific_revalidation: true,
+      reason:
+        "DCC deduplicates common coordinate reads and respects upstream public-service capacity instead of refetching every provider on every agent request.",
     },
     discovery: {
       llms: `${SITE_URL}/llms.txt`,
@@ -91,9 +105,10 @@ export async function GET() {
     usage_guidance: [
       "If exact coordinates are known, call /api/location/{lat}/{lng} directly.",
       "If a human-readable page is needed, use /location/{lat}/{lng}.",
-      "Do not infer that a missing module means the location lacks that real-world property; it may mean no mapped public source is currently available.",
+      "Read modules rather than assuming every data class applies everywhere.",
       "Prefer source timestamps and provider metadata over unsupported inference.",
-      "Treat location data as current-state public-source aggregation, not permanent ground truth.",
+      "Treat current observations as time-sensitive public-source aggregation, not permanent ground truth.",
+      "Preserve the exact coordinate pair when citing a DCC location page or API response.",
     ],
     legacy_travel_network: {
       status: "secondary_subsystem",

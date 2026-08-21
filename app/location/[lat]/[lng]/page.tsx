@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
-import LocationFirstHome from "@/app/components/dcc/LocationFirstHome";
+import DenseLocationView from "@/app/components/dcc/DenseLocationView";
+import ExtendedLocationPanels from "@/app/components/dcc/ExtendedLocationPanels";
 import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
 import { canonicalCoordinate, getDiscoverableLocation, isIndexableCoordinate } from "@/lib/dcc/locationDiscovery";
 
@@ -34,8 +35,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${label} | Destination Command Center`,
     description: known
-      ? `Live public location intelligence for ${known.name}, anchored to latitude ${canonicalCoordinate(lat)} and longitude ${canonicalCoordinate(lng)}.`
-      : `Live public location intelligence for latitude ${canonicalCoordinate(lat)} and longitude ${canonicalCoordinate(lng)}.`,
+      ? `Dense public location intelligence for ${known.name}, anchored to latitude ${canonicalCoordinate(lat)} and longitude ${canonicalCoordinate(lng)}.`
+      : `Dense public location intelligence for latitude ${canonicalCoordinate(lat)} and longitude ${canonicalCoordinate(lng)}.`,
     alternates: { canonical: `/location/${canonicalCoordinate(lat)}/${canonicalCoordinate(lng)}` },
     robots: { index: indexable, follow: true },
   };
@@ -80,7 +81,7 @@ export default async function CoordinateLocationPage({ params }: PageProps) {
     },
     subjectOf: {
       "@type": "DataFeed",
-      name: "Destination Command Center coordinate location data",
+      name: "Destination Command Center dense coordinate intelligence",
       url: apiUrl,
       encodingFormat: "application/json",
     },
@@ -97,7 +98,8 @@ export default async function CoordinateLocationPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
-      <LocationFirstHome initialCoordinates={{ lat, lng }} />
+      <DenseLocationView lat={lat} lng={lng} knownName={known?.name || null} />
+      <ExtendedLocationPanels lat={lat} lng={lng} />
     </>
   );
 }
