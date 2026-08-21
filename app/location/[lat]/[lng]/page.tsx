@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import DenseLocationView from "@/app/components/dcc/DenseLocationView";
+import ExtendedLocationPanels from "@/app/components/dcc/ExtendedLocationPanels";
 import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
 import { canonicalCoordinate, getDiscoverableLocation, isIndexableCoordinate } from "@/lib/dcc/locationDiscovery";
 
@@ -98,6 +99,7 @@ export default async function CoordinateLocationPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
       <DenseLocationView lat={lat} lng={lng} knownName={known?.name || null} />
+      <ExtendedLocationPanels lat={lat} lng={lng} />
     </>
   );
 }
