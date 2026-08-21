@@ -7,7 +7,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL = "https://www.destinationcommandcenter.com";
+const SITE_URL = "https://destinationcommandcenter.com";
 
 export async function GET() {
   const h = await headers();
