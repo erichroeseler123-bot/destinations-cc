@@ -1,8 +1,19 @@
+import { headers } from "next/headers";
+import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
+
 export const dynamic = "force-dynamic";
 
 const SITE_URL = "https://www.destinationcommandcenter.com";
 
 export async function GET() {
+  const h = await headers();
+  logDiscoveryRequest({
+    surface: "llms_txt",
+    path: "/llms.txt",
+    userAgent: h.get("user-agent"),
+    referer: h.get("referer"),
+  });
+
   const body = [
     "# Destination Command Center",
     "",
@@ -42,6 +53,10 @@ export async function GET() {
     `- Well-known agent contract: ${SITE_URL}/.well-known/agent.json`,
     `- OpenAPI: ${SITE_URL}/openapi.json`,
     `- Developer guide: ${SITE_URL}/developers`,
+    `- Quality-gated location sitemap: ${SITE_URL}/locations-sitemap.xml`,
+    "",
+    "## Indexing policy",
+    "Any valid coordinate can be requested, but DCC does not ask search engines to index an infinite coordinate grid. Public indexing is quality-gated to named, useful locations with meaningful DCC coverage. Other coordinate pages remain available on demand with noindex metadata.",
     "",
     "## Human behavior",
     "On the homepage, DCC may request browser location permission. If granted, device coordinates become the active DCC location. If a user enters another place, DCC geocodes that place to coordinates and opens the corresponding canonical location page.",
