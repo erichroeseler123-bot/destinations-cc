@@ -111,57 +111,19 @@ function withRedRocksTrackingParams(targetId: "shared" | "private", params?: Sea
     }
   }
 
-  if (!filtered.src) {
-    filtered.src = "dcc";
-  }
-
-  if (!filtered.page && pageAlias) {
-    filtered.page = pageAlias;
-  }
-
-  if (!filtered.source_page && sourcePageParam) {
-    filtered.source_page = sourcePageParam;
-  }
-
-  if (!filtered.decision_corridor) {
-    filtered.decision_corridor = decisionCorridor;
-  }
-
-  if (!filtered.decision_cta) {
-    filtered.decision_cta = decisionCta;
-  }
-
-  if (!filtered.decision_action) {
-    filtered.decision_action = decisionAction;
-  }
-
-  if (!filtered.decision_option) {
-    filtered.decision_option = decisionOption;
-  }
-
-  if (!filtered.decision_product) {
-    filtered.decision_product = decisionProduct;
-  }
-
-  if (!filtered.requested_lane) {
-    filtered.requested_lane = requestedLane;
-  }
-
-  if (!filtered.resolved_lane) {
-    filtered.resolved_lane = resolvedLane;
-  }
-
-  if (!filtered.product_slug) {
-    filtered.product_slug = decisionProduct;
-  }
-
-  if (!filtered.pickupHub && pickupHub) {
-    filtered.pickupHub = pickupHub;
-  }
-
-  if (!filtered.pickupLabel && pickupLabel) {
-    filtered.pickupLabel = pickupLabel;
-  }
+  if (!filtered.src) filtered.src = "dcc";
+  if (!filtered.page && pageAlias) filtered.page = pageAlias;
+  if (!filtered.source_page && sourcePageParam) filtered.source_page = sourcePageParam;
+  if (!filtered.decision_corridor) filtered.decision_corridor = decisionCorridor;
+  if (!filtered.decision_cta) filtered.decision_cta = decisionCta;
+  if (!filtered.decision_action) filtered.decision_action = decisionAction;
+  if (!filtered.decision_option) filtered.decision_option = decisionOption;
+  if (!filtered.decision_product) filtered.decision_product = decisionProduct;
+  if (!filtered.requested_lane) filtered.requested_lane = requestedLane;
+  if (!filtered.resolved_lane) filtered.resolved_lane = resolvedLane;
+  if (!filtered.product_slug) filtered.product_slug = decisionProduct;
+  if (!filtered.pickupHub && pickupHub) filtered.pickupHub = pickupHub;
+  if (!filtered.pickupLabel && pickupLabel) filtered.pickupLabel = pickupLabel;
 
   return filtered;
 }
@@ -188,8 +150,20 @@ export function buildParrBookUrl(params?: Record<string, SearchParamValue>) {
   return appendSearchParams(url, params).toString();
 }
 
+/**
+ * Legacy compatibility helper. Party at Red Rocks no longer sells shared seats,
+ * so any old DCC code asking for the shared lane must continue into the current
+ * private operator lane instead of reopening or dead-ending the funnel.
+ */
 export function buildParrSharedRedRocksUrl(params?: Record<string, SearchParamValue>) {
-  return buildRedRocksHandoffUrl("shared", params);
+  return buildRedRocksHandoffUrl("private", {
+    ...(params ?? {}),
+    decision_option: "private",
+    decision_product: "parr-private",
+    requested_lane: "private",
+    resolved_lane: "parr-private",
+    product_slug: "parr-private",
+  });
 }
 
 export function buildParrPrivateRedRocksUrl(params?: Record<string, SearchParamValue>) {
@@ -197,9 +171,10 @@ export function buildParrPrivateRedRocksUrl(params?: Record<string, SearchParamV
 }
 
 export function buildRedRocksHandoffUrl(targetId: "shared" | "private", params?: SearchParamMap) {
-  const target = getRedRocksHandoffTarget(targetId);
+  const resolvedTargetId = targetId === "shared" ? "private" : targetId;
+  const target = getRedRocksHandoffTarget(resolvedTargetId);
   if (!target) {
-    throw new Error(`Unknown Red Rocks handoff target: ${targetId}`);
+    throw new Error(`Unknown Red Rocks handoff target: ${resolvedTargetId}`);
   }
-  return buildParrUrl(new URL(target.href).pathname, withRedRocksTrackingParams(targetId, params));
+  return buildParrUrl(new URL(target.href).pathname, withRedRocksTrackingParams(resolvedTargetId, params));
 }

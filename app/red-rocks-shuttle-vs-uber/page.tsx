@@ -2,17 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ParrCtaLink from "@/app/components/dcc/ParrCtaLink";
 import RedRocksFunnelTelemetry from "@/app/components/dcc/RedRocksFunnelTelemetry";
-import { buildParrSharedRedRocksUrl } from "@/lib/dcc/contracts/dccParrBridge";
+import { buildParrPrivateRedRocksUrl } from "@/lib/dcc/contracts/dccParrBridge";
 
 export const metadata: Metadata = {
-  title: "Red Rocks Shuttle vs Uber | Which Is Better After the Show?",
+  title: "Red Rocks Private Ride vs Uber | Which Is Better After the Show?",
   description:
-    "For most people, a Red Rocks shuttle is more reliable than Uber after the show. Compare surge risk, pickup chaos, and the cleanest ride-home option.",
+    "Compare a pre-booked private Red Rocks ride with Uber after the show, including surge risk, pickup friction, and the value of having one vehicle for your group.",
   alternates: { canonical: "/red-rocks-shuttle-vs-uber" },
   openGraph: {
-    title: "Red Rocks Shuttle vs Uber | Which Is Better After the Show?",
+    title: "Red Rocks Private Ride vs Uber | Which Is Better After the Show?",
     description:
-      "Uber can work on the way in. Shuttle usually wins on the way home. This page explains why.",
+      "Uber can work on the way in. A pre-booked private ride solves the harder part: getting your group home after the show.",
     url: "/red-rocks-shuttle-vs-uber",
     type: "article",
   },
@@ -21,14 +21,20 @@ export const metadata: Metadata = {
 const PAGE_PATH = "/red-rocks-shuttle-vs-uber";
 
 export default function RedRocksShuttleVsUberPage() {
-  const sharedBookingHref = buildParrSharedRedRocksUrl({
+  const privateBookingHref = buildParrPrivateRedRocksUrl({
     sourcePage: PAGE_PATH,
     cta: "primary",
+    decision_option: "private",
+    decision_product: "parr-private",
+    requested_lane: "private",
   });
 
-  const recommendationBookingHref = buildParrSharedRedRocksUrl({
+  const recommendationBookingHref = buildParrPrivateRedRocksUrl({
     sourcePage: PAGE_PATH,
     cta: "recommendation-primary",
+    decision_option: "private",
+    decision_product: "parr-private",
+    requested_lane: "private",
   });
 
   return (
@@ -36,21 +42,21 @@ export default function RedRocksShuttleVsUberPage() {
       <RedRocksFunnelTelemetry page={PAGE_PATH} />
       <div className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-16">
         <header className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(61,243,255,0.14),transparent_24%),linear-gradient(180deg,rgba(9,15,31,0.96),rgba(7,11,25,0.96))] p-7 shadow-[0_20px_70px_rgba(0,0,0,0.35)]">
-          <p className="text-xs uppercase tracking-[0.24em] text-cyan-300">Red Rocks feeder page</p>
+          <p className="text-xs uppercase tracking-[0.24em] text-cyan-300">Red Rocks transport comparison</p>
           <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">
-            Shuttle usually beats Uber at Red Rocks for one reason: the ride home is where the plan breaks.
+            Private Red Rocks transportation beats improvising after the show for one reason: your ride home is already solved.
           </h1>
           <p className="mt-4 max-w-4xl text-base leading-8 text-zinc-300">
-            Uber can feel fine before the show. After the encore, it turns into surge pricing, pickup confusion, and waiting in a crowd that is all trying to leave at once. If you already know you want the safer move, stop comparing and book the shuttle.
+            Uber can feel easy before the show. After the encore, thousands of people are trying to leave at once. Party at Red Rocks now offers private transportation only, so your group can reserve one vehicle for the concert night instead of gambling on post-show pickup timing.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <ParrCtaLink
-              href={sharedBookingHref}
+              href={privateBookingHref}
               page={PAGE_PATH}
               cta="primary"
               className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#3df3ff] px-6 text-sm font-black uppercase tracking-[0.16em] text-[#07111d] transition hover:bg-[#62f6ff]"
             >
-              Book The Shuttle
+              Reserve Private Transportation
             </ParrCtaLink>
             <Link
               href="/red-rocks-transportation"
@@ -69,50 +75,32 @@ export default function RedRocksShuttleVsUberPage() {
             </p>
           </article>
           <article className="rounded-[1.6rem] border border-white/10 bg-white/[0.05] p-5">
-            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#ffb07c]">Shuttle advantage</div>
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#ffb07c]">Private ride advantage</div>
             <p className="mt-3 text-sm leading-7 text-zinc-300">
-              Shuttle removes the hardest part of the decision by solving the ride home before the venue empties out.
+              Your group has one vehicle and one plan for the night, with the return already accounted for before the encore ends.
             </p>
           </article>
           <article className="rounded-[1.6rem] border border-white/10 bg-white/[0.05] p-5">
-            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#ffb07c]">Best-fit user</div>
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#ffb07c]">Current offer</div>
             <p className="mt-3 text-sm leading-7 text-zinc-300">
-              Visitors staying in Denver who want certainty, fewer moving parts, and less chance of the night dragging on.
+              Party at Red Rocks offers private service: a $399 Private Suburban, with a $599 private van option for larger groups.
             </p>
           </article>
         </section>
 
         <section className="rounded-[1.9rem] border border-cyan-400/20 bg-cyan-500/10 p-6 shadow-[0_18px_60px_rgba(0,0,0,0.22)]">
           <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">Short answer</p>
-          <h2 className="mt-3 text-3xl font-black">If your real question is what happens after the show, shuttle is usually the better answer.</h2>
+          <h2 className="mt-3 text-3xl font-black">If your group wants the ride home decided before the show starts, reserve private transportation.</h2>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-zinc-200">
-            Uber still works for people who are comfortable gambling on price and pickup timing. That is not most people. Most people want the night solved, not one more uncertain step after the encore.
+            Uber can still work if you are comfortable with changing prices, pickup timing, and post-show congestion. A private ride costs more than improvising, but it removes those variables and keeps the group together.
           </p>
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <article className="rounded-[1.5rem] border border-cyan-300/20 bg-[#08141d] p-5">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">Why shuttle wins</p>
-              <ul className="mt-4 space-y-2 text-sm leading-7 text-zinc-200">
-                <li>• The return trip is decided before the crowd compresses.</li>
-                <li>• You avoid the worst surge and pickup uncertainty window.</li>
-                <li>• The choice is clearer for first-time visitors and out-of-town groups.</li>
-              </ul>
-            </article>
-            <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.05] p-5">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-zinc-400">When Uber is acceptable</p>
-              <ul className="mt-4 space-y-2 text-sm leading-7 text-zinc-200">
-                <li>• You are fine waiting longer than expected after the show.</li>
-                <li>• You care more about improvisation than certainty.</li>
-                <li>• Your group accepts that the ride home may cost more and feel worse.</li>
-              </ul>
-            </article>
-          </div>
         </section>
 
         <section className="rounded-[1.9rem] border border-white/10 bg-[linear-gradient(180deg,rgba(10,16,32,0.96),rgba(6,9,18,0.96))] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
           <p className="text-xs uppercase tracking-[0.2em] text-[#ffb07c]">Recommendation</p>
-          <h2 className="mt-3 text-3xl font-black">If you already know you do not want a messy pickup after the show, stop here and book the shuttle.</h2>
+          <h2 className="mt-3 text-3xl font-black">Already know you do not want to manage parking or post-show rideshare? Go straight to the private booking path.</h2>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-zinc-300">
-            This page exists to answer one narrow question. For most people, the answer is shuttle. If you still need to compare parking and the broader venue plan, go to the transport hub. Otherwise move straight to booking.
+            Party at Red Rocks currently offers private transportation only. The standard private Suburban is $399, and larger groups can choose the $599 private van option.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <ParrCtaLink
@@ -121,7 +109,7 @@ export default function RedRocksShuttleVsUberPage() {
               cta="recommendation-primary"
               className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#3df3ff] px-6 text-sm font-black uppercase tracking-[0.16em] text-[#07111d] transition hover:bg-[#62f6ff]"
             >
-              Secure Your Round-Trip Shuttle
+              Reserve Your Private Ride
             </ParrCtaLink>
             <Link
               href="/red-rocks-transportation"
