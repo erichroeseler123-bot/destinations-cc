@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type ResolvedLocation = {
   id: string;
@@ -68,6 +69,10 @@ type LivePayload = {
 
 type LoadState = "locating" | "loading" | "ready" | "needs-location" | "error";
 
+type LocationFirstHomeProps = {
+  initialCoordinates?: { lat: number; lng: number } | null;
+};
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -76,6 +81,14 @@ function slugify(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 100) || "location";
+}
+
+function canonicalCoordinate(value: number) {
+  return Number(value).toFixed(5);
+}
+
+function locationPath(lat: number, lng: number) {
+  return `/location/${canonicalCoordinate(lat)}/${canonicalCoordinate(lng)}`;
 }
 
 function compactLocation(location: ResolvedLocation) {
@@ -102,7 +115,8 @@ async function fetchJson<T>(url: string): Promise<T> {
   return (await response.json()) as T;
 }
 
-export default function LocationFirstHome() {
+export default function LocationFirstHome({ initialCoordinates = null }: LocationFirstHomeProps) {
+  const router = useRouter();
   const [location, setLocation] = useState<ResolvedLocation | null>(null);
   const [live, setLive] = useState<LivePayload | null>(null);
   const [state, setState] = useState<LoadState>("locating");
@@ -148,30 +162,24 @@ export default function LocationFirstHome() {
     return resolved;
   }, []);
 
+  const openCoordinatePage = useCallback((lat: number, lng: number, replace = false) => {
+    const path = locationPath(lat, lng);
+    if (replace) router.replace(path);
+    else router.push(path);
+  }, [router]);
+
   const useCurrentLocation = useCallback(() => {
     if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
       setState("needs-location");
-      setMessage("Your browser does not provide device location. Search for a place instead.");
+      setMessage("Your browser does not provide device location. Enter an address or place instead.");
       return;
     }
 
     setState("locating");
     setMessage(null);
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const resolved = await resolveCoordinates(position.coords.latitude, position.coords.longitude);
-          await loadLive(resolved);
-        } catch {
-          const fallback: ResolvedLocation = {
-            id: `device:${position.coords.latitude}:${position.coords.longitude}`,
-            name: "Your location",
-            displayName: "Your current location",
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          await loadLive(fallback);
-        }
+      (position) => {
+        openCoordinatePage(position.coords.latitude, position.coords.longitude, true);
       },
       () => {
         let restored: ResolvedLocation | null = null;
@@ -183,19 +191,42 @@ export default function LocationFirstHome() {
         }
         if (restored && typeof restored.lat === "number" && typeof restored.lng === "number") {
           setMessage("Location permission is off, so DCC restored your last selected place.");
-          void loadLive(restored);
+          openCoordinatePage(restored.lat, restored.lng, true);
           return;
         }
         setState("needs-location");
-        setMessage("Share your location or search for any place to open its live public-data view.");
+        setMessage("Share your location or enter any address or place to open its DCC page.");
       },
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 120000 },
     );
-  }, [loadLive, resolveCoordinates]);
+  }, [openCoordinatePage]);
 
   useEffect(() => {
+    if (initialCoordinates) {
+      let cancelled = false;
+      void (async () => {
+        try {
+          const resolved = await resolveCoordinates(initialCoordinates.lat, initialCoordinates.lng);
+          if (!cancelled) await loadLive(resolved);
+        } catch {
+          if (!cancelled) {
+            await loadLive({
+              id: `coordinate:${initialCoordinates.lat}:${initialCoordinates.lng}`,
+              name: "Coordinate location",
+              displayName: `${initialCoordinates.lat}, ${initialCoordinates.lng}`,
+              lat: initialCoordinates.lat,
+              lng: initialCoordinates.lng,
+            });
+          }
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }
     useCurrentLocation();
-  }, [useCurrentLocation]);
+    return undefined;
+  }, [initialCoordinates, loadLive, resolveCoordinates, useCurrentLocation]);
 
   async function search(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -209,8 +240,8 @@ export default function LocationFirstHome() {
       const response = await fetchJson<{ results?: ResolvedLocation[] }>(`/api/public/location-resolve?${params.toString()}`);
       const nextResults = response.results || [];
       setResults(nextResults);
-      if (nextResults.length === 1) await loadLive(nextResults[0]);
-      if (nextResults.length === 0) setMessage("No matching place found. Try a city, ZIP code, airport, venue, or landmark.");
+      if (nextResults.length === 1) openCoordinatePage(nextResults[0].lat, nextResults[0].lng);
+      if (nextResults.length === 0) setMessage("No matching place found. Try an address, city, ZIP code, airport, venue, port, or landmark.");
     } catch {
       setMessage("Location search is unavailable right now.");
     } finally {
@@ -235,6 +266,8 @@ export default function LocationFirstHome() {
 
   const events = live?.ticketmaster?.available ? live.ticketmaster.events || [] : [];
   const weather = live?.weather;
+  const coordinateUrl = location ? locationPath(location.lat, location.lng) : null;
+  const apiUrl = location ? `/api/location/${canonicalCoordinate(location.lat)}/${canonicalCoordinate(location.lng)}` : null;
 
   return (
     <main className="min-h-screen bg-[#070b10] text-white">
@@ -243,7 +276,7 @@ export default function LocationFirstHome() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Destination Command Center</p>
-              <h1 className="mt-2 text-4xl font-black tracking-[-0.045em] sm:text-5xl lg:text-6xl">The public internet, by location.</h1>
+              <h1 className="mt-2 text-4xl font-black tracking-[-0.045em] sm:text-5xl lg:text-6xl">The public internet, by coordinates.</h1>
             </div>
             <button type="button" onClick={useCurrentLocation} className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300/15">
               Use my location
@@ -251,28 +284,28 @@ export default function LocationFirstHome() {
           </div>
 
           <p className="mt-4 max-w-3xl text-base leading-7 text-white/58 sm:text-lg">
-            DCC uses coordinates to pull the useful public machine-readable signals available around a place. Open here, or move the lens anywhere else.
+            Every latitude and longitude can become a DCC page. Your device or an entered address simply determines the coordinates; the coordinates are the permanent location key.
           </p>
 
           <form onSubmit={search} className="mt-7 flex max-w-4xl flex-col gap-3 sm:flex-row">
-            <label className="sr-only" htmlFor="dcc-location-search">Check another location</label>
+            <label className="sr-only" htmlFor="dcc-location-search">Open another location</label>
             <input
               id="dcc-location-search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="City, ZIP, airport, venue, port, landmark…"
+              placeholder="Address, city, ZIP, airport, venue, port, landmark…"
               className="min-h-14 flex-1 rounded-2xl border border-white/12 bg-white/[0.055] px-5 text-base text-white outline-none placeholder:text-white/32 focus:border-cyan-300/55 focus:ring-2 focus:ring-cyan-300/10"
               autoComplete="off"
             />
             <button type="submit" disabled={searching} className="min-h-14 rounded-2xl bg-cyan-300 px-6 text-sm font-black uppercase tracking-[0.12em] text-[#031217] transition hover:bg-cyan-200 disabled:cursor-wait disabled:opacity-60">
-              {searching ? "Finding…" : "Check place"}
+              {searching ? "Finding…" : "Open location"}
             </button>
           </form>
 
           {results.length > 1 ? (
             <div className="mt-3 grid max-w-4xl gap-2 rounded-2xl border border-white/10 bg-black/30 p-2">
               {results.map((result) => (
-                <button key={result.id} type="button" onClick={() => void loadLive(result)} className="rounded-xl px-4 py-3 text-left transition hover:bg-white/[0.07]">
+                <button key={result.id} type="button" onClick={() => openCoordinatePage(result.lat, result.lng)} className="rounded-xl px-4 py-3 text-left transition hover:bg-white/[0.07]">
                   <strong className="block text-sm text-white">{result.name}</strong>
                   <span className="mt-1 block text-xs text-white/42">{result.displayName}</span>
                 </button>
@@ -287,7 +320,7 @@ export default function LocationFirstHome() {
       <section className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
         {state === "locating" ? (
           <div className="rounded-[28px] border border-white/10 bg-white/[0.035] p-8">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200">Finding your location</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200">Finding coordinates</p>
             <p className="mt-3 text-xl font-bold text-white">DCC is positioning the lens around you…</p>
           </div>
         ) : null}
@@ -295,8 +328,8 @@ export default function LocationFirstHome() {
         {state === "needs-location" ? (
           <div className="rounded-[28px] border border-white/10 bg-white/[0.035] p-8">
             <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200">Choose a location</p>
-            <h2 className="mt-3 text-2xl font-black">Share your current location or search anywhere on Earth.</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-white/52">DCC does not need a hand-built city page. Latitude and longitude determine which live public sources can contribute to the view.</p>
+            <h2 className="mt-3 text-2xl font-black">Share your location or enter anywhere on Earth.</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-white/52">DCC converts the selection to latitude and longitude, then generates the location page from the public sources that cover those coordinates.</p>
           </div>
         ) : null}
 
@@ -304,9 +337,13 @@ export default function LocationFirstHome() {
           <div className="space-y-5">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-200/70">Current lens</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-200/70">Coordinate page</p>
                 <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] sm:text-4xl">📍 {compactLocation(location)}</h2>
-                <p className="mt-2 text-xs text-white/35">{location.lat.toFixed(4)}, {location.lng.toFixed(4)}</p>
+                <p className="mt-2 font-mono text-xs text-white/45">{canonicalCoordinate(location.lat)}, {canonicalCoordinate(location.lng)}</p>
+                <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-[0.1em]">
+                  {coordinateUrl ? <a href={coordinateUrl} className="rounded-full border border-white/10 px-3 py-2 text-white/45 hover:text-white">Canonical page</a> : null}
+                  {apiUrl ? <a href={apiUrl} className="rounded-full border border-cyan-300/20 bg-cyan-300/[0.06] px-3 py-2 text-cyan-100/75 hover:bg-cyan-300/[0.1]">JSON / developer</a> : null}
+                </div>
               </div>
               <div className="text-right text-xs text-white/35">
                 <p>{state === "loading" ? "Refreshing public sources…" : `${activeProviders.length} provider slots active`}</p>
@@ -346,7 +383,7 @@ export default function LocationFirstHome() {
               <article className="rounded-[26px] border border-white/10 bg-white/[0.04] p-6">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">Public signals</p>
                 <strong className="mt-3 block text-4xl font-black">{machineItems.length}</strong>
-                <p className="mt-2 text-sm leading-6 text-white/45">Current machine-readable alerts, transport, traffic, earth, water, and other mapped observations returned for this location.</p>
+                <p className="mt-2 text-sm leading-6 text-white/45">Current machine-readable alerts, transport, traffic, earth, water, and other mapped observations returned for this coordinate.</p>
               </article>
 
               <article className="rounded-[26px] border border-white/10 bg-white/[0.04] p-6">
