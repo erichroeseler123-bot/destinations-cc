@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
+import { isIndexableCoordinate } from "@/lib/dcc/locationDiscovery";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -61,6 +63,17 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const canonicalLng = canonical(lng);
   const canonicalPage = `/location/${canonicalLat}/${canonicalLng}`;
   const canonicalApi = `/api/location/${canonicalLat}/${canonicalLng}`;
+  const indexable = isIndexableCoordinate(lat, lng);
+
+  logDiscoveryRequest({
+    surface: "location_api",
+    path: canonicalApi,
+    userAgent: request.headers.get("user-agent"),
+    referer: request.headers.get("referer"),
+    coordinate: `${canonicalLat},${canonicalLng}`,
+    indexable,
+  });
+
   let location: any = null;
 
   try {
@@ -102,6 +115,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
       llms: `${origin}/llms.txt`,
       openapi: `${origin}/openapi.json`,
       developers: `${origin}/developers`,
+    },
+    indexing: {
+      eligible: indexable,
+      policy: indexable ? "quality-gated-known-location" : "available-but-noindex",
     },
   };
 
