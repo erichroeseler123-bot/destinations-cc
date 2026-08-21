@@ -53,6 +53,29 @@ async function source<T>(provider: string, attribution: string, reader: () => Pr
   }
 }
 
+export function formatGaugeStatus(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value === "string") return value;
+  if (typeof value !== "object") return String(value);
+
+  const status = value as Record<string, unknown>;
+  const primary = typeof status.primary === "number" && status.primary > -900
+    ? `${status.primary} ${typeof status.primaryUnit === "string" ? status.primaryUnit : ""}`.trim()
+    : null;
+  const categoryRaw = typeof status.floodCategory === "string" ? status.floodCategory : null;
+  const ignored = new Set(["not_defined", "fcst_not_current", "obs_not_current", "out_of_service"]);
+  const category = categoryRaw && !ignored.has(categoryRaw) ? categoryRaw.replaceAll("_", " ") : null;
+  return [primary, category].filter(Boolean).join(" · ") || null;
+}
+
+export function normalizeGaugeStatuses<T extends { statusObserved?: unknown; statusForecast?: unknown }>(gauge: T) {
+  return {
+    ...gauge,
+    statusObserved: formatGaugeStatus(gauge.statusObserved),
+    statusForecast: formatGaugeStatus(gauge.statusForecast),
+  };
+}
+
 export async function readGlobalRiverDischarge({ lat, lng }: Coordinate) {
   return source("open-meteo-flood", "Global river discharge: Open-Meteo / GloFAS", async () => {
     const url = new URL("https://flood-api.open-meteo.com/v1/flood");
