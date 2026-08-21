@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
 import { isIndexableCoordinate } from "@/lib/dcc/locationDiscovery";
 import { readLocationIntelligence } from "@/lib/dcc/locationIntelligence";
-import { readHydroMarine } from "@/lib/dcc/hydroMarine";
+import { normalizeGaugeStatuses, readHydroMarine } from "@/lib/dcc/hydroMarine";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -78,6 +78,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       readOptionalLegacy(origin, lat, lng, request.nextUrl.searchParams.get("timezone") || "auto"),
     ]);
 
+    const normalizedGauges = (intelligence.water.nearbyGauges || []).map(normalizeGaugeStatuses);
     const now = {
       ...intelligence.now,
       marine: hydroMarine.marine?.current || null,
@@ -89,6 +90,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     };
     const water = {
       ...intelligence.water,
+      nearbyGauges: normalizedGauges,
       globalRiverDischarge: hydroMarine.river || null,
       marine: hydroMarine.marine || null,
     };
