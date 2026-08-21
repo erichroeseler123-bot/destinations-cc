@@ -92,6 +92,11 @@ const DCC_RUNTIME_REDIRECTS = [
     permanent: true,
   },
   {
+    source: "/guides/best-new-orleans-swamp-tour",
+    destination: "/swamp-tours",
+    permanent: true,
+  },
+  {
     source: "/things-to-do-today",
     destination: "/guides/things-to-do-in-new-orleans-today",
     permanent: true,
