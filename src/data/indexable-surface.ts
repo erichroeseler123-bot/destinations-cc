@@ -1,8 +1,20 @@
 import { discoverableLocationPaths } from "@/lib/dcc/locationDiscovery";
-import { getRootPathsByPublishState } from "@/src/data/route-governance";
+
+/**
+ * Public DCC search identity.
+ *
+ * DCC is a coordinate-intelligence product. Legacy travel, corridor, tour,
+ * venue, port and operator-handoff routes may remain available as secondary
+ * applications, but they must not define the root DCC site's crawl/index
+ * surface or appear in the canonical DCC sitemap.
+ */
+const COORDINATE_NATIVE_PUBLIC_PATHS = [
+  "/",
+  "/developers",
+] as const;
 
 const INDEXABLE_SURFACE_SET = new Set<string>([
-  ...getRootPathsByPublishState("indexable", "promoted"),
+  ...COORDINATE_NATIVE_PUBLIC_PATHS,
   ...discoverableLocationPaths(),
 ]);
 
