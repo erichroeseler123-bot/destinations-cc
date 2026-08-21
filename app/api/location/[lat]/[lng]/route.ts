@@ -3,6 +3,7 @@ import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
 import { isIndexableCoordinate } from "@/lib/dcc/locationDiscovery";
 import { readLocationIntelligence } from "@/lib/dcc/locationIntelligence";
 import { normalizeGaugeStatuses, readHydroMarine } from "@/lib/dcc/hydroMarine";
+import { readExtendedCoordinateFeeds } from "@/lib/dcc/extendedCoordinateFeeds";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -72,9 +73,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
   });
 
   try {
-    const [intelligence, hydroMarine, legacy] = await Promise.all([
+    const [intelligence, hydroMarine, extended, legacy] = await Promise.all([
       readLocationIntelligence({ lat, lng }),
       readHydroMarine({ lat, lng }),
+      readExtendedCoordinateFeeds({ lat, lng }),
       readOptionalLegacy(origin, lat, lng, request.nextUrl.searchParams.get("timezone") || "auto"),
     ]);
 
@@ -93,8 +95,19 @@ export async function GET(request: NextRequest, context: RouteContext) {
       nearbyGauges: normalizedGauges,
       globalRiverDischarge: hydroMarine.river || null,
       marine: hydroMarine.marine || null,
+      coops: extended.coastal.coops,
+      ndbc: extended.coastal.ndbc,
     };
-    const sources = [...intelligence.sources, ...hydroMarine.sources];
+    const winterHours = (conditions.next12Hours || []).filter(
+      (hour: any) => Number(hour?.snowDepthM || 0) > 0 || Number(hour?.snowfall || 0) > 0,
+    );
+    const winter = {
+      active: Number(now.weather?.snowfall || 0) > 0 || winterHours.length > 0,
+      currentSnowfallCm: Number(now.weather?.snowfall || 0),
+      maxSnowDepthCm: Math.max(0, ...winterHours.map((hour: any) => Number(hour?.snowDepthM || 0) * 100)),
+      hours: winterHours,
+    };
+    const sources = [...intelligence.sources, ...hydroMarine.sources, ...extended.sources];
 
     return NextResponse.json(
       {
@@ -124,6 +137,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
           conditions,
           hazards: intelligence.hazards,
           water,
+          winter,
+          nearby: extended.nearby,
+          aviation: extended.aviation,
+          coastal: extended.coastal,
           official: intelligence.official,
           events: legacy?.ticketmaster || null,
           machineFeeds: legacy?.machineFeeds || [],
@@ -136,6 +153,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
         events: legacy?.ticketmaster || null,
         machineFeeds: legacy?.machineFeeds || [],
         providerSlots: legacy?.providerSlots || {},
+        nearby: extended.nearby,
+        aviation: extended.aviation,
+        coastal: extended.coastal,
         sources,
         discovery: {
           agent: `${origin}/agent.json`,
@@ -154,6 +174,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
           responseCacheSeconds: 60,
           machineApiReverseGeocoding: false,
           marineRequiresLocalNonNullModelData: true,
+          nearbyInfrastructureIsBoundedAndCached: true,
+          trafficRequiresEfficientRegionalPublicCoverage: true,
           interpretation:
             "DCC assembles current public machine-readable context for this coordinate. Missing modules indicate unavailable mapped coverage, not proof that a real-world phenomenon is absent.",
         },
