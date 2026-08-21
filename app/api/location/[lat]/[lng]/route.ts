@@ -8,6 +8,8 @@ import { readExtendedCoordinateFeeds } from "@/lib/dcc/extendedCoordinateFeeds";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const NATURAL_EVENT_RELEVANCE_KM = 500;
+
 function parseCoordinate(value: string, min: number, max: number) {
   const decoded = decodeURIComponent(value);
   if (!/^-?\d+(?:\.\d+)?$/.test(decoded)) return null;
@@ -107,6 +109,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
       maxSnowDepthCm: Math.max(0, ...winterHours.map((hour: any) => Number(hour?.snowDepthM || 0) * 100)),
       hours: winterHours,
     };
+    const naturalEvents = (intelligence.hazards.naturalEvents || []).filter(
+      (event: any) => Number.isFinite(event?.distanceKm) && event.distanceKm <= NATURAL_EVENT_RELEVANCE_KM,
+    );
+    const hazards = {
+      ...intelligence.hazards,
+      naturalEvents,
+    };
     const sources = [...intelligence.sources, ...hydroMarine.sources, ...extended.sources];
 
     return NextResponse.json(
@@ -135,7 +144,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
           identity: intelligence.identity,
           now,
           conditions,
-          hazards: intelligence.hazards,
+          hazards,
           water,
           winter,
           nearby: extended.nearby,
@@ -148,8 +157,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
           officialLiveLinks: legacy?.officialLiveLinks || [],
         },
         weather: now.weather,
-        alerts: intelligence.hazards.alerts,
-        earthquakes: intelligence.hazards.earthquakes,
+        alerts: hazards.alerts,
+        earthquakes: hazards.earthquakes,
         events: legacy?.ticketmaster || null,
         machineFeeds: legacy?.machineFeeds || [],
         providerSlots: legacy?.providerSlots || {},
@@ -174,6 +183,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
           responseCacheSeconds: 60,
           machineApiReverseGeocoding: false,
           marineRequiresLocalNonNullModelData: true,
+          naturalEventRelevanceKm: NATURAL_EVENT_RELEVANCE_KM,
           nearbyInfrastructureIsBoundedAndCached: true,
           trafficRequiresEfficientRegionalPublicCoverage: true,
           interpretation:
@@ -187,6 +197,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
           "Access-Control-Allow-Origin": "*",
           "X-DCC-Schema": "dcc-location-v2",
           "X-DCC-Coordinate": `${canonicalLat},${canonicalLng}`,
+          "X-DCC-Natural-Event-Relevance-Km": String(NATURAL_EVENT_RELEVANCE_KM),
         },
       },
     );
