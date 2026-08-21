@@ -1,3 +1,5 @@
+import { headers } from "next/headers";
+import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
 import {
   getPublicCorridorContracts,
   getPublicMachineReadablePaths,
@@ -8,6 +10,14 @@ export const dynamic = "force-dynamic";
 const SITE_URL = "https://www.destinationcommandcenter.com";
 
 export async function GET() {
+  const h = await headers();
+  logDiscoveryRequest({
+    surface: "agent_manifest",
+    path: "/agent.json",
+    userAgent: h.get("user-agent"),
+    referer: h.get("referer"),
+  });
+
   const manifest = {
     version: "2026-08-20",
     site: {
@@ -76,6 +86,7 @@ export async function GET() {
       agent_well_known: `${SITE_URL}/.well-known/agent.json`,
       openapi: `${SITE_URL}/openapi.json`,
       developers: `${SITE_URL}/developers`,
+      locations_sitemap: `${SITE_URL}/locations-sitemap.xml`,
     },
     usage_guidance: [
       "If exact coordinates are known, call /api/location/{lat}/{lng} directly.",
