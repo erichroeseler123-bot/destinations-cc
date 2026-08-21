@@ -10,6 +10,7 @@ import { discoverableLocationPaths } from "@/lib/dcc/locationDiscovery";
  */
 const COORDINATE_NATIVE_PUBLIC_PATHS = [
   "/",
+  "/about",
   "/developers",
 ] as const;
 
