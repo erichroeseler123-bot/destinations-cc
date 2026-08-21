@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import DccMachineContractExplainer from "@/app/components/dcc/DccMachineContractExplainer";
 import LocationFirstHome from "@/app/components/dcc/LocationFirstHome";
 import JuneauFlightDeckHostPage from "@/app/juneau-flight-deck/page";
 import WisconsinDellsBrandPage from "@/app/wisconsin-dells-brand/page";
@@ -46,12 +47,12 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   return {
-    title: "Destination Command Center | Live Public Data for Any Location",
-    description: "Open DCC to see live public machine-readable signals around your current location, or move the lens to another city, airport, venue, port, or place.",
+    title: "Destination Command Center | Live Public Data for Any Coordinate",
+    description: "DCC turns latitude and longitude into a live public location page and machine-readable JSON endpoint using public data sources available around that coordinate.",
     alternates: { canonical: "/" },
     openGraph: {
       title: "Destination Command Center",
-      description: "The public internet, organized by location.",
+      description: "Every coordinate on Earth can have a DCC page.",
       url: "https://destinationcommandcenter.com",
       type: "website",
     },
@@ -62,5 +63,10 @@ export default async function HomePage() {
   const host = await requestHost();
   if (JFD_HOSTS.has(host)) return <JuneauFlightDeckHostPage />;
   if (DELLS_HOSTS.has(host)) return <WisconsinDellsBrandPage />;
-  return <LocationFirstHome />;
+  return (
+    <>
+      <LocationFirstHome />
+      <DccMachineContractExplainer />
+    </>
+  );
 }
