@@ -19,7 +19,7 @@ export async function GET() {
   });
 
   const manifest = {
-    version: "2026-08-21",
+    version: "2026-08-21.2",
     site: {
       id: "destinationcommandcenter",
       name: "Destination Command Center",
@@ -75,6 +75,26 @@ export async function GET() {
         "providerSlots",
         "officialLiveLinks",
       ],
+      discovery_fields: [
+        "agent",
+        "llms",
+        "openapi",
+        "developers",
+        "directory",
+        "sitemap",
+        "sitemapIndex",
+        "locationsSitemap",
+        "sectionSitemap",
+      ],
+      indexing_fields: [
+        "eligible",
+        "policy",
+        "threshold",
+        "qualityScore",
+        "locationType",
+        "sitemapSection",
+        "reason",
+      ],
       core_public_sources: [
         "Open-Meteo weather",
         "Open-Meteo / CAMS air quality",
@@ -86,6 +106,15 @@ export async function GET() {
       compatibility_aliases: ["weather", "alerts", "earthquakes", "events", "machineFeeds", "providerSlots"],
       source_rule:
         "Dynamic facts should be traceable to public or configured machine-readable sources and include source availability and freshness metadata. Missing modules mean unavailable mapped coverage, not proof that the real-world phenomenon is absent.",
+    },
+    indexing_policy: {
+      coordinate_pages_exist_independently_of_indexing: true,
+      sitemap_membership_requires_curated_location: true,
+      quality_score_threshold: 90,
+      rule:
+        "An arbitrary coordinate may be read by humans or machines but is not promoted into search discovery. DCC sitemap membership requires a curated discoverable location with qualityScore >= 90.",
+      promoted_location_types: ["city", "venue", "resort", "port", "island"],
+      section_sitemap_template: `${SITE_URL}/sitemaps/{section}.xml`,
     },
     caching: {
       response_shared_cache_seconds: 60,
@@ -100,11 +129,24 @@ export async function GET() {
       agent_well_known: `${SITE_URL}/.well-known/agent.json`,
       openapi: `${SITE_URL}/openapi.json`,
       developers: `${SITE_URL}/developers`,
+      directory: `${SITE_URL}/directory`,
+      sitemap: `${SITE_URL}/sitemap.xml`,
+      sitemap_index: `${SITE_URL}/sitemap-index.xml`,
       locations_sitemap: `${SITE_URL}/locations-sitemap.xml`,
+      section_sitemaps: {
+        core: `${SITE_URL}/sitemaps/core.xml`,
+        cities: `${SITE_URL}/sitemaps/cities.xml`,
+        venues: `${SITE_URL}/sitemaps/venues.xml`,
+        resorts: `${SITE_URL}/sitemaps/resorts.xml`,
+        ports: `${SITE_URL}/sitemaps/ports.xml`,
+        islands: `${SITE_URL}/sitemaps/islands.xml`,
+      },
     },
     usage_guidance: [
       "If exact coordinates are known, call /api/location/{lat}/{lng} directly.",
       "If a human-readable page is needed, use /location/{lat}/{lng}.",
+      "Read the response indexing object before assuming a coordinate is promoted into search discovery.",
+      "Use discovery.sectionSitemap when non-null to find the curated sitemap collection containing a promoted location.",
       "Read modules rather than assuming every data class applies everywhere.",
       "Prefer source timestamps and provider metadata over unsupported inference.",
       "Treat current observations as time-sensitive public-source aggregation, not permanent ground truth.",
