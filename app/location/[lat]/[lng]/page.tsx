@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import LocationFirstHome from "@/app/components/dcc/LocationFirstHome";
+import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
+import { canonicalCoordinate, getDiscoverableLocation, isIndexableCoordinate } from "@/lib/dcc/locationDiscovery";
 
 const SITE_URL = "https://www.destinationcommandcenter.com";
 
@@ -9,10 +12,6 @@ function parseCoordinate(value: string, min: number, max: number) {
   if (!/^-?\d+(?:\.\d+)?$/.test(decoded)) return null;
   const number = Number(decoded);
   return Number.isFinite(number) && number >= min && number <= max ? number : null;
-}
-
-function canonical(value: number) {
-  return value.toFixed(5);
 }
 
 type PageProps = {
@@ -27,12 +26,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Location not found | Destination Command Center", robots: { index: false, follow: false } };
   }
 
-  const coordinate = `${canonical(lat)}, ${canonical(lng)}`;
+  const known = getDiscoverableLocation(lat, lng);
+  const indexable = isIndexableCoordinate(lat, lng);
+  const coordinate = `${canonicalCoordinate(lat)}, ${canonicalCoordinate(lng)}`;
+  const label = known?.name || coordinate;
+
   return {
-    title: `${coordinate} | Destination Command Center`,
-    description: `Live public location intelligence for latitude ${canonical(lat)} and longitude ${canonical(lng)}.`,
-    alternates: { canonical: `/location/${canonical(lat)}/${canonical(lng)}` },
-    robots: { index: false, follow: true },
+    title: `${label} | Destination Command Center`,
+    description: known
+      ? `Live public location intelligence for ${known.name}, anchored to latitude ${canonicalCoordinate(lat)} and longitude ${canonicalCoordinate(lng)}.`
+      : `Live public location intelligence for latitude ${canonicalCoordinate(lat)} and longitude ${canonicalCoordinate(lng)}.`,
+    alternates: { canonical: `/location/${canonicalCoordinate(lat)}/${canonicalCoordinate(lng)}` },
+    robots: { index: indexable, follow: true },
   };
 }
 
@@ -42,11 +47,23 @@ export default async function CoordinateLocationPage({ params }: PageProps) {
   const lng = parseCoordinate(raw.lng, -180, 180);
   if (lat == null || lng == null) notFound();
 
-  const canonicalLat = canonical(lat);
-  const canonicalLng = canonical(lng);
+  const canonicalLat = canonicalCoordinate(lat);
+  const canonicalLng = canonicalCoordinate(lng);
   if (raw.lat !== canonicalLat || raw.lng !== canonicalLng) {
     permanentRedirect(`/location/${canonicalLat}/${canonicalLng}`);
   }
+
+  const known = getDiscoverableLocation(lat, lng);
+  const indexable = isIndexableCoordinate(lat, lng);
+  const h = await headers();
+  logDiscoveryRequest({
+    surface: "location_page",
+    path: `/location/${canonicalLat}/${canonicalLng}`,
+    userAgent: h.get("user-agent"),
+    referer: h.get("referer"),
+    coordinate: `${canonicalLat},${canonicalLng}`,
+    indexable,
+  });
 
   const pageUrl = `${SITE_URL}/location/${canonicalLat}/${canonicalLng}`;
   const apiUrl = `${SITE_URL}/api/location/${canonicalLat}/${canonicalLng}`;
@@ -54,7 +71,7 @@ export default async function CoordinateLocationPage({ params }: PageProps) {
     "@context": "https://schema.org",
     "@type": "Place",
     "@id": pageUrl,
-    name: `DCC location ${canonicalLat}, ${canonicalLng}`,
+    name: known?.name || `DCC location ${canonicalLat}, ${canonicalLng}`,
     url: pageUrl,
     geo: {
       "@type": "GeoCoordinates",
