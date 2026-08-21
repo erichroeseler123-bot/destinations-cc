@@ -10,6 +10,7 @@ type SourceState<T> = {
 };
 
 const UA = "DestinationCommandCenter/2.1 (+https://destinationcommandcenter.com/developers)";
+const NDBC_RELEVANCE_KM = 100;
 
 function haversineKm(a: Coordinate, b: Coordinate) {
   const r = 6371;
@@ -222,10 +223,10 @@ export async function readNdbc(coordinate: Coordinate) {
     const stations = [...xml.matchAll(/<station\s+([^>]+?)\s*\/>/g)]
       .map((match) => parseXmlAttributes(match[1]))
       .map((station) => ({ ...station, distanceKm: stationDistance(coordinate, station) }))
-      .filter((station: any) => Number.isFinite(station.distanceKm) && station.distanceKm <= 250)
+      .filter((station: any) => Number.isFinite(station.distanceKm) && station.distanceKm <= NDBC_RELEVANCE_KM)
       .sort((a: any, b: any) => a.distanceKm - b.distanceKm)
       .slice(0, 3);
-    if (!stations.length) throw new Error("no active NDBC stations within 250 km");
+    if (!stations.length) throw new Error(`no active NDBC stations within ${NDBC_RELEVANCE_KM} km`);
 
     return Promise.all(stations.map(async (station: any) => {
       const latest = await readText(`https://www.ndbc.noaa.gov/data/realtime2/${encodeURIComponent(station.id)}.txt`, 300).catch(() => "");
