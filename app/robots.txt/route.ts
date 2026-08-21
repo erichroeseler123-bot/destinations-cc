@@ -50,7 +50,9 @@ export function buildRobotsTxt(host: string) {
   }
 
   const sitemaps = [`Sitemap: ${sitemapUrl}`];
-  if (isDcc) sitemaps.push("Sitemap: https://www.destinationcommandcenter.com/locations-sitemap.xml");
+  if (isDcc) {
+    sitemaps.unshift("Sitemap: https://destinationcommandcenter.com/sitemap-index.xml");
+  }
 
   return [...groups, ...sitemaps].join("\n\n");
 }

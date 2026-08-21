@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
-import { isIndexableCoordinate } from "@/lib/dcc/locationDiscovery";
+import { getDiscoverableLocation, isIndexableCoordinate } from "@/lib/dcc/locationDiscovery";
 import { readLocationIntelligence } from "@/lib/dcc/locationIntelligence";
 import { normalizeGaugeStatuses, readHydroMarine } from "@/lib/dcc/hydroMarine";
 import { readExtendedCoordinateFeeds } from "@/lib/dcc/extendedCoordinateFeeds";
@@ -63,7 +63,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const canonicalLng = canonical(lng);
   const canonicalPage = `/location/${canonicalLat}/${canonicalLng}`;
   const canonicalApi = `/api/location/${canonicalLat}/${canonicalLng}`;
+  const knownLocation = getDiscoverableLocation(lat, lng);
   const indexable = isIndexableCoordinate(lat, lng);
+  const sitemapSection = knownLocation?.type ? `${knownLocation.type}s` : null;
 
   logDiscoveryRequest({
     surface: "location_api",
@@ -126,8 +128,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
         coordinate: { lat, lng, precision_decimals: 5 },
         location: {
           id: `coordinate:${canonicalLat}:${canonicalLng}`,
-          name: "Coordinate location",
-          displayName: `${canonicalLat}, ${canonicalLng}`,
+          name: knownLocation?.name || "Coordinate location",
+          displayName: knownLocation?.name || `${canonicalLat}, ${canonicalLng}`,
+          type: knownLocation?.type || "coordinate",
           lat,
           lng,
           timezone: intelligence.identity.timezone,
@@ -171,10 +174,23 @@ export async function GET(request: NextRequest, context: RouteContext) {
           llms: `${origin}/llms.txt`,
           openapi: `${origin}/openapi.json`,
           developers: `${origin}/developers`,
+          directory: `${origin}/directory`,
+          sitemap: `${origin}/sitemap.xml`,
+          sitemapIndex: `${origin}/sitemap-index.xml`,
+          locationsSitemap: `${origin}/locations-sitemap.xml`,
+          sectionSitemap:
+            indexable && sitemapSection ? `${origin}/sitemaps/${sitemapSection}.xml` : null,
         },
         indexing: {
           eligible: indexable,
           policy: indexable ? "quality-gated-known-location" : "available-but-noindex",
+          threshold: 90,
+          qualityScore: knownLocation?.qualityScore ?? null,
+          locationType: knownLocation?.type ?? null,
+          sitemapSection: indexable ? sitemapSection : null,
+          reason: indexable
+            ? "This coordinate is a curated DCC location with qualityScore >= 90 and is eligible for public discovery surfaces."
+            : "This coordinate remains available through the human page and machine API but is not promoted into DCC search sitemaps unless curated and quality-gated.",
         },
         policy: {
           coordinateIsCanonicalKey: true,
@@ -182,6 +198,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
           sourceSpecificCaching: true,
           responseCacheSeconds: 60,
           machineApiReverseGeocoding: false,
+          sitemapEligibilityRequiresCuratedQualityScore: true,
+          sitemapQualityThreshold: 90,
           marineRequiresLocalNonNullModelData: true,
           naturalEventRelevanceKm: NATURAL_EVENT_RELEVANCE_KM,
           nearbyInfrastructureIsBoundedAndCached: true,
@@ -197,6 +215,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
           "Access-Control-Allow-Origin": "*",
           "X-DCC-Schema": "dcc-location-v2",
           "X-DCC-Coordinate": `${canonicalLat},${canonicalLng}`,
+          "X-DCC-Indexable": indexable ? "true" : "false",
           "X-DCC-Natural-Event-Relevance-Km": String(NATURAL_EVENT_RELEVANCE_KM),
         },
       },
