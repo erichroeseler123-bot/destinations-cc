@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import DccMachineContractExplainer from "@/app/components/dcc/DccMachineContractExplainer";
-import LocationFirstHome from "@/app/components/dcc/LocationFirstHome";
+import LocationFirstHomeFast from "@/app/components/dcc/LocationFirstHomeFast";
 import JuneauFlightDeckHostPage from "@/app/juneau-flight-deck/page";
 import WisconsinDellsBrandPage from "@/app/wisconsin-dells-brand/page";
 
@@ -65,7 +65,7 @@ export default async function HomePage() {
   if (DELLS_HOSTS.has(host)) return <WisconsinDellsBrandPage />;
   return (
     <>
-      <LocationFirstHome />
+      <LocationFirstHomeFast />
       <DccMachineContractExplainer />
     </>
   );
