@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
 import { isIndexableCoordinate } from "@/lib/dcc/locationDiscovery";
 import { readLocationIntelligence } from "@/lib/dcc/locationIntelligence";
+import { readHydroMarine } from "@/lib/dcc/hydroMarine";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,9 +41,7 @@ async function readOptionalLegacy(origin: string, lat: number, lng: number, time
   }
 }
 
-type RouteContext = {
-  params: Promise<{ lat: string; lng: string }>;
-};
+type RouteContext = { params: Promise<{ lat: string; lng: string }> };
 
 export async function GET(request: NextRequest, context: RouteContext) {
   const raw = await context.params;
@@ -51,18 +50,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   if (lat == null || lng == null) {
     return NextResponse.json(
-      {
-        ok: false,
-        schema: "dcc-location-v2",
-        error: "Valid latitude (-90..90) and longitude (-180..180) are required.",
-      },
-      {
-        status: 400,
-        headers: {
-          "Cache-Control": "no-store",
-          "Access-Control-Allow-Origin": "*",
-        },
-      },
+      { ok: false, schema: "dcc-location-v2", error: "Valid latitude (-90..90) and longitude (-180..180) are required." },
+      { status: 400, headers: { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" } },
     );
   }
 
@@ -83,91 +72,100 @@ export async function GET(request: NextRequest, context: RouteContext) {
   });
 
   try {
-    const [intelligence, legacy] = await Promise.all([
+    const [intelligence, hydroMarine, legacy] = await Promise.all([
       readLocationIntelligence({ lat, lng }),
-      readOptionalLegacy(
-        origin,
-        lat,
-        lng,
-        request.nextUrl.searchParams.get("timezone") || "auto",
-      ),
+      readHydroMarine({ lat, lng }),
+      readOptionalLegacy(origin, lat, lng, request.nextUrl.searchParams.get("timezone") || "auto"),
     ]);
 
-    const response = {
-      ok: true,
-      schema: "dcc-location-v2",
-      schemaVersion: 2,
-      coordinate: {
-        lat,
-        lng,
-        precision_decimals: 5,
-      },
-      location: {
-        id: `coordinate:${canonicalLat}:${canonicalLng}`,
-        name: "Coordinate location",
-        displayName: `${canonicalLat}, ${canonicalLng}`,
-        lat,
-        lng,
-        timezone: intelligence.identity.timezone,
-        elevationM: intelligence.identity.elevationM,
-      },
-      canonical: {
-        page: canonicalPage,
-        api: canonicalApi,
-        absolutePage: `${origin}${canonicalPage}`,
-        absoluteApi: `${origin}${canonicalApi}`,
-      },
-      checkedAt: intelligence.checkedAt,
-      modules: {
-        identity: intelligence.identity,
-        now: intelligence.now,
-        conditions: intelligence.conditions,
-        hazards: intelligence.hazards,
-        water: intelligence.water,
-        official: intelligence.official,
+    const now = {
+      ...intelligence.now,
+      marine: hydroMarine.marine?.current || null,
+    };
+    const conditions = {
+      ...intelligence.conditions,
+      globalRiverDischarge: hydroMarine.river || null,
+      marine: hydroMarine.marine || null,
+    };
+    const water = {
+      ...intelligence.water,
+      globalRiverDischarge: hydroMarine.river || null,
+      marine: hydroMarine.marine || null,
+    };
+    const sources = [...intelligence.sources, ...hydroMarine.sources];
+
+    return NextResponse.json(
+      {
+        ok: true,
+        schema: "dcc-location-v2",
+        schemaVersion: 2,
+        coordinate: { lat, lng, precision_decimals: 5 },
+        location: {
+          id: `coordinate:${canonicalLat}:${canonicalLng}`,
+          name: "Coordinate location",
+          displayName: `${canonicalLat}, ${canonicalLng}`,
+          lat,
+          lng,
+          timezone: intelligence.identity.timezone,
+          elevationM: intelligence.identity.elevationM,
+        },
+        canonical: {
+          page: canonicalPage,
+          api: canonicalApi,
+          absolutePage: `${origin}${canonicalPage}`,
+          absoluteApi: `${origin}${canonicalApi}`,
+        },
+        checkedAt: intelligence.checkedAt,
+        modules: {
+          identity: intelligence.identity,
+          now,
+          conditions,
+          hazards: intelligence.hazards,
+          water,
+          official: intelligence.official,
+          events: legacy?.ticketmaster || null,
+          machineFeeds: legacy?.machineFeeds || [],
+          providerSlots: legacy?.providerSlots || {},
+          officialLiveLinks: legacy?.officialLiveLinks || [],
+        },
+        weather: now.weather,
+        alerts: intelligence.hazards.alerts,
+        earthquakes: intelligence.hazards.earthquakes,
         events: legacy?.ticketmaster || null,
         machineFeeds: legacy?.machineFeeds || [],
         providerSlots: legacy?.providerSlots || {},
-        officialLiveLinks: legacy?.officialLiveLinks || [],
+        sources,
+        discovery: {
+          agent: `${origin}/agent.json`,
+          llms: `${origin}/llms.txt`,
+          openapi: `${origin}/openapi.json`,
+          developers: `${origin}/developers`,
+        },
+        indexing: {
+          eligible: indexable,
+          policy: indexable ? "quality-gated-known-location" : "available-but-noindex",
+        },
+        policy: {
+          coordinateIsCanonicalKey: true,
+          dynamicFactsMayChange: true,
+          sourceSpecificCaching: true,
+          responseCacheSeconds: 60,
+          machineApiReverseGeocoding: false,
+          marineRequiresLocalNonNullModelData: true,
+          interpretation:
+            "DCC assembles current public machine-readable context for this coordinate. Missing modules indicate unavailable mapped coverage, not proof that a real-world phenomenon is absent.",
+        },
       },
-      // Compatibility aliases for clients that integrated dcc-location-v1.
-      weather: intelligence.now.weather,
-      alerts: intelligence.hazards.alerts,
-      earthquakes: intelligence.hazards.earthquakes,
-      events: legacy?.ticketmaster || null,
-      machineFeeds: legacy?.machineFeeds || [],
-      providerSlots: legacy?.providerSlots || {},
-      sources: intelligence.sources,
-      discovery: {
-        agent: `${origin}/agent.json`,
-        llms: `${origin}/llms.txt`,
-        openapi: `${origin}/openapi.json`,
-        developers: `${origin}/developers`,
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "public, max-age=15, s-maxage=60, stale-while-revalidate=240",
+          "Access-Control-Allow-Origin": "*",
+          "X-DCC-Schema": "dcc-location-v2",
+          "X-DCC-Coordinate": `${canonicalLat},${canonicalLng}`,
+        },
       },
-      indexing: {
-        eligible: indexable,
-        policy: indexable ? "quality-gated-known-location" : "available-but-noindex",
-      },
-      policy: {
-        coordinateIsCanonicalKey: true,
-        dynamicFactsMayChange: true,
-        sourceSpecificCaching: true,
-        responseCacheSeconds: 60,
-        machineApiReverseGeocoding: false,
-        interpretation:
-          "DCC assembles current public machine-readable context for this coordinate. Missing modules indicate unavailable mapped coverage, not proof that a real-world phenomenon is absent.",
-      },
-    };
-
-    return NextResponse.json(response, {
-      status: 200,
-      headers: {
-        "Cache-Control": "public, max-age=15, s-maxage=60, stale-while-revalidate=240",
-        "Access-Control-Allow-Origin": "*",
-        "X-DCC-Schema": "dcc-location-v2",
-        "X-DCC-Coordinate": `${canonicalLat},${canonicalLng}`,
-      },
-    });
+    );
   } catch (error) {
     return NextResponse.json(
       {
@@ -185,14 +183,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         error: "Location intelligence sources are temporarily unavailable.",
         detail: error instanceof Error ? error.message : undefined,
       },
-      {
-        status: 503,
-        headers: {
-          "Cache-Control": "no-store",
-          "Access-Control-Allow-Origin": "*",
-          "X-DCC-Schema": "dcc-location-v2",
-        },
-      },
+      { status: 503, headers: { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*", "X-DCC-Schema": "dcc-location-v2" } },
     );
   }
 }
