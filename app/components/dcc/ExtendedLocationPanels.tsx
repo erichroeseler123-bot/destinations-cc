@@ -42,6 +42,7 @@ export default function ExtendedLocationPanels({ lat, lng }: Props) {
   useEffect(() => {
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let idleId: number | null = null;
 
     const load = () => {
       void fetch(apiUrl, { cache: "default" })
@@ -53,7 +54,6 @@ export default function ExtendedLocationPanels({ lat, lng }: Props) {
     };
 
     const idle = (window as any).requestIdleCallback as ((callback: () => void, options?: { timeout: number }) => number) | undefined;
-    let idleId: number | null = null;
     if (idle) idleId = idle(load, { timeout: 1200 });
     else timer = setTimeout(load, 350);
 
