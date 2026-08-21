@@ -26,9 +26,6 @@ function canonical(value: number) {
 function requestedScope(request: NextRequest): Scope {
   const explicit = request.nextUrl.searchParams.get("scope");
   if (explicit === "core" || explicit === "extended" || explicit === "full") return explicit;
-
-  // Same-origin browser components get the fast payload by default. Direct API/agent
-  // requests continue to receive the complete machine-readable contract.
   const sameOriginBrowserFetch = request.headers.get("sec-fetch-site") === "same-origin";
   return sameOriginBrowserFetch ? "core" : "full";
 }
@@ -98,25 +95,27 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }));
 
   try {
-    const intelligence = await readLocationIntelligence({ lat, lng });
+    const intelligencePromise = readLocationIntelligence({ lat, lng });
+    const enrichmentPromise = scope === "core"
+      ? Promise.resolve([
+          { river: null, marine: null, sources: [] },
+          { nearby: [], aviation: [], coastal: { coops: [], ndbc: [] }, sources: [] },
+          null,
+        ] as const)
+      : Promise.all([
+          readHydroMarine({ lat, lng }),
+          readExtendedCoordinateFeeds({ lat, lng }),
+          readOptionalLegacy(origin, lat, lng, request.nextUrl.searchParams.get("timezone") || "auto"),
+        ]);
+
+    const [intelligence, enrichment] = await Promise.all([intelligencePromise, enrichmentPromise]);
+    const [hydroMarine, extended, legacy] = enrichment as any;
+
     const normalizedGauges = (intelligence.water.nearbyGauges || []).map(normalizeGaugeStatuses);
     const naturalEvents = (intelligence.hazards.naturalEvents || []).filter(
       (event: any) => Number.isFinite(event?.distanceKm) && event.distanceKm <= NATURAL_EVENT_RELEVANCE_KM,
     );
     const hazards = { ...intelligence.hazards, naturalEvents };
-
-    let hydroMarine: any = { river: null, marine: null, sources: [] };
-    let extended: any = { nearby: [], aviation: [], coastal: { coops: [], ndbc: [] }, sources: [] };
-    let legacy: any = null;
-
-    if (scope !== "core") {
-      [hydroMarine, extended, legacy] = await Promise.all([
-        readHydroMarine({ lat, lng }),
-        readExtendedCoordinateFeeds({ lat, lng }),
-        readOptionalLegacy(origin, lat, lng, request.nextUrl.searchParams.get("timezone") || "auto"),
-      ]);
-    }
-
     const now = {
       ...intelligence.now,
       marine: hydroMarine.marine?.current || null,
