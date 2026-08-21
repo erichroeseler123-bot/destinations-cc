@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import LocationFirstHome from "@/app/components/dcc/LocationFirstHome";
 
+const SITE_URL = "https://www.destinationcommandcenter.com";
+
 function parseCoordinate(value: string, min: number, max: number) {
   const decoded = decodeURIComponent(value);
   if (!/^-?\d+(?:\.\d+)?$/.test(decoded)) return null;
@@ -46,5 +48,39 @@ export default async function CoordinateLocationPage({ params }: PageProps) {
     permanentRedirect(`/location/${canonicalLat}/${canonicalLng}`);
   }
 
-  return <LocationFirstHome initialCoordinates={{ lat, lng }} />;
+  const pageUrl = `${SITE_URL}/location/${canonicalLat}/${canonicalLng}`;
+  const apiUrl = `${SITE_URL}/api/location/${canonicalLat}/${canonicalLng}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Place",
+    "@id": pageUrl,
+    name: `DCC location ${canonicalLat}, ${canonicalLng}`,
+    url: pageUrl,
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: lat,
+      longitude: lng,
+    },
+    subjectOf: {
+      "@type": "DataFeed",
+      name: "Destination Command Center coordinate location data",
+      url: apiUrl,
+      encodingFormat: "application/json",
+    },
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Destination Command Center",
+      url: SITE_URL,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
+      <LocationFirstHome initialCoordinates={{ lat, lng }} />
+    </>
+  );
 }
