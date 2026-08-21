@@ -12,6 +12,7 @@ const COORDINATE_NATIVE_PUBLIC_PATHS = [
   "/",
   "/about",
   "/developers",
+  "/directory",
 ] as const;
 
 const INDEXABLE_SURFACE_SET = new Set<string>([
