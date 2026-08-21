@@ -1,108 +1,79 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { SITE_IDENTITY } from "@/src/data/site-identity";
-import JsonLd from "@/app/components/dcc/JsonLd";
-import {
-  buildAboutPageJsonLd,
-  buildBreadcrumbJsonLd,
-  buildOrganizationJsonLd,
-} from "@/lib/dcc/jsonld";
 
 export const metadata: Metadata = {
-  title: SITE_IDENTITY.aboutTitle,
-  description: SITE_IDENTITY.canonicalDescription,
-  alternates: { canonical: "/about" },
+  title: "About Destination Command Center | Coordinate Intelligence",
+  description:
+    "Destination Command Center is a coordinate-intelligence system that organizes public machine-readable information by latitude and longitude.",
+  alternates: { canonical: "https://destinationcommandcenter.com/about" },
+  robots: { index: true, follow: true },
   openGraph: {
-    title: SITE_IDENTITY.aboutTitle,
-    description: SITE_IDENTITY.aboutDescription,
-    url: `${SITE_IDENTITY.siteUrl}/about`,
+    title: "About Destination Command Center | Coordinate Intelligence",
+    description:
+      "One coordinate in. Structured public context out. DCC organizes public machine-readable information by latitude and longitude.",
+    url: "https://destinationcommandcenter.com/about",
     type: "website",
   },
 };
 
-export default function AboutPage() {
+export default function AboutDccPage() {
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
-      <JsonLd
-        data={{
-          "@context": "https://schema.org",
-          "@graph": [
-            buildOrganizationJsonLd(),
-            buildAboutPageJsonLd({
-              path: "/about",
-              name: SITE_IDENTITY.aboutTitle,
-              description: SITE_IDENTITY.aboutDescription,
-            }),
-            buildBreadcrumbJsonLd([
-              { name: "Home", item: "/" },
-              { name: "About", item: "/about" },
-            ]),
-          ],
-        }}
-      />
-      <div className="mx-auto max-w-5xl px-6 py-16 space-y-8">
-        <header className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(24,24,27,0.96),rgba(9,9,11,0.98))] p-8 shadow-[0_28px_80px_rgba(0,0,0,0.45)]">
-          <p className="text-xs uppercase tracking-[0.24em] text-cyan-300">About Destination Command Center</p>
+      <div className="mx-auto max-w-4xl space-y-8 px-6 py-16">
+        <header className="rounded-[2rem] border border-white/10 bg-zinc-900 p-8">
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-300">
+            Destination Command Center · coordinate intelligence
+          </p>
           <h1 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">
-            {SITE_IDENTITY.aboutHeroTitle}
+            The public internet, organized by location.
           </h1>
-          <p className="mt-4 max-w-3xl text-lg text-zinc-300">
-            {SITE_IDENTITY.aboutHeroSummary}
+          <p className="mt-5 max-w-3xl text-lg text-zinc-300">
+            Destination Command Center (DCC) is a coordinate-intelligence system. Latitude and longitude are the
+            permanent identity of a place. DCC asks mapped public machine-readable sources what they currently know
+            about that exact point.
           </p>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-2">
-          <article className="rounded-3xl border border-white/10 bg-white/[0.05] p-6">
-            <h2 className="text-2xl font-bold">What DCC covers</h2>
-            <div className="mt-4 space-y-2 text-zinc-300">
-              {SITE_IDENTITY.coreCoverage.map((item) => (
-                <p key={item}>{item}</p>
-              ))}
-            </div>
-          </article>
-          <article className="rounded-3xl border border-white/10 bg-white/[0.05] p-6">
-            <h2 className="text-2xl font-bold">Who it is for</h2>
-            <div className="mt-4 space-y-3 text-zinc-300">
-              {SITE_IDENTITY.audience.map((item) => (
-                <p key={item}>{item}</p>
-              ))}
-            </div>
-          </article>
-        </section>
-
         <section className="rounded-3xl border border-white/10 bg-white/[0.05] p-6">
-          <h2 className="text-2xl font-bold">How transportation fits</h2>
-          <p className="mt-4 max-w-3xl text-zinc-300">
-            {SITE_IDENTITY.transportationFit} For Red Rocks, Party At Red Rocks handles the ride and booking side.
+          <h2 className="text-2xl font-bold">What DCC is</h2>
+          <p className="mt-4 text-zinc-300">
+            Give DCC a latitude and longitude and it can assemble geographically relevant public context such as
+            weather, air quality, official alerts, earthquakes, natural hazards, rivers and flood context, nearby
+            infrastructure, aviation weather, tides, buoy observations, marine conditions and winter conditions.
+            Only applicable modules appear, and sources expose availability and freshness.
           </p>
         </section>
 
         <section className="rounded-3xl border border-white/10 bg-white/[0.05] p-6">
           <h2 className="text-2xl font-bold">What DCC is not</h2>
-          <p className="mt-4 max-w-3xl text-zinc-300">
-            Destination Command Center is built to help travelers compare destination options, understand timing and context,
-            and move toward the right booking path when needed. It is {SITE_IDENTITY.notDescriptions.join(", ")}.
+          <p className="mt-4 text-zinc-300">
+            DCC is not primarily a travel booking marketplace, travel agency, shuttle operator, affiliate network,
+            tour marketplace or city-guide publisher. Older travel and commercial-decision pages belonged to a
+            previous DCC architecture and do not define the current product.
           </p>
         </section>
 
         <section className="rounded-3xl border border-white/10 bg-white/[0.05] p-6">
-          <h2 className="text-2xl font-bold">Start Exploring</h2>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Link href="/cities" className="rounded-2xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white hover:bg-cyan-500">
-              Browse cities
-            </Link>
-            <Link href="/transportation" className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm text-zinc-200 hover:bg-white/10">
-              Transportation guides
-            </Link>
-            <Link href="/vegas" className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm text-zinc-200 hover:bg-white/10">
-              Las Vegas guide
-            </Link>
-            <Link href="/denver/shows" className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm text-zinc-200 hover:bg-white/10">
-              Denver shows
-            </Link>
-            <Link href="/ai" className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm text-zinc-200 hover:bg-white/10">
-              For AI and crawlers
-            </Link>
+          <h2 className="text-2xl font-bold">One place, two representations</h2>
+          <pre className="mt-4 overflow-x-auto rounded-2xl bg-black/40 p-4 text-sm text-cyan-200">
+            /location/44.76648/-91.49810{"\n"}/api/location/44.76648/-91.49810
+          </pre>
+          <p className="mt-4 text-zinc-300">
+            The human page and JSON endpoint represent the same physical point. Address, city name, ZIP code, airport,
+            venue or device location are discovery methods; the coordinate pair is the canonical identity.
+          </p>
+        </section>
+
+        <section className="rounded-3xl border border-white/10 bg-white/[0.05] p-6">
+          <h2 className="text-2xl font-bold">For software and AI agents</h2>
+          <p className="mt-4 text-zinc-300">
+            DCC publishes a self-describing coordinate API and machine-discovery surfaces so software can use the same
+            location object without rebuilding source selection for every geography.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3 text-sm">
+            <a className="rounded-xl bg-cyan-600 px-4 py-2 font-semibold" href="/developers">Developer guide</a>
+            <a className="rounded-xl border border-white/10 px-4 py-2" href="/openapi.json">OpenAPI</a>
+            <a className="rounded-xl border border-white/10 px-4 py-2" href="/llms.txt">llms.txt</a>
+            <a className="rounded-xl border border-white/10 px-4 py-2" href="/agent.json">agent.json</a>
           </div>
         </section>
       </div>
