@@ -37,18 +37,30 @@ function fmt(value: unknown, suffix = "") {
 
 export default function ExtendedLocationPanels({ lat, lng }: Props) {
   const [payload, setPayload] = useState<Payload | null>(null);
-  const apiUrl = `/api/location/${canonical(lat)}/${canonical(lng)}`;
+  const apiUrl = `/api/location/${canonical(lat)}/${canonical(lng)}?scope=extended`;
 
   useEffect(() => {
     let cancelled = false;
-    void fetch(apiUrl)
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
-        if (!cancelled && data) setPayload(data);
-      })
-      .catch(() => null);
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const load = () => {
+      void fetch(apiUrl, { cache: "default" })
+        .then((response) => (response.ok ? response.json() : null))
+        .then((data) => {
+          if (!cancelled && data) setPayload(data);
+        })
+        .catch(() => null);
+    };
+
+    const idle = (window as any).requestIdleCallback as ((callback: () => void, options?: { timeout: number }) => number) | undefined;
+    let idleId: number | null = null;
+    if (idle) idleId = idle(load, { timeout: 1200 });
+    else timer = setTimeout(load, 350);
+
     return () => {
       cancelled = true;
+      if (timer) clearTimeout(timer);
+      if (idleId != null && (window as any).cancelIdleCallback) (window as any).cancelIdleCallback(idleId);
     };
   }, [apiUrl]);
 
