@@ -51,14 +51,16 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   if (lat == null || lng == null) {
     return NextResponse.json(
-      { ok: false, error: "Valid latitude (-90..90) and longitude (-180..180) are required." },
-      { status: 400, headers: { "Cache-Control": "no-store" } },
+      { ok: false, schema: "dcc-location-v1", error: "Valid latitude (-90..90) and longitude (-180..180) are required." },
+      { status: 400, headers: { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" } },
     );
   }
 
   const origin = request.nextUrl.origin;
   const canonicalLat = canonical(lat);
   const canonicalLng = canonical(lng);
+  const canonicalPage = `/location/${canonicalLat}/${canonicalLng}`;
+  const canonicalApi = `/api/location/${canonicalLat}/${canonicalLng}`;
   let location: any = null;
 
   try {
@@ -78,23 +80,37 @@ export async function GET(request: NextRequest, context: RouteContext) {
   liveUrl.searchParams.set("lng", String(lng));
   liveUrl.searchParams.set("timezone", request.nextUrl.searchParams.get("timezone") || "auto");
 
+  const common = {
+    schema: "dcc-location-v1",
+    schemaVersion: 1,
+    coordinate: { lat, lng, precision_decimals: 5 },
+    location: location || {
+      id: `coordinate:${canonicalLat}:${canonicalLng}`,
+      name: "Coordinate location",
+      displayName: `${canonicalLat}, ${canonicalLng}`,
+      lat,
+      lng,
+    },
+    canonical: {
+      page: canonicalPage,
+      api: canonicalApi,
+      absolutePage: `${origin}${canonicalPage}`,
+      absoluteApi: `${origin}${canonicalApi}`,
+    },
+    discovery: {
+      agent: `${origin}/agent.json`,
+      llms: `${origin}/llms.txt`,
+      openapi: `${origin}/openapi.json`,
+      developers: `${origin}/developers`,
+    },
+  };
+
   try {
     const live = await fetchJson(liveUrl.toString());
     return NextResponse.json(
       {
         ok: true,
-        coordinate: { lat, lng, precision_decimals: 5 },
-        location: location || {
-          id: `coordinate:${canonicalLat}:${canonicalLng}`,
-          name: "Coordinate location",
-          displayName: `${canonicalLat}, ${canonicalLng}`,
-          lat,
-          lng,
-        },
-        canonical: {
-          page: `/location/${canonicalLat}/${canonicalLng}`,
-          api: `/api/location/${canonicalLat}/${canonicalLng}`,
-        },
+        ...common,
         checkedAt: live?.checkedAt || new Date().toISOString(),
         cityNow: live?.cityNow || null,
         weather: live?.weather || null,
@@ -108,6 +124,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
           dynamicDataStored: false,
           cache: "no-store",
           coordinateIsCanonicalKey: true,
+          interpretation:
+            "This response aggregates current public or configured machine-readable sources for this coordinate. Missing modules indicate unavailable mapped coverage, not proof of absence in the physical world.",
         },
       },
       {
@@ -115,6 +133,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         headers: {
           "Cache-Control": "no-store, max-age=0",
           "Access-Control-Allow-Origin": "*",
+          "X-DCC-Schema": "dcc-location-v1",
           "X-DCC-Coordinate": `${canonicalLat},${canonicalLng}`,
         },
       },
@@ -123,15 +142,18 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return NextResponse.json(
       {
         ok: false,
-        coordinate: { lat, lng, precision_decimals: 5 },
-        location,
-        canonical: {
-          page: `/location/${canonicalLat}/${canonicalLng}`,
-          api: `/api/location/${canonicalLat}/${canonicalLng}`,
-        },
+        ...common,
+        checkedAt: new Date().toISOString(),
         error: "Live location sources are temporarily unavailable.",
       },
-      { status: 503, headers: { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" } },
+      {
+        status: 503,
+        headers: {
+          "Cache-Control": "no-store",
+          "Access-Control-Allow-Origin": "*",
+          "X-DCC-Schema": "dcc-location-v1",
+        },
+      },
     );
   }
 }
