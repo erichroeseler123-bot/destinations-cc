@@ -34,7 +34,7 @@ function JsonLd() {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "TravelAgency",
+        "@type": "WebSite",
         "@id": `${SITE}/#organization`,
         name: "Last Frontier Shore Excursions",
         url: SITE,
@@ -90,13 +90,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/ports/ketchikan">Ketchikan</Link>
             <Link href="/ports/sitka">Sitka</Link>
             <Link href="/ports/icy-strait-point">Icy Strait Point</Link>
+            <Link href="/about">About</Link>
           </nav>
         </div>
         {children}
         <footer className="footer">
           <div className="shell">
             <strong>Last Frontier Shore Excursions</strong>
-            <p>Independent Alaska cruise-excursion guide. Tour availability, schedules, meeting points, and cancellation terms are controlled by the tour provider. Affiliate links may earn us a commission.</p>
+            <p>Independent Alaska cruise-excursion planning and comparison. Tour availability, schedules, meeting points, and cancellation terms are controlled by the tour provider. Affiliate links may earn us a commission.</p>
+            <p><Link href="/about">About, booking boundaries & affiliate transparency</Link></p>
           </div>
         </footer>
       </body>
