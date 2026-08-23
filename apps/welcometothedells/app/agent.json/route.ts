@@ -7,18 +7,30 @@ import {
 
 export const dynamic = "force-static";
 
+const portfolioFeed = "https://www.destinationcommandcenter.com/api/public/portfolio-feed";
+
 export function GET() {
   return Response.json(
     {
-      version: "2026-08-11",
+      spec: "dcc-site-contract",
+      version: "1.0",
+      dcc_id: "dcc:site:welcome-to-the-dells",
+      schema_version: "2026-08-23",
       site: {
-        id: "welcometothedells",
+        id: "welcome-to-the-dells",
         name: "Welcome to the Dells",
         url: SITE_URL,
+        type: "wisconsin_dells_destination_planning",
         description:
           "Consumer-first Wisconsin Dells discovery and planning for things to do, boat tours, Ducks, waterparks, rainy-day activities, family trips, adults-only trips, tonight plans, area guides, and large-group logistics.",
-        role: "local_destination_discovery_and_decision_layer",
         areaServed: ["Wisconsin Dells, Wisconsin", "Lake Delton, Wisconsin"],
+      },
+      authority: ["published_wisconsin_dells_destination_content", "published_decision_guides", "published_outbound_handoffs"],
+      service_area: {
+        dcc_id: "dcc:destination:wisconsin-dells",
+        city: "Wisconsin Dells",
+        region: "Wisconsin",
+        country: "US",
       },
       canonicalPaths: [
         "/",
@@ -40,18 +52,6 @@ export function GET() {
         rule: "Choose one anchor, keep nearby stops together, and preserve a weather backup.",
         anchorTypes: ["river", "waterpark", "major attraction", "evening plan"],
       },
-      revenuePriority: [
-        {
-          lane: "river_and_signature_experiences",
-          description: "Boat tours, jet boats, Original Wisconsin Ducks, Ghost Boat, and sunset/scenic river products.",
-          primaryEvent: "product_opened",
-        },
-        {
-          lane: "large_group_logistics",
-          description: "Large-group planning and Feastly food logistics handoffs.",
-          primaryEvent: "support_opened",
-        },
-      ],
       riverExperiences: RIVER_OPS_TERMINAL.map((card) => ({
         slug: card.slug,
         title: card.title,
@@ -78,20 +78,27 @@ export function GET() {
         friction: hub.friction,
         defaultMove: hub.defaultMove,
       })),
-      destinationCommandCenter: {
-        relationship: "broader_destination_research_layer",
-        url: "https://www.destinationcommandcenter.com/wisconsin-dells",
-        useWhen: "The visitor wants broader city context before narrowing the local decision on Welcome to the Dells.",
-      },
-      machineReadable: {
+      machine: {
+        agent: `${SITE_URL}/agent.json`,
         llms: `${SITE_URL}/llms.txt`,
         sitemap: `${SITE_URL}/sitemap.xml`,
         robots: `${SITE_URL}/robots.txt`,
+        portfolio_graph: portfolioFeed,
+      },
+      booking_boundary: {
+        rule: "Use the attraction, lodging, tour, or booking provider as the authority for live availability, price, payment, final inclusions, restrictions, and provider terms.",
+      },
+      network: {
+        parent_dcc_id: "dcc:site:destination-command-center",
+        parent_url: "https://www.destinationcommandcenter.com",
+        relationship: "affiliated destination planning property",
+        portfolio_feed: portfolioFeed,
       },
     },
     {
       headers: {
         "Cache-Control": "public, max-age=3600, s-maxage=3600",
+        "Access-Control-Allow-Origin": "*",
       },
     },
   );
