@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
+import { DCC_PRODUCT_SCOPE } from "@/lib/dcc/productScope";
 
 export const dynamic = "force-dynamic";
 
@@ -20,13 +21,13 @@ export async function GET() {
     "> DCC is a dense coordinate-native public location intelligence system.",
     "",
     "## Primary interpretation",
-    "Destination Command Center represents physical locations by latitude and longitude. Every valid coordinate pair can resolve to a human-readable DCC location page and a machine-readable JSON endpoint.",
+    DCC_PRODUCT_SCOPE.primaryProduct.description,
     "",
     "A city name, street address, ZIP code, airport, port, venue, landmark, or device location is only a method for discovering coordinates. Latitude and longitude are the canonical location identity.",
     "",
     "## Canonical URL contract",
-    `- Human page: ${SITE_URL}/location/{lat}/{lng}`,
-    `- JSON API: ${SITE_URL}/api/location/{lat}/{lng}`,
+    `- Human page: ${SITE_URL}${DCC_PRODUCT_SCOPE.primaryProduct.canonicalHumanPath}`,
+    `- JSON API: ${SITE_URL}${DCC_PRODUCT_SCOPE.primaryProduct.canonicalMachinePath}`,
     "- Canonical coordinate precision: 5 decimal places",
     "- Latitude range: -90 to 90",
     "- Longitude range: -180 to 180",
@@ -37,11 +38,17 @@ export async function GET() {
     "",
     "## Current response schema",
     "The primary machine schema is dcc-location-v2.",
-    "Its ordered modules are: identity, now, conditions, hazards, water, official, events, machineFeeds, providerSlots, and officialLiveLinks.",
+    `Its ordered modules are: ${DCC_PRODUCT_SCOPE.primaryProduct.allowedCoreModules.join(", ")}.`,
     "",
     "Core coordinate-driven sources currently include Open-Meteo weather, Open-Meteo/CAMS air quality, U.S. National Weather Service forecasts and alerts where applicable, U.S. Geological Survey earthquake data, NASA EONET natural events, and NOAA National Water Prediction Service gauges where applicable.",
     "",
     "DCC also preserves compatibility aliases such as weather, alerts, earthquakes, events, machineFeeds, and providerSlots for clients that integrated the first coordinate schema.",
+    "",
+    "## Product scope",
+    `- Machine scope contract: ${SITE_URL}/scope.json`,
+    `- Primary product: ${DCC_PRODUCT_SCOPE.primaryProduct.id}`,
+    ...DCC_PRODUCT_SCOPE.secondaryProducts.map((product) => `- Secondary product: ${product.id}`),
+    "- New feeds, destinations, portfolio properties, and providers do not silently redefine DCC's primary product.",
     "",
     "## What DCC returns",
     "Depending on geographic source coverage, a coordinate response may include current weather, humidity, wind, visibility, pressure, air quality, UV, short-range forecast, sunrise/sunset, official alerts, NWS forecast details, recent earthquakes, open NASA natural events, nearby NOAA river/flood gauges, configured events, transport or traffic signals, machine feeds, official links, timezone, elevation, source availability, and freshness metadata.",
@@ -64,6 +71,7 @@ export async function GET() {
     "## Machine-readable discovery",
     `- Agent contract: ${SITE_URL}/agent.json`,
     `- Well-known agent contract: ${SITE_URL}/.well-known/agent.json`,
+    `- Product scope: ${SITE_URL}/scope.json`,
     `- OpenAPI: ${SITE_URL}/openapi.json`,
     `- Developer guide: ${SITE_URL}/developers`,
     `- Quality-gated location sitemap: ${SITE_URL}/locations-sitemap.xml`,
