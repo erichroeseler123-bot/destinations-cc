@@ -27,6 +27,8 @@ Before moving the custom domain, confirm the dedicated project URL returns succe
 - `/sitemap.xml`
 - `/robots.txt`
 - `/api/health`
+- `/agent.json`
+- `/llms.txt`
 
 ## Domain cutover rule
 
@@ -40,6 +42,10 @@ Cutover sequence:
 4. Attach `www.welcometothedells.com` and `welcometothedells.com` to that dedicated project.
 5. Redirect the non-canonical hostname consistently.
 6. Only after aliases are active, remove the domain from any stale or generic project.
+
+## Current production wiring
+
+As of 2026-08-23, the dedicated Vercel project is expected to deploy from `main` with Root Directory `apps/welcometothedells`. The custom apex and `www` domains are attached to that dedicated project. Any future production deployment should be Git-sourced from this repository rather than a redeploy of an older CLI artifact.
 
 ## Commercial and network behavior
 
