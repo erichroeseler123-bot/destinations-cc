@@ -12,3 +12,5 @@ Required Vercel settings:
 Validate `/`, `/agent.json`, `/llms.txt`, `/robots.txt`, `/sitemap.xml`, and `/api/health` before promoting.
 
 Do not deploy Welcome to the Swamp source into this project. French Quarter Orientation is a distinct first-hour New Orleans orientation property.
+
+Deployment trigger: 2026-08-23 after Git and Root Directory cleanup.
