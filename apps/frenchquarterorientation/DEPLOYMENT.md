@@ -14,3 +14,4 @@ Validate `/`, `/agent.json`, `/llms.txt`, `/robots.txt`, `/sitemap.xml`, and `/a
 Do not deploy Welcome to the Swamp source into this project. French Quarter Orientation is a distinct first-hour New Orleans orientation property.
 
 Deployment trigger: 2026-08-23 after Git and Root Directory cleanup.
+Root-directory verification trigger: 2026-08-23 12:24 America/Chicago.
