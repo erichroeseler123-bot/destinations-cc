@@ -46,6 +46,15 @@ export const DCC_PORTFOLIO_SITES = [
     authority: ["service_routes", "published_transfer_pricing", "vehicle_service_options"],
   },
   {
+    dcc_id: "dcc:site:bigsky-gosno",
+    id: "bigsky-gosno",
+    name: "Big Sky GoSno",
+    url: "https://bigsky.gosno.co",
+    type: "private_mountain_transportation",
+    launch: { status: "opening_announced", date: "2026-11-15" },
+    authority: ["big_sky_service_information", "published_transfer_pricing", "site_booking_state"],
+  },
+  {
     dcc_id: "dcc:site:save-on-the-strip",
     id: "save-on-the-strip",
     name: "Save On The Strip",
@@ -92,6 +101,8 @@ export const DCC_PORTFOLIO_RELATIONSHIPS = [
   { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:vibe-around-town" },
   { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:wno-tours" },
   { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:gosno" },
+  { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:bigsky-gosno" },
+  { from: "dcc:site:bigsky-gosno", relation: "related_service", to: "dcc:site:gosno" },
   { from: "dcc:site:wno-tours", relation: "serves_destination", to: "dcc:destination:new-orleans" },
   { from: "dcc:site:welcome-to-the-swamp", relation: "serves_destination", to: "dcc:destination:new-orleans" },
   { from: "dcc:site:vibe-around-town", relation: "serves_destination", to: "dcc:destination:st-thomas" },
@@ -99,4 +110,6 @@ export const DCC_PORTFOLIO_RELATIONSHIPS = [
   { from: "dcc:site:vibe-around-town", relation: "serves_destination", to: "dcc:destination:st-croix" },
   { from: "dcc:site:gosno", relation: "serves_airport", to: "dcc:airport:den" },
   { from: "dcc:site:gosno", relation: "serves_airport", to: "dcc:airport:cos" },
+  { from: "dcc:site:bigsky-gosno", relation: "serves_airport", to: "dcc:airport:bzn" },
+  { from: "dcc:site:bigsky-gosno", relation: "serves_destination", to: "dcc:destination:big-sky-montana" },
 ] as const;
