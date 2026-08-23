@@ -1,40 +1,51 @@
 const baseUrl = "https://juneauflightdeck.com";
+const portfolioFeed = "https://www.destinationcommandcenter.com/api/public/portfolio-feed";
 
 const agentPayload = {
-  schema_version: "2026-05-08",
-  name: "Juneau Flight Deck",
-  canonical_url: baseUrl,
-  entity_type: "SatelliteDecisionSurface",
-  disambiguating_description:
-    "Juneau Flight Deck narrows urgent Juneau helicopter, glacier, whale-watching, weather-backup, and cruise-timing decisions before execution handoff.",
-  dcc_affiliation: {
-    parent_network: "Destination Command Center",
+  spec: "dcc-site-contract",
+  version: "1.0",
+  dcc_id: "dcc:site:juneau-flight-deck",
+  schema_version: "2026-08-23",
+  site: {
+    id: "juneau-flight-deck",
+    name: "Juneau Flight Deck",
+    url: baseUrl,
+    type: "juneau_excursion_discovery",
+    description:
+      "Juneau decision-support surface for helicopter, glacier, whale-watching, weather-backup, and cruise-timing choices before operator handoff.",
+  },
+  authority: ["juneau_excursion_context", "published_decision_guides", "published_fallback_guidance"],
+  service_area: {
+    dcc_id: "dcc:destination:juneau",
+    city: "Juneau",
+    region: "Alaska",
+    country: "US",
+  },
+  entry_points: [
+    { path: "/", method: "GET", purpose: "Juneau excursion decision support" },
+  ],
+  machine: {
+    agent: `${baseUrl}/agent.json`,
+    llms: `${baseUrl}/llms.txt`,
+    portfolio_graph: portfolioFeed,
+  },
+  booking_boundary: {
+    rule:
+      "Use the selected operator or booking provider as the authority for live availability, weather cancellation rules, payment, final inclusions, restrictions, and operator terms.",
+  },
+  network: {
+    parent_dcc_id: "dcc:site:destination-command-center",
     parent_url: "https://www.destinationcommandcenter.com",
-    relationship: "affiliated_network_site",
-    network_role: "satellite_decision_surface",
-    execution_type: "Juneau decision compression before operator or fallback handoff",
-    dcc_relationship:
-      "Receives Juneau and Alaska excursion intent from Destination Command Center when users need same-day or cruise-safe narrowing.",
-    operational_function:
-      "Compresses Juneau helicopter, glacier, whale-watching, and weather-backup choices into the next correct action.",
-    decision_layer_role: "satellite decision surface",
-    execution_tier: "decision_surface",
-    continuity_contract:
-      "DCC resolves or frames the Juneau corridor; Juneau Flight Deck preserves decision context before operator or fallback execution.",
-    canonical_network_page: "https://www.destinationcommandcenter.com/network",
-    doctrine: [
-      "decision_compression",
-      "one_recommended_move",
-      "execution_continuity",
-      "marketplace_inventory_is_fallback",
-    ],
+    relationship: "affiliated Juneau decision-support property",
+    portfolio_feed: portfolioFeed,
   },
 };
 
 export function GET() {
   return Response.json(agentPayload, {
     headers: {
-      "Cache-Control": "public, max-age=3600",
+      "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      "Access-Control-Allow-Origin": "*",
     },
   });
 }
