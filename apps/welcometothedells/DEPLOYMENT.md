@@ -47,6 +47,8 @@ Cutover sequence:
 
 As of 2026-08-23, the dedicated Vercel project is expected to deploy from `main` with Root Directory `apps/welcometothedells`. The custom apex and `www` domains are attached to that dedicated project. Any future production deployment should be Git-sourced from this repository rather than a redeploy of an older CLI artifact.
 
+Root Directory was re-saved in Vercel on 2026-08-23; this commit exists solely to force a clean app-scoped Git deployment after that configuration change.
+
 ## Commercial and network behavior
 
 Welcome to the Dells should remain a consumer-first Wisconsin Dells planner. It can route qualified visitors into operator booking paths, Viator fallback inventory, Feastly for large-group food logistics, and Destination Command Center for deeper destination context without exposing internal network/governance terminology to consumers.
