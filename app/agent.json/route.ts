@@ -5,6 +5,7 @@ import {
   getPublicMachineReadablePaths,
 } from "@/lib/dcc/publicCorridorContract";
 import { DCC_SITE_CONTRACT } from "@/lib/dcc/portfolioRegistry";
+import { DCC_PRODUCT_SCOPE } from "@/lib/dcc/productScope";
 
 export const dynamic = "force-dynamic";
 
@@ -24,23 +25,20 @@ export async function GET() {
     version: DCC_SITE_CONTRACT.version,
     dcc_id: "dcc:site:destination-command-center",
     schema_version: "2026-08-23",
+    product_scope: {
+      url: `${SITE_URL}/scope.json`,
+      contract: DCC_PRODUCT_SCOPE,
+    },
     site: {
       id: "destination-command-center",
       name: "Destination Command Center",
       url: SITE_URL,
       type: "location_intelligence_graph",
-      primary_role: "dense_coordinate_location_intelligence",
-      description:
-        "Destination Command Center represents physical locations by latitude and longitude, assembles current public machine-readable context for those coordinates, and provides the canonical public relationship graph for affiliated portfolio properties.",
+      primary_role: DCC_PRODUCT_SCOPE.primaryProduct.id,
+      description: DCC_PRODUCT_SCOPE.primaryProduct.description,
       preferred_interpretation:
         "Treat DCC as a coordinate-native public location intelligence system and portfolio relationship graph. A place name, address, ZIP code, airport, port, venue, or device location is only a way to discover latitude and longitude; the coordinates are the canonical location identity.",
-      not: [
-        "IT command center",
-        "military command center",
-        "generic booking marketplace",
-        "address directory",
-        "city-only travel guide",
-      ],
+      not: DCC_PRODUCT_SCOPE.outOfScopeAsPrimaryIdentity,
     },
     authority: [
       "coordinate_identity",
@@ -49,12 +47,12 @@ export async function GET() {
       "cross_property_relationships",
     ],
     coordinate_contract: {
-      canonical_key: "latitude,longitude",
+      canonical_key: DCC_PRODUCT_SCOPE.primaryProduct.canonicalIdentity,
       canonical_precision_decimals: 5,
       latitude_range: [-90, 90],
       longitude_range: [-180, 180],
-      human_page_template: `${SITE_URL}/location/{lat}/{lng}`,
-      json_api_template: `${SITE_URL}/api/location/{lat}/{lng}`,
+      human_page_template: `${SITE_URL}${DCC_PRODUCT_SCOPE.primaryProduct.canonicalHumanPath}`,
+      json_api_template: `${SITE_URL}${DCC_PRODUCT_SCOPE.primaryProduct.canonicalMachinePath}`,
       example: {
         coordinates: { lat: 39.6654, lng: -105.2057 },
         page: `${SITE_URL}/location/39.66540/-105.20570`,
@@ -74,18 +72,7 @@ export async function GET() {
     location_response: {
       schema: "dcc-location-v2",
       schemaVersion: 2,
-      ordered_modules: [
-        "identity",
-        "now",
-        "conditions",
-        "hazards",
-        "water",
-        "official",
-        "events",
-        "machineFeeds",
-        "providerSlots",
-        "officialLiveLinks",
-      ],
+      ordered_modules: DCC_PRODUCT_SCOPE.primaryProduct.allowedCoreModules,
       core_public_sources: [
         "Open-Meteo weather",
         "Open-Meteo / CAMS air quality",
@@ -109,6 +96,7 @@ export async function GET() {
       llms: `${SITE_URL}/llms.txt`,
       agent: `${SITE_URL}/agent.json`,
       agent_well_known: `${SITE_URL}/.well-known/agent.json`,
+      scope: `${SITE_URL}/scope.json`,
       openapi: `${SITE_URL}/openapi.json`,
       developers: `${SITE_URL}/developers`,
       locations_sitemap: `${SITE_URL}/locations-sitemap.xml`,
