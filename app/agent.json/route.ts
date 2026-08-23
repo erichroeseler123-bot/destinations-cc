@@ -4,6 +4,7 @@ import {
   getPublicCorridorContracts,
   getPublicMachineReadablePaths,
 } from "@/lib/dcc/publicCorridorContract";
+import { DCC_SITE_CONTRACT } from "@/lib/dcc/portfolioRegistry";
 
 export const dynamic = "force-dynamic";
 
@@ -19,16 +20,20 @@ export async function GET() {
   });
 
   const manifest = {
-    version: "2026-08-21",
+    spec: DCC_SITE_CONTRACT.spec,
+    version: DCC_SITE_CONTRACT.version,
+    dcc_id: "dcc:site:destination-command-center",
+    schema_version: "2026-08-23",
     site: {
-      id: "destinationcommandcenter",
+      id: "destination-command-center",
       name: "Destination Command Center",
       url: SITE_URL,
+      type: "location_intelligence_graph",
       primary_role: "dense_coordinate_location_intelligence",
       description:
-        "Destination Command Center represents physical locations by latitude and longitude and assembles dense current public machine-readable context for those coordinates.",
+        "Destination Command Center represents physical locations by latitude and longitude, assembles current public machine-readable context for those coordinates, and provides the canonical public relationship graph for affiliated portfolio properties.",
       preferred_interpretation:
-        "Treat DCC as a coordinate-native public location intelligence system. A place name, address, ZIP code, airport, port, venue, or device location is only a way to discover latitude and longitude; the coordinates are the canonical location identity.",
+        "Treat DCC as a coordinate-native public location intelligence system and portfolio relationship graph. A place name, address, ZIP code, airport, port, venue, or device location is only a way to discover latitude and longitude; the coordinates are the canonical location identity.",
       not: [
         "IT command center",
         "military command center",
@@ -37,6 +42,12 @@ export async function GET() {
         "city-only travel guide",
       ],
     },
+    authority: [
+      "coordinate_identity",
+      "public_location_context",
+      "portfolio_site_identity",
+      "cross_property_relationships",
+    ],
     coordinate_contract: {
       canonical_key: "latitude,longitude",
       canonical_precision_decimals: 5,
@@ -101,10 +112,20 @@ export async function GET() {
       openapi: `${SITE_URL}/openapi.json`,
       developers: `${SITE_URL}/developers`,
       locations_sitemap: `${SITE_URL}/locations-sitemap.xml`,
+      portfolio_feed: DCC_SITE_CONTRACT.registryUrl,
+    },
+    machine: {
+      portfolio_graph: DCC_SITE_CONTRACT.registryUrl,
+      coordinate_api_template: `${SITE_URL}/api/location/{lat}/{lng}`,
+    },
+    network: {
+      role: "canonical_directory_and_relationship_graph",
+      portfolio_feed: DCC_SITE_CONTRACT.registryUrl,
     },
     usage_guidance: [
       "If exact coordinates are known, call /api/location/{lat}/{lng} directly.",
       "If a human-readable page is needed, use /location/{lat}/{lng}.",
+      "Use /api/public/portfolio-feed for canonical public relationships between DCC portfolio properties.",
       "Read modules rather than assuming every data class applies everywhere.",
       "Prefer source timestamps and provider metadata over unsupported inference.",
       "Treat current observations as time-sensitive public-source aggregation, not permanent ground truth.",
