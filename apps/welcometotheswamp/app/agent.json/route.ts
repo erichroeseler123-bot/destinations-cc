@@ -3,23 +3,33 @@ import { PAGE_SUMMARIES } from "@/lib/content";
 
 export const dynamic = "force-static";
 
+const portfolioFeed = "https://www.destinationcommandcenter.com/api/public/portfolio-feed";
+
 export function GET() {
   return Response.json(
     {
-      version: "2026-03-29",
+      spec: "dcc-site-contract",
+      version: "1.0",
+      dcc_id: "dcc:site:welcome-to-the-swamp",
+      schema_version: "2026-08-23",
       site: {
-        id: SITE_CONFIG.siteKey,
+        id: "welcome-to-the-swamp",
         name: SITE_CONFIG.name,
         url: SITE_CONFIG.url,
+        type: "swamp_tour_discovery",
         description: SITE_CONFIG.mission,
       },
-      relationship: {
-        role: "authority-satellite",
-        parentSystem: "Destination Command Center",
-        purpose: "tourist-first swamp-tour education and decision support before action",
+      authority: ["swamp_tour_discovery", "new_orleans_swamp_experience_context", "published_decision_guides"],
+      service_area: {
+        dcc_id: "dcc:destination:new-orleans",
+        city: "New Orleans",
+        region: "Louisiana",
+        country: "US",
       },
-      machineReadable: {
+      machine: {
+        agent: `${SITE_CONFIG.url}/agent.json`,
         llms: `${SITE_CONFIG.url}/llms.txt`,
+        portfolio_graph: portfolioFeed,
       },
       canonicalPaths: Object.entries(PAGE_SUMMARIES).map(([path, item]) => ({
         path,
@@ -34,10 +44,22 @@ export function GET() {
         "tour-planning",
         "tourist-expectations",
       ],
+      booking_boundary: {
+        rule:
+          "Use the participating operator or booking provider as the authority for live availability, final inclusions, restrictions, payment, and operator terms.",
+      },
+      network: {
+        parent_dcc_id: "dcc:site:destination-command-center",
+        parent_url: "https://www.destinationcommandcenter.com",
+        related_site_dcc_id: "dcc:site:wno-tours",
+        relationship: "affiliated New Orleans decision-support property",
+        portfolio_feed: portfolioFeed,
+      },
     },
     {
       headers: {
         "Cache-Control": "public, max-age=3600, s-maxage=3600",
+        "Access-Control-Allow-Origin": "*",
       },
     }
   );
