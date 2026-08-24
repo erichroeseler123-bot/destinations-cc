@@ -1,4 +1,4 @@
-const baseUrl = "https://www.welcometoneworleanstours.com";
+const baseUrl = "https://welcometoneworleanstours.com";
 const portfolioFeed = "https://www.destinationcommandcenter.com/api/public/portfolio-feed";
 
 const agentPayload = {
