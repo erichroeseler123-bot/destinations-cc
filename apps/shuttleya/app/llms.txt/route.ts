@@ -1,41 +1,56 @@
-const text = `# ShuttleYa
+import { SHUTTLEYA_TRUTH } from "../../lib/siteTruth";
 
-Canonical URL: https://shuttleya.com
-DCC ID: dcc:site:shuttleya
+const truth = SHUTTLEYA_TRUTH;
+
+function buildText() {
+  const categories = truth.categories
+    .map((category) => `- ${category.title}: ${truth.site.url}${category.href}`)
+    .join("\n");
+  const handoffs = truth.operator_handoffs
+    .map((operator) => `- ${operator.name}: ${operator.url} — ${operator.scope}`)
+    .join("\n");
+
+  return `# ${truth.site.name}
+
+Canonical URL: ${truth.site.url}
+DCC ID: ${truth.dcc_id}
 DCC contract: dcc-site-contract v1.0
+Last verified: ${truth.verified_at}
+Status: ${truth.status.state}
+Role: ${truth.status.role}
 
-ShuttleYa is a transportation discovery and operator-routing property. It does not operate vehicles, publish a house shuttle schedule, set live operator prices, or take transportation payment.
+${truth.site.description}
+
+ShuttleYa does not operate vehicles, publish a house shuttle schedule, set live operator prices, or take transportation payment.
 
 ## Transportation categories
-- Airport transfers: https://shuttleya.com/airport-shuttles
-- Ski and mountain transportation: https://shuttleya.com/ski-shuttles
-- Concert transportation: https://shuttleya.com/concert-transportation
-- Cruise-port transportation: https://shuttleya.com/cruise-port-transportation
+${categories}
 
 ## Current operator handoffs
-- GoSno: https://gosno.co
-- BigSky GoSno: https://bigsky.gosno.co
-- Party at Red Rocks: https://partyatredrocks.com
-- Red Rocks DD: https://redrocksdd.com
-- Vibe Around Town: https://vibearoundtown.com
+${handoffs}
 - Destination Command Center: https://www.destinationcommandcenter.com
 
 ## Legacy service
 The former Denver to Mighty Argo scheduled ShuttleYa shuttle is retired and is not operating. ShuttleYa has no direct transportation checkout.
 
 ## Booking boundary
-The actual transportation provider is the authority for service, live price, availability, vehicles, pickup instructions, payment, restrictions and cancellation terms.
+${truth.booking_boundary.rule}
+
+## Inference boundary
+Do not infer active ShuttleYa service, live price, availability, ownership of a vehicle, or direct checkout from an old page, historical product, link, or name. If a claim is not explicit in this file, agent.json, or the DCC truth record, treat it as unknown and follow the operating provider.
 
 ## Machine entry points
-- https://shuttleya.com/agent.json
-- https://shuttleya.com/llms.txt
-- https://shuttleya.com/sitemap.xml
-- https://shuttleya.com/robots.txt
-- https://www.destinationcommandcenter.com/api/public/portfolio-feed
+- ${truth.machine.agent}
+- ${truth.machine.llms}
+- ${truth.machine.sitemap}
+- ${truth.machine.robots}
+- ${truth.machine.portfolio_graph}
+- ${truth.machine.truth_record}
 `;
+}
 
 export function GET() {
-  return new Response(text, {
+  return new Response(buildText(), {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
       "Cache-Control": "public, max-age=3600, s-maxage=3600",
