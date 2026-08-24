@@ -4,14 +4,15 @@ export const dynamic = "force-static";
 
 const baseUrl = "https://saveonthestrip.com";
 const portfolioFeed = "https://www.destinationcommandcenter.com/api/public/portfolio-feed";
+const truthRecord = "https://www.destinationcommandcenter.com/api/public/truth-feed?id=save-on-the-strip";
 
 export function GET() {
   return Response.json(
     {
       spec: "dcc-site-contract",
-      version: "1.0",
+      version: "1.1",
       dcc_id: "dcc:site:save-on-the-strip",
-      schema_version: "2026-08-23",
+      schema_version: "2026-08-24",
       site: {
         id: "save-on-the-strip",
         name: "Save On The Strip",
@@ -20,6 +21,7 @@ export function GET() {
         description:
           "A Las Vegas decision guide for what is worth the money, what to do tonight, what to skip, and how to build a better trip without overspending.",
       },
+      status: { state: "active", last_verified: "2026-08-24" },
       authority: ["las_vegas_destination_content", "published_decision_guides", "published_comparisons"],
       service_area: {
         dcc_id: "dcc:destination:las-vegas",
@@ -33,6 +35,7 @@ export function GET() {
         sitemap: `${baseUrl}/sitemap.xml`,
         page_feed_template: `${baseUrl}/api/public/page-feed?path={pathname}`,
         portfolio_graph: portfolioFeed,
+        truth_record: truthRecord,
       },
       entry_points: [
         { path: "/tonight", method: "GET", purpose: "time-sensitive Las Vegas ideas" },
@@ -69,6 +72,7 @@ export function GET() {
         parent_url: "https://www.destinationcommandcenter.com",
         relationship: "affiliated destination planning property",
         portfolio_feed: portfolioFeed,
+        truth_record: truthRecord,
       },
     },
     {
