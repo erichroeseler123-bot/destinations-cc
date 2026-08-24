@@ -1,6 +1,7 @@
 import path from "node:path";
 import type { NextConfig } from "next";
 
+// Dedicated standalone Vercel project for SaveOnTheStrip.
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   turbopack: {
