@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import DccPortfolioBridge from "@/app/components/DccPortfolioBridge";
 import { SiteHeader } from "./components/SiteHeader";
 import { WhatsLiveButton } from "./components/WhatsLiveButton";
 import { SocialLinks } from "./components/SocialLinks";
@@ -34,7 +33,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <head><link rel="alternate" type="application/json" href="/agent.json" /><link rel="alternate" type="text/plain" href="/llms.txt" /></head>
       <body>
-        <DccPortfolioBridge site="save-on-the-strip" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@graph": [{ "@type": "Organization", name: "Save On The Strip", url: "https://saveonthestrip.com/", sameAs, contactPoint: [{ "@type": "ContactPoint", contactType: "customer support", telephone: "+1-702-530-3081", email: "contact@saveonthestrip.com", areaServed: "US" }] }, { "@type": "WebSite", name: "Save On The Strip", url: "https://saveonthestrip.com/", sameAs }] }) }} />
         <div className="shell">
           <SiteHeader />{children}<WhatsLiveButton />
