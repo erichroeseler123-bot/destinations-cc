@@ -70,31 +70,49 @@ export default function AirportPickupHomeClient({
       <section className="hero">
         <div>
           <p className="eyebrow">Private Colorado airport transfers · adults 21+</p>
-          <h1>Land at DEN. Start Colorado your way.</h1>
+          <h1>Land at DEN or COS. Start Colorado your way.</h1>
           <p className="arrival-line">
-            Private airport transportation to Denver and Colorado mountain destinations, with an optional dispensary stop included at no additional transportation charge.
+            Private airport transportation from Denver International Airport and Colorado Springs Airport, with an optional lawful dispensary stop when practical for the route and timing.
           </p>
           <p className="hero-copy">
-            Go straight to your destination or build a legal retail stop into the route when practical. No shared shuttle, no random rideshare match, and no extra transportation fee for the optional stop.
+            Go straight to your destination or build a legal retail stop into the route when practical. No shared shuttle, no random rideshare match, and no cannabis consumption in the vehicle.
           </p>
           <div className="cta-row">
             <a className="button" href={checkoutHref} onClick={() => trackCheckout("primary_booking_cta")}>Book Denver pickup</a>
-            <Link className="button-secondary" href="/colorado">See mountain transfers</Link>
+            <Link className="button-secondary" href="/colorado-springs-airport">Flying into COS?</Link>
+            <Link className="button-secondary" href="/colorado">See DEN transfers</Link>
           </div>
         </div>
       </section>
 
       <section className="panel">
-        <p className="eyebrow">Where are you headed?</p>
-        <h2>The 420-friendly option now goes beyond Denver.</h2>
+        <p className="eyebrow">Two Colorado airports</p>
+        <h2>Start from DEN or Colorado Springs Airport.</h2>
+        <div className="trust-grid">
+          <div className="trust-item">
+            <strong>Denver International Airport (DEN)</strong>
+            <p className="muted">Denver arrivals plus private transfers to Colorado Springs and major mountain destinations.</p>
+            <p><Link href="/colorado">Browse DEN routes</Link></p>
+          </div>
+          <div className="trust-item">
+            <strong>Colorado Springs Airport (COS)</strong>
+            <p className="muted">Colorado Springs-area pickup plus configured GoSno routes to major Colorado mountain destinations.</p>
+            <p><Link href="/colorado-springs-airport">Browse COS routes</Link></p>
+          </div>
+        </div>
+      </section>
+
+      <section className="panel">
+        <p className="eyebrow">Where are you headed from DEN?</p>
+        <h2>The 420-friendly option goes beyond Denver.</h2>
         <p className="muted">
-          These private airport-to-resort trips are fulfilled through GoSno. Choose a destination here and continue to the corresponding GoSno route for current availability, vehicle options, and final pricing.
+          These private airport-to-destination trips are fulfilled through GoSno. Choose a destination here and continue to the corresponding GoSno route or quote flow for current availability, vehicle options, and final pricing.
         </p>
         <div className="trust-grid" style={{ marginTop: 24 }}>
           {COLORADO_TRANSFERS.map((transfer) => (
             <div className="trust-item" key={transfer.slug}>
               <strong>DEN → {transfer.destination}</strong>
-              <p className="muted">Optional dispensary stop included at no additional transportation charge.</p>
+              <p className="muted">Optional lawful dispensary stop when practical for the confirmed route and timing.</p>
               <p><Link href={`/colorado/${transfer.slug}`}>View {transfer.destination} transfer</Link></p>
             </div>
           ))}
@@ -110,12 +128,12 @@ export default function AirportPickupHomeClient({
             <p className="muted">DEN to your Denver hotel, home base, or agreed destination.</p>
           </div>
           <div className="trust-item">
-            <strong>Optional dispensary stop</strong>
-            <p className="muted">For adults 21+, a lawful retail stop can be included at no additional transportation charge when practical for the route and timing.</p>
+            <strong>Colorado Springs pickup</strong>
+            <p className="muted">Use the COS route hub for Colorado Springs Airport arrivals and mountain transfers.</p>
           </div>
           <div className="trust-item">
-            <strong>Mountain resort transfer</strong>
-            <p className="muted">Continue privately to Colorado ski destinations through the GoSno transportation network.</p>
+            <strong>Optional dispensary stop</strong>
+            <p className="muted">For adults 21+, a lawful retail stop can be included when practical for the route and timing.</p>
           </div>
         </div>
       </section>
@@ -125,8 +143,8 @@ export default function AirportPickupHomeClient({
         <h2>Private transportation first. The 420-friendly stop is an amenity.</h2>
         <ul>
           <li>Private vehicle only.</li>
-          <li>Pickup begins at Denver International Airport.</li>
-          <li>Optional dispensary stop included at no additional transportation charge when lawful and practical.</li>
+          <li>Airport pickup begins at DEN or COS depending on the selected route.</li>
+          <li>Optional dispensary stop when lawful and practical for the confirmed trip.</li>
           <li>Passengers make any retail purchase independently from the retailer.</li>
           <li>No cannabis consumption is permitted in the vehicle.</li>
         </ul>
@@ -135,7 +153,7 @@ export default function AirportPickupHomeClient({
       <section id="pricing" className="panel">
         <p className="eyebrow">Staying in Denver?</p>
         <h2>See the live Denver-arrival price before you pay.</h2>
-        <p className="muted">For mountain resorts, use the destination pages above to continue into the matching GoSno route.</p>
+        <p className="muted">For Colorado Springs Airport or mountain routes, use the airport and destination pages above to continue into the matching GoSno route or quote flow.</p>
         <div className="form-grid" style={{ marginTop: 24 }}>
           <div className="field">
             <label htmlFor="arrival-date">Arrival date</label>
@@ -157,15 +175,15 @@ export default function AirportPickupHomeClient({
         <div className="trust-grid">
           <div className="trust-item">
             <strong>Mountain resorts</strong>
-            <p className="muted"><Link href="/colorado">Browse 420-friendly private mountain transfers</Link> fulfilled through GoSno.</p>
+            <p className="muted"><Link href="/colorado">Browse private DEN mountain transfers</Link> fulfilled through GoSno.</p>
+          </div>
+          <div className="trust-item">
+            <strong>Colorado Springs Airport</strong>
+            <p className="muted"><Link href="/colorado-springs-airport">Browse COS private transportation</Link> to Colorado Springs and mountain destinations.</p>
           </div>
           <div className="trust-item">
             <strong>Red Rocks</strong>
             <p className="muted"><a href="https://partyatredrocks.com/">Party at Red Rocks</a> handles private concert transportation.</p>
-          </div>
-          <div className="trust-item">
-            <strong>Denver arrival</strong>
-            <p className="muted">Use this site directly for the private airport arrival itself.</p>
           </div>
         </div>
       </section>
