@@ -1,4 +1,5 @@
 {
+  "ignoreCommand": "node scripts/vercel-ignore-juneau.mjs",
   "crons": [
     {
       "path": "/api/internal/hydrate-pipeline?key=aeb135f629cda8158eb0a62c949d28e7",
