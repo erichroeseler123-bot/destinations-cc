@@ -53,6 +53,11 @@ jobs:
       - name: Pull production environment
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
+      - name: Connect project to Git repository
+        run: |
+          vercel git connect --yes --token=${{ secrets.VERCEL_TOKEN }} || \
+            echo "Git connection already exists or could not be changed; continuing authenticated deploy."
+
       - name: Build production app
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
