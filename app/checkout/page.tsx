@@ -20,6 +20,10 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const route = readFirst(resolvedSearchParams.route) || null;
 
+  if (route === "argo") {
+    redirect("/mighty-argo");
+  }
+
   if (route === "parr-private") {
     const redirectParams = new URLSearchParams();
     const product = readFirst(resolvedSearchParams.product);
