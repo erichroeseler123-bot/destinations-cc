@@ -41,22 +41,22 @@ jobs:
       - name: Validate deploy credential
         run: test -n "${{ secrets.VERCEL_TOKEN }}" || (echo "Missing VERCEL_TOKEN" && exit 1)
 
-      - name: Lock Vercel project to standalone app root
+      - name: Lock Vercel project to Juneau app root
         run: |
           curl --fail-with-body --silent --show-error \
             --request PATCH \
             --url "https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}?teamId=${VERCEL_ORG_ID}" \
             --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
             --header "Content-Type: application/json" \
-            --data '{"framework":"nextjs","rootDirectory":"apps/juneauflightdeck","sourceFilesOutsideRootDirectory":false}'
+            --data '{"framework":"nextjs","rootDirectory":"apps/juneauflightdeck","sourceFilesOutsideRootDirectory":true,"commandForIgnoringBuildStep":"node ../../scripts/vercel-ignore-monorepo.mjs"}'
 
       - name: Pull production environment
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Build standalone production app
+      - name: Build production app
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Deploy standalone production app
+      - name: Deploy production app
         id: deploy
         run: |
           set -o pipefail
@@ -82,7 +82,7 @@ jobs:
             fi
           done
 
-      - name: Pin Juneau domains to standalone deployment
+      - name: Pin Juneau domains to production deployment
         run: |
           vercel alias set "${{ steps.deploy.outputs.url }}" juneauflightdeck.com --token=${{ secrets.VERCEL_TOKEN }}
           vercel alias set "${{ steps.deploy.outputs.url }}" www.juneauflightdeck.com --token=${{ secrets.VERCEL_TOKEN }}
