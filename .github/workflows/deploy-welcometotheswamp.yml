@@ -1,4 +1,5 @@
 name: Deploy Welcome To The Swamp
+# Credential refresh trigger: 2026-08-24
 
 on:
   push:
