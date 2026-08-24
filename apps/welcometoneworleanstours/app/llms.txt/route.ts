@@ -2,9 +2,11 @@ const llmsText = `# Welcome to New Orleans Tours
 
 Canonical URL: https://welcometoneworleanstours.com
 DCC ID: dcc:site:wno-tours
-DCC contract: dcc-site-contract v1.0
+DCC contract: dcc-site-contract v1.1
 Agent contract: https://welcometoneworleanstours.com/agent.json
 Portfolio graph: https://www.destinationcommandcenter.com/api/public/portfolio-feed
+Canonical DCC truth record: https://www.destinationcommandcenter.com/api/public/truth-feed?id=wno-tours
+Last verified: 2026-08-24
 
 Welcome to New Orleans Tours is an independent New Orleans tour-planning and booking-assistance site. It helps visitors narrow choices with curated experience pages, practical decision guides, current local context, concierge help, and direct handoff to participating operators for booking.
 
@@ -17,6 +19,7 @@ Welcome to New Orleans Tours is an independent New Orleans tour-planning and boo
 - service_area_dcc_id: dcc:destination:new-orleans
 - service_area: New Orleans, Louisiana
 - booking_relationship: participating operators complete checkout and control live availability, payment, final inclusions, restrictions and operator terms
+- canonical_truth_record: https://www.destinationcommandcenter.com/api/public/truth-feed?id=wno-tours
 
 ## Current public capabilities
 - Curated New Orleans tour and experience pages
