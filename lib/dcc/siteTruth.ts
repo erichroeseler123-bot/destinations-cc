@@ -234,11 +234,19 @@ export const DCC_SITE_TRUTH: readonly DccPortfolioTruthRecord[] = [
     id: "french-quarter-orientation",
     name: "French Quarter Orientation",
     url: "https://frenchquarterorientation.com",
-    type: "new_orleans_orientation_guide",
+    type: "new_orleans_orientation",
     role: "French Quarter orientation property",
     authority: ["french_quarter_orientation_content"],
     status: { state: "active" },
-    provenance: { kind: "declared_by_site", last_verified: VERIFIED },
+    provenance: {
+      kind: "declared_by_site",
+      last_verified: VERIFIED,
+      note: "The current orientation is 30 minutes. Do not revive the older 45-minute/$5 identity from stale pages or search cache.",
+    },
+    public_claims: {
+      orientation_duration_minutes: 30,
+      legacy_45_minute_5_dollar_identity: "retired",
+    },
   },
   {
     dcc_id: "dcc:site:shuttleya",
