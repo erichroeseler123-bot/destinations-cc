@@ -55,8 +55,11 @@ jobs:
               --url "https://api.vercel.com/v11/projects?teamId=${VERCEL_ORG_ID}" \
               --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
               --header "Content-Type: application/json" \
-              --data '{"name":"saveonthestrip","framework":"nextjs","rootDirectory":"apps/saveonthestrip","sourceFilesOutsideRootDirectory":false,"previewDeploymentsDisabled":true}')
-            test "$CREATE_STATUS" = "200" || test "$CREATE_STATUS" = "201"
+              --data '{"name":"saveonthestrip","framework":"nextjs","rootDirectory":"apps/saveonthestrip","previewDeploymentsDisabled":true}')
+            if [ "$CREATE_STATUS" != "200" ] && [ "$CREATE_STATUS" != "201" ]; then
+              cat /tmp/save-project-create.json
+              exit 1
+            fi
             PROJECT_ID=$(node -e "const fs=require('fs'); console.log(JSON.parse(fs.readFileSync('/tmp/save-project-create.json','utf8')).id)")
           fi
 
