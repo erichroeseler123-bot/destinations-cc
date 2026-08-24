@@ -1,5 +1,6 @@
 const baseUrl = "https://420friendlyairportpickup.com";
 const portfolioFeed = "https://www.destinationcommandcenter.com/api/public/portfolio-feed";
+const truthRecord = "https://www.destinationcommandcenter.com/api/public/truth-feed?id=420-friendly-airport-pickup";
 
 const denDestinations = [
   "colorado-springs",
@@ -28,9 +29,9 @@ const cosDestinations = [
 
 const agentPayload = {
   spec: "dcc-site-contract",
-  version: "1.0",
+  version: "1.1",
   dcc_id: "dcc:site:420-friendly-airport-pickup",
-  schema_version: "2026-08-23",
+  schema_version: "2026-08-24",
   site: {
     id: "420-friendly-airport-pickup",
     name: "420 Friendly Airport Pickup",
@@ -39,6 +40,7 @@ const agentPayload = {
     description:
       "Private Colorado airport transportation for adults 21+, including DEN and COS arrivals, Colorado Springs, and mountain transfers with an optional lawful dispensary stop when practical.",
   },
+  status: { state: "active", last_verified: "2026-08-24" },
   authority: [
     "published_airport_transfer_content",
     "published_colorado_destination_routes",
@@ -78,6 +80,7 @@ const agentPayload = {
     llms: `${baseUrl}/llms.txt`,
     sitemap: `${baseUrl}/sitemap.xml`,
     portfolio_graph: portfolioFeed,
+    truth_record: truthRecord,
   },
   booking_boundary: {
     rule:
@@ -95,6 +98,7 @@ const agentPayload = {
     related_site_url: "https://gosno.co",
     relationship: "affiliated transportation property",
     portfolio_feed: portfolioFeed,
+    truth_record: truthRecord,
   },
 };
 
