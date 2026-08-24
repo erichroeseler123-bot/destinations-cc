@@ -19,14 +19,7 @@ if (!relevantAppPaths) {
   process.exit(1);
 }
 
-const base = process.env.VERCEL_GIT_PREVIOUS_SHA;
 const head = process.env.VERCEL_GIT_COMMIT_SHA || "HEAD";
-
-// If Vercel cannot give us a trustworthy comparison range, fail open and build.
-if (!base) {
-  process.exit(1);
-}
-
 const sharedBuildInputs = [
   "package.json",
   "pnpm-lock.yaml",
@@ -34,26 +27,36 @@ const sharedBuildInputs = [
   "yarn.lock",
 ];
 
-const relevantPaths = [...relevantAppPaths, ...sharedBuildInputs];
-const result = spawnSync(
+const changed = spawnSync(
   "git",
-  ["diff", "--quiet", `${base}...${head}`, "--", ...relevantPaths],
-  { stdio: "inherit" },
+  ["diff-tree", "--no-commit-id", "--name-only", "-r", "-m", head],
+  { encoding: "utf8" },
 );
 
-if (result.status === 0) {
+if (changed.status !== 0) {
+  console.warn(`Vercel project ${projectId}: changed-file list could not be evaluated; building fail-open.`);
+  process.exit(1);
+}
+
+const changedPaths = changed.stdout
+  .split(/\r?\n/)
+  .map((value) => value.trim())
+  .filter(Boolean);
+
+const relevant = changedPaths.some((changedPath) =>
+  [...relevantAppPaths, ...sharedBuildInputs].some(
+    (prefix) => changedPath === prefix || changedPath.startsWith(`${prefix}/`),
+  ),
+);
+
+if (!relevant) {
   console.log(
-    `Vercel project ${projectId}: no changes under ${relevantAppPaths.join(", ")}; skipping deployment.`,
+    `Vercel project ${projectId}: current commit does not touch ${relevantAppPaths.join(", ")}; skipping deployment.`,
   );
   process.exit(0);
 }
 
-if (result.status === 1) {
-  console.log(
-    `Vercel project ${projectId}: relevant app or shared dependency change detected; building.`,
-  );
-  process.exit(1);
-}
-
-console.warn(`Vercel project ${projectId}: git diff could not be evaluated; building fail-open.`);
+console.log(
+  `Vercel project ${projectId}: relevant app or shared dependency change detected; building.`,
+);
 process.exit(1);
