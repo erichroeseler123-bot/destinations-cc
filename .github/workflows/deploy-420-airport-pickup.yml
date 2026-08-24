@@ -84,7 +84,9 @@ jobs:
           done
           test "$STATE" = "READY"
 
-      - name: Move and pin 420 production domain
+      - name: Move and pin 420 production domains
         run: |
-          vercel domains add 420friendlyairportpickup.com 420-airport-pickup --force --token=${{ secrets.VERCEL_TOKEN }} --scope=${VERCEL_TEAM_SLUG}
-          vercel alias set "${{ steps.deploy.outputs.url }}" 420friendlyairportpickup.com --token=${{ secrets.VERCEL_TOKEN }} --scope=${VERCEL_TEAM_SLUG}
+          for DOMAIN in 420friendlyairportpickup.com www.420friendlyairportpickup.com; do
+            vercel domains add "$DOMAIN" 420-airport-pickup --force --token=${{ secrets.VERCEL_TOKEN }} --scope=${VERCEL_TEAM_SLUG}
+            vercel alias set "${{ steps.deploy.outputs.url }}" "$DOMAIN" --token=${{ secrets.VERCEL_TOKEN }} --scope=${VERCEL_TEAM_SLUG}
+          done
