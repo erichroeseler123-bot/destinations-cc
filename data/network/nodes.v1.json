@@ -1,11 +1,11 @@
 {
   "version": "dcc-network-v1",
-  "generatedAt": "2026-03-11T00:00:00Z",
+  "generatedAt": "2026-08-24T21:00:00Z",
   "nodes": [
     {
       "node_id": "dcc:node:mighty-argo-shuttle",
       "node_type": "operator",
-      "name": "Mighty Argo Cable Car Shuttle",
+      "name": "Former Mighty Argo Scheduled Shuttle",
       "slug": "mighty-argo-shuttle",
       "geo": {
         "lat": 39.742,
@@ -14,25 +14,10 @@
         "region": "Colorado",
         "locality": "Idaho Springs"
       },
-      "tags": ["argo", "shuttle", "colorado", "transport"],
-      "status": "active",
-      "authority_url": "https://destinationcommandcenter.com/mighty-argo-shuttle",
-      "monetized_targets": [
-        {
-          "site": "DCC",
-          "path": "/book?route=argo&product=argo-seat",
-          "operator_id": "dcc:operator:argo-seat",
-          "booking_mode": "internal",
-          "checkout_url": "https://destinationcommandcenter.com/book?route=argo&product=argo-seat"
-        },
-        {
-          "site": "DCC",
-          "path": "/book?route=argo&product=argo-suv",
-          "operator_id": "dcc:operator:argo-suv",
-          "booking_mode": "internal",
-          "checkout_url": "https://destinationcommandcenter.com/book?route=argo&product=argo-suv"
-        }
-      ],
+      "tags": ["argo", "shuttle", "colorado", "transport", "retired"],
+      "status": "retired",
+      "authority_url": "https://destinationcommandcenter.com/mighty-argo",
+      "monetized_targets": [],
       "related_nodes": [
         "dcc:node:vegas",
         "dcc:node:alaska",
@@ -41,10 +26,10 @@
         "dcc:node:new-orleans"
       ],
       "source": "manual-seed",
-      "confidence": 0.94,
-      "owner_pipeline": "operator-business",
+      "confidence": 1,
+      "owner_pipeline": "retired-service",
       "provenance": "manual",
-      "updatedAt": "2026-03-11T00:00:00Z"
+      "updatedAt": "2026-08-24T21:00:00Z"
     },
     {
       "node_id": "dcc:node:vegas",

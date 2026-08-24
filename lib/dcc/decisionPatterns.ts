@@ -5,7 +5,6 @@ import {
 
 type DecisionPatternKey =
   | "RED_ROCKS_TRANSPORT"
-  | "ARGO_SHUTTLE"
   | "AIRPORT_420_PICKUP"
   | "BRECKENRIDGE_TRANSPORT";
 
@@ -55,21 +54,6 @@ export const DECISION_PATTERNS = {
     action: "book_red_rocks_transport",
     option: "private-ride",
     product: "red-rocks-private",
-  },
-  ARGO_SHUTTLE: {
-    key: "ARGO_SHUTTLE",
-    corridorId: "argo-day-transport",
-    label: "Mighty Argo shuttle",
-    canonicalDecisionPath: "/mighty-argo-shuttle",
-    executionHost: "shuttleya.com",
-    executionPath: "/book/argo-shuttle",
-    handoffParams: CANONICAL_CONTINUATION_FIELDS,
-    networkRole: "decision_to_action",
-    telemetryKey: "argo_shuttle",
-    isDefault: true,
-    action: "book_argo_shuttle",
-    option: "argo-shuttle",
-    product: "argo-seat",
   },
   AIRPORT_420_PICKUP: {
     key: "AIRPORT_420_PICKUP",

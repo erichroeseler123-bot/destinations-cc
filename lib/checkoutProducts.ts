@@ -1,6 +1,6 @@
 import { PARR_PICKUP_HUBS } from "@/lib/parrOperator";
 
-export type CheckoutRouteKey = "argo" | "parr-private" | "parr-shared" | "feastly";
+export type CheckoutRouteKey = "parr-private" | "parr-shared" | "feastly";
 
 export type CheckoutProductKind = "seat" | "private";
 
@@ -35,25 +35,6 @@ export type CheckoutRouteConfig = {
 };
 
 const PRODUCTS: CheckoutProduct[] = [
-  {
-    key: "argo-seat",
-    route: "argo",
-    title: "Argo Shuttle Seat",
-    priceCents: 5900,
-    kind: "seat",
-    maxQty: 12,
-    description: "Shared shuttle seat from Denver to the Argo attraction.",
-  },
-  {
-    key: "argo-suv",
-    route: "argo",
-    title: "Argo Private SUV",
-    priceCents: 49900,
-    kind: "private",
-    maxQty: 1,
-    maxPassengers: 6,
-    description: "Private SUV for your group to the Argo attraction.",
-  },
   {
     key: "parr-shared-denver",
     route: "parr-shared",
@@ -124,23 +105,6 @@ const PRODUCTS: CheckoutProduct[] = [
 ];
 
 const ROUTES: Record<CheckoutRouteKey, CheckoutRouteConfig> = {
-  argo: {
-    key: "argo",
-    title: "Book Argo Shuttle",
-    intro: "Choose your ride, date, and quantity, then continue to secure checkout.",
-    backHref: "/mighty-argo-shuttle",
-    backLabel: "Back to Argo page",
-    defaultProduct: "argo-seat",
-    pickupMode: "select",
-    pickupOptions: ["Denver", "Union Station", "Downtown Hotel"],
-    defaultPickup: "Denver",
-    checkoutTitle: "Checkout",
-    checkoutIntro: "Argo booking preload is active. Review this cart snapshot before payment.",
-    prelaunchEnvVar: "NEXT_PUBLIC_ARGO_PRELAUNCH",
-    paymentsEnvVar: "ENABLE_ARGO_PAYMENTS",
-    depositPercentage: 100,
-    defaultDropoff: "Argo Mill and Tunnel",
-  },
   "parr-private": {
     key: "parr-private",
     title: "Book Red Rocks Private Transport",
