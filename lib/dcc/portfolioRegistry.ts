@@ -1,4 +1,4 @@
-import { DCC_SITE_TRUTH } from "@/lib/dcc/siteTruth";
+import { DCC_SITE_TRUTH } from "./siteTruth";
 
 export const DCC_SITE_CONTRACT = {
   spec: "dcc-site-contract",
