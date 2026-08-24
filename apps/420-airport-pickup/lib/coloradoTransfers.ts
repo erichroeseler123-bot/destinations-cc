@@ -3,9 +3,17 @@ export type ColoradoTransfer = {
   destination: string;
   gosnoPath: string;
   summary: string;
+  handoffMode?: "route" | "quote";
 };
 
 export const COLORADO_TRANSFERS: ColoradoTransfer[] = [
+  {
+    slug: "colorado-springs",
+    destination: "Colorado Springs",
+    gosnoPath: "/request-quote",
+    handoffMode: "quote",
+    summary: "Private DEN to Colorado Springs transportation for adults 21+ with an optional lawful dispensary stop when practical. GoSno confirms this corridor by quote.",
+  },
   {
     slug: "breckenridge",
     destination: "Breckenridge",
@@ -66,5 +74,10 @@ export function buildGoSnoHref(transfer: ColoradoTransfer) {
   url.searchParams.set("utm_medium", "referral");
   url.searchParams.set("utm_campaign", "420-friendly-transfer");
   url.searchParams.set("arrival_option", "optional-dispensary-stop");
+  if (transfer.handoffMode === "quote") {
+    url.searchParams.set("origin", "DEN");
+    url.searchParams.set("destination", transfer.destination);
+    url.searchParams.set("direction", "airport_to_resort");
+  }
   return url.toString();
 }
