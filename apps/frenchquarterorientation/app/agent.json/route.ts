@@ -11,13 +11,14 @@ export function GET() {
       name: "French Quarter Orientation",
       url: "https://frenchquarterorientation.com",
       type: "new_orleans_orientation",
-      description: "Practical first-hour French Quarter orientation covering neighborhood layout, first-street choice, navigation, regroup points, walking strategy, and next-step handoffs.",
+      description: "Practical 30-minute French Quarter orientation covering neighborhood layout, first-street choice, navigation, regroup points, walking strategy, and next-step handoffs.",
       areaServed: ["French Quarter, New Orleans, Louisiana", "New Orleans, Louisiana"]
     },
     authority: ["published_french_quarter_orientation_content", "published_navigation_guidance", "published_outbound_handoffs"],
     service_area: { dcc_id: "dcc:destination:new-orleans", city: "New Orleans", region: "Louisiana", country: "US" },
     canonicalPaths: ["/"],
     orientationModel: {
+      duration_minutes: 30,
       rule: "Understand the neighborhood first, choose one anchor, preserve a clear regroup point, then hand off live commerce to the operating provider.",
       anchors: ["Mississippi River", "Canal Street", "Rampart Street", "Esplanade Avenue", "Jackson Square"]
     },
