@@ -55,6 +55,10 @@ test("ShuttleYa truth keeps the retired Argo service retired everywhere", () => 
   assert.equal(shuttleya.public_claims?.denver_to_mighty_argo_scheduled_shuttle, "retired_not_operating");
 
   const surfaces = [
+    "lib/dcc/shuttleyaTruth.ts",
+    "app/shuttleya/page.tsx",
+    "app/shuttleya/agent.json/route.ts",
+    "app/shuttleya/llms.txt/route.ts",
     "apps/shuttleya/lib/siteTruth.ts",
     "apps/shuttleya/app/page.tsx",
     "apps/shuttleya/app/agent.json/route.ts",
@@ -75,6 +79,9 @@ test("ShuttleYa truth keeps the retired Argo service retired everywhere", () => 
     }
   }
 
+  assert.ok(read("app/shuttleya/page.tsx").includes("SHUTTLEYA_ROOT_TRUTH"));
+  assert.ok(read("app/shuttleya/agent.json/route.ts").includes("SHUTTLEYA_ROOT_TRUTH"));
+  assert.ok(read("app/shuttleya/llms.txt/route.ts").includes("SHUTTLEYA_ROOT_TRUTH"));
   assert.ok(read("apps/shuttleya/app/page.tsx").includes("SHUTTLEYA_TRUTH"));
   assert.ok(read("apps/shuttleya/app/agent.json/route.ts").includes("SHUTTLEYA_TRUTH"));
   assert.ok(read("apps/shuttleya/app/llms.txt/route.ts").includes("SHUTTLEYA_TRUTH"));
