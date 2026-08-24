@@ -70,7 +70,7 @@ jobs:
             --url "https://api.vercel.com/v13/deployments?forceNew=1&teamId=${VERCEL_ORG_ID}" \
             --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
             --header "Content-Type: application/json" \
-            --data "{\"name\":\"420-airport-pickup\",\"project\":\"${VERCEL_PROJECT_ID}\",\"target\":\"production\",\"gitSource\":{\"type\":\"github\",\"org\":\"erichroeseler123-bot\",\"repo\":\"destinations-cc\",\"ref\":\"main\"},\"projectSettings\":{\"framework\":\"nextjs\",\"rootDirectory\":\"apps/420-airport-pickup\",\"sourceFilesOutsideRootDirectory\":true}}" \
+            --data "{\"name\":\"420-airport-pickup\",\"project\":\"${VERCEL_PROJECT_ID}\",\"target\":\"production\",\"gitSource\":{\"type\":\"github\",\"org\":\"erichroeseler123-bot\",\"repo\":\"destinations-cc\",\"ref\":\"${GITHUB_SHA}\"},\"projectSettings\":{\"framework\":\"nextjs\",\"rootDirectory\":\"apps/420-airport-pickup\",\"sourceFilesOutsideRootDirectory\":true}}" \
             > /tmp/vercel-deployment.json
           DEPLOYMENT_ID=$(node -e "const j=require('/tmp/vercel-deployment.json'); if(!j.id) process.exit(1); console.log(j.id)")
           DEPLOYMENT_URL=$(node -e "const j=require('/tmp/vercel-deployment.json'); if(!j.url) process.exit(1); console.log('https://'+j.url)")
