@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 const DCC = "https://www.destinationcommandcenter.com";
 
 export const metadata: Metadata = {
+  applicationName: "Juneau Flight Deck",
   title: "Juneau Flight Deck | Glacier Flights for Cruise Visitors",
   description:
     "A focused Juneau flightseeing storefront for cruise visitors comparing helicopter glacier flights, landing-style experiences, ship timing, and weather backup planning.",
@@ -11,7 +12,14 @@ export const metadata: Metadata = {
     title: "Juneau Flight Deck",
     description: "Compare Juneau glacier-flight formats after you have decided flying is the right use of your port day.",
     url: "https://juneauflightdeck.com/",
+    siteName: "Juneau Flight Deck",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Juneau Flight Deck | Glacier Flights for Cruise Visitors",
+    description:
+      "Compare Juneau glacier-flight formats, ship timing, and weather-backup planning before choosing a provider.",
   },
 };
 
