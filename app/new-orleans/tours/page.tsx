@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const hostHeader = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "";
   const host = hostHeader.split(":")[0];
   const isWto = host === "welcometoneworleanstours.com" || host === "www.welcometoneworleanstours.com";
-  const origin = isWto ? "https://www.welcometoneworleanstours.com" : "https://destinationcommandcenter.com";
+  const origin = isWto ? "https://welcometoneworleanstours.com" : "https://destinationcommandcenter.com";
   const canonical = isWto ? "/tours" : NEW_ORLEANS_TOURS_PATH;
 
   return {
