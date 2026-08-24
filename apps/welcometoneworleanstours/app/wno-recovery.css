@@ -1,19 +1,251 @@
-/* WNO-only visual polish.
-   Keep these overrides scoped to the standalone Welcome to New Orleans Tours app
-   so the shared Destination Command Center New Orleans components remain unchanged. */
+/* WNO-only appearance layer.
+   This stylesheet is imported only by the standalone Welcome to New Orleans Tours app.
+   It deliberately changes presentation, not routes, copy, inventory, booking, tracking,
+   structured data, or shared Destination Command Center behavior. */
 
-/* Homepage hero: keep the photo readable without washing out the typography. */
+:root {
+  --wno-paper: #f7f0e4;
+  --wno-paper-strong: #fffaf2;
+  --wno-paper-deep: #eadbc8;
+  --wno-ink: #241f1a;
+  --wno-muted: #74685d;
+  --wno-green: #2f4638;
+  --wno-green-deep: #20372c;
+  --wno-burgundy: #743044;
+  --wno-brass: #b7832d;
+  --wno-line: rgba(74, 58, 40, 0.16);
+}
+
+html,
+body {
+  background: var(--wno-paper) !important;
+}
+
+/* Shared shell: make WNO feel like a warm travel publication rather than a dark console. */
+[class*="siteShell"] {
+  --wno-gold: var(--wno-brass) !important;
+  --wno-gold-soft: #c49a53 !important;
+  --wno-cream: var(--wno-paper-strong) !important;
+  --wno-ink: #241f1a !important;
+  --wno-charcoal: var(--wno-paper) !important;
+  --wno-panel: var(--wno-paper-strong) !important;
+  background:
+    radial-gradient(circle at 88% 2%, rgba(116, 48, 68, 0.06), transparent 28%),
+    radial-gradient(circle at 6% 18%, rgba(47, 70, 56, 0.05), transparent 25%),
+    var(--wno-paper) !important;
+  color: var(--wno-ink) !important;
+}
+
+[class*="pageWash"]::before {
+  background: linear-gradient(180deg, rgba(183, 131, 45, 0.06), transparent) !important;
+}
+
+main {
+  background: var(--wno-paper) !important;
+  color: var(--wno-ink) !important;
+}
+
+/* Header: light, editorial, and easy to scan. */
+header[class*="marketHeader"] {
+  color: var(--wno-ink) !important;
+  background: rgba(255, 250, 242, 0.965) !important;
+  border-bottom: 1px solid var(--wno-line) !important;
+  box-shadow: 0 8px 28px rgba(54, 40, 27, 0.08) !important;
+  backdrop-filter: blur(14px);
+}
+
+header[class*="marketHeader"] [class*="marketHeaderInner"] {
+  min-height: 78px !important;
+}
+
+header[class*="marketHeader"] [class*="marketBrand"] {
+  color: var(--wno-ink) !important;
+}
+
+header[class*="marketHeader"] [class*="marketBrandWelcome"] {
+  color: var(--wno-burgundy) !important;
+}
+
+header[class*="marketHeader"] [class*="marketBrandCity"] {
+  color: var(--wno-green-deep) !important;
+  letter-spacing: 0.025em !important;
+}
+
+header[class*="marketHeader"] [class*="marketBrandTours"] {
+  color: var(--wno-brass) !important;
+}
+
+header[class*="marketHeader"] [class*="marketDesktopNav"] a {
+  color: #40382f !important;
+}
+
+header[class*="marketHeader"] [class*="marketDesktopNav"] a:hover,
+header[class*="marketHeader"] [class*="marketDesktopNav"] a:focus-visible {
+  color: var(--wno-burgundy) !important;
+}
+
+header[class*="marketHeader"] [class*="marketPhoneLabel"] {
+  color: #75695d !important;
+}
+
+header[class*="marketHeader"] [class*="marketPhoneNumber"] {
+  color: var(--wno-burgundy) !important;
+}
+
+header[class*="marketHeader"] a[class*="md:hidden"],
+header[class*="marketHeader"] a[class*="md:hidden"] span {
+  color: var(--wno-ink) !important;
+}
+
+header[class*="marketHeader"] a[class*="md:hidden"] span:last-child {
+  color: var(--wno-burgundy) !important;
+}
+
+header[class*="marketHeader"] [class*="marketMenuButton"] div {
+  background: var(--wno-green) !important;
+}
+
+/* Mobile menu carries the same paper-and-ink treatment. */
+div[class*="overlayDrawer"] {
+  background: rgba(31, 27, 23, 0.34) !important;
+  backdrop-filter: blur(4px);
+}
+
+div[class*="drawerPanel"] {
+  background: #fffaf2 !important;
+  color: var(--wno-ink) !important;
+  border-left: 1px solid var(--wno-line) !important;
+  box-shadow: -20px 0 55px rgba(48, 35, 24, 0.18) !important;
+}
+
+div[class*="drawerPanel"] nav a,
+div[class*="drawerPanel"] button,
+div[class*="drawerPanel"] span {
+  color: var(--wno-ink) !important;
+}
+
+div[class*="drawerPanel"] nav a:hover,
+div[class*="drawerPanel"] nav a:focus-visible {
+  color: var(--wno-burgundy) !important;
+}
+
+/* General content surfaces. Keep page structure intact while replacing the black-card treatment. */
+main article,
+main details,
+main aside,
+main [class*="productCard"],
+main [class*="comparison"],
+main [class*="chooser"],
+main [class*="recommendation"],
+main div[class*="bg-[#1a1a1a]"],
+main div[class*="bg-[#12110e]"],
+main div[class*="bg-[#111014]"],
+main div[class*="bg-[#0b0b0c]"] {
+  background: var(--wno-paper-strong) !important;
+  color: var(--wno-ink) !important;
+  border-color: var(--wno-line) !important;
+  border-radius: 16px;
+  box-shadow: 0 10px 28px rgba(56, 41, 27, 0.07);
+}
+
+main article:hover,
+main [class*="productCard"]:hover {
+  border-color: rgba(183, 131, 45, 0.5) !important;
+  box-shadow: 0 18px 38px rgba(56, 41, 27, 0.12) !important;
+}
+
+main [class*="productCardTitle"],
+main article h2,
+main article h3,
+main details summary,
+main [class*="comparison"] h2,
+main [class*="comparison"] h3,
+main [class*="chooser"] h2,
+main [class*="chooser"] h3,
+main [class*="recommendation"] h2,
+main [class*="recommendation"] h3 {
+  color: var(--wno-ink) !important;
+}
+
+main [class*="productCardOperator"],
+main [class*="productCardCue"],
+main [class*="eyebrow"],
+main [class*="Eyebrow"] {
+  color: var(--wno-burgundy) !important;
+}
+
+main [class*="productCardCta"] {
+  border: 1px solid var(--wno-green-deep) !important;
+  border-radius: 999px !important;
+  background: var(--wno-green-deep) !important;
+  color: #fffaf2 !important;
+  box-shadow: none !important;
+}
+
+main [class*="productCardCta"]:hover {
+  background: var(--wno-burgundy) !important;
+  border-color: var(--wno-burgundy) !important;
+}
+
+main input,
+main select,
+main textarea {
+  background: #fffdf8 !important;
+  color: var(--wno-ink) !important;
+  border-color: rgba(74, 58, 40, 0.24) !important;
+  border-radius: 10px !important;
+}
+
+main input:focus,
+main select:focus,
+main textarea:focus {
+  outline: 1px solid var(--wno-brass) !important;
+  box-shadow: 0 0 0 3px rgba(183, 131, 45, 0.12) !important;
+}
+
+main table {
+  background: var(--wno-paper-strong) !important;
+  color: var(--wno-ink) !important;
+  border-color: var(--wno-line) !important;
+}
+
+main th {
+  background: #eee1d0 !important;
+  color: var(--wno-green-deep) !important;
+}
+
+main .prose,
+main [class*="prose"] {
+  color: #51483f !important;
+}
+
+main .prose h1,
+main .prose h2,
+main .prose h3,
+main .prose strong,
+main [class*="prose"] h1,
+main [class*="prose"] h2,
+main [class*="prose"] h3,
+main [class*="prose"] strong {
+  color: var(--wno-ink) !important;
+}
+
+main .prose a,
+main [class*="prose"] a {
+  color: var(--wno-burgundy) !important;
+}
+
+/* Homepage legacy/shared components: preserve the improved centering and landscape crops. */
 div[class*="homeHeroBackground"] {
-  filter: brightness(1.08) saturate(0.98) contrast(1.02);
+  filter: brightness(1.08) saturate(1.01) contrast(1.01);
 }
 
 div[class*="homeHeroOverlay"] {
   background:
-    linear-gradient(90deg, rgba(8, 3, 12, 0.28), rgba(7, 7, 9, 0.68) 28%, rgba(7, 7, 9, 0.68) 72%, rgba(22, 10, 3, 0.24)),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.03), rgba(4, 3, 5, 0.2) 58%, rgba(8, 7, 9, 0.76)) !important;
+    linear-gradient(90deg, rgba(36, 31, 26, 0.25), rgba(36, 31, 26, 0.58) 32%, rgba(36, 31, 26, 0.58) 68%, rgba(36, 31, 26, 0.22)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(36, 31, 26, 0.16) 58%, rgba(36, 31, 26, 0.66)) !important;
 }
 
-/* Give homepage sections a clear editorial center instead of a left-heavy layout. */
 div[class*="homeSectionHeading"],
 div[class*="homeCuratedHeading"] {
   flex-direction: column !important;
@@ -47,17 +279,14 @@ div[class*="homeCuratedHeading"] {
   margin-inline: auto;
 }
 
-/* The old 4:5 crop made the experience photography feel oversized and poster-like.
-   Use a consistent landscape editorial crop instead. */
 div[class*="homeCategoryMedia"] {
   aspect-ratio: 16 / 10 !important;
 }
 
-/* Remove the alternating vertical stagger so the grid reads cleanly. */
 a[class*="homeCategoryCard"],
 [class*="homeCategoryCard"] {
   transform: none !important;
-  border-radius: 14px;
+  border-radius: 16px;
 }
 
 [class*="homeCategoryCard"]:hover,
@@ -74,30 +303,28 @@ a[class*="homeCategoryCard"],
   margin-inline: auto;
 }
 
-/* Shared cinematic guide heroes are left aligned by default.
-   On WNO, make them feel like real destination landing pages. */
-section[class*="hero"] div[class*="inner"] {
+/* Shared guide/category heroes remain image-forward, but typography is centered and cleaner. */
+main > div[class*="min-h-screen"] section[class*="hero"] div[class*="inner"] {
   text-align: center;
 }
 
-section[class*="hero"] [class*="eyebrow"],
-section[class*="hero"] [class*="title"],
-section[class*="hero"] [class*="intro"] {
+main > div[class*="min-h-screen"] section[class*="hero"] [class*="eyebrow"],
+main > div[class*="min-h-screen"] section[class*="hero"] [class*="title"],
+main > div[class*="min-h-screen"] section[class*="hero"] [class*="intro"] {
   margin-left: auto !important;
   margin-right: auto !important;
   text-align: center !important;
 }
 
-section[class*="hero"] [class*="rule"] {
+main > div[class*="min-h-screen"] section[class*="hero"] [class*="rule"] {
   margin-left: auto !important;
   margin-right: auto !important;
 }
 
-section[class*="hero"] [class*="actions"] {
+main > div[class*="min-h-screen"] section[class*="hero"] [class*="actions"] {
   justify-content: center !important;
 }
 
-/* Make guide/category imagery feel intentional and consistent. */
 main article {
   overflow: hidden;
 }
@@ -107,19 +334,10 @@ main section img[class*="object-cover"] {
   object-position: center center;
 }
 
-/* Add breathing room and visual grouping to content cards without changing copy. */
-main article,
-main details,
-main div[class*="border"][class*="bg-[#1a1a1a]"],
-main div[class*="border"][class*="bg-[#12110e]"] {
-  border-radius: 14px;
-}
-
 main details {
   overflow: hidden;
 }
 
-/* Section headings should establish hierarchy; body copy stays left aligned for readability. */
 main section > h2,
 main section > div:first-child > h2 {
   text-align: center;
@@ -130,14 +348,48 @@ main section > div:first-child > p[class*="uppercase"] {
   text-align: center;
 }
 
-/* Softer content width and spacing on large screens. */
 main > div[class*="min-h-screen"] > div[class*="max-w-3xl"] {
   max-width: 860px;
+}
+
+/* Footer: use one rich dark anchor instead of making the entire site dark. */
+footer[class*="footer"] {
+  background: var(--wno-green-deep) !important;
+  color: #f9f1e5 !important;
+  border-top: 0 !important;
+}
+
+footer[class*="footer"] h4,
+footer[class*="footer"] strong {
+  color: #fff8ed !important;
+}
+
+footer[class*="footer"] p,
+footer[class*="footer"] a,
+footer[class*="footer"] small,
+footer[class*="footer"] [class*="copyright"] {
+  color: rgba(255, 248, 237, 0.72) !important;
+}
+
+footer[class*="footer"] [class*="brandKicker"],
+footer[class*="footer"] [class*="label"] {
+  color: #e2bb73 !important;
+}
+
+footer[class*="footer"] a:hover,
+footer[class*="footer"] a:focus-visible {
+  color: #fff8ed !important;
 }
 
 @media (max-width: 900px) {
   div[class*="homeCategoryGrid"] {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 767px) {
+  header[class*="marketHeader"] [class*="marketHeaderInner"] {
+    min-height: 68px !important;
   }
 }
 
@@ -155,7 +407,7 @@ main > div[class*="min-h-screen"] > div[class*="max-w-3xl"] {
     width: min(100% - 1.5rem, 1240px) !important;
   }
 
-  section[class*="hero"] div[class*="inner"] {
+  main > div[class*="min-h-screen"] section[class*="hero"] div[class*="inner"] {
     width: min(100% - 28px, 1180px) !important;
   }
 }
