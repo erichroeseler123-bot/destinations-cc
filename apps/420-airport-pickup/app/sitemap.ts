@@ -29,6 +29,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.95,
     },
+    {
+      url: toAbsolute("/colorado-springs-airport"),
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.95,
+    },
     ...COLORADO_TRANSFERS.map((transfer) => ({
       url: toAbsolute(`/colorado/${transfer.slug}`),
       lastModified: new Date(),
