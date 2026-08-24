@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 import { GET as getSitemapResponse } from "../../../app/sitemap.xml/route";
 
+const CANONICAL_ORIGIN = "https://welcometoneworleanstours.com";
+const LEGACY_ORIGIN = "https://www.welcometoneworleanstours.com";
+
 function decodeXml(value: string) {
   return value
     .replaceAll("&apos;", "'")
@@ -8,6 +11,12 @@ function decodeXml(value: string) {
     .replaceAll("&gt;", ">")
     .replaceAll("&lt;", "<")
     .replaceAll("&amp;", "&");
+}
+
+function canonicalizeWnoUrl(value: string) {
+  return value.startsWith(LEGACY_ORIGIN)
+    ? `${CANONICAL_ORIGIN}${value.slice(LEGACY_ORIGIN.length)}`
+    : value;
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -20,7 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (!loc) continue;
     const lastModified = body.match(/<lastmod>([\s\S]*?)<\/lastmod>/)?.[1];
     entries.push({
-      url: decodeXml(loc),
+      url: canonicalizeWnoUrl(decodeXml(loc)),
       ...(lastModified ? { lastModified: decodeXml(lastModified) } : {}),
     });
   }
