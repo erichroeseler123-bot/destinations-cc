@@ -12,7 +12,6 @@ import {
   buildDecisionPatternExecutionUrl,
   getDecisionPatterns,
 } from "@/lib/dcc/decisionPatterns";
-import { getRootRouteGovernance } from "@/src/data/route-governance";
 import { getSpecialPagesRouteGovernance } from "@/apps/special-pages/lib/route-governance";
 
 test("public corridor contract stays canonical and unique", () => {
@@ -21,8 +20,9 @@ test("public corridor contract stays canonical and unique", () => {
   const planningPaths = corridors.map((corridor) => corridor.planningPath);
 
   assert.equal(new Set(planningPaths).size, planningPaths.length);
-  assert.equal(corridors.length, 4);
+  assert.equal(corridors.length, 3);
   assert.equal(corridors.length, patterns.length);
+  assert.equal(corridors.some((corridor) => corridor.id === "argo-day-transport"), false);
 
   for (const corridor of corridors) {
     assert.deepEqual(corridor.continuity.requiredFields, CANONICAL_CONTINUATION_FIELDS);
@@ -32,13 +32,13 @@ test("public corridor contract stays canonical and unique", () => {
 });
 
 test("decision patterns build canonical execution handoff urls", () => {
-  const url = buildDecisionPatternExecutionUrl(DECISION_PATTERNS.ARGO_SHUTTLE, {
+  const url = buildDecisionPatternExecutionUrl(DECISION_PATTERNS.BRECKENRIDGE_TRANSPORT, {
     cta: "hero",
   });
 
-  assert.match(url, /^https:\/\/shuttleya\.com\/book\/argo-shuttle\?/);
-  assert.match(url, /decision_corridor=argo-day-transport/);
-  assert.match(url, /decision_action=book_argo_shuttle/);
+  assert.match(url, /^https:\/\/gosno\.co\/denver-to-breckenridge\?/);
+  assert.match(url, /decision_corridor=denver-to-breckenridge/);
+  assert.match(url, /decision_action=operator_checkout/);
   assert.match(url, /decision_policy=continue_without_reset/);
 });
 
@@ -58,25 +58,22 @@ test("operator apps do not expose acquisition-style routes as indexable", () => 
   }
 });
 
-test("primary corridor paths are not governed by more than one app", () => {
-  const rootArgo = getRootRouteGovernance("/mighty-argo-shuttle");
+test("retired Argo sales page has no duplicate special-pages authority", () => {
   const specialPagesArgo = getSpecialPagesRouteGovernance("/mighty-argo-shuttle");
-
-  assert.equal(rootArgo?.publishState, "indexable");
   assert.equal(specialPagesArgo, null);
 });
 
-test("agent.json exports only the canonical public corridor contract", async () => {
+test("agent.json exports only active canonical public corridor contracts", async () => {
   const response = await getAgentManifest();
   const manifest = await response.json();
 
   assert.equal(Array.isArray(manifest.corridors), true);
-  assert.equal(manifest.corridors.length, 4);
-  assert.equal(manifest.canonicalPaths.includes("/mighty-argo-shuttle"), true);
-  assert.equal(manifest.canonicalPaths.includes("/denver-to-argo-shuttle"), false);
+  assert.equal(manifest.corridors.length, 3);
+  assert.equal(manifest.canonicalPaths.includes("/mighty-argo-shuttle"), false);
+  assert.equal(manifest.corridors.some((corridor: { id?: string }) => corridor.id === "argo-day-transport"), false);
 });
 
-test("llms.txt reflects canonical planning authority and excludes ghost routes", async () => {
+test("llms.txt reflects canonical planning authority and excludes retired Argo execution", async () => {
   const response = await getLlms();
   const body = await response.text();
 
@@ -84,4 +81,5 @@ test("llms.txt reflects canonical planning authority and excludes ghost routes",
   assert.match(body, /should not restart a completed decision/i);
   assert.doesNotMatch(body, /denver-to-argo-shuttle/);
   assert.doesNotMatch(body, /how-to-get-to-argo-cable-car-from-denver/);
+  assert.doesNotMatch(body, /book_argo_shuttle/);
 });
