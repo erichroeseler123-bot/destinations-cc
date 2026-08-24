@@ -6,6 +6,10 @@ on:
     paths:
       - 'apps/saveonthestrip/**'
       - '.github/workflows/deploy-saveonthestrip.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/saveonthestrip/**'
   workflow_dispatch:
 
 permissions:
@@ -17,6 +21,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.event_name != 'pull_request' || github.head_ref == 'deploy-suite-production-trigger'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
