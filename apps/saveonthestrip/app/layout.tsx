@@ -9,10 +9,22 @@ import { SITE_CONFIG } from "./site-config";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Save On The Strip",
+  applicationName: "Save On The Strip",
+  title: "Save On The Strip | Las Vegas Deals, Shows & Things To Do",
   description: "A faster way to decide what is actually worth your money in Las Vegas: tonight, shows, tours, free wins, hotel moves, and practical Strip planning.",
   alternates: { canonical: "https://saveonthestrip.com/" },
-  openGraph: { title: "Save On The Strip", description: "Do not waste money in Vegas. Find the nights, outings, and free wins that are actually worth it.", url: "https://saveonthestrip.com/", type: "website" },
+  openGraph: {
+    siteName: "Save On The Strip",
+    title: "Save On The Strip",
+    description: "Do not waste money in Vegas. Find the nights, outings, and free wins that are actually worth it.",
+    url: "https://saveonthestrip.com/",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Save On The Strip | Las Vegas Deals, Shows & Things To Do",
+    description: "Las Vegas decision help for shows, tours, free things, hotels, tonight, and practical Strip planning.",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
