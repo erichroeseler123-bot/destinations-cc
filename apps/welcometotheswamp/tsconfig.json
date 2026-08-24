@@ -27,6 +27,7 @@
       "@/app/components/PartnerAnalyticsScript": ["../../lib/getyourguide/PartnerAnalyticsScript"],
       "@/app/components/ActivitiesWidget": ["../../app/components/ActivitiesWidget"],
       "@/app/components/AvailabilityWidget": ["../../app/components/AvailabilityWidget"],
+      "@/app/components/DccPortfolioBridge": ["../../app/components/DccPortfolioBridge"],
       "@/app/components/network/types": ["../../app/components/network/types"],
       "@/lib/dcc/networkEntityJsonLd": ["../../lib/dcc/networkEntityJsonLd"],
       "@/lib/liveProductLinks": ["../../lib/liveProductLinks"],
