@@ -22,6 +22,8 @@ import PlanNewOrleans, { metadata as planNewOrleansMetadata } from "@/app/new-or
 import BeforeCruise, { metadata as beforeCruiseMetadata } from "@/app/new-orleans/things-to-do-before-a-cruise-new-orleans/page";
 import AfterCruise, { metadata as afterCruiseMetadata } from "@/app/new-orleans/things-to-do-after-a-cruise-new-orleans/page";
 
+const WNO_METADATA_BASE = new URL("https://welcometoneworleanstours.com");
+
 const guideAliases = {
   "french-quarter-tour-timing": "french-quarter-orientation",
   "pre-cruise-new-orleans-tours": "new-orleans-tours-with-transportation",
@@ -48,26 +50,33 @@ const bridgedMetadata: Record<string, Metadata> = {
   },
 };
 
+function onWnoHost(metadata: Metadata): Metadata {
+  return {
+    ...metadata,
+    metadataBase: WNO_METADATA_BASE,
+  };
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug?: string }> }): Promise<Metadata> {
   const resolved = await params;
   const slug = resolved.slug;
 
   if (slug && directAliases[slug as keyof typeof directAliases]) {
-    return {
+    return onWnoHost({
       title: "Help Me Choose a New Orleans Tour",
       description: "Use the New Orleans tour chooser to narrow the best options for your group, schedule, pace, and interests.",
       alternates: { canonical: directAliases[slug as keyof typeof directAliases] },
       robots: { index: false, follow: true },
-    };
+    });
   }
 
-  if (slug && bridgedMetadata[slug]) return bridgedMetadata[slug];
+  if (slug && bridgedMetadata[slug]) return onWnoHost(bridgedMetadata[slug]);
 
   const canonicalSlug = slug && guideAliases[slug as keyof typeof guideAliases]
     ? guideAliases[slug as keyof typeof guideAliases]
     : slug;
 
-  return generateCanonicalMetadata({ params: Promise.resolve({ slug: canonicalSlug }) });
+  return onWnoHost(await generateCanonicalMetadata({ params: Promise.resolve({ slug: canonicalSlug }) }));
 }
 
 const pages = {
