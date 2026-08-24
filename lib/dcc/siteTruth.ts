@@ -51,6 +51,10 @@ export const DCC_SITE_TRUTH: readonly DccPortfolioTruthRecord[] = [
     status: { state: "active" },
     provenance: { kind: "dcc_curated", last_verified: VERIFIED },
     booking: { authority: "none", takes_payment: false },
+    public_claims: {
+      mighty_argo_scheduled_transportation: "retired_not_operating",
+      mighty_argo_direct_checkout: false,
+    },
   },
   {
     dcc_id: "dcc:site:cruise-promenade",
@@ -130,6 +134,23 @@ export const DCC_SITE_TRUTH: readonly DccPortfolioTruthRecord[] = [
     },
   },
   {
+    dcc_id: "dcc:site:party-at-red-rocks",
+    id: "party-at-red-rocks",
+    name: "Party at Red Rocks",
+    url: "https://www.partyatredrocks.com",
+    type: "private_red_rocks_transportation",
+    role: "private Red Rocks concert transportation operator",
+    authority: ["red_rocks_private_transportation", "published_vehicle_pricing", "site_booking_state"],
+    status: { state: "active" },
+    provenance: { kind: "operator_supplied", last_verified: VERIFIED },
+    booking: { authority: "site", takes_payment: true },
+    public_claims: {
+      shared_seat_service: false,
+      suburban_usd: 399,
+      van_usd: 599,
+    },
+  },
+  {
     dcc_id: "dcc:site:save-on-the-strip",
     id: "save-on-the-strip",
     name: "Save On The Strip",
@@ -179,6 +200,22 @@ export const DCC_SITE_TRUTH: readonly DccPortfolioTruthRecord[] = [
     status: { state: "active" },
     provenance: { kind: "declared_by_site", last_verified: VERIFIED },
     booking: { authority: "provider" },
+  },
+  {
+    dcc_id: "dcc:site:welcome-to-alaska-tours",
+    id: "welcome-to-alaska-tours",
+    name: "Welcome to Alaska Tours",
+    url: "https://www.welcometoalaskatours.com",
+    type: "alaska_excursion_shopping",
+    role: "Alaska excursion catalog, calendar and checkout property",
+    authority: ["excursion_catalog", "tour_calendar", "site_checkout_state"],
+    status: { state: "active" },
+    provenance: {
+      kind: "declared_by_site",
+      last_verified: VERIFIED,
+      note: "Do not infer ownership or control relationships from shared links, inventory, phone numbers, or operator references.",
+    },
+    booking: { authority: "site", takes_payment: true },
   },
   {
     dcc_id: "dcc:site:welcome-to-the-dells",
