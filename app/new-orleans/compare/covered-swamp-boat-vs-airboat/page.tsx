@@ -11,4 +11,5 @@ export const metadata: Metadata = {
 
 export default function CoveredBoatVsAirboatPage() {
   permanentRedirect("https://welcometotheswamp.com/airboat-vs-boat");
+  return null;
 }
