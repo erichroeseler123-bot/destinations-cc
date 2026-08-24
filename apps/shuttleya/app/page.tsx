@@ -11,8 +11,30 @@ export const metadata: Metadata = {
 };
 
 export default function ShuttleYaHome() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: truth.site.name,
+    url: truth.site.url,
+    description: truth.site.description,
+    mainEntity: {
+      "@type": "ItemList",
+      name: "Transportation categories",
+      itemListElement: truth.categories.map((category, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: category.title,
+        url: `${truth.site.url}${category.href}`,
+      })),
+    },
+  };
+
   return (
     <main className="min-h-screen bg-[#091014] text-[#f7f5ef]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <section className="border-b border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_38%),radial-gradient(circle_at_top_right,rgba(34,197,94,0.12),transparent_30%)]">
         <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 md:py-24">
           <div className="inline-flex rounded-full border border-sky-300/30 bg-sky-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-sky-200">
