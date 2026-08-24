@@ -5,6 +5,16 @@ const nextConfig = {
   experimental: {
     externalDir: true,
   },
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.welcometotheswamp.com" }],
+        destination: "https://welcometotheswamp.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
