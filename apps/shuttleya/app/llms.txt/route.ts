@@ -1,4 +1,4 @@
-import { SHUTTLEYA_TRUTH } from "@/lib/siteTruth";
+import { SHUTTLEYA_TRUTH } from "../../lib/siteTruth";
 
 const truth = SHUTTLEYA_TRUTH;
 
