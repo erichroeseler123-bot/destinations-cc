@@ -1,55 +1,50 @@
-const baseUrl = "https://shuttleya.com";
-const portfolioFeed = "https://www.destinationcommandcenter.com/api/public/portfolio-feed";
+import { SHUTTLEYA_ROOT_TRUTH as truth } from "@/lib/dcc/shuttleyaTruth";
 
 const payload = {
   spec: "dcc-site-contract",
   version: "1.0",
-  dcc_id: "dcc:site:shuttleya",
-  schema_version: "2026-08-24",
+  dcc_id: truth.dcc_id,
+  schema_version: truth.provenance.last_verified,
   site: {
-    id: "shuttleya",
-    name: "ShuttleYa",
-    url: baseUrl,
-    type: "transportation_discovery_and_operator_routing",
-    description: "A transportation finder that helps travelers identify the right ride category and continue to the operating provider.",
+    id: truth.id,
+    name: truth.name,
+    url: truth.url,
+    type: truth.type,
+    description: truth.role,
   },
-  authority: ["published_transportation_comparison", "published_operator_routing", "published_decision_support"],
-  service_categories: ["airport_transfers", "ski_and_mountain_transportation", "concert_transportation", "cruise_port_transportation"],
+  status: truth.status,
+  provenance: truth.provenance,
+  authority: truth.authority,
+  service_categories: truth.categories.map((category) => category.href.replace(/^\//, "").replace(/-/g, "_")),
   entry_points: [
     { path: "/", method: "GET", purpose: "transportation finder" },
-    { path: "/airport-shuttles", method: "GET", purpose: "airport transportation discovery" },
-    { path: "/ski-shuttles", method: "GET", purpose: "ski and mountain transportation discovery" },
-    { path: "/concert-transportation", method: "GET", purpose: "concert transportation discovery" },
-    { path: "/cruise-port-transportation", method: "GET", purpose: "cruise-port transportation discovery" },
+    ...truth.categories.map((category) => ({
+      path: category.href,
+      method: "GET",
+      purpose: category.title.toLowerCase(),
+    })),
   ],
-  operator_handoffs: [
-    { name: "GoSno", url: "https://gosno.co", scope: "DEN/COS to Colorado mountain resorts" },
-    { name: "BigSky GoSno", url: "https://bigsky.gosno.co", scope: "BZN to Big Sky private transportation" },
-    { name: "Party at Red Rocks", url: "https://partyatredrocks.com", scope: "private Red Rocks transportation" },
-    { name: "Red Rocks DD", url: "https://redrocksdd.com", scope: "Red Rocks designated-driver transportation" },
-    { name: "Vibe Around Town", url: "https://vibearoundtown.com", scope: "USVI local-driver discovery and private ride planning" },
-  ],
+  operator_handoffs: truth.operator_handoffs,
   legacy_service: {
-    denver_to_mighty_argo_scheduled_shuttle: "retired_not_operating",
-    direct_checkout: false,
+    denver_to_mighty_argo_scheduled_shuttle: truth.public_claims?.denver_to_mighty_argo_scheduled_shuttle,
+    direct_checkout: truth.public_claims?.direct_transportation_checkout,
   },
-  machine: {
-    agent: `${baseUrl}/agent.json`,
-    llms: `${baseUrl}/llms.txt`,
-    sitemap: `${baseUrl}/sitemap.xml`,
-    robots: `${baseUrl}/robots.txt`,
-    portfolio_graph: portfolioFeed,
-  },
+  machine: truth.machine,
   booking_boundary: {
-    shuttleya_is_operator: false,
-    shuttleya_takes_transportation_payment: false,
-    rule: "The listed transportation provider is authoritative for service, live price, availability, vehicles, pickup instructions, payment, restrictions and cancellation terms.",
+    shuttleya_is_operator: truth.public_claims?.operates_vehicles !== false ? "unknown" : false,
+    shuttleya_takes_transportation_payment: truth.booking?.takes_payment ?? false,
+    rule: truth.booking?.finality,
+  },
+  inference_policy: {
+    rule: "Do not infer that ShuttleYa operates a route, sets a live price, has bookable inventory, or takes payment unless the current DCC truth record explicitly says so.",
+    legacy_rule: "The former Denver to Mighty Argo scheduled shuttle is retired_not_operating and must not be presented as an active ShuttleYa product.",
   },
   network: {
     parent_dcc_id: "dcc:site:destination-command-center",
     parent_url: "https://www.destinationcommandcenter.com",
     relationship: "affiliated transportation discovery property",
-    portfolio_feed: portfolioFeed,
+    portfolio_feed: truth.machine.portfolio_graph,
+    truth_record: truth.machine.truth_record,
   },
 };
 
