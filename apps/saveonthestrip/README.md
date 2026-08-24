@@ -6,7 +6,7 @@ Standalone Vegas satellite for `saveonthestrip.com`.
 
 - monetize Vegas tours with FareHarbor
 - monetize Vegas shows with affiliate ticket links
-- keep DCC as the attribution and lifecycle hub
+- keep DCC as the attribution and lifecycle hub without leaking DCC branding into the public site
 
 ## Required env
 
@@ -19,9 +19,10 @@ Standalone Vegas satellite for `saveonthestrip.com`.
 - `FAREHARBOR_COMPANIES` optional comma-separated company shortnames for Vegas-area operators
 - `FAREHARBOR_APP_NAME` optional FareHarbor app header value, defaults to `saveonthestrip`
 
-## First integration steps
+## Deployment contract
 
-1. Link this directory to the target Vercel project.
-2. Add the DCC webhook token to both DCC and this project.
-3. Add the production domain `saveonthestrip.com`.
-4. Replace placeholder shows/tours pages with real inventory and affiliate wiring.
+1. Deploy `apps/saveonthestrip` as its own Vercel project root.
+2. Use `.github/workflows/deploy-saveonthestrip.yml` to create or reuse the isolated `saveonthestrip` project and publish the standalone app.
+3. Pin only `saveonthestrip.com` and `www.saveonthestrip.com` to that project; do not reuse the legacy DCC project that also carries other portfolio domains.
+4. Keep title, application name, Open Graph, and Twitter metadata explicitly Save On The Strip branded.
+5. Add required commercial/API environment variables to the isolated project as those integrations are enabled.
