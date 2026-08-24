@@ -54,7 +54,7 @@ jobs:
               --url "https://api.vercel.com/v11/projects?teamId=${VERCEL_ORG_ID}" \
               --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
               --header "Content-Type: application/json" \
-              --data '{"name":"saveonthestrip","framework":"nextjs","rootDirectory":"apps/saveonthestrip","previewDeploymentsDisabled":true}')
+              --data '{"name":"saveonthestrip","framework":"nextjs","rootDirectory":"apps/saveonthestrip","sourceFilesOutsideRootDirectory":false,"previewDeploymentsDisabled":true}')
             test "$CREATE_STATUS" = "200" || test "$CREATE_STATUS" = "201"
             PROJECT_ID=$(node -e "const fs=require('fs'); console.log(JSON.parse(fs.readFileSync('/tmp/save-project-create.json','utf8')).id)")
           fi
@@ -62,6 +62,15 @@ jobs:
           test -n "$PROJECT_ID"
           echo "VERCEL_PROJECT_ID=$PROJECT_ID" >> "$GITHUB_ENV"
           echo "Using project $PROJECT_ID"
+
+      - name: Lock project to Save app root
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --request PATCH \
+            --url "https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}?teamId=${VERCEL_ORG_ID}" \
+            --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            --header "Content-Type: application/json" \
+            --data '{"framework":"nextjs","rootDirectory":"apps/saveonthestrip","sourceFilesOutsideRootDirectory":false,"previewDeploymentsDisabled":true}'
 
       - name: Pull production environment
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
@@ -77,6 +86,22 @@ jobs:
           DEPLOYMENT_URL=$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' /tmp/vercel-deploy.txt | tail -n 1)
           test -n "$DEPLOYMENT_URL"
           echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Attach Save domains to isolated project
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --url "https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}" \
+            --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            --header "Content-Type: application/json" \
+            --data '{"name":"saveonthestrip.com"}' || true
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --url "https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}" \
+            --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            --header "Content-Type: application/json" \
+            --data '{"name":"www.saveonthestrip.com"}' || true
 
       - name: Pin Save On The Strip domains
         run: |
