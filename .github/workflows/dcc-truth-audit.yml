@@ -8,8 +8,11 @@ on:
       - "app/api/public/portfolio-feed/route.ts"
       - "app/api/public/truth-feed/route.ts"
       - "app/agent.json/route.ts"
+      - "apps/**/app/agent.json/route.ts"
+      - "apps/**/app/llms.txt/route.ts"
       - "apps/shuttleya/**"
       - "tests/dcc/site-truth.test.ts"
+      - "tests/dcc/satellite-truth-linkage.test.ts"
       - "scripts/dcc/audit-site-truth-live.ts"
       - ".github/workflows/dcc-truth-audit.yml"
   schedule:
@@ -29,7 +32,10 @@ jobs:
         with:
           node-version: "24"
       - name: Run DCC truth tests
-        run: npx --yes tsx --test tests/dcc/site-truth.test.ts
+        run: >-
+          npx --yes tsx --test
+          tests/dcc/site-truth.test.ts
+          tests/dcc/satellite-truth-linkage.test.ts
 
   live-truth:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'

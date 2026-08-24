@@ -8,14 +8,15 @@ import {
 export const dynamic = "force-static";
 
 const portfolioFeed = "https://www.destinationcommandcenter.com/api/public/portfolio-feed";
+const truthRecord = "https://www.destinationcommandcenter.com/api/public/truth-feed?id=welcome-to-the-dells";
 
 export function GET() {
   return Response.json(
     {
       spec: "dcc-site-contract",
-      version: "1.0",
+      version: "1.1",
       dcc_id: "dcc:site:welcome-to-the-dells",
-      schema_version: "2026-08-23",
+      schema_version: "2026-08-24",
       site: {
         id: "welcome-to-the-dells",
         name: "Welcome to the Dells",
@@ -84,6 +85,7 @@ export function GET() {
         sitemap: `${SITE_URL}/sitemap.xml`,
         robots: `${SITE_URL}/robots.txt`,
         portfolio_graph: portfolioFeed,
+        truth_record: truthRecord,
       },
       booking_boundary: {
         rule: "Use the attraction, lodging, tour, or booking provider as the authority for live availability, price, payment, final inclusions, restrictions, and provider terms.",
@@ -93,6 +95,7 @@ export function GET() {
         parent_url: "https://www.destinationcommandcenter.com",
         relationship: "affiliated destination planning property",
         portfolio_feed: portfolioFeed,
+        truth_record: truthRecord,
       },
     },
     {

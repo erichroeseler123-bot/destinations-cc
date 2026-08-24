@@ -1,11 +1,12 @@
 const baseUrl = "https://juneauflightdeck.com";
 const portfolioFeed = "https://www.destinationcommandcenter.com/api/public/portfolio-feed";
+const truthRecord = "https://www.destinationcommandcenter.com/api/public/truth-feed?id=juneau-flight-deck";
 
 const agentPayload = {
   spec: "dcc-site-contract",
-  version: "1.0",
+  version: "1.1",
   dcc_id: "dcc:site:juneau-flight-deck",
-  schema_version: "2026-08-23",
+  schema_version: "2026-08-24",
   site: {
     id: "juneau-flight-deck",
     name: "Juneau Flight Deck",
@@ -14,6 +15,7 @@ const agentPayload = {
     description:
       "Juneau decision-support surface for helicopter, glacier, whale-watching, weather-backup, and cruise-timing choices before operator handoff.",
   },
+  status: { state: "active", last_verified: "2026-08-24" },
   authority: ["juneau_excursion_context", "published_decision_guides", "published_fallback_guidance"],
   service_area: {
     dcc_id: "dcc:destination:juneau",
@@ -28,6 +30,7 @@ const agentPayload = {
     agent: `${baseUrl}/agent.json`,
     llms: `${baseUrl}/llms.txt`,
     portfolio_graph: portfolioFeed,
+    truth_record: truthRecord,
   },
   booking_boundary: {
     rule:
@@ -38,6 +41,7 @@ const agentPayload = {
     parent_url: "https://www.destinationcommandcenter.com",
     relationship: "affiliated Juneau decision-support property",
     portfolio_feed: portfolioFeed,
+    truth_record: truthRecord,
   },
 };
 

@@ -3,6 +3,10 @@ const llmsText = `# 420 Friendly Airport Pickup
 420 Friendly Airport Pickup is an owned execution and transportation-discovery surface for private Colorado airport arrivals from Denver International Airport (DEN) and Colorado Springs Airport (COS).
 
 Canonical URL: https://420friendlyairportpickup.com
+DCC ID: dcc:site:420-friendly-airport-pickup
+DCC contract: dcc-site-contract v1.1
+Canonical DCC truth record: https://www.destinationcommandcenter.com/api/public/truth-feed?id=420-friendly-airport-pickup
+Last verified: 2026-08-24
 
 ## Public transportation scope
 - Denver International Airport (DEN) private pickup
@@ -24,8 +28,10 @@ Canonical URL: https://420friendlyairportpickup.com
 
 ## Machine-readable surfaces
 - agent: https://420friendlyairportpickup.com/agent.json
+- llms: https://420friendlyairportpickup.com/llms.txt
 - sitemap: https://420friendlyairportpickup.com/sitemap.xml
 - robots: https://420friendlyairportpickup.com/robots.txt
+- DCC truth: https://www.destinationcommandcenter.com/api/public/truth-feed?id=420-friendly-airport-pickup
 - DEN routes: https://420friendlyairportpickup.com/colorado
 - COS routes: https://420friendlyairportpickup.com/colorado-springs-airport
 
@@ -41,7 +47,7 @@ Canonical URL: https://420friendlyairportpickup.com
 - operational_function: carries DEN and COS airport pickup demand into direct transportation execution or the matching GoSno route/quote flow
 - decision_layer_role: execution surface
 - execution_tier: owned_execution
-- canonical_network_page: https://www.destinationcommandcenter.com/network
+- canonical_truth_record: https://www.destinationcommandcenter.com/api/public/truth-feed?id=420-friendly-airport-pickup
 - doctrine: decision_compression, one_recommended_move, execution_continuity, marketplace_inventory_is_fallback
 - continuity_contract: DCC resolves airport pickup intent; this site carries pickup context into direct transportation execution.
 
