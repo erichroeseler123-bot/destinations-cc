@@ -24,7 +24,7 @@ export async function GET() {
     spec: DCC_SITE_CONTRACT.spec,
     version: DCC_SITE_CONTRACT.version,
     dcc_id: "dcc:site:destination-command-center",
-    schema_version: "2026-08-23",
+    schema_version: "2026-08-24",
     product_scope: {
       url: `${SITE_URL}/scope.json`,
       contract: DCC_PRODUCT_SCOPE,
@@ -45,6 +45,7 @@ export async function GET() {
       "public_location_context",
       "portfolio_site_identity",
       "cross_property_relationships",
+      "canonical_public_portfolio_truth",
     ],
     coordinate_contract: {
       canonical_key: DCC_PRODUCT_SCOPE.primaryProduct.canonicalIdentity,
@@ -85,6 +86,13 @@ export async function GET() {
       source_rule:
         "Dynamic facts should be traceable to public or configured machine-readable sources and include source availability and freshness metadata. Missing modules mean unavailable mapped coverage, not proof that the real-world phenomenon is absent.",
     },
+    portfolio_truth: {
+      feed: DCC_SITE_CONTRACT.truthFeedUrl,
+      purpose:
+        "Canonical public site identity, role, declared service status, authority boundaries, provenance and safe public claims for DCC portfolio properties.",
+      inference_rule:
+        "Do not infer ownership, live availability, live price, guarantees, operating status or third-party integrations when the truth feed does not explicitly publish them.",
+    },
     caching: {
       response_shared_cache_seconds: 60,
       stale_while_revalidate_seconds: 240,
@@ -101,19 +109,24 @@ export async function GET() {
       developers: `${SITE_URL}/developers`,
       locations_sitemap: `${SITE_URL}/locations-sitemap.xml`,
       portfolio_feed: DCC_SITE_CONTRACT.registryUrl,
+      truth_feed: DCC_SITE_CONTRACT.truthFeedUrl,
     },
     machine: {
       portfolio_graph: DCC_SITE_CONTRACT.registryUrl,
+      portfolio_truth: DCC_SITE_CONTRACT.truthFeedUrl,
       coordinate_api_template: `${SITE_URL}/api/location/{lat}/{lng}`,
     },
     network: {
       role: "canonical_directory_and_relationship_graph",
       portfolio_feed: DCC_SITE_CONTRACT.registryUrl,
+      truth_feed: DCC_SITE_CONTRACT.truthFeedUrl,
     },
     usage_guidance: [
       "If exact coordinates are known, call /api/location/{lat}/{lng} directly.",
       "If a human-readable page is needed, use /location/{lat}/{lng}.",
       "Use /api/public/portfolio-feed for canonical public relationships between DCC portfolio properties.",
+      "Use /api/public/truth-feed for canonical public site role, status, provenance and authority boundaries.",
+      "Never infer ownership or live commercial facts from portfolio relationships or naming similarity.",
       "Read modules rather than assuming every data class applies everywhere.",
       "Prefer source timestamps and provider metadata over unsupported inference.",
       "Treat current observations as time-sensitive public-source aggregation, not permanent ground truth.",
