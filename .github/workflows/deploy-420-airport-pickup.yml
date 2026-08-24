@@ -40,11 +40,29 @@ jobs:
       - name: Validate deploy credential
         run: test -n "${{ secrets.VERCEL_TOKEN }}" || (echo "Missing VERCEL_TOKEN" && exit 1)
 
+      - name: Lock Vercel project to standalone app root
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --request PATCH \
+            --url "https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}?teamId=${VERCEL_ORG_ID}" \
+            --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            --header "Content-Type: application/json" \
+            --data '{"framework":"nextjs","rootDirectory":"apps/420-airport-pickup","sourceFilesOutsideRootDirectory":false}'
+
       - name: Pull production environment
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Build production
+      - name: Build standalone production app
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Deploy production
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy standalone production app
+        id: deploy
+        run: |
+          set -o pipefail
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee /tmp/vercel-deploy.txt
+          DEPLOYMENT_URL=$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' /tmp/vercel-deploy.txt | tail -n 1)
+          test -n "$DEPLOYMENT_URL"
+          echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Pin 420 production domain
+        run: vercel alias set "${{ steps.deploy.outputs.url }}" 420friendlyairportpickup.com --token=${{ secrets.VERCEL_TOKEN }}
