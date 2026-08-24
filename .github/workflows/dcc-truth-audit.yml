@@ -1,0 +1,55 @@
+name: DCC Truth Audit
+
+on:
+  pull_request:
+    paths:
+      - "lib/dcc/siteTruth.ts"
+      - "lib/dcc/portfolioRegistry.ts"
+      - "app/api/public/portfolio-feed/route.ts"
+      - "app/api/public/truth-feed/route.ts"
+      - "app/agent.json/route.ts"
+      - "apps/shuttleya/**"
+      - "tests/dcc/site-truth.test.ts"
+      - "scripts/dcc/audit-site-truth-live.ts"
+      - ".github/workflows/dcc-truth-audit.yml"
+  schedule:
+    - cron: "17 12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-truth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run DCC truth tests
+        run: pnpm test:dcc
+
+  live-truth:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: static-truth
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Audit live human and machine surfaces
+        run: pnpm exec tsx scripts/dcc/audit-site-truth-live.ts
