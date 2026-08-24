@@ -35,6 +35,18 @@ export default function HomePage() {
     <>
       <JsonLd data={jsonLd} />
       <SwampStorefrontPage page={swampStorefrontConfig} />
+      <section className="border-t border-amber-300/20 bg-stone-950 px-6 py-8 text-stone-100">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">Looking for the French Quarter orientation?</p>
+          <h2 className="mt-3 text-2xl font-black">The 30-minute orientation has its own home now.</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-300">
+            Welcome to the Swamp is the swamp-tour specialist. The separate French Quarter Orientation site handles the 30-minute Moonwalk orientation and its current reservation details.
+          </p>
+          <div className="mt-5">
+            <a className="rounded-xl border border-amber-300/40 px-4 py-3 text-sm font-bold" href="https://frenchquarterorientation.com/?src=welcome-to-the-swamp">Open French Quarter Orientation ↗</a>
+          </div>
+        </div>
+      </section>
       <section className="border-t border-stone-800 bg-stone-950 px-6 py-10 text-stone-100">
         <div className="mx-auto max-w-5xl">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">Planning the rest of New Orleans?</p>
