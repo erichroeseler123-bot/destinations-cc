@@ -64,6 +64,23 @@ jobs:
           test -n "$DEPLOYMENT_URL"
           echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
 
+      - name: Ensure Swamp domains belong to this project
+        run: |
+          set -euo pipefail
+          DOMAIN_LIST=$(curl --fail-with-body --silent --show-error \
+            --url "https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}&limit=100" \
+            --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}")
+          for DOMAIN in welcometotheswamp.com www.welcometotheswamp.com operator.welcometotheswamp.com; do
+            if ! printf '%s' "$DOMAIN_LIST" | DOMAIN="$DOMAIN" node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const j=JSON.parse(s);process.exit((j.domains||[]).some(d=>d.name===process.env.DOMAIN)?0:1)})"; then
+              curl --fail-with-body --silent --show-error \
+                --request POST \
+                --url "https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}" \
+                --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+                --header "Content-Type: application/json" \
+                --data "{\"name\":\"${DOMAIN}\"}"
+            fi
+          done
+
       - name: Pin Welcome To The Swamp domains
         run: |
           vercel alias set "${{ steps.deploy.outputs.url }}" welcometotheswamp.com --token=${{ secrets.VERCEL_TOKEN }}
