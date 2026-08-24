@@ -1,0 +1,84 @@
+name: Deploy Save On The Strip
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/saveonthestrip/**'
+      - '.github/workflows/deploy-saveonthestrip.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-saveonthestrip-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/saveonthestrip
+    env:
+      VERCEL_ORG_ID: team_A35bPkpQ920idHaAvOwWpsSX
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Validate deploy credential
+        run: test -n "${{ secrets.VERCEL_TOKEN }}" || (echo "Missing VERCEL_TOKEN" && exit 1)
+
+      - name: Resolve or create isolated Vercel project
+        run: |
+          set -euo pipefail
+          STATUS=$(curl --silent --show-error --output /tmp/save-project.json --write-out '%{http_code}' \
+            --url "https://api.vercel.com/v9/projects/saveonthestrip?teamId=${VERCEL_ORG_ID}" \
+            --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}")
+
+          if [ "$STATUS" = "200" ]; then
+            PROJECT_ID=$(node -e "const fs=require('fs'); console.log(JSON.parse(fs.readFileSync('/tmp/save-project.json','utf8')).id)")
+          else
+            CREATE_STATUS=$(curl --silent --show-error --output /tmp/save-project-create.json --write-out '%{http_code}' \
+              --request POST \
+              --url "https://api.vercel.com/v11/projects?teamId=${VERCEL_ORG_ID}" \
+              --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+              --header "Content-Type: application/json" \
+              --data '{"name":"saveonthestrip","framework":"nextjs","rootDirectory":"apps/saveonthestrip","previewDeploymentsDisabled":true}')
+            test "$CREATE_STATUS" = "200" || test "$CREATE_STATUS" = "201"
+            PROJECT_ID=$(node -e "const fs=require('fs'); console.log(JSON.parse(fs.readFileSync('/tmp/save-project-create.json','utf8')).id)")
+          fi
+
+          test -n "$PROJECT_ID"
+          echo "VERCEL_PROJECT_ID=$PROJECT_ID" >> "$GITHUB_ENV"
+          echo "Using project $PROJECT_ID"
+
+      - name: Pull production environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build standalone production app
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy standalone production app
+        id: deploy
+        run: |
+          set -o pipefail
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee /tmp/vercel-deploy.txt
+          DEPLOYMENT_URL=$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' /tmp/vercel-deploy.txt | tail -n 1)
+          test -n "$DEPLOYMENT_URL"
+          echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Pin Save On The Strip domains
+        run: |
+          vercel alias set "${{ steps.deploy.outputs.url }}" saveonthestrip.com --token=${{ secrets.VERCEL_TOKEN }}
+          vercel alias set "${{ steps.deploy.outputs.url }}" www.saveonthestrip.com --token=${{ secrets.VERCEL_TOKEN }}
