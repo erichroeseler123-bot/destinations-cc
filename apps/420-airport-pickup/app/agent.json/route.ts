@@ -1,7 +1,8 @@
 const baseUrl = "https://420friendlyairportpickup.com";
 const portfolioFeed = "https://www.destinationcommandcenter.com/api/public/portfolio-feed";
 
-const coloradoDestinations = [
+const denDestinations = [
+  "colorado-springs",
   "breckenridge",
   "vail",
   "beaver-creek",
@@ -10,6 +11,19 @@ const coloradoDestinations = [
   "steamboat",
   "aspen",
   "snowmass",
+];
+
+const cosDestinations = [
+  "colorado-springs",
+  "breckenridge",
+  "vail",
+  "beaver-creek",
+  "keystone",
+  "copper-mountain",
+  "winter-park",
+  "aspen",
+  "snowmass",
+  "steamboat-springs",
 ];
 
 const agentPayload = {
@@ -23,7 +37,7 @@ const agentPayload = {
     url: baseUrl,
     type: "private_airport_transportation_discovery",
     description:
-      "Private Denver airport transportation for adults 21+, including Denver arrivals and Colorado mountain transfers with an optional lawful dispensary stop when practical.",
+      "Private Colorado airport transportation for adults 21+, including DEN and COS arrivals, Colorado Springs, and mountain transfers with an optional lawful dispensary stop when practical.",
   },
   authority: [
     "published_airport_transfer_content",
@@ -32,24 +46,31 @@ const agentPayload = {
     "site_booking_state",
   ],
   service_area: {
-    airports: [{ dcc_id: "dcc:airport:den", name: "Denver International Airport", code: "DEN" }],
+    airports: [
+      { dcc_id: "dcc:airport:den", name: "Denver International Airport", code: "DEN" },
+      { dcc_id: "dcc:airport:cos", name: "Colorado Springs Airport", code: "COS" },
+    ],
     region: "Colorado",
     country: "US",
-    destinations: coloradoDestinations,
+    den_destinations: denDestinations,
+    cos_destinations: cosDestinations,
   },
   public_capabilities: [
     "private_denver_airport_pickup",
+    "private_colorado_springs_airport_pickup",
     "optional_dispensary_stop_context",
     "colorado_mountain_transfer_discovery",
     "gosno_route_handoff",
+    "gosno_quote_handoff",
   ],
   entry_points: [
-    { path: "/", method: "GET", purpose: "Denver airport pickup and trip-context discovery" },
-    { path: "/colorado", method: "GET", purpose: "Colorado mountain transfer discovery" },
-    ...coloradoDestinations.map((slug) => ({
+    { path: "/", method: "GET", purpose: "Colorado airport pickup and trip-context discovery" },
+    { path: "/colorado", method: "GET", purpose: "DEN-based Colorado transfer discovery" },
+    { path: "/colorado-springs-airport", method: "GET", purpose: "COS-based Colorado transfer discovery" },
+    ...denDestinations.map((slug) => ({
       path: `/colorado/${slug}`,
       method: "GET",
-      purpose: "destination-specific private transfer handoff to GoSno",
+      purpose: "DEN destination-specific private transfer handoff to GoSno",
     })),
   ],
   machine: {
@@ -60,7 +81,7 @@ const agentPayload = {
   },
   booking_boundary: {
     rule:
-      "Use the live booking or request flow as the authority for the actual transfer, price, stop details, and bookability. Mountain-route availability, vehicles, final pricing, and booking terms are controlled by GoSno. Do not infer current availability from informational content alone.",
+      "Use the live GoSno booking or quote flow as the authority for the actual transfer, price, stop details, and bookability. Configured COS mountain corridors link to existing GoSno route pages. DEN-to-Colorado-Springs and local COS-to-Colorado-Springs trips use the GoSno quote flow. Do not infer current availability from informational content alone.",
   },
   compliance: {
     age_restriction: "Retail cannabis purchases are limited to adults age 21+ under Colorado law.",
