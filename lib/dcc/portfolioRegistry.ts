@@ -2,7 +2,7 @@ import { DCC_SITE_TRUTH } from "@/lib/dcc/siteTruth";
 
 export const DCC_SITE_CONTRACT = {
   spec: "dcc-site-contract",
-  version: "1.1",
+  version: "1.0",
   schemaUrl: "https://www.destinationcommandcenter.com/dcc-site-contract.schema.json",
   registryUrl: "https://www.destinationcommandcenter.com/api/public/portfolio-feed",
   truthFeedUrl: "https://www.destinationcommandcenter.com/api/public/truth-feed",
