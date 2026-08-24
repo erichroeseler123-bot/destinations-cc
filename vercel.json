@@ -8,5 +8,75 @@
       "path": "/api/wno/daily-brief",
       "schedule": "5 * * * *"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/book/argo-shuttle",
+      "destination": "/",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "shuttleya.com" }]
+    },
+    {
+      "source": "/book/argo-shuttle",
+      "destination": "/",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "www.shuttleya.com" }]
+    },
+    {
+      "source": "/denver-to-argo-shuttle",
+      "destination": "/",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "shuttleya.com" }]
+    },
+    {
+      "source": "/denver-to-argo-shuttle",
+      "destination": "/",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "www.shuttleya.com" }]
+    },
+    {
+      "source": "/argo-shuttle-schedule",
+      "destination": "/",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "shuttleya.com" }]
+    },
+    {
+      "source": "/argo-shuttle-schedule",
+      "destination": "/",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "www.shuttleya.com" }]
+    },
+    {
+      "source": "/mighty-argo-cable-car-shuttle",
+      "destination": "/",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "shuttleya.com" }]
+    },
+    {
+      "source": "/mighty-argo-cable-car-shuttle",
+      "destination": "/",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "www.shuttleya.com" }]
+    }
+  ],
+  "rewrites": [
+    { "source": "/", "destination": "/shuttleya", "has": [{ "type": "host", "value": "shuttleya.com" }] },
+    { "source": "/", "destination": "/shuttleya", "has": [{ "type": "host", "value": "www.shuttleya.com" }] },
+    { "source": "/airport-shuttles", "destination": "/shuttleya/airport-shuttles", "has": [{ "type": "host", "value": "shuttleya.com" }] },
+    { "source": "/airport-shuttles", "destination": "/shuttleya/airport-shuttles", "has": [{ "type": "host", "value": "www.shuttleya.com" }] },
+    { "source": "/ski-shuttles", "destination": "/shuttleya/ski-shuttles", "has": [{ "type": "host", "value": "shuttleya.com" }] },
+    { "source": "/ski-shuttles", "destination": "/shuttleya/ski-shuttles", "has": [{ "type": "host", "value": "www.shuttleya.com" }] },
+    { "source": "/concert-transportation", "destination": "/shuttleya/concert-transportation", "has": [{ "type": "host", "value": "shuttleya.com" }] },
+    { "source": "/concert-transportation", "destination": "/shuttleya/concert-transportation", "has": [{ "type": "host", "value": "www.shuttleya.com" }] },
+    { "source": "/cruise-port-transportation", "destination": "/shuttleya/cruise-port-transportation", "has": [{ "type": "host", "value": "shuttleya.com" }] },
+    { "source": "/cruise-port-transportation", "destination": "/shuttleya/cruise-port-transportation", "has": [{ "type": "host", "value": "www.shuttleya.com" }] },
+    { "source": "/agent.json", "destination": "/shuttleya/agent.json", "has": [{ "type": "host", "value": "shuttleya.com" }] },
+    { "source": "/agent.json", "destination": "/shuttleya/agent.json", "has": [{ "type": "host", "value": "www.shuttleya.com" }] },
+    { "source": "/llms.txt", "destination": "/shuttleya/llms.txt", "has": [{ "type": "host", "value": "shuttleya.com" }] },
+    { "source": "/llms.txt", "destination": "/shuttleya/llms.txt", "has": [{ "type": "host", "value": "www.shuttleya.com" }] },
+    { "source": "/sitemap.xml", "destination": "/shuttleya/sitemap.xml", "has": [{ "type": "host", "value": "shuttleya.com" }] },
+    { "source": "/sitemap.xml", "destination": "/shuttleya/sitemap.xml", "has": [{ "type": "host", "value": "www.shuttleya.com" }] },
+    { "source": "/robots.txt", "destination": "/shuttleya/robots.txt", "has": [{ "type": "host", "value": "shuttleya.com" }] },
+    { "source": "/robots.txt", "destination": "/shuttleya/robots.txt", "has": [{ "type": "host", "value": "www.shuttleya.com" }] }
   ]
 }
