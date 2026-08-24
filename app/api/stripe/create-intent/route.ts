@@ -16,7 +16,21 @@ type CreateIntentBody = {
 
 export async function POST(req: NextRequest) {
   const body = (await req.json()) as CreateIntentBody;
-  const route = body.route || "argo";
+  const route = body.route || "";
+
+  if (route === "argo" || body.product?.startsWith("argo-")) {
+    return Response.json(
+      {
+        ok: false,
+        error: "The former Mighty Argo scheduled transportation service is retired and cannot be purchased through DCC.",
+      },
+      { status: 410 },
+    );
+  }
+
+  if (!route) {
+    return Response.json({ ok: false, error: "A supported checkout route is required." }, { status: 400 });
+  }
 
   if (!isCheckoutPaymentsEnabled(route)) {
     return Response.json(
@@ -40,7 +54,7 @@ export async function POST(req: NextRequest) {
         ok: false,
         error: "Stripe is not configured.",
       },
-      { status: 503 }
+      { status: 503 },
     );
   }
 
@@ -49,11 +63,11 @@ export async function POST(req: NextRequest) {
   params.set("currency", (body.currency || "usd").toLowerCase());
   params.set("automatic_payment_methods[enabled]", "true");
   params.set("metadata[route]", route);
-  params.set("metadata[product]", body.product || "argo-seat");
+  params.set("metadata[product]", body.product || "");
   params.set("metadata[qty]", String(Math.max(1, Number(body.qty || 1))));
   params.set("metadata[party_size]", String(Math.max(1, Number(body.partySize || body.qty || 1))));
   params.set("metadata[date]", body.date || "");
-  params.set("metadata[pickup]", body.pickup || "Denver");
+  params.set("metadata[pickup]", body.pickup || "");
   params.set("metadata[customer_email]", body.customerEmail || "");
   params.set("metadata[total_cents]", String(pricing.totalCents));
   params.set("metadata[amount_due_now_cents]", String(pricing.amountDueNowCents));
