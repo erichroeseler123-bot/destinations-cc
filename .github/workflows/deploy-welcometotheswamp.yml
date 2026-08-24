@@ -22,6 +22,7 @@ jobs:
     env:
       VERCEL_ORG_ID: team_A35bPkpQ920idHaAvOwWpsSX
       VERCEL_PROJECT_ID: prj_ZY5kkB2QvuIkvJWSGD9IZ0mvhBxx
+      VERCEL_TEAM_SLUG: erichroeseler123-bots-projects
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -46,24 +47,7 @@ jobs:
             --header "Content-Type: application/json" \
             --data '{"framework":"nextjs","rootDirectory":"apps/welcometotheswamp","sourceFilesOutsideRootDirectory":true,"commandForIgnoringBuildStep":"node ../../scripts/vercel-ignore-monorepo.mjs"}'
 
-      - name: Ensure Swamp domains belong to this project
-        run: |
-          set -euo pipefail
-          DOMAIN_LIST=$(curl --fail-with-body --silent --show-error \
-            --url "https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}&limit=100" \
-            --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}")
-          for DOMAIN in welcometotheswamp.com www.welcometotheswamp.com operator.welcometotheswamp.com; do
-            if ! printf '%s' "$DOMAIN_LIST" | DOMAIN="$DOMAIN" node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const j=JSON.parse(s);process.exit((j.domains||[]).some(d=>d.name===process.env.DOMAIN)?0:1)})"; then
-              curl --fail-with-body --silent --show-error \
-                --request POST \
-                --url "https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}" \
-                --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
-                --header "Content-Type: application/json" \
-                --data "{\"name\":\"${DOMAIN}\"}"
-            fi
-          done
-
-      - name: Create Vercel production deployment from Git
+      - name: Create Vercel production deployment from exact Git commit
         id: deploy
         run: |
           set -euo pipefail
@@ -100,8 +84,9 @@ jobs:
           done
           test "$STATE" = "READY"
 
-      - name: Pin Welcome To The Swamp domains
+      - name: Move and pin Swamp production domains
         run: |
-          vercel alias set "${{ steps.deploy.outputs.url }}" welcometotheswamp.com --token=${{ secrets.VERCEL_TOKEN }}
-          vercel alias set "${{ steps.deploy.outputs.url }}" www.welcometotheswamp.com --token=${{ secrets.VERCEL_TOKEN }}
-          vercel alias set "${{ steps.deploy.outputs.url }}" operator.welcometotheswamp.com --token=${{ secrets.VERCEL_TOKEN }}
+          for DOMAIN in welcometotheswamp.com www.welcometotheswamp.com operator.welcometotheswamp.com; do
+            vercel domains add "$DOMAIN" welcometotheswamp --force --token=${{ secrets.VERCEL_TOKEN }} --scope=${VERCEL_TEAM_SLUG}
+            vercel alias set "${{ steps.deploy.outputs.url }}" "$DOMAIN" --token=${{ secrets.VERCEL_TOKEN }} --scope=${VERCEL_TEAM_SLUG}
+          done
