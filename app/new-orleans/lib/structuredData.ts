@@ -1,7 +1,7 @@
 import { PRODUCT_IMAGES } from "../data/imageRegistry";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 
-export const WNO_ORIGIN = "https://www.welcometoneworleanstours.com";
+export const WNO_ORIGIN = "https://welcometoneworleanstours.com";
 export const WNO_SITE_NAME = "Welcome to New Orleans Tours";
 export const WNO_PHONE = "+15044849687";
 export const WNO_ORGANIZATION_ID = `${WNO_ORIGIN}/#organization`;
