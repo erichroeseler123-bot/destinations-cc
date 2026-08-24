@@ -1,5 +1,4 @@
 name: Deploy Juneau Flight Deck
-# Credential refresh trigger: 2026-08-24
 
 on:
   push:
@@ -20,12 +19,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    defaults:
-      run:
-        working-directory: apps/juneauflightdeck
     env:
       VERCEL_ORG_ID: team_A35bPkpQ920idHaAvOwWpsSX
       VERCEL_PROJECT_ID: prj_7nY8notLHK8Fh5TkSwli9qXUDhxA
+      VERCEL_TEAM_SLUG: erichroeseler123-bots-projects
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -50,39 +47,46 @@ jobs:
             --header "Content-Type: application/json" \
             --data '{"framework":"nextjs","rootDirectory":"apps/juneauflightdeck","sourceFilesOutsideRootDirectory":true,"commandForIgnoringBuildStep":"node ../../scripts/vercel-ignore-monorepo.mjs"}'
 
-      - name: Pull production environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Build production app
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Deploy production app
+      - name: Create Vercel production deployment from exact Git commit
         id: deploy
         run: |
-          set -o pipefail
-          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee /tmp/vercel-deploy.txt
-          DEPLOYMENT_URL=$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' /tmp/vercel-deploy.txt | tail -n 1)
-          test -n "$DEPLOYMENT_URL"
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --url "https://api.vercel.com/v13/deployments?forceNew=1&teamId=${VERCEL_ORG_ID}" \
+            --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            --header "Content-Type: application/json" \
+            --data "{\"name\":\"juneauflightdeck\",\"project\":\"${VERCEL_PROJECT_ID}\",\"target\":\"production\",\"gitSource\":{\"type\":\"github\",\"org\":\"erichroeseler123-bot\",\"repo\":\"destinations-cc\",\"ref\":\"${GITHUB_SHA}\"},\"projectSettings\":{\"framework\":\"nextjs\",\"rootDirectory\":\"apps/juneauflightdeck\",\"sourceFilesOutsideRootDirectory\":true}}" \
+            > /tmp/vercel-deployment.json
+          DEPLOYMENT_ID=$(node -e "const j=require('/tmp/vercel-deployment.json'); if(!j.id) process.exit(1); console.log(j.id)")
+          DEPLOYMENT_URL=$(node -e "const j=require('/tmp/vercel-deployment.json'); if(!j.url) process.exit(1); console.log('https://'+j.url)")
+          echo "id=$DEPLOYMENT_ID" >> "$GITHUB_OUTPUT"
           echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
+          echo "Created $DEPLOYMENT_ID at $DEPLOYMENT_URL"
 
-      - name: Ensure Juneau domains belong to this project
+      - name: Wait for Vercel production readiness
         run: |
           set -euo pipefail
-          DOMAIN_LIST=$(curl --fail-with-body --silent --show-error \
-            --url "https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}&limit=100" \
-            --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}")
-          for DOMAIN in juneauflightdeck.com www.juneauflightdeck.com; do
-            if ! printf '%s' "$DOMAIN_LIST" | DOMAIN="$DOMAIN" node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const j=JSON.parse(s);process.exit((j.domains||[]).some(d=>d.name===process.env.DOMAIN)?0:1)})"; then
-              curl --fail-with-body --silent --show-error \
-                --request POST \
-                --url "https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}" \
-                --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
-                --header "Content-Type: application/json" \
-                --data "{\"name\":\"${DOMAIN}\"}"
+          STATE=""
+          for ATTEMPT in $(seq 1 72); do
+            curl --fail-with-body --silent --show-error \
+              --url "https://api.vercel.com/v13/deployments/${{ steps.deploy.outputs.id }}?teamId=${VERCEL_ORG_ID}" \
+              --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+              > /tmp/vercel-state.json
+            STATE=$(node -e "const j=require('/tmp/vercel-state.json'); console.log(j.readyState || j.status || '')")
+            echo "Vercel state: $STATE"
+            if [ "$STATE" = "READY" ]; then break; fi
+            if [ "$STATE" = "ERROR" ] || [ "$STATE" = "CANCELED" ] || [ "$STATE" = "BLOCKED" ]; then
+              cat /tmp/vercel-state.json
+              exit 1
             fi
+            sleep 10
           done
+          test "$STATE" = "READY"
 
-      - name: Pin Juneau domains to production deployment
+      - name: Move and pin Juneau production domains
         run: |
-          vercel alias set "${{ steps.deploy.outputs.url }}" juneauflightdeck.com --token=${{ secrets.VERCEL_TOKEN }}
-          vercel alias set "${{ steps.deploy.outputs.url }}" www.juneauflightdeck.com --token=${{ secrets.VERCEL_TOKEN }}
+          for DOMAIN in juneauflightdeck.com www.juneauflightdeck.com; do
+            vercel domains add "$DOMAIN" juneauflightdeck --force --token=${{ secrets.VERCEL_TOKEN }} --scope=${VERCEL_TEAM_SLUG}
+            vercel alias set "${{ steps.deploy.outputs.url }}" "$DOMAIN" --token=${{ secrets.VERCEL_TOKEN }} --scope=${VERCEL_TEAM_SLUG}
+          done
