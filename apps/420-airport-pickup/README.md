@@ -60,9 +60,7 @@ Stable package slugs:
 - browser telemetry now mirrors into the durable corridor event warehouse when `NEXT_PUBLIC_DCC_EVENT_ENDPOINT` is configured
 - local QA matrix exists in `qa/corridors/420-airport-pickup.md`
 - low-confidence fallback and conflicting-signal QA cases are documented
-- production app alias: `https://420-airport-pickup-v2.vercel.app/`
-- live Red Rocks handoff URL:
-  `https://420-airport-pickup-v2.vercel.app/?dcc_handoff_id=live_420_001&source_page=%2Fred-rocks%2Fairport-arrival&decision_corridor=red-rocks-airport-arrival&decision_action=book_transfer&decision_option=event-transfer&decision_product=airport-red-rocks&decision_entry=act&decision_state=committed&requested_lane=private-transfer&resolved_lane=event-transfer&product_slug=airport-red-rocks&date=2026-08-14&port=denver`
+- production app alias: `https://420friendlyairportpickup.com/`
 
 This app now matches Tahoe on runtime continuity. It still needs production operator hardening if the goal is full commercial rollout.
 
@@ -99,6 +97,6 @@ This is the current act-layer proof that the shared decision engine can drive di
 
 ## Deployment Notes
 
-1. Link `apps/420-airport-pickup` as its own Vercel project root.
-2. Confirm the production domain before changing `SITE_URL` in sitemap or robots.
+1. `apps/420-airport-pickup` is deployed through `.github/workflows/deploy-420-airport-pickup.yml` to its dedicated Vercel project.
+2. Keep `420friendlyairportpickup.com` on that dedicated production deployment.
 3. Verify the homepage, sitemap, and robots outputs together after deploy.

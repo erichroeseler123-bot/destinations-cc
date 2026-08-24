@@ -21,4 +21,6 @@ Standalone Juneau helicopter-tour satellite for `juneauflightdeck.com`.
 
 ## Deployment verification
 
-Production should build from the `main` branch with Vercel Root Directory set to `apps/juneauflightdeck`. Use `/api/health` after each production deployment to confirm the standalone Juneau app is serving before assigning the public domain.
+Production builds from `main` with Vercel Root Directory set to `apps/juneauflightdeck`. The dedicated `deploy-juneauflightdeck.yml` workflow enforces that root and pins both `juneauflightdeck.com` and `www.juneauflightdeck.com` to the standalone production deployment.
+
+Use `/api/health` after each production deployment to confirm the standalone Juneau app is serving before changing public-domain routing. Unrelated `destinations-cc` commits are filtered by the Juneau ignored-build guard so they do not rebuild this property.
