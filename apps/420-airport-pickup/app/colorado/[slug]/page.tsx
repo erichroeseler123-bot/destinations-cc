@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!transfer) return {};
 
   const title = `420-Friendly DEN to ${transfer.destination} Private Transfer`;
-  const description = `Private Denver airport transportation to ${transfer.destination} for adults 21+, with an optional dispensary stop included at no additional transportation charge.`;
+  const description = `Private Denver airport transportation to ${transfer.destination} for adults 21+, with an optional lawful dispensary stop when practical for the route and timing.`;
 
   return {
     title,
@@ -38,6 +38,7 @@ export default async function ColoradoTransferPage({ params }: { params: Promise
   if (!transfer) notFound();
 
   const bookingHref = buildGoSnoHref(transfer);
+  const isQuote = transfer.handoffMode === "quote";
 
   return (
     <main className="stack">
@@ -46,13 +47,13 @@ export default async function ColoradoTransferPage({ params }: { params: Promise
           <p className="eyebrow">Private Colorado transfer · adults 21+</p>
           <h1>DEN to {transfer.destination}, with the arrival handled your way.</h1>
           <p className="arrival-line">
-            Private airport-to-resort transportation with an optional dispensary stop included at no additional transportation charge.
+            Private airport transportation with an optional lawful dispensary stop when practical for the route and timing.
           </p>
           <p className="hero-copy">
-            The transportation is fulfilled through GoSno. If you want the optional retail stop, it can be included when lawful and practical for the route and timing.
+            The transportation is fulfilled through GoSno. If you want the optional retail stop, it can be included when lawful and practical for the confirmed trip.
           </p>
           <div className="cta-row">
-            <a className="button" href={bookingHref}>Check {transfer.destination} transportation</a>
+            <a className="button" href={bookingHref}>{isQuote ? `Request ${transfer.destination} quote` : `Check ${transfer.destination} transportation`}</a>
             <Link className="button-secondary" href="/colorado">See all Colorado destinations</Link>
           </div>
         </div>
@@ -68,11 +69,11 @@ export default async function ColoradoTransferPage({ params }: { params: Promise
           </div>
           <div className="trust-item">
             <strong>Optional dispensary stop</strong>
-            <p className="muted">Included at no additional transportation charge when the stop is lawful and practical for the booked route and schedule.</p>
+            <p className="muted">Included when the stop is lawful and practical for the confirmed route and schedule.</p>
           </div>
           <div className="trust-item">
             <strong>GoSno fulfillment</strong>
-            <p className="muted">Availability, vehicle options, final pricing, and booking terms are handled by GoSno.</p>
+            <p className="muted">{isQuote ? "This corridor is confirmed by GoSno through a custom quote before booking." : "Availability, vehicle options, final pricing, and booking terms are handled by GoSno."}</p>
           </div>
         </div>
       </section>
@@ -90,11 +91,11 @@ export default async function ColoradoTransferPage({ params }: { params: Promise
       </section>
 
       <section className="panel">
-        <p className="eyebrow">Book the trip</p>
-        <h2>Ready for {transfer.destination}?</h2>
-        <p className="muted">Open the dedicated GoSno route page for current availability, vehicle options, and final pricing.</p>
+        <p className="eyebrow">Continue with GoSno</p>
+        <h2>{isQuote ? `Request a private transfer quote to ${transfer.destination}.` : `Ready for ${transfer.destination}?`}</h2>
+        <p className="muted">{isQuote ? "The quote form is prefilled with DEN and Colorado Springs so GoSno can confirm the actual route, vehicle, availability, and price." : "Open the dedicated GoSno route page for current availability, vehicle options, and final pricing."}</p>
         <div className="cta-row">
-          <a className="button" href={bookingHref}>Continue to GoSno</a>
+          <a className="button" href={bookingHref}>{isQuote ? "Request GoSno quote" : "Continue to GoSno"}</a>
         </div>
       </section>
     </main>
