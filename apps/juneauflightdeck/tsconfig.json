@@ -29,7 +29,7 @@
       "@/src/data/*": ["../../src/data/*"],
       "@/app/components/decision/*": ["../../app/components/decision/*"],
       "@/data/*": ["../../data/*"],
-      "@/lib/getyourguide/*": ["../../lib/getyourguide/*"],
+      "@/lib/getyourguide/*": ["./lib/getyourguide/*"],
       "@/lib/wta/*": ["../../lib/wta/*"],
       "@/lib/db/*": ["../../lib/db/*"],
       "@/lib/session/*": ["../../lib/session/*"],
