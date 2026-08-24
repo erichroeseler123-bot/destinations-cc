@@ -64,5 +64,20 @@ jobs:
           test -n "$DEPLOYMENT_URL"
           echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
 
+      - name: Ensure 420 domain belongs to this project
+        run: |
+          set -euo pipefail
+          DOMAIN_LIST=$(curl --fail-with-body --silent --show-error \
+            --url "https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}&limit=100" \
+            --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}")
+          if ! printf '%s' "$DOMAIN_LIST" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const j=JSON.parse(s);process.exit((j.domains||[]).some(d=>d.name==='420friendlyairportpickup.com')?0:1)})"; then
+            curl --fail-with-body --silent --show-error \
+              --request POST \
+              --url "https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}" \
+              --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+              --header "Content-Type: application/json" \
+              --data '{"name":"420friendlyairportpickup.com"}'
+          fi
+
       - name: Pin 420 production domain
         run: vercel alias set "${{ steps.deploy.outputs.url }}" 420friendlyairportpickup.com --token=${{ secrets.VERCEL_TOKEN }}
