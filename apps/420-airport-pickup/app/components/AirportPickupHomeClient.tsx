@@ -91,7 +91,7 @@ export default function AirportPickupHomeClient({
         <div className="trust-grid">
           <div className="trust-item">
             <strong>Denver International Airport (DEN)</strong>
-            <p className="muted">Denver arrivals plus private transfers to Colorado Springs and major mountain destinations.</p>
+            <p className="muted">Denver airport arrivals with private transfers to Denver, Colorado Springs, and major mountain destinations.</p>
             <p><Link href="/colorado">Browse DEN routes</Link></p>
           </div>
           <div className="trust-item">
