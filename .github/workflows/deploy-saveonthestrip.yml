@@ -108,9 +108,35 @@ jobs:
           done
           test "$STATE" = "READY"
 
-      - name: Move and pin Save On The Strip domains
+      - name: Move Save domains to isolated project
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error \
+            --url "https://api.vercel.com/v1/domains/saveonthestrip.com/project-domains?teamId=${VERCEL_ORG_ID}&limit=100" \
+            --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            > /tmp/save-domain-owners.json
+
+          for DOMAIN in saveonthestrip.com www.saveonthestrip.com; do
+            OWNER=$(DOMAIN="$DOMAIN" node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('/tmp/save-domain-owners.json','utf8'));const d=(j.projectDomains||[]).find(x=>x.name===process.env.DOMAIN);process.stdout.write(d?.projectId||'')")
+            if [ -n "$OWNER" ] && [ "$OWNER" != "$VERCEL_PROJECT_ID" ]; then
+              curl --fail-with-body --silent --show-error \
+                --request POST \
+                --url "https://api.vercel.com/v1/projects/${OWNER}/domains/${DOMAIN}/move?teamId=${VERCEL_ORG_ID}" \
+                --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+                --header "Content-Type: application/json" \
+                --data "{\"projectId\":\"${VERCEL_PROJECT_ID}\"}"
+            elif [ -z "$OWNER" ]; then
+              curl --fail-with-body --silent --show-error \
+                --request POST \
+                --url "https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/domains?teamId=${VERCEL_ORG_ID}" \
+                --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+                --header "Content-Type: application/json" \
+                --data "{\"name\":\"${DOMAIN}\"}"
+            fi
+          done
+
+      - name: Pin Save On The Strip domains
         run: |
           for DOMAIN in saveonthestrip.com www.saveonthestrip.com; do
-            vercel domains add "$DOMAIN" saveonthestrip --force --token=${{ secrets.VERCEL_TOKEN }} --scope=${VERCEL_TEAM_SLUG}
             vercel alias set "${{ steps.deploy.outputs.url }}" "$DOMAIN" --token=${{ secrets.VERCEL_TOKEN }} --scope=${VERCEL_TEAM_SLUG}
           done
