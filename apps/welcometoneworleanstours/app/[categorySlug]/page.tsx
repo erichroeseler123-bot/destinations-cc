@@ -5,6 +5,8 @@ import PrivacyPage from "@/app/new-orleans/privacy/page";
 import TermsPage from "@/app/new-orleans/terms/page";
 import AccessibilityPage from "@/app/new-orleans/accessibility/page";
 
+const WNO_METADATA_BASE = new URL("https://welcometoneworleanstours.com");
+
 const specialPages = {
   privacy: PrivacyPage,
   terms: TermsPage,
@@ -29,10 +31,17 @@ const specialMetadata: Record<string, Metadata> = {
   },
 };
 
+function onWnoHost(metadata: Metadata): Metadata {
+  return {
+    ...metadata,
+    metadataBase: WNO_METADATA_BASE,
+  };
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ categorySlug: string }> }): Promise<Metadata> {
   const resolved = await params;
-  if (specialMetadata[resolved.categorySlug]) return specialMetadata[resolved.categorySlug];
-  return generateCategoryMetadata({ params: Promise.resolve({ categorySlug: resolved.categorySlug }) });
+  if (specialMetadata[resolved.categorySlug]) return onWnoHost(specialMetadata[resolved.categorySlug]);
+  return onWnoHost(await generateCategoryMetadata({ params: Promise.resolve({ categorySlug: resolved.categorySlug }) }));
 }
 
 export default async function WnoTopLevelPage({ params }: { params: Promise<{ categorySlug: string }> }) {
