@@ -1,3 +1,4 @@
+import Link from "next/link";
 import AirportPickupHomeClient from "./components/AirportPickupHomeClient";
 import { readHandoffContext } from "@/lib/handoff/readContext";
 import { resolveInitialState } from "@/lib/handoff/resolveInitialState";
@@ -47,10 +48,27 @@ export default async function HomePage({
   };
 
   return (
-    <AirportPickupHomeClient
-      initialUiState={initialUiState}
-      initialHandoffContext={handoffContext}
-      initialResolutionDebug={initialResolutionDebug}
-    />
+    <>
+      <AirportPickupHomeClient
+        initialUiState={initialUiState}
+        initialHandoffContext={handoffContext}
+        initialResolutionDebug={initialResolutionDebug}
+      />
+      <aside className="panel" aria-labelledby="denver-420-guides">
+        <p className="eyebrow">Denver 420-friendly airport pickup</p>
+        <h2 id="denver-420-guides">Need the DEN-specific 420-friendly route?</h2>
+        <p className="muted">
+          Use the dedicated Denver pages when the optional lawful retail stop is part of the airport-arrival plan. They explain the 21+ route, private-pickup boundary, and booking lane without mixing it into every Colorado transfer.
+        </p>
+        <div className="cta-row">
+          <Link className="button-secondary" href="/denver-airport-420-friendly-pickup">
+            420 Friendly Airport Pickup Denver
+          </Link>
+          <Link className="button-secondary" href="/420-friendly-airport-transport-denver">
+            420 Friendly Airport Transport Denver
+          </Link>
+        </div>
+      </aside>
+    </>
   );
 }
