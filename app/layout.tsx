@@ -44,48 +44,110 @@ const GA_MEASUREMENT_ID = "G-S6JEJVWVDT";
 
 const JFD_HOSTS = new Set(["juneauflightdeck.com", "www.juneauflightdeck.com"]);
 const DELLS_HOSTS = new Set(["welcometothedells.com", "www.welcometothedells.com"]);
+const SAVE_ON_THE_STRIP_HOSTS = new Set(["saveonthestrip.com", "www.saveonthestrip.com"]);
 const JFD_PUBLIC_PATHS = new Set(["/", "/helicopter", "/juneau/helicopter"]);
 const DELLS_PUBLIC_PATHS = new Set(["/"]);
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_IDENTITY.siteUrl),
-  applicationName: SITE_IDENTITY.name,
-  title: SITE_IDENTITY.homepageTitle,
-  description: SITE_IDENTITY.canonicalDescription,
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
-    },
-  },
-  openGraph: {
-    siteName: SITE_IDENTITY.name,
-    type: "website",
-    locale: "en_US",
-    url: SITE_IDENTITY.siteUrl,
-    title: SITE_IDENTITY.homepageTitle,
-    description: SITE_IDENTITY.homepageDescription,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: SITE_IDENTITY.homepageTitle,
-    description: SITE_IDENTITY.homepageDescription,
-  },
-  category: "travel",
-};
-
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const requestHeaders = await headers();
-  const host = (
+function getRequestHost(requestHeaders: Awaited<ReturnType<typeof headers>>) {
+  return (
     requestHeaders.get("x-forwarded-host") ||
     requestHeaders.get("host") ||
     ""
   ).split(":")[0].toLowerCase();
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const requestHeaders = await headers();
+  const host = getRequestHost(requestHeaders);
+
+  if (JFD_HOSTS.has(host)) {
+    return {
+      metadataBase: new URL("https://juneauflightdeck.com"),
+      applicationName: "Juneau Flight Deck",
+      title: "Juneau Flight Deck | Glacier Flights for Cruise Visitors",
+      description:
+        "A focused Juneau flightseeing storefront for cruise visitors comparing helicopter glacier flights, landing-style experiences, ship timing, and weather backup planning.",
+      robots: { index: true, follow: true },
+      openGraph: {
+        siteName: "Juneau Flight Deck",
+        type: "website",
+        url: "https://juneauflightdeck.com/",
+        title: "Juneau Flight Deck | Glacier Flights for Cruise Visitors",
+        description:
+          "Compare Juneau glacier-flight formats, ship timing, and weather-backup planning before choosing a provider.",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: "Juneau Flight Deck | Glacier Flights for Cruise Visitors",
+        description:
+          "Compare Juneau glacier-flight formats, ship timing, and weather-backup planning before choosing a provider.",
+      },
+      category: "travel",
+    };
+  }
+
+  if (SAVE_ON_THE_STRIP_HOSTS.has(host)) {
+    return {
+      metadataBase: new URL("https://saveonthestrip.com"),
+      applicationName: "Save On The Strip",
+      title: "Save On The Strip | Las Vegas Deals, Shows & Things To Do",
+      description:
+        "A faster way to decide what is actually worth your money in Las Vegas: tonight, shows, tours, free wins, hotel moves, and practical Strip planning.",
+      robots: { index: true, follow: true },
+      openGraph: {
+        siteName: "Save On The Strip",
+        type: "website",
+        url: "https://saveonthestrip.com/",
+        title: "Save On The Strip",
+        description:
+          "Do not waste money in Vegas. Find the nights, outings, and free wins that are actually worth it.",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: "Save On The Strip",
+        description:
+          "Las Vegas decision help for shows, tours, free things, hotels, tonight, and practical Strip planning.",
+      },
+      category: "travel",
+    };
+  }
+
+  return {
+    metadataBase: new URL(SITE_IDENTITY.siteUrl),
+    applicationName: SITE_IDENTITY.name,
+    title: SITE_IDENTITY.homepageTitle,
+    description: SITE_IDENTITY.canonicalDescription,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
+    },
+    openGraph: {
+      siteName: SITE_IDENTITY.name,
+      type: "website",
+      locale: "en_US",
+      url: SITE_IDENTITY.siteUrl,
+      title: SITE_IDENTITY.homepageTitle,
+      description: SITE_IDENTITY.homepageDescription,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: SITE_IDENTITY.homepageTitle,
+      description: SITE_IDENTITY.homepageDescription,
+    },
+    category: "travel",
+  };
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const requestHeaders = await headers();
+  const host = getRequestHost(requestHeaders);
   const brandShell = requestHeaders.get("x-dcc-brand-shell") || "";
   const isWtonotShell = brandShell === "wtonot";
   const isLfseShell = brandShell === "lfse";
