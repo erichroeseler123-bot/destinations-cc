@@ -1,27 +1,33 @@
 const llmsText = `# 420 Friendly Airport Pickup
 
-420 Friendly Airport Pickup is an owned execution and transportation-discovery surface for private Denver airport arrivals and Colorado mountain transfers.
+420 Friendly Airport Pickup is an owned execution and transportation-discovery surface for private Colorado airport arrivals from Denver International Airport (DEN) and Colorado Springs Airport (COS).
 
 Canonical URL: https://420friendlyairportpickup.com
 
 ## Public transportation scope
 - Denver International Airport (DEN) private pickup
+- Colorado Springs Airport (COS) private pickup
 - Denver metro arrival transportation
+- Colorado Springs-area arrival transportation by GoSno quote
 - Optional lawful dispensary-stop context for adults 21+ when practical
-- Colorado mountain transfer discovery for Breckenridge, Vail, Beaver Creek, Winter Park, Copper Mountain, Steamboat Springs, Aspen, and Snowmass
-- Mountain-route handoff to GoSno for current availability, vehicle options, final pricing, and booking terms
+- DEN transfer discovery for Colorado Springs, Breckenridge, Vail, Beaver Creek, Winter Park, Copper Mountain, Steamboat Springs, Aspen, and Snowmass
+- COS transfer discovery for Colorado Springs, Breckenridge, Vail, Beaver Creek, Keystone, Copper Mountain, Winter Park, Aspen, Snowmass, and Steamboat Springs
+- Configured COS mountain corridors hand off to existing GoSno route pages
+- DEN-to-Colorado-Springs and local COS-to-Colorado-Springs requests hand off to GoSno's prefilled quote flow
 
 ## Important operating boundary
 - The transportation provider does not sell cannabis.
 - Passengers make any retail purchase independently from the retailer.
 - Cannabis consumption is not permitted in the vehicle.
 - Route, road, weather, timing, retailer availability, and applicable law can affect whether an optional stop is practical.
+- The live GoSno booking or quote flow controls actual availability, vehicle options, price, and booking terms.
 
 ## Machine-readable surfaces
 - agent: https://420friendlyairportpickup.com/agent.json
 - sitemap: https://420friendlyairportpickup.com/sitemap.xml
 - robots: https://420friendlyairportpickup.com/robots.txt
-- Colorado routes: https://420friendlyairportpickup.com/colorado
+- DEN routes: https://420friendlyairportpickup.com/colorado
+- COS routes: https://420friendlyairportpickup.com/colorado-springs-airport
 
 ## DCC network affiliation
 - parent_network: Destination Command Center
@@ -32,7 +38,7 @@ Canonical URL: https://420friendlyairportpickup.com
 - related_operator: GoSno
 - related_operator_url: https://gosno.co
 - dcc_relationship: receives resolved direct airport pickup intent
-- operational_function: executes Denver airport pickup requests and routes mountain-transfer demand into the matching GoSno service
+- operational_function: carries DEN and COS airport pickup demand into direct transportation execution or the matching GoSno route/quote flow
 - decision_layer_role: execution surface
 - execution_tier: owned_execution
 - canonical_network_page: https://www.destinationcommandcenter.com/network
