@@ -1,0 +1,378 @@
+/* WNO current color refresh — presentation only. Structure and behavior intentionally unchanged. */
+
+:root {
+  --wno-now-bone: #f8f7f4;
+  --wno-now-paper: #efede8;
+  --wno-now-ink: #171a1f;
+  --wno-now-navy: #111827;
+  --wno-now-slate: #667085;
+  --wno-now-cobalt: #3157f6;
+  --wno-now-cobalt-soft: #dfe6ff;
+  --wno-now-coral: #ff6b5d;
+  --wno-now-line: rgba(23, 26, 31, 0.13);
+}
+
+html,
+body,
+main {
+  background: var(--wno-now-bone) !important;
+  color: var(--wno-now-ink) !important;
+}
+
+/* Header — crisp, editorial, contemporary. */
+header[class*="marketHeader"] {
+  background: rgba(17, 24, 39, 0.98) !important;
+  color: var(--wno-now-bone) !important;
+  border-bottom: 2px solid var(--wno-now-cobalt) !important;
+  box-shadow: 0 8px 28px rgba(17, 24, 39, 0.18) !important;
+}
+
+header[class*="marketHeader"] [class*="marketBrandWelcome"] {
+  color: var(--wno-now-coral) !important;
+}
+
+header[class*="marketHeader"] [class*="marketBrandCity"] {
+  color: #ffffff !important;
+}
+
+header[class*="marketHeader"] [class*="marketBrandTours"] {
+  color: #b9c7ff !important;
+}
+
+header[class*="marketHeader"] [class*="marketDesktopNav"] a,
+header[class*="marketHeader"] [class*="marketPhoneLabel"] {
+  color: rgba(248, 247, 244, 0.78) !important;
+}
+
+header[class*="marketHeader"] [class*="marketDesktopNav"] a::after {
+  background: var(--wno-now-cobalt) !important;
+}
+
+header[class*="marketHeader"] [class*="marketPhoneNumber"],
+header[class*="marketHeader"] a[class*="md:hidden"] span:last-child {
+  color: var(--wno-now-coral) !important;
+}
+
+header[class*="marketHeader"] [class*="marketMenuButton"] div {
+  background: #ffffff !important;
+}
+
+/* Homepage hero — same composition, cleaner modern palette. */
+[class*="cinematic-home"][class*="wrap"] {
+  background: var(--wno-now-bone) !important;
+  color: var(--wno-now-ink) !important;
+}
+
+section[class*="cinematic-home"][class*="hero"] {
+  background: var(--wno-now-navy) !important;
+}
+
+[class*="cinematic-home"][class*="heroBg"] {
+  filter: saturate(1.04) contrast(1.03) brightness(0.91) !important;
+}
+
+[class*="cinematic-home"][class*="heroBg"]::before {
+  background:
+    linear-gradient(90deg, rgba(17, 24, 39, 0.96) 0%, rgba(17, 24, 39, 0.87) 25%, rgba(17, 24, 39, 0.48) 49%, rgba(17, 24, 39, 0.05) 73%),
+    linear-gradient(180deg, rgba(17, 24, 39, 0.03), rgba(17, 24, 39, 0.18) 62%, rgba(17, 24, 39, 0.92) 100%) !important;
+}
+
+[class*="cinematic-home"][class*="heroBg"]::after {
+  background:
+    radial-gradient(circle at 75% 24%, rgba(49, 87, 246, 0.2), transparent 18%),
+    radial-gradient(circle at 88% 55%, rgba(255, 107, 93, 0.16), transparent 21%) !important;
+}
+
+[class*="cinematic-home"][class*="heroShade"] {
+  background: linear-gradient(180deg, transparent 54%, rgba(17, 24, 39, 0.78) 100%) !important;
+}
+
+section[class*="cinematic-home"][class*="hero"]::before {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  box-shadow: 0 0 0 42px rgba(255, 255, 255, 0.025), 0 0 0 84px rgba(49, 87, 246, 0.035) !important;
+}
+
+section[class*="cinematic-home"][class*="hero"]::after {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.38) !important;
+  background: rgba(17, 24, 39, 0.38) !important;
+}
+
+[class*="cinematic-home"][class*="copyBlock"]::before {
+  color: #dfe6ff !important;
+  border-color: rgba(223, 230, 255, 0.34) !important;
+  background: rgba(49, 87, 246, 0.13) !important;
+}
+
+[class*="cinematic-home"][class*="eyebrow"] {
+  color: #c8d4ff !important;
+}
+
+[class*="cinematic-home"][class*="headline"] {
+  color: #ffffff !important;
+}
+
+[class*="cinematic-home"][class*="script"] {
+  color: var(--wno-now-coral) !important;
+}
+
+[class*="cinematic-home"][class*="divider"] {
+  color: var(--wno-now-cobalt) !important;
+}
+
+[class*="cinematic-home"][class*="divider"] span {
+  background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(49,87,246,.85)) !important;
+}
+
+[class*="cinematic-home"][class*="lede"] {
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+
+/* Hero action panels: cobalt + bone + ink. */
+[class*="cinematic-home"][class*="action"] {
+  background: var(--wno-now-bone) !important;
+  color: var(--wno-now-ink) !important;
+  border-color: rgba(255,255,255,.2) !important;
+}
+
+[class*="cinematic-home"][class*="goldAction"] {
+  background: var(--wno-now-cobalt) !important;
+  color: #ffffff !important;
+  border-color: #3157f6 !important;
+  box-shadow: 0 20px 45px rgba(49, 87, 246, 0.27) !important;
+}
+
+[class*="cinematic-home"][class*="goldAction"]:hover {
+  background: #2448df !important;
+}
+
+[class*="cinematic-home"][class*="action"]:nth-child(2) {
+  background: #ffffff !important;
+}
+
+[class*="cinematic-home"][class*="action"]:nth-child(3) {
+  background: var(--wno-now-ink) !important;
+  color: #ffffff !important;
+}
+
+[class*="cinematic-home"][class*="actionIcon"] {
+  background: rgba(49, 87, 246, 0.09) !important;
+  color: var(--wno-now-cobalt) !important;
+}
+
+[class*="cinematic-home"][class*="goldAction"] [class*="actionIcon"] {
+  background: rgba(255,255,255,.14) !important;
+  color: #ffffff !important;
+}
+
+[class*="cinematic-home"][class*="action"]:nth-child(3) [class*="actionIcon"] {
+  background: rgba(255,255,255,.1) !important;
+  color: var(--wno-now-coral) !important;
+}
+
+[class*="cinematic-home"][class*="action"] small {
+  color: #6b7280 !important;
+}
+
+[class*="cinematic-home"][class*="goldAction"] small,
+[class*="cinematic-home"][class*="action"]:nth-child(3) small {
+  color: rgba(255,255,255,.7) !important;
+}
+
+[class*="cinematic-home"][class*="action"] b {
+  color: var(--wno-now-cobalt) !important;
+}
+
+[class*="cinematic-home"][class*="goldAction"] b,
+[class*="cinematic-home"][class*="action"]:nth-child(3) b {
+  color: var(--wno-now-coral) !important;
+}
+
+/* Discovery area — warm neutral base, vivid accents used sparingly. */
+section[class*="cinematic-home"][class*="discovery"] {
+  background: linear-gradient(180deg, #fbfaf8 0%, #efede8 100%) !important;
+}
+
+section[class*="cinematic-home"][class*="discovery"]::before {
+  background:
+    radial-gradient(circle at 8% 5%, rgba(49, 87, 246, 0.07), transparent 20%),
+    radial-gradient(circle at 96% 18%, rgba(255, 107, 93, 0.06), transparent 25%) !important;
+}
+
+[class*="cinematic-home"][class*="discoveryTitle"] > span {
+  background: linear-gradient(90deg, transparent, rgba(49,87,246,.44), rgba(255,107,93,.48)) !important;
+}
+
+[class*="cinematic-home"][class*="discoveryTitle"] h2 {
+  color: var(--wno-now-ink) !important;
+}
+
+[class*="cinematic-home"][class*="discoveryTitle"] p {
+  color: var(--wno-now-slate) !important;
+}
+
+[class*="cinematic-home"][class*="categoryCard"] {
+  background: var(--wno-now-ink) !important;
+  color: #ffffff !important;
+  box-shadow: 0 16px 34px rgba(17, 24, 39, 0.13) !important;
+}
+
+[class*="cinematic-home"][class*="categoryCard"]:hover {
+  box-shadow: 0 28px 56px rgba(17, 24, 39, 0.22) !important;
+}
+
+[class*="cinematic-home"][class*="categoryImage"]::after {
+  background:
+    linear-gradient(180deg, rgba(17,24,39,.03) 20%, rgba(17,24,39,.15) 50%, rgba(17,24,39,.9) 100%),
+    linear-gradient(90deg, rgba(17,24,39,.08), transparent 55%) !important;
+}
+
+[class*="cinematic-home"][class*="categoryIcon"] {
+  color: #ffffff !important;
+  border-color: rgba(255,255,255,.58) !important;
+  background: rgba(49, 87, 246, 0.76) !important;
+}
+
+[class*="cinematic-home"][class*="categoryCard"]:nth-child(even) [class*="categoryIcon"] {
+  background: rgba(255, 107, 93, 0.82) !important;
+}
+
+[class*="cinematic-home"][class*="categoryText"] h3 {
+  color: #ffffff !important;
+}
+
+[class*="cinematic-home"][class*="categoryText"] p {
+  color: rgba(255,255,255,.78) !important;
+}
+
+[class*="cinematic-home"][class*="trustStrip"] {
+  background: var(--wno-now-ink) !important;
+  color: #ffffff !important;
+}
+
+[class*="cinematic-home"][class*="trustStrip"] div {
+  color: rgba(255,255,255,.82) !important;
+}
+
+[class*="cinematic-home"][class*="trustStrip"] span {
+  color: var(--wno-now-coral) !important;
+}
+
+/* Internal pages — neutral cards with cobalt actions. */
+main:not(:has([class*="cinematic-home"])) {
+  background:
+    radial-gradient(circle at 94% 4%, rgba(49,87,246,.045), transparent 23%),
+    radial-gradient(circle at 5% 17%, rgba(255,107,93,.035), transparent 22%),
+    linear-gradient(180deg, #fbfaf8 0%, #efede8 100%) !important;
+}
+
+main article,
+main details,
+main aside,
+main [class*="productCard"],
+main [class*="comparison"],
+main [class*="chooser"],
+main [class*="recommendation"] {
+  background: #ffffff !important;
+  color: var(--wno-now-ink) !important;
+  border-color: var(--wno-now-line) !important;
+  box-shadow: 0 12px 30px rgba(17, 24, 39, 0.07) !important;
+}
+
+main h1,
+main h2,
+main h3 {
+  color: var(--wno-now-ink) !important;
+}
+
+main [class*="eyebrow"],
+main [class*="Eyebrow"],
+main [class*="productCardOperator"],
+main [class*="productCardCue"] {
+  color: var(--wno-now-cobalt) !important;
+}
+
+main [class*="productCardCta"] {
+  background: var(--wno-now-cobalt) !important;
+  border-color: var(--wno-now-cobalt) !important;
+  color: #ffffff !important;
+}
+
+main [class*="productCardCta"]:hover {
+  background: var(--wno-now-ink) !important;
+  border-color: var(--wno-now-ink) !important;
+}
+
+/* Planning shortcuts below the homepage. */
+aside[aria-label="Planning help"] {
+  background: var(--wno-now-paper) !important;
+  color: var(--wno-now-ink) !important;
+  border-color: var(--wno-now-line) !important;
+}
+
+aside[aria-label="Planning help"] p:first-child {
+  color: var(--wno-now-cobalt) !important;
+}
+
+aside[aria-label="Planning help"] p,
+aside[aria-label="Planning help"] a {
+  color: var(--wno-now-ink) !important;
+}
+
+aside[aria-label="Planning help"] a {
+  background: #ffffff !important;
+  border-color: rgba(23,26,31,.12) !important;
+}
+
+aside[aria-label="Planning help"] a span {
+  color: var(--wno-now-coral) !important;
+}
+
+/* Footer — soft charcoal, no faux-luxury green/gold. */
+footer[class*="footer"] {
+  background:
+    radial-gradient(circle at 15% 0%, rgba(49,87,246,.13), transparent 30%),
+    linear-gradient(135deg, #171a1f 0%, #111827 100%) !important;
+  border-top: 0 !important;
+  color: #ffffff !important;
+}
+
+footer[class*="footer"] [class*="brandKicker"],
+footer[class*="footer"] [class*="label"] {
+  color: #aebeff !important;
+}
+
+footer[class*="footer"] h4,
+footer[class*="footer"] strong {
+  color: #ffffff !important;
+}
+
+footer[class*="footer"] p,
+footer[class*="footer"] a,
+footer[class*="footer"] small,
+footer[class*="footer"] [class*="copyright"] {
+  color: rgba(255,255,255,.68) !important;
+}
+
+footer[class*="footer"] a:hover,
+footer[class*="footer"] a:focus-visible {
+  color: var(--wno-now-coral) !important;
+}
+
+/* Mobile drawer follows the same navy/cobalt system. */
+div[class*="drawerPanel"] {
+  background: var(--wno-now-navy) !important;
+  color: #ffffff !important;
+  border-left: 2px solid var(--wno-now-cobalt) !important;
+}
+
+div[class*="drawerPanel"] nav a,
+div[class*="drawerPanel"] button,
+div[class*="drawerPanel"] span {
+  color: #ffffff !important;
+}
+
+div[class*="drawerPanel"] nav a:hover,
+div[class*="drawerPanel"] nav a:focus-visible {
+  color: var(--wno-now-coral) !important;
+}
