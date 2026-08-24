@@ -2,6 +2,16 @@
 // Dedicated Vercel app root; shared monorepo modules are intentionally allowed.
 const nextConfig = {
   reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.juneauflightdeck.com" }],
+        destination: "https://juneauflightdeck.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
