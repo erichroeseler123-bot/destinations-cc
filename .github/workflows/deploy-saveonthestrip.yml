@@ -1,4 +1,5 @@
 name: Deploy Save On The Strip
+# Credential refresh trigger: 2026-08-24
 
 on:
   push:
