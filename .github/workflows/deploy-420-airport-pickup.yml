@@ -1,5 +1,4 @@
 name: Deploy 420 Airport Pickup
-# Credential refresh trigger: 2026-08-24
 
 on:
   push:
@@ -20,9 +19,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    defaults:
-      run:
-        working-directory: apps/420-airport-pickup
     env:
       VERCEL_ORG_ID: team_A35bPkpQ920idHaAvOwWpsSX
       VERCEL_PROJECT_ID: prj_V8SeDn6xhYXvMSUestu5yT2hdbP0
@@ -50,26 +46,6 @@ jobs:
             --header "Content-Type: application/json" \
             --data '{"framework":"nextjs","rootDirectory":"apps/420-airport-pickup","sourceFilesOutsideRootDirectory":true,"commandForIgnoringBuildStep":"node ../../scripts/vercel-ignore-monorepo.mjs"}'
 
-      - name: Pull production environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Connect project to Git repository
-        run: |
-          vercel git connect --yes --token=${{ secrets.VERCEL_TOKEN }} || \
-            echo "Git connection already exists or could not be changed; continuing authenticated deploy."
-
-      - name: Build production app
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Deploy production app
-        id: deploy
-        run: |
-          set -o pipefail
-          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee /tmp/vercel-deploy.txt
-          DEPLOYMENT_URL=$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' /tmp/vercel-deploy.txt | tail -n 1)
-          test -n "$DEPLOYMENT_URL"
-          echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
-
       - name: Ensure 420 domain belongs to this project
         run: |
           set -euo pipefail
@@ -84,6 +60,43 @@ jobs:
               --header "Content-Type: application/json" \
               --data '{"name":"420friendlyairportpickup.com"}'
           fi
+
+      - name: Create Vercel production deployment from Git
+        id: deploy
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --url "https://api.vercel.com/v13/deployments?forceNew=1&teamId=${VERCEL_ORG_ID}" \
+            --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            --header "Content-Type: application/json" \
+            --data "{\"name\":\"420-airport-pickup\",\"project\":\"${VERCEL_PROJECT_ID}\",\"target\":\"production\",\"gitSource\":{\"type\":\"github\",\"org\":\"erichroeseler123-bot\",\"repo\":\"destinations-cc\",\"ref\":\"main\"},\"projectSettings\":{\"framework\":\"nextjs\",\"rootDirectory\":\"apps/420-airport-pickup\",\"sourceFilesOutsideRootDirectory\":true}}" \
+            > /tmp/vercel-deployment.json
+          DEPLOYMENT_ID=$(node -e "const j=require('/tmp/vercel-deployment.json'); if(!j.id) process.exit(1); console.log(j.id)")
+          DEPLOYMENT_URL=$(node -e "const j=require('/tmp/vercel-deployment.json'); if(!j.url) process.exit(1); console.log('https://'+j.url)")
+          echo "id=$DEPLOYMENT_ID" >> "$GITHUB_OUTPUT"
+          echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
+          echo "Created $DEPLOYMENT_ID at $DEPLOYMENT_URL"
+
+      - name: Wait for Vercel production readiness
+        run: |
+          set -euo pipefail
+          STATE=""
+          for ATTEMPT in $(seq 1 72); do
+            curl --fail-with-body --silent --show-error \
+              --url "https://api.vercel.com/v13/deployments/${{ steps.deploy.outputs.id }}?teamId=${VERCEL_ORG_ID}" \
+              --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+              > /tmp/vercel-state.json
+            STATE=$(node -e "const j=require('/tmp/vercel-state.json'); console.log(j.readyState || j.status || '')")
+            echo "Vercel state: $STATE"
+            if [ "$STATE" = "READY" ]; then break; fi
+            if [ "$STATE" = "ERROR" ] || [ "$STATE" = "CANCELED" ] || [ "$STATE" = "BLOCKED" ]; then
+              cat /tmp/vercel-state.json
+              exit 1
+            fi
+            sleep 10
+          done
+          test "$STATE" = "READY"
 
       - name: Pin 420 production domain
         run: vercel alias set "${{ steps.deploy.outputs.url }}" 420friendlyairportpickup.com --token=${{ secrets.VERCEL_TOKEN }}
