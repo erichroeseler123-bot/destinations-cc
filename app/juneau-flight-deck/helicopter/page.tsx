@@ -4,6 +4,7 @@ const DCC = "https://www.destinationcommandcenter.com";
 const GO = "/go/juneau/helicopter-tours";
 
 export const metadata: Metadata = {
+  applicationName: "Juneau Flight Deck",
   title: "Compare Juneau Helicopter Glacier Flights | Juneau Flight Deck",
   description:
     "Compare Juneau helicopter flight formats after deciding flightseeing fits your cruise day: scenic icefield flights, glacier-landing emphasis, and premium combination formats.",
@@ -12,7 +13,14 @@ export const metadata: Metadata = {
     title: "Compare Juneau Helicopter Glacier Flights | Juneau Flight Deck",
     description: "Choose the flight format first, then continue to current provider availability and terms.",
     url: "https://juneauflightdeck.com/helicopter",
+    siteName: "Juneau Flight Deck",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Compare Juneau Helicopter Glacier Flights | Juneau Flight Deck",
+    description:
+      "Compare scenic icefield flights, glacier-landing formats, and premium Juneau helicopter experiences around your ship day.",
   },
 };
 
