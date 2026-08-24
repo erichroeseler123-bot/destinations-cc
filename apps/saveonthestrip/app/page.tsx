@@ -39,6 +39,12 @@ export default async function HomePage() {
         .slice(0, 6)
     : [];
 
+  const heroStats = [
+    { count: shows.length, label: "shows tracked" },
+    { count: tourFeed.tours.length, label: "tours found" },
+    { count: liveItems.length, label: "live picks" },
+  ].filter((item) => item.count > 0);
+
   const decisionLanes = [
     {
       label: "Tonight",
@@ -89,11 +95,15 @@ export default async function HomePage() {
             <Link href="/shows" className="hero-primary-card hero-primary-blue"><span>Find a show</span></Link>
             <Link href="/free-things" className="hero-primary-card hero-primary-green"><span>Find a free win</span></Link>
           </div>
-          <div className="hero-stat-row">
-            <div className="hero-stat-chip"><strong>{shows.length}</strong><span>shows tracked</span></div>
-            <div className="hero-stat-chip"><strong>{tourFeed.tours.length}</strong><span>tours found</span></div>
-            <div className="hero-stat-chip"><strong>{liveItems.length}</strong><span>live picks</span></div>
-          </div>
+          {heroStats.length ? (
+            <div className="hero-stat-row">
+              {heroStats.map((stat) => (
+                <div className="hero-stat-chip" key={stat.label}>
+                  <strong>{stat.count}</strong><span>{stat.label}</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
 
