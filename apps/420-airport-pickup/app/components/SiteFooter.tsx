@@ -6,9 +6,11 @@ export default function SiteFooter() {
       <div className="site-shell site-footer-inner">
         <div className="site-footer-copy">
           <p className="eyebrow">420 Friendly Airport Pickup</p>
-          <p>Book the Denver arrival route that fits without reopening the whole transport market.</p>
+          <p>Private Colorado airport transportation from DEN and COS, with optional lawful 21+ retail-stop planning when practical.</p>
         </div>
         <nav className="site-footer-links" aria-label="Footer">
+          <Link href="/colorado">DEN destinations</Link>
+          <Link href="/colorado-springs-airport">COS destinations</Link>
           <Link href="/about">About</Link>
           <Link href="/faq">FAQ</Link>
           <Link href="/privacy-policy">Privacy policy</Link>
