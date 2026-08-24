@@ -1,0 +1,71 @@
+name: Deploy Welcome To The Swamp
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/welcometotheswamp/**'
+      - '.github/workflows/deploy-welcometotheswamp.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-welcometotheswamp-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/welcometotheswamp
+    env:
+      VERCEL_ORG_ID: team_A35bPkpQ920idHaAvOwWpsSX
+      VERCEL_PROJECT_ID: prj_ZY5kkB2QvuIkvJWSGD9IZ0mvhBxx
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Validate deploy credential
+        run: test -n "${{ secrets.VERCEL_TOKEN }}" || (echo "Missing VERCEL_TOKEN" && exit 1)
+
+      - name: Lock Vercel project to standalone app root
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --request PATCH \
+            --url "https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}?teamId=${VERCEL_ORG_ID}" \
+            --header "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            --header "Content-Type: application/json" \
+            --data '{"framework":"nextjs","rootDirectory":"apps/welcometotheswamp","sourceFilesOutsideRootDirectory":false}'
+
+      - name: Pull production environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build standalone production app
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy standalone production app
+        id: deploy
+        run: |
+          set -o pipefail
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tee /tmp/vercel-deploy.txt
+          DEPLOYMENT_URL=$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' /tmp/vercel-deploy.txt | tail -n 1)
+          test -n "$DEPLOYMENT_URL"
+          echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Pin Welcome To The Swamp domains
+        run: |
+          vercel alias set "${{ steps.deploy.outputs.url }}" welcometotheswamp.com --token=${{ secrets.VERCEL_TOKEN }}
+          vercel alias set "${{ steps.deploy.outputs.url }}" www.welcometotheswamp.com --token=${{ secrets.VERCEL_TOKEN }}
+          vercel alias set "${{ steps.deploy.outputs.url }}" operator.welcometotheswamp.com --token=${{ secrets.VERCEL_TOKEN }}
