@@ -1,11 +1,12 @@
 const baseUrl = "https://welcometoneworleanstours.com";
 const portfolioFeed = "https://www.destinationcommandcenter.com/api/public/portfolio-feed";
+const truthRecord = "https://www.destinationcommandcenter.com/api/public/truth-feed?id=wno-tours";
 
 const agentPayload = {
   spec: "dcc-site-contract",
-  version: "1.0",
+  version: "1.1",
   dcc_id: "dcc:site:wno-tours",
-  schema_version: "2026-08-23",
+  schema_version: "2026-08-24",
   site: {
     id: "wno-tours",
     name: "Welcome to New Orleans Tours",
@@ -55,7 +56,10 @@ const agentPayload = {
   ],
   machine: {
     agent: `${baseUrl}/agent.json`,
+    llms: `${baseUrl}/llms.txt`,
+    sitemap: `${baseUrl}/sitemap.xml`,
     portfolio_graph: portfolioFeed,
+    truth_record: truthRecord,
   },
   booking_boundary: {
     site_role: "independent_planning_and_booking_assistance",
@@ -79,6 +83,7 @@ const agentPayload = {
     relationship: "affiliated planning site",
     category: "New Orleans tour planning and recommendation",
     portfolio_feed: portfolioFeed,
+    truth_record: truthRecord,
   },
 };
 
