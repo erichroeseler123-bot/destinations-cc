@@ -19,6 +19,7 @@ jobs:
     env:
       VERCEL_ORG_ID: team_A35bPkpQ920idHaAvOwWpsSX
       VERCEL_PROJECT_ID: prj_u5YgZvGuXLTdhbTehOTOGbkBUCpX
+      SOURCE_VERCEL_PROJECT_ID: prj_pqvFn6jtJbbVgv1UsAsg3KtMl26s
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -36,6 +37,55 @@ jobs:
 
       - name: Validate deploy credential
         run: test -n "${{ secrets.VERCEL_TOKEN }}" || (echo "Missing VERCEL_TOKEN" && exit 1)
+
+      - name: Migrate missing production environment contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .vercel
+          vercel env pull .vercel/source-production.env \
+            --environment=production \
+            --project="$SOURCE_VERCEL_PROJECT_ID" \
+            --token=${{ secrets.VERCEL_TOKEN }}
+
+          set -a
+          source .vercel/source-production.env
+          set +a
+
+          required=(
+            DATABASE_URL
+            INTERNAL_API_SECRET
+            RESEND_API_KEY
+            DCC_SHUTTLEYA_WEBHOOK_TOKEN
+            DCC_PARR_WEBHOOK_TOKEN
+            SQUARE_LOCATION_ID
+            SQUARE_ACCESS_TOKEN
+            MAIL_FROM_DCC
+            EARTHOS_APPROVAL_TO
+          )
+
+          for key in "${required[@]}"; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "Source DCC production environment is missing required key: $key"
+              exit 1
+            fi
+          done
+
+          target_list="$(NO_COLOR=1 vercel env ls production \
+            --project="$VERCEL_PROJECT_ID" \
+            --token=${{ secrets.VERCEL_TOKEN }} 2>&1)"
+
+          for key in "${required[@]}"; do
+            if printf '%s\n' "$target_list" | grep -Eq "(^|[[:space:]])${key}([[:space:]]|$)"; then
+              echo "$key already present in dcc-v2-monolith; leaving it unchanged."
+            else
+              printf '%s' "${!key}" | vercel env add "$key" production \
+                --sensitive \
+                --project="$VERCEL_PROJECT_ID" \
+                --token=${{ secrets.VERCEL_TOKEN }} >/dev/null
+              echo "Added missing production key: $key"
+            fi
+          done
 
       - name: Pull production environment
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
