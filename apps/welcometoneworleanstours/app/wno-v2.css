@@ -1,0 +1,210 @@
+/* WNO visual redesign v2 — standalone app only. Presentation overrides only. */
+
+:root {
+  --wno-v2-cream: #fff8ec;
+  --wno-v2-paper: #f3e6d2;
+  --wno-v2-green: #173c2b;
+  --wno-v2-green-2: #25563d;
+  --wno-v2-burgundy: #8b2f4d;
+  --wno-v2-purple: #5b365f;
+  --wno-v2-gold: #d6a33d;
+  --wno-v2-ink: #1d261f;
+}
+
+/* A strong destination-brand header instead of a neutral utility bar. */
+header[class*="marketHeader"] {
+  background: var(--wno-v2-green) !important;
+  color: var(--wno-v2-cream) !important;
+  border-bottom: 3px solid var(--wno-v2-gold) !important;
+  box-shadow: 0 10px 30px rgba(10, 31, 21, 0.22) !important;
+}
+
+header[class*="marketHeader"] [class*="marketHeaderInner"] {
+  min-height: 92px !important;
+  padding-top: 0.6rem !important;
+  padding-bottom: 0.6rem !important;
+}
+
+header[class*="marketHeader"] [class*="marketBrand"] {
+  color: var(--wno-v2-cream) !important;
+  transform: scale(1.06);
+  transform-origin: left center;
+}
+
+header[class*="marketHeader"] [class*="marketBrandWelcome"] {
+  color: #f2c85f !important;
+  font-size: 1.65rem !important;
+}
+
+header[class*="marketHeader"] [class*="marketBrandCity"] {
+  color: #fff8ec !important;
+  font-size: 1.9rem !important;
+  letter-spacing: 0.025em !important;
+}
+
+header[class*="marketHeader"] [class*="marketBrandTours"] {
+  color: #f2c85f !important;
+}
+
+header[class*="marketHeader"] [class*="marketDesktopNav"] {
+  gap: clamp(1rem, 2vw, 2.25rem) !important;
+}
+
+header[class*="marketHeader"] [class*="marketDesktopNav"] a {
+  position: relative;
+  color: rgba(255, 248, 236, 0.9) !important;
+  font-size: 0.7rem !important;
+}
+
+header[class*="marketHeader"] [class*="marketDesktopNav"] a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: -9px;
+  height: 2px;
+  background: var(--wno-v2-gold);
+  transition: right 180ms ease;
+}
+
+header[class*="marketHeader"] [class*="marketDesktopNav"] a:hover::after,
+header[class*="marketHeader"] [class*="marketDesktopNav"] a:focus-visible::after {
+  right: 0;
+}
+
+header[class*="marketHeader"] [class*="marketPhoneLabel"] {
+  color: rgba(255, 248, 236, 0.68) !important;
+}
+
+header[class*="marketHeader"] [class*="marketPhoneNumber"] {
+  color: #f2c85f !important;
+  font-size: 1.12rem !important;
+}
+
+header[class*="marketHeader"] [class*="marketMenuButton"] div {
+  background: #f2c85f !important;
+}
+
+header[class*="marketHeader"] a[class*="md:hidden"],
+header[class*="marketHeader"] a[class*="md:hidden"] span {
+  color: var(--wno-v2-cream) !important;
+}
+
+header[class*="marketHeader"] a[class*="md:hidden"] span:last-child {
+  color: #f2c85f !important;
+}
+
+/* Internal pages: more contrast, less generic white-card repetition. */
+main:not(:has([class*="cinematic-home"])) {
+  background:
+    radial-gradient(circle at 92% 3%, rgba(91,54,95,.055), transparent 25%),
+    radial-gradient(circle at 4% 16%, rgba(139,47,77,.05), transparent 24%),
+    linear-gradient(180deg, #fff9ef 0%, #f4e7d5 100%) !important;
+}
+
+main article,
+main details,
+main aside,
+main [class*="productCard"],
+main [class*="comparison"],
+main [class*="chooser"],
+main [class*="recommendation"] {
+  border: 1px solid rgba(23,60,43,.14) !important;
+  border-radius: 22px !important;
+  box-shadow: 0 13px 32px rgba(63,43,24,.09) !important;
+}
+
+main article:hover,
+main [class*="productCard"]:hover {
+  border-color: rgba(139,47,77,.34) !important;
+  box-shadow: 0 22px 44px rgba(63,43,24,.14) !important;
+}
+
+main h1,
+main h2,
+main h3 {
+  letter-spacing: -0.015em !important;
+}
+
+main h1 {
+  color: var(--wno-v2-green) !important;
+}
+
+main [class*="eyebrow"],
+main [class*="Eyebrow"],
+main [class*="productCardOperator"],
+main [class*="productCardCue"] {
+  color: var(--wno-v2-burgundy) !important;
+}
+
+main [class*="productCardCta"] {
+  min-height: 46px !important;
+  border-radius: 999px !important;
+  background: var(--wno-v2-burgundy) !important;
+  border-color: var(--wno-v2-burgundy) !important;
+  color: #fff8ec !important;
+}
+
+main [class*="productCardCta"]:hover {
+  background: var(--wno-v2-green) !important;
+  border-color: var(--wno-v2-green) !important;
+}
+
+main button:not([class*="menu"]),
+main a[class*="border"] {
+  border-radius: 999px;
+}
+
+main section {
+  position: relative;
+}
+
+main section:nth-of-type(even):not([class*="hero"]) {
+  background-color: rgba(255,255,255,.16);
+}
+
+/* Footer acts as the final saturated color block. */
+footer[class*="footer"] {
+  background:
+    radial-gradient(circle at 15% 0%, rgba(214,163,61,.13), transparent 28%),
+    linear-gradient(135deg, #153725 0%, #0f2e20 100%) !important;
+  border-top: 4px solid var(--wno-v2-gold) !important;
+}
+
+footer[class*="footer"] [class*="brandKicker"],
+footer[class*="footer"] [class*="label"] {
+  color: #f0c966 !important;
+}
+
+footer[class*="footer"] [class*="brandTitle"] {
+  font-size: 24px !important;
+}
+
+/* Mobile drawer looks like the same brand, not a separate component. */
+div[class*="drawerPanel"] {
+  background: var(--wno-v2-green) !important;
+  color: var(--wno-v2-cream) !important;
+  border-left: 3px solid var(--wno-v2-gold) !important;
+}
+
+div[class*="drawerPanel"] nav a,
+div[class*="drawerPanel"] button,
+div[class*="drawerPanel"] span {
+  color: var(--wno-v2-cream) !important;
+}
+
+div[class*="drawerPanel"] nav a:hover,
+div[class*="drawerPanel"] nav a:focus-visible {
+  color: #f2c85f !important;
+}
+
+@media (max-width: 767px) {
+  header[class*="marketHeader"] [class*="marketHeaderInner"] {
+    min-height: 72px !important;
+  }
+
+  header[class*="marketHeader"] [class*="marketBrand"] {
+    transform: scale(.88);
+    transform-origin: left center;
+  }
+}
