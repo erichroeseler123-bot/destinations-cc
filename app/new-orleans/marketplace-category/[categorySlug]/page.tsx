@@ -45,7 +45,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
   const heroImage = products.find((product) => product.imageUrl)?.imageUrl;
 
   return (
-    <div className="min-h-screen bg-[#0b0a09] text-[#f8f1e5]">
+    <div data-wno-category={resolvedParams.categorySlug} className="min-h-screen bg-[#0b0a09] text-[#f8f1e5]">
       <WnoBreadcrumbs
         items={[
           { name: "Home", path: "/" },
