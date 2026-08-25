@@ -1,5 +1,5 @@
 import Link from "next/link";
-import styles from "./cinematic-home.module.css";
+import styles from "./cinematic-home-gold.module.css";
 
 const categories = [
   { href: "/city-tours", title: "City Tours", copy: "Explore the Big Easy", image: "/images/travel-markets/new-orleans/french-quarter-street.jpg", icon: "⚜" },
@@ -14,7 +14,7 @@ const categories = [
 
 export default function CinematicHomepageTop() {
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} data-wno-home-theme="black-gold-v2">
       <section className={styles.hero}>
         <div className={styles.heroBg} aria-hidden="true" />
         <div className={styles.heroShade} aria-hidden="true" />
