@@ -17,14 +17,77 @@ const CARD_EYEBROWS = [
   "Also consider",
 ];
 
+type CategoryLayout = "scenic" | "nightlife" | "adventure" | "editorial" | "standard";
+
+function categoryLayout(categorySlug: string): CategoryLayout {
+  if (categorySlug === "riverboat-cruises") return "scenic";
+  if (categorySlug === "jazz-music-tours") return "nightlife";
+  if (["swamp-tours", "airboat-tours", "covered-swamp-boat-tours"].includes(categorySlug)) return "adventure";
+  if (categorySlug === "garden-district-tours") return "editorial";
+  return "standard";
+}
+
+function categoryCopy(layout: CategoryLayout) {
+  if (layout === "scenic") {
+    return {
+      optionsEyebrow: "On the Mississippi",
+      optionsTitle: "Choose your river moment",
+      optionsIntro: "Start with the mood you want on the water: daytime sightseeing, an evening with jazz, brunch, or a shorter scenic cruise.",
+      cta: "See river cruises",
+    };
+  }
+  if (layout === "nightlife") {
+    return {
+      optionsEyebrow: "Tonight in New Orleans",
+      optionsTitle: "Pick the kind of night you want",
+      optionsIntro: "Treat this like an evening edit, not a catalog. Choose by energy, timing, meal format, and how much of the night you want the experience to own.",
+      cta: "See jazz experiences",
+    };
+  }
+  if (layout === "adventure") {
+    return {
+      optionsEyebrow: "Out beyond the city",
+      optionsTitle: "Choose your way into the swamp",
+      optionsIntro: "The biggest difference is the ride itself: faster and more exposed, calmer and covered, or a broader combination day. Pick the experience before you pick the departure time.",
+      cta: "See swamp options",
+    };
+  }
+  if (layout === "editorial") {
+    return {
+      optionsEyebrow: "Architecture · streets · stories",
+      optionsTitle: "Choose the pace and perspective",
+      optionsIntro: "Decide whether you want the Garden District as the main story or as part of a broader city overview, then compare the amount of walking and neighborhood depth.",
+      cta: "See Garden District tours",
+    };
+  }
+  return {
+    optionsEyebrow: "Curated options",
+    optionsTitle: "Where we’d start",
+    optionsIntro: "You do not need to sort an operator catalog. Start with the experiences that fit this kind of day, then check the live booking option when you are ready.",
+    cta: "See our picks",
+  };
+}
+
 function cardEyebrow(categorySlug: string, index: number) {
   if (categorySlug === "riverboat-cruises") {
     return [
-      "Our pick for a classic New Orleans night",
-      "Our pick for an easy daytime river plan",
-      "Our pick for a festive Sunday",
-      "Our pick for a shorter scenic cruise",
+      "A classic New Orleans night",
+      "An easy daytime river plan",
+      "A festive Sunday",
+      "A shorter scenic cruise",
     ][index] || CARD_EYEBROWS[index % CARD_EYEBROWS.length];
+  }
+
+  if (categorySlug === "jazz-music-tours") {
+    return ["After dark", "Daytime rhythm", "Sunday session"][index] || CARD_EYEBROWS[index % CARD_EYEBROWS.length];
+  }
+
+  if (["swamp-tours", "airboat-tours", "covered-swamp-boat-tours"].includes(categorySlug)) {
+    return ["Most adventurous", "Easygoing choice", "Worth comparing", "Make a day of it"][index] || CARD_EYEBROWS[index % CARD_EYEBROWS.length];
+  }
+
+  if (categorySlug === "garden-district-tours") {
+    return ["Neighborhood first", "Broader city context"][index] || CARD_EYEBROWS[index % CARD_EYEBROWS.length];
   }
 
   return CARD_EYEBROWS[index % CARD_EYEBROWS.length];
@@ -43,9 +106,108 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
   const products = record.liveProductIds.map((id) => getProductById(id)).filter(isLiveProduct);
   const heroImage = products.find((product) => product.imageUrl)?.imageUrl;
+  const layout = categoryLayout(resolvedParams.categorySlug);
+  const copy = categoryCopy(layout);
+
+  const openingSection = record.openingAnswer ? (
+    <section data-wno-section="opening" className="mx-auto max-w-3xl text-center">
+      <p className="font-serif text-xl leading-9 text-[#eadfca] md:text-2xl">{record.openingAnswer}</p>
+    </section>
+  ) : null;
+
+  const decisionSection = (
+    <ExperienceDecisionBlock
+      slugs={products.map((product) => product.slug)}
+      categoryLabel={record.heroTitle}
+    />
+  );
+
+  const fitSection = (record.whoItIsFor || record.decisionFactors.length > 0) ? (
+    <section data-wno-section="fit" className="mt-12 grid gap-5 md:grid-cols-2">
+      {record.whoItIsFor && (
+        <div className="border border-[#342b1d] bg-[#12110e] p-6 shadow-[0_18px_55px_rgba(0,0,0,.16)] md:p-8">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#c9a86a]">Concierge note</p>
+          <h2 className="mt-2 font-serif text-2xl text-[#f3dfb3]">Who this tends to fit</h2>
+          <p className="mt-4 leading-7 text-[#b7ad9e]">{record.whoItIsFor}</p>
+        </div>
+      )}
+      {record.decisionFactors.length > 0 && (
+        <div className="border border-[#342b1d] bg-[#12110e] p-6 shadow-[0_18px_55px_rgba(0,0,0,.16)] md:p-8">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#c9a86a]">What to think about</p>
+          <ul className="mt-4 space-y-3 text-sm leading-6 text-[#b7ad9e]">
+            {record.decisionFactors.slice(0, 5).map((factor, index) => (
+              <li key={index} className="flex gap-3">
+                <span className="text-[#c9a86a]">•</span>
+                <span>{factor}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  ) : null;
+
+  const optionsSection = (
+    <section id="options" data-wno-section="options" className="mt-16 scroll-mt-24">
+      <div data-wno-options-heading className="text-center">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#c9a86a]">{copy.optionsEyebrow}</p>
+        <h2 className="mt-2 font-serif text-3xl text-[#f3dfb3] md:text-4xl">{copy.optionsTitle}</h2>
+        <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[#9d9587]">{copy.optionsIntro}</p>
+      </div>
+
+      {products.length > 0 ? (
+        <div data-wno-options-grid className="mt-9 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {products.map((product, index) => (
+            <VisualEditorialCard
+              key={product.id}
+              title={product.title}
+              slug={product.slug}
+              description={product.description}
+              imageUrl={product.imageUrl}
+              eyebrow={cardEyebrow(resolvedParams.categorySlug, index)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="mx-auto mt-8 max-w-2xl border border-[#342b1d] bg-[#12110e] p-7 text-center">
+          <p className="text-[#aaa193]">
+            We do not have a confirmed bookable option in this category yet. Use the chooser and we’ll point you toward the closest current fit.
+          </p>
+          <Link href="/help-me-choose" className="mt-5 inline-block text-xs font-bold uppercase tracking-[0.15em] text-[#c9a86a]">
+            Help Me Choose →
+          </Link>
+        </div>
+      )}
+    </section>
+  );
+
+  const planningSection = (record.planningConsiderations || record.transportationNotes) ? (
+    <section data-wno-section="planning" className="mx-auto mt-14 max-w-3xl border-y border-[#342b1d] py-7 text-sm leading-7 text-[#9d9587]">
+      {record.planningConsiderations && <p>{record.planningConsiderations}</p>}
+      {record.transportationNotes && <p className="mt-3">{record.transportationNotes}</p>}
+    </section>
+  ) : null;
+
+  const faqSection = record.faqs && record.faqs.length > 0 ? (
+    <section data-wno-section="faq" className="mx-auto mt-14 max-w-3xl">
+      <h2 className="text-center font-serif text-3xl text-[#f3dfb3]">A few useful answers</h2>
+      <div className="mt-6 space-y-3">
+        {record.faqs.map((faq, index) => (
+          <details key={index} className="border border-[#342b1d] bg-[#12110e] p-5">
+            <summary className="cursor-pointer font-semibold text-[#eadfca]">{faq.question}</summary>
+            <p className="mt-3 text-sm leading-6 text-[#aaa193]">{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  ) : null;
 
   return (
-    <div data-wno-category={resolvedParams.categorySlug} className="min-h-screen bg-[#0b0a09] text-[#f8f1e5]">
+    <div
+      data-wno-category={resolvedParams.categorySlug}
+      data-wno-layout={layout}
+      className="min-h-screen bg-[#0b0a09] text-[#f8f1e5]"
+    >
       <WnoBreadcrumbs
         items={[
           { name: "Home", path: "/" },
@@ -81,7 +243,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
               href="#options"
               className="inline-flex min-h-12 items-center bg-[#c9a86a] px-6 py-3 text-xs font-bold uppercase tracking-[0.15em] text-[#17130c] transition hover:bg-[#f3dfb3]"
             >
-              See our picks
+              {copy.cta}
             </a>
             <Link
               href="/help-me-choose"
@@ -94,96 +256,24 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
       </header>
 
       <main className="mx-auto w-[min(1180px,calc(100%-2rem))] py-12 md:py-16">
-        {record.openingAnswer && (
-          <section className="mx-auto max-w-3xl text-center">
-            <p className="font-serif text-xl leading-9 text-[#eadfca] md:text-2xl">{record.openingAnswer}</p>
-          </section>
-        )}
+        {layout === "adventure" && decisionSection}
+        {openingSection}
 
-        <ExperienceDecisionBlock
-          slugs={products.map((product) => product.slug)}
-          categoryLabel={record.heroTitle}
-        />
+        {(layout === "scenic" || layout === "nightlife") && optionsSection}
 
-        {(record.whoItIsFor || record.decisionFactors.length > 0) && (
-          <section className="mt-12 grid gap-5 md:grid-cols-2">
-            {record.whoItIsFor && (
-              <div className="border border-[#342b1d] bg-[#12110e] p-6 shadow-[0_18px_55px_rgba(0,0,0,.16)] md:p-8">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#c9a86a]">Concierge note</p>
-                <h2 className="mt-2 font-serif text-2xl text-[#f3dfb3]">Who this tends to fit</h2>
-                <p className="mt-4 leading-7 text-[#b7ad9e]">{record.whoItIsFor}</p>
-              </div>
-            )}
-            {record.decisionFactors.length > 0 && (
-              <div className="border border-[#342b1d] bg-[#12110e] p-6 shadow-[0_18px_55px_rgba(0,0,0,.16)] md:p-8">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#c9a86a]">What to think about</p>
-                <ul className="mt-4 space-y-3 text-sm leading-6 text-[#b7ad9e]">
-                  {record.decisionFactors.slice(0, 5).map((factor, index) => (
-                    <li key={index} className="flex gap-3">
-                      <span className="text-[#c9a86a]">•</span>
-                      <span>{factor}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </section>
-        )}
+        {(layout === "adventure" || layout === "editorial" || layout === "nightlife") && fitSection}
 
-        <section id="options" className="mt-16 scroll-mt-24">
-          <div className="text-center">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#c9a86a]">Curated options</p>
-            <h2 className="mt-2 font-serif text-3xl text-[#f3dfb3] md:text-4xl">Where we’d start</h2>
-            <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[#9d9587]">
-              You do not need to sort an operator catalog. Start with the experiences that fit this kind of day, then check the live booking option when you are ready.
-            </p>
-          </div>
+        {layout === "standard" && decisionSection}
+        {layout === "scenic" && decisionSection}
+        {layout === "editorial" && decisionSection}
+        {layout === "nightlife" && decisionSection}
 
-          {products.length > 0 ? (
-            <div className="mt-9 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {products.map((product, index) => (
-                <VisualEditorialCard
-                  key={product.id}
-                  title={product.title}
-                  slug={product.slug}
-                  description={product.description}
-                  imageUrl={product.imageUrl}
-                  eyebrow={cardEyebrow(resolvedParams.categorySlug, index)}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="mx-auto mt-8 max-w-2xl border border-[#342b1d] bg-[#12110e] p-7 text-center">
-              <p className="text-[#aaa193]">
-                We do not have a confirmed bookable option in this category yet. Use the chooser and we’ll point you toward the closest current fit.
-              </p>
-              <Link href="/help-me-choose" className="mt-5 inline-block text-xs font-bold uppercase tracking-[0.15em] text-[#c9a86a]">
-                Help Me Choose →
-              </Link>
-            </div>
-          )}
-        </section>
+        {(layout === "scenic" || layout === "standard") && fitSection}
 
-        {(record.planningConsiderations || record.transportationNotes) && (
-          <section className="mx-auto mt-14 max-w-3xl border-y border-[#342b1d] py-7 text-sm leading-7 text-[#9d9587]">
-            {record.planningConsiderations && <p>{record.planningConsiderations}</p>}
-            {record.transportationNotes && <p className="mt-3">{record.transportationNotes}</p>}
-          </section>
-        )}
+        {(layout === "standard" || layout === "editorial" || layout === "adventure") && optionsSection}
 
-        {record.faqs && record.faqs.length > 0 && (
-          <section className="mx-auto mt-14 max-w-3xl">
-            <h2 className="text-center font-serif text-3xl text-[#f3dfb3]">A few useful answers</h2>
-            <div className="mt-6 space-y-3">
-              {record.faqs.map((faq, index) => (
-                <details key={index} className="border border-[#342b1d] bg-[#12110e] p-5">
-                  <summary className="cursor-pointer font-semibold text-[#eadfca]">{faq.question}</summary>
-                  <p className="mt-3 text-sm leading-6 text-[#aaa193]">{faq.answer}</p>
-                </details>
-              ))}
-            </div>
-          </section>
-        )}
+        {planningSection}
+        {faqSection}
 
         <div className="mt-14 text-center">
           <Link
