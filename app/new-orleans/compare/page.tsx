@@ -26,6 +26,8 @@ const planningGuides = [
   { href: "/guides/new-orleans-tours-that-fit-before-dinner", title: "Tours that fit before dinner", description: "Shorter afternoon formats with realistic check-in, boarding, finish-time, and travel buffers before a dinner reservation." },
 ];
 
+const cardStyle = { borderRadius: "18px" } as const;
+
 export default function CompareToursPage() {
   const ready = COMPARISON_OPPORTUNITIES.filter((item) => item.status === "READY_TO_PUBLISH");
 
@@ -44,35 +46,55 @@ export default function CompareToursPage() {
         ]}
       />
 
-      <div id="comparisons" className="mx-auto max-w-5xl px-6 py-14 md:py-20 scroll-mt-24">
-        <div className="grid gap-6 md:grid-cols-2">
+      <div id="comparisons" className="mx-auto max-w-6xl scroll-mt-24 px-6 py-14 md:py-20">
+        <div className="mb-8 max-w-3xl">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">Side-by-side decision help</p>
+          <h2 className="mt-3 text-3xl font-black leading-tight text-[#fff8ec] sm:text-4xl">Pick the comparison that matches your decision</h2>
+          <p className="mt-3 leading-7 text-[#cfc6ba]">These are compact reading cards on purpose. The headline, the actual decision, and the link should all be readable without squeezing text into decorative shapes.</p>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2">
           {ready.map((item) => (
-            <Link key={item.slug} href={`/compare/${item.slug}`} className="group relative overflow-hidden border border-[#d4af37]/28 bg-[linear-gradient(145deg,#171419,#0b0a0c)] p-7 shadow-xl shadow-black/20 transition-all hover:-translate-y-1 hover:border-[#d4af37]">
-              <div className="absolute left-0 top-0 h-full w-[2px] bg-gradient-to-b from-[#d4af37] via-[#d4af37]/30 to-transparent" />
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d4af37]">Tour comparison</p>
-              <h2 className="mt-3 font-[var(--font-accent)] text-2xl font-bold group-hover:text-[#e3b74a]">{item.title}</h2>
-              <p className="mt-4 text-sm leading-relaxed text-[#b8afa2]">{item.queryIntent}</p>
-              <span className="mt-6 inline-block text-sm font-bold text-[#d4af37]">Read comparison →</span>
+            <Link
+              key={item.slug}
+              href={`/compare/${item.slug}`}
+              style={cardStyle}
+              className="group relative min-h-[230px] overflow-hidden border border-[#d4af37]/30 bg-[linear-gradient(145deg,#18151a,#0d0b0e)] p-7 shadow-[0_18px_45px_rgba(0,0,0,0.28)] transition-all hover:-translate-y-1 hover:border-[#d4af37] sm:p-8"
+            >
+              <div className="absolute inset-y-6 left-0 w-[3px] rounded-full bg-gradient-to-b from-[#e2bc48] via-[#b88727] to-transparent" />
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#e0b83e]">Tour comparison</p>
+              <h2 className="mt-3 max-w-[34rem] text-[1.55rem] font-black leading-[1.12] tracking-[-0.02em] text-[#fff8ec] sm:text-[1.8rem]">
+                {item.title}
+              </h2>
+              <p className="mt-4 max-w-[34rem] text-[0.98rem] leading-7 text-[#c9c0b5]">{item.queryIntent}</p>
+              <span className="mt-6 inline-flex items-center gap-2 text-sm font-black text-[#e0b83e]">Read comparison <span aria-hidden="true">→</span></span>
             </Link>
           ))}
         </div>
 
         <section className="mt-16 border-t border-[#d4af37]/20 pt-10">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">Practical planning questions</p>
-          <h2 className="mt-3 font-[var(--font-accent)] text-3xl font-bold">Start with the problem you actually need to solve</h2>
-          <p className="mt-4 max-w-3xl leading-relaxed text-[#aaa]">These guides answer the questions that usually matter before somebody knows the exact tour name they want.</p>
+          <h2 className="mt-3 text-3xl font-black leading-tight text-[#fff8ec]">Start with the problem you actually need to solve</h2>
+          <p className="mt-4 max-w-3xl leading-relaxed text-[#bcb3a8]">These guides answer the questions that usually matter before somebody knows the exact tour name they want.</p>
           <div className="mt-7 grid gap-5 md:grid-cols-3">
             {planningGuides.map((guide) => (
-              <Link key={guide.href} href={guide.href} className="group border border-[#d4af37]/22 bg-[#111014] p-6 transition-all hover:-translate-y-1 hover:border-[#d4af37]">
-                <h3 className="font-[var(--font-accent)] text-xl font-bold group-hover:text-[#d4af37]">{guide.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-[#aaa]">{guide.description}</p>
+              <Link
+                key={guide.href}
+                href={guide.href}
+                style={cardStyle}
+                className="group border border-[#d4af37]/22 bg-[#111014] p-6 transition-all hover:-translate-y-1 hover:border-[#d4af37]"
+              >
+                <h3 className="text-xl font-black leading-snug text-[#fff8ec] group-hover:text-[#e0b83e]">{guide.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-[#bcb3a8]">{guide.description}</p>
                 <span className="mt-5 inline-block text-sm font-bold text-[#d4af37]">Read guide →</span>
               </Link>
             ))}
           </div>
         </section>
 
-        <div className="mt-12 border-t border-[#d4af37]/20 pt-8"><Link href="/tours" className="text-[#d4af37] underline underline-offset-4">Browse all bookable tours</Link></div>
+        <div className="mt-12 border-t border-[#d4af37]/20 pt-8">
+          <Link href="/tours" className="font-bold text-[#d4af37] underline underline-offset-4">Browse all bookable tours</Link>
+        </div>
       </div>
     </div>
   );
