@@ -3,6 +3,7 @@ import "../../../app/globals.css";
 import "./wno-recovery.css";
 import "./wno-v2.css";
 import "./wno-current-colors.css";
+import "./wno-page-identity.css";
 import "@/app/new-orleans/data/truthLayerRuntime";
 import CanonicalNewOrleansLayout from "@/app/new-orleans/layout";
 
