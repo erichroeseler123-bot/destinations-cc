@@ -1,0 +1,277 @@
+/* Category-page identity layer.
+   Loaded after the broad WNO color refresh so individual experience pages
+   can keep a shared brand without becoming visual clones. */
+
+[data-wno-category] {
+  --wno-cat-page: #f7f5f0;
+  --wno-cat-surface: #ffffff;
+  --wno-cat-ink: #1c2430;
+  --wno-cat-muted: #5f6976;
+  --wno-cat-accent: #3157f6;
+  --wno-cat-accent-2: #ff6b5d;
+  --wno-cat-line: rgba(28, 36, 48, 0.14);
+  --wno-cat-hero: #111827;
+  --wno-cat-overlay: linear-gradient(90deg, rgba(17,24,39,.94), rgba(17,24,39,.66) 52%, rgba(17,24,39,.28)), linear-gradient(180deg, rgba(17,24,39,.08), rgba(17,24,39,.86));
+  background: var(--wno-cat-page) !important;
+  color: var(--wno-cat-ink) !important;
+}
+
+/* River: blue, bright, water-forward. */
+[data-wno-category="riverboat-cruises"] {
+  --wno-cat-page: #f2f7f9;
+  --wno-cat-ink: #142d3a;
+  --wno-cat-muted: #536d79;
+  --wno-cat-accent: #277aa3;
+  --wno-cat-accent-2: #e78b42;
+  --wno-cat-line: rgba(39,122,163,.22);
+  --wno-cat-hero: #0e3447;
+  --wno-cat-overlay: linear-gradient(90deg, rgba(9,43,58,.96), rgba(14,52,71,.72) 50%, rgba(14,52,71,.24)), linear-gradient(180deg, rgba(7,32,44,.04), rgba(7,32,44,.88));
+}
+
+/* Garden District: airy, architectural, sage. */
+[data-wno-category="garden-district-tours"] {
+  --wno-cat-page: #f5f3eb;
+  --wno-cat-ink: #263328;
+  --wno-cat-muted: #617064;
+  --wno-cat-accent: #55754f;
+  --wno-cat-accent-2: #c47754;
+  --wno-cat-line: rgba(85,117,79,.22);
+  --wno-cat-hero: #314737;
+  --wno-cat-overlay: linear-gradient(90deg, rgba(31,52,36,.94), rgba(49,71,55,.62) 55%, rgba(49,71,55,.14)), linear-gradient(180deg, rgba(31,52,36,.02), rgba(31,52,36,.82));
+}
+
+/* Jazz: midnight blue and brass. */
+[data-wno-category="jazz-music-tours"] {
+  --wno-cat-page: #f4f1ea;
+  --wno-cat-ink: #20263a;
+  --wno-cat-muted: #60677b;
+  --wno-cat-accent: #b57924;
+  --wno-cat-accent-2: #4054b7;
+  --wno-cat-line: rgba(181,121,36,.22);
+  --wno-cat-hero: #10172c;
+  --wno-cat-overlay: radial-gradient(circle at 72% 20%, rgba(181,121,36,.16), transparent 28%), linear-gradient(90deg, rgba(10,16,34,.97), rgba(16,23,44,.72) 50%, rgba(16,23,44,.24)), linear-gradient(180deg, rgba(16,23,44,.02), rgba(10,16,34,.9));
+}
+
+/* Ghosts: plum, charcoal and a restrained rose accent. */
+[data-wno-category="ghost-tours"],
+[data-wno-category="cemetery-tours"] {
+  --wno-cat-page: #f5f1f5;
+  --wno-cat-ink: #312536;
+  --wno-cat-muted: #716273;
+  --wno-cat-accent: #76527d;
+  --wno-cat-accent-2: #a5525d;
+  --wno-cat-line: rgba(118,82,125,.22);
+  --wno-cat-hero: #241b2a;
+  --wno-cat-overlay: linear-gradient(90deg, rgba(29,20,34,.97), rgba(49,34,55,.72) 52%, rgba(49,34,55,.22)), linear-gradient(180deg, rgba(36,27,42,.06), rgba(25,17,29,.9));
+}
+
+/* Food/cocktails: warm paper, terracotta and aubergine. */
+[data-wno-category="food-tours"],
+[data-wno-category="cooking-classes"] {
+  --wno-cat-page: #fbf3ec;
+  --wno-cat-ink: #3a2928;
+  --wno-cat-muted: #755f59;
+  --wno-cat-accent: #c25e43;
+  --wno-cat-accent-2: #7b4961;
+  --wno-cat-line: rgba(194,94,67,.22);
+  --wno-cat-hero: #4a2827;
+  --wno-cat-overlay: linear-gradient(90deg, rgba(66,31,30,.96), rgba(88,45,39,.70) 52%, rgba(88,45,39,.18)), linear-gradient(180deg, rgba(74,40,39,.02), rgba(58,30,29,.88));
+}
+
+/* Swamp / airboat: cypress green and amber. */
+[data-wno-category="swamp-tours"],
+[data-wno-category="airboat-tours"],
+[data-wno-category="covered-swamp-boat-tours"] {
+  --wno-cat-page: #f2f4ec;
+  --wno-cat-ink: #293428;
+  --wno-cat-muted: #657064;
+  --wno-cat-accent: #567143;
+  --wno-cat-accent-2: #d48a33;
+  --wno-cat-line: rgba(86,113,67,.22);
+  --wno-cat-hero: #21311f;
+  --wno-cat-overlay: linear-gradient(90deg, rgba(24,40,23,.97), rgba(36,53,31,.70) 52%, rgba(36,53,31,.18)), linear-gradient(180deg, rgba(33,49,31,.02), rgba(24,38,23,.9));
+}
+
+/* Plantation/history: parchment and cypress brown. */
+[data-wno-category="plantation-tours"] {
+  --wno-cat-page: #f7f2e9;
+  --wno-cat-ink: #392f26;
+  --wno-cat-muted: #75695d;
+  --wno-cat-accent: #8a6743;
+  --wno-cat-accent-2: #4f715b;
+  --wno-cat-line: rgba(138,103,67,.22);
+  --wno-cat-hero: #3f3328;
+  --wno-cat-overlay: linear-gradient(90deg, rgba(51,41,31,.96), rgba(70,56,42,.68) 52%, rgba(70,56,42,.16)), linear-gradient(180deg, rgba(63,51,40,.02), rgba(48,38,29,.88));
+}
+
+/* City / walking / private categories stay modern, but use a brighter civic blue. */
+[data-wno-category="city-tours"],
+[data-wno-category="walking-tours"],
+[data-wno-category="private-tours"],
+[data-wno-category="night-tours"] {
+  --wno-cat-page: #f5f4f1;
+  --wno-cat-ink: #202a36;
+  --wno-cat-muted: #647080;
+  --wno-cat-accent: #3968a8;
+  --wno-cat-accent-2: #d66c55;
+  --wno-cat-line: rgba(57,104,168,.20);
+  --wno-cat-hero: #1d3652;
+  --wno-cat-overlay: linear-gradient(90deg, rgba(22,46,72,.96), rgba(29,54,82,.69) 52%, rgba(29,54,82,.18)), linear-gradient(180deg, rgba(29,54,82,.02), rgba(20,42,64,.88));
+}
+
+/* Hero: keep every word readable regardless of the broad site color layer. */
+[data-wno-category] > header {
+  background: var(--wno-cat-hero) !important;
+  border-color: var(--wno-cat-accent) !important;
+}
+
+[data-wno-category] > header > img {
+  opacity: .68 !important;
+  filter: saturate(.92) contrast(1.06) brightness(.76) !important;
+}
+
+[data-wno-category] > header > div:first-of-type {
+  background: var(--wno-cat-overlay) !important;
+}
+
+[data-wno-category] > header h1 {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  text-shadow: 0 4px 30px rgba(0,0,0,.62) !important;
+}
+
+[data-wno-category] > header > div:last-child > p:first-child {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: .86;
+}
+
+[data-wno-category] > header h1 + p {
+  color: rgba(255,255,255,.9) !important;
+  -webkit-text-fill-color: rgba(255,255,255,.9) !important;
+  text-shadow: 0 2px 18px rgba(0,0,0,.52) !important;
+}
+
+[data-wno-category] > header a:first-of-type {
+  background: var(--wno-cat-accent) !important;
+  border-color: var(--wno-cat-accent) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+[data-wno-category] > header a:last-of-type {
+  background: rgba(10,15,22,.36) !important;
+  border-color: rgba(255,255,255,.7) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Two visual families so the pages no longer read as clones. */
+[data-wno-category="garden-district-tours"] > header,
+[data-wno-category="food-tours"] > header,
+[data-wno-category="ghost-tours"] > header,
+[data-wno-category="swamp-tours"] > header,
+[data-wno-category="plantation-tours"] > header {
+  text-align: left !important;
+}
+
+[data-wno-category="garden-district-tours"] > header > div:last-child,
+[data-wno-category="food-tours"] > header > div:last-child,
+[data-wno-category="ghost-tours"] > header > div:last-child,
+[data-wno-category="swamp-tours"] > header > div:last-child,
+[data-wno-category="plantation-tours"] > header > div:last-child {
+  align-items: flex-start !important;
+}
+
+[data-wno-category="garden-district-tours"] > header h1 + p,
+[data-wno-category="food-tours"] > header h1 + p,
+[data-wno-category="ghost-tours"] > header h1 + p,
+[data-wno-category="swamp-tours"] > header h1 + p,
+[data-wno-category="plantation-tours"] > header h1 + p {
+  margin-left: 0 !important;
+}
+
+[data-wno-category="garden-district-tours"] > header > div:last-child > div,
+[data-wno-category="food-tours"] > header > div:last-child > div,
+[data-wno-category="ghost-tours"] > header > div:last-child > div,
+[data-wno-category="swamp-tours"] > header > div:last-child > div,
+[data-wno-category="plantation-tours"] > header > div:last-child > div {
+  justify-content: flex-start !important;
+}
+
+/* Body surfaces: light, readable, with category color doing the identity work. */
+[data-wno-category] > main {
+  background: var(--wno-cat-page) !important;
+  color: var(--wno-cat-ink) !important;
+}
+
+[data-wno-category] > main h2,
+[data-wno-category] > main h3,
+[data-wno-category] > main summary,
+[data-wno-category] > main strong {
+  color: var(--wno-cat-ink) !important;
+  -webkit-text-fill-color: var(--wno-cat-ink) !important;
+}
+
+[data-wno-category] > main p,
+[data-wno-category] > main li {
+  color: var(--wno-cat-muted) !important;
+  -webkit-text-fill-color: var(--wno-cat-muted) !important;
+}
+
+[data-wno-category] > main > section:first-of-type p {
+  color: var(--wno-cat-ink) !important;
+  -webkit-text-fill-color: var(--wno-cat-ink) !important;
+}
+
+[data-wno-category] > main > section > div[class*="border"],
+[data-wno-category] > main details {
+  background: var(--wno-cat-surface) !important;
+  border-color: var(--wno-cat-line) !important;
+  color: var(--wno-cat-ink) !important;
+  box-shadow: 0 16px 38px rgba(26,35,46,.07) !important;
+}
+
+[data-wno-category] > main > section > div[class*="border"] p:first-child,
+[data-wno-category] > main #options > div:first-child > p:first-child {
+  color: var(--wno-cat-accent) !important;
+  -webkit-text-fill-color: var(--wno-cat-accent) !important;
+}
+
+[data-wno-category] > main li > span:first-child {
+  color: var(--wno-cat-accent) !important;
+  -webkit-text-fill-color: var(--wno-cat-accent) !important;
+}
+
+[data-wno-category] > main section[class*="border-y"] {
+  border-color: var(--wno-cat-line) !important;
+}
+
+[data-wno-category] > main > div:last-child a {
+  background: var(--wno-cat-accent) !important;
+  border-color: var(--wno-cat-accent) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+[data-wno-category] > main a:focus-visible,
+[data-wno-category] > header a:focus-visible {
+  outline: 3px solid var(--wno-cat-accent-2) !important;
+  outline-offset: 3px;
+}
+
+@media (max-width: 767px) {
+  [data-wno-category] > header,
+  [data-wno-category] > header > div:last-child {
+    text-align: left !important;
+    align-items: flex-start !important;
+  }
+
+  [data-wno-category] > header h1 + p {
+    margin-left: 0 !important;
+  }
+
+  [data-wno-category] > header > div:last-child > div {
+    justify-content: flex-start !important;
+  }
+}
