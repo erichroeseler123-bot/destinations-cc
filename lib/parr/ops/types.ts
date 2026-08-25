@@ -10,6 +10,7 @@ export type OpsOrder = {
   orderId: string;
   source: StoredOrder;
   route: string;
+  serviceLabel: string;
   productKey: string | null;
   productLabel: string;
   bookingReference: string | null;
@@ -18,6 +19,9 @@ export type OpsOrder = {
   departureKey: string;
   departureLabel: string;
   pickupLabel: string | null;
+  dropoffLabel: string | null;
+  flightNumber: string | null;
+  dispensaryPreference: string | null;
   seats: number;
   partySize: number;
   customerName: string | null;

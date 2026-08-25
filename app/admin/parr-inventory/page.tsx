@@ -90,7 +90,7 @@ export default async function ParrInventoryAdminPage({
   nextParams.set("view", view);
   if (selectedOrderId) nextParams.set("order", selectedOrderId);
   const nextPath = `/admin/parr-inventory?${nextParams.toString()}`;
-  const selectedRouteConfig = selectedOrder ? getCheckoutRouteConfig(selectedOrder.route as "parr-private" | "parr-shared") : null;
+  const selectedRouteConfig = selectedOrder ? getCheckoutRouteConfig(selectedOrder.route) : null;
   const selectedProductOptions = selectedOrder ? getCheckoutProductsForRoute(selectedOrder.route) : [];
   const selectedPickupOptions = selectedRouteConfig?.pickupOptions || [];
   const routeAllowsFreeformPickup = selectedRouteConfig?.pickupMode === "freeform";

@@ -45,12 +45,20 @@ export default function OpsOrderCard({ order, href, selected }: { order: OpsOrde
 
       <div className="mt-4 grid gap-3 text-sm text-zinc-300 md:grid-cols-2 xl:grid-cols-4">
         <div>
+          <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">Service</div>
+          <div className="mt-1 text-white">{order.serviceLabel}</div>
+        </div>
+        <div>
           <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">Departure</div>
           <div className="mt-1 text-white">{order.departureLabel}</div>
         </div>
         <div>
           <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">Pickup</div>
           <div className="mt-1 text-white">{order.pickupLabel || "Needs routing"}</div>
+        </div>
+        <div>
+          <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">Drop-off</div>
+          <div className="mt-1 text-white">{order.dropoffLabel || "—"}</div>
         </div>
         <div>
           <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">Seats</div>

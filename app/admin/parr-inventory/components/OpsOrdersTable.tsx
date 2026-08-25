@@ -27,8 +27,10 @@ export default function OpsOrdersTable({
         <thead className="border-b border-white/10 bg-black/30 text-zinc-300">
           <tr>
             <th className="px-4 py-3 font-semibold">Created</th>
+            <th className="px-4 py-3 font-semibold">Service</th>
             <th className="px-4 py-3 font-semibold">Service day</th>
             <th className="px-4 py-3 font-semibold">Departure</th>
+            <th className="px-4 py-3 font-semibold">Pickup / drop-off</th>
             <th className="px-4 py-3 font-semibold">Customer</th>
             <th className="px-4 py-3 font-semibold">Status</th>
             <th className="px-4 py-3 font-semibold">Payment</th>
@@ -41,8 +43,13 @@ export default function OpsOrdersTable({
           {orders.map((order) => (
             <tr key={order.orderId} className={`border-b border-white/10 ${selectedOrderId === order.orderId ? "bg-orange-500/10" : ""}`}>
               <td className="px-4 py-3 text-zinc-300">{formatDateTime(order.createdAt)}</td>
+              <td className="px-4 py-3 font-semibold text-white">{order.serviceLabel}</td>
               <td className="px-4 py-3 text-zinc-300">{order.serviceDate || "Unscheduled"}</td>
               <td className="px-4 py-3 text-zinc-300">{order.departureLabel}</td>
+              <td className="px-4 py-3 text-zinc-300">
+                <div>{order.pickupLabel || "—"}</div>
+                <div className="mt-1 text-xs text-zinc-500">{order.dropoffLabel || "—"}</div>
+              </td>
               <td className="px-4 py-3 text-zinc-300">
                 <Link
                   href={`/admin/parr-inventory?${(() => {
@@ -65,7 +72,7 @@ export default function OpsOrdersTable({
           ))}
           {orders.length === 0 ? (
             <tr>
-              <td className="px-4 py-6 text-zinc-400" colSpan={9}>
+              <td className="px-4 py-6 text-zinc-400" colSpan={11}>
                 No PARR orders match the current filters.
               </td>
             </tr>
