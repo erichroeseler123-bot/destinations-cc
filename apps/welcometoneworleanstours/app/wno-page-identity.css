@@ -254,6 +254,76 @@
   -webkit-text-fill-color: #ffffff !important;
 }
 
+/* Decision guide remains a dark feature panel, so never inherit dark body text. */
+[data-wno-category] > main section[aria-label$="decision guide"] {
+  background: var(--wno-cat-hero) !important;
+  border-color: var(--wno-cat-accent) !important;
+  color: #ffffff !important;
+}
+
+[data-wno-category] > main section[aria-label$="decision guide"] h2,
+[data-wno-category] > main section[aria-label$="decision guide"] p,
+[data-wno-category] > main section[aria-label$="decision guide"] strong,
+[data-wno-category] > main section[aria-label$="decision guide"] li {
+  color: rgba(255,255,255,.92) !important;
+  -webkit-text-fill-color: rgba(255,255,255,.92) !important;
+}
+
+[data-wno-category] > main section[aria-label$="decision guide"] > div > div:first-child > p {
+  color: rgba(255,255,255,.72) !important;
+  -webkit-text-fill-color: rgba(255,255,255,.72) !important;
+}
+
+[data-wno-category] > main section[aria-label$="decision guide"] > div > div:nth-child(2) > div {
+  background: rgba(255,255,255,.07) !important;
+  border-color: rgba(255,255,255,.16) !important;
+}
+
+[data-wno-category] > main section[aria-label$="decision guide"] a {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Product-card image overlays are dark by design; keep titles and labels light. */
+[data-wno-category] > main #options article {
+  background: var(--wno-cat-surface) !important;
+  border-color: var(--wno-cat-line) !important;
+  color: var(--wno-cat-ink) !important;
+}
+
+[data-wno-category] > main #options article > a:first-child h3 {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  text-shadow: 0 2px 14px rgba(0,0,0,.62) !important;
+}
+
+[data-wno-category] > main #options article > a:first-child p {
+  color: rgba(255,255,255,.86) !important;
+  -webkit-text-fill-color: rgba(255,255,255,.86) !important;
+  text-shadow: 0 1px 10px rgba(0,0,0,.58) !important;
+}
+
+[data-wno-category] > main #options article > div > p {
+  color: var(--wno-cat-muted) !important;
+  -webkit-text-fill-color: var(--wno-cat-muted) !important;
+}
+
+[data-wno-category] > main #options article > div > div {
+  border-color: var(--wno-cat-line) !important;
+}
+
+[data-wno-category] > main #options article > div > div a:first-child {
+  background: var(--wno-cat-accent) !important;
+  border-color: var(--wno-cat-accent) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+[data-wno-category] > main #options article > div > div a:last-child {
+  color: var(--wno-cat-accent) !important;
+  -webkit-text-fill-color: var(--wno-cat-accent) !important;
+}
+
 [data-wno-category] > main a:focus-visible,
 [data-wno-category] > header a:focus-visible {
   outline: 3px solid var(--wno-cat-accent-2) !important;
