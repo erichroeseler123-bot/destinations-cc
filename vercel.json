@@ -1,4 +1,5 @@
 {
+  "buildCommand": "tsx scripts/test-wno-recommendations.ts && pnpm run build",
   "ignoreCommand": "node scripts/vercel-ignore-monorepo.mjs",
   "crons": [
     {
