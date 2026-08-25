@@ -1,0 +1,491 @@
+/* WNO category layout families — structural differentiation, not just recoloring. */
+
+/* Shared structural hooks */
+[data-wno-layout] [data-wno-section="opening"] {
+  position: relative;
+}
+
+[data-wno-layout] [data-wno-options-grid] {
+  align-items: stretch;
+}
+
+/* -------------------------------------------------------------------------- */
+/* RIVERBOAT / SCENIC: wide, cinematic, horizon-first.                        */
+/* -------------------------------------------------------------------------- */
+[data-wno-layout="scenic"] > header {
+  min-height: 610px !important;
+}
+
+[data-wno-layout="scenic"] > header > img {
+  object-position: center 38% !important;
+}
+
+[data-wno-layout="scenic"] > header > div:last-child {
+  min-height: 475px !important;
+  max-width: 1040px !important;
+}
+
+[data-wno-layout="scenic"] [data-wno-section="opening"] {
+  max-width: 920px !important;
+  padding: 18px 0 8px 34px;
+  text-align: left !important;
+  border-left: 4px solid var(--wno-cat-accent);
+}
+
+[data-wno-layout="scenic"] [data-wno-section="opening"] p {
+  font-size: clamp(1.35rem, 2.2vw, 2rem) !important;
+  line-height: 1.45 !important;
+}
+
+[data-wno-layout="scenic"] [data-wno-section="options"] {
+  margin-top: 54px !important;
+}
+
+[data-wno-layout="scenic"] [data-wno-options-heading] {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(320px, 1.2fr);
+  column-gap: 48px;
+  align-items: end;
+  text-align: left !important;
+}
+
+[data-wno-layout="scenic"] [data-wno-options-heading] > p:first-child,
+[data-wno-layout="scenic"] [data-wno-options-heading] > h2 {
+  grid-column: 1;
+}
+
+[data-wno-layout="scenic"] [data-wno-options-heading] > p:last-child {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: end;
+  max-width: 560px !important;
+  margin: 0 !important;
+  padding-bottom: 6px;
+  font-size: 1rem !important;
+  line-height: 1.75 !important;
+}
+
+[data-wno-layout="scenic"] [data-wno-options-grid] {
+  display: grid !important;
+  grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+  gap: 22px !important;
+}
+
+[data-wno-layout="scenic"] [data-wno-options-grid] > article:nth-child(1) {
+  grid-column: span 7;
+}
+
+[data-wno-layout="scenic"] [data-wno-options-grid] > article:nth-child(2) {
+  grid-column: span 5;
+}
+
+[data-wno-layout="scenic"] [data-wno-options-grid] > article:nth-child(n+3) {
+  grid-column: span 6;
+}
+
+[data-wno-layout="scenic"] [data-wno-options-grid] > article:nth-child(1) > a:first-child > div {
+  aspect-ratio: 16 / 8 !important;
+}
+
+[data-wno-layout="scenic"] [data-wno-section="fit"] {
+  margin-top: 62px !important;
+  grid-template-columns: 1.15fr .85fr !important;
+}
+
+[data-wno-layout="scenic"] [data-wno-section="planning"] {
+  max-width: 880px !important;
+  padding-left: 28px;
+  border-left: 1px solid var(--wno-cat-accent) !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* JAZZ / NIGHTLIFE: magazine-style dark feature with an evening edit.        */
+/* -------------------------------------------------------------------------- */
+[data-wno-layout="nightlife"] > header {
+  min-height: 560px !important;
+}
+
+[data-wno-layout="nightlife"] > header > img {
+  filter: saturate(.82) contrast(1.14) brightness(.58) !important;
+}
+
+[data-wno-layout="nightlife"] [data-wno-section="opening"] {
+  max-width: 780px !important;
+  margin-left: 0 !important;
+  text-align: left !important;
+}
+
+[data-wno-layout="nightlife"] [data-wno-section="opening"]::before {
+  content: "THE EVENING EDIT";
+  display: block;
+  margin-bottom: 14px;
+  color: var(--wno-cat-accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .26em;
+}
+
+[data-wno-layout="nightlife"] [data-wno-section="options"] {
+  width: 100vw;
+  margin-top: 50px !important;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding: 64px max(24px, calc((100vw - 1180px) / 2)) 72px;
+  background:
+    radial-gradient(circle at 85% 8%, rgba(181,121,36,.18), transparent 26%),
+    linear-gradient(135deg, #0c1326 0%, #15192a 56%, #0a0f1d 100%);
+  border-top: 1px solid rgba(181,121,36,.42);
+  border-bottom: 1px solid rgba(181,121,36,.32);
+}
+
+[data-wno-layout="nightlife"] [data-wno-options-heading] {
+  max-width: 900px;
+  margin: 0 auto 0 0;
+  text-align: left !important;
+}
+
+[data-wno-layout="nightlife"] [data-wno-options-heading] h2,
+[data-wno-layout="nightlife"] [data-wno-options-heading] p:last-child {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+[data-wno-layout="nightlife"] [data-wno-options-heading] p:last-child {
+  max-width: 680px !important;
+  margin-left: 0 !important;
+  color: rgba(255,255,255,.72) !important;
+  -webkit-text-fill-color: rgba(255,255,255,.72) !important;
+}
+
+[data-wno-layout="nightlife"] [data-wno-options-grid] {
+  display: grid !important;
+  grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+}
+
+[data-wno-layout="nightlife"] [data-wno-options-grid] > article {
+  background: #111827 !important;
+  border-color: rgba(255,255,255,.13) !important;
+  box-shadow: 0 24px 60px rgba(0,0,0,.28) !important;
+}
+
+[data-wno-layout="nightlife"] [data-wno-options-grid] > article:nth-child(1) {
+  grid-column: span 7;
+}
+
+[data-wno-layout="nightlife"] [data-wno-options-grid] > article:nth-child(2) {
+  grid-column: span 5;
+}
+
+[data-wno-layout="nightlife"] [data-wno-options-grid] > article:nth-child(n+3) {
+  grid-column: span 4;
+}
+
+[data-wno-layout="nightlife"] [data-wno-options-grid] > article > div > p {
+  color: rgba(255,255,255,.72) !important;
+  -webkit-text-fill-color: rgba(255,255,255,.72) !important;
+}
+
+[data-wno-layout="nightlife"] [data-wno-options-grid] > article > div > div {
+  border-color: rgba(255,255,255,.12) !important;
+}
+
+[data-wno-layout="nightlife"] [data-wno-options-grid] > article > div > div a:last-child {
+  color: #d8b36a !important;
+  -webkit-text-fill-color: #d8b36a !important;
+}
+
+[data-wno-layout="nightlife"] [data-wno-section="fit"] {
+  grid-template-columns: .82fr 1.18fr !important;
+}
+
+[data-wno-layout="nightlife"] [data-wno-section="fit"] > div:first-child {
+  transform: translateY(24px);
+}
+
+[data-wno-layout="nightlife"] [data-wno-section="faq"] {
+  max-width: 920px !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* SWAMP / ADVENTURE: decision-first, energetic, staggered expedition cards.  */
+/* -------------------------------------------------------------------------- */
+[data-wno-layout="adventure"] > header {
+  min-height: 520px !important;
+}
+
+[data-wno-layout="adventure"] > main > section[aria-label$="decision guide"] {
+  margin-top: -76px !important;
+  position: relative;
+  z-index: 5;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  box-shadow: 0 28px 70px rgba(25,42,24,.24) !important;
+}
+
+[data-wno-layout="adventure"] [data-wno-section="opening"] {
+  max-width: 850px !important;
+  margin-top: 52px;
+  text-align: left !important;
+}
+
+[data-wno-layout="adventure"] [data-wno-section="opening"] p {
+  font-size: clamp(1.25rem, 2vw, 1.8rem) !important;
+}
+
+[data-wno-layout="adventure"] [data-wno-section="fit"] {
+  margin-top: 42px !important;
+  grid-template-columns: 1fr 1.15fr !important;
+}
+
+[data-wno-layout="adventure"] [data-wno-section="fit"] > div {
+  border-radius: 18px;
+}
+
+[data-wno-layout="adventure"] [data-wno-section="fit"] > div:first-child {
+  transform: rotate(-.6deg);
+}
+
+[data-wno-layout="adventure"] [data-wno-section="fit"] > div:last-child {
+  transform: rotate(.45deg) translateY(18px);
+}
+
+[data-wno-layout="adventure"] [data-wno-section="options"] {
+  margin-top: 82px !important;
+}
+
+[data-wno-layout="adventure"] [data-wno-options-heading] {
+  max-width: 760px;
+  text-align: left !important;
+}
+
+[data-wno-layout="adventure"] [data-wno-options-heading] p:last-child {
+  margin-left: 0 !important;
+}
+
+[data-wno-layout="adventure"] [data-wno-options-grid] {
+  display: grid !important;
+  grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+  gap: 24px !important;
+}
+
+[data-wno-layout="adventure"] [data-wno-options-grid] > article:nth-child(1) {
+  grid-column: span 7;
+}
+
+[data-wno-layout="adventure"] [data-wno-options-grid] > article:nth-child(2) {
+  grid-column: 8 / span 5;
+  margin-top: 54px;
+}
+
+[data-wno-layout="adventure"] [data-wno-options-grid] > article:nth-child(3) {
+  grid-column: span 5;
+}
+
+[data-wno-layout="adventure"] [data-wno-options-grid] > article:nth-child(4) {
+  grid-column: span 7;
+  margin-top: -18px;
+}
+
+[data-wno-layout="adventure"] [data-wno-options-grid] > article:nth-child(n+5) {
+  grid-column: span 6;
+}
+
+[data-wno-layout="adventure"] [data-wno-options-grid] > article {
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+[data-wno-layout="adventure"] [data-wno-section="planning"] {
+  max-width: 980px !important;
+  padding: 30px 34px !important;
+  background: rgba(86,113,67,.07);
+  border: 1px solid var(--wno-cat-line) !important;
+  border-radius: 16px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* GARDEN DISTRICT / EDITORIAL: restrained, architectural, asymmetric columns. */
+/* -------------------------------------------------------------------------- */
+[data-wno-layout="editorial"] > header {
+  min-height: 560px !important;
+}
+
+[data-wno-layout="editorial"] > header > img {
+  object-position: center 46% !important;
+}
+
+[data-wno-layout="editorial"] [data-wno-section="opening"] {
+  max-width: 900px !important;
+  margin-left: 0 !important;
+  padding-left: 30px;
+  text-align: left !important;
+  border-left: 1px solid var(--wno-cat-accent);
+}
+
+[data-wno-layout="editorial"] [data-wno-section="opening"] p {
+  max-width: 760px;
+  font-size: clamp(1.3rem, 2vw, 1.85rem) !important;
+  line-height: 1.55 !important;
+}
+
+[data-wno-layout="editorial"] [data-wno-section="fit"] {
+  margin-top: 64px !important;
+  grid-template-columns: 1.25fr .75fr !important;
+  gap: 34px !important;
+}
+
+[data-wno-layout="editorial"] [data-wno-section="fit"] > div {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  border-left-width: 3px !important;
+}
+
+[data-wno-layout="editorial"] [data-wno-section="fit"] > div:last-child {
+  margin-top: 54px;
+}
+
+[data-wno-layout="editorial"] > main > section[aria-label$="decision guide"] {
+  margin-top: 72px !important;
+  background: transparent !important;
+  color: var(--wno-cat-ink) !important;
+  border-top: 1px solid var(--wno-cat-line) !important;
+  border-bottom: 1px solid var(--wno-cat-line) !important;
+  box-shadow: none !important;
+}
+
+[data-wno-layout="editorial"] > main > section[aria-label$="decision guide"] h2,
+[data-wno-layout="editorial"] > main > section[aria-label$="decision guide"] p,
+[data-wno-layout="editorial"] > main > section[aria-label$="decision guide"] li,
+[data-wno-layout="editorial"] > main > section[aria-label$="decision guide"] strong {
+  color: var(--wno-cat-ink) !important;
+  -webkit-text-fill-color: var(--wno-cat-ink) !important;
+}
+
+[data-wno-layout="editorial"] > main > section[aria-label$="decision guide"] > div > div:nth-child(2) > div {
+  background: transparent !important;
+  border-color: var(--wno-cat-line) !important;
+}
+
+[data-wno-layout="editorial"] > main > section[aria-label$="decision guide"] a {
+  color: var(--wno-cat-accent) !important;
+  -webkit-text-fill-color: var(--wno-cat-accent) !important;
+}
+
+[data-wno-layout="editorial"] [data-wno-section="options"] {
+  margin-top: 74px !important;
+}
+
+[data-wno-layout="editorial"] [data-wno-options-heading] {
+  display: grid;
+  grid-template-columns: .7fr 1.3fr;
+  gap: 40px;
+  align-items: end;
+  text-align: left !important;
+}
+
+[data-wno-layout="editorial"] [data-wno-options-heading] > p:first-child,
+[data-wno-layout="editorial"] [data-wno-options-heading] > h2 {
+  grid-column: 1;
+}
+
+[data-wno-layout="editorial"] [data-wno-options-heading] > p:last-child {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  margin: 0 !important;
+  padding-bottom: 4px;
+  max-width: 620px !important;
+  line-height: 1.8 !important;
+}
+
+[data-wno-layout="editorial"] [data-wno-options-grid] {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 30px !important;
+}
+
+[data-wno-layout="editorial"] [data-wno-options-grid] > article {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+[data-wno-layout="editorial"] [data-wno-options-grid] > article:nth-child(even) {
+  margin-top: 46px;
+}
+
+[data-wno-layout="editorial"] [data-wno-section="planning"] {
+  max-width: 900px !important;
+  margin-left: 0 !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Responsive normalization                                                     */
+/* -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  [data-wno-layout="scenic"] [data-wno-options-heading],
+  [data-wno-layout="editorial"] [data-wno-options-heading] {
+    display: block;
+  }
+
+  [data-wno-layout="scenic"] [data-wno-options-heading] > p:last-child,
+  [data-wno-layout="editorial"] [data-wno-options-heading] > p:last-child {
+    margin-top: 14px !important;
+  }
+
+  [data-wno-layout="scenic"] [data-wno-options-grid],
+  [data-wno-layout="nightlife"] [data-wno-options-grid],
+  [data-wno-layout="adventure"] [data-wno-options-grid] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  [data-wno-layout="scenic"] [data-wno-options-grid] > article,
+  [data-wno-layout="nightlife"] [data-wno-options-grid] > article,
+  [data-wno-layout="adventure"] [data-wno-options-grid] > article {
+    grid-column: auto !important;
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 700px) {
+  [data-wno-layout="scenic"] > header,
+  [data-wno-layout="nightlife"] > header,
+  [data-wno-layout="adventure"] > header,
+  [data-wno-layout="editorial"] > header {
+    min-height: auto !important;
+  }
+
+  [data-wno-layout="scenic"] [data-wno-section="opening"],
+  [data-wno-layout="editorial"] [data-wno-section="opening"] {
+    padding-left: 18px;
+  }
+
+  [data-wno-layout="nightlife"] [data-wno-section="options"] {
+    padding: 48px 18px 56px;
+  }
+
+  [data-wno-layout="scenic"] [data-wno-options-grid],
+  [data-wno-layout="nightlife"] [data-wno-options-grid],
+  [data-wno-layout="adventure"] [data-wno-options-grid],
+  [data-wno-layout="editorial"] [data-wno-options-grid] {
+    grid-template-columns: 1fr !important;
+  }
+
+  [data-wno-layout="editorial"] [data-wno-section="fit"],
+  [data-wno-layout="nightlife"] [data-wno-section="fit"],
+  [data-wno-layout="adventure"] [data-wno-section="fit"],
+  [data-wno-layout="scenic"] [data-wno-section="fit"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  [data-wno-layout="editorial"] [data-wno-section="fit"] > div:last-child,
+  [data-wno-layout="nightlife"] [data-wno-section="fit"] > div:first-child,
+  [data-wno-layout="adventure"] [data-wno-section="fit"] > div,
+  [data-wno-layout="editorial"] [data-wno-options-grid] > article:nth-child(even) {
+    margin-top: 0 !important;
+    transform: none !important;
+  }
+
+  [data-wno-layout="adventure"] > main > section[aria-label$="decision guide"] {
+    margin-top: -38px !important;
+  }
+}
