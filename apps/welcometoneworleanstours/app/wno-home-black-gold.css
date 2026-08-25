@@ -1,0 +1,154 @@
+/* Homepage-only black/gold restoration. Loaded after wno-current-colors.css so the homepage is not recolored coral/cobalt. Interior pages intentionally remain on their page-specific themes. */
+
+body:has([data-wno-home-theme="black-gold-v2"]),
+body:has([data-wno-home-theme="black-gold-v2"]) main {
+  background:#040404 !important;
+  color:#f6efe2 !important;
+}
+
+/* Homepage shell/header */
+body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] {
+  background:#0d0a0d !important;
+  color:#fdfbf7 !important;
+  border-bottom:1px solid #3a2b17 !important;
+  box-shadow:0 8px 28px rgba(0,0,0,.28) !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketBrandWelcome"] { color:#e3a72f !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketBrandCity"] { color:#fdfbf7 !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketBrandTours"] { color:#c7a96b !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketDesktopNav"] a,
+body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketPhoneLabel"] { color:#e8dfd0 !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketDesktopNav"] a::after { background:#d4af37 !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketPhoneNumber"],
+body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] a[class*="md:hidden"] span:last-child { color:#e3a72f !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketMenuButton"] div { background:#c7a96b !important; }
+
+/* Hero: defeat the current coral/cobalt !important palette. */
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="wrap"] {
+  background:#040404 !important;
+  color:#f6efe2 !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) section[class*="cinematic-home-gold"][class*="hero"] {
+  background:#040404 !important;
+  border-bottom-color:rgba(205,154,43,.35) !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="heroBg"] {
+  filter:brightness(.64) saturate(.92) contrast(1.12) !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="heroBg"]::before {
+  background:url('/images/wikimedia/originals/french-quarter-night.jpg') 55% 48%/cover no-repeat !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="heroBg"]::after {
+  background:url('/images/travel-markets/new-orleans/steamboat-natchez.jpg') center 58%/cover no-repeat !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="heroShade"] {
+  background:linear-gradient(90deg,rgba(0,0,0,.97) 0%,rgba(0,0,0,.88) 25%,rgba(0,0,0,.62) 43%,rgba(0,0,0,.22) 66%,rgba(0,0,0,.25) 100%),linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.08) 60%,rgba(0,0,0,.72) 100%) !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) section[class*="cinematic-home-gold"][class*="hero"]::before {
+  background:radial-gradient(circle at 63% 28%,rgba(224,163,44,.22),transparent 14%),radial-gradient(circle at 78% 46%,rgba(196,105,25,.15),transparent 22%),linear-gradient(180deg,transparent 67%,rgba(0,0,0,.78) 100%) !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) section[class*="cinematic-home-gold"][class*="hero"]::after {
+  color:transparent !important;
+  border:0 !important;
+  background:linear-gradient(transparent,rgba(210,160,49,.38),transparent) !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="eyebrow"] { color:#dfae38 !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="headline"] { color:#f8f0e4 !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="script"] { color:#e4aa27 !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="divider"] { color:#d6a232 !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="divider"] span { background:linear-gradient(90deg,transparent,#d5a334) !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="lede"] { color:#e9e0d3 !important; }
+
+/* Homepage actions */
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="action"] {
+  background:linear-gradient(180deg,rgba(7,7,7,.91),rgba(2,2,2,.95)) !important;
+  color:#f7efe2 !important;
+  border-color:rgba(213,163,52,.84) !important;
+  box-shadow:0 18px 38px rgba(0,0,0,.36),inset 0 0 0 1px rgba(255,255,255,.02) !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="action"]:nth-child(2),
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="action"]:nth-child(3) {
+  background:linear-gradient(180deg,rgba(7,7,7,.91),rgba(2,2,2,.95)) !important;
+  color:#f7efe2 !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="goldAction"] {
+  background:linear-gradient(135deg,#e9c45e 0%,#d4a532 55%,#b77a14 100%) !important;
+  color:#171106 !important;
+  border-color:#f0cd6d !important;
+  box-shadow:0 16px 34px rgba(101,63,5,.32) !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="actionIcon"] {
+  background:transparent !important;
+  color:#e4b43e !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="goldAction"] [class*="actionIcon"] { color:#fff0bd !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="action"] small,
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="action"] b { color:inherit !important; }
+
+/* Discovery/tour grid */
+body:has([data-wno-home-theme="black-gold-v2"]) section[class*="cinematic-home-gold"][class*="discovery"] {
+  background:radial-gradient(circle at 50% -12%,rgba(145,86,15,.17),transparent 38%),linear-gradient(180deg,#060606,#030303) !important;
+  border-top-color:rgba(212,167,44,.24) !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) section[class*="cinematic-home-gold"][class*="discovery"]::before {
+  background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px) !important;
+  background-size:100% 8px !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="discoveryTitle"] > span { background:linear-gradient(90deg,transparent,#a97720) !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="discoveryTitle"] h2 { color:#f7efe4 !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="discoveryTitle"] p { color:#c9a86a !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="categoryCard"] {
+  background:#0b0a0b !important;
+  color:#f8f0e4 !important;
+  border-color:rgba(212,167,44,.66) !important;
+  box-shadow:0 13px 27px rgba(0,0,0,.28) !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="categoryImage"]::after {
+  background:linear-gradient(180deg,rgba(15,8,1,.05),rgba(7,4,2,.16) 36%,rgba(4,3,3,.72) 67%,#050505 100%),linear-gradient(90deg,rgba(198,133,29,.04),transparent 45%) !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="categoryIcon"],
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="categoryCard"]:nth-child(even) [class*="categoryIcon"] {
+  color:#e3ae35 !important;
+  border-color:rgba(212,167,44,.72) !important;
+  background:radial-gradient(circle at 35% 30%,#2a2115,#080808 68%) !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="categoryText"] h3 { color:#fbf3e7 !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="categoryText"] p { color:#d8cec0 !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="trustStrip"] {
+  background:transparent !important;
+  color:#d7c8b2 !important;
+  border-top-color:rgba(212,167,44,.27) !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="trustStrip"] div { color:#d7c8b2 !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="cinematic-home-gold"][class*="trustStrip"] span { color:#dfab34 !important; }
+
+/* Homepage planning strip */
+body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] {
+  background:#0d0a0d !important;
+  color:#fdfbf7 !important;
+  border-color:#3a2b17 !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] p:first-child { color:#d4af37 !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] p,
+body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] a { color:#e8dfd0 !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] a { background:rgba(255,255,255,.025) !important; border-color:rgba(255,255,255,.10) !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] a span { color:#d4af37 !important; }
+
+/* Homepage footer */
+body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] {
+  background:#0d0a0d !important;
+  border-top:1px solid #3a2b17 !important;
+  color:#fdfbf7 !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] [class*="brandKicker"],
+body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] [class*="label"] { color:#d4af37 !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] h4,
+body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] strong { color:#f3eadc !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] p,
+body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] a,
+body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] small,
+body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] [class*="copyright"] { color:#cfc1ad !important; }
+body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] a:hover,
+body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] a:focus-visible { color:#e3a72f !important; }
