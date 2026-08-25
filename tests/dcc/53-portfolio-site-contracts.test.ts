@@ -6,6 +6,10 @@ import {
   getPortfolioSiteContract,
 } from "@/src/data/portfolio-site-contracts";
 
+function includes(list: readonly string[], value: string) {
+  return list.includes(value);
+}
+
 test("every network-graph site has a portfolio role contract", () => {
   const contractedIds = new Set(PORTFOLIO_SITE_CONTRACTS.map((site) => site.id));
 
@@ -35,7 +39,8 @@ test("every property declares a real customer job and explicit ownership boundar
     assert.ok(site.mustNotOwn.length > 0, `${site.id} needs at least one explicit boundary`);
     assert.ok(site.handoffRule.length >= 40, `${site.id} needs a meaningful handoff rule`);
 
-    const overlap = site.owns.filter((capability) => site.mustNotOwn.includes(capability));
+    const forbidden = new Set<string>(site.mustNotOwn);
+    const overlap = site.owns.filter((capability) => forbidden.has(capability));
     assert.deepEqual(overlap, [], `${site.id} cannot both own and forbid the same capability`);
   }
 });
@@ -44,7 +49,7 @@ test("child properties reference a real parent", () => {
   const ids = new Set(PORTFOLIO_SITE_CONTRACTS.map((site) => site.id));
 
   for (const site of PORTFOLIO_SITE_CONTRACTS) {
-    if (!site.parentId) continue;
+    if (!("parentId" in site)) continue;
     assert.equal(ids.has(site.parentId), true, `${site.id} parent ${site.parentId} must exist`);
     assert.notEqual(site.parentId, site.id, `${site.id} cannot parent itself`);
   }
@@ -55,20 +60,20 @@ test("child properties reference a real parent", () => {
 test("DCC remains intelligence and routing rather than transaction authority", () => {
   const dcc = getPortfolioSiteContract("dcc");
   assert.ok(dcc);
-  assert.equal(dcc.owns.includes("location_intelligence"), true);
-  assert.equal(dcc.owns.includes("decision_routing"), true);
-  assert.equal(dcc.mustNotOwn.includes("customer_checkout"), true);
-  assert.equal(dcc.mustNotOwn.includes("operator_inventory"), true);
-  assert.equal(dcc.mustNotOwn.includes("customer_payment"), true);
+  assert.equal(includes(dcc.owns, "location_intelligence"), true);
+  assert.equal(includes(dcc.owns, "decision_routing"), true);
+  assert.equal(includes(dcc.mustNotOwn, "customer_checkout"), true);
+  assert.equal(includes(dcc.mustNotOwn, "operator_inventory"), true);
+  assert.equal(includes(dcc.mustNotOwn, "customer_payment"), true);
 });
 
 test("Cruise Promenade stays a private shared planner rather than a social network", () => {
   const cp = getPortfolioSiteContract("cp");
   assert.ok(cp);
   assert.equal(cp.jobKey, "private_shared_cruise_planning");
-  assert.equal(cp.owns.includes("private_group_plans"), true);
-  assert.equal(cp.owns.includes("share_links"), true);
-  assert.equal(cp.mustNotOwn.includes("public_social_network"), true);
+  assert.equal(includes(cp.owns, "private_group_plans"), true);
+  assert.equal(includes(cp.owns, "share_links"), true);
+  assert.equal(includes(cp.mustNotOwn, "public_social_network"), true);
 });
 
 test("New Orleans properties own distinct decisions", () => {
@@ -80,9 +85,9 @@ test("New Orleans properties own distinct decisions", () => {
   assert.equal(wno.jobKey, "new_orleans_experience_choice");
   assert.equal(fqo.jobKey, "french_quarter_first_hour_orientation");
   assert.equal(swamp.jobKey, "new_orleans_swamp_choice");
-  assert.equal(wno.mustNotOwn.includes("french_quarter_first_hour_orientation"), true);
-  assert.equal(fqo.mustNotOwn.includes("general_new_orleans_tour_catalog"), true);
-  assert.equal(swamp.mustNotOwn.includes("general_new_orleans_experience_catalog"), true);
+  assert.equal(includes(wno.mustNotOwn, "french_quarter_first_hour_orientation"), true);
+  assert.equal(includes(fqo.mustNotOwn, "general_new_orleans_tour_catalog"), true);
+  assert.equal(includes(swamp.mustNotOwn, "general_new_orleans_experience_catalog"), true);
 });
 
 test("Red Rocks properties cannot silently collapse into the same product", () => {
@@ -93,8 +98,8 @@ test("Red Rocks properties cannot silently collapse into the same product", () =
 
   assert.equal(parr.jobKey, "red_rocks_private_transport");
   assert.equal(rrdd.jobKey, "red_rocks_designated_driver_network");
-  assert.equal(parr.mustNotOwn.includes("red_rocks_designated_driver_network"), true);
-  assert.equal(rrdd.mustNotOwn.includes("red_rocks_private_transport"), true);
+  assert.equal(includes(parr.mustNotOwn, "red_rocks_designated_driver_network"), true);
+  assert.equal(includes(rrdd.mustNotOwn, "red_rocks_private_transport"), true);
   assert.equal(fastPass.strategy, "review");
 });
 
