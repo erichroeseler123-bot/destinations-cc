@@ -1,3 +1,4 @@
+import { buildRecommendationShortlist } from "@/lib/recommendationEngine";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 import { getGovernedExperienceGraphRecord } from "../data/experienceGraphGovernance";
 import {
@@ -176,6 +177,15 @@ export interface RecommendationResult {
   isNoFit: boolean;
 }
 
+type ScoredTour = {
+  slug: string;
+  score: number;
+  eligible: boolean;
+  reasons: string[];
+  cautions: string[];
+  sourceIndex: number;
+};
+
 export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveRecommendationContext = {}): RecommendationResult {
   if (!inputs.availableTime || !inputs.transportation || !inputs.groupStyle || !inputs.mixedAges || !inputs.airboatEligibility || !inputs.historicalInterest) {
     return { primary: null, isNoFit: true };
@@ -185,7 +195,7 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
   const tonight = inputs.planningWindow === "Something for today" && live.period === "evening";
   const airboatEligible = inputs.airboatEligibility === "No known airboat restrictions";
 
-  const ranked = STOREFRONT_PRODUCTS.map((product) => {
+  const scored: ScoredTour[] = STOREFRONT_PRODUCTS.map((product, sourceIndex) => {
     const profile = PROFILES[product.slug] || {};
     const governedMinutes = governedCommitmentMinutes(product.slug, inputs.transportation);
     const commitmentMinutes = product.slug === SOUTHERN_STYLE_COMBO_SLUG || product.slug === HELD_COMBO_SLUG
@@ -310,15 +320,27 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
       reasons.push("Clear daytime conditions strengthen the fit for an adventurous airboat option.");
     }
 
-    return { slug: product.slug, score, eligible, reasons, cautions };
-  })
-    .filter((item) => item.eligible)
-    .sort((a, b) => b.score - a.score);
+    return { slug: product.slug, score, eligible, reasons, cautions, sourceIndex };
+  });
 
-  if (!ranked.length || ranked[0].score <= 0) return { primary: null, isNoFit: true };
+  const eligiblePositive = scored.filter((item) => item.eligible && item.score > 0);
+  const shortlist = buildRecommendationShortlist({
+    candidates: eligiblePositive,
+    limit: 2,
+    evaluate: (item) => ({
+      key: item.slug,
+      score: item.score,
+      exactMatch: true,
+      reason: item.reasons[0] || "Strong overall fit",
+    }),
+    tieBreak: (a, b) => a.candidate.sourceIndex - b.candidate.sourceIndex,
+  });
+  const ranked = shortlist.recommendations.map((item) => item.candidate);
+
+  if (!ranked.length) return { primary: null, isNoFit: true };
 
   const primary = ranked[0];
-  const secondary = ranked.find((item, index) => index > 0 && item.score > 0 && item.slug !== primary.slug);
+  const secondary = ranked[1];
 
   return {
     primary: {
