@@ -68,7 +68,7 @@ function categoryCopy(layout: CategoryLayout) {
   };
 }
 
-function cardEyebrow(categorySlug: string, index: number) {
+function cardEyebrow(categorySlug: string, index: number, productSlug: string) {
   if (categorySlug === "riverboat-cruises") {
     return [
       "A classic New Orleans night",
@@ -83,7 +83,9 @@ function cardEyebrow(categorySlug: string, index: number) {
   }
 
   if (["swamp-tours", "airboat-tours", "covered-swamp-boat-tours"].includes(categorySlug)) {
-    return ["Most adventurous", "Easygoing choice", "Worth comparing", "Make a day of it"][index] || CARD_EYEBROWS[index % CARD_EYEBROWS.length];
+    if (productSlug.includes("airboat")) return "Most adventurous";
+    if (productSlug.includes("covered")) return "Easygoing choice";
+    return ["Worth comparing", "Make a day of it"][index % 2];
   }
 
   if (categorySlug === "garden-district-tours") {
@@ -164,7 +166,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
               slug={product.slug}
               description={product.description}
               imageUrl={product.imageUrl}
-              eyebrow={cardEyebrow(resolvedParams.categorySlug, index)}
+              eyebrow={cardEyebrow(resolvedParams.categorySlug, index, product.slug)}
             />
           ))}
         </div>
