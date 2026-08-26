@@ -115,8 +115,6 @@
 
 [data-wno-category] > main [data-wno-section="fit"] h2,
 [data-wno-category] > main [data-wno-section="fit"] h3,
-[data-wno-category] > main [data-wno-options-grid] h2,
-[data-wno-category] > main [data-wno-options-grid] h3,
 [data-wno-category] > main details summary {
   color: #211c17 !important;
   -webkit-text-fill-color: #211c17 !important;
@@ -124,10 +122,23 @@
 
 [data-wno-category] > main [data-wno-section="fit"] p,
 [data-wno-category] > main [data-wno-section="fit"] li,
-[data-wno-category] > main [data-wno-options-grid] p,
+[data-wno-category] > main [data-wno-options-grid] > article > div > p,
 [data-wno-category] > main details p {
   color: #554d45 !important;
   -webkit-text-fill-color: #554d45 !important;
+}
+
+/* Image-card titles and eyebrows sit on a dark gradient and must remain light. */
+[data-wno-category] [data-wno-options-grid] > article > a:first-child h3 {
+  color: #fff8eb !important;
+  -webkit-text-fill-color: #fff8eb !important;
+  text-shadow: 0 2px 14px rgba(0,0,0,.72) !important;
+}
+
+[data-wno-category] [data-wno-options-grid] > article > a:first-child p {
+  color: #f2d28b !important;
+  -webkit-text-fill-color: #f2d28b !important;
+  text-shadow: 0 1px 10px rgba(0,0,0,.72) !important;
 }
 
 /* Keep intentionally dark feature panels readable. */
