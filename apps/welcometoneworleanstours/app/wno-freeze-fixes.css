@@ -9,7 +9,11 @@
 /* Neighborhood and walking categories should explicitly inherit a real city image
    rather than depending on whether the first live product happens to have one. */
 [data-wno-category="city-tours"],
+[data-wno-category="city-sightseeing-tours"],
+[data-wno-category="french-quarter-tours"],
 [data-wno-category="garden-district-tours"],
+[data-wno-category="architecture-tours"],
+[data-wno-category="walking-city-tours"],
 [data-wno-category="walking-tours"],
 [data-wno-category="private-tours"] {
   --wno-freeze-hero-image: url('/images/travel-markets/new-orleans/french-quarter-street.jpg');
