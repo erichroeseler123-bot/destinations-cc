@@ -13,6 +13,12 @@
   ],
   "redirects": [
     {
+      "source": "/:path*",
+      "destination": "https://www.welcometoneworleanstours.com/:path*",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "welcometoneworleanstours.com" }]
+    },
+    {
       "source": "/book/argo-shuttle",
       "destination": "/",
       "permanent": true,
