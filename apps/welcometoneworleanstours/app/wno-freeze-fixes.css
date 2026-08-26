@@ -187,6 +187,9 @@
   min-width: 0 !important;
   max-width: 100% !important;
   height: auto !important;
+  font-size: .76rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .03em !important;
 }
 
 [data-wno-category] a[class*="rounded-full"],
