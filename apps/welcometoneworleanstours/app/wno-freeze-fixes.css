@@ -1,0 +1,243 @@
+/* Final WNO category-page stabilization pass.
+   Scope is intentionally limited to marketplace category pages so the black/gold
+   homepage remains untouched. */
+
+[data-wno-category] {
+  --wno-freeze-hero-image: url('/images/travel-markets/new-orleans/french-quarter-street.jpg');
+}
+
+/* Neighborhood and walking categories should explicitly inherit a real city image
+   rather than depending on whether the first live product happens to have one. */
+[data-wno-category="city-tours"],
+[data-wno-category="city-sightseeing-tours"],
+[data-wno-category="french-quarter-tours"],
+[data-wno-category="garden-district-tours"],
+[data-wno-category="architecture-tours"],
+[data-wno-category="walking-city-tours"],
+[data-wno-category="walking-tours"],
+[data-wno-category="private-tours"] {
+  --wno-freeze-hero-image: url('/images/travel-markets/new-orleans/french-quarter-street.jpg');
+}
+
+[data-wno-category="plantation-tours"] {
+  --wno-freeze-hero-image: url('/images/wikimedia/originals/oak-alley-front.jpg');
+}
+
+[data-wno-category="swamp-tours"],
+[data-wno-category="covered-swamp-boat-tours"] {
+  --wno-freeze-hero-image: url('/images/travel-markets/new-orleans/covered-boat-swamp.png');
+}
+
+[data-wno-category="airboat-tours"] {
+  --wno-freeze-hero-image: url('/images/travel-markets/new-orleans/airboat-swamp.png');
+}
+
+[data-wno-category="riverboat-cruises"] {
+  --wno-freeze-hero-image: url('/images/travel-markets/new-orleans/steamboat-natchez.jpg');
+}
+
+[data-wno-category="jazz-music-tours"] {
+  --wno-freeze-hero-image: url('/images/travel-markets/new-orleans/new-orleans-live-music.jpg');
+}
+
+[data-wno-category="food-tours"],
+[data-wno-category="cooking-classes"] {
+  --wno-freeze-hero-image: url('/images/wikimedia/originals/gumbo-dish.jpg');
+}
+
+[data-wno-category="ghost-tours"],
+[data-wno-category="cemetery-tours"],
+[data-wno-category="night-tours"] {
+  --wno-freeze-hero-image: url('/images/wikimedia/originals/french-quarter-night.jpg');
+}
+
+/* A category hero should never be a giant empty slab. This background is a
+   dependable fallback when a product-specific image is missing. */
+[data-wno-category] > header {
+  min-height: 400px !important;
+  background-image:
+    linear-gradient(90deg, rgba(6,8,10,.91) 0%, rgba(8,10,12,.73) 48%, rgba(8,10,12,.42) 100%),
+    linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.72)),
+    var(--wno-freeze-hero-image) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+[data-wno-category] > header > img {
+  opacity: .82 !important;
+  filter: saturate(.98) contrast(1.08) brightness(.72) !important;
+}
+
+[data-wno-category] > header > div:first-of-type {
+  background: linear-gradient(90deg, rgba(5,7,9,.88), rgba(5,7,9,.60) 55%, rgba(5,7,9,.30)) !important;
+}
+
+[data-wno-category] > header > div:last-child {
+  position: relative;
+  z-index: 2;
+}
+
+[data-wno-category] > header h1,
+[data-wno-category] > header h1 + p,
+[data-wno-category] > header > div:last-child > p:first-child {
+  color: #fffdf8 !important;
+  -webkit-text-fill-color: #fffdf8 !important;
+  text-shadow: 0 3px 20px rgba(0,0,0,.72) !important;
+}
+
+[data-wno-category] > header h1 + p {
+  opacity: 1 !important;
+  max-width: 760px !important;
+  font-weight: 500 !important;
+}
+
+/* Body copy gets a quiet, high-contrast reading surface. */
+[data-wno-category] > main {
+  background: #f6f1e8 !important;
+  color: #201c18 !important;
+}
+
+[data-wno-category] > main h2,
+[data-wno-category] > main h3,
+[data-wno-category] > main h4,
+[data-wno-category] > main summary,
+[data-wno-category] > main strong {
+  color: #201c18 !important;
+  -webkit-text-fill-color: #201c18 !important;
+}
+
+[data-wno-category] > main p,
+[data-wno-category] > main li {
+  color: #514a43 !important;
+  -webkit-text-fill-color: #514a43 !important;
+}
+
+[data-wno-category] > main [data-wno-section="opening"] p {
+  color: #2b251f !important;
+  -webkit-text-fill-color: #2b251f !important;
+}
+
+[data-wno-category] > main [data-wno-section="fit"] > div,
+[data-wno-category] > main details,
+[data-wno-category] > main [data-wno-options-grid] > article {
+  background: #fffdf9 !important;
+  border-color: rgba(57,45,32,.18) !important;
+  box-shadow: 0 14px 34px rgba(47,38,27,.08) !important;
+}
+
+[data-wno-category] > main [data-wno-section="fit"] h2,
+[data-wno-category] > main [data-wno-section="fit"] h3,
+[data-wno-category] > main details summary {
+  color: #211c17 !important;
+  -webkit-text-fill-color: #211c17 !important;
+}
+
+[data-wno-category] > main [data-wno-section="fit"] p,
+[data-wno-category] > main [data-wno-section="fit"] li,
+[data-wno-category] > main [data-wno-options-grid] > article > div > p,
+[data-wno-category] > main details p {
+  color: #554d45 !important;
+  -webkit-text-fill-color: #554d45 !important;
+}
+
+/* Image-card titles and eyebrows sit on a dark gradient and must remain light. */
+[data-wno-category] [data-wno-options-grid] > article > a:first-child h3 {
+  color: #fff8eb !important;
+  -webkit-text-fill-color: #fff8eb !important;
+  text-shadow: 0 2px 14px rgba(0,0,0,.72) !important;
+}
+
+[data-wno-category] [data-wno-options-grid] > article > a:first-child p {
+  color: #f2d28b !important;
+  -webkit-text-fill-color: #f2d28b !important;
+  text-shadow: 0 1px 10px rgba(0,0,0,.72) !important;
+}
+
+/* Keep intentionally dark feature panels readable. */
+[data-wno-category] > main section[aria-label$="decision guide"] {
+  background: #171a18 !important;
+  border-color: rgba(212,175,55,.48) !important;
+}
+
+[data-wno-category] > main section[aria-label$="decision guide"] h2,
+[data-wno-category] > main section[aria-label$="decision guide"] h3,
+[data-wno-category] > main section[aria-label$="decision guide"] p,
+[data-wno-category] > main section[aria-label$="decision guide"] li,
+[data-wno-category] > main section[aria-label$="decision guide"] strong,
+[data-wno-category] > main section[aria-label$="decision guide"] span {
+  color: #f8f1e5 !important;
+  -webkit-text-fill-color: #f8f1e5 !important;
+}
+
+[data-wno-category] > main section[aria-label$="decision guide"] a {
+  color: #f2c86f !important;
+  -webkit-text-fill-color: #f2c86f !important;
+}
+
+/* The oversized pill/oval treatment in the decision controls breaks badly on
+   narrow widths. Use compact chips/buttons with sensible wrapping instead. */
+[data-wno-category] a[class*="rounded-full"],
+[data-wno-category] button[class*="rounded-full"],
+[data-wno-category] span[class*="rounded-full"] {
+  border-radius: 8px !important;
+  white-space: normal !important;
+  line-height: 1.25 !important;
+  text-align: center !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  font-size: .76rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .03em !important;
+}
+
+[data-wno-category] a[class*="rounded-full"],
+[data-wno-category] button[class*="rounded-full"] {
+  padding: .68rem .9rem !important;
+}
+
+/* Product imagery must read as imagery, not a near-black placeholder. */
+[data-wno-category] [data-wno-options-grid] img {
+  opacity: 1 !important;
+  filter: saturate(1.02) contrast(1.04) brightness(.92) !important;
+}
+
+/* Avoid the dramatic stagger/rotation treatments from becoming malformed
+   on tablet and desktop. Freeze pages should feel finished, not experimental. */
+[data-wno-category] [data-wno-section="fit"] > div,
+[data-wno-category] [data-wno-options-grid] > article {
+  transform: none !important;
+  margin-top: 0 !important;
+  border-radius: 10px !important;
+}
+
+@media (max-width: 767px) {
+  [data-wno-category] > header {
+    min-height: 350px !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  [data-wno-category] > header h1 {
+    font-size: clamp(2.25rem, 12vw, 3.4rem) !important;
+    line-height: 1.02 !important;
+  }
+
+  [data-wno-category] > main {
+    width: 100% !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  [data-wno-category] [data-wno-options-grid],
+  [data-wno-category] [data-wno-section="fit"] {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  [data-wno-category] [data-wno-options-grid] > article {
+    grid-column: 1 !important;
+  }
+}

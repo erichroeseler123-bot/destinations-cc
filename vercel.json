@@ -1,6 +1,6 @@
 {
-  "buildCommand": "tsx scripts/test-wno-recommendations.ts && pnpm run build",
-  "ignoreCommand": "node scripts/vercel-ignore-monorepo.mjs",
+  "buildCommand": "node \"$(git rev-parse --show-toplevel)/scripts/vercel-build-monorepo.mjs\"",
+  "ignoreCommand": "node \"$(git rev-parse --show-toplevel)/scripts/vercel-ignore-monorepo.mjs\"",
   "crons": [
     {
       "path": "/api/internal/hydrate-pipeline?key=aeb135f629cda8158eb0a62c949d28e7",
