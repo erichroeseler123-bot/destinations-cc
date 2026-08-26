@@ -1,5 +1,5 @@
 {
-  "buildCommand": "if [ \"$VERCEL_PROJECT_ID\" = \"prj_G4aMmGzfGoWKyVZ9wTgUPf5D7rrS\" ]; then pnpm -w exec tsx \"$(git rev-parse --show-toplevel)/scripts/test-wno-recommendations.ts\" && node \"$(git rev-parse --show-toplevel)/node_modules/next/dist/bin/next\" build; else pnpm run build; fi",
+  "buildCommand": "node \"$(git rev-parse --show-toplevel)/scripts/vercel-build-monorepo.mjs\"",
   "ignoreCommand": "node \"$(git rev-parse --show-toplevel)/scripts/vercel-ignore-monorepo.mjs\"",
   "crons": [
     {
