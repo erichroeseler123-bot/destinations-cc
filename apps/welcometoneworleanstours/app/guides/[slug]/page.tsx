@@ -111,6 +111,11 @@ export default async function GuideBridgePage({ params }: { params: Promise<{ sl
   if (guideTarget) permanentRedirect(`/guides/${guideTarget}`);
 
   const Page = pages[slug as keyof typeof pages] as unknown as (() => ReactNode) | undefined;
-  if (Page) return <>{Page()}</>;
+  if (Page) {
+    if (slug === "tonight") {
+      return <div data-wno-surface="tonight">{Page()}</div>;
+    }
+    return <>{Page()}</>;
+  }
   return <CanonicalGuidePage params={Promise.resolve({ slug })} />;
 }
