@@ -6,6 +6,7 @@ import "./wno-current-colors.css";
 import "./wno-page-identity.css";
 import "./wno-category-layouts.css";
 import "./wno-home-black-gold.css";
+import "./wno-freeze-fixes.css";
 import "@/app/new-orleans/data/truthLayerRuntime";
 import CanonicalNewOrleansLayout from "@/app/new-orleans/layout";
 
