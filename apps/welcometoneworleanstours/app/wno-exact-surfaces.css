@@ -1,0 +1,387 @@
+/* Exact WNO surface repair.
+   This file loads last and intentionally counters older broad `main ... !important`
+   rules only on the three public pages reported as visually broken. */
+
+/* -------------------------------------------------------------------------- */
+/* /tours — visible imagery, high contrast, clean rectangular cards.           */
+/* -------------------------------------------------------------------------- */
+[data-wno-surface="tours"] main {
+  background:
+    radial-gradient(circle at 95% 2%, rgba(184,132,45,.08), transparent 24%),
+    linear-gradient(180deg, #f8f3ea 0%, #efe7da 100%) !important;
+  color: #211c17 !important;
+}
+
+[data-wno-surface="tours"] main > section:first-of-type {
+  color: #fffdf8 !important;
+}
+
+[data-wno-surface="tours"] main > section:first-of-type h1,
+[data-wno-surface="tours"] main > section:first-of-type h2,
+[data-wno-surface="tours"] main > section:first-of-type h3,
+[data-wno-surface="tours"] main > section:first-of-type p {
+  color: #fffdf8 !important;
+  -webkit-text-fill-color: #fffdf8 !important;
+  text-shadow: 0 3px 22px rgba(0,0,0,.68) !important;
+}
+
+[data-wno-surface="tours"] #tour-collection h2,
+[data-wno-surface="tours"] #tour-collection h3 {
+  color: #211c17 !important;
+  -webkit-text-fill-color: #211c17 !important;
+}
+
+[data-wno-surface="tours"] #tour-collection > section > div:first-child > p {
+  color: #6f6255 !important;
+  -webkit-text-fill-color: #6f6255 !important;
+}
+
+[data-wno-surface="tours"] main [class*="productCard"].group {
+  overflow: hidden !important;
+  border: 1px solid rgba(69,54,38,.18) !important;
+  border-radius: 12px !important;
+  background: #fffdf9 !important;
+  box-shadow: 0 16px 38px rgba(48,37,24,.11) !important;
+}
+
+[data-wno-surface="tours"] main [class*="productCardMedia"] {
+  position: relative !important;
+  display: flex !important;
+  overflow: hidden !important;
+  aspect-ratio: 16 / 10 !important;
+  background: #17140f !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+[data-wno-surface="tours"] main [class*="productCardMedia"] > div:first-child {
+  position: relative !important;
+  min-height: 220px !important;
+  background: #17140f !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+[data-wno-surface="tours"] main [class*="productCardMedia"] img {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  filter: saturate(1.05) contrast(1.04) brightness(1.02) !important;
+}
+
+[data-wno-surface="tours"] main [class*="productCardImageShade"] {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  background: linear-gradient(180deg, transparent 62%, rgba(7,6,5,.38) 100%) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
+}
+
+[data-wno-surface="tours"] main [class*="productCardCredit"] {
+  background: #17140f !important;
+  color: #f5ead6 !important;
+  border-color: rgba(216,174,91,.24) !important;
+  box-shadow: none !important;
+}
+
+[data-wno-surface="tours"] main [class*="productCardFallback"] {
+  min-height: 220px !important;
+  background-image:
+    linear-gradient(180deg, rgba(8,7,6,.12), rgba(8,7,6,.62)),
+    url('/images/travel-markets/new-orleans/french-quarter-street.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  color: #fff !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+[data-wno-surface="tours"] main [class*="productCardFallback"] span {
+  color: #fffdf8 !important;
+  -webkit-text-fill-color: #fffdf8 !important;
+  text-shadow: 0 2px 14px rgba(0,0,0,.7) !important;
+}
+
+[data-wno-surface="tours"] main [class*="productCardContent"] {
+  background: #fffdf9 !important;
+  color: #211c17 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+[data-wno-surface="tours"] main [class*="productCardTitle"] {
+  color: #211c17 !important;
+  -webkit-text-fill-color: #211c17 !important;
+}
+
+[data-wno-surface="tours"] main [class*="productCardDescription"] {
+  color: #5b5147 !important;
+  -webkit-text-fill-color: #5b5147 !important;
+  opacity: 1 !important;
+}
+
+[data-wno-surface="tours"] main [class*="productCardOperator"],
+[data-wno-surface="tours"] main [class*="productCardCue"],
+[data-wno-surface="tours"] main [class*="productCardFit"] {
+  color: #725b32 !important;
+  -webkit-text-fill-color: #725b32 !important;
+}
+
+[data-wno-surface="tours"] main [class*="productCardCue"] {
+  background: #f4ecdf !important;
+  border-color: rgba(114,91,50,.22) !important;
+}
+
+[data-wno-surface="tours"] main [class*="productCardFooter"] {
+  border-color: rgba(69,54,38,.14) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-wno-surface="tours"] main [class*="productCardCta"] {
+  border-radius: 6px !important;
+  background: #b8872f !important;
+  border-color: #b8872f !important;
+  color: #17130c !important;
+  -webkit-text-fill-color: #17130c !important;
+  font-weight: 800 !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* /help-me-choose — make the reported decision section readable and visual.   */
+/* -------------------------------------------------------------------------- */
+[data-wno-surface="chooser"] > div {
+  background: #0b0a0d !important;
+  color: #fffaf0 !important;
+}
+
+[data-wno-surface="chooser"] > div > section:first-of-type {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+  background-image:
+    linear-gradient(90deg, rgba(9,8,11,.96) 0%, rgba(13,11,15,.90) 50%, rgba(13,11,15,.75) 100%),
+    url('/images/travel-markets/new-orleans/french-quarter-street.jpg') !important;
+  background-size: cover !important;
+  background-position: center 46% !important;
+  border-color: rgba(212,175,55,.32) !important;
+}
+
+[data-wno-surface="chooser"] > div > section:first-of-type::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(circle at 88% 18%, rgba(212,175,55,.18), transparent 28%) !important;
+}
+
+[data-wno-surface="chooser"] > div > section:first-of-type h2 {
+  color: #fff8ec !important;
+  -webkit-text-fill-color: #fff8ec !important;
+  text-shadow: 0 2px 18px rgba(0,0,0,.7) !important;
+}
+
+[data-wno-surface="chooser"] > div > section:first-of-type > div > div:first-child > p:last-child {
+  color: #e1d8cc !important;
+  -webkit-text-fill-color: #e1d8cc !important;
+  opacity: 1 !important;
+}
+
+[data-wno-surface="chooser"] > div > section:first-of-type div[class*="border"] {
+  background: rgba(18,15,20,.88) !important;
+  color: #fff8ec !important;
+  border-color: rgba(212,175,55,.32) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 14px 34px rgba(0,0,0,.22) !important;
+}
+
+[data-wno-surface="chooser"] > div > section:first-of-type div[class*="border"] h3 {
+  color: #fff8ec !important;
+  -webkit-text-fill-color: #fff8ec !important;
+}
+
+[data-wno-surface="chooser"] > div > section:first-of-type div[class*="border"] p:last-child {
+  color: #d5ccc1 !important;
+  -webkit-text-fill-color: #d5ccc1 !important;
+  opacity: 1 !important;
+}
+
+[data-wno-surface="chooser"] > div > section:first-of-type div[class*="border"] p:first-child {
+  color: #e5b94f !important;
+  -webkit-text-fill-color: #e5b94f !important;
+}
+
+/* Keep the other intentionally dark chooser panels from inheriting the old
+   global dark-heading rule. */
+[data-wno-surface="chooser"] > div > section:last-of-type h2,
+[data-wno-surface="chooser"] > div > section:last-of-type h3,
+[data-wno-surface="chooser"] > div > section:last-of-type strong {
+  color: #fff8ec !important;
+  -webkit-text-fill-color: #fff8ec !important;
+}
+
+[data-wno-surface="chooser"] > div > section:last-of-type p,
+[data-wno-surface="chooser"] > div > section:last-of-type span {
+  color: #cfc5ba !important;
+  -webkit-text-fill-color: #cfc5ba !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* /guides/tonight — no ovals, visible photography, readable dark-night UI.    */
+/* -------------------------------------------------------------------------- */
+[data-wno-surface="tonight"] main {
+  background:
+    radial-gradient(circle at 88% 8%, rgba(199,151,62,.11), transparent 24%),
+    linear-gradient(180deg, #0c0a0d 0%, #151117 100%) !important;
+  color: #f7efe5 !important;
+}
+
+[data-wno-surface="tonight"] main h1,
+[data-wno-surface="tonight"] main h2,
+[data-wno-surface="tonight"] main h3,
+[data-wno-surface="tonight"] main strong {
+  color: #fff8ec !important;
+  -webkit-text-fill-color: #fff8ec !important;
+}
+
+[data-wno-surface="tonight"] main > div > div:first-child a {
+  background: #171319 !important;
+  color: #f3eadf !important;
+  -webkit-text-fill-color: #f3eadf !important;
+  border-color: rgba(212,175,55,.35) !important;
+  border-radius: 7px !important;
+}
+
+[data-wno-surface="tonight"] [data-wno-night-dinner] {
+  overflow: hidden !important;
+  background: #fffaf0 !important;
+  color: #241d18 !important;
+  border-color: rgba(184,135,47,.42) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 42px rgba(0,0,0,.24) !important;
+}
+
+[data-wno-surface="tonight"] [data-wno-night-dinner] > div:first-child {
+  background: #171319 !important;
+  border-color: rgba(184,135,47,.24) !important;
+  box-shadow: none !important;
+}
+
+[data-wno-surface="tonight"] [data-wno-night-dinner] img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  opacity: 1 !important;
+  filter: saturate(1.05) contrast(1.03) !important;
+}
+
+[data-wno-surface="tonight"] [data-wno-night-dinner] h2 {
+  color: #241d18 !important;
+  -webkit-text-fill-color: #241d18 !important;
+}
+
+[data-wno-surface="tonight"] [data-wno-night-dinner] p {
+  color: #5e544b !important;
+  -webkit-text-fill-color: #5e544b !important;
+  opacity: 1 !important;
+}
+
+[data-wno-surface="tonight"] [data-wno-night-dinner] > p:first-of-type {
+  color: #9a6e20 !important;
+  -webkit-text-fill-color: #9a6e20 !important;
+}
+
+[data-wno-surface="tonight"] [data-wno-night-dinner] a {
+  border-radius: 7px !important;
+  background: #d8aa43 !important;
+  color: #17130c !important;
+  -webkit-text-fill-color: #17130c !important;
+}
+
+[data-wno-surface="tonight"] [data-wno-night-fallback] {
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 330px !important;
+  max-width: none !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: 14px !important;
+  background: #131015 !important;
+  color: #fff8ec !important;
+  border: 1px solid rgba(212,175,55,.28) !important;
+  box-shadow: 0 16px 36px rgba(0,0,0,.22) !important;
+  transform: none !important;
+}
+
+[data-wno-surface="tonight"] [data-wno-night-fallback] > div:first-child {
+  width: 100% !important;
+  height: 144px !important;
+  min-height: 144px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #171319 !important;
+  box-shadow: none !important;
+}
+
+[data-wno-surface="tonight"] [data-wno-night-fallback] > div:first-child img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  opacity: .96 !important;
+  filter: saturate(1.02) contrast(1.04) !important;
+}
+
+[data-wno-surface="tonight"] [data-wno-night-fallback] > div:last-child {
+  background: #131015 !important;
+  color: #fff8ec !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+[data-wno-surface="tonight"] [data-wno-night-fallback] h3 {
+  color: #fff8ec !important;
+  -webkit-text-fill-color: #fff8ec !important;
+}
+
+[data-wno-surface="tonight"] [data-wno-night-fallback] p {
+  color: #cfc5ba !important;
+  -webkit-text-fill-color: #cfc5ba !important;
+  opacity: 1 !important;
+}
+
+[data-wno-surface="tonight"] [data-wno-night-fallback] p:first-child,
+[data-wno-surface="tonight"] [data-wno-night-fallback] span:last-child {
+  color: #e4b84f !important;
+  -webkit-text-fill-color: #e4b84f !important;
+}
+
+[data-wno-surface="tonight"] main section > div:not([data-wno-night-dinner]) > div[class*="rounded"] {
+  color: #d8cec2 !important;
+}
+
+@media (max-width: 767px) {
+  [data-wno-surface="tours"] #tour-collection {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  [data-wno-surface="tours"] main [class*="productCardMedia"] > div:first-child {
+    min-height: 190px !important;
+  }
+
+  [data-wno-surface="chooser"] > div > section:first-of-type {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  [data-wno-surface="tonight"] [data-wno-night-fallback] {
+    min-height: 0 !important;
+  }
+}
