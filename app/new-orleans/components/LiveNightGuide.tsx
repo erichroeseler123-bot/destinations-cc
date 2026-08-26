@@ -22,6 +22,7 @@ const fallbackIdeas = [
     title: "Pick the meal first",
     description: "Choose a New Orleans staple or Dining Partner, then build the rest of the evening around where you already plan to be.",
     cta: "Find dinner",
+    image: "/images/wikimedia/originals/gumbo-dish.jpg",
   },
   {
     href: "/tours",
@@ -29,6 +30,7 @@ const fallbackIdeas = [
     title: "Browse evening-friendly tours",
     description: "Compare river cruises, ghosts and spirits, cocktail walks, and other experiences that can work after the daytime sightseeing is done.",
     cta: "Browse tours",
+    image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
   },
   {
     href: "/help-me-choose",
@@ -36,6 +38,7 @@ const fallbackIdeas = [
     title: "Tell us what kind of night you want",
     description: "Use the chooser to narrow the options by your group, pace, interests, timing, and how much structure you actually want.",
     cta: "Help me choose",
+    image: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
   },
 ] as const;
 
@@ -71,7 +74,10 @@ export default async function LiveNightGuide({
         </div>
 
         <section className="grid items-start gap-7 lg:grid-cols-[0.72fr_1.28fr]">
-          <aside className="rounded-[18px] border border-[#d4af37]/45 bg-[linear-gradient(180deg,#151217,#0c0b0d)] p-7 shadow-2xl shadow-black/20 lg:sticky lg:top-24">
+          <aside data-wno-night-dinner className="overflow-hidden rounded-[18px] border border-[#d4af37]/45 bg-[linear-gradient(180deg,#151217,#0c0b0d)] p-7 shadow-2xl shadow-black/20 lg:sticky lg:top-24">
+            <div aria-hidden="true" className="-mx-7 -mt-7 mb-6 h-40 overflow-hidden border-b border-[#d4af37]/25">
+              <img src="/images/wikimedia/originals/gumbo-dish.jpg" alt="" className="h-full w-full object-cover" loading="lazy" />
+            </div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">Make a night of it</p>
             <h2 className="mt-3 text-3xl font-black leading-tight text-[#fff8ec]">Dinner first.</h2>
             <p className="mt-4 leading-7 text-[#d6cec3]">Pick dinner around the event instead of treating the night as two separate decisions. Our dining guide includes free New Orleans staples and clearly labeled Dining Partners.</p>
@@ -101,12 +107,19 @@ export default async function LiveNightGuide({
                     <Link
                       key={idea.href}
                       href={idea.href}
-                      className="group flex min-h-[220px] flex-col rounded-[16px] border border-[#d4af37]/22 bg-[linear-gradient(155deg,#18151a,#0d0b0e)] p-6 transition hover:-translate-y-1 hover:border-[#d4af37]"
+                      data-wno-night-fallback
+                      className="group flex min-h-[330px] flex-col overflow-hidden rounded-[14px] border border-[#d4af37]/22 bg-[#111014] transition hover:-translate-y-1 hover:border-[#d4af37]"
                     >
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37]">{idea.eyebrow}</p>
-                      <h3 className="mt-3 text-xl font-black leading-snug text-[#fff8ec]">{idea.title}</h3>
-                      <p className="mt-3 flex-1 text-sm leading-6 text-[#bdb4aa]">{idea.description}</p>
-                      <span className="mt-5 text-sm font-black text-[#d4af37]">{idea.cta} →</span>
+                      <div className="relative h-36 shrink-0 overflow-hidden bg-[#171419]">
+                        <img src={idea.image} alt="" aria-hidden="true" loading="lazy" className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105 group-hover:opacity-100" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#111014]/70 via-transparent to-transparent" />
+                      </div>
+                      <div className="flex flex-1 flex-col p-5">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37]">{idea.eyebrow}</p>
+                        <h3 className="mt-3 text-xl font-black leading-snug text-[#fff8ec]">{idea.title}</h3>
+                        <p className="mt-3 flex-1 text-sm leading-6 text-[#bdb4aa]">{idea.description}</p>
+                        <span className="mt-5 text-sm font-black text-[#d4af37]">{idea.cta} →</span>
+                      </div>
                     </Link>
                   ))}
                 </div>
