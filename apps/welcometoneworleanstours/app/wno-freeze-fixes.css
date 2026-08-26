@@ -54,7 +54,7 @@
 /* A category hero should never be a giant empty slab. This background is a
    dependable fallback when a product-specific image is missing. */
 [data-wno-category] > header {
-  min-height: 440px !important;
+  min-height: 400px !important;
   background-image:
     linear-gradient(90deg, rgba(6,8,10,.91) 0%, rgba(8,10,12,.73) 48%, rgba(8,10,12,.42) 100%),
     linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.72)),
@@ -211,7 +211,7 @@
 
 @media (max-width: 767px) {
   [data-wno-category] > header {
-    min-height: 380px !important;
+    min-height: 350px !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
   }
