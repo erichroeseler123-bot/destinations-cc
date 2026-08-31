@@ -1,4 +1,6 @@
 const WNO = "https://welcometoneworleanstours.com";
+const WNO_TODAY = `${WNO}/things-to-do-in-new-orleans-today?utm_source=frenchquarterorientation&utm_medium=referral&utm_campaign=fqo_to_wno`;
+const WNO_FOUR_HOURS = `${WNO}/guides/4-hours-in-new-orleans?utm_source=frenchquarterorientation&utm_medium=referral&utm_campaign=fqo_to_wno`;
 
 const decisions = [
   ["01", "Know the shape of the Quarter", "The river, Rampart Street, Canal Street, and Esplanade Avenue give you the box. Once you know the edges, individual streets stop feeling random."],
@@ -16,7 +18,7 @@ export default function Home() {
         <div className="eyebrow">French Quarter Orientation · New Orleans</div>
         <h1>Understand the Quarter before you start wandering it.</h1>
         <p>The French Quarter is compact, but first-time visitors can burn a surprising amount of time walking the wrong direction, choosing the wrong first street, or trying to regroup after everyone splits up. This site is the practical 30-minute orientation layer: where you are, what connects to what, and what your smartest next move is.</p>
-        <div className="actions"><a className="btn primary" href="#first-hour">Plan your first hour</a><a className="btn secondary" href={`${WNO}/things-to-do-in-new-orleans-today?src=fqo`}>Explore New Orleans tours ↗</a></div>
+        <div className="actions"><a className="btn primary" href="#first-hour">Plan your first hour</a><a className="btn secondary" href={WNO_TODAY}>Explore New Orleans tours ↗</a></div>
       </div></section>
 
       <section className="section" id="first-hour"><div className="shell">
@@ -34,7 +36,7 @@ export default function Home() {
       <section className="section"><div className="shell">
         <div className="eyebrow" style={{color:"#8c352f"}}>After you are oriented</div><h2>Turn “where am I?” into “what should we do?”</h2>
         <p className="lede">Once the Quarter makes sense, use Welcome to New Orleans Tours for broader tour comparison and trip choices. The provider handling the booking remains the authority for current availability, price, meeting details, restrictions, and cancellation terms.</p>
-        <div className="actions"><a className="btn primary" href={`${WNO}/things-to-do-in-new-orleans-today?src=fqo`}>Things to do today ↗</a><a className="btn" style={{border:"1px solid #8c352f",color:"#8c352f"}} href={`${WNO}/guides/4-hours-in-new-orleans?src=fqo`}>Only have four hours? ↗</a><a className="btn" style={{border:"1px solid #8c352f",color:"#8c352f"}} href="https://www.destinationcommandcenter.com/new-orleans?utm_source=frenchquarterorientation&utm_medium=satellite">Open deeper New Orleans context ↗</a></div>
+        <div className="actions"><a className="btn primary" href={WNO_TODAY}>Things to do today ↗</a><a className="btn" style={{border:"1px solid #8c352f",color:"#8c352f"}} href={WNO_FOUR_HOURS}>Only have four hours? ↗</a><a className="btn" style={{border:"1px solid #8c352f",color:"#8c352f"}} href="https://www.destinationcommandcenter.com/new-orleans?utm_source=frenchquarterorientation&utm_medium=satellite">Open deeper New Orleans context ↗</a></div>
       </div></section>
     </main>
     <footer><div className="shell">French Quarter Orientation · Independent New Orleans orientation resource. The orientation is 30 minutes. Live prices, availability, and final terms come from the relevant provider.</div></footer>
