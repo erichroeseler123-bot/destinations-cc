@@ -29,7 +29,7 @@ export default function RestaurantOrientationAd() {
             See the $5 Orientation
           </Link>
           <a
-            href="sms:+15044849687?body=Hi%20New%20Orleans%20Concierge%20Desk%20%E2%80%94%20I%20want%20to%20reserve%20the%20%245%20French%20Quarter%20Orientation."
+            href="sms:+15044849687?body=Hi%20Welcome%20to%20New%20Orleans%20Tours%20%E2%80%94%20I%20want%20to%20reserve%20the%20%245%20French%20Quarter%20Orientation."
             className="inline-flex justify-center border border-[#d4af37] text-[#d4af37] font-bold px-6 py-3 uppercase tracking-wider text-xs"
           >
             Text to Reserve
