@@ -2,8 +2,8 @@ import { SupportPageShell, buildSupportMetadata } from "../supportPages";
 
 export const metadata = buildSupportMetadata(
   "/accessibility",
-  "Accessibility Statement | New Orleans Concierge Desk",
-  "Accessibility commitment and support contact information for New Orleans Concierge Desk.",
+  "Accessibility Statement | Welcome to New Orleans Tours",
+  "Accessibility commitment and support contact information for Welcome to New Orleans Tours.",
 );
 
 export default function AccessibilityPage() {
@@ -12,7 +12,7 @@ export default function AccessibilityPage() {
       eyebrow="Accessibility"
       title="Accessibility Statement"
       updated="August 9, 2026"
-      intro="New Orleans Concierge Desk aims to make its visitor-help and tour recommendation site usable for as many travelers as practical and to provide clear ways to ask for help."
+      intro="Welcome to New Orleans Tours aims to make its visitor-help and tour recommendation site usable for as many travelers as practical and to provide clear ways to ask for help."
       sections={[
         {
           title: "Our commitment",
