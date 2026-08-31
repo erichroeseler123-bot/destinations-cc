@@ -2,8 +2,8 @@ import { SupportPageShell, buildSupportMetadata } from "../supportPages";
 
 export const metadata = buildSupportMetadata(
   "/about",
-  "About Welcome to New Orleans Tours | New Orleans Concierge Desk",
-  "Who runs Welcome to New Orleans Tours, what the site does, how recommendations work, how booking works, and how to contact the Concierge Desk.",
+  "About Welcome to New Orleans Tours",
+  "Who runs Welcome to New Orleans Tours, what the site does, how recommendations work, how booking works, and how to contact us for local planning help.",
 );
 
 export default function AboutPage() {
@@ -11,13 +11,13 @@ export default function AboutPage() {
     <SupportPageShell
       eyebrow="About & transparency"
       title="About Welcome to New Orleans Tours"
-      intro="Welcome to New Orleans Tours and the New Orleans Concierge Desk are an independent visitor-planning service built to help travelers compare New Orleans experiences, understand the tradeoffs, and continue to the correct participating operator when they are ready to book."
+      intro="Welcome to New Orleans Tours is an independent visitor-planning service built to help travelers compare New Orleans experiences, understand the tradeoffs, and continue to the correct participating operator when they are ready to book."
       sections={[
         {
           title: "Who runs this site",
           body: [
             "Welcome to New Orleans Tours is an independent New Orleans visitor-planning and tour-recommendation site. It is not the City of New Orleans, a tourism bureau, or a cruise line, and it does not present partner tours as its own operations.",
-            "For visitor help, call or text the New Orleans Concierge Desk at 504-484-9687.",
+            "For visitor help, call or text our local planning team at 504-484-9687.",
           ],
         },
         {
@@ -51,7 +51,7 @@ export default function AboutPage() {
         {
           title: "Our own visitor service",
           body: [
-            "The Concierge Desk also offers its own $5 French Quarter Morning Orientation. Pages for that service identify it separately from third-party tour recommendations.",
+            "Welcome to New Orleans Tours also offers its own $5 French Quarter Morning Orientation. Pages for that service identify it separately from third-party tour recommendations.",
             "For questions about what fits your group, timing, transportation, weather exposure, mobility, or what to verify before purchase, call or text 504-484-9687.",
           ],
         },
