@@ -59,7 +59,7 @@ export default function NewOrleansToursTonightPage() {
       <section className="border-t border-white/10 bg-[#110e14] px-6 py-14">
         <div className="mx-auto max-w-5xl text-center">
           <h2 className="font-serif text-3xl">Want help choosing?</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-white/70">Use the quick chooser or contact the Concierge Desk if you are already in town and trying to make a plan.</p>
+          <p className="mx-auto mt-4 max-w-2xl text-white/70">Use the quick chooser or contact us if you are already in town and trying to make a plan.</p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link href="/help-me-choose" className="bg-[#d4af37] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717]">Help me choose</Link>
             <a href="tel:+15044849687" className="border border-[#d4af37] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#fdfbf7]">Call or text 504-484-9687</a>
