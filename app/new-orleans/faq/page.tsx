@@ -6,12 +6,12 @@ import { SupportPageShell, buildSupportMetadata } from "../supportPages";
 export const metadata = buildSupportMetadata(
   "/faq",
   "FAQ | Welcome to New Orleans Tours",
-  "General booking, operator, cancellation, accessibility, orientation, and affiliate questions for Welcome to New Orleans Tours and the New Orleans Concierge Desk.",
+  "General booking, operator, cancellation, accessibility, orientation, and affiliate questions for Welcome to New Orleans Tours.",
 );
 
 const FAQS = [
   {
-    question: "Does New Orleans Concierge Desk operate the tours?",
+    question: "Does Welcome to New Orleans Tours operate the tours?",
     answer:
       "We offer our own $5 French Quarter Morning Orientation. The other tours displayed on the site are provided by independent participating operators, which generally manage the customer experience after purchase.",
   },
@@ -23,7 +23,7 @@ const FAQS = [
   {
     question: "How do I reserve the $5 French Quarter Orientation?",
     answer:
-      "The orientation runs daily at 8:00 AM and 9:30 AM. Until online checkout is connected, call or text the Concierge Desk to reserve and pay $5 per person at check-in.",
+      "The orientation runs daily at 8:00 AM and 9:30 AM. Until online checkout is connected, call or text Welcome to New Orleans Tours to reserve and pay $5 per person at check-in.",
   },
   {
     question: "Can I change or cancel a third-party tour booking?",
@@ -43,7 +43,7 @@ const FAQS = [
   {
     question: "How do I ask about accessibility or group needs?",
     answer:
-      "Before booking, contact the Concierge Desk for planning help or review the operator checkout. For specific accommodation commitments on partner tours, confirm directly with the operator.",
+      "Before booking, contact us for planning help or review the operator checkout. For specific accommodation commitments on partner tours, confirm directly with the operator.",
   },
 ] as const;
 
@@ -60,7 +60,7 @@ export default function FaqPage() {
       <SupportPageShell
         eyebrow="FAQ"
         title="Frequently Asked Questions"
-        intro="General answers for visitors using Welcome to New Orleans Tours and the New Orleans Concierge Desk. Specific third-party tour terms may differ, so always check the tour page and checkout terms before booking."
+        intro="General answers for visitors using Welcome to New Orleans Tours. Specific third-party tour terms may differ, so always check the tour page and checkout terms before booking."
         sections={FAQS.map((item) => ({ title: item.question, body: [item.answer] }))}
       />
     </>

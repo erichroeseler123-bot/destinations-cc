@@ -5,9 +5,9 @@ import CinematicPageHero from '../components/CinematicPageHero';
 import { NEW_ORLEANS_ORIGIN } from '../tours/pageConfig';
 
 export const metadata: Metadata = {
-  title: 'New Orleans Concierge Desk | Local Tour & Trip Help',
-  description: 'Get personal help comparing New Orleans tours, timing, transportation, and what to do next. Call or text the New Orleans Concierge Desk.',
-  openGraph: { title: 'New Orleans Concierge Desk', description: 'Personal New Orleans planning help, a $5 French Quarter morning orientation, and in-person concierge visits when available.' },
+  title: 'Local Planning Help | Welcome to New Orleans Tours',
+  description: 'Get personal help comparing New Orleans tours, timing, transportation, and what to do next from Welcome to New Orleans Tours.',
+  openGraph: { title: 'Local Planning Help | Welcome to New Orleans Tours', description: 'Personal New Orleans planning help, a $5 French Quarter morning orientation, and in-person concierge visits when available.' },
   alternates: { canonical: `${NEW_ORLEANS_ORIGIN}/french-quarter-welcome-stop` }
 };
 
@@ -15,13 +15,13 @@ export default function WelcomeStopPage() {
   return (
     <div className="bg-[#080708] min-h-screen text-[#fdfbf7] font-[var(--font-sans)]">
       <CinematicPageHero
-        eyebrow="A real person when you want one"
-        title="New Orleans Concierge Desk"
+        eyebrow="Welcome to New Orleans Tours · Personal help"
+        title="Need a real person to help plan your day?"
         script="local help, right now"
-        intro="Need help deciding what to do? Tell us who's traveling, how much time you have, and what sounds good. We'll help you compare tours, timing and transportation — and when available, we can come to you for an in-person concierge visit."
+        intro="Tell us who's traveling, how much time you have, and what sounds good. We'll help you compare tours, timing and transportation — and when available, we can come to you for an in-person planning visit."
         image="/images/travel-markets/new-orleans/french-quarter-street.jpg"
         actions={[
-          { href: "tel:+15044849687", label: "Call the Desk", detail: "504-484-9687", primary: true },
+          { href: "tel:+15044849687", label: "Call Us", detail: "504-484-9687", primary: true },
           { href: "sms:+15044849687", label: "Text Us", detail: "Ask a quick planning question" },
           { href: "/guides/french-quarter-orientation", label: "$5 Orientation", detail: "30 minutes · 8:00 AM or 9:30 AM" },
         ]}
@@ -37,15 +37,15 @@ export default function WelcomeStopPage() {
           </div>
           <div className="relative overflow-hidden bg-[linear-gradient(145deg,#171419,#0b0a0c)] border border-[#d4af37]/32 p-7 shadow-xl shadow-black/20">
             <p className="text-xs font-bold uppercase tracking-widest text-[#d4af37] mb-2">We’ll come to you</p>
-            <h2 className="text-3xl font-bold mb-3">Concierge visit where you are</h2>
-            <p className="text-[#bbb0a1] text-sm leading-relaxed mb-5">Want a person to help you sort out the day without coming to the desk first? Call or text us. When an in-person concierge visit is available, we’ll confirm the location and timing with you directly.</p>
+            <h2 className="text-3xl font-bold mb-3">In-person planning visit</h2>
+            <p className="text-[#bbb0a1] text-sm leading-relaxed mb-5">Want a person to help you sort out the day without coming to us first? Call or text. When an in-person visit is available, we’ll confirm the location and timing with you directly.</p>
             <div className="flex flex-col sm:flex-row gap-3"><a href="tel:+15044849687" className="bg-[#d4af37] text-[#151515] px-5 py-3 text-xs font-bold uppercase tracking-widest text-center">Call 504-484-9687</a><a href="sms:+15044849687" className="border border-[#d4af37] text-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest text-center">Text for a visit</a></div>
           </div>
         </div>
 
         <div className="relative overflow-hidden bg-[linear-gradient(145deg,#171419,#0b0a0c)] border border-[#d4af37]/32 p-7 shadow-xl shadow-black/20 mb-10">
           <p className="text-xs font-bold uppercase tracking-widest text-[#d4af37] mb-2">Personal planning help</p>
-          <h2 className="text-3xl font-bold mb-3">Call or text the desk</h2>
+          <h2 className="text-3xl font-bold mb-3">Call or text us</h2>
           <p className="text-[#bbb0a1] text-sm leading-relaxed mb-5">Two tours fit? Not sure whether to do a swamp or river cruise? Need something before dinner? This is the human fallback for the decision engine.</p>
           <div className="flex gap-3"><a href="tel:+15044849687" className="bg-[#d4af37] text-[#151515] px-5 py-3 text-xs font-bold uppercase tracking-widest">Call</a><a href="sms:+15044849687" className="border border-[#d4af37] text-[#d4af37] px-5 py-3 text-xs font-bold uppercase tracking-widest">Text</a></div>
         </div>

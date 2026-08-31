@@ -2,7 +2,7 @@ import { SupportPageShell, buildSupportMetadata } from "../supportPages";
 
 export const metadata = buildSupportMetadata(
   "/cancellation-policy",
-  "Cancellation and Refund Policy | New Orleans Concierge Desk",
+  "Cancellation and Refund Policy | Welcome to New Orleans Tours",
   "How cancellations, refunds, no-shows, late arrivals, and weather changes are generally handled for operator-provided New Orleans tours.",
 );
 
@@ -25,7 +25,7 @@ export default function CancellationPolicyPage() {
           title: "How to request help after booking",
           body: [
             "Use the operating company and FareHarbor details in your confirmation email first. Include your booking number, tour date, traveler name, and the change or cancellation you are requesting.",
-            "If you cannot identify the right operator contact, New Orleans Concierge Desk can help point you back to the appropriate confirmation details, but we cannot override the operator's policy.",
+            "If you cannot identify the right operator contact, Welcome to New Orleans Tours can help point you back to the appropriate confirmation details, but we cannot override the operator's policy.",
           ],
         },
         {

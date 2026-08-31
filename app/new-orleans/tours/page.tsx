@@ -15,7 +15,7 @@ import { headers } from "next/headers";
 import { generateCategorySchemaGraph } from "../lib/schema";
 
 const CURRENT_TOURS_DESCRIPTION =
-  "Browse 21 curated New Orleans experiences across river cruises, city tours, swamps, airboats, plantation history, walking tours, and full-day combinations, with concierge help when you want it.";
+  "Browse 21 curated New Orleans experiences across river cruises, city tours, swamps, airboats, plantation history, walking tours, and full-day combinations, with personal planning help when you want it.";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -83,7 +83,7 @@ export default async function NewOrleansToursPage() {
           actions={[
             { href: "#tour-collection", label: "Browse Tours", detail: `${STOREFRONT_PRODUCTS.length} current experiences`, primary: true },
             { href: "/help-me-choose", label: "Help Me Choose", detail: "Narrow it down for me" },
-            { href: "tel:+15044849687", label: "Ask the Desk", detail: "504-484-9687" },
+            { href: "tel:+15044849687", label: "Ask Us", detail: "504-484-9687" },
           ]}
         />
 

@@ -11,7 +11,7 @@ export const metadata = {
   description:
     "Handpicked New Orleans tours and experiences for your group. Tell us what kind of day you want and we’ll narrow the city down to the experiences that fit.",
   openGraph: {
-    title: "Welcome to New Orleans Tours | Local Concierge Help",
+    title: "Welcome to New Orleans Tours | Local Planning Help",
     description:
       "Find the right New Orleans experience for your group with curated recommendations, timely local context, and direct booking when you’re ready.",
   },
@@ -74,7 +74,7 @@ export default function NewOrleansHomePage() {
         <div className="mx-auto grid w-[min(1100px,calc(100%-2rem))] grid-cols-1 divide-y divide-[var(--nola-border)] py-4 text-center sm:grid-cols-3 sm:divide-x sm:divide-y-0">
           <div className="px-4 py-3"><p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">Trusted Local Partners</p></div>
           <div className="px-4 py-3"><p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">Curated Experiences</p></div>
-          <div className="px-4 py-3"><p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">Local Concierge Support</p></div>
+          <div className="px-4 py-3"><p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">Local Planning Support</p></div>
         </div>
       </section>
 
@@ -117,7 +117,7 @@ export default function NewOrleansHomePage() {
 
       <section className="border-y border-[var(--nola-border)] bg-[#0b0b0c] py-16">
         <div className="mx-auto w-[min(1240px,calc(100%-3rem))]">
-          <p className={visualStyles.homeSectionEyebrow}>Live concierge notes</p>
+          <p className={visualStyles.homeSectionEyebrow}>Live local notes</p>
           <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>What’s happening next 48 hours</h2>
           <LiveIntelligencePanel />
           <div className="mt-8"><a href="#chooser" data-wno-event="live_intelligence_chooser_clicked" data-wno-label="Not sure? Help Me Choose" className={visualStyles.homeGoldButton}>Not sure? Help Me Choose</a></div>
@@ -167,7 +167,7 @@ export default function NewOrleansHomePage() {
         <div className={visualStyles.homeSectionInner}>
           <div className="border border-[var(--nola-border)] bg-[var(--nola-surface)] p-6 md:flex md:items-center md:justify-between md:gap-8">
             <div>
-              <p className={visualStyles.homeSectionEyebrow}>Concierge Desk</p>
+              <p className={visualStyles.homeSectionEyebrow}>Local Planning Help</p>
               <p className="mt-2 max-w-3xl text-base leading-6 text-[var(--nola-ivory)]">Want help now? Call or text 504-484-9687 or book a $5 French Quarter Orientation at 8:00 or 9:30 AM daily.</p>
             </div>
             <div className="mt-5 flex flex-wrap gap-3 md:mt-0">

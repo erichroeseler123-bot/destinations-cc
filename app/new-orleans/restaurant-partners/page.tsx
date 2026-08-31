@@ -4,9 +4,9 @@ import RestaurantOrientationAd from "../components/RestaurantOrientationAd";
 import { DEFAULT_SEATED_GUEST_FEE_USD } from "../data/diningPartners";
 
 export const metadata: Metadata = {
-  title: "Restaurant Partner Program | New Orleans Concierge Desk",
+  title: "Restaurant Partner Program | Welcome to New Orleans Tours",
   description:
-    "Join the New Orleans Concierge Desk dining partner pilot and pay only for confirmed seated guests we refer.",
+    "Join the Welcome to New Orleans Tours dining partner pilot and pay only for confirmed seated guests we refer.",
   alternates: { canonical: "/new-orleans/restaurant-partners" },
 };
 
@@ -15,7 +15,7 @@ export default function RestaurantPartnersPage() {
     <main className="min-h-screen bg-[#151515] text-[#fdfbf7] px-6 py-16 md:py-24">
       <div className="max-w-4xl mx-auto">
         <p className="text-[#d4af37] text-xs font-bold uppercase tracking-[0.2em] mb-4">
-          New Orleans Concierge Desk · Dining Partner Pilot
+          Welcome to New Orleans Tours · Dining Partner Pilot
         </p>
         <h1 className="font-[var(--font-accent)] text-4xl md:text-6xl font-bold leading-tight mb-6">
           We send diners. You pay only when they show up.
@@ -52,7 +52,7 @@ export default function RestaurantPartnersPage() {
             <ol className="space-y-4 text-[#cccccc] leading-relaxed list-decimal pl-6">
               <li>We agree on your restaurant profile, visitor fit, referral code, and seated-guest fee.</li>
               <li>We recommend your restaurant only when it fits the visitor’s stated needs and disclose that you are a Dining Partner.</li>
-              <li>The visitor reserves through your normal reservation channel or through concierge assistance.</li>
+              <li>The visitor reserves through your normal reservation channel or through our planning assistance.</li>
               <li>We track the referred party using the partner referral code and reservation details.</li>
               <li>At month-end, we reconcile which referred guests actually seated. Only confirmed seated guests are billable.</li>
             </ol>
@@ -89,7 +89,7 @@ export default function RestaurantPartnersPage() {
         <section className="border border-[#d4af37] bg-[#1a1a1a] p-7 md:p-9 mb-10">
           <h2 className="font-[var(--font-accent)] text-2xl font-bold mb-3">Start the pilot</h2>
           <p className="text-[#cccccc] mb-6 leading-relaxed">
-            Call or text the New Orleans Concierge Desk. We can set up the first partner manually and keep the pilot simple while we prove the referrals.
+            Call or text Welcome to New Orleans Tours. We can set up the first partner manually and keep the pilot simple while we prove the referrals.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <a href="tel:+15044849687" className="inline-flex justify-center bg-[#d4af37] text-[#151515] font-bold px-6 py-4 uppercase tracking-wider text-sm">

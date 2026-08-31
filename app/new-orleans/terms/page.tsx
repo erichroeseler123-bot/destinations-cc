@@ -2,8 +2,8 @@ import { SupportPageShell, buildSupportMetadata } from "../supportPages";
 
 export const metadata = buildSupportMetadata(
   "/terms",
-  "Terms of Use and Booking Terms | New Orleans Concierge Desk",
-  "Terms explaining the visitor-help, affiliate recommendation, direct orientation, and operator-controlled booking roles of New Orleans Concierge Desk.",
+  "Terms of Use and Booking Terms | Welcome to New Orleans Tours",
+  "Terms explaining the visitor-help, affiliate recommendation, direct orientation, and operator-controlled booking roles of Welcome to New Orleans Tours.",
 );
 
 export default function TermsPage() {
@@ -12,7 +12,7 @@ export default function TermsPage() {
       eyebrow="Terms"
       title="Terms of Use and Booking Terms"
       updated="August 9, 2026"
-      intro="New Orleans Concierge Desk provides visitor help, tour recommendations, and an independently offered $5 French Quarter Morning Orientation. Independent tour operators provide the other experiences displayed on this site and generally serve as the merchant and service provider for those bookings."
+      intro="Welcome to New Orleans Tours provides visitor help, tour recommendations, and an independently offered $5 French Quarter Morning Orientation. Independent tour operators provide the other experiences displayed on this site and generally serve as the merchant and service provider for those bookings."
       sections={[
         {
           title: "Our role",
@@ -24,7 +24,7 @@ export default function TermsPage() {
         {
           title: "$5 French Quarter Orientation",
           body: [
-            "The French Quarter Morning Orientation is offered by New Orleans Concierge Desk and is separate from third-party tours. Until online checkout is connected, reservations are confirmed directly by call or text and payment is handled at check-in.",
+            "The French Quarter Morning Orientation is offered by Welcome to New Orleans Tours and is separate from third-party tours. Until online checkout is connected, reservations are confirmed directly by call or text and payment is handled at check-in.",
           ],
         },
         {
@@ -45,7 +45,7 @@ export default function TermsPage() {
           title: "Limitations",
           body: [
             "We provide recommendation and booking-assistance content as-is and cannot guarantee that all third-party information will be complete, current, or error-free at every moment.",
-            "To the extent allowed by applicable law, New Orleans Concierge Desk is not responsible for operator service failures, schedule changes, denied participation, weather interruptions, or policies controlled by an independent operator.",
+            "To the extent allowed by applicable law, Welcome to New Orleans Tours is not responsible for operator service failures, schedule changes, denied participation, weather interruptions, or policies controlled by an independent operator.",
           ],
         },
       ]}
