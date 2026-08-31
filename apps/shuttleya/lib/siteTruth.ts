@@ -1,6 +1,6 @@
 export const SHUTTLEYA_TRUTH = {
   dcc_id: "dcc:site:shuttleya",
-  verified_at: "2026-08-24",
+  verified_at: "2026-08-31",
   site: {
     id: "shuttleya",
     name: "ShuttleYa",
@@ -45,11 +45,11 @@ export const SHUTTLEYA_TRUTH = {
     },
   ],
   operator_handoffs: [
-    { name: "GoSno", url: "https://gosno.co", scope: "DEN / COS ↔ Colorado mountain resorts" },
-    { name: "BigSky GoSno", url: "https://bigsky.gosno.co", scope: "BZN ↔ Big Sky private transportation" },
-    { name: "Party at Red Rocks", url: "https://partyatredrocks.com", scope: "Private Red Rocks transportation" },
-    { name: "Red Rocks DD", url: "https://redrocksdd.com", scope: "Red Rocks designated-driver transportation" },
-    { name: "Vibe Around Town", url: "https://vibearoundtown.com", scope: "USVI local-driver discovery and private ride planning" },
+    { name: "GoSno", url: "https://gosno.co/?utm_source=shuttleya&utm_medium=referral&utm_campaign=colorado_mountain_transport", scope: "DEN / COS ↔ Colorado mountain resorts" },
+    { name: "BigSky GoSno", url: "https://bigsky.gosno.co/?utm_source=shuttleya&utm_medium=referral&utm_campaign=big_sky_transport", scope: "BZN ↔ Big Sky private transportation" },
+    { name: "Party at Red Rocks", url: "https://partyatredrocks.com/?utm_source=shuttleya&utm_medium=referral&utm_campaign=red_rocks_private_transport", scope: "Private Red Rocks transportation" },
+    { name: "Red Rocks DD", url: "https://redrocksdd.com/?utm_source=shuttleya&utm_medium=referral&utm_campaign=red_rocks_designated_driver", scope: "Red Rocks designated-driver transportation" },
+    { name: "Vibe Around Town", url: "https://vibearoundtown.com/?utm_source=shuttleya&utm_medium=referral&utm_campaign=local_driver_discovery", scope: "USVI and launching-market local-driver discovery and private ride planning" },
   ],
   legacy_service: {
     denver_to_mighty_argo_scheduled_shuttle: "retired_not_operating",
