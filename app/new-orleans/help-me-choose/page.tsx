@@ -39,7 +39,7 @@ export default function HelpMeChoosePage() {
     <div className="bg-[#080708] text-[#fdfbf7] min-h-screen">
       <ChooserExitBriefPrompt />
       <CinematicPageHero
-        eyebrow="Your New Orleans decision desk"
+        eyebrow="Your New Orleans decision guide"
         title="Tell us what kind of New Orleans day you want"
         script="we'll narrow it down"
         intro="Answer a few traveler questions and we’ll make a best-fit recommendation, explain why it fits, surface cautions and show a backup. We use timing, transportation, group fit, live context and practical constraints instead of forcing you through a giant catalog."
@@ -94,8 +94,8 @@ export default function HelpMeChoosePage() {
           <div className="border border-[#d4af37]/30 bg-[#171419] p-7">
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">Prefer a human?</p>
             <h2 className="mt-2 text-3xl font-[var(--font-accent)] font-bold">We’ll help you sort out the day</h2>
-            <p className="mt-3 text-sm leading-6 text-[#bbb0a1]">If you’re already in New Orleans and want help comparing the choices, call or text the Concierge Desk. We can help with timing, transportation, group fit and what to verify before booking.</p>
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row"><a href="tel:+15044849687" className="bg-[#d4af37] px-5 py-3 text-center text-xs font-bold uppercase tracking-widest text-[#151515]">Call 504-484-9687</a><a href="sms:+15044849687" className="border border-[#d4af37] px-5 py-3 text-center text-xs font-bold uppercase tracking-widest text-[#d4af37]">Text the desk</a></div>
+            <p className="mt-3 text-sm leading-6 text-[#bbb0a1]">If you’re already in New Orleans and want help comparing the choices, call or text us. We can help with timing, transportation, group fit and what to verify before booking.</p>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row"><a href="tel:+15044849687" className="bg-[#d4af37] px-5 py-3 text-center text-xs font-bold uppercase tracking-widest text-[#151515]">Call 504-484-9687</a><a href="sms:+15044849687" className="border border-[#d4af37] px-5 py-3 text-center text-xs font-bold uppercase tracking-widest text-[#d4af37]">Text us</a></div>
           </div>
           <div className="border border-[#d4af37]/30 bg-[#171419] p-7">
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">Morning shortcut</p>
