@@ -5,7 +5,7 @@ import { ACTIVE_DINING_PARTNERS, DINING_DISCLOSURE } from "../data/diningPartner
 import { NEW_ORLEANS_STAPLES, STAPLE_DISCLOSURE } from "../data/diningStaples";
 
 export const metadata: Metadata = {
-  title: "Where Should We Eat in New Orleans? | New Orleans Concierge Desk",
+  title: "Where Should We Eat in New Orleans? | Welcome to New Orleans Tours",
   description:
     "Get practical New Orleans dining help based on your group, timing, neighborhood, and plans before or after tours, shows, games and river cruises.",
   keywords: [
@@ -35,7 +35,7 @@ export default function NewOrleansFoodPage() {
   return (
     <main className="min-h-screen bg-[#151515] text-[#fdfbf7] px-6 py-16 md:py-24">
       <div className="max-w-5xl mx-auto">
-        <p className="text-[#d4af37] text-xs font-bold uppercase tracking-[0.2em] mb-4">New Orleans Concierge Desk</p>
+        <p className="text-[#d4af37] text-xs font-bold uppercase tracking-[0.2em] mb-4">Welcome to New Orleans Tours · Dining Help</p>
         <h1 className="font-[var(--font-accent)] text-4xl md:text-6xl font-bold leading-tight mb-6">Where should we eat?</h1>
         <p className="text-lg md:text-xl text-[#cccccc] max-w-3xl leading-relaxed mb-10">
           Tell us what kind of meal you need and when. We help narrow the choices around your group, neighborhood, schedule, and what you are doing before or after dinner.
@@ -93,11 +93,11 @@ export default function NewOrleansFoodPage() {
         <section className="border border-[#2a2a2a] bg-[#1a1a1a] p-7 md:p-9 mb-12">
           <h2 className="font-[var(--font-accent)] text-2xl md:text-3xl font-bold mb-3">Need a recommendation now?</h2>
           <p className="text-[#cccccc] leading-relaxed mb-6">
-            Call or text the concierge desk with your party size, preferred time, neighborhood, and what kind of meal you want. We can help you narrow the options and, where available, coordinate a reservation.
+            Call or text us with your party size, preferred time, neighborhood, and what kind of meal you want. We can help you narrow the options and, where available, coordinate a reservation.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <a href="tel:+15044849687" className="inline-flex justify-center bg-[#d4af37] text-[#151515] font-bold px-6 py-4 uppercase tracking-wider text-sm">Call 504-484-9687</a>
-            <a href="sms:+15044849687" className="inline-flex justify-center border border-[#d4af37] text-[#d4af37] font-bold px-6 py-4 uppercase tracking-wider text-sm">Text the Concierge</a>
+            <a href="sms:+15044849687" className="inline-flex justify-center border border-[#d4af37] text-[#d4af37] font-bold px-6 py-4 uppercase tracking-wider text-sm">Text Us</a>
           </div>
         </section>
 
@@ -117,7 +117,7 @@ export default function NewOrleansFoodPage() {
           ) : (
             <div className="border border-dashed border-[#3a3a3a] bg-[#181818] p-7 md:p-9">
               <h3 className="font-bold text-lg mb-2">Partner dining recommendations are being added carefully.</h3>
-              <p className="text-[#aaaaaa] leading-relaxed max-w-3xl">We do not publish paid restaurant recommendations until a restaurant has actually joined the program and its participation is disclosed. In the meantime, the concierge can still help you think through timing, location, and group fit.</p>
+              <p className="text-[#aaaaaa] leading-relaxed max-w-3xl">We do not publish paid restaurant recommendations until a restaurant has actually joined the program and its participation is disclosed. In the meantime, we can still help you think through timing, location, and group fit.</p>
             </div>
           )}
         </section>
