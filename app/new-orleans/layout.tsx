@@ -29,11 +29,11 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://welcometoneworleanstours.com"),
   applicationName: "Welcome to New Orleans Tours",
   title: {
-    default: "Welcome to New Orleans Tours | New Orleans Concierge Desk",
+    default: "Welcome to New Orleans Tours | Tours, Planning & Local Help",
     template: "%s | Welcome to New Orleans Tours",
   },
   openGraph: {
-    title: "Welcome to New Orleans Tours | New Orleans Concierge Desk",
+    title: "Welcome to New Orleans Tours | Tours, Planning & Local Help",
     description: socialDescription,
     url: "https://welcometoneworleanstours.com",
     siteName: "Welcome to New Orleans Tours",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Welcome to New Orleans Tours | New Orleans Concierge Desk",
+    title: "Welcome to New Orleans Tours | Tours, Planning & Local Help",
     description: socialDescription,
   },
   verification: {
