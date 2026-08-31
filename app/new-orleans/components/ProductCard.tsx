@@ -55,7 +55,9 @@ export default function ProductCard({
       );
   const fitLabel = product.slug === 'covered-tour-boat'
     ? 'a calmer, shaded swamp ride'
-    : product.bestFor?.replace(/^Best for\s*/i, '');
+    : product.slug === 'ragin-cajun-airboat-options'
+      ? 'a faster, open-air swamp adventure'
+      : product.bestFor?.replace(/^Best for\s*/i, '');
 
   return (
     <div className={`${visualStyles.productCard} group`}>
