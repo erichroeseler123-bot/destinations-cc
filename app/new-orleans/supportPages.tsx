@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const WTONOT_SITE_NAME = "New Orleans Concierge Desk";
+export const WTONOT_SITE_NAME = "Welcome to New Orleans Tours";
 export const WTONOT_ORIGIN = "https://www.welcometoneworleanstours.com";
 export const WTONOT_SUPPORT_EMAIL = "help@welcometoneworleanstours.com";
 export const WTONOT_SUPPORT_PHONE = "504-484-9687";
