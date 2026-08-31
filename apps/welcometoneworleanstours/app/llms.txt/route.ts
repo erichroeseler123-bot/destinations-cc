@@ -6,9 +6,9 @@ DCC contract: dcc-site-contract v1.1
 Agent contract: https://welcometoneworleanstours.com/agent.json
 Portfolio graph: https://www.destinationcommandcenter.com/api/public/portfolio-feed
 Canonical DCC truth record: https://www.destinationcommandcenter.com/api/public/truth-feed?id=wno-tours
-Last verified: 2026-08-24
+Last verified: 2026-08-31
 
-Welcome to New Orleans Tours is an independent New Orleans tour-planning and booking-assistance site. It helps visitors narrow choices with curated experience pages, practical decision guides, current local context, concierge help, and direct handoff to participating operators for booking.
+Welcome to New Orleans Tours is an independent New Orleans tour-planning and booking-assistance site. It helps visitors narrow choices with curated experience pages, practical decision guides, current local context, personal planning help, and direct handoff to participating operators for booking.
 
 ## Relationship to Destination Command Center
 - parent: Destination Command Center
@@ -27,7 +27,7 @@ Welcome to New Orleans Tours is an independent New Orleans tour-planning and boo
 - Time-sensitive local context used when relevant
 - Decision guides and comparison pages
 - Direct participating-operator booking handoff
-- Human concierge help by phone or text
+- Personal planning help by phone or text
 
 ## How recommendations work
 The recommendation flow considers traveler timing, available time, transportation needs, group fit, pace, known restrictions, historical interest and current local context when available. It returns a best-fit option, reasons, cautions and a secondary option where the supported inventory allows one.
