@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import CinematicHomepageTop from "./CinematicHomepageTop";
 
 // Keep this app entrypoint tied to the shared New Orleans storefront so WNO production
-// rebuilds when shared customer-facing cleanup is ready to ship.
+// rebuilds when shared customer-facing cleanup and retired-route fixes are ready to ship.
 export const metadata: Metadata = {
   title: "Welcome to New Orleans Tours | Find the Right Experience",
   description: "Choose the New Orleans experience that fits your group, time, transportation, and interests, then check live operator availability.",
