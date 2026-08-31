@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   },
 };
 
+const GOSNO =
+  "https://gosno.co/?utm_source=420friendlyairportpickup&utm_medium=referral&utm_campaign=colorado_airport_transfer";
+
 export default async function HomePage({
   searchParams,
 }: {
@@ -67,6 +70,18 @@ export default async function HomePage({
           <Link className="button-secondary" href="/420-friendly-airport-transport-denver">
             420 Friendly Airport Transport Denver
           </Link>
+        </div>
+      </aside>
+      <aside className="panel" aria-labelledby="gosno-transfer-handoff">
+        <p className="eyebrow">Heading to the mountains?</p>
+        <h2 id="gosno-transfer-handoff">Continue to GoSno for the actual private transfer.</h2>
+        <p className="muted">
+          If your trip is a DEN or COS private transfer to a Colorado mountain destination, GoSno is the operating transportation business and controls current service, pricing and availability.
+        </p>
+        <div className="cta-row">
+          <a className="button-secondary" href={GOSNO}>
+            Check GoSno transportation ↗
+          </a>
         </div>
       </aside>
     </>
