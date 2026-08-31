@@ -23,17 +23,17 @@ const newOrleansScriptFont = Pinyon_Script({
   variable: '--font-new-orleans-script',
 });
 
-const socialDescription = "Welcome to New Orleans Tours helps visitors choose curated local experiences with timely recommendations, concierge help, and direct booking when they are ready.";
+const socialDescription = "Welcome to New Orleans Tours helps visitors choose curated local experiences with timely recommendations, personal planning help, and direct booking when they are ready.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://welcometoneworleanstours.com"),
   applicationName: "Welcome to New Orleans Tours",
   title: {
-    default: "Welcome to New Orleans Tours | New Orleans Concierge Desk",
+    default: "Welcome to New Orleans Tours | Find the Right New Orleans Experience",
     template: "%s | Welcome to New Orleans Tours",
   },
   openGraph: {
-    title: "Welcome to New Orleans Tours | New Orleans Concierge Desk",
+    title: "Welcome to New Orleans Tours | Find the Right New Orleans Experience",
     description: socialDescription,
     url: "https://welcometoneworleanstours.com",
     siteName: "Welcome to New Orleans Tours",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Welcome to New Orleans Tours | New Orleans Concierge Desk",
+    title: "Welcome to New Orleans Tours | Find the Right New Orleans Experience",
     description: socialDescription,
   },
   verification: {
