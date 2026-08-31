@@ -33,9 +33,12 @@ export default function ProductCard({
   attributionSource = FAREHARBOR_SOURCES.guide,
 }: AttributedProductCardProps) {
   const sourceProduct = STOREFRONT_PRODUCTS.find((item) => item.slug === product.slug);
+  const variableCityPlantationCombo = product.slug === 'all-day-city-plantation-combo';
   const cues = [
-    sourceProduct?.durationLabel,
-    sourceProduct?.pickupSummary || sourceProduct?.transportationSummary,
+    variableCityPlantationCombo ? 'Duration depends on the current itinerary.' : sourceProduct?.durationLabel,
+    variableCityPlantationCombo
+      ? 'Pickup and transportation are confirmed with the current booking.'
+      : sourceProduct?.pickupSummary || sourceProduct?.transportationSummary,
     sourceProduct?.physicalFormat?.walking,
     sourceProduct?.physicalFormat?.exposure,
   ].filter((cue): cue is string => Boolean(cue)).slice(0, 4);
@@ -43,11 +46,16 @@ export default function ProductCard({
   const detailHref = isApprovedProductSlug(product.slug)
     ? buildAttributedTourHref(product.slug, attributionSource)
     : `/tours/${product.slug}`;
-  const description = discoveryDescription(
-    product.description || (product as any).experience?.summary,
-    sourceProduct?.operatorName,
-    Boolean(product.operatorAttribution),
-  );
+  const description = variableCityPlantationCombo
+    ? 'Combine a New Orleans city experience with a plantation visit. The current itinerary, duration, pickup and return timing are confirmed when you check availability.'
+    : discoveryDescription(
+        product.description || (product as any).experience?.summary,
+        sourceProduct?.operatorName,
+        Boolean(product.operatorAttribution),
+      );
+  const fitLabel = product.slug === 'covered-tour-boat'
+    ? 'a calmer, shaded swamp ride'
+    : product.bestFor?.replace(/^Best for\s*/i, '');
 
   return (
     <div className={`${visualStyles.productCard} group`}>
@@ -92,9 +100,9 @@ export default function ProductCard({
           </p>
         )}
 
-        {product.bestFor && (
+        {fitLabel && (
           <p className={visualStyles.productCardFit}>
-            Good fit: {product.bestFor.replace(/^Best for\s*/i, "")}
+            Good fit: {fitLabel}
           </p>
         )}
 
