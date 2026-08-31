@@ -6,14 +6,14 @@ const agentPayload = {
   spec: "dcc-site-contract",
   version: "1.1",
   dcc_id: "dcc:site:wno-tours",
-  schema_version: "2026-08-24",
+  schema_version: "2026-08-31",
   site: {
     id: "wno-tours",
     name: "Welcome to New Orleans Tours",
     url: baseUrl,
     type: "tour_recommendation_service",
     description:
-      "Independent New Orleans tour-planning and booking-assistance site with curated recommendations, decision guides, current local context, concierge help, and participating-operator booking handoff.",
+      "Independent New Orleans tour-planning and booking-assistance site with curated recommendations, decision guides, current local context, personal planning help, and participating-operator booking handoff.",
   },
   authority: [
     "tour_recommendations",
@@ -37,7 +37,7 @@ const agentPayload = {
     "time_sensitive_local_context",
     "decision_guides_and_comparisons",
     "participating_operator_booking_handoff",
-    "human_concierge_help",
+    "personal_planning_help",
   ],
   recommendation_inputs: [
     "planning_window",
