@@ -2,8 +2,8 @@ import { SupportPageShell, buildSupportMetadata } from "../supportPages";
 
 export const metadata = buildSupportMetadata(
   "/privacy",
-  "Privacy Policy | New Orleans Concierge Desk",
-  "How New Orleans Concierge Desk handles analytics, contact requests, email opt-ins, referral tracking, logs, and third-party booking tools.",
+  "Privacy Policy | Welcome to New Orleans Tours",
+  "How Welcome to New Orleans Tours handles analytics, contact requests, email opt-ins, referral tracking, logs, and third-party booking tools.",
 );
 
 export default function PrivacyPage() {
@@ -12,7 +12,7 @@ export default function PrivacyPage() {
       eyebrow="Privacy"
       title="Privacy Policy"
       updated="August 15, 2026"
-      intro="This policy explains how New Orleans Concierge Desk may collect and use information when you browse our visitor-help and tour recommendation site, contact us, join the New Orleans planning brief, reserve the orientation, or continue to an operator booking path."
+      intro="This policy explains how Welcome to New Orleans Tours may collect and use information when you browse our visitor-help and tour recommendation site, contact us, join the New Orleans planning brief, reserve the orientation, or continue to an operator booking path."
       sections={[
         {
           title: "What this site collects",
@@ -39,7 +39,7 @@ export default function PrivacyPage() {
           title: "FareHarbor and operator bookings",
           body: [
             "Third-party tour bookings are completed through FareHarbor booking links or lightframes and through the operator. FareHarbor and the operator may collect booking details, traveler details, payment information, and related records under their own privacy practices.",
-            "New Orleans Concierge Desk does not claim to store payment-card data for FareHarbor bookings.",
+            "Welcome to New Orleans Tours does not claim to store payment-card data for FareHarbor bookings.",
           ],
         },
         {
