@@ -108,7 +108,7 @@ export default function ProductCard({
               {cues.map((cue, index) => (
                 <React.Fragment key={`${cue}-${index}`}>
                   <span className={visualStyles.productCardCue}>{cue}</span>
-                  {index < cues.length - 1 ? ' ' : null}
+                  {index < cues.length - 1 ? <span aria-hidden="true"> · </span> : null}
                 </React.Fragment>
               ))}
             </div>
