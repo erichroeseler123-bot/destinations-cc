@@ -2,32 +2,24 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ParrCtaLink from "@/app/components/dcc/ParrCtaLink";
 import RedRocksAuthorityPage from "@/app/components/dcc/RedRocksAuthorityPage";
-import { getEdgeSignalMapForSubjects } from "@/lib/dcc/routing/edge-signals";
-import {
-  buildDccRedRocksSharedGoUrl,
-  RED_ROCKS_SHARED_GO_PATH,
-  RED_ROCKS_SHARED_SIGNAL_SUBJECT_IDS,
-  resolveGoRedirect,
-} from "@/lib/dcc/routing/middleware";
-import { buildDecisionContinuationParams } from "@/lib/dcc/contracts/decisionContinuation";
-import { mapDecisionToDestination } from "@/lib/dcc/mapping";
+import { buildParrPrivateRedRocksUrl } from "@/lib/dcc/contracts/dccParrBridge";
 
 export const metadata: Metadata = {
-  title: "Red Rocks Transportation — Solved | Easiest Way To Get There And Back",
+  title: "Red Rocks Transportation — Private Ride From Denver | Party at Red Rocks",
   description:
-    "Parking fills early, Uber gets brittle after the show, and the easiest Red Rocks move is usually to solve the ride before the night starts.",
+    "Compare driving and rideshare with private Red Rocks transportation. Party at Red Rocks currently offers a $399 Private Suburban and $599 private van option.",
   alternates: { canonical: "/red-rocks-transportation" },
   keywords: [
     "best way to get to red rocks",
     "red rocks transportation",
+    "private red rocks transportation",
     "red rocks shuttle vs uber",
     "how to get back from red rocks",
-    "red rocks parking vs shuttle",
   ],
   openGraph: {
-    title: "Red Rocks Transportation — Solved | Easiest Way To Get There And Back",
+    title: "Red Rocks Transportation — Private Ride From Denver",
     description:
-      "If you want the easiest, most reliable Red Rocks ride plan, solve the ride before the show and stop improvising the way home.",
+      "Solve the ride before show night with private Party at Red Rocks transportation for your group.",
     url: "/red-rocks-transportation",
     type: "article",
   },
@@ -45,174 +37,93 @@ export default async function RedRocksTransportationPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = (await searchParams) || {};
-  const baseRouteParams = {
+  const privateBookingHref = buildParrPrivateRedRocksUrl({
+    sourcePage: PAGE_PATH,
+    cta: "primary",
     qty: getFirstSearchParam(sp.qty),
     partySize: getFirstSearchParam(sp.partySize),
     date: getFirstSearchParam(sp.date),
     event: getFirstSearchParam(sp.event),
     artist: getFirstSearchParam(sp.artist),
-    venue: getFirstSearchParam(sp.venue),
+    venue: getFirstSearchParam(sp.venue) || "red-rocks-amphitheatre",
     dcc_handoff_id: getFirstSearchParam(sp.dcc_handoff_id),
-  };
-  const sharedDecisionParams = buildDecisionContinuationParams({
-    sourcePage: PAGE_PATH,
-    corridor: "red-rocks-transport",
-    cta: "entry-ready-primary",
-    action: "book_shared_red_rocks_shuttle",
-    option: "shuttle",
-    product: "shared-red-rocks-shuttle-seat",
-    entryMode: "dcc-first",
-    destinationSurface: "flow",
+    decision_option: "private",
+    decision_product: "parr-private",
+    requested_lane: "private",
+    resolved_lane: "parr-private",
+    product_slug: "parr-private",
   });
-  const sharedBookingHref = buildDccRedRocksSharedGoUrl({
-    sourcePage: PAGE_PATH,
-    cta: "primary",
-    ...sharedDecisionParams,
-    ...baseRouteParams,
-  });
-  const signalMap = await getEdgeSignalMapForSubjects([...RED_ROCKS_SHARED_SIGNAL_SUBJECT_IDS]);
-  const mappedReadyToAct = mapDecisionToDestination({
-    sourcePage: PAGE_PATH,
-    corridor: "red-rocks-transport",
-    cta: "entry-ready-primary",
-    action: "book_shared_red_rocks_shuttle",
-    option: "shuttle",
-    product: "shared-red-rocks-shuttle-seat",
-    entryMode: "dcc-first",
-    state: "chosen",
-    destinationSurface: "operator",
-  });
-  const resolvedPrimary = resolveGoRedirect({
-    pathname: RED_ROCKS_SHARED_GO_PATH,
-    searchParams: new URLSearchParams(
-      Object.entries({
-        sourcePage: PAGE_PATH,
-        cta: "primary",
-        ...sharedDecisionParams,
-        ...baseRouteParams,
-      }).flatMap(([key, value]) =>
-        typeof value === "string" && value.length > 0 ? [[key, value]] : []
-      )
-    ),
-    signalMap,
-  });
-  const primaryCtaLabel = resolvedPrimary?.ctaText || "Book Your Guaranteed Ride Home";
-  const urgencyCopy =
-    resolvedPrimary?.status === "warning"
-      ? "High-demand nights tighten shared inventory first. If the date is set, lock the ride in early."
-      : resolvedPrimary?.status === "fallback"
-        ? "Shared seats are not the cleanest live path right now, so availability may tighten or shift faster than usual."
-        : "The cleanest nights are the ones where the ride home is solved before the show starts.";
 
   return (
     <RedRocksAuthorityPage
-      eyebrow="Ride plan"
-      title="Red Rocks transportation — solved"
-      intro="Parking is limited. Uber works better getting there than leaving. If you want the easiest, most reliable way to get there and back without stress, solve the ride before the show and stop improvising the trip home."
+      eyebrow="Private ride plan"
+      title="Red Rocks transportation — solve the whole night before the show starts"
+      intro="Driving means parking and exit traffic. Uber can be easy on the way in and unpredictable after the encore. Party at Red Rocks currently offers private transportation only, so your group can reserve one vehicle for the concert night and stop improvising the ride home."
       sourcePath={PAGE_PATH}
-      primaryCtaHref={sharedBookingHref}
-      primaryCtaLabel="See shuttle options"
-      buyerIntentLabel="Red Rocks transportation"
+      primaryCtaHref={privateBookingHref}
+      primaryCtaLabel="Reserve Private Transportation"
+      buyerIntentLabel="Private Red Rocks transportation"
       heroTrustBadges={[
-        "Round-trip planned before the show",
-        "No parking strategy required",
-        "Built around the ride home",
+        "$399 Private Suburban",
+        "$599 private van option",
+        "One group, one vehicle, one plan",
       ]}
       heroSummaryCards={[
         {
-          label: "What breaks",
-          body: "Parking and the ride home cause most of the stress, not getting in.",
+          label: "Current service",
+          body: "Party at Red Rocks offers private transportation only. There are no shared shuttle seats.",
         },
         {
-          label: "Best default",
-          body: "For most visitors, shuttle is the easiest, most reliable move.",
+          label: "Best for",
+          body: "Groups that want the ride home decided before the venue empties out.",
         },
         {
-          label: "Best fit",
-          body: "Visitors staying in Denver who do not want to gamble on post-show pickup chaos.",
+          label: "Booking path",
+          body: "DCC hands your concert context directly into the Party at Red Rocks private booking flow.",
         },
       ]}
       hidePrimaryPathLinks
-      hideSupportReading
       hideSimpleFunnel
-      hideRecommendedFlow
       notice={
         <div className="space-y-6">
           <section className="rounded-[1.9rem] border border-[#3df3ff]/20 bg-[linear-gradient(180deg,rgba(16,33,43,0.96),rgba(7,15,21,0.96))] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
-            <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">Choose your entry point</p>
-            <h2 className="mt-3 text-2xl font-bold text-white">Need help deciding, or already know you want the shuttle?</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#ffb07c]">Still deciding</p>
-                <p className="mt-3 text-sm leading-7 text-zinc-300">
-                  Use a narrow feeder only when you need to eliminate one specific mistake first. Otherwise go straight into the main transportation lane.
-                </p>
-                <div className="mt-4 flex flex-wrap gap-3 text-sm">
-                  <Link href="/red-rocks-shuttle" className="rounded-full border border-white/14 bg-white/6 px-4 py-2 font-black uppercase tracking-[0.14em] text-white transition hover:bg-white/10">
-                    Shuttle fit
-                  </Link>
-                  <Link href="/red-rocks-parking" className="rounded-full border border-white/14 bg-white/6 px-4 py-2 font-black uppercase tracking-[0.14em] text-white transition hover:bg-white/10">
-                    Parking reality
-                  </Link>
-                  <Link href="/command" className="rounded-full border border-white/14 bg-white/6 px-4 py-2 font-black uppercase tracking-[0.14em] text-white transition hover:bg-white/10">
-                    Command view
-                  </Link>
-                </div>
-              </div>
-              <div className="rounded-[1.5rem] border border-cyan-300/20 bg-[#08141d] p-5">
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">Ready to act</p>
-                <p className="mt-3 text-sm leading-7 text-zinc-300">
-                  If you already know you want the cleanest ride-home plan, skip the comparison step and go straight into shuttle availability.
-                </p>
-                <div className="mt-4">
-                  <ParrCtaLink
-                    href={mappedReadyToAct?.url || buildDccRedRocksSharedGoUrl({
-                      sourcePage: PAGE_PATH,
-                      cta: "entry-ready-primary",
-                      ...sharedDecisionParams,
-                      ...baseRouteParams,
-                    })}
-                    page={PAGE_PATH}
-                    cta="entry-ready-primary"
-                    mapperMeta={
-                      mappedReadyToAct
-                        ? {
-                            corridor: "red-rocks-transport",
-                            routeKey: mappedReadyToAct.routeKey,
-                            provider: mappedReadyToAct.provider,
-                            targetKind: mappedReadyToAct.targetKind,
-                            operatorId: mappedReadyToAct.operatorId,
-                          }
-                        : undefined
-                    }
-                    className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#3df3ff] px-6 text-sm font-black uppercase tracking-[0.16em] text-[#07111d] transition hover:bg-[#62f6ff]"
-                  >
-                    {primaryCtaLabel}
-                  </ParrCtaLink>
-                </div>
-              </div>
+            <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">Current Party at Red Rocks offer</p>
+            <h2 className="mt-3 text-2xl font-bold text-white">Private transportation, not shared seats.</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-300">
+              The standard option is a $399 Private Suburban. Larger groups can choose the $599 private van. The point is simple: your group has one ride plan for the full concert night.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <ParrCtaLink
+                href={privateBookingHref}
+                page={PAGE_PATH}
+                cta="notice-primary"
+                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#3df3ff] px-6 text-sm font-black uppercase tracking-[0.16em] text-[#07111d] transition hover:bg-[#62f6ff]"
+              >
+                Reserve Your Private Ride
+              </ParrCtaLink>
+              <Link
+                href="/red-rocks-shuttle-vs-uber"
+                className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/14 bg-white/6 px-6 text-sm font-black uppercase tracking-[0.16em] text-white transition hover:bg-white/10"
+              >
+                Compare With Uber
+              </Link>
             </div>
           </section>
 
-          <section className="rounded-[1.9rem] border border-[#3df3ff]/20 bg-[linear-gradient(180deg,rgba(16,33,43,0.96),rgba(7,15,21,0.96))] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
-            <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">What most people get wrong</p>
-            <h2 className="mt-3 text-2xl font-bold text-white">The hard part is not getting there. It is ending the night cleanly when everyone tries to leave at once.</h2>
-            <p className="mt-3 text-sm leading-7 text-zinc-300">
-              Driving feels easier until parking pushes you farther out than expected and the exit drags. Uber can work on the way in, but the ride home is where that plan gets brittle. If you want the easiest option, take the shuttle and treat the return as solved.
-            </p>
-            <p className="mt-3 text-xs uppercase tracking-[0.18em] text-[#ffb07c]">{urgencyCopy}</p>
-            <div className="mt-5 grid gap-3 md:grid-cols-3">
+          <section className="rounded-[1.9rem] border border-white/10 bg-white/[0.05] p-6">
+            <p className="text-xs uppercase tracking-[0.2em] text-[#ffb07c]">Why this can sell better</p>
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
               <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
-                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#ffb07c]">Parking</div>
-                <p className="mt-2 text-sm leading-6 text-zinc-300">Full control, but it often becomes a long uphill walk in and a slow crawl out.</p>
+                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#ffb07c]">Search intent</div>
+                <p className="mt-2 text-sm leading-6 text-zinc-300">DCC answers parking, shuttle, rideshare, and exit questions before the visitor reaches the operator.</p>
               </div>
               <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
-                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#ffb07c]">Uber / Lyft</div>
-                <p className="mt-2 text-sm leading-6 text-zinc-300">Usually easier on the way in than the way out. Pickup friction hits after the encore.</p>
+                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#ffb07c]">Product clarity</div>
+                <p className="mt-2 text-sm leading-6 text-zinc-300">The visitor sees the real private-only product and prices before clicking into booking.</p>
               </div>
               <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
-                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#ffb07c]">Shuttle (recommended)</div>
-                <p className="mt-2 text-sm leading-6 text-zinc-300">Round-trip planned, no parking strategy, and no need to gamble on the ride home.</p>
+                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#ffb07c]">Context handoff</div>
+                <p className="mt-2 text-sm leading-6 text-zinc-300">Artist, event, date, party size, and DCC attribution can continue into Party at Red Rocks.</p>
               </div>
             </div>
           </section>
@@ -221,39 +132,29 @@ export default async function RedRocksTransportationPage({
       sections={[
         {
           title: "Your options, simplified",
-          body: "This is a friction decision, not a research project. Driving adds parking and exit stress. Uber is weakest after the show. Shuttle is the cleanest default when you want the whole night to feel easier.",
+          body: "This is a friction decision. Driving gives you control but adds parking and exit work. Rideshare is flexible but can be hardest after the show. A private vehicle is the pre-booked option for groups that want one plan for the night.",
           bullets: [
-            "Uber or Lyft: easiest to imagine, least reliable after the show.",
-            "Driving yourself: workable only if you accept parking, walking, and a slower exit.",
-            "Shuttle: recommended for the easiest reliable round trip.",
+            "Driving: workable if you accept parking, walking, and a slower exit.",
+            "Uber or Lyft: flexible, but the return can be the least predictable part of the night.",
+            "Private Party at Red Rocks ride: one vehicle for your group, with the return planned in advance.",
           ],
         },
         {
-          title: "Why shuttle usually wins",
-          body: "Most people choose shuttle because it solves the part of the night that breaks most often: the return. You are not paying for more theory. You are paying to avoid parking friction, surge pricing, long uphill walks, and the scramble that starts once the crowd moves at the same time.",
+          title: "What the private service costs",
+          body: "Party at Red Rocks currently lists a $399 Private Suburban and a $599 private van option. These are private group services, not per-person shared shuttle seats.",
+        },
+        {
+          title: "Why the ride home matters",
+          body: "Red Rocks transportation looks easy until the concert ends and thousands of people move at once. The value of pre-booking is having the return already settled before that moment arrives.",
           bullets: [
-            "Round-trip is planned before the show starts.",
-            "No parking strategy or lot exit stress.",
-            "No relying on spotty cell service and surge-priced pickup luck after the encore.",
+            "No new transportation decision after the encore.",
+            "Your group stays together.",
+            "You avoid turning the end of the night into another search for a ride.",
           ],
         },
         {
-          title: "If you still need help deciding",
-          body: "Use the narrower decision pages when your question is more specific than transportation in general. They are built to answer one thing fast, not make you read a giant guide.",
-          bullets: [
-            "Use shuttle vs Uber if your real question is reliability.",
-            "Use the exit page if your real question is leaving after the encore.",
-            "Use the Denver page if you are starting from the city and want the cleanest default.",
-          ],
-        },
-        {
-          title: "If you already know you want the shuttle",
-          body: "Skip the decision loop and go straight into availability. That is the right move when the recommendation is already clear in your head and you are ready to act.",
-          bullets: [
-            "Use the booking flow for live availability and pickup details.",
-            "Treat the ride home as solved before the first song starts.",
-            "Do not leave the return as a last-minute decision.",
-          ],
+          title: "Already know the date?",
+          body: "Move straight to the private booking flow. DCC preserves the useful context it has so Party at Red Rocks can receive the customer closer to the transaction instead of making them restart their planning.",
         },
       ]}
     />

@@ -9,20 +9,18 @@ import type {
   CorridorRouteRole,
 } from "@/lib/dcc/corridors/types";
 
-const CANONICAL_SHARED_EXECUTION_TARGET =
-  "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/custom/shared";
 const CANONICAL_PRIVATE_EXECUTION_TARGET =
   "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/private";
 
 const handoffTargets: CorridorHandoffTarget[] = [
   {
     id: "shared",
-    href: CANONICAL_SHARED_EXECUTION_TARGET,
+    href: CANONICAL_PRIVATE_EXECUTION_TARGET,
     mode: "shared",
     satelliteId: "partyatredrocks",
     venueSlug: "red-rocks-amphitheatre",
-    notes: "Canonical shared shuttle handoff for Red Rocks transport.",
-    isCanonical: true,
+    notes: "Legacy shared identifier retained for compatibility; Party at Red Rocks now resolves this lane to private service.",
+    isCanonical: false,
   },
   {
     id: "private",
@@ -30,7 +28,7 @@ const handoffTargets: CorridorHandoffTarget[] = [
     mode: "private",
     satelliteId: "partyatredrocks",
     venueSlug: "red-rocks-amphitheatre",
-    notes: "Canonical private ride handoff for Red Rocks transport.",
+    notes: "Canonical current Party at Red Rocks private ride handoff.",
     isCanonical: true,
   },
 ];
@@ -43,12 +41,12 @@ const commandBinding: CorridorCommandBinding = {
 
 const relatedGuides: CorridorNavigationLink[] = [
   { href: "/red-rocks-transportation", label: "Red Rocks transportation" },
-  { href: "/red-rocks-shuttle", label: "Red Rocks shuttle" },
-  { href: "/red-rocks-shuttle-vs-uber", label: "Red Rocks shuttle vs Uber" },
+  { href: "/red-rocks-shuttle", label: "Red Rocks transportation guide" },
+  { href: "/red-rocks-shuttle-vs-uber", label: "Private ride vs Uber" },
   { href: "/how-to-get-to-red-rocks-without-parking-hassle", label: "how to get to Red Rocks without parking hassle" },
   { href: "/red-rocks-parking", label: "Red Rocks parking" },
   { href: "/how-to-leave-red-rocks-after-a-concert", label: "best way to leave Red Rocks" },
-  { href: "https://www.partyatredrocks.com/shuttles", label: "Party at Red Rocks shuttles" },
+  { href: "https://www.partyatredrocks.com/shuttles", label: "Party at Red Rocks private transportation" },
 ];
 
 const decisionCards: CorridorDecisionCard[] = [
@@ -61,7 +59,7 @@ const decisionCards: CorridorDecisionCard[] = [
   {
     href: "/red-rocks-shuttle-vs-uber",
     title: "Resolve the rideshare question",
-    body: "Use this when the real comparison is shuttle versus the post-show pickup mess.",
+    body: "Use this when the real comparison is a pre-booked private ride versus the post-show pickup mess.",
     label: "Rideshare lane",
   },
   {
@@ -84,7 +82,7 @@ const auditPages: CorridorAuditPageConfig[] = [
     file: "app/red-rocks-transportation/page.tsx",
     alias: "rr-transportation",
     role: "hub",
-    expectedRegistryTarget: CANONICAL_SHARED_EXECUTION_TARGET,
+    expectedRegistryTarget: CANONICAL_PRIVATE_EXECUTION_TARGET,
     requiredUrlCtas: ["primary", "notice-primary"],
     requiredTelemetryCtas: ["notice-primary"],
     minParrCtaLinks: 1,
@@ -175,16 +173,16 @@ export const RED_ROCKS_CORRIDOR: CorridorManifest = {
     {
       route: "/red-rocks-transportation",
       role: "hub",
-      target: CANONICAL_SHARED_EXECUTION_TARGET,
+      target: CANONICAL_PRIVATE_EXECUTION_TARGET,
       pageParamAlias: "rr-transportation",
-      notes: "Canonical Red Rocks transportation decision hub.",
+      notes: "Canonical Red Rocks transportation decision hub; current operator handoff is private-only.",
     },
     {
       route: "/red-rocks-shuttle-vs-uber",
       role: "feeder",
       target: "/red-rocks-transportation",
       pageParamAlias: "rr-shuttle-vs-uber",
-      notes: "Constraint page for shuttle-versus-rideshare intent only.",
+      notes: "Legacy shuttle-keyword feeder that now compares pre-booked private transportation with rideshare.",
     },
     {
       route: "/how-to-get-to-red-rocks-without-parking-hassle",
@@ -217,13 +215,13 @@ export const RED_ROCKS_CORRIDOR: CorridorManifest = {
       route: "/private-vs-shared-shuttles-to-red-rocks-denver-guide",
       role: "feeder",
       target: "/red-rocks-transportation",
-      notes: "Constraint page for ride-type selection only.",
+      notes: "Legacy ride-type comparison page; current operator service is private-only.",
     },
     {
       route: "/guide/local/denver-pickups",
       role: "feeder",
       target: "/red-rocks-transportation",
-      notes: "Constraint page for pickup-anchor planning only.",
+      notes: "Constraint page for pickup planning only.",
     },
     {
       route: "/red-rocks-parking",
@@ -235,7 +233,7 @@ export const RED_ROCKS_CORRIDOR: CorridorManifest = {
       route: "/red-rocks-shuttle",
       role: "feeder",
       target: "/red-rocks-transportation",
-      notes: "Shuttle-intent feeder only.",
+      notes: "Legacy shuttle-keyword feeder; current operator execution is private-only.",
     },
     {
       route: "/red-rocks",
@@ -264,20 +262,20 @@ export const RED_ROCKS_CORRIDOR: CorridorManifest = {
     {
       route: "/book/red-rocks",
       role: "execution_alias",
-      target: CANONICAL_SHARED_EXECUTION_TARGET,
-      notes: "Legacy DCC shared booking alias.",
+      target: CANONICAL_PRIVATE_EXECUTION_TARGET,
+      notes: "Legacy DCC booking alias now resolves to current private Party at Red Rocks service.",
     },
     {
       route: "/book/red-rocks-amphitheatre",
       role: "execution_alias",
-      target: CANONICAL_SHARED_EXECUTION_TARGET,
-      notes: "Legacy DCC shared booking alias.",
+      target: CANONICAL_PRIVATE_EXECUTION_TARGET,
+      notes: "Legacy DCC booking alias now resolves to current private Party at Red Rocks service.",
     },
     {
       route: "/book/red-rocks-amphitheatre/private",
       role: "execution_alias",
       target: CANONICAL_PRIVATE_EXECUTION_TARGET,
-      notes: "Legacy DCC private booking alias.",
+      notes: "Current DCC private booking alias.",
     },
   ],
 };
@@ -304,6 +302,6 @@ export function getRedRocksPageParamAlias(route: string): string {
   return RED_ROCKS_PAGE_PARAM_MAP[route] ?? route.replace(/^\/+/, "");
 }
 
-export const RED_ROCKS_CANONICAL_SHARED_TARGET = CANONICAL_SHARED_EXECUTION_TARGET;
+export const RED_ROCKS_CANONICAL_SHARED_TARGET = CANONICAL_PRIVATE_EXECUTION_TARGET;
 export const RED_ROCKS_CANONICAL_PRIVATE_TARGET = CANONICAL_PRIVATE_EXECUTION_TARGET;
 export const RED_ROCKS_HANDOFF_TARGETS = handoffTargets;

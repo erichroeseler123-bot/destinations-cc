@@ -1,6 +1,5 @@
 import {
   buildParrPrivateRedRocksUrl,
-  buildParrSharedRedRocksUrl,
 } from "@/lib/dcc/contracts/dccParrBridge";
 import { buildDecisionContinuationParams } from "@/lib/dcc/contracts/decisionContinuation";
 import { buildDccDenver420AirportPickupGoUrl } from "@/lib/dcc/routing/middleware";
@@ -63,6 +62,34 @@ function buildRedRocksCampaign(input: DecisionDestinationInput, lane: string) {
   ]);
 }
 
+function buildPrivateDestination(input: DecisionDestinationInput): DecisionDestinationResult {
+  const campaign = buildRedRocksCampaign(input, "private");
+  return {
+    provider: "internal",
+    url: buildParrPrivateRedRocksUrl({
+      ...buildBaseParams({
+        ...input,
+        action: "book_private_red_rocks_transport",
+        option: "private",
+        product: "parr-private",
+        destinationSurface: "operator",
+      }),
+      decision_option: "private",
+      decision_product: "parr-private",
+      requested_lane: "private",
+      resolved_lane: "parr-private",
+      product_slug: "parr-private",
+    }),
+    fit: "exact_product",
+    targetKind: "operator_checkout",
+    operatorId: "partyatredrocks",
+    routeKey: "red-rocks-private-operator",
+    reason:
+      "Party at Red Rocks currently offers private service only, so Red Rocks transport decisions continue into the current private operator lane.",
+    campaign,
+  };
+}
+
 export function mapRedRocksDecisionToDestination(
   input: DecisionDestinationInput,
 ): DecisionDestinationResult {
@@ -99,53 +126,5 @@ export function mapRedRocksDecisionToDestination(
     };
   }
 
-  if (
-    hasWord(text, /\bprivate\b/i) ||
-    hasWord(text, /\bgroup\b/i) ||
-    (input.constraints || []).some((constraint) =>
-      ["group", "large-group", "private"].includes(constraint.toLowerCase()),
-    )
-  ) {
-    const campaign = buildRedRocksCampaign(input, "private");
-    return {
-      provider: "internal",
-      url: buildParrPrivateRedRocksUrl({
-        ...buildBaseParams({
-          ...input,
-          action: input.action || "book_private_red_rocks_transport",
-          option: input.option || "private",
-          product: input.product || "parr-suburban",
-          destinationSurface: "operator",
-        }),
-      }),
-      fit: "exact_product",
-      targetKind: "operator_checkout",
-      operatorId: "partyatredrocks",
-      routeKey: "red-rocks-private-operator",
-      reason:
-        "The group already needs a private Red Rocks operator lane, so the mapper should continue into the PARR private booking path.",
-      campaign,
-    };
-  }
-
-  const campaign = buildRedRocksCampaign(input, "shared");
-  return {
-    provider: "internal",
-    url: buildParrSharedRedRocksUrl({
-      ...buildBaseParams({
-        ...input,
-        action: input.action || "book_shared_red_rocks_shuttle",
-        option: input.option || "shuttle",
-        product: input.product || "shared-red-rocks-shuttle-seat",
-        destinationSurface: "operator",
-      }),
-    }),
-    fit: "exact_product",
-    targetKind: "operator_checkout",
-    operatorId: "partyatredrocks",
-    routeKey: "red-rocks-shared-operator",
-    reason:
-      "The decision is already narrowed to the shared shuttle lane, so the mapper should continue into the PARR shared booking flow instead of reopening transport comparison.",
-    campaign,
-  };
+  return buildPrivateDestination(input);
 }

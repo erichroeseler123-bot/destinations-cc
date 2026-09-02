@@ -5,24 +5,23 @@ import SatelliteHandoffStatusCard from "@/app/components/dcc/SatelliteHandoffSta
 import { getLocalFallbackImageSetForEntity } from "@/src/lib/media/source-local";
 
 export const metadata: Metadata = {
-  title: "Red Rocks Shuttle From Denver | Cleanest Ride Plan",
-  description: "Use the cleanest Red Rocks ride plan from Denver when you want parking and the ride home solved before the show starts.",
+  title: "Red Rocks Shuttle From Denver | Private Transportation Alternative",
+  description: "Looking for a Red Rocks shuttle from Denver? Party at Red Rocks now offers private transportation only: reserve a private Suburban or van for your concert night.",
   alternates: { canonical: "/red-rocks-shuttle" },
   keywords: [
     "red rocks shuttle",
     "red rocks shuttle from denver",
     "denver to red rocks shuttle",
+    "private red rocks transportation",
     "transportation to red rocks amphitheatre",
-    "how to get to red rocks",
   ],
   openGraph: {
-    title: "Red Rocks Shuttle From Denver | Shuttle vs Driving vs Uber",
-    description: "Decision-first Red Rocks shuttle guide for visitors comparing parking, rideshare, and shuttle service from Denver.",
+    title: "Red Rocks Shuttle From Denver | Private Transportation Alternative",
+    description: "Searching for a Red Rocks shuttle? Compare the current private Party at Red Rocks option with driving and rideshare.",
     url: "/red-rocks-shuttle",
     type: "article",
   },
 };
-
 
 export default async function RedRocksShuttlePage({
   searchParams,
@@ -35,22 +34,22 @@ export default async function RedRocksShuttlePage({
 
   return (
     <RedRocksAuthorityPage
-      eyebrow="DCC Shuttle Guide"
-      title="Red Rocks shuttle from Denver is usually the cleanest move when you do not want to fight parking or post-show Uber."
-      intro="Visitors searching for a Red Rocks shuttle are usually past the inspiration phase. They want the simplest way to get from Denver to Red Rocks and back without parking stress, uphill lot walks, or a surge-priced pickup mess after the show."
+      eyebrow="DCC Transportation Guide"
+      title="Looking for a Red Rocks shuttle? The current Party at Red Rocks service is private transportation for your group."
+      intro="A lot of visitors still search for a Red Rocks shuttle because the real problem is the same: getting from Denver to the amphitheatre and back without dealing with parking or a chaotic post-show Uber pickup. Party at Red Rocks now offers private service only, with a $399 Private Suburban and a $599 private van option."
       sourcePath="/red-rocks-shuttle"
       primaryCtaHref="/red-rocks-transportation"
-      primaryCtaLabel="Use The Transport Decision"
-      buyerIntentLabel="Red Rocks shuttle from Denver"
+      primaryCtaLabel="See Private Transport Options"
+      buyerIntentLabel="Red Rocks transportation from Denver"
       heroImageSrc={imageSet?.hero?.src || "https://www.partyatredrocks.com/hero/hero-home.jpg"}
-      heroImageAlt={imageSet?.hero?.alt || "Red Rocks shuttle proof image tied to the live Party at Red Rocks service"}
+      heroImageAlt={imageSet?.hero?.alt || "Red Rocks transportation proof image tied to Party at Red Rocks"}
       notice={
         <>
           <SatelliteHandoffStatusCard handoffId={handoffId} />
           <section className="rounded-[1.9rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Feeder rule</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Current service</p>
             <p className="mt-3 text-sm leading-7 text-zinc-300">
-              This feeder exists for one reason only: to answer whether shuttle is the correct default. Once that answer is yes, the next move is the main transport corridor rather than another comparison stack.
+              Party at Red Rocks no longer sells shared shuttle seats. This page keeps answering the high-intent “Red Rocks shuttle” search, then hands the visitor into the current private transportation corridor.
             </p>
           </section>
         </>
@@ -58,48 +57,44 @@ export default async function RedRocksShuttlePage({
       operatorAttribution={PARR_OPERATOR}
       sections={[
         {
-          title: "Why visitors search for a Red Rocks shuttle",
-          body: "This is a problem-solving query, not a browsing query. Most searchers are trying to avoid parking stress, long uphill walks from late lots, and the uncertainty of getting back to Denver after the show.",
+          title: "Why people still search for a Red Rocks shuttle",
+          body: "The search phrase is really shorthand for a transportation problem: visitors want a reliable ride to the venue and a clear way home after the show without parking stress.",
           bullets: [
             "They already know the venue.",
-            "They already know transportation is the main friction point.",
-            "They are narrowing the cleanest move between shuttle, driving, Uber, or private ride.",
+            "They already know transportation is the friction point.",
+            "They want an alternative to driving and post-show rideshare uncertainty.",
           ],
         },
         {
-          title: "When shuttle beats driving",
-          body: "Driving works for visitors who want full control and can arrive early. Shuttle service is stronger when the group wants to offload the parking decision and reduce end-of-night route friction.",
-        },
-        {
-          title: "When shuttle beats rideshare",
-          body: "Uber and Lyft can work on the way in, but the return trip is where the plan gets brittle. Shuttle service is stronger for visitors who care more about a clean ride home than gambling on surge pricing and pickup congestion.",
+          title: "What Party at Red Rocks offers now",
+          body: "The current service is private transportation only. Smaller groups can reserve the $399 Private Suburban, while larger groups can choose the $599 private van.",
           bullets: [
-            "Ingress is usually easier than egress.",
-            "Dedicated ride-home certainty matters more after sold-out shows.",
-            "The real question is whether the exit plan is already solved before the show starts.",
+            "One private vehicle for your group.",
+            "The ride home is part of the plan before the show starts.",
+            "No shared seats or per-person shuttle fare.",
           ],
         },
         {
-          title: "The ride home is the real planning problem",
-          body: "Most Red Rocks transport decisions feel easy on the way in. The hard part is ending the night cleanly when pickup zones compress, the crowd moves at once, and nobody wants to improvise after the encore. That is why the strongest plans solve the return before the show starts, not after.",
+          title: "When private transportation beats driving",
+          body: "Driving can work if you want full control and are comfortable with parking, walking, and the exit. Private transportation is stronger when the group wants to offload those decisions and keep the night together.",
+        },
+        {
+          title: "When private transportation beats rideshare",
+          body: "Uber and Lyft can be easy on the way in, but the return trip is where uncertainty rises. A pre-booked private ride is designed for groups who would rather have the ride home decided before the crowd leaves.",
           bullets: [
-            "If the group wants certainty, plan the ride home in advance.",
-            "If the group is fine with waiting, surge pricing, or pickup friction, rideshare can still be acceptable.",
-            "This is why shared shuttle and private ride both outperform casual Uber plans on sold-out nights.",
+            "One group, one vehicle, one plan.",
+            "No waiting for a new rideshare match after the show.",
+            "No need to decide transportation again at the end of the night.",
           ],
         },
         {
           title: "Plan the night in this order",
-          body: "A clean Red Rocks transportation plan usually gets easier once the group stops thinking about arrival first.",
+          body: "A clean Red Rocks transportation plan gets easier when you solve the end of the night first.",
           bullets: [
-            "1. When the show ends",
-            "2. How you are getting back",
-            "3. Then how you are getting there",
+            "1. Decide how your group is getting home.",
+            "2. Reserve the vehicle for the concert date.",
+            "3. Then lock in pickup details for the ride to Red Rocks.",
           ],
-        },
-        {
-          title: "What makes this a valid feeder",
-          body: "A feeder only stays visible when it removes one specific mistake and then hands the visitor into the dominant node. This page exists to rule shuttle in or out cleanly, then move the visitor into the main transportation decision.",
         },
       ]}
     />
