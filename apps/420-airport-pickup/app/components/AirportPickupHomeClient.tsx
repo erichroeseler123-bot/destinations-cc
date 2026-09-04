@@ -11,7 +11,7 @@ type ResolutionDebug = {
   winners: Array<{ field: string; confidence: number; ruleId: string; reason: string }>;
 };
 
-const CHECKOUT_URL = "https://www.destinationcommandcenter.com/checkout";
+const GOSNO_URL = "https://gosno.co/";
 
 function buildCheckoutHref(handoff: HandoffContext, productSlug: string, date: string, dropoff: string) {
   const params = new URLSearchParams();
@@ -28,7 +28,7 @@ function buildCheckoutHref(handoff: HandoffContext, productSlug: string, date: s
   if (handoff.sourcePage) params.set("source_page", handoff.sourcePage);
   params.set("decision_product", handoff.decisionProduct || productSlug);
   params.set("product_slug", handoff.decisionProduct || productSlug);
-  return `${CHECKOUT_URL}?${params.toString()}`;
+  return `${GOSNO_URL}?${params.toString()}`;
 }
 
 export default function AirportPickupHomeClient({
@@ -78,7 +78,7 @@ export default function AirportPickupHomeClient({
             Go straight to your destination or build a legal retail stop into the route when practical. No shared shuttle, no random rideshare match, and no cannabis consumption in the vehicle.
           </p>
           <div className="cta-row">
-            <a className="button" href={checkoutHref} onClick={() => trackCheckout("primary_booking_cta")}>Book Denver pickup</a>
+            <a className="button" href={checkoutHref} onClick={() => trackCheckout("primary_booking_cta")}>Continue to GoSno</a>
             <Link className="button-secondary" href="/colorado-springs-airport">Flying into COS?</Link>
             <Link className="button-secondary" href="/colorado">See DEN transfers</Link>
           </div>
@@ -120,7 +120,7 @@ export default function AirportPickupHomeClient({
       </section>
 
       <section id="options" className="panel">
-        <p className="eyebrow">Choose your arrival</p>
+        <p className="eyebrow">Operated by GoSno</p>
         <h2>One private ride. Your destination. Optional 21+ stop.</h2>
         <div className="trust-grid">
           <div className="trust-item">
@@ -165,7 +165,7 @@ export default function AirportPickupHomeClient({
           </div>
         </div>
         <div className="cta-row">
-          <a className="button" href={checkoutHref} onClick={() => trackCheckout("pricing_section_booking_cta")}>See Denver price & book</a>
+          <a className="button" href={checkoutHref} onClick={() => trackCheckout("pricing_section_booking_cta")}>Check GoSno price & availability</a>
         </div>
       </section>
 
