@@ -111,7 +111,7 @@ export default function LocationFirstHomeFast() {
             <button type="submit" disabled={searching} className="min-h-14 rounded-2xl bg-cyan-300 px-6 text-sm font-black uppercase tracking-[0.12em] text-[#031217] transition hover:bg-cyan-200 disabled:cursor-wait disabled:opacity-60">
               {searching ? "Finding…" : "Open location"}
             </button>
-          </form>
+          </form>\n\n          <div className="mt-4 flex max-w-4xl flex-wrap gap-2" aria-label="Example locations">\n            <span className="py-2 text-xs font-bold uppercase tracking-[0.12em] text-white/45">Try an example:</span>\n            <button type="button" onClick={() => openLocation(39.85610, -104.67370)} className="rounded-full border border-white/12 px-3 py-2 text-xs font-bold text-white/75 hover:border-cyan-300/45">Denver Airport</button>\n            <button type="button" onClick={() => openLocation(18.34190, -64.93070)} className="rounded-full border border-white/12 px-3 py-2 text-xs font-bold text-white/75 hover:border-cyan-300/45">Charlotte Amalie</button>\n            <button type="button" onClick={() => openLocation(45.26180, -111.30800)} className="rounded-full border border-white/12 px-3 py-2 text-xs font-bold text-white/75 hover:border-cyan-300/45">Big Sky</button>\n            <button type="button" onClick={() => openLocation(39.66540, -105.20570)} className="rounded-full border border-white/12 px-3 py-2 text-xs font-bold text-white/75 hover:border-cyan-300/45">Red Rocks</button>\n          </div>
 
           {results.length > 1 ? (
             <div className="mt-3 grid max-w-4xl gap-2 rounded-2xl border border-white/10 bg-black/30 p-2">
