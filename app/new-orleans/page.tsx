@@ -7,7 +7,7 @@ import DailyBriefSignup from "./components/DailyBriefSignup";
 import { STOREFRONT_PRODUCTS } from "./tours/pageConfig";
 
 export const metadata = {
-  title: "Welcome to New Orleans Tours | Curated New Orleans Experiences",
+  title: "New Orleans Tours, Swamp Tours & River Cruises",
   description:
     "Handpicked New Orleans tours and experiences for your group. Tell us what kind of day you want and we’ll narrow the city down to the experiences that fit.",
   openGraph: {
@@ -72,7 +72,7 @@ export default function NewOrleansHomePage() {
 
       <section className="border-y border-[var(--nola-border)] bg-[#09090a]">
         <div className="mx-auto grid w-[min(1100px,calc(100%-2rem))] grid-cols-1 divide-y divide-[var(--nola-border)] py-4 text-center sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-          <div className="px-4 py-3"><p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">Trusted Local Partners</p></div>
+          <div className="px-4 py-3"><p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">Trusted Local Partners<br /><span className="normal-case tracking-normal text-[11px] text-[var(--nola-text-muted)]">Southern Style Tours · Ragin Cajun Tours · New Orleans Steamboat Company</span></p></div>
           <div className="px-4 py-3"><p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">Curated Experiences</p></div>
           <div className="px-4 py-3"><p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">Local Planning Support</p></div>
         </div>
