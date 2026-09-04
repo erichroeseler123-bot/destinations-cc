@@ -42,7 +42,7 @@ export default async function HomePage() {
   const heroStats = [
     { count: shows.length, label: "shows tracked" },
     { count: tourFeed.tours.length, label: "tours found" },
-    { count: liveItems.length, label: "live picks" },
+    { count: liveItems.length, label: "current planning picks" },
   ].filter((item) => item.count > 0);
 
   const decisionLanes = [
@@ -134,7 +134,7 @@ export default async function HomePage() {
         <div className="eyebrow">Next 48 hours</div>
         <div style={{ height: 10 }} />
         <h2>Vegas happening soon.</h2>
-        <p className="lead">A short live board is more useful than a giant directory.</p>
+        <p className="lead">A short current board is more useful than a giant directory. Verify the exact date, availability, and terms with the provider before purchase.</p>
         <div style={{ height: 18 }} />
         {liveItems.length ? (
           <div className="grid">
@@ -143,7 +143,7 @@ export default async function HomePage() {
                 <div className="eyebrow">{item.category}</div>
                 <h2>{item.title}</h2>
                 <p>
-                  {new Date(item.startAt).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" })}
+                  {new Date(item.startAt).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
                   {" • "}{item.venueOrArea}
                 </p>
                 <p>{item.whyItMatters}</p>
