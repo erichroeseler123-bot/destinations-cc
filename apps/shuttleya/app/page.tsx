@@ -4,9 +4,9 @@ import { SHUTTLEYA_TRUTH } from "../lib/siteTruth";
 const truth = SHUTTLEYA_TRUTH;
 
 export const metadata: Metadata = {
-  title: "ShuttleYa | Find the Right Ride",
+  title: "Airport, Mountain, Red Rocks & Cruise Port Transportation | ShuttleYa",
   description:
-    "Transportation discovery for airport transfers, mountain rides, concert transportation and cruise-port ground transportation. ShuttleYa helps you choose; the listed operator provides the ride.",
+    "Compare Colorado and Montana airport transfers, Red Rocks concert transportation, and USVI cruise-port rides. ShuttleYa helps you choose; the listed operator provides the ride.",
   alternates: { canonical: `${truth.site.url}/` },
 };
 
@@ -55,14 +55,14 @@ export default function ShuttleYaHome() {
 
       <section id="find-a-ride" className="mx-auto max-w-6xl px-5 py-14 sm:px-8 md:py-20">
         <p className="text-xs font-black uppercase tracking-[0.2em] text-sky-300">Start with the trip</p>
-        <h2 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">What kind of transportation do you need?</h2>
+        <h2 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">Where do you need transportation?</h2>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {truth.categories.map((item) => (
             <a key={item.href} href={item.href} className="rounded-3xl border border-white/10 bg-white/[0.045] p-6 transition hover:-translate-y-1 hover:border-sky-300/45">
               <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-300">{item.eyebrow}</p>
               <h3 className="mt-3 text-2xl font-black text-white">{item.title}</h3>
               <p className="mt-3 leading-7 text-slate-300">{item.copy}</p>
-              <span className="mt-6 inline-block text-sm font-black text-sky-200">Explore options →</span>
+              <span className="mt-6 inline-block text-sm font-black text-sky-200">See destination options →</span>
             </a>
           ))}
         </div>
