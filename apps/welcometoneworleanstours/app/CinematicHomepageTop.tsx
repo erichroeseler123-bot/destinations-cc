@@ -12,6 +12,13 @@ const categories = [
   { href: "/jazz-music-tours", title: "Jazz / Music", copy: "The soul of New Orleans", image: "/images/wikimedia/originals/french-quarter-night.jpg", icon: "♪" },
 ];
 
+const popularDecisions = [
+  { href: "/guides/best-new-orleans-swamp-tour", title: "Which swamp tour is best?", copy: "Compare covered boats, airboats, transportation and group fit." },
+  { href: "/garden-district-tours", title: "Garden District walking tours", copy: "Choose a dedicated walk or a broader city tour that includes the neighborhood." },
+  { href: "/guides/best-swamp-tour-with-transportation", title: "Swamp tours with transportation", copy: "Compare pickup, travel time and boat format before booking." },
+  { href: "/compare/whitney-vs-oak-alley", title: "Whitney vs Oak Alley", copy: "Compare historical focus, setting and practical trip fit." },
+];
+
 export default function CinematicHomepageTop() {
   return (
     <div className={styles.wrap} data-wno-home-theme="black-gold-v2">
@@ -34,6 +41,22 @@ export default function CinematicHomepageTop() {
           <Link href="/guides/things-to-do-in-new-orleans-today" className={`${styles.action} ${styles.goldAction}`}><span className={styles.actionIcon}>⚜</span><span><strong>Find Something Today</strong><small>See what fits right now</small></span><b>›</b></Link>
           <Link href="/help-me-choose" className={styles.action}><span className={styles.actionIcon}>✥</span><span><strong>Help Me Choose</strong><small>Answer a few questions</small></span><b>›</b></Link>
           <a href="tel:+15044849687" className={styles.action}><span className={styles.actionIcon}>☎</span><span><strong>Call or Text</strong><small>504-484-9687</small></span><b>›</b></a>
+        </div>
+      </section>
+
+      <section className="border-y border-[#342b1d] bg-[#0b0a09] px-6 py-12 text-[#f8f1e5]">
+        <div className="mx-auto max-w-6xl">
+          <p className="text-[0.75rem] font-bold uppercase tracking-[0.2em] text-[#c9a86a]">Most visitors start here</p>
+          <h2 className="mt-3 font-serif text-3xl text-[#fff4dd] md:text-4xl">Make the big tour decisions first</h2>
+          <div className="mt-7 grid gap-3 md:grid-cols-2">
+            {popularDecisions.map((decision) => (
+              <Link key={decision.href} href={decision.href} className="group border border-[#342b1d] bg-[#12110e] p-5 transition hover:border-[#c9a86a]">
+                <h3 className="font-serif text-xl text-[#f3dfb3]">{decision.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[#b7ad9e]">{decision.copy}</p>
+                <span className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.12em] text-[#c9a86a] group-hover:text-[#fff4dd]">Compare options →</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 

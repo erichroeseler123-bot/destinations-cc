@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
 import { GET as getSitemapResponse } from "../../../app/sitemap.xml/route";
 
-const CANONICAL_ORIGIN = "https://welcometoneworleanstours.com";
-const LEGACY_ORIGIN = "https://www.welcometoneworleanstours.com";
+const CANONICAL_ORIGIN = "https://www.welcometoneworleanstours.com";
+const LEGACY_ORIGIN = "https://welcometoneworleanstours.com";
 
 function decodeXml(value: string) {
   return value

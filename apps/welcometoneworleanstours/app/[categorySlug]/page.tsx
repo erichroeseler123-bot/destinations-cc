@@ -5,7 +5,7 @@ import PrivacyPage from "@/app/new-orleans/privacy/page";
 import TermsPage from "@/app/new-orleans/terms/page";
 import AccessibilityPage from "@/app/new-orleans/accessibility/page";
 
-const WNO_METADATA_BASE = new URL("https://welcometoneworleanstours.com");
+const WNO_METADATA_BASE = new URL("https://www.welcometoneworleanstours.com");
 
 const specialPages = {
   privacy: PrivacyPage,

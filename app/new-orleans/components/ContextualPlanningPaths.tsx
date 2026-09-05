@@ -19,6 +19,7 @@ const CATEGORY_LINKS: Record<string, PlanningLink[]> = {
     { href: "/guides/4-hours-in-new-orleans", label: "Tour planning with about four hours" },
   ],
   "/swamp-tours": [
+    { href: "/guides/best-new-orleans-swamp-tour", label: "Best swamp tour for your group" },
     { href: "/compare/covered-swamp-boat-vs-airboat", label: "Covered boat vs airboat" },
     { href: "/airboat-tours", label: "Browse airboat tour formats" },
     { href: "/covered-swamp-boat-tours", label: "Browse covered swamp boats" },

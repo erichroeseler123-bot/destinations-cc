@@ -37,6 +37,7 @@ const WTONOT_HIGH_INTENT_PATHS = [
   "/guides/new-orleans-tours-tonight",
   "/guides/4-hours-in-new-orleans",
   "/guides/first-time-new-orleans-tours",
+  "/guides/best-new-orleans-swamp-tour",
   "/guides/new-orleans-tours-for-families",
   "/guides/best-swamp-tour-with-transportation",
   "/guides/new-orleans-tours-with-transportation",

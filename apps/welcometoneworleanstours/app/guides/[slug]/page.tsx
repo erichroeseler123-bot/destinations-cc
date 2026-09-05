@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { permanentRedirect } from "next/navigation";
 import CanonicalGuidePage, { generateMetadata as generateCanonicalMetadata } from "@/app/new-orleans/guides/[slug]/page";
 import FourHours from "@/app/new-orleans/guides/4-hours-in-new-orleans/page";
-import BestSwamp from "@/app/new-orleans/guides/best-new-orleans-swamp-tour/page";
+import BestSwamp, { metadata as bestSwampMetadata } from "@/app/new-orleans/guides/best-new-orleans-swamp-tour/page";
 import RainyDay, { metadata as rainyDayMetadata } from "@/app/new-orleans/guides/best-new-orleans-tours-for-a-rainy-day/page";
 import FirstTime, { metadata as firstTimeMetadata } from "@/app/new-orleans/guides/first-time-new-orleans-tours/page";
 import SwampTransport, { metadata as swampTransportMetadata } from "@/app/new-orleans/guides/best-swamp-tour-with-transportation/page";
@@ -22,7 +22,7 @@ import PlanNewOrleans, { metadata as planNewOrleansMetadata } from "@/app/new-or
 import BeforeCruise, { metadata as beforeCruiseMetadata } from "@/app/new-orleans/things-to-do-before-a-cruise-new-orleans/page";
 import AfterCruise, { metadata as afterCruiseMetadata } from "@/app/new-orleans/things-to-do-after-a-cruise-new-orleans/page";
 
-const WNO_METADATA_BASE = new URL("https://welcometoneworleanstours.com");
+const WNO_METADATA_BASE = new URL("https://www.welcometoneworleanstours.com");
 
 const guideAliases = {
   "french-quarter-tour-timing": "french-quarter-orientation",
@@ -35,6 +35,7 @@ const directAliases = {
 } as const;
 
 const bridgedMetadata: Record<string, Metadata> = {
+  "best-new-orleans-swamp-tour": bestSwampMetadata,
   "best-new-orleans-tours-for-a-rainy-day": rainyDayMetadata,
   "first-time-new-orleans-tours": firstTimeMetadata,
   "best-swamp-tour-with-transportation": swampTransportMetadata,

@@ -12,7 +12,7 @@ import "@/app/new-orleans/data/truthLayerRuntime";
 import CanonicalNewOrleansLayout from "@/app/new-orleans/layout";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://welcometoneworleanstours.com"),
+  metadataBase: new URL("https://www.welcometoneworleanstours.com"),
   title: {
     default: "Welcome to New Orleans Tours | Find the Right Experience",
     template: "%s",
