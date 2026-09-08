@@ -394,6 +394,85 @@ body::after {
   }
 }
 
+/* CSS modules emit hashed class names; keep the final art-direction selectors
+   attribute-based so the live bundle receives the same treatment as local. */
+[data-wno-home-theme="black-gold-v2"] [class*="hero"] {
+  min-height: 590px !important;
+  background: #f7efe1 !important;
+}
+[data-wno-home-theme="black-gold-v2"] [class*="heroBg"] {
+  inset: 0 0 0 49% !important;
+  background: url('/images/new-orleans/hero-french-quarter-balcony.jpg') center / cover no-repeat !important;
+  opacity: 1 !important;
+  filter: saturate(.86) contrast(1.03) !important;
+}
+[data-wno-home-theme="black-gold-v2"] [class*="heroBg"]::before {
+  display: none !important;
+}
+[data-wno-home-theme="black-gold-v2"] [class*="heroBg"]::after {
+  display: block !important;
+  inset: auto 8% 8% auto !important;
+  width: 38% !important;
+  height: 32% !important;
+  background: url('/images/wikimedia/originals/french-quarter-night.jpg') center / cover no-repeat !important;
+  opacity: .32 !important;
+  mix-blend-mode: multiply !important;
+  mask-image: linear-gradient(135deg, transparent, #000 45%) !important;
+  -webkit-mask-image: linear-gradient(135deg, transparent, #000 45%) !important;
+}
+[data-wno-home-theme="black-gold-v2"] [class*="heroShade"] {
+  background: linear-gradient(90deg, #f7efe1 0%, #f7efe1 42%, rgba(247,239,225,.84) 49%, rgba(247,239,225,0) 67%) !important;
+}
+[data-wno-home-theme="black-gold-v2"] [class*="categoryCard"] {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  background: #fffaf0 !important;
+  border: 1px solid rgba(36,52,77,.35) !important;
+  box-shadow: 5px 5px 0 rgba(36,52,77,.1) !important;
+}
+[data-wno-home-theme="black-gold-v2"] [class*="categoryImage"] {
+  position: relative !important;
+  inset: auto !important;
+  height: 185px !important;
+  flex: 0 0 185px !important;
+}
+[data-wno-home-theme="black-gold-v2"] [class*="categoryIcon"] {
+  top: 14px !important;
+  left: auto !important;
+  right: 14px !important;
+  transform: none !important;
+  background: #fffaf0 !important;
+  color: var(--wno-ink) !important;
+  box-shadow: 0 2px 0 rgba(36,52,77,.14) !important;
+}
+[data-wno-home-theme="black-gold-v2"] [class*="categoryText"] {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  min-height: 158px !important;
+  padding: 20px 20px 22px !important;
+  text-align: left !important;
+  text-shadow: none !important;
+}
+[data-wno-home-theme="black-gold-v2"] [class*="categoryText"] h3 {
+  color: var(--wno-ink) !important;
+  font-size: 1.45rem !important;
+  letter-spacing: -.02em !important;
+  text-transform: none !important;
+}
+[data-wno-home-theme="black-gold-v2"] [class*="categoryText"] p {
+  color: #526274 !important;
+  font-size: .9rem !important;
+  line-height: 1.45 !important;
+}
+
+@media (max-width: 820px) {
+  [data-wno-home-theme="black-gold-v2"] [class*="heroBg"] { inset: 0 0 43% 0 !important; }
+  [data-wno-home-theme="black-gold-v2"] [class*="heroShade"] { background: linear-gradient(180deg, rgba(247,239,225,0) 0%, rgba(247,239,225,.86) 48%, #f7efe1 70%) !important; }
+}
+
 /* Light direction: New Orleans print shop / tiled plaster. The destination
    needs air and color, not a wall of black. Keep photography inside cards where
    it helps visitors choose, but remove the full-bleed hero photograph. */
