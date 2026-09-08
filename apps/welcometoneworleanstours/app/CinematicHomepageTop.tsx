@@ -23,8 +23,8 @@ export default function CinematicHomepageTop() {
   return (
     <div className={styles.wrap} data-wno-home-theme="black-gold-v2">
       <section className={styles.hero}>
-        <div className={styles.heroBg} aria-hidden="true" />
-        <div className={styles.heroShade} aria-hidden="true" />
+        <div className={styles.heroBg} aria-hidden="true" style={{ left: "50%", right: 0, top: 0, bottom: 0, backgroundImage: "url('/images/new-orleans/hero-french-quarter-balcony.jpg')", backgroundSize: "cover", backgroundPosition: "center", zIndex: 0 }} />
+        <div className={styles.heroShade} aria-hidden="true" style={{ display: "none" }} />
         <div className={styles.heroInner}>
           <div className={styles.copyBlock}>
             <p className={styles.eyebrow}>Find the right</p>
@@ -39,7 +39,7 @@ export default function CinematicHomepageTop() {
         </div>
         <div className={styles.actions}>
           <Link href="/guides/things-to-do-in-new-orleans-today" className={`${styles.action} ${styles.goldAction}`}><span className={styles.actionIcon}>⚜</span><span><strong>Find Something Today</strong><small>See what fits right now</small></span><b>›</b></Link>
-          <Link href="/help-me-choose" className={styles.action}><span className={styles.actionIcon}>✥</span><span><strong>Help Me Choose</strong><small>Answer a few questions</small></span><b>›</b></Link>
+          <Link href="/help-me-choose" className={styles.action} style={{ background: "#fffaf0", color: "#24344d", borderColor: "rgba(36,52,77,.5)" }}><span className={styles.actionIcon}>✥</span><span><strong>Help Me Choose</strong><small>Answer a few questions</small></span><b>›</b></Link>
           <a href="tel:+15044849687" className={styles.action}><span className={styles.actionIcon}>☎</span><span><strong>Call or Text</strong><small>504-484-9687</small></span><b>›</b></a>
         </div>
       </section>
