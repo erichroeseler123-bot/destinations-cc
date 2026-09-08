@@ -53,22 +53,6 @@ export default function CinematicHomepageTop() {
               </Link>
             </div>
           </div>
-
-          <div className={styles.heroFrameWrap}>
-            <div className={styles.heroFrame}>
-              <div className={styles.heroFrameInner}>
-                <img
-                  src="/images/new-orleans/hero-french-quarter-balcony.jpg"
-                  alt="Historic French Quarter wrought iron balcony"
-                  className={styles.heroFrameImage}
-                />
-              </div>
-              <span className={`${styles.frameCorner} ${styles.cornerTl}`} aria-hidden="true">⚜</span>
-              <span className={`${styles.frameCorner} ${styles.cornerTr}`} aria-hidden="true">⚜</span>
-              <span className={`${styles.frameCorner} ${styles.cornerBl}`} aria-hidden="true">⚜</span>
-              <span className={`${styles.frameCorner} ${styles.cornerBr}`} aria-hidden="true">⚜</span>
-            </div>
-          </div>
         </div>
 
         <div className={styles.actions}>

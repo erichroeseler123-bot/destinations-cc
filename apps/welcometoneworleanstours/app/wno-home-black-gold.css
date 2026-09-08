@@ -1,6 +1,6 @@
 /* wno-home-black-gold.css → Old World Mardi Gras Homepage Theme
    Loaded on homepage only (via data-wno-home-theme="black-gold-v2")
-   Palette:
+   LIGHT PARCHMENT & WARM PAPER PALETTE — ZERO BLACK SURFACES.
    - Base Parchment: #F5EEDB, #FAF4E8, #EFE4CE
    - Walnut Ink: #2C1810
    - Mardi Gras Purple: #4A1A6B
@@ -9,6 +9,7 @@
 */
 
 body:has([data-wno-home-theme="black-gold-v2"]),
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="siteShell"],
 body:has([data-wno-home-theme="black-gold-v2"]) main {
   background: #F5EEDB !important;
   color: #2C1810 !important;
@@ -94,12 +95,17 @@ body:has([data-wno-home-theme="black-gold-v2"]) [class*="text-\[#b7ad9e\]"] {
   color: #5C4638 !important;
 }
 
-/* ─── Planning Help Strip ─────────────────────────────────────────────── */
+/* ─── Planning Help Strip: Warm Parchment, NOT Dark ──────────────────── */
 body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] {
   background: #FAF5EC !important;
   color: #2C1810 !important;
   border-color: #D8C7A5 !important;
-  border-top: 2px solid #4A1A6B !important;
+  border-top: 3px solid #4A1A6B !important;
+}
+
+body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] h2,
+body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] span {
+  color: #2C1810 !important;
 }
 
 body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] p:first-child {
@@ -107,51 +113,61 @@ body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"
   font-weight: 700 !important;
 }
 
-body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] p,
-body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] a {
+body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] p {
   color: #4E3526 !important;
 }
 
 body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] a {
-  background: #EFE4CE !important;
+  background: #FAF6EE !important;
   border-color: #D8C7A5 !important;
+  color: #2C1810 !important;
 }
 
 body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] a:hover {
   border-color: #4A1A6B !important;
   color: #4A1A6B !important;
+  background: #F4EAF7 !important;
 }
 
 body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] a span {
   color: #C8831A !important;
 }
 
-/* ─── Footer: Rich Walnut Base with Mardi Gras Accents ───────────────── */
+/* ─── Footer: Light Vintage Paper & Ivory, NO Black ──────────────────── */
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] {
-  background: #24150D !important;
+  background: #FAF5EC !important;
   border-top: 3px solid #C8831A !important;
-  color: #FAF5EC !important;
+  color: #2C1810 !important;
 }
 
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] [class*="brandKicker"],
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] [class*="label"] {
-  color: #E8BA59 !important;
+  color: #4A1A6B !important;
+  font-weight: 800 !important;
 }
 
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] h4,
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] strong {
-  color: #FAF5EC !important;
+  color: #2C1810 !important;
   font-family: var(--font-new-orleans-display), serif !important;
 }
 
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] p,
-body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] a,
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] small,
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] [class*="copyright"] {
-  color: #D6C7B2 !important;
+  color: #5C4638 !important;
+}
+
+body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] a {
+  color: #4E3526 !important;
+  transition: color 0.16s ease !important;
 }
 
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] a:hover,
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] a:focus-visible {
-  color: #E8BA59 !important;
+  color: #4A1A6B !important;
+}
+
+body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] [class*="bottom"] {
+  border-top: 1px solid #D8C7A5 !important;
 }

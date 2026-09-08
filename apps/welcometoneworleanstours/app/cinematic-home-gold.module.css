@@ -1,12 +1,12 @@
 /* cinematic-home-gold.module.css
    Old World New Orleans with Mardi Gras Accents
-   Palette:
+   Light Parchment Palette — NO black backgrounds!
    - Parchment Base: #F5EEDB, #FAF4E8, #EFE4CE
    - Deep Sepia / Walnut Ink: #2C1810, #3D2214
    - Mardi Gras Purple: #4A1A6B, #3B1257
    - Mardi Gras Gold / Amber: #C8831A, #D4972C
    - Mardi Gras Green / Moss: #2D5A27, #22471E
-   - Card Backgrounds: #FAF6EE, #FCF8F2
+   - Card Backgrounds: #FAF6EE, #FFFFFF
 */
 
 /* ─── Wrapper ─────────────────────────────────────────────────────────── */
@@ -43,28 +43,28 @@
   background: #2D5A27;
 }
 
-/* ─── Hero Section ────────────────────────────────────────────────────── */
+/* ─── Hero Section: Clean, Centered, Old World ───────────────────────── */
 .hero {
   position: relative;
   background: transparent;
-  padding: 36px 0 68px;
+  padding: 48px 0 64px;
 }
 
 .heroInner {
   position: relative;
   z-index: 2;
-  width: min(1380px, calc(100% - 48px));
+  width: min(960px, calc(100% - 48px));
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: clamp(28px, 4.5vw, 64px);
-  min-height: 520px;
+  justify-content: center;
+  text-align: center;
 }
 
-/* Left copy column */
 .copyBlock {
-  text-align: left;
+  text-align: center;
+  margin: 0 auto;
 }
 
 .eyebrow {
@@ -78,22 +78,22 @@
 }
 
 .headline {
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   color: #2C1810;
   font-family: var(--font-new-orleans-display), var(--font-accent), "Playfair Display", Georgia, serif;
-  font-size: clamp(40px, 4.3vw, 66px);
+  font-size: clamp(42px, 5vw, 68px);
   font-weight: 600;
   letter-spacing: 0.02em;
-  line-height: 0.94;
+  line-height: 0.96;
   text-transform: uppercase;
 }
 
 .script {
   display: block;
-  margin: 4px 0 6px;
+  margin: 6px 0 8px;
   color: #C8831A;
   font-family: var(--font-new-orleans-script), "Pinyon Script", cursive;
-  font-size: clamp(56px, 5.8vw, 86px);
+  font-size: clamp(58px, 6.5vw, 92px);
   font-weight: 400;
   letter-spacing: 0;
   line-height: 0.72;
@@ -102,12 +102,12 @@
 }
 
 .divider {
-  width: min(420px, 90%);
-  margin: 20px 0 16px;
+  width: min(440px, 90%);
+  margin: 22px auto 18px;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   color: #4A1A6B;
 }
 
@@ -121,22 +121,23 @@
 }
 
 .divider b {
-  font-size: 20px;
+  font-size: 22px;
   color: #C8831A;
 }
 
 .lede {
-  max-width: 480px;
-  margin: 0;
+  max-width: 620px;
+  margin: 0 auto;
   color: #4E3526;
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 /* Primary CTA in hero */
 .heroCtas {
-  margin-top: 24px;
+  margin-top: 28px;
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 16px;
 }
@@ -145,117 +146,59 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 13px 28px;
+  padding: 14px 34px;
   background: linear-gradient(135deg, #4A1A6B 0%, #35104E 100%);
   color: #FAF5EC;
-  border: 1.5px solid #C8831A;
+  border: 2px solid #C8831A;
   border-radius: 4px;
   font-family: var(--font-new-orleans-display), serif;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  box-shadow: 0 10px 24px rgba(74, 26, 107, 0.28), inset 0 0 0 1px rgba(200, 131, 26, 0.4);
+  box-shadow: 0 10px 24px rgba(74, 26, 107, 0.25), inset 0 0 0 1px rgba(200, 131, 26, 0.4);
   transition: all 0.2s ease;
+  text-decoration: none;
 }
 
 .heroPrimaryBtn:hover {
   background: linear-gradient(135deg, #5C2285 0%, #441663 100%);
   transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(74, 26, 107, 0.38);
+  box-shadow: 0 14px 30px rgba(74, 26, 107, 0.35);
   border-color: #E2A036;
 }
 
 .btnFleur {
   color: #E8BA59;
-  font-size: 18px;
+  font-size: 19px;
 }
 
-/* ─── Right Column: Postcard / Ornate Balcony Frame ───────────────────── */
-.heroFrameWrap {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 12px;
-}
-
-.heroFrame {
-  position: relative;
-  width: 100%;
-  max-width: 560px;
-  background: #FAF6EE;
-  padding: 16px;
-  border: 2px solid #4A1A6B;
-  border-radius: 4px;
-  box-shadow:
-    0 20px 42px rgba(44, 24, 16, 0.16),
-    inset 0 0 0 1px #C8831A,
-    inset 0 0 0 6px #FAF6EE,
-    inset 0 0 0 8px rgba(74, 26, 107, 0.45);
-}
-
-.heroFrameInner {
-  position: relative;
-  overflow: hidden;
-  border-radius: 2px;
-  border: 1px solid #D8C7A5;
-  aspect-ratio: 16 / 11;
-  background: #EFE4CE;
-}
-
-.heroFrameImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 30%;
-  filter: sepia(0.1) contrast(1.05) brightness(0.97);
-  transition: transform 0.6s ease, filter 0.3s ease;
-}
-
-.heroFrame:hover .heroFrameImage {
-  transform: scale(1.03);
-  filter: sepia(0.04) contrast(1.06) brightness(1.0);
-}
-
-/* Ornate Corner Fleur-de-lis */
-.frameCorner {
-  position: absolute;
-  z-index: 5;
-  font-size: 18px;
-  color: #4A1A6B;
-  line-height: 1;
-  user-select: none;
-  pointer-events: none;
-}
-
-.cornerTl { top: 4px; left: 4px; }
-.cornerTr { top: 4px; right: 4px; }
-.cornerBl { bottom: 4px; left: 4px; }
-.cornerBr { bottom: 4px; right: 4px; }
-
-/* ─── Hero Quick-Action Badges ─────────────────────────────────────────── */
+/* ─── Hero Quick-Action Badges (Warm Parchment/Cream, NOT black) ─────── */
 .actions {
-  width: min(1180px, calc(100% - 48px));
-  margin: 16px auto 0;
+  width: min(1120px, calc(100% - 48px));
+  margin: 44px auto 0;
   display: grid;
   grid-template-columns: 1.15fr 1fr 1fr;
-  gap: 16px;
+  gap: 18px;
 }
 
 .action {
-  min-height: 70px;
-  padding: 12px 18px;
+  min-height: 72px;
+  padding: 14px 20px;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 14px;
-  border-radius: 4px;
+  border-radius: 6px;
   text-decoration: none;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  background: #FAF6EE;
+  box-shadow: 0 8px 20px rgba(44, 24, 16, 0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 
 .action:hover {
   transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(44, 24, 16, 0.12);
 }
 
 .action span:nth-child(2) {
@@ -272,9 +215,9 @@
 
 .action small {
   margin-top: 2px;
-  font-size: 11.5px;
+  font-size: 12px;
   font-style: italic;
-  opacity: 0.9;
+  color: #5C4638;
 }
 
 .action b {
@@ -283,79 +226,70 @@
 }
 
 .actionIcon {
-  font-size: 22px;
+  font-size: 24px;
 }
 
 /* Purple Action */
 .purpleAction {
-  background: linear-gradient(135deg, #4A1A6B 0%, #35104E 100%);
-  color: #FAF5EC;
-  border: 1px solid #C8831A;
-  box-shadow: 0 12px 28px rgba(74, 26, 107, 0.22);
+  border: 1.5px solid #4A1A6B;
 }
 
 .purpleAction .actionIcon {
-  color: #E8BA59;
+  color: #4A1A6B;
 }
 
 .purpleAction strong {
-  color: #FAF5EC;
+  color: #4A1A6B;
 }
 
-.purpleAction small {
-  color: #E5D5BC;
+.purpleAction b {
+  color: #4A1A6B;
 }
 
 .purpleAction:hover {
-  box-shadow: 0 16px 34px rgba(74, 26, 107, 0.32);
+  background: #F4EAF7;
 }
 
 /* Gold Action */
 .goldAction {
-  background: linear-gradient(135deg, #D4972C 0%, #B87C18 100%);
-  color: #241407;
-  border: 1px solid #E8BA59;
-  box-shadow: 0 12px 28px rgba(184, 124, 24, 0.2);
+  border: 1.5px solid #C8831A;
 }
 
 .goldAction .actionIcon {
-  color: #241407;
+  color: #C8831A;
 }
 
 .goldAction strong {
-  color: #241407;
+  color: #2C1810;
 }
 
-.goldAction small {
-  color: #3F2309;
+.goldAction b {
+  color: #C8831A;
 }
 
 .goldAction:hover {
-  box-shadow: 0 16px 34px rgba(184, 124, 24, 0.3);
+  background: #FAF2E4;
 }
 
 /* Green Action */
 .greenAction {
-  background: linear-gradient(135deg, #2D5A27 0%, #1E3F1A 100%);
-  color: #FAF5EC;
-  border: 1px solid #5A8F53;
-  box-shadow: 0 12px 28px rgba(45, 90, 39, 0.2);
+  border: 1.5px solid #2D5A27;
 }
 
 .greenAction .actionIcon {
-  color: #E8BA59;
+  color: #2D5A27;
 }
 
 .greenAction strong {
-  color: #FAF5EC;
+  color: #2D5A27;
 }
 
-.greenAction small {
-  color: #D6E3D4;
+.greenAction b {
+  color: #2D5A27;
 }
 
 .greenAction:hover {
-  box-shadow: 0 16px 34px rgba(45, 90, 39, 0.3);
+  background: #EBF4E9;
 }
 
 /* ─── Ornate Section Divider ─────────────────────────────────────────── */
@@ -364,8 +298,8 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 18px;
-  max-width: 900px;
-  margin: 36px auto;
+  max-width: 800px;
+  margin: 40px auto;
   padding: 0 24px;
 }
 
@@ -388,7 +322,7 @@
   background: #EFE4CE;
   border-top: 1px solid #D8C7A5;
   border-bottom: 1px solid #D8C7A5;
-  padding: 42px 24px;
+  padding: 46px 24px;
 }
 
 .popularInner {
@@ -423,7 +357,7 @@
   background: #FAF6EE;
   border: 1px solid #D8C7A5;
   border-radius: 4px;
-  padding: 20px;
+  padding: 22px;
   text-decoration: none;
   box-shadow: 0 8px 20px rgba(44, 24, 16, 0.05);
   transition: all 0.2s ease;
@@ -441,7 +375,7 @@
   margin: 0;
   color: #2C1810;
   font-family: var(--font-new-orleans-display), serif;
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 600;
 }
 
@@ -449,7 +383,7 @@
   margin: 8px 0 16px;
   color: #5C4638;
   font-size: 13px;
-  line-height: 1.45;
+  line-height: 1.5;
   flex-grow: 1;
 }
 
@@ -472,7 +406,7 @@
   background:
     radial-gradient(circle at 50% 0%, rgba(200, 131, 26, 0.04), transparent 45%),
     #F5EEDB;
-  padding: 48px 24px 60px;
+  padding: 52px 24px 64px;
 }
 
 .discoveryTitle {
@@ -481,7 +415,7 @@
   align-items: center;
   gap: 20px;
   max-width: 1240px;
-  margin: 0 auto 32px;
+  margin: 0 auto 36px;
   text-align: center;
 }
 
@@ -498,7 +432,7 @@
   margin: 0;
   color: #2C1810;
   font-family: var(--font-new-orleans-display), serif;
-  font-size: clamp(22px, 2.6vw, 30px);
+  font-size: clamp(22px, 2.6vw, 32px);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -512,7 +446,6 @@
   letter-spacing: 0.04em;
 }
 
-/* 4 columns on large screens for postcard cards just like mockup */
 .categoryGrid {
   max-width: 1280px;
   margin: 0 auto;
@@ -526,7 +459,7 @@
   background: #FAF6EE;
   border: 1px solid #D8C7A5;
   border-radius: 6px;
-  padding-bottom: 16px;
+  padding-bottom: 18px;
   overflow: hidden;
   text-decoration: none;
   box-shadow: 0 10px 24px rgba(44, 24, 16, 0.07);
@@ -544,8 +477,8 @@
 .cardRibbon {
   align-self: center;
   padding: 4px 14px;
-  margin-top: 10px;
-  margin-bottom: 8px;
+  margin-top: 12px;
+  margin-bottom: 10px;
   border-radius: 2px;
   font-family: var(--font-accent), serif;
   font-size: 10.5px;
@@ -606,7 +539,7 @@
 }
 
 .categoryText {
-  padding: 12px 14px 0;
+  padding: 14px 14px 0;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -622,10 +555,10 @@
 }
 
 .categoryText p {
-  margin: 6px 0 12px;
+  margin: 6px 0 14px;
   color: #5C4638;
-  font-size: 12.5px;
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.45;
   flex-grow: 1;
 }
 
@@ -645,11 +578,11 @@
 /* ─── Trust Strip ─────────────────────────────────────────────────────── */
 .trustStrip {
   max-width: 1040px;
-  margin: 40px auto 0;
+  margin: 44px auto 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   border-top: 1px solid #D8C7A5;
-  padding-top: 18px;
+  padding-top: 20px;
 }
 
 .trustStrip div {
@@ -674,48 +607,30 @@
 
 /* ─── Responsive Media Queries ────────────────────────────────────────── */
 @media (max-width: 1080px) {
-  .heroInner {
-    grid-template-columns: 1fr;
-    gap: 36px;
-    padding-bottom: 40px;
-  }
-
-  .copyBlock {
-    text-align: center;
-  }
-
-  .divider {
-    margin: 20px auto 16px;
-  }
-
-  .lede {
-    margin: 0 auto;
-  }
-
-  .heroCtas {
-    justify-content: center;
-  }
-
   .categoryGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 768px) {
+  .hero {
+    padding: 32px 0 44px;
+  }
+
   .heroInner {
     width: calc(100% - 32px);
-    padding: 24px 0 32px;
   }
 
   .actions {
     grid-template-columns: 1fr;
     width: calc(100% - 32px);
-    gap: 10px;
+    gap: 12px;
+    margin-top: 32px;
   }
 
   .action {
-    min-height: 60px;
-    padding: 10px 14px;
+    min-height: 62px;
+    padding: 12px 16px;
   }
 
   .categoryGrid {
