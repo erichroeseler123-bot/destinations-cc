@@ -8,6 +8,7 @@ import "./wno-category-layouts.css";
 import "./wno-home-black-gold.css";
 import "./wno-freeze-fixes.css";
 import "./wno-exact-surfaces.css";
+import "./wno-unified-theme.css";
 import "@/app/new-orleans/data/truthLayerRuntime";
 import CanonicalNewOrleansLayout from "@/app/new-orleans/layout";
 
