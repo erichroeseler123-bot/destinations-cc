@@ -393,3 +393,215 @@ body::after {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Light direction: New Orleans print shop / tiled plaster. The destination
+   needs air and color, not a wall of black. Keep photography inside cards where
+   it helps visitors choose, but remove the full-bleed hero photograph. */
+:root {
+  --wno-night: #24344d;
+  --wno-night-deep: #f2e8d4;
+  --wno-plum: #e8d9c3;
+  --wno-plum-soft: #d9c5a6;
+  --wno-parchment: #fffaf0;
+  --wno-parchment-deep: #e4cfad;
+  --wno-ink: #24344d;
+  --wno-brass: #bd8428;
+  --wno-brass-bright: #d9a43f;
+  --wno-iron-line: rgba(36, 52, 77, 0.26);
+  --wno-copy: #405165;
+}
+
+html,
+body {
+  background: #f2e8d4 !important;
+}
+
+body {
+  background-image:
+    linear-gradient(90deg, rgba(36, 52, 77, 0.045) 1px, transparent 1px),
+    linear-gradient(rgba(36, 52, 77, 0.045) 1px, transparent 1px) !important;
+  background-size: 38px 38px !important;
+}
+
+body::after {
+  color: rgba(36, 52, 77, 0.55) !important;
+}
+
+header[class*="marketHeader"] {
+  background: var(--wno-night) !important;
+  border-bottom: 4px solid var(--wno-brass) !important;
+  box-shadow: 0 8px 22px rgba(36, 52, 77, 0.18) !important;
+}
+
+main {
+  background:
+    radial-gradient(circle at 7% 0%, rgba(189, 132, 40, 0.1), transparent 19rem),
+    #f2e8d4 !important;
+  color: var(--wno-copy) !important;
+}
+
+main h1,
+main h2,
+main h3,
+main h4 {
+  color: var(--wno-ink) !important;
+  -webkit-text-fill-color: var(--wno-ink) !important;
+  text-shadow: none !important;
+}
+
+main p,
+main li,
+main dt,
+main dd {
+  color: var(--wno-copy) !important;
+}
+
+main article,
+main aside,
+main details,
+main [class*="productCard"],
+main [class*="comparison"],
+main [class*="chooser"],
+main [class*="recommendation"] {
+  background: #fffaf0 !important;
+  border-color: rgba(36, 52, 77, 0.2) !important;
+  box-shadow: 0 14px 30px rgba(36, 52, 77, 0.1) !important;
+  color: var(--wno-copy) !important;
+}
+
+main [class*="productCard"] h2,
+main [class*="productCard"] h3,
+main [class*="productCard"] h4,
+main [class*="chooser"] h2,
+main [class*="chooser"] h3,
+main [class*="recommendation"] h2,
+main [class*="recommendation"] h3 {
+  color: var(--wno-ink) !important;
+  -webkit-text-fill-color: var(--wno-ink) !important;
+}
+
+main [class*="productCardCta"],
+main [class*="goldAction"],
+main button[type="submit"] {
+  background: var(--wno-brass) !important;
+  border-color: var(--wno-brass) !important;
+  color: #fffaf0 !important;
+  box-shadow: 0 8px 18px rgba(189, 132, 40, 0.2) !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] {
+  background: #f2e8d4 !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="hero"] {
+  background: #f2e8d4 !important;
+  border-bottom: 1px solid rgba(36, 52, 77, 0.16) !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="heroBg"] {
+  background:
+    radial-gradient(circle at 78% 22%, rgba(189, 132, 40, 0.26), transparent 14rem),
+    linear-gradient(135deg, #f8efdf 0%, #e4cfad 100%) !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="heroBg"]::before,
+[data-wno-home-theme="black-gold-v2"] [class*="heroBg"]::after {
+  display: none !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="heroShade"] {
+  background:
+    linear-gradient(90deg, rgba(242, 232, 212, 0.98) 0%, rgba(242, 232, 212, 0.82) 43%, rgba(242, 232, 212, 0.18) 100%),
+    repeating-linear-gradient(135deg, transparent 0 28px, rgba(36, 52, 77, 0.045) 28px 29px) !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="copyBlock"] {
+  filter: none !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="headline"],
+[data-wno-home-theme="black-gold-v2"] [class*="lede"] {
+  color: var(--wno-ink) !important;
+  -webkit-text-fill-color: var(--wno-ink) !important;
+  text-shadow: none !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="script"],
+[data-wno-home-theme="black-gold-v2"] [class*="eyebrow"] {
+  color: #a76b16 !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="action"] {
+  background: #fffaf0 !important;
+  color: var(--wno-ink) !important;
+  border: 1px solid rgba(36, 52, 77, 0.24) !important;
+  border-left: 4px solid var(--wno-brass) !important;
+  box-shadow: 5px 5px 0 rgba(36, 52, 77, 0.12) !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="action"] small,
+[data-wno-home-theme="black-gold-v2"] [class*="action"] b {
+  color: var(--wno-copy) !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="actionIcon"] {
+  color: var(--wno-brass) !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="goldAction"] {
+  background: var(--wno-night) !important;
+  color: #fffaf0 !important;
+  border-color: var(--wno-night) !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="goldAction"] small,
+[data-wno-home-theme="black-gold-v2"] [class*="goldAction"] b,
+[data-wno-home-theme="black-gold-v2"] [class*="goldAction"] [class*="actionIcon"] {
+  color: #f1d393 !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="discovery"] {
+  background: #fffaf0 !important;
+  border-top-color: var(--wno-night) !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="discoveryTitle"] h2,
+[data-wno-home-theme="black-gold-v2"] [class*="discoveryTitle"] p {
+  color: var(--wno-ink) !important;
+  -webkit-text-fill-color: var(--wno-ink) !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="categoryCard"] {
+  border-color: var(--wno-night) !important;
+  box-shadow: 7px 7px 0 rgba(36, 52, 77, 0.14) !important;
+}
+
+[data-wno-home-theme="black-gold-v2"] [class*="categoryCard"]:nth-child(odd) {
+  box-shadow: 7px 7px 0 rgba(189, 132, 40, 0.25) !important;
+}
+
+[data-wno-decision-panel] {
+  background: #e4cfad !important;
+}
+
+[data-wno-decision-panel] h2 {
+  color: var(--wno-ink) !important;
+  -webkit-text-fill-color: var(--wno-ink) !important;
+}
+
+[data-wno-decision-card] {
+  background: #fffaf0 !important;
+  border-color: rgba(36, 52, 77, 0.25) !important;
+}
+
+[data-wno-decision-card] h3 {
+  color: var(--wno-ink) !important;
+  -webkit-text-fill-color: var(--wno-ink) !important;
+}
+
+footer[class*="footer"] {
+  background: var(--wno-night) !important;
+  border-top-color: var(--wno-brass) !important;
+}
