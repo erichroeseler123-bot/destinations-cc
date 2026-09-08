@@ -6,6 +6,7 @@ import { HeaderNav, FooterNav } from "./components/MarketplaceNavigation";
 import WnoFunnelTracker from "./components/WnoFunnelTracker";
 import ContextualPlanningPaths from "./components/ContextualPlanningPaths";
 import WnoMobileConversionMount from "./components/WnoMobileConversionMount";
+import FareHarborLightframeLoader from "./components/FareHarborLightframeLoader";
 import { buildWnoSiteGraph } from "./lib/structuredData";
 import siteTheme from "./components/siteWideTheme.module.css";
 
@@ -57,6 +58,7 @@ export default function NewOrleansLayout({
   return (
     <div className={`${siteTheme.siteShell} flex flex-col min-h-screen ${newOrleansDisplayFont.variable} ${newOrleansScriptFont.variable}`}>
       <JsonLd data={buildWnoSiteGraph()} />
+      <FareHarborLightframeLoader />
       <WnoFunnelTracker />
       <HeaderNav />
       <main className={`${siteTheme.pageWash} flex-1 w-full relative`}>

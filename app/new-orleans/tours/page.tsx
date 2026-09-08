@@ -13,9 +13,12 @@ import {
 import { NEW_ORLEANS_TOURS_PATH, METADATA, STOREFRONT_PRODUCTS } from "./pageConfig";
 import { headers } from "next/headers";
 import { generateCategorySchemaGraph } from "../lib/schema";
+import { isHeldProduct } from "../data/truthPolicy";
+import { FAREHARBOR_SOURCES } from "../lib/fareHarborAttribution";
 
+const BOOKABLE_PRODUCT_COUNT = STOREFRONT_PRODUCTS.filter((product) => !isHeldProduct(product.slug)).length;
 const CURRENT_TOURS_DESCRIPTION =
-  "Browse 21 curated New Orleans experiences across river cruises, city tours, swamps, airboats, plantation history, walking tours, and full-day combinations, with personal planning help when you want it.";
+  `Compare ${BOOKABLE_PRODUCT_COUNT} bookable New Orleans tours across river cruises, city tours, swamps, airboats, plantation history, walking tours, and full-day combinations. Check live dates and prices without leaving WNO.`;
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -78,10 +81,10 @@ export default async function NewOrleansToursPage() {
           eyebrow="The complete collection"
           title="New Orleans Tours"
           script="find your kind of New Orleans"
-          intro="Browse the live collection by experience type, or jump to the chooser if you would rather tell us what kind of day you want. Practical details and current operator booking paths stay attached to every tour."
+          intro="Compare bookable experiences by type, or tell us what kind of day you want. When you are ready, check live operator dates and prices directly from the tour card."
           image="/images/travel-markets/new-orleans/french-quarter-street.jpg"
           actions={[
-            { href: "#tour-collection", label: "Browse Tours", detail: `${STOREFRONT_PRODUCTS.length} current experiences`, primary: true },
+            { href: "#tour-collection", label: "Browse Tours", detail: `${BOOKABLE_PRODUCT_COUNT} bookable experiences`, primary: true },
             { href: "/help-me-choose", label: "Help Me Choose", detail: "Narrow it down for me" },
             { href: "tel:+15044849687", label: "Ask Us", detail: "504-484-9687" },
           ]}
@@ -102,7 +105,16 @@ export default async function NewOrleansToursPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {sectionProducts.map((product) => (
-                    <ProductCard key={product.id} product={{ ...product, operatorAttribution: undefined, isBookable: true, ctaLabel: "View Details" } as any} />
+                    <ProductCard
+                      key={product.id}
+                      attributionSource={FAREHARBOR_SOURCES.tours}
+                      product={{
+                        ...product,
+                        operatorAttribution: product.operatorName,
+                        isBookable: !isHeldProduct(product.slug),
+                        ctaLabel: isHeldProduct(product.slug) ? "View details · call to confirm" : undefined,
+                      } as any}
+                    />
                   ))}
                 </div>
               </section>

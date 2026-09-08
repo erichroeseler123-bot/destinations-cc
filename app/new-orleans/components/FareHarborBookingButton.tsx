@@ -1,11 +1,21 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import {
+  buildFareHarborLightframeOptions,
   getExpectedFareHarborAsn,
   normalizeFareHarborFallbackHref,
   type FareHarborSource,
 } from "../lib/fareHarborAttribution";
+import { getWnoFunnelContext, sendWnoTelemetry } from "./WnoFunnelTracker";
+
+declare global {
+  interface Window {
+    FH?: {
+      open: (options: Record<string, unknown>) => boolean;
+    };
+  }
+}
 
 export interface FareHarborBookingButtonProps {
   productTitle?: string;
@@ -33,6 +43,8 @@ export default function FareHarborBookingButton({
   asn,
   refCode,
   fallbackHref,
+  scheduleUuid,
+  fullItems,
   placement,
   className = "",
   onBookingClick,
@@ -49,7 +61,7 @@ export default function FareHarborBookingButton({
     [fallbackHref, shortname, effectiveAsn],
   );
 
-  const trackEvent = (eventName: string) => {
+  const trackEvent = useCallback((eventName: string) => {
     const eventData = {
       productTitle,
       productSlug,
@@ -67,7 +79,7 @@ export default function FareHarborBookingButton({
       const dataLayer = (window as any).dataLayer || [];
       dataLayer.push({ event: eventName, ...eventData });
     }
-  };
+  }, [effectiveFallbackHref, flowId, itemId, placement, productSlug, productTitle, refCode, shortname]);
 
   useEffect(() => {
     if (!buttonRef.current) return;
@@ -84,21 +96,75 @@ export default function FareHarborBookingButton({
 
     observer.observe(buttonRef.current);
     return () => observer.disconnect();
-  }, [productSlug, placement, effectiveFallbackHref]);
+  }, [trackEvent]);
 
-  const handleClick = () => {
+  const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    const context = getWnoFunnelContext();
+    const sourcePage = window.location.pathname;
+
     trackEvent("fareharbor_cta_clicked");
-    trackEvent("fareharbor_direct_fallback_used");
+    trackEvent("booking_opened");
+    sendWnoTelemetry({
+      eventName: "booking_opened",
+      sourcePage,
+      targetPath: effectiveFallbackHref,
+      productSlug,
+      productName: productTitle,
+      operatorId: shortname,
+      itemId: String(itemId || ""),
+      flowId: String(flowId || ""),
+      ctaLocation: placement,
+      entrySource: context?.source,
+      entryPath: context?.landingPath,
+    });
     if (onBookingClick) onBookingClick();
+
+    // Preserve native modified-click behavior for visitors who explicitly ask
+    // the browser to open the secure FareHarbor fallback in another tab.
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      trackEvent("fareharbor_direct_fallback_used");
+      return;
+    }
+
+    trackEvent("fareharbor_open_attempted");
+    if (!window.FH?.open) {
+      trackEvent("fareharbor_script_failed");
+      trackEvent("fareharbor_direct_fallback_used");
+      return;
+    }
+
+    try {
+      const opened = window.FH.open(buildFareHarborLightframeOptions({
+        shortname,
+        asn: effectiveAsn,
+        itemId,
+        flowId,
+        source: refCode,
+        scheduleUuid,
+        fullItems,
+      }));
+      if (opened) {
+        event.preventDefault();
+        trackEvent("fareharbor_open_succeeded");
+        return;
+      }
+    } catch {
+      trackEvent("fareharbor_script_failed");
+    }
+
+    // The href remains a real, attributed FareHarbor URL so checkout still
+    // works when Lightframe is unavailable or unsupported on the device.
+    trackEvent("fareharbor_direct_fallback_used");
   };
 
   return (
     <a
       ref={buttonRef}
       href={effectiveFallbackHref}
-      target="_blank"
-      rel="noopener noreferrer"
       onClick={handleClick}
+      data-wno-managed-click="true"
+      data-wno-product={productSlug}
+      data-cta-location={placement}
       className={className}
     >
       {children}
