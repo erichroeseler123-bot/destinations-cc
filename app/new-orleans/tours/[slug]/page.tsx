@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import FareHarborLightframeLoader from "../../components/FareHarborLightframeLoader";
 import TourDetailBookingAction from "./TourDetailBookingAction";
 import { headers } from "next/headers";
 import { STOREFRONT_PRODUCTS, getFareHarborUrl, NEW_ORLEANS_TOURS_PATH } from "../pageConfig";
@@ -161,8 +160,6 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
         }}
       />
       <TourDetailAnalytics productId={product.id} operatorId={product.companyShortname} />
-      <FareHarborLightframeLoader />
-
       <main id="main-content">
         <section className={`${styles.hero} ${!resolvedImage ? styles.noImageHero : ""}`}>
           {resolvedImage && <img src={resolvedImage.src} alt={resolvedImage.alt} className={styles.heroImage} />}

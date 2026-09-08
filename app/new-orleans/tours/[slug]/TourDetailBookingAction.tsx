@@ -68,18 +68,6 @@ export default function TourDetailBookingAction({ product, refCode, fallbackHref
         trackEvent("fareharbor_outbound_clicked", basePayload);
         trackEvent("fareharbor_checkout_opened", basePayload);
 
-        sendWnoTelemetry({
-          eventName: "booking_opened",
-          sourcePage: context?.source,
-          targetPath: fallbackHref,
-          productSlug: product.slug,
-          productName: product.title,
-          operatorId: product.companyShortname,
-          variantLabel,
-          itemId: String(itemId || product.itemId || ""),
-          flowId: String(finalFlow || ""),
-        });
-
         try {
           const completedAt = Number(sessionStorage.getItem(CHOOSER_COMPLETED_AT));
           const recommendation = sessionStorage.getItem(CHOOSER_RECOMMENDATION);

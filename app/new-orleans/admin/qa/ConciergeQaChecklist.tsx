@@ -51,7 +51,7 @@ const sections: ChecklistSection[] = [
   ]},
   { id: "booking", title: "Booking Path", items: [
     { id: "all-detail-pages", label: "Every experience detail page loads." },
-    { id: "direct-fareharbor", label: "See Availability opens FareHarbor directly in a new tab; Lightframe is not required." },
+    { id: "direct-fareharbor", label: "Booking CTAs open the FareHarbor Lightframe when supported and retain the attributed FareHarbor URL as a safe fallback." },
     { id: "affiliate-params", label: "Affiliate parameters are normalized on every booking URL." },
     { id: "variant-links", label: "Variant-level links work for experiences with multiple times / meals / formats." },
     { id: "dead-routes", label: "Homepage tiles, editorial cards, chooser results, category links, logo/home links, and CTAs have no dead internal routes." },

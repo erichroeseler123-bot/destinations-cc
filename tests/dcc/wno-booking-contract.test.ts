@@ -7,6 +7,12 @@ import {
   getExpectedFareHarborAsn,
   normalizeFareHarborFallbackHref,
 } from "../../app/new-orleans/lib/fareHarborAttribution";
+import { isHeldProduct } from "../../app/new-orleans/data/truthPolicy";
+import {
+  CHOOSER_CATEGORIES,
+  getPreferencesForCategory,
+  getRecommendation,
+} from "../../app/new-orleans/help-me-choose/recommendationRules";
 
 test("WNO has exactly 21 approved parent experiences with unique detail slugs", () => {
   assert.equal(STOREFRONT_PRODUCTS.length, 21);
@@ -15,6 +21,35 @@ test("WNO has exactly 21 approved parent experiences with unique detail slugs", 
   const productSlugs = STOREFRONT_PRODUCTS.map((product) => product.slug);
   assert.equal(new Set(productSlugs).size, 21);
   assert.deepEqual(new Set(productSlugs), new Set(APPROVED_PRODUCT_SLUGS));
+});
+
+test("WNO distinguishes self-service inventory from the held manual-confirmation product", () => {
+  const bookableProducts = STOREFRONT_PRODUCTS.filter((product) => !isHeldProduct(product.slug));
+  const heldProducts = STOREFRONT_PRODUCTS.filter((product) => isHeldProduct(product.slug));
+
+  assert.equal(bookableProducts.length, 20);
+  assert.deepEqual(heldProducts.map((product) => product.slug), ["covered-boat-plantation-combo"]);
+});
+
+test("every quick chooser path resolves to governed self-service inventory", () => {
+  const productsById = new Map(STOREFRONT_PRODUCTS.map((product) => [product.id, product]));
+
+  for (const category of CHOOSER_CATEGORIES) {
+    const preferences = getPreferencesForCategory(category.id);
+    const paths = preferences.length > 0 ? preferences.map((preference) => preference.id) : [undefined];
+
+    for (const preferenceId of paths) {
+      const recommendation = getRecommendation(category.id, preferenceId);
+      assert.ok(recommendation.primaryProductId, `${category.id}/${preferenceId || "default"}: missing primary product`);
+
+      for (const productId of [recommendation.primaryProductId, ...(recommendation.alternativeProductIds || [])]) {
+        if (!productId) continue;
+        const product = productsById.get(productId);
+        assert.ok(product, `${category.id}/${preferenceId || "default"}: unknown product ${productId}`);
+        assert.equal(isHeldProduct(product.slug), false, `${category.id}/${preferenceId || "default"}: chooser routes to held product ${product.slug}`);
+      }
+    }
+  }
 });
 
 test("every WNO parent experience resolves to a governed FareHarbor booking target", () => {

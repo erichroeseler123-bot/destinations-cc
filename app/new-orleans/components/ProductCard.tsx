@@ -1,8 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
 import { ProductCardProps } from '../data/types';
-import { STOREFRONT_PRODUCTS } from '../tours/pageConfig';
+import { getFareHarborUrl, STOREFRONT_PRODUCTS } from '../tours/pageConfig';
 import WikimediaImageCredit from './WikimediaImageCredit';
+import FareHarborBookingButton from './FareHarborBookingButton';
 import visualStyles from './newOrleansVisual.module.css';
 import { resolveProductImage } from '../lib/imageResolver';
 import { optimizedProductImageUrl } from '../lib/optimizedProductImage';
@@ -12,6 +13,7 @@ import {
   isApprovedProductSlug,
   type FareHarborSource,
 } from '../lib/fareHarborAttribution';
+import { isHeldProduct } from '../data/truthPolicy';
 
 type AttributedProductCardProps = ProductCardProps & {
   attributionSource?: FareHarborSource;
@@ -46,6 +48,14 @@ export default function ProductCard({
   const detailHref = isApprovedProductSlug(product.slug)
     ? buildAttributedTourHref(product.slug, attributionSource)
     : `/tours/${product.slug}`;
+  const canBook = Boolean(sourceProduct && !isHeldProduct(product.slug));
+  const cardFlowId = sourceProduct?.flowId || sourceProduct?.bookingVariants?.[0]?.flowId;
+  const bookingHref = sourceProduct
+    ? getFareHarborUrl(sourceProduct.companyShortname, sourceProduct.itemId, cardFlowId)
+    : "";
+  const bookingLabel = sourceProduct?.bookingVariants && sourceProduct.bookingVariants.length > 1
+    ? "View Booking Options"
+    : "Check Dates & Prices";
   const description = variableCityPlantationCombo
     ? 'Combine a New Orleans city experience with a plantation visit. The current itinerary, duration, pickup and return timing are confirmed when you check availability.'
     : discoveryDescription(
@@ -123,12 +133,33 @@ export default function ProductCard({
               ))}
             </div>
           )}
-          {product.isBookable || product.ctaLabel ? (
+          {canBook && sourceProduct ? (
+            <div className={visualStyles.productCardActions}>
+              <Link href={detailHref} className={visualStyles.productCardDetailCta}>
+                Tour details
+              </Link>
+              <FareHarborBookingButton
+                productTitle={sourceProduct.title}
+                productSlug={sourceProduct.slug}
+                shortname={sourceProduct.companyShortname}
+                itemId={sourceProduct.itemId}
+                flowId={cardFlowId}
+                asn="aktourcenter"
+                refCode={attributionSource}
+                fallbackHref={bookingHref}
+                fullItems="yes"
+                placement="tour_catalog_card"
+                className={visualStyles.productCardCta}
+              >
+                {bookingLabel}
+              </FareHarborBookingButton>
+            </div>
+          ) : product.ctaLabel ? (
             <Link href={detailHref} className={visualStyles.productCardCta}>
-              {product.ctaLabel || "View Details"}
+              {product.ctaLabel}
             </Link>
           ) : (
-            <span className={visualStyles.productCardPreview}>Preview</span>
+            <Link href={detailHref} className={visualStyles.productCardPreview}>View details · call to confirm</Link>
           )}
         </div>
       </div>

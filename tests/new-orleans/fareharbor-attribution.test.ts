@@ -165,4 +165,16 @@ test("FareHarbor Lightframe attribution", async (t) => {
     assert.ok(detailAction.includes('"tour_detail_booking_selected"'));
     assert.ok(detailAction.includes('"fareharbor_checkout_opened"'));
   });
+
+  await t.test("mounts Lightframe once across WNO and keeps a governed fallback", () => {
+    const layout = fs.readFileSync(path.join(process.cwd(), "app/new-orleans/layout.tsx"), "utf8");
+    const bookingButton = fs.readFileSync(path.join(process.cwd(), "app/new-orleans/components/FareHarborBookingButton.tsx"), "utf8");
+    const detailPage = fs.readFileSync(path.join(process.cwd(), "app/new-orleans/tours/[slug]/page.tsx"), "utf8");
+
+    assert.ok(layout.includes("<FareHarborLightframeLoader />"));
+    assert.ok(bookingButton.includes("window.FH.open"));
+    assert.ok(bookingButton.includes('data-wno-managed-click="true"'));
+    assert.ok(bookingButton.includes('eventName: "booking_opened"'));
+    assert.ok(!detailPage.includes("<FareHarborLightframeLoader />"));
+  });
 });
