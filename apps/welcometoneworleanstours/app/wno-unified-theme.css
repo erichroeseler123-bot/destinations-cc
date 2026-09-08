@@ -1,0 +1,193 @@
+/* WNO unified destination identity: French Quarter brass, ironwork, and night color.
+   This is intentionally sitewide so the homepage, chooser, catalog, guides, and
+   time-sensitive pages feel like one destination brand. */
+
+:root {
+  --wno-night: #211720;
+  --wno-night-deep: #160f17;
+  --wno-plum: #33202f;
+  --wno-plum-soft: #422b3d;
+  --wno-parchment: #f5ead7;
+  --wno-parchment-deep: #e8d5b8;
+  --wno-ink: #211720;
+  --wno-brass: #d3a64d;
+  --wno-brass-bright: #f0c96c;
+  --wno-iron-line: rgba(240, 201, 108, 0.32);
+  --wno-copy: #e8dccb;
+}
+
+html,
+body {
+  background: var(--wno-night-deep) !important;
+}
+
+body {
+  color: var(--wno-copy) !important;
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(211, 166, 77, 0.11), transparent 20rem),
+    radial-gradient(circle at 88% 22%, rgba(111, 60, 93, 0.22), transparent 26rem),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.018) 0, rgba(255,255,255,0.018) 1px, transparent 1px, transparent 72px) !important;
+}
+
+header[class*="marketHeader"] {
+  background: linear-gradient(135deg, var(--wno-night-deep), #251625) !important;
+  border-bottom: 2px solid var(--wno-brass) !important;
+  box-shadow: 0 12px 32px rgba(10, 5, 10, 0.34) !important;
+}
+
+header[class*="marketHeader"] [class*="marketBrandWelcome"],
+header[class*="marketHeader"] [class*="marketBrandTours"] {
+  color: var(--wno-brass-bright) !important;
+}
+
+header[class*="marketHeader"] [class*="marketBrandCity"] {
+  color: var(--wno-parchment) !important;
+}
+
+header[class*="marketHeader"] [class*="marketDesktopNav"] a,
+header[class*="marketHeader"] [class*="marketPhoneLabel"] {
+  color: rgba(245, 234, 215, 0.84) !important;
+}
+
+header[class*="marketHeader"] [class*="marketDesktopNav"] a::after {
+  background: var(--wno-brass-bright) !important;
+}
+
+header[class*="marketHeader"] [class*="marketPhoneNumber"],
+header[class*="marketHeader"] a[class*="md:hidden"] span:last-child {
+  color: var(--wno-brass-bright) !important;
+}
+
+main {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(211, 166, 77, 0.09), transparent 22rem),
+    radial-gradient(circle at 96% 18%, rgba(111, 60, 93, 0.18), transparent 24rem),
+    var(--wno-night) !important;
+  color: var(--wno-copy) !important;
+}
+
+main::before {
+  content: "⚜";
+  position: absolute;
+  z-index: -1;
+  top: 2.5rem;
+  right: clamp(1.2rem, 4vw, 4rem);
+  color: rgba(240, 201, 108, 0.13);
+  font-size: clamp(5rem, 12vw, 10rem);
+  line-height: 1;
+  pointer-events: none;
+}
+
+main h1,
+main h2,
+main h3,
+main h4 {
+  color: var(--wno-parchment) !important;
+  -webkit-text-fill-color: var(--wno-parchment) !important;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.18);
+}
+
+main p,
+main li,
+main dt,
+main dd {
+  color: var(--wno-copy) !important;
+}
+
+main a:not([class*="productCardCta"]):not([class*="goldAction"]):not([class*="button"]),
+main button {
+  accent-color: var(--wno-brass);
+}
+
+main a:not([class*="productCardCta"]):not([class*="goldAction"]):not([class*="button"]):hover,
+main a:not([class*="productCardCta"]):not([class*="goldAction"]):not([class*="button"]):focus-visible {
+  color: var(--wno-brass-bright) !important;
+}
+
+main article,
+main aside,
+main details,
+main [class*="productCard"],
+main [class*="comparison"],
+main [class*="chooser"],
+main [class*="recommendation"] {
+  background: linear-gradient(145deg, rgba(66, 43, 61, 0.94), rgba(38, 25, 36, 0.98)) !important;
+  border: 1px solid var(--wno-iron-line) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 18px 38px rgba(10, 5, 10, 0.24) !important;
+  color: var(--wno-copy) !important;
+}
+
+main [class*="productCard"] h2,
+main [class*="productCard"] h3,
+main [class*="productCard"] h4,
+main [class*="chooser"] h2,
+main [class*="chooser"] h3,
+main [class*="recommendation"] h2,
+main [class*="recommendation"] h3 {
+  color: var(--wno-parchment) !important;
+  -webkit-text-fill-color: var(--wno-parchment) !important;
+}
+
+main [class*="productCardCta"],
+main [class*="goldAction"],
+main button[type="submit"] {
+  background: var(--wno-brass) !important;
+  border-color: var(--wno-brass) !important;
+  color: var(--wno-ink) !important;
+  box-shadow: 0 8px 18px rgba(211, 166, 77, 0.2) !important;
+}
+
+main [class*="productCardCta"]:hover,
+main [class*="goldAction"]:hover,
+main button[type="submit"]:hover {
+  background: var(--wno-brass-bright) !important;
+  border-color: var(--wno-brass-bright) !important;
+}
+
+main [class*="eyebrow"],
+main [class*="Eyebrow"],
+main [class*="productCardOperator"],
+main [class*="productCardCue"] {
+  color: var(--wno-brass-bright) !important;
+}
+
+/* Remove the route-by-route rainbow. Category pages keep their imagery and
+   information architecture, but inherit the same WNO destination identity. */
+[data-wno-category] {
+  --wno-cat-page: var(--wno-night);
+  --wno-cat-surface: var(--wno-plum);
+  --wno-cat-ink: var(--wno-parchment);
+  --wno-cat-muted: var(--wno-copy);
+  --wno-cat-accent: var(--wno-brass);
+  --wno-cat-accent-2: var(--wno-brass-bright);
+  --wno-cat-line: var(--wno-iron-line);
+  --wno-cat-hero: var(--wno-night-deep);
+}
+
+[data-wno-category] > header {
+  border-color: var(--wno-brass) !important;
+}
+
+[data-wno-category] > header a:first-of-type {
+  background: var(--wno-brass) !important;
+  border-color: var(--wno-brass) !important;
+  color: var(--wno-ink) !important;
+}
+
+footer[class*="footer"] {
+  background:
+    radial-gradient(circle at 15% 0%, rgba(240, 201, 108, 0.16), transparent 28%),
+    linear-gradient(135deg, #160f17 0%, #2d1a2a 100%) !important;
+  border-top: 2px solid var(--wno-brass) !important;
+}
+
+@media (max-width: 720px) {
+  main::before {
+    top: 1.5rem;
+    right: 0.8rem;
+    font-size: 4.5rem;
+  }
+}
