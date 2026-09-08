@@ -1,14 +1,14 @@
 /* WNO visual redesign v2 — standalone app only. Presentation overrides only. */
 
 :root {
-  --wno-v2-cream: #fff8ec;
-  --wno-v2-paper: #f3e6d2;
-  --wno-v2-green: #173c2b;
-  --wno-v2-green-2: #25563d;
+  --wno-v2-cream: #E8D5A3;
+  --wno-v2-paper: #D4BC82;
+  --wno-v2-green: #0D1B2A;
+  --wno-v2-green-2: #162A40;
   --wno-v2-burgundy: #8b2f4d;
   --wno-v2-purple: #5b365f;
-  --wno-v2-gold: #d6a33d;
-  --wno-v2-ink: #1d261f;
+  --wno-v2-gold: #C9922A;
+  --wno-v2-ink: #0A1828;
 }
 
 /* A strong destination-brand header instead of a neutral utility bar. */
