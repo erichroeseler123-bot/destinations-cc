@@ -481,11 +481,25 @@ html body main [data-wno-home-theme="black-gold-v2"][data-wno-home-theme="black-
   opacity: 1 !important;
 }
 html body main [data-wno-home-theme="black-gold-v2"][data-wno-home-theme="black-gold-v2"] [class*="heroShade"] {
-  background: linear-gradient(90deg, #f7efe1 0%, #f7efe1 42%, rgba(247,239,225,.84) 49%, rgba(247,239,225,0) 67%) !important;
+  display: none !important;
+}
+html body main [data-wno-home-theme="black-gold-v2"][data-wno-home-theme="black-gold-v2"] [class*="heroBg"] { z-index: 0 !important; }
+html body main [data-wno-home-theme="black-gold-v2"][data-wno-home-theme="black-gold-v2"] [class*="heroInner"] { z-index: 2 !important; }
+html body main [data-wno-home-theme="black-gold-v2"][data-wno-home-theme="black-gold-v2"] [class*="action"] {
+  background: #fffaf0 !important;
+  color: #24344d !important;
+  border: 1px solid rgba(36,52,77,.5) !important;
+  border-left: 1px solid rgba(36,52,77,.5) !important;
+  box-shadow: 4px 4px 0 rgba(36,52,77,.12) !important;
+}
+html body main [data-wno-home-theme="black-gold-v2"][data-wno-home-theme="black-gold-v2"] [class*="goldAction"] {
+  background: #d4a52f !important;
+  color: #17243a !important;
+  border-color: #b8811c !important;
 }
 @media (max-width: 820px) {
   html body main [data-wno-home-theme="black-gold-v2"][data-wno-home-theme="black-gold-v2"] [class*="heroBg"] { inset: 0 0 43% 0 !important; }
-  html body main [data-wno-home-theme="black-gold-v2"][data-wno-home-theme="black-gold-v2"] [class*="heroShade"] { background: linear-gradient(180deg, rgba(247,239,225,0) 0%, rgba(247,239,225,.86) 48%, #f7efe1 70%) !important; }
+  html body main [data-wno-home-theme="black-gold-v2"][data-wno-home-theme="black-gold-v2"] [class*="heroShade"] { display: none !important; }
 }
 
 /* Light direction: New Orleans print shop / tiled plaster. The destination
