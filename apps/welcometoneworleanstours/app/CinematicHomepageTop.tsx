@@ -44,13 +44,13 @@ export default function CinematicHomepageTop() {
         </div>
       </section>
 
-      <section className="border-y border-[#342b1d] bg-[#0b0a09] px-6 py-12 text-[#f8f1e5]">
+      <section data-wno-decision-panel className="border-y border-[#342b1d] bg-[#0b0a09] px-6 py-12 text-[#f8f1e5]">
         <div className="mx-auto max-w-6xl">
           <p className="text-[0.75rem] font-bold uppercase tracking-[0.2em] text-[#c9a86a]">Most visitors start here</p>
           <h2 className="mt-3 font-serif text-3xl text-[#fff4dd] md:text-4xl">Make the big tour decisions first</h2>
-          <div className="mt-7 grid gap-3 md:grid-cols-2">
+          <div data-wno-decision-grid className="mt-7 grid gap-3 md:grid-cols-2">
             {popularDecisions.map((decision) => (
-              <Link key={decision.href} href={decision.href} className="group border border-[#342b1d] bg-[#12110e] p-5 transition hover:border-[#c9a86a]">
+              <Link data-wno-decision-card key={decision.href} href={decision.href} className="group border border-[#342b1d] bg-[#12110e] p-5 transition hover:border-[#c9a86a]">
                 <h3 className="font-serif text-xl text-[#f3dfb3]">{decision.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-[#b7ad9e]">{decision.copy}</p>
                 <span className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.12em] text-[#c9a86a] group-hover:text-[#fff4dd]">Compare options →</span>
