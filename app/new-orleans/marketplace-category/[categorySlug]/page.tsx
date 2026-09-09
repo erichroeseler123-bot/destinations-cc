@@ -8,6 +8,8 @@ import ExperienceDecisionBlock from "../../components/ExperienceDecisionBlock";
 import WnoBreadcrumbs from "../../components/WnoBreadcrumbs";
 import VisualEditorialCard from "../../components/VisualEditorialCard";
 import { buildSeoMetadata } from "../../lib/buildSeoMetadata";
+import GeoDirectAnswerCard from "../../components/GeoDirectAnswerCard";
+import { getNolaGeoFact } from "../../data/nolaGeoFacts";
 
 const CARD_EYEBROWS = [
   "Our first pick",
@@ -111,6 +113,28 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
   const layout = categoryLayout(resolvedParams.categorySlug);
   const copy = categoryCopy(layout);
 
+  const geoFact = getNolaGeoFact(resolvedParams.categorySlug);
+
+  const combinedFaqs = [
+    ...(record.faqs || []),
+    ...(geoFact?.faqSchema || []).filter(
+      (gf) => !(record.faqs || []).some((rf) => rf.question.toLowerCase() === gf.question.toLowerCase())
+    ),
+  ];
+
+  const faqSchema = combinedFaqs.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: combinedFaqs.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: f.answer,
+      },
+    })),
+  } : null;
+
   const openingSection = record.openingAnswer ? (
     <section data-wno-section="opening" className="mx-auto max-w-3xl text-center">
       <p className="font-serif text-xl leading-9 text-[#eadfca] md:text-2xl">{record.openingAnswer}</p>
@@ -210,6 +234,13 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
       data-wno-layout={layout}
       className="min-h-screen bg-[#0b0a09] text-[#f8f1e5]"
     >
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
+
       <WnoBreadcrumbs
         items={[
           { name: "Home", path: "/" },
@@ -258,6 +289,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
       </header>
 
       <main className="mx-auto w-[min(1180px,calc(100%-2rem))] py-12 md:py-16">
+        {/* DIRECT ANSWER CARD FOR GOOGLE AI OVERVIEWS */}
+        {geoFact && <GeoDirectAnswerCard fact={geoFact} />}
+
         {layout === "adventure" && decisionSection}
         {openingSection}
 

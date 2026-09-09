@@ -64,6 +64,7 @@ const sections: GuideSection[] = [
       { href: "/guides/new-orleans-tours-near-french-quarter", title: "French Quarter walking & nearby tours", description: "Start with central meeting points, walking experiences, and options that work without renting a car." },
       { href: "/guides/city-tour-vs-swamp-tour-new-orleans", title: "City tour vs swamp tour", description: "Choose between understanding New Orleans itself and getting out into the wetlands." },
       { href: "/compare/covered-swamp-boat-vs-airboat", title: "Covered swamp boat vs airboat", description: "Compare pace, exposure, ride style, and group fit." },
+      { href: "/guides/oak-alley-vs-whitney-plantation-vs-swamp-tour", title: "Oak Alley vs Whitney vs Swamp Tour", description: "Compare River Road plantations against bayou swamp tours or full-day combination trips." },
       { href: "/compare/whitney-vs-oak-alley", title: "Whitney Plantation vs Oak Alley", description: "Compare historical focus, setting, and what kind of visit you want." },
       { href: "/guides/daytime-vs-evening-jazz-cruise-new-orleans", title: "Daytime vs evening jazz cruise", description: "Choose based on schedule, atmosphere, meal plan, and what you want the river experience to feel like." },
       { href: "/compare/natchez-vs-city-of-new-orleans-riverboat", title: "NATCHEZ vs CITY of NEW ORLEANS", description: "Compare the two riverboat choices without treating them as interchangeable." },

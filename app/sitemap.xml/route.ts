@@ -21,6 +21,7 @@ export const WTONOT_SUPPORT_PATHS = [
 ] as const;
 
 const WTONOT_DECISION_GUIDES = [
+  "/guides/oak-alley-vs-whitney-plantation-vs-swamp-tour",
   "/guides/new-orleans-swamp-tour-without-a-car", "/guides/can-kids-ride-airboats-new-orleans",
   "/guides/whitney-plantation-vs-oak-alley-history-focus", "/guides/new-orleans-tours-for-grandparents-and-kids",
   "/guides/new-orleans-tours-limited-mobility", "/guides/best-new-orleans-tours-if-you-arrive-at-noon",

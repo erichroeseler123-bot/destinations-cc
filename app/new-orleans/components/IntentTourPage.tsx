@@ -1,6 +1,8 @@
 import Link from "next/link";
 import ProductCard from "./ProductCard";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
+import GeoDirectAnswerCard from "./GeoDirectAnswerCard";
+import { getNolaGeoFact } from "../data/nolaGeoFacts";
 
 type IntentLink = { href: string; label: string };
 type IntentFaq = { question: string; answer: string };
@@ -14,6 +16,7 @@ type IntentTourPageProps = {
   productSlugs: string[];
   relatedLinks?: IntentLink[];
   faq?: IntentFaq[];
+  geoFactKey?: string;
 };
 
 const GOVERNED_INTENT_PATHS = new Set([
@@ -45,15 +48,34 @@ export default function IntentTourPage({
   productSlugs,
   relatedLinks = [],
   faq = [],
+  geoFactKey,
 }: IntentTourPageProps) {
   const products = productSlugs
     .map((slug) => STOREFRONT_PRODUCTS.find((product) => product.slug === slug))
     .filter(Boolean);
 
-  const faqSchema = faq.length ? {
+  const derivedKey = geoFactKey || (
+    eyebrow.toLowerCase().includes("swamp") ? "swamp-tours" :
+    eyebrow.toLowerCase().includes("airboat") ? "airboat-tours" :
+    eyebrow.toLowerCase().includes("ghost") ? "ghost-tours" :
+    eyebrow.toLowerCase().includes("riverboat") || eyebrow.toLowerCase().includes("cruise") ? "riverboat-cruises" :
+    eyebrow.toLowerCase().includes("plantation") ? "plantation-tours" :
+    eyebrow.toLowerCase().includes("garden") ? "garden-district-tours" :
+    eyebrow.toLowerCase().includes("french quarter") ? "french-quarter-tours" : ""
+  );
+  const geoFact = derivedKey ? getNolaGeoFact(derivedKey) : null;
+
+  const combinedFaqs = [
+    ...faq,
+    ...(geoFact?.faqSchema || []).filter(
+      (gf) => !faq.some((f) => f.question.toLowerCase() === gf.question.toLowerCase())
+    ),
+  ];
+
+  const faqSchema = combinedFaqs.length ? {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: faq.map((item) => ({
+    mainEntity: combinedFaqs.map((item) => ({
       "@type": "Question",
       name: item.question,
       acceptedAnswer: { "@type": "Answer", text: item.answer },
@@ -72,6 +94,13 @@ export default function IntentTourPage({
           <Link href="/help-me-choose" className="border border-[var(--nola-border)] px-5 py-3 text-xs font-bold uppercase tracking-widest">Help Me Choose</Link>
         </div>
       </section>
+
+      {/* DIRECT ANSWER CARD FOR GOOGLE AI OVERVIEWS */}
+      {geoFact && (
+        <div className="mx-auto max-w-6xl px-6 -mt-4 mb-8">
+          <GeoDirectAnswerCard fact={geoFact} />
+        </div>
+      )}
 
       <section className="border-y border-[var(--nola-border)] bg-[var(--nola-surface-subtle)]">
         <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 md:grid-cols-[0.85fr_1.15fr]">
