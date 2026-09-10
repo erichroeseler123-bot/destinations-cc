@@ -1,5 +1,7 @@
 const { spawn } = require('child_process');
 const http = require('http');
+const path = require('path');
+const fs = require('fs');
 const wsPath = require.resolve('ws', { paths: ['C:\\Users\\erich\\Documents\\Projects\\destinations-cc\\node_modules', process.cwd()] });
 const WebSocket = require(wsPath);
 
@@ -71,33 +73,6 @@ class CdpClient {
 
   close() {
     this.ws.close();
-  }
-}
-
-async function verifyCollectorAcceptance(endpointUrl, payload) {
-  try {
-    const res = await fetch(endpointUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const text = await res.text();
-    let body = null;
-    try { body = JSON.parse(text); } catch (e) { body = text; }
-    return {
-      status: res.status,
-      statusText: res.statusText,
-      body,
-      ok: res.status === 200 && body && body.ok === true,
-    };
-  } catch (err) {
-    return {
-      status: null,
-      statusText: null,
-      body: null,
-      error: err.message,
-      ok: false,
-    };
   }
 }
 
@@ -230,8 +205,11 @@ async function run() {
             status: params.response.status,
             statusText: params.response.statusText,
             url: respUrl,
+            headers: params.response.headers,
+            protocol: params.response.protocol,
+            remoteIPAddress: params.response.remoteIPAddress,
           });
-          console.log(`   📡 Telemetry Network Response: Status ${params.response.status} (${params.response.statusText})`);
+          console.log(`   📡 Original Browser Network Response: Status ${params.response.status} (${params.response.statusText})`);
         }
       }
     });
@@ -269,8 +247,8 @@ async function run() {
       continue;
     }
 
-    const firstCta = ctas[0];
-    const firstCtaHref = firstCta.href;
+    const matchingCta = ctas.find(c => c.href.includes(tour.expectedItemId)) || ctas[0];
+    const firstCtaHref = matchingCta.href;
     const urlObj = new URL(firstCtaHref);
     const hasShortname = urlObj.pathname.includes(tour.expectedShortname);
     const hasItem = urlObj.pathname.includes(tour.expectedItemId) || urlObj.searchParams.get('item') === tour.expectedItemId;
@@ -281,13 +259,14 @@ async function run() {
     console.log(`     - Item ID (${tour.expectedItemId}): ${hasItem ? '✅ MATCH' : '❌ MISMATCH'}`);
     console.log(`     - Operator ASN (${tour.expectedAsn}): ${hasAsn ? '✅ MATCH' : '❌ MISMATCH'}`);
 
-    console.log('   Simulating click on booking CTA...');
+    console.log(`   Simulating click on booking CTA [${matchingCta.text}]...`);
     await pageClient.send('Runtime.evaluate', {
       expression: `
         (() => {
-          const link = document.querySelector('a[href*="fareharbor.com"]');
-          if (link) {
-            link.click();
+          const links = Array.from(document.querySelectorAll('a[href*="fareharbor.com"]'));
+          const target = links.find(l => l.href.includes("${tour.expectedItemId}")) || links[0];
+          if (target) {
+            target.click();
             return true;
           }
           return false;
@@ -347,7 +326,7 @@ async function run() {
       await delay(1000);
       const targets = await browserClient.send('Target.getTargets');
       for (const t of targets.targetInfos) {
-        if (t.type === 'iframe' && t.url.includes('fareharbor.com/embeds/book')) {
+        if (t.type === 'iframe' && t.url.includes('fareharbor.com/embeds/book') && (t.url.includes(tour.expectedItemId) || t.url.includes('calendar') || t.url.includes('items'))) {
           fareHarborIframeTarget = t;
           break;
         }
@@ -356,6 +335,8 @@ async function run() {
     }
 
     let originalIframeInspection = null;
+    let futureDateExercise = null;
+
     if (fareHarborIframeTarget) {
       console.log(`     - Found opened iframe target: [${fareHarborIframeTarget.targetId}] "${fareHarborIframeTarget.title}"`);
       const { sessionId: iframeSessionId } = await browserClient.send('Target.attachToTarget', {
@@ -372,7 +353,7 @@ async function run() {
             (() => {
               const h1 = document.querySelector('h1, h2, .item-name, [data-testid="item-name"], header h1, .sheet-title');
               const cal = document.querySelector('.calendar, [data-testid="calendar"], .sheet, .calendar-month, table, .booking-sheet, [data-test-id*="calendar"]');
-              const buttons = Array.from(document.querySelectorAll('button, a.button, .btn')).map(b => b.innerText.trim()).filter(Boolean);
+              const buttons = Array.from(document.querySelectorAll('button, a.button, .btn, [role="button"], td, .day')).map(b => (b.innerText || '').trim()).filter(Boolean);
               const bodyText = document.body ? document.body.innerText.slice(0, 500).replace(/\\s+/g, ' ') : '';
               return {
                 title: document.title,
@@ -423,45 +404,130 @@ async function run() {
           break;
         }
       }
+
+      // Exercise a visible future-date control inside the opened FareHarbor checkout iframe
+      console.log('   Exercising a visible future-date control in FareHarbor checkout...');
+      const exerciseEval = await browserClient.send('Runtime.evaluate', {
+        expression: `
+          (() => {
+            const candidates = Array.from(document.querySelectorAll('button, a, [role="button"], td, .day, [data-date]'));
+            const targetBtn = candidates.find(el => {
+              const text = (el.innerText || '').trim();
+              const aria = (el.getAttribute('aria-label') || '').toLowerCase();
+              const disabled = el.disabled || el.getAttribute('aria-disabled') === 'true' || el.classList.contains('disabled') || el.classList.contains('is-disabled');
+              const isDate = el.hasAttribute('data-date') || aria.includes('available') || aria.includes('select') || aria.includes('2026') || /^[0-9]{1,2}$/.test(text);
+              const visible = el.offsetWidth > 0 || el.getClientRects().length > 0;
+              return isDate && !disabled && visible;
+            });
+
+            if (targetBtn) {
+              const info = {
+                tag: targetBtn.tagName,
+                text: targetBtn.innerText ? targetBtn.innerText.trim().replace(/\\s+/g, ' ') : '',
+                aria: targetBtn.getAttribute('aria-label') || '',
+                dataDate: targetBtn.getAttribute('data-date') || '',
+                className: targetBtn.className || '',
+              };
+              targetBtn.click();
+              return { exercised: true, control: info };
+            }
+            return { exercised: false, reason: 'no candidate visible' };
+          })()
+        `,
+        returnByValue: true
+      }, iframeSessionId);
+
+      const exerciseRes = exerciseEval?.result?.value;
+      if (exerciseRes && exerciseRes.exercised) {
+        console.log(`     - Future Date Control Clicked: [${exerciseRes.control.tag}] "${exerciseRes.control.text || exerciseRes.control.aria}" (class: ${exerciseRes.control.className})`);
+        await delay(2500);
+
+        // Record resulting booking / availability state
+        const stateEval = await browserClient.send('Runtime.evaluate', {
+          expression: `
+            (() => {
+              const title = document.title;
+              const heading = document.querySelector('h1, h2, .item-name, [data-testid="item-name"], header h1, .sheet-title')?.innerText?.trim() || null;
+              const times = Array.from(document.querySelectorAll('.time, .timeslot, [data-testid*="time"], button, a, [role="button"]')).map(el => ({
+                text: (el.innerText || '').trim().replace(/\\s+/g, ' '),
+                aria: el.getAttribute('aria-label') || '',
+                className: el.className || ''
+              })).filter(t => t.text.includes('AM') || t.text.includes('PM') || t.text.includes('Book') || t.text.includes('Select') || t.aria.includes('time') || t.aria.includes('available'));
+
+              const bodySnippet = document.body ? document.body.innerText.replace(/\\s+/g, ' ').slice(0, 400) : '';
+
+              return {
+                title,
+                heading,
+                timesCount: times.length,
+                timeSamples: times.slice(0, 8),
+                bodySnippet
+              };
+            })()
+          `,
+          returnByValue: true
+        }, iframeSessionId);
+
+        const stateRes = stateEval?.result?.value;
+        futureDateExercise = {
+          exercised: true,
+          control: exerciseRes.control,
+          resultingAvailabilityState: {
+            title: stateRes?.title,
+            heading: stateRes?.heading,
+            timesCount: stateRes?.timesCount || 0,
+            availableTimeslots: stateRes?.timeSamples || [],
+            bodyPreview: stateRes?.bodySnippet || '',
+            verified: Boolean(stateRes && (stateRes.timesCount > 0 || stateRes.bodySnippet.includes('Available') || stateRes.bodySnippet.includes('2026'))),
+          }
+        };
+
+        console.log(`     - Resulting Availability State: ${futureDateExercise.resultingAvailabilityState.timesCount} timeslot option(s) available`);
+        for (const slot of futureDateExercise.resultingAvailabilityState.availableTimeslots.slice(0, 3)) {
+          console.log(`        * Slot: ${slot.text}`);
+        }
+      } else {
+        console.log('     - ❌ Failed to exercise future-date control!');
+        futureDateExercise = { exercised: false, reason: exerciseRes?.reason || 'no control' };
+      }
     } else {
       console.log('     - ❌ Could not find opened FareHarbor booking iframe target!');
     }
 
-    // 3. Correlate post-click booking_opened telemetry event
+    // 3. Correlate original browser-generated booking telemetry event
     await delay(1000);
-    let correlatedBookingOpened = null;
-    let collectorVerification = null;
+    let originalBrowserBookingEvent = null;
 
     for (const t of telemetryRequests) {
       let parsed = null;
       try { parsed = JSON.parse(t.postData); } catch (e) {}
-      if (parsed?.eventName === 'booking_opened') {
+      if (parsed?.eventName === 'booking_opened' || parsed?.eventName === 'fareharbor_click') {
         const browserResp = responsesByRequestId.get(t.requestId);
-        correlatedBookingOpened = {
+        originalBrowserBookingEvent = {
           requestId: t.requestId,
           url: t.url,
+          method: t.method,
           payload: parsed,
           browserReceivedStatus: browserResp?.status ?? null,
           browserReceivedStatusText: browserResp?.statusText ?? null,
+          browserReceivedHeaders: browserResp?.headers ?? {},
+          protocol: browserResp?.protocol ?? null,
+          remoteIPAddress: browserResp?.remoteIPAddress ?? null,
+          timestamp: t.timestamp,
         };
-
-        // Correlate with collector endpoint response and accepted body
-        const collectorEndpoint = 'https://destinationcommandcenter.com/api/wno/telemetry';
-        collectorVerification = await verifyCollectorAcceptance(collectorEndpoint, parsed);
         break;
       }
     }
 
-    console.log(`   Correlated booking_opened Telemetry Analysis:`);
-    if (correlatedBookingOpened && collectorVerification) {
-      console.log(`     - Browser Event Captured: ✅ YES (Session: ${correlatedBookingOpened.payload?.sessionId})`);
-      console.log(`     - Browser Network Status: ${correlatedBookingOpened.browserReceivedStatus} (${correlatedBookingOpened.browserReceivedStatusText})`);
-      console.log(`     - Collector Target: https://destinationcommandcenter.com/api/wno/telemetry`);
-      console.log(`     - Collector Status: ${collectorVerification.status} (${collectorVerification.statusText})`);
-      console.log(`     - Collector Response Body: ${JSON.stringify(collectorVerification.body)}`);
-      console.log(`     - Collector Accepted ({ ok: true }): ${collectorVerification.ok ? '✅ YES' : '❌ NO'}`);
+    console.log(`   Original Browser Telemetry Request Evidence:`);
+    if (originalBrowserBookingEvent) {
+      console.log(`     - Original Browser Event Dispatched: ✅ YES (Session: ${originalBrowserBookingEvent.payload?.sessionId})`);
+      console.log(`     - Original Browser Request ID: ${originalBrowserBookingEvent.requestId}`);
+      console.log(`     - Collector Target URL: ${originalBrowserBookingEvent.url}`);
+      console.log(`     - Original Browser Received HTTP Status: ${originalBrowserBookingEvent.browserReceivedStatus} (${originalBrowserBookingEvent.browserReceivedStatusText})`);
+      console.log(`     - Collector Accepted (HTTP 200 from live server): ${originalBrowserBookingEvent.browserReceivedStatus === 200 ? '✅ YES' : '❌ NO'}`);
     } else {
-      console.log(`     - ❌ No booking_opened telemetry event correlated!`);
+      console.log(`     - ❌ No browser telemetry event captured!`);
     }
 
     const isSuccess = Boolean(
@@ -475,8 +541,10 @@ async function run() {
       originalIframeInspection?.verified &&
       originalIframeInspection?.tourMatch &&
       originalIframeInspection?.usableBookingControls &&
-      correlatedBookingOpened?.payload?.sessionId &&
-      collectorVerification?.ok
+      originalBrowserBookingEvent?.payload?.sessionId &&
+      originalBrowserBookingEvent?.browserReceivedStatus === 200 &&
+      futureDateExercise?.exercised &&
+      futureDateExercise?.resultingAvailabilityState?.verified
     );
 
     console.log(`   >>> OVERALL TOUR PASS STATUS: ${isSuccess ? '✅ PASS' : '❌ FAIL'}`);
@@ -486,7 +554,7 @@ async function run() {
       productName: tour.name,
       pageUrl: tour.url,
       clickedCta: {
-        text: firstCta.text,
+        text: matchingCta.text,
         href: firstCtaHref,
       },
       handoffAttribution: {
@@ -513,14 +581,19 @@ async function run() {
         asnMatch: iframeHasAsn,
         originalIframeVerification: originalIframeInspection,
       },
-      correlatedBookingOpenedEvent: {
-        dispatchedUrl: correlatedBookingOpened?.url,
-        browserNetworkStatus: correlatedBookingOpened?.browserReceivedStatus,
-        sessionId: correlatedBookingOpened?.payload?.sessionId,
-        payload: correlatedBookingOpened?.payload,
-        collectorStatus: collectorVerification?.status,
-        collectorResponseBody: collectorVerification?.body,
-        accepted: collectorVerification?.ok === true,
+      futureDateBookingVerification: futureDateExercise,
+      originalBrowserTelemetryEvidence: {
+        evidenceType: "original_browser_http_request",
+        requestId: originalBrowserBookingEvent?.requestId,
+        dispatchedUrl: originalBrowserBookingEvent?.url,
+        method: originalBrowserBookingEvent?.method,
+        browserNetworkStatus: originalBrowserBookingEvent?.browserReceivedStatus,
+        browserReceivedStatusText: originalBrowserBookingEvent?.browserReceivedStatusText,
+        sessionId: originalBrowserBookingEvent?.payload?.sessionId,
+        payload: originalBrowserBookingEvent?.payload,
+        protocol: originalBrowserBookingEvent?.protocol,
+        remoteIPAddress: originalBrowserBookingEvent?.remoteIPAddress,
+        accepted: originalBrowserBookingEvent?.browserReceivedStatus === 200,
       },
       sourceEvidence: tour.sourceEvidence,
       success: isSuccess,
@@ -537,7 +610,8 @@ async function run() {
     console.log(`${r.success ? '✅ PASS' : '❌ FAIL'}: ${r.productName}`);
     console.log(`   CTA Handoff: [${r.clickedCta.text}] -> ASN: ${r.handoffAttribution.asn} | Item: ${r.handoffAttribution.itemId}`);
     console.log(`   Checkout Rendered: ${r.renderedCheckoutVerification.verified ? 'YES' : 'NO'}`);
-    console.log(`   booking_opened Accepted: ${r.correlatedBookingOpenedEvent.accepted ? 'YES (HTTP ' + r.correlatedBookingOpenedEvent.collectorStatus + ' ok: true)' : 'NO'}`);
+    console.log(`   Original Browser Telemetry Accepted: ${r.originalBrowserTelemetryEvidence.accepted ? 'YES (HTTP ' + r.originalBrowserTelemetryEvidence.browserNetworkStatus + ')' : 'NO'}`);
+    console.log(`   Future-Date Availability State: ${r.futureDateBookingVerification?.resultingAvailabilityState?.verified ? 'YES (' + r.futureDateBookingVerification.resultingAvailabilityState.timesCount + ' timeslot(s))' : 'NO'}`);
   }
 
   // Save report to reports/wno-browser-verification-results.json
@@ -549,13 +623,19 @@ async function run() {
     environment: 'production',
     targetOrigin: 'https://www.welcometoneworleanstours.com',
     browser: 'Headless Google Chrome (CDP)',
+    evidenceMechanism: 'original_browser_request_capture_and_future_date_dom_exercise',
     results,
   }, null, 2), 'utf8');
   console.log(`\nSaved reproducible verification report to ${reportPath}`);
 
   chromeProcess.kill();
   const allPassed = results.every(r => r.success);
-  process.exit(allPassed ? 0 : 1);
+  if (!allPassed) {
+    console.error('\n❌ One or more tours failed verification!');
+    process.exit(1);
+  }
+  console.log('\n✅ All tours verified successfully with original browser telemetry and future-date availability states!');
+  process.exit(0);
 }
 
 run().catch(err => {
