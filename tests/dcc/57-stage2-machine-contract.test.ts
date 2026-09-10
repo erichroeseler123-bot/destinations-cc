@@ -185,12 +185,111 @@ test("Stage 2 Contract: Pricing Feed Modeling", async (t) => {
 });
 
 test("Stage 2 Contract: Policy Feed Modeling", async (t) => {
+  await t.test("accepts verified non-refundable policy without full_refund_notice_hours and main_deck_only accessibility", () => {
+    const validPolicy: DccPolicyItem = {
+      sku: "wno-evening-jazz-cruise",
+      dcc_product_id: "dcc:product:wno-evening-jazz-cruise",
+      verification_status: "verified",
+      cancellation: {
+        refund_eligibility: "non_refundable",
+        cancellation_method: "phone_or_email",
+        note: "All sales final per passenger contract.",
+      },
+      weather_guarantee: {
+        is_guaranteed: false,
+        policy_summary: "Cruises sail rain or shine. In severe river conditions event is held dockside.",
+        compensation_type: "none",
+      },
+      restrictions: {
+        wheelchair_accessible: "main_deck_only",
+        accessibility_note: "Main deck and dining room accessible; top deck accessible by stairs only per operator FAQ.",
+      },
+      provenance: SAMPLE_PROVENANCE,
+    };
+    const result = validatePolicyFeed([validPolicy]);
+    assert.equal(result.valid, true, `Errors: ${result.errors.join(", ")}`);
+  });
+
+  await t.test("rejects non-refundable policy that specifies full_refund_notice_hours", () => {
+    const badNonRefundable: DccPolicyItem = {
+      sku: "wno-bad-non-refundable",
+      dcc_product_id: "dcc:product:wno-bad-non-refundable",
+      verification_status: "verified",
+      cancellation: {
+        refund_eligibility: "non_refundable",
+        full_refund_notice_hours: 0, // FORBIDDEN for non_refundable!
+        cancellation_method: "phone_or_email",
+      },
+      weather_guarantee: {
+        is_guaranteed: false,
+        policy_summary: "Rain or shine.",
+        compensation_type: "none",
+      },
+      restrictions: {
+        wheelchair_accessible: "main_deck_only",
+      },
+      provenance: SAMPLE_PROVENANCE,
+    };
+    const result = validatePolicyFeed([badNonRefundable]);
+    assert.equal(result.valid, false);
+    assert.ok(result.errors.some((e) => e.includes("must not specify full_refund_notice_hours")));
+  });
+
+  await t.test("rejects full_refund_with_notice policy missing positive notice hours", () => {
+    const badRefundNotice: DccPolicyItem = {
+      sku: "wno-bad-refund-notice",
+      dcc_product_id: "dcc:product:wno-bad-refund-notice",
+      verification_status: "verified",
+      cancellation: {
+        refund_eligibility: "full_refund_with_notice",
+        cancellation_method: "phone_or_email",
+      },
+      weather_guarantee: {
+        is_guaranteed: false,
+        policy_summary: "Rain or shine.",
+        compensation_type: "none",
+      },
+      restrictions: {
+        wheelchair_accessible: "full",
+      },
+      provenance: SAMPLE_PROVENANCE,
+    };
+    const result = validatePolicyFeed([badRefundNotice]);
+    assert.equal(result.valid, false);
+    assert.ok(result.errors.some((e) => e.includes("must specify positive full_refund_notice_hours")));
+  });
+
+  await t.test("rejects invalid wheelchair_accessible option", () => {
+    const badAccess: DccPolicyItem = {
+      sku: "wno-bad-access",
+      dcc_product_id: "dcc:product:wno-bad-access",
+      verification_status: "requires_operator_confirmation",
+      cancellation: {
+        refund_eligibility: "requires_operator_confirmation",
+        cancellation_method: "requires_operator_confirmation",
+      },
+      weather_guarantee: {
+        is_guaranteed: false,
+        policy_summary: "Standard policy",
+        compensation_type: "requires_operator_confirmation",
+      },
+      restrictions: {
+        wheelchair_accessible: "partial_unknown" as any,
+      },
+      provenance: SAMPLE_PROVENANCE,
+    };
+    const result = validatePolicyFeed([badAccess]);
+    assert.equal(result.valid, false);
+    assert.ok(result.errors.some((e) => e.includes("restrictions.wheelchair_accessible must be one of")));
+  });
+
   await t.test("rejects unverified policy that falsely claims affirmative weather guarantee", () => {
     const badPolicy: DccPolicyItem = {
       sku: "wno-unverified-policy",
       dcc_product_id: "dcc:product:wno-unverified-policy",
       verification_status: "requires_operator_confirmation",
       cancellation: {
+        refund_eligibility: "requires_operator_confirmation",
         cancellation_method: "requires_operator_confirmation",
       },
       weather_guarantee: {
@@ -298,8 +397,10 @@ test("WNO Pilot: 3-Offering Factual Verification", async (t) => {
 
     const pol = policies.find((p) => p.sku === "wno-evening-jazz-cruise")!;
     assert.equal(pol.verification_status, "verified");
-    assert.equal(pol.cancellation.full_refund_notice_hours, 0); // All sales final under contract
-    assert.equal(pol.restrictions.wheelchair_accessible, "foldable_only");
+    assert.equal(pol.cancellation.refund_eligibility, "non_refundable");
+    assert.equal(pol.cancellation.full_refund_notice_hours, undefined); // Reserved strictly for full_refund_with_notice
+    assert.equal(pol.restrictions.wheelchair_accessible, "main_deck_only");
+    assert.ok(pol.restrictions.accessibility_note);
     assert.equal(pol.weather_guarantee.is_guaranteed, false);
     assert.equal(pol.weather_guarantee.compensation_type, "none");
   });
@@ -323,6 +424,7 @@ test("WNO Pilot: 3-Offering Factual Verification", async (t) => {
     assert.equal(price.fee_completeness, "taxes_and_fees_confirmed_at_checkout");
 
     const pol = policies.find((p) => p.sku === "wno-covered-tour-boat")!;
+    assert.equal(pol.cancellation.refund_eligibility, "full_refund_with_notice");
     assert.equal(pol.cancellation.full_refund_notice_hours, 48);
     assert.equal(pol.weather_guarantee.is_guaranteed, true);
     assert.equal(pol.weather_guarantee.compensation_type, "full_refund_or_reschedule");

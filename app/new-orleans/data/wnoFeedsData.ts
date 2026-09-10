@@ -320,7 +320,7 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
         dcc_product_id: `dcc:product:wno-${p.slug}`,
         verification_status: "verified",
         cancellation: {
-          full_refund_notice_hours: 0,
+          refund_eligibility: "non_refundable",
           cancellation_method: "phone_or_email",
           note: "Bookings are non-refundable. All sales are final per FareHarbor passenger contract terms.",
         },
@@ -330,7 +330,8 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
           compensation_type: "none",
         },
         restrictions: {
-          wheelchair_accessible: "foldable_only",
+          wheelchair_accessible: "main_deck_only",
+          accessibility_note: "The riverboat is handicap accessible via boarding ramp to main deck and dining rooms; top deck access is by marine stairs only per operator FAQ.",
           pregnancy_allowed: true,
         },
         provenance: STEAMBOAT_PROVENANCE,
@@ -343,6 +344,7 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
         dcc_product_id: `dcc:product:wno-${p.slug}`,
         verification_status: "verified",
         cancellation: {
+          refund_eligibility: "full_refund_with_notice",
           full_refund_notice_hours: 48,
           cancellation_method: "phone_or_email",
           note: "48-hour advance cancellation required for full cash refund. Inside 48 hours is non-refundable unless Trip Protection was purchased.",
@@ -354,6 +356,7 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
         },
         restrictions: {
           wheelchair_accessible: "requires_operator_confirmation",
+          accessibility_note: "Bayou vessel boarding accessibility and physical assistance require operator confirmation.",
         },
         provenance: RAGIN_CAJUN_PROVENANCE,
       };
@@ -365,6 +368,7 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
         dcc_product_id: `dcc:product:wno-${p.slug}`,
         verification_status: "requires_operator_confirmation",
         cancellation: {
+          refund_eligibility: "requires_operator_confirmation",
           cancellation_method: "requires_operator_confirmation",
           note: "Cancellation window and refund rules are governed by individual operator terms shown during checkout.",
         },
@@ -375,6 +379,7 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
         },
         restrictions: {
           wheelchair_accessible: "requires_operator_confirmation",
+          accessibility_note: "Historic grounds terrain and minibus step requirements require operator confirmation.",
         },
         provenance: SOUTHERN_STYLE_PROVENANCE,
       };
@@ -386,6 +391,7 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
       dcc_product_id: `dcc:product:wno-${p.slug}`,
       verification_status: "requires_operator_confirmation",
       cancellation: {
+        refund_eligibility: "requires_operator_confirmation",
         cancellation_method: "requires_operator_confirmation",
         note: "Cancellation window and refund rules are governed by individual operator terms shown during checkout.",
       },

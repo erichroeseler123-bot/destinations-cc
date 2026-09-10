@@ -27,6 +27,7 @@ export interface WnoEvidenceEntry {
     };
     cancellation?: {
       status: "verified" | "requires_operator_confirmation";
+      refund_eligibility?: "non_refundable" | "full_refund_with_notice" | "requires_operator_confirmation";
       full_refund_notice_hours?: number;
       summary: string;
       source_basis: "live_operator_page" | "fareharbor_item" | "storefront_catalog";
@@ -49,11 +50,13 @@ export interface WnoEvidenceEntry {
       status: "verified" | "requires_operator_confirmation";
       departure_times?: string[];
       time_zone?: string;
+      summary?: string;
       source_basis: "live_operator_page" | "fareharbor_item" | "storefront_catalog";
     };
     accessibility?: {
       status: "verified" | "requires_operator_confirmation";
-      wheelchair_accessible: "full" | "foldable_only" | "not_accessible" | "requires_operator_confirmation";
+      wheelchair_accessible: "full" | "foldable_only" | "main_deck_only" | "not_accessible" | "requires_operator_confirmation";
+      accessibility_note?: string;
       summary: string;
       source_basis: "live_operator_page" | "fareharbor_item" | "storefront_catalog";
     };
@@ -84,7 +87,7 @@ export const WNO_FACTUAL_EVIDENCE_REGISTER: Record<string, WnoEvidenceEntry> = {
       },
       cancellation: {
         status: "verified",
-        full_refund_notice_hours: 0, // All sales final under contract
+        refund_eligibility: "non_refundable",
         summary: "FareHarbor contract notes: 'Bookings are non-refundable. All sales are final.'",
         source_basis: "fareharbor_item",
       },
@@ -106,13 +109,15 @@ export const WNO_FACTUAL_EVIDENCE_REGISTER: Record<string, WnoEvidenceEntry> = {
         status: "verified",
         departure_times: ["19:00"],
         time_zone: "America/Chicago",
+        summary: "Daily evening departure at 7:00 PM (boarding at 6:00 PM) verified on published schedule.",
         source_basis: "live_operator_page",
       },
       accessibility: {
         status: "verified",
-        wheelchair_accessible: "foldable_only",
-        summary: "The riverboat is handicap accessible; however, access to top deck is by stairs only.",
-        source_basis: "fareharbor_item",
+        wheelchair_accessible: "main_deck_only",
+        accessibility_note: "Main deck and dining room accessible via boarding ramps; top deck accessible by marine stairs only per operator FAQ.",
+        summary: "The riverboat is handicap accessible via boarding ramp to main deck and dining rooms; however, access to top/hurricane deck is by stairs only per operator FAQ (https://www.steamboatnatchez.com/about/frequently-asked-questions.html). Boarding ramps accommodate standard wheelchairs; electric wheelchairs accommodated if within ramp width dimensions.",
+        source_basis: "live_operator_page",
       },
     },
     verbatim_quotes: [
@@ -120,7 +125,7 @@ export const WNO_FACTUAL_EVIDENCE_REGISTER: Record<string, WnoEvidenceEntry> = {
       "Boarding: 6:00pm, Cruising: 7:00pm - 9:00pm.",
       "All cruises sail rain or shine. In the rare event the US Coast Guard halts navigation due to river conditions, the event is held dockside with music and food service; cruise tickets are non-refundable for weather.",
       "Bookings are non-refundable. All sales are final.",
-      "The riverboat is handicap accessible. However, access to the top deck is by stairs only.",
+      "The riverboat is handicap accessible. However, access to the top deck is by stairs only. Boarding ramps accommodate standard wheelchairs.",
     ],
     paraphrased_summaries: [
       "Sightseeing-only ticket confirmed at $58 adult rate on operator pricing table observed September 9, 2026.",
@@ -149,6 +154,7 @@ export const WNO_FACTUAL_EVIDENCE_REGISTER: Record<string, WnoEvidenceEntry> = {
       },
       cancellation: {
         status: "verified",
+        refund_eligibility: "full_refund_with_notice",
         full_refund_notice_hours: 48,
         summary: "Full refund with at least 48 hours notice before tour departure. Inside 48 hours non-refundable.",
         source_basis: "fareharbor_item",
@@ -212,6 +218,7 @@ export const WNO_FACTUAL_EVIDENCE_REGISTER: Record<string, WnoEvidenceEntry> = {
       },
       cancellation: {
         status: "requires_operator_confirmation",
+        refund_eligibility: "requires_operator_confirmation",
         summary: "Operator cancellation policy is not published via public API for Item 83002 and must be verified in live checkout.",
         source_basis: "storefront_catalog",
       },

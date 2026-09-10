@@ -137,7 +137,8 @@ export interface DccPolicyItem {
   dcc_product_id: `dcc:product:${string}`;
   verification_status: "verified" | "requires_operator_confirmation";
   cancellation: {
-    full_refund_notice_hours?: number;
+    refund_eligibility: "non_refundable" | "full_refund_with_notice" | "requires_operator_confirmation";
+    full_refund_notice_hours?: number; // Only allowed when refund_eligibility === "full_refund_with_notice"
     cancellation_method: "phone_or_email" | "self_service_link" | "requires_operator_confirmation";
     note?: string;
   };
@@ -149,7 +150,8 @@ export interface DccPolicyItem {
   restrictions: {
     minimum_age?: number;
     pregnancy_allowed?: boolean;
-    wheelchair_accessible: "full" | "foldable_only" | "not_accessible" | "requires_operator_confirmation";
+    wheelchair_accessible: "full" | "foldable_only" | "main_deck_only" | "not_accessible" | "requires_operator_confirmation";
+    accessibility_note?: string;
   };
   provenance: DccProvenance;
 }
@@ -360,6 +362,9 @@ export function validatePolicyFeed(items: unknown[]): ValidationResult {
     return { valid: false, errors: ["Policy feed must be an array of policy items"] };
   }
 
+  const allowedRefundEligibility = ["non_refundable", "full_refund_with_notice", "requires_operator_confirmation"];
+  const allowedAccessible = ["full", "foldable_only", "main_deck_only", "not_accessible", "requires_operator_confirmation"];
+
   items.forEach((item, idx) => {
     const pol = item as Partial<DccPolicyItem>;
     const prefix = `PolicyItem[${idx}] (${pol.sku || "unknown"})`;
@@ -369,10 +374,25 @@ export function validatePolicyFeed(items: unknown[]): ValidationResult {
       errors.push(`${prefix}: dcc_product_id must match 'dcc:product:*'`);
     }
 
-    if (pol.verification_status === "verified") {
-      if (typeof pol.cancellation?.full_refund_notice_hours !== "number" || pol.cancellation.full_refund_notice_hours < 0) {
-        errors.push(`${prefix}: verified cancellation.full_refund_notice_hours must be a non-negative number`);
+    if (!pol.cancellation?.refund_eligibility || !allowedRefundEligibility.includes(pol.cancellation.refund_eligibility)) {
+      errors.push(`${prefix}: cancellation.refund_eligibility must be one of: ${allowedRefundEligibility.join(", ")}`);
+    }
+
+    if (pol.cancellation?.refund_eligibility === "full_refund_with_notice") {
+      if (typeof pol.cancellation.full_refund_notice_hours !== "number" || pol.cancellation.full_refund_notice_hours <= 0) {
+        errors.push(`${prefix}: cancellation with 'full_refund_with_notice' must specify positive full_refund_notice_hours`);
       }
+    } else if (pol.cancellation?.refund_eligibility === "non_refundable") {
+      if (pol.cancellation.full_refund_notice_hours !== undefined) {
+        errors.push(`${prefix}: cancellation with 'non_refundable' must not specify full_refund_notice_hours`);
+      }
+    }
+
+    if (pol.restrictions?.wheelchair_accessible && !allowedAccessible.includes(pol.restrictions.wheelchair_accessible)) {
+      errors.push(`${prefix}: restrictions.wheelchair_accessible must be one of: ${allowedAccessible.join(", ")}`);
+    }
+
+    if (pol.verification_status === "verified") {
       if (!pol.weather_guarantee?.policy_summary) {
         errors.push(`${prefix}: verified weather_guarantee.policy_summary is required`);
       }
