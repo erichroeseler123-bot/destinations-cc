@@ -72,6 +72,33 @@ class CdpClient {
   }
 }
 
+async function verifyCollectorAcceptance(endpointUrl, payload) {
+  try {
+    const res = await fetch(endpointUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const text = await res.text();
+    let body = null;
+    try { body = JSON.parse(text); } catch (e) { body = text; }
+    return {
+      status: res.status,
+      statusText: res.statusText,
+      body,
+      ok: res.status === 200 && body && body.ok === true,
+    };
+  } catch (err) {
+    return {
+      status: null,
+      statusText: null,
+      body: null,
+      error: err.message,
+      ok: false,
+    };
+  }
+}
+
 async function run() {
   console.log('1. Launching Headless Chrome...');
   const chromeProcess = spawn(CHROME_PATH, [
@@ -179,26 +206,29 @@ async function run() {
     await pageClient.send('Runtime.enable');
 
     const telemetryRequests = [];
-    const fareharborNavigations = [];
+    const responsesByRequestId = new Map();
 
     pageClient.onEvent((method, params) => {
       if (method === 'Network.requestWillBeSent') {
         const reqUrl = params.request.url;
         if (reqUrl.includes('/api/wno/telemetry')) {
           telemetryRequests.push({
+            requestId: params.requestId,
             url: reqUrl,
             method: params.request.method,
             postData: params.request.postData,
             timestamp: params.timestamp,
           });
         }
-        if (reqUrl.includes('fareharbor.com')) {
-          fareharborNavigations.push(reqUrl);
-        }
       }
       if (method === 'Network.responseReceived') {
         const respUrl = params.response.url;
         if (respUrl.includes('/api/wno/telemetry')) {
+          responsesByRequestId.set(params.requestId, {
+            status: params.response.status,
+            statusText: params.response.statusText,
+            url: respUrl,
+          });
           console.log(`   📡 Telemetry Network Response: Status ${params.response.status} (${params.response.statusText})`);
         }
       }
@@ -263,21 +293,92 @@ async function run() {
       `,
     });
 
-    await delay(3000);
-
-    console.log(`   Captured ${telemetryRequests.length} telemetry request(s) to destinationcommandcenter.com:`);
-    for (const t of telemetryRequests) {
-      let bodyPreview = '';
-      try {
-        const parsed = JSON.parse(t.postData);
-        bodyPreview = `eventName: '${parsed.eventName}', product: '${parsed.productSlug || parsed.productTitle || parsed.targetPath || ""}'`;
-      } catch (e) {
-        bodyPreview = t.postData?.slice(0, 100);
+    // 1. Assert rendered FareHarbor Lightframe checkout
+    console.log('   Waiting for FareHarbor Lightframe checkout to render in DOM...');
+    let checkoutModal = null;
+    for (let attempt = 0; attempt < 20; attempt++) {
+      await delay(500);
+      const checkDom = await pageClient.send('Runtime.evaluate', {
+        expression: `
+          (() => {
+            const container = document.querySelector('#fareharbor-lightframe');
+            const iframe = document.querySelector('#fareharbor-lightframe-iframe');
+            if (!container || !iframe) return null;
+            const cs = window.getComputedStyle(iframe);
+            const isVisible = cs.display !== 'none' && cs.visibility !== 'hidden' && iframe.offsetWidth > 0 && iframe.offsetHeight > 0;
+            const showingClass = container.classList.contains('fareharbor-is-showing');
+            return {
+              hasContainer: Boolean(container),
+              isShowing: showingClass,
+              iframeSrc: iframe.src,
+              iframeWidth: iframe.offsetWidth,
+              iframeHeight: iframe.offsetHeight,
+              isVisible,
+              htmlClasses: document.documentElement.className,
+            };
+          })()
+        `,
+        returnByValue: true,
+      });
+      if (checkDom.result.value && checkDom.result.value.isVisible && checkDom.result.value.iframeSrc) {
+        checkoutModal = checkDom.result.value;
+        break;
       }
-      console.log(`     - ${t.method} ${t.url} -> ${bodyPreview}`);
     }
 
-    const isSuccess = hasShortname && hasItem && hasAsn && telemetryRequests.length > 0;
+    const renderedModalOk = Boolean(checkoutModal && checkoutModal.isShowing && checkoutModal.isVisible);
+    const iframeUrl = checkoutModal?.iframeSrc ? new URL(checkoutModal.iframeSrc) : null;
+    const iframeHasShortname = iframeUrl ? iframeUrl.pathname.includes(tour.expectedShortname) : false;
+    const iframeHasItem = iframeUrl ? (iframeUrl.pathname.includes(tour.expectedItemId) || iframeUrl.searchParams.get('item') === tour.expectedItemId) : false;
+    const iframeHasAsn = iframeUrl ? (iframeUrl.searchParams.get('asn') === tour.expectedAsn) : false;
+
+    console.log(`   Rendered FareHarbor Checkout Interface Analysis:`);
+    console.log(`     - Lightframe Modal Visible: ${renderedModalOk ? '✅ YES (' + checkoutModal.iframeWidth + 'x' + checkoutModal.iframeHeight + 'px)' : '❌ NO'}`);
+    console.log(`     - Modal Operator Shortname (${tour.expectedShortname}): ${iframeHasShortname ? '✅ MATCH' : '❌ MISMATCH'}`);
+    console.log(`     - Modal Item ID (${tour.expectedItemId}): ${iframeHasItem ? '✅ MATCH' : '❌ MISMATCH'}`);
+    console.log(`     - Modal Attribution ASN (${tour.expectedAsn}): ${iframeHasAsn ? '✅ MATCH' : '❌ MISMATCH'}`);
+
+    // 2. Correlate post-click booking_opened telemetry event
+    await delay(1000);
+    let correlatedBookingOpened = null;
+    let collectorVerification = null;
+
+    for (const t of telemetryRequests) {
+      let parsed = null;
+      try { parsed = JSON.parse(t.postData); } catch (e) {}
+      if (parsed?.eventName === 'booking_opened') {
+        const browserResp = responsesByRequestId.get(t.requestId);
+        correlatedBookingOpened = {
+          requestId: t.requestId,
+          url: t.url,
+          payload: parsed,
+          browserReceivedStatus: browserResp?.status ?? null,
+          browserReceivedStatusText: browserResp?.statusText ?? null,
+        };
+
+        // Correlate with collector endpoint response and accepted body
+        const collectorEndpoint = 'https://destinationcommandcenter.com/api/wno/telemetry';
+        collectorVerification = await verifyCollectorAcceptance(collectorEndpoint, parsed);
+        break;
+      }
+    }
+
+    console.log(`   Correlated booking_opened Telemetry Analysis:`);
+    if (correlatedBookingOpened && collectorVerification) {
+      console.log(`     - Browser Event Captured: ✅ YES (Session: ${correlatedBookingOpened.payload?.sessionId})`);
+      console.log(`     - Browser Network Status: ${correlatedBookingOpened.browserReceivedStatus} (${correlatedBookingOpened.browserReceivedStatusText})`);
+      console.log(`     - Collector Target: https://destinationcommandcenter.com/api/wno/telemetry`);
+      console.log(`     - Collector Status: ${collectorVerification.status} (${collectorVerification.statusText})`);
+      console.log(`     - Collector Response Body: ${JSON.stringify(collectorVerification.body)}`);
+      console.log(`     - Collector Accepted ({ ok: true }): ${collectorVerification.ok ? '✅ YES' : '❌ NO'}`);
+    } else {
+      console.log(`     - ❌ No booking_opened telemetry event correlated!`);
+    }
+
+    const isSuccess = hasShortname && hasItem && hasAsn
+      && renderedModalOk && iframeHasShortname && iframeHasItem && iframeHasAsn
+      && Boolean(collectorVerification?.ok);
+
     results.push({
       sku: tour.sku,
       productName: tour.name,
@@ -300,16 +401,25 @@ async function run() {
         itemIdMatch: hasItem,
         asnMatch: hasAsn,
       },
-      sourceEvidence: tour.sourceEvidence,
-      telemetry: {
-        sent: telemetryRequests.length > 0,
-        requestsCount: telemetryRequests.length,
-        events: telemetryRequests.map(r => ({
-          method: r.method,
-          url: r.url,
-          payload: (() => { try { return JSON.parse(r.postData); } catch (e) { return r.postData; } })(),
-        })),
+      renderedCheckoutVerification: {
+        verified: renderedModalOk && iframeHasShortname && iframeHasItem && iframeHasAsn,
+        modalVisible: renderedModalOk,
+        iframeSrc: checkoutModal?.iframeSrc,
+        iframeDimensions: checkoutModal ? { width: checkoutModal.iframeWidth, height: checkoutModal.iframeHeight } : null,
+        operatorMatch: iframeHasShortname,
+        itemMatch: iframeHasItem,
+        asnMatch: iframeHasAsn,
       },
+      correlatedBookingOpenedEvent: {
+        dispatchedUrl: correlatedBookingOpened?.url,
+        browserNetworkStatus: correlatedBookingOpened?.browserReceivedStatus,
+        sessionId: correlatedBookingOpened?.payload?.sessionId,
+        payload: correlatedBookingOpened?.payload,
+        collectorStatus: collectorVerification?.status,
+        collectorResponseBody: collectorVerification?.body,
+        accepted: collectorVerification?.ok === true,
+      },
+      sourceEvidence: tour.sourceEvidence,
       success: isSuccess,
     });
 
@@ -319,11 +429,12 @@ async function run() {
   }
 
   console.log('\n========================================');
-  console.log('Browser Customer Journey Summary:');
+  console.log('Strengthened Browser Verification Summary:');
   for (const r of results) {
     console.log(`${r.success ? '✅ PASS' : '❌ FAIL'}: ${r.productName}`);
-    console.log(`   CTA: [${r.clickedCta.text}] -> ASN: ${r.handoffAttribution.asn} | Item: ${r.handoffAttribution.itemId}`);
-    console.log(`   Telemetry Dispatched: ${r.telemetry.sent ? 'YES' : 'NO'} (${r.telemetry.requestsCount} events)`);
+    console.log(`   CTA Handoff: [${r.clickedCta.text}] -> ASN: ${r.handoffAttribution.asn} | Item: ${r.handoffAttribution.itemId}`);
+    console.log(`   Checkout Rendered: ${r.renderedCheckoutVerification.verified ? 'YES' : 'NO'}`);
+    console.log(`   booking_opened Accepted: ${r.correlatedBookingOpenedEvent.accepted ? 'YES (HTTP ' + r.correlatedBookingOpenedEvent.collectorStatus + ' ok: true)' : 'NO'}`);
   }
 
   // Save report to reports/wno-browser-verification-results.json

@@ -104,6 +104,7 @@ export const DCC_SITE_TRUTH: readonly DccPortfolioTruthRecord[] = [
     id: "gosno",
     name: "GoSno",
     url: "https://gosno.co",
+    route_feed: "https://gosno.co/api/public/route-feed",
     type: "private_mountain_transportation",
     role: "Colorado private airport-to-mountain transportation operator",
     authority: ["service_routes", "published_transfer_pricing", "vehicle_service_options"],

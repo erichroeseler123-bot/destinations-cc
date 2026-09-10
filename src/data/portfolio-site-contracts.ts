@@ -20,6 +20,7 @@ export type PortfolioSiteContract = {
   id: string;
   name: string;
   canonicalUrl: string | null;
+  routeFeedUrl?: string;
   parentId?: string;
   networkRole: PortfolioNetworkRole;
   strategy: PortfolioStrategy;
@@ -167,6 +168,7 @@ export const PORTFOLIO_SITE_CONTRACTS = [
     id: "gosno",
     name: "GoSno",
     canonicalUrl: "https://gosno.co",
+    routeFeedUrl: "https://gosno.co/api/public/route-feed",
     networkRole: "transportation_commerce",
     strategy: "operate",
     jobKey: "colorado_private_mountain_transport",
