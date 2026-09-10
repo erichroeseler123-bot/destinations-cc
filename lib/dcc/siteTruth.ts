@@ -65,11 +65,17 @@ export const DCC_SITE_TRUTH: readonly DccPortfolioTruthRecord[] = [
     type: "cruise_group_planner",
     role: "shared private cruise-group planning property",
     authority: ["cruise_planning", "ship_and_sailing_context", "shared_private_plans"],
+    route_feed: "https://cruisepromenade.com/api/v2/feeds/ports",
     status: { state: "active" },
     provenance: {
       kind: "declared_by_site",
-      last_verified: VERIFIED,
+      last_verified: "2026-09-10",
       note: "Do not infer a live third-party cruise-data API relationship from attribution language alone.",
+    },
+    booking: {
+      authority: "provider",
+      takes_payment: false,
+      finality: "Cruise Promenade refers travelers to GetYourGuide; excursion bookings and payments are finalized with the provider.",
     },
   },
   {

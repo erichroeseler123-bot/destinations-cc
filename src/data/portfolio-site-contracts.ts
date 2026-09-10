@@ -60,6 +60,7 @@ export const PORTFOLIO_SITE_CONTRACTS = [
     id: "cp",
     name: "Cruise Promenade",
     canonicalUrl: "https://cruisepromenade.com",
+    routeFeedUrl: "https://cruisepromenade.com/api/v2/feeds/ports",
     networkRole: "planning_tool",
     strategy: "breakout_product",
     jobKey: "private_shared_cruise_planning",
