@@ -14,6 +14,7 @@ export type DccPortfolioTruthRecord = {
   type: string;
   role: string;
   authority: readonly string[];
+  route_feed?: string;
   status: {
     state: DccServiceState;
     effective_from?: string;

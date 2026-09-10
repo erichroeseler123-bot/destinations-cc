@@ -19,6 +19,7 @@ export const DCC_PORTFOLIO_SITES = DCC_SITE_TRUTH.map((record) => ({
   status: record.status,
   provenance: record.provenance,
   booking: record.booking,
+  route_feed: record.route_feed,
   truth_url: `${DCC_SITE_CONTRACT.truthFeedUrl}?id=${encodeURIComponent(record.id)}`,
 }));
 
