@@ -39,7 +39,7 @@ const SOUTHERN_STYLE_PROVENANCE: DccProvenance = {
 
 const UNVERIFIED_PROVENANCE: DccProvenance = {
   source: "Storefront Catalog Listing (Requires Operator Checkout Verification)",
-  source_type: "published_commercial_rate",
+  source_type: "storefront_catalog",
   last_verified: "2026-09-09T23:00:00Z",
   review_by: "2026-12-01T00:00:00Z",
   verified_by: "catalog-audit@destinations-cc.com",
@@ -59,12 +59,12 @@ export function getWnoAgentDirectory(): DccAgentDirectoryV2 {
     canonical_url: WNO_ORIGIN,
     service_area: {
       dcc_destination_id: "dcc:destination:louisiana:new-orleans",
-      name: "Greater New Orleans",
+      name: "New Orleans",
       region: "Louisiana",
       country: "US",
       coordinates: {
-        latitude: 29.951065,
-        longitude: -90.071533,
+        latitude: 29.9511,
+        longitude: -90.0715,
       },
     },
     contact: {
@@ -73,17 +73,16 @@ export function getWnoAgentDirectory(): DccAgentDirectoryV2 {
       help_url: `${WNO_ORIGIN}/contact`,
     },
     authority_scope: [
-      "new_orleans_swamp_tours",
-      "plantation_educational_tours",
-      "french_quarter_historic_walks",
-      "mississippi_riverboat_cruises",
-      "participating_operator_booking_handoff",
+      "curated_tours",
+      "decision_guides",
+      "operator_handoffs",
+      "transportation_guidance",
     ],
     booking_boundary: {
       execution_model: "secure_handoff",
       primary_engine: "FareHarbor",
       payment_collected_on_site: false,
-      operator_terms_url: `${WNO_ORIGIN}/cancellation-policy`,
+      operator_terms_url: `${WNO_ORIGIN}/terms`,
     },
     directory: {
       products: "/api/v2/feeds/products",
@@ -139,11 +138,11 @@ export function getWnoLocationsFeed(): DccLocationItem[] {
         postal_code: "70070",
         country: "US",
       },
-      meeting_instructions: "Self-drive guests must arrive 30 minutes prior to departure at the Luling slips along LA-3127 (exact slip assigned in booking confirmation). Guests selecting hotel transportation will board the shuttle at their confirmed hotel corridor pickup time.",
+      meeting_instructions: "Self-drive guests must arrive 30 minutes prior to departure at 1265 LA-3127 in Luling. Hotel shuttle guests board at their confirmed corridor pickup time.",
     },
     {
-      dcc_poi_id: "dcc:poi:nola:oak-alley-or-laura-grounds",
-      name: "Oak Alley or Laura Plantation Historic Grounds",
+      dcc_poi_id: "dcc:poi:nola:oak-alley-plantation-grounds",
+      name: "Oak Alley Plantation Historic Grounds",
       destination_id: "dcc:destination:louisiana:new-orleans",
       kind: "plantation",
       coordinates: { latitude: 30.0053, longitude: -90.7765 },
@@ -154,8 +153,24 @@ export function getWnoLocationsFeed(): DccLocationItem[] {
         postal_code: "70090",
         country: "US",
       },
-      meeting_instructions: "Coach transports guests directly from New Orleans to either Oak Alley Plantation (Vacherie) or Laura Plantation (Vacherie) based on selection confirmed during booking handoff.",
+      meeting_instructions: "Tour coach arrives at Oak Alley visitor welcome center ticket plaza. One of two alternate destination options on the combined plantation tour.",
       wikidata_id: "Q2165187",
+    },
+    {
+      dcc_poi_id: "dcc:poi:nola:laura-plantation-grounds",
+      name: "Laura Plantation: Louisiana's Creole Heritage Site",
+      destination_id: "dcc:destination:louisiana:new-orleans",
+      kind: "plantation",
+      coordinates: { latitude: 30.0083, longitude: -90.7247 },
+      physical_address: {
+        street: "2247 LA-18",
+        city: "Vacherie",
+        region: "Louisiana",
+        postal_code: "70090",
+        country: "US",
+      },
+      meeting_instructions: "Tour coach arrives at Laura Plantation historic homestead plaza. One of two alternate destination options on the combined plantation tour.",
+      wikidata_id: "Q6499318",
     },
     {
       dcc_poi_id: "dcc:poi:nola:french-quarter-pickup-zone",
@@ -177,6 +192,8 @@ export function getWnoProductsFeed(): DccProductItem[] {
     // Determine meeting and attraction locations with factual precision
     let meetingHub: `dcc:poi:${string}` | undefined = undefined;
     let attractionHub: `dcc:poi:${string}` | undefined = undefined;
+    let possibleDestinations: Array<`dcc:poi:${string}`> | undefined = undefined;
+    let destinationSelection: "single" | "determined_during_booking" | undefined = undefined;
     let pickupMode: DccProductItem["locations"]["pickup_mode"] = "requires_operator_confirmation";
 
     if (p.slug === "evening-jazz-cruise") {
@@ -188,8 +205,13 @@ export function getWnoProductsFeed(): DccProductItem[] {
       attractionHub = "dcc:poi:nola:ragin-cajun-slip-luling";
       pickupMode = "optional_add_on";
     } else if (p.slug === "oak-alley-or-laura-plantation-tour") {
-      meetingHub = "dcc:poi:nola:french-quarter-pickup-zone";
-      attractionHub = "dcc:poi:nola:oak-alley-or-laura-grounds";
+      // Departure point is unconfirmed across multiple hotel corridors; kept unknown
+      meetingHub = undefined;
+      possibleDestinations = [
+        "dcc:poi:nola:oak-alley-plantation-grounds",
+        "dcc:poi:nola:laura-plantation-grounds",
+      ];
+      destinationSelection = "determined_during_booking";
       pickupMode = "included";
     }
 
@@ -207,6 +229,8 @@ export function getWnoProductsFeed(): DccProductItem[] {
       locations: {
         meeting_hub: meetingHub,
         attraction_hub: attractionHub,
+        possible_destinations: possibleDestinations,
+        destination_selection: destinationSelection,
         pickup_mode: pickupMode,
       },
       canonical_page_url: `${WNO_ORIGIN}/tours/${p.slug}`,
@@ -215,7 +239,7 @@ export function getWnoProductsFeed(): DccProductItem[] {
 }
 
 // ---------------------------------------------------------------------------
-// 4. Pricing Feed (/api/v2/feeds/pricing) - Grounded with no $35 fallback
+// 4. Pricing Feed (/api/v2/feeds/pricing) - Field-Level Completeness & Scope
 // ---------------------------------------------------------------------------
 
 export function getWnoPricingFeed(): DccPriceItem[] {
@@ -228,6 +252,8 @@ export function getWnoPricingFeed(): DccPriceItem[] {
         currency: "USD",
         verification_status: "verified",
         pricing_structure: "per_person",
+        price_scope: "sightseeing_only",
+        fee_completeness: "taxes_and_fees_confirmed_at_checkout",
         base_rate: 58.0, // Sightseeing starting rate (Dinner options up to $95-$105)
         mandatory_fees: [],
         provenance: STEAMBOAT_PROVENANCE,
@@ -241,6 +267,8 @@ export function getWnoPricingFeed(): DccPriceItem[] {
         currency: "USD",
         verification_status: "verified",
         pricing_structure: "per_person",
+        price_scope: "self_arrive",
+        fee_completeness: "taxes_and_fees_confirmed_at_checkout",
         base_rate: 35.0, // Self-drive starting rate
         rate_with_transportation: 60.0, // With round-trip hotel shuttle ($50 child)
         mandatory_fees: [],
@@ -253,10 +281,12 @@ export function getWnoPricingFeed(): DccPriceItem[] {
         sku: `wno-${p.slug}`,
         dcc_product_id: `dcc:product:wno-${p.slug}`,
         currency: "USD",
-        verification_status: "verified",
+        verification_status: "requires_operator_confirmation",
         pricing_structure: "per_person",
-        base_rate: 85.0, // Minibus tour including transportation & admissions
+        price_scope: "requires_operator_confirmation",
+        fee_completeness: "requires_operator_confirmation",
         mandatory_fees: [],
+        confirmation_note: "Plantation tour pricing and admissions vary depending on Oak Alley vs Laura selection and must be confirmed in live operator checkout.",
         provenance: SOUTHERN_STYLE_PROVENANCE,
       };
     }
@@ -268,6 +298,8 @@ export function getWnoPricingFeed(): DccPriceItem[] {
       currency: "USD",
       verification_status: "requires_operator_confirmation",
       pricing_structure: "per_person",
+      price_scope: "requires_operator_confirmation",
+      fee_completeness: "requires_operator_confirmation",
       mandatory_fees: [],
       confirmation_note: "Exact starting rates, youth discounts, and transport options are confirmed in live operator checkout.",
       provenance: UNVERIFIED_PROVENANCE,
@@ -288,9 +320,9 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
         dcc_product_id: `dcc:product:wno-${p.slug}`,
         verification_status: "verified",
         cancellation: {
-          full_refund_notice_hours: 24,
+          full_refund_notice_hours: 0,
           cancellation_method: "phone_or_email",
-          note: "Cancellations must be requested at least 24 hours prior to scheduled boarding.",
+          note: "Bookings are non-refundable. All sales are final per FareHarbor passenger contract terms.",
         },
         weather_guarantee: {
           is_guaranteed: false,
@@ -298,7 +330,7 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
           compensation_type: "none",
         },
         restrictions: {
-          wheelchair_accessible: "full",
+          wheelchair_accessible: "foldable_only",
           pregnancy_allowed: true,
         },
         provenance: STEAMBOAT_PROVENANCE,
@@ -313,7 +345,7 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
         cancellation: {
           full_refund_notice_hours: 48,
           cancellation_method: "phone_or_email",
-          note: "48-hour advance cancellation required for full cash refund. 24-hour notice applies only if Trip Protection was purchased.",
+          note: "48-hour advance cancellation required for full cash refund. Inside 48 hours is non-refundable unless Trip Protection was purchased.",
         },
         weather_guarantee: {
           is_guaranteed: true,
@@ -321,8 +353,7 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
           compensation_type: "full_refund_or_reschedule",
         },
         restrictions: {
-          wheelchair_accessible: "foldable_only",
-          pregnancy_allowed: true,
+          wheelchair_accessible: "requires_operator_confirmation",
         },
         provenance: RAGIN_CAJUN_PROVENANCE,
       };
@@ -332,20 +363,18 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
       return {
         sku: `wno-${p.slug}`,
         dcc_product_id: `dcc:product:wno-${p.slug}`,
-        verification_status: "verified",
+        verification_status: "requires_operator_confirmation",
         cancellation: {
-          full_refund_notice_hours: 48,
-          cancellation_method: "phone_or_email",
-          note: "Minibus tours require 48 hours notice for full cancellation.",
+          cancellation_method: "requires_operator_confirmation",
+          note: "Cancellation window and refund rules are governed by individual operator terms shown during checkout.",
         },
         weather_guarantee: {
           is_guaranteed: false,
-          policy_summary: "Tours operate rain or shine; historical grounds and mansion tours proceed under covered walkways and interiors.",
-          compensation_type: "none",
+          policy_summary: "Weather policies vary by activity and are governed by the participating operator.",
+          compensation_type: "requires_operator_confirmation",
         },
         restrictions: {
-          wheelchair_accessible: "foldable_only",
-          pregnancy_allowed: true,
+          wheelchair_accessible: "requires_operator_confirmation",
         },
         provenance: SOUTHERN_STYLE_PROVENANCE,
       };
@@ -379,7 +408,7 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
 
 export function getWnoOperatingWindowsFeed(): DccScheduleItem[] {
   return STOREFRONT_PRODUCTS.map((p) => {
-    // 3 verified pilot offerings with distinct, non-uniform schedules
+    // 3 pilot offerings: field-level verification (price verified does not force schedule verified)
     if (p.slug === "evening-jazz-cruise") {
       return {
         sku: `wno-${p.slug}`,
@@ -404,22 +433,15 @@ export function getWnoOperatingWindowsFeed(): DccScheduleItem[] {
     }
 
     if (p.slug === "covered-tour-boat") {
+      // Price verified, but daily departure schedule varies by seasonal water levels: marked requires_operator_confirmation
       return {
         sku: `wno-${p.slug}`,
         dcc_product_id: `dcc:product:wno-${p.slug}`,
         time_zone: "America/Chicago",
-        verification_status: "verified",
-        season: {
-          start_date: "2026-01-01",
-          end_date: "2026-12-31",
-          season_type: "year_round",
-        },
-        daily_departures: [
-          { departure_time_local: "09:45", duration_minutes: 105, description: "Morning Bayou Tour (1h45m on water)" },
-          { departure_time_local: "12:15", duration_minutes: 105, description: "Midday Bayou Tour (1h45m on water)" },
-          { departure_time_local: "14:45", duration_minutes: 105, description: "Afternoon Bayou Tour (1h45m on water)" },
-        ],
-        known_blackout_dates: ["2026-12-25"],
+        verification_status: "requires_operator_confirmation",
+        daily_departures: [],
+        known_blackout_dates: [],
+        schedule_note: "Morning hotel pickup is listed at 8:30 AM; exact boat launch times vary seasonally and are confirmed in operator checkout.",
         provenance: RAGIN_CAJUN_PROVENANCE,
       };
     }
@@ -429,20 +451,10 @@ export function getWnoOperatingWindowsFeed(): DccScheduleItem[] {
         sku: `wno-${p.slug}`,
         dcc_product_id: `dcc:product:wno-${p.slug}`,
         time_zone: "America/Chicago",
-        verification_status: "verified",
-        season: {
-          start_date: "2026-01-01",
-          end_date: "2026-12-31",
-          season_type: "year_round",
-        },
-        daily_departures: [
-          {
-            departure_time_local: "08:15",
-            duration_minutes: 330,
-            description: "Full Plantation Day Trip (Morning hotel pickup window 08:00–08:30, returns approx 14:00)",
-          },
-        ],
-        known_blackout_dates: ["2026-11-26", "2026-12-25"],
+        verification_status: "requires_operator_confirmation",
+        daily_departures: [],
+        known_blackout_dates: [],
+        schedule_note: "Hotel pickup is between 8:00 AM and 8:30 AM; full schedule is confirmed in operator checkout.",
         provenance: SOUTHERN_STYLE_PROVENANCE,
       };
     }

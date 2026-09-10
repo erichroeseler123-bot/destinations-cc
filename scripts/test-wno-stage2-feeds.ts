@@ -52,9 +52,9 @@ assert.equal(priceResult.valid, true, `Pricing errors: ${priceResult.errors.join
 assert.equal(pricing.length, STOREFRONT_PRODUCTS.length);
 const verifiedPrices = pricing.filter(p => p.verification_status === "verified");
 const unverifiedPrices = pricing.filter(p => p.verification_status === "requires_operator_confirmation");
-assert.equal(verifiedPrices.length, 3, "Exactly 3 offerings should be verified in pilot");
-assert.equal(unverifiedPrices.length, 18, "Remaining 18 offerings should require operator confirmation");
-console.log(`   ✅ Pricing feed is fully valid (3 verified rates, 18 requiring operator confirmation).`);
+assert.equal(verifiedPrices.length, 2, "Exactly 2 offerings have published verified base rates in pilot");
+assert.equal(unverifiedPrices.length, 19, "Remaining 19 offerings (including plantation tour) require operator confirmation");
+console.log(`   ✅ Pricing feed is fully valid (2 verified rates, 19 requiring operator confirmation).`);
 
 // 5. Validate Policies Feed
 console.log("5. Validating /api/v2/feeds/policies...");
@@ -63,8 +63,8 @@ const polResult = validatePolicyFeed(policies);
 assert.equal(polResult.valid, true, `Policies errors: ${polResult.errors.join(", ")}`);
 assert.equal(policies.length, STOREFRONT_PRODUCTS.length);
 const verifiedPolicies = policies.filter(p => p.verification_status === "verified");
-assert.equal(verifiedPolicies.length, 3);
-console.log(`   ✅ Policies feed is fully valid (3 verified policies, 18 requiring operator confirmation).`);
+assert.equal(verifiedPolicies.length, 2, "Exactly 2 offerings have verified contract policies");
+console.log(`   ✅ Policies feed is fully valid (2 verified policies, 19 requiring operator confirmation).`);
 
 // 6. Validate Operating Windows Feed
 console.log("6. Validating /api/v2/feeds/operating-windows...");
@@ -73,7 +73,7 @@ const schedResult = validateOperatingWindowsFeed(schedules);
 assert.equal(schedResult.valid, true, `Schedules errors: ${schedResult.errors.join(", ")}`);
 assert.equal(schedules.length, STOREFRONT_PRODUCTS.length);
 const verifiedSchedules = schedules.filter(s => s.verification_status === "verified");
-assert.equal(verifiedSchedules.length, 3);
+assert.equal(verifiedSchedules.length, 1, "Exactly 1 offering (Steamboat Natchez) has a fixed verified departure schedule");
 for (const s of schedules) {
   assert.equal(s.time_zone, "America/Chicago");
 }

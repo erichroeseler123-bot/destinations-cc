@@ -277,7 +277,7 @@ test("WNO Pilot: 3-Offering Factual Verification", async (t) => {
   const pricing = getWnoPricingFeed();
   const policies = getWnoPoliciesFeed();
 
-  await t.test("1. Evening Jazz Cruise has distinct evening schedule & wharf location", () => {
+  await t.test("1. Evening Jazz Cruise has distinct evening schedule, wharf location, non-refundable terms, and accessibility", () => {
     const sched = schedules.find((s) => s.sku === "wno-evening-jazz-cruise")!;
     assert.equal(sched.verification_status, "verified");
     assert.equal(sched.daily_departures.length, 1);
@@ -293,70 +293,80 @@ test("WNO Pilot: 3-Offering Factual Verification", async (t) => {
     const price = pricing.find((p) => p.sku === "wno-evening-jazz-cruise")!;
     assert.equal(price.verification_status, "verified");
     assert.equal(price.base_rate, 58.0);
+    assert.equal(price.price_scope, "sightseeing_only");
+    assert.equal(price.fee_completeness, "taxes_and_fees_confirmed_at_checkout");
 
     const pol = policies.find((p) => p.sku === "wno-evening-jazz-cruise")!;
     assert.equal(pol.verification_status, "verified");
-    assert.equal(pol.cancellation.full_refund_notice_hours, 24);
+    assert.equal(pol.cancellation.full_refund_notice_hours, 0); // All sales final under contract
+    assert.equal(pol.restrictions.wheelchair_accessible, "foldable_only");
     assert.equal(pol.weather_guarantee.is_guaranteed, false);
     assert.equal(pol.weather_guarantee.compensation_type, "none");
   });
 
-  await t.test("2. Covered Tour Boat has 3 daytime departures & Luling slip location", () => {
+  await t.test("2. Covered Tour Boat has verified rates, verified launch location, 48h cancellation, and unknown schedule", () => {
     const sched = schedules.find((s) => s.sku === "wno-covered-tour-boat")!;
-    assert.equal(sched.verification_status, "verified");
-    assert.equal(sched.daily_departures.length, 3);
-    assert.deepEqual(
-      sched.daily_departures.map((d) => d.departure_time_local),
-      ["09:45", "12:15", "14:45"]
-    );
-    assert.equal(sched.daily_departures[0].duration_minutes, 105);
+    // Field-level truth: schedule is unknown/requires confirmation, even though price is verified
+    assert.equal(sched.verification_status, "requires_operator_confirmation");
+    assert.equal(sched.daily_departures.length, 0);
+    assert.ok(sched.schedule_note);
 
     const prod = products.find((p) => p.sku === "wno-covered-tour-boat")!;
     assert.equal(prod.locations.meeting_hub, "dcc:poi:nola:ragin-cajun-slip-luling");
     assert.equal(prod.locations.pickup_mode, "optional_add_on");
 
     const price = pricing.find((p) => p.sku === "wno-covered-tour-boat")!;
+    assert.equal(price.verification_status, "verified");
     assert.equal(price.base_rate, 35.0);
     assert.equal(price.rate_with_transportation, 60.0);
+    assert.equal(price.price_scope, "self_arrive");
+    assert.equal(price.fee_completeness, "taxes_and_fees_confirmed_at_checkout");
 
     const pol = policies.find((p) => p.sku === "wno-covered-tour-boat")!;
     assert.equal(pol.cancellation.full_refund_notice_hours, 48);
     assert.equal(pol.weather_guarantee.is_guaranteed, true);
     assert.equal(pol.weather_guarantee.compensation_type, "full_refund_or_reschedule");
+    assert.equal(pol.restrictions.wheelchair_accessible, "requires_operator_confirmation");
   });
 
-  await t.test("3. Oak Alley or Laura Plantation Tour has morning pickup & dual plantation destination", () => {
+  await t.test("3. Oak Alley or Laura Plantation Tour has unconfirmed meeting point, alternative destinations, and requires confirmation for price/schedule", () => {
     const sched = schedules.find((s) => s.sku === "wno-oak-alley-or-laura-plantation-tour")!;
-    assert.equal(sched.verification_status, "verified");
-    assert.equal(sched.daily_departures[0].departure_time_local, "08:15");
-    assert.equal(sched.daily_departures[0].duration_minutes, 330);
+    assert.equal(sched.verification_status, "requires_operator_confirmation");
 
     const prod = products.find((p) => p.sku === "wno-oak-alley-or-laura-plantation-tour")!;
-    // Meeting location (pickup) is French Quarter hotel corridor
-    assert.equal(prod.locations.meeting_hub, "dcc:poi:nola:french-quarter-pickup-zone");
-    // Destination attraction is Oak Alley or Laura Grounds
-    assert.equal(prod.locations.attraction_hub, "dcc:poi:nola:oak-alley-or-laura-grounds");
+    // Departure point is unconfirmed across multiple hotel corridors; kept unknown
+    assert.equal(prod.locations.meeting_hub, undefined);
+    // Separate alternative destinations
+    assert.deepEqual(prod.locations.possible_destinations, [
+      "dcc:poi:nola:oak-alley-plantation-grounds",
+      "dcc:poi:nola:laura-plantation-grounds",
+    ]);
+    assert.equal(prod.locations.destination_selection, "determined_during_booking");
     assert.equal(prod.locations.pickup_mode, "included");
 
     const price = pricing.find((p) => p.sku === "wno-oak-alley-or-laura-plantation-tour")!;
-    assert.equal(price.base_rate, 85.0);
+    assert.equal(price.verification_status, "requires_operator_confirmation");
+    assert.equal(price.base_rate, undefined);
+    assert.ok(price.confirmation_note);
 
     const pol = policies.find((p) => p.sku === "wno-oak-alley-or-laura-plantation-tour")!;
-    assert.equal(pol.cancellation.full_refund_notice_hours, 48);
-    assert.equal(pol.weather_guarantee.is_guaranteed, false);
-    assert.equal(pol.weather_guarantee.compensation_type, "none");
+    assert.equal(pol.verification_status, "requires_operator_confirmation");
+    assert.equal(pol.cancellation.cancellation_method, "requires_operator_confirmation");
+    assert.equal(pol.weather_guarantee.compensation_type, "requires_operator_confirmation");
   });
 
-  await t.test("4. Remaining 18 offerings declare requires_operator_confirmation with genuine unknowns", () => {
+  await t.test("4. Non-verified fields declare requires_operator_confirmation with genuine unknowns", () => {
     const unverifiedPricing = pricing.filter((p) => p.verification_status === "requires_operator_confirmation");
-    assert.equal(unverifiedPricing.length, 18);
+    // 18 catalog products + 1 plantation tour = 19 items requiring operator checkout price confirmation
+    assert.equal(unverifiedPricing.length, 19);
     for (const p of unverifiedPricing) {
       assert.equal(p.base_rate, undefined, `Expected undefined base_rate for ${p.sku}`);
       assert.ok(p.confirmation_note);
     }
 
     const unverifiedSchedules = schedules.filter((s) => s.verification_status === "requires_operator_confirmation");
-    assert.equal(unverifiedSchedules.length, 18);
+    // 18 catalog products + 1 covered boat + 1 plantation tour = 20 items requiring operator schedule confirmation
+    assert.equal(unverifiedSchedules.length, 20);
     for (const s of unverifiedSchedules) {
       assert.equal(s.daily_departures.length, 0, `Expected 0 daily departures for unverified ${s.sku}`);
       assert.equal(s.known_blackout_dates.length, 0, `Expected 0 blackout dates for unverified ${s.sku}`);

@@ -19,7 +19,7 @@ export interface ValidationResult {
 
 export interface DccProvenance {
   source: string;
-  source_type: "operator_contract" | "live_api_tariff" | "published_commercial_rate";
+  source_type: "operator_contract" | "live_api_tariff" | "published_commercial_rate" | "storefront_catalog";
   last_verified: string; // ISO-8601 UTC
   review_by: string;    // ISO-8601 UTC
   verified_by: string;
@@ -87,6 +87,8 @@ export interface DccProductItem {
   locations: {
     meeting_hub?: `dcc:poi:${string}`;
     attraction_hub?: `dcc:poi:${string}`;
+    possible_destinations?: Array<`dcc:poi:${string}`>;
+    destination_selection?: "single" | "determined_during_booking";
     pickup_mode: "included" | "optional_add_on" | "self_arrive_only" | "requires_operator_confirmation";
   };
   canonical_page_url: string;
@@ -118,6 +120,8 @@ export interface DccPriceItem {
   currency: "USD";
   verification_status: "verified" | "requires_operator_confirmation";
   pricing_structure: "per_person" | "per_vehicle" | "per_group";
+  price_scope?: "sightseeing_only" | "self_arrive" | "with_transportation" | "minibus_with_admission" | "general_admission" | "requires_operator_confirmation";
+  fee_completeness?: "all_mandatory_fees_included" | "taxes_and_fees_confirmed_at_checkout" | "requires_operator_confirmation";
   base_rate?: number; // Only present when verification_status === "verified"
   rate_with_transportation?: number;
   mandatory_fees: Array<{
@@ -207,8 +211,8 @@ export function validateProvenance(prov: unknown, fieldPrefix = "provenance"): s
   if (!p.source || typeof p.source !== "string" || !p.source.trim()) {
     errors.push(`${fieldPrefix}.source is required and cannot be empty`);
   }
-  if (!["operator_contract", "live_api_tariff", "published_commercial_rate"].includes(p.source_type as string)) {
-    errors.push(`${fieldPrefix}.source_type must be one of operator_contract, live_api_tariff, published_commercial_rate`);
+  if (!["operator_contract", "live_api_tariff", "published_commercial_rate", "storefront_catalog"].includes(p.source_type as string)) {
+    errors.push(`${fieldPrefix}.source_type must be one of operator_contract, live_api_tariff, published_commercial_rate, storefront_catalog`);
   }
   if (!p.verified_by || typeof p.verified_by !== "string" || !p.verified_by.trim()) {
     errors.push(`${fieldPrefix}.verified_by is required`);
@@ -411,6 +415,17 @@ export function validateProductFeed(items: unknown[]): ValidationResult {
     }
     if (prod.locations?.attraction_hub && !isValidDccId(prod.locations.attraction_hub, "dcc:poi")) {
       errors.push(`${prefix}: locations.attraction_hub must match 'dcc:poi:*'`);
+    }
+    if (prod.locations?.possible_destinations) {
+      if (!Array.isArray(prod.locations.possible_destinations)) {
+        errors.push(`${prefix}: locations.possible_destinations must be an array`);
+      } else {
+        for (const dest of prod.locations.possible_destinations) {
+          if (!isValidDccId(dest, "dcc:poi")) {
+            errors.push(`${prefix}: locations.possible_destinations contains invalid ID '${dest}'`);
+          }
+        }
+      }
     }
     if (!prod.canonical_page_url || !isValidHttpUrl(prod.canonical_page_url, true)) {
       errors.push(`${prefix}: canonical_page_url must be an https:// URL or relative path`);
