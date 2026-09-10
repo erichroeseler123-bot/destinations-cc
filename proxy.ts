@@ -124,6 +124,7 @@ export function getWtonotHostRewrite(request: NextRequest) {
     "/booking-help",
     "/faq",
     "/about",
+    "/how-we-choose",
   ]);
 
   if (supportRoutes.has(pathname)) {

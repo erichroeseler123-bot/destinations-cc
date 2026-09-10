@@ -101,7 +101,7 @@ test("Conversion Card Actions & Booking Integrity Suite", async (t) => {
 
   await t.test("8. Catalog detail cues contain an explicit text separator", () => {
     const card = fs.readFileSync(path.join(process.cwd(), "app/new-orleans/components/ProductCard.tsx"), "utf8");
-    assert.match(card, /index < cues\.length - 1 \? ' ' : null/);
+    assert.match(card, /index < cues\.length - 1 \? (<span aria-hidden="true"> · <\/span>|' ')/);
   });
 
   await t.test("9. Mobile conversion bar is mounted globally but only activates on approved tour-detail paths", () => {

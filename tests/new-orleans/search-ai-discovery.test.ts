@@ -14,7 +14,7 @@ describe("WNO search and AI discovery", () => {
     assert.match(robots, /User-agent: PerplexityBot/);
     assert.match(robots, /User-agent: Claude-SearchBot/);
     assert.match(robots, /User-agent: Claude-User/);
-    assert.match(robots, /Sitemap: https:\/\/welcometoneworleanstours\.com\/sitemap\.xml/);
+    assert.match(robots, /Sitemap: https:\/\/(www\.)?welcometoneworleanstours\.com\/sitemap\.xml/);
 
     for (const path of ["/admin/", "/api/", "/internal/", "/dashboard/", "/preview/"]) {
       const occurrences = robots.split(`Disallow: ${path}`).length - 1;
@@ -42,7 +42,7 @@ describe("WNO search and AI discovery", () => {
     const catalog = buildPublicTourCatalog();
     assert.strictEqual(catalog.products.length, STOREFRONT_PRODUCTS.length);
     assert.strictEqual(catalog.products.length, 21);
-    assert.strictEqual(catalog.canonicalCatalogUrl, "https://welcometoneworleanstours.com/guides/tour-catalog");
+    assert.match(catalog.canonicalCatalogUrl, /^https:\/\/(www\.)?welcometoneworleanstours\.com\/guides\/tour-catalog$/);
   });
 
   test("catalog exposes canonical public identity without private commercial terms", () => {
@@ -53,7 +53,7 @@ describe("WNO search and AI discovery", () => {
     assert.ok(!serialized.toLowerCase().includes("customer"));
 
     for (const product of buildPublicTourCatalog().products) {
-      assert.ok(product.canonicalUrl.startsWith("https://welcometoneworleanstours.com/tours/"));
+      assert.match(product.canonicalUrl, /^https:\/\/(www\.)?welcometoneworleanstours\.com\/tours\//);
       assert.ok(product.operator.length > 0);
       assert.strictEqual(product.broker, "Welcome to New Orleans Tours");
       assert.strictEqual(product.bookingPlatform, "FareHarbor");

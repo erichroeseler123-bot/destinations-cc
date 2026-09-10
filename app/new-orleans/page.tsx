@@ -23,9 +23,9 @@ const categoryLinks = [
   { href: "/riverboat-cruises", label: "River Cruises", text: "Jazz, brunch & Mississippi views.", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg" },
   { href: "/plantation-tours", label: "Plantations", text: "History beneath the oaks.", image: "/images/wikimedia/originals/oak-alley-front.jpg" },
   { href: "/food-tours", label: "Food & Cocktails", text: "Taste your way through the Quarter.", image: "/images/wikimedia/originals/gumbo-dish.jpg" },
-  { href: "/ghost-tours", label: "Ghosts & Cemetery", text: "Strange stories after dark.", image: "/images/wikimedia/originals/lalaurie-mansion-1906.jpg" },
+  { href: "/ghost-tours", label: "Ghosts & Spirits", text: "Strange stories after dark.", image: "/images/wikimedia/originals/lalaurie-mansion-1906.jpg" },
   { href: "/city-tours", label: "Garden District", text: "Mansions, history & neighborhood character.", image: "/images/travel-markets/new-orleans/french-quarter-street.jpg" },
-  { href: "/riverboat-cruises", label: "Jazz / Music", text: "Build the night around New Orleans sound.", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg" },
+  { href: "/tours#combo-tours", label: "Full-Day Combos", text: "Combine the city and plantation in one day.", image: "/images/travel-markets/new-orleans/steamboat-natchez.jpg" },
 ];
 
 const editorialPicks = [
@@ -39,7 +39,7 @@ const editorialPicks = [
 
 const guideCards = [
   { href: "/guides/things-to-do-in-new-orleans-today", title: "Things to do today", copy: "Same-day picks that fit your window." },
-  { href: "/guides/tonight", title: "What’s on tonight", copy: "Live music, dinner, and evening tours." },
+  { href: "/guides/new-orleans-tours-tonight", title: "What’s on tonight", copy: "Live music, dinner, and evening tours." },
   { href: "/guides", title: "Plan by trip type", copy: "Families, couples, first timers, and cruise visitors." },
 ];
 
@@ -62,7 +62,8 @@ export default function NewOrleansHomePage() {
             <div className={visualStyles.homeDivider} aria-hidden="true"><span /><span className={visualStyles.homeFleur}>⚜</span><span /></div>
             <p className={visualStyles.homeHeroCopy}>New Orleans is better when you choose the right experience. Tell us who you’re traveling with and what kind of day you want. We’ll narrow the city down to the experiences that actually fit.</p>
             <div className={visualStyles.homeHeroActions}>
-              <Link href="/guides/things-to-do-in-new-orleans-today" data-wno-event="hero_cta_clicked" data-wno-label="Find Something Today" className="border border-[var(--nola-gold)] bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[var(--nola-ivory)]">Find Something Today</Link>
+              <Link href="/tours" data-wno-event="hero_cta_clicked" data-wno-label="Browse All Tours" className="border border-[var(--nola-gold)] bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[var(--nola-ivory)]">Browse All Tours</Link>
+              <Link href="/guides/things-to-do-in-new-orleans-today" data-wno-event="hero_cta_clicked" data-wno-label="Find Something Today" className="border border-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-ivory)] hover:bg-[var(--nola-gold)] hover:text-[#171717]">Find Something Today</Link>
               <a href="#chooser" data-wno-event="hero_cta_clicked" data-wno-label="Help Me Choose" className="border border-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-ivory)]">Help Me Choose</a>
               <a href="tel:+15044849687" data-wno-event="hero_cta_clicked" data-wno-label="Call or Text 504-484-9687" className={visualStyles.homeHeroPhoneAction}>Call or Text&nbsp; 504-484-9687</a>
             </div>
@@ -172,7 +173,7 @@ export default function NewOrleansHomePage() {
             </div>
             <div className="mt-5 flex flex-wrap gap-3 md:mt-0">
               <a href="tel:+15044849687" data-wno-event="concierge_phone_clicked" className={visualStyles.homeGoldButton}>Call or Text</a>
-              <Link href="/guides/french-quarter-orientation" data-wno-event="orientation_clicked" className={visualStyles.homeTextButton}>French Quarter Orientation</Link>
+              <Link href="/french-quarter-welcome-stop" data-wno-event="welcome_stop_clicked" className={visualStyles.homeTextButton}>French Quarter Welcome Stop</Link>
             </div>
           </div>
         </div>

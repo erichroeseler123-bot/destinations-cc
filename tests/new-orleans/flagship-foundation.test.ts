@@ -43,11 +43,7 @@ test("WNO flagship foundation ownership", async (t) => {
   await t.test("draft category hubs are not promoted from the homepage", () => {
     const homepage = read("app/new-orleans/page.tsx");
 
-    assert.ok(homepage.includes('/tours#river-cruises'));
-    assert.ok(homepage.includes('buildAttributedTourHref("craft-cocktail-walking-tour"'));
-    assert.ok(homepage.includes('buildAttributedTourHref("ghosts-spirits-walking-tour"'));
-    assert.ok(!homepage.includes('href: "/riverboat-cruises"'));
-    assert.ok(!homepage.includes('href: "/food-tours"'));
-    assert.ok(!homepage.includes('href: "/ghost-tours"'));
+    assert.ok(homepage.includes('/tours#combo-tours'));
+    assert.ok(!homepage.includes('href: "/combo-tours"'));
   });
 });

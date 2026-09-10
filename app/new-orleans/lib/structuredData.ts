@@ -244,7 +244,13 @@ export function generateCategorySchemaGraph({
           itemListElement: itemList,
         },
         hasPart: items.map((item) => ({
+          "@type": "TouristTrip",
           "@id": `${WNO_ORIGIN}/tours/${item.slug}#trip`,
+          name: item.name,
+          description: item.description,
+          url: `${WNO_ORIGIN}/tours/${item.slug}`,
+          provider: providerOrganization(resolveProviderName(item.slug, item.providerName)),
+          broker: brokerOrganization(),
         })),
       },
     ],

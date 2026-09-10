@@ -8,6 +8,9 @@
    - Mardi Gras Green: #2D5A27
 */
 
+body,
+main,
+[class*="siteShell"],
 body:has([data-wno-home-theme="black-gold-v2"]),
 body:has([data-wno-home-theme="black-gold-v2"]) [class*="siteShell"],
 body:has([data-wno-home-theme="black-gold-v2"]) main {
@@ -16,6 +19,7 @@ body:has([data-wno-home-theme="black-gold-v2"]) main {
 }
 
 /* ─── Header: Vintage Hotel / New Orleans Parlor ──────────────────────── */
+header[class*="marketHeader"],
 body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] {
   background: #FAF5EC !important;
   color: #2C1810 !important;
@@ -23,50 +27,61 @@ body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] {
   box-shadow: 0 4px 20px rgba(44, 24, 16, 0.08) !important;
 }
 
+header[class*="marketHeader"] [class*="marketBrandWelcome"],
 body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketBrandWelcome"] {
   color: #C8831A !important;
   font-family: var(--font-new-orleans-script), cursive !important;
 }
 
+header[class*="marketHeader"] [class*="marketBrandCity"],
 body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketBrandCity"] {
   color: #2C1810 !important;
   font-family: var(--font-new-orleans-display), serif !important;
   font-weight: 700 !important;
 }
 
+header[class*="marketHeader"] [class*="marketBrandTours"],
 body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketBrandTours"] {
   color: #4A1A6B !important;
   font-weight: 800 !important;
 }
 
+header[class*="marketHeader"] [class*="marketDesktopNav"] a,
 body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketDesktopNav"] a {
   color: #2C1810 !important;
   font-weight: 700 !important;
   transition: color 0.16s ease !important;
 }
 
+header[class*="marketHeader"] [class*="marketDesktopNav"] a:hover,
+header[class*="marketHeader"] [class*="marketDesktopNav"] a:focus-visible,
 body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketDesktopNav"] a:hover,
 body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketDesktopNav"] a:focus-visible {
   color: #4A1A6B !important;
 }
 
+header[class*="marketHeader"] [class*="marketDesktopNav"] a::after,
 body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketDesktopNav"] a::after {
   background: #4A1A6B !important;
 }
 
+header[class*="marketHeader"] [class*="marketPhoneLabel"],
 body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketPhoneLabel"] {
   color: #6D5546 !important;
 }
 
+header[class*="marketHeader"] [class*="marketPhoneNumber"],
 body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketPhoneNumber"] {
   color: #C8831A !important;
   font-weight: 800 !important;
 }
 
+header[class*="marketHeader"] a[class*="md:hidden"] span:last-child,
 body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] a[class*="md:hidden"] span:last-child {
   color: #C8831A !important;
 }
 
+header[class*="marketHeader"] [class*="marketMenuButton"] div,
 body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketMenuButton"] div {
   background: #2C1810 !important;
 }
@@ -134,40 +149,52 @@ body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"
 }
 
 /* ─── Footer: Light Vintage Paper & Ivory, NO Black ──────────────────── */
+footer[class*="footer"],
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] {
   background: #FAF5EC !important;
   border-top: 3px solid #C8831A !important;
   color: #2C1810 !important;
 }
 
+footer[class*="footer"] [class*="brandKicker"],
+footer[class*="footer"] [class*="label"],
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] [class*="brandKicker"],
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] [class*="label"] {
   color: #4A1A6B !important;
   font-weight: 800 !important;
 }
 
+footer[class*="footer"] h4,
+footer[class*="footer"] strong,
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] h4,
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] strong {
   color: #2C1810 !important;
   font-family: var(--font-new-orleans-display), serif !important;
 }
 
+footer[class*="footer"] p,
+footer[class*="footer"] small,
+footer[class*="footer"] [class*="copyright"],
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] p,
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] small,
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] [class*="copyright"] {
   color: #5C4638 !important;
 }
 
+footer[class*="footer"] a,
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] a {
   color: #4E3526 !important;
   transition: color 0.16s ease !important;
 }
 
+footer[class*="footer"] a:hover,
+footer[class*="footer"] a:focus-visible,
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] a:hover,
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] a:focus-visible {
   color: #4A1A6B !important;
 }
 
+footer[class*="footer"] [class*="bottom"],
 body:has([data-wno-home-theme="black-gold-v2"]) footer[class*="footer"] [class*="bottom"] {
   border-top: 1px solid #D8C7A5 !important;
 }

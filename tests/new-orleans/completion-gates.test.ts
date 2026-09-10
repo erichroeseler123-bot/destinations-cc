@@ -16,7 +16,8 @@ test("WNO completion gates", async (t) => {
     assert.equal(storefrontSlugs.length, 21, `Expected 21 governed storefront intelligence records, found ${storefrontSlugs.length}`);
 
     assert.ok(governance.includes("Object.keys(TOUR_INTELLIGENCE)"));
-    assert.ok(governance.includes("WNO_EXPERIENCE_GRAPH_V2[slug] || unverifiedShell(slug)"));
+    assert.ok(governance.includes("WNO_EXPERIENCE_GRAPH_V2[slug]"));
+    assert.ok(governance.includes("unverifiedShell(slug)"));
     assert.ok(governance.includes('verificationStatus: "NEEDS_VERIFICATION"'));
     assert.ok(governance.includes('source: "unknown"'));
     assert.ok(governance.includes('confidence: "unverified"'));

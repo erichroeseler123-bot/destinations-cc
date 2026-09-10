@@ -10,6 +10,7 @@ const usefulLinks = [
   { href: "/guides", label: "Planning Guides" },
   { href: "/guides/things-to-do-in-new-orleans-today", label: "Things To Do Today" },
   { href: "/guides/tonight", label: "Tonight" },
+  { href: "/how-we-choose", label: "How We Choose" },
   { href: "/faq", label: "FAQ" },
   { href: "/booking-help", label: "Booking Help" },
   { href: "/about", label: "About" },
@@ -77,7 +78,9 @@ export function FooterNav() {
         <div>
           <p className={footerStyles.brandKicker}>Welcome to New Orleans Tours</p>
           <h4 className={footerStyles.brandTitle}>A better way to choose your New Orleans experience.</h4>
-          <p className={footerStyles.brandCopy}>Curated experiences, timely local context, and personal planning help when you want a hand deciding what fits.</p>
+          <p className={footerStyles.brandCopy}>
+            Curated experiences, timely local context, and personal New Orleans Tour Concierge help. Schedule tour help arranged in advance; availability varies.
+          </p>
         </div>
 
         <div>
@@ -94,7 +97,7 @@ export function FooterNav() {
             <strong>504-484-9687</strong>
           </PhoneCta>
           <nav className={footerStyles.contactLinks} aria-label="Planning help links">
-            <Link href="/help-me-choose">Help Me Choose</Link>
+            <Link href="/french-quarter-welcome-stop">Schedule Tour Help</Link>
             <Link href="/compare">Compare Tours</Link>
           </nav>
         </div>

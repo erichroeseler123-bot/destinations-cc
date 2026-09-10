@@ -81,10 +81,8 @@ type Profile = {
 const PROFILES: Record<string, Profile> = {
   "city-tour-of-new-orleans": { minutes: 180, pace: "balanced", family: "good", history: "some", exposure: "covered", transportation: "included" },
   "oak-alley-or-laura-plantation-tour": { minutes: 330, pace: "balanced", family: "neutral", history: "strong", exposure: "mixed", transportation: "included" },
-  "covered-tour-boat": { minutes: 210, pace: "relaxed", family: "good", history: "low", exposure: "covered", morning: true, transportation: "available" },
+  "covered-tour-boat": { minutes: 210, pace: "relaxed", family: "good", history: "low", exposure: "covered", morning: true, transportation: "included" },
   "ragin-cajun-airboat-options": { minutes: 210, pace: "adventurous", family: "neutral", history: "low", exposure: "outdoor", morning: true, transportation: "available" },
-  "all-day-city-plantation-combo": { pace: "balanced", family: "neutral", history: "strong", exposure: "mixed", fullDay: true, transportation: "included" },
-  "covered-boat-plantation-combo": { pace: "relaxed", family: "neutral", history: "strong", exposure: "mixed", fullDay: true, transportation: "included" },
   "evening-jazz-cruise": { minutes: 150, pace: "relaxed", family: "good", history: "low", exposure: "mixed", evening: true, music: true, transportation: "self" },
   "daytime-jazz-cruise": { minutes: 150, pace: "relaxed", family: "good", history: "low", exposure: "mixed", music: true, transportation: "self" },
   "sunday-jazz-brunch-cruise": { minutes: 180, pace: "relaxed", family: "good", history: "low", exposure: "mixed", morning: true, music: true, transportation: "self" },
@@ -98,7 +96,7 @@ const PROFILES: Record<string, Profile> = {
   "cocktail-walking-tour": { minutes: 150, pace: "balanced", family: "adult", history: "some", exposure: "outdoor", evening: true, cocktails: true, transportation: "self" },
   "craft-cocktail-walking-tour": { minutes: 150, pace: "balanced", family: "adult", history: "some", exposure: "outdoor", evening: true, cocktails: true, transportation: "self" },
   "ghosts-spirits-walking-tour": { minutes: 120, pace: "balanced", family: "neutral", history: "some", exposure: "outdoor", evening: true, transportation: "self" },
-  "city-cemetery-garden-district-tour": { minutes: 180, pace: "balanced", family: "good", history: "strong", exposure: "mixed", transportation: "included" },
+  "city-cemetery-garden-district-tour": { minutes: 180, pace: "balanced", family: "good", history: "strong", exposure: "mixed", transportation: "self" },
   "city-of-new-orleans-riverboat-cruise": { minutes: 75, pace: "relaxed", family: "good", history: "low", exposure: "mixed", transportation: "self" },
 };
 
@@ -187,8 +185,12 @@ type ScoredTour = {
 };
 
 export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveRecommendationContext = {}): RecommendationResult {
-  if (!inputs.availableTime || !inputs.transportation || !inputs.groupStyle || !inputs.mixedAges || !inputs.airboatEligibility || !inputs.historicalInterest) {
+  if (!inputs.availableTime || !inputs.transportation || !inputs.groupStyle || !inputs.mixedAges || !inputs.historicalInterest) {
     return { primary: null, isNoFit: true };
+  }
+
+  if (!inputs.airboatEligibility) {
+    inputs.airboatEligibility = "No known airboat restrictions";
   }
 
   const maxMinutes = inputs.availableTime === "About 3 hours" ? 210 : inputs.availableTime === "About half a day" ? 360 : 600;
@@ -209,10 +211,16 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
     if (!eligible && truthEligibility.reason) cautions.push(truthEligibility.reason);
 
     // Hard constraints are applied before any preference scoring.
+    if (product.slug.includes("combo")) eligible = false;
     if (AIRBOAT_SLUGS.has(product.slug) && !airboatEligible) eligible = false;
     if (commitmentMinutes && commitmentMinutes > maxMinutes) eligible = false;
+    if (inputs.availableTime === "About 3 hours" && (product.category.includes("Swamp") || product.category.includes("Plantation") || product.category.includes("Airboat"))) eligible = false;
     if (inputs.availableTime !== "Most of the day" && profile.fullDay) eligible = false;
     if (tonight && (product.category.includes("Plantation") || product.category.includes("Swamp") || product.category.includes("Airboat") || profile.fullDay)) eligible = false;
+    if (inputs.groupStyle === "Fast and adventurous" && profile.pace !== "adventurous") eligible = false;
+    if (inputs.groupStyle === "Relaxed and comfortable" && profile.pace === "adventurous") eligible = false;
+    if (inputs.historicalInterest === "Strong interest" && profile.history === "low") eligible = false;
+    if (inputs.availableTime === "About 3 hours" && inputs.transportation === "We need pickup or transportation" && profile.transportation === "self") eligible = false;
 
     if (inputs.groupStyle === "Relaxed and comfortable") {
       if (profile.pace === "relaxed") { score += 5; reasons.push("Matches your preference for a relaxed, comfortable pace."); }
@@ -238,11 +246,6 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
     if (inputs.historicalInterest === "Strong interest") {
       if (profile.history === "strong") { score += 7; reasons.push("Strongly matches your interest in New Orleans and Louisiana history."); }
       if (profile.history === "low") score -= 4;
-      if (product.slug === "whitney-plantation-tour") {
-        score += 3;
-        reasons.push("Whitney is especially strong when understanding plantation history is the priority.");
-      }
-      if (product.slug === "city-cemetery-garden-district-tour") score += 2;
     } else if (inputs.historicalInterest === "Some interest" && (profile.history === "some" || profile.history === "strong")) {
       score += 3;
       reasons.push("Includes meaningful historical context without making history the only focus.");
@@ -263,7 +266,7 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
         ? "The governed time commitment fits comfortably inside the time you selected."
         : "The published activity duration fits comfortably inside the time you selected; confirm the full door-to-door commitment before booking.");
     }
-    if (inputs.availableTime === "Most of the day" && profile.fullDay && product.slug !== HELD_COMBO_SLUG) {
+    if (inputs.availableTime === "Most of the day" && (profile.fullDay || (profile.minutes && profile.minutes >= 300)) && product.slug !== HELD_COMBO_SLUG) {
       score += 5;
       reasons.push("Makes good use of the larger block of time you have available.");
     }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import RestaurantOrientationAd from "../components/RestaurantOrientationAd";
 import { ACTIVE_DINING_PARTNERS, DINING_DISCLOSURE } from "../data/diningPartners";
-import { NEW_ORLEANS_STAPLES, STAPLE_DISCLOSURE } from "../data/diningStaples";
+import { NEW_ORLEANS_STAPLES, STAPLE_DISCLOSURE as DINING_STAPLES_DISCLOSURE } from "../data/diningStaples";
 
 export const metadata: Metadata = {
   title: "Where Should We Eat in New Orleans? | Welcome to New Orleans Tours",
@@ -58,14 +58,14 @@ export default function NewOrleansFoodPage() {
             You may be in New Orleans for the city and have no idea a concert, game, comedy show, theater performance or other live event is happening while you are here. Check the live city feed before you lock in the rest of your night.
           </p>
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
-            <Link href="/guides/tonight" className="inline-flex justify-center bg-[#d4af37] text-[#151515] font-bold px-6 py-4 uppercase tracking-wider text-sm">See what’s happening tonight</Link>
-            <Link href="/guides/this-weekend" className="inline-flex justify-center border border-[#d4af37] text-[#d4af37] font-bold px-6 py-4 uppercase tracking-wider text-sm">This weekend</Link>
+            <Link href="/new-orleans/tonight" className="inline-flex justify-center bg-[#d4af37] text-[#151515] font-bold px-6 py-4 uppercase tracking-wider text-sm">See what’s happening tonight</Link>
+            <Link href="/new-orleans/this-weekend" className="inline-flex justify-center border border-[#d4af37] text-[#d4af37] font-bold px-6 py-4 uppercase tracking-wider text-sm">This weekend</Link>
           </div>
         </section>
 
         <section id="new-orleans-staples" className="mb-12 scroll-mt-24">
           <div className="mb-5">
-            <p className="text-[#d4af37] text-xs font-bold uppercase tracking-[0.18em] mb-2">New Orleans Staples</p>
+            <p className="text-[#d4af37] text-xs font-bold uppercase tracking-[0.18em] mb-2">New Orleans staples</p>
             <h2 className="font-[var(--font-accent)] text-2xl md:text-3xl font-bold">Places visitors should know about</h2>
             <p className="text-[#aaaaaa] mt-3 max-w-3xl leading-relaxed">
               These are independent editorial listings, included because they are longstanding or widely recognized New Orleans dining landmarks. They are not paid Dining Partners.
@@ -84,7 +84,7 @@ export default function NewOrleansFoodPage() {
                 <p className="text-sm text-[#cccccc] leading-relaxed mb-3"><strong>Good fit:</strong> {restaurant.fitTags.join(", ")}.</p>
                 <p className="text-xs text-[#aaaaaa] leading-relaxed mb-4">{restaurant.planningNote}</p>
                 <a href={restaurant.officialUrl} target="_blank" rel="noreferrer" className="text-[#d4af37] font-bold text-sm underline underline-offset-4">Official restaurant site</a>
-                <p className="text-[11px] text-[#777777] leading-relaxed mt-4">{STAPLE_DISCLOSURE}</p>
+                <p className="text-[11px] text-[#777777] leading-relaxed mt-4">{DINING_STAPLES_DISCLOSURE}</p>
               </article>
             ))}
           </div>
@@ -116,7 +116,7 @@ export default function NewOrleansFoodPage() {
             </div>
           ) : (
             <div className="border border-dashed border-[#3a3a3a] bg-[#181818] p-7 md:p-9">
-              <h3 className="font-bold text-lg mb-2">Partner dining recommendations are being added carefully.</h3>
+              <h3 className="font-bold text-lg mb-2">No paid Dining Partners yet.</h3>
               <p className="text-[#aaaaaa] leading-relaxed max-w-3xl">We do not publish paid restaurant recommendations until a restaurant has actually joined the program and its participation is disclosed. In the meantime, we can still help you think through timing, location, and group fit.</p>
             </div>
           )}
@@ -129,7 +129,7 @@ export default function NewOrleansFoodPage() {
             <h2 className="font-[var(--font-accent)] text-2xl font-bold mb-2">Own or manage a restaurant?</h2>
             <p className="text-[#aaaaaa] max-w-2xl">Our pilot dining-partner program has no upfront listing fee. Participating restaurants pay for confirmed seated guests we refer.</p>
           </div>
-          <Link href="/guides/restaurant-partners" className="inline-flex justify-center border border-[#d4af37] text-[#d4af37] font-bold px-6 py-4 uppercase tracking-wider text-sm whitespace-nowrap">Restaurant Partner Program</Link>
+          <Link href="/new-orleans/restaurant-partners" className="inline-flex justify-center border border-[#d4af37] text-[#d4af37] font-bold px-6 py-4 uppercase tracking-wider text-sm whitespace-nowrap">Restaurant Partner Program</Link>
         </section>
       </div>
     </main>

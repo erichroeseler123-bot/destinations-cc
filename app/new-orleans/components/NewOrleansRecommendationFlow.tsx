@@ -14,6 +14,9 @@ import {
 import visualStyles from "./newOrleansVisual.module.css";
 import { buildAttributedTourHref, FAREHARBOR_SOURCES, isApprovedProductSlug } from "../lib/fareHarborAttribution";
 import { getWnoFunnelContext, sendWnoTelemetry } from "./WnoFunnelTracker";
+import { RecommendationAnalyticsTracker } from "../lib/useRecommendationAnalytics";
+
+const analyticsTracker = new RecommendationAnalyticsTracker();
 
 const STEPS: (keyof RecommendationInputs)[] = [
   "planningWindow",

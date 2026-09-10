@@ -244,7 +244,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
       <WnoBreadcrumbs
         items={[
           { name: "Home", path: "/" },
-          { name: "New Orleans Experiences", path: "/tours" },
+          { name: "New Orleans Tours", path: "/tours" },
           { name: record.heroTitle, path: record.publicRoute },
         ]}
       />

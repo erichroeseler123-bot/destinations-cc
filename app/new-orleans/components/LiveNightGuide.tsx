@@ -144,7 +144,7 @@ export default async function LiveNightGuide({
                       <p className="mt-1 text-sm text-[#9f968c]">{event.venue_name || "New Orleans area venue"}</p>
                       <div className="mt-6 flex flex-col gap-3 border-t border-[#d4af37]/15 pt-5">
                         {event.url ? <a href={event.url} target="_blank" rel="noopener noreferrer" className="inline-flex justify-center rounded-md bg-[#d4af37] px-4 py-3 text-xs font-black uppercase tracking-wider text-[#151515]">Check tickets & details</a> : null}
-                        <Link href="/guides/where-to-eat#new-orleans-staples" className="inline-flex justify-center rounded-md border border-[#d4af37]/35 px-4 py-3 text-xs font-black uppercase tracking-wider text-[#fdfbf7] hover:border-[#d4af37]">Find dinner before it</Link>
+                        <Link href="/new-orleans/food#new-orleans-staples" className="inline-flex justify-center rounded-md border border-[#d4af37]/35 px-4 py-3 text-xs font-black uppercase tracking-wider text-[#fdfbf7] hover:border-[#d4af37]">Find dinner before it</Link>
                       </div>
                     </div>
                   </article>

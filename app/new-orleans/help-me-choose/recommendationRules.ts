@@ -124,13 +124,13 @@ export function getRecommendation(
   switch (categoryId) {
     case "swamp-airboat":
       if (preferenceId === "swamp-covered") {
-        return { primaryProductId: "swamp-bayou-tour", alternativeProductIds: ["ragincajun-covered-boat"], explanation: "A classic, relaxed covered boat tour." };
+        return { primaryProductId: "swamp-bayou-tour", alternativeProductIds: ["covered-tour-boat"], explanation: "A classic, relaxed covered boat tour." };
       }
       if (preferenceId === "swamp-small-airboat") {
-        return { primaryProductId: "small-airboat-swamp-adventure", alternativeProductIds: ["ragincajun-airboat"], explanation: "An intimate, fast-paced airboat ride." };
+        return { primaryProductId: "small-airboat-swamp-adventure", alternativeProductIds: ["ragin-cajun-airboat-options"], explanation: "An intimate, fast-paced airboat ride." };
       }
       if (preferenceId === "swamp-large-airboat") {
-        return { primaryProductId: "large-airboat-swamp-adventure", alternativeProductIds: ["ragincajun-airboat"], explanation: "A high-speed large airboat experience." };
+        return { primaryProductId: "large-airboat-swamp-adventure", alternativeProductIds: ["ragin-cajun-airboat-options"], explanation: "A high-speed large airboat experience." };
       }
       if (preferenceId === "swamp-plantation") {
         return { primaryProductId: "swamp-boat-oak-alley-combo", alternativeProductIds: ["swamp-boat-whitney-combo"], explanation: "A full day exploring both." };
@@ -139,7 +139,7 @@ export function getRecommendation(
 
     case "city-highlights":
       if (preferenceId === "city-sightseeing") {
-        return { primaryProductId: "city-cemetery-garden-district-tour", alternativeProductIds: ["southernstyle-city-tour"], explanation: "A comprehensive city overview." };
+        return { primaryProductId: "city-cemetery-garden-district-tour", alternativeProductIds: ["city-tour-of-new-orleans"], explanation: "A comprehensive city overview." };
       }
       if (preferenceId === "city-river") {
         return { primaryProductId: "evening-jazz-cruise", alternativeProductIds: ["daytime-jazz-cruise"], explanation: "Experience the Mississippi River." };
@@ -154,7 +154,7 @@ export function getRecommendation(
 
     case "plantations-history":
       if (preferenceId === "plantation-oak-alley") {
-        return { primaryProductId: "oak-alley-plantation-tour-grey-line", alternativeProductIds: ["southernstyle-plantation"], explanation: "Visit Oak Alley and compare the available historic-site options." };
+        return { primaryProductId: "oak-alley-plantation-tour-grey-line", alternativeProductIds: ["oak-alley-or-laura-plantation-tour"], explanation: "Visit Oak Alley and compare the available historic-site options." };
       }
       if (preferenceId === "plantation-whitney") {
         return { primaryProductId: "whitney-plantation-tour", explanation: "Choose an experience centered on Whitney Plantation." };

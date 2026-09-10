@@ -153,8 +153,8 @@
 /* /help-me-choose — make the reported decision section readable and visual.   */
 /* -------------------------------------------------------------------------- */
 [data-wno-surface="chooser"] > div {
-  background: #0b0a0d !important;
-  color: #fffaf0 !important;
+  background: #F5EEDB !important;
+  color: #2C1810 !important;
 }
 
 [data-wno-surface="chooser"] > div > section:first-of-type {
@@ -162,11 +162,11 @@
   isolation: isolate !important;
   overflow: hidden !important;
   background-image:
-    linear-gradient(90deg, rgba(9,8,11,.96) 0%, rgba(13,11,15,.90) 50%, rgba(13,11,15,.75) 100%),
+    linear-gradient(90deg, rgba(250,245,236,.96) 0%, rgba(245,238,219,.92) 50%, rgba(245,238,219,.85) 100%),
     url('/images/travel-markets/new-orleans/french-quarter-street.jpg') !important;
   background-size: cover !important;
   background-position: center 46% !important;
-  border-color: rgba(212,175,55,.32) !important;
+  border-color: rgba(200,131,26,.32) !important;
 }
 
 [data-wno-surface="chooser"] > div > section:first-of-type::before {
@@ -174,98 +174,95 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(circle at 88% 18%, rgba(212,175,55,.18), transparent 28%) !important;
+  background: radial-gradient(circle at 88% 18%, rgba(200,131,26,.12), transparent 28%) !important;
 }
 
 [data-wno-surface="chooser"] > div > section:first-of-type h2 {
-  color: #fff8ec !important;
-  -webkit-text-fill-color: #fff8ec !important;
-  text-shadow: 0 2px 18px rgba(0,0,0,.7) !important;
+  color: #2C1810 !important;
+  -webkit-text-fill-color: #2C1810 !important;
 }
 
 [data-wno-surface="chooser"] > div > section:first-of-type > div > div:first-child > p:last-child {
-  color: #e1d8cc !important;
-  -webkit-text-fill-color: #e1d8cc !important;
+  color: #5C4638 !important;
+  -webkit-text-fill-color: #5C4638 !important;
   opacity: 1 !important;
 }
 
 [data-wno-surface="chooser"] > div > section:first-of-type div[class*="border"] {
-  background: rgba(18,15,20,.88) !important;
-  color: #fff8ec !important;
-  border-color: rgba(212,175,55,.32) !important;
+  background: #FAF6EE !important;
+  color: #2C1810 !important;
+  border-color: rgba(200,131,26,.32) !important;
   border-radius: 10px !important;
-  box-shadow: 0 14px 34px rgba(0,0,0,.22) !important;
+  box-shadow: 0 10px 28px rgba(44,24,16,.08) !important;
 }
 
 [data-wno-surface="chooser"] > div > section:first-of-type div[class*="border"] h3 {
-  color: #fff8ec !important;
-  -webkit-text-fill-color: #fff8ec !important;
+  color: #2C1810 !important;
+  -webkit-text-fill-color: #2C1810 !important;
 }
 
 [data-wno-surface="chooser"] > div > section:first-of-type div[class*="border"] p:last-child {
-  color: #d5ccc1 !important;
-  -webkit-text-fill-color: #d5ccc1 !important;
+  color: #5C4638 !important;
+  -webkit-text-fill-color: #5C4638 !important;
   opacity: 1 !important;
 }
 
 [data-wno-surface="chooser"] > div > section:first-of-type div[class*="border"] p:first-child {
-  color: #e5b94f !important;
-  -webkit-text-fill-color: #e5b94f !important;
+  color: #C8831A !important;
+  -webkit-text-fill-color: #C8831A !important;
 }
 
-/* Keep the other intentionally dark chooser panels from inheriting the old
-   global dark-heading rule. */
 [data-wno-surface="chooser"] > div > section:last-of-type h2,
 [data-wno-surface="chooser"] > div > section:last-of-type h3,
 [data-wno-surface="chooser"] > div > section:last-of-type strong {
-  color: #fff8ec !important;
-  -webkit-text-fill-color: #fff8ec !important;
+  color: #2C1810 !important;
+  -webkit-text-fill-color: #2C1810 !important;
 }
 
 [data-wno-surface="chooser"] > div > section:last-of-type p,
 [data-wno-surface="chooser"] > div > section:last-of-type span {
-  color: #cfc5ba !important;
-  -webkit-text-fill-color: #cfc5ba !important;
+  color: #5C4638 !important;
+  -webkit-text-fill-color: #5C4638 !important;
 }
 
 /* -------------------------------------------------------------------------- */
-/* /guides/tonight — no ovals, visible photography, readable dark-night UI.    */
+/* /guides/tonight — no ovals, visible photography, readable warm parlor UI.   */
 /* -------------------------------------------------------------------------- */
 [data-wno-surface="tonight"] main {
   background:
-    radial-gradient(circle at 88% 8%, rgba(199,151,62,.11), transparent 24%),
-    linear-gradient(180deg, #0c0a0d 0%, #151117 100%) !important;
-  color: #f7efe5 !important;
+    radial-gradient(circle at 88% 8%, rgba(200,131,26,.08), transparent 24%),
+    linear-gradient(180deg, #FAF5EC 0%, #F5EEDB 100%) !important;
+  color: #2C1810 !important;
 }
 
 [data-wno-surface="tonight"] main h1,
 [data-wno-surface="tonight"] main h2,
 [data-wno-surface="tonight"] main h3,
 [data-wno-surface="tonight"] main strong {
-  color: #fff8ec !important;
-  -webkit-text-fill-color: #fff8ec !important;
+  color: #2C1810 !important;
+  -webkit-text-fill-color: #2C1810 !important;
 }
 
 [data-wno-surface="tonight"] main > div > div:first-child a {
-  background: #171319 !important;
-  color: #f3eadf !important;
-  -webkit-text-fill-color: #f3eadf !important;
-  border-color: rgba(212,175,55,.35) !important;
+  background: #FAF6EE !important;
+  color: #2C1810 !important;
+  -webkit-text-fill-color: #2C1810 !important;
+  border-color: rgba(200,131,26,.35) !important;
   border-radius: 7px !important;
 }
 
 [data-wno-surface="tonight"] [data-wno-night-dinner] {
   overflow: hidden !important;
-  background: #fffaf0 !important;
-  color: #241d18 !important;
-  border-color: rgba(184,135,47,.42) !important;
+  background: #FAF5EC !important;
+  color: #2C1810 !important;
+  border-color: rgba(200,131,26,.42) !important;
   border-radius: 14px !important;
-  box-shadow: 0 18px 42px rgba(0,0,0,.24) !important;
+  box-shadow: 0 12px 32px rgba(44,24,16,.09) !important;
 }
 
 [data-wno-surface="tonight"] [data-wno-night-dinner] > div:first-child {
-  background: #171319 !important;
-  border-color: rgba(184,135,47,.24) !important;
+  background: #F5EEDB !important;
+  border-color: rgba(200,131,26,.24) !important;
   box-shadow: none !important;
 }
 
@@ -279,26 +276,26 @@
 }
 
 [data-wno-surface="tonight"] [data-wno-night-dinner] h2 {
-  color: #241d18 !important;
-  -webkit-text-fill-color: #241d18 !important;
+  color: #2C1810 !important;
+  -webkit-text-fill-color: #2C1810 !important;
 }
 
 [data-wno-surface="tonight"] [data-wno-night-dinner] p {
-  color: #5e544b !important;
-  -webkit-text-fill-color: #5e544b !important;
+  color: #5C4638 !important;
+  -webkit-text-fill-color: #5C4638 !important;
   opacity: 1 !important;
 }
 
 [data-wno-surface="tonight"] [data-wno-night-dinner] > p:first-of-type {
-  color: #9a6e20 !important;
-  -webkit-text-fill-color: #9a6e20 !important;
+  color: #C8831A !important;
+  -webkit-text-fill-color: #C8831A !important;
 }
 
 [data-wno-surface="tonight"] [data-wno-night-dinner] a {
   border-radius: 7px !important;
-  background: #d8aa43 !important;
-  color: #17130c !important;
-  -webkit-text-fill-color: #17130c !important;
+  background: #C8831A !important;
+  color: #FAF5EC !important;
+  -webkit-text-fill-color: #FAF5EC !important;
 }
 
 [data-wno-surface="tonight"] [data-wno-night-fallback] {
@@ -309,10 +306,10 @@
   padding: 0 !important;
   overflow: hidden !important;
   border-radius: 14px !important;
-  background: #131015 !important;
-  color: #fff8ec !important;
-  border: 1px solid rgba(212,175,55,.28) !important;
-  box-shadow: 0 16px 36px rgba(0,0,0,.22) !important;
+  background: #FAF5EC !important;
+  color: #2C1810 !important;
+  border: 1px solid rgba(200,131,26,.28) !important;
+  box-shadow: 0 12px 30px rgba(44,24,16,.08) !important;
   transform: none !important;
 }
 
@@ -324,7 +321,7 @@
   overflow: hidden !important;
   border: 0 !important;
   border-radius: 0 !important;
-  background: #171319 !important;
+  background: #F5EEDB !important;
   box-shadow: none !important;
 }
 
@@ -338,32 +335,32 @@
 }
 
 [data-wno-surface="tonight"] [data-wno-night-fallback] > div:last-child {
-  background: #131015 !important;
-  color: #fff8ec !important;
+  background: #FAF5EC !important;
+  color: #2C1810 !important;
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
 }
 
 [data-wno-surface="tonight"] [data-wno-night-fallback] h3 {
-  color: #fff8ec !important;
-  -webkit-text-fill-color: #fff8ec !important;
+  color: #2C1810 !important;
+  -webkit-text-fill-color: #2C1810 !important;
 }
 
 [data-wno-surface="tonight"] [data-wno-night-fallback] p {
-  color: #cfc5ba !important;
-  -webkit-text-fill-color: #cfc5ba !important;
+  color: #5C4638 !important;
+  -webkit-text-fill-color: #5C4638 !important;
   opacity: 1 !important;
 }
 
 [data-wno-surface="tonight"] [data-wno-night-fallback] p:first-child,
 [data-wno-surface="tonight"] [data-wno-night-fallback] span:last-child {
-  color: #e4b84f !important;
-  -webkit-text-fill-color: #e4b84f !important;
+  color: #C8831A !important;
+  -webkit-text-fill-color: #C8831A !important;
 }
 
 [data-wno-surface="tonight"] main section > div:not([data-wno-night-dinner]) > div[class*="rounded"] {
-  color: #d8cec2 !important;
+  color: #5C4638 !important;
 }
 
 @media (max-width: 767px) {

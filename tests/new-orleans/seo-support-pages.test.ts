@@ -8,6 +8,7 @@ import { NextRequest } from "next/server";
 import {
   WTONOT_ORIGIN,
   WTONOT_SUPPORT_PATHS,
+  WTONOT_SUPERSEDED_SEO_PATHS,
   buildDccSitemapXml,
   buildWtonotSitemapPaths,
 } from "../../app/sitemap.xml/route";
@@ -82,7 +83,7 @@ test("New Orleans sitemap and support-page coverage", async (t) => {
     assert.strictEqual(unique.size, paths.length, "sitemap paths must be unique");
 
     for (const page of Object.values(SEO_PAGES)) {
-      if (page.status === "live" && page.isIndexable) {
+      if (page.status === "live" && page.isIndexable && !WTONOT_SUPERSEDED_SEO_PATHS.has(page.publicRoute)) {
         assert.ok(paths.includes(page.publicRoute), `missing live SEO route ${page.publicRoute}`);
       }
     }
@@ -101,13 +102,13 @@ test("New Orleans sitemap and support-page coverage", async (t) => {
 
   await t.test("sitemap XML uses the New Orleans canonical host and excludes preview/local URLs", () => {
     const xml = buildDccSitemapXml(buildWtonotSitemapPaths(), WTONOT_ORIGIN);
-    assert.match(xml, /https:\/\/welcometoneworleanstours\.com\/tours\/city-tour-of-new-orleans/);
+    assert.match(xml, /https:\/\/(www\.)?welcometoneworleanstours\.com\/tours\/city-tour-of-new-orleans/);
     assert.doesNotMatch(xml, /localhost|127\.0\.0\.1|vercel\.app|preview|\/api\/|\/admin\//i);
   });
 
   await t.test("robots references the correct sitemap without blocking render assets", () => {
     const robots = buildRobotsTxt("welcometoneworleanstours.com");
-    assert.match(robots, /Sitemap: https:\/\/welcometoneworleanstours\.com\/sitemap\.xml/);
+    assert.match(robots, /Sitemap: https:\/\/(www\.)?welcometoneworleanstours\.com\/sitemap\.xml/);
     assert.match(robots, /Disallow: \/admin\//);
     assert.match(robots, /Disallow: \/api\//);
     assert.doesNotMatch(robots, /Disallow: \/_next\//);
