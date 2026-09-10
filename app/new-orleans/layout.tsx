@@ -27,7 +27,7 @@ const newOrleansScriptFont = Pinyon_Script({
 const socialDescription = "Welcome to New Orleans Tours helps visitors choose curated local experiences with timely recommendations, concierge help, and direct booking when they are ready.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://welcometoneworleanstours.com"),
+  metadataBase: new URL("https://www.welcometoneworleanstours.com"),
   applicationName: "Welcome to New Orleans Tours",
   title: {
     default: "New Orleans Tours, Swamp Tours & River Cruises",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "New Orleans Tours, Swamp Tours & River Cruises",
     description: socialDescription,
-    url: "https://welcometoneworleanstours.com",
+    url: "https://www.welcometoneworleanstours.com",
     siteName: "Welcome to New Orleans Tours",
     type: "website",
   },

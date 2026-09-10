@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { GET as getRobotsResponse } from "../../../app/robots.txt/route";
 
-const CANONICAL_SITEMAP = "https://welcometoneworleanstours.com/sitemap.xml";
+const CANONICAL_SITEMAP = "https://www.welcometoneworleanstours.com/sitemap.xml";
 
 type RobotsRule = {
   userAgent: string;

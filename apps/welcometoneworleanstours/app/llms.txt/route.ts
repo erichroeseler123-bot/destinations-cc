@@ -1,9 +1,9 @@
 const llmsText = `# Welcome to New Orleans Tours
 
-Canonical URL: https://welcometoneworleanstours.com
+Canonical URL: https://www.welcometoneworleanstours.com
 DCC ID: dcc:site:wno-tours
 DCC contract: dcc-site-contract v1.1
-Agent contract: https://welcometoneworleanstours.com/agent.json
+Agent contract: https://www.welcometoneworleanstours.com/agent.json
 Portfolio graph: https://www.destinationcommandcenter.com/api/public/portfolio-feed
 Canonical DCC truth record: https://www.destinationcommandcenter.com/api/public/truth-feed?id=wno-tours
 Last verified: 2026-08-31

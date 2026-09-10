@@ -3,7 +3,7 @@ import SharedTourDetailPage, { generateMetadata as generateSharedMetadata } from
 import { HELD_COMBO_SLUG } from "@/app/new-orleans/data/truthPolicy";
 import HeldProductPage from "../HeldProductPage";
 
-const WNO_ORIGIN = "https://welcometoneworleanstours.com";
+const WNO_ORIGIN = "https://www.welcometoneworleanstours.com";
 
 type Props = {
   params: Promise<{ slug: string }>;

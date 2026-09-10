@@ -17,6 +17,7 @@ const ALLOWED_HOSTS = new Set([
 const PUBLIC_CRAWL_RULES = [
   "Allow: /",
   "Allow: /api/location/",
+  "Allow: /api/v2/feeds/",
   "Disallow: /admin/",
   "Disallow: /api/",
   "Disallow: /internal/",
