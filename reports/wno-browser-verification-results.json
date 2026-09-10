@@ -1,5 +1,5 @@
 {
-  "auditDate": "2026-09-10T02:08:44.272Z",
+  "auditDate": "2026-09-10T02:48:06.832Z",
   "environment": "production",
   "targetOrigin": "https://www.welcometoneworleanstours.com",
   "browser": "Headless Google Chrome (CDP)",
@@ -26,6 +26,41 @@
         "itemIdMatch": true,
         "asnMatch": true
       },
+      "renderedCheckoutVerification": {
+        "verified": true,
+        "modalVisible": true,
+        "iframeSrc": "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/calendar/?asn=welcometoneworleanstours&ref=WelcomeToNewOrleansTours&full-items=yes&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&flow=1621291&u=d5453d13-9367-492e-a54d-5a007e24c2c0&from-ssl=yes&g4=yes&cp=no&csp=no&back=https%3A%2F%2Fwww.welcometoneworleanstours.com%2Ftours%2Fevening-jazz-cruise",
+        "iframeDimensions": {
+          "width": 744,
+          "height": 475
+        },
+        "operatorMatch": true,
+        "itemMatch": true,
+        "asnMatch": true
+      },
+      "correlatedBookingOpenedEvent": {
+        "dispatchedUrl": "https://www.destinationcommandcenter.com/api/wno/telemetry",
+        "browserNetworkStatus": 200,
+        "sessionId": "wno_mtuxgaoj_8htuuuwf",
+        "payload": {
+          "eventName": "booking_opened",
+          "sourcePage": "/tours/evening-jazz-cruise",
+          "targetPath": "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621291",
+          "operatorId": "neworleanssteamboatcompany",
+          "itemId": "560825",
+          "flowId": "1621291",
+          "entrySource": "wtonot-entry-tours/evening-jazz-cruise",
+          "entryPath": "/tours/evening-jazz-cruise",
+          "sessionId": "wno_mtuxgaoj_8htuuuwf",
+          "landingPath": "/tours/evening-jazz-cruise",
+          "source": "wtonot-entry-tours/evening-jazz-cruise"
+        },
+        "collectorStatus": 200,
+        "collectorResponseBody": {
+          "ok": true
+        },
+        "accepted": true
+      },
       "sourceEvidence": {
         "verbatim_quotations": [
           "Adult (Sightseeing Cruise Only): $58.00.",
@@ -36,154 +71,6 @@
         "summaries": [
           "Sightseeing base rate $58 verified; non-refundable policy verified.",
           "Vessel assignment (Steamboat NATCHEZ vs Riverboat CITY OF NEW ORLEANS) is determined during booking/schedule; main deck ramp accessible, hurricane/top deck stairs only on both vessels."
-        ]
-      },
-      "telemetry": {
-        "sent": true,
-        "requestsCount": 10,
-        "events": [
-          {
-            "method": "POST",
-            "url": "https://www.destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "landing_viewed",
-              "sourcePage": "wtonot-entry-tours/evening-jazz-cruise",
-              "targetPath": "/tours/evening-jazz-cruise",
-              "sessionId": "wno_mtuw1kvl_upwod888",
-              "landingPath": "/tours/evening-jazz-cruise",
-              "source": "wtonot-entry-tours/evening-jazz-cruise"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://www.destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "product_opened",
-              "sourcePage": "wtonot-entry-tours/evening-jazz-cruise",
-              "targetPath": "/tours/evening-jazz-cruise",
-              "productSlug": "evening-jazz-cruise",
-              "operatorId": "neworleanssteamboatcompany",
-              "sessionId": "wno_mtuw1kvl_upwod888",
-              "landingPath": "/tours/evening-jazz-cruise",
-              "source": "wtonot-entry-tours/evening-jazz-cruise"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://www.destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "phone_cta_seen",
-              "placement": "WTONOT-HEADER-PHONE-MOBILE",
-              "pagePath": "/tours/evening-jazz-cruise",
-              "phoneNumber": "504-484-9687",
-              "sessionId": "wno_mtuw1kvl_upwod888",
-              "landingPath": "/tours/evening-jazz-cruise",
-              "source": "wtonot-entry-tours/evening-jazz-cruise"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://www.destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "phone_cta_seen",
-              "placement": "WTONOT-MOBILE-TOUR-CALL",
-              "productId": "evening-jazz-cruise",
-              "productSlug": "evening-jazz-cruise",
-              "pagePath": "/tours/evening-jazz-cruise",
-              "phoneNumber": "504-484-9687",
-              "sessionId": "wno_mtuw1kvl_upwod888",
-              "landingPath": "/tours/evening-jazz-cruise",
-              "source": "wtonot-entry-tours/evening-jazz-cruise"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "landing_viewed",
-              "sourcePage": "wtonot-entry-tours/evening-jazz-cruise",
-              "targetPath": "/tours/evening-jazz-cruise",
-              "sessionId": "wno_mtuw1kvl_upwod888",
-              "landingPath": "/tours/evening-jazz-cruise",
-              "source": "wtonot-entry-tours/evening-jazz-cruise"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "phone_cta_seen",
-              "placement": "WTONOT-HEADER-PHONE-MOBILE",
-              "pagePath": "/tours/evening-jazz-cruise",
-              "phoneNumber": "504-484-9687",
-              "sessionId": "wno_mtuw1kvl_upwod888",
-              "landingPath": "/tours/evening-jazz-cruise",
-              "source": "wtonot-entry-tours/evening-jazz-cruise"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "phone_cta_seen",
-              "placement": "WTONOT-MOBILE-TOUR-CALL",
-              "productId": "evening-jazz-cruise",
-              "productSlug": "evening-jazz-cruise",
-              "pagePath": "/tours/evening-jazz-cruise",
-              "phoneNumber": "504-484-9687",
-              "sessionId": "wno_mtuw1kvl_upwod888",
-              "landingPath": "/tours/evening-jazz-cruise",
-              "source": "wtonot-entry-tours/evening-jazz-cruise"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "product_opened",
-              "sourcePage": "wtonot-entry-tours/evening-jazz-cruise",
-              "targetPath": "/tours/evening-jazz-cruise",
-              "productSlug": "evening-jazz-cruise",
-              "operatorId": "neworleanssteamboatcompany",
-              "sessionId": "wno_mtuw1kvl_upwod888",
-              "landingPath": "/tours/evening-jazz-cruise",
-              "source": "wtonot-entry-tours/evening-jazz-cruise"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://www.destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "booking_opened",
-              "sourcePage": "/tours/evening-jazz-cruise",
-              "targetPath": "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621291",
-              "operatorId": "neworleanssteamboatcompany",
-              "itemId": "560825",
-              "flowId": "1621291",
-              "entrySource": "wtonot-entry-tours/evening-jazz-cruise",
-              "entryPath": "/tours/evening-jazz-cruise",
-              "sessionId": "wno_mtuw1kvl_upwod888",
-              "landingPath": "/tours/evening-jazz-cruise",
-              "source": "wtonot-entry-tours/evening-jazz-cruise"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "booking_opened",
-              "sourcePage": "/tours/evening-jazz-cruise",
-              "targetPath": "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/?ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&asn=welcometoneworleanstours&full-items=yes&flow=1621291",
-              "operatorId": "neworleanssteamboatcompany",
-              "itemId": "560825",
-              "flowId": "1621291",
-              "entrySource": "wtonot-entry-tours/evening-jazz-cruise",
-              "entryPath": "/tours/evening-jazz-cruise",
-              "sessionId": "wno_mtuw1kvl_upwod888",
-              "landingPath": "/tours/evening-jazz-cruise",
-              "source": "wtonot-entry-tours/evening-jazz-cruise"
-            }
-          }
         ]
       },
       "success": true
@@ -210,6 +97,41 @@
         "itemIdMatch": true,
         "asnMatch": true
       },
+      "renderedCheckoutVerification": {
+        "verified": true,
+        "modalVisible": true,
+        "iframeSrc": "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/calendar/?asn=aktourcenter&ref=wtonot-detail-covered&full-items=yes&flow=392449&u=d5453d13-9367-492e-a54d-5a007e24c2c0&from-ssl=yes&g4=yes&cp=no&csp=no&back=https%3A%2F%2Fwww.welcometoneworleanstours.com%2Ftours%2Fcovered-tour-boat",
+        "iframeDimensions": {
+          "width": 744,
+          "height": 475
+        },
+        "operatorMatch": true,
+        "itemMatch": true,
+        "asnMatch": true
+      },
+      "correlatedBookingOpenedEvent": {
+        "dispatchedUrl": "https://www.destinationcommandcenter.com/api/wno/telemetry",
+        "browserNetworkStatus": 200,
+        "sessionId": "wno_mtuxgeti_ay90sa6p",
+        "payload": {
+          "eventName": "booking_opened",
+          "sourcePage": "/tours/covered-tour-boat",
+          "targetPath": "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/?asn=aktourcenter&flow=392449&full-items=yes",
+          "operatorId": "ragincajuntours",
+          "itemId": "590176",
+          "flowId": "392449",
+          "entrySource": "wtonot-entry-tours/covered-tour-boat",
+          "entryPath": "/tours/covered-tour-boat",
+          "sessionId": "wno_mtuxgeti_ay90sa6p",
+          "landingPath": "/tours/covered-tour-boat",
+          "source": "wtonot-entry-tours/covered-tour-boat"
+        },
+        "collectorStatus": 200,
+        "collectorResponseBody": {
+          "ok": true
+        },
+        "accepted": true
+      },
       "sourceEvidence": {
         "verbatim_quotations": [
           "Our cancellation policy is a full refund up to 48 hours before tour time. Inside of 48 hours, there are no refunds.",
@@ -219,154 +141,6 @@
           "Base rate $35 self-arrive and $60 with shuttle verified on published rate card; 48-hour cancellation verified.",
           "Standalone covered boat pickup and departure times are subject to seasonal operator confirmation in checkout; the cited 8:30 AM pickup belongs to the boat-and-plantation combination.",
           "Launch address and hotel pickup details are unconfirmed in FareHarbor item 590176 and require operator confirmation."
-        ]
-      },
-      "telemetry": {
-        "sent": true,
-        "requestsCount": 10,
-        "events": [
-          {
-            "method": "POST",
-            "url": "https://www.destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "landing_viewed",
-              "sourcePage": "wtonot-entry-tours/covered-tour-boat",
-              "targetPath": "/tours/covered-tour-boat",
-              "sessionId": "wno_mtuw1pz0_qxy1q8ni",
-              "landingPath": "/tours/covered-tour-boat",
-              "source": "wtonot-entry-tours/covered-tour-boat"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://www.destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "product_opened",
-              "sourcePage": "wtonot-entry-tours/covered-tour-boat",
-              "targetPath": "/tours/covered-tour-boat",
-              "productSlug": "ragincajun-covered-boat",
-              "operatorId": "ragincajuntours",
-              "sessionId": "wno_mtuw1pz0_qxy1q8ni",
-              "landingPath": "/tours/covered-tour-boat",
-              "source": "wtonot-entry-tours/covered-tour-boat"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://www.destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "phone_cta_seen",
-              "placement": "WTONOT-HEADER-PHONE-MOBILE",
-              "pagePath": "/tours/covered-tour-boat",
-              "phoneNumber": "504-484-9687",
-              "sessionId": "wno_mtuw1pz0_qxy1q8ni",
-              "landingPath": "/tours/covered-tour-boat",
-              "source": "wtonot-entry-tours/covered-tour-boat"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "landing_viewed",
-              "sourcePage": "wtonot-entry-tours/covered-tour-boat",
-              "targetPath": "/tours/covered-tour-boat",
-              "sessionId": "wno_mtuw1pz0_qxy1q8ni",
-              "landingPath": "/tours/covered-tour-boat",
-              "source": "wtonot-entry-tours/covered-tour-boat"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://www.destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "phone_cta_seen",
-              "placement": "WTONOT-MOBILE-TOUR-CALL",
-              "productId": "ragincajun-covered-boat",
-              "productSlug": "covered-tour-boat",
-              "pagePath": "/tours/covered-tour-boat",
-              "phoneNumber": "504-484-9687",
-              "sessionId": "wno_mtuw1pz0_qxy1q8ni",
-              "landingPath": "/tours/covered-tour-boat",
-              "source": "wtonot-entry-tours/covered-tour-boat"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "phone_cta_seen",
-              "placement": "WTONOT-HEADER-PHONE-MOBILE",
-              "pagePath": "/tours/covered-tour-boat",
-              "phoneNumber": "504-484-9687",
-              "sessionId": "wno_mtuw1pz0_qxy1q8ni",
-              "landingPath": "/tours/covered-tour-boat",
-              "source": "wtonot-entry-tours/covered-tour-boat"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "product_opened",
-              "sourcePage": "wtonot-entry-tours/covered-tour-boat",
-              "targetPath": "/tours/covered-tour-boat",
-              "productSlug": "ragincajun-covered-boat",
-              "operatorId": "ragincajuntours",
-              "sessionId": "wno_mtuw1pz0_qxy1q8ni",
-              "landingPath": "/tours/covered-tour-boat",
-              "source": "wtonot-entry-tours/covered-tour-boat"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "phone_cta_seen",
-              "placement": "WTONOT-MOBILE-TOUR-CALL",
-              "productId": "ragincajun-covered-boat",
-              "productSlug": "covered-tour-boat",
-              "pagePath": "/tours/covered-tour-boat",
-              "phoneNumber": "504-484-9687",
-              "sessionId": "wno_mtuw1pz0_qxy1q8ni",
-              "landingPath": "/tours/covered-tour-boat",
-              "source": "wtonot-entry-tours/covered-tour-boat"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://www.destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "booking_opened",
-              "sourcePage": "/tours/covered-tour-boat",
-              "targetPath": "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/?asn=aktourcenter&flow=392449&full-items=yes",
-              "operatorId": "ragincajuntours",
-              "itemId": "590176",
-              "flowId": "392449",
-              "entrySource": "wtonot-entry-tours/covered-tour-boat",
-              "entryPath": "/tours/covered-tour-boat",
-              "sessionId": "wno_mtuw1pz0_qxy1q8ni",
-              "landingPath": "/tours/covered-tour-boat",
-              "source": "wtonot-entry-tours/covered-tour-boat"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "booking_opened",
-              "sourcePage": "/tours/covered-tour-boat",
-              "targetPath": "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/?asn=aktourcenter&flow=392449&full-items=yes",
-              "operatorId": "ragincajuntours",
-              "itemId": "590176",
-              "flowId": "392449",
-              "entrySource": "wtonot-entry-tours/covered-tour-boat",
-              "entryPath": "/tours/covered-tour-boat",
-              "sessionId": "wno_mtuw1pz0_qxy1q8ni",
-              "landingPath": "/tours/covered-tour-boat",
-              "source": "wtonot-entry-tours/covered-tour-boat"
-            }
-          }
         ]
       },
       "success": true
@@ -393,6 +167,41 @@
         "itemIdMatch": true,
         "asnMatch": true
       },
+      "renderedCheckoutVerification": {
+        "verified": true,
+        "modalVisible": true,
+        "iframeSrc": "https://fareharbor.com/embeds/book/southernstyletours/items/83002/calendar/?asn=aktourcenter&ref=wtonot-detail-plantation&full-items=yes&flow=4344&u=d5453d13-9367-492e-a54d-5a007e24c2c0&from-ssl=yes&g4=yes&cp=no&csp=no&back=https%3A%2F%2Fwww.welcometoneworleanstours.com%2Ftours%2Foak-alley-or-laura-plantation-tour",
+        "iframeDimensions": {
+          "width": 744,
+          "height": 475
+        },
+        "operatorMatch": true,
+        "itemMatch": true,
+        "asnMatch": true
+      },
+      "correlatedBookingOpenedEvent": {
+        "dispatchedUrl": "https://www.destinationcommandcenter.com/api/wno/telemetry",
+        "browserNetworkStatus": 200,
+        "sessionId": "wno_mtuxgj10_t81gjagy",
+        "payload": {
+          "eventName": "booking_opened",
+          "sourcePage": "/tours/oak-alley-or-laura-plantation-tour",
+          "targetPath": "https://fareharbor.com/embeds/book/southernstyletours/items/83002/?asn=aktourcenter&flow=4344&full-items=yes",
+          "operatorId": "southernstyletours",
+          "itemId": "83002",
+          "flowId": "4344",
+          "entrySource": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour",
+          "entryPath": "/tours/oak-alley-or-laura-plantation-tour",
+          "sessionId": "wno_mtuxgj10_t81gjagy",
+          "landingPath": "/tours/oak-alley-or-laura-plantation-tour",
+          "source": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour"
+        },
+        "collectorStatus": 200,
+        "collectorResponseBody": {
+          "ok": true
+        },
+        "accepted": true
+      },
       "sourceEvidence": {
         "verbatim_quotations": [
           "We pick up at most hotels in the uptown, downtown and French Quarter area. Be ready at 8:00 am. Pick up time is between 8:00 am and 8:30 am"
@@ -400,154 +209,6 @@
         "summaries": [
           "Storefront tour offering alternative destinations (Oak Alley or Laura Plantation) determined during booking.",
           "Base rate, departure point, and cancellation policy require checkout confirmation."
-        ]
-      },
-      "telemetry": {
-        "sent": true,
-        "requestsCount": 10,
-        "events": [
-          {
-            "method": "POST",
-            "url": "https://www.destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "landing_viewed",
-              "sourcePage": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour",
-              "targetPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "sessionId": "wno_mtuw1v4o_772r5lug",
-              "landingPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "source": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://www.destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "product_opened",
-              "sourcePage": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour",
-              "targetPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "productSlug": "southernstyle-plantation",
-              "operatorId": "southernstyletours",
-              "sessionId": "wno_mtuw1v4o_772r5lug",
-              "landingPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "source": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://www.destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "phone_cta_seen",
-              "placement": "WTONOT-HEADER-PHONE-MOBILE",
-              "pagePath": "/tours/oak-alley-or-laura-plantation-tour",
-              "phoneNumber": "504-484-9687",
-              "sessionId": "wno_mtuw1v4o_772r5lug",
-              "landingPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "source": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://www.destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "phone_cta_seen",
-              "placement": "WTONOT-MOBILE-TOUR-CALL",
-              "productId": "southernstyle-plantation",
-              "productSlug": "oak-alley-or-laura-plantation-tour",
-              "pagePath": "/tours/oak-alley-or-laura-plantation-tour",
-              "phoneNumber": "504-484-9687",
-              "sessionId": "wno_mtuw1v4o_772r5lug",
-              "landingPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "source": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "product_opened",
-              "sourcePage": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour",
-              "targetPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "productSlug": "southernstyle-plantation",
-              "operatorId": "southernstyletours",
-              "sessionId": "wno_mtuw1v4o_772r5lug",
-              "landingPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "source": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "phone_cta_seen",
-              "placement": "WTONOT-MOBILE-TOUR-CALL",
-              "productId": "southernstyle-plantation",
-              "productSlug": "oak-alley-or-laura-plantation-tour",
-              "pagePath": "/tours/oak-alley-or-laura-plantation-tour",
-              "phoneNumber": "504-484-9687",
-              "sessionId": "wno_mtuw1v4o_772r5lug",
-              "landingPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "source": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "landing_viewed",
-              "sourcePage": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour",
-              "targetPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "sessionId": "wno_mtuw1v4o_772r5lug",
-              "landingPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "source": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "phone_cta_seen",
-              "placement": "WTONOT-HEADER-PHONE-MOBILE",
-              "pagePath": "/tours/oak-alley-or-laura-plantation-tour",
-              "phoneNumber": "504-484-9687",
-              "sessionId": "wno_mtuw1v4o_772r5lug",
-              "landingPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "source": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://www.destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "booking_opened",
-              "sourcePage": "/tours/oak-alley-or-laura-plantation-tour",
-              "targetPath": "https://fareharbor.com/embeds/book/southernstyletours/items/83002/?asn=aktourcenter&flow=4344&full-items=yes",
-              "operatorId": "southernstyletours",
-              "itemId": "83002",
-              "flowId": "4344",
-              "entrySource": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour",
-              "entryPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "sessionId": "wno_mtuw1v4o_772r5lug",
-              "landingPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "source": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour"
-            }
-          },
-          {
-            "method": "POST",
-            "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-            "payload": {
-              "eventName": "booking_opened",
-              "sourcePage": "/tours/oak-alley-or-laura-plantation-tour",
-              "targetPath": "https://fareharbor.com/embeds/book/southernstyletours/items/83002/?asn=aktourcenter&flow=4344&full-items=yes",
-              "operatorId": "southernstyletours",
-              "itemId": "83002",
-              "flowId": "4344",
-              "entrySource": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour",
-              "entryPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "sessionId": "wno_mtuw1v4o_772r5lug",
-              "landingPath": "/tours/oak-alley-or-laura-plantation-tour",
-              "source": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour"
-            }
-          }
         ]
       },
       "success": true
