@@ -44,6 +44,7 @@ export interface WnoEvidenceEntry {
       meeting_or_launch_point?: string;
       attraction_destinations?: string[];
       destination_selection_mode?: "single" | "determined_during_booking";
+      summary?: string;
       source_basis: "live_operator_page" | "fareharbor_item" | "storefront_catalog";
     };
     schedule?: {
@@ -113,10 +114,10 @@ export const WNO_FACTUAL_EVIDENCE_REGISTER: Record<string, WnoEvidenceEntry> = {
         source_basis: "live_operator_page",
       },
       accessibility: {
-        status: "verified",
-        wheelchair_accessible: "main_deck_only",
-        accessibility_note: "Main deck and dining room accessible via boarding ramps; top deck accessible by marine stairs only per operator FAQ.",
-        summary: "The riverboat is handicap accessible via boarding ramp to main deck and dining rooms; however, access to top/hurricane deck is by stairs only per operator FAQ (https://www.steamboatnatchez.com/about/frequently-asked-questions.html). Boarding ramps accommodate standard wheelchairs; electric wheelchairs accommodated if within ramp width dimensions.",
+        status: "requires_operator_confirmation",
+        wheelchair_accessible: "requires_operator_confirmation",
+        accessibility_note: "Cruises operate on either Steamboat NATCHEZ or Riverboat CITY OF NEW ORLEANS depending on vessel schedule. On both vessels, boarding ramps provide wheelchair access to the main deck and dining rooms, but hurricane/top deck access is by marine stairs only. Vessel assignment is confirmed during booking.",
+        summary: "Vessel assignment (Steamboat NATCHEZ vs Riverboat CITY OF NEW ORLEANS) is determined during booking or operational rotation. Both vessels accommodate wheelchairs via boarding ramps on the main deck and interior dining areas; hurricane/top decks on both vessels are accessible strictly by marine stairs per operator FAQ.",
         source_basis: "live_operator_page",
       },
     },
@@ -130,6 +131,7 @@ export const WNO_FACTUAL_EVIDENCE_REGISTER: Record<string, WnoEvidenceEntry> = {
     paraphrased_summaries: [
       "Sightseeing-only ticket confirmed at $58 adult rate on operator pricing table observed September 9, 2026.",
       "Cancellation is strictly non-refundable per FareHarbor passenger contract terms for Item 560825.",
+      "Cruises rotate between Steamboat NATCHEZ and Riverboat CITY OF NEW ORLEANS; deck accessibility depends on vessel assignment with main deck ramp access and stair-only top deck access on both.",
     ],
   },
 
@@ -167,17 +169,18 @@ export const WNO_FACTUAL_EVIDENCE_REGISTER: Record<string, WnoEvidenceEntry> = {
         source_basis: "fareharbor_item",
       },
       location: {
-        status: "verified",
-        meeting_or_launch_point: "1265 LA-3127, Luling, LA 70070",
-        attraction_destinations: ["dcc:poi:nola:ragin-cajun-slip-luling"],
+        status: "requires_operator_confirmation",
+        meeting_or_launch_point: undefined, // Unconfirmed in FareHarbor item 590176
+        attraction_destinations: [],
         destination_selection_mode: "single",
-        source_basis: "live_operator_page",
+        summary: "Launch address and hotel pickup details are not published in FareHarbor item 590176 and require operator confirmation before departure.",
+        source_basis: "fareharbor_item",
       },
       schedule: {
         status: "requires_operator_confirmation",
         time_zone: "America/Chicago",
-        summary: "Operator page lists morning hotel pickup at 8:30 AM; exact boat launch times vary seasonally and require checkout confirmation.",
-        source_basis: "live_operator_page",
+        summary: "Standalone covered-boat pickup and departure times are subject to seasonal operator confirmation in checkout; the cited 8:30 AM pickup belongs to the boat-and-plantation combination.",
+        source_basis: "fareharbor_item",
       },
       accessibility: {
         status: "requires_operator_confirmation",

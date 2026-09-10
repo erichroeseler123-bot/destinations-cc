@@ -399,22 +399,24 @@ test("WNO Pilot: 3-Offering Factual Verification", async (t) => {
     assert.equal(pol.verification_status, "verified");
     assert.equal(pol.cancellation.refund_eligibility, "non_refundable");
     assert.equal(pol.cancellation.full_refund_notice_hours, undefined); // Reserved strictly for full_refund_with_notice
-    assert.equal(pol.restrictions.wheelchair_accessible, "main_deck_only");
+    assert.equal(pol.restrictions.wheelchair_accessible, "requires_operator_confirmation");
     assert.ok(pol.restrictions.accessibility_note);
     assert.equal(pol.weather_guarantee.is_guaranteed, false);
     assert.equal(pol.weather_guarantee.compensation_type, "none");
   });
 
-  await t.test("2. Covered Tour Boat has verified rates, verified launch location, 48h cancellation, and unknown schedule", () => {
+  await t.test("2. Covered Tour Boat has verified rates, unconfirmed meeting point in tariff, 48h cancellation, and unknown schedule", () => {
     const sched = schedules.find((s) => s.sku === "wno-covered-tour-boat")!;
     // Field-level truth: schedule is unknown/requires confirmation, even though price is verified
     assert.equal(sched.verification_status, "requires_operator_confirmation");
     assert.equal(sched.daily_departures.length, 0);
     assert.ok(sched.schedule_note);
+    assert.ok(sched.schedule_note.includes("boat-and-plantation"));
 
     const prod = products.find((p) => p.sku === "wno-covered-tour-boat")!;
-    assert.equal(prod.locations.meeting_hub, "dcc:poi:nola:ragin-cajun-slip-luling");
-    assert.equal(prod.locations.pickup_mode, "optional_add_on");
+    // Launch address is unconfirmed in FareHarbor Item 590176
+    assert.equal(prod.locations.meeting_hub, undefined);
+    assert.equal(prod.locations.pickup_mode, "requires_operator_confirmation");
 
     const price = pricing.find((p) => p.sku === "wno-covered-tour-boat")!;
     assert.equal(price.verification_status, "verified");

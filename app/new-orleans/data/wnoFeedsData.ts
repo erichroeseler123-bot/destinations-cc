@@ -201,9 +201,9 @@ export function getWnoProductsFeed(): DccProductItem[] {
       attractionHub = "dcc:poi:nola:toulouse-street-wharf";
       pickupMode = "self_arrive_only";
     } else if (p.slug === "covered-tour-boat") {
-      meetingHub = "dcc:poi:nola:ragin-cajun-slip-luling";
-      attractionHub = "dcc:poi:nola:ragin-cajun-slip-luling";
-      pickupMode = "optional_add_on";
+      meetingHub = undefined;
+      attractionHub = undefined;
+      pickupMode = "requires_operator_confirmation";
     } else if (p.slug === "oak-alley-or-laura-plantation-tour") {
       // Departure point is unconfirmed across multiple hotel corridors; kept unknown
       meetingHub = undefined;
@@ -330,8 +330,8 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
           compensation_type: "none",
         },
         restrictions: {
-          wheelchair_accessible: "main_deck_only",
-          accessibility_note: "The riverboat is handicap accessible via boarding ramp to main deck and dining rooms; top deck access is by marine stairs only per operator FAQ.",
+          wheelchair_accessible: "requires_operator_confirmation",
+          accessibility_note: "Cruises operate on either Steamboat NATCHEZ or Riverboat CITY OF NEW ORLEANS depending on vessel schedule. On both vessels, boarding ramps provide wheelchair access to the main deck and dining rooms, but hurricane/top deck access is by marine stairs only. Vessel assignment is confirmed during booking.",
           pregnancy_allowed: true,
         },
         provenance: STEAMBOAT_PROVENANCE,
@@ -447,7 +447,7 @@ export function getWnoOperatingWindowsFeed(): DccScheduleItem[] {
         verification_status: "requires_operator_confirmation",
         daily_departures: [],
         known_blackout_dates: [],
-        schedule_note: "Morning hotel pickup is listed at 8:30 AM; exact boat launch times vary seasonally and are confirmed in operator checkout.",
+        schedule_note: "Standalone covered-boat pickup and departure times are subject to seasonal operator confirmation in checkout; the cited 8:30 AM pickup belongs to the boat-and-plantation combination.",
         provenance: RAGIN_CAJUN_PROVENANCE,
       };
     }
