@@ -1,9 +1,15 @@
 /**
- * Stage 2 Machine-Readable Contract and Runtime Validator
+ * Stage 2 Machine-Readable Contract and Runtime Validator (Corrected Reality-First Spec)
  * 
  * Defines and validates the lightweight /agent.json directory and
- * read-only feeds (products, locations, pricing, policies, operating windows)
- * with strict provenance, date-ordering, and security invariants.
+ * read-only feeds (products, locations, pricing, policies, operating windows).
+ * 
+ * Invariants:
+ * 1. Contains only verified facts; unsupported claims MUST be declared as "requires_operator_confirmation".
+ * 2. Distinguishes meeting points from destination attractions.
+ * 3. Mandates time zones on operating schedules.
+ * 4. Enforces strict provenance (source, verified_by, valid date ordering last_verified <= review_by).
+ * 5. Rejects insecure URLs, script injection, negative prices, and site ID mismatches.
  */
 
 export interface ValidationResult {
@@ -56,11 +62,9 @@ export interface DccAgentDirectoryV2 {
     operating_windows: string;
     truth_record: string;
   };
-  actions: {
-    quote?: string;
-    availability?: string;
-    booking_handoff?: string;
-    share?: string;
+  capabilities: {
+    catalog_navigation: string;
+    booking_handoff_mode: "client_navigation";
   };
   metadata: {
     last_generated: string;
@@ -81,8 +85,9 @@ export interface DccProductItem {
     company_shortname: string;
   };
   locations: {
-    primary_hub: `dcc:poi:${string}`;
-    pickup_available: boolean;
+    meeting_hub: `dcc:poi:${string}`;
+    attraction_hub?: `dcc:poi:${string}`;
+    pickup_mode: "included" | "optional_add_on" | "self_arrive_only" | "requires_operator_confirmation";
   };
   canonical_page_url: string;
 }
@@ -111,32 +116,36 @@ export interface DccPriceItem {
   sku: string;
   dcc_product_id: `dcc:product:${string}`;
   currency: "USD";
+  verification_status: "verified" | "requires_operator_confirmation";
   pricing_structure: "per_person" | "per_vehicle" | "per_group";
-  base_rate: number;
+  base_rate?: number; // Only present when verification_status === "verified"
   rate_with_transportation?: number;
   mandatory_fees: Array<{
     description: string;
     amount: number;
   }>;
+  confirmation_note?: string;
   provenance: DccProvenance;
 }
 
 export interface DccPolicyItem {
   sku: string;
   dcc_product_id: `dcc:product:${string}`;
+  verification_status: "verified" | "requires_operator_confirmation";
   cancellation: {
-    full_refund_notice_hours: number;
-    cancellation_method: "phone_or_email" | "self_service_link";
+    full_refund_notice_hours?: number;
+    cancellation_method: "phone_or_email" | "self_service_link" | "requires_operator_confirmation";
+    note?: string;
   };
   weather_guarantee: {
     is_guaranteed: boolean;
     policy_summary: string;
-    compensation_type: "full_refund_or_reschedule" | "reschedule_only" | "none";
+    compensation_type: "full_refund_or_reschedule" | "reschedule_only" | "none" | "requires_operator_confirmation";
   };
   restrictions: {
     minimum_age?: number;
-    pregnancy_allowed: boolean;
-    wheelchair_accessible: "full" | "foldable_only" | "not_accessible";
+    pregnancy_allowed?: boolean;
+    wheelchair_accessible: "full" | "foldable_only" | "not_accessible" | "requires_operator_confirmation";
   };
   provenance: DccProvenance;
 }
@@ -144,6 +153,8 @@ export interface DccPolicyItem {
 export interface DccScheduleItem {
   sku: string;
   dcc_product_id: `dcc:product:${string}`;
+  time_zone: string; // e.g. "America/Chicago"
+  verification_status: "verified" | "requires_operator_confirmation";
   season: {
     start_date: string; // YYYY-MM-DD
     end_date: string;   // YYYY-MM-DD
@@ -152,8 +163,10 @@ export interface DccScheduleItem {
   daily_departures: Array<{
     departure_time_local: string; // HH:MM (24h)
     duration_minutes: number;
+    description?: string;
   }>;
   known_blackout_dates: string[];
+  schedule_note?: string;
   provenance: DccProvenance;
 }
 
@@ -228,7 +241,7 @@ export function validateProvenance(prov: unknown, fieldPrefix = "provenance"): s
 // Schema Validators
 // ---------------------------------------------------------------------------
 
-export function validateAgentDirectory(data: unknown): ValidationResult {
+export function validateAgentDirectory(data: unknown, expectedSiteId = "dcc:site:wno-tours"): ValidationResult {
   const errors: string[] = [];
   if (!data || typeof data !== "object") {
     return { valid: false, errors: ["Data must be a non-null object"] };
@@ -237,7 +250,9 @@ export function validateAgentDirectory(data: unknown): ValidationResult {
 
   if (d.spec !== "dcc-agent-directory") errors.push("spec must be 'dcc-agent-directory'");
   if (d.version !== "2.0") errors.push("version must be '2.0'");
-  if (!d.dcc_id || !isValidDccId(d.dcc_id, "dcc:site")) errors.push("dcc_id must match 'dcc:site:*'");
+  if (!d.dcc_id || d.dcc_id !== expectedSiteId) {
+    errors.push(`dcc_id must match expected canonical site ID '${expectedSiteId}'`);
+  }
   if (!d.name || typeof d.name !== "string") errors.push("name is required");
   if (!d.canonical_url || !isValidHttpUrl(d.canonical_url)) errors.push("canonical_url must be an https:// URL");
 
@@ -280,19 +295,22 @@ export function validateAgentDirectory(data: unknown): ValidationResult {
     }
   }
 
-  // Actions
-  if (d.actions) {
-    for (const [actionName, actionUrl] of Object.entries(d.actions)) {
-      if (actionUrl && !isValidHttpUrl(actionUrl, true)) {
-        errors.push(`actions.${actionName} must be a valid https:// URL or relative path`);
-      }
+  // Capabilities
+  if (!d.capabilities || typeof d.capabilities !== "object") {
+    errors.push("capabilities object is required");
+  } else {
+    if (d.capabilities.booking_handoff_mode !== "client_navigation") {
+      errors.push("capabilities.booking_handoff_mode must be 'client_navigation'");
+    }
+    if (!isValidHttpUrl(d.capabilities.catalog_navigation, true)) {
+      errors.push("capabilities.catalog_navigation must be a valid https:// URL or relative path");
     }
   }
 
   return { valid: errors.length === 0, errors };
 }
 
-export function validatePricingFeed(items: unknown[]): ValidationResult {
+export function validatePricingFeed(items: unknown[], expectedSiteId = "dcc:site:wno-tours"): ValidationResult {
   const errors: string[] = [];
   if (!Array.isArray(items)) {
     return { valid: false, errors: ["Pricing feed must be an array of pricing items"] };
@@ -300,20 +318,29 @@ export function validatePricingFeed(items: unknown[]): ValidationResult {
 
   items.forEach((item, idx) => {
     const p = item as Partial<DccPriceItem>;
-    const prefix = `Item[${idx}] (${p.sku || "unknown"})`;
+    const prefix = `PriceItem[${idx}] (${p.sku || "unknown"})`;
 
     if (!p.sku || typeof p.sku !== "string") errors.push(`${prefix}: sku is required`);
     if (!p.dcc_product_id || !isValidDccId(p.dcc_product_id, "dcc:product")) {
       errors.push(`${prefix}: dcc_product_id must match 'dcc:product:*'`);
     }
     if (p.currency !== "USD") errors.push(`${prefix}: currency must be 'USD'`);
-    if (typeof p.base_rate !== "number" || isNaN(p.base_rate) || p.base_rate <= 0) {
-      errors.push(`${prefix}: base_rate must be a positive number`);
-    }
-    if (p.rate_with_transportation !== undefined) {
-      if (typeof p.rate_with_transportation !== "number" || p.rate_with_transportation < (p.base_rate || 0)) {
-        errors.push(`${prefix}: rate_with_transportation must be >= base_rate`);
+
+    if (p.verification_status === "verified") {
+      if (typeof p.base_rate !== "number" || isNaN(p.base_rate) || p.base_rate <= 0) {
+        errors.push(`${prefix}: verified item must have a positive base_rate number`);
       }
+      if (p.rate_with_transportation !== undefined) {
+        if (typeof p.rate_with_transportation !== "number" || p.rate_with_transportation < (p.base_rate || 0)) {
+          errors.push(`${prefix}: rate_with_transportation must be >= base_rate`);
+        }
+      }
+    } else if (p.verification_status === "requires_operator_confirmation") {
+      if (!p.confirmation_note) {
+        errors.push(`${prefix}: requires_operator_confirmation items must include a confirmation_note`);
+      }
+    } else {
+      errors.push(`${prefix}: verification_status must be 'verified' or 'requires_operator_confirmation'`);
     }
 
     const provErrors = validateProvenance(p.provenance, `${prefix}.provenance`);
@@ -331,18 +358,27 @@ export function validatePolicyFeed(items: unknown[]): ValidationResult {
 
   items.forEach((item, idx) => {
     const pol = item as Partial<DccPolicyItem>;
-    const prefix = `Policy[${idx}] (${pol.sku || "unknown"})`;
+    const prefix = `PolicyItem[${idx}] (${pol.sku || "unknown"})`;
 
     if (!pol.sku) errors.push(`${prefix}: sku is required`);
     if (!pol.dcc_product_id || !isValidDccId(pol.dcc_product_id, "dcc:product")) {
       errors.push(`${prefix}: dcc_product_id must match 'dcc:product:*'`);
     }
 
-    if (!pol.cancellation || typeof pol.cancellation.full_refund_notice_hours !== "number" || pol.cancellation.full_refund_notice_hours < 0) {
-      errors.push(`${prefix}: cancellation.full_refund_notice_hours must be a non-negative number`);
-    }
-    if (!pol.weather_guarantee || typeof pol.weather_guarantee.policy_summary !== "string" || !pol.weather_guarantee.policy_summary.trim()) {
-      errors.push(`${prefix}: weather_guarantee.policy_summary is required`);
+    if (pol.verification_status === "verified") {
+      if (typeof pol.cancellation?.full_refund_notice_hours !== "number" || pol.cancellation.full_refund_notice_hours < 0) {
+        errors.push(`${prefix}: verified cancellation.full_refund_notice_hours must be a non-negative number`);
+      }
+      if (!pol.weather_guarantee?.policy_summary) {
+        errors.push(`${prefix}: verified weather_guarantee.policy_summary is required`);
+      }
+    } else if (pol.verification_status === "requires_operator_confirmation") {
+      // Must not make unsupported affirmative guarantee claims
+      if (pol.weather_guarantee?.is_guaranteed && pol.weather_guarantee.compensation_type !== "requires_operator_confirmation") {
+        errors.push(`${prefix}: unverified policy must not claim affirmative weather guarantee without operator verification`);
+      }
+    } else {
+      errors.push(`${prefix}: verification_status must be 'verified' or 'requires_operator_confirmation'`);
     }
 
     const provErrors = validateProvenance(pol.provenance, `${prefix}.provenance`);
@@ -360,7 +396,7 @@ export function validateProductFeed(items: unknown[]): ValidationResult {
 
   items.forEach((item, idx) => {
     const prod = item as Partial<DccProductItem>;
-    const prefix = `Product[${idx}] (${prod.sku || "unknown"})`;
+    const prefix = `ProductItem[${idx}] (${prod.sku || "unknown"})`;
 
     if (!prod.sku) errors.push(`${prefix}: sku is required`);
     if (!prod.dcc_product_id || !isValidDccId(prod.dcc_product_id, "dcc:product")) {
@@ -370,9 +406,61 @@ export function validateProductFeed(items: unknown[]): ValidationResult {
     if (!prod.operator || !isValidDccId(prod.operator.dcc_operator_id, "dcc:operator")) {
       errors.push(`${prefix}: operator.dcc_operator_id must match 'dcc:operator:*'`);
     }
+    if (!prod.locations?.meeting_hub || !isValidDccId(prod.locations.meeting_hub, "dcc:poi")) {
+      errors.push(`${prefix}: locations.meeting_hub must match 'dcc:poi:*'`);
+    }
+    if (prod.locations?.attraction_hub && !isValidDccId(prod.locations.attraction_hub, "dcc:poi")) {
+      errors.push(`${prefix}: locations.attraction_hub must match 'dcc:poi:*'`);
+    }
     if (!prod.canonical_page_url || !isValidHttpUrl(prod.canonical_page_url, true)) {
       errors.push(`${prefix}: canonical_page_url must be an https:// URL or relative path`);
     }
+  });
+
+  return { valid: errors.length === 0, errors };
+}
+
+export function validateOperatingWindowsFeed(items: unknown[]): ValidationResult {
+  const errors: string[] = [];
+  if (!Array.isArray(items)) {
+    return { valid: false, errors: ["Operating windows feed must be an array of schedule items"] };
+  }
+
+  items.forEach((item, idx) => {
+    const sched = item as Partial<DccScheduleItem>;
+    const prefix = `ScheduleItem[${idx}] (${sched.sku || "unknown"})`;
+
+    if (!sched.sku) errors.push(`${prefix}: sku is required`);
+    if (!sched.dcc_product_id || !isValidDccId(sched.dcc_product_id, "dcc:product")) {
+      errors.push(`${prefix}: dcc_product_id must match 'dcc:product:*'`);
+    }
+    if (!sched.time_zone || typeof sched.time_zone !== "string") {
+      errors.push(`${prefix}: time_zone is required (e.g. 'America/Chicago')`);
+    }
+
+    if (sched.verification_status === "verified") {
+      if (!Array.isArray(sched.daily_departures) || sched.daily_departures.length === 0) {
+        errors.push(`${prefix}: verified item must list at least one departure time`);
+      } else {
+        for (const dep of sched.daily_departures) {
+          if (!/^[0-2][0-9]:[0-5][0-9]$/.test(dep.departure_time_local)) {
+            errors.push(`${prefix}: departure_time_local must be in 24h HH:MM format`);
+          }
+          if (typeof dep.duration_minutes !== "number" || dep.duration_minutes <= 0) {
+            errors.push(`${prefix}: duration_minutes must be a positive number`);
+          }
+        }
+      }
+    } else if (sched.verification_status === "requires_operator_confirmation") {
+      if (!sched.schedule_note) {
+        errors.push(`${prefix}: requires_operator_confirmation items must provide a schedule_note`);
+      }
+    } else {
+      errors.push(`${prefix}: verification_status must be 'verified' or 'requires_operator_confirmation'`);
+    }
+
+    const provErrors = validateProvenance(sched.provenance, `${prefix}.provenance`);
+    errors.push(...provErrors);
   });
 
   return { valid: errors.length === 0, errors };
@@ -386,12 +474,15 @@ export function validateLocationFeed(items: unknown[]): ValidationResult {
 
   items.forEach((item, idx) => {
     const loc = item as Partial<DccLocationItem>;
-    const prefix = `Location[${idx}] (${loc.dcc_poi_id || "unknown"})`;
+    const prefix = `LocationItem[${idx}] (${loc.dcc_poi_id || "unknown"})`;
 
     if (!loc.dcc_poi_id || !isValidDccId(loc.dcc_poi_id, "dcc:poi")) {
       errors.push(`${prefix}: dcc_poi_id must match 'dcc:poi:*'`);
     }
     if (!loc.name) errors.push(`${prefix}: name is required`);
+    if (!loc.destination_id || !isValidDccId(loc.destination_id, "dcc:destination")) {
+      errors.push(`${prefix}: destination_id must match 'dcc:destination:*'`);
+    }
     if (!loc.coordinates || typeof loc.coordinates.latitude !== "number" || loc.coordinates.latitude < -90 || loc.coordinates.latitude > 90) {
       errors.push(`${prefix}: latitude must be between -90 and 90`);
     }

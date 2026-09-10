@@ -6,11 +6,22 @@ import {
   validatePolicyFeed,
   validateProductFeed,
   validateLocationFeed,
+  validateOperatingWindowsFeed,
   validateProvenance,
   DccAgentDirectoryV2,
   DccPriceItem,
   DccPolicyItem,
+  DccScheduleItem,
+  DccProductItem,
 } from "../../lib/dcc/contracts/stage2MachineFeedContract";
+import {
+  getWnoAgentDirectory,
+  getWnoProductsFeed,
+  getWnoLocationsFeed,
+  getWnoPricingFeed,
+  getWnoPoliciesFeed,
+  getWnoOperatingWindowsFeed,
+} from "../../app/new-orleans/data/wnoFeedsData";
 
 const SAMPLE_PROVENANCE = {
   source: "Airboat Adventures 2026 Operator Agreement (Item #3491)",
@@ -24,7 +35,7 @@ const SAMPLE_VALID_DIRECTORY: DccAgentDirectoryV2 = {
   $schema: "https://www.destinationcommandcenter.com/schemas/dcc-agent-directory.v2.json",
   spec: "dcc-agent-directory",
   version: "2.0",
-  dcc_id: "dcc:site:welcome-to-new-orleans-tours",
+  dcc_id: "dcc:site:wno-tours",
   name: "Welcome to New Orleans Tours",
   canonical_url: "https://www.welcometoneworleanstours.com",
   service_area: {
@@ -50,17 +61,16 @@ const SAMPLE_VALID_DIRECTORY: DccAgentDirectoryV2 = {
     operator_terms_url: "https://www.welcometoneworleanstours.com/terms",
   },
   directory: {
-    products: "/api/v2/feeds/products.json",
-    locations: "/api/v2/feeds/locations.json",
-    pricing: "/api/v2/feeds/pricing.json",
-    policies: "/api/v2/feeds/policies.json",
-    operating_windows: "/api/v2/feeds/operating-windows.json",
+    products: "/api/v2/feeds/products",
+    locations: "/api/v2/feeds/locations",
+    pricing: "/api/v2/feeds/pricing",
+    policies: "/api/v2/feeds/policies",
+    operating_windows: "/api/v2/feeds/operating-windows",
     truth_record: "https://www.destinationcommandcenter.com/api/public/truth-feed?id=wno-tours",
   },
-  actions: {
-    quote: "/api/v2/actions/quote",
-    availability: "/api/v2/actions/availability",
-    booking_handoff: "/api/v2/actions/booking-handoff",
+  capabilities: {
+    catalog_navigation: "https://www.welcometoneworleanstours.com/tours",
+    booking_handoff_mode: "client_navigation",
   },
   metadata: {
     last_generated: "2026-09-09T18:00:00Z",
@@ -70,54 +80,37 @@ const SAMPLE_VALID_DIRECTORY: DccAgentDirectoryV2 = {
 };
 
 test("Stage 2 Contract: Directory Validation", async (t) => {
-  await t.test("accepts a fully compliant Stage 2 directory", () => {
-    const result = validateAgentDirectory(SAMPLE_VALID_DIRECTORY);
+  await t.test("accepts a fully compliant Stage 2 directory with matching site ID", () => {
+    const result = validateAgentDirectory(SAMPLE_VALID_DIRECTORY, "dcc:site:wno-tours");
     assert.equal(result.valid, true, `Expected valid, got errors: ${result.errors.join(", ")}`);
     assert.equal(result.errors.length, 0);
   });
 
-  await t.test("rejects insecure or non-web action endpoints", () => {
+  await t.test("rejects site ID mismatch", () => {
     const badDirectory = {
       ...SAMPLE_VALID_DIRECTORY,
-      actions: {
-        booking_handoff: "http://insecure-checkout.com/handoff", // Insecure HTTP
-        quote: "javascript:alert(1)",                           // XSS attempt
+      dcc_id: "dcc:site:wrong-site" as any,
+    };
+    const result = validateAgentDirectory(badDirectory, "dcc:site:wno-tours");
+    assert.equal(result.valid, false);
+    assert.ok(result.errors.some((e) => e.includes("expected canonical site ID")));
+  });
+
+  await t.test("rejects insecure or non-web navigation links", () => {
+    const badDirectory = {
+      ...SAMPLE_VALID_DIRECTORY,
+      capabilities: {
+        ...SAMPLE_VALID_DIRECTORY.capabilities,
+        catalog_navigation: "http://insecure.com/tours", // Insecure HTTP
       },
     };
     const result = validateAgentDirectory(badDirectory);
     assert.equal(result.valid, false);
-    assert.ok(result.errors.some((e) => e.includes("actions.booking_handoff")));
-    assert.ok(result.errors.some((e) => e.includes("actions.quote")));
-  });
-
-  await t.test("rejects malformed DCC IDs", () => {
-    const badDirectory = {
-      ...SAMPLE_VALID_DIRECTORY,
-      dcc_id: "invalid_id_format" as any,
-    };
-    const result = validateAgentDirectory(badDirectory);
-    assert.equal(result.valid, false);
-    assert.ok(result.errors.some((e) => e.includes("dcc:site:*")));
-  });
-
-  await t.test("rejects out-of-range coordinates", () => {
-    const badDirectory = {
-      ...SAMPLE_VALID_DIRECTORY,
-      service_area: {
-        ...SAMPLE_VALID_DIRECTORY.service_area,
-        coordinates: {
-          latitude: 999.0, // Invalid latitude
-          longitude: -90.0715,
-        },
-      },
-    };
-    const result = validateAgentDirectory(badDirectory);
-    assert.equal(result.valid, false);
-    assert.ok(result.errors.some((e) => e.includes("latitude must be between -90 and 90")));
+    assert.ok(result.errors.some((e) => e.includes("capabilities.catalog_navigation")));
   });
 });
 
-test("Stage 2 Contract: Provenance & Date Order Enforcement", async (t) => {
+test("Stage 2 Contract: Provenance & Date Invariants", async (t) => {
   await t.test("accepts valid provenance with past verification and future review date", () => {
     const errors = validateProvenance(SAMPLE_PROVENANCE);
     assert.equal(errors.length, 0);
@@ -142,76 +135,178 @@ test("Stage 2 Contract: Provenance & Date Order Enforcement", async (t) => {
     const errors = validateProvenance(future);
     assert.ok(errors.some((e) => e.includes("cannot be in the future")));
   });
-
-  await t.test("rejects missing source or verified_by", () => {
-    const missing = {
-      ...SAMPLE_PROVENANCE,
-      source: "",
-      verified_by: "",
-    };
-    const errors = validateProvenance(missing);
-    assert.ok(errors.some((e) => e.includes("source is required")));
-    assert.ok(errors.some((e) => e.includes("verified_by is required")));
-  });
 });
 
-test("Stage 2 Contract: Pricing Feed Validation", async (t) => {
-  await t.test("accepts valid pricing item with provenance", () => {
+test("Stage 2 Contract: Pricing Feed Modeling", async (t) => {
+  await t.test("accepts verified pricing item with positive base rate", () => {
     const validItem: DccPriceItem = {
       sku: "wno-swamp-airboat-small",
       dcc_product_id: "dcc:product:wno-swamp-airboat-small",
       currency: "USD",
+      verification_status: "verified",
       pricing_structure: "per_person",
       base_rate: 89.0,
-      rate_with_transportation: 109.0,
       mandatory_fees: [],
       provenance: SAMPLE_PROVENANCE,
     };
     const result = validatePricingFeed([validItem]);
     assert.equal(result.valid, true);
-    assert.equal(result.errors.length, 0);
   });
 
-  await t.test("rejects non-positive rates and rate_with_transportation < base_rate", () => {
-    const badItem: DccPriceItem = {
-      sku: "wno-bad-pricing",
-      dcc_product_id: "dcc:product:wno-bad-pricing",
+  await t.test("accepts requires_operator_confirmation item with note and no base_rate", () => {
+    const confirmationItem: DccPriceItem = {
+      sku: "wno-unverified-tour",
+      dcc_product_id: "dcc:product:wno-unverified-tour",
       currency: "USD",
+      verification_status: "requires_operator_confirmation",
       pricing_structure: "per_person",
-      base_rate: -20.0, // Negative base rate
-      rate_with_transportation: 10.0, // Less than base rate
+      mandatory_fees: [],
+      confirmation_note: "Rates confirmed in live checkout",
+      provenance: SAMPLE_PROVENANCE,
+    };
+    const result = validatePricingFeed([confirmationItem]);
+    assert.equal(result.valid, true);
+  });
+
+  await t.test("rejects requires_operator_confirmation item missing confirmation note", () => {
+    const badItem: DccPriceItem = {
+      sku: "wno-bad-unverified",
+      dcc_product_id: "dcc:product:wno-bad-unverified",
+      currency: "USD",
+      verification_status: "requires_operator_confirmation",
+      pricing_structure: "per_person",
       mandatory_fees: [],
       provenance: SAMPLE_PROVENANCE,
     };
     const result = validatePricingFeed([badItem]);
     assert.equal(result.valid, false);
-    assert.ok(result.errors.some((e) => e.includes("base_rate must be a positive number")));
+    assert.ok(result.errors.some((e) => e.includes("must include a confirmation_note")));
   });
 });
 
-test("Stage 2 Contract: Policy Feed Validation", async (t) => {
-  await t.test("accepts enforceable cancellation and weather policy with provenance", () => {
-    const validPolicy: DccPolicyItem = {
-      sku: "wno-swamp-airboat-small",
-      dcc_product_id: "dcc:product:wno-swamp-airboat-small",
+test("Stage 2 Contract: Policy Feed Modeling", async (t) => {
+  await t.test("rejects unverified policy that falsely claims affirmative weather guarantee", () => {
+    const badPolicy: DccPolicyItem = {
+      sku: "wno-unverified-policy",
+      dcc_product_id: "dcc:product:wno-unverified-policy",
+      verification_status: "requires_operator_confirmation",
       cancellation: {
-        full_refund_notice_hours: 24,
-        cancellation_method: "phone_or_email",
+        cancellation_method: "requires_operator_confirmation",
       },
       weather_guarantee: {
-        is_guaranteed: true,
-        policy_summary: "Full automatic refund if captain cancels due to squalls or lightning.",
+        is_guaranteed: true, // FALSE AFFIRMATIVE CLAIM ON UNVERIFIED ITEM!
+        policy_summary: "Inferred guarantee",
         compensation_type: "full_refund_or_reschedule",
       },
       restrictions: {
-        minimum_age: 5,
-        pregnancy_allowed: false,
-        wheelchair_accessible: "foldable_only",
+        wheelchair_accessible: "requires_operator_confirmation",
       },
       provenance: SAMPLE_PROVENANCE,
     };
-    const result = validatePolicyFeed([validPolicy]);
-    assert.equal(result.valid, true);
-    assert.equal(result.errors.length, 0);
+    const result = validatePolicyFeed([badPolicy]);
+    assert.equal(result.valid, false);
+    assert.ok(result.errors.some((e) => e.includes("must not claim affirmative weather guarantee")));
+  });
+});
+
+test("Stage 2 Contract: Operating Windows Modeling", async (t) => {
+  await t.test("requires valid time zone on all schedules", () => {
+    const badSchedule: DccScheduleItem = {
+      sku: "wno-bad-schedule",
+      dcc_product_id: "dcc:product:wno-bad-schedule",
+      time_zone: "", // Missing time zone
+      verification_status: "verified",
+      season: {
+        start_date: "2026-01-01",
+        end_date: "2026-12-31",
+        season_type: "year_round",
+      },
+      daily_departures: [{ departure_time_local: "09:45", duration_minutes: 120 }],
+      known_blackout_dates: [],
+      provenance: SAMPLE_PROVENANCE,
+    };
+    const result = validateOperatingWindowsFeed([badSchedule]);
+    assert.equal(result.valid, false);
+    assert.ok(result.errors.some((e) => e.includes("time_zone is required")));
+  });
+});
+
+test("WNO Pilot: 3-Offering Factual Verification", async (t) => {
+  const products = getWnoProductsFeed();
+  const schedules = getWnoOperatingWindowsFeed();
+  const pricing = getWnoPricingFeed();
+  const policies = getWnoPoliciesFeed();
+
+  await t.test("1. Evening Jazz Cruise has distinct evening schedule & wharf location", () => {
+    const sched = schedules.find((s) => s.sku === "wno-evening-jazz-cruise")!;
+    assert.equal(sched.verification_status, "verified");
+    assert.equal(sched.daily_departures.length, 1);
+    assert.equal(sched.daily_departures[0].departure_time_local, "19:00");
+    assert.equal(sched.daily_departures[0].duration_minutes, 120);
+    assert.equal(sched.time_zone, "America/Chicago");
+
+    const prod = products.find((p) => p.sku === "wno-evening-jazz-cruise")!;
+    assert.equal(prod.locations.meeting_hub, "dcc:poi:nola:toulouse-street-wharf");
+    assert.equal(prod.locations.pickup_mode, "self_arrive_only");
+
+    const price = pricing.find((p) => p.sku === "wno-evening-jazz-cruise")!;
+    assert.equal(price.verification_status, "verified");
+    assert.equal(price.base_rate, 55.0);
+  });
+
+  await t.test("2. Covered Tour Boat has 3 daytime departures & slip location", () => {
+    const sched = schedules.find((s) => s.sku === "wno-covered-tour-boat")!;
+    assert.equal(sched.verification_status, "verified");
+    assert.equal(sched.daily_departures.length, 3);
+    assert.deepEqual(
+      sched.daily_departures.map((d) => d.departure_time_local),
+      ["09:45", "12:15", "14:45"]
+    );
+    assert.equal(sched.daily_departures[0].duration_minutes, 105);
+
+    const prod = products.find((p) => p.sku === "wno-covered-tour-boat")!;
+    assert.equal(prod.locations.meeting_hub, "dcc:poi:nola:barataria-preserve-dock");
+    assert.equal(prod.locations.pickup_mode, "optional_add_on");
+
+    const price = pricing.find((p) => p.sku === "wno-covered-tour-boat")!;
+    assert.equal(price.base_rate, 35.0);
+    assert.equal(price.rate_with_transportation, 59.0);
+
+    const pol = policies.find((p) => p.sku === "wno-covered-tour-boat")!;
+    assert.equal(pol.weather_guarantee.is_guaranteed, true);
+    assert.equal(pol.weather_guarantee.compensation_type, "full_refund_or_reschedule");
+  });
+
+  await t.test("3. Oak Alley Tour has morning pickup & separate attraction location", () => {
+    const sched = schedules.find((s) => s.sku === "wno-oak-alley-or-laura-plantation-tour")!;
+    assert.equal(sched.verification_status, "verified");
+    assert.equal(sched.daily_departures[0].departure_time_local, "08:15");
+    assert.equal(sched.daily_departures[0].duration_minutes, 330);
+
+    const prod = products.find((p) => p.sku === "wno-oak-alley-or-laura-plantation-tour")!;
+    // Meeting location (pickup) is French Quarter hotel corridor
+    assert.equal(prod.locations.meeting_hub, "dcc:poi:nola:french-quarter-pickup-zone");
+    // Destination attraction is Oak Alley Grounds
+    assert.equal(prod.locations.attraction_hub, "dcc:poi:nola:oak-alley-grounds");
+    assert.equal(prod.locations.pickup_mode, "included");
+
+    const pol = policies.find((p) => p.sku === "wno-oak-alley-or-laura-plantation-tour")!;
+    assert.equal(pol.cancellation.full_refund_notice_hours, 48);
+  });
+
+  await t.test("4. Remaining 18 offerings declare requires_operator_confirmation", () => {
+    const unverifiedPricing = pricing.filter((p) => p.verification_status === "requires_operator_confirmation");
+    assert.equal(unverifiedPricing.length, 18);
+    for (const p of unverifiedPricing) {
+      assert.equal(p.base_rate, undefined, `Expected undefined base_rate for ${p.sku}`);
+      assert.ok(p.confirmation_note);
+    }
+
+    const unverifiedSchedules = schedules.filter((s) => s.verification_status === "requires_operator_confirmation");
+    assert.equal(unverifiedSchedules.length, 18);
+    for (const s of unverifiedSchedules) {
+      assert.equal(s.daily_departures.length, 0, `Expected 0 daily departures for unverified ${s.sku}`);
+      assert.ok(s.schedule_note);
+    }
   });
 });

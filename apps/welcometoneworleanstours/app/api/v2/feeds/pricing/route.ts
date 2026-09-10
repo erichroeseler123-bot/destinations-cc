@@ -5,7 +5,7 @@ export const dynamic = "force-static";
 
 export function GET() {
   const items = getWnoPricingFeed();
-  const validation = validatePricingFeed(items);
+  const validation = validatePricingFeed(items, "dcc:site:wno-tours");
 
   if (!validation.valid) {
     return Response.json(
@@ -19,7 +19,7 @@ export function GET() {
       feed_version: "2.0",
       generated_at: new Date().toISOString(),
       pricing_tier: "retail_published",
-      source_site_id: "dcc:site:welcome-to-new-orleans-tours",
+      source_site_id: "dcc:site:wno-tours",
       items,
     },
     {

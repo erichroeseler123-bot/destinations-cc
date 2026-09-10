@@ -18,7 +18,7 @@ export function GET() {
     {
       feed_version: "2.0",
       generated_at: new Date().toISOString(),
-      source_site_id: "dcc:site:welcome-to-new-orleans-tours",
+      source_site_id: "dcc:site:wno-tours",
       policies,
     },
     {
