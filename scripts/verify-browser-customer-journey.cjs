@@ -55,11 +55,13 @@ class CdpClient {
     });
   }
 
-  send(method, params = {}) {
+  send(method, params = {}, sessionId = undefined) {
     return new Promise((resolve, reject) => {
       const id = this.id++;
       this.callbacks.set(id, { resolve, reject });
-      this.ws.send(JSON.stringify({ id, method, params }));
+      const payload = { id, method, params };
+      if (sessionId) payload.sessionId = sessionId;
+      this.ws.send(JSON.stringify(payload));
     });
   }
 
@@ -338,7 +340,94 @@ async function run() {
     console.log(`     - Modal Item ID (${tour.expectedItemId}): ${iframeHasItem ? '✅ MATCH' : '❌ MISMATCH'}`);
     console.log(`     - Modal Attribution ASN (${tour.expectedAsn}): ${iframeHasAsn ? '✅ MATCH' : '❌ MISMATCH'}`);
 
-    // 2. Correlate post-click booking_opened telemetry event
+    // 2. Verify expected tour and usable booking content inside original opened FareHarbor checkout iframe
+    console.log('   Inspecting usable booking content inside original opened FareHarbor checkout iframe...');
+    let fareHarborIframeTarget = null;
+    for (let attempt = 0; attempt < 20; attempt++) {
+      await delay(1000);
+      const targets = await browserClient.send('Target.getTargets');
+      for (const t of targets.targetInfos) {
+        if (t.type === 'iframe' && t.url.includes('fareharbor.com/embeds/book')) {
+          fareHarborIframeTarget = t;
+          break;
+        }
+      }
+      if (fareHarborIframeTarget) break;
+    }
+
+    let originalIframeInspection = null;
+    if (fareHarborIframeTarget) {
+      console.log(`     - Found opened iframe target: [${fareHarborIframeTarget.targetId}] "${fareHarborIframeTarget.title}"`);
+      const { sessionId: iframeSessionId } = await browserClient.send('Target.attachToTarget', {
+        targetId: fareHarborIframeTarget.targetId,
+        flatten: true,
+      });
+
+      await browserClient.send('Runtime.enable', {}, iframeSessionId);
+
+      for (let attempt = 0; attempt < 12; attempt++) {
+        await delay(1000);
+        const evalRes = await browserClient.send('Runtime.evaluate', {
+          expression: `
+            (() => {
+              const h1 = document.querySelector('h1, h2, .item-name, [data-testid="item-name"], header h1, .sheet-title');
+              const cal = document.querySelector('.calendar, [data-testid="calendar"], .sheet, .calendar-month, table, .booking-sheet, [data-test-id*="calendar"]');
+              const buttons = Array.from(document.querySelectorAll('button, a.button, .btn')).map(b => b.innerText.trim()).filter(Boolean);
+              const bodyText = document.body ? document.body.innerText.slice(0, 500).replace(/\\s+/g, ' ') : '';
+              return {
+                title: document.title,
+                heading: h1 ? h1.innerText.trim() : null,
+                hasCalendar: Boolean(cal),
+                calTag: cal ? cal.tagName : null,
+                buttonCount: buttons.length,
+                buttons: buttons.slice(0, 6),
+                bodyPreview: bodyText.slice(0, 200),
+              };
+            })()
+          `,
+          returnByValue: true,
+        }, iframeSessionId);
+
+        const val = evalRes?.result?.value;
+        if (val && val.hasCalendar && val.buttonCount > 0) {
+          const expectedTourKey = tour.expectedShortname.toLowerCase();
+          const titleLower = (val.title || fareHarborIframeTarget.title || '').toLowerCase();
+          const bodyLower = (val.bodyPreview || '').toLowerCase();
+          const nameLower = tour.name.toLowerCase();
+          const tourMatch = titleLower.includes(expectedTourKey)
+            || bodyLower.includes(expectedTourKey)
+            || (nameLower.includes('jazz') && (titleLower.includes('jazz') || bodyLower.includes('jazz') || titleLower.includes('steamboat')))
+            || (nameLower.includes('covered') && (titleLower.includes('covered') || bodyLower.includes('covered') || titleLower.includes('cajun')))
+            || (nameLower.includes('plantation') && (titleLower.includes('plantation') || bodyLower.includes('plantation') || titleLower.includes('oak alley')));
+
+          originalIframeInspection = {
+            openedIframeTargetFound: true,
+            targetId: fareHarborIframeTarget.targetId,
+            targetTitle: fareHarborIframeTarget.title,
+            targetUrl: fareHarborIframeTarget.url,
+            documentTitle: val.title,
+            heading: val.heading,
+            hasCalendar: val.hasCalendar,
+            interactiveButtonCount: val.buttonCount,
+            buttonSamples: val.buttons,
+            bodyPreview: val.bodyPreview,
+            tourMatch: Boolean(tourMatch),
+            usableBookingControls: Boolean(val.hasCalendar && val.buttonCount > 0),
+            verified: Boolean(tourMatch && val.hasCalendar && val.buttonCount > 0),
+          };
+
+          console.log(`     - Opened Iframe Target Title: "${fareHarborIframeTarget.title}"`);
+          console.log(`     - Tour Match Assertion: ${originalIframeInspection.tourMatch ? '✅ MATCH' : '❌ MISMATCH'}`);
+          console.log(`     - Calendar Sheet Assertion: ${originalIframeInspection.hasCalendar ? '✅ RENDERED' : '❌ MISSING'}`);
+          console.log(`     - Usable Booking Controls Assertion (${val.buttonCount} interactive buttons): ${originalIframeInspection.usableBookingControls ? '✅ VERIFIED' : '❌ MISSING'}`);
+          break;
+        }
+      }
+    } else {
+      console.log('     - ❌ Could not find opened FareHarbor booking iframe target!');
+    }
+
+    // 3. Correlate post-click booking_opened telemetry event
     await delay(1000);
     let correlatedBookingOpened = null;
     let collectorVerification = null;
@@ -375,9 +464,22 @@ async function run() {
       console.log(`     - ❌ No booking_opened telemetry event correlated!`);
     }
 
-    const isSuccess = hasShortname && hasItem && hasAsn
-      && renderedModalOk && iframeHasShortname && iframeHasItem && iframeHasAsn
-      && Boolean(collectorVerification?.ok);
+    const isSuccess = Boolean(
+      hasShortname &&
+      hasItem &&
+      hasAsn &&
+      renderedModalOk &&
+      iframeHasShortname &&
+      iframeHasItem &&
+      iframeHasAsn &&
+      originalIframeInspection?.verified &&
+      originalIframeInspection?.tourMatch &&
+      originalIframeInspection?.usableBookingControls &&
+      correlatedBookingOpened?.payload?.sessionId &&
+      collectorVerification?.ok
+    );
+
+    console.log(`   >>> OVERALL TOUR PASS STATUS: ${isSuccess ? '✅ PASS' : '❌ FAIL'}`);
 
     results.push({
       sku: tour.sku,
@@ -402,13 +504,14 @@ async function run() {
         asnMatch: hasAsn,
       },
       renderedCheckoutVerification: {
-        verified: renderedModalOk && iframeHasShortname && iframeHasItem && iframeHasAsn,
+        verified: renderedModalOk && iframeHasShortname && iframeHasItem && iframeHasAsn && Boolean(originalIframeInspection?.verified),
         modalVisible: renderedModalOk,
         iframeSrc: checkoutModal?.iframeSrc,
         iframeDimensions: checkoutModal ? { width: checkoutModal.iframeWidth, height: checkoutModal.iframeHeight } : null,
         operatorMatch: iframeHasShortname,
         itemMatch: iframeHasItem,
         asnMatch: iframeHasAsn,
+        originalIframeVerification: originalIframeInspection,
       },
       correlatedBookingOpenedEvent: {
         dispatchedUrl: correlatedBookingOpened?.url,
