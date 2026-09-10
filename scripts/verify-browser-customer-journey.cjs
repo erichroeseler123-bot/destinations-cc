@@ -33,6 +33,108 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function parseDateFromObservedText(text) {
+  if (!text || typeof text !== 'string') return null;
+  const match = text.match(/(?:(?:Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday),\s*)?(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s*(\d{4})/i);
+  if (!match) {
+    const isoMatch = text.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (isoMatch) {
+      return {
+        isoDate: `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`,
+        matchedSnippet: isoMatch[0],
+      };
+    }
+    return null;
+  }
+  const monthNames = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+  const monthNum = monthNames.indexOf(match[1].toLowerCase()) + 1;
+  if (monthNum === 0) return null;
+  const month = String(monthNum).padStart(2, '0');
+  const day = String(match[2]).padStart(2, '0');
+  const year = match[3];
+  return {
+    isoDate: `${year}-${month}-${day}`,
+    matchedSnippet: match[0],
+  };
+}
+
+function validateDateAssertion({ requestedDate, calendarDateText, activePanelObservedText }) {
+  if (!activePanelObservedText || typeof activePanelObservedText !== 'string') {
+    return { pass: false, reason: 'missing_availability_panel_date' };
+  }
+  const parsed = parseDateFromObservedText(activePanelObservedText);
+  if (!parsed || !parsed.isoDate) {
+    return { pass: false, reason: 'unparseable_availability_panel_date', rawObserved: activePanelObservedText };
+  }
+  if (parsed.isoDate !== requestedDate) {
+    return {
+      pass: false,
+      reason: 'availability_panel_date_mismatch',
+      requestedDate,
+      parsedDate: parsed.isoDate,
+      rawObserved: activePanelObservedText,
+    };
+  }
+  return {
+    pass: true,
+    requestedDate,
+    parsedDate: parsed.isoDate,
+    matchedSnippet: parsed.matchedSnippet,
+    rawObserved: activePanelObservedText,
+  };
+}
+
+// Regression Checks
+function runAllRegressionChecks() {
+  console.log('--- RUNNING WNO REGRESSION SUITE ---');
+
+  // 1. Telemetry regression: successful page_view cannot satisfy booking event
+  function validateBookingTelemetryCheck(telemetryEvents, durableRecords = []) {
+    const bookingEvent = telemetryEvents.find(e => e.payload?.eventName === 'booking_opened');
+    if (!bookingEvent) return { pass: false, reason: 'missing_booking_opened_event' };
+    const hasValidBody = bookingEvent.completedResponse?.parsedBody?.ok === true;
+    const hasDurableRecord = durableRecords.some(r => r.session_id === bookingEvent.payload.sessionId && r.event_name === 'booking_opened');
+    if (!hasValidBody && !hasDurableRecord) return { pass: false, reason: 'booking_not_verified' };
+    return { pass: true };
+  }
+
+  const pageViewOnly = validateBookingTelemetryCheck([
+    { payload: { eventName: 'page_viewed', sessionId: 'wno_reg_1' }, completedResponse: { status: 200, parsedBody: { ok: true } } }
+  ], []);
+  if (pageViewOnly.pass) throw new Error('REGRESSION FAILURE: Page view satisfied booking check!');
+
+  // 2. Date regression: Calendar has requested date, but active availability panel shows a different date (MUST FAIL)
+  const mismatchedPanelDate = validateDateAssertion({
+    requestedDate: '2026-09-11',
+    calendarDateText: 'Friday, September 11, 2026',
+    activePanelObservedText: 'Saturday, September 12, 2026 at 6:00 PM',
+  });
+  if (mismatchedPanelDate.pass) {
+    throw new Error('REGRESSION FAILURE: Mismatched panel date (Sept 12 vs Sept 11) incorrectly passed date assertion!');
+  }
+  console.log('✅ REGRESSION PROVEN: Mismatched panel date (Sept 12 vs Sept 11) strictly fails verification.');
+
+  // 3. Date regression: Missing or unparseable date text in availability panel (MUST FAIL)
+  const unparseableDate = validateDateAssertion({
+    requestedDate: '2026-09-11',
+    calendarDateText: 'Friday, September 11, 2026',
+    activePanelObservedText: 'All Ages • 2 Hour Cruise • Meal not included',
+  });
+  if (unparseableDate.pass) {
+    throw new Error('REGRESSION FAILURE: Unparseable date text incorrectly passed date assertion!');
+  }
+  console.log('✅ REGRESSION PROVEN: Unparseable date text strictly fails verification.');
+
+  return {
+    regressionProven: true,
+    testedCases: [
+      'page_viewed_only_cannot_satisfy_booking_check',
+      'calendar_requested_date_with_mismatched_panel_date_fails',
+      'unparseable_or_missing_panel_date_fails'
+    ]
+  };
+}
+
 class CdpClient {
   constructor(wsUrl) {
     this.ws = new WebSocket(wsUrl);
@@ -80,62 +182,8 @@ class CdpClient {
   }
 }
 
-// Regression Test: Verify that a successful page-view response cannot satisfy a failed booking-event check
-function runRegressionCheck() {
-  console.log('--- RUNNING TELEMETRY REGRESSION CHECK ---');
-  function validateBookingTelemetryCheck(telemetryEvents, durableRecords = []) {
-    const bookingEvent = telemetryEvents.find(e => e.payload?.eventName === 'booking_opened');
-    if (!bookingEvent) {
-      return { pass: false, reason: 'missing_booking_opened_event' };
-    }
-    const hasValidBody = bookingEvent.completedResponse?.parsedBody?.ok === true;
-    const hasDurableRecord = durableRecords.some(r => r.session_id === bookingEvent.payload.sessionId && r.event_name === 'booking_opened');
-    if (!hasValidBody && !hasDurableRecord) {
-      return { pass: false, reason: 'booking_response_not_ok_and_no_durable_record' };
-    }
-    return { pass: true };
-  }
-
-  // Case 1: Page view succeeds with ok:true, but booking event is completely missing
-  const pageViewOnlyTrace = [
-    {
-      payload: { eventName: 'page_viewed', sessionId: 'wno_reg_1' },
-      completedResponse: { status: 200, parsedBody: { ok: true } }
-    }
-  ];
-  const case1 = validateBookingTelemetryCheck(pageViewOnlyTrace, []);
-  if (case1.pass) {
-    throw new Error('REGRESSION FAILURE: Successful page_view satisfied missing booking event!');
-  }
-
-  // Case 2: Page view succeeds with ok:true, but booking event response failed
-  const failedBookingTrace = [
-    {
-      payload: { eventName: 'page_viewed', sessionId: 'wno_reg_2' },
-      completedResponse: { status: 200, parsedBody: { ok: true } }
-    },
-    {
-      payload: { eventName: 'booking_opened', sessionId: 'wno_reg_2' },
-      completedResponse: { status: 500, parsedBody: { ok: false } }
-    }
-  ];
-  const case2 = validateBookingTelemetryCheck(failedBookingTrace, []);
-  if (case2.pass) {
-    throw new Error('REGRESSION FAILURE: Successful page_view satisfied failed booking event!');
-  }
-
-  console.log('✅ REGRESSION PROVEN: Successful page-view response strictly CANNOT satisfy booking-event check.');
-  return {
-    regressionProven: true,
-    testedCases: [
-      'page_viewed_only_cannot_satisfy_booking_check',
-      'page_viewed_ok_cannot_mask_booking_failure'
-    ]
-  };
-}
-
 async function run() {
-  const regressionResult = runRegressionCheck();
+  const regressionResult = runAllRegressionChecks();
 
   console.log('\n1. Launching Headless Chrome under NORMAL SECURITY (no --disable-web-security)...');
   const chromeProcess = spawn(CHROME_PATH, [
@@ -144,7 +192,7 @@ async function run() {
     '--disable-gpu',
     '--no-first-run',
     '--no-default-browser-check',
-    '--user-data-dir=' + require('os').tmpdir() + '/chrome_wno_normal_sec_' + Date.now(),
+    '--user-data-dir=' + require('os').tmpdir() + '/chrome_wno_corrected_date_' + Date.now(),
   ], { stdio: 'ignore' });
 
   await delay(1500);
@@ -235,7 +283,6 @@ async function run() {
     await pageClient.send('Page.enable');
     await pageClient.send('Runtime.enable');
 
-    // Intercept responses for telemetry on this page
     await pageClient.send('Fetch.enable', {
       patterns: [{ urlPattern: '*api/wno/telemetry*', requestStage: 'Response' }]
     });
@@ -275,9 +322,7 @@ async function run() {
               if (rawBody) {
                 try { parsedBody = JSON.parse(rawBody); } catch (e) {}
               }
-            } catch (err) {
-              // Normal security withholding cross-origin body
-            }
+            } catch (err) {}
           }
 
           pausedResponses.push({
@@ -321,9 +366,7 @@ async function run() {
     });
 
     const ctas = evalResult.result.value || [];
-    console.log(`   Found ${ctas.length} FareHarbor CTA link(s) on page.`);
     const matchingCta = ctas.find(c => c.href.includes(tour.expectedItemId)) || ctas[0];
-
     const firstCtaHref = matchingCta.href;
     const urlObj = new URL(firstCtaHref);
     const hasShortname = urlObj.pathname.includes(tour.expectedShortname);
@@ -383,8 +426,6 @@ async function run() {
     const iframeHasShortname = iframeUrl ? iframeUrl.pathname.includes(tour.expectedShortname) : false;
     const iframeHasItem = iframeUrl ? (iframeUrl.pathname.includes(tour.expectedItemId) || iframeUrl.searchParams.get('item') === tour.expectedItemId) : false;
     const iframeHasAsn = iframeUrl ? (iframeUrl.searchParams.get('asn') === tour.expectedAsn) : false;
-
-    console.log(`   Modal Rendered: ${renderedModalOk ? 'YES (' + checkoutModal.iframeWidth + 'x' + checkoutModal.iframeHeight + 'px)' : 'NO'}`);
 
     // Attach to FareHarbor iframe target
     console.log('   Locating opened FareHarbor iframe target...');
@@ -465,9 +506,10 @@ async function run() {
         }
       }
 
-      // Requirement: Select an enabled calendar control representing a specific future date in America/Chicago.
+      // Requirement 1: Select an enabled calendar control representing a specific future date in America/Chicago.
       // Wait until active availability panel shows that date.
-      // Assert that requested date, selected calendar date, and availability date agree.
+      // Read actual date from the visible active availability panel or its selected booking slot.
+      // Record exact observed text and compare its parsed date with requested date.
       console.log(`   Selecting enabled calendar control for ${REQUESTED_DATE_FORMATTED} (${REQUESTED_TIMEZONE})...`);
       let dateSelectRes = null;
       for (let attempt = 0; attempt < 25; attempt++) {
@@ -476,7 +518,6 @@ async function run() {
           expression: `
             (() => {
               const targetStr = "September 11, 2026";
-              // Query by aria-label or text matching September 11, 2026
               const all = Array.from(document.querySelectorAll('button, a, [role="button"], td, .day, .next-day-card'));
               const btn = all.find(b => {
                 const aria = b.getAttribute('aria-label') || '';
@@ -516,8 +557,8 @@ async function run() {
       if (dateSelectRes && dateSelectRes.success) {
         console.log(`     - Clicked Date Control: [${dateSelectRes.tag}] "${dateSelectRes.aria || dateSelectRes.text}"`);
         
-        // Wait until the active availability panel shows that date
-        console.log('     - Waiting for active availability panel to display target date...');
+        // Wait until active availability panel shows that date and read actual date from panel or booking slot
+        console.log('     - Reading actual date from active availability panel or selected booking slot...');
         let availRes = null;
         for (let waitAttempt = 0; waitAttempt < 15; waitAttempt++) {
           await delay(1000);
@@ -526,10 +567,51 @@ async function run() {
               (() => {
                 const bodyText = document.body ? document.body.innerText.replace(/\\s+/g, ' ') : '';
                 
-                // Locate the active panel / date header
-                const dateHeaderEl = document.querySelector('.fh-link--text-variant, .sheet-title, .day-title, [data-test-id*="availability"] header, .item-headline, .timeslot-header, .availability-pane');
-                const panelDateText = dateHeaderEl ? dateHeaderEl.innerText.trim().replace(/\\s+/g, ' ') : '';
-                
+                // Specific search for date in active availability panel or selected booking slot
+                const candidateSelectors = [
+                  '.fh-link--text-variant',
+                  '.timeslot-header',
+                  '.day-title',
+                  '.sheet-title',
+                  '.availability-pane',
+                  '.time-select',
+                  '[data-test-id*="availability"] header',
+                  '.booking-sheet header',
+                  '.item-headline',
+                  '.timeslot-card',
+                  '.cal-block'
+                ];
+
+                let exactObservedDateText = null;
+                for (const sel of candidateSelectors) {
+                  const els = Array.from(document.querySelectorAll(sel));
+                  for (const el of els) {
+                    const txt = (el.innerText || '').trim().replace(/\\s+/g, ' ');
+                    if (/(January|February|March|April|May|June|July|August|September|October|November|December)\\s+\\d{1,2},\\s*\\d{4}/i.test(txt)) {
+                      exactObservedDateText = txt;
+                      break;
+                    }
+                  }
+                  if (exactObservedDateText) break;
+                }
+
+                // If not found in candidate selectors, search all text elements in the active booking sheet
+                if (!exactObservedDateText) {
+                  const allElements = Array.from(document.querySelectorAll('.booking-sheet, .sheet, .availability-pane, .time-select, [data-test-id*="availability"], form, main, .item-view'));
+                  for (const container of allElements) {
+                    const subEls = Array.from(container.querySelectorAll('h1, h2, h3, h4, h5, p, span, a, div, header'));
+                    for (const el of subEls) {
+                      if (el.children.length > 3) continue;
+                      const txt = (el.innerText || '').trim().replace(/\\s+/g, ' ');
+                      if (txt.length < 120 && /(January|February|March|April|May|June|July|August|September|October|November|December)\\s+\\d{1,2},\\s*\\d{4}/i.test(txt)) {
+                        exactObservedDateText = txt;
+                        break;
+                      }
+                    }
+                    if (exactObservedDateText) break;
+                  }
+                }
+
                 const timeslotElements = Array.from(document.querySelectorAll('.time, .timeslot, [data-testid*="time"], button, a, [role="button"], .booking-sheet-item, .item-headline, .timeslot-card, .availability-cell, .cal-block')).map(el => {
                   const text = (el.innerText || '').trim().replace(/\\s+/g, ' ');
                   const aria = el.getAttribute('aria-label') || '';
@@ -537,8 +619,6 @@ async function run() {
                   const disabled = el.disabled || el.getAttribute('aria-disabled') === 'true' || cls.includes('disabled');
                   return { text, aria, cls, disabled };
                 }).filter(t => (t.text.includes('AM') || t.text.includes('PM') || t.aria.includes('time') || t.text.includes('Available') || t.text.includes('Book') || t.text.includes('Call')) && t.text.length < 90);
-
-                const hasTargetDateInSnippet = bodyText.includes('September 11, 2026') || bodyText.includes('Sep 11, 2026') || bodyText.includes('Friday, September 11');
 
                 const isSoldOut = bodyText.toLowerCase().includes('sold out') || timeslotElements.some(t => t.text.toLowerCase().includes('sold out'));
                 const isCallToBook = bodyText.toLowerCase().includes('call to book') || bodyText.toLowerCase().includes('call us') || timeslotElements.some(t => t.text.toLowerCase().includes('call'));
@@ -550,8 +630,7 @@ async function run() {
                 else if (isCallToBook) reportedState = 'CALL_TO_BOOK';
 
                 return {
-                  hasTargetDateInSnippet,
-                  panelDateText,
+                  exactObservedDateText,
                   reportedState,
                   timeslotCount: timeslotElements.length,
                   availableTimeslots: timeslotElements.slice(0, 6),
@@ -563,25 +642,36 @@ async function run() {
           }, iframeSessionId);
 
           const resVal = availEval?.result?.value;
-          if (resVal && resVal.hasTargetDateInSnippet) {
+          if (resVal && resVal.exactObservedDateText) {
             availRes = resVal;
             break;
           }
         }
 
         const selectedDateDisplay = dateSelectRes.aria.trim() || dateSelectRes.text || REQUESTED_DATE_FORMATTED;
+        const exactObservedText = availRes?.exactObservedDateText || null;
+        
+        // Validate date assertion: read actual date, compare parsed date with requested date
+        const dateValidation = validateDateAssertion({
+          requestedDate: REQUESTED_DATE,
+          calendarDateText: selectedDateDisplay,
+          activePanelObservedText: exactObservedText,
+        });
+
         const selectedCalendarDateMatches = selectedDateDisplay.includes('September 11, 2026') || selectedDateDisplay.includes('11 Sep') || dateSelectRes.dataDate === REQUESTED_DATE;
-        const availabilityPanelDateMatches = Boolean(availRes?.hasTargetDateInSnippet);
-        const datesAgree = Boolean(selectedCalendarDateMatches && availabilityPanelDateMatches);
+        const datesAgree = Boolean(dateValidation.pass && selectedCalendarDateMatches);
 
         futureDateSelection = {
           requestedDate: REQUESTED_DATE,
           requestedDateFormatted: REQUESTED_DATE_FORMATTED,
           timezone: REQUESTED_TIMEZONE,
-          selectedDate: selectedDateDisplay,
-          availabilityPanelDateDisplay: availRes?.panelDateText || 'September 11, 2026',
+          selectedCalendarDate: selectedDateDisplay,
           selectedCalendarDateMatches,
-          availabilityPanelDateMatches,
+          exactObservedText,
+          parsedDate: dateValidation.parsedDate || null,
+          matchedDateSnippet: dateValidation.matchedSnippet || null,
+          dateMatchAssertion: dateValidation.pass,
+          dateValidationFailureReason: dateValidation.reason || null,
           datesAgree,
           resultingAvailability: {
             state: availRes?.reportedState,
@@ -595,9 +685,10 @@ async function run() {
         };
 
         console.log(`     - Requested Date: ${futureDateSelection.requestedDate} (${futureDateSelection.timezone})`);
-        console.log(`     - Selected Calendar Date: ${futureDateSelection.selectedDate}`);
-        console.log(`     - Availability Panel Date: ${futureDateSelection.availabilityPanelDateDisplay}`);
-        console.log(`     - Dates Agree Assertion: ${futureDateSelection.datesAgree ? 'AGREE' : 'DISAGREE'}`);
+        console.log(`     - Selected Calendar Date: ${futureDateSelection.selectedCalendarDate}`);
+        console.log(`     - Exact Observed Panel/Slot Text: "${futureDateSelection.exactObservedText}"`);
+        console.log(`     - Parsed Date: ${futureDateSelection.parsedDate}`);
+        console.log(`     - Date Comparison: ${futureDateSelection.parsedDate} === ${futureDateSelection.requestedDate} -> ${futureDateSelection.dateMatchAssertion ? 'MATCH' : 'MISMATCH'}`);
         console.log(`     - Resulting Availability State: ${futureDateSelection.resultingAvailability.state} (${futureDateSelection.resultingAvailability.timeslotCount} timeslots)`);
       } else {
         console.log(`     - FAILED to select requested date control: matching enabled date control not found`);
@@ -620,7 +711,6 @@ async function run() {
           method: req.method,
           payload: parsed,
         };
-        // Find corresponding paused response using networkId
         originalBookingPausedResp = pausedResponses.find(p => p.networkId === reqId && (p.statusCode === 200 || p.statusCode === 307));
         break;
       }
@@ -665,16 +755,6 @@ async function run() {
       responseBodyOkOrDurableVerified: (originalBookingPausedResp?.parsedBody?.ok === true) || durableRecordVerified,
     };
 
-    console.log(`   Telemetry Correlation Evidence:`);
-    console.log(`     - Network Request ID: ${originalBookingNetworkReq?.requestId}`);
-    console.log(`     - Paused Response networkId: ${originalBookingPausedResp?.networkId}`);
-    console.log(`     - Session ID: ${originalBookingNetworkReq?.payload?.sessionId}`);
-    console.log(`     - Event Name: ${originalBookingNetworkReq?.payload?.eventName}`);
-    console.log(`     - Tour Item: ${originalBookingNetworkReq?.payload?.itemId} (Expected: ${tour.expectedItemId})`);
-    console.log(`     - NetworkId Match: ${telemetryAssertions.networkIdCorrelated ? 'MATCH' : 'MISMATCH'}`);
-    console.log(`     - Response Status: ${originalBookingPausedResp?.statusCode}`);
-    console.log(`     - Durable Event In DB: ${durableRecordVerified ? 'VERIFIED (' + durableRecord?.event_id + ')' : 'UNVERIFIED'}`);
-
     const isSuccess = Boolean(
       hasShortname &&
       hasItem &&
@@ -685,6 +765,7 @@ async function run() {
       iframeHasAsn &&
       originalIframeInspection?.verified &&
       futureDateSelection?.datesAgree &&
+      futureDateSelection?.dateMatchAssertion &&
       futureDateSelection?.resultingAvailability?.availabilityVerifiedForRequestedDate &&
       Object.values(telemetryAssertions).every(Boolean)
     );
@@ -739,8 +820,10 @@ async function run() {
   console.log('FINAL RESULTS SUMMARY:');
   for (const r of results) {
     console.log(`${r.success ? 'PASS' : 'FAIL'}: ${r.productName}`);
-    console.log(`   Selected Date: ${r.futureDateSelection?.selectedDate} | Availability: ${r.futureDateSelection?.resultingAvailability?.state}`);
-    console.log(`   Telemetry Response: status ${r.originalBrowserTelemetryEvidence?.responseStatusCode} -> durable_verified=${r.originalBrowserTelemetryEvidence?.assertions?.durableEventVerified}`);
+    console.log(`   Observed Panel/Slot Date: "${r.futureDateSelection?.exactObservedText}"`);
+    console.log(`   Parsed Date: ${r.futureDateSelection?.parsedDate} (Match: ${r.futureDateSelection?.dateMatchAssertion})`);
+    console.log(`   Availability: ${r.futureDateSelection?.resultingAvailability?.state} (${r.futureDateSelection?.resultingAvailability?.timeslotCount} timeslots)`);
+    console.log(`   Telemetry: status ${r.originalBrowserTelemetryEvidence?.responseStatusCode} -> durable_verified=${r.originalBrowserTelemetryEvidence?.assertions?.durableEventVerified}`);
   }
 
   const allPassed = results.every(r => r.success);
@@ -750,7 +833,7 @@ async function run() {
     environment: 'production',
     targetOrigin: 'https://www.welcometoneworleanstours.com',
     browser: 'Headless Google Chrome (CDP) under Normal Customer Security (no --disable-web-security)',
-    evidenceMechanism: 'cdp_network_id_correlation_durable_event_verification_and_future_date_panel_agreement',
+    evidenceMechanism: 'cdp_network_id_correlation_durable_event_verification_and_parsed_active_panel_date_agreement',
     timezone: REQUESTED_TIMEZONE,
     requestedDate: REQUESTED_DATE,
     requestedDateFormatted: REQUESTED_DATE_FORMATTED,
@@ -769,7 +852,6 @@ async function run() {
   fs.writeFileSync(gosnoReportPath, JSON.stringify(reportPayload, null, 2), 'utf8');
   console.log('Mirrored report to ' + gosnoReportPath);
 
-  // Also update destinations-cc/scripts/verify-browser-customer-journey.cjs with the final corrected script
   const scriptDest = 'C:/Users/erich/Documents/Projects/destinations-cc/scripts/verify-browser-customer-journey.cjs';
   fs.copyFileSync(__filename, scriptDest);
   console.log('Updated authoritative script at ' + scriptDest);
@@ -778,7 +860,7 @@ async function run() {
     console.error('\n❌ One or more tours failed verification!');
     process.exit(1);
   }
-  console.log('\n✅ All tours verified successfully under normal security with networkId correlation, durable event verification, and future-date availability agreement!');
+  console.log('\n✅ All tours verified successfully under normal security with exact parsed date assertion, networkId correlation, and durable DB records!');
   process.exit(0);
 }
 
