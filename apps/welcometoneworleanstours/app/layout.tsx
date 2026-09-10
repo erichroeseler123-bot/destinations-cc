@@ -22,6 +22,9 @@ export const metadata: Metadata = {
     siteName: "Welcome to New Orleans Tours",
     type: "website",
   },
+  verification: {
+    google: process.env.WTONOT_GOOGLE_SITE_VERIFICATION || undefined,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

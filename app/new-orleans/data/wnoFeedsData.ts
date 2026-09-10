@@ -8,38 +8,39 @@ import {
   DccScheduleItem,
   DccProvenance,
 } from "@/lib/dcc/contracts/stage2MachineFeedContract";
+import { WNO_FACTUAL_EVIDENCE_REGISTER } from "./wnoPrivateEvidenceRegister";
 
 const WNO_ORIGIN = "https://www.welcometoneworleanstours.com";
 
-// Provenance records grounded in verified operator contracts
+// Provenance records grounded in verified operator evidence & register
 const STEAMBOAT_PROVENANCE: DccProvenance = {
-  source: "New Orleans Steamboat Company Tariff & FareHarbor Schedule (Item #560825/560778)",
-  source_type: "operator_contract",
-  last_verified: "2026-09-01T12:00:00Z",
-  review_by: "2026-12-01T00:00:00Z",
-  verified_by: "contracts@destinations-cc.com",
+  source: WNO_FACTUAL_EVIDENCE_REGISTER["steamboat-natchez-evening-jazz"].source_url,
+  source_type: WNO_FACTUAL_EVIDENCE_REGISTER["steamboat-natchez-evening-jazz"].source_type,
+  last_verified: WNO_FACTUAL_EVIDENCE_REGISTER["steamboat-natchez-evening-jazz"].verified_at,
+  review_by: WNO_FACTUAL_EVIDENCE_REGISTER["steamboat-natchez-evening-jazz"].review_by,
+  verified_by: WNO_FACTUAL_EVIDENCE_REGISTER["steamboat-natchez-evening-jazz"].verified_by,
 };
 
 const RAGIN_CAJUN_PROVENANCE: DccProvenance = {
-  source: "Ragin Cajun Swamp Tours Operating Agreement & FareHarbor Schedule (Item #590176)",
-  source_type: "operator_contract",
-  last_verified: "2026-09-01T12:00:00Z",
-  review_by: "2026-12-01T00:00:00Z",
-  verified_by: "contracts@destinations-cc.com",
+  source: WNO_FACTUAL_EVIDENCE_REGISTER["ragin-cajun-covered-tour-boat"].source_url,
+  source_type: WNO_FACTUAL_EVIDENCE_REGISTER["ragin-cajun-covered-tour-boat"].source_type,
+  last_verified: WNO_FACTUAL_EVIDENCE_REGISTER["ragin-cajun-covered-tour-boat"].verified_at,
+  review_by: WNO_FACTUAL_EVIDENCE_REGISTER["ragin-cajun-covered-tour-boat"].review_by,
+  verified_by: WNO_FACTUAL_EVIDENCE_REGISTER["ragin-cajun-covered-tour-boat"].verified_by,
 };
 
 const SOUTHERN_STYLE_PROVENANCE: DccProvenance = {
-  source: "Southern Style Tours Commercial Agreement & FareHarbor Schedule (Item #83002)",
-  source_type: "operator_contract",
-  last_verified: "2026-09-01T12:00:00Z",
-  review_by: "2026-12-01T00:00:00Z",
-  verified_by: "contracts@destinations-cc.com",
+  source: WNO_FACTUAL_EVIDENCE_REGISTER["southern-style-oak-alley-laura-plantation"].source_url,
+  source_type: WNO_FACTUAL_EVIDENCE_REGISTER["southern-style-oak-alley-laura-plantation"].source_type,
+  last_verified: WNO_FACTUAL_EVIDENCE_REGISTER["southern-style-oak-alley-laura-plantation"].verified_at,
+  review_by: WNO_FACTUAL_EVIDENCE_REGISTER["southern-style-oak-alley-laura-plantation"].review_by,
+  verified_by: WNO_FACTUAL_EVIDENCE_REGISTER["southern-style-oak-alley-laura-plantation"].verified_by,
 };
 
 const UNVERIFIED_PROVENANCE: DccProvenance = {
   source: "Storefront Catalog Listing (Requires Operator Checkout Verification)",
   source_type: "published_commercial_rate",
-  last_verified: "2026-09-01T12:00:00Z",
+  last_verified: "2026-09-09T23:00:00Z",
   review_by: "2026-12-01T00:00:00Z",
   verified_by: "catalog-audit@destinations-cc.com",
 };
@@ -123,26 +124,26 @@ export function getWnoLocationsFeed(): DccLocationItem[] {
         postal_code: "70130",
         country: "US",
       },
-      meeting_instructions: "Boarding begins 60 minutes prior to sailing (5:00 PM for dinner, 6:00 PM for general boarding). Located on the Mississippi River levee at Toulouse Street behind Jax Brewery.",
+      meeting_instructions: "Boarding begins 60 minutes prior to sailing (6:00 PM for 7:00 PM cruise). Located on the Mississippi River levee at Toulouse Street behind Jax Brewery.",
     },
     {
-      dcc_poi_id: "dcc:poi:nola:barataria-preserve-dock",
-      name: "Ragin Cajun Swamp Tour Marina",
+      dcc_poi_id: "dcc:poi:nola:ragin-cajun-slip-luling",
+      name: "Ragin Cajun Swamp Tour Slips (Luling Launch)",
       destination_id: "dcc:destination:louisiana:new-orleans",
       kind: "swamp_slip",
-      coordinates: { latitude: 29.7428, longitude: -90.1192 },
+      coordinates: { latitude: 29.9248, longitude: -90.3541 },
       physical_address: {
-        street: "5145 Privateer Blvd",
-        city: "Barataria",
+        street: "1265 LA-3127",
+        city: "Luling",
         region: "Louisiana",
-        postal_code: "70036",
+        postal_code: "70070",
         country: "US",
       },
-      meeting_instructions: "For self-drive guests, arrive 30 minutes before scheduled boat departure at the covered marina pavilion. For hotel pickup guests, board designated coach at confirmed French Quarter hotel zone.",
+      meeting_instructions: "Self-drive guests must arrive 30 minutes prior to departure at the Luling slips along LA-3127 (exact slip assigned in booking confirmation). Guests selecting hotel transportation will board the shuttle at their confirmed hotel corridor pickup time.",
     },
     {
-      dcc_poi_id: "dcc:poi:nola:oak-alley-grounds",
-      name: "Oak Alley Plantation Historic Grounds",
+      dcc_poi_id: "dcc:poi:nola:oak-alley-or-laura-grounds",
+      name: "Oak Alley or Laura Plantation Historic Grounds",
       destination_id: "dcc:destination:louisiana:new-orleans",
       kind: "plantation",
       coordinates: { latitude: 30.0053, longitude: -90.7765 },
@@ -153,7 +154,7 @@ export function getWnoLocationsFeed(): DccLocationItem[] {
         postal_code: "70090",
         country: "US",
       },
-      meeting_instructions: "Tour coach arrives at the visitor welcome center ticket plaza. Self-guided grounds access and scheduled Big House tour timing guided by site staff.",
+      meeting_instructions: "Coach transports guests directly from New Orleans to either Oak Alley Plantation (Vacherie) or Laura Plantation (Vacherie) based on selection confirmed during booking handoff.",
       wikidata_id: "Q2165187",
     },
     {
@@ -162,7 +163,7 @@ export function getWnoLocationsFeed(): DccLocationItem[] {
       destination_id: "dcc:destination:louisiana:new-orleans",
       kind: "hotel_zone",
       coordinates: { latitude: 29.9574, longitude: -90.0631 },
-      meeting_instructions: "Designated pickup windows between 8:00 AM and 8:30 AM outside hotel lobbies along Canal Street, Poydras Street, and the French Quarter perimeter.",
+      meeting_instructions: "Designated pickup windows between 8:00 AM and 8:30 AM outside hotel lobbies along Canal Street, Poydras Street, and the French Quarter perimeter for tours offering scheduled hotel transportation.",
     },
   ];
 }
@@ -174,8 +175,8 @@ export function getWnoLocationsFeed(): DccLocationItem[] {
 export function getWnoProductsFeed(): DccProductItem[] {
   return STOREFRONT_PRODUCTS.map((p) => {
     // Determine meeting and attraction locations with factual precision
-    let meetingHub: `dcc:poi:${string}` = "dcc:poi:nola:french-quarter-pickup-zone";
-    let attractionHub: `dcc:poi:${string}` | undefined;
+    let meetingHub: `dcc:poi:${string}` | undefined = undefined;
+    let attractionHub: `dcc:poi:${string}` | undefined = undefined;
     let pickupMode: DccProductItem["locations"]["pickup_mode"] = "requires_operator_confirmation";
 
     if (p.slug === "evening-jazz-cruise") {
@@ -183,12 +184,12 @@ export function getWnoProductsFeed(): DccProductItem[] {
       attractionHub = "dcc:poi:nola:toulouse-street-wharf";
       pickupMode = "self_arrive_only";
     } else if (p.slug === "covered-tour-boat") {
-      meetingHub = "dcc:poi:nola:barataria-preserve-dock";
-      attractionHub = "dcc:poi:nola:barataria-preserve-dock";
+      meetingHub = "dcc:poi:nola:ragin-cajun-slip-luling";
+      attractionHub = "dcc:poi:nola:ragin-cajun-slip-luling";
       pickupMode = "optional_add_on";
     } else if (p.slug === "oak-alley-or-laura-plantation-tour") {
       meetingHub = "dcc:poi:nola:french-quarter-pickup-zone";
-      attractionHub = "dcc:poi:nola:oak-alley-grounds";
+      attractionHub = "dcc:poi:nola:oak-alley-or-laura-grounds";
       pickupMode = "included";
     }
 
@@ -227,7 +228,7 @@ export function getWnoPricingFeed(): DccPriceItem[] {
         currency: "USD",
         verification_status: "verified",
         pricing_structure: "per_person",
-        base_rate: 55.0, // Sightseeing starting rate (Dinner options up to $95-$105)
+        base_rate: 58.0, // Sightseeing starting rate (Dinner options up to $95-$105)
         mandatory_fees: [],
         provenance: STEAMBOAT_PROVENANCE,
       };
@@ -241,7 +242,7 @@ export function getWnoPricingFeed(): DccPriceItem[] {
         verification_status: "verified",
         pricing_structure: "per_person",
         base_rate: 35.0, // Self-drive starting rate
-        rate_with_transportation: 59.0, // With round-trip hotel pickup
+        rate_with_transportation: 60.0, // With round-trip hotel shuttle ($50 child)
         mandatory_fees: [],
         provenance: RAGIN_CAJUN_PROVENANCE,
       };
@@ -292,9 +293,9 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
           note: "Cancellations must be requested at least 24 hours prior to scheduled boarding.",
         },
         weather_guarantee: {
-          is_guaranteed: true,
-          policy_summary: "Cruises sail rain or shine in covered, climate-controlled dining decks. In the rare event of severe river conditions declared unsafe by the USCG or captain, full refunds or rescheduling are provided.",
-          compensation_type: "full_refund_or_reschedule",
+          is_guaranteed: false,
+          policy_summary: "Cruises sail rain or shine. In the event of severe weather where Coast Guard halts navigation, a dockside event is held; refunds are excluded.",
+          compensation_type: "none",
         },
         restrictions: {
           wheelchair_accessible: "full",
@@ -310,9 +311,9 @@ export function getWnoPoliciesFeed(): DccPolicyItem[] {
         dcc_product_id: `dcc:product:wno-${p.slug}`,
         verification_status: "verified",
         cancellation: {
-          full_refund_notice_hours: 24,
+          full_refund_notice_hours: 48,
           cancellation_method: "phone_or_email",
-          note: "24-hour advance cancellation required for full cash refund.",
+          note: "48-hour advance cancellation required for full cash refund. 24-hour notice applies only if Trip Protection was purchased.",
         },
         weather_guarantee: {
           is_guaranteed: true,
@@ -397,7 +398,7 @@ export function getWnoOperatingWindowsFeed(): DccScheduleItem[] {
             description: "Evening Jazz Cruise (Boarding begins 18:00, sails 19:00 to 21:00)",
           },
         ],
-        known_blackout_dates: ["2026-12-25", "2027-02-09"], // Christmas Day and Mardi Gras Day
+        known_blackout_dates: ["2026-12-25"], // Christmas Day (Mardi Gras 2027 is in 2027 season)
         provenance: STEAMBOAT_PROVENANCE,
       };
     }
@@ -441,25 +442,20 @@ export function getWnoOperatingWindowsFeed(): DccScheduleItem[] {
             description: "Full Plantation Day Trip (Morning hotel pickup window 08:00–08:30, returns approx 14:00)",
           },
         ],
-        known_blackout_dates: ["2026-12-25", "2026-11-26", "2027-02-09"],
+        known_blackout_dates: ["2026-11-26", "2026-12-25"],
         provenance: SOUTHERN_STYLE_PROVENANCE,
       };
     }
 
-    // All other 18 catalog products: declare confirmation required without fictitious uniform times!
+    // All other 18 catalog products: genuine unknowns without fictitious season ranges or blackout dates!
     return {
       sku: `wno-${p.slug}`,
       dcc_product_id: `dcc:product:wno-${p.slug}`,
       time_zone: "America/Chicago",
       verification_status: "requires_operator_confirmation",
-      season: {
-        start_date: "2026-01-01",
-        end_date: "2026-12-31",
-        season_type: "year_round",
-      },
       daily_departures: [],
-      known_blackout_dates: ["2026-12-25"],
-      schedule_note: "Departure schedules vary by day and season; live availability is confirmed in operator checkout.",
+      known_blackout_dates: [],
+      schedule_note: "Operating season, departure times, and blackout dates are confirmed in live operator reservation calendar.",
       provenance: UNVERIFIED_PROVENANCE,
     };
   });

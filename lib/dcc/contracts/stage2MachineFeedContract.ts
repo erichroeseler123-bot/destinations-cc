@@ -85,7 +85,7 @@ export interface DccProductItem {
     company_shortname: string;
   };
   locations: {
-    meeting_hub: `dcc:poi:${string}`;
+    meeting_hub?: `dcc:poi:${string}`;
     attraction_hub?: `dcc:poi:${string}`;
     pickup_mode: "included" | "optional_add_on" | "self_arrive_only" | "requires_operator_confirmation";
   };
@@ -155,7 +155,7 @@ export interface DccScheduleItem {
   dcc_product_id: `dcc:product:${string}`;
   time_zone: string; // e.g. "America/Chicago"
   verification_status: "verified" | "requires_operator_confirmation";
-  season: {
+  season?: {
     start_date: string; // YYYY-MM-DD
     end_date: string;   // YYYY-MM-DD
     season_type: "year_round" | "summer_cruise_only" | "winter_ski_only";
@@ -406,7 +406,7 @@ export function validateProductFeed(items: unknown[]): ValidationResult {
     if (!prod.operator || !isValidDccId(prod.operator.dcc_operator_id, "dcc:operator")) {
       errors.push(`${prefix}: operator.dcc_operator_id must match 'dcc:operator:*'`);
     }
-    if (!prod.locations?.meeting_hub || !isValidDccId(prod.locations.meeting_hub, "dcc:poi")) {
+    if (prod.locations?.meeting_hub && !isValidDccId(prod.locations.meeting_hub, "dcc:poi")) {
       errors.push(`${prefix}: locations.meeting_hub must match 'dcc:poi:*'`);
     }
     if (prod.locations?.attraction_hub && !isValidDccId(prod.locations.attraction_hub, "dcc:poi")) {
@@ -439,11 +439,14 @@ export function validateOperatingWindowsFeed(items: unknown[]): ValidationResult
     }
 
     if (sched.verification_status === "verified") {
+      if (!sched.season || !sched.season.start_date || !sched.season.end_date) {
+        errors.push(`${prefix}: verified item must specify season start_date and end_date`);
+      }
       if (!Array.isArray(sched.daily_departures) || sched.daily_departures.length === 0) {
         errors.push(`${prefix}: verified item must list at least one departure time`);
       } else {
         for (const dep of sched.daily_departures) {
-          if (!/^[0-2][0-9]:[0-5][0-9]$/.test(dep.departure_time_local)) {
+          if (!/^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(dep.departure_time_local)) {
             errors.push(`${prefix}: departure_time_local must be in 24h HH:MM format`);
           }
           if (typeof dep.duration_minutes !== "number" || dep.duration_minutes <= 0) {
@@ -457,6 +460,16 @@ export function validateOperatingWindowsFeed(items: unknown[]): ValidationResult
       }
     } else {
       errors.push(`${prefix}: verification_status must be 'verified' or 'requires_operator_confirmation'`);
+    }
+
+    if (sched.season?.start_date && sched.season?.end_date && Array.isArray(sched.known_blackout_dates)) {
+      for (const bDate of sched.known_blackout_dates) {
+        if (bDate < sched.season.start_date || bDate > sched.season.end_date) {
+          errors.push(
+            `${prefix}: blackout date (${bDate}) falls outside declared season range (${sched.season.start_date} to ${sched.season.end_date})`
+          );
+        }
+      }
     }
 
     const provErrors = validateProvenance(sched.provenance, `${prefix}.provenance`);

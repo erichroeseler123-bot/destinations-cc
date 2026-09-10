@@ -229,6 +229,46 @@ test("Stage 2 Contract: Operating Windows Modeling", async (t) => {
     assert.equal(result.valid, false);
     assert.ok(result.errors.some((e) => e.includes("time_zone is required")));
   });
+
+  await t.test("rejects invalid clock time format (e.g. 29:59)", () => {
+    const badTimeSchedule: DccScheduleItem = {
+      sku: "wno-bad-clock-time",
+      dcc_product_id: "dcc:product:wno-bad-clock-time",
+      time_zone: "America/Chicago",
+      verification_status: "verified",
+      season: {
+        start_date: "2026-01-01",
+        end_date: "2026-12-31",
+        season_type: "year_round",
+      },
+      daily_departures: [{ departure_time_local: "29:59", duration_minutes: 120 }],
+      known_blackout_dates: [],
+      provenance: SAMPLE_PROVENANCE,
+    };
+    const result = validateOperatingWindowsFeed([badTimeSchedule]);
+    assert.equal(result.valid, false);
+    assert.ok(result.errors.some((e) => e.includes("departure_time_local must be in 24h HH:MM format")));
+  });
+
+  await t.test("rejects blackout date falling outside declared season range", () => {
+    const outOfBoundsSchedule: DccScheduleItem = {
+      sku: "wno-out-of-bounds-blackout",
+      dcc_product_id: "dcc:product:wno-out-of-bounds-blackout",
+      time_zone: "America/Chicago",
+      verification_status: "verified",
+      season: {
+        start_date: "2026-01-01",
+        end_date: "2026-12-31",
+        season_type: "year_round",
+      },
+      daily_departures: [{ departure_time_local: "19:00", duration_minutes: 120 }],
+      known_blackout_dates: ["2027-02-09"], // 2027 date in 2026 season
+      provenance: SAMPLE_PROVENANCE,
+    };
+    const result = validateOperatingWindowsFeed([outOfBoundsSchedule]);
+    assert.equal(result.valid, false);
+    assert.ok(result.errors.some((e) => e.includes("falls outside declared season range")));
+  });
 });
 
 test("WNO Pilot: 3-Offering Factual Verification", async (t) => {
@@ -244,6 +284,7 @@ test("WNO Pilot: 3-Offering Factual Verification", async (t) => {
     assert.equal(sched.daily_departures[0].departure_time_local, "19:00");
     assert.equal(sched.daily_departures[0].duration_minutes, 120);
     assert.equal(sched.time_zone, "America/Chicago");
+    assert.deepEqual(sched.known_blackout_dates, ["2026-12-25"]);
 
     const prod = products.find((p) => p.sku === "wno-evening-jazz-cruise")!;
     assert.equal(prod.locations.meeting_hub, "dcc:poi:nola:toulouse-street-wharf");
@@ -251,10 +292,16 @@ test("WNO Pilot: 3-Offering Factual Verification", async (t) => {
 
     const price = pricing.find((p) => p.sku === "wno-evening-jazz-cruise")!;
     assert.equal(price.verification_status, "verified");
-    assert.equal(price.base_rate, 55.0);
+    assert.equal(price.base_rate, 58.0);
+
+    const pol = policies.find((p) => p.sku === "wno-evening-jazz-cruise")!;
+    assert.equal(pol.verification_status, "verified");
+    assert.equal(pol.cancellation.full_refund_notice_hours, 24);
+    assert.equal(pol.weather_guarantee.is_guaranteed, false);
+    assert.equal(pol.weather_guarantee.compensation_type, "none");
   });
 
-  await t.test("2. Covered Tour Boat has 3 daytime departures & slip location", () => {
+  await t.test("2. Covered Tour Boat has 3 daytime departures & Luling slip location", () => {
     const sched = schedules.find((s) => s.sku === "wno-covered-tour-boat")!;
     assert.equal(sched.verification_status, "verified");
     assert.equal(sched.daily_departures.length, 3);
@@ -265,19 +312,20 @@ test("WNO Pilot: 3-Offering Factual Verification", async (t) => {
     assert.equal(sched.daily_departures[0].duration_minutes, 105);
 
     const prod = products.find((p) => p.sku === "wno-covered-tour-boat")!;
-    assert.equal(prod.locations.meeting_hub, "dcc:poi:nola:barataria-preserve-dock");
+    assert.equal(prod.locations.meeting_hub, "dcc:poi:nola:ragin-cajun-slip-luling");
     assert.equal(prod.locations.pickup_mode, "optional_add_on");
 
     const price = pricing.find((p) => p.sku === "wno-covered-tour-boat")!;
     assert.equal(price.base_rate, 35.0);
-    assert.equal(price.rate_with_transportation, 59.0);
+    assert.equal(price.rate_with_transportation, 60.0);
 
     const pol = policies.find((p) => p.sku === "wno-covered-tour-boat")!;
+    assert.equal(pol.cancellation.full_refund_notice_hours, 48);
     assert.equal(pol.weather_guarantee.is_guaranteed, true);
     assert.equal(pol.weather_guarantee.compensation_type, "full_refund_or_reschedule");
   });
 
-  await t.test("3. Oak Alley Tour has morning pickup & separate attraction location", () => {
+  await t.test("3. Oak Alley or Laura Plantation Tour has morning pickup & dual plantation destination", () => {
     const sched = schedules.find((s) => s.sku === "wno-oak-alley-or-laura-plantation-tour")!;
     assert.equal(sched.verification_status, "verified");
     assert.equal(sched.daily_departures[0].departure_time_local, "08:15");
@@ -286,15 +334,20 @@ test("WNO Pilot: 3-Offering Factual Verification", async (t) => {
     const prod = products.find((p) => p.sku === "wno-oak-alley-or-laura-plantation-tour")!;
     // Meeting location (pickup) is French Quarter hotel corridor
     assert.equal(prod.locations.meeting_hub, "dcc:poi:nola:french-quarter-pickup-zone");
-    // Destination attraction is Oak Alley Grounds
-    assert.equal(prod.locations.attraction_hub, "dcc:poi:nola:oak-alley-grounds");
+    // Destination attraction is Oak Alley or Laura Grounds
+    assert.equal(prod.locations.attraction_hub, "dcc:poi:nola:oak-alley-or-laura-grounds");
     assert.equal(prod.locations.pickup_mode, "included");
+
+    const price = pricing.find((p) => p.sku === "wno-oak-alley-or-laura-plantation-tour")!;
+    assert.equal(price.base_rate, 85.0);
 
     const pol = policies.find((p) => p.sku === "wno-oak-alley-or-laura-plantation-tour")!;
     assert.equal(pol.cancellation.full_refund_notice_hours, 48);
+    assert.equal(pol.weather_guarantee.is_guaranteed, false);
+    assert.equal(pol.weather_guarantee.compensation_type, "none");
   });
 
-  await t.test("4. Remaining 18 offerings declare requires_operator_confirmation", () => {
+  await t.test("4. Remaining 18 offerings declare requires_operator_confirmation with genuine unknowns", () => {
     const unverifiedPricing = pricing.filter((p) => p.verification_status === "requires_operator_confirmation");
     assert.equal(unverifiedPricing.length, 18);
     for (const p of unverifiedPricing) {
@@ -306,7 +359,18 @@ test("WNO Pilot: 3-Offering Factual Verification", async (t) => {
     assert.equal(unverifiedSchedules.length, 18);
     for (const s of unverifiedSchedules) {
       assert.equal(s.daily_departures.length, 0, `Expected 0 daily departures for unverified ${s.sku}`);
+      assert.equal(s.known_blackout_dates.length, 0, `Expected 0 blackout dates for unverified ${s.sku}`);
+      assert.equal(s.season, undefined, `Expected undefined season for unverified ${s.sku}`);
       assert.ok(s.schedule_note);
+    }
+
+    const unverifiedProducts = products.filter(
+      (p) => !["wno-evening-jazz-cruise", "wno-covered-tour-boat", "wno-oak-alley-or-laura-plantation-tour"].includes(p.sku)
+    );
+    assert.equal(unverifiedProducts.length, 18);
+    for (const p of unverifiedProducts) {
+      assert.equal(p.locations.meeting_hub, undefined, `Expected undefined meeting_hub for unverified ${p.sku}`);
+      assert.equal(p.locations.pickup_mode, "requires_operator_confirmation");
     }
   });
 });
