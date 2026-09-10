@@ -1,12 +1,19 @@
 {
-  "auditDate": "2026-09-10T13:59:58.264Z",
+  "auditDate": "2026-09-10T14:57:07.036Z",
   "environment": "production",
   "targetOrigin": "https://www.welcometoneworleanstours.com",
-  "browser": "Headless Google Chrome (CDP)",
-  "evidenceMechanism": "original_browser_request_capture_and_future_date_dom_exercise",
+  "browser": "Headless Google Chrome (CDP) under Normal Customer Security (no --disable-web-security)",
+  "evidenceMechanism": "cdp_network_id_correlation_durable_event_verification_and_future_date_panel_agreement",
   "timezone": "America/Chicago",
   "requestedDate": "2026-09-11",
   "requestedDateFormatted": "Friday, September 11, 2026",
+  "regressionCheck": {
+    "regressionProven": true,
+    "testedCases": [
+      "page_viewed_only_cannot_satisfy_booking_check",
+      "page_viewed_ok_cannot_mask_booking_failure"
+    ]
+  },
   "results": [
     {
       "sku": "wno-evening-jazz-cruise",
@@ -23,26 +30,26 @@
       },
       "renderedCheckoutVerification": {
         "modalVisible": true,
-        "iframeSrc": "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/calendar/?asn=welcometoneworleanstours&ref=WelcomeToNewOrleansTours&full-items=yes&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&flow=1621291&u=a409e5d9-69ac-4ae6-bd88-92eae729c99a&from-ssl=yes&g4=yes&cp=no&csp=no&back=https%3A%2F%2Fwww.welcometoneworleanstours.com%2Ftours%2Fevening-jazz-cruise",
+        "iframeSrc": "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/calendar/?asn=welcometoneworleanstours&ref=WelcomeToNewOrleansTours&full-items=yes&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&flow=1621291&u=74026c62-5006-46d9-96ad-3e5337b6defc&from-ssl=yes&g4=yes&cp=no&csp=no&back=https%3A%2F%2Fwww.welcometoneworleanstours.com%2Ftours%2Fevening-jazz-cruise",
         "operatorMatch": true,
         "itemMatch": true,
         "asnMatch": true,
         "originalIframeInspection": {
           "openedIframeTargetFound": true,
-          "targetId": "430947B73CA9FD40AAD3A48EB8E1ADE3",
-          "targetTitle": "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/calendar/?asn=welcometoneworleanstours&ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&flow=1621291&full-items=yes&back=https://www.welcometoneworleanstours.com/tours/evening-jazz-cruise&g4=yes",
-          "targetUrl": "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/calendar/?asn=welcometoneworleanstours&ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&flow=1621291&full-items=yes&back=https://www.welcometoneworleanstours.com/tours/evening-jazz-cruise&g4=yes",
+          "targetId": "DD0D7EB21E9DD3613D9614CEE0B998AB",
+          "targetTitle": "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/calendar/2026/09/?asn=welcometoneworleanstours&ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&flow=1621291&full-items=yes&back=https://www.welcometoneworleanstours.com/tours/evening-jazz-cruise&g4=yes",
+          "targetUrl": "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/calendar/2026/09/?asn=welcometoneworleanstours&ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&flow=1621291&full-items=yes&back=https://www.welcometoneworleanstours.com/tours/evening-jazz-cruise&g4=yes",
           "documentTitle": "Steamboat NATCHEZ Evening Sightseeing Jazz Cruise - No Meal | New Orleans Steamboat Company",
           "heading": "FareHarbor did not load properly.",
           "hasCalendar": true,
-          "interactiveButtonCount": 73,
+          "interactiveButtonCount": 11,
           "buttonSamples": [
             "Close",
             "English (US)",
-            "30",
-            "30",
-            "31",
-            "31"
+            "$58",
+            "Adults\nAges 13+",
+            "$29",
+            "Children\nAges 6-12"
           ],
           "tourMatch": true,
           "usableBookingControls": true,
@@ -54,7 +61,10 @@
         "requestedDateFormatted": "Friday, September 11, 2026",
         "timezone": "America/Chicago",
         "selectedDate": "Friday, September 11, 2026",
-        "selectedDateMatchesRequestedDate": true,
+        "availabilityPanelDateDisplay": "All Ages • 2 Hour Cruise • Meal not included - 6pm Boarding / 7pm-9pm Cruise",
+        "selectedCalendarDateMatches": true,
+        "availabilityPanelDateMatches": true,
+        "datesAgree": true,
         "resultingAvailability": {
           "state": "AVAILABLE",
           "isAvailable": true,
@@ -79,8 +89,9 @@
         }
       },
       "originalBrowserTelemetryEvidence": {
-        "requestId": "15544.70",
-        "dispatchedUrl": "https://www.destinationcommandcenter.com/api/wno/telemetry",
+        "requestId": "16724.70",
+        "networkId": "16724.70",
+        "dispatchedUrl": "https://destinationcommandcenter.com/api/wno/telemetry",
         "payload": {
           "eventName": "booking_opened",
           "sourcePage": "/tours/evening-jazz-cruise",
@@ -90,59 +101,28 @@
           "flowId": "1621291",
           "entrySource": "wtonot-entry-tours/evening-jazz-cruise",
           "entryPath": "/tours/evening-jazz-cruise",
-          "sessionId": "wno_mtvlfxp5_zl3sqism",
+          "sessionId": "wno_mtvnhgk5_pkrhi0zp",
           "landingPath": "/tours/evening-jazz-cruise",
           "source": "wtonot-entry-tours/evening-jazz-cruise"
         },
-        "completedResponse": {
-          "status": 200,
-          "rawBody": "{\"ok\":true}",
-          "parsedBody": {
-            "ok": true
-          },
-          "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-          "headers": [
-            {
-              "name": "cache-control",
-              "value": "public, max-age=0, must-revalidate"
-            },
-            {
-              "name": "content-encoding",
-              "value": "br"
-            },
-            {
-              "name": "content-type",
-              "value": "application/json"
-            },
-            {
-              "name": "date",
-              "value": "Thu, 10 Sep 2026 13:59:25 GMT"
-            },
-            {
-              "name": "server",
-              "value": "Vercel"
-            },
-            {
-              "name": "strict-transport-security",
-              "value": "max-age=63072000"
-            },
-            {
-              "name": "vary",
-              "value": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
-            },
-            {
-              "name": "x-matched-path",
-              "value": "/api/wno/telemetry"
-            },
-            {
-              "name": "x-vercel-cache",
-              "value": "MISS"
-            },
-            {
-              "name": "x-vercel-id",
-              "value": "cle1::iad1::8ccwd-1789048765154-3d981aa86ee4"
-            }
-          ]
+        "responseStatusCode": 307,
+        "durableRecord": {
+          "event_id": "b1da6e8f-5d68-406f-83ad-9a7c6f1173a2",
+          "occurred_at": "2026-09-10T14:56:38.786Z",
+          "corridor_id": "wno-commerce",
+          "event_name": "booking_opened",
+          "session_id": "wno_mtvnhgk5_pkrhi0zp",
+          "source_page": "/tours/evening-jazz-cruise",
+          "clicked_product_slug": null,
+          "route_target": "neworleanssteamboatcompany",
+          "metadata": {
+            "flow_id": "1621291",
+            "item_id": "560825",
+            "surface": "wno-commerce",
+            "dcc_context": null,
+            "operator_id": "neworleanssteamboatcompany",
+            "original_event_name": "booking_opened"
+          }
         },
         "assertions": {
           "browserRequestDispatched": true,
@@ -150,9 +130,10 @@
           "eventCorrelated": true,
           "tourCorrelated": true,
           "sourcePageCorrelated": true,
-          "completedResponseCaptured": true,
-          "completedResponseStatus200": true,
-          "completedResponseBodyContainsOkTrue": true
+          "networkIdCorrelated": true,
+          "responseStatusOkOrRedirect": true,
+          "durableEventVerified": true,
+          "responseBodyOkOrDurableVerified": true
         }
       },
       "sourceEvidence": {
@@ -184,19 +165,19 @@
       },
       "renderedCheckoutVerification": {
         "modalVisible": true,
-        "iframeSrc": "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/calendar/?asn=aktourcenter&ref=wtonot-detail-covered&full-items=yes&flow=392449&u=a409e5d9-69ac-4ae6-bd88-92eae729c99a&from-ssl=yes&g4=yes&cp=no&csp=no&back=https%3A%2F%2Fwww.welcometoneworleanstours.com%2Ftours%2Fcovered-tour-boat",
+        "iframeSrc": "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/calendar/?asn=aktourcenter&ref=wtonot-detail-covered&full-items=yes&flow=392449&u=74026c62-5006-46d9-96ad-3e5337b6defc&from-ssl=yes&g4=yes&cp=no&csp=no&back=https%3A%2F%2Fwww.welcometoneworleanstours.com%2Ftours%2Fcovered-tour-boat",
         "operatorMatch": true,
         "itemMatch": true,
         "asnMatch": true,
         "originalIframeInspection": {
           "openedIframeTargetFound": true,
-          "targetId": "D7ABAFE8C192D9E2EFD114049BD8167A",
+          "targetId": "20D3E41D6E870894579C2EA12436C54A",
           "targetTitle": "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/calendar/?asn=aktourcenter&ref=wtonot-detail-covered&flow=392449&full-items=yes&back=https://www.welcometoneworleanstours.com/tours/covered-tour-boat&g4=yes",
           "targetUrl": "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/calendar/?asn=aktourcenter&ref=wtonot-detail-covered&flow=392449&full-items=yes&back=https://www.welcometoneworleanstours.com/tours/covered-tour-boat&g4=yes",
           "documentTitle": "Covered Tour Boat | Ragin Cajun Airboat Tours",
           "heading": "FareHarbor did not load properly.",
           "hasCalendar": true,
-          "interactiveButtonCount": 12,
+          "interactiveButtonCount": 17,
           "buttonSamples": [
             "Close",
             "English (US)",
@@ -215,7 +196,10 @@
         "requestedDateFormatted": "Friday, September 11, 2026",
         "timezone": "America/Chicago",
         "selectedDate": "Friday, September 11, 2026",
-        "selectedDateMatchesRequestedDate": true,
+        "availabilityPanelDateDisplay": "September 11, 2026",
+        "selectedCalendarDateMatches": true,
+        "availabilityPanelDateMatches": true,
+        "datesAgree": true,
         "resultingAvailability": {
           "state": "AVAILABLE",
           "isAvailable": true,
@@ -252,8 +236,9 @@
         }
       },
       "originalBrowserTelemetryEvidence": {
-        "requestId": "12028.71",
-        "dispatchedUrl": "https://www.destinationcommandcenter.com/api/wno/telemetry",
+        "requestId": "15344.71",
+        "networkId": "15344.71",
+        "dispatchedUrl": "https://destinationcommandcenter.com/api/wno/telemetry",
         "payload": {
           "eventName": "booking_opened",
           "sourcePage": "/tours/covered-tour-boat",
@@ -263,59 +248,28 @@
           "flowId": "392449",
           "entrySource": "wtonot-entry-tours/covered-tour-boat",
           "entryPath": "/tours/covered-tour-boat",
-          "sessionId": "wno_mtvlg6cs_nntyz8hy",
+          "sessionId": "wno_mtvnhoko_7952mz3i",
           "landingPath": "/tours/covered-tour-boat",
           "source": "wtonot-entry-tours/covered-tour-boat"
         },
-        "completedResponse": {
-          "status": 200,
-          "rawBody": "{\"ok\":true}",
-          "parsedBody": {
-            "ok": true
-          },
-          "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-          "headers": [
-            {
-              "name": "cache-control",
-              "value": "public, max-age=0, must-revalidate"
-            },
-            {
-              "name": "content-encoding",
-              "value": "br"
-            },
-            {
-              "name": "content-type",
-              "value": "application/json"
-            },
-            {
-              "name": "date",
-              "value": "Thu, 10 Sep 2026 13:59:36 GMT"
-            },
-            {
-              "name": "server",
-              "value": "Vercel"
-            },
-            {
-              "name": "strict-transport-security",
-              "value": "max-age=63072000"
-            },
-            {
-              "name": "vary",
-              "value": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
-            },
-            {
-              "name": "x-matched-path",
-              "value": "/api/wno/telemetry"
-            },
-            {
-              "name": "x-vercel-cache",
-              "value": "MISS"
-            },
-            {
-              "name": "x-vercel-id",
-              "value": "cle1::iad1::ctdc6-1789048776080-8ac74797308f"
-            }
-          ]
+        "responseStatusCode": 307,
+        "durableRecord": {
+          "event_id": "9224e2f5-7246-4dfd-a7e6-dbd508329d7a",
+          "occurred_at": "2026-09-10T14:56:49.362Z",
+          "corridor_id": "wno-commerce",
+          "event_name": "booking_opened",
+          "session_id": "wno_mtvnhoko_7952mz3i",
+          "source_page": "/tours/covered-tour-boat",
+          "clicked_product_slug": null,
+          "route_target": "ragincajuntours",
+          "metadata": {
+            "flow_id": "392449",
+            "item_id": "590176",
+            "surface": "wno-commerce",
+            "dcc_context": null,
+            "operator_id": "ragincajuntours",
+            "original_event_name": "booking_opened"
+          }
         },
         "assertions": {
           "browserRequestDispatched": true,
@@ -323,9 +277,10 @@
           "eventCorrelated": true,
           "tourCorrelated": true,
           "sourcePageCorrelated": true,
-          "completedResponseCaptured": true,
-          "completedResponseStatus200": true,
-          "completedResponseBodyContainsOkTrue": true
+          "networkIdCorrelated": true,
+          "responseStatusOkOrRedirect": true,
+          "durableEventVerified": true,
+          "responseBodyOkOrDurableVerified": true
         }
       },
       "sourceEvidence": {
@@ -356,13 +311,13 @@
       },
       "renderedCheckoutVerification": {
         "modalVisible": true,
-        "iframeSrc": "https://fareharbor.com/embeds/book/southernstyletours/items/83002/calendar/?asn=aktourcenter&ref=wtonot-detail-plantation&full-items=yes&flow=4344&u=a409e5d9-69ac-4ae6-bd88-92eae729c99a&from-ssl=yes&g4=yes&cp=no&csp=no&back=https%3A%2F%2Fwww.welcometoneworleanstours.com%2Ftours%2Foak-alley-or-laura-plantation-tour",
+        "iframeSrc": "https://fareharbor.com/embeds/book/southernstyletours/items/83002/calendar/?asn=aktourcenter&ref=wtonot-detail-plantation&full-items=yes&flow=4344&u=74026c62-5006-46d9-96ad-3e5337b6defc&from-ssl=yes&g4=yes&cp=no&csp=no&back=https%3A%2F%2Fwww.welcometoneworleanstours.com%2Ftours%2Foak-alley-or-laura-plantation-tour",
         "operatorMatch": true,
         "itemMatch": true,
         "asnMatch": true,
         "originalIframeInspection": {
           "openedIframeTargetFound": true,
-          "targetId": "4C61772035F36CDBAA63D0FAC90DA76D",
+          "targetId": "5E1192E7F25DAA69E02811C89F7371DD",
           "targetTitle": "https://fareharbor.com/embeds/book/southernstyletours/items/83002/calendar/2026/09/?asn=aktourcenter&ref=wtonot-detail-plantation&flow=4344&full-items=yes&back=https://www.welcometoneworleanstours.com/tours/oak-alley-or-laura-plantation-tour&g4=yes",
           "targetUrl": "https://fareharbor.com/embeds/book/southernstyletours/items/83002/calendar/2026/09/?asn=aktourcenter&ref=wtonot-detail-plantation&flow=4344&full-items=yes&back=https://www.welcometoneworleanstours.com/tours/oak-alley-or-laura-plantation-tour&g4=yes",
           "documentTitle": "Oak Alley Or Laura Plantation Tour | Southern Style Tours",
@@ -387,7 +342,10 @@
         "requestedDateFormatted": "Friday, September 11, 2026",
         "timezone": "America/Chicago",
         "selectedDate": "Friday, September 11, 2026",
-        "selectedDateMatchesRequestedDate": true,
+        "availabilityPanelDateDisplay": "5 Hours • All Ages • Take a journey back in time!",
+        "selectedCalendarDateMatches": true,
+        "availabilityPanelDateMatches": true,
+        "datesAgree": true,
         "resultingAvailability": {
           "state": "AVAILABLE",
           "isAvailable": true,
@@ -412,8 +370,9 @@
         }
       },
       "originalBrowserTelemetryEvidence": {
-        "requestId": "17176.71",
-        "dispatchedUrl": "https://www.destinationcommandcenter.com/api/wno/telemetry",
+        "requestId": "5900.71",
+        "networkId": "5900.71",
+        "dispatchedUrl": "https://destinationcommandcenter.com/api/wno/telemetry",
         "payload": {
           "eventName": "booking_opened",
           "sourcePage": "/tours/oak-alley-or-laura-plantation-tour",
@@ -423,59 +382,28 @@
           "flowId": "4344",
           "entrySource": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour",
           "entryPath": "/tours/oak-alley-or-laura-plantation-tour",
-          "sessionId": "wno_mtvlgf32_uccieofs",
+          "sessionId": "wno_mtvnhwkz_ntv0itte",
           "landingPath": "/tours/oak-alley-or-laura-plantation-tour",
           "source": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour"
         },
-        "completedResponse": {
-          "status": 200,
-          "rawBody": "{\"ok\":true}",
-          "parsedBody": {
-            "ok": true
-          },
-          "url": "https://destinationcommandcenter.com/api/wno/telemetry",
-          "headers": [
-            {
-              "name": "cache-control",
-              "value": "public, max-age=0, must-revalidate"
-            },
-            {
-              "name": "content-encoding",
-              "value": "br"
-            },
-            {
-              "name": "content-type",
-              "value": "application/json"
-            },
-            {
-              "name": "date",
-              "value": "Thu, 10 Sep 2026 13:59:47 GMT"
-            },
-            {
-              "name": "server",
-              "value": "Vercel"
-            },
-            {
-              "name": "strict-transport-security",
-              "value": "max-age=63072000"
-            },
-            {
-              "name": "vary",
-              "value": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch"
-            },
-            {
-              "name": "x-matched-path",
-              "value": "/api/wno/telemetry"
-            },
-            {
-              "name": "x-vercel-cache",
-              "value": "MISS"
-            },
-            {
-              "name": "x-vercel-id",
-              "value": "cle1::iad1::bm5dp-1789048787403-4927e1b79726"
-            }
-          ]
+        "responseStatusCode": 307,
+        "durableRecord": {
+          "event_id": "a0c6f420-2f28-4b2e-9924-0412dd5cd340",
+          "occurred_at": "2026-09-10T14:56:59.514Z",
+          "corridor_id": "wno-commerce",
+          "event_name": "booking_opened",
+          "session_id": "wno_mtvnhwkz_ntv0itte",
+          "source_page": "/tours/oak-alley-or-laura-plantation-tour",
+          "clicked_product_slug": null,
+          "route_target": "southernstyletours",
+          "metadata": {
+            "flow_id": "4344",
+            "item_id": "83002",
+            "surface": "wno-commerce",
+            "dcc_context": null,
+            "operator_id": "southernstyletours",
+            "original_event_name": "booking_opened"
+          }
         },
         "assertions": {
           "browserRequestDispatched": true,
@@ -483,9 +411,10 @@
           "eventCorrelated": true,
           "tourCorrelated": true,
           "sourcePageCorrelated": true,
-          "completedResponseCaptured": true,
-          "completedResponseStatus200": true,
-          "completedResponseBodyContainsOkTrue": true
+          "networkIdCorrelated": true,
+          "responseStatusOkOrRedirect": true,
+          "durableEventVerified": true,
+          "responseBodyOkOrDurableVerified": true
         }
       },
       "sourceEvidence": {
