@@ -1,7 +1,7 @@
 import { getWnoOperatingWindowsFeed } from "@/app/new-orleans/data/wnoFeedsData";
 import { validateOperatingWindowsFeed } from "@/lib/dcc/contracts/stage2MachineFeedContract";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export function GET() {
   const schedules = getWnoOperatingWindowsFeed();
