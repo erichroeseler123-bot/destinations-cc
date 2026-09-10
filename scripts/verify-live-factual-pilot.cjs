@@ -82,13 +82,15 @@ async function verify() {
   const oakProd = products?.products?.find((p) => p.sku === 'wno-oak-alley-or-laura-plantation-tour');
   console.log('   - Pricing verification status:', oakPrice?.verification_status);
   console.log('   - Schedule verification status:', oakSched?.verification_status);
-  console.log('   - Candidate destination hubs:', oakProd?.locations?.candidate_destination_hubs);
+  console.log('   - Possible destination hubs:', oakProd?.locations?.possible_destinations);
   const oakOk = 
     oakPrice?.verification_status === 'requires_operator_confirmation' &&
     oakSched?.verification_status === 'requires_operator_confirmation' &&
-    Array.isArray(oakProd?.locations?.candidate_destination_hubs) &&
-    oakProd?.locations?.candidate_destination_hubs.includes('dcc:poi:nola:oak-alley-plantation') &&
-    oakProd?.locations?.candidate_destination_hubs.includes('dcc:poi:nola:laura-plantation');
+    Array.isArray(oakProd?.locations?.possible_destinations) &&
+    oakProd?.locations?.possible_destinations.includes('dcc:poi:nola:oak-alley-plantation-grounds') &&
+    oakProd?.locations?.possible_destinations.includes('dcc:poi:nola:laura-plantation-grounds') &&
+    oakProd?.locations?.destination_selection === 'determined_during_booking' &&
+    oakProd?.locations?.meeting_hub === undefined;
   console.log('   => Oak Alley Plantation Verification:', oakOk ? 'PASS ✅' : 'FAIL ❌');
 
   const allPassed = idsMatch && jazzOk && boatOk && oakOk;
