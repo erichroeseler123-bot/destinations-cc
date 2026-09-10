@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+// Stage 2 Machine Contract Pilot Release
 const nextConfig = {
   images: {
     formats: ["image/webp"],

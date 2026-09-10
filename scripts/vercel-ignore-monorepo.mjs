@@ -21,7 +21,11 @@ const projectPaths = {
     ".github/workflows/deploy-saveonthestrip.yml",
   ],
   prj_I9q7K5y6J7jbHWJ7QFVCE2GQW5T3: ["apps/welcometothedells"],
-  prj_G4aMmGzfGoWKyVZ9wTgUPf5D7rrS: ["apps/welcometoneworleanstours"],
+  prj_G4aMmGzfGoWKyVZ9wTgUPf5D7rrS: [
+    "apps/welcometoneworleanstours",
+    "app/new-orleans",
+    "lib/dcc",
+  ],
   prj_YfLWOIm1TuSgA6E8Je3TANQvoDfo: ["apps/frenchquarterorientation"],
 };
 
