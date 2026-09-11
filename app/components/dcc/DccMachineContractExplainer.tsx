@@ -31,7 +31,8 @@ export default function DccMachineContractExplainer() {
         </div>
 
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link href="/developers" className="rounded-xl bg-cyan-300 px-5 py-3 text-sm font-black text-[#041216] transition hover:bg-cyan-200">Developer guide →</Link>
+          <Link href="/demo" className="rounded-xl bg-cyan-300 px-5 py-3 text-sm font-black text-[#041216] transition hover:bg-cyan-200">Live Endpoint Hydration Demo →</Link>
+          <Link href="/developers" className="rounded-xl border border-white/12 px-5 py-3 text-sm font-black text-white/75 transition hover:bg-white/[0.05]">Developer guide</Link>
           <a href="/openapi.json" className="rounded-xl border border-white/12 px-5 py-3 text-sm font-black text-white/75 transition hover:bg-white/[0.05]">OpenAPI</a>
           <a href="/agent.json" className="rounded-xl border border-white/12 px-5 py-3 text-sm font-black text-white/75 transition hover:bg-white/[0.05]">Agent contract</a>
         </div>
