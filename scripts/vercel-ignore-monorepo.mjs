@@ -43,6 +43,9 @@ const sharedBuildInputs = [
   "pnpm-lock.yaml",
   "package-lock.json",
   "yarn.lock",
+  "vercel.json",
+  "scripts/vercel-build-monorepo.mjs",
+  "scripts/vercel-ignore-monorepo.mjs",
 ];
 
 const changed = spawnSync(

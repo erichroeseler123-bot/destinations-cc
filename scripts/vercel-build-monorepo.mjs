@@ -1,20 +1,26 @@
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 
+import fs from "node:fs";
+
 const WNO_PROJECT_ID = "prj_G4aMmGzfGoWKyVZ9wTgUPf5D7rrS";
 const cwd = process.cwd();
 
+let root = "";
 const rootResult = spawnSync("git", ["rev-parse", "--show-toplevel"], {
   cwd,
   encoding: "utf8",
 });
 
-if (rootResult.status !== 0) {
-  console.error("Could not resolve repository root for Vercel build.");
-  process.exit(rootResult.status || 1);
+if (rootResult.status === 0 && rootResult.stdout && rootResult.stdout.trim()) {
+  root = rootResult.stdout.trim();
+} else if (fs.existsSync(path.join(cwd, "package.json")) && fs.existsSync(path.join(cwd, "apps"))) {
+  root = cwd;
+} else if (fs.existsSync(path.join(cwd, "../../package.json"))) {
+  root = path.resolve(cwd, "../..");
+} else {
+  root = cwd;
 }
-
-const root = rootResult.stdout.trim();
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
