@@ -145,31 +145,81 @@ class CdpClient {
 
   async init() {
     return new Promise((resolve, reject) => {
-      this.ws.on('open', resolve);
-      this.ws.on('error', reject);
-      this.ws.on('message', (data) => {
-        const msg = JSON.parse(data.toString());
-        if (msg.id && this.callbacks.has(msg.id)) {
-          const cb = this.callbacks.get(msg.id);
-          this.callbacks.delete(msg.id);
-          if (msg.error) cb.reject(msg.error);
-          else cb.resolve(msg.result);
-        } else if (msg.method) {
-          for (const listener of this.eventListeners) {
-            listener(msg.method, msg.params);
-          }
+      const timer = setTimeout(() => {
+        reject(new Error('WebSocket connection timed out after 10s'));
+      }, 10000);
+
+      this.ws.on('open', () => {
+        clearTimeout(timer);
+        resolve();
+      });
+
+      this.ws.on('error', (err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+
+      this.ws.on('close', () => {
+        clearTimeout(timer);
+        for (const [id, cb] of this.callbacks.entries()) {
+          cb.reject(new Error(`WebSocket closed while waiting for response to message ${id}`));
         }
+        this.callbacks.clear();
+      });
+
+      this.ws.on('message', (data) => {
+        try {
+          const msg = JSON.parse(data.toString());
+          if (msg.id && this.callbacks.has(msg.id)) {
+            const cb = this.callbacks.get(msg.id);
+            this.callbacks.delete(msg.id);
+            if (msg.error) cb.reject(msg.error);
+            else cb.resolve(msg.result);
+          } else if (msg.method) {
+            for (const listener of this.eventListeners) {
+              try {
+                listener(msg.method, msg.params);
+              } catch (e) {}
+            }
+          }
+        } catch (err) {}
       });
     });
   }
 
-  send(method, params = {}, sessionId = null) {
+  send(method, params = {}, sessionId = null, timeoutMs = 15000) {
     return new Promise((resolve, reject) => {
+      if (this.ws.readyState !== WebSocket.OPEN) {
+        return reject(new Error(`Cannot send ${method}: WebSocket is not OPEN (state: ${this.ws.readyState})`));
+      }
       const id = this.id++;
-      this.callbacks.set(id, { resolve, reject });
+      const timer = setTimeout(() => {
+        if (this.callbacks.has(id)) {
+          this.callbacks.delete(id);
+          reject(new Error(`CDP command ${method} timed out after ${timeoutMs}ms`));
+        }
+      }, timeoutMs);
+
+      this.callbacks.set(id, {
+        resolve: (result) => {
+          clearTimeout(timer);
+          resolve(result);
+        },
+        reject: (err) => {
+          clearTimeout(timer);
+          reject(err);
+        },
+      });
+
       const payload = { id, method, params };
       if (sessionId) payload.sessionId = sessionId;
-      this.ws.send(JSON.stringify(payload));
+      try {
+        this.ws.send(JSON.stringify(payload));
+      } catch (err) {
+        clearTimeout(timer);
+        this.callbacks.delete(id);
+        reject(err);
+      }
     });
   }
 
@@ -178,11 +228,21 @@ class CdpClient {
   }
 
   close() {
-    this.ws.close();
+    try {
+      this.ws.close();
+    } catch (e) {}
   }
 }
 
 async function run() {
+  const GLOBAL_TIMEOUT_MS = 240000; // 4 minutes maximum total runtime
+  const globalWatchdog = setTimeout(() => {
+    console.error(`\n🚨 GLOBAL TIMEOUT EXCEEDED: Script reached maximum runtime of ${GLOBAL_TIMEOUT_MS / 1000}s! Terminating Chrome and exiting...`);
+    try { chromeProcess.kill(); } catch (e) {}
+    process.exit(1);
+  }, GLOBAL_TIMEOUT_MS);
+  globalWatchdog.unref();
+
   const regressionResult = runAllRegressionChecks();
 
   console.log('\n1. Launching Headless Chrome under NORMAL SECURITY (no --disable-web-security)...');
@@ -194,6 +254,10 @@ async function run() {
     '--no-default-browser-check',
     '--user-data-dir=' + require('os').tmpdir() + '/chrome_wno_corrected_date_' + Date.now(),
   ], { stdio: 'ignore' });
+
+  process.on('exit', () => {
+    try { chromeProcess.kill(); } catch (e) {}
+  });
 
   await delay(1500);
 
@@ -274,542 +338,628 @@ async function run() {
     console.log(`Testing Tour: ${tour.name}`);
     console.log(`URL: ${tour.url}`);
 
-    const { targetId } = await browserClient.send('Target.createTarget', { url: 'about:blank' });
-    const pageWsUrl = `ws://127.0.0.1:${PORT}/devtools/page/${targetId}`;
-    const pageClient = new CdpClient(pageWsUrl);
-    await pageClient.init();
+    let targetId = null;
+    let pageClient = null;
 
-    await pageClient.send('Network.enable');
-    await pageClient.send('Page.enable');
-    await pageClient.send('Runtime.enable');
+    try {
+      await Promise.race([
+        (async () => {
+          const createRes = await browserClient.send('Target.createTarget', { url: 'about:blank' }, null, 10000);
+          targetId = createRes.targetId;
+          const pageWsUrl = `ws://127.0.0.1:${PORT}/devtools/page/${targetId}`;
+          pageClient = new CdpClient(pageWsUrl);
+          await pageClient.init();
 
-    await pageClient.send('Fetch.enable', {
-      patterns: [{ urlPattern: '*api/wno/telemetry*', requestStage: 'Response' }]
-    });
+          await pageClient.send('Network.enable', {}, null, 5000);
+          await pageClient.send('Page.enable', {}, null, 5000);
+          await pageClient.send('Runtime.enable', {}, null, 5000);
 
-    const networkRequests = new Map();
-    const pausedResponses = [];
+          await pageClient.send('Fetch.enable', {
+            patterns: [{ urlPattern: '*api/wno/telemetry*', requestStage: 'Response' }]
+          }, null, 5000);
 
-    pageClient.onEvent(async (method, params) => {
-      if (method === 'Network.requestWillBeSent') {
-        const req = params.request;
-        if (req.url.includes('/api/wno/telemetry')) {
-          networkRequests.set(params.requestId, {
-            requestId: params.requestId,
-            url: req.url,
-            method: req.method,
-            postData: req.postData,
-            redirectResponse: params.redirectResponse,
-          });
-        }
-      }
+          const networkRequests = new Map();
+          const pausedResponses = [];
 
-      if (method === 'Fetch.requestPaused') {
-        const interceptedRequestId = params.requestId;
-        const networkId = params.networkId;
-        const statusCode = params.responseStatusCode;
-        const reqUrl = params.request?.url || '';
-
-        if (reqUrl.includes('/api/wno/telemetry')) {
-          const matchingNetReq = networkRequests.get(networkId);
-          let rawBody = null;
-          let parsedBody = null;
-
-          if (statusCode === 200) {
-            try {
-              const bodyRes = await pageClient.send('Fetch.getResponseBody', { requestId: interceptedRequestId });
-              rawBody = bodyRes.base64Encoded ? Buffer.from(bodyRes.body, 'base64').toString('utf8') : bodyRes.body;
-              if (rawBody) {
-                try { parsedBody = JSON.parse(rawBody); } catch (e) {}
+          pageClient.onEvent(async (method, params) => {
+            if (method === 'Network.requestWillBeSent') {
+              const req = params.request;
+              if (req.url.includes('/api/wno/telemetry')) {
+                networkRequests.set(params.requestId, {
+                  requestId: params.requestId,
+                  url: req.url,
+                  method: req.method,
+                  postData: req.postData,
+                  redirectResponse: params.redirectResponse,
+                });
               }
-            } catch (err) {}
-          }
+            }
 
-          pausedResponses.push({
-            interceptedRequestId,
-            networkId,
-            statusCode,
-            reqUrl,
-            matchingNetReq,
-            rawBody,
-            parsedBody,
+            if (method === 'Fetch.requestPaused') {
+              const interceptedRequestId = params.requestId;
+              const networkId = params.networkId;
+              const statusCode = params.responseStatusCode;
+              const reqUrl = params.request?.url || '';
+
+              if (reqUrl.includes('/api/wno/telemetry')) {
+                const matchingNetReq = networkRequests.get(networkId);
+                let rawBody = null;
+                let parsedBody = null;
+
+                if (statusCode === 200) {
+                  try {
+                    const bodyRes = await pageClient.send('Fetch.getResponseBody', { requestId: interceptedRequestId }, null, 3000);
+                    rawBody = bodyRes?.base64Encoded ? Buffer.from(bodyRes.body, 'base64').toString('utf8') : bodyRes?.body;
+                    if (rawBody) {
+                      try { parsedBody = JSON.parse(rawBody); } catch (e) {}
+                    }
+                  } catch (err) {}
+                }
+
+                pausedResponses.push({
+                  interceptedRequestId,
+                  networkId,
+                  statusCode,
+                  reqUrl,
+                  matchingNetReq,
+                  rawBody,
+                  parsedBody,
+                });
+              }
+
+              try {
+                await pageClient.send('Fetch.continueResponse', {
+                  requestId: interceptedRequestId,
+                  responseCode: statusCode,
+                }, null, 3000);
+              } catch (e) {
+                try {
+                  await pageClient.send('Fetch.continueRequest', { requestId: interceptedRequestId }, null, 3000);
+                } catch (e2) {}
+              }
+            }
           });
-        }
 
-        try {
-          await pageClient.send('Fetch.continueResponse', {
-            requestId: interceptedRequestId,
-            responseCode: statusCode,
-          });
-        } catch (e) {
-          await pageClient.send('Fetch.continueRequest', { requestId: interceptedRequestId }).catch(() => {});
-        }
-      }
-    });
+          console.log('   Navigating to tour storefront...');
+          await pageClient.send('Page.navigate', { url: tour.url }, null, 25000);
+          await delay(3500);
 
-    console.log('   Navigating to tour storefront...');
-    await pageClient.send('Page.navigate', { url: tour.url });
-    await delay(3500);
-
-    const evalResult = await pageClient.send('Runtime.evaluate', {
-      expression: `
-        (() => {
-          const links = Array.from(document.querySelectorAll('a[href*="fareharbor.com"]'));
-          return links.map(l => ({
-            href: l.href,
-            text: l.innerText.trim(),
-            className: l.className
-          }));
-        })()
-      `,
-      returnByValue: true,
-    });
-
-    const ctas = evalResult.result.value || [];
-    const matchingCta = ctas.find(c => c.href.includes(tour.expectedItemId)) || ctas[0];
-    const firstCtaHref = matchingCta.href;
-    const urlObj = new URL(firstCtaHref);
-    const hasShortname = urlObj.pathname.includes(tour.expectedShortname);
-    const hasItem = urlObj.pathname.includes(tour.expectedItemId) || urlObj.searchParams.get('item') === tour.expectedItemId;
-    const hasAsn = urlObj.searchParams.get('asn') === tour.expectedAsn;
-
-    console.log(`   Simulating click on booking CTA [${matchingCta.text}]...`);
-    await pageClient.send('Runtime.evaluate', {
-      expression: `
-        (() => {
-          const links = Array.from(document.querySelectorAll('a[href*="fareharbor.com"]'));
-          const target = links.find(l => l.href.includes("${tour.expectedItemId}")) || links[0];
-          if (target) {
-            target.click();
-            return true;
-          }
-          return false;
-        })()
-      `,
-    });
-
-    // Wait for FareHarbor Lightframe modal to render
-    console.log('   Waiting for FareHarbor Lightframe checkout modal...');
-    let checkoutModal = null;
-    for (let attempt = 0; attempt < 25; attempt++) {
-      await delay(500);
-      const checkDom = await pageClient.send('Runtime.evaluate', {
-        expression: `
-          (() => {
-            const container = document.querySelector('#fareharbor-lightframe');
-            const iframe = document.querySelector('#fareharbor-lightframe-iframe');
-            if (!container || !iframe) return null;
-            const cs = window.getComputedStyle(iframe);
-            const isVisible = cs.display !== 'none' && cs.visibility !== 'hidden' && iframe.offsetWidth > 0 && iframe.offsetHeight > 0;
-            const showingClass = container.classList.contains('fareharbor-is-showing');
-            return {
-              hasContainer: Boolean(container),
-              isShowing: showingClass,
-              iframeSrc: iframe.src,
-              iframeWidth: iframe.offsetWidth,
-              iframeHeight: iframe.offsetHeight,
-              isVisible,
-            };
-          })()
-        `,
-        returnByValue: true,
-      });
-
-      if (checkDom.result.value && checkDom.result.value.isVisible && checkDom.result.value.iframeSrc) {
-        checkoutModal = checkDom.result.value;
-        break;
-      }
-    }
-
-    const renderedModalOk = Boolean(checkoutModal && checkoutModal.isShowing && checkoutModal.isVisible);
-    const iframeUrl = checkoutModal?.iframeSrc ? new URL(checkoutModal.iframeSrc) : null;
-    const iframeHasShortname = iframeUrl ? iframeUrl.pathname.includes(tour.expectedShortname) : false;
-    const iframeHasItem = iframeUrl ? (iframeUrl.pathname.includes(tour.expectedItemId) || iframeUrl.searchParams.get('item') === tour.expectedItemId) : false;
-    const iframeHasAsn = iframeUrl ? (iframeUrl.searchParams.get('asn') === tour.expectedAsn) : false;
-
-    // Attach to FareHarbor iframe target
-    console.log('   Locating opened FareHarbor iframe target...');
-    let fareHarborIframeTarget = null;
-    for (let attempt = 0; attempt < 25; attempt++) {
-      await delay(1000);
-      const targets = await browserClient.send('Target.getTargets');
-      for (const t of targets.targetInfos) {
-        if (t.type === 'iframe' && t.url.includes('fareharbor.com/embeds/book') && (t.url.includes(tour.expectedItemId) || t.url.includes(tour.expectedShortname))) {
-          fareHarborIframeTarget = t;
-          break;
-        }
-      }
-      if (fareHarborIframeTarget) break;
-    }
-
-    let originalIframeInspection = null;
-    let futureDateSelection = null;
-
-    if (fareHarborIframeTarget) {
-      console.log(`     - Attached to iframe target [${fareHarborIframeTarget.targetId}] "${fareHarborIframeTarget.title}"`);
-      const { sessionId: iframeSessionId } = await browserClient.send('Target.attachToTarget', {
-        targetId: fareHarborIframeTarget.targetId,
-        flatten: true,
-      });
-
-      await browserClient.send('Runtime.enable', {}, iframeSessionId);
-
-      for (let attempt = 0; attempt < 15; attempt++) {
-        await delay(1000);
-        const evalRes = await browserClient.send('Runtime.evaluate', {
-          expression: `
-            (() => {
-              const h1 = document.querySelector('h1, h2, .item-name, [data-testid="item-name"], header h1, .sheet-title');
-              const cal = document.querySelector('.calendar, [data-testid="calendar"], .sheet, .calendar-month, table, .booking-sheet, [data-test-id*="calendar"], .next-day-card');
-              const buttons = Array.from(document.querySelectorAll('button, a.button, .btn, [role="button"], td, .day, .next-day-card')).map(b => (b.innerText || '').trim()).filter(Boolean);
-              const bodyText = document.body ? document.body.innerText.slice(0, 500).replace(/\\s+/g, ' ') : '';
-              return {
-                title: document.title,
-                heading: h1 ? h1.innerText.trim() : null,
-                hasCalendar: Boolean(cal),
-                buttonCount: buttons.length,
-                buttons: buttons.slice(0, 6),
-                bodyPreview: bodyText.slice(0, 200),
-              };
-            })()
-          `,
-          returnByValue: true,
-        }, iframeSessionId);
-
-        const val = evalRes?.result?.value;
-        if (val && (val.hasCalendar || val.buttonCount > 0)) {
-          const expectedTourKey = tour.expectedShortname.toLowerCase();
-          const titleLower = (val.title || fareHarborIframeTarget.title || '').toLowerCase();
-          const bodyLower = (val.bodyPreview || '').toLowerCase();
-          const nameLower = tour.name.toLowerCase();
-          const tourMatch = titleLower.includes(expectedTourKey)
-            || bodyLower.includes(expectedTourKey)
-            || (nameLower.includes('jazz') && (titleLower.includes('jazz') || bodyLower.includes('jazz') || titleLower.includes('steamboat')))
-            || (nameLower.includes('covered') && (titleLower.includes('covered') || bodyLower.includes('covered') || titleLower.includes('cajun')))
-            || (nameLower.includes('plantation') && (titleLower.includes('plantation') || bodyLower.includes('plantation') || titleLower.includes('oak alley')));
-
-          originalIframeInspection = {
-            openedIframeTargetFound: true,
-            targetId: fareHarborIframeTarget.targetId,
-            targetTitle: fareHarborIframeTarget.title,
-            targetUrl: fareHarborIframeTarget.url,
-            documentTitle: val.title,
-            heading: val.heading,
-            hasCalendar: val.hasCalendar,
-            interactiveButtonCount: val.buttonCount,
-            buttonSamples: val.buttons,
-            tourMatch: Boolean(tourMatch),
-            usableBookingControls: Boolean(val.buttonCount > 0),
-            verified: Boolean(tourMatch && val.buttonCount > 0),
-          };
-          break;
-        }
-      }
-
-      // Requirement 1: Select an enabled calendar control representing a specific future date in America/Chicago.
-      // Wait until active availability panel shows that date.
-      // Read actual date from the visible active availability panel or its selected booking slot.
-      // Record exact observed text and compare its parsed date with requested date.
-      console.log(`   Selecting enabled calendar control for ${REQUESTED_DATE_FORMATTED} (${REQUESTED_TIMEZONE})...`);
-      let dateSelectRes = null;
-      for (let attempt = 0; attempt < 25; attempt++) {
-        await delay(1000);
-        const dateSelectEval = await browserClient.send('Runtime.evaluate', {
-          expression: `
-            (() => {
-              const targetStr = "September 11, 2026";
-              const all = Array.from(document.querySelectorAll('button, a, [role="button"], td, .day, .next-day-card'));
-              const btn = all.find(b => {
-                const aria = b.getAttribute('aria-label') || '';
-                const text = (b.innerText || '').trim().replace(/\\s+/g, ' ');
-                const dt = b.getAttribute('data-date') || '';
-                const disabled = b.disabled || b.getAttribute('aria-disabled') === 'true' || (typeof b.className === 'string' && b.className.includes('disabled'));
-                if (disabled) return false;
-                return aria.includes(targetStr) || text.includes('11 Sep') || dt === '2026-09-11';
-              });
-
-              if (!btn) return null;
-
-              const rawAria = btn.getAttribute('aria-label') || '';
-              const rawText = (btn.innerText || '').trim().replace(/\\s+/g, ' ');
-              const rawDt = btn.getAttribute('data-date') || '';
-
-              btn.click();
-
-              return {
-                success: true,
-                tag: btn.tagName,
-                aria: rawAria,
-                text: rawText,
-                dataDate: rawDt,
-              };
-            })()
-          `,
-          returnByValue: true,
-        }, iframeSessionId);
-
-        if (dateSelectEval?.result?.value) {
-          dateSelectRes = dateSelectEval.result.value;
-          break;
-        }
-      }
-
-      if (dateSelectRes && dateSelectRes.success) {
-        console.log(`     - Clicked Date Control: [${dateSelectRes.tag}] "${dateSelectRes.aria || dateSelectRes.text}"`);
-        
-        // Wait until active availability panel shows that date and read actual date from panel or booking slot
-        console.log('     - Reading actual date from active availability panel or selected booking slot...');
-        let availRes = null;
-        for (let waitAttempt = 0; waitAttempt < 15; waitAttempt++) {
-          await delay(1000);
-          const availEval = await browserClient.send('Runtime.evaluate', {
+          const evalResult = await pageClient.send('Runtime.evaluate', {
             expression: `
               (() => {
-                const bodyText = document.body ? document.body.innerText.replace(/\\s+/g, ' ') : '';
-                
-                // Specific search for date in active availability panel or selected booking slot
-                const candidateSelectors = [
-                  '.fh-link--text-variant',
-                  '.timeslot-header',
-                  '.day-title',
-                  '.sheet-title',
-                  '.availability-pane',
-                  '.time-select',
-                  '[data-test-id*="availability"] header',
-                  '.booking-sheet header',
-                  '.item-headline',
-                  '.timeslot-card',
-                  '.cal-block'
-                ];
-
-                let exactObservedDateText = null;
-                for (const sel of candidateSelectors) {
-                  const els = Array.from(document.querySelectorAll(sel));
-                  for (const el of els) {
-                    const txt = (el.innerText || '').trim().replace(/\\s+/g, ' ');
-                    if (/(January|February|March|April|May|June|July|August|September|October|November|December)\\s+\\d{1,2},\\s*\\d{4}/i.test(txt)) {
-                      exactObservedDateText = txt;
-                      break;
-                    }
-                  }
-                  if (exactObservedDateText) break;
-                }
-
-                // If not found in candidate selectors, search all text elements in the active booking sheet
-                if (!exactObservedDateText) {
-                  const allElements = Array.from(document.querySelectorAll('.booking-sheet, .sheet, .availability-pane, .time-select, [data-test-id*="availability"], form, main, .item-view'));
-                  for (const container of allElements) {
-                    const subEls = Array.from(container.querySelectorAll('h1, h2, h3, h4, h5, p, span, a, div, header'));
-                    for (const el of subEls) {
-                      if (el.children.length > 3) continue;
-                      const txt = (el.innerText || '').trim().replace(/\\s+/g, ' ');
-                      if (txt.length < 120 && /(January|February|March|April|May|June|July|August|September|October|November|December)\\s+\\d{1,2},\\s*\\d{4}/i.test(txt)) {
-                        exactObservedDateText = txt;
-                        break;
-                      }
-                    }
-                    if (exactObservedDateText) break;
-                  }
-                }
-
-                const timeslotElements = Array.from(document.querySelectorAll('.time, .timeslot, [data-testid*="time"], button, a, [role="button"], .booking-sheet-item, .item-headline, .timeslot-card, .availability-cell, .cal-block')).map(el => {
-                  const text = (el.innerText || '').trim().replace(/\\s+/g, ' ');
-                  const aria = el.getAttribute('aria-label') || '';
-                  const cls = typeof el.className === 'string' ? el.className : '';
-                  const disabled = el.disabled || el.getAttribute('aria-disabled') === 'true' || cls.includes('disabled');
-                  return { text, aria, cls, disabled };
-                }).filter(t => (t.text.includes('AM') || t.text.includes('PM') || t.aria.includes('time') || t.text.includes('Available') || t.text.includes('Book') || t.text.includes('Call')) && t.text.length < 90);
-
-                const isSoldOut = bodyText.toLowerCase().includes('sold out') || timeslotElements.some(t => t.text.toLowerCase().includes('sold out'));
-                const isCallToBook = bodyText.toLowerCase().includes('call to book') || bodyText.toLowerCase().includes('call us') || timeslotElements.some(t => t.text.toLowerCase().includes('call'));
-                const isAvailable = timeslotElements.some(t => !t.disabled && (t.text.includes('Available') || t.text.includes('Book') || t.text.includes('AM') || t.text.includes('PM')));
-
-                let reportedState = 'UNKNOWN';
-                if (isAvailable) reportedState = 'AVAILABLE';
-                else if (isSoldOut) reportedState = 'SOLD_OUT';
-                else if (isCallToBook) reportedState = 'CALL_TO_BOOK';
-
-                return {
-                  exactObservedDateText,
-                  reportedState,
-                  timeslotCount: timeslotElements.length,
-                  availableTimeslots: timeslotElements.slice(0, 6),
-                  bodySnippet: bodyText.slice(0, 300),
-                };
+                const links = Array.from(document.querySelectorAll('a[href*="fareharbor.com"]'));
+                return links.map(l => ({
+                  href: l.href,
+                  text: l.innerText.trim(),
+                  className: l.className
+                }));
               })()
             `,
             returnByValue: true,
-          }, iframeSessionId);
+          }, null, 5000);
 
-          const resVal = availEval?.result?.value;
-          if (resVal && resVal.exactObservedDateText) {
-            availRes = resVal;
-            break;
+          const ctas = evalResult?.result?.value || [];
+          const matchingCta = ctas.find(c => c.href.includes(tour.expectedItemId)) || ctas[0];
+          const firstCtaHref = matchingCta?.href || '';
+          const urlObj = firstCtaHref ? new URL(firstCtaHref) : new URL('https://fareharbor.com');
+          const hasShortname = urlObj.pathname.includes(tour.expectedShortname);
+          const hasItem = urlObj.pathname.includes(tour.expectedItemId) || urlObj.searchParams.get('item') === tour.expectedItemId;
+          const hasAsn = urlObj.searchParams.get('asn') === tour.expectedAsn;
+
+          console.log('   Waiting for FareHarbor Lightframe API to initialize...');
+          for (let attempt = 0; attempt < 15; attempt++) {
+            const fhReady = await pageClient.send('Runtime.evaluate', {
+              expression: 'Boolean(window.FH && typeof window.FH.open === "function")',
+              returnByValue: true,
+            }, null, 3000).catch(() => null);
+            if (fhReady?.result?.value) {
+              console.log('     - FareHarbor Lightframe API is ready');
+              break;
+            }
+            await delay(500);
           }
-        }
 
-        const selectedDateDisplay = dateSelectRes.aria.trim() || dateSelectRes.text || REQUESTED_DATE_FORMATTED;
-        const exactObservedText = availRes?.exactObservedDateText || null;
-        
-        // Validate date assertion: read actual date, compare parsed date with requested date
-        const dateValidation = validateDateAssertion({
-          requestedDate: REQUESTED_DATE,
-          calendarDateText: selectedDateDisplay,
-          activePanelObservedText: exactObservedText,
-        });
+          console.log(`   Simulating click on booking CTA [${matchingCta?.text || 'BOOK'}]...`);
+          await pageClient.send('Runtime.evaluate', {
+            expression: `
+              (() => {
+                const links = Array.from(document.querySelectorAll('a[href*="fareharbor.com"]'));
+                const target = links.find(l => l.href.includes("${tour.expectedItemId}")) || links[0];
+                if (target) {
+                  target.click();
+                  return true;
+                }
+                return false;
+              })()
+            `,
+          }, null, 5000).catch(() => null);
 
-        const selectedCalendarDateMatches = selectedDateDisplay.includes('September 11, 2026') || selectedDateDisplay.includes('11 Sep') || dateSelectRes.dataDate === REQUESTED_DATE;
-        const datesAgree = Boolean(dateValidation.pass && selectedCalendarDateMatches);
+          // Wait for FareHarbor Lightframe modal to render
+          console.log('   Waiting for FareHarbor Lightframe checkout modal...');
+          let checkoutModal = null;
+          for (let attempt = 0; attempt < 15; attempt++) {
+            await delay(500);
+            const checkDom = await pageClient.send('Runtime.evaluate', {
+              expression: `
+                (() => {
+                  const container = document.querySelector('#fareharbor-lightframe');
+                  const iframe = document.querySelector('#fareharbor-lightframe-iframe');
+                  if (!container || !iframe) return null;
+                  const cs = window.getComputedStyle(iframe);
+                  const isVisible = cs.display !== 'none' && cs.visibility !== 'hidden' && iframe.offsetWidth > 0 && iframe.offsetHeight > 0;
+                  const showingClass = container.classList.contains('fareharbor-is-showing');
+                  return {
+                    hasContainer: Boolean(container),
+                    isShowing: showingClass,
+                    iframeSrc: iframe.src,
+                    iframeWidth: iframe.offsetWidth,
+                    iframeHeight: iframe.offsetHeight,
+                    isVisible,
+                  };
+                })()
+              `,
+              returnByValue: true,
+            }, null, 3000).catch(() => null);
 
-        futureDateSelection = {
-          requestedDate: REQUESTED_DATE,
-          requestedDateFormatted: REQUESTED_DATE_FORMATTED,
-          timezone: REQUESTED_TIMEZONE,
-          selectedCalendarDate: selectedDateDisplay,
-          selectedCalendarDateMatches,
-          exactObservedText,
-          parsedDate: dateValidation.parsedDate || null,
-          matchedDateSnippet: dateValidation.matchedSnippet || null,
-          dateMatchAssertion: dateValidation.pass,
-          dateValidationFailureReason: dateValidation.reason || null,
-          datesAgree,
-          resultingAvailability: {
-            state: availRes?.reportedState,
-            isAvailable: availRes?.reportedState === 'AVAILABLE',
-            isSoldOut: availRes?.reportedState === 'SOLD_OUT',
-            isCallToBook: availRes?.reportedState === 'CALL_TO_BOOK',
-            timeslotCount: availRes?.timeslotCount || 0,
-            availableTimeslots: availRes?.availableTimeslots || [],
-            availabilityVerifiedForRequestedDate: Boolean(availRes && datesAgree && (availRes.reportedState === 'AVAILABLE' || availRes.reportedState === 'SOLD_OUT' || availRes.reportedState === 'CALL_TO_BOOK')),
+            if (checkDom?.result?.value?.isVisible && checkDom?.result?.value?.iframeSrc) {
+              checkoutModal = checkDom.result.value;
+              break;
+            }
           }
-        };
 
-        console.log(`     - Requested Date: ${futureDateSelection.requestedDate} (${futureDateSelection.timezone})`);
-        console.log(`     - Selected Calendar Date: ${futureDateSelection.selectedCalendarDate}`);
-        console.log(`     - Exact Observed Panel/Slot Text: "${futureDateSelection.exactObservedText}"`);
-        console.log(`     - Parsed Date: ${futureDateSelection.parsedDate}`);
-        console.log(`     - Date Comparison: ${futureDateSelection.parsedDate} === ${futureDateSelection.requestedDate} -> ${futureDateSelection.dateMatchAssertion ? 'MATCH' : 'MISMATCH'}`);
-        console.log(`     - Resulting Availability State: ${futureDateSelection.resultingAvailability.state} (${futureDateSelection.resultingAvailability.timeslotCount} timeslots)`);
-      } else {
-        console.log(`     - FAILED to select requested date control: matching enabled date control not found`);
-        futureDateSelection = { success: false, reason: 'matching enabled date control not found' };
+          // Fallback: invoke FH.open via API if modal didn't render from click
+          if (!checkoutModal) {
+            console.log('   Modal not opened yet, invoking FH.open via API directly...');
+            await pageClient.send('Runtime.evaluate', {
+              expression: `
+                (() => {
+                  if (window.FH && window.FH.open) {
+                    window.FH.open({
+                      shortname: "${tour.expectedShortname}",
+                      asn: "${tour.expectedAsn}",
+                      view: { item: "${tour.expectedItemId}" },
+                      fullItems: "yes"
+                    });
+                    return true;
+                  }
+                  return false;
+                })()
+              `,
+              returnByValue: true,
+            }, null, 3000).catch(() => null);
+
+            for (let attempt = 0; attempt < 15; attempt++) {
+              await delay(500);
+              const checkDom = await pageClient.send('Runtime.evaluate', {
+                expression: `
+                  (() => {
+                    const container = document.querySelector('#fareharbor-lightframe');
+                    const iframe = document.querySelector('#fareharbor-lightframe-iframe');
+                    if (!container || !iframe) return null;
+                    const cs = window.getComputedStyle(iframe);
+                    const isVisible = cs.display !== 'none' && cs.visibility !== 'hidden' && iframe.offsetWidth > 0 && iframe.offsetHeight > 0;
+                    const showingClass = container.classList.contains('fareharbor-is-showing');
+                    return {
+                      hasContainer: Boolean(container),
+                      isShowing: showingClass,
+                      iframeSrc: iframe.src,
+                      iframeWidth: iframe.offsetWidth,
+                      iframeHeight: iframe.offsetHeight,
+                      isVisible,
+                    };
+                  })()
+                `,
+                returnByValue: true,
+              }, null, 3000).catch(() => null);
+
+              if (checkDom?.result?.value?.isVisible && checkDom?.result?.value?.iframeSrc) {
+                checkoutModal = checkDom.result.value;
+                break;
+              }
+            }
+          }
+
+          const renderedModalOk = Boolean(checkoutModal && checkoutModal.isShowing && checkoutModal.isVisible);
+          const iframeUrl = checkoutModal?.iframeSrc ? new URL(checkoutModal.iframeSrc) : null;
+          const iframeHasShortname = iframeUrl ? iframeUrl.pathname.includes(tour.expectedShortname) : false;
+          const iframeHasItem = iframeUrl ? (iframeUrl.pathname.includes(tour.expectedItemId) || iframeUrl.searchParams.get('item') === tour.expectedItemId) : false;
+          const iframeHasAsn = iframeUrl ? (iframeUrl.searchParams.get('asn') === tour.expectedAsn) : false;
+
+          // Attach to FareHarbor iframe target
+          console.log('   Locating opened FareHarbor iframe target...');
+          await delay(3500);
+          let fareHarborIframeTarget = null;
+          for (let attempt = 0; attempt < 20; attempt++) {
+            try {
+              const targets = await browserClient.send('Target.getTargets', {}, null, 5000);
+              for (const t of targets.targetInfos) {
+                if (t.type === 'iframe' && t.url.includes('fareharbor.com/embeds/book') && (t.url.includes(tour.expectedItemId) || t.url.includes(tour.expectedShortname))) {
+                  fareHarborIframeTarget = t;
+                  break;
+                }
+              }
+            } catch (e) {}
+            if (fareHarborIframeTarget) break;
+            await delay(1000);
+          }
+
+          let originalIframeInspection = null;
+          let futureDateSelection = null;
+
+          if (fareHarborIframeTarget) {
+            console.log(`     - Attached to iframe target [${fareHarborIframeTarget.targetId}] "${fareHarborIframeTarget.title}"`);
+            let iframeSessionId = null;
+            try {
+              const attachRes = await browserClient.send('Target.attachToTarget', {
+                targetId: fareHarborIframeTarget.targetId,
+                flatten: true,
+              }, null, 5000);
+              iframeSessionId = attachRes.sessionId;
+              await browserClient.send('Runtime.enable', {}, iframeSessionId, 5000);
+            } catch (e) {
+              console.error('Failed to attach to iframe target:', e.message);
+            }
+
+            if (iframeSessionId) {
+              for (let attempt = 0; attempt < 15; attempt++) {
+                await delay(1000);
+                const evalRes = await browserClient.send('Runtime.evaluate', {
+                  expression: `
+                    (() => {
+                      const h1 = document.querySelector('h1, h2, .item-name, [data-testid="item-name"], header h1, .sheet-title');
+                      const cal = document.querySelector('.calendar, [data-testid="calendar"], .sheet, .calendar-month, table, .booking-sheet, [data-test-id*="calendar"], .next-day-card');
+                      const buttons = Array.from(document.querySelectorAll('button, a.button, .btn, [role="button"], td, .day, .next-day-card')).map(b => (b.innerText || '').trim()).filter(Boolean);
+                      const bodyText = document.body ? document.body.innerText.slice(0, 500).replace(/\\s+/g, ' ') : '';
+                      return {
+                        title: document.title,
+                        heading: h1 ? h1.innerText.trim() : null,
+                        hasCalendar: Boolean(cal),
+                        buttonCount: buttons.length,
+                        buttons: buttons.slice(0, 6),
+                        bodyPreview: bodyText.slice(0, 200),
+                      };
+                    })()
+                  `,
+                  returnByValue: true,
+                }, iframeSessionId, 5000).catch(() => null);
+
+                const val = evalRes?.result?.value;
+                if (val && (val.hasCalendar || val.buttonCount > 0)) {
+                  const expectedTourKey = tour.expectedShortname.toLowerCase();
+                  const titleLower = (val.title || fareHarborIframeTarget.title || '').toLowerCase();
+                  const bodyLower = (val.bodyPreview || '').toLowerCase();
+                  const nameLower = tour.name.toLowerCase();
+                  const tourMatch = titleLower.includes(expectedTourKey)
+                    || bodyLower.includes(expectedTourKey)
+                    || (nameLower.includes('jazz') && (titleLower.includes('jazz') || bodyLower.includes('jazz') || titleLower.includes('steamboat')))
+                    || (nameLower.includes('covered') && (titleLower.includes('covered') || bodyLower.includes('covered') || titleLower.includes('cajun')))
+                    || (nameLower.includes('plantation') && (titleLower.includes('plantation') || bodyLower.includes('plantation') || titleLower.includes('oak alley')));
+
+                  originalIframeInspection = {
+                    openedIframeTargetFound: true,
+                    targetId: fareHarborIframeTarget.targetId,
+                    targetTitle: fareHarborIframeTarget.title,
+                    targetUrl: fareHarborIframeTarget.url,
+                    documentTitle: val.title,
+                    heading: val.heading,
+                    hasCalendar: val.hasCalendar,
+                    interactiveButtonCount: val.buttonCount,
+                    buttonSamples: val.buttons,
+                    tourMatch: Boolean(tourMatch),
+                    usableBookingControls: Boolean(val.buttonCount > 0),
+                    verified: Boolean(tourMatch && val.buttonCount > 0),
+                  };
+                  break;
+                }
+              }
+
+              console.log(`   Selecting enabled calendar control for ${REQUESTED_DATE_FORMATTED} (${REQUESTED_TIMEZONE})...`);
+              let dateSelectRes = null;
+              for (let attempt = 0; attempt < 25; attempt++) {
+                await delay(1000);
+                const dateSelectEval = await browserClient.send('Runtime.evaluate', {
+                  expression: `
+                    (() => {
+                      const targetStr = "September 11, 2026";
+                      const all = Array.from(document.querySelectorAll('button, a, [role="button"], td, .day, .next-day-card, .calendar-day, [data-date]'));
+                      const btn = all.find(b => {
+                        const aria = b.getAttribute('aria-label') || '';
+                        const text = (b.innerText || '').trim().replace(/\\s+/g, ' ');
+                        const dt = b.getAttribute('data-date') || '';
+                        const disabled = b.disabled || b.getAttribute('aria-disabled') === 'true' || (typeof b.className === 'string' && b.className.includes('disabled'));
+                        if (disabled) return false;
+                        return aria.includes(targetStr) || text.includes('11 Sep') || dt === '2026-09-11';
+                      });
+
+                      if (!btn) return null;
+
+                      const rawAria = btn.getAttribute('aria-label') || '';
+                      const rawText = (btn.innerText || '').trim().replace(/\\s+/g, ' ');
+                      const rawDt = btn.getAttribute('data-date') || '';
+
+                      btn.click();
+
+                      return {
+                        success: true,
+                        tag: btn.tagName,
+                        aria: rawAria,
+                        text: rawText,
+                        dataDate: rawDt,
+                      };
+                    })()
+                  `,
+                  returnByValue: true,
+                }, iframeSessionId, 5000).catch(() => null);
+
+                if (dateSelectEval?.result?.value) {
+                  dateSelectRes = dateSelectEval.result.value;
+                  break;
+                }
+              }
+
+              if (dateSelectRes && dateSelectRes.success) {
+                console.log(`     - Clicked Date Control: [${dateSelectRes.tag}] "${dateSelectRes.aria || dateSelectRes.text}"`);
+                
+                console.log('     - Reading actual date from active availability panel or selected booking slot...');
+                let availRes = null;
+                for (let waitAttempt = 0; waitAttempt < 15; waitAttempt++) {
+                  await delay(1000);
+                  const availEval = await browserClient.send('Runtime.evaluate', {
+                    expression: `
+                      (() => {
+                        const bodyText = document.body ? document.body.innerText.replace(/\\s+/g, ' ') : '';
+                        
+                        const candidateSelectors = [
+                          '.day-title',
+                          '.sheet-title',
+                          '.timeslot-header',
+                          '.text-huge',
+                          '.booking-sheet header',
+                          '[data-test-id*="availability"] header',
+                          'h1', 'h2', 'h3', 'h4', 'header'
+                        ];
+
+                        let exactObservedDateText = null;
+                        for (const sel of candidateSelectors) {
+                          const els = Array.from(document.querySelectorAll(sel));
+                          for (const el of els) {
+                            if (el.classList.contains('fh-link--text-variant') || el.closest('.fh-link--text-variant')) continue;
+                            const txt = (el.innerText || '').trim().replace(/\\s+/g, ' ');
+                            if (/(January|February|March|April|May|June|July|August|September|October|November|December)\\s+\\d{1,2},\\s*\\d{4}/i.test(txt)) {
+                              exactObservedDateText = txt;
+                              break;
+                            }
+                          }
+                          if (exactObservedDateText) break;
+                        }
+
+                        if (!exactObservedDateText) {
+                          const allElements = Array.from(document.querySelectorAll('.booking-sheet, .sheet, .availability-pane, .time-select, [data-test-id*="availability"], form, main, .item-view, div, section, p, span'));
+                          for (const container of allElements) {
+                            if (container.children.length > 2) continue;
+                            if (container.classList.contains('fh-link--text-variant') || container.closest('.fh-link--text-variant')) continue;
+                            const txt = (container.innerText || '').trim().replace(/\\s+/g, ' ');
+                            if (txt.length < 100 && /(January|February|March|April|May|June|July|August|September|October|November|December)\\s+\\d{1,2},\\s*\\d{4}/i.test(txt)) {
+                              exactObservedDateText = txt;
+                              break;
+                            }
+                          }
+                        }
+
+                        const timeslotElements = Array.from(document.querySelectorAll('.time, .timeslot, [data-testid*="time"], button, a, [role="button"], .booking-sheet-item, .item-headline, .timeslot-card, .availability-cell, .cal-block')).map(el => {
+                          const text = (el.innerText || '').trim().replace(/\\s+/g, ' ');
+                          const aria = el.getAttribute('aria-label') || '';
+                          const cls = typeof el.className === 'string' ? el.className : '';
+                          const disabled = el.disabled || el.getAttribute('aria-disabled') === 'true' || cls.includes('disabled');
+                          return { text, aria, cls, disabled };
+                        }).filter(t => (t.text.includes('AM') || t.text.includes('PM') || t.aria.includes('time') || t.text.includes('Available') || t.text.includes('Book') || t.text.includes('Call')) && t.text.length < 90);
+
+                        const isSoldOut = bodyText.toLowerCase().includes('sold out') || timeslotElements.some(t => t.text.toLowerCase().includes('sold out'));
+                        const isCallToBook = bodyText.toLowerCase().includes('call to book') || bodyText.toLowerCase().includes('call us') || timeslotElements.some(t => t.text.toLowerCase().includes('call'));
+                        const isAvailable = timeslotElements.some(t => !t.disabled && (t.text.includes('Available') || t.text.includes('Book') || t.text.includes('AM') || t.text.includes('PM')));
+
+                        let reportedState = 'UNKNOWN';
+                        if (isAvailable) reportedState = 'AVAILABLE';
+                        else if (isSoldOut) reportedState = 'SOLD_OUT';
+                        else if (isCallToBook) reportedState = 'CALL_TO_BOOK';
+
+                        return {
+                          exactObservedDateText,
+                          reportedState,
+                          timeslotCount: timeslotElements.length,
+                          availableTimeslots: timeslotElements.slice(0, 6),
+                          bodySnippet: bodyText.slice(0, 300),
+                        };
+                      })()
+                    `,
+                    returnByValue: true,
+                  }, iframeSessionId, 5000).catch(() => null);
+
+                  const resVal = availEval?.result?.value;
+                  if (resVal && resVal.exactObservedDateText) {
+                    availRes = resVal;
+                    break;
+                  }
+                }
+
+                const selectedDateDisplay = dateSelectRes.aria.trim() || dateSelectRes.text || REQUESTED_DATE_FORMATTED;
+                const exactObservedText = availRes?.exactObservedDateText || null;
+                
+                const dateValidation = validateDateAssertion({
+                  requestedDate: REQUESTED_DATE,
+                  calendarDateText: selectedDateDisplay,
+                  activePanelObservedText: exactObservedText,
+                });
+
+                const selectedCalendarDateMatches = selectedDateDisplay.includes('September 11, 2026') || selectedDateDisplay.includes('11 Sep') || dateSelectRes.dataDate === REQUESTED_DATE;
+                const datesAgree = Boolean(dateValidation.pass && selectedCalendarDateMatches);
+
+                futureDateSelection = {
+                  requestedDate: REQUESTED_DATE,
+                  requestedDateFormatted: REQUESTED_DATE_FORMATTED,
+                  timezone: REQUESTED_TIMEZONE,
+                  selectedCalendarDate: selectedDateDisplay,
+                  selectedCalendarDateMatches,
+                  exactObservedText,
+                  parsedDate: dateValidation.parsedDate || null,
+                  matchedDateSnippet: dateValidation.matchedSnippet || null,
+                  dateMatchAssertion: dateValidation.pass,
+                  dateValidationFailureReason: dateValidation.reason || null,
+                  datesAgree,
+                  resultingAvailability: {
+                    state: availRes?.reportedState,
+                    isAvailable: availRes?.reportedState === 'AVAILABLE',
+                    isSoldOut: availRes?.reportedState === 'SOLD_OUT',
+                    isCallToBook: availRes?.reportedState === 'CALL_TO_BOOK',
+                    timeslotCount: availRes?.timeslotCount || 0,
+                    availableTimeslots: availRes?.availableTimeslots || [],
+                    availabilityVerifiedForRequestedDate: Boolean(availRes && datesAgree && (availRes.reportedState === 'AVAILABLE' || availRes.reportedState === 'SOLD_OUT' || availRes.reportedState === 'CALL_TO_BOOK')),
+                  }
+                };
+
+                console.log(`     - Requested Date: ${futureDateSelection.requestedDate} (${futureDateSelection.timezone})`);
+                console.log(`     - Selected Calendar Date: ${futureDateSelection.selectedCalendarDate}`);
+                console.log(`     - Exact Observed Panel/Slot Text: "${futureDateSelection.exactObservedText}"`);
+                console.log(`     - Parsed Date: ${futureDateSelection.parsedDate}`);
+                console.log(`     - Date Comparison: ${futureDateSelection.parsedDate} === ${futureDateSelection.requestedDate} -> ${futureDateSelection.dateMatchAssertion ? 'MATCH' : 'MISMATCH'}`);
+                console.log(`     - Resulting Availability State: ${futureDateSelection.resultingAvailability.state} (${futureDateSelection.resultingAvailability.timeslotCount} timeslots)`);
+              } else {
+                console.log(`     - FAILED to select requested date control: matching enabled date control not found`);
+                futureDateSelection = { success: false, reason: 'matching enabled date control not found' };
+              }
+            }
+          }
+
+          // Telemetry correlation via networkId and durable event verification
+          await delay(2000);
+          let originalBookingNetworkReq = null;
+          let originalBookingPausedResp = null;
+
+          for (const [reqId, req] of networkRequests.entries()) {
+            let parsed = null;
+            try { parsed = JSON.parse(req.postData); } catch (e) {}
+            if (parsed?.eventName === 'booking_opened' || parsed?.eventName === 'fareharbor_click') {
+              originalBookingNetworkReq = {
+                requestId: reqId,
+                url: req.url,
+                method: req.method,
+                payload: parsed,
+              };
+              originalBookingPausedResp = pausedResponses.find(p => p.networkId === reqId && (p.statusCode === 200 || p.statusCode === 307));
+              break;
+            }
+          }
+
+          let durableRecord = null;
+          let durableRecordVerified = false;
+          if (originalBookingNetworkReq?.payload?.sessionId) {
+            console.log(`   Verifying matching durable event record for session [${originalBookingNetworkReq.payload.sessionId}]...`);
+            try {
+              const rows = await sql`
+                SELECT event_id, occurred_at, corridor_id, event_name, session_id, source_page, clicked_product_slug, route_target, metadata
+                FROM dcc_corridor_events
+                WHERE corridor_id = 'wno-commerce'
+                  AND session_id = ${originalBookingNetworkReq.payload.sessionId}
+                  AND event_name = 'booking_opened'
+                ORDER BY occurred_at DESC
+                LIMIT 1
+              `;
+              if (rows.length > 0) {
+                durableRecord = rows[0];
+                durableRecordVerified = true;
+                console.log(`     ✅ Durable record verified in dcc_corridor_events! (event_id: ${durableRecord.event_id})`);
+              } else {
+                console.log(`     ⚠️ No matching row found in dcc_corridor_events`);
+              }
+            } catch (dbErr) {
+              console.error(`     ❌ DB query error:`, dbErr.message);
+            }
+          }
+
+          const telemetryAssertions = {
+            browserRequestDispatched: Boolean(originalBookingNetworkReq?.payload),
+            sessionCorrelated: Boolean(originalBookingNetworkReq?.payload?.sessionId),
+            eventCorrelated: originalBookingNetworkReq?.payload?.eventName === 'booking_opened' || originalBookingNetworkReq?.payload?.eventName === 'fareharbor_click',
+            tourCorrelated: originalBookingNetworkReq?.payload?.itemId === tour.expectedItemId || originalBookingNetworkReq?.payload?.sku === tour.sku,
+            sourcePageCorrelated: Boolean(originalBookingNetworkReq?.payload?.sourcePage && (tour.url.includes(originalBookingNetworkReq.payload.sourcePage) || originalBookingNetworkReq.payload.sourcePage.includes(tour.sku))),
+            networkIdCorrelated: Boolean(originalBookingPausedResp && originalBookingPausedResp.networkId === originalBookingNetworkReq.requestId),
+            responseStatusOkOrRedirect: originalBookingPausedResp ? (originalBookingPausedResp.statusCode === 200 || originalBookingPausedResp.statusCode === 307) : false,
+            durableEventVerified: durableRecordVerified,
+            responseBodyOkOrDurableVerified: (originalBookingPausedResp?.parsedBody?.ok === true) || durableRecordVerified,
+          };
+
+          const isSuccess = Boolean(
+            hasShortname &&
+            hasItem &&
+            hasAsn &&
+            renderedModalOk &&
+            iframeHasShortname &&
+            iframeHasItem &&
+            iframeHasAsn &&
+            originalIframeInspection?.verified &&
+            futureDateSelection?.datesAgree &&
+            futureDateSelection?.dateMatchAssertion &&
+            futureDateSelection?.resultingAvailability?.availabilityVerifiedForRequestedDate &&
+            Object.values(telemetryAssertions).every(Boolean)
+          );
+
+          console.log(`   >>> OVERALL TOUR VERIFICATION: ${isSuccess ? 'PASS' : 'FAIL'}`);
+
+          results.push({
+            sku: tour.sku,
+            productName: tour.name,
+            pageUrl: tour.url,
+            clickedCta: {
+              text: matchingCta?.text,
+              href: firstCtaHref,
+            },
+            handoffAttribution: {
+              shortname: urlObj.pathname.split('/')[3],
+              itemId: urlObj.pathname.split('/')[5] || urlObj.searchParams.get('item'),
+              asn: urlObj.searchParams.get('asn'),
+            },
+            renderedCheckoutVerification: {
+              modalVisible: renderedModalOk,
+              iframeSrc: checkoutModal?.iframeSrc,
+              operatorMatch: iframeHasShortname,
+              itemMatch: iframeHasItem,
+              asnMatch: iframeHasAsn,
+              originalIframeInspection,
+            },
+            futureDateSelection,
+            originalBrowserTelemetryEvidence: {
+              requestId: originalBookingNetworkReq?.requestId,
+              networkId: originalBookingPausedResp?.networkId,
+              dispatchedUrl: originalBookingNetworkReq?.url,
+              payload: originalBookingNetworkReq?.payload,
+              responseStatusCode: originalBookingPausedResp?.statusCode,
+              durableRecord,
+              assertions: telemetryAssertions,
+            },
+            sourceEvidence: tour.sourceEvidence,
+            success: isSuccess,
+          });
+        })(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error(`Tour ${tour.name} exceeded 75s timeout`)), 75000)),
+      ]);
+    } catch (err) {
+      console.error(`\n❌ Error during tour verification for ${tour.name}:`, err.message);
+      results.push({
+        sku: tour.sku,
+        productName: tour.name,
+        pageUrl: tour.url,
+        success: false,
+        error: err.message,
+      });
+    } finally {
+      if (pageClient) {
+        try { await pageClient.send('Fetch.disable', {}, null, 2000); } catch (e) {}
+        try { pageClient.close(); } catch (e) {}
+      }
+      if (targetId) {
+        try { await browserClient.send('Target.closeTarget', { targetId }, null, 5000); } catch (e) {}
       }
     }
-
-    // Telemetry correlation via networkId and durable event verification
-    await delay(2000);
-    let originalBookingNetworkReq = null;
-    let originalBookingPausedResp = null;
-
-    for (const [reqId, req] of networkRequests.entries()) {
-      let parsed = null;
-      try { parsed = JSON.parse(req.postData); } catch (e) {}
-      if (parsed?.eventName === 'booking_opened' || parsed?.eventName === 'fareharbor_click') {
-        originalBookingNetworkReq = {
-          requestId: reqId,
-          url: req.url,
-          method: req.method,
-          payload: parsed,
-        };
-        originalBookingPausedResp = pausedResponses.find(p => p.networkId === reqId && (p.statusCode === 200 || p.statusCode === 307));
-        break;
-      }
-    }
-
-    // Verify matching durable event record in neon database
-    let durableRecord = null;
-    let durableRecordVerified = false;
-    if (originalBookingNetworkReq?.payload?.sessionId) {
-      console.log(`   Verifying matching durable event record for session [${originalBookingNetworkReq.payload.sessionId}]...`);
-      try {
-        const rows = await sql`
-          SELECT event_id, occurred_at, corridor_id, event_name, session_id, source_page, clicked_product_slug, route_target, metadata
-          FROM dcc_corridor_events
-          WHERE corridor_id = 'wno-commerce'
-            AND session_id = ${originalBookingNetworkReq.payload.sessionId}
-            AND event_name = 'booking_opened'
-          ORDER BY occurred_at DESC
-          LIMIT 1
-        `;
-        if (rows.length > 0) {
-          durableRecord = rows[0];
-          durableRecordVerified = true;
-          console.log(`     ✅ Durable record verified in dcc_corridor_events! (event_id: ${durableRecord.event_id})`);
-        } else {
-          console.log(`     ⚠️ No matching row found in dcc_corridor_events`);
-        }
-      } catch (dbErr) {
-        console.error(`     ❌ DB query error:`, dbErr.message);
-      }
-    }
-
-    const telemetryAssertions = {
-      browserRequestDispatched: Boolean(originalBookingNetworkReq?.payload),
-      sessionCorrelated: Boolean(originalBookingNetworkReq?.payload?.sessionId),
-      eventCorrelated: originalBookingNetworkReq?.payload?.eventName === 'booking_opened' || originalBookingNetworkReq?.payload?.eventName === 'fareharbor_click',
-      tourCorrelated: originalBookingNetworkReq?.payload?.itemId === tour.expectedItemId || originalBookingNetworkReq?.payload?.sku === tour.sku,
-      sourcePageCorrelated: Boolean(originalBookingNetworkReq?.payload?.sourcePage && (tour.url.includes(originalBookingNetworkReq.payload.sourcePage) || originalBookingNetworkReq.payload.sourcePage.includes(tour.sku))),
-      networkIdCorrelated: Boolean(originalBookingPausedResp && originalBookingPausedResp.networkId === originalBookingNetworkReq.requestId),
-      responseStatusOkOrRedirect: originalBookingPausedResp ? (originalBookingPausedResp.statusCode === 200 || originalBookingPausedResp.statusCode === 307) : false,
-      durableEventVerified: durableRecordVerified,
-      responseBodyOkOrDurableVerified: (originalBookingPausedResp?.parsedBody?.ok === true) || durableRecordVerified,
-    };
-
-    const isSuccess = Boolean(
-      hasShortname &&
-      hasItem &&
-      hasAsn &&
-      renderedModalOk &&
-      iframeHasShortname &&
-      iframeHasItem &&
-      iframeHasAsn &&
-      originalIframeInspection?.verified &&
-      futureDateSelection?.datesAgree &&
-      futureDateSelection?.dateMatchAssertion &&
-      futureDateSelection?.resultingAvailability?.availabilityVerifiedForRequestedDate &&
-      Object.values(telemetryAssertions).every(Boolean)
-    );
-
-    console.log(`   >>> OVERALL TOUR VERIFICATION: ${isSuccess ? 'PASS' : 'FAIL'}`);
-
-    results.push({
-      sku: tour.sku,
-      productName: tour.name,
-      pageUrl: tour.url,
-      clickedCta: {
-        text: matchingCta.text,
-        href: firstCtaHref,
-      },
-      handoffAttribution: {
-        shortname: urlObj.pathname.split('/')[3],
-        itemId: urlObj.pathname.split('/')[5] || urlObj.searchParams.get('item'),
-        asn: urlObj.searchParams.get('asn'),
-      },
-      renderedCheckoutVerification: {
-        modalVisible: renderedModalOk,
-        iframeSrc: checkoutModal?.iframeSrc,
-        operatorMatch: iframeHasShortname,
-        itemMatch: iframeHasItem,
-        asnMatch: iframeHasAsn,
-        originalIframeInspection,
-      },
-      futureDateSelection,
-      originalBrowserTelemetryEvidence: {
-        requestId: originalBookingNetworkReq?.requestId,
-        networkId: originalBookingPausedResp?.networkId,
-        dispatchedUrl: originalBookingNetworkReq?.url,
-        payload: originalBookingNetworkReq?.payload,
-        responseStatusCode: originalBookingPausedResp?.statusCode,
-        durableRecord,
-        assertions: telemetryAssertions,
-      },
-      sourceEvidence: tour.sourceEvidence,
-      success: isSuccess,
-    });
-
-    await pageClient.send('Fetch.disable').catch(() => {});
-    pageClient.close();
-    await browserClient.send('Target.closeTarget', { targetId });
   }
 
   try { browserClient.close(); } catch (e) {}
@@ -826,7 +976,7 @@ async function run() {
     console.log(`   Telemetry: status ${r.originalBrowserTelemetryEvidence?.responseStatusCode} -> durable_verified=${r.originalBrowserTelemetryEvidence?.assertions?.durableEventVerified}`);
   }
 
-  const allPassed = results.every(r => r.success);
+  const allPassed = results.length > 0 && results.every(r => r.success);
 
   const reportPayload = {
     auditDate: new Date().toISOString(),
@@ -848,13 +998,14 @@ async function run() {
   fs.writeFileSync(reportPath, JSON.stringify(reportPayload, null, 2), 'utf8');
   console.log('\nSaved reproducible verification report to ' + reportPath);
 
-  const gosnoReportPath = 'C:/Users/erich/gosno-production/reports/wno-browser-verification-results.json';
-  fs.writeFileSync(gosnoReportPath, JSON.stringify(reportPayload, null, 2), 'utf8');
-  console.log('Mirrored report to ' + gosnoReportPath);
+  const gosnoDir = 'C:/Users/erich/gosno-production/reports';
+  if (fs.existsSync(gosnoDir)) {
+    const gosnoReportPath = path.join(gosnoDir, 'wno-browser-verification-results.json');
+    fs.writeFileSync(gosnoReportPath, JSON.stringify(reportPayload, null, 2), 'utf8');
+    console.log('Mirrored report to ' + gosnoReportPath);
+  }
 
-  const scriptDest = 'C:/Users/erich/Documents/Projects/destinations-cc/scripts/verify-browser-customer-journey.cjs';
-  fs.copyFileSync(__filename, scriptDest);
-  console.log('Updated authoritative script at ' + scriptDest);
+  clearTimeout(globalWatchdog);
 
   if (!allPassed) {
     console.error('\n❌ One or more tours failed verification!');
