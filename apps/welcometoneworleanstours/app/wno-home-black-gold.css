@@ -86,6 +86,100 @@ body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [c
   background: #2C1810 !important;
 }
 
+/* ─── Hero Section: Light Parchment & Warm Typography ─────────────── */
+body:has([data-wno-home-theme="black-gold-v2"]) section[class*="hero"],
+[data-wno-home-theme="black-gold-v2"] section[class*="hero"] {
+  background: transparent !important;
+  color: #2C1810 !important;
+}
+
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="headline"],
+[data-wno-home-theme="black-gold-v2"] [class*="headline"] {
+  color: #2C1810 !important;
+  text-shadow: none !important;
+  -webkit-text-fill-color: #2C1810 !important;
+}
+
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="eyebrow"],
+[data-wno-home-theme="black-gold-v2"] [class*="eyebrow"] {
+  color: #4A1A6B !important;
+}
+
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="script"],
+[data-wno-home-theme="black-gold-v2"] [class*="script"] {
+  color: #C8831A !important;
+}
+
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="lede"],
+[data-wno-home-theme="black-gold-v2"] [class*="lede"] {
+  color: #4E3526 !important;
+  text-shadow: none !important;
+}
+
+/* ─── Action Cards: Warm Parchment Surfaces with Mardi Gras Borders ─── */
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="actions"] [class*="action"],
+[data-wno-home-theme="black-gold-v2"] [class*="actions"] [class*="action"] {
+  background: #FAF6EE !important;
+  color: #2C1810 !important;
+  box-shadow: 0 8px 20px rgba(44, 24, 16, 0.06) !important;
+}
+
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="actions"] [class*="action"] small,
+[data-wno-home-theme="black-gold-v2"] [class*="actions"] [class*="action"] small {
+  color: #5C4638 !important;
+}
+
+/* Purple Action (Card 1) */
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="purpleAction"],
+[data-wno-home-theme="black-gold-v2"] [class*="purpleAction"] {
+  border: 1.5px solid #4A1A6B !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="purpleAction"] strong,
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="purpleAction"] b,
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="purpleAction"] [class*="actionIcon"],
+[data-wno-home-theme="black-gold-v2"] [class*="purpleAction"] strong,
+[data-wno-home-theme="black-gold-v2"] [class*="purpleAction"] b,
+[data-wno-home-theme="black-gold-v2"] [class*="purpleAction"] [class*="actionIcon"] {
+  color: #4A1A6B !important;
+  background: transparent !important;
+}
+
+/* Gold Action (Card 2) */
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="goldAction"],
+[data-wno-home-theme="black-gold-v2"] [class*="goldAction"] {
+  border: 1.5px solid #C8831A !important;
+  background: #FAF6EE !important;
+  box-shadow: 0 8px 20px rgba(44, 24, 16, 0.06) !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="goldAction"] strong,
+[data-wno-home-theme="black-gold-v2"] [class*="goldAction"] strong {
+  color: #2C1810 !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="goldAction"] b,
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="goldAction"] [class*="actionIcon"],
+[data-wno-home-theme="black-gold-v2"] [class*="goldAction"] b,
+[data-wno-home-theme="black-gold-v2"] [class*="goldAction"] [class*="actionIcon"] {
+  color: #C8831A !important;
+  background: transparent !important;
+}
+
+/* Green Action (Card 3: Call or Text) */
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="greenAction"],
+[data-wno-home-theme="black-gold-v2"] [class*="greenAction"] {
+  border: 1.5px solid #2D5A27 !important;
+  background: #FAF6EE !important;
+  box-shadow: 0 8px 20px rgba(44, 24, 16, 0.06) !important;
+}
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="greenAction"] strong,
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="greenAction"] b,
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="greenAction"] [class*="actionIcon"],
+[data-wno-home-theme="black-gold-v2"] [class*="greenAction"] strong,
+[data-wno-home-theme="black-gold-v2"] [class*="greenAction"] b,
+[data-wno-home-theme="black-gold-v2"] [class*="greenAction"] [class*="actionIcon"] {
+  color: #2D5A27 !important;
+  background: transparent !important;
+}
+
 /* ─── Popular Decisions / Tailwind Section Overrides ─────────────────── */
 body:has([data-wno-home-theme="black-gold-v2"]) [class*="bg-\[#0b0a09\]"],
 body:has([data-wno-home-theme="black-gold-v2"]) [class*="bg-\[#12110e\]"] {

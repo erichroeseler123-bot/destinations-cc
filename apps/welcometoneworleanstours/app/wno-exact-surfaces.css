@@ -382,3 +382,53 @@
     min-height: 0 !important;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Homepage — Light Parchment & Walnut Ink, Zero Dark Surfaces               */
+/* -------------------------------------------------------------------------- */
+[data-wno-home-theme="black-gold-v2"],
+body:has([data-wno-home-theme="black-gold-v2"]) section[class*="hero"],
+[data-wno-home-theme="black-gold-v2"] section[class*="hero"] {
+  background: transparent !important;
+  color: #2C1810 !important;
+}
+
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="headline"],
+[data-wno-home-theme="black-gold-v2"] [class*="headline"] {
+  color: #2C1810 !important;
+  text-shadow: none !important;
+  -webkit-text-fill-color: #2C1810 !important;
+}
+
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="lede"],
+[data-wno-home-theme="black-gold-v2"] [class*="lede"] {
+  color: #4E3526 !important;
+  text-shadow: none !important;
+}
+
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="actions"] [class*="action"],
+[data-wno-home-theme="black-gold-v2"] [class*="actions"] [class*="action"] {
+  background: #FAF6EE !important;
+  color: #2C1810 !important;
+}
+
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="greenAction"],
+[data-wno-home-theme="black-gold-v2"] [class*="greenAction"] {
+  background: #FAF6EE !important;
+  border: 1.5px solid #2D5A27 !important;
+  color: #2D5A27 !important;
+}
+
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="greenAction"] strong,
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="greenAction"] [class*="actionIcon"],
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="greenAction"] b,
+[data-wno-home-theme="black-gold-v2"] [class*="greenAction"] strong,
+[data-wno-home-theme="black-gold-v2"] [class*="greenAction"] [class*="actionIcon"],
+[data-wno-home-theme="black-gold-v2"] [class*="greenAction"] b {
+  color: #2D5A27 !important;
+}
+
+body:has([data-wno-home-theme="black-gold-v2"]) [class*="greenAction"] small,
+[data-wno-home-theme="black-gold-v2"] [class*="greenAction"] small {
+  color: #5C4638 !important;
+}
