@@ -1,5 +1,5 @@
 {
-  "auditDate": "2026-09-11T00:29:39.469Z",
+  "auditDate": "2026-09-11T00:39:34.629Z",
   "environment": "production",
   "targetOrigin": "https://www.welcometoneworleanstours.com",
   "browser": "Headless Google Chrome (CDP) under Normal Customer Security (no --disable-web-security)",
@@ -31,26 +31,26 @@
       },
       "renderedCheckoutVerification": {
         "modalVisible": true,
-        "iframeSrc": "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/calendar/?asn=welcometoneworleanstours&ref=WelcomeToNewOrleansTours&full-items=yes&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&flow=1621291&u=41573e78-44d6-4d9b-8840-d5aabdc1e5ed&from-ssl=yes&g4=yes&cp=no&csp=no&back=https%3A%2F%2Fwww.welcometoneworleanstours.com%2Ftours%2Fevening-jazz-cruise",
+        "iframeSrc": "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/calendar/?asn=welcometoneworleanstours&ref=WelcomeToNewOrleansTours&full-items=yes&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&flow=1621291&u=64ee197f-bc56-4b11-9da9-282db67a88d3&from-ssl=yes&g4=yes&cp=no&csp=no&back=https%3A%2F%2Fwww.welcometoneworleanstours.com%2Ftours%2Fevening-jazz-cruise",
         "operatorMatch": true,
         "itemMatch": true,
         "asnMatch": true,
         "originalIframeInspection": {
           "openedIframeTargetFound": true,
-          "targetId": "FDD122B90DA28098E840FBEDEA0D28D7",
+          "targetId": "8B1A0D0E4F1E6EE1CCF93205A2B7F686",
           "targetTitle": "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/calendar/2026/09/?asn=welcometoneworleanstours&ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&flow=1621291&full-items=yes&back=https://www.welcometoneworleanstours.com/tours/evening-jazz-cruise&g4=yes",
           "targetUrl": "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/560825/calendar/2026/09/?asn=welcometoneworleanstours&ref=WelcomeToNewOrleansTours&schedule-uuid=154cb35d-dbcd-4233-aef8-3bc8c48776b3&flow=1621291&full-items=yes&back=https://www.welcometoneworleanstours.com/tours/evening-jazz-cruise&g4=yes",
           "documentTitle": "Steamboat NATCHEZ Evening Sightseeing Jazz Cruise - No Meal | New Orleans Steamboat Company",
           "heading": "FareHarbor did not load properly.",
           "hasCalendar": true,
-          "interactiveButtonCount": 81,
+          "interactiveButtonCount": 11,
           "buttonSamples": [
             "Close",
             "English (US)",
-            "30",
-            "30",
-            "31",
-            "31"
+            "$58",
+            "Adults\nAges 13+",
+            "$29",
+            "Children\nAges 6-12"
           ],
           "tourMatch": true,
           "usableBookingControls": true,
@@ -93,8 +93,8 @@
         }
       },
       "originalBrowserTelemetryEvidence": {
-        "requestId": "14024.70",
-        "networkId": "14024.70",
+        "requestId": "11164.70",
+        "networkId": "11164.70",
         "dispatchedUrl": "https://destinationcommandcenter.com/api/wno/telemetry",
         "payload": {
           "eventName": "booking_opened",
@@ -105,17 +105,17 @@
           "flowId": "1621291",
           "entrySource": "wtonot-entry-tours/evening-jazz-cruise",
           "entryPath": "/tours/evening-jazz-cruise",
-          "sessionId": "wno_mtw7xlq6_q36qg7q3",
+          "sessionId": "wno_mtw8aatr_buybrc4f",
           "landingPath": "/tours/evening-jazz-cruise",
           "source": "wtonot-entry-tours/evening-jazz-cruise"
         },
         "responseStatusCode": 307,
         "durableRecord": {
-          "event_id": "d73198bf-98c5-482c-8cb3-a3a1ec454aba",
-          "occurred_at": "2026-09-11T00:29:03.390Z",
+          "event_id": "ec7a25ed-bf9f-412b-9262-ec5593dc9e1d",
+          "occurred_at": "2026-09-11T00:38:56.706Z",
           "corridor_id": "wno-commerce",
           "event_name": "booking_opened",
-          "session_id": "wno_mtw7xlq6_q36qg7q3",
+          "session_id": "wno_mtw8aatr_buybrc4f",
           "source_page": "/tours/evening-jazz-cruise",
           "clicked_product_slug": null,
           "route_target": "neworleanssteamboatcompany",
@@ -169,19 +169,19 @@
       },
       "renderedCheckoutVerification": {
         "modalVisible": true,
-        "iframeSrc": "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/calendar/?asn=aktourcenter&ref=wtonot-detail-covered&full-items=yes&flow=392449&u=41573e78-44d6-4d9b-8840-d5aabdc1e5ed&from-ssl=yes&g4=yes&cp=no&csp=no&back=https%3A%2F%2Fwww.welcometoneworleanstours.com%2Ftours%2Fcovered-tour-boat",
+        "iframeSrc": "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/calendar/?asn=aktourcenter&ref=wtonot-detail-covered&full-items=yes&flow=392449&u=64ee197f-bc56-4b11-9da9-282db67a88d3&from-ssl=yes&g4=yes&cp=no&csp=no&back=https%3A%2F%2Fwww.welcometoneworleanstours.com%2Ftours%2Fcovered-tour-boat",
         "operatorMatch": true,
         "itemMatch": true,
         "asnMatch": true,
         "originalIframeInspection": {
           "openedIframeTargetFound": true,
-          "targetId": "8D8AC1378E23949462F28FDF9C11693F",
+          "targetId": "A4FBE0D03E94207E2762114BB5A9E0B6",
           "targetTitle": "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/calendar/?asn=aktourcenter&ref=wtonot-detail-covered&flow=392449&full-items=yes&back=https://www.welcometoneworleanstours.com/tours/covered-tour-boat&g4=yes",
           "targetUrl": "https://fareharbor.com/embeds/book/ragincajuntours/items/590176/calendar/?asn=aktourcenter&ref=wtonot-detail-covered&flow=392449&full-items=yes&back=https://www.welcometoneworleanstours.com/tours/covered-tour-boat&g4=yes",
           "documentTitle": "Covered Tour Boat | Ragin Cajun Airboat Tours",
           "heading": "FareHarbor did not load properly.",
           "hasCalendar": true,
-          "interactiveButtonCount": 17,
+          "interactiveButtonCount": 12,
           "buttonSamples": [
             "Close",
             "English (US)",
@@ -243,8 +243,8 @@
         }
       },
       "originalBrowserTelemetryEvidence": {
-        "requestId": "24320.71",
-        "networkId": "24320.71",
+        "requestId": "5428.71",
+        "networkId": "5428.71",
         "dispatchedUrl": "https://destinationcommandcenter.com/api/wno/telemetry",
         "payload": {
           "eventName": "booking_opened",
@@ -255,17 +255,17 @@
           "flowId": "392449",
           "entrySource": "wtonot-entry-tours/covered-tour-boat",
           "entryPath": "/tours/covered-tour-boat",
-          "sessionId": "wno_mtw7xv7v_iouetmtp",
+          "sessionId": "wno_mtw8amg6_5rtsx0iz",
           "landingPath": "/tours/covered-tour-boat",
           "source": "wtonot-entry-tours/covered-tour-boat"
         },
         "responseStatusCode": 307,
         "durableRecord": {
-          "event_id": "f2737e62-808d-41e2-920e-85a8cd11827e",
-          "occurred_at": "2026-09-11T00:29:16.573Z",
+          "event_id": "fd9fe4bf-8e8e-4b74-82a7-00cd2cc76275",
+          "occurred_at": "2026-09-11T00:39:12.683Z",
           "corridor_id": "wno-commerce",
           "event_name": "booking_opened",
-          "session_id": "wno_mtw7xv7v_iouetmtp",
+          "session_id": "wno_mtw8amg6_5rtsx0iz",
           "source_page": "/tours/covered-tour-boat",
           "clicked_product_slug": null,
           "route_target": "ragincajuntours",
@@ -318,13 +318,13 @@
       },
       "renderedCheckoutVerification": {
         "modalVisible": true,
-        "iframeSrc": "https://fareharbor.com/embeds/book/southernstyletours/items/83002/calendar/?asn=aktourcenter&ref=wtonot-detail-plantation&full-items=yes&flow=4344&u=41573e78-44d6-4d9b-8840-d5aabdc1e5ed&from-ssl=yes&g4=yes&cp=no&csp=no&back=https%3A%2F%2Fwww.welcometoneworleanstours.com%2Ftours%2Foak-alley-or-laura-plantation-tour",
+        "iframeSrc": "https://fareharbor.com/embeds/book/southernstyletours/items/83002/calendar/?asn=aktourcenter&ref=wtonot-detail-plantation&full-items=yes&flow=4344&u=64ee197f-bc56-4b11-9da9-282db67a88d3&from-ssl=yes&g4=yes&cp=no&csp=no&back=https%3A%2F%2Fwww.welcometoneworleanstours.com%2Ftours%2Foak-alley-or-laura-plantation-tour",
         "operatorMatch": true,
         "itemMatch": true,
         "asnMatch": true,
         "originalIframeInspection": {
           "openedIframeTargetFound": true,
-          "targetId": "58EA3B29619CEDEC974E4E3C60931C43",
+          "targetId": "560B930EFFC917662862649C2C411051",
           "targetTitle": "https://fareharbor.com/embeds/book/southernstyletours/items/83002/calendar/2026/09/?asn=aktourcenter&ref=wtonot-detail-plantation&flow=4344&full-items=yes&back=https://www.welcometoneworleanstours.com/tours/oak-alley-or-laura-plantation-tour&g4=yes",
           "targetUrl": "https://fareharbor.com/embeds/book/southernstyletours/items/83002/calendar/2026/09/?asn=aktourcenter&ref=wtonot-detail-plantation&flow=4344&full-items=yes&back=https://www.welcometoneworleanstours.com/tours/oak-alley-or-laura-plantation-tour&g4=yes",
           "documentTitle": "Oak Alley Or Laura Plantation Tour | Southern Style Tours",
@@ -380,8 +380,8 @@
         }
       },
       "originalBrowserTelemetryEvidence": {
-        "requestId": "15720.71",
-        "networkId": "15720.71",
+        "requestId": "12720.71",
+        "networkId": "12720.71",
         "dispatchedUrl": "https://destinationcommandcenter.com/api/wno/telemetry",
         "payload": {
           "eventName": "booking_opened",
@@ -392,17 +392,17 @@
           "flowId": "4344",
           "entrySource": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour",
           "entryPath": "/tours/oak-alley-or-laura-plantation-tour",
-          "sessionId": "wno_mtw7y53v_hi2ba7ty",
+          "sessionId": "wno_mtw8awf0_rmzbjai0",
           "landingPath": "/tours/oak-alley-or-laura-plantation-tour",
           "source": "wtonot-entry-tours/oak-alley-or-laura-plantation-tour"
         },
         "responseStatusCode": 307,
         "durableRecord": {
-          "event_id": "bbb693cf-3f52-4225-913e-3cadbfb492f0",
-          "occurred_at": "2026-09-11T00:29:29.480Z",
+          "event_id": "0f060887-3c15-4722-944c-de059f933d2b",
+          "occurred_at": "2026-09-11T00:39:24.701Z",
           "corridor_id": "wno-commerce",
           "event_name": "booking_opened",
-          "session_id": "wno_mtw7y53v_hi2ba7ty",
+          "session_id": "wno_mtw8awf0_rmzbjai0",
           "source_page": "/tours/oak-alley-or-laura-plantation-tour",
           "clicked_product_slug": null,
           "route_target": "southernstyletours",
