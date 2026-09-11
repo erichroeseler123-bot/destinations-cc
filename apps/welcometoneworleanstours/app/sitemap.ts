@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { GET as getSitemapResponse } from "../../../app/sitemap.xml/route";
 
+// Canonical and legacy origin mapping for WNO sitemap
 const CANONICAL_ORIGIN = "https://www.welcometoneworleanstours.com";
 const LEGACY_ORIGIN = "https://welcometoneworleanstours.com";
 
