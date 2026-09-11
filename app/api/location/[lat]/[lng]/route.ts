@@ -4,6 +4,7 @@ import { isIndexableCoordinate } from "@/lib/dcc/locationDiscovery";
 import { readLocationIntelligence } from "@/lib/dcc/locationIntelligence";
 import { normalizeGaugeStatuses, readHydroMarine } from "@/lib/dcc/hydroMarine";
 import { readExtendedCoordinateFeeds } from "@/lib/dcc/extendedCoordinateFeeds";
+import { readApplicableDccEndpoints } from "@/lib/dcc/endpointRegistry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -96,6 +97,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   try {
     const intelligencePromise = readLocationIntelligence({ lat, lng });
+    const dccEndpointsPromise = readApplicableDccEndpoints({ lat, lng });
     const enrichmentPromise = scope === "core"
       ? Promise.resolve([
           { river: null, marine: null, sources: [] },
@@ -108,7 +110,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
           readOptionalLegacy(origin, lat, lng, request.nextUrl.searchParams.get("timezone") || "auto"),
         ]);
 
-    const [intelligence, enrichment] = await Promise.all([intelligencePromise, enrichmentPromise]);
+    const [intelligence, enrichment, dccEndpoints] = await Promise.all([
+      intelligencePromise,
+      enrichmentPromise,
+      dccEndpointsPromise,
+    ]);
     const [hydroMarine, extended, legacy] = enrichment as any;
 
     const normalizedGauges = (intelligence.water.nearbyGauges || []).map(normalizeGaugeStatuses);
@@ -142,7 +148,19 @@ export async function GET(request: NextRequest, context: RouteContext) {
       maxSnowDepthCm: Math.max(0, ...winterHours.map((hour: any) => Number(hour?.snowDepthM || 0) * 100)),
       hours: winterHours,
     };
-    const sources = [...intelligence.sources, ...(hydroMarine.sources || []), ...(extended.sources || [])];
+    const dccSources = dccEndpoints.map((ep) => ({
+      provider: `DCC Endpoint: ${ep.name}`,
+      attribution: `${ep.endpointUrl} · ${ep.payload?.claims?.find((c: any) => c.predicate === "operating_authority")?.value || "DCC Verified"}`,
+      available: ep.available,
+      checkedAt: ep.checkedAt,
+      error: ep.available ? undefined : ep.error,
+    }));
+    const sources = [
+      ...dccSources,
+      ...intelligence.sources,
+      ...(hydroMarine.sources || []),
+      ...(extended.sources || []),
+    ];
 
     const payload = {
       ok: true,
@@ -166,7 +184,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
         absoluteApi: `${origin}${canonicalApi}`,
       },
       checkedAt: intelligence.checkedAt,
+      dccEndpoints,
       modules: {
+        dccEndpoints,
         identity: intelligence.identity,
         now,
         conditions,

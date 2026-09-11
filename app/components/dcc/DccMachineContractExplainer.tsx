@@ -21,12 +21,12 @@ export default function DccMachineContractExplainer() {
             <p className="mt-2 text-sm leading-6 text-white/45">Device location or entered place becomes latitude and longitude.</p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
-            <strong className="text-sm text-white">2. Assemble</strong>
-            <p className="mt-2 text-sm leading-6 text-white/45">DCC checks which public sources can contribute useful information at those coordinates.</p>
+            <strong className="text-sm text-white">2. Hydrate Direct</strong>
+            <p className="mt-2 text-sm leading-6 text-white/45">After a location is opened, the page hydrates directly from public machine-readable endpoints without duplicating schedules, inventory, prices, or status.</p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
-            <strong className="text-sm text-white">3. Publish</strong>
-            <p className="mt-2 text-sm leading-6 text-white/45">The coordinate gets a stable human page and machine-readable JSON representation.</p>
+            <strong className="text-sm text-white">3. Public View</strong>
+            <p className="mt-2 text-sm leading-6 text-white/45">The coordinate gets a stable human view and machine-readable JSON representation served straight from authoritative sources.</p>
           </article>
         </div>
 

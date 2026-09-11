@@ -111,7 +111,20 @@ export default function LocationFirstHomeFast() {
             <button type="submit" disabled={searching} className="min-h-14 rounded-2xl bg-cyan-300 px-6 text-sm font-black uppercase tracking-[0.12em] text-[#031217] transition hover:bg-cyan-200 disabled:cursor-wait disabled:opacity-60">
               {searching ? "Finding…" : "Open location"}
             </button>
-          </form>\n\n          <div className="mt-4 flex max-w-4xl flex-wrap gap-2" aria-label="Example locations">\n            <span className="py-2 text-xs font-bold uppercase tracking-[0.12em] text-white/45">Try an example:</span>\n            <button type="button" onClick={() => openLocation(39.85610, -104.67370)} className="rounded-full border border-white/12 px-3 py-2 text-xs font-bold text-white/75 hover:border-cyan-300/45">Denver Airport</button>\n            <button type="button" onClick={() => openLocation(18.34190, -64.93070)} className="rounded-full border border-white/12 px-3 py-2 text-xs font-bold text-white/75 hover:border-cyan-300/45">Charlotte Amalie</button>\n            <button type="button" onClick={() => openLocation(45.26180, -111.30800)} className="rounded-full border border-white/12 px-3 py-2 text-xs font-bold text-white/75 hover:border-cyan-300/45">Big Sky</button>\n            <button type="button" onClick={() => openLocation(39.66540, -105.20570)} className="rounded-full border border-white/12 px-3 py-2 text-xs font-bold text-white/75 hover:border-cyan-300/45">Red Rocks</button>\n          </div>
+          </form>
+
+          <div className="mt-4 flex max-w-4xl flex-wrap items-center gap-2" aria-label="Example locations">
+            <span className="py-1 text-xs font-bold uppercase tracking-[0.12em] text-white/45">Try an example:</span>
+            <button type="button" onClick={() => openLocation(39.85610, -104.67370)} className="rounded-full border border-white/12 px-3 py-1.5 text-xs font-bold text-white/75 transition hover:border-cyan-300/45 hover:text-white">Denver Airport</button>
+            <button type="button" onClick={() => openLocation(18.34190, -64.93070)} className="rounded-full border border-white/12 px-3 py-1.5 text-xs font-bold text-white/75 transition hover:border-cyan-300/45 hover:text-white">Charlotte Amalie</button>
+            <button type="button" onClick={() => openLocation(45.26180, -111.30800)} className="rounded-full border border-white/12 px-3 py-1.5 text-xs font-bold text-white/75 transition hover:border-cyan-300/45 hover:text-white">Big Sky</button>
+            <button type="button" onClick={() => openLocation(39.66540, -105.20570)} className="rounded-full border border-white/12 px-3 py-1.5 text-xs font-bold text-white/75 transition hover:border-cyan-300/45 hover:text-white">Red Rocks</button>
+          </div>
+
+          <div className="mt-6 flex max-w-4xl items-center gap-2.5 rounded-xl border border-cyan-400/20 bg-cyan-400/[0.05] px-4 py-2.5 text-xs text-cyan-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400"></span>
+            <span>This page is a view. The current information comes from the public endpoints that serve this location.</span>
+          </div>
 
           {results.length > 1 ? (
             <div className="mt-3 grid max-w-4xl gap-2 rounded-2xl border border-white/10 bg-black/30 p-2">
@@ -127,9 +140,18 @@ export default function LocationFirstHomeFast() {
           {message ? <p className="mt-4 text-sm text-amber-200/80">{message}</p> : null}
 
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4"><p className="text-xs font-black text-white">No startup API waterfall</p><p className="mt-1 text-xs leading-5 text-white/42">The homepage is immediately usable before any location lookup begins.</p></div>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4"><p className="text-xs font-black text-white">Coordinates stay canonical</p><p className="mt-1 text-xs leading-5 text-white/42">Search and device location both route to the same five-decimal coordinate identity.</p></div>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4"><p className="text-xs font-black text-white">Live data loads where needed</p><p className="mt-1 text-xs leading-5 text-white/42">Weather, hazards and other sources load on the selected location page instead of blocking the homepage.</p></div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+              <p className="text-xs font-black text-white">No startup API waterfall</p>
+              <p className="mt-1 text-xs leading-5 text-white/42">The homepage is immediately usable before any location lookup begins.</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+              <p className="text-xs font-black text-white">Coordinates stay canonical</p>
+              <p className="mt-1 text-xs leading-5 text-white/42">Search and device location both route to the same five-decimal coordinate identity.</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+              <p className="text-xs font-black text-white">Hydrates direct without duplication</p>
+              <p className="mt-1 text-xs leading-5 text-white/42">After a location is opened, the page hydrates in real time from public machine-readable endpoints and does not duplicate their schedules, inventory, prices, or status.</p>
+            </div>
           </div>
         </div>
       </section>

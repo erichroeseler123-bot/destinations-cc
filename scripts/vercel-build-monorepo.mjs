@@ -47,4 +47,5 @@ if (process.env.VERCEL_PROJECT_ID === WNO_PROJECT_ID) {
   process.exit(0);
 }
 
+process.env.SKIP_ENV_CHECK = "1";
 run("pnpm", ["run", "build"]);

@@ -18,7 +18,9 @@ type DccPayload = {
   checkedAt?: string;
   coordinate?: { lat: number; lng: number };
   location?: { timezone?: string | null; elevationM?: number | null };
+  dccEndpoints?: any[];
   modules?: {
+    dccEndpoints?: any[];
     now?: { weather?: any; airQuality?: any };
     conditions?: { next12Hours?: any[]; next3Days?: any[]; airQualityNext12Hours?: any[] };
     hazards?: { alerts?: any[]; earthquakes?: any[]; naturalEvents?: any[] };
@@ -167,6 +169,25 @@ export default function DenseLocationView({ lat, lng, knownName = null }: Props)
   );
   const sources = payload?.sources || [];
   const activeSources = sources.filter((source) => source.available).length;
+  const dccEndpoints = (payload?.modules?.dccEndpoints || payload?.dccEndpoints || []) as Array<{
+    id?: string;
+    name?: string;
+    url?: string;
+    endpointUrl?: string;
+    sourceUrl?: string;
+    matchedRegion?: string;
+    checkedAt?: string;
+    fetchedAt?: string;
+    available?: boolean;
+    status?: "fresh" | "stale" | "unavailable" | string;
+    isFresh?: boolean;
+    asOf?: string | null;
+    as_of?: string | null;
+    freshUntil?: string | null;
+    fresh_until?: string | null;
+    error?: string;
+    payload?: any;
+  }>;
 
   return (
     <main className="min-h-screen bg-[#070b10] text-white">
@@ -193,6 +214,10 @@ export default function DenseLocationView({ lat, lng, knownName = null }: Props)
             {payload?.location?.elevationM != null ? <span className="rounded-full border border-white/10 px-3 py-2">Elevation {metersToFeet(payload.location.elevationM)?.toLocaleString()} ft</span> : null}
             {payload?.checkedAt ? <span className="rounded-full border border-white/10 px-3 py-2">Checked {checked(payload.checkedAt)}</span> : null}
           </div>
+          <div className="mt-4 flex max-w-3xl items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/[0.05] px-3.5 py-2 text-xs text-cyan-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400"></span>
+            <span>This page is a view. The current information comes from the public endpoints that serve this location.</span>
+          </div>
         </div>
       </header>
 
@@ -210,6 +235,274 @@ export default function DenseLocationView({ lat, lng, knownName = null }: Props)
 
         {payload ? (
           <>
+            <Section
+              eyebrow="Direct Tourism Internet"
+              title={
+                dccEndpoints.length
+                  ? `${dccEndpoints.length} verified operator endpoint${dccEndpoints.length === 1 ? "" : "s"} serving this location`
+                  : "Direct operator endpoints"
+              }
+            >
+              {dccEndpoints.length ? (
+                <div className="space-y-6">
+                  {dccEndpoints.map((ep, idx) => {
+                    const data = ep.payload || {};
+                    const operator = data.operator || {};
+                    const isFresh = ep.status === "fresh" || ep.isFresh === true;
+                    const isStale = ep.status === "stale";
+                    const isError = ep.status === "unavailable" || !ep.available;
+
+                    // Extract claims from array or object
+                    const rawClaims: any[] = Array.isArray(data.claims)
+                      ? data.claims
+                      : Object.entries(data.claims || {}).map(([predicate, value]) => ({ predicate, value }));
+
+                    const claimsMap: Record<string, any> = {};
+                    for (const c of rawClaims) {
+                      if (c && c.predicate) claimsMap[c.predicate] = c;
+                    }
+
+                    const legalName = claimsMap.legal_name?.value || operator.identity?.legal_name || ep.name || "Direct Operator";
+                    const operatingAuth = claimsMap.operating_authority?.value || operator.identity?.operating_authority?.id;
+                    const operatingAuthEvidence = claimsMap.operating_authority?.evidence?.[0]?.pointer || operator.identity?.operating_authority?.evidence_url;
+
+                    // Extract state
+                    const rawState: any[] = Array.isArray(data.state)
+                      ? data.state
+                      : Object.entries(data.state || {}).map(([predicate, value]) => ({ predicate, value }));
+
+                    // Timestamps & URLs
+                    const endpointUrl = ep.endpointUrl || ep.sourceUrl || data.self || "https://gosno.co/.well-known/dcc";
+                    const asOf = ep.asOf || ep.as_of || rawState.find((s: any) => s.as_of)?.as_of || data.as_of;
+                    const freshUntil = ep.freshUntil || ep.fresh_until || rawState.find((s: any) => s.fresh_until)?.fresh_until || data.fresh_until;
+
+                    // Extract actions
+                    const actionsList: Array<{ id: string; method: string; target: string; description?: string }> = Array.isArray(data.actions)
+                      ? data.actions.map((a: any) => ({
+                          id: a.action_id || a.id || "action",
+                          method: a.method || "GET",
+                          target: a.target || a.endpoint_url || a.href || "#",
+                          description: a.description || (a.input?.schema ? `Schema: ${a.input.schema.split("/").pop()}` : undefined),
+                        }))
+                      : Object.entries(data.actions || {}).map(([key, a]: [string, any]) => ({
+                          id: key,
+                          method: a.method || "GET",
+                          target: a.endpoint_url || a.href || a.target || "#",
+                          description: a.description,
+                        }));
+
+                    // Extract links
+                    const linksList: Array<{ rel: string; target: string }> = Array.isArray(data.links)
+                      ? data.links.map((l: any) => ({
+                          rel: l.rel || "link",
+                          target: l.target || l.href || l.url || "#",
+                        }))
+                      : Object.entries(data.links || {}).map(([rel, target]: [string, any]) => ({
+                          rel,
+                          target: String(target),
+                        }));
+
+                    // Displayable claims (excluding legal_name / operating_authority which are in header)
+                    const displayClaims = rawClaims.filter(
+                      (c: any) => c && c.predicate && c.predicate !== "legal_name" && c.predicate !== "operating_authority",
+                    );
+
+                    return (
+                      <div
+                        key={endpointUrl || idx}
+                        className="rounded-2xl border border-white/10 bg-black/25 p-5 sm:p-7 space-y-5"
+                      >
+                        {/* Top: Operator info & Freshness Badges */}
+                        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/8 pb-4">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="text-xl font-black text-white sm:text-2xl">
+                                {legalName}
+                              </h3>
+                              <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-cyan-200">
+                                {data.profile?.service_type || "Tourism Operator"}
+                              </span>
+                            </div>
+                            <p className="mt-1 text-xs text-white/50">
+                              Legal: <span className="font-semibold text-white/80">{legalName}</span>
+                              {(data.id || operator.identity?.id) ? <> · ID: <code className="font-mono text-cyan-200/80">{data.id || operator.identity?.id}</code></> : null}
+                              {operatingAuth ? (
+                                <>
+                                  {" "}· Authority:{" "}
+                                  {operatingAuthEvidence ? (
+                                    <a
+                                      href={operatingAuthEvidence}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="underline hover:text-white"
+                                    >
+                                      {operatingAuth}
+                                    </a>
+                                  ) : (
+                                    <span>{operatingAuth}</span>
+                                  )}
+                                </>
+                              ) : null}
+                            </p>
+                          </div>
+
+                          <div className="flex flex-col items-end gap-1.5 text-right">
+                            {isFresh && (
+                              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-bold text-emerald-300">
+                                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                Operational · Verified Fresh
+                              </span>
+                            )}
+                            {isStale && (
+                              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-bold text-amber-300">
+                                ▲ Stale Endpoint Notice
+                              </span>
+                            )}
+                            {isError && (
+                              <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-400/30 bg-rose-400/10 px-3 py-1 text-xs font-bold text-rose-300">
+                                ✖ Endpoint Unavailable
+                              </span>
+                            )}
+                            {ep.matchedRegion ? (
+                              <span className="text-[10px] uppercase tracking-wider text-white/40">
+                                Matched Region: {ep.matchedRegion}
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+
+                        {/* Stale or Error Notice if applicable */}
+                        {isStale && (
+                          <div className="rounded-xl border border-amber-400/25 bg-amber-400/10 p-3.5 text-xs text-amber-200">
+                            <strong>Freshness Expired:</strong> This operator endpoint has not updated since{" "}
+                            <code>{freshUntil || "unknown"}</code>. Displaying original data with freshness disclaimer.
+                          </div>
+                        )}
+                        {isError && (
+                          <div className="rounded-xl border border-rose-400/25 bg-rose-400/10 p-3.5 text-xs text-rose-200">
+                            <strong>Endpoint Error:</strong> {ep.error || "Failed to validate schema with DCC Core v2."}
+                          </div>
+                        )}
+
+                        {/* Provenance & Freshness metadata */}
+                        <div className="grid gap-3 sm:grid-cols-3 rounded-xl border border-white/6 bg-white/[0.02] p-3 text-xs">
+                          <div>
+                            <span className="text-[10px] uppercase tracking-wider text-white/40 block">Authoritative Endpoint</span>
+                            <a
+                              href={endpointUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-mono text-cyan-300 underline hover:text-cyan-100 break-all"
+                            >
+                              {endpointUrl}
+                            </a>
+                          </div>
+                          <div>
+                            <span className="text-[10px] uppercase tracking-wider text-white/40 block">As Of</span>
+                            <span className="font-mono text-white/70">{asOf || "—"}</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] uppercase tracking-wider text-white/40 block">Fresh Until</span>
+                            <span className="font-mono text-white/70">{freshUntil || "—"}</span>
+                          </div>
+                        </div>
+
+                        {/* Operator Claims */}
+                        {displayClaims.length > 0 && (
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-wider text-white/45 mb-2.5">
+                              Authoritative Operator Claims
+                            </p>
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 text-xs">
+                              {displayClaims.map((claim: any) => (
+                                <div key={claim.predicate} className="rounded-xl border border-white/6 bg-white/[0.02] p-3">
+                                  <span className="font-bold text-white/80 block mb-1 uppercase tracking-wider text-[10px]">
+                                    {claim.predicate.replace(/_/g, " ")}
+                                  </span>
+                                  <span className="text-white/60">
+                                    {Array.isArray(claim.value) ? claim.value.join(", ") : String(claim.value)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Direct Actions & Links */}
+                        <div className="grid gap-4 sm:grid-cols-2 pt-2">
+                          {/* Direct Actions */}
+                          {actionsList.length > 0 && (
+                            <div className="rounded-xl border border-cyan-400/15 bg-cyan-400/[0.03] p-4">
+                              <p className="text-[10px] font-black uppercase tracking-wider text-cyan-200 mb-2.5">
+                                Direct Machine Actions (No Middleman)
+                              </p>
+                              <div className="space-y-2">
+                                {actionsList.map((action) => (
+                                  <div key={action.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/8 bg-black/30 p-2.5 text-xs">
+                                    <div>
+                                      <span className="font-bold text-white">{action.id.replace(/_/g, " ")}</span>
+                                      <span className="ml-2 font-mono text-[10px] text-cyan-300">[{action.method}]</span>
+                                      {action.description ? <p className="text-[11px] text-white/50 mt-0.5">{action.description}</p> : null}
+                                    </div>
+                                    <a
+                                      href={action.target}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="rounded bg-cyan-400/20 px-2.5 py-1 text-[11px] font-bold text-cyan-100 hover:bg-cyan-400/30"
+                                    >
+                                      Execute Endpoint →
+                                    </a>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Direct Links */}
+                          {linksList.length > 0 && (
+                            <div className="rounded-xl border border-white/8 bg-white/[0.02] p-4">
+                              <p className="text-[10px] font-black uppercase tracking-wider text-white/45 mb-2.5">
+                                Canonical Direct Links
+                              </p>
+                              <div className="space-y-2">
+                                {linksList.map((link) => (
+                                  <div key={link.rel} className="flex items-center justify-between gap-2 rounded-lg border border-white/6 bg-black/20 p-2.5 text-xs">
+                                    <span className="font-medium text-white/80">{link.rel.replace(/_/g, " ")}</span>
+                                    <a
+                                      href={link.target}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="font-mono text-[11px] text-cyan-300 underline hover:text-cyan-100"
+                                    >
+                                      {link.target.replace(/^https?:\/\//, "")}
+                                    </a>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Explanatory note adhering to rules 8 & 9 */}
+                        <div className="border-t border-white/6 pt-3 text-[11px] leading-relaxed text-white/40">
+                          ℹ️ Direct endpoint data is fetched live from the operator&apos;s public URL. Destination Command Center acts as an open coordinate reader and does not store or duplicate schedules, pricing, or capacity in an intermediate database.
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-white/8 bg-black/20 p-6 text-sm leading-6 text-white/50 space-y-3">
+                  <p>
+                    No DCC-compliant operator endpoints currently publish machine-readable coverage for this coordinate.
+                  </p>
+                  <p className="text-xs text-white/35">
+                    Any tourism operator serving this region can publish an endpoint at <code>/.well-known/dcc</code>. Once registered or discovered, live schedules, claims, and booking actions will be hydrated dynamically directly from their authoritative source without marketplace fees.
+                  </p>
+                </div>
+              )}
+            </Section>
+
             <Section eyebrow="Now" title="What conditions are like at this point">
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
                 <Metric label="Temperature" value={weather?.temperature_2m != null ? `${cToF(weather.temperature_2m)}°F` : "—"} detail={weather?.description || null} />
