@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://destinationcommandcenter.com/schemas/core-v2.schema.json",
+  "title": "DCC Core v2 Canonical Specification",
+  "description": "Canonical machine-readable response envelope and optional containers for the Direct Tourism Internet protocol.",
+  "type": "object",
+  "required": ["protocol", "core", "self", "id"],
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "const": "dcc",
+      "description": "Protocol identifier. Must be 'dcc'."
+    },
+    "core": {
+      "type": "string",
+      "const": "2",
+      "description": "Core protocol version. Must be '2'."
+    },
+    "self": {
+      "type": "string",
+      "format": "uri",
+      "description": "Canonical absolute URL of this endpoint."
+    },
+    "id": {
+      "type": "string",
+      "description": "Unique namespaced identifier for the entity or resource (e.g. domain:type/id)."
+    },
+    "claims": {
+      "type": "array",
+      "description": "Optional container of authoritative claims made by this operator or authority.",
+      "items": {
+        "type": "object",
+        "required": ["predicate", "value"],
+        "properties": {
+          "predicate": {
+            "type": "string",
+            "description": "Claim predicate name."
+          },
+          "value": {
+            "description": "Claim value."
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp when this claim was asserted."
+          },
+          "evidence": {
+            "type": "array",
+            "description": "Supporting evidence pointers and certifications.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "type": "string" },
+                "pointer": { "type": "string" },
+                "as_of": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "state": {
+      "type": "array",
+      "description": "Optional container of dynamic operating state facts.",
+      "items": {
+        "type": "object",
+        "required": ["predicate", "value"],
+        "properties": {
+          "predicate": {
+            "type": "string",
+            "description": "State fact predicate name."
+          },
+          "value": {
+            "description": "State fact value."
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp when this state fact was evaluated."
+          },
+          "fresh_until": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp until which this state fact is guaranteed fresh."
+          },
+          "evidence": {
+            "type": "array",
+            "description": "Supporting telemetry or evidence records."
+          }
+        }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "description": "Optional container of direct machine actions.",
+      "items": {
+        "type": "object",
+        "required": ["action_id", "method", "target"],
+        "properties": {
+          "action_id": {
+            "type": "string",
+            "description": "Unique identifier for the action."
+          },
+          "method": {
+            "type": "string",
+            "enum": ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
+            "description": "HTTP method for invoking the action."
+          },
+          "target": {
+            "type": "string",
+            "format": "uri",
+            "description": "Absolute HTTPS target endpoint for the action."
+          },
+          "input": {
+            "description": "Structured input schema or addressable parameter specification."
+          },
+          "auth": {
+            "type": "string",
+            "description": "Authentication requirement (e.g. 'none', 'bearer', 'apiKey')."
+          }
+        }
+      }
+    },
+    "links": {
+      "type": "array",
+      "description": "Optional container of related machine-readable links.",
+      "items": {
+        "type": "object",
+        "required": ["rel", "target"],
+        "properties": {
+          "rel": {
+            "type": "string",
+            "description": "Relationship type identifier."
+          },
+          "target": {
+            "type": "string",
+            "format": "uri",
+            "description": "Target URI."
+          }
+        }
+      }
+    }
+  }
+}

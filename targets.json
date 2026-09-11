@@ -1,0 +1,46 @@
+[
+  {
+    "id": "gosno-well-known",
+    "url": "https://gosno.co/.well-known/dcc",
+    "kind": "production",
+    "description": "GoSno authoritative root DCC Core v2 discovery endpoint"
+  },
+  {
+    "id": "gosno-routes-catalog",
+    "url": "https://gosno.co/api/dcc/routes",
+    "kind": "production",
+    "description": "GoSno public DCC Core v2 routes catalog"
+  },
+  {
+    "id": "gosno-route-den-vail",
+    "url": "https://gosno.co/api/dcc/routes/DEN-VAIL",
+    "kind": "production",
+    "description": "GoSno Denver to Vail mountain route specification"
+  },
+  {
+    "id": "gosno-route-den-breck",
+    "url": "https://gosno.co/api/dcc/routes/DEN-BRECKENRIDGE",
+    "kind": "production",
+    "description": "GoSno Denver to Breckenridge mountain route specification"
+  },
+  {
+    "id": "gosno-route-den-aspen",
+    "url": "https://gosno.co/api/dcc/routes/DEN-ASPEN",
+    "kind": "production",
+    "description": "GoSno Denver to Aspen mountain route specification"
+  },
+  {
+    "id": "synthetic-tour-demo-t1",
+    "url": "test-vector://tours/denver-craft-brewery",
+    "kind": "test-vector",
+    "fixture_path": "fixtures/test-vector-available.json",
+    "description": "Controlled synthetic tour test vector observation 1 (state: available)"
+  },
+  {
+    "id": "synthetic-tour-demo-t2",
+    "url": "test-vector://tours/denver-craft-brewery",
+    "kind": "test-vector",
+    "fixture_path": "fixtures/test-vector-limited.json",
+    "description": "Controlled synthetic tour test vector observation 2 (state: limited, demonstrating available -> limited transition)"
+  }
+]
