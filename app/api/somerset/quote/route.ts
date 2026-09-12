@@ -1,4 +1,5 @@
 import { appendFile, mkdir } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -74,10 +75,23 @@ export async function POST(req: NextRequest) {
       status: "pending_dispatch",
     };
 
-    const outDir = path.join(process.cwd(), "data", "quotes");
-    const outFile = path.join(outDir, "somerset-quotes.jsonl");
-    await mkdir(outDir, { recursive: true });
-    await appendFile(outFile, `${JSON.stringify(quoteRecord)}\n`, "utf8");
+    console.log("[SOMERSET_QUOTE_RECEIVED]", JSON.stringify(quoteRecord));
+
+    try {
+      const outDir = path.join(process.cwd(), "data", "quotes");
+      const outFile = path.join(outDir, "somerset-quotes.jsonl");
+      await mkdir(outDir, { recursive: true });
+      await appendFile(outFile, `${JSON.stringify(quoteRecord)}\n`, "utf8");
+    } catch {
+      // In serverless environments (AWS Lambda / Vercel), /var/task is read-only.
+      // Fallback to os.tmpdir()
+      try {
+        const tmpFile = path.join(os.tmpdir(), "somerset-quotes.jsonl");
+        await appendFile(tmpFile, `${JSON.stringify(quoteRecord)}\n`, "utf8");
+      } catch (e) {
+        console.error("Failed writing quote to tmpdir:", e);
+      }
+    }
 
     return NextResponse.json({
       ok: true,
