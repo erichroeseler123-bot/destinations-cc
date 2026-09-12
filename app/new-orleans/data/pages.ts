@@ -1101,63 +1101,80 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "variant": "category",
     "pageIntent": "swamp tours",
     "canonicalRoute": "https://www.welcometoneworleanstours.com/swamp-tours",
-    "heroEyebrow": "Into the Bayou",
-    "heroTitle": "New Orleans Swamp Tours",
-    "heroSubtitle": "Compare covered boats, airboats, transportation and combination tours before you book.",
-    "openingAnswer": "The best swamp tour for your group depends on the ride you want and how you plan to get there. Covered boats favor shade and a calmer pace; airboats favor speed and open-air adventure. Start with that choice, then compare transportation and total trip time.",
+    "heroEyebrow": "Into the Bayou · Swamp & Airboat Guide",
+    "heroTitle": "New Orleans Swamp Tours: Airboats, Covered Boats & Transportation",
+    "heroSubtitle": "Compare covered tour boats vs. high-speed airboats, hotel pickup vs. central departure, and combo options before you book.",
+    "openingAnswer": "Looking for the best New Orleans swamp tour? Your decision comes down to two major choices: boat type and transportation. Choose a covered tour boat for a calm, shaded, family-friendly cruise suitable for all ages; choose an airboat for a high-speed, thrilling open-air ride through shallow marshes. For transportation, the swamps are 35–45 minutes from downtown New Orleans: Gray Line tours include round-trip coach from 400 Toulouse St in the French Quarter (approx. 3h 45m door-to-door), while Ragin Cajun Tours offers hotel pickup options or self-drive.",
     "topCta": "/tours",
     "secondaryCta": null,
     "whoItIsFor": "Nature lovers, families, mixed-age groups and adventure seekers who want to experience Louisiana wetlands outside the city.",
     "whoShouldChooseSomethingElse": null,
-    "decisionFactors": ["Boat type: choose a faster, louder open-air airboat or a calmer covered boat with shade.","Transportation: confirm whether your selected departure includes pickup or requires self-driving.","Total time: include travel between New Orleans and the swamp when planning the rest of your day.","Group fit: verify child eligibility, mobility needs and weather exposure with the operator.","Wildlife sightings vary by season and are never guaranteed."],
+    "decisionFactors": [
+      "New Orleans swamp tour with transportation: Swamps are located 35–45 minutes outside the city. Book an excursion with round-trip coach transportation included from the French Quarter (400 Toulouse St) to avoid car rentals or expensive rideshares.",
+      "New Orleans swamp tour with hotel pickup: Select operators like Ragin Cajun Tours offer hotel pickup from downtown and French Quarter hotels. Confirm your hotel is in the active pickup zone during checkout.",
+      "Covered boat swamp tour: Shaded flat-bottom vessel traveling at a gentle pace. Ideal for families, young children, seniors, pregnant travelers, and wildlife photography.",
+      "Airboat swamp tour: High-speed, fan-powered open-air thrill ride navigating deep and shallow marsh. Hearing protection provided; age minimums apply (generally no pregnant travelers or infants).",
+      "Combo tours: Gray Line offers a full-day combination tour (7h 45m) pairing a morning swamp boat tour with afternoon Oak Alley Plantation."
+    ],
     "comparisonColumns": [],
     "comparisonRows": [],
     "recommendedChoiceGuidance": null,
-    "planningConsiderations": "Most swamp experiences require travel outside New Orleans. Factor transportation, check-in and return time into your schedule rather than comparing boat time alone.",
-    "transportationNotes": "Transportation availability varies by operator and booking option. Confirm the pickup location, pickup zone and whether transportation is included before purchasing.",
-    "durationNotes": null,
-    "ageNotes": null,
-    "mobilityNotes": null,
-    "weatherNotes": null,
+    "planningConsiderations": "Most swamp experiences require travel 35–45 minutes outside New Orleans. Gray Line provides round-trip coach service from 400 Toulouse St, while Ragin Cajun Tours offers hotel pickup options.",
+    "transportationNotes": "Round-trip coach transportation from 400 Toulouse St is included on Gray Line swamp tours. Ragin Cajun Tours provides hotel pickup options or self-drive.",
+    "durationNotes": "3 hours 45 minutes total for transportation-inclusive tours (approx. 1 hour 45 minutes to 2 hours on the water).",
+    "ageNotes": "Covered tour boats are suitable for all ages including infants and seniors. Airboats enforce age and height minimums.",
+    "mobilityNotes": "Covered boats offer easier boarding and wheelchair accessibility at select docks; airboats require stepping down into bucket seating.",
+    "weatherNotes": "Covered boats provide rain and sun protection. Airboats are fully open-air and run weather permitting.",
     "itineraryCombinations": [],
     "liveProductIds": [
-        "ragincajun-covered-boat",
-        "ragincajun-airboat"
+      "swamp-bayou-tour",
+      "small-airboat-swamp-adventure",
+      "large-airboat-swamp-adventure",
+      "ragincajun-covered-boat",
+      "ragincajun-airboat",
+      "swamp-boat-oak-alley-combo"
     ],
     "futureProductCategoryIds": [],
     "relatedPageIds": ["swamp-tours-airboat-vs-covered-boat"],
     "relatedAreaIds": [],
-    "disclosure": "We partner directly with swamp operators to bring you authentic bayou experiences.",
+    "disclosure": "Welcome to New Orleans Tours partners directly with licensed operators Gray Line New Orleans and Ragin Cajun Tours.",
     "faqs": [
       {
-        "question": "What is the difference between an airboat and a covered boat?",
-        "answer": "An airboat offers a high-speed thrill ride that can access shallow marshes, but is loud and open to the elements. A covered boat provides a slower, shaded, family-friendly cruise that is quieter and better for photography."
+        "question": "Can I get a New Orleans swamp tour with transportation?",
+        "answer": "Yes. Round-trip transportation is included on Gray Line swamp tours departing from 400 Toulouse Street in the French Quarter. The total outing takes approximately 3 hours 45 minutes door-to-door, including the scenic drive through Louisiana wetlands."
       },
       {
-        "question": "Are alligator sightings guaranteed?",
-        "answer": "While alligators are wild animals, sightings are highly likely during the warmer months (April to October). In the winter, they are less active, but you'll still see other wildlife like wild boars and exotic birds."
+        "question": "Which swamp tours offer hotel pickup in New Orleans?",
+        "answer": "Ragin Cajun Tours offers hotel pickup options from major downtown and French Quarter accommodations. You can select the hotel pickup variant during online checkout."
       },
       {
-        "question": "How do I get to the swamp from the French Quarter?",
-        "answer": "You can either book a tour that includes hotel pickup (usually an additional fee) or drive yourself if you have a rental car. The swamps are typically 35-45 minutes from downtown New Orleans."
+        "question": "What is the difference between a covered boat and an airboat swamp tour?",
+        "answer": "A covered boat provides a slower, shaded, family-friendly cruise with protection from sun and rain, making it ideal for conversation, photography, and all ages. An airboat is a high-speed, open-air thrill ride powered by a giant aircraft propeller that skims over shallow marsh grass."
+      },
+      {
+        "question": "Are airboat swamp tours suitable for young children or pregnant women?",
+        "answer": "Airboats are fast, bumpy, and loud, so operators enforce safety restrictions: children must typically be at least 5 years old or 48 inches tall, and pregnant women or individuals with neck/back issues are advised to choose a covered boat instead."
+      },
+      {
+        "question": "How far are swamp tours from New Orleans?",
+        "answer": "Most Louisiana swamp and bayou docks (such as Barataria Preserve, Jean Lafitte, or Honey Island) are located 30 to 45 miles outside New Orleans, taking about 35 to 45 minutes of driving each way."
       }
     ],
     "metadata": {
-      "title": "New Orleans Swamp Tours | Compare Airboats, Covered Boats & Pickup",
-      "description": "Compare New Orleans swamp tours by boat type, transportation, pace and group fit, then check current operator times and prices.",
+      "title": "New Orleans Swamp Tours: Airboats, Covered Boats & Transportation",
+      "description": "Compare New Orleans swamp tours: covered boats vs high-speed airboats, included French Quarter coach transport vs hotel pickup, duration, and live booking.",
       "canonicalRoute": "https://www.welcometoneworleanstours.com/swamp-tours",
       "robots": "index, follow",
-      "openGraphTitle": "New Orleans Swamp Tours | Compare Airboats, Covered Boats & Pickup",
+      "openGraphTitle": "New Orleans Swamp Tours: Airboats, Covered Boats & Transportation",
       "openGraphUrl": "https://www.welcometoneworleanstours.com/swamp-tours",
-      "twitterTitle": "New Orleans Swamp Tours | Compare Airboats, Covered Boats & Pickup"
+      "twitterTitle": "New Orleans Swamp Tours: Airboats, Covered Boats & Transportation"
     },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
-
-},
+  },
   "airboat-tours": {
     "id": "airboat-tours",
     "publicRoute": "/airboat-tours",

@@ -7,6 +7,18 @@ import { getNolaGeoFact } from "../data/nolaGeoFacts";
 type IntentLink = { href: string; label: string };
 type IntentFaq = { question: string; answer: string };
 
+export type DirectAnswerItem = {
+  query: string;
+  answer: string;
+  tag?: string;
+};
+
+export type InquiryNotice = {
+  title: string;
+  body: string;
+  phone: string;
+};
+
 type IntentTourPageProps = {
   eyebrow: string;
   title: string;
@@ -17,6 +29,8 @@ type IntentTourPageProps = {
   relatedLinks?: IntentLink[];
   faq?: IntentFaq[];
   geoFactKey?: string;
+  directAnswers?: DirectAnswerItem[];
+  inquiryNotice?: InquiryNotice;
 };
 
 const GOVERNED_INTENT_PATHS = new Set([
@@ -49,6 +63,8 @@ export default function IntentTourPage({
   relatedLinks = [],
   faq = [],
   geoFactKey,
+  directAnswers,
+  inquiryNotice,
 }: IntentTourPageProps) {
   const products = productSlugs
     .map((slug) => STOREFRONT_PRODUCTS.find((product) => product.slug === slug))
@@ -102,6 +118,29 @@ export default function IntentTourPage({
         </div>
       )}
 
+      {directAnswers && directAnswers.length > 0 && (
+        <section aria-labelledby="direct-answers-heading" className="mx-auto max-w-6xl px-6 mb-12">
+          <div className="border border-[var(--nola-border)] bg-[var(--nola-surface-subtle)] p-6 md:p-8">
+            <h2 id="direct-answers-heading" className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--nola-gold)] mb-6">
+              Quick Answers: Transportation, Boat Formats & Pickup
+            </h2>
+            <div className="grid gap-6 md:grid-cols-2">
+              {directAnswers.map((item) => (
+                <div key={item.query} className="border-l-2 border-[var(--nola-gold)] bg-[#12110e] p-5 shadow-sm">
+                  {item.tag && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#d4af37] block mb-1">
+                      {item.tag}
+                    </span>
+                  )}
+                  <h3 className="font-serif text-lg font-semibold text-[#f8f1e5] mb-2">{item.query}</h3>
+                  <p className="text-sm leading-relaxed text-[#b9b0a2]">{item.answer}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="border-y border-[var(--nola-border)] bg-[var(--nola-surface-subtle)]">
         <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 md:grid-cols-[0.85fr_1.15fr]">
           <div>
@@ -124,10 +163,23 @@ export default function IntentTourPage({
           {products.map((product) => product && (
             <ProductCard
               key={product.id}
-              product={{ ...product, operatorAttribution: undefined, isBookable: true, ctaLabel: "Check Times & Prices" } as any}
+              product={{ ...product, operatorAttribution: product.operatorName, isBookable: true, ctaLabel: "Check Dates & Prices" } as any}
             />
           ))}
         </div>
+
+        {inquiryNotice && (
+          <div className="mt-10 border border-[#342b1d] bg-[#12110e] p-7 text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#d4af37] mb-2">{inquiryNotice.title}</p>
+            <p className="mx-auto max-w-2xl text-sm leading-relaxed text-[#b9b0a2]">{inquiryNotice.body}</p>
+            <a
+              href={`tel:${inquiryNotice.phone.replace(/[^0-9]/g, '')}`}
+              className="mt-4 inline-block bg-[#d4af37] px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-[#151515] hover:bg-[#fff8eb] transition"
+            >
+              Call or Text {inquiryNotice.phone}
+            </a>
+          </div>
+        )}
       </section>
 
       {faq.length > 0 && (

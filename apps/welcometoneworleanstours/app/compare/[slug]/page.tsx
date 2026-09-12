@@ -27,7 +27,11 @@ const metadataBySlug: Record<string, Metadata> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  return metadataBySlug[slug] || {};
+  const meta = metadataBySlug[slug] || {};
+  return {
+    ...meta,
+    metadataBase: new URL("https://www.welcometoneworleanstours.com"),
+  };
 }
 
 export default async function ComparisonPage({ params }: { params: Promise<{ slug: string }> }) {

@@ -106,9 +106,9 @@ export default function ProductCard({
       <div className={visualStyles.productCardContent}>
         <h3 className={visualStyles.productCardTitle}>{product.title}</h3>
 
-        {product.operatorAttribution && (
+        {(product.operatorAttribution || sourceProduct?.operatorName) && (
           <p className={visualStyles.productCardOperator}>
-            Operated by {product.operatorAttribution}
+            Operated by {product.operatorAttribution || sourceProduct?.operatorName}
           </p>
         )}
 

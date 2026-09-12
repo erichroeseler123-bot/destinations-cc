@@ -413,10 +413,10 @@ export default function NewOrleansRecommendationFlow() {
         {result.isNoFit || !result.primary ? (
           <div className="mx-auto mt-10 max-w-2xl border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)] p-8 text-center">
             <h4 className="text-2xl font-bold text-[var(--nola-ivory)]">Let’s narrow it another way.</h4>
-            <p className="mt-4 text-sm leading-6 text-[var(--nola-text-muted)]">None of the 21 curated experiences is a strong enough fit for that exact combination. Change an answer or let the Concierge Desk help with your timing and group.</p>
+            <p className="mt-4 text-sm leading-6 text-[var(--nola-text-muted)]">None of the 21 curated experiences is a strong enough fit for that exact combination. Change an answer or let our local team help with your timing and group.</p>
             <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
               <button onClick={restart} className="border border-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)]">Adjust answers</button>
-              <Link href="/contact" data-wno-event="chooser_concierge_fallback_clicked" className="bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-bg-black)]">Ask the Concierge Desk</Link>
+              <Link href="/contact" data-wno-event="chooser_concierge_fallback_clicked" className="bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-bg-black)]">Get Tour Planning Help</Link>
             </div>
           </div>
         ) : (

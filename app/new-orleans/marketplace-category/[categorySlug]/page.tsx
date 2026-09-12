@@ -11,6 +11,8 @@ import { buildSeoMetadata } from "../../lib/buildSeoMetadata";
 import GeoDirectAnswerCard from "../../components/GeoDirectAnswerCard";
 import { getNolaGeoFact } from "../../data/nolaGeoFacts";
 
+import { STOREFRONT_PRODUCTS } from "../../tours/pageConfig";
+
 const CARD_EYEBROWS = [
   "Our first pick",
   "A strong alternative",
@@ -50,15 +52,15 @@ function categoryCopy(layout: CategoryLayout) {
     return {
       optionsEyebrow: "Out beyond the city",
       optionsTitle: "Choose your way into the swamp",
-      optionsIntro: "The biggest difference is the ride itself: faster and more exposed, calmer and covered, or a broader combination day. Pick the experience before you pick the departure time.",
+      optionsIntro: "The biggest difference is the ride itself: faster and more adventurous airboats, calmer and shaded covered boats, or a full-day plantation combination. Pick the experience before you pick the departure time.",
       cta: "See swamp options",
     };
   }
   if (layout === "editorial") {
     return {
       optionsEyebrow: "Architecture · streets · stories",
-      optionsTitle: "Choose the pace and perspective",
-      optionsIntro: "Decide whether you want the Garden District as the main story or as part of a broader city overview, then compare the amount of walking and neighborhood depth.",
+      optionsTitle: "City Sightseeing Featuring the Garden District",
+      optionsIntro: "These are comprehensive vehicle-based city sightseeing tours that include the Garden District as part of the route—not dedicated walking-only tours.",
       cta: "See Garden District tours",
     };
   }
@@ -68,6 +70,19 @@ function categoryCopy(layout: CategoryLayout) {
     optionsIntro: "You do not need to sort an operator catalog. Start with the experiences that fit this kind of day, then check the live booking option when you are ready.",
     cta: "See our picks",
   };
+}
+
+function cardBadge(categorySlug: string, productSlug: string) {
+  if (categorySlug === "garden-district-tours") {
+    return "City Tour · Includes Garden District (Not Walking-Only)";
+  }
+  if (["swamp-tours", "airboat-tours", "covered-swamp-boat-tours"].includes(categorySlug)) {
+    if (productSlug.includes("combo")) return "Swamp + Plantation Combo";
+    if (productSlug.includes("small-airboat")) return "Small Airboat";
+    if (productSlug.includes("large-airboat") || productSlug.includes("airboat")) return "High-Speed Airboat";
+    return "Covered Boat · Shaded";
+  }
+  return undefined;
 }
 
 function cardEyebrow(categorySlug: string, index: number, productSlug: string) {
@@ -85,13 +100,23 @@ function cardEyebrow(categorySlug: string, index: number, productSlug: string) {
   }
 
   if (["swamp-tours", "airboat-tours", "covered-swamp-boat-tours"].includes(categorySlug)) {
-    if (productSlug.includes("airboat")) return "Most adventurous";
-    if (productSlug.includes("covered")) return "Easygoing choice";
-    return ["Worth comparing", "Make a day of it"][index % 2];
+    if (productSlug.includes("small-airboat")) return "Intimate Small Airboat · Transport Included";
+    if (productSlug.includes("large-airboat")) return "Fast Large Airboat · Transport Included";
+    if (productSlug.includes("airboat")) return "High-Speed Airboat · Hotel Pickup Available";
+    if (productSlug.includes("swamp-bayou-tour")) return "Covered Swamp Tour · Transport Included";
+    if (productSlug.includes("covered")) return "Covered Tour Boat · Hotel Pickup Available";
+    if (productSlug.includes("combo")) return "Full-Day Combination · Swamp & Plantation";
+    return ["Transportation Included", "Hotel Pickup Options Available"][index % 2];
   }
 
   if (categorySlug === "garden-district-tours") {
-    return ["Neighborhood first", "Broader city context"][index] || CARD_EYEBROWS[index % CARD_EYEBROWS.length];
+    if (productSlug === "city-cemetery-garden-district-tour") {
+      return "City Motorcoach Tour · Includes Garden District";
+    }
+    if (productSlug === "city-tour-of-new-orleans") {
+      return "Minibus City Tour · Includes Garden District";
+    }
+    return "City Sightseeing · Includes Garden District";
   }
 
   return CARD_EYEBROWS[index % CARD_EYEBROWS.length];
@@ -183,16 +208,27 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
       {products.length > 0 ? (
         <div data-wno-options-grid className="mt-9 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {products.map((product, index) => (
-            <VisualEditorialCard
-              key={product.id}
-              title={product.title}
-              slug={product.slug}
-              description={product.description}
-              imageUrl={product.imageUrl}
-              eyebrow={cardEyebrow(resolvedParams.categorySlug, index, product.slug)}
-            />
-          ))}
+          {products.map((product, index) => {
+            const sourceProduct = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug);
+            return (
+              <VisualEditorialCard
+                key={product.id}
+                title={product.title}
+                slug={product.slug}
+                description={product.description}
+                imageUrl={product.imageUrl}
+                eyebrow={cardEyebrow(resolvedParams.categorySlug, index, product.slug)}
+                badge={cardBadge(resolvedParams.categorySlug, product.slug)}
+                operatorName={sourceProduct?.operatorName}
+                durationLabel={sourceProduct?.durationLabel}
+                pickupSummary={sourceProduct?.pickupSummary || sourceProduct?.transportationSummary}
+                inclusions={sourceProduct?.highlights || sourceProduct?.confirmedInclusions}
+                bookingItemId={sourceProduct?.itemId}
+                bookingFlowId={sourceProduct?.flowId}
+                companyShortname={sourceProduct?.companyShortname}
+              />
+            );
+          })}
         </div>
       ) : (
         <div className="mx-auto mt-8 max-w-2xl border border-[#342b1d] bg-[#12110e] p-7 text-center">

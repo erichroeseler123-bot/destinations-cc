@@ -116,7 +116,7 @@ export default function FrenchQuarterCommercialHub() {
             </Link>
             <Link href="/contact?src=french-quarter-hub" className="group bg-[#101010] p-7">
               <p className="text-xs font-bold uppercase tracking-widest text-[#d4af37]">Still unsure?</p>
-              <h2 className="mt-3 font-serif text-2xl">Ask the Concierge Desk</h2>
+              <h2 className="mt-3 font-serif text-2xl">Tour Planning Help</h2>
               <p className="mt-3 text-sm leading-relaxed text-[#aaaaaa]">Tell us who is coming, how much time you have and what sounds fun. We will help narrow it down.</p>
               <p className="mt-5 text-sm font-bold text-[#d4af37] group-hover:text-[#fdfbf7]">Get help choosing →</p>
             </Link>

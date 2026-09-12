@@ -14,7 +14,7 @@ const categories = [
 
 const popularDecisions = [
   { href: "/guides/best-new-orleans-swamp-tour", title: "Which swamp tour is best?", copy: "Compare covered boats, airboats, transportation and group fit." },
-  { href: "/garden-district-tours", title: "Garden District walking tours", copy: "Choose a dedicated walk or a broader city tour that includes the neighborhood." },
+  { href: "/garden-district-tours", title: "Garden District & City Tours", copy: "Explore the Garden District via air-conditioned city tour with cemetery stops." },
   { href: "/guides/best-swamp-tour-with-transportation", title: "Swamp tours with transportation", copy: "Compare pickup, travel time and boat format before booking." },
   { href: "/compare/whitney-vs-oak-alley", title: "Whitney vs Oak Alley", copy: "Compare historical focus, setting and practical trip fit." },
 ];
@@ -137,7 +137,7 @@ export default function CinematicHomepageTop() {
         <div className={styles.trustStrip}>
           <div><span>⚜</span><strong>Trusted Local Partners</strong></div>
           <div><span>⚜</span><strong>Curated Experiences</strong></div>
-          <div><span>⚜</span><strong>Local Concierge Support</strong></div>
+          <div><span>⚜</span><strong>Local Tour Support</strong></div>
         </div>
       </section>
     </div>

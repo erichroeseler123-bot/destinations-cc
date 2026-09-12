@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import DecisionComparison from "../DecisionComparison";
 
 export const metadata: Metadata = {
-  title: "Whitney Plantation vs Oak Alley: Which New Orleans Tour Fits You?",
-  description: "Compare Whitney Plantation and Oak Alley from New Orleans by history focus, tour format, walking, accessibility, duration and overall fit before you book.",
+  title: "Whitney Plantation vs Oak Alley: Which Tour Fits You? | Welcome to New Orleans Tours",
+  description: "Whitney Plantation vs Oak Alley comparison: Compare duration (5h 25m), included New Orleans transportation, slavery history vs estate grounds, walking, accessibility, and booking options.",
   alternates: { canonical: "/compare/whitney-vs-oak-alley" },
   openGraph: {
-    title: "Whitney Plantation vs Oak Alley: Which Tour Fits You?",
-    description: "A practical side-by-side comparison of Whitney Plantation and Oak Alley tours from New Orleans.",
+    title: "Whitney Plantation vs Oak Alley: Which Tour Fits You? | Welcome to New Orleans Tours",
+    description: "Compare Whitney Plantation vs Oak Alley Plantation tours from New Orleans: duration, included transportation, slavery history, accessibility, and booking choices.",
     url: "/compare/whitney-vs-oak-alley",
     type: "article",
   },
@@ -16,15 +16,71 @@ export const metadata: Metadata = {
 export default function WhitneyVsOakAlleyPage() {
   return (
     <DecisionComparison
-      eyebrow="New Orleans tour comparison"
-      title="Whitney Plantation vs Oak Alley: which one should you visit?"
-      intro="Both tours leave New Orleans for a roughly five-and-a-half-hour plantation visit, but the experiences are meaningfully different. Whitney is centered on the history of slavery through a self-paced audio experience, memorials and first-person narratives. Oak Alley combines slavery interpretation with a guided Big House visit, reconstructed cabins, sugarcane exhibits, gardens and the famous oak allee."
-      verdict="Choose Whitney if your priority is a slavery-focused museum experience built around the lives and testimony of enslaved people. Choose Oak Alley if you want a broader historic-property visit with a guided Big House component, grounds, exhibits and the iconic oak-lined approach."
-      left={{ heading: "Whitney Plantation", href: "/tours/whitney-plantation-tour", cta: "View Whitney tour" }}
-      right={{ heading: "Oak Alley", href: "/tours/oak-alley-plantation-tour-grey-line", cta: "View Oak Alley tour" }}
+      breadcrumbs={[
+        { label: "Home", href: "/" },
+        { label: "Compare", href: "/compare" },
+        { label: "Whitney vs Oak Alley", href: "/compare/whitney-vs-oak-alley" },
+      ]}
+      eyebrow="Welcome to New Orleans Tours · Comparison Guide"
+      title="Whitney Plantation vs Oak Alley: Which Tour Should You Book?"
+      intro="Both excursions depart from central New Orleans (400 Toulouse St) with round-trip coach transportation included and take approximately 5 hours 25 minutes total. However, the experience and historical focus are completely different."
+      verdict="Choose Whitney Plantation if your priority is Louisiana's only museum dedicated exclusively to the history of slavery, featuring first-person enslaved narratives, memorial artwork, and historic outbuildings on a self-paced audio tour. Choose Oak Alley Plantation if you want a broader historic-estate visit featuring the iconic 300-year-old oak allee, a guided Greek Revival Big House tour, reconstructed cabins, sugarcane exhibits, and on-site dining."
+      topCards={{
+        left: {
+          heading: "Whitney Plantation Tour",
+          badge: "Slavery Museum Focus",
+          operator: "Gray Line New Orleans",
+          duration: "5 hours 25 minutes total (door-to-door)",
+          transportation: "Round-trip coach included (departs 400 Toulouse St)",
+          historicalFocus: "First-person narratives, memorial art, restored outbuildings, and slavery education",
+          walkingMobility: "Self-paced audio tour; uneven gravel on grounds; museum & restrooms accessible",
+          href: "/tours/whitney-plantation-tour",
+          ctaText: "Book Whitney Tour →",
+        },
+        right: {
+          heading: "Oak Alley Plantation Tour",
+          badge: "Iconic Grounds & Big House",
+          operator: "Gray Line New Orleans",
+          duration: "5 hours 25 minutes total (door-to-door)",
+          transportation: "Round-trip coach included (departs 400 Toulouse St)",
+          historicalFocus: "Historic plantation landscape, Big House, slavery exhibits, sugarcane history & gardens",
+          walkingMobility: "Guided Big House tour; mostly paved pathways; 22 stairs to 2nd floor (video alternative)",
+          href: "/tours/oak-alley-plantation-tour-grey-line",
+          ctaText: "Book Oak Alley Tour →",
+        },
+      }}
+      topSummaryRows={[
+        {
+          label: "Duration",
+          left: "5 hours 25 minutes total",
+          right: "5 hours 25 minutes total",
+        },
+        {
+          label: "Transportation",
+          left: "Round-trip coach included from 400 Toulouse St",
+          right: "Round-trip coach included from 400 Toulouse St",
+        },
+        {
+          label: "Historical Focus",
+          left: "Exclusively centered on the history of slavery, first-person narratives & memorials",
+          right: "Broader historic estate, Greek Revival Big House, 300-year oaks & slavery exhibits",
+        },
+        {
+          label: "Walking & Mobility",
+          left: "Uneven gravel grounds; self-paced audio; museum is wheelchair accessible",
+          right: "Paved pathways; 22 stairs to Big House second floor (video alternative available)",
+        },
+        {
+          label: "Booking Choices",
+          left: "Verified live Gray Line inventory via Welcome to New Orleans Tours",
+          right: "Verified live Gray Line inventory via Welcome to New Orleans Tours",
+        },
+      ]}
+      left={{ heading: "Whitney Plantation", href: "/tours/whitney-plantation-tour", cta: "Book Whitney Tour" }}
+      right={{ heading: "Oak Alley", href: "/tours/oak-alley-plantation-tour-grey-line", cta: "Book Oak Alley Tour" }}
       rows={[
         { label: "Published duration", left: "5 hours 25 minutes", right: "5 hours 25 minutes" },
-        { label: "Transportation", left: "Round-trip transportation from New Orleans is included", right: "Round-trip transportation from New Orleans is included" },
+        { label: "Transportation", left: "Round-trip coach from 400 Toulouse St included", right: "Round-trip coach from 400 Toulouse St included" },
         { label: "Primary focus", left: "Slavery history, first-person narratives, memorial art, restored buildings and museum exhibits", right: "Historic plantation landscape, Big House, slavery exhibit, reconstructed cabins, sugarcane history, gardens and blacksmithing" },
         { label: "Tour format", left: "Self-paced audio tour", right: "Guided Big House visit plus self-paced grounds and exhibits" },
         { label: "Walking", left: "Grounds include uneven gravel paths", right: "Walking is integral; paved pathways are available throughout much of the property" },
@@ -37,7 +93,7 @@ export default function WhitneyVsOakAlleyPage() {
         right: ["You want to see the famous oak allee and Greek Revival Big House.", "You like a mix of guided interpretation and time to explore exhibits on your own.", "You want gardens, sugarcane history, reconstructed cabins and additional property exhibits in one visit."],
       }}
       cautions={[
-        "Both tours require a significant time commitment outside central New Orleans.",
+        "Both tours require a significant time commitment outside central New Orleans (approx. 5.5 hours total).",
         "Whitney's gravel paths can matter for travelers with mobility limitations.",
         "Oak Alley's second-floor Big House area requires stairs, though a video alternative is provided for guests who cannot climb them.",
         "Schedules, policies and accessibility details can change; confirm the live operator details before checkout.",
