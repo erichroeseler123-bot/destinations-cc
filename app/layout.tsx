@@ -45,6 +45,7 @@ const GA_MEASUREMENT_ID = "G-S6JEJVWVDT";
 const JFD_HOSTS = new Set(["juneauflightdeck.com", "www.juneauflightdeck.com"]);
 const DELLS_HOSTS = new Set(["welcometothedells.com", "www.welcometothedells.com"]);
 const SAVE_ON_THE_STRIP_HOSTS = new Set(["saveonthestrip.com", "www.saveonthestrip.com"]);
+const SOMERSET_HOSTS = new Set(["shuttletosomersetamphitheater.com", "www.shuttletosomersetamphitheater.com"]);
 const JFD_PUBLIC_PATHS = new Set(["/", "/helicopter", "/juneau/helicopter"]);
 const DELLS_PUBLIC_PATHS = new Set(["/"]);
 
@@ -81,6 +82,32 @@ export async function generateMetadata(): Promise<Metadata> {
         title: "Juneau Flight Deck | Glacier Flights for Cruise Visitors",
         description:
           "Compare Juneau glacier-flight formats, ship timing, and weather-backup planning before choosing a provider.",
+      },
+      category: "travel",
+    };
+  }
+
+  if (SOMERSET_HOSTS.has(host)) {
+    return {
+      metadataBase: new URL("https://www.shuttletosomersetamphitheater.com"),
+      applicationName: "Somerset Amphitheater Shuttle",
+      title: "Somerset Amphitheater Shuttle | Apple River & Somerset Concert Transportation",
+      description:
+        "Private group shuttle and concert transportation to Somerset Amphitheater from Minneapolis, St. Paul, and the Twin Cities. High-roof vans and SUVs with guaranteed late-night return rides.",
+      robots: { index: true, follow: true },
+      openGraph: {
+        siteName: "Somerset Amphitheater Shuttle",
+        type: "website",
+        url: "https://www.shuttletosomersetamphitheater.com/",
+        title: "Somerset Amphitheater Shuttle | Apple River & Somerset Concert Transportation",
+        description:
+          "Private group shuttle and concert transportation to Somerset Amphitheater from Minneapolis, St. Paul, and the Twin Cities.",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: "Somerset Amphitheater Shuttle | Apple River & Somerset Concert Transportation",
+        description:
+          "Private group shuttle and concert transportation to Somerset Amphitheater from Minneapolis, St. Paul, and the Twin Cities.",
       },
       category: "travel",
     };
@@ -151,11 +178,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const brandShell = requestHeaders.get("x-dcc-brand-shell") || "";
   const isWtonotShell = brandShell === "wtonot";
   const isLfseShell = brandShell === "lfse";
+  const isSomersetHost = SOMERSET_HOSTS.has(host);
+  const isSomersetShell = brandShell === "somerset" || isSomersetHost;
   const pathname = requestHeaders.get("x-pathname") || "";
   const isHomepage = pathname === "/";
   const isJfdHost = JFD_HOSTS.has(host);
   const isDellsHost = DELLS_HOSTS.has(host);
-  const isSpecialistHost = isJfdHost || isDellsHost;
+  const isSpecialistHost = isJfdHost || isDellsHost || isSomersetHost;
 
   // The Juneau and Dells custom domains currently resolve through this monolith.
   // Do not let stale DCC routes leak onto specialist domains. Known legacy Juneau
@@ -182,7 +211,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <PartnerAnalyticsScript />
       </head>
       <body className={`${headingFont.variable} ${accentFont.variable} ${sansFont.variable} ${monoFont.variable} ${isWtonotShell ? "bg-[#151515] text-[#fdfbf7]" : ""}`}>
-        {isWtonotShell || isLfseShell || isHomepage || isSpecialistHost ? (
+        {isWtonotShell || isLfseShell || isSomersetShell || isHomepage || isSpecialistHost ? (
           <>
             <a href="#main-content" className="dcc-skip-link">
               Skip to main content

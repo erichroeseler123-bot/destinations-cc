@@ -71,16 +71,69 @@ function shouldReturnGone(pathname: string) {
   return GONE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
-function getSomersetHostRewrite(request: NextRequest) {
-  if (!SOMERSET_HOSTS.has(request.nextUrl.hostname)) return null;
-  if (request.nextUrl.pathname.startsWith(SOMERSET_BASE_PATH)) return null;
+function getSomersetBrandShellHeaders(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(WTONOT_BRAND_SHELL_HEADER, "somerset");
+  return requestHeaders;
+}
 
-  const destinationPath = SOMERSET_HOST_PATH_REWRITES.get(request.nextUrl.pathname);
-  if (!destinationPath) return null;
+export function handleSomersetHost(request: NextRequest) {
+  const hostHeader = request.headers.get("x-forwarded-host") || request.nextUrl.hostname;
+  const host = hostHeader.split(":")[0].toLowerCase();
+  if (!SOMERSET_HOSTS.has(host)) return null;
 
-  const url = request.nextUrl.clone();
-  url.pathname = destinationPath;
-  return url;
+  const pathname = request.nextUrl.pathname;
+
+  // Allow static next/image/assets resources
+  if (
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/images/") ||
+    pathname === "/favicon.ico"
+  ) {
+    return null;
+  }
+
+  // Allow API routes through directly
+  if (pathname.startsWith("/api/")) {
+    return null;
+  }
+
+  // Obsolete & competing redirects (301 Permanent)
+  const SOMERSET_REDIRECTS: Record<string, string> = {
+    "/transportation": "/somerset-amphitheater-shuttle",
+    "/concerts": "/somerset-concert-transportation",
+    "/apple-river-tubing": "/",
+    "/rivers-edge-campground": "/somerset-amphitheater-parking-and-transportation",
+    "/mystic-lake-amphitheater": "/",
+    "/the-ledge-amphitheater": "/",
+  };
+
+  if (SOMERSET_REDIRECTS[pathname]) {
+    return NextResponse.redirect(new URL(SOMERSET_REDIRECTS[pathname], request.url), 301);
+  }
+
+  // Core canonical routes
+  const SOMERSET_CANONICAL_REWRITES: Record<string, string> = {
+    "/": "/somerset-wi",
+    "/somerset-amphitheater-shuttle": "/somerset-wi/somerset-amphitheater-shuttle",
+    "/somerset-concert-transportation": "/somerset-wi/somerset-concert-transportation",
+    "/somerset-amphitheater-parking-and-transportation": "/somerset-wi/somerset-amphitheater-parking-and-transportation",
+    "/sitemap.xml": "/somerset-wi/sitemap.xml",
+  };
+
+  const dest = SOMERSET_CANONICAL_REWRITES[pathname];
+  if (dest) {
+    const url = request.nextUrl.clone();
+    url.pathname = dest;
+    const response = NextResponse.rewrite(url, {
+      request: { headers: getSomersetBrandShellHeaders(request) },
+    });
+    response.headers.set("x-robots-tag", "index, follow");
+    return response;
+  }
+
+  // Any other URL on Somerset host collapses to root
+  return NextResponse.redirect(new URL("/", request.url), 301);
 }
 
 export function getWtonotHostRewrite(request: NextRequest) {
@@ -561,11 +614,9 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     return NextResponse.redirect(new URL(`/internal/dashboard/${relativePath}${request.nextUrl.search}`, request.url), 307);
   }
 
-  const somersetRewrite = getSomersetHostRewrite(request);
-  if (somersetRewrite) {
-    const response = NextResponse.rewrite(somersetRewrite);
-    response.headers.set("x-robots-tag", "index, follow");
-    return response;
+  const somersetResponse = handleSomersetHost(request);
+  if (somersetResponse) {
+    return somersetResponse;
   }
 
   const wtonotRewrite = getWtonotHostRewrite(request);

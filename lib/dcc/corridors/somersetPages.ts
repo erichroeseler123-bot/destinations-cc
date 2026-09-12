@@ -21,12 +21,9 @@ export const SOMERSET_BASE_PATH = "/somerset-wi";
 
 export const SOMERSET_PAGE_PATHS = [
   SOMERSET_BASE_PATH,
-  `${SOMERSET_BASE_PATH}/concerts`,
-  `${SOMERSET_BASE_PATH}/apple-river-tubing`,
-  `${SOMERSET_BASE_PATH}/transportation`,
-  `${SOMERSET_BASE_PATH}/rivers-edge-campground`,
-  `${SOMERSET_BASE_PATH}/mystic-lake-amphitheater`,
-  `${SOMERSET_BASE_PATH}/the-ledge-amphitheater`,
+  `${SOMERSET_BASE_PATH}/somerset-amphitheater-shuttle`,
+  `${SOMERSET_BASE_PATH}/somerset-concert-transportation`,
+  `${SOMERSET_BASE_PATH}/somerset-amphitheater-parking-and-transportation`,
 ] as const;
 
 export const SOMERSET_PAGES: readonly SomersetPageConfig[] = [
