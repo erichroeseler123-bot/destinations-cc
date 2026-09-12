@@ -79,6 +79,19 @@ export const DCC_SOURCE_REGISTRY: DccSourceRegistryEntry[] = [
       },
     ],
   },
+  {
+    id: "vibe-around-town",
+    name: "Vibe Around Town",
+    endpointUrl: "https://vibearoundtown.com/.well-known/dcc",
+    profile: "tourism/private-excursions-v1",
+    description: "Licensed private excursions, custom island tours, and cruise port transportation across St. Thomas, St. John, and St. Croix.",
+    serviceAreas: [
+      {
+        name: "U.S. Virgin Islands & Cruise Ports (St. Thomas, St. John, St. Croix)",
+        bbox: [17.5, -65.1, 18.5, -64.4],
+      },
+    ],
+  },
 ];
 
 // ============================================================================

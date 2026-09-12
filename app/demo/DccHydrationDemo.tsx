@@ -16,6 +16,7 @@ export type RouteOffering = {
 };
 
 export type HydrationDemoProps = {
+  currentOperator?: string;
   wellKnownEndpoint: string;
   routesEndpoint: string;
   wellKnownPayload: any;
@@ -32,6 +33,7 @@ export type HydrationDemoProps = {
 };
 
 export default function DccHydrationDemo({
+  currentOperator,
   wellKnownEndpoint,
   routesEndpoint,
   wellKnownPayload,
@@ -58,8 +60,10 @@ export default function DccHydrationDemo({
   const state = Array.isArray(wellKnownPayload?.state) ? wellKnownPayload.state : [];
   const actions = Array.isArray(wellKnownPayload?.actions) ? wellKnownPayload.actions : [];
 
-  const legalNameClaim = claims.find((c: any) => c.predicate === "legal_name")?.value || "GoSno LLC";
-  const authorityClaim = claims.find((c: any) => c.predicate === "operating_authority")?.value || "CO PUC LL-03577";
+  const isVibe = currentOperator === "vibe-around-town";
+
+  const legalNameClaim = claims.find((c: any) => c.predicate === "legal_name")?.value || (isVibe ? "Vibing Around Tour Co." : "GoSno LLC");
+  const authorityClaim = claims.find((c: any) => c.predicate === "operating_authority")?.value || (isVibe ? "USVI Licensed Commercial Transportation" : "CO PUC LL-03577");
 
   const serviceStatus = state.find((s: any) => s.predicate === "service_status");
   const asOf = serviceStatus?.as_of || fetchedAt;
@@ -70,6 +74,17 @@ export default function DccHydrationDemo({
     ? routesPayload.claims
         .filter((c: any) => c.predicate === "route_offering" && c.value)
         .map((c: any) => c.value)
+    : Array.isArray(routesPayload?.packages)
+    ? routesPayload.packages.map((pkg: any) => ({
+        route_id: pkg.package_id,
+        origin: pkg.pickup_ports?.[0] || pkg.island || "St. Thomas",
+        destination: pkg.title || `Tour with ${pkg.driver_name}`,
+        vehicle_class: `${pkg.vehicle?.class || "Van"} (${pkg.vehicle?.capacity || 8} pax)`,
+        price_cents: (pkg.pricing?.total_price_usd || 0) * 100,
+        price_formatted: `$${pkg.pricing?.total_price_usd || 0}`,
+        duration_minutes: (pkg.duration_hours || 5) * 60,
+        online_bookable: true,
+      }))
     : [];
 
   const selectedRoute = routesList.find((r) => r.route_id === selectedRouteId) || routesList[0];
@@ -80,11 +95,13 @@ export default function DccHydrationDemo({
     setAvailabilityResult(null);
 
     try {
-      const url = `https://gosno.co/api/availability?origin=${encodeURIComponent(
-        availabilityOrigin
-      )}&dest=${encodeURIComponent(availabilityDest)}&date=${encodeURIComponent(
-        availabilityDate
-      )}`;
+      const url = isVibe
+        ? "https://vibearoundtown.com/api/v2/feeds/drivers"
+        : `https://gosno.co/api/availability?origin=${encodeURIComponent(
+            availabilityOrigin
+          )}&dest=${encodeURIComponent(availabilityDest)}&date=${encodeURIComponent(
+            availabilityDate
+          )}`;
       const res = await fetch(url, {
         headers: { Accept: "application/json" },
       });
@@ -146,23 +163,57 @@ export default function DccHydrationDemo({
         </div>
       </header>
 
+      {/* Operator Selection Bar */}
+      <div className="border-b border-white/10 bg-[#070c14] px-5 py-3">
+        <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-white/50 uppercase tracking-wider text-[11px]">DCC Operator:</span>
+            <Link
+              href={simulateMode ? `/demo?operator=gosno&simulate=${simulateMode}` : "/demo?operator=gosno"}
+              className={`rounded-lg px-3 py-1.5 font-mono text-xs transition flex items-center gap-2 ${
+                !isVibe
+                  ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold shadow-[0_0_12px_rgba(6,182,212,0.15)]"
+                  : "bg-white/5 text-white/60 hover:text-white border border-transparent"
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${!isVibe ? "bg-cyan-400 animate-pulse" : "bg-white/30"}`}></span>
+              1. GoSno LLC (Colorado & Big Sky)
+            </Link>
+            <Link
+              href={simulateMode ? `/demo?operator=vibe-around-town&simulate=${simulateMode}` : "/demo?operator=vibe-around-town"}
+              className={`rounded-lg px-3 py-1.5 font-mono text-xs transition flex items-center gap-2 ${
+                isVibe
+                  ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold shadow-[0_0_12px_rgba(168,85,247,0.15)]"
+                  : "bg-white/5 text-white/60 hover:text-white border border-transparent"
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${isVibe ? "bg-purple-400 animate-pulse" : "bg-white/30"}`}></span>
+              2. Vibe Around Town (U.S. Virgin Islands)
+            </Link>
+          </div>
+          <span className="font-mono text-[11px] text-white/40 hidden md:inline">
+            Dual live operator hydration · Direct HTTPS · Zero database duplication
+          </span>
+        </div>
+      </div>
+
       {/* State & Audit Simulation Switcher Bar */}
       <div className="border-b border-white/5 bg-[#090f18] px-5 py-2.5">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
             <span className="font-mono text-white/40 uppercase">Audit Test Modes:</span>
             <Link
-              href="/demo"
+              href={isVibe ? "/demo?operator=vibe-around-town" : "/demo?operator=gosno"}
               className={`rounded px-2.5 py-1 font-mono transition ${
                 !simulateMode
                   ? "bg-cyan-400 text-black font-bold"
                   : "bg-white/5 text-white/60 hover:text-white"
               }`}
             >
-              1. Live GoSno (Normal)
+              1. Live {isVibe ? "Vibe Around Town" : "GoSno"} (Normal)
             </Link>
             <Link
-              href="/demo?simulate=failure"
+              href={`/demo?simulate=failure&operator=${isVibe ? "vibe-around-town" : "gosno"}`}
               className={`rounded px-2.5 py-1 font-mono transition ${
                 simulateMode === "failure"
                   ? "bg-red-500 text-white font-bold"
@@ -172,7 +223,7 @@ export default function DccHydrationDemo({
               2. Endpoint Failure
             </Link>
             <Link
-              href="/demo?simulate=stale"
+              href={`/demo?simulate=stale&operator=${isVibe ? "vibe-around-town" : "gosno"}`}
               className={`rounded px-2.5 py-1 font-mono transition ${
                 simulateMode === "stale"
                   ? "bg-amber-500 text-black font-bold"
@@ -182,7 +233,7 @@ export default function DccHydrationDemo({
               3. Stale State
             </Link>
             <Link
-              href="/demo?simulate=malformed"
+              href={`/demo?simulate=malformed&operator=${isVibe ? "vibe-around-town" : "gosno"}`}
               className={`rounded px-2.5 py-1 font-mono transition ${
                 simulateMode === "malformed"
                   ? "bg-rose-500 text-white font-bold"

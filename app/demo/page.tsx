@@ -16,11 +16,18 @@ export const metadata: Metadata = {
 export default async function DemoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ simulate?: string }>;
+  searchParams: Promise<{ simulate?: string; operator?: string }>;
 }) {
-  const { simulate } = (await searchParams) || {};
-  const wellKnownEndpoint = "https://gosno.co/.well-known/dcc";
-  const routesEndpoint = "https://gosno.co/api/dcc/routes";
+  const { simulate, operator } = (await searchParams) || {};
+  const isVibe = operator === "vibe-around-town" || operator === "vat";
+
+  const wellKnownEndpoint = isVibe
+    ? "https://vibearoundtown.com/.well-known/dcc"
+    : "https://gosno.co/.well-known/dcc";
+  const routesEndpoint = isVibe
+    ? "https://vibearoundtown.com/api/dcc/packages"
+    : "https://gosno.co/api/dcc/routes";
+  const currentOperator = isVibe ? "vibe-around-town" : "gosno";
 
   let wellKnownPayload: any = null;
   let routesPayload: any = null;
@@ -31,38 +38,64 @@ export default async function DemoPage({
 
   // 1. Simulation Modes for Auditing Failure, Stale, and Malformed States
   if (simulate === "failure") {
-    fetchError = "HTTP 503 Service Unavailable: Simulated upstream operator gateway timeout";
+    fetchError = `HTTP 503 Service Unavailable: Simulated upstream operator gateway timeout (${currentOperator})`;
     httpStatus = 503;
   } else if (simulate === "stale") {
-    wellKnownPayload = {
-      protocol: "dcc",
-      core: "2",
-      self: wellKnownEndpoint,
-      id: "gosno.co:org/gosno",
-      claims: [
-        { predicate: "legal_name", value: "GoSno LLC", as_of: "2024-01-01T00:00:00Z", evidence: [] },
-        { predicate: "operating_authority", value: "CO PUC LL-03577", as_of: "2024-01-01T00:00:00Z", evidence: [] }
-      ],
-      state: [
-        {
-          predicate: "service_status",
-          value: "operational",
-          as_of: "2026-09-10T12:00:00Z",
-          fresh_until: "2026-09-10T13:00:00Z", // Past timestamp = STALE
-          evidence: []
+    wellKnownPayload = isVibe
+      ? {
+          protocol: "dcc",
+          core: "2",
+          self: wellKnownEndpoint,
+          id: "vibearoundtown.com:org/vibe-around-town",
+          profile: "tourism/private-excursions-v1",
+          claims: [
+            { predicate: "legal_name", value: "Vibing Around Tour Co.", as_of: "2024-01-01T00:00:00Z", evidence: [] },
+            { predicate: "brand_name", value: "Vibe Around Town", as_of: "2024-01-01T00:00:00Z", evidence: [] },
+            { predicate: "operating_authority", value: "USVI Licensed Commercial Passenger Transportation", as_of: "2024-01-01T00:00:00Z", evidence: [] }
+          ],
+          state: [
+            {
+              predicate: "service_status",
+              value: "operational",
+              as_of: "2026-09-10T12:00:00Z",
+              fresh_until: "2026-09-10T13:00:00Z", // Past timestamp = STALE
+              evidence: []
+            }
+          ],
+          actions: [
+            { action_id: "request_reservation", method: "GET", target: "https://vibearoundtown.com/reserve", input: {}, auth: "none" }
+          ],
+          links: []
         }
-      ],
-      actions: [
-        { action_id: "check_availability", method: "GET", target: "https://gosno.co/api/availability", input: {}, auth: "none" }
-      ],
-      links: []
-    };
+      : {
+          protocol: "dcc",
+          core: "2",
+          self: wellKnownEndpoint,
+          id: "gosno.co:org/gosno",
+          claims: [
+            { predicate: "legal_name", value: "GoSno LLC", as_of: "2024-01-01T00:00:00Z", evidence: [] },
+            { predicate: "operating_authority", value: "CO PUC LL-03577", as_of: "2024-01-01T00:00:00Z", evidence: [] }
+          ],
+          state: [
+            {
+              predicate: "service_status",
+              value: "operational",
+              as_of: "2026-09-10T12:00:00Z",
+              fresh_until: "2026-09-10T13:00:00Z", // Past timestamp = STALE
+              evidence: []
+            }
+          ],
+          actions: [
+            { action_id: "check_availability", method: "GET", target: "https://gosno.co/api/availability", input: {}, auth: "none" }
+          ],
+          links: []
+        };
     rawByteSha256 = crypto.createHash("sha256").update(Buffer.from(JSON.stringify(wellKnownPayload))).digest("hex");
   } else if (simulate === "malformed") {
     // Malformed: Missing protocol and core envelope fields, and forbidden field names
     wellKnownPayload = {
       self: wellKnownEndpoint,
-      id: "gosno.co:org/gosno",
+      id: isVibe ? "vibearoundtown.com:org/vibe-around-town" : "gosno.co:org/gosno",
       claims: "not-an-array", // Malformed container
       actions: [
         { name: "bad_action", href: "http://insecure.example" } // Forbidden names
@@ -98,7 +131,7 @@ export default async function DemoPage({
         routesPayload = JSON.parse(routesBytes.toString("utf-8"));
       }
     } catch (err: any) {
-      fetchError = err.message || "Failed to fetch live GoSno endpoints";
+      fetchError = err.message || `Failed to fetch live ${currentOperator} endpoints`;
       httpStatus = 500;
     }
   }
@@ -128,6 +161,7 @@ export default async function DemoPage({
 
   return (
     <DccHydrationDemo
+      currentOperator={currentOperator}
       wellKnownEndpoint={wellKnownEndpoint}
       routesEndpoint={routesEndpoint}
       wellKnownPayload={wellKnownPayload}
