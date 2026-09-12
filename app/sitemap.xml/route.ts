@@ -126,10 +126,26 @@ export async function GET() {
   if (isDellsHost) return new Response(buildDccSitemapXml(["/"], "https://welcometothedells.com", false), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
   if (isLfseHost) return new Response(buildDccSitemapXml(["/", "/tours", "/ports", "/ports/juneau", "/ports/skagway", "/ports/ketchikan"], "https://www.lastfrontiershoreexcursions.com"), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
   if (isWtonotHost) return new Response(buildDccSitemapXml(buildWtonotSitemapPaths(), WTONOT_ORIGIN, false), { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
+  if (isSomersetHost) {
+    const somersetPaths = [
+      "/",
+      "/somerset-amphitheater-shuttle",
+      "/somerset-concert-transportation",
+      "/somerset-amphitheater-parking-and-transportation",
+    ];
+    return new Response(
+      buildDccSitemapXml(somersetPaths, "https://www.shuttletosomersetamphitheater.com", true),
+      {
+        headers: {
+          "Content-Type": "application/xml; charset=utf-8",
+          "Cache-Control": "public, max-age=3600, s-maxage=3600",
+        },
+      }
+    );
+  }
 
-  const origin = isSomersetHost ? `https://${host}` : SITE_IDENTITY.siteUrl;
   const preSiteGuidePaths = ["/guides", "/ask", "/vibe-around", "/shuttleya", "/juneau-flightseeing", "/french-quarter-orientation", "/new-orleans-swamp-tours", ...DECISION_CATEGORIES.map((category) => `/guides/category/${category.slug}`), ...PUBLISHED_DECISION_GUIDES.map((guide) => `/guides/${guide.slug}`)];
   const dccPaths = [...new Set([...INDEXABLE_SURFACE_PATHS, ...SOMERSET_PAGE_PATHS, ...preSiteGuidePaths])];
-  const body = isSomersetHost ? buildDccSitemapXml(SOMERSET_PAGE_PATHS, origin) : buildDccSitemapXml(dccPaths);
+  const body = buildDccSitemapXml(dccPaths);
   return new Response(body, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
 }
