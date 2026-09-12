@@ -6,6 +6,9 @@ type PortSlug = "juneau" | "skagway";
 type HelicopterDispatchBoardProps = {
   portSlug: PortSlug;
   sourcePage?: string;
+  headline?: string;
+  subhead?: string;
+  primaryCtaLabel?: string;
 };
 
 const PORT_COPY: Record<
@@ -22,8 +25,9 @@ const PORT_COPY: Record<
 > = {
   juneau: {
     label: "Juneau shore day",
-    headline: "Fly the glacier. Keep a backup.",
-    subhead: "Big ice, ship timing, weather pivots, clean next step.",
+    headline: "Juneau Flight Deck: Juneau Helicopter & Glacier Tours",
+    subhead:
+      "Juneau Flight Deck helps cruise passengers compare Juneau helicopter glacier tours, whale-watching backups, weather policies, and ship-safe timing.",
     verdict: "Start with the glacier flight. Keep whales ready.",
     portNote: "Check pickup, flight time, return buffer, and weather policy.",
     crossLinkHref: "/skagway/helicopter",
@@ -131,8 +135,16 @@ const PLANNING_CARDS = [
 
 export default function HelicopterDispatchBoard({
   portSlug,
+  headline,
+  subhead,
+  primaryCtaLabel,
 }: HelicopterDispatchBoardProps) {
   const copy = PORT_COPY[portSlug];
+  const renderedHeadline = headline || copy.headline;
+  const renderedSubhead = subhead || copy.subhead;
+  const renderedPrimaryCta =
+    primaryCtaLabel ||
+    (portSlug === "juneau" ? "Compare Juneau Helicopter Tours" : "Compare glacier flights");
 
   return (
     <main className="page-shell dispatch-page">
@@ -143,8 +155,8 @@ export default function HelicopterDispatchBoard({
         </div>
         <div className="dispatch-hero-copy">
           <p className="eyebrow">{copy.label} · glacier flights · shore excursions</p>
-          <h1>{copy.headline}</h1>
-          <p className="dispatch-subhead">{copy.subhead}</p>
+          <h1>{renderedHeadline}</h1>
+          <p className="dispatch-subhead">{renderedSubhead}</p>
           <div className="dispatch-verdict">
             <strong>Best first move</strong>
             <span>{copy.verdict}</span>
@@ -160,7 +172,7 @@ export default function HelicopterDispatchBoard({
               className="button button-primary"
               href={portSlug === "juneau" ? "/helicopter" : "/skagway/helicopter"}
             >
-              Compare glacier flights
+              {renderedPrimaryCta}
             </Link>
             <Link className="button button-secondary" href={copy.crossLinkHref}>
               {copy.crossLinkLabel}

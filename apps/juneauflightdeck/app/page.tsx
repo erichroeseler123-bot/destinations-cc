@@ -2,16 +2,25 @@ import type { Metadata } from "next";
 import HelicopterDispatchBoard from "./components/HelicopterDispatchBoard";
 
 export const metadata: Metadata = {
-  title: "Juneau Helicopter & Glacier Tours | Cruise-Safe Alaska Excursions",
+  title: {
+    absolute: "Juneau Flight Deck | Juneau Helicopter & Glacier Tours",
+  },
   description:
-    "Compare Juneau helicopter glacier tours, Mendenhall scenery, whale-watching backups, and cruise-safe timing before opening provider booking pages.",
+    "Juneau Flight Deck helps cruise passengers compare Juneau helicopter glacier tours, whale-watching backups, weather policies, and ship-safe timing.",
   alternates: { canonical: "https://juneauflightdeck.com/" },
   openGraph: {
-    title: "Juneau Helicopter & Glacier Tours",
+    title: "Juneau Flight Deck | Juneau Helicopter & Glacier Tours",
     description:
-      "Compare glacier flights, Mendenhall scenery, whale-watching backups, and cruise-safe timing for a Juneau shore day.",
+      "Juneau Flight Deck helps cruise passengers compare Juneau helicopter glacier tours, whale-watching backups, weather policies, and ship-safe timing.",
     url: "https://juneauflightdeck.com/",
+    siteName: "Juneau Flight Deck",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Juneau Flight Deck | Juneau Helicopter & Glacier Tours",
+    description:
+      "Juneau Flight Deck helps cruise passengers compare Juneau helicopter glacier tours, whale-watching backups, weather policies, and ship-safe timing.",
   },
 };
 
@@ -21,7 +30,13 @@ const CP =
 export default function HomePage() {
   return (
     <>
-      <HelicopterDispatchBoard portSlug="juneau" sourcePage="/" />
+      <HelicopterDispatchBoard
+        portSlug="juneau"
+        sourcePage="/"
+        headline="Juneau Flight Deck: Juneau Helicopter & Glacier Tours"
+        subhead="Juneau Flight Deck helps cruise passengers compare Juneau helicopter glacier tours, whale-watching backups, weather policies, and ship-safe timing."
+        primaryCtaLabel="Compare Juneau Helicopter Tours"
+      />
       <section
         aria-label="Plan the rest of your cruise"
         style={{ maxWidth: 1120, margin: "0 auto 52px", padding: "0 20px" }}

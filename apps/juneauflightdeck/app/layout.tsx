@@ -50,6 +50,18 @@ const siteJsonLd = {
       publisher: { "@id": "https://juneauflightdeck.com/#organization" },
     },
     {
+      "@type": "BreadcrumbList",
+      "@id": "https://juneauflightdeck.com/#breadcrumb",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Juneau Flight Deck",
+          item: "https://juneauflightdeck.com/",
+        },
+      ],
+    },
+    {
       "@type": "Service",
       "@id": "https://juneauflightdeck.com/#service",
       name: "Juneau excursion planning",
