@@ -42,5 +42,17 @@
     "kind": "test-vector",
     "fixture_path": "fixtures/test-vector-limited.json",
     "description": "Controlled synthetic tour test vector observation 2 (state: limited, demonstrating available -> limited transition)"
+  },
+  {
+    "id": "vibe-well-known",
+    "url": "https://vibearoundtown.com/.well-known/dcc",
+    "kind": "production",
+    "description": "Vibe Around Town root DCC Core v2 discovery endpoint"
+  },
+  {
+    "id": "vibe-packages-catalog",
+    "url": "https://vibearoundtown.com/api/dcc/packages",
+    "kind": "production",
+    "description": "Vibe Around Town public DCC Core v2 tour packages catalog"
   }
 ]
