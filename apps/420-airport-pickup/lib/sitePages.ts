@@ -61,16 +61,6 @@ export const sitePages: SitePage[] = [
     ctaHref: "/",
   },
   {
-    slug: "denver-airport-pickup",
-    title: "Denver Airport Pickup",
-    headline: "Support route for direct airport-pickup links.",
-    description: "This page stays live to preserve older direct-pickup links and continue into the operator flow.",
-    body: "If you arrived from an older airport-pickup link, continue into the main booking surface. DCC owns the broader planning and comparison layer.",
-    bullets: ["Private ride", "Direct from DEN", "Best if you want the clean default"],
-    ctaLabel: "Book the direct airport pickup",
-    ctaHref: "/",
-  },
-  {
     slug: "420-friendly-airport-pickup",
     title: "420-Friendly Airport Pickup",
     headline: "Support route for dispensary-stop links.",

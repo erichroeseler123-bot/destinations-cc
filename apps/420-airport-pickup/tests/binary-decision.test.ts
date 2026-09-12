@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { resolveBinaryDecision } from "../../../lib/decision/binaryDecision";
+import { resolveStandardVs420Decision } from "../lib/binaryDecision";
 
 test("420 airport standard-vs-420 decision uses booking CTA mode", () => {
-  const decision = resolveBinaryDecision("standard-vs-420", {
+  const decision = resolveStandardVs420Decision({
     standardHref: "https://www.destinationcommandcenter.com/checkout?product=airport-pickup",
     enhanced420Href:
       "https://www.destinationcommandcenter.com/checkout?product=airport-dispensary",

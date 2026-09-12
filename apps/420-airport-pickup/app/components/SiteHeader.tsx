@@ -10,6 +10,7 @@ export default function SiteHeader() {
         </Link>
         <nav className="site-nav" aria-label="Primary">
           <Link href="/">Denver</Link>
+          <Link href="/denver-airport-pickup">DEN Pickup</Link>
           <Link href="/colorado-springs-airport">Colorado Springs</Link>
           <Link href="/colorado">Destinations</Link>
           <Link href="/how-it-works">How it works</Link>

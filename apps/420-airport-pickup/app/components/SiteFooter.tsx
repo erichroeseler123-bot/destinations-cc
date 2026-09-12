@@ -9,6 +9,7 @@ export default function SiteFooter() {
           <p>Private Colorado airport transportation from DEN and COS, with optional lawful 21+ retail-stop planning when practical.</p>
         </div>
         <nav className="site-footer-links" aria-label="Footer">
+          <Link href="/denver-airport-pickup">Denver airport pickup</Link>
           <Link href="/colorado">DEN destinations</Link>
           <Link href="/colorado-springs-airport">COS destinations</Link>
           <Link href="/about">About</Link>

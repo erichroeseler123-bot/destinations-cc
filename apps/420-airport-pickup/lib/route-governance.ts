@@ -118,11 +118,12 @@ const AIRPORT420_ROUTE_GOVERNANCE = [
   },
   {
     path: "/denver-airport-pickup",
-    publishState: "live_unpromoted",
+    publishState: "indexable",
     networkRole: "operator",
     handoffPolicy: "bidirectional",
-    priority: 0.8,
+    priority: 0.9,
     changeFrequency: "weekly",
+    notes: "Dedicated transactional Denver Airport Pickup landing page.",
   },
   {
     path: "/420-friendly-airport-pickup",

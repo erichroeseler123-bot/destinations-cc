@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description:
     "Private Colorado airport transportation for adults 21+ from DEN and COS, with Denver, Colorado Springs, and mountain destinations plus optional lawful dispensary-stop planning when practical.",
   alternates: { canonical: "/" },
-  robots: { index: true, follow: true },
+  robots: { index: true, follow: true, },
   openGraph: {
     title: "420-Friendly Colorado Airport Transportation | DEN & COS",
     description:
