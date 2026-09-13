@@ -88,6 +88,51 @@ export function ExcursionCard({ excursion, showCalculatedFit }: ExcursionCardPro
         border: "1px solid var(--line)",
       }}
     >
+      {excursion.permittedImages && excursion.permittedImages.length > 0 && (
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            height: "170px",
+            overflow: "hidden",
+            borderRadius: "10px",
+            marginBottom: "14px",
+            background: "#eef5f6",
+            border: "1px solid var(--line)",
+          }}
+        >
+          <img
+            src={excursion.permittedImages[0].url}
+            alt={excursion.permittedImages[0].caption || excursion.title}
+            width={600}
+            height={400}
+            loading="lazy"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+            }}
+          />
+          <span
+            style={{
+              position: "absolute",
+              bottom: 6,
+              left: 6,
+              background: "rgba(14, 26, 31, 0.75)",
+              backdropFilter: "blur(4px)",
+              color: "#ffffff",
+              fontSize: "10.5px",
+              padding: "2px 7px",
+              borderRadius: "4px",
+              lineHeight: 1.3,
+            }}
+          >
+            {excursion.permittedImages[0].caption}
+          </span>
+        </div>
+      )}
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
         <span className="badge badge-safety">
           {excursion.transferBufferMinutes}m transit · Last Frontier Planning Standard

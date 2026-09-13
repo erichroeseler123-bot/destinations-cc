@@ -6,6 +6,7 @@ import { getPort } from "@/lib/ports";
 import { buildAffiliateUrl } from "@/lib/affiliate/links";
 import { getExcursionsByActivity, getExcursionsByPort } from "@/lib/affiliate/catalog";
 import { getEditorialInsight } from "@/lib/affiliate/editorial";
+import { getActivityImage } from "@/lib/images";
 import { PortSlug } from "@/lib/affiliate/types";
 import { CruiseWindowCalculator } from "@/components/CruiseWindowCalculator";
 import { ExcursionCard } from "@/components/ExcursionCard";
@@ -30,6 +31,8 @@ export async function generateMetadata({
   const item = getPortActivity(port, activity);
   if (!item) return {};
 
+  const image = getActivityImage(port, activity);
+
   return {
     title: item.title,
     description: item.metaDescription,
@@ -42,6 +45,14 @@ export async function generateMetadata({
       url: `${SITE}/${item.portSlug}/${item.slug}`,
       siteName: "Last Frontier Shore Excursions",
       type: "article",
+      images: [
+        {
+          url: `${SITE}${image.url}`,
+          width: 1200,
+          height: 800,
+          alt: image.alt,
+        },
+      ],
     },
   };
 }
@@ -60,6 +71,7 @@ export default async function ActivityPage({
   const editorial = getEditorialInsight(port, activity);
   const matchedExcursions = getExcursionsByActivity(port as PortSlug, activity);
   const fallbackExcursions = matchedExcursions.length > 0 ? matchedExcursions : getExcursionsByPort(port as PortSlug).slice(0, 2);
+  const activityImg = getActivityImage(port, activity);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -150,7 +162,7 @@ export default async function ActivityPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <section className="port-hero">
+      <section className="port-hero" style={{ padding: "40px 0 36px" }}>
         <div className="shell">
           <nav className="breadcrumbs" aria-label="Breadcrumbs">
             <Link href="/">Home</Link>
@@ -159,25 +171,72 @@ export default async function ActivityPage({
             <span>›</span>
             <span>{item.slug}</span>
           </nav>
-          <p className="eyebrow" style={{ color: "#607078" }}>{item.eyebrow}</p>
-          <h1>{item.h1}</h1>
-          <p className="lead" style={{ color: "#485b63" }}>
-            {item.overview[0]}
-          </p>
-          <div className="cta-row">
-            <a
-              className="button"
-              href={primaryOutboundUrl}
-              target="_blank"
-              rel="sponsored noopener noreferrer"
-            >
-              Check live tour options & availability →
-            </a>
-            <Link className="button secondary" href="#calculator">
-              Calculate ship-window fit ↓
-            </Link>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 32, alignItems: "center" }}>
+            <div>
+              <p className="eyebrow" style={{ color: "#607078" }}>{item.eyebrow}</p>
+              <h1 style={{ marginTop: 6, marginBottom: 12 }}>{item.h1}</h1>
+              <p className="lead" style={{ color: "#485b63", fontSize: "16px", marginBottom: 20 }}>
+                {item.overview[0]}
+              </p>
+              <div className="cta-row">
+                <a
+                  className="button"
+                  href={primaryOutboundUrl}
+                  target="_blank"
+                  rel="sponsored noopener noreferrer"
+                >
+                  Check live tour options & availability →
+                </a>
+                <Link className="button secondary" href="#calculator">
+                  Calculate ship-window fit ↓
+                </Link>
+              </div>
+              <TrustDisclosure compact />
+            </div>
+
+            <div style={{ position: "relative" }}>
+              <div
+                style={{
+                  position: "relative",
+                  borderRadius: "14px",
+                  overflow: "hidden",
+                  border: "1px solid var(--line)",
+                  boxShadow: "var(--card-shadow)",
+                  aspectRatio: "16 / 10",
+                  background: "#eef5f6",
+                }}
+              >
+                <img
+                  src={activityImg.url}
+                  alt={activityImg.alt}
+                  width={1200}
+                  height={800}
+                  loading="eager"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
+                <span
+                  style={{
+                    position: "absolute",
+                    bottom: 8,
+                    right: 10,
+                    background: "rgba(14, 26, 31, 0.75)",
+                    backdropFilter: "blur(4px)",
+                    color: "#ffffff",
+                    fontSize: "11px",
+                    padding: "3px 8px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  {activityImg.caption}
+                </span>
+              </div>
+            </div>
           </div>
-          <TrustDisclosure compact />
         </div>
       </section>
 

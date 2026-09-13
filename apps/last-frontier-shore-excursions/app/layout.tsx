@@ -21,11 +21,20 @@ export const metadata: Metadata = {
     url: SITE,
     siteName: "Last Frontier Shore Excursions",
     type: "website",
+    images: [
+      {
+        url: "/images/alaska/inside-passage-hero.jpg",
+        width: 1920,
+        height: 1200,
+        alt: "Glaciated peaks and fjords of the Alaska Inside Passage",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Last Frontier Shore Excursions",
     description: DESCRIPTION,
+    images: ["/images/alaska/inside-passage-hero.jpg"],
   },
 };
 

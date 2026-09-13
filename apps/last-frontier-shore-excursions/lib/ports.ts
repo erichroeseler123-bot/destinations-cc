@@ -5,6 +5,9 @@ export type Port = {
   nameAlt?: string;
   region: string;
   hook: string;
+  image: string;
+  imageAlt: string;
+  imageCaption: string;
   dockLocations: string[];
   tenderStatus: string;
   typicalPortHours: string;
@@ -20,6 +23,9 @@ export const PORTS: Port[] = [
     name: "Juneau",
     region: "Southeast Alaska",
     hook: "Glaciers, whale watching, flightseeing, and the easiest place to build one unforgettable Alaska day.",
+    image: "/images/alaska/juneau-mendenhall.jpg",
+    imageAlt: "Mendenhall Glacier terminus and mountain lake near Juneau, Alaska",
+    imageCaption: "Mendenhall Glacier, Juneau",
     dockLocations: [
       "Franklin Dock (South downtown)",
       "Marine Dock (Center downtown)",
@@ -45,6 +51,9 @@ export const PORTS: Port[] = [
     name: "Skagway",
     region: "Inside Passage",
     hook: "Gold Rush history, White Pass scenery, rail, road trips, and mountain views built for a port day.",
+    image: "/images/alaska/skagway-white-pass.jpg",
+    imageAlt: "White Pass and Yukon Route railway navigating rugged mountain pass in Skagway, Alaska",
+    imageCaption: "White Pass & Yukon Route, Skagway",
     dockLocations: [
       "Railroad Dock (Direct dockside train boarding)",
       "Broadway Dock (Steps from historic downtown)",
@@ -68,6 +77,9 @@ export const PORTS: Port[] = [
     name: "Ketchikan",
     region: "Southeast Alaska",
     hook: "Totem culture, wildlife, rainforest, fishing, and floatplane scenery close to port.",
+    image: "/images/alaska/ketchikan-creek-street.jpg",
+    imageAlt: "Historic Creek Street wooden boardwalk over water in Ketchikan, Alaska",
+    imageCaption: "Historic Creek Street, Ketchikan",
     dockLocations: [
       "Berths 1, 2, 3, 4 (Downtown waterfront, steps to Creek Street)",
       "Ward Cove (7 miles north, complimentary 20-min shuttle required)"
@@ -90,6 +102,9 @@ export const PORTS: Port[] = [
     name: "Sitka",
     region: "Baranof Island",
     hook: "Wildlife, Russian-Alaska history, rainforest, and a less frantic port-day rhythm.",
+    image: "/images/alaska/sitka-sound.jpg",
+    imageAlt: "Fishing vessels in Crescent Harbor against coastal mountains in Sitka, Alaska",
+    imageCaption: "Crescent Harbor & Mountains, Sitka",
     dockLocations: [
       "Sitka Sound Cruise Terminal / Old Sitka Dock (5 miles north, continuous 10-min shuttle)",
       "Crescent Harbor / O'Connell Bridge (Tender pier directly downtown for small ships)"
@@ -110,6 +125,9 @@ export const PORTS: Port[] = [
     nameAlt: "Hoonah",
     region: "Chichagof Island",
     hook: "Whales, bears, wilderness, and high-impact excursions without a big-city port feel.",
+    image: "/images/alaska/icy-strait-point-wilderness.jpg",
+    imageAlt: "Historic cannery, excursion dock, and evergreen rainforest shore at Icy Strait Point, Hoonah",
+    imageCaption: "Historic Cannery & Waterfront, Icy Strait Point",
     dockLocations: [
       "Wilderness Dock (Connected to Cannery via Transporter Gondola)",
       "Adventure Dock (Direct foot access to Cannery Plaza)"

@@ -34,6 +34,14 @@ export async function generateMetadata({
       url: `${SITE}/ports/${port.slug}`,
       siteName: "Last Frontier Shore Excursions",
       type: "website",
+      images: [
+        {
+          url: `${SITE}${port.image}`,
+          width: 1600,
+          height: 1067,
+          alt: port.imageAlt,
+        },
+      ],
     },
   };
 }
@@ -104,25 +112,72 @@ export default async function PortPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <section className="port-hero">
+      <section className="port-hero" style={{ padding: "40px 0 36px" }}>
         <div className="shell">
           <nav className="breadcrumbs" aria-label="Breadcrumbs">
             <Link href="/">Home</Link>
             <span>›</span>
             <span>{port.name}</span>
           </nav>
-          <p className="eyebrow" style={{ color: "#607078" }}>{port.region} · Cruise Port Guide</p>
-          <h1>{port.name} Shore Excursions</h1>
-          <p className="lead" style={{ color: "#485b63" }}>{port.hook}</p>
-          <div className="cta-row">
-            <a className="button" href={primaryBrowseUrl} target="_blank" rel="sponsored noopener noreferrer">
-              Browse live tours on partner platforms →
-            </a>
-            <a className="button secondary" href="#calculator">
-              Calculate {port.name} ship window
-            </a>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 32, alignItems: "center" }}>
+            <div>
+              <p className="eyebrow" style={{ color: "#607078" }}>{port.region} · Cruise Port Guide</p>
+              <h1 style={{ marginTop: 6, marginBottom: 12 }}>{port.name} Shore Excursions</h1>
+              <p className="lead" style={{ color: "#485b63", fontSize: "17px", marginBottom: 20 }}>{port.hook}</p>
+              <div className="cta-row">
+                <a className="button" href={primaryBrowseUrl} target="_blank" rel="sponsored noopener noreferrer">
+                  Browse live tours on partner platforms →
+                </a>
+                <a className="button secondary" href="#calculator">
+                  Calculate {port.name} ship window
+                </a>
+              </div>
+              <TrustDisclosure compact />
+            </div>
+
+            <div style={{ position: "relative" }}>
+              <div
+                style={{
+                  position: "relative",
+                  borderRadius: "14px",
+                  overflow: "hidden",
+                  border: "1px solid var(--line)",
+                  boxShadow: "var(--card-shadow)",
+                  aspectRatio: "16 / 10",
+                  background: "#eef5f6",
+                }}
+              >
+                <img
+                  src={port.image}
+                  alt={port.imageAlt}
+                  width={1600}
+                  height={1067}
+                  loading="eager"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
+                <span
+                  style={{
+                    position: "absolute",
+                    bottom: 8,
+                    right: 10,
+                    background: "rgba(14, 26, 31, 0.75)",
+                    backdropFilter: "blur(4px)",
+                    color: "#ffffff",
+                    fontSize: "11px",
+                    padding: "3px 8px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  {port.imageCaption}
+                </span>
+              </div>
+            </div>
           </div>
-          <TrustDisclosure compact />
         </div>
       </section>
 
