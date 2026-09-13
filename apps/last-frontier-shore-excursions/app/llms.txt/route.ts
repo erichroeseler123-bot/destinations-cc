@@ -1,9 +1,9 @@
 const text = `# Last Frontier Shore Excursions
 
-Canonical URL: https://lastfrontiershoreexcursions.com
+Canonical URL: https://www.lastfrontiershoreexcursions.com
 DCC ID: dcc:site:last-frontier-shore-excursions
 DCC contract: dcc-site-contract v1.1
-Agent contract: https://lastfrontiershoreexcursions.com/agent.json
+Agent contract: https://www.lastfrontiershoreexcursions.com/agent.json
 Portfolio graph: https://www.destinationcommandcenter.com/api/public/portfolio-feed
 Canonical DCC truth record: https://www.destinationcommandcenter.com/api/public/truth-feed?id=last-frontier-shore-excursions
 Last verified: 2026-08-24

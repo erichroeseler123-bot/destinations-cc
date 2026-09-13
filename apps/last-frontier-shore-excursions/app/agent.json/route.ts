@@ -1,4 +1,4 @@
-const baseUrl = "https://lastfrontiershoreexcursions.com";
+const baseUrl = "https://www.lastfrontiershoreexcursions.com";
 const portfolioFeed = "https://www.destinationcommandcenter.com/api/public/portfolio-feed";
 const truthRecord = "https://www.destinationcommandcenter.com/api/public/truth-feed?id=last-frontier-shore-excursions";
 

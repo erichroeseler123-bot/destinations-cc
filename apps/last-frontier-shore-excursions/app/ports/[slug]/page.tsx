@@ -1,87 +1,239 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PORTS, getPort } from "@/lib/ports";
-import { buildViatorSearchUrl } from "@/lib/viator";
+import { getPortActivities } from "@/lib/portActivities";
+import { getExcursionsByPort } from "@/lib/affiliate/catalog";
+import { PortSlug } from "@/lib/affiliate/types";
+import { buildAffiliateUrl } from "@/lib/affiliate/links";
+import { CruiseWindowCalculator } from "@/components/CruiseWindowCalculator";
+import { ExcursionFilters } from "@/components/ExcursionFilters";
+import { TrustDisclosure } from "@/components/TrustDisclosure";
+
+const SITE = "https://www.lastfrontiershoreexcursions.com";
 
 export function generateStaticParams() {
   return PORTS.map((port) => ({ slug: port.slug }));
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
   const { slug } = await params;
   const port = getPort(slug);
   if (!port) return {};
   return {
-    title: `${port.name} Shore Excursions | Last Frontier Shore Excursions`,
-    description: `Compare ${port.name} Alaska shore excursions by experience, fit, and weather backup. Built specifically for cruise passengers with limited time in port.`,
-    alternates: { canonical: `/ports/${port.slug}` },
+    title: `${port.name} Shore Excursions | Cruise-Safe Port Guide & Tours`,
+    description: `Compare ${port.name} Alaska shore excursions by experience, port-day fit, duration, and weather backup. 45-minute return-to-ship safety rule.`,
+    alternates: { canonical: `${SITE}/ports/${port.slug}` },
+    openGraph: {
+      title: `${port.name} Shore Excursions | Last Frontier Shore Excursions`,
+      description: `Compare ${port.name} Alaska shore excursions by experience, port-day fit, duration, and weather backup.`,
+      url: `${SITE}/ports/${port.slug}`,
+      siteName: "Last Frontier Shore Excursions",
+      type: "website",
+    },
   };
 }
 
-export default async function PortPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function PortPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
   const port = getPort(slug);
   if (!port) notFound();
 
-  const searches = port.searchTerms.map((term, index) => ({
-    label: index === 0 ? `Browse ${port.name} excursions` : term,
-    href: buildViatorSearchUrl(term, `${port.slug}-${index + 1}`),
-  }));
+  const activities = getPortActivities(slug);
+  const portExcursions = getExcursionsByPort(slug as PortSlug);
+
+  const primaryBrowseUrl = portExcursions.length > 0
+    ? buildAffiliateUrl(portExcursions[0].source, portExcursions[0].officialUrl, portExcursions[0].attributionCampaign)
+    : buildAffiliateUrl("viator", `${port.name} Alaska shore excursions`, `${port.slug}-hub`);
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` },
+          { "@type": "ListItem", position: 2, name: `${port.name} Shore Excursions`, item: `${SITE}/ports/${port.slug}` },
+        ],
+      },
+      {
+        "@type": "TouristDestination",
+        name: `${port.name}, Alaska`,
+        description: port.hook,
+        touristType: ["Cruise Travelers", "Excursion Planners"],
+      },
+      ...(portExcursions.length > 0
+        ? [
+            {
+              "@type": "ItemList",
+              name: `${port.name} Featured Excursions`,
+              itemListElement: portExcursions.map((ex, index) => ({
+                "@type": "ListItem",
+                position: index + 1,
+                item: {
+                  "@type": "Product",
+                  name: ex.title,
+                  description: ex.description,
+                  offers: {
+                    "@type": "Offer",
+                    price: ex.priceFrom,
+                    priceCurrency: ex.currency,
+                    availability: "https://schema.org/InStock",
+                    url: buildAffiliateUrl(ex.source, ex.officialUrl, ex.attributionCampaign),
+                  },
+                },
+              })),
+            },
+          ]
+        : []),
+    ],
+  };
 
   return (
     <main>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <section className="port-hero">
         <div className="shell">
-          <p className="eyebrow" style={{color:"#607078"}}>{port.region} · Cruise port guide</p>
-          <h1>{port.name} shore excursions</h1>
-          <p className="lead" style={{color:"#607078"}}>{port.hook}</p>
+          <nav className="breadcrumbs" aria-label="Breadcrumbs">
+            <Link href="/">Home</Link>
+            <span>›</span>
+            <span>{port.name}</span>
+          </nav>
+          <p className="eyebrow" style={{ color: "#607078" }}>{port.region} · Cruise Port Guide</p>
+          <h1>{port.name} Shore Excursions</h1>
+          <p className="lead" style={{ color: "#485b63" }}>{port.hook}</p>
           <div className="cta-row">
-            <a className="button" href={searches[0].href} rel="sponsored nofollow">Browse live tours</a>
-            <a className="button secondary" href="#fit">Choose by fit</a>
+            <a className="button" href={primaryBrowseUrl} target="_blank" rel="sponsored noopener noreferrer">
+              Browse live tours on partner platforms →
+            </a>
+            <a className="button secondary" href="#calculator">
+              Calculate {port.name} ship window
+            </a>
+          </div>
+          <TrustDisclosure compact />
+        </div>
+      </section>
+
+      {/* Dock & Tender Logistics Bar */}
+      <section className="section" style={{ background: "#ffffff", borderBottom: "1px solid var(--line)", padding: "28px 0" }}>
+        <div className="shell">
+          <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+            <div>
+              <strong style={{ display: "block", color: "var(--deep)", fontSize: "13px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Typical Port Call</strong>
+              <span style={{ fontSize: "16px", color: "var(--ink)", fontWeight: 600 }}>{port.typicalPortHours}</span>
+            </div>
+            <div>
+              <strong style={{ display: "block", color: "var(--deep)", fontSize: "13px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Tendering Status</strong>
+              <span style={{ fontSize: "14px", color: "var(--ink)" }}>{port.tenderStatus}</span>
+            </div>
+            <div>
+              <strong style={{ display: "block", color: "var(--deep)", fontSize: "13px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Dock Berths</strong>
+              <span style={{ fontSize: "14px", color: "var(--ink)" }}>{port.dockLocations.length} active berthing areas</span>
+            </div>
+            <div>
+              <strong style={{ display: "block", color: "var(--deep)", fontSize: "13px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Weather Reality</strong>
+              <span style={{ fontSize: "13px", color: "#156d3a", fontWeight: 600 }}>{port.weatherBackup.slice(0, 70)}...</span>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="section" id="fit">
+      {/* Port Dock Locations Breakdown */}
+      <section className="section" style={{ padding: "32px 0", background: "#f8fbfb" }}>
         <div className="shell">
-          <p className="eyebrow" style={{color:"#607078"}}>Best fits</p>
-          <h2>What kind of Alaska day do you want?</h2>
-          <div className="grid">
-            {port.bestFor.map((item, index) => (
-              <article className="card" key={item}>
-                <h3>{item}</h3>
-                <p>Use this as the anchor for the day, then compare departure time, duration, meeting point, and cancellation terms before booking.</p>
-                <a className="button" href={buildViatorSearchUrl(`${port.name} ${item}`, `${port.slug}-${index + 10}`)} rel="sponsored nofollow">Compare {item.toLowerCase()}</a>
-              </article>
+          <h2>{port.name} Cruise Dock Logistics & Shuttle Transit</h2>
+          <p style={{ color: "var(--muted)", maxWidth: 750 }}>
+            Know your dock location before selecting a tour. Terminal transfer times dictate whether an excursion complies with our 45-minute return safety margin:
+          </p>
+          <div className="grid" style={{ marginTop: 20 }}>
+            {port.dockLocations.map((dock, index) => (
+              <div className="card" key={index} style={{ background: "#ffffff", border: "1px solid var(--line)" }}>
+                <span className="badge badge-safety" style={{ alignSelf: "flex-start", marginBottom: 6 }}>
+                  Berth {index + 1}
+                </span>
+                <strong style={{ fontSize: "16px", color: "var(--forest)", display: "block" }}>{dock}</strong>
+                <p style={{ fontSize: "13px", color: "var(--muted)", marginTop: 6 }}>
+                  Allow sufficient transfer buffer when meeting independent guides outside port security gates.
+                </p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="section">
+      {/* Cruise Window Calculator */}
+      <section className="section" id="calculator" style={{ background: "#ffffff" }}>
         <div className="shell">
-          <div className="rule">
-            <p className="eyebrow" style={{color:"#8b4c25"}}>Weather backup</p>
-            <h2 style={{marginTop:8}}>Have a second plan before Alaska chooses for you.</h2>
-            <p className="lead" style={{color:"#607078"}}>{port.weatherBackup}</p>
+          <CruiseWindowCalculator portSlug={slug as PortSlug} defaultDurationMinutes={portExcursions[0]?.durationMinutes || 210} />
+        </div>
+      </section>
+
+      {/* Interactive Excursions Filter & Comparison */}
+      <section className="section" id="clusters" style={{ background: "#f8fbfb" }}>
+        <div className="shell">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", marginBottom: 20 }}>
+            <div>
+              <p className="eyebrow" style={{ color: "var(--muted)" }}>Compare Port Excursions</p>
+              <h2>{port.name} Shore Excursion Directory</h2>
+            </div>
+            <span style={{ fontSize: "14px", color: "var(--forest)", fontWeight: 700 }}>
+              {portExcursions.length} Curated Options
+            </span>
+          </div>
+
+          <ExcursionFilters excursions={portExcursions} initialPort={slug as PortSlug} showPortFilter={false} />
+          <TrustDisclosure />
+        </div>
+      </section>
+
+      {/* Activity Clusters Cards */}
+      <section className="section" style={{ background: "#ffffff" }}>
+        <div className="shell">
+          <h2>{port.name} Excursion Categories</h2>
+          <p className="lead" style={{ color: "var(--muted)" }}>
+            In-depth timing breakdowns, return buffers, and curated independent providers for every major {port.name} experience:
+          </p>
+
+          <div className="grid" style={{ marginTop: 24 }}>
+            {activities.map((act) => (
+              <Link className="card" href={`/${act.portSlug}/${act.slug}`} key={act.slug}>
+                <span className="badge badge-safety" style={{ alignSelf: "flex-start", marginBottom: 8 }}>
+                  {act.typicalDuration}
+                </span>
+                <h3>{act.h1}</h3>
+                <p>{act.metaDescription}</p>
+                <div className="chips">
+                  <span className="chip">{act.returnMargin}</span>
+                  <span className="chip" style={{ color: act.weatherSensitivity === 'High' ? '#9e2323' : '#156d3a' }}>
+                    {act.weatherSensitivity} Sensitivity
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="section">
+      {/* Weather Backup Section */}
+      <section className="section" style={{ background: "#f8fbfb" }}>
         <div className="shell">
-          <p className="eyebrow" style={{color:"#607078"}}>Before booking</p>
-          <h2>Four things matter more on a cruise day.</h2>
-          <div className="grid">
-            {[
-              ["Your actual port window", "Do not use the ship's full published port time as excursion time. You still need disembarkation and return margin."],
-              ["Meeting point", "Know whether the tour meets at the pier, requires a shuttle, or begins elsewhere in town."],
-              ["Duration", "A shorter excellent excursion is usually better than a perfect-looking tour that leaves no recovery margin."],
-              ["Cancellation terms", "Alaska weather changes plans. Read the operator's cancellation and weather policy before paying."],
-            ].map(([title, copy]) => <article className="card" key={title}><h3>{title}</h3><p>{copy}</p></article>)}
-          </div>
-          <div className="cta-row">
-            {searches.map((search) => <a className="button" href={search.href} rel="sponsored nofollow" key={search.href}>{search.label}</a>)}
+          <div className="callout">
+            <h2 style={{ fontSize: "20px", marginTop: 0 }}>Weather & Port Reality in {port.name}</h2>
+            <p style={{ fontSize: "15px", lineHeight: 1.6, marginTop: 8 }}>
+              {port.weatherBackup}
+            </p>
           </div>
         </div>
       </section>

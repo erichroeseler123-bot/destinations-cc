@@ -3,20 +3,20 @@ import Link from "next/link";
 import { PORTS } from "@/lib/ports";
 import "./globals.css";
 
-const SITE = "https://lastfrontiershoreexcursions.com";
+const SITE = "https://www.lastfrontiershoreexcursions.com";
 const DESCRIPTION =
-  "Compare Alaska cruise shore excursions in Juneau, Skagway, Ketchikan, Sitka, and Icy Strait Point by experience, port-day fit, duration, and weather backup.";
+  "Compare cruise-safe Alaska shore excursions in Juneau, Skagway, Ketchikan, Sitka, and Icy Strait Point by port, ship-day timing, duration, and return-to-ship margins.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: "Last Frontier Shore Excursions | Alaska Cruise Port Tours",
+    default: "Last Frontier Shore Excursions | Cruise-Safe Alaska Shore Excursions",
     template: "%s | Last Frontier Shore Excursions",
   },
   description: DESCRIPTION,
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Last Frontier Shore Excursions | Alaska Cruise Port Tours",
+    title: "Last Frontier Shore Excursions | Cruise-Safe Alaska Shore Excursions",
     description: DESCRIPTION,
     url: SITE,
     siteName: "Last Frontier Shore Excursions",
@@ -34,7 +34,7 @@ function JsonLd() {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "WebSite",
+        "@type": "Organization",
         "@id": `${SITE}/#organization`,
         name: "Last Frontier Shore Excursions",
         url: SITE,
@@ -43,13 +43,12 @@ function JsonLd() {
         knowsAbout: [
           "Alaska shore excursions",
           "Alaska cruise ports",
-          "Juneau shore excursions",
-          "Skagway shore excursions",
-          "Ketchikan shore excursions",
-          "Sitka shore excursions",
-          "Icy Strait Point shore excursions",
+          "Juneau whale watching",
+          "Mendenhall Glacier tours",
+          "White Pass Railway",
+          "Misty Fjords floatplanes",
           "cruise port timing",
-          "weather backup planning",
+          "return to ship safety",
         ],
       },
       {
@@ -82,7 +81,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <JsonLd />
-        <div className="shell site-header">
+        <header className="site-header shell">
           <Link className="brand" href="/">Last Frontier Shore Excursions</Link>
           <nav className="nav" aria-label="Primary navigation">
             <Link href="/ports/juneau">Juneau</Link>
@@ -90,15 +89,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/ports/ketchikan">Ketchikan</Link>
             <Link href="/ports/sitka">Sitka</Link>
             <Link href="/ports/icy-strait-point">Icy Strait Point</Link>
+            <Link href="/tours">All Tours</Link>
+            <Link href="/decision/best-excursion-for-each-port">Decision Guides</Link>
             <Link href="/about">About</Link>
           </nav>
-        </div>
+        </header>
         {children}
         <footer className="footer">
           <div className="shell">
-            <strong>Last Frontier Shore Excursions</strong>
-            <p>Independent Alaska cruise-excursion planning and comparison. Tour availability, schedules, meeting points, and cancellation terms are controlled by the tour provider. Affiliate links may earn us a commission.</p>
-            <p><Link href="/about">About, booking boundaries & affiliate transparency</Link></p>
+            <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
+              <div>
+                <strong>Last Frontier Shore Excursions</strong>
+                <p style={{ maxWidth: 500, margin: "8px 0" }}>
+                  Cruise-safe Alaska shore excursions, sorted by port and timing. Tour availability, live pricing, meeting points, and cancellation terms are controlled directly by the tour provider.
+                </p>
+              </div>
+              <div>
+                <strong>Quick Links</strong>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8 }}>
+                  <Link href="/tours">Complete Tours Catalog</Link>
+                  <Link href="/decision/best-excursion-for-each-port">Best Excursions by Port</Link>
+                  <Link href="/decision/excursions-safe-for-cruise-ship-window">The 45-Minute Safety Rule</Link>
+                  <Link href="/about">About, Affiliate & Booking Boundaries</Link>
+                </div>
+              </div>
+            </div>
+            <p style={{ marginTop: 24, fontSize: "13px" }}>
+              © {new Date().getFullYear()} Last Frontier Shore Excursions. Independent Alaska cruise planning.
+            </p>
           </div>
         </footer>
       </body>
