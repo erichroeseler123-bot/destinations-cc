@@ -24,7 +24,7 @@ describe("WNO search and AI discovery", () => {
 
   test("WNO sitemap exposes canonical commerce and machine-discovery surfaces only", () => {
     const paths = buildWtonotSitemapPaths();
-    assert.ok(paths.includes("/guides/tour-catalog"));
+    assert.ok(!paths.includes("/guides/tour-catalog"));
     assert.ok(!paths.includes("/guides/tour-catalog.json"));
     assert.ok(!paths.includes("/guides/tour-catalog/data.json"));
     assert.ok(paths.includes("/guides/best-new-orleans-swamp-tour"));

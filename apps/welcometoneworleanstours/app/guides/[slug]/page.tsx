@@ -14,8 +14,8 @@ import KidsAirboats from "@/app/new-orleans/guides/can-kids-ride-airboats-new-or
 import Orientation from "@/app/new-orleans/guides/french-quarter-orientation/page";
 import VisitorRewards from "@/app/new-orleans/guides/visitor-rewards/page";
 import WhitneyVsOakAlley from "@/app/new-orleans/guides/whitney-plantation-vs-oak-alley-history-focus/page";
-import ThisWeekend from "@/app/new-orleans/guides/this-weekend/page";
-import Tonight from "@/app/new-orleans/guides/tonight/page";
+import ThisWeekend, { metadata as thisWeekendMetadata } from "@/app/new-orleans/guides/this-weekend/page";
+import Tonight, { metadata as tonightMetadata } from "@/app/new-orleans/guides/tonight/page";
 import KidsUnderSix from "@/app/new-orleans/guides/best-new-orleans-tours-with-kids-under-6/page";
 import ArriveAtNoon from "@/app/new-orleans/guides/best-new-orleans-tours-if-you-arrive-at-noon/page";
 import PlanNewOrleans, { metadata as planNewOrleansMetadata } from "@/app/new-orleans/high-intent-tours/page";
@@ -41,6 +41,8 @@ const bridgedMetadata: Record<string, Metadata> = {
   "best-swamp-tour-with-transportation": swampTransportMetadata,
   "new-orleans-tours-near-french-quarter": nearQuarterMetadata,
   "plan-new-orleans-tours": planNewOrleansMetadata,
+  "this-weekend": thisWeekendMetadata,
+  "tonight": tonightMetadata,
   "things-to-do-before-a-cruise-new-orleans": {
     ...beforeCruiseMetadata,
     alternates: { canonical: "/guides/things-to-do-before-a-cruise-new-orleans" },

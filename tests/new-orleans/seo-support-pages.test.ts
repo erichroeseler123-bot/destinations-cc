@@ -55,7 +55,6 @@ const LIVE_CITY_PATHS = [
   "/guides/tonight",
   "/guides/this-weekend",
   "/guides/where-to-eat",
-  "/guides/restaurant-partners",
 ] as const;
 
 function buildRequest(pathname: string) {
