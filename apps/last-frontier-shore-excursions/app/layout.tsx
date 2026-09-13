@@ -23,10 +23,10 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/images/alaska/inside-passage-hero.jpg",
-        width: 1920,
-        height: 1200,
-        alt: "Glaciated peaks and fjords of the Alaska Inside Passage",
+        url: "/images/alaska/inside-passage-hero-generated.png",
+        width: 1024,
+        height: 426,
+        alt: "Panoramic vista of a grand tidewater glacier flowing into the Alaska Inside Passage surrounded by snow-dusted mountains",
       },
     ],
   },
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Last Frontier Shore Excursions",
     description: DESCRIPTION,
-    images: ["/images/alaska/inside-passage-hero.jpg"],
+    images: ["/images/alaska/inside-passage-hero-generated.png"],
   },
 };
 

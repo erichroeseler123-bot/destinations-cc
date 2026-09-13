@@ -55,8 +55,8 @@ export default function HomePage() {
                 <img
                   src={HERO_IMAGE.url}
                   alt={HERO_IMAGE.alt}
-                  width={1920}
-                  height={1200}
+                  width={1024}
+                  height={426}
                   loading="eager"
                   style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                 />

@@ -5,9 +5,9 @@ export interface ImageAsset {
 }
 
 export const HERO_IMAGE: ImageAsset = {
-  url: "/images/alaska/inside-passage-hero.jpg",
-  alt: "Glaciated peaks and deep fjords of the Alaska Inside Passage at Holkham Bay",
-  caption: "Holkham Bay, Alaska Inside Passage",
+  url: "/images/alaska/inside-passage-hero-generated.png",
+  alt: "Panoramic vista of a grand tidewater glacier flowing into the tranquil waters of the Alaska Inside Passage framed by snow-capped peaks and coastal evergreen forests",
+  caption: "Inside Passage & Tidewater Glacier",
 };
 
 export const PORT_IMAGES: Record<string, ImageAsset> = {
@@ -130,7 +130,7 @@ export const ACTIVITY_IMAGES: Record<string, ImageAsset> = {
     caption: "Sitka Sound Marine and Historic District",
   },
   "excursions-by-cruise-ship-time": {
-    url: "/images/alaska/inside-passage-hero.jpg",
+    url: "/images/alaska/inside-passage-hero-generated.png",
     alt: "Southeast Alaska Inside Passage waters and mountains",
     caption: "Cruise Ship Timing Excursion Routes",
   },

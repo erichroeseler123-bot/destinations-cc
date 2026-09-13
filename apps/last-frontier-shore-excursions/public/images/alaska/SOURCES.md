@@ -8,6 +8,7 @@ All imagery adheres strictly to public domain declarations or documented Creativ
 
 | File | Target Use | Description | License | Attribution / Author | Source |
 | :--- | :--- | :--- | :--- | :--- | :--- |
+| `inside-passage-hero-generated.png` | Homepage Hero & Default OpenGraph preview | Panoramic vista of a grand tidewater glacier flowing into the tranquil waters of the Alaska Inside Passage framed by snow-capped peaks and coastal evergreen forests | Proprietary / Custom Generated | Destinations CC / Last Frontier Shore Excursions | Custom Created Asset |
 | `inside-passage-hero.jpg` | Holkham Bay fjord and glaciated peaks in the Alaska Inside Passage | Fjords and snowcapped mountains of the Alaska Inside Passage at Holkham Bay | CC BY-SA 4.0 | DJ Cane | [Commons Page](https://commons.wikimedia.org/wiki/File:Holkham_Bay.jpg) |
 | `juneau-mendenhall.jpg` | Mendenhall Glacier and Mendenhall Lake near Juneau, Alaska | Mendenhall Glacier terminus and mountain lake near Juneau, Alaska | CC BY-SA 4.0 | Gillfoto (Juneau, Alaska) | [Commons Page](https://commons.wikimedia.org/wiki/File:Mendenhall_Glacier_15.jpg) |
 | `skagway-white-pass.jpg` | White Pass and Yukon Route vintage railroad navigating Alaska mountain pass | White Pass and Yukon Route railway train carving through rugged mountain terrain in Skagway, Alaska | CC BY-SA 4.0 | Diego Delso | [Commons Page](https://commons.wikimedia.org/wiki/File:Ferrocarril_White_Pass,_Portage,_Alaska,_Estados_Unidos,_2017-08-31,_DD_39.jpg) |
