@@ -11,7 +11,7 @@ const allCategories: Omit<Category, "id">[] = [
   { title: "Food, Cooking & Culinary Experiences", slug: "food-tours", parentCategoryId: null, priority: 7, status: "live", imageAttributionId: null },
   { title: "Riverboats, Cruises & Waterfront", slug: "riverboat-cruises", parentCategoryId: null, priority: 8, status: "live", imageAttributionId: null },
   { title: "Music, Culture & Mardi Gras", slug: "music-tours", parentCategoryId: null, priority: 9, status: "draft", imageAttributionId: null },
-  { title: "Walking Tours", slug: "walking-tours", parentCategoryId: null, priority: 10, status: "draft", imageAttributionId: null },
+  { title: "Walking Tours", slug: "walking-tours", parentCategoryId: null, priority: 10, status: "live", imageAttributionId: null },
   { title: "Private & Custom Tours", slug: "private-tours", parentCategoryId: null, priority: 11, status: "draft", imageAttributionId: null },
   { title: "Combinations & Full-Day Plans", slug: "combo-tours", parentCategoryId: null, priority: 12, status: "draft", imageAttributionId: null },
   { title: "Family-Friendly New Orleans", slug: "family-tours", parentCategoryId: null, priority: 13, status: "draft", imageAttributionId: null },

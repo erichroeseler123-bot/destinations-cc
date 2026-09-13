@@ -155,7 +155,7 @@ export const INTENT_SEO_PAGES: IntentSeoPage[] = [
       relatedLinks: [
         { href: "/plantation-tours", label: "Plantation tours" },
         { href: "/compare/whitney-vs-oak-alley", label: "Whitney vs Oak Alley" },
-        { href: "/plantation-tours/oak-alley-vs-laura", label: "Oak Alley vs Laura" }
+        { href: "/guides/oak-alley-plantation-tour-from-new-orleans", label: "Oak Alley from New Orleans" }
       ]
     }
   },

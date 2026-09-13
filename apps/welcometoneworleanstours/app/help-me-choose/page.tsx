@@ -1,4 +1,12 @@
-import HelpMeChoosePage from "@/app/new-orleans/help-me-choose/page";
+import type { Metadata } from "next";
+import HelpMeChoosePage, { metadata as baseMetadata } from "@/app/new-orleans/help-me-choose/page";
+
+export const metadata: Metadata = {
+  ...baseMetadata,
+  alternates: {
+    canonical: "https://www.welcometoneworleanstours.com/help-me-choose",
+  },
+};
 
 export default function WnoHelpMeChoosePage() {
   return (

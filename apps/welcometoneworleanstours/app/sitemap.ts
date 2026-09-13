@@ -1,39 +1,14 @@
 import type { MetadataRoute } from "next";
-import { GET as getSitemapResponse } from "../../../app/sitemap.xml/route";
+import { buildWtonotSitemapPaths } from "../../../app/sitemap.xml/route";
 
-// Canonical and legacy origin mapping for WNO sitemap
 const CANONICAL_ORIGIN = "https://www.welcometoneworleanstours.com";
-const LEGACY_ORIGIN = "https://welcometoneworleanstours.com";
 
-function decodeXml(value: string) {
-  return value
-    .replaceAll("&apos;", "'")
-    .replaceAll("&quot;", '"')
-    .replaceAll("&gt;", ">")
-    .replaceAll("&lt;", "<")
-    .replaceAll("&amp;", "&");
-}
-
-function canonicalizeWnoUrl(value: string) {
-  return value.startsWith(LEGACY_ORIGIN)
-    ? `${CANONICAL_ORIGIN}${value.slice(LEGACY_ORIGIN.length)}`
-    : value;
-}
-
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const xml = await (await getSitemapResponse()).text();
-  const entries: MetadataRoute.Sitemap = [];
-
-  for (const match of xml.matchAll(/<url>([\s\S]*?)<\/url>/g)) {
-    const body = match[1];
-    const loc = body.match(/<loc>([\s\S]*?)<\/loc>/)?.[1];
-    if (!loc) continue;
-    const lastModified = body.match(/<lastmod>([\s\S]*?)<\/lastmod>/)?.[1];
-    entries.push({
-      url: canonicalizeWnoUrl(decodeXml(loc)),
-      ...(lastModified ? { lastModified: decodeXml(lastModified) } : {}),
-    });
-  }
-
-  return entries;
+export default function sitemap(): MetadataRoute.Sitemap {
+  const paths = buildWtonotSitemapPaths();
+  return paths.map((path) => ({
+    url: `${CANONICAL_ORIGIN}${path === "/" ? "" : path}`,
+    lastModified: new Date("2026-09-13T00:00:00.000Z"),
+    changeFrequency: "weekly" as const,
+    priority: path === "/" ? 1.0 : path.startsWith("/tours/") ? 0.8 : 0.7,
+  }));
 }

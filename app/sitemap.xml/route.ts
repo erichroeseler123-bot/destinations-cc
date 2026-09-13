@@ -74,19 +74,11 @@ export const WTONOT_SUPERSEDED_SEO_PATHS = new Set([
 // These routes are intentionally not indexable or are known aliases/dead paths.
 // Keep them out of the sitemap even if an older registry still surfaces them.
 const WTONOT_NON_INDEXABLE_PATHS = new Set([
-  "/guides/4-hours-in-new-orleans",
-  "/guides/best-new-orleans-tours-if-you-arrive-at-noon",
-  "/guides/best-new-orleans-tours-with-kids-under-6",
-  "/guides/can-kids-ride-airboats-new-orleans",
   "/guides/french-quarter-orientation",
-  "/guides/new-orleans-swamp-tour-without-a-car",
-  "/guides/new-orleans-tours-for-grandparents-and-kids",
   "/guides/new-orleans-tours-tonight",
-  "/guides/new-orleans-tours-under-50-dollars",
   "/guides/restaurant-partners",
   "/guides/tour-catalog",
   "/guides/visitor-rewards",
-  "/guides/whitney-plantation-vs-oak-alley-history-focus",
 ]);
 
 function xmlEscape(value: string): string { return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;"); }
@@ -104,7 +96,7 @@ export function buildDccSitemapXml(paths: readonly string[] = INDEXABLE_SURFACE_
 export function buildWtonotSitemapPaths() {
   const intentPaths = INTENT_SEO_PAGES.map((page) => `/guides/${page.slug}`);
   const audienceIntentPaths = AUDIENCE_INTENT_SEO_PAGES.map((page) => `/guides/${page.slug}`);
-  const wtoPaths = ["/", "/tours", "/compare", "/french-quarter-welcome-stop", ...WTONOT_HIGH_INTENT_PATHS, ...WTONOT_LIVE_CITY_PATHS, ...WTONOT_COMMERCIAL_CATEGORY_PATHS, ...WTONOT_OPERATOR_PATHS, ...intentPaths, ...audienceIntentPaths, ...WTONOT_DECISION_GUIDES, ...WTONOT_SUPPORT_PATHS];
+  const wtoPaths = ["/", "/tours", "/compare", "/help-me-choose", "/french-quarter-welcome-stop", ...WTONOT_HIGH_INTENT_PATHS, ...WTONOT_LIVE_CITY_PATHS, ...WTONOT_COMMERCIAL_CATEGORY_PATHS, ...WTONOT_OPERATOR_PATHS, ...intentPaths, ...audienceIntentPaths, ...WTONOT_DECISION_GUIDES, ...WTONOT_SUPPORT_PATHS];
   ALL_PRODUCTS.forEach((product: any) => { if (product.status === "live" && product.isIndexable) wtoPaths.push(`/tours/${product.slug}`); });
   Object.values(SEO_PAGES).forEach((page: any) => { if (page.status === "live" && page.isIndexable && !WTONOT_SUPERSEDED_SEO_PATHS.has(page.publicRoute)) wtoPaths.push(page.publicRoute); });
   COMPARISON_OPPORTUNITIES.forEach((comparison) => { if (comparison.status === "READY_TO_PUBLISH") wtoPaths.push(`/compare/${comparison.slug}`); });

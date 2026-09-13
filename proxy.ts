@@ -622,6 +622,28 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     return somersetResponse;
   }
 
+  if (WTONOT_HOSTS.has(host.toLowerCase())) {
+    const pathname = request.nextUrl.pathname;
+    if (pathname === "/new-orleans/tonight" || pathname === "/guides/new-orleans-tours-tonight") {
+      return NextResponse.redirect(new URL("/guides/tonight", request.url), 308);
+    }
+    if (pathname === "/new-orleans/this-weekend") {
+      return NextResponse.redirect(new URL("/guides/this-weekend", request.url), 308);
+    }
+    if (pathname === "/plantation-tours/oak-alley-vs-laura") {
+      return NextResponse.redirect(new URL("/guides/oak-alley-plantation-tour-from-new-orleans", request.url), 308);
+    }
+    if (pathname === "/new-orleans/restaurant-partners" || pathname === "/guides/restaurant-partners") {
+      return NextResponse.redirect(new URL("/contact", request.url), 308);
+    }
+    if (pathname === "/guides/french-quarter-orientation") {
+      return NextResponse.redirect(new URL("/help-me-choose", request.url), 308);
+    }
+    if (pathname === "/guides/tour-catalog") {
+      return NextResponse.redirect(new URL("/tours", request.url), 308);
+    }
+  }
+
   const wtonotRewrite = getWtonotHostRewrite(request);
   if (wtonotRewrite) {
     const isNotFound = wtonotRewrite.pathname === "/not-found";

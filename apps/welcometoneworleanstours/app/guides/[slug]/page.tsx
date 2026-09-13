@@ -2,22 +2,23 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { permanentRedirect } from "next/navigation";
 import CanonicalGuidePage, { generateMetadata as generateCanonicalMetadata } from "@/app/new-orleans/guides/[slug]/page";
-import FourHours from "@/app/new-orleans/guides/4-hours-in-new-orleans/page";
+import FourHours, { metadata as fourHoursMetadata } from "@/app/new-orleans/guides/4-hours-in-new-orleans/page";
 import BestSwamp, { metadata as bestSwampMetadata } from "@/app/new-orleans/guides/best-new-orleans-swamp-tour/page";
 import RainyDay, { metadata as rainyDayMetadata } from "@/app/new-orleans/guides/best-new-orleans-tours-for-a-rainy-day/page";
 import FirstTime, { metadata as firstTimeMetadata } from "@/app/new-orleans/guides/first-time-new-orleans-tours/page";
 import SwampTransport, { metadata as swampTransportMetadata } from "@/app/new-orleans/guides/best-swamp-tour-with-transportation/page";
 import NearQuarter, { metadata as nearQuarterMetadata } from "@/app/new-orleans/guides/new-orleans-tours-near-french-quarter/page";
-import UnderFifty from "@/app/new-orleans/guides/new-orleans-tours-under-50-dollars/page";
-import NoCar from "@/app/new-orleans/guides/new-orleans-swamp-tour-without-a-car/page";
-import KidsAirboats from "@/app/new-orleans/guides/can-kids-ride-airboats-new-orleans/page";
+import UnderFifty, { metadata as underFiftyMetadata } from "@/app/new-orleans/guides/new-orleans-tours-under-50-dollars/page";
+import NoCar, { metadata as noCarMetadata } from "@/app/new-orleans/guides/new-orleans-swamp-tour-without-a-car/page";
+import KidsAirboats, { metadata as kidsAirboatsMetadata } from "@/app/new-orleans/guides/can-kids-ride-airboats-new-orleans/page";
 import Orientation from "@/app/new-orleans/guides/french-quarter-orientation/page";
 import VisitorRewards from "@/app/new-orleans/guides/visitor-rewards/page";
-import WhitneyVsOakAlley from "@/app/new-orleans/guides/whitney-plantation-vs-oak-alley-history-focus/page";
+import WhitneyVsOakAlley, { metadata as whitneyVsOakAlleyMetadata } from "@/app/new-orleans/guides/whitney-plantation-vs-oak-alley-history-focus/page";
 import ThisWeekend, { metadata as thisWeekendMetadata } from "@/app/new-orleans/guides/this-weekend/page";
 import Tonight, { metadata as tonightMetadata } from "@/app/new-orleans/guides/tonight/page";
-import KidsUnderSix from "@/app/new-orleans/guides/best-new-orleans-tours-with-kids-under-6/page";
-import ArriveAtNoon from "@/app/new-orleans/guides/best-new-orleans-tours-if-you-arrive-at-noon/page";
+import KidsUnderSix, { metadata as kidsUnderSixMetadata } from "@/app/new-orleans/guides/best-new-orleans-tours-with-kids-under-6/page";
+import ArriveAtNoon, { metadata as arriveAtNoonMetadata } from "@/app/new-orleans/guides/best-new-orleans-tours-if-you-arrive-at-noon/page";
+import GrandparentsKidsGuide, { metadata as grandparentsKidsMetadata } from "@/app/new-orleans/guides/new-orleans-tours-for-grandparents-and-kids/page";
 import PlanNewOrleans, { metadata as planNewOrleansMetadata } from "@/app/new-orleans/high-intent-tours/page";
 import BeforeCruise, { metadata as beforeCruiseMetadata } from "@/app/new-orleans/things-to-do-before-a-cruise-new-orleans/page";
 import AfterCruise, { metadata as afterCruiseMetadata } from "@/app/new-orleans/things-to-do-after-a-cruise-new-orleans/page";
@@ -32,6 +33,10 @@ const guideAliases = {
 
 const directAliases = {
   "tour-planning": "/help-me-choose",
+  "french-quarter-orientation": "/help-me-choose",
+  "new-orleans-tours-tonight": "/guides/tonight",
+  "tour-catalog": "/tours",
+  "restaurant-partners": "/contact",
 } as const;
 
 const bridgedMetadata: Record<string, Metadata> = {
@@ -43,6 +48,17 @@ const bridgedMetadata: Record<string, Metadata> = {
   "plan-new-orleans-tours": planNewOrleansMetadata,
   "this-weekend": thisWeekendMetadata,
   "tonight": tonightMetadata,
+  "4-hours-in-new-orleans": {
+    ...fourHoursMetadata,
+    alternates: { canonical: "/guides/4-hours-in-new-orleans" },
+  },
+  "best-new-orleans-tours-if-you-arrive-at-noon": arriveAtNoonMetadata,
+  "best-new-orleans-tours-with-kids-under-6": kidsUnderSixMetadata,
+  "can-kids-ride-airboats-new-orleans": kidsAirboatsMetadata,
+  "new-orleans-swamp-tour-without-a-car": noCarMetadata,
+  "new-orleans-tours-for-grandparents-and-kids": grandparentsKidsMetadata,
+  "new-orleans-tours-under-50-dollars": underFiftyMetadata,
+  "whitney-plantation-vs-oak-alley-history-focus": whitneyVsOakAlleyMetadata,
   "things-to-do-before-a-cruise-new-orleans": {
     ...beforeCruiseMetadata,
     alternates: { canonical: "/guides/things-to-do-before-a-cruise-new-orleans" },
@@ -99,6 +115,7 @@ const pages = {
   "tonight": Tonight,
   "best-new-orleans-tours-with-kids-under-6": KidsUnderSix,
   "best-new-orleans-tours-if-you-arrive-at-noon": ArriveAtNoon,
+  "new-orleans-tours-for-grandparents-and-kids": GrandparentsKidsGuide,
   "plan-new-orleans-tours": PlanNewOrleans,
   "things-to-do-before-a-cruise-new-orleans": BeforeCruise,
   "things-to-do-after-a-cruise-new-orleans": AfterCruise,

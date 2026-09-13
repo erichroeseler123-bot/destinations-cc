@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "../../../app/globals.css";
 import "./wno-recovery.css";
 import "./wno-v2.css";
@@ -27,6 +28,17 @@ export const metadata: Metadata = {
   },
 };
 
+const isProduction = process.env.VERCEL_ENV === "production";
+const gaId = isProduction
+  ? process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+  : undefined;
+
+if (isProduction && !gaId) {
+  throw new Error(
+    "Analytics Deployment Failure: Missing NEXT_PUBLIC_GA_MEASUREMENT_ID"
+  );
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -37,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <CanonicalNewOrleansLayout>{children}</CanonicalNewOrleansLayout>
+        {gaId ? <GoogleAnalytics gaId={gaId} /> : null}
       </body>
     </html>
   );
