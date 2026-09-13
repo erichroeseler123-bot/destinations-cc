@@ -31,6 +31,10 @@ export function ExcursionCard({ excursion, showCalculatedFit }: ExcursionCardPro
       category: excursion.activitySlug,
       provider: excursion.provider,
       productId: excursion.productId || undefined,
+      tourTitle: excursion.title,
+      destinationUrl: affiliateUrl,
+      placement: "card",
+      isExactProduct: excursion.isExactProduct,
       campaign: excursion.attributionCampaign,
       status: excursion.availabilityStatus,
     });

@@ -90,6 +90,10 @@ export function ExcursionComparisonTable({ excursions }: ExcursionComparisonTabl
                           category: ex.activitySlug,
                           provider: ex.provider,
                           productId: ex.productId || undefined,
+                          tourTitle: ex.title,
+                          destinationUrl: url,
+                          placement: "comparison_table",
+                          isExactProduct: ex.isExactProduct,
                           campaign: ex.attributionCampaign,
                           status: ex.availabilityStatus,
                         });

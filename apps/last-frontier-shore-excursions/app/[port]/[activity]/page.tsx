@@ -386,7 +386,7 @@ export default async function ActivityPage({
         <div className="shell">
           <h3>Last Frontier Editorial Methodology & Provenance</h3>
           <p style={{ fontSize: "14px", color: "#485b63", lineHeight: 1.6, maxWidth: 800 }}>
-            {editorial.methodology} Our analysis is derived from official municipal port authority berthing calendars, National Park and Forest Service permits, and direct partner data feeds from Viator and GetYourGuide.
+            {editorial.methodology} Our analysis is derived from official municipal port authority berthing calendars, National Park and Forest Service permits, and approved partner listing research across Viator and GetYourGuide.
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 12 }}>
             {editorial.sourcesAndTimestamps.map((src, i) => (

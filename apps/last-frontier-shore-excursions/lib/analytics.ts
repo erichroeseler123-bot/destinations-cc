@@ -15,10 +15,21 @@ export interface AnalyticsEventPayload {
   category?: string;
   provider?: string;
   productId?: string;
+  tourTitle?: string;
+  destinationUrl?: string;
+  placement?: "card" | "comparison_table" | "hero_cta" | "guide_link";
+  isExactProduct?: boolean;
   campaign?: string;
   status?: string;
   metadata?: Record<string, any>;
   timestamp?: string;
+}
+
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+    dataLayer?: any[];
+  }
 }
 
 export function trackAffiliateEvent(payload: AnalyticsEventPayload) {
@@ -35,7 +46,27 @@ export function trackAffiliateEvent(payload: AnalyticsEventPayload) {
     console.log(`[LFSE Analytics: ${payload.event}]`, eventData);
   }
 
-  // 2. Dispatch to local telemetry endpoint (non-blocking, zero-PII)
+  // 2. Forward to Google Analytics gtag if initialized
+  try {
+    if (typeof window.gtag === "function") {
+      window.gtag("event", payload.event, {
+        event_category: "affiliate_outbound",
+        event_label: payload.tourTitle || payload.destinationUrl || payload.campaign,
+        provider: payload.provider,
+        port: payload.port,
+        category: payload.category,
+        product_id: payload.productId || "unverified_search",
+        placement: payload.placement || "card",
+        is_exact_product: payload.isExactProduct || false,
+        destination_url: payload.destinationUrl,
+        campaign: payload.campaign,
+      });
+    }
+  } catch {
+    // Non-blocking
+  }
+
+  // 3. Dispatch to local telemetry endpoint (non-blocking, zero-PII)
   try {
     if (navigator.sendBeacon) {
       navigator.sendBeacon(
