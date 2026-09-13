@@ -1,11 +1,37 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import WnoBreadcrumbs from "../../components/WnoBreadcrumbs";
 
 export const metadata: Metadata = {
   title: "Best New Orleans Tours If You Only Have About 3 Hours",
   description:
     "Compare New Orleans tours that fit a short time window, including city sightseeing, ghost tours and cocktail walking tours with current published durations and check-in requirements.",
   alternates: { canonical: "/compare/best-new-orleans-tour-if-you-only-have-3-hours" },
+};
+
+const threeHourFaqs = [
+  {
+    question: "Can you do a swamp tour in 3 hours in New Orleans?",
+    answer: "No. Swamp tours in New Orleans require approximately 3.75 to 4 hours round-trip when transportation is included, because the bayous are located 35 to 45 minutes outside the city. If you only have 3 hours, choose a 2-hour walking tour, city minibus tour, or riverboat cruise instead.",
+  },
+  {
+    question: "What are the best New Orleans tours that take 2 to 3 hours?",
+    answer: "The best options within a 2 to 3 hour window are the 2-hour French Quarter Ghosts & Spirits walking tour, the 2-hour Craft Cocktail walking tour, the 75-minute Riverboat CITY of NEW ORLEANS cruise, or the 3-hour City & Cemetery tour (if you have schedule buffer).",
+  },
+  {
+    question: "How much buffer time should I leave before a cruise or flight in New Orleans?",
+    answer: "Always leave at least 1 to 2 hours of buffer between a tour return time and any flight or cruise boarding deadline to account for 15-minute advance check-ins, traffic, and travel to the airport or terminal.",
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: threeHourFaqs.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: { "@type": "Answer", text: item.answer },
+  })),
 };
 
 const options = [
@@ -46,7 +72,15 @@ const options = [
 export default function ThreeHourTourGuidePage() {
   return (
     <article className="min-h-screen bg-[#151515] text-[#fdfbf7]">
-      <header className="border-b border-[#2a2a2a] bg-[#101010] px-6 py-14 md:py-20">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <WnoBreadcrumbs
+        items={[
+          { name: "Home", path: "/" },
+          { name: "Compare", path: "/compare" },
+          { name: "Best Tours Under 3 Hours", path: "/compare/best-new-orleans-tour-if-you-only-have-3-hours" },
+        ]}
+      />
+      <header className="border-b border-[#2a2a2a] bg-[#101010] px-6 py-10 md:py-16">
         <div className="mx-auto max-w-5xl">
           <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#d4af37]">Short-time decision guide</p>
           <h1 className="mt-4 max-w-4xl font-[var(--font-accent)] text-4xl font-bold leading-tight md:text-6xl">Best New Orleans tours if you only have about 3 hours</h1>

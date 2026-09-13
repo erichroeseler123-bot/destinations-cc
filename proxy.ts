@@ -119,6 +119,9 @@ export function handleSomersetHost(request: NextRequest) {
     "/somerset-concert-transportation": "/somerset-wi/somerset-concert-transportation",
     "/somerset-amphitheater-parking-and-transportation": "/somerset-wi/somerset-amphitheater-parking-and-transportation",
     "/sitemap.xml": "/somerset-wi/sitemap.xml",
+    "/agent.json": "/somerset-wi/agent.json",
+    "/.well-known/agent.json": "/somerset-wi/agent.json",
+    "/llms.txt": "/somerset-wi/llms.txt",
   };
 
   const dest = SOMERSET_CANONICAL_REWRITES[pathname];

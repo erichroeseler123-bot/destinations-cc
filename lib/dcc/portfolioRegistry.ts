@@ -37,6 +37,8 @@ export const DCC_PORTFOLIO_RELATIONSHIPS = [
   { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:french-quarter-orientation" },
   { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:shuttleya" },
   { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:420-friendly-airport-pickup" },
+  { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:somerset-amphitheater-shuttle" },
+  { from: "dcc:site:destination-command-center", relation: "indexes", to: "dcc:site:blue-hills-outpost" },
   { from: "dcc:site:bigsky-gosno", relation: "related_service", to: "dcc:site:gosno" },
   { from: "dcc:site:wno-tours", relation: "serves_destination", to: "dcc:destination:new-orleans" },
   { from: "dcc:site:welcome-to-the-swamp", relation: "serves_destination", to: "dcc:destination:new-orleans" },

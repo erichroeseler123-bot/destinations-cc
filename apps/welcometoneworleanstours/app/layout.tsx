@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <meta name="wno-build-commit" content="cd3f6378" />
+        <meta name="wno-build-commit" content="43dabe64" />
         <link rel="preconnect" href="https://fareharbor.com" />
         <link rel="dns-prefetch" href="//fareharbor.com" />
       </head>

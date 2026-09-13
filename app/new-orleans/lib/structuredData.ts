@@ -80,12 +80,17 @@ export function buildWnoBreadcrumbJsonLd(items: WnoBreadcrumbItem[]) {
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    itemListElement: items.map((item, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      name: item.name,
-      item: absolute(item.path),
-    })),
+    itemListElement: items.map((item, index) => {
+      const entry: Record<string, any> = {
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.name,
+      };
+      if (item.path && item.path.trim() !== "") {
+        entry.item = absolute(item.path);
+      }
+      return entry;
+    }),
   };
 }
 

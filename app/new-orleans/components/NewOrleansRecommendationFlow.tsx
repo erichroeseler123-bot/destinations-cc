@@ -263,6 +263,7 @@ export default function NewOrleansRecommendationFlow() {
     setResult(nextResult);
     const primarySlug = nextResult.primary?.slug || null;
     const secondarySlug = nextResult.secondary?.slug || null;
+    const tertiarySlug = nextResult.tertiary?.slug || null;
     try {
       sessionStorage.setItem(CHOOSER_COMPLETED_AT, String(Date.now()));
       if (primarySlug) sessionStorage.setItem(CHOOSER_RECOMMENDATION, primarySlug);
@@ -278,6 +279,7 @@ export default function NewOrleansRecommendationFlow() {
       live_outdoor_friendly: Boolean(contextForDecision.outdoorFriendly),
       primary_recommendation: primarySlug,
       secondary_recommendation: secondarySlug,
+      tertiary_recommendation: tertiarySlug,
       bundle_recommendation: bundle?.id || null,
       bundle_products: bundle?.slugs.join(",") || null,
       no_fit: nextResult.isNoFit,
@@ -382,31 +384,20 @@ export default function NewOrleansRecommendationFlow() {
       ? buildAttributedTourHref(slug, FAREHARBOR_SOURCES.recommendation, slug)
       : `/tours/${slug}`;
 
-  const handleRecommendationClick = (slug: string, rank: "primary" | "secondary") => {
+  const handleRecommendationClick = (slug: string, rank: "primary" | "secondary" | "tertiary") => {
     emitChooserEvent("chooser_recommendation_clicked", {
       product_slug: slug,
       recommendation_rank: rank,
     });
   };
 
-  const handleBundleClick = (bundle: BundleRecommendation, slug: string, position: number) => {
-    emitChooserEvent("chooser_bundle_product_clicked", {
-      bundle_id: bundle.id,
-      bundle_products: bundle.slugs.join(","),
-      product_slug: slug,
-      bundle_position: position,
-    });
-  };
-
   if (result) {
-    const completedInputs = answers as RecommendationInputs;
-    const bundle = !result.isNoFit ? chooseBundle(completedInputs, result, liveContext) : null;
-
     return (
       <div className={`${visualStyles.surfacePanel} mt-8 p-6 md:p-10`}>
         <div className="text-center">
           <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]">Your concierge recommendation</p>
-          <h3 className={`mt-3 text-3xl uppercase tracking-wide text-[var(--nola-ivory)] md:text-4xl ${visualStyles.accentFont}`}>Our pick for your group</h3>
+          <h3 className={`mt-3 text-3xl uppercase tracking-wide text-[var(--nola-ivory)] md:text-4xl ${visualStyles.accentFont}`}>Our top picks for your group</h3>
+          <p className="mt-2 text-sm text-[var(--nola-text-muted)]">Verified options matching your party size, timing, and transportation needs.</p>
           <button onClick={restart} className="mt-4 text-xs font-bold uppercase tracking-widest text-[var(--nola-text-muted)] hover:text-[var(--nola-gold)]">Start over</button>
         </div>
 
@@ -421,15 +412,32 @@ export default function NewOrleansRecommendationFlow() {
           </div>
         ) : (
           <div className="mx-auto mt-10 max-w-3xl space-y-6">
-            <RecommendationCard slug={result.primary.slug} reasons={result.primary.reasons} cautions={result.primary.cautionReasons} primary href={getTourHref(result.primary.slug)} onClick={() => handleRecommendationClick(result.primary!.slug, "primary")} />
+            <RecommendationCard
+              slug={result.primary.slug}
+              reasons={result.primary.reasons}
+              cautions={result.primary.cautionReasons}
+              rank="primary"
+              href={getTourHref(result.primary.slug)}
+              onClick={() => handleRecommendationClick(result.primary!.slug, "primary")}
+            />
             {result.secondary && (
-              <RecommendationCard slug={result.secondary.slug} reasons={result.secondary.reasons} cautions={[]} href={getTourHref(result.secondary.slug)} onClick={() => handleRecommendationClick(result.secondary!.slug, "secondary")} />
+              <RecommendationCard
+                slug={result.secondary.slug}
+                reasons={result.secondary.reasons}
+                cautions={[]}
+                rank="secondary"
+                href={getTourHref(result.secondary.slug)}
+                onClick={() => handleRecommendationClick(result.secondary!.slug, "secondary")}
+              />
             )}
-            {bundle && (
-              <BundleRecommendationCard
-                bundle={bundle}
-                getTourHref={getTourHref}
-                onProductClick={(slug, position) => handleBundleClick(bundle, slug, position)}
+            {result.tertiary && (
+              <RecommendationCard
+                slug={result.tertiary.slug}
+                reasons={result.tertiary.reasons}
+                cautions={[]}
+                rank="tertiary"
+                href={getTourHref(result.tertiary.slug)}
+                onClick={() => handleRecommendationClick(result.tertiary!.slug, "tertiary")}
               />
             )}
           </div>
@@ -475,67 +483,104 @@ export default function NewOrleansRecommendationFlow() {
   );
 }
 
-function RecommendationCard({ slug, reasons, cautions, primary = false, href, onClick }: { slug: string; reasons: string[]; cautions: string[]; primary?: boolean; href: string; onClick: () => void }) {
+function RecommendationCard({
+  slug,
+  reasons,
+  cautions,
+  rank = "secondary",
+  href,
+  onClick,
+}: {
+  slug: string;
+  reasons: string[];
+  cautions: string[];
+  rank?: "primary" | "secondary" | "tertiary";
+  href: string;
+  onClick: () => void;
+}) {
   const tour = TOUR_RECORDS[slug];
   if (!tour) return null;
 
+  const isPrimary = rank === "primary";
+  const badgeLabel =
+    rank === "primary"
+      ? "Top recommendation · Best fit"
+      : rank === "secondary"
+        ? "Alternative fit · Also recommended"
+        : "Third option · Different pace";
+
   return (
-    <div className={`relative border p-6 md:p-8 ${primary ? "border-[var(--nola-gold)] bg-[var(--nola-surface-strong)]" : "border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)]"}`}>
-      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">{primary ? "Best fit" : "Also worth considering"}</p>
-      <h4 className={`mt-3 text-3xl text-[var(--nola-ivory)] ${visualStyles.accentFont}`}>{tour.experienceType}</h4>
+    <div
+      className={`relative border p-6 md:p-8 ${
+        isPrimary
+          ? "border-[var(--nola-gold)] bg-[var(--nola-surface-strong)]"
+          : "border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)]"
+      }`}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">
+          {badgeLabel}
+        </p>
+        <span className="text-xs text-[var(--nola-text-muted)]">{tour.operator}</span>
+      </div>
+      <h4 className={`mt-3 text-3xl text-[var(--nola-ivory)] ${visualStyles.accentFont}`}>
+        {tour.experienceType}
+      </h4>
       <div className="mt-5">
-        <p className="text-xs font-bold uppercase tracking-widest text-[var(--nola-text-muted)]">Why we picked it</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-[var(--nola-text-muted)]">
+          Why this fits your group
+        </p>
         <ul className="mt-3 space-y-2">
-          {reasons.map((reason) => <li key={reason} className="flex gap-3 text-sm leading-6 text-[var(--nola-text-muted)]"><span className="text-[var(--nola-gold)]">✓</span><span>{reason}</span></li>)}
+          {reasons.map((reason) => (
+            <li key={reason} className="flex gap-3 text-sm leading-6 text-[var(--nola-text-muted)]">
+              <span className="text-[var(--nola-gold)]">✓</span>
+              <span>{reason}</span>
+            </li>
+          ))}
         </ul>
       </div>
       <div className="mt-5 grid gap-3 border-t border-[var(--nola-border)] pt-5 text-sm sm:grid-cols-2">
-        <div><span className="block text-[10px] font-bold uppercase tracking-widest text-[var(--nola-text-muted)]">Time</span><span className="mt-1 block text-[var(--nola-ivory)]">{tour.verifiedDurationLabel}</span></div>
-        <div><span className="block text-[10px] font-bold uppercase tracking-widest text-[var(--nola-text-muted)]">Getting there</span><span className="mt-1 block text-[var(--nola-ivory)]">{tour.transportationAvailable}</span></div>
+        <div>
+          <span className="block text-[10px] font-bold uppercase tracking-widest text-[var(--nola-text-muted)]">
+            Time commitment
+          </span>
+          <span className="mt-1 block text-[var(--nola-ivory)]">{tour.verifiedDurationLabel}</span>
+        </div>
+        <div>
+          <span className="block text-[10px] font-bold uppercase tracking-widest text-[var(--nola-text-muted)]">
+            Transportation
+          </span>
+          <span className="mt-1 block text-[var(--nola-ivory)]">{tour.transportationAvailable}</span>
+        </div>
       </div>
-      {cautions.length > 0 && <div className="mt-5 border-l-2 border-[var(--nola-gold)] pl-4"><p className="text-[10px] font-bold uppercase tracking-widest text-[var(--nola-gold)]">Good to know</p>{cautions.map((caution) => <p key={caution} className="mt-1 text-sm text-[var(--nola-text-muted)]">{caution}</p>)}</div>}
-      <Link href={href} onClick={onClick} data-wno-event="chooser_see_availability_clicked" data-wno-product={slug} className={`mt-6 inline-block px-6 py-3 text-xs font-bold uppercase tracking-widest ${primary ? "bg-[var(--nola-gold)] text-[var(--nola-bg-black)]" : "border border-[var(--nola-gold)] text-[var(--nola-gold)]"}`}>See Availability →</Link>
+      {cautions.length > 0 && (
+        <div className="mt-5 border-l-2 border-[var(--nola-gold)] pl-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--nola-gold)]">Good to know</p>
+          {cautions.map((caution) => (
+            <p key={caution} className="mt-1 text-sm text-[var(--nola-text-muted)]">
+              {caution}
+            </p>
+          ))}
+        </div>
+      )}
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+        <Link
+          href={href}
+          onClick={onClick}
+          data-wno-event="booking_button_clicked"
+          data-wno-label={`See Availability - ${tour.experienceType}`}
+          data-wno-product={slug}
+          className={`inline-block px-6 py-3 text-xs font-bold uppercase tracking-widest transition ${
+            isPrimary
+              ? "bg-[var(--nola-gold)] text-[var(--nola-bg-black)] hover:bg-[#ffe082]"
+              : "border border-[var(--nola-gold)] text-[var(--nola-gold)] hover:bg-[var(--nola-gold)] hover:text-[var(--nola-bg-black)]"
+          }`}
+        >
+          See Availability & Book Live Dates →
+        </Link>
+        <span className="text-xs text-[var(--nola-text-muted)]">Live rates confirmed at checkout</span>
+      </div>
     </div>
   );
 }
 
-function BundleRecommendationCard({
-  bundle,
-  getTourHref,
-  onProductClick,
-}: {
-  bundle: BundleRecommendation;
-  getTourHref: (slug: string) => string;
-  onProductClick: (slug: string, position: number) => void;
-}) {
-  const products = bundle.slugs.map((slug) => ({ slug, tour: TOUR_RECORDS[slug] })).filter((item) => item.tour);
-  if (products.length !== 2) return null;
-
-  return (
-    <section className="border border-[var(--nola-gold)]/60 bg-[linear-gradient(180deg,rgba(197,160,89,.10),rgba(17,14,20,.92))] p-6 md:p-8">
-      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">Make more of the day</p>
-      <h4 className={`mt-3 text-3xl text-[var(--nola-ivory)] ${visualStyles.accentFont}`}>{bundle.title}</h4>
-      <p className="mt-3 text-sm leading-6 text-[var(--nola-text-muted)]">{bundle.reason}</p>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        {products.map(({ slug, tour }, index) => (
-          <div key={slug} className="border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)] p-5">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--nola-text-muted)]">{index === 0 ? "First idea" : "Pair it with"}</p>
-            <h5 className="mt-2 text-lg font-bold text-[var(--nola-ivory)]">{tour!.experienceType}</h5>
-            <p className="mt-2 text-xs leading-5 text-[var(--nola-text-muted)]">{tour!.verifiedDurationLabel}</p>
-            <Link
-              href={getTourHref(slug)}
-              onClick={() => onProductClick(slug, index + 1)}
-              data-wno-event="chooser_bundle_product_clicked"
-              data-wno-product={slug}
-              data-wno-bundle={bundle.id}
-              className="mt-4 inline-block text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)] underline underline-offset-4"
-            >
-              Check this experience →
-            </Link>
-          </div>
-        ))}
-      </div>
-      <p className="mt-5 text-xs leading-5 text-[var(--nola-text-muted)]">These are two separate experiences, not a packaged booking. Check each operator’s current schedule, travel time, eligibility and availability before booking both.</p>
-    </section>
-  );
-}

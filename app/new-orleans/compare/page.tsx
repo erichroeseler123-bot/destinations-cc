@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CinematicPageHero from "../components/CinematicPageHero";
 import { COMPARISON_OPPORTUNITIES } from "../data/comparisonRegistry";
+import WnoBreadcrumbs from "../components/WnoBreadcrumbs";
 
 export const metadata: Metadata = {
   title: "Compare New Orleans Tours Before You Book",
@@ -33,6 +34,12 @@ export default function CompareToursPage() {
 
   return (
     <div className="min-h-screen bg-[#080708] text-[#fdfbf7]">
+      <WnoBreadcrumbs
+        items={[
+          { name: "Home", path: "/" },
+          { name: "Compare", path: "/compare" },
+        ]}
+      />
       <CinematicPageHero
         eyebrow="Decision guides"
         title="Compare New Orleans tours before you book"

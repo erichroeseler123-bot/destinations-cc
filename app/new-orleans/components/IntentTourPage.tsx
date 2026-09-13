@@ -3,6 +3,8 @@ import ProductCard from "./ProductCard";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 import GeoDirectAnswerCard from "./GeoDirectAnswerCard";
 import { getNolaGeoFact } from "../data/nolaGeoFacts";
+import WnoBreadcrumbs from "./WnoBreadcrumbs";
+import type { WnoBreadcrumbItem } from "../lib/structuredData";
 
 type IntentLink = { href: string; label: string };
 type IntentFaq = { question: string; answer: string };
@@ -31,6 +33,7 @@ type IntentTourPageProps = {
   geoFactKey?: string;
   directAnswers?: DirectAnswerItem[];
   inquiryNotice?: InquiryNotice;
+  breadcrumbs?: WnoBreadcrumbItem[];
 };
 
 const GOVERNED_INTENT_PATHS = new Set([
@@ -65,10 +68,18 @@ export default function IntentTourPage({
   geoFactKey,
   directAnswers,
   inquiryNotice,
+  breadcrumbs,
 }: IntentTourPageProps) {
   const products = productSlugs
     .map((slug) => STOREFRONT_PRODUCTS.find((product) => product.slug === slug))
     .filter(Boolean);
+
+  const defaultBreadcrumbs: WnoBreadcrumbItem[] = [
+    { name: "Home", path: "/" },
+    { name: "Guides", path: "/guides" },
+    { name: eyebrow || title, path: "" },
+  ];
+  const activeBreadcrumbs = breadcrumbs && breadcrumbs.length > 0 ? breadcrumbs : defaultBreadcrumbs;
 
   const derivedKey = geoFactKey || (
     eyebrow.toLowerCase().includes("swamp") ? "swamp-tours" :
@@ -101,7 +112,8 @@ export default function IntentTourPage({
   return (
     <div className="bg-[var(--nola-bg-charcoal)] text-[var(--nola-ivory)] min-h-screen">
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
-      <section className="mx-auto max-w-6xl px-6 pb-12 pt-16 md:pt-24">
+      <WnoBreadcrumbs items={activeBreadcrumbs} />
+      <section className="mx-auto max-w-6xl px-6 pb-12 pt-8 md:pt-14">
         <p className="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]">{eyebrow}</p>
         <h1 className="max-w-4xl font-serif text-4xl leading-tight md:text-6xl">{title}</h1>
         <p className="mt-6 max-w-3xl text-lg leading-8 text-[var(--nola-text-muted)]">{intro}</p>

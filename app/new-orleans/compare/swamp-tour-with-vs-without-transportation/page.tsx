@@ -54,25 +54,68 @@ export default function SwampTransportationComparisonPage() {
         </section>
 
         <section className="grid gap-6 md:grid-cols-2">
-          <div className="border border-[#333] bg-[#1a1a1a] p-6">
-            <h2 className="font-[var(--font-accent)] text-2xl font-bold">Transportation is usually the better fit if…</h2>
-            <ul className="mt-5 space-y-3 text-[#ccc]">
-              <li>✓ You are staying in the French Quarter or downtown without a car.</li>
-              <li>✓ You want one meeting point and fewer logistics to manage.</li>
-              <li>✓ You do not want to worry about driving, directions or parking.</li>
-              <li>✓ A longer fixed tour block is acceptable.</li>
-            </ul>
-            <Link href="/tours/swamp-bayou-tour" className="mt-7 inline-block bg-[#d4af37] px-5 py-3 text-sm font-bold uppercase tracking-wider text-[#151515]">View transported swamp tour</Link>
+          <div className="flex flex-col justify-between border-2 border-[#d4af37] bg-[#1a1a1a] p-6 shadow-xl">
+            <div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">Ragin Cajun Tours</span>
+                <span className="rounded bg-[#d4af37]/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#d4af37] border border-[#d4af37]/40">
+                  Transportation Included
+                </span>
+              </div>
+              <h2 className="mt-3 font-[var(--font-accent)] text-2xl font-bold text-[#fdfbf7]">Transportation is usually the better fit if…</h2>
+              <ul className="mt-4 space-y-2.5 text-sm text-[#ccc]">
+                <li>✓ You are staying in the French Quarter or downtown without a car.</li>
+                <li>✓ You want one meeting point and fewer logistics to manage.</li>
+                <li>✓ You do not want to worry about driving, directions or parking.</li>
+                <li>✓ A longer fixed tour block (approx. 3.5–4 hrs total) is acceptable.</li>
+              </ul>
+              <p className="mt-4 text-xs text-[#aaa]">
+                <strong className="text-white">Pricing:</strong> From $60 per adult with round-trip shuttle (meeting point confirmed at checkout)
+              </p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-[#333]">
+              <Link
+                href="/tours/covered-tour-boat?src=wtonot-detail-covered"
+                data-wno-event="booking_button_clicked"
+                data-wno-label="Check Live Dates & Book Transported Tour"
+                data-wno-product="covered-tour-boat"
+                className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb]"
+              >
+                Check Live Dates & Book Transported Tour →
+              </Link>
+            </div>
           </div>
-          <div className="border border-[#333] bg-[#1a1a1a] p-6">
-            <h2 className="font-[var(--font-accent)] text-2xl font-bold">Self drive is usually the better fit if…</h2>
-            <ul className="mt-5 space-y-3 text-[#ccc]">
-              <li>✓ You already have a rental car.</li>
-              <li>✓ You want to control your departure after the boat ride.</li>
-              <li>✓ You are comfortable driving to Lafitte yourself.</li>
-              <li>✓ You understand that ride-share is not a reliable fallback at the swamp.</li>
-            </ul>
-            <Link href="/swamp-tours" className="mt-7 inline-block border border-[#d4af37] px-5 py-3 text-sm font-bold uppercase tracking-wider text-[#d4af37]">Compare swamp tour formats</Link>
+
+          <div className="flex flex-col justify-between border-2 border-[#d4af37] bg-[#1a1a1a] p-6 shadow-xl">
+            <div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">Ragin Cajun Tours</span>
+                <span className="rounded bg-[#d4af37]/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#d4af37] border border-[#d4af37]/40">
+                  Self-Drive (Meet at Dock)
+                </span>
+              </div>
+              <h2 className="mt-3 font-[var(--font-accent)] text-2xl font-bold text-[#fdfbf7]">Self drive is usually the better fit if…</h2>
+              <ul className="mt-4 space-y-2.5 text-sm text-[#ccc]">
+                <li>✓ You already have a rental car or personal vehicle.</li>
+                <li>✓ You want to control your departure after the boat ride.</li>
+                <li>✓ You are comfortable driving to the swamp dock in Lafitte yourself.</li>
+                <li>✓ You understand that ride-share is not a reliable fallback at the swamp.</li>
+              </ul>
+              <p className="mt-4 text-xs text-[#aaa]">
+                <strong className="text-white">Pricing:</strong> From $35 per adult self-drive (dock check-in confirmed at checkout)
+              </p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-[#333]">
+              <Link
+                href="/tours/covered-tour-boat?src=wtonot-detail-covered"
+                data-wno-event="booking_button_clicked"
+                data-wno-label="Check Live Self-Drive Dates"
+                data-wno-product="covered-tour-boat"
+                className="block w-full text-center border border-[#d4af37] bg-transparent px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#d4af37] transition hover:bg-[#d4af37] hover:text-[#151515]"
+              >
+                Check Live Self-Drive Dates →
+              </Link>
+            </div>
           </div>
         </section>
 

@@ -7,12 +7,27 @@ import {
 import { DCC_SITE_CONTRACT } from "@/lib/dcc/portfolioRegistry";
 import { DCC_PRODUCT_SCOPE } from "@/lib/dcc/productScope";
 
+import { SOMERSET_AGENT_PAYLOAD } from "@/app/somerset-wi/agent.json/route";
+
 export const dynamic = "force-dynamic";
 
 const SITE_URL = "https://www.destinationcommandcenter.com";
 
 export async function GET() {
   const h = await headers();
+  const hostHeader = h.get("x-forwarded-host") || h.get("host") || "";
+  const host = hostHeader.split(":")[0].toLowerCase();
+
+  if (host.includes("shuttletosomersetamphitheater")) {
+    return Response.json(SOMERSET_AGENT_PAYLOAD, {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "public, max-age=3600, s-maxage=3600",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+  }
+
   logDiscoveryRequest({
     surface: "agent_manifest",
     path: "/agent.json",

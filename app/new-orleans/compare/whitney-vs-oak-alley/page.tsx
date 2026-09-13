@@ -34,8 +34,9 @@ export default function WhitneyVsOakAlleyPage() {
           transportation: "Round-trip coach included (departs 400 Toulouse St)",
           historicalFocus: "First-person narratives, memorial art, restored outbuildings, and slavery education",
           walkingMobility: "Self-paced audio tour; uneven gravel on grounds; museum & restrooms accessible",
-          href: "/tours/whitney-plantation-tour",
-          ctaText: "Book Whitney Tour →",
+          priceContext: "Live rates, admissions, and seasonal departures confirmed in Gray Line checkout",
+          href: "/tours/whitney-plantation-tour?src=wtonot-detail-plantation",
+          ctaText: "Check Live Dates & Book Whitney →",
         },
         right: {
           heading: "Oak Alley Plantation Tour",
@@ -45,8 +46,9 @@ export default function WhitneyVsOakAlleyPage() {
           transportation: "Round-trip coach included (departs 400 Toulouse St)",
           historicalFocus: "Historic plantation landscape, Big House, slavery exhibits, sugarcane history & gardens",
           walkingMobility: "Guided Big House tour; mostly paved pathways; 22 stairs to 2nd floor (video alternative)",
-          href: "/tours/oak-alley-plantation-tour-grey-line",
-          ctaText: "Book Oak Alley Tour →",
+          priceContext: "Live rates, admissions, and seasonal departures confirmed in Gray Line checkout",
+          href: "/tours/oak-alley-plantation-tour-grey-line?src=wtonot-detail-plantation",
+          ctaText: "Check Live Dates & Book Oak Alley →",
         },
       }}
       topSummaryRows={[

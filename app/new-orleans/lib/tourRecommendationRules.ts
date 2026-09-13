@@ -34,7 +34,7 @@ export interface RecommendationInputs {
   transportation: TransportationNeed | null;
   groupStyle: GroupStyle | null;
   mixedAges: ChildrenOrMixedAges | null;
-  airboatEligibility: AirboatEligibility | null;
+  airboatEligibility?: AirboatEligibility | null;
   historicalInterest: HistoricalInterest | null;
 }
 
@@ -172,6 +172,7 @@ export const TOUR_RECORDS: Record<string, TourRecord> = Object.fromEntries(
 export interface RecommendationResult {
   primary: { slug: string; reasons: string[]; cautionReasons: string[] } | null;
   secondary?: { slug: string; reasons: string[] };
+  tertiary?: { slug: string; reasons: string[] };
   isNoFit: boolean;
 }
 
@@ -329,7 +330,7 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
   const eligiblePositive = scored.filter((item) => item.eligible && item.score > 0);
   const shortlist = buildRecommendationShortlist({
     candidates: eligiblePositive,
-    limit: 2,
+    limit: 3,
     evaluate: (item) => ({
       key: item.slug,
       score: item.score,
@@ -344,6 +345,7 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
 
   const primary = ranked[0];
   const secondary = ranked[1];
+  const tertiary = ranked[2];
 
   return {
     primary: {
@@ -354,6 +356,10 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
     secondary: secondary ? {
       slug: secondary.slug,
       reasons: secondary.reasons.slice(0, 2).length ? secondary.reasons.slice(0, 2) : ["A strong alternative if you want a slightly different pace or format."],
+    } : undefined,
+    tertiary: tertiary ? {
+      slug: tertiary.slug,
+      reasons: tertiary.reasons.slice(0, 2).length ? tertiary.reasons.slice(0, 2) : ["Another verified option that matches your timing and party criteria."],
     } : undefined,
     isNoFit: false,
   };

@@ -19,6 +19,53 @@ const popularDecisions = [
   { href: "/compare/whitney-vs-oak-alley", title: "Whitney vs Oak Alley", copy: "Compare historical focus, setting and practical trip fit." },
 ];
 
+const bookTodayChoices = [
+  {
+    href: "/tours/covered-tour-boat?src=wtonot-home",
+    slug: "covered-tour-boat",
+    badge: "Swamp & Bayou",
+    title: "Best fit for wildlife & bayou scenery (with shuttle option)",
+    operator: "Ragin Cajun Tours",
+    priceContext: "From $35 self-drive / $60 with shuttle (live dates & rates confirmed at checkout)",
+    duration: "Approx. 3.5–4 hrs with shuttle / 1.5–2 hrs on water",
+    transportation: "Hotel pickup & return shuttle options available; pickup point confirmed at checkout",
+    groupFit: "Best fit for families, mixed ages, and shaded comfort on the bayou",
+  },
+  {
+    href: "/tours/city-tour-of-new-orleans?src=wtonot-home",
+    slug: "city-tour-of-new-orleans",
+    badge: "City & Garden District",
+    title: "Best fit for first-time orientation (French Quarter & Garden District)",
+    operator: "Southern Style Tours",
+    priceContext: "Minibus overview · Live rates & dates confirmed at checkout",
+    duration: "Approx. 2.5–3 hours",
+    transportation: "Minibus with AC; pickup zone confirmed at checkout",
+    groupFit: "Best fit for first-time visitors seeking comprehensive neighborhood context",
+  },
+  {
+    href: "/tours/all-day-city-plantation-combo?src=wtonot-home",
+    slug: "all-day-city-plantation-combo",
+    badge: "Full-Day Combo",
+    title: "Best fit for a full-day history itinerary (City + Plantation Combo)",
+    operator: "Southern Style Tours",
+    priceContext: "Full-day combination · Live rates & dates confirmed at checkout",
+    duration: "8 hours total door-to-door commitment",
+    transportation: "Morning pickup window (8:00–8:30 a.m.) included; confirmed at checkout",
+    groupFit: "Best fit for travelers wanting city highlights and historic River Road in one planned day",
+  },
+  {
+    href: "/tours/evening-jazz-cruise?src=wtonot-home",
+    slug: "evening-jazz-cruise",
+    badge: "Evening River Cruise",
+    title: "Best fit for an evening on the water (Live Jazz River Cruise)",
+    operator: "New Orleans Steamboat Company",
+    priceContext: "Sightseeing from $58; optional dinner seating up to $95–$105 confirmed at checkout",
+    duration: "Boards 6:00 PM, sails 7:00–9:00 PM (2 hrs on water)",
+    transportation: "Departs Toulouse St Wharf (Riverfront); central French Quarter boarding",
+    groupFit: "Best fit for evening river atmosphere, live Dukes of Dixieland jazz, and skyline views",
+  },
+];
+
 export default function CinematicHomepageTop() {
   return (
     <div className={styles.wrap} data-wno-home-theme="black-gold-v2">
@@ -72,7 +119,12 @@ export default function CinematicHomepageTop() {
             </span>
             <b>›</b>
           </Link>
-          <a href="tel:+15044849687" className={`${styles.action} ${styles.greenAction}`}>
+          <a
+            href="tel:+15044849687"
+            className={`${styles.action} ${styles.greenAction}`}
+            data-wno-event="contact_phone_clicked"
+            data-wno-label="504-484-9687"
+          >
             <span className={styles.actionIcon}>☎</span>
             <span>
               <strong>Call or Text</strong>
@@ -80,6 +132,44 @@ export default function CinematicHomepageTop() {
             </span>
             <b>›</b>
           </a>
+        </div>
+      </section>
+
+      <section className={styles.bookTodaySection} aria-labelledby="book-today-heading">
+        <div className={styles.bookTodayInner}>
+          <div className={styles.bookTodayHeader}>
+            <p className={styles.bookTodayEyebrow}>Book today · Verified live experiences</p>
+            <h2 id="book-today-heading" className={styles.bookTodayTitle}>Choose the experience that fits your group</h2>
+            <p className={styles.bookTodayIntro}>Direct operator booking with confirmed schedules, transparent logistics, and honest pricing.</p>
+          </div>
+          <div className={styles.bookTodayGrid}>
+            {bookTodayChoices.map((choice) => (
+              <article key={choice.slug} className={styles.bookCard}>
+                <div className={styles.bookCardBadgeWrap}>
+                  <span className={styles.bookCardBadge}>{choice.badge}</span>
+                  <span className={styles.bookCardOperator}>{choice.operator}</span>
+                </div>
+                <h3 className={styles.bookCardTitle}>{choice.title}</h3>
+                <div className={styles.bookCardMeta}>
+                  <p className={styles.bookCardMetaRow}><strong>Duration:</strong> {choice.duration}</p>
+                  <p className={styles.bookCardMetaRow}><strong>Transportation:</strong> {choice.transportation}</p>
+                  <p className={styles.bookCardMetaRow}><strong>Group fit:</strong> {choice.groupFit}</p>
+                  <div className={styles.bookCardPriceRow}>
+                    <span>{choice.priceContext}</span>
+                  </div>
+                </div>
+                <Link
+                  href={choice.href}
+                  className={styles.bookCardCta}
+                  data-wno-event="booking_button_clicked"
+                  data-wno-label={`Check Live Dates - ${choice.title}`}
+                  data-wno-product={choice.slug}
+                >
+                  Check live dates →
+                </Link>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 

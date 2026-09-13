@@ -122,6 +122,40 @@ function cardEyebrow(categorySlug: string, index: number, productSlug: string) {
   return CARD_EYEBROWS[index % CARD_EYEBROWS.length];
 }
 
+function getCategoryRelatedLinks(categorySlug: string) {
+  if (["swamp-tours", "airboat-tours", "covered-swamp-boat-tours"].includes(categorySlug)) {
+    return [
+      { href: "/compare/covered-swamp-boat-vs-airboat", title: "Covered Boat vs Airboat", desc: "Compare shade, noise, speed and family comfort." },
+      { href: "/compare/small-vs-large-airboat", title: "Small vs Large Airboat", desc: "6–12 passenger vs 15–27 passenger comparison." },
+      { href: "/compare/swamp-tour-with-vs-without-transportation", title: "With Pickup vs Self-Drive", desc: "How pickup affects total excursion duration." },
+      { href: "/guides/best-new-orleans-swamp-tour", title: "Best Swamp Tour Guide", desc: "How to choose the right format for your group." },
+      { href: "/guides/best-swamp-tour-with-transportation", title: "Swamp Tours With Transportation", desc: "No-car pickup choices from downtown and French Quarter." },
+      { href: "/guides/how-long-does-a-swamp-tour-take", title: "How Long Does It Take?", desc: "Door-to-door timeline breakdowns." },
+    ];
+  }
+  if (categorySlug === "riverboat-cruises" || categorySlug === "jazz-music-tours") {
+    return [
+      { href: "/compare/natchez-vs-city-of-new-orleans-riverboat", title: "NATCHEZ vs Riverboat CITY", desc: "Compare classic steamboat jazz vs modern 75-min sightseeing." },
+      { href: "/compare/best-new-orleans-tour-if-you-only-have-3-hours", title: "Tours Under 3 Hours", desc: "Short excursions that fit tight schedules." },
+      { href: "/guides/things-to-do-before-a-cruise-new-orleans", title: "Before a Cruise Port Day", desc: "Pre-cruise sightseeing and luggage-friendly ideas." },
+      { href: "/guides/things-to-do-after-a-cruise-new-orleans", title: "After a Cruise Day", desc: "Post-cruise ideas before your flight home." },
+    ];
+  }
+  if (categorySlug === "plantation-tours") {
+    return [
+      { href: "/compare/whitney-vs-oak-alley", title: "Whitney vs Oak Alley", desc: "Slavery-focused history vs classic big house grounds." },
+      { href: "/guides/new-orleans-plantation-and-swamp-tour", title: "Plantation & Swamp Combo", desc: "Combine two top Louisiana day trips into one booking." },
+      { href: "/compare/best-new-orleans-tour-if-you-only-have-3-hours", title: "Tours Under 3 Hours", desc: "Need a shorter half-day option instead?" },
+    ];
+  }
+  return [
+    { href: "/compare/best-new-orleans-tour-if-you-only-have-3-hours", title: "Tours Under 3 Hours", desc: "Short city, walking, and river options." },
+    { href: "/guides/first-time-new-orleans-tours", title: "First-Time Visitor Guide", desc: "The core tours everyone starts with." },
+    { href: "/guides/new-orleans-tours-for-families", title: "Family-Friendly Tours", desc: "Best options for kids, strollers, and all ages." },
+    { href: "/compare", title: "Tour Comparisons", desc: "Side-by-side decision guides for every tour type." },
+  ];
+}
+
 function isLiveProduct(product: ReturnType<typeof getProductById>): product is LiveProductAdapter {
   return Boolean(product && product.status === "live");
 }
@@ -264,6 +298,39 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
     </section>
   ) : null;
 
+  const categoryRelatedLinks = getCategoryRelatedLinks(resolvedParams.categorySlug);
+  const relatedLinksSection = categoryRelatedLinks.length > 0 ? (
+    <section data-wno-section="decision-guides" className="mx-auto mt-16 max-w-4xl border-t border-[#342b1d] pt-12">
+      <p className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-[#e4c985]">
+        Related Guides & Comparisons
+      </p>
+      <h2 className="mt-2 text-center font-serif text-2xl md:text-3xl text-[#f3dfb3]">
+        Compare Before You Choose
+      </h2>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+        {categoryRelatedLinks.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="group flex flex-col justify-between border border-[#342b1d] bg-[#12110e] p-5 transition hover:border-[#c9a86a] hover:bg-[#181612]"
+          >
+            <div>
+              <h3 className="font-serif text-lg font-semibold text-[#f8f1e5] group-hover:text-[#e4c985]">
+                {link.title}
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-[#aaa193]">
+                {link.desc}
+              </p>
+            </div>
+            <span className="mt-4 text-xs font-bold uppercase tracking-wider text-[#c9a86a]">
+              Read Guide →
+            </span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  ) : null;
+
   return (
     <div
       data-wno-category={resolvedParams.categorySlug}
@@ -345,6 +412,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         {(layout === "standard" || layout === "editorial" || layout === "adventure") && optionsSection}
 
         {planningSection}
+        {relatedLinksSection}
         {faqSection}
 
         <div className="mt-14 text-center">

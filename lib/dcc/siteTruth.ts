@@ -289,6 +289,54 @@ export const DCC_SITE_TRUTH: readonly DccPortfolioTruthRecord[] = [
     provenance: { kind: "declared_by_site", last_verified: VERIFIED },
     booking: { authority: "operator" },
   },
+  {
+    dcc_id: "dcc:site:somerset-amphitheater-shuttle",
+    id: "somerset-amphitheater-shuttle",
+    name: "Somerset Amphitheater Shuttle",
+    url: "https://www.shuttletosomersetamphitheater.com",
+    type: "private_concert_transportation",
+    role: "private Twin Cities to Somerset Amphitheater concert transportation operator",
+    authority: [
+      "somerset_concert_transportation",
+      "published_vehicle_pricing",
+      "door_to_door_twin_cities_coverage",
+      "venue_parking_and_logistics_guidance",
+    ],
+    status: { state: "active" },
+    provenance: { kind: "operator_supplied", last_verified: "2026-09-12" },
+    booking: {
+      authority: "site",
+      takes_payment: false,
+      finality: "All rides are prearranged private group charters finalized through flat quote confirmation.",
+    },
+    public_claims: {
+      operates_shared_shuttle: false,
+      apple_river_tubing_shuttle: "not_operated_refer_to_local_campgrounds",
+      van_round_trip_usd: 500,
+      suv_round_trip_usd: 400,
+    },
+  },
+  {
+    dcc_id: "dcc:site:blue-hills-outpost",
+    id: "blue-hills-outpost",
+    name: "Blue Hills Outpost",
+    url: "https://bluehillsoutpost.com",
+    type: "regional_destination_guide",
+    role: "Chetek Chain of Lakes and Blue Hills outdoor field-test destination guide",
+    authority: [
+      "chetek_chain_lakes_guide",
+      "blue_hills_trail_guide",
+      "local_events_and_dining",
+      "cabin_and_lake_planning",
+    ],
+    status: { state: "active" },
+    provenance: { kind: "operator_supplied", last_verified: "2026-09-12" },
+    booking: {
+      authority: "none",
+      takes_payment: false,
+      finality: "Editorial and visitor guide; activities, rentals, and lodging are provided by independent local businesses.",
+    },
+  },
 ] as const;
 
 export function getDccSiteTruth(idOrDccId: string) {

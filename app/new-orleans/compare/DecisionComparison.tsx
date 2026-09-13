@@ -27,6 +27,7 @@ export type TopCard = {
   transportation: string;
   historicalFocus: string;
   walkingMobility: string;
+  priceContext?: string;
   href: string;
   ctaText: string;
 };
@@ -148,11 +149,17 @@ export default function DecisionComparison({
                     <p><strong className="text-white">Transportation:</strong> {topCards.left.transportation}</p>
                     <p><strong className="text-white">Historical Focus:</strong> {topCards.left.historicalFocus}</p>
                     <p><strong className="text-white">Walking / Mobility:</strong> {topCards.left.walkingMobility}</p>
+                    {topCards.left.priceContext && (
+                      <p><strong className="text-white">Pricing:</strong> {topCards.left.priceContext}</p>
+                    )}
                   </div>
                 </div>
                 <div className="mt-6 pt-4 border-t border-[#333]">
                   <Link
                     href={topCards.left.href}
+                    data-wno-event="booking_button_clicked"
+                    data-wno-label={topCards.left.ctaText}
+                    data-wno-product={topCards.left.href.replace("/tours/", "").split("?")[0]}
                     className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
                   >
                     {topCards.left.ctaText}
@@ -176,11 +183,17 @@ export default function DecisionComparison({
                     <p><strong className="text-white">Transportation:</strong> {topCards.right.transportation}</p>
                     <p><strong className="text-white">Historical Focus:</strong> {topCards.right.historicalFocus}</p>
                     <p><strong className="text-white">Walking / Mobility:</strong> {topCards.right.walkingMobility}</p>
+                    {topCards.right.priceContext && (
+                      <p><strong className="text-white">Pricing:</strong> {topCards.right.priceContext}</p>
+                    )}
                   </div>
                 </div>
                 <div className="mt-6 pt-4 border-t border-[#333]">
                   <Link
                     href={topCards.right.href}
+                    data-wno-event="booking_button_clicked"
+                    data-wno-label={topCards.right.ctaText}
+                    data-wno-product={topCards.right.href.replace("/tours/", "").split("?")[0]}
                     className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
                   >
                     {topCards.right.ctaText}
