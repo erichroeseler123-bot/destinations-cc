@@ -41,7 +41,7 @@ export function ExcursionComparisonTable({ excursions }: ExcursionComparisonTabl
               const partner = ex.source === "viator" ? "Viator" : "GetYourGuide";
               const ctaText = ex.isExactProduct && ex.productId
                 ? `Check on ${partner}`
-                : `Search live options →`;
+                : `Browse more tours →`;
 
               return (
                 <tr key={idx} style={{ borderBottom: "1px solid var(--line)" }}>

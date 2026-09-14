@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PORT_ACTIVITIES, getPortActivity } from "@/lib/portActivities";
 import { getPort } from "@/lib/ports";
-import { buildAffiliateUrl } from "@/lib/affiliate/links";
+import { buildAffiliateUrl, buildViatorSearchUrl } from "@/lib/affiliate/links";
 import { getExcursionsByActivity, getExcursionsByPort } from "@/lib/affiliate/catalog";
 import { getEditorialInsight } from "@/lib/affiliate/editorial";
 import { getActivityImage } from "@/lib/images";
@@ -151,8 +151,15 @@ export default async function ActivityPage({
     ],
   };
 
+  const hasExactProduct = Boolean(fallbackExcursions[0]?.isExactProduct && fallbackExcursions[0]?.productId);
   const primaryOutboundUrl = fallbackExcursions.length > 0
-    ? buildAffiliateUrl(fallbackExcursions[0].source, fallbackExcursions[0].officialUrl, fallbackExcursions[0].attributionCampaign)
+    ? buildAffiliateUrl(
+        fallbackExcursions[0].source,
+        fallbackExcursions[0].officialUrl,
+        fallbackExcursions[0].attributionCampaign,
+        fallbackExcursions[0].title,
+        fallbackExcursions[0].isExactProduct
+      )
     : buildAffiliateUrl("viator", item.sampleTours[0]?.searchQuery || "Alaska shore excursions", item.sampleTours[0]?.campaignTag || "juneau-tour");
 
   return (
@@ -185,7 +192,9 @@ export default async function ActivityPage({
                   target="_blank"
                   rel="sponsored noopener noreferrer"
                 >
-                  Check live tour options & availability →
+                  {hasExactProduct
+                    ? "Check live tour options & availability →"
+                    : "Browse more tours on Viator →"}
                 </a>
                 <Link className="button secondary" href="#calculator">
                   Calculate ship-window fit ↓
@@ -289,6 +298,22 @@ export default async function ActivityPage({
           </div>
 
           <ExcursionComparisonTable excursions={fallbackExcursions} />
+
+          {/* Explicit Browse More Tours Fallback */}
+          <div style={{ marginTop: 24, marginBottom: 20, padding: "16px 20px", background: "#f8fbfb", borderRadius: "8px", border: "1px dashed var(--line)", textAlign: "center" }}>
+            <p style={{ margin: "0 0 8px", fontSize: "14px", color: "var(--muted)" }}>
+              Looking for alternative departure times, private charters, or additional operators?
+            </p>
+            <a
+              href={buildViatorSearchUrl(`${portData.name} Alaska ${item.eyebrow.split("·")[1]?.trim() || item.h1}`, `${item.slug}-browse-more`)}
+              target="_blank"
+              rel="sponsored noopener noreferrer"
+              style={{ fontSize: "14px", color: "var(--forest)", fontWeight: 700, textDecoration: "underline" }}
+            >
+              Browse more {portData.name} {item.h1.toLowerCase()} on Viator →
+            </a>
+          </div>
+
           <TrustDisclosure />
         </div>
       </section>

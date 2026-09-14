@@ -75,7 +75,7 @@ export function ExcursionCard({ excursion, showCalculatedFit }: ExcursionCardPro
   const partnerName = excursion.source === "viator" ? "Viator" : "GetYourGuide";
   const ctaLabel = excursion.isExactProduct && excursion.productId
     ? `Check Availability on ${partnerName} →`
-    : `Search live options on ${partnerName} →`;
+    : `Browse more tours on ${partnerName} →`;
 
   return (
     <article

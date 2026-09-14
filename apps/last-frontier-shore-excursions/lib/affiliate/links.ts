@@ -107,10 +107,19 @@ export function buildAffiliateUrl(
   officialUrl: string,
   campaign: string,
   fallbackQuery?: string,
-  isExactProduct: boolean = false
+  isExactProduct?: boolean
 ): string {
+  const isDirectProduct = isExactProduct !== undefined
+    ? isExactProduct
+    : Boolean(
+        officialUrl &&
+        !officialUrl.includes("searchResults") &&
+        !officialUrl.includes("/s/?") &&
+        (officialUrl.includes("/tours/") || officialUrl.includes("getyourguide.com/activity/"))
+      );
+
   // If not a verified exact product, always route to partner search with affiliate tracking
-  if (!isExactProduct || !officialUrl || officialUrl.includes("searchResults") || officialUrl.includes("/s/?")) {
+  if (!isDirectProduct || !officialUrl || officialUrl.includes("searchResults") || officialUrl.includes("/s/?")) {
     const query = fallbackQuery || (officialUrl.includes("text=") ? new URL(officialUrl).searchParams.get("text") || "" : "Alaska shore excursions");
     if (source === "getyourguide") {
       return buildGetYourGuideSearchUrl(query, campaign);
