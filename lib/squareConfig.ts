@@ -92,6 +92,16 @@ export function getSquareLocationId(route?: string | null) {
   );
 }
 
+export function getSquareLocationIdDcc() {
+  const dccSpecific = readCanonicalSquareEnv(
+    ["NEXT_PUBLIC_SQUARE_LOCATION_ID_DCC", "SQUARE_LOCATION_ID_DCC"],
+    [],
+    "square.location_id.dcc",
+  );
+  if (dccSpecific) return dccSpecific;
+  return getSquareLocationId();
+}
+
 export function getSquareAccessToken(route?: string | null) {
   const env = getSquareEnvironment(route);
   if (is420PickupRoute(route)) {

@@ -110,3 +110,38 @@ export interface CancelOrderItemRequest {
   reason?: string;
   resellerId?: string;
 }
+
+export interface DccSquareCheckoutRequest {
+  orderId?: string;
+  items?: Array<{
+    productId: string;
+    optionId: string;
+    availabilityId: string;
+    unitItems: DccUnitItem[];
+    notes?: string;
+  }>;
+  travelerId?: string;
+  sourceId?: string;
+  contact: {
+    fullName: string;
+    emailAddress: string;
+    phoneNumber?: string;
+    country?: string;
+    notes?: string;
+  };
+  idempotencyKey?: string;
+  resellerId?: string;
+  options?: {
+    simulateFailure?: boolean;
+    simulateHoldFailure?: boolean;
+    simulateConfirmationFailure?: boolean;
+  };
+}
+
+export interface DccSquareCheckoutResult {
+  order: DccMasterOrder;
+  paymentId: string;
+  paymentRecord: any;
+  status: "CONFIRMED" | "FAILED" | "CANCELLED";
+  alreadyCompleted?: boolean;
+}

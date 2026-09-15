@@ -142,6 +142,48 @@ export class DccSagaRepository {
   }
 
   /**
+   * Get all master orders for a traveler ID or email address
+   */
+  static async getOrdersByTravelerOrEmail(
+    travelerId?: string,
+    email?: string
+  ): Promise<DccMasterOrder[]> {
+    const normalizedEmail = email?.trim().toLowerCase();
+    const results: DccMasterOrder[] = [];
+
+    for (const order of memOrders.values()) {
+      if (travelerId && order.travelerId === travelerId) {
+        results.push(order);
+        continue;
+      }
+      if (normalizedEmail && order.customer?.emailAddress?.toLowerCase() === normalizedEmail) {
+        results.push(order);
+        continue;
+      }
+    }
+
+    const db = getDb();
+    if (db) {
+      try {
+        const rows = await db.select().from(dccOrders);
+        for (const r of rows) {
+          if (results.some((existing) => existing.orderId === r.id)) continue;
+          const matchTraveler = travelerId && r.travelerId === travelerId;
+          const matchEmail = normalizedEmail && r.customerEmail?.toLowerCase() === normalizedEmail;
+          if (matchTraveler || matchEmail) {
+            const ord = await this.getOrder(r.id);
+            if (ord) results.push(ord);
+          }
+        }
+      } catch (err: any) {
+        console.warn("Neon DB error fetching orders by traveler/email:", err.message);
+      }
+    }
+
+    return results;
+  }
+
+  /**
    * Save order item
    */
   static async saveOrderItem(item: DccOrderItem, orderId: string): Promise<void> {

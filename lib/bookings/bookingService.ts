@@ -163,6 +163,43 @@ export class DccBookingService {
   }
 
   /**
+   * Check real-time availability for a product/option
+   */
+  static async checkAvailability(
+    productId: string,
+    optionId: string,
+    availabilityId: string,
+    unitItems: any[] = []
+  ): Promise<{ available: boolean; id: string }> {
+    const supplierConnId = await this.resolveConnectionForProduct(productId);
+    const { adapter, isMock } = await this.getAdapterForConnection(supplierConnId);
+
+    if (isMock) {
+      const dateMatch = availabilityId.match(/\d{4}-\d{2}-\d{2}/);
+      const checkDate = dateMatch ? dateMatch[0] : "2026-09-20";
+      const slots = MockOctoSupplierEngine.checkAvailability(productId, optionId, checkDate, unitItems);
+      const found = slots.find((s) => s.id === availabilityId || s.available);
+      return {
+        available: Boolean(found?.available && found.status !== "SOLD_OUT"),
+        id: availabilityId,
+      };
+    }
+
+    if (adapter) {
+      const dateMatch = availabilityId.match(/\d{4}-\d{2}-\d{2}/);
+      const checkDate = dateMatch ? dateMatch[0] : new Date().toISOString().slice(0, 10);
+      const avail = await adapter.checkAvailability(productId, optionId, checkDate, unitItems);
+      const found = avail.find((s: any) => s.id === availabilityId && s.available);
+      return {
+        available: Boolean(found),
+        id: availabilityId,
+      };
+    }
+
+    return { available: true, id: availabilityId };
+  }
+
+  /**
    * Step 1: Create a Booking Reservation Hold
    */
   static async createHold(

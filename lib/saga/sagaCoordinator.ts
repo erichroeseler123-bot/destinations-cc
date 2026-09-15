@@ -364,7 +364,9 @@ export class DccSagaCoordinator {
         orderId,
         amount: totalPrice,
         currency: "USD",
+        sourceId: (params as any).sourceId || (params.paymentInfo as any)?.sourceId,
         paymentInfo: {
+          provider: "square",
           ...params.paymentInfo,
           status: "authorized",
         },
@@ -434,7 +436,7 @@ export class DccSagaCoordinator {
             country: params.customer?.country,
           },
           payment: {
-            provider: "stripe",
+            provider: "square",
             paymentId,
             amount: sb.price,
             currency: sb.currency,
@@ -516,7 +518,7 @@ export class DccSagaCoordinator {
           amount: totalPrice,
           currency: "USD",
           paymentInfo: {
-            provider: "stripe",
+            provider: "square",
             paymentId,
             status: "captured",
           },
@@ -705,13 +707,7 @@ export class DccSagaCoordinator {
       // Compensation Step 8: Refund or void payment if captured / authorized
       if (paymentId) {
         try {
-          await DccPaymentService.processRefund({
-            orderId,
-            operatorSlug: "dcc-saga-compensation",
-            amount: totalPrice,
-            currency: "USD",
-            reason: `Saga compensation rollback: ${errorCode}`,
-          });
+          await DccPaymentService.cancelOrVoidPayment(orderId, `Saga compensation rollback: ${errorCode}`);
         } catch (payErr: any) {
           console.warn("Payment compensation refund error:", payErr.message);
         }

@@ -8,7 +8,7 @@ export type DccPaymentStatus =
   | "failed";
 
 export interface DccPaymentInfo {
-  provider?: "stripe" | "square" | "octo_reseller" | "supplier_hosted" | string;
+  provider?: "square" | "octo_reseller" | "supplier_hosted" | string;
   paymentId?: string;
   paymentIntentId?: string;
   amount?: number;
@@ -21,9 +21,16 @@ export interface DccProcessPaymentParams {
   amount: number;
   currency: string;
   paymentInfo?: DccPaymentInfo;
+  sourceId?: string;
+  idempotencyKey?: string;
   customer?: {
     fullName: string;
     emailAddress: string;
+  };
+  options?: {
+    squareClient?: any;
+    simulateCapture?: boolean;
+    simulateFailure?: boolean;
   };
 }
 
