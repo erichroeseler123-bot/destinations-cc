@@ -14,6 +14,8 @@ import {
 } from "./types";
 import { OctoBookingResult } from "@/lib/octo/types";
 import { eq } from "drizzle-orm";
+import { DccSagaCoordinator, DccSagaRepository } from "@/lib/saga";
+import type { DccSagaResult, DccSagaExecutionOptions } from "@/lib/saga/types";
 
 const fallbackOrderStore = new Map<string, DccMasterOrder>();
 
@@ -308,10 +310,29 @@ export class DccOrderService {
   }
 
   /**
+   * Execute durable Saga for multi-supplier DCC order booking
+   */
+  static async executeOrderSaga(
+    params: CreateOrderRequest & {
+      paymentInfo?: {
+        provider?: string;
+        paymentId?: string;
+        paymentIntentId?: string;
+        status?: "authorized" | "captured";
+      };
+    },
+    options?: DccSagaExecutionOptions
+  ): Promise<DccSagaResult> {
+    return DccSagaCoordinator.executeOrderSaga(params, options);
+  }
+
+  /**
    * Get an order by ID
    */
   static async getOrder(orderId: string): Promise<DccMasterOrder | null> {
-    return fallbackOrderStore.get(orderId) || null;
+    const memory = fallbackOrderStore.get(orderId);
+    if (memory) return memory;
+    return DccSagaRepository.getOrder(orderId);
   }
 
   /**

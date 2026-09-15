@@ -238,6 +238,14 @@ export class DccBookingService {
       params.supplierConnectionId
     );
 
+    if (connection?.connectionStatus === "authorization_pending" || (!isMock && !adapter)) {
+      throw new OctoApiError(
+        403,
+        "UNAUTHORIZED_SUPPLIER",
+        `Supplier ${connection?.operatorName || params.supplierConnectionId} is authorization_pending and non-bookable`
+      );
+    }
+
     // Final availability recheck before creating hold
     if (isMock) {
       const dateMatch = params.availabilityId.match(/\d{4}-\d{2}-\d{2}/);

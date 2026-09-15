@@ -455,30 +455,6 @@ export const dccReconciliation = pgTable(
   }),
 );
 
-export const dccOrders = pgTable(
-  "dcc_orders",
-  {
-    orderId: text("order_id").primaryKey(),
-    route: text("route").notNull(),
-    status: text("status"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-    customerEmail: text("customer_email"),
-    customerPhone: text("customer_phone"),
-    paymentProvider: text("payment_provider"),
-    paymentId: text("payment_id"),
-    eventDate: date("event_date"),
-    payload: jsonb("payload").$type<Record<string, unknown>>().notNull(),
-  },
-  (table) => ({
-    routeCreatedAtIdx: index("dcc_orders_route_created_at_idx").on(table.route, table.createdAt),
-    statusIdx: index("dcc_orders_status_idx").on(table.status),
-    customerEmailIdx: index("dcc_orders_customer_email_idx").on(table.customerEmail),
-    paymentIdIdx: uniqueIndex("dcc_orders_payment_id_uidx").on(table.paymentId),
-    eventDateIdx: index("dcc_orders_event_date_idx").on(table.eventDate),
-  }),
-);
-
 export const dccOperators = pgTable(
   "dcc_operators",
   {
@@ -1015,9 +991,6 @@ export type NewDccHandoffSummaryRow = typeof dccHandoffSummaries.$inferInsert;
 export type DccReconciliationRow = typeof dccReconciliation.$inferSelect;
 export type NewDccReconciliationRow = typeof dccReconciliation.$inferInsert;
 
-export type DccOrderRow = typeof dccOrders.$inferSelect;
-export type NewDccOrderRow = typeof dccOrders.$inferInsert;
-
 export type DccCorridorCatalogRow = typeof dccCorridorCatalog.$inferSelect;
 export type NewDccCorridorCatalogRow = typeof dccCorridorCatalog.$inferInsert;
 
@@ -1356,6 +1329,42 @@ export const dccOrderPayments = pgTable(
   })
 );
 
+export const dccOrders = pgTable(
+  "dcc_orders",
+  {
+    id: text("id").primaryKey(), // dcc:ord:...
+    travelerId: text("traveler_id"),
+    resellerId: text("reseller_id"),
+    status: text("status").notNull().default("PENDING_HOLD"),
+    currency: text("currency").notNull().default("USD"),
+    totalPrice: numeric("total_price", { precision: 12, scale: 2 }).notNull(),
+    paymentId: text("payment_id"),
+    paymentStatus: text("payment_status").notNull().default("unpaid"),
+    idempotencyKey: text("idempotency_key"),
+    idempotencyHash: text("idempotency_hash"),
+    utcHoldExpires: timestamp("utc_hold_expires", { withTimezone: true }),
+    customerFullName: text("customer_full_name"),
+    customerEmail: text("customer_email"),
+    customerPhone: text("customer_phone"),
+    customerCountry: text("customer_country"),
+    customerNotes: text("customer_notes"),
+    sagaId: text("saga_id"),
+    sagaStatus: text("saga_status").notNull().default("NOT_STARTED"),
+    lastErrorCode: text("last_error_code"),
+    lastErrorMessage: text("last_error_message"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    travelerIdIdx: index("dcc_orders_traveler_id_idx").on(table.travelerId),
+    statusIdx: index("dcc_orders_status_idx").on(table.status),
+    idempotencyKeyIdx: index("dcc_orders_idempotency_key_idx").on(table.idempotencyKey),
+    sagaIdIdx: index("dcc_orders_saga_id_idx").on(table.sagaId),
+    createdAtIdx: index("dcc_orders_created_at_idx").on(table.createdAt),
+  })
+);
+
 export const dccOrderItems = pgTable(
   "dcc_order_items",
   {
@@ -1366,6 +1375,7 @@ export const dccOrderItems = pgTable(
     productId: text("product_id").notNull(),
     optionId: text("option_id").notNull(),
     availabilityId: text("availability_id").notNull(),
+    supplierConnectionId: text("supplier_connection_id"),
     operatorSlug: text("operator_slug").notNull(),
     operatorName: text("operator_name").notNull(),
     price: numeric("price", { precision: 12, scale: 2 }).notNull(),
@@ -1445,11 +1455,118 @@ export const dccDisputesAndRefunds = pgTable(
   })
 );
 
+export const dccSupplierBookings = pgTable(
+  "dcc_supplier_bookings",
+  {
+    id: text("id").primaryKey(), // dcc:sbk:...
+    orderId: text("order_id").notNull(),
+    orderItemId: text("order_item_id").notNull(),
+    supplierConnectionId: text("supplier_connection_id").notNull(),
+    operatorSlug: text("operator_slug").notNull(),
+    operatorName: text("operator_name").notNull(),
+    productId: text("product_id").notNull(),
+    optionId: text("option_id").notNull(),
+    availabilityId: text("availability_id").notNull(),
+    providerBookingId: text("provider_booking_id"),
+    providerBookingUuid: text("provider_booking_uuid"),
+    status: text("status").notNull().default("PENDING_HOLD"),
+    holdExpiresAt: timestamp("hold_expires_at", { withTimezone: true }),
+    confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+    cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+    cancellationReason: text("cancellation_reason"),
+    price: numeric("price", { precision: 12, scale: 2 }).notNull(),
+    currency: text("currency").notNull().default("USD"),
+    unitItems: jsonb("unit_items").$type<unknown[]>().notNull().default([]),
+    idempotencyKey: text("idempotency_key"),
+    idempotencyHash: text("idempotency_hash"),
+    externalRequestId: text("external_request_id"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    lastErrorCode: text("last_error_code"),
+    lastErrorMessage: text("last_error_message"),
+    voucherCode: text("voucher_code"),
+    voucherUrl: text("voucher_url"),
+    voucherInstructions: text("voucher_instructions"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    orderIdIdx: index("dcc_supplier_bookings_order_id_idx").on(table.orderId),
+    orderItemIdIdx: index("dcc_supplier_bookings_order_item_id_idx").on(table.orderItemId),
+    supplierConnIdx: index("dcc_supplier_bookings_supplier_conn_idx").on(table.supplierConnectionId),
+    statusIdx: index("dcc_supplier_bookings_status_idx").on(table.status),
+    idempotencyKeyIdx: index("dcc_supplier_bookings_idempotency_key_idx").on(table.idempotencyKey),
+  })
+);
+
+export const dccSagaSteps = pgTable(
+  "dcc_saga_steps",
+  {
+    id: text("id").primaryKey(), // dcc:saga:step:...
+    sagaId: text("saga_id").notNull(),
+    orderId: text("order_id").notNull(),
+    stepName: text("step_name").notNull(),
+    stepIndex: integer("step_index").notNull(),
+    status: text("status").notNull().default("PENDING"),
+    idempotencyKey: text("idempotency_key").notNull(),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    maxRetries: integer("max_retries").notNull().default(3),
+    retryPolicy: jsonb("retry_policy").$type<Record<string, unknown>>().notNull().default({}),
+    nextRetryAt: timestamp("next_retry_at", { withTimezone: true }),
+    externalReferenceId: text("external_reference_id"),
+    inputPayload: jsonb("input_payload").$type<Record<string, unknown>>().notNull().default({}),
+    outputPayload: jsonb("output_payload").$type<Record<string, unknown>>().default({}),
+    errorCode: text("error_code"),
+    errorMessage: text("error_message"),
+    compensationStatus: text("compensation_status").notNull().default("NOT_APPLICABLE"),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    sagaIdIdx: index("dcc_saga_steps_saga_id_idx").on(table.sagaId),
+    orderIdIdx: index("dcc_saga_steps_order_id_idx").on(table.orderId),
+    stepNameIdx: index("dcc_saga_steps_step_name_idx").on(table.stepName),
+    statusIdx: index("dcc_saga_steps_status_idx").on(table.status),
+    idempotencyKeyIdx: index("dcc_saga_steps_idempotency_key_idx").on(table.idempotencyKey),
+  })
+);
+
+export const dccSagaAuditEvents = pgTable(
+  "dcc_saga_audit_events",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    sagaId: text("saga_id").notNull(),
+    orderId: text("order_id").notNull(),
+    stepId: text("step_id"),
+    eventType: text("event_type").notNull(),
+    action: text("action").notNull(),
+    entityType: text("entity_type").notNull(),
+    entityId: text("entity_id").notNull(),
+    idempotencyKey: text("idempotency_key"),
+    attemptNumber: integer("attempt_number").notNull().default(1),
+    status: text("status").notNull(),
+    errorCode: text("error_code"),
+    errorMessage: text("error_message"),
+    sanitizedDetails: jsonb("sanitized_details").$type<Record<string, unknown>>().notNull().default({}),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    sagaIdIdx: index("dcc_saga_audit_events_saga_id_idx").on(table.sagaId),
+    orderIdIdx: index("dcc_saga_audit_events_order_id_idx").on(table.orderId),
+    eventTypeIdx: index("dcc_saga_audit_events_event_type_idx").on(table.eventType),
+    occurredAtIdx: index("dcc_saga_audit_events_occurred_at_idx").on(table.occurredAt),
+  })
+);
+
 export type DccTravelerProfileRow = typeof dccTravelerProfiles.$inferSelect;
 export type NewDccTravelerProfileRow = typeof dccTravelerProfiles.$inferInsert;
 
 export type DccAuthTokenRow = typeof dccAuthTokens.$inferSelect;
 export type NewDccAuthTokenRow = typeof dccAuthTokens.$inferInsert;
+
+export type DccOrderRow = typeof dccOrders.$inferSelect;
+export type NewDccOrderRow = typeof dccOrders.$inferInsert;
 
 export type DccOrderPaymentRow = typeof dccOrderPayments.$inferSelect;
 export type NewDccOrderPaymentRow = typeof dccOrderPayments.$inferInsert;
@@ -1457,10 +1574,20 @@ export type NewDccOrderPaymentRow = typeof dccOrderPayments.$inferInsert;
 export type DccOrderItemRow = typeof dccOrderItems.$inferSelect;
 export type NewDccOrderItemRow = typeof dccOrderItems.$inferInsert;
 
+export type DccSupplierBookingRow = typeof dccSupplierBookings.$inferSelect;
+export type NewDccSupplierBookingRow = typeof dccSupplierBookings.$inferInsert;
+
 export type DccOperatorPayableRow = typeof dccOperatorPayables.$inferSelect;
 export type NewDccOperatorPayableRow = typeof dccOperatorPayables.$inferInsert;
 
 export type DccDisputeOrRefundRow = typeof dccDisputesAndRefunds.$inferSelect;
 export type NewDccDisputeOrRefundRow = typeof dccDisputesAndRefunds.$inferInsert;
+
+export type DccSagaStepRow = typeof dccSagaSteps.$inferSelect;
+export type NewDccSagaStepRow = typeof dccSagaSteps.$inferInsert;
+
+export type DccSagaAuditEventRow = typeof dccSagaAuditEvents.$inferSelect;
+export type NewDccSagaAuditEventRow = typeof dccSagaAuditEvents.$inferInsert;
+
 
 

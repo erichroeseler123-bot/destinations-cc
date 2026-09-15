@@ -12,6 +12,7 @@ import { OctoClientConfig, OctoProviderAdapter } from "./types";
 export class OctoApiError extends Error {
   public status: number;
   public octoError: string;
+  public code: string;
   public details?: unknown;
 
   constructor(status: number, octoError: string, message: string, details?: unknown) {
@@ -19,6 +20,7 @@ export class OctoApiError extends Error {
     this.name = "OctoApiError";
     this.status = status;
     this.octoError = octoError;
+    this.code = octoError;
     this.details = details;
   }
 }
