@@ -3,6 +3,7 @@ import { octoNormalizedProducts, octoSupplierConnections } from "@/lib/db/schema
 import { OctoProduct } from "./types";
 import { MockOctoSupplierEngine } from "./mockServer";
 import { OctoRegistryService, INITIAL_OCTO_PARTICIPANTS } from "./registry";
+import { canonicalPlaceService, DccCanonicalPlace } from "@/lib/dcc/canonicalPlaceService";
 import { eq } from "drizzle-orm";
 
 export type CommercialStatus = "bookable" | "directory_only";
@@ -93,11 +94,19 @@ export class DccLocationProductService {
   }): Promise<{
     products: LocationProductAssociation[];
     directoryOnlyOperators: LocationDiscoveryDirectoryItem[];
+    canonicalPlace?: DccCanonicalPlace | null;
   }> {
     const isProd = process.env.NODE_ENV === "production";
     const maxRadius = params.radiusKm || 75; // Default 75km radius
     const detectedSlug = params.destinationSlug || matchDestinationSlugForCoordinates(params.lat, params.lng);
     const db = getDb();
+
+    // Resolve canonical DCC place identity using existing geography layer
+    const canonicalPlace = params.destinationSlug
+      ? canonicalPlaceService.resolvePlaceByDestinationSlug(params.destinationSlug) ||
+        canonicalPlaceService.resolvePlaceBySlug(params.destinationSlug) ||
+        canonicalPlaceService.resolvePlaceByCoordinates(params.lat, params.lng, maxRadius)
+      : canonicalPlaceService.resolvePlaceByCoordinates(params.lat, params.lng, maxRadius);
 
     const productAssociations: LocationProductAssociation[] = [];
     const directoryOnlyOperators: LocationDiscoveryDirectoryItem[] = [];
@@ -126,6 +135,24 @@ export class DccLocationProductService {
             if (distanceKm <= maxRadius) {
               matches = true;
             }
+          }
+
+          if (!matches && canonicalPlace) {
+            matches = canonicalPlaceService.isProductServingPlace(
+              {
+                id: row.id,
+                title: row.title,
+                internalName: row.title,
+                destinationSlug: row.destinationSlug,
+                dccPlaceId: (row as any).dccPlaceId,
+                placeCoordinates:
+                  row.latitude != null && row.longitude != null
+                    ? { lat: Number(row.latitude), lng: Number(row.longitude) }
+                    : undefined,
+              } as OctoProduct,
+              canonicalPlace.placeId,
+              maxRadius
+            ).serves;
           }
 
           if (!matches && detectedSlug && row.destinationSlug) {
@@ -205,6 +232,10 @@ export class DccLocationProductService {
           if (distanceKm <= maxRadius) matches = true;
         }
 
+        if (!matches && canonicalPlace) {
+          matches = canonicalPlaceService.isProductServingPlace(p, canonicalPlace.placeId, maxRadius).serves;
+        }
+
         if (!matches && detectedSlug && p.destinationSlug) {
           if (
             p.destinationSlug.toLowerCase() === detectedSlug.toLowerCase() ||
@@ -218,14 +249,42 @@ export class DccLocationProductService {
         if (matches) {
           // Reference mock supplier in sandbox: strictly technical_onboarding
           // It is bookable in test runs, but clearly flagged as sandbox mock
+          const operatorName =
+            p.id === "prod_redrocks_sunset"
+              ? "Red Rocks Adventure Co (Sandbox Reference)"
+              : p.id === "prod_denver_craft_brew_culture"
+              ? "Mile High Craft & Culture Walks (Sandbox Reference)"
+              : "Alaska Premier Expeditions (Sandbox Reference)";
+
+          const operatorSlug =
+            p.id === "prod_redrocks_sunset"
+              ? "red-rocks-adventures"
+              : p.id === "prod_denver_craft_brew_culture"
+              ? "mile-high-craft-culture"
+              : "alaska-premier-expeditions";
+
+          const connectionId =
+            p.id === "prod_redrocks_sunset"
+              ? "conn_mock_redrocks"
+              : p.id === "prod_denver_craft_brew_culture"
+              ? "conn_mock_denver_craft"
+              : "conn_mock_alaska";
+
+          const providerType =
+            p.providerExternalIds?.fareharborShortname
+              ? "fareharbor"
+              : p.providerExternalIds?.bokunActivityId
+              ? "bokun"
+              : "direct";
+
           productAssociations.push({
             product: p,
             commercialStatus: "bookable", // Available in test / sandbox
             supplier: {
-              connectionId: "conn_mock_alaska",
-              operatorName: "Alaska Premier Expeditions (Sandbox Reference)",
-              operatorSlug: "alaska-premier-expeditions",
-              providerType: "direct",
+              connectionId,
+              operatorName,
+              operatorSlug,
+              providerType,
               connectionStatus: "authorized",
               onboardingStage: "technical_onboarding",
               isAuthorized: true,
@@ -270,6 +329,52 @@ export class DccLocationProductService {
     return {
       products: productAssociations,
       directoryOnlyOperators,
+      canonicalPlace: canonicalPlace || null,
+    };
+  }
+
+  /**
+   * Resolve a canonical DCC place for a place ID, slug, or coordinate
+   */
+  static resolveCanonicalPlace(query: string | { lat: number; lng: number }): DccCanonicalPlace | null {
+    if (typeof query === "string") {
+      return (
+        canonicalPlaceService.resolvePlaceById(query) ||
+        canonicalPlaceService.resolvePlaceBySlug(query) ||
+        canonicalPlaceService.resolvePlaceByDestinationSlug(query)
+      );
+    }
+    return canonicalPlaceService.resolvePlaceByCoordinates(query.lat, query.lng);
+  }
+
+  /**
+   * Find products specifically attached to or serving a canonical DCC place
+   */
+  static async findProductsForCanonicalPlace(
+    placeIdOrSlug: string,
+    maxRadiusKm: number = 75
+  ): Promise<{
+    place: DccCanonicalPlace | null;
+    products: LocationProductAssociation[];
+    directoryOnlyOperators: LocationDiscoveryDirectoryItem[];
+  }> {
+    const place =
+      canonicalPlaceService.resolvePlaceById(placeIdOrSlug) ||
+      canonicalPlaceService.resolvePlaceBySlug(placeIdOrSlug) ||
+      canonicalPlaceService.resolvePlaceByDestinationSlug(placeIdOrSlug);
+    if (!place) {
+      return { place: null, products: [], directoryOnlyOperators: [] };
+    }
+    const res = await this.findProductsForLocation({
+      lat: place.coordinates.lat,
+      lng: place.coordinates.lng,
+      radiusKm: maxRadiusKm,
+      destinationSlug: place.admin.destinationSlug || place.slug,
+    });
+    return {
+      place,
+      products: res.products,
+      directoryOnlyOperators: res.directoryOnlyOperators,
     };
   }
 
@@ -278,7 +383,13 @@ export class DccLocationProductService {
    */
   static async canBookProduct(productId: string): Promise<boolean> {
     const isProd = process.env.NODE_ENV === "production";
-    if (isProd && (productId.includes("mock") || productId === "prod_alaska_whale_glacier")) {
+    if (
+      isProd &&
+      (productId.includes("mock") ||
+        productId === "prod_alaska_whale_glacier" ||
+        productId === "prod_redrocks_sunset" ||
+        productId === "prod_denver_craft_brew_culture")
+    ) {
       return false;
     }
 
@@ -289,8 +400,14 @@ export class DccLocationProductService {
 
     const db = getDb();
     if (!db) {
-      // Without DB, only reference mock product can be booked in non-production sandbox
-      return !isProd && (productId === "prod_alaska_whale_glacier" || productId.startsWith("prod_mock_"));
+      // Without DB, only reference mock products can be booked in non-production sandbox
+      return (
+        !isProd &&
+        (productId === "prod_alaska_whale_glacier" ||
+          productId === "prod_redrocks_sunset" ||
+          productId === "prod_denver_craft_brew_culture" ||
+          productId.startsWith("prod_mock_"))
+      );
     }
 
     try {
@@ -300,7 +417,13 @@ export class DccLocationProductService {
         .where(eq(octoNormalizedProducts.id, productId));
 
       if (rows.length === 0) {
-        return !isProd && (productId === "prod_alaska_whale_glacier" || productId.startsWith("prod_mock_"));
+        return (
+          !isProd &&
+          (productId === "prod_alaska_whale_glacier" ||
+            productId === "prod_redrocks_sunset" ||
+            productId === "prod_denver_craft_brew_culture" ||
+            productId.startsWith("prod_mock_"))
+        );
       }
 
       const product = rows[0];

@@ -112,6 +112,39 @@ export interface OctoProduct {
   durationMinutes?: number;
   meetingPoint?: string;
   cancellationPolicy?: string;
+  // Canonical DCC Place Identity & Geography Connection
+  dccPlaceId?: string;
+  serviceArea?: {
+    primaryPlaceId: string;
+    servedPlaceIds: string[];
+    radiusKm?: number;
+    corridors?: string[];
+  };
+  pickupPoints?: Array<{
+    id: string;
+    name: string;
+    type?: "pickup" | "meeting" | "departure" | "terminal";
+    coordinates?: { lat: number; lng: number };
+    address?: string;
+    description?: string;
+  }>;
+  providerExternalIds?: DccExternalProviderIds;
+}
+
+export interface DccExternalProviderIds {
+  viatorDestinationId?: number | null;
+  viatorProductCode?: string | null;
+  fareharborLocationId?: string | null;
+  fareharborShortname?: string | null;
+  fareharborItem?: number | string | null;
+  rezdyLocation?: string | null;
+  bokunLocationId?: string | null;
+  bokunActivityId?: string | null;
+  ventrataDestinationId?: string | null;
+  peekLocationId?: string | null;
+  tourcmsLocationId?: string | null;
+  zauiLocationId?: string | null;
+  custom?: Record<string, string | number>;
 }
 
 export interface OctoAvailabilitySlot {
