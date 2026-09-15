@@ -1074,3 +1074,228 @@ export type NewDccCorridorHealthSignalRow = typeof dccCorridorHealthSignals.$inf
 
 export type DccExternalDependencyHealthRow = typeof dccExternalDependencyHealth.$inferSelect;
 export type NewDccExternalDependencyHealthRow = typeof dccExternalDependencyHealth.$inferInsert;
+
+// ==========================================
+// OCTO PROTOCOL & BOOKING DISTRIBUTION LAYER
+// ==========================================
+
+export const octoParticipants = pgTable(
+  "octo_participants",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    role: text("role").notNull(), // supplier, reseller, booking_system, channel_manager, technology_partner
+    website: text("website").notNull(),
+    contactEmail: text("contact_email").notNull(),
+    contactName: text("contact_name"),
+    destinations: jsonb("destinations").$type<string[]>().notNull().default([]),
+    endpoint: text("endpoint"),
+    certificationEvidence: text("certification_evidence"),
+    consentStatus: text("consent_status").notNull().default("not_requested"),
+    credentialStatus: text("credential_status").notNull().default("none"),
+    productsAvailableCount: integer("products_available_count").notNull().default(0),
+    bookingPaymentModel: text("booking_payment_model").notNull().default("supplier_hosted"),
+    outreachStatus: text("outreach_status").notNull().default("identified"),
+    agreedCommissionPercent: numeric("agreed_commission_percent", { precision: 5, scale: 2 }), // Nullable pending commercial contract
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    roleIdx: index("octo_participants_role_idx").on(table.role),
+    outreachStatusIdx: index("octo_participants_outreach_status_idx").on(table.outreachStatus),
+  })
+);
+
+export const octoSupplierConnections = pgTable(
+  "octo_supplier_connections",
+  {
+    id: text("id").primaryKey(),
+    operatorSlug: text("operator_slug").notNull(),
+    operatorName: text("operator_name").notNull(),
+    endpoint: text("endpoint").notNull(),
+    encryptedApiKey: text("encrypted_api_key"),
+    encryptedBearerToken: text("encrypted_bearer_token"),
+    capabilities: jsonb("capabilities").$type<string[]>().notNull().default(["octo/core"]),
+    isSandbox: boolean("is_sandbox").notNull().default(false),
+    connectionStatus: text("connection_status").notNull().default("discovery_only"), // discovery_only, authorization_pending, authorized, sandbox_verified, production_verified, bookable, suspended
+    reservationPlatform: text("reservation_platform").notNull().default("direct_octo"), // ventrata, bokun, rezdy, fareharbor, peek, tourcms, zaui, direct_octo
+    octoBaseUrl: text("octo_base_url"),
+    apiCredentialRef: text("api_credential_ref"),
+    authorizedProductIds: jsonb("authorized_product_ids").$type<string[]>().notNull().default([]),
+    onboardingStage: text("onboarding_stage").notNull().default("discovered"), // discovered, consented, credentials_configured, connection_verified, catalog_synced, availability_verified, booking_tested, bookable
+    operatorLegalName: text("operator_legal_name"),
+    businessAddress: text("business_address"),
+    signatoryName: text("signatory_name"),
+    signatoryEmail: text("signatory_email"),
+    consentAgreementVersion: text("consent_agreement_version").notNull().default("1.0"),
+    consentTermsText: text("consent_terms_text"),
+    consentedAt: timestamp("consented_at", { withTimezone: true }),
+    sandboxVerifiedAt: timestamp("sandbox_verified_at", { withTimezone: true }),
+    productionVerifiedAt: timestamp("production_verified_at", { withTimezone: true }),
+    paymentModel: text("payment_model").notNull().default("supplier_hosted"),
+    settlementTerms: text("settlement_terms"),
+    commissionPercent: numeric("commission_percent", { precision: 5, scale: 2 }), // Nullable pending signed agreement
+    cancellationRules: jsonb("cancellation_rules").$type<Record<string, unknown>>(),
+    healthStatus: text("health_status").notNull().default("untested"), // healthy, degraded, error, untested
+    lastHealthCheckAt: timestamp("last_health_check_at", { withTimezone: true }),
+    lastHealthCheckStatus: text("last_health_check_status"),
+    provenance: text("provenance"),
+    lastVerificationTime: timestamp("last_verification_time", { withTimezone: true }),
+    catalogSyncStatus: text("catalog_sync_status"),
+    catalogSyncedAt: timestamp("catalog_synced_at", { withTimezone: true }),
+    availabilityTestStatus: text("availability_test_status"),
+    availabilityTestedAt: timestamp("availability_tested_at", { withTimezone: true }),
+    bookingTestStatus: text("booking_test_status"),
+    bookingTestedAt: timestamp("booking_tested_at", { withTimezone: true }),
+    lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
+    lastErrorMessage: text("last_error_message"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    operatorSlugIdx: index("octo_supplier_connections_operator_slug_idx").on(table.operatorSlug),
+    connectionStatusIdx: index("octo_supplier_connections_connection_status_idx").on(table.connectionStatus),
+    healthStatusIdx: index("octo_supplier_connections_health_status_idx").on(table.healthStatus),
+    onboardingStageIdx: index("octo_supplier_connections_onboarding_stage_idx").on(table.onboardingStage),
+  })
+);
+
+export const octoNormalizedProducts = pgTable(
+  "octo_normalized_products",
+  {
+    id: text("id").primaryKey(), // e.g. dcc:octo:prod:...
+    supplierConnectionId: text("supplier_connection_id")
+      .notNull()
+      .references(() => octoSupplierConnections.id, { onDelete: "cascade" }),
+    supplierProductReference: text("supplier_product_reference").notNull(),
+    title: text("title").notNull(),
+    description: text("description"),
+    destinationSlug: text("destination_slug").notNull(),
+    destinationName: text("destination_name"),
+    country: text("country"),
+    locationName: text("location_name"),
+    latitude: numeric("latitude", { precision: 9, scale: 6 }),
+    longitude: numeric("longitude", { precision: 9, scale: 6 }),
+    defaultCurrency: text("default_currency").notNull().default("USD"),
+    durationMinutes: integer("duration_minutes"),
+    meetingPoint: text("meeting_point"),
+    cancellationPolicy: text("cancellation_policy"),
+    capabilities: jsonb("capabilities").$type<string[]>().notNull().default(["octo/core"]),
+    options: jsonb("options").$type<unknown[]>().notNull().default([]),
+    pricingFrom: numeric("pricing_from", { precision: 10, scale: 2 }),
+    imageUrl: text("image_url"),
+    sourceFreshness: timestamp("source_freshness", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    destinationSlugIdx: index("octo_normalized_products_destination_slug_idx").on(table.destinationSlug),
+    supplierConnIdx: index("octo_normalized_products_supplier_conn_idx").on(table.supplierConnectionId),
+  })
+);
+
+export const octoBookings = pgTable(
+  "octo_bookings",
+  {
+    id: text("id").primaryKey(), // dcc:bk:...
+    bookingUuid: text("booking_uuid").notNull(), // Matching OCTO booking UUID
+    idempotencyKey: text("idempotency_key"),
+    idempotencyHash: text("idempotency_hash"), // SHA256 of request payload for altered-key rejection
+    supplierConnectionId: text("supplier_connection_id").notNull(),
+    resellerId: text("reseller_id"),
+    productId: text("product_id").notNull(),
+    optionId: text("option_id").notNull(),
+    availabilityId: text("availability_id").notNull(),
+    status: text("status").notNull().default("ON_HOLD"), // ON_HOLD, CONFIRMED, CANCELLED, EXPIRED
+    expirationMinutes: integer("expiration_minutes").notNull().default(15),
+    utcHoldExpires: timestamp("utc_hold_expires", { withTimezone: true }),
+    totalPrice: numeric("total_price", { precision: 12, scale: 2 }).notNull(),
+    currency: text("currency").notNull().default("USD"),
+    unitItems: jsonb("unit_items").$type<unknown[]>().notNull().default([]),
+    contact: jsonb("contact").$type<Record<string, unknown>>(),
+    supplierReference: text("supplier_reference"),
+    resellerReference: text("reseller_reference"),
+    checkoutUrl: text("checkout_url"),
+    voucher: jsonb("voucher").$type<Record<string, unknown>>(),
+    cancellationReason: text("cancellation_reason"),
+    confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+    cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    bookingUuidUniqueIdx: uniqueIndex("octo_bookings_booking_uuid_uidx").on(table.bookingUuid),
+    idempotencyKeyIdx: index("octo_bookings_idempotency_key_idx").on(table.idempotencyKey),
+    statusIdx: index("octo_bookings_status_idx").on(table.status),
+    productIdIdx: index("octo_bookings_product_id_idx").on(table.productId),
+    supplierConnIdx: index("octo_bookings_supplier_conn_idx").on(table.supplierConnectionId),
+  })
+);
+
+export const octoSettlementLedger = pgTable(
+  "octo_settlement_ledger",
+  {
+    id: text("id").primaryKey(), // dcc:ledg:...
+    bookingId: text("booking_id")
+      .notNull()
+      .references(() => octoBookings.id, { onDelete: "cascade" }),
+    dccReference: text("dcc_reference").notNull(),
+    supplierReference: text("supplier_reference"),
+    operatorSlug: text("operator_slug").notNull(),
+    operatorName: text("operator_name").notNull(),
+    currency: text("currency").notNull().default("USD"),
+    grossAmount: numeric("gross_amount", { precision: 12, scale: 2 }).notNull(),
+    dccSharePercent: numeric("dcc_share_percent", { precision: 5, scale: 2 }).default("0.00"),
+    dccShareAmount: numeric("dcc_share_amount", { precision: 12, scale: 2 }).notNull(),
+    operatorShareAmount: numeric("operator_share_amount", { precision: 12, scale: 2 }).notNull(),
+    paymentStatus: text("payment_status").notNull().default("unpaid"), // unpaid, authorized, captured, refunded, failed
+    settlementStatus: text("settlement_status").notNull().default("pending"), // pending, settled, disputed, refunded
+    cancellationStatus: text("cancellation_status").notNull().default("none"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    bookingIdIdx: index("octo_settlement_ledger_booking_id_idx").on(table.bookingId),
+    operatorSlugIdx: index("octo_settlement_ledger_operator_slug_idx").on(table.operatorSlug),
+    settlementStatusIdx: index("octo_settlement_ledger_settlement_status_idx").on(table.settlementStatus),
+  })
+);
+
+export const octoAuditLogs = pgTable(
+  "octo_audit_logs",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull().defaultNow(),
+    action: text("action").notNull(),
+    entityType: text("entity_type").notNull(),
+    entityId: text("entity_id").notNull(),
+    status: text("status").notNull(),
+    payload: jsonb("payload").$type<Record<string, unknown>>().notNull().default({}),
+    errorMessage: text("error_message"),
+  },
+  (table) => ({
+    entityIdx: index("octo_audit_logs_entity_idx").on(table.entityType, table.entityId),
+    occurredAtIdx: index("octo_audit_logs_occurred_at_idx").on(table.occurredAt),
+  })
+);
+
+export type OctoParticipantRow = typeof octoParticipants.$inferSelect;
+export type NewOctoParticipantRow = typeof octoParticipants.$inferInsert;
+
+export type OctoSupplierConnectionRow = typeof octoSupplierConnections.$inferSelect;
+export type NewOctoSupplierConnectionRow = typeof octoSupplierConnections.$inferInsert;
+
+export type OctoNormalizedProductRow = typeof octoNormalizedProducts.$inferSelect;
+export type NewOctoNormalizedProductRow = typeof octoNormalizedProducts.$inferInsert;
+
+export type OctoBookingRow = typeof octoBookings.$inferSelect;
+export type NewOctoBookingRow = typeof octoBookings.$inferInsert;
+
+export type OctoSettlementLedgerRow = typeof octoSettlementLedger.$inferSelect;
+export type NewOctoSettlementLedgerRow = typeof octoSettlementLedger.$inferInsert;
+
+export type OctoAuditLogRow = typeof octoAuditLogs.$inferSelect;
+export type NewOctoAuditLogRow = typeof octoAuditLogs.$inferInsert;
+

@@ -58,6 +58,180 @@ export async function GET() {
           },
         },
       },
+      "/octo/supplier": {
+        get: {
+          operationId: "getOctoSupplier",
+          summary: "Get OCTO Supplier information",
+          description: "Returns supplier identity, endpoint, contact information, and supported capabilities per OCTO Core v1.2.0.",
+          security: [{ BearerAuth: [] }],
+          responses: {
+            "200": { description: "OCTO Supplier profile" },
+            "401": { description: "Invalid or missing Bearer token" },
+          },
+        },
+      },
+      "/octo/products": {
+        get: {
+          operationId: "listOctoProducts",
+          summary: "List OCTO Products",
+          description: "Returns all active tour and activity products available through the OCTO layer.",
+          security: [{ BearerAuth: [] }],
+          responses: {
+            "200": { description: "Array of OCTO products" },
+            "401": { description: "Invalid or missing Bearer token" },
+          },
+        },
+      },
+      "/octo/products/{productId}": {
+        get: {
+          operationId: "getOctoProduct",
+          summary: "Get OCTO Product Details",
+          parameters: [{ name: "productId", in: "path", required: true, schema: { type: "string" } }],
+          security: [{ BearerAuth: [] }],
+          responses: {
+            "200": { description: "OCTO Product detail" },
+            "404": { description: "Product not found" },
+          },
+        },
+      },
+      "/octo/availability/calendar": {
+        post: {
+          operationId: "getOctoAvailabilityCalendar",
+          summary: "Check date-range availability calendar",
+          security: [{ BearerAuth: [] }],
+          responses: {
+            "200": { description: "Calendar availability summary" },
+          },
+        },
+      },
+      "/octo/availability": {
+        post: {
+          operationId: "checkOctoAvailabilityCore",
+          summary: "Check detailed live availability",
+          security: [{ BearerAuth: [] }],
+          responses: {
+            "200": { description: "Available time slots, vacancies, and pricing" },
+          },
+        },
+      },
+      "/octo/bookings": {
+        post: {
+          operationId: "createOctoBooking",
+          summary: "Create an OCTO reservation hold",
+          security: [{ BearerAuth: [] }],
+          responses: {
+            "201": { description: "Booking hold created with utcHoldExpires" },
+            "400": { description: "Invalid request or insufficient availability" },
+          },
+        },
+        get: {
+          operationId: "listOctoBookings",
+          summary: "List OCTO bookings",
+          security: [{ BearerAuth: [] }],
+          responses: {
+            "200": { description: "List of bookings" },
+          },
+        },
+      },
+      "/octo/bookings/{bookingUuid}": {
+        get: {
+          operationId: "getOctoBookingByUuid",
+          summary: "Retrieve booking status",
+          parameters: [{ name: "bookingUuid", in: "path", required: true, schema: { type: "string" } }],
+          security: [{ BearerAuth: [] }],
+          responses: {
+            "200": { description: "Booking details" },
+            "404": { description: "Booking not found" },
+          },
+        },
+        patch: {
+          operationId: "updateOctoBookingByUuid",
+          summary: "Update passenger contact or notes on existing booking",
+          parameters: [{ name: "bookingUuid", in: "path", required: true, schema: { type: "string" } }],
+          security: [{ BearerAuth: [] }],
+          responses: {
+            "200": { description: "Updated booking details" },
+          },
+        },
+      },
+      "/octo/bookings/{bookingUuid}/confirm": {
+        post: {
+          operationId: "confirmOctoBookingByUuid",
+          summary: "Confirm on-hold booking",
+          parameters: [{ name: "bookingUuid", in: "path", required: true, schema: { type: "string" } }],
+          security: [{ BearerAuth: [] }],
+          responses: {
+            "200": { description: "Booking confirmed with voucher" },
+            "410": { description: "Hold expired" },
+          },
+        },
+      },
+      "/octo/bookings/{bookingUuid}/cancel": {
+        post: {
+          operationId: "cancelOctoBookingByUuid",
+          summary: "Cancel booking and initiate settlement adjustment",
+          parameters: [{ name: "bookingUuid", in: "path", required: true, schema: { type: "string" } }],
+          security: [{ BearerAuth: [] }],
+          responses: {
+            "200": { description: "Booking cancelled" },
+          },
+        },
+      },
+      "/api/octo/participants": {
+        get: {
+          operationId: "listOctoParticipants",
+          summary: "List authorized OCTO participants and ecosystem registry",
+          description: "Returns connected operators, booking systems, resellers, and channel managers implementing the OCTO standard under DCC direct authority.",
+          responses: {
+            "200": { description: "List of OCTO participants" },
+          },
+        },
+      },
+      "/api/octo/availability": {
+        post: {
+          operationId: "checkOctoAvailability",
+          summary: "Query live availability directly from operator OCTO systems",
+          description: "Live availability check against upstream OCTO provider. Returns available departure times, remaining seat capacity, and dynamic pricing.",
+          responses: {
+            "200": { description: "Available time slots and pricing" },
+          },
+        },
+      },
+      "/api/octo/hold": {
+        post: {
+          operationId: "createOctoBookingHold",
+          summary: "Reserve seats with explicit hold duration",
+          description: "Initiates a two-phase booking reservation hold enforcing expirationMinutes per the OCTO Core specification. Seats are held upstream in the operator reservation system.",
+          responses: {
+            "201": { description: "Hold created with utcHoldExpires timestamp" },
+          },
+        },
+      },
+      "/api/octo/confirm": {
+        post: {
+          operationId: "confirmOctoBooking",
+          summary: "Confirm held booking and issue digital voucher",
+          description: "Confirms an on-hold reservation with lead traveler details and authorized payment handoff. Records agreed commission in settlement ledger.",
+          responses: {
+            "200": { description: "Booking confirmed with voucher code" },
+            "410": { description: "Hold expired" },
+          },
+        },
+      },
+      "/api/octo/bookings/{id}": {
+        get: {
+          operationId: "getOctoBooking",
+          summary: "Retrieve booking status and voucher details",
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          responses: { "200": { description: "Booking details" } },
+        },
+        delete: {
+          operationId: "cancelOctoBooking",
+          summary: "Cancel reservation and trigger settlement refund",
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          responses: { "200": { description: "Booking cancelled" } },
+        },
+      },
     },
     components: {
       schemas: {
