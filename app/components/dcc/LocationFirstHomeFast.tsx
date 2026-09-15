@@ -92,7 +92,7 @@ export default function LocationFirstHomeFast() {
                   Public Intelligence + OCTO Standard
                 </span>
               </div>
-              <h1 className="mt-2 text-4xl font-black tracking-[-0.045em] sm:text-5xl lg:text-6xl">The public internet, by coordinates.</h1>
+              <h1 className="mt-2 text-4xl font-black tracking-[-0.045em] sm:text-5xl lg:text-6xl">The open booking layer for tours and experiences.</h1>
             </div>
             <button type="button" onClick={useCurrentLocation} disabled={locating} className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300/15 disabled:cursor-wait disabled:opacity-60">
               {locating ? "Locating…" : "Use my location"}
@@ -148,23 +148,23 @@ export default function LocationFirstHomeFast() {
             <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
               <div className="flex items-center gap-1.5 text-xs font-black text-cyan-300">
                 <span className="h-2 w-2 rounded-full bg-cyan-400"></span>
-                <span>Layer 1: Destination Intelligence</span>
+                <span>Discover</span>
               </div>
-              <p className="mt-1 text-xs leading-5 text-white/55">Current weather, NWS official alerts, seismic activity, water gauges, and public feeds hydrated live from authoritative sources.</p>
+              <p className="mt-1 text-xs leading-5 text-white/55">Current weather, official hazards, seismic activity, water gauges, and public feeds hydrated live from authoritative sources.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
               <div className="flex items-center gap-1.5 text-xs font-black text-emerald-300">
                 <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
-                <span>Layer 2: Authorized OCTO Commerce</span>
+                <span>Connect</span>
               </div>
-              <p className="mt-1 text-xs leading-5 text-white/55">Real-time availability, booking holds, and master DCC Orders direct to licensed operators under the official OCTO standard.</p>
+              <p className="mt-1 text-xs leading-5 text-white/55">Direct connectivity to licensed tour and transport operators via the open OCTO standard with zero middleman markup.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
-              <div className="flex items-center gap-1.5 text-xs font-black text-white">
-                <span className="h-2 w-2 rounded-full bg-white/40"></span>
-                <span>Canonical Coordinate Identity</span>
+              <div className="flex items-center gap-1.5 text-xs font-black text-cyan-200">
+                <span className="h-2 w-2 rounded-full bg-cyan-300"></span>
+                <span>Book</span>
               </div>
-              <p className="mt-1 text-xs leading-5 text-white/55">Permanent 5-decimal coordinate identity for people, machines, and search engines with zero startup API waterfall.</p>
+              <p className="mt-1 text-xs leading-5 text-white/55">Real-time availability, secure 15-minute booking holds, and coordinated multi-supplier checkout via master DCC Orders.</p>
             </div>
           </div>
         </div>

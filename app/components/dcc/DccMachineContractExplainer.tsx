@@ -17,16 +17,16 @@ export default function DccMachineContractExplainer() {
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
-            <strong className="text-sm text-cyan-200">1. Resolve Coordinate</strong>
-            <p className="mt-2 text-sm leading-6 text-white/50">Device location or entered place resolves to a permanent 5-decimal latitude and longitude identity.</p>
+            <strong className="text-sm text-cyan-200">1. Discover</strong>
+            <p className="mt-2 text-sm leading-6 text-white/50">Device location or entered place resolves to a permanent coordinate hydrated live from authoritative public sources.</p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
-            <strong className="text-sm text-cyan-200">2. Hydrate Public Feeds</strong>
-            <p className="mt-2 text-sm leading-6 text-white/50">Weather, official hazards, river gauges, and marine conditions load live from authoritative public sources without fact duplication.</p>
+            <strong className="text-sm text-emerald-300">2. Connect</strong>
+            <p className="mt-2 text-sm leading-6 text-white/50">Direct connectivity to licensed tour and transport operators via the open OCTO standard with zero middleman markup.</p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
-            <strong className="text-sm text-emerald-300">3. Connect Authorized OCTO</strong>
-            <p className="mt-2 text-sm leading-6 text-white/50">Discover authorized operator inventory, check live availability, and coordinate multi-supplier bookings via master DCC Orders.</p>
+            <strong className="text-sm text-cyan-200">3. Book</strong>
+            <p className="mt-2 text-sm leading-6 text-white/50">Real-time availability, secure 15-minute booking holds, and coordinated multi-supplier checkout via master DCC Orders.</p>
           </article>
         </div>
 
