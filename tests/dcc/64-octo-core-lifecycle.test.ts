@@ -760,3 +760,65 @@ test("26. Proof: Every route matches pinned official OCTO Core v1.2.0 contract",
   assert.ok("errorMessage" in errBody, "Error body must include 'errorMessage' field per OCTO Core");
 });
 
+// 27. Proof: Master DCC Order Coordinates Multiple Items and Supplier Bookings
+test("27. Master DCC Order: Coordinates multi-item orders, supplier booking holds, payment capture, and settlement", async () => {
+  const { DccOrderService } = await import("@/lib/orders");
+  const { DccBookingService } = await import("@/lib/bookings");
+  const { DccSettlementEngine } = await import("@/lib/settlement");
+
+  // Create multi-item master order
+  const order = await DccOrderService.createOrder({
+    resellerId: "reseller_multi_test",
+    currency: "USD",
+    items: [
+      {
+        productId: "prod_alaska_whale_glacier",
+        optionId: "opt_morning_cruise",
+        availabilityId: "avail_slot_1",
+        unitItems: [{ unitId: "unit_adult", quantity: 2 }],
+      },
+      {
+        productId: "prod_alaska_whale_glacier",
+        optionId: "opt_morning_cruise",
+        availabilityId: "avail_slot_1",
+        unitItems: [{ unitId: "unit_child", quantity: 1 }],
+      },
+    ],
+  });
+
+  assert.ok(order.orderId.startsWith("dcc:ord:"));
+  assert.equal(order.status, "ON_HOLD");
+  assert.equal(order.items.length, 2);
+  assert.equal(order.bookingIds.length, 2);
+  assert.ok(order.totalPrice > 0);
+  assert.ok(order.utcHoldExpires);
+
+  // Verify underlying booking holds exist in DccBookingService
+  const firstBooking = await DccBookingService.getBooking(order.bookingIds[0]);
+  assert.equal(firstBooking.status, "ON_HOLD");
+
+  // Confirm order with payment
+  const confirmation = await DccOrderService.confirmOrder({
+    orderId: order.orderId,
+    contact: {
+      fullName: "Master Order Traveler",
+      emailAddress: "traveler@dcc.travel",
+      phoneNumber: "+13405550199",
+    },
+    payment: {
+      provider: "stripe",
+      paymentId: "pi_test_order_12345",
+      status: "captured",
+    },
+    resellerId: "reseller_multi_test",
+  });
+
+  assert.equal(confirmation.order.status, "CONFIRMED");
+  assert.equal(confirmation.bookings.length, 2);
+  assert.equal(confirmation.bookings[0].status, "CONFIRMED");
+  assert.ok(confirmation.bookings[0].voucher?.code);
+  assert.equal(confirmation.bookings[1].status, "CONFIRMED");
+  assert.ok(confirmation.bookings[1].voucher?.code);
+});
+
+

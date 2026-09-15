@@ -182,6 +182,7 @@ export interface OctoConfirmBookingParams {
 }
 
 export interface OctoBookingResult {
+  id?: string;
   uuid: string;
   status: OctoBookingStatus;
   utcHoldExpires: string | null;
