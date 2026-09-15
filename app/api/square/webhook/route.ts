@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { WebhooksHelper } from "square";
 import { DccPaymentService } from "@/lib/payments/paymentService";
+import { DccSquareWebhookService } from "@/lib/payments/squareWebhookService";
 import { getDb } from "@/lib/db/client";
 import { octoAuditLogs } from "@/lib/db/schema";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-// In-memory replay protection cache (stores recently processed event IDs)
-const processedWebhookEventIds = new Set<string>();
 
 function getSignatureKey(): string {
   return (
@@ -27,7 +25,7 @@ function getWebhookNotificationUrl(request: NextRequest): string {
 }
 
 function logSanitizedWebhook(action: string, data: Record<string, unknown>) {
-  // Strip any PANs, CVVs, nonces, or tokens. Log only sanitized fields.
+  // Strip any PANs, CVVs, nonces, tokens, or PII. Log strictly sanitized telemetry.
   const sanitized = {
     action,
     timestamp: new Date().toISOString(),
@@ -95,6 +93,10 @@ export async function POST(request: NextRequest) {
   const eventId: string = body.event_id || body.id || "";
   const createdAt: string = body.created_at || "";
 
+  if (!eventId || !eventType) {
+    return NextResponse.json({ ok: false, error: "missing_event_identifiers" }, { status: 400 });
+  }
+
   // 3. Replay Protection: Timestamp window (5 minutes)
   if (createdAt && !isTestBypass) {
     const eventTime = new Date(createdAt).getTime();
@@ -109,25 +111,34 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // 4. Replay Protection: Idempotent Event Deduplication
-  if (eventId) {
-    if (processedWebhookEventIds.has(eventId)) {
-      logSanitizedWebhook("duplicate_ignored", { eventType, eventId, status: "already_processed" });
-      return NextResponse.json({ ok: true, duplicate: true, eventId });
-    }
-    processedWebhookEventIds.add(eventId);
-    if (processedWebhookEventIds.size > 5000) {
-      const oldest = processedWebhookEventIds.values().next().value;
-      if (oldest) processedWebhookEventIds.delete(oldest);
-    }
+  // Extract preliminary IDs from payload
+  const dataObj = body.data?.object || body.object || {};
+  let preliminaryPaymentId: string | undefined =
+    dataObj.payment?.id ||
+    dataObj.refund?.payment_id ||
+    dataObj.dispute?.disputed_payment?.payment_id;
+  let preliminaryOrderId: string | undefined =
+    dataObj.payment?.reference_id ||
+    dataObj.payment?.order_id ||
+    dataObj.refund?.order_id;
+
+  // 4. Durable Atomic Insertion: Unique constraint on square_event_id
+  const { isDuplicate } = await DccSquareWebhookService.recordIncomingEventAtomic({
+    squareEventId: eventId,
+    eventType,
+    paymentId: preliminaryPaymentId,
+    orderId: preliminaryOrderId,
+  });
+
+  if (isDuplicate) {
+    logSanitizedWebhook("duplicate_ignored", { eventType, eventId, status: "already_processed" });
+    return NextResponse.json({ ok: true, duplicate: true, eventId });
   }
 
-  logSanitizedWebhook("received", { eventType, eventId });
+  logSanitizedWebhook("received", { eventType, eventId, paymentId: preliminaryPaymentId, orderId: preliminaryOrderId });
 
-  // 5. Route Event to Dedicated Handlers
+  // 5. Route Event to Handlers & Verify Amount/Currency Matching
   try {
-    const dataObj = body.data?.object || body.object || {};
-
     switch (eventType) {
       case "payment.created": {
         const payment = dataObj.payment || dataObj;
@@ -149,34 +160,77 @@ export async function POST(request: NextRequest) {
         const squareStatus = payment.status; // COMPLETED, APPROVED, CANCELED, FAILED
         const orderId = payment.reference_id;
 
-        logSanitizedWebhook("payment_updated", {
-          eventType,
-          eventId,
-          paymentId,
-          orderId,
-          status: squareStatus,
-          amount: payment.amount_money ? Number(payment.amount_money.amount) / 100 : undefined,
-          currency: payment.amount_money?.currency,
-        });
-
         if (paymentId) {
-          const targetPayment = (await DccPaymentService.getPaymentById(paymentId)) ||
+          const targetPayment =
+            (await DccPaymentService.getPaymentById(paymentId)) ||
             (orderId ? await DccPaymentService.getPaymentByOrderId(orderId) : null);
 
-          if (targetPayment) {
-            let nextStatus = targetPayment.status;
-            if (squareStatus === "COMPLETED") {
-              nextStatus = "captured";
-            } else if (squareStatus === "CANCELED") {
-              nextStatus = "cancelled";
-            } else if (squareStatus === "FAILED") {
-              nextStatus = "failed";
+          if (!targetPayment) {
+            logSanitizedWebhook("payment_not_found", { eventType, eventId, paymentId, orderId });
+            await DccSquareWebhookService.markEventProcessed(eventId, "ignored", { reason: "payment_not_found" });
+            return NextResponse.json({ ok: true, ignored: true, reason: "payment_not_found" });
+          }
+
+          // Verify event amount and currency match the stored order payment
+          if (payment.amount_money) {
+            const eventAmount = Number(payment.amount_money.amount) / 100;
+            const eventCurrency = payment.amount_money.currency;
+
+            if (targetPayment.amount !== undefined && Math.round(eventAmount * 100) !== Math.round(targetPayment.amount * 100)) {
+              logSanitizedWebhook("amount_mismatch", {
+                eventType,
+                eventId,
+                paymentId,
+                expectedAmount: targetPayment.amount,
+                eventAmount,
+              });
+              await DccSquareWebhookService.markEventProcessed(eventId, "failed", {
+                error: "AMOUNT_MISMATCH",
+                expectedAmount: targetPayment.amount,
+                eventAmount,
+              });
+              return NextResponse.json({ ok: false, error: "amount_mismatch" }, { status: 400 });
             }
 
-            if (nextStatus !== targetPayment.status) {
-              await DccPaymentService.updatePaymentStatus(targetPayment.orderId, nextStatus);
+            if (targetPayment.currency && eventCurrency && eventCurrency !== targetPayment.currency) {
+              logSanitizedWebhook("currency_mismatch", {
+                eventType,
+                eventId,
+                paymentId,
+                expectedCurrency: targetPayment.currency,
+                eventCurrency,
+              });
+              await DccSquareWebhookService.markEventProcessed(eventId, "failed", {
+                error: "CURRENCY_MISMATCH",
+                expectedCurrency: targetPayment.currency,
+                eventCurrency,
+              });
+              return NextResponse.json({ ok: false, error: "currency_mismatch" }, { status: 400 });
             }
           }
+
+          let nextStatus = targetPayment.status;
+          if (squareStatus === "COMPLETED") {
+            nextStatus = "captured";
+          } else if (squareStatus === "CANCELED") {
+            nextStatus = "cancelled";
+          } else if (squareStatus === "FAILED") {
+            nextStatus = "failed";
+          }
+
+          if (nextStatus !== targetPayment.status) {
+            await DccPaymentService.updatePaymentStatus(targetPayment.orderId, nextStatus);
+          }
+
+          logSanitizedWebhook("payment_updated", {
+            eventType,
+            eventId,
+            paymentId,
+            orderId: targetPayment.orderId,
+            status: nextStatus,
+            amount: targetPayment.amount,
+            currency: targetPayment.currency,
+          });
         }
         break;
       }
@@ -191,25 +245,39 @@ export async function POST(request: NextRequest) {
         const amount = amountCents / 100;
         const currency = refund.amount_money?.currency || "USD";
 
-        logSanitizedWebhook("refund_event", {
-          eventType,
-          eventId,
-          refundId,
-          paymentId,
-          status: refundStatus,
-          amount,
-          currency,
-        });
-
         if (paymentId && (refundStatus === "SUCCESS" || refundStatus === "COMPLETED")) {
           const targetPayment = await DccPaymentService.getPaymentById(paymentId);
           if (targetPayment) {
-            await DccPaymentService.recordExternalRefund({
+            // Verify currency match
+            if (targetPayment.currency && currency !== targetPayment.currency) {
+              logSanitizedWebhook("currency_mismatch", { eventType, eventId, refundId, expected: targetPayment.currency, received: currency });
+              await DccSquareWebhookService.markEventProcessed(eventId, "failed", { error: "CURRENCY_MISMATCH" });
+              return NextResponse.json({ ok: false, error: "currency_mismatch" }, { status: 400 });
+            }
+
+            // Idempotent refund handling: check if already recorded
+            const existingRefunds = await DccPaymentService.getRefundsForOrder(targetPayment.orderId);
+            const alreadyRecorded = existingRefunds.some((r) => r.id === refundId);
+
+            if (!alreadyRecorded) {
+              await DccPaymentService.recordExternalRefund({
+                refundId,
+                orderId: targetPayment.orderId,
+                amount,
+                currency,
+                reason: refund.reason || "Square Webhook Refund",
+              });
+            }
+
+            logSanitizedWebhook("refund_processed", {
+              eventType,
+              eventId,
               refundId,
+              paymentId,
               orderId: targetPayment.orderId,
               amount,
               currency,
-              reason: refund.reason || "Square Webhook Refund",
+              status: "processed",
             });
           }
         }
@@ -226,25 +294,32 @@ export async function POST(request: NextRequest) {
         const currency = dispute.amount_money?.currency || "USD";
         const state = dispute.state || dispute.status;
 
-        logSanitizedWebhook("dispute_event", {
-          eventType,
-          eventId,
-          disputeId,
-          paymentId,
-          status: state,
-          amount,
-          currency,
-        });
-
         if (paymentId) {
           const targetPayment = await DccPaymentService.getPaymentById(paymentId);
           if (targetPayment) {
-            await DccPaymentService.recordChargeback({
+            // Idempotent dispute handling: check if already recorded
+            const existingRefunds = await DccPaymentService.getRefundsForOrder(targetPayment.orderId);
+            const alreadyRecorded = existingRefunds.some((r) => r.id === disputeId);
+
+            if (!alreadyRecorded) {
+              await DccPaymentService.recordChargeback({
+                orderId: targetPayment.orderId,
+                operatorSlug: "dcc-system",
+                amount,
+                currency,
+                reason: dispute.reason || `Square dispute: ${state}`,
+              });
+            }
+
+            logSanitizedWebhook("dispute_processed", {
+              eventType,
+              eventId,
+              disputeId,
+              paymentId,
               orderId: targetPayment.orderId,
-              operatorSlug: "dcc-system",
+              status: state,
               amount,
               currency,
-              reason: dispute.reason || `Square dispute: ${state}`,
             });
           }
         }
@@ -256,14 +331,22 @@ export async function POST(request: NextRequest) {
         break;
     }
 
-    // Persist audit log in DB if available
+    // Mark event successfully processed in durable store
+    await DccSquareWebhookService.markEventProcessed(
+      eventId,
+      "succeeded",
+      undefined,
+      { paymentId: preliminaryPaymentId, orderId: preliminaryOrderId }
+    );
+
+    // Audit log in DB if available
     const db = getDb();
     if (db) {
       try {
         await db.insert(octoAuditLogs).values({
           action: "SQUARE_WEBHOOK_PROCESSED",
           entityType: "WEBHOOK",
-          entityId: eventId || `ev_${Date.now()}`,
+          entityId: eventId,
           status: "SUCCESS",
           payload: {
             eventType,
@@ -272,13 +355,14 @@ export async function POST(request: NextRequest) {
           },
         });
       } catch {
-        // Non-blocking audit log
+        // Non-blocking
       }
     }
 
     return NextResponse.json({ ok: true, processed: true, eventType, eventId });
   } catch (err: any) {
     logSanitizedWebhook("processing_error", { eventType, eventId, status: err.message });
+    await DccSquareWebhookService.markEventProcessed(eventId, "failed", { error: err.message });
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }
 }

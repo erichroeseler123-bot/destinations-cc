@@ -1589,5 +1589,32 @@ export type NewDccSagaStepRow = typeof dccSagaSteps.$inferInsert;
 export type DccSagaAuditEventRow = typeof dccSagaAuditEvents.$inferSelect;
 export type NewDccSagaAuditEventRow = typeof dccSagaAuditEvents.$inferInsert;
 
+export const dccSquareWebhookEvents = pgTable(
+  "dcc_square_webhook_events",
+  {
+    id: text("id").primaryKey(), // sq_evt_...
+    squareEventId: text("square_event_id").notNull(),
+    eventType: text("event_type").notNull(),
+    paymentId: text("payment_id"),
+    orderId: text("order_id"),
+    processingStatus: text("processing_status").notNull().default("processing"), // processing, succeeded, duplicate, ignored, failed
+    errorMetadata: jsonb("error_metadata").$type<Record<string, unknown>>(),
+    receivedAt: timestamp("received_at", { withTimezone: true }).notNull().defaultNow(),
+    processedAt: timestamp("processed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    squareEventIdUniqueIdx: uniqueIndex("dcc_square_webhook_events_event_id_uidx").on(table.squareEventId),
+    eventTypeIdx: index("dcc_square_webhook_events_event_type_idx").on(table.eventType),
+    paymentIdIdx: index("dcc_square_webhook_events_payment_id_idx").on(table.paymentId),
+    orderIdIdx: index("dcc_square_webhook_events_order_id_idx").on(table.orderId),
+    processingStatusIdx: index("dcc_square_webhook_events_status_idx").on(table.processingStatus),
+  })
+);
+
+export type DccSquareWebhookEventRow = typeof dccSquareWebhookEvents.$inferSelect;
+export type NewDccSquareWebhookEventRow = typeof dccSquareWebhookEvents.$inferInsert;
+
 
 

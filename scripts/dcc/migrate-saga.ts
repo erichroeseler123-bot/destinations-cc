@@ -270,6 +270,26 @@ export const DCC_SAGA_MIGRATION_QUERIES = [
   `CREATE INDEX IF NOT EXISTS dcc_saga_audit_events_order_id_idx ON dcc_saga_audit_events (order_id);`,
   `CREATE INDEX IF NOT EXISTS dcc_saga_audit_events_event_type_idx ON dcc_saga_audit_events (event_type);`,
   `CREATE INDEX IF NOT EXISTS dcc_saga_audit_events_occurred_at_idx ON dcc_saga_audit_events (occurred_at);`,
+
+  // 11. dcc_square_webhook_events
+  `CREATE TABLE IF NOT EXISTS dcc_square_webhook_events (
+    id TEXT PRIMARY KEY,
+    square_event_id TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    payment_id TEXT,
+    order_id TEXT,
+    processing_status TEXT NOT NULL DEFAULT 'processing',
+    error_metadata JSONB,
+    received_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    processed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS dcc_square_webhook_events_event_id_uidx ON dcc_square_webhook_events (square_event_id);`,
+  `CREATE INDEX IF NOT EXISTS dcc_square_webhook_events_event_type_idx ON dcc_square_webhook_events (event_type);`,
+  `CREATE INDEX IF NOT EXISTS dcc_square_webhook_events_payment_id_idx ON dcc_square_webhook_events (payment_id);`,
+  `CREATE INDEX IF NOT EXISTS dcc_square_webhook_events_order_id_idx ON dcc_square_webhook_events (order_id);`,
+  `CREATE INDEX IF NOT EXISTS dcc_square_webhook_events_status_idx ON dcc_square_webhook_events (processing_status);`,
 ];
 
 export async function runDccSagaMigration(targetDbUrl?: string): Promise<{ success: boolean; queriesRun: number }> {
