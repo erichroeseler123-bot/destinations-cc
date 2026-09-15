@@ -1299,3 +1299,168 @@ export type NewOctoSettlementLedgerRow = typeof octoSettlementLedger.$inferInser
 export type OctoAuditLogRow = typeof octoAuditLogs.$inferSelect;
 export type NewOctoAuditLogRow = typeof octoAuditLogs.$inferInsert;
 
+export const dccTravelerProfiles = pgTable(
+  "dcc_traveler_profiles",
+  {
+    id: text("id").primaryKey(), // dcc:trav:...
+    email: text("email").notNull(),
+    fullName: text("full_name"),
+    phoneNumber: text("phone_number"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    emailUniqueIdx: uniqueIndex("dcc_traveler_profiles_email_uidx").on(table.email),
+    createdAtIdx: index("dcc_traveler_profiles_created_at_idx").on(table.createdAt),
+  })
+);
+
+export const dccAuthTokens = pgTable(
+  "dcc_auth_tokens",
+  {
+    id: text("id").primaryKey(),
+    email: text("email").notNull(),
+    tokenHash: text("token_hash").notNull(),
+    otpCode: text("otp_code").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    emailIdx: index("dcc_auth_tokens_email_idx").on(table.email),
+    expiresAtIdx: index("dcc_auth_tokens_expires_at_idx").on(table.expiresAt),
+  })
+);
+
+export const dccOrderPayments = pgTable(
+  "dcc_order_payments",
+  {
+    id: text("id").primaryKey(), // dcc:pay:...
+    orderId: text("order_id").notNull(),
+    travelerId: text("traveler_id"),
+    amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+    currency: text("currency").notNull().default("USD"),
+    provider: text("provider").notNull(), // stripe, square, octo_reseller
+    status: text("status").notNull(), // captured, authorized, partially_refunded, refunded, chargeback
+    paymentMethod: text("payment_method"),
+    receiptUrl: text("receipt_url"),
+    customerEmail: text("customer_email"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    orderIdIdx: index("dcc_order_payments_order_id_idx").on(table.orderId),
+    travelerIdIdx: index("dcc_order_payments_traveler_id_idx").on(table.travelerId),
+    statusIdx: index("dcc_order_payments_status_idx").on(table.status),
+  })
+);
+
+export const dccOrderItems = pgTable(
+  "dcc_order_items",
+  {
+    id: text("id").primaryKey(), // dcc:item:...
+    orderId: text("order_id").notNull(),
+    bookingId: text("booking_id"),
+    bookingUuid: text("booking_uuid"),
+    productId: text("product_id").notNull(),
+    optionId: text("option_id").notNull(),
+    availabilityId: text("availability_id").notNull(),
+    operatorSlug: text("operator_slug").notNull(),
+    operatorName: text("operator_name").notNull(),
+    price: numeric("price", { precision: 12, scale: 2 }).notNull(),
+    currency: text("currency").notNull().default("USD"),
+    unitItems: jsonb("unit_items").$type<unknown[]>().notNull().default([]),
+    status: text("status").notNull().default("ON_HOLD"), // ON_HOLD, CONFIRMED, COMPLETED, CANCELLED
+    eventDate: date("event_date"),
+    eventTime: text("event_time"),
+    serviceCompleted: boolean("service_completed").notNull().default(false),
+    serviceCompletedAt: timestamp("service_completed_at", { withTimezone: true }),
+    voucher: jsonb("voucher").$type<Record<string, unknown>>(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    orderIdIdx: index("dcc_order_items_order_id_idx").on(table.orderId),
+    bookingIdIdx: index("dcc_order_items_booking_id_idx").on(table.bookingId),
+    operatorSlugIdx: index("dcc_order_items_operator_slug_idx").on(table.operatorSlug),
+    statusIdx: index("dcc_order_items_status_idx").on(table.status),
+  })
+);
+
+export const dccOperatorPayables = pgTable(
+  "dcc_operator_payables",
+  {
+    id: text("id").primaryKey(), // dcc:paybl:...
+    orderId: text("order_id").notNull(),
+    orderItemId: text("order_item_id").notNull(),
+    bookingId: text("booking_id").notNull(),
+    operatorSlug: text("operator_slug").notNull(),
+    operatorName: text("operator_name").notNull(),
+    currency: text("currency").notNull().default("USD"),
+    grossAmount: numeric("gross_amount", { precision: 12, scale: 2 }).notNull(),
+    dccCommissionPercent: numeric("dcc_commission_percent", { precision: 5, scale: 2 }),
+    dccCommissionAmount: numeric("dcc_commission_amount", { precision: 12, scale: 2 }).notNull(),
+    operatorPayableAmount: numeric("operator_payable_amount", { precision: 12, scale: 2 }).notNull(),
+    reserveAmount: numeric("reserve_amount", { precision: 12, scale: 2 }).notNull().default("0.00"),
+    settlementStatus: text("settlement_status").notNull().default("pending"), // pending, ready_for_payout, paid, reversed, held
+    serviceDate: date("service_date"),
+    serviceCompletedAt: timestamp("service_completed_at", { withTimezone: true }),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+    cancellationStatus: text("cancellation_status").notNull().default("none"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    orderIdIdx: index("dcc_operator_payables_order_id_idx").on(table.orderId),
+    operatorSlugIdx: index("dcc_operator_payables_operator_slug_idx").on(table.operatorSlug),
+    settlementStatusIdx: index("dcc_operator_payables_settlement_status_idx").on(table.settlementStatus),
+    serviceDateIdx: index("dcc_operator_payables_service_date_idx").on(table.serviceDate),
+  })
+);
+
+export const dccDisputesAndRefunds = pgTable(
+  "dcc_disputes_and_refunds",
+  {
+    id: text("id").primaryKey(), // dcc:ref:... or dcc:dis:...
+    type: text("type").notNull(), // refund, chargeback, reserve_recovery
+    orderId: text("order_id").notNull(),
+    orderItemId: text("order_item_id"),
+    bookingId: text("booking_id"),
+    paymentId: text("payment_id").notNull(),
+    operatorSlug: text("operator_slug").notNull(),
+    amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+    currency: text("currency").notNull().default("USD"),
+    status: text("status").notNull().default("succeeded"), // pending, succeeded, reversed
+    reason: text("reason"),
+    settlementImpact: text("settlement_impact").notNull(), // reduced_pending, deducted_future_payout, operator_reserve
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    orderIdIdx: index("dcc_disputes_and_refunds_order_id_idx").on(table.orderId),
+    operatorSlugIdx: index("dcc_disputes_and_refunds_operator_slug_idx").on(table.operatorSlug),
+    typeIdx: index("dcc_disputes_and_refunds_type_idx").on(table.type),
+  })
+);
+
+export type DccTravelerProfileRow = typeof dccTravelerProfiles.$inferSelect;
+export type NewDccTravelerProfileRow = typeof dccTravelerProfiles.$inferInsert;
+
+export type DccAuthTokenRow = typeof dccAuthTokens.$inferSelect;
+export type NewDccAuthTokenRow = typeof dccAuthTokens.$inferInsert;
+
+export type DccOrderPaymentRow = typeof dccOrderPayments.$inferSelect;
+export type NewDccOrderPaymentRow = typeof dccOrderPayments.$inferInsert;
+
+export type DccOrderItemRow = typeof dccOrderItems.$inferSelect;
+export type NewDccOrderItemRow = typeof dccOrderItems.$inferInsert;
+
+export type DccOperatorPayableRow = typeof dccOperatorPayables.$inferSelect;
+export type NewDccOperatorPayableRow = typeof dccOperatorPayables.$inferInsert;
+
+export type DccDisputeOrRefundRow = typeof dccDisputesAndRefunds.$inferSelect;
+export type NewDccDisputeOrRefundRow = typeof dccDisputesAndRefunds.$inferInsert;
+
+

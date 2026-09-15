@@ -500,27 +500,6 @@ export class DccBookingService {
           })
           .where(eq(octoBookings.id, dccBookingId));
 
-        // Create DCC Commission Settlement Ledger Entry
-        const gross = Number(bookingRecord?.totalPrice || confirmedResult.totalPrice);
-        await DccSettlementEngine.recordBookingSettlement({
-          bookingId: dccBookingId,
-          orderId: params.orderId,
-          dccReference: dccBookingId,
-          supplierReference: confirmedResult.supplierReference || bookingRecord?.supplierReference,
-          operatorSlug: connection.operatorSlug,
-          operatorName: connection.operatorName,
-          currency: confirmedResult.currency,
-          grossAmount: gross,
-          commissionPercent:
-            connection.commissionPercent != null ? Number(connection.commissionPercent) : undefined,
-          paymentStatus: "captured",
-          settlementStatus: "pending",
-          metadata: {
-            confirmedAt: confirmedResult.confirmedAt,
-            voucherCode: confirmedResult.voucher?.code,
-          },
-        });
-
         await db.insert(octoAuditLogs).values({
           action: "BOOKING_CONFIRMED",
           entityType: "BOOKING",
@@ -535,6 +514,27 @@ export class DccBookingService {
         console.error("Database error updating booking to CONFIRMED:", err.message);
       }
     }
+
+    // Record DCC Commission Settlement Ledger Entry (handles DB and memory fallback)
+    const gross = Number(bookingRecord?.totalPrice || confirmedResult.totalPrice);
+    await DccSettlementEngine.recordBookingSettlement({
+      bookingId: dccBookingId,
+      orderId: params.orderId,
+      dccReference: dccBookingId,
+      supplierReference: confirmedResult.supplierReference || bookingRecord?.supplierReference,
+      operatorSlug: connection.operatorSlug,
+      operatorName: connection.operatorName,
+      currency: confirmedResult.currency,
+      grossAmount: gross,
+      commissionPercent:
+        connection.commissionPercent != null ? Number(connection.commissionPercent) : undefined,
+      paymentStatus: "captured",
+      settlementStatus: "pending",
+      metadata: {
+        confirmedAt: confirmedResult.confirmedAt,
+        voucherCode: confirmedResult.voucher?.code,
+      },
+    });
 
     const updated = {
       ...confirmedResult,
@@ -757,14 +757,6 @@ export class DccBookingService {
               : eq(octoBookings.bookingUuid, bookingIdOrUuid)
           );
 
-        // Record cancellation settlement adjustment
-        const ledgerId = `dcc:ledg:${bookingKey.replace(/^dcc:bk:/, "")}`;
-        await DccSettlementEngine.recordCancellationSettlement({
-          ledgerId,
-          refundType: "full",
-          refundAmount: booking.totalPrice,
-        });
-
         await db.insert(octoAuditLogs).values({
           action: "BOOKING_CANCELLED",
           entityType: "BOOKING",
@@ -779,6 +771,15 @@ export class DccBookingService {
         console.error("Database error on cancelBooking:", err.message);
       }
     }
+
+    // Record cancellation settlement adjustment (handles DB and memory fallback)
+    const ledgerId = `dcc:ledg:${bookingKey.replace(/^dcc:bk:/, "")}`;
+    await DccSettlementEngine.recordCancellationSettlement({
+      ledgerId,
+      bookingId: bookingKey,
+      refundType: "full",
+      refundAmount: booking.totalPrice,
+    });
 
     fallbackBookingRecordMap.set(bookingKey, cancelledResult);
     return cancelledResult;
