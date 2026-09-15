@@ -1,12 +1,14 @@
 import crypto from "crypto";
 import { getDb } from "@/lib/db/client";
 import { dccOrderPayments, dccDisputesAndRefunds, octoAuditLogs } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { SquareClient, SquareEnvironment } from "square";
 import {
   getSquareAccessToken,
   getSquareEnvironment,
   getSquareLocationIdDcc,
+  assertValidDccSquareProductionConfig,
+  isSquareProduction,
 } from "@/lib/squareConfig";
 import {
   DccPaymentResult,
@@ -43,6 +45,10 @@ export class DccPaymentService {
 
     if (params.options?.simulateFailure) {
       throw new Error("Square payment failed: Simulated payment gateway decline");
+    }
+
+    if (isSquareProduction()) {
+      assertValidDccSquareProductionConfig();
     }
 
     const provider = params.paymentInfo?.provider || "square";
@@ -187,6 +193,145 @@ export class DccPaymentService {
   }
 
   /**
+   * Retrieve a payment record by either internal DCC ID or provider payment ID
+   */
+  static async getPaymentById(id: string): Promise<DccOrderPaymentRecord | null> {
+    const db = getDb();
+    if (db) {
+      try {
+        const rows = await db
+          .select()
+          .from(dccOrderPayments)
+          .where(or(eq(dccOrderPayments.id, id), eq(dccOrderPayments.orderId, id)));
+        if (rows.length > 0) {
+          const r = rows[0];
+          return {
+            id: r.id,
+            orderId: r.orderId,
+            paymentProvider: r.provider,
+            providerPaymentId: r.id,
+            amount: Number(r.amount),
+            currency: r.currency,
+            status: r.status as any,
+            rawMetadata: { customerEmail: r.customerEmail },
+            createdAt: r.createdAt?.toISOString() || new Date().toISOString(),
+            updatedAt: r.updatedAt?.toISOString() || new Date().toISOString(),
+          };
+        }
+      } catch (err: any) {
+        console.error("Database query error on getPaymentById:", err.message);
+      }
+    }
+
+    return fallbackPaymentStore.get(id) || null;
+  }
+
+  /**
+   * Update the status of an existing payment record
+   */
+  static async updatePaymentStatus(orderId: string, status: any): Promise<boolean> {
+    const payment = await this.getPaymentByOrderId(orderId);
+    if (!payment) return false;
+
+    payment.status = status;
+    payment.updatedAt = new Date().toISOString();
+    fallbackPaymentStore.set(orderId, payment);
+    fallbackPaymentStore.set(payment.id, payment);
+
+    const db = getDb();
+    if (db) {
+      try {
+        await db
+          .update(dccOrderPayments)
+          .set({ status, updatedAt: new Date() })
+          .where(eq(dccOrderPayments.orderId, orderId));
+      } catch (err: any) {
+        console.error("Database update error on updatePaymentStatus:", err.message);
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Record an external refund event (e.g. from Square webhook)
+   */
+  static async recordExternalRefund(params: {
+    refundId: string;
+    orderId: string;
+    amount: number;
+    currency?: string;
+    reason?: string;
+  }): Promise<DccRefundRecord> {
+    const now = new Date().toISOString();
+    const payment = await this.getPaymentByOrderId(params.orderId);
+
+    const refundRecord: DccRefundRecord = {
+      id: params.refundId,
+      orderId: params.orderId,
+      operatorSlug: "dcc-system",
+      type: "refund",
+      amount: params.amount,
+      currency: params.currency || "USD",
+      status: "processed",
+      reason: params.reason || "External Square Refund",
+      settlementAdjusted: false,
+      createdAt: now,
+    };
+
+    fallbackRefundStore.set(params.refundId, refundRecord);
+
+    if (payment) {
+      const allRefunds = await this.getRefundsForOrder(params.orderId);
+      const totalRefunded = allRefunds.reduce((sum, r) => sum + r.amount, 0);
+      payment.status = totalRefunded >= payment.amount ? "refunded" : "partially_refunded";
+      payment.updatedAt = now;
+      fallbackPaymentStore.set(params.orderId, payment);
+      fallbackPaymentStore.set(payment.id, payment);
+    }
+
+    const db = getDb();
+    if (db) {
+      try {
+        await db.insert(dccDisputesAndRefunds).values({
+          id: refundRecord.id,
+          orderId: refundRecord.orderId,
+          paymentId: payment?.id || "pay_unspecified",
+          operatorSlug: refundRecord.operatorSlug,
+          type: refundRecord.type,
+          amount: refundRecord.amount.toFixed(2),
+          currency: refundRecord.currency,
+          status: refundRecord.status,
+          reason: refundRecord.reason || null,
+          settlementImpact: "reduced_pending",
+        });
+
+        if (payment) {
+          await db
+            .update(dccOrderPayments)
+            .set({ status: payment.status, updatedAt: new Date() })
+            .where(eq(dccOrderPayments.orderId, params.orderId));
+        }
+
+        await db.insert(octoAuditLogs).values({
+          action: "WEBHOOK_REFUND_RECORDED",
+          entityType: "REFUND",
+          entityId: refundRecord.id,
+          status: "SUCCESS",
+          payload: {
+            orderId: params.orderId,
+            amount: params.amount,
+          },
+        });
+      } catch (err: any) {
+        console.error("Database insert error on recordExternalRefund:", err.message);
+      }
+    }
+
+    return refundRecord;
+  }
+
+  /**
    * Process and record a refund (item-level or order-level)
    */
   static async processRefund(params: DccRefundParams): Promise<DccRefundRecord> {
@@ -198,6 +343,9 @@ export class DccPaymentService {
     // Live Square refund if configured and payment exists
     const token = getSquareAccessToken();
     if (payment?.paymentProvider === "square" && payment.providerPaymentId && token && !payment.providerPaymentId.startsWith("mock_")) {
+      if (isSquareProduction()) {
+        assertValidDccSquareProductionConfig();
+      }
       try {
         const client = new SquareClient({
           token,

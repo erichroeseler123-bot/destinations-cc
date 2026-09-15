@@ -92,6 +92,13 @@ export function getSquareLocationId(route?: string | null) {
   );
 }
 
+export function isSquareProduction(): boolean {
+  const explicit = process.env.SQUARE_ENVIRONMENT?.toLowerCase();
+  if (explicit === "production") return true;
+  if (explicit === "sandbox" || explicit === "test") return false;
+  return process.env.NODE_ENV === "production";
+}
+
 export function getSquareLocationIdDcc() {
   const dccSpecific = readCanonicalSquareEnv(
     ["NEXT_PUBLIC_SQUARE_LOCATION_ID_DCC", "SQUARE_LOCATION_ID_DCC"],
@@ -99,7 +106,37 @@ export function getSquareLocationIdDcc() {
     "square.location_id.dcc",
   );
   if (dccSpecific) return dccSpecific;
+
+  if (isSquareProduction()) {
+    throw new Error(
+      "DCC_SQUARE_CONFIG_ERROR: Production requires explicit SQUARE_LOCATION_ID_DCC. Fallback to shared satellite location is strictly forbidden in production."
+    );
+  }
+
   return getSquareLocationId();
+}
+
+export function assertValidDccSquareProductionConfig() {
+  if (!isSquareProduction()) {
+    return;
+  }
+
+  const token = getSquareAccessToken();
+  if (!token) {
+    throw new Error("DCC_SQUARE_CONFIG_ERROR: SQUARE_ACCESS_TOKEN is required in production.");
+  }
+
+  const dccSpecific = readCanonicalSquareEnv(
+    ["NEXT_PUBLIC_SQUARE_LOCATION_ID_DCC", "SQUARE_LOCATION_ID_DCC"],
+    [],
+    "square.location_id.dcc",
+  );
+
+  if (!dccSpecific) {
+    throw new Error(
+      "DCC_SQUARE_CONFIG_ERROR: SQUARE_LOCATION_ID_DCC is required in production. Fallback to shared satellite location is strictly forbidden in production."
+    );
+  }
 }
 
 export function getSquareAccessToken(route?: string | null) {

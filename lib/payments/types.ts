@@ -5,6 +5,7 @@ export type DccPaymentStatus =
   | "refunded"
   | "partially_refunded"
   | "chargeback"
+  | "cancelled"
   | "failed";
 
 export interface DccPaymentInfo {

@@ -511,11 +511,24 @@ export class DccBookingService {
 
     let confirmedResult: OctoBookingResult;
 
+    // Sanitize payment details sent to upstream supplier adapters:
+    // Pass only standard OCTO fields (isPrepaid, currency, amount) and strip internal Square payment IDs (paymentId, card nonces)
+    // unless the provider adapter connection explicitly flags requiresPaymentDetails: true.
+    const supplierPayment = connection?.requiresPaymentDetails
+      ? params.payment
+      : params.payment
+      ? {
+          isPrepaid: params.payment.isPrepaid ?? true,
+          ...(params.payment.currency ? { currency: params.payment.currency } : {}),
+          ...(params.payment.amount != null ? { amount: params.payment.amount } : {}),
+        }
+      : { isPrepaid: true };
+
     if (isMock) {
       confirmedResult = MockOctoSupplierEngine.confirmBooking(bookingUuid, {
         contact: params.contact,
         resellerReference: dccBookingId,
-        payment: params.payment,
+        payment: supplierPayment,
       });
     } else if (adapter) {
       confirmedResult = await adapter.confirmBooking(
@@ -523,7 +536,7 @@ export class DccBookingService {
         {
           contact: params.contact,
           resellerReference: dccBookingId,
-          payment: params.payment,
+          payment: supplierPayment,
         },
         params.idempotencyKey
       );

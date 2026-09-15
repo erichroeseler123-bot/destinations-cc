@@ -36,6 +36,7 @@ export interface DccBookingConfirmRequest {
     notes?: string;
   };
   payment?: {
+    isPrepaid?: boolean;
     provider?: string;
     paymentId?: string;
     currency?: string;

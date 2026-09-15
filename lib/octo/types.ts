@@ -206,6 +206,7 @@ export interface OctoConfirmBookingParams {
   contact: OctoContact;
   resellerReference?: string;
   payment?: {
+    isPrepaid?: boolean;
     provider?: string;
     paymentId?: string;
     currency?: string;
