@@ -100,7 +100,7 @@ export default function LocationFirstHomeFast() {
           </div>
 
           <p className="mt-4 max-w-3xl text-base leading-7 text-white/58 sm:text-lg">
-            Enter anywhere on Earth or use your device location. DCC connects two layers: live public destination intelligence (weather, hazards, river gauges, transit) and an authorized open connectivity (OCTO) standard connecting you directly to verified tour and transport operators with zero middleman markup.
+            Enter anywhere on Earth or use your device location. DCC connects two layers: live public destination intelligence (weather, hazards, river gauges, transit) and an open connectivity (OCTO) standard designed to connect directly to authorized operators when live connections are available.
           </p>
 
           <form onSubmit={search} className="mt-7 flex max-w-4xl flex-col gap-3 sm:flex-row">
@@ -157,14 +157,14 @@ export default function LocationFirstHomeFast() {
                 <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
                 <span>Connect</span>
               </div>
-              <p className="mt-1 text-xs leading-5 text-white/55">Direct connectivity to licensed tour and transport operators via the open OCTO standard with zero middleman markup.</p>
+              <p className="mt-1 text-xs leading-5 text-white/55">Direct connectivity to authorized operators via the open OCTO standard when live connections are available.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
               <div className="flex items-center gap-1.5 text-xs font-black text-cyan-200">
                 <span className="h-2 w-2 rounded-full bg-cyan-300"></span>
                 <span>Book</span>
               </div>
-              <p className="mt-1 text-xs leading-5 text-white/55">Real-time availability, secure 15-minute booking holds, and coordinated multi-supplier checkout via master DCC Orders.</p>
+              <p className="mt-1 text-xs leading-5 text-white/55">Standardized booking holds and direct checkout with authorized operators when live connections are available.</p>
             </div>
           </div>
         </div>

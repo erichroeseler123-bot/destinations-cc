@@ -229,7 +229,7 @@ async function ServerLocationSnapshot({ lat, lng, dccEndpoints }: { lat: number;
                   Tourism, Activities & Experiences Serving This Coordinate
                 </h3>
                 <p className="mt-1 text-xs text-white/45">
-                  Direct operator catalog and authorized connectivity standard. Live bookings connect directly to verified suppliers with zero middleman markup.
+                  Direct operator catalog and authorized connectivity standard. Bookings connect directly to authorized operators when live connections are available.
                 </p>
               </div>
 

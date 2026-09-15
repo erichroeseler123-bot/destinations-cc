@@ -8,10 +8,10 @@ export default function DccMachineContractExplainer() {
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">How DCC works</p>
           <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] sm:text-4xl">Every coordinate on Earth can have a DCC page.</h2>
           <p className="mt-5 text-base leading-8 text-white/58">
-            DCC connects two foundational layers: <strong>Destination Intelligence</strong> and <strong>Authorized Tourism Commerce</strong>. Your device location, street address, airport, port, or landmark resolves to a canonical coordinate. DCC then hydrates the location view from authoritative public feeds and connects directly to verified tour and transport operators using the open OCTO standard.
+            DCC connects two foundational layers: <strong>Destination Intelligence</strong> and <strong>Authorized Tourism Commerce</strong>. Your device location, street address, airport, port, or landmark resolves to a canonical coordinate. DCC hydrates the location view from authoritative public feeds and connects directly to authorized operators using the open OCTO standard when live connections are available.
           </p>
           <p className="mt-4 text-base leading-8 text-white/58">
-            The same coordinate has two views: a human page at <code className="text-cyan-200">/location/lat/lng</code> and a developer JSON endpoint at <code className="text-cyan-200">/api/location/lat/lng</code>. Commercial bookings route through DCC master Orders directly to authorized operator booking systems with zero proprietary lock-in.
+            The same coordinate has two views: a human page at <code className="text-cyan-200">/location/lat/lng</code> and a developer JSON endpoint at <code className="text-cyan-200">/api/location/lat/lng</code>. Standardized bookings route directly to authorized operator booking systems when live connections are available.
           </p>
         </div>
 
@@ -22,11 +22,11 @@ export default function DccMachineContractExplainer() {
           </article>
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
             <strong className="text-sm text-emerald-300">2. Connect</strong>
-            <p className="mt-2 text-sm leading-6 text-white/50">Direct connectivity to licensed tour and transport operators via the open OCTO standard with zero middleman markup.</p>
+            <p className="mt-2 text-sm leading-6 text-white/50">Direct connectivity to authorized operators via the open OCTO standard when live connections are available.</p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
             <strong className="text-sm text-cyan-200">3. Book</strong>
-            <p className="mt-2 text-sm leading-6 text-white/50">Real-time availability, secure 15-minute booking holds, and coordinated multi-supplier checkout via master DCC Orders.</p>
+            <p className="mt-2 text-sm leading-6 text-white/50">Standardized availability holds and booking workflows with authorized operators when live connections are available.</p>
           </article>
         </div>
 
