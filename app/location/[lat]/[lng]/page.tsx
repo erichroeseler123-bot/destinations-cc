@@ -6,7 +6,9 @@ import ExtendedLocationPanels from "@/app/components/dcc/ExtendedLocationPanels"
 import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
 import { canonicalCoordinate, getDiscoverableLocation, isIndexableCoordinate } from "@/lib/dcc/locationDiscovery";
 import { readLocationIntelligence } from "@/lib/dcc/locationIntelligence";
+import Link from "next/link";
 import { readApplicableDccEndpoints } from "@/lib/dcc/endpointRegistry";
+import { DccLocationProductService } from "@/lib/octo/locationProductService";
 
 const SITE_URL = "https://www.destinationcommandcenter.com";
 
@@ -43,23 +45,46 @@ function SnapshotMetric({ label, value, detail }: { label: string; value: string
 }
 
 async function ServerLocationSnapshot({ lat, lng, dccEndpoints }: { lat: number; lng: number; dccEndpoints?: any[] }) {
+  let intelligence: any = null;
+  let endpoints: any[] = [];
+  let octoDiscovery: any = { products: [], directoryOnlyOperators: [] };
+  let loadFailed = false;
+
   try {
-    const [intelligence, endpoints] = await Promise.all([
+    const [intResult, epResult, octoResult] = await Promise.all([
       readLocationIntelligence({ lat, lng }),
       dccEndpoints ? Promise.resolve(dccEndpoints) : readApplicableDccEndpoints({ lat, lng }),
+      DccLocationProductService.findProductsForLocation({ lat, lng }),
     ]);
-    const weather = intelligence.now?.weather || null;
-    const air = intelligence.now?.airQuality || null;
-    const nextHours = intelligence.conditions?.next12Hours || [];
-    const nextDays = intelligence.conditions?.next3Days || [];
-    const alerts = intelligence.hazards?.alerts || [];
-    const earthquakes = intelligence.hazards?.earthquakes || [];
-    const naturalEvents = intelligence.hazards?.naturalEvents || [];
-    const gauges = intelligence.water?.nearbyGauges || [];
-    const activeSources = (intelligence.sources || []).filter((source: any) => source.available);
+    intelligence = intResult;
+    endpoints = epResult || [];
+    octoDiscovery = octoResult || { products: [], directoryOnlyOperators: [] };
+  } catch {
+    loadFailed = true;
+  }
 
+  if (loadFailed || !intelligence) {
     return (
       <section className="border-b border-white/10 bg-[#070b10] text-white">
+        <div className="mx-auto max-w-7xl px-5 py-6 sm:px-8">
+          <p className="text-sm leading-6 text-white/55">Live public sources are temporarily unavailable. The coordinate remains canonical and the live panels below will retry independently.</p>
+        </div>
+      </section>
+    );
+  }
+
+  const weather = intelligence.now?.weather || null;
+  const air = intelligence.now?.airQuality || null;
+  const nextHours = intelligence.conditions?.next12Hours || [];
+  const nextDays = intelligence.conditions?.next3Days || [];
+  const alerts = intelligence.hazards?.alerts || [];
+  const earthquakes = intelligence.hazards?.earthquakes || [];
+  const naturalEvents = intelligence.hazards?.naturalEvents || [];
+  const gauges = intelligence.water?.nearbyGauges || [];
+  const activeSources = (intelligence.sources || []).filter((source: any) => source.available);
+
+  return (
+    <section className="border-b border-white/10 bg-[#070b10] text-white">
         <div className="mx-auto max-w-7xl px-5 py-7 sm:px-8 sm:py-9">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -188,6 +213,118 @@ async function ServerLocationSnapshot({ lat, lng, dccEndpoints }: { lat: number;
             </div>
           ) : null}
 
+          {/* Authorized Tourism & Experiences (OCTO Connectivity) */}
+          {(octoDiscovery?.products?.length || octoDiscovery?.directoryOnlyOperators?.length) ? (
+            <div className="mt-8 border-t border-white/10 pt-7">
+              <div className="mb-4">
+                <div className="flex items-center gap-2">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200/70">
+                    Authorized Open Connectivity (OCTO)
+                  </p>
+                  <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2 py-0.5 text-[9px] font-bold text-cyan-200">
+                    Direct Operator Commerce
+                  </span>
+                </div>
+                <h3 className="mt-1 text-xl font-black text-white sm:text-2xl">
+                  Tourism, Activities & Experiences Serving This Coordinate
+                </h3>
+                <p className="mt-1 text-xs text-white/45">
+                  Direct operator catalog and authorized connectivity standard. Live bookings connect directly to verified suppliers with zero middleman markup.
+                </p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {octoDiscovery.products.map((item: any) => {
+                  const p = item.product;
+                  const isBookable = item.commercialStatus === "bookable";
+                  const price = p.options?.[0]?.units?.[0]?.pricingFrom?.[0]?.retail;
+                  const formattedPrice = price != null ? `$${(price / 100).toFixed(2)}` : null;
+
+                  return (
+                    <div key={p.id} className="flex flex-col justify-between rounded-2xl border border-white/10 bg-black/30 p-5">
+                      <div>
+                        <div className="flex items-start justify-between gap-2">
+                          <span
+                            className={`rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider ${
+                              isBookable
+                                ? "border border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+                                : "border border-amber-400/30 bg-amber-400/10 text-amber-300"
+                            }`}
+                          >
+                            {isBookable ? "● Live Bookable" : "○ Directory Only"}
+                          </span>
+                          {formattedPrice ? (
+                            <span className="text-sm font-black text-white">from {formattedPrice}</span>
+                          ) : null}
+                        </div>
+
+                        <h4 className="mt-3 text-base font-bold text-white leading-snug">{p.title}</h4>
+                        <p className="mt-2 text-xs leading-5 text-white/55 line-clamp-2">{p.description}</p>
+
+                        <div className="mt-3 space-y-1 text-[11px] text-white/40">
+                          {p.durationMinutes ? (
+                            <p>Duration: ~{Math.round(p.durationMinutes / 60)} hrs</p>
+                          ) : null}
+                          <p>Supplier: {item.supplier?.operatorName}</p>
+                          {item.distanceKm != null ? (
+                            <p>Proximity: ~{Math.round(item.distanceKm)} km from coordinate</p>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-white/8">
+                        {isBookable ? (
+                          <Link
+                            href={`/tours/octo/${p.id}`}
+                            className="inline-flex w-full items-center justify-center rounded-xl bg-cyan-300 px-4 py-2.5 text-xs font-black text-[#041216] transition hover:bg-cyan-200"
+                          >
+                            View Availability & Book →
+                          </Link>
+                        ) : (
+                          <div className="text-center">
+                            <span className="block text-[10px] font-medium text-amber-200/80 mb-1">
+                              {item.reason || "Direct booking authorization pending"}
+                            </span>
+                            <span className="inline-block rounded-lg border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-white/40">
+                              Directory Listing Only
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {octoDiscovery.directoryOnlyOperators.map((op: any) => (
+                  <div key={op.id} className="flex flex-col justify-between rounded-2xl border border-white/10 bg-black/20 p-5">
+                    <div>
+                      <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-amber-300">
+                        ○ Directory Listing
+                      </span>
+                      <h4 className="mt-3 text-base font-bold text-white">{op.name}</h4>
+                      <p className="mt-1 text-xs text-cyan-200/80">{op.website}</p>
+                      <p className="mt-2 text-xs leading-5 text-white/45">{op.notes}</p>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {op.destinations.map((d: string) => (
+                          <span key={d} className="rounded bg-white/5 px-2 py-0.5 text-[10px] text-white/40">
+                            {d}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-white/8 text-center text-[10px] text-amber-200/70">
+                      Reseller agreement pending · Direct booking unavailable
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-3 text-[11px] leading-relaxed text-white/35">
+                ℹ️ Physical observations (weather, hazards, gauges, seismic) provide destination context and are strictly decoupled from commercial operator capacity.
+              </div>
+            </div>
+          ) : null}
+
           {nextHours.length ? (
             <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
               <p className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200/70">Next hours</p>
@@ -211,15 +348,6 @@ async function ServerLocationSnapshot({ lat, lng, dccEndpoints }: { lat: number;
         </div>
       </section>
     );
-  } catch {
-    return (
-      <section className="border-b border-white/10 bg-[#070b10] text-white">
-        <div className="mx-auto max-w-7xl px-5 py-6 sm:px-8">
-          <p className="text-sm leading-6 text-white/55">Live public sources are temporarily unavailable. The coordinate remains canonical and the live panels below will retry independently.</p>
-        </div>
-      </section>
-    );
-  }
 }
 
 type PageProps = {

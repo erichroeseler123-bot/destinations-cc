@@ -86,7 +86,12 @@ export default function LocationFirstHomeFast() {
         <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Destination Command Center</p>
+              <div className="flex items-center gap-2">
+                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Destination Command Center</p>
+                <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cyan-200">
+                  Public Intelligence + OCTO Standard
+                </span>
+              </div>
               <h1 className="mt-2 text-4xl font-black tracking-[-0.045em] sm:text-5xl lg:text-6xl">The public internet, by coordinates.</h1>
             </div>
             <button type="button" onClick={useCurrentLocation} disabled={locating} className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-cyan-100 transition hover:bg-cyan-300/15 disabled:cursor-wait disabled:opacity-60">
@@ -95,7 +100,7 @@ export default function LocationFirstHomeFast() {
           </div>
 
           <p className="mt-4 max-w-3xl text-base leading-7 text-white/58 sm:text-lg">
-            Enter anywhere on Earth or use your device location. DCC turns the result into a permanent coordinate page and loads the public machine-readable sources that apply there.
+            Enter anywhere on Earth or use your device location. DCC connects two layers: live public destination intelligence (weather, hazards, river gauges, transit) and an authorized open connectivity (OCTO) standard connecting you directly to verified tour and transport operators with zero middleman markup.
           </p>
 
           <form onSubmit={search} className="mt-7 flex max-w-4xl flex-col gap-3 sm:flex-row">
@@ -141,16 +146,25 @@ export default function LocationFirstHomeFast() {
 
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
-              <p className="text-xs font-black text-white">No startup API waterfall</p>
-              <p className="mt-1 text-xs leading-5 text-white/42">The homepage is immediately usable before any location lookup begins.</p>
+              <div className="flex items-center gap-1.5 text-xs font-black text-cyan-300">
+                <span className="h-2 w-2 rounded-full bg-cyan-400"></span>
+                <span>Layer 1: Destination Intelligence</span>
+              </div>
+              <p className="mt-1 text-xs leading-5 text-white/55">Current weather, NWS official alerts, seismic activity, water gauges, and public feeds hydrated live from authoritative sources.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
-              <p className="text-xs font-black text-white">Coordinates stay canonical</p>
-              <p className="mt-1 text-xs leading-5 text-white/42">Search and device location both route to the same five-decimal coordinate identity.</p>
+              <div className="flex items-center gap-1.5 text-xs font-black text-emerald-300">
+                <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
+                <span>Layer 2: Authorized OCTO Commerce</span>
+              </div>
+              <p className="mt-1 text-xs leading-5 text-white/55">Real-time availability, booking holds, and master DCC Orders direct to licensed operators under the official OCTO standard.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
-              <p className="text-xs font-black text-white">Hydrates direct without duplication</p>
-              <p className="mt-1 text-xs leading-5 text-white/42">After a location is opened, the page hydrates in real time from public machine-readable endpoints and does not duplicate their schedules, inventory, prices, or status.</p>
+              <div className="flex items-center gap-1.5 text-xs font-black text-white">
+                <span className="h-2 w-2 rounded-full bg-white/40"></span>
+                <span>Canonical Coordinate Identity</span>
+              </div>
+              <p className="mt-1 text-xs leading-5 text-white/55">Permanent 5-decimal coordinate identity for people, machines, and search engines with zero startup API waterfall.</p>
             </div>
           </div>
         </div>

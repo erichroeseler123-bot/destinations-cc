@@ -5,6 +5,7 @@ import { readLocationIntelligence } from "@/lib/dcc/locationIntelligence";
 import { normalizeGaugeStatuses, readHydroMarine } from "@/lib/dcc/hydroMarine";
 import { readExtendedCoordinateFeeds } from "@/lib/dcc/extendedCoordinateFeeds";
 import { readApplicableDccEndpoints } from "@/lib/dcc/endpointRegistry";
+import { DccLocationProductService } from "@/lib/octo/locationProductService";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -98,6 +99,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const intelligencePromise = readLocationIntelligence({ lat, lng });
     const dccEndpointsPromise = readApplicableDccEndpoints({ lat, lng });
+    const octoDiscoveryPromise = DccLocationProductService.findProductsForLocation({ lat, lng });
     const enrichmentPromise = scope === "core"
       ? Promise.resolve([
           { river: null, marine: null, sources: [] },
@@ -110,10 +112,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
           readOptionalLegacy(origin, lat, lng, request.nextUrl.searchParams.get("timezone") || "auto"),
         ]);
 
-    const [intelligence, enrichment, dccEndpoints] = await Promise.all([
+    const [intelligence, enrichment, dccEndpoints, octoDiscovery] = await Promise.all([
       intelligencePromise,
       enrichmentPromise,
       dccEndpointsPromise,
+      octoDiscoveryPromise,
     ]);
     const [hydroMarine, extended, legacy] = enrichment as any;
 
@@ -155,8 +158,31 @@ export async function GET(request: NextRequest, context: RouteContext) {
       checkedAt: ep.checkedAt,
       error: ep.available ? undefined : ep.error,
     }));
+
+    const octoSources = (octoDiscovery?.products || []).map((p: any) => ({
+      provider: `OCTO Supplier: ${p.supplier.operatorName}`,
+      attribution: `${p.product.title} · ${p.commercialStatus === "bookable" ? "Live Authorized Direct Operator" : "Directory Listing Only"}`,
+      available: p.supplier.isAuthorized,
+      checkedAt: new Date().toISOString(),
+      error: p.commercialStatus === "bookable" ? undefined : (p.reason || "Directory listing only"),
+    }));
+
+    const providerSlots = {
+      ...(legacy?.providerSlots || {}),
+      octo: {
+        products: octoDiscovery?.products || [],
+        directoryOnlyOperators: octoDiscovery?.directoryOnlyOperators || [],
+        count: (octoDiscovery?.products || []).length,
+        bookableCount: (octoDiscovery?.products || []).filter((p: any) => p.commercialStatus === "bookable").length,
+        directoryOnlyCount:
+          (octoDiscovery?.products || []).filter((p: any) => p.commercialStatus === "directory_only").length +
+          (octoDiscovery?.directoryOnlyOperators || []).length,
+      },
+    };
+
     const sources = [
       ...dccSources,
+      ...octoSources,
       ...intelligence.sources,
       ...(hydroMarine.sources || []),
       ...(extended.sources || []),
@@ -199,7 +225,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         official: intelligence.official,
         events: legacy?.ticketmaster || null,
         machineFeeds: legacy?.machineFeeds || [],
-        providerSlots: legacy?.providerSlots || {},
+        providerSlots,
         officialLiveLinks: legacy?.officialLiveLinks || [],
       },
       weather: now.weather,
@@ -207,7 +233,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       earthquakes: hazards.earthquakes,
       events: legacy?.ticketmaster || null,
       machineFeeds: legacy?.machineFeeds || [],
-      providerSlots: legacy?.providerSlots || {},
+      providerSlots,
       nearby: extended.nearby || [],
       aviation: extended.aviation || [],
       coastal: extended.coastal || { coops: [], ndbc: [] },

@@ -14,9 +14,18 @@ export const dynamic = "force-dynamic";
 const SITE_URL = "https://www.destinationcommandcenter.com";
 
 export async function GET() {
-  const h = await headers();
-  const hostHeader = h.get("x-forwarded-host") || h.get("host") || "";
-  const host = hostHeader.split(":")[0].toLowerCase();
+  let host = "";
+  let userAgent: string | null = null;
+  let referer: string | null = null;
+  try {
+    const h = await headers();
+    const hostHeader = h.get("x-forwarded-host") || h.get("host") || "";
+    host = hostHeader.split(":")[0].toLowerCase();
+    userAgent = h.get("user-agent");
+    referer = h.get("referer");
+  } catch {
+    // Unit test / static execution context
+  }
 
   if (host.includes("shuttletosomersetamphitheater")) {
     return Response.json(SOMERSET_AGENT_PAYLOAD, {
@@ -31,8 +40,8 @@ export async function GET() {
   logDiscoveryRequest({
     surface: "agent_manifest",
     path: "/agent.json",
-    userAgent: h.get("user-agent"),
-    referer: h.get("referer"),
+    userAgent,
+    referer,
   });
 
   const manifest = {

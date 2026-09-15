@@ -47,12 +47,12 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   return {
-    title: "Destination Command Center | Live Public Data for Any Coordinate",
-    description: "DCC turns latitude and longitude into a live public location page and machine-readable JSON endpoint using public data sources available around that coordinate.",
+    title: "Destination Command Center | Public Coordinate Intelligence & Authorized OCTO Marketplace",
+    description: "DCC connects two layers: live public destination intelligence by coordinates (weather, hazards, water, transit) and an authorized open connectivity (OCTO) standard for direct operator tourism commerce.",
     alternates: { canonical: "/" },
     openGraph: {
       title: "Destination Command Center",
-      description: "Every coordinate on Earth can have a DCC page.",
+      description: "Public destination intelligence and authorized open connectivity (OCTO) for every coordinate on Earth.",
       url: "https://destinationcommandcenter.com",
       type: "website",
     },
