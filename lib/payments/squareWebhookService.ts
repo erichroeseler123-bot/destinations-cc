@@ -5,6 +5,8 @@ import { getDb } from "@/lib/db/client";
 import { dccSquareWebhookEvents } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
+import { isSquareProduction } from "@/lib/squareConfig";
+
 export interface DccSquareWebhookEventRecord {
   id: string;
   squareEventId: string;
@@ -72,8 +74,15 @@ export class DccSquareWebhookService {
     orderId?: string;
   }): Promise<{ isDuplicate: boolean; eventRecordId: string }> {
     const db = getDb();
+    const isProd = isSquareProduction();
     const nowIso = new Date().toISOString();
     const eventRecordId = `sq_evt_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
+
+    if (isProd && !db) {
+      throw new Error(
+        "DCC_SQUARE_WEBHOOK_ERROR: Neon database connection is required for durable webhook deduplication in production. Ephemeral fallback storage is strictly forbidden."
+      );
+    }
 
     if (db) {
       try {
@@ -104,11 +113,14 @@ export class DccSquareWebhookService {
         ) {
           return { isDuplicate: true, eventRecordId: "" };
         }
-        // Fallback to durable file storage on connection or missing table error
+        if (isProd) {
+          throw new Error(`DCC_SQUARE_WEBHOOK_DATABASE_ERROR: ${err.message}`);
+        }
+        // Fallback to durable file storage on connection or missing table error in offline tests
       }
     }
 
-    // Durable file-backed fallback (survives process restart and concurrent calls)
+    // Durable file-backed fallback (survives process restart and concurrent calls in explicitly offline tests)
     const store = loadFallbackStore();
     if (store[params.squareEventId]) {
       return { isDuplicate: true, eventRecordId: store[params.squareEventId].id };
@@ -147,6 +159,11 @@ export class DccSquareWebhookService {
     const now = new Date();
     const nowIso = now.toISOString();
 
+    const isProd = isSquareProduction();
+    if (isProd && !db) {
+      throw new Error("DCC_SQUARE_WEBHOOK_ERROR: Neon database connection required in production.");
+    }
+
     if (db) {
       try {
         await db
@@ -161,8 +178,11 @@ export class DccSquareWebhookService {
           })
           .where(eq(dccSquareWebhookEvents.squareEventId, squareEventId));
         return;
-      } catch {
-        // Fallback to file update
+      } catch (err: any) {
+        if (isProd) {
+          throw new Error(`DCC_SQUARE_WEBHOOK_DATABASE_ERROR: ${err.message}`);
+        }
+        // Fallback to file update in offline tests
       }
     }
 
@@ -189,6 +209,11 @@ export class DccSquareWebhookService {
    */
   static async getWebhookEvent(squareEventId: string): Promise<DccSquareWebhookEventRecord | null> {
     const db = getDb();
+    const isProd = isSquareProduction();
+    if (isProd && !db) {
+      throw new Error("DCC_SQUARE_WEBHOOK_ERROR: Neon database connection required in production.");
+    }
+
     if (db) {
       try {
         const rows = await db
@@ -211,8 +236,11 @@ export class DccSquareWebhookService {
             updatedAt: r.updatedAt?.toISOString() || new Date().toISOString(),
           };
         }
-      } catch {
-        // Fallback to file store
+      } catch (err: any) {
+        if (isProd) {
+          throw new Error(`DCC_SQUARE_WEBHOOK_DATABASE_ERROR: ${err.message}`);
+        }
+        // Fallback to file store in offline tests
       }
     }
 
