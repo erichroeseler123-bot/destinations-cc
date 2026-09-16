@@ -258,7 +258,7 @@ export class DccOrderService {
     order: DccMasterOrder;
     cancelledItem: DccOrderItem;
   }> {
-    const order = fallbackOrderStore.get(params.orderId);
+    const order = fallbackOrderStore.get(params.orderId) || (await this.getOrder(params.orderId));
     if (!order) {
       throw new Error(`Order ${params.orderId} not found`);
     }
@@ -470,7 +470,7 @@ export class DccOrderService {
         currency: order.currency,
         sourceId: params.sourceId,
         idempotencyKey: params.idempotencyKey ? `sq_${params.idempotencyKey}` : undefined,
-        paymentInfo: {
+        paymentInfo: params.paymentInfo || {
           provider: "square",
           status: "captured",
         },
@@ -480,6 +480,7 @@ export class DccOrderService {
         },
         options: {
           simulateFailure: params.options?.simulateFailure,
+          squareClient: params.options?.squareClient,
         },
       });
     } catch (payErr: any) {

@@ -24,7 +24,23 @@ async function verifyNeon() {
   }
 
   console.log("Connecting directly to Neon database...");
+  const u = new URL(dbUrl);
+  console.log("Database Environment Report:");
+  console.log("  Provider: Neon Serverless Postgres");
+  console.log("  Host:", u.host);
+  console.log("  Database:", u.pathname.replace("/", ""));
+  console.log("  SSL Mode:", u.searchParams.get("sslmode"));
+  console.log("  Neon Endpoint ID:", u.host.split(".")[0]);
+
   const sql = neon(dbUrl);
+  const dbInfo = await sql.query("SELECT current_database(), current_user, current_schema(), version()");
+  console.log("  Current Database:", (dbInfo as any)[0].current_database);
+  console.log("  Current User Role:", (dbInfo as any)[0].current_user);
+  console.log("  Current Schema:", (dbInfo as any)[0].current_schema);
+  console.log("  Postgres Version:", (dbInfo as any)[0].version.split(" ")[0] + " " + (dbInfo as any)[0].version.split(" ")[1]);
+
+  const dccTables = await sql.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'dcc_%' ORDER BY table_name");
+  console.log("  All DCC Tables in Database:", (dccTables as any).map((t: any) => t.table_name));
 
   // 1. Table existence check
   const tables = await sql.query(

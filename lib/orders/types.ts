@@ -131,10 +131,18 @@ export interface DccSquareCheckoutRequest {
   };
   idempotencyKey?: string;
   resellerId?: string;
+  paymentInfo?: {
+    provider?: string;
+    paymentId?: string;
+    paymentIntentId?: string;
+    status?: "captured" | "authorized";
+    sourceId?: string;
+  };
   options?: {
     simulateFailure?: boolean;
     simulateHoldFailure?: boolean;
     simulateConfirmationFailure?: boolean;
+    squareClient?: any;
   };
 }
 
