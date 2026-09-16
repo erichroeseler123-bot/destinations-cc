@@ -183,7 +183,7 @@ async function runControlledSandboxProof() {
   console.log("-------------------------------------------------------------------------------");
   const draftOrder = await DccOrderService.createOrder({
     items: multiTours,
-    contact: customer,
+    customer: customer,
   });
   console.log(`  ✔ Order created: ${draftOrder.orderId}`);
   console.log(`  ✔ Status: ${draftOrder.status}`);
