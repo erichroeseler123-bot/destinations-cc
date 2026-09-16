@@ -355,9 +355,9 @@ export const DECISION_PAGES: DecisionPage[] = [
         },
         {
           "category": "Juneau",
-          "col1": "Glacier Dog Sledding by Helicopter",
-          "col2": "Ages 2+ (best for teens)",
-          "verdict": "Meeting friendly husky racing puppies and riding sleds on snow in summer is unforgettable."
+          "col1": "Sled Dog Discovery & Musher's Camp",
+          "col2": "All ages",
+          "verdict": "Meeting friendly husky racing puppies and riding summer dog carts is unforgettable for kids."
         },
         {
           "category": "Ketchikan",
@@ -387,11 +387,11 @@ export const DECISION_PAGES: DecisionPage[] = [
         ]
       },
       {
-        "heading": "Glacier Dog Sledding: The Ultimate Bucket List for Kids & Teens",
+        "heading": "Sled Dog Discovery: The Ultimate Bucket List for Kids & Teens",
         "paragraphs": [
-          "If your budget allows one splurge for the kids, helicopter glacier dog sledding high on the Juneau Icefield creates lifetime memories. Children are enchanted by litters of husky puppies, while teens and parents thrill at taking the reins behind a 12-dog team across real alpine snow in July."
+          "For families with children and teens, the Juneau Sled Dog Discovery & Musher's Camp in Sheep Creek Valley creates lifetime memories. Children are enchanted by litters of husky puppies, while teens and parents thrill at riding a wheeled dog cart behind an eager team along rainforest trails."
         ],
-        "callout": "Safety Note: Glacier dog camps are located at 3,000+ feet elevation. Dress children in snow-appropriate warm winter layers and sunglasses to prevent snow glare."
+        "callout": "Family Note: Gentle gravel paths and accessible kennel visits make this one of Southeast Alaska's most welcoming family excursions."
       }
     ],
     "cruiseSafetyAdvice": [

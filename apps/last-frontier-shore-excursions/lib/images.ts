@@ -70,9 +70,9 @@ export const ACTIVITY_IMAGES: Record<string, ImageAsset> = {
     caption: "Floatplane Scenery, Misty Fjords",
   },
   "dog-sledding": {
-    url: "/images/alaska/glacier-flightseeing.jpg",
-    alt: "Glacier icefield dog sled camp access by helicopter",
-    caption: "Glacier Dog Sled Camp, Alaska Icefield",
+    url: "/images/alaska/glacier-dog-sled.jpg",
+    alt: "Alaskan husky sled dog team at musher camp",
+    caption: "Alaskan Husky Sled Dog Camp, Juneau",
   },
   "white-pass-railway-tours": {
     url: "/images/alaska/scenic-railway.jpg",

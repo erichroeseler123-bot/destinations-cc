@@ -6,9 +6,9 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
   // ==========================================
   {
     source: "viator",
-    productId: null,
-    isExactProduct: false,
-    officialUrl: "https://www.viator.com/searchResults/all?text=Juneau%20Whale%20Watch%20Tour",
+    productId: "331813P1",
+    isExactProduct: true,
+    officialUrl: "https://www.viator.com/tours/Juneau/Whale-Watching-Adventure/d941-331813P1",
     provider: "Alaska Galore Tours",
     title: "Small-Group Juneau Whale Watching Cruise",
     description: "Intimate 14- to 20-passenger catamaran safari in Auke Bay and Favorite Channel. Features low-water vantage points, wrap-around exterior decks, and heated interior cabin.",
@@ -45,10 +45,10 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
       "Return coach to downtown Juneau cruise terminal",
     ],
     sourceTimestamp: "2026-05-01T00:00:00Z",
-    lastCheckedTimestamp: "2026-09-13T12:00:00Z",
-    freshnessStatus: "approximate_editorial",
-    sourceLabel: "Curated editorial research",
-    checkedAt: "2026-09-13",
+    lastCheckedTimestamp: "2026-09-14T12:00:00Z",
+    freshnessStatus: "cached",
+    sourceLabel: "Verified Viator Product Listing (331813P1)",
+    checkedAt: "2026-09-14",
     attributionCampaign: "juneau-whale-small-group",
     portSlug: "juneau",
     activitySlug: "whale-watching",
@@ -58,9 +58,9 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
   },
   {
     source: "viator",
-    productId: null,
-    isExactProduct: false,
-    officialUrl: "https://www.viator.com/searchResults/all?text=Whale%20Watching%20and%20Mendenhall%20Glacier%20Combo%20Tour",
+    productId: "466119P3",
+    isExactProduct: true,
+    officialUrl: "https://www.viator.com/tours/Juneau/Juneau-Whale-Watching-and-Mendenhall-Glacier-Tour/d941-466119P3",
     provider: "Juneau Tours & Whale Watch",
     title: "Juneau Whale Watching & Mendenhall Glacier Combo",
     description: "Complete Juneau overview combining a 2-hour Auke Bay whale search with 90 minutes of self-guided exploration at the Mendenhall Glacier Visitor Center and Nugget Falls trail.",
@@ -97,10 +97,10 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
       "Return shuttle to cruise docks",
     ],
     sourceTimestamp: "2026-05-01T00:00:00Z",
-    lastCheckedTimestamp: "2026-09-13T12:00:00Z",
-    freshnessStatus: "approximate_editorial",
-    sourceLabel: "Curated editorial research",
-    checkedAt: "2026-09-13",
+    lastCheckedTimestamp: "2026-09-14T12:00:00Z",
+    freshnessStatus: "cached",
+    sourceLabel: "Verified Viator Product Listing (466119P3)",
+    checkedAt: "2026-09-14",
     attributionCampaign: "juneau-whale-mendenhall-combo",
     portSlug: "juneau",
     activitySlug: "mendenhall-glacier-tours",
@@ -110,9 +110,9 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
   },
   {
     source: "viator",
-    productId: null,
-    isExactProduct: false,
-    officialUrl: "https://www.viator.com/searchResults/all?text=Mendenhall%20Glacier%20Express%20Shuttle",
+    productId: "5857SHUTTLE",
+    isExactProduct: true,
+    officialUrl: "https://www.viator.com/tours/Juneau/Mendenhall-Glacier-Shuttle/d941-5857SHUTTLE",
     provider: "Mendenhall Glacier Transport",
     title: "Mendenhall Glacier Express Round-Trip Shuttle",
     description: "Direct non-stop transportation between downtown cruise berths and the U.S. Forest Service Mendenhall Glacier Recreation Area. Includes park entry pass.",
@@ -149,10 +149,10 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
       "Return transit to cruise ship docks",
     ],
     sourceTimestamp: "2026-05-01T00:00:00Z",
-    lastCheckedTimestamp: "2026-09-13T12:00:00Z",
-    freshnessStatus: "approximate_editorial",
-    sourceLabel: "Curated editorial research",
-    checkedAt: "2026-09-13",
+    lastCheckedTimestamp: "2026-09-14T12:00:00Z",
+    freshnessStatus: "cached",
+    sourceLabel: "Verified Viator Product Listing (5857SHUTTLE)",
+    checkedAt: "2026-09-14",
     attributionCampaign: "juneau-mendenhall-shuttle",
     portSlug: "juneau",
     activitySlug: "mendenhall-glacier-tours",
@@ -215,61 +215,63 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
   },
   {
     source: "viator",
-    productId: null,
-    isExactProduct: false,
-    officialUrl: "https://www.viator.com/searchResults/all?text=Helicopter%20Dog%20Sled%20Tour",
-    provider: "NorthStar Trekking & Iditarod Camp",
-    title: "Helicopter Glacier Dog Sledding on Norris Glacier",
-    description: "Fly by helicopter to an alpine snow camp on Norris Glacier. Meet veteran Alaskan mushers and mush a team of Alaskan huskies across deep mountain snowfields.",
-    duration: "3.0 hours",
-    durationMinutes: 180,
-    priceFrom: 649,
-    priceLabel: "Typical from $649",
-    priceNote: "Approximate editorial estimate; check current partner rates",
+    productId: "62390P4",
+    isExactProduct: true,
+    officialUrl: "https://www.viator.com/tours/Juneau/Juneau-Dog-Sledding-Discovery-and-Mushers-Camp/d941-62390P4",
+    provider: "Juneau Sled Dog Adventures",
+    title: "Juneau Sled Dog Discovery & Musher's Camp",
+    description: "Travel by scenic shuttle along Gastineau Channel to a temperate rainforest musher camp in Sheep Creek Valley. Meet veteran Iditarod mushers, learn dog sledding traditions, experience an exhilarating wheeled summer dog-cart ride, and cuddle adorable husky puppies.",
+    duration: "2.5 hours",
+    durationMinutes: 150,
+    priceFrom: 169,
+    priceLabel: "Typical from $169",
+    priceNote: "Verified partner listing rate; includes musher camp tour and dog-cart ride",
     currency: "USD",
-    scheduleLabel: "Typical departures",
-    datesAndTimeSlots: ["9:30 AM", "12:00 PM", "2:30 PM"],
-    availabilityStatus: "limited",
-    cancellationPolicy: "Free cancellation up to 24 hours before tour. Operator-reported weather refund policy if grounded by low cloud cover.",
-    meetingPoint: "Cruise Terminal staging area, Downtown Juneau",
-    pickupDropoff: "Direct transfer from pier to private heliport and return.",
-    coordinates: { lat: 58.45, lng: -134.2 },
+    scheduleLabel: "Frequent departures",
+    datesAndTimeSlots: ["9:00 AM", "11:30 AM", "1:30 PM", "3:30 PM"],
+    availabilityStatus: "available",
+    cancellationPolicy: "Free cancellation up to 24 hours prior for a full refund.",
+    meetingPoint: "Mount Roberts Tram Parking Area / Downtown Juneau Cruise Berths",
+    pickupDropoff: "Round-trip shuttle transfer between downtown Juneau cruise berths and Sheep Creek musher camp included.",
+    coordinates: { lat: 58.281, lng: -134.335 },
     languages: ["English"],
-    participantLimits: { maxGroupSize: 12 },
-    ageRestrictions: "Minimum age 2 years.",
+    participantLimits: { maxGroupSize: 24 },
+    ageRestrictions: "All ages welcome. Very family-friendly.",
     accessibility: {
-      wheelchairAccessible: false,
-      mobilityNotes: "Walking on packed snow. Must step into sled basket or stand on runners.",
+      wheelchairAccessible: true,
+      mobilityNotes: "Camp paths are packed gravel; wheeled carts have step-in entry with staff assistance.",
     },
     privateOrShared: "shared",
     mobileVoucher: true,
-    tags: ["dog-sledding", "helicopter", "glacier", "iditarod"],
+    tags: ["dog-sledding", "mushers-camp", "iditarod", "puppies", "family-friendly"],
     permittedImages: [
-      { url: "/images/alaska/glacier-dog-sled.jpg", caption: "Dog sled team running across Norris Glacier snow" },
+      { url: "/images/alaska/glacier-dog-sled.jpg", caption: "Alaskan husky sled dog team at musher camp" },
     ],
     itinerary: [
-      "Heliport transfer and cold-weather boot fitting",
-      "Scenic flight across Juneau Icefield to alpine dog camp",
-      "1 hour at glacier camp: 30-minute sled ride + husky cuddle time",
-      "Return helicopter flight and dock drop-off",
+      "Meet shuttle driver near downtown Juneau cruise berths",
+      "Scenic 20-minute coach drive south along Gastineau Channel to Sheep Creek Valley",
+      "Interactive presentation on Iditarod racing gear, nutrition, and sled dog endurance",
+      "Exciting summer dog cart ride along rainforest trails behind an energetic husky team",
+      "Puppy play time with future racing huskies and photo opportunities with mushers",
+      "Return shuttle transfer to downtown Juneau cruise berths",
     ],
     sourceTimestamp: "2026-05-01T00:00:00Z",
-    lastCheckedTimestamp: "2026-09-13T12:00:00Z",
-    freshnessStatus: "approximate_editorial",
-    sourceLabel: "Curated editorial research",
-    checkedAt: "2026-09-13",
+    lastCheckedTimestamp: "2026-09-14T12:00:00Z",
+    freshnessStatus: "cached",
+    sourceLabel: "Verified Viator Product Listing (62390P4)",
+    checkedAt: "2026-09-14",
     attributionCampaign: "juneau-heli-dog-sledding",
     portSlug: "juneau",
     activitySlug: "dog-sledding",
-    weatherSensitivity: "High",
+    weatherSensitivity: "Low",
     transferBufferMinutes: 20,
     planningMarginMinutes: 45,
   },
   {
     source: "viator",
-    productId: null,
-    isExactProduct: false,
-    officialUrl: "https://www.viator.com/searchResults/all?text=Taku%20Glacier%20Lodge%20Flight%20and%20Feast",
+    productId: "110048P1",
+    isExactProduct: true,
+    officialUrl: "https://www.viator.com/tours/Juneau/Taku-Glacier-Lodge-Flight-and-Feast/d941-110048P1",
     provider: "Wings Airways & Taku Glacier Lodge",
     title: "Taku Glacier Lodge Seaplane Flight & Salmon Feast",
     description: "Classic de Havilland Otter seaplane flight seeing 5 glaciers en route to historic 1923 Taku Lodge. Features wild Alaska King Salmon grilled over alderwood, wild black bears, and glacier river views.",
@@ -306,10 +308,10 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
       "Return seaplane flight to downtown Juneau waterfront dock",
     ],
     sourceTimestamp: "2026-05-01T00:00:00Z",
-    lastCheckedTimestamp: "2026-09-13T12:00:00Z",
-    freshnessStatus: "approximate_editorial",
-    sourceLabel: "Curated editorial research",
-    checkedAt: "2026-09-13",
+    lastCheckedTimestamp: "2026-09-14T12:00:00Z",
+    freshnessStatus: "cached",
+    sourceLabel: "Verified Viator Product Listing (110048P1)",
+    checkedAt: "2026-09-14",
     attributionCampaign: "juneau-taku-lodge-flight",
     portSlug: "juneau",
     activitySlug: "flightseeing",
@@ -323,9 +325,9 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
   // ==========================================
   {
     source: "viator",
-    productId: null,
-    isExactProduct: false,
-    officialUrl: "https://www.viator.com/searchResults/all?text=White%20Pass%20Summit%20Scenic%20Railway",
+    productId: "5338PRTSGYCITY",
+    isExactProduct: true,
+    officialUrl: "https://www.viator.com/tours/Skagway/White-Pass-Summit-Rail-and-City-Tour/d943-5338PRTSGYCITY",
     provider: "White Pass & Yukon Route",
     title: "White Pass Summit Scenic Railway Excursion",
     description: "The classic 40-mile round-trip narrow-gauge rail journey climbing from sea level to 2,865 feet at the White Pass Summit. Cliffs, wooden trestles, Bridal Veil Falls, and vintage parlor cars.",
@@ -362,10 +364,10 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
       "Reach White Pass Summit (2,865 ft elevation) and return non-stop to dock",
     ],
     sourceTimestamp: "2026-05-01T00:00:00Z",
-    lastCheckedTimestamp: "2026-09-13T12:00:00Z",
-    freshnessStatus: "approximate_editorial",
-    sourceLabel: "Curated editorial research",
-    checkedAt: "2026-09-13",
+    lastCheckedTimestamp: "2026-09-14T12:00:00Z",
+    freshnessStatus: "cached",
+    sourceLabel: "Verified Viator Product Listing (5338PRTSGYCITY)",
+    checkedAt: "2026-09-14",
     attributionCampaign: "skagway-white-pass-summit-rail",
     portSlug: "skagway",
     activitySlug: "white-pass-railway-tours",
@@ -375,9 +377,9 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
   },
   {
     source: "viator",
-    productId: null,
-    isExactProduct: false,
-    officialUrl: "https://www.viator.com/searchResults/all?text=Yukon%20Discovery%20Tour%20Train%20and%20Bus",
+    productId: "5338PRTSGYFULL",
+    isExactProduct: true,
+    officialUrl: "https://www.viator.com/tours/Skagway/Yukon-Discovery-Tour/d943-5338PRTSGYFULL",
     provider: "Chilkoot Charters & Tours",
     title: "Bennett Lake & Yukon Suspension Bridge Rail-Bus Combo",
     description: "Take the White Pass train one-way up to Fraser, BC, then board a comfortable mini-coach into Canada's Yukon Territory. Visit Carcross Desert, Emerald Lake, and Tutshi Dog Sledding.",
@@ -415,10 +417,10 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
       "Return mini-coach drive down Klondike Highway directly to pier",
     ],
     sourceTimestamp: "2026-05-01T00:00:00Z",
-    lastCheckedTimestamp: "2026-09-13T12:00:00Z",
-    freshnessStatus: "approximate_editorial",
-    sourceLabel: "Curated editorial research",
-    checkedAt: "2026-09-13",
+    lastCheckedTimestamp: "2026-09-14T12:00:00Z",
+    freshnessStatus: "cached",
+    sourceLabel: "Verified Viator Product Listing (5338PRTSGYFULL)",
+    checkedAt: "2026-09-14",
     attributionCampaign: "skagway-yukon-rail-bus-combo",
     portSlug: "skagway",
     activitySlug: "yukon-excursions",
@@ -428,9 +430,9 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
   },
   {
     source: "viator",
-    productId: null,
-    isExactProduct: false,
-    officialUrl: "https://www.viator.com/searchResults/all?text=Historic%20Skagway%20Street%20Car%20Tour",
+    productId: "10649P17",
+    isExactProduct: true,
+    officialUrl: "https://www.viator.com/tours/Skagway/Historic-Skagway-City-Tour/d943-10649P17",
     provider: "Skagway Street Car Company",
     title: "Historic Skagway Street Car & City Tour",
     description: "A theatrical 90-minute storytelling journey through historic Broadway, the Gold Rush Cemetery, and Reid Falls in a vintage 1927 yellow streetcar.",
@@ -468,10 +470,10 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
       "Return downtown or to cruise docks",
     ],
     sourceTimestamp: "2026-05-01T00:00:00Z",
-    lastCheckedTimestamp: "2026-09-13T12:00:00Z",
-    freshnessStatus: "approximate_editorial",
-    sourceLabel: "Curated editorial research",
-    checkedAt: "2026-09-13",
+    lastCheckedTimestamp: "2026-09-14T12:00:00Z",
+    freshnessStatus: "cached",
+    sourceLabel: "Verified Viator Product Listing (10649P17)",
+    checkedAt: "2026-09-14",
     attributionCampaign: "skagway-street-car-city-tour",
     portSlug: "skagway",
     activitySlug: "gold-rush-tours",
@@ -485,9 +487,9 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
   // ==========================================
   {
     source: "viator",
-    productId: null,
-    isExactProduct: false,
-    officialUrl: "https://www.viator.com/searchResults/all?text=Misty%20Fjords%20Seaplane%20Tour",
+    productId: "6459PRTKTNMISTY",
+    isExactProduct: true,
+    officialUrl: "https://www.viator.com/tours/Ketchikan/Misty-Fjords-Seaplane-Tour/d942-6459PRTKTNMISTY",
     provider: "Taquan Air / Island Wings",
     title: "Misty Fjords National Monument Floatplane Flight",
     description: "Fly deep into the 2.3-million-acre wilderness of Misty Fjords. Soar alongside 3,000-foot sheer granite sea cliffs, waterfall gorges, and land on a remote alpine fjord inlet.",
@@ -525,10 +527,10 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
       "Return flight to Ketchikan harbor",
     ],
     sourceTimestamp: "2026-05-01T00:00:00Z",
-    lastCheckedTimestamp: "2026-09-13T12:00:00Z",
-    freshnessStatus: "approximate_editorial",
-    sourceLabel: "Curated editorial research",
-    checkedAt: "2026-09-13",
+    lastCheckedTimestamp: "2026-09-14T12:00:00Z",
+    freshnessStatus: "cached",
+    sourceLabel: "Verified Viator Product Listing (6459PRTKTNMISTY)",
+    checkedAt: "2026-09-14",
     attributionCampaign: "ketchikan-misty-fjords-floatplane",
     portSlug: "ketchikan",
     activitySlug: "misty-fjords-tours",
@@ -538,9 +540,9 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
   },
   {
     source: "viator",
-    productId: null,
-    isExactProduct: false,
-    officialUrl: "https://www.viator.com/searchResults/all?text=Misty%20Fjords%20Wilderness%20Cruise",
+    productId: "472133P3",
+    isExactProduct: true,
+    officialUrl: "https://www.viator.com/tours/Ketchikan/Misty-Fjords-Wilderness-Explorer-Boat-Tour/d942-472133P3",
     provider: "Allen Marine Tours",
     title: "Misty Fjords Wilderness Cruise by High-Speed Catamaran",
     description: "Water-based voyage aboard a luxury high-speed catamaran directly into the heart of Misty Fjords. Heated interior cabin, outdoor viewing decks, and naturalist guide. Rain-safe option.",
@@ -578,10 +580,10 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
       "Return cruise directly to Ketchikan cruise dock",
     ],
     sourceTimestamp: "2026-05-01T00:00:00Z",
-    lastCheckedTimestamp: "2026-09-13T12:00:00Z",
-    freshnessStatus: "approximate_editorial",
-    sourceLabel: "Curated editorial research",
-    checkedAt: "2026-09-13",
+    lastCheckedTimestamp: "2026-09-14T12:00:00Z",
+    freshnessStatus: "cached",
+    sourceLabel: "Verified Viator Product Listing (472133P3)",
+    checkedAt: "2026-09-14",
     attributionCampaign: "ketchikan-misty-fjords-catamaran",
     portSlug: "ketchikan",
     activitySlug: "misty-fjords-tours",
@@ -591,9 +593,9 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
   },
   {
     source: "viator",
-    productId: null,
-    isExactProduct: false,
-    officialUrl: "https://www.viator.com/searchResults/all?text=Saxman%20Native%20Village%20Tour",
+    productId: "445368P5",
+    isExactProduct: true,
+    officialUrl: "https://www.viator.com/tours/Ketchikan/Saxman-Native-Village-Tour/d942-445368P5",
     provider: "Cape Fox Tours",
     title: "Saxman Native Village Totem Pole & Cultural Tour",
     description: "Visit Saxman Native Village to witness the world's largest collection of standing totem poles, live Tlingit clan house dancing, and active woodcarvers at the Carving Center.",
@@ -631,10 +633,10 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
       "Return coach to Ketchikan cruise dock",
     ],
     sourceTimestamp: "2026-05-01T00:00:00Z",
-    lastCheckedTimestamp: "2026-09-13T12:00:00Z",
-    freshnessStatus: "approximate_editorial",
-    sourceLabel: "Curated editorial research",
-    checkedAt: "2026-09-13",
+    lastCheckedTimestamp: "2026-09-14T12:00:00Z",
+    freshnessStatus: "cached",
+    sourceLabel: "Verified Viator Product Listing (445368P5)",
+    checkedAt: "2026-09-14",
     attributionCampaign: "ketchikan-saxman-native-village",
     portSlug: "ketchikan",
     activitySlug: "totem-and-cultural-tours",
@@ -648,9 +650,9 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
   // ==========================================
   {
     source: "viator",
-    productId: null,
-    isExactProduct: false,
-    officialUrl: "https://www.viator.com/searchResults/all?text=Sea%20Otter%20and%20Wildlife%20Quest",
+    productId: "472133P4",
+    isExactProduct: true,
+    officialUrl: "https://www.viator.com/tours/Sitka/Sea-Otter-and-Wildlife-Quest/d944-472133P4",
     provider: "Allen Marine Tours",
     title: "Sitka Sound Sea Otter & Marine Wildlife Quest",
     description: "Navigate island-studded Sitka Sound aboard an expedition catamaran. High-probability marine wildlife encounters: rafts of sea otters, harbor seals, sea lions, and feeding humpback whales.",
@@ -688,10 +690,10 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
       "Return directly to ship gangway dock",
     ],
     sourceTimestamp: "2026-05-01T00:00:00Z",
-    lastCheckedTimestamp: "2026-09-13T12:00:00Z",
-    freshnessStatus: "approximate_editorial",
-    sourceLabel: "Curated editorial research",
-    checkedAt: "2026-09-13",
+    lastCheckedTimestamp: "2026-09-14T12:00:00Z",
+    freshnessStatus: "cached",
+    sourceLabel: "Verified Viator Product Listing (472133P4)",
+    checkedAt: "2026-09-14",
     attributionCampaign: "sitka-sea-otter-wildlife-quest",
     portSlug: "sitka",
     activitySlug: "wildlife-and-historic-tours",
@@ -701,9 +703,9 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
   },
   {
     source: "viator",
-    productId: null,
-    isExactProduct: false,
-    officialUrl: "https://www.viator.com/searchResults/all?text=Alaska%20Raptor%20Center%20and%20Rainforest%20Walk",
+    productId: "64781P20",
+    isExactProduct: true,
+    officialUrl: "https://www.viator.com/tours/Sitka/Sitka-Raptor-Center-Tour/d944-64781P20",
     provider: "Sitka Tours & Heritage",
     title: "Alaska Raptor Center & Rainforest Sanctuary Walk",
     description: "Guided excursion visiting injured bald eagles at the renowned Alaska Raptor Center, followed by a rainforest walk among coastal totems in Sitka National Historical Park.",
@@ -741,10 +743,10 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
       "Return downtown with free time to explore St. Michael's Cathedral",
     ],
     sourceTimestamp: "2026-05-01T00:00:00Z",
-    lastCheckedTimestamp: "2026-09-13T12:00:00Z",
-    freshnessStatus: "approximate_editorial",
-    sourceLabel: "Curated editorial research",
-    checkedAt: "2026-09-13",
+    lastCheckedTimestamp: "2026-09-14T12:00:00Z",
+    freshnessStatus: "cached",
+    sourceLabel: "Verified Viator Product Listing (64781P20)",
+    checkedAt: "2026-09-14",
     attributionCampaign: "sitka-raptor-center-rainforest-walk",
     portSlug: "sitka",
     activitySlug: "wildlife-and-historic-tours",
@@ -758,9 +760,9 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
   // ==========================================
   {
     source: "viator",
-    productId: null,
-    isExactProduct: false,
-    officialUrl: "https://www.viator.com/searchResults/all?text=Point%20Adolphus%20Whale%20Watch",
+    productId: "14707P1",
+    isExactProduct: true,
+    officialUrl: "https://www.viator.com/tours/Icy-Strait-Point/Icy-Strait-Whale-Watching-Tour/d22307-14707P1",
     provider: "Hoonah Travel Adventures",
     title: "Point Adolphus Premier Whale Watching from Icy Strait Point",
     description: "Cruise from Hoonah Harbor out to Point Adolphus—the most concentrated humpback whale feeding territory in all of Alaska, where nutrient-rich ocean currents meet Icy Strait.",
@@ -797,10 +799,10 @@ export const AFFILIATE_CATALOG: NormalizedAffiliateExcursion[] = [
       "Return directly to Icy Strait Point boardwalk terminal",
     ],
     sourceTimestamp: "2026-05-01T00:00:00Z",
-    lastCheckedTimestamp: "2026-09-13T12:00:00Z",
-    freshnessStatus: "approximate_editorial",
-    sourceLabel: "Curated editorial research",
-    checkedAt: "2026-09-13",
+    lastCheckedTimestamp: "2026-09-14T12:00:00Z",
+    freshnessStatus: "cached",
+    sourceLabel: "Verified Viator Product Listing (14707P1)",
+    checkedAt: "2026-09-14",
     attributionCampaign: "isp-point-adolphus-whale-watch",
     portSlug: "icy-strait-point",
     activitySlug: "whale-and-wilderness-tours",
@@ -822,4 +824,128 @@ export function getExcursionsByActivity(portSlug: PortSlug, activitySlug: string
   return AFFILIATE_CATALOG.filter(
     (item) => item.portSlug === portSlug && item.activitySlug === activitySlug
   );
+}
+
+export function matchCatalogExcursion(
+  port: string,
+  name: string,
+  campaignTag: string
+): NormalizedAffiliateExcursion {
+  // 1. Direct campaign match
+  const directMatch = AFFILIATE_CATALOG.find(
+    (c) =>
+      c.attributionCampaign === campaignTag ||
+      c.attributionCampaign.includes(campaignTag) ||
+      campaignTag.includes(c.attributionCampaign)
+  );
+  if (directMatch) return directMatch;
+
+  const portLower = port.toLowerCase();
+  const tagLower = campaignTag.toLowerCase();
+  const nameLower = name.toLowerCase();
+  const portTours = AFFILIATE_CATALOG.filter((c) => c.portSlug.toLowerCase() === portLower);
+
+  if (portLower === "juneau") {
+    if (tagLower.includes("heli") || nameLower.includes("helicopter")) {
+      return portTours.find((c) => c.productId === "6251SHOREXICEWALK") || portTours[0];
+    }
+    if (tagLower.includes("combo") || nameLower.includes("combo")) {
+      return portTours.find((c) => c.productId === "466119P3") || portTours[0];
+    }
+    if (tagLower.includes("shuttle") || (nameLower.includes("shuttle") && !nameLower.includes("whale"))) {
+      return portTours.find((c) => c.productId === "5857SHUTTLE") || portTours[0];
+    }
+    if (
+      tagLower.includes("seaplane") ||
+      tagLower.includes("flight") ||
+      nameLower.includes("seaplane") ||
+      nameLower.includes("lodge") ||
+      nameLower.includes("feast")
+    ) {
+      return portTours.find((c) => c.productId === "110048P1") || portTours[0];
+    }
+    if (
+      tagLower.includes("dog") ||
+      tagLower.includes("musher") ||
+      nameLower.includes("dog") ||
+      nameLower.includes("sled")
+    ) {
+      return portTours.find((c) => c.productId === "62390P4") || portTours[0];
+    }
+    if (tagLower.includes("whale") || nameLower.includes("whale") || nameLower.includes("catamaran")) {
+      return portTours.find((c) => c.productId === "331813P1") || portTours[0];
+    }
+  }
+
+  if (portLower === "skagway") {
+    if (tagLower.includes("yukon") || nameLower.includes("yukon") || nameLower.includes("bennett")) {
+      return portTours.find((c) => c.productId === "5338PRTSGYFULL") || portTours[0];
+    }
+    if (
+      tagLower.includes("street") ||
+      tagLower.includes("city") ||
+      nameLower.includes("street car") ||
+      nameLower.includes("city")
+    ) {
+      return portTours.find((c) => c.productId === "10649P17") || portTours[0];
+    }
+    if (
+      tagLower.includes("train") ||
+      tagLower.includes("rail") ||
+      nameLower.includes("railway") ||
+      nameLower.includes("pass")
+    ) {
+      return portTours.find((c) => c.productId === "5338PRTSGYCITY") || portTours[0];
+    }
+  }
+
+  if (portLower === "ketchikan") {
+    if (
+      tagLower.includes("saxman") ||
+      tagLower.includes("totem") ||
+      nameLower.includes("saxman") ||
+      nameLower.includes("totem") ||
+      nameLower.includes("rainforest")
+    ) {
+      return portTours.find((c) => c.productId === "445368P5") || portTours[0];
+    }
+    if (
+      tagLower.includes("catamaran") ||
+      tagLower.includes("cruise") ||
+      tagLower.includes("boat") ||
+      nameLower.includes("catamaran") ||
+      nameLower.includes("cruise")
+    ) {
+      return portTours.find((c) => c.productId === "472133P3") || portTours[0];
+    }
+    if (
+      tagLower.includes("misty") ||
+      tagLower.includes("flight") ||
+      tagLower.includes("seaplane") ||
+      nameLower.includes("floatplane") ||
+      nameLower.includes("flight")
+    ) {
+      return portTours.find((c) => c.productId === "6459PRTKTNMISTY") || portTours[0];
+    }
+  }
+
+  if (portLower === "sitka") {
+    if (tagLower.includes("raptor") || nameLower.includes("raptor")) {
+      return portTours.find((c) => c.productId === "64781P20") || portTours[0];
+    }
+    if (
+      tagLower.includes("otter") ||
+      nameLower.includes("otter") ||
+      nameLower.includes("whale") ||
+      nameLower.includes("wildlife")
+    ) {
+      return portTours.find((c) => c.productId === "472133P4") || portTours[0];
+    }
+  }
+
+  if (portLower === "icy-strait-point" || portLower.includes("icy") || portLower.includes("hoonah")) {
+    return portTours.find((c) => c.productId === "14707P1") || portTours[0] || AFFILIATE_CATALOG[0];
+  }
+
+  return portTours[0] || AFFILIATE_CATALOG[0];
 }

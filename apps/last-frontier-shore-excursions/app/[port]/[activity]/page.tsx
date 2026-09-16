@@ -305,12 +305,14 @@ export default async function ActivityPage({
               Looking for alternative departure times, private charters, or additional operators?
             </p>
             <a
-              href={buildViatorSearchUrl(`${portData.name} Alaska ${item.eyebrow.split("·")[1]?.trim() || item.h1}`, `${item.slug}-browse-more`)}
+              href={hasExactProduct ? primaryOutboundUrl : buildViatorSearchUrl(`${portData.name} Alaska ${item.eyebrow.split("·")[1]?.trim() || item.h1}`, `${item.slug}-browse-more`)}
               target="_blank"
               rel="sponsored noopener noreferrer"
               style={{ fontSize: "14px", color: "var(--forest)", fontWeight: 700, textDecoration: "underline" }}
             >
-              Browse more {portData.name} {item.h1.toLowerCase()} on Viator →
+              {hasExactProduct
+                ? `Check availability for ${fallbackExcursions[0].title} on Viator →`
+                : `Browse more ${portData.name} ${item.h1.toLowerCase()} on Viator →`}
             </a>
           </div>
 

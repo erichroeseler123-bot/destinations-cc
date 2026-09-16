@@ -315,7 +315,7 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     ],
     "relatedActivities": [
       {
-        "name": "Dog Sledding by Helicopter",
+        "name": "Sled Dog & Musher's Camp",
         "href": "/juneau/dog-sledding"
       },
       {
@@ -447,72 +447,63 @@ export const PORT_ACTIVITIES: PortActivity[] = [
     "portSlug": "juneau",
     "portName": "Juneau",
     "slug": "dog-sledding",
-    "title": "Juneau Glacier Dog Sledding by Helicopter | Ultimate Shore Excursion",
-    "metaDescription": "Fly by helicopter to an alpine snow camp on Herbert Glacier for real dog sledding with Alaskan huskies. Timing, weight, and booking rules.",
-    "h1": "Juneau Glacier Dog Sledding by Helicopter",
-    "eyebrow": "Juneau, Alaska · Iditarod & Glaciers",
-    "typicalDuration": "2.75 to 3.25 hours total (35 mins flight + 60 mins on glacier dog sled camp)",
-    "meetingLogistics": "Shuttle coaches pick up directly outside the cruise terminals in downtown Juneau for the 20-minute transfer to the heliport.",
-    "returnMargin": "Requires minimum 5-hour port call. Returns you downtown 60 to 90 minutes before ship all-aboard.",
-    "weatherSensitivity": "High",
-    "weatherBackupAdvice": "Glacier dog camps sit at 3,000+ feet elevation on the snowfields. They are the most weather-sensitive tour in Alaska. If cloud cover closes the snowfield, you are fully refunded. Have a backup plan to pivot to whale watching.",
-    "cruiseSafetyRule": "Glacier dog sledding sells out 4 to 6 months in advance. Book early, and never select a tour slot that cuts your ship all-aboard margin below 75 minutes.",
+    "title": "Juneau Sled Dog Discovery & Musher's Camp | Cruise Shore Excursion",
+    "metaDescription": "Experience a genuine Southeast Alaska sled dog discovery at a rainforest musher camp in Sheep Creek Valley. Meet Iditarod mushers, ride a summer dog-cart, and cuddle husky puppies.",
+    "h1": "Juneau Sled Dog Discovery & Musher's Camp",
+    "eyebrow": "Juneau, Alaska · Iditarod Sled Dogs & Musher Camp",
+    "typicalDuration": "2.25 to 2.75 hours total (including scenic transfer & musher camp experience)",
+    "meetingLogistics": "Shuttle coaches pick up downtown outside the cruise piers for the short scenic transfer to the Sheep Creek Valley musher camp.",
+    "returnMargin": "Requires minimum 4-hour port call. Returns you downtown 60 to 90 minutes before ship all-aboard.",
+    "weatherSensitivity": "Low",
+    "weatherBackupAdvice": "The musher camp operates in all typical Southeast Alaska summer weather. Raingear is recommended for light coastal rain.",
+    "cruiseSafetyRule": "Book your scheduled departure early to ensure a comfortable return margin of at least 60 to 90 minutes before all-aboard.",
     "overview": [
-      "Glacier dog sledding combines two of Alaska's most iconic adventures: a panoramic helicopter flight across the Juneau Icefield, followed by a landing at a remote dog mushing camp pitched on deep summer snow.",
-      "Here, professional Iditarod and Yukon Quest mushers live on the ice throughout the summer with teams of eager, energetic Alaskan huskies. Guests meet the dogs, cuddle husky puppies, learn about arctic sled technology, and take the reins or ride inside the basket on a real sled run across alpine snow.",
-      "Because the camp is located on permanent snowpack high on Herbert or Norris Glacier, it requires winter boots and snow overboots (provided by the operator) even in the middle of July."
+      "Experience the thrilling heritage of Alaska dog mushing at a scenic rainforest musher camp nestled in Sheep Creek Valley just outside downtown Juneau.",
+      "Meet veteran Iditarod mushers and their energetic teams of Alaskan huskies. Discover authentic racing equipment, learn how dogs are trained for 1,000-mile winter treks across frozen wilderness, and cuddle summer litters of playful husky puppies.",
+      "Board a custom-designed wheeled summer dog cart for an exhilarating ride along lush temperate rainforest trails behind a hard-pulling team of Alaskan huskies."
     ],
     "keyHighlights": [
-      "Experience genuine dog mushing on real snow in the middle of summer",
-      "Meet Iditarod veteran mushers and hear firsthand tales of 1,000-mile arctic races",
-      "Panoramic helicopter flight with aerial views of deep crevasses and glacial waterfalls",
-      "Spend quality time petting friendly racing huskies and meeting summer litters of puppies"
+      "Feel the power of an eager Alaskan husky team on an exciting wheeled dog-cart ride",
+      "Meet Iditarod veteran mushers and hear firsthand stories of arctic endurance",
+      "Interact with friendly sled dogs and cuddle adorable husky racing puppies",
+      "Learn authentic racing gear, nutrition, and mushing traditions in a rainforest setting"
     ],
     "timingBreakdown": {
-      "disembarkation": "15 mins to meet transfer van",
-      "travelToSite": "20 mins van transit to heliport",
-      "activeExperience": "35 mins flight + 60 mins dog sledding and kennel tour",
-      "returnTransit": "20 mins van ride back to pier",
+      "disembarkation": "15 mins to meet downtown transfer shuttle",
+      "travelToSite": "20 mins scenic shuttle along Gastineau Channel",
+      "activeExperience": "75 mins musher presentation, dog-cart run, and puppy interaction",
+      "returnTransit": "20 mins shuttle back to cruise pier",
       "pierBuffer": "60–90 mins buffer before all-aboard"
     },
     "sampleTours": [
       {
-        "name": "Helicopter Glacier Dog Sledding on Herbert Glacier",
-        "duration": "3 hours",
+        "name": "Juneau Sled Dog Discovery & Musher's Camp",
+        "duration": "2.5 hours",
         "returnMargin": "75 min buffer",
-        "bestSuitedFor": "Bucket-list travelers and families wanting the ultimate Alaska thrill",
-        "meetingPoint": "Downtown Cruise Pier Staging Lot",
-        "searchQuery": "Juneau helicopter glacier dog sledding tour",
+        "bestSuitedFor": "Families, dog lovers, and cruisers wanting genuine Iditarod mushing traditions",
+        "meetingPoint": "Downtown Cruise Pier / Mt Roberts Tramway Area",
+        "searchQuery": "Juneau sled dog discovery mushers camp",
         "campaignTag": "juneau-heli-dog-sledding"
-      },
-      {
-        "name": "Extended Glacier Dog Sledding & Flightseeing",
-        "duration": "3.5 hours",
-        "returnMargin": "90 min buffer (needs 5.5+ hr port call)",
-        "bestSuitedFor": "Cruisers wanting longer flight routes and extra hands-on driving time",
-        "meetingPoint": "Downtown Cruise Pier Staging Lot",
-        "searchQuery": "Juneau extended glacier dog sledding helicopter",
-        "campaignTag": "juneau-dog-sled-extended"
       }
     ],
     "whatToBring": [
-      "Dark sunglasses or ski goggles (snow glare at 3,500 feet is intense)",
-      "Layered clothing with waterproof outer shell and warm fleece underlayer",
-      "Warm winter gloves and beanie (temperatures on the snow can be 20°F cooler than downtown)",
-      "High-SPF sunscreen and lip balm"
+      "Comfortable walking shoes or sneakers suitable for outdoor gravel trails",
+      "Layered clothing with a light waterproof jacket or windbreaker",
+      "Camera or smartphone for husky puppy photos",
+      "Sunglasses and light daypack"
     ],
     "faqs": [
       {
-        "question": "Is there real snow on the glacier in July and August?",
-        "answer": "Yes. The dog camps are established on upper snowfields at over 3,000 feet elevation on the Juneau Icefield, where packed snow remains deep throughout the entire summer cruise season."
+        "question": "How does dog sledding work in the summer without snow?",
+        "answer": "In summer, the dogs pull specially designed wheeled carts along private dirt trails through the lush temperate rainforest. The dogs are just as energetic and enthusiastic as they are on winter snow."
       },
       {
-        "question": "Do guests get to drive the dog sled?",
-        "answer": "Yes, guests typically have the opportunity to stand on the runners behind the musher and help drive the sled, or sit comfortably inside the padded sled basket. The musher maintains primary brake control for safety."
+        "question": "Do guests get to interact with the dogs and puppies?",
+        "answer": "Yes! A major highlight of the musher's camp is spending quality one-on-one time with the sled dogs in their kennels and cuddling the young husky puppies."
       },
       {
-        "question": "What happens if weather cancels the dog sledding portion?",
-        "answer": "If weather prevents landing at the high-elevation snow camp, the operator may offer an alternative lower-elevation glacier landing walk with a partial refund, or a refund per the operator's weather policy."
+        "question": "Is this tour suitable for young children and families?",
+        "answer": "Yes, this is one of Juneau's most family-friendly shore excursions with gentle walking on flat gravel paths and fun activities for all generations."
       }
     ],
     "relatedActivities": [

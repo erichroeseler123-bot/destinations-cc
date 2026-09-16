@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DECISION_PAGES, getDecisionPage } from "@/lib/decisionPages";
 import { buildAffiliateUrl } from "@/lib/affiliate/links";
-import { AFFILIATE_CATALOG } from "@/lib/affiliate/catalog";
+import { AFFILIATE_CATALOG, matchCatalogExcursion } from "@/lib/affiliate/catalog";
 import { CruiseWindowCalculator } from "@/components/CruiseWindowCalculator";
 import { TrustDisclosure } from "@/components/TrustDisclosure";
 
@@ -240,9 +240,9 @@ export default async function DecisionPage({
 
           <div className="grid" style={{ marginTop: 24 }}>
             {guide.recommendedTours.map((tour) => {
-              const matched = AFFILIATE_CATALOG.find((c) => c.attributionCampaign.includes(tour.campaignTag) || tour.campaignTag.includes(c.attributionCampaign));
+              const matched = matchCatalogExcursion(tour.port, tour.name, tour.campaignTag);
               const outboundUrl = matched
-                ? buildAffiliateUrl(matched.source, matched.officialUrl, matched.attributionCampaign)
+                ? buildAffiliateUrl(matched.source, matched.officialUrl, matched.attributionCampaign, matched.title, matched.isExactProduct)
                 : buildAffiliateUrl("viator", tour.searchQuery, tour.campaignTag);
 
               return (

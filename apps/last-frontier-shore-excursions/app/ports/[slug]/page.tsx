@@ -59,7 +59,7 @@ export default async function PortPage({
   const portExcursions = getExcursionsByPort(slug as PortSlug);
 
   const primaryBrowseUrl = portExcursions.length > 0
-    ? buildAffiliateUrl(portExcursions[0].source, portExcursions[0].officialUrl, portExcursions[0].attributionCampaign)
+    ? buildAffiliateUrl(portExcursions[0].source, portExcursions[0].officialUrl, portExcursions[0].attributionCampaign, portExcursions[0].title, portExcursions[0].isExactProduct)
     : buildAffiliateUrl("viator", `${port.name} Alaska shore excursions`, `${port.slug}-hub`);
 
   const jsonLd = {
@@ -95,7 +95,7 @@ export default async function PortPage({
                     price: ex.priceFrom,
                     priceCurrency: ex.currency,
                     availability: "https://schema.org/InStock",
-                    url: buildAffiliateUrl(ex.source, ex.officialUrl, ex.attributionCampaign),
+                    url: buildAffiliateUrl(ex.source, ex.officialUrl, ex.attributionCampaign, ex.title, ex.isExactProduct),
                   },
                 },
               })),
