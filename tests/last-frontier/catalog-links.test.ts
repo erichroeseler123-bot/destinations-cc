@@ -243,4 +243,34 @@ describe("Last Frontier Shore Excursions - Viator Direct Link Verification", () 
       }
     }
   });
+
+  it("all 15 catalog items use verified exact canonical Viator URLs matching destination and product slug", () => {
+    const VERIFIED_CANONICAL_URLS: Record<string, string> = {
+      "331813P1": "https://www.viator.com/tours/Juneau/Whale-Tours-in-Juneau-Alaska/d941-331813P1",
+      "466119P3": "https://www.viator.com/tours/Juneau/Mendenhall-Glacier-Waterfall-and-Whale-Watching-Tour/d941-466119P3",
+      "5857SHUTTLE": "https://www.viator.com/tours/Juneau/Round-Trip-Mendenhall-Glacier-Shuttle-Service/d941-5857SHUTTLE",
+      "6251SHOREXICEWALK": "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK",
+      "62390P4": "https://www.viator.com/tours/Juneau/Sled-Dog-Discovery-in-Juneau/d941-62390P4",
+      "110048P1": "https://www.viator.com/tours/Juneau/Taku-Lodge-Feast-and-5-Glacier-Seaplane-Discovery/d941-110048P1",
+      "5338PRTSGYCITY": "https://www.viator.com/tours/Skagway/Skagway-Shore-Excursion-White-Pass-Summit-and-Skagway-City-Tour/d943-5338PRTSGYCITY",
+      "5338PRTSGYFULL": "https://www.viator.com/tours/Whitehorse/Skagway-Shore-Excursion-Full-Day-Tour-of-the-Yukon/d5420-5338PRTSGYFULL",
+      "10649P17": "https://www.viator.com/tours/Skagway/Skagway-Historic-City-Tour-2-HRS/d943-10649P17",
+      "6459PRTKTNMISTY": "https://www.viator.com/tours/Ketchikan/Ketchikan-Shore-Excursion-Misty-Fjords-National-Monument-Floatplane-Tour/d942-6459PRTKTNMISTY",
+      "472133P3": "https://www.viator.com/tours/Ketchikan/Misty-Fjords-and-Wilderness-Explorer/d942-472133P3",
+      "445368P5": "https://www.viator.com/tours/Ketchikan/Saxman-Native-Village-Ketchikan-Highlights-and-Lumberjack-Show/d942-445368P5",
+      "472133P4": "https://www.viator.com/tours/Sitka/Whale-Watch-and-Sea-Otter-Quest/d4153-472133P4",
+      "64781P20": "https://www.viator.com/tours/Sitka/Simply-Amazing-Sitka-Tour/d4153-64781P20",
+      "14707P1": "https://www.viator.com/tours/Hoonah/Whale-Watch-Adventure/d26215-14707P1",
+    };
+
+    for (const item of AFFILIATE_CATALOG) {
+      const expectedUrl = VERIFIED_CANONICAL_URLS[item.productId!];
+      assert.ok(expectedUrl, `Missing expected canonical URL for ${item.productId}`);
+      assert.equal(
+        item.officialUrl,
+        expectedUrl,
+        `Item ${item.title} (${item.productId}) has officialUrl ${item.officialUrl}, expected ${expectedUrl}`
+      );
+    }
+  });
 });
