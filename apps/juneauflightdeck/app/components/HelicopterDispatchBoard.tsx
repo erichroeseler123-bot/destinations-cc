@@ -183,18 +183,18 @@ export default function HelicopterDispatchBoard({
           </p>
         </div>
 
-        <aside className="dispatch-panel" aria-label="Juneau trip checks">
+        <aside className="dispatch-panel" aria-label="Juneau planning guidance">
           <div>
             <span className="dispatch-metric">Ship</span>
-            <span className="dispatch-metric-label">Return buffer</span>
+            <span className="dispatch-metric-label">Buffer guidance</span>
           </div>
           <div>
             <span className="dispatch-metric">Wx</span>
-            <span className="dispatch-metric-label">Weather read</span>
+            <span className="dispatch-metric-label">Weather criteria</span>
           </div>
           <div>
             <span className="dispatch-metric">Alt</span>
-            <span className="dispatch-metric-label">Backup ready</span>
+            <span className="dispatch-metric-label">Backup options</span>
           </div>
         </aside>
       </section>
