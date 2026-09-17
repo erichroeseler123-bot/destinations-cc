@@ -1616,5 +1616,64 @@ export const dccSquareWebhookEvents = pgTable(
 export type DccSquareWebhookEventRow = typeof dccSquareWebhookEvents.$inferSelect;
 export type NewDccSquareWebhookEventRow = typeof dccSquareWebhookEvents.$inferInsert;
 
+export const dccContextStatusEnum = pgEnum("dcc_context_status", [
+  "issued",
+  "redeemed",
+  "expired",
+  "revoked",
+]);
 
+export const dccContexts = pgTable(
+  "dcc_contexts",
+  {
+    contextId: text("context_id").primaryKey(), // "dcc_ctx_..."
+    contextHash: text("context_hash").notNull(), // sha256(contextId) for secure index & lookup
+    idempotencyKey: text("idempotency_key"),
+    version: text("version").notNull().default("1.0"),
+    status: dccContextStatusEnum("status").notNull().default("issued"),
+    sourceSite: text("source_site").notNull(),
+    destination: text("destination").notNull(),
+    targetOwner: text("target_owner").notNull(),
+    targetIntent: text("target_intent"),
+    timezone: text("timezone").notNull(),
 
+    // Schedule
+    scheduleDate: text("schedule_date").notNull(), // YYYY-MM-DD
+    arrival: text("arrival"), // HH:mm
+    departure: text("departure"), // HH:mm
+    travelers: integer("travelers").notNull().default(1),
+    shipOrVenue: text("ship_or_venue"),
+
+    // Safety Constraints & Calculated Return Windows
+    bufferMinutes: integer("buffer_minutes").notNull().default(0),
+    latestSafeReturnDate: text("latest_safe_return_date"),
+    latestSafeReturnTime: text("latest_safe_return_time"),
+    midnightCrossed: boolean("midnight_crossed").notNull().default(false),
+
+    // Minimal Non-Sensitive Attribution Metadata
+    attribution: jsonb("attribution").$type<{
+      feederSessionId?: string;
+      campaign?: string;
+      referrerDomain?: string;
+    }>(),
+
+    // Lifecycle Timestamps
+    issuedAt: timestamp("issued_at", { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    redeemedAt: timestamp("redeemed_at", { withTimezone: true }),
+    redeemedBy: text("redeemed_by"),
+
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    contextHashIdx: uniqueIndex("dcc_contexts_hash_uidx").on(table.contextHash),
+    idempotencyKeyIdx: uniqueIndex("dcc_contexts_idempotency_uidx").on(table.idempotencyKey),
+    statusIdx: index("dcc_contexts_status_idx").on(table.status),
+    expiresAtIdx: index("dcc_contexts_expires_at_idx").on(table.expiresAt),
+    targetOwnerIdx: index("dcc_contexts_target_owner_idx").on(table.targetOwner),
+  })
+);
+
+export type DccContextRow = typeof dccContexts.$inferSelect;
+export type NewDccContextRow = typeof dccContexts.$inferInsert;
