@@ -613,3 +613,52 @@ export async function cleanupExpiredDccSessions(
     return { success: false, deletedCount: 0 };
   }
 }
+
+/**
+ * Scheduled cleanup job: Transitions expired unredeemed context rows to 'expired' status
+ * and purges stale unredeemed contexts older than the retention threshold (default 7 days).
+ */
+export async function cleanupExpiredDccContexts(
+  options?: { dbOverride?: DccDb | null; now?: number; purgeOlderThanDays?: number }
+): Promise<{ success: boolean; expiredCount: number; purgedCount: number }> {
+  const db = options?.dbOverride !== undefined ? options.dbOverride : getDb();
+  if (!db) return { success: false, expiredCount: 0, purgedCount: 0 };
+
+  const now = options?.now ? new Date(options.now) : new Date();
+  const purgeDays = options?.purgeOlderThanDays ?? 7;
+  const purgeThreshold = new Date(now.getTime() - purgeDays * 24 * 60 * 60 * 1000);
+
+  try {
+    // 1. Mark unredeemed contexts past expiresAt as 'expired'
+    const expiredRows = await db
+      .update(dccContexts)
+      .set({ status: "expired" })
+      .where(
+        and(
+          eq(dccContexts.status, "issued"),
+          lte(dccContexts.expiresAt, now)
+        )
+      )
+      .returning({ contextId: dccContexts.contextId });
+
+    // 2. Purge unredeemed expired contexts older than purge threshold
+    const purgedRows = await db
+      .delete(dccContexts)
+      .where(
+        and(
+          eq(dccContexts.status, "expired"),
+          lte(dccContexts.expiresAt, purgeThreshold)
+        )
+      )
+      .returning({ contextId: dccContexts.contextId });
+
+    return {
+      success: true,
+      expiredCount: expiredRows.length,
+      purgedCount: purgedRows.length,
+    };
+  } catch (err) {
+    console.error("Failed to clean up expired contexts:", err);
+    return { success: false, expiredCount: 0, purgedCount: 0 };
+  }
+}

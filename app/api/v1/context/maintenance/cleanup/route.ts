@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyServiceRequestHeaders } from "@/lib/dcc/auth/hmac-service-auth";
-import { cleanupExpiredDccSessions } from "@/lib/dcc/context/service";
+import { cleanupExpiredDccSessions, cleanupExpiredDccContexts } from "@/lib/dcc/context/service";
 
 export const runtime = "nodejs";
 
-export async function POST(request: NextRequest) {
+async function handleCleanup(request: NextRequest, method: "GET" | "POST") {
   // 1. Check CRON_SECRET authorization (e.g. Vercel Cron or Cloudflare Cron Trigger)
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET?.trim();
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     if (!keyId) return false;
     const auth = verifyServiceRequestHeaders({
       headers: request.headers,
-      method: "POST",
+      method,
       pathname: "/api/v1/context/maintenance/cleanup",
     });
     return auth.authorized;
@@ -37,14 +37,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const result = await cleanupExpiredDccSessions();
+  const [sessionCleanup, contextCleanup] = await Promise.all([
+    cleanupExpiredDccSessions(),
+    cleanupExpiredDccContexts(),
+  ]);
 
-  if (!result.success) {
+  if (!sessionCleanup.success || !contextCleanup.success) {
     return NextResponse.json(
       {
         success: false,
         errorCode: "DATABASE_UNAVAILABLE",
-        message: "Failed to purge expired records.",
+        message: "Failed to purge or transition expired records.",
       },
       { status: 503 }
     );
@@ -52,7 +55,17 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     success: true,
-    deletedCount: result.deletedCount,
+    sessionsDeleted: sessionCleanup.deletedCount,
+    contextsExpired: contextCleanup.expiredCount,
+    contextsPurged: contextCleanup.purgedCount,
     timestamp: Date.now(),
   });
+}
+
+export async function GET(request: NextRequest) {
+  return handleCleanup(request, "GET");
+}
+
+export async function POST(request: NextRequest) {
+  return handleCleanup(request, "POST");
 }
