@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { signServiceRequest } from "@/lib/dcc/auth/hmac-service-auth";
 import type { DccContextRedeemResponse } from "@/lib/dcc/context/schema";
+import { invalidateDccSession, isDccSessionInvalidated } from "@/lib/dcc/context/service";
 
 export interface ContextRedeemResult {
   success: boolean;
@@ -279,22 +280,44 @@ export function clearInvalidatedSessionsForTesting() {
   invalidatedSessionIds.clear();
 }
 
-export function isSessionInvalidated(sessionId: string): boolean {
-  return invalidatedSessionIds.has(sessionId);
+export async function isSessionInvalidated(
+  sessionId: string,
+  options?: { dbOverride?: any; now?: number }
+): Promise<boolean> {
+  // 1. Fast in-memory check
+  if (invalidatedSessionIds.has(sessionId)) {
+    return true;
+  }
+  // 2. Durable Neon database check (cross-instance safety)
+  return await isDccSessionInvalidated(sessionId, options);
 }
 
-export function invalidateCheckoutSession(
+export async function invalidateCheckoutSession(
   sessionIdOrToken: string,
   options?: {
     sessionSecrets?: Record<string, string>;
     sessionSecret?: string;
+    contextId?: string;
+    owner?: string;
+    reason?: string;
+    dbOverride?: any;
   }
-) {
+): Promise<void> {
   const verified = verifySessionToken(sessionIdOrToken, JFD_SESSION_AUDIENCE, options);
   const sid = verified ? verified.sid : sessionIdOrToken;
+  const ctx = verified ? verified.ctx : (options?.contextId || "");
   const exp = verified ? verified.exp : Date.now() + 3600 * 1000;
+  const owner = options?.owner || "juneauflightdeck";
+
+  // Wipe local memory cache
   activeCheckoutSessions.delete(sid);
   invalidatedSessionIds.set(sid, exp);
+
+  // Durable invalidation in Neon PostgreSQL
+  await invalidateDccSession(sid, ctx, owner, options?.reason, {
+    dbOverride: options?.dbOverride,
+    expiresAt: new Date(exp),
+  });
 }
 
 /**
@@ -312,6 +335,8 @@ export async function getOrCreateCheckoutSession(
     sessionSecret?: string;
     sessionSecrets?: Record<string, string>;
     fetcher?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+    dbOverride?: any;
+    now?: number;
   }
 ): Promise<
   ContextRedeemResult & {
@@ -320,14 +345,14 @@ export async function getOrCreateCheckoutSession(
     isExistingSession?: boolean;
   }
 > {
-  const now = Date.now();
+  const now = options?.now || Date.now();
   pruneExpiredSessions(now);
 
   const verified = verifySessionToken(sessionToken, JFD_SESSION_AUDIENCE, options);
   const effectiveSessionId = verified?.sid || null;
 
-  // 1. Check if session was explicitly invalidated by server
-  if (effectiveSessionId && isSessionInvalidated(effectiveSessionId)) {
+  // 1. Check if session was explicitly invalidated by server (in-memory or durable in Neon)
+  if (effectiveSessionId && (await isSessionInvalidated(effectiveSessionId, options))) {
     return {
       success: false,
       errorCode: "INVALID_SESSION",

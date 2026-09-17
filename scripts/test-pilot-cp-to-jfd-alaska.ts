@@ -205,20 +205,35 @@ async function runAlaskaPilotTest() {
   assert.equal(JFD_CHECKOUT_COOKIE_OPTIONS.maxAge, 3600, "Cookie must have 1-hour max age");
   console.log("  ✔ Cookie Security Verified: HttpOnly=true, SameSite=Lax, MaxAge=3600s, Zero PII/Payment data in cookie");
 
-  // Step 7: Server-Side Invalidation on Checkout / Cancellation & Post-Invalidation Block
-  console.log("\nStep 7: Testing server-side session invalidation & post-invalidation reuse block...");
-  invalidateCheckoutSession(activeSessionToken);
-  
-  // Attacker or replayed client attempts to reuse the signed cookie string after server invalidation:
-  const postInvalidationAttempt = await getOrCreateCheckoutSession(
+  // Step 7: Server-Side Invalidation & Durable Cross-Instance Invalidation in Neon
+  console.log("\nStep 7: Testing durable cross-instance session invalidation...");
+  await invalidateCheckoutSession(activeSessionToken, { reason: "Booking completed on Instance 1" });
+
+  // 7a. Verify immediate rejection on Instance 1
+  const postInvalidationAttempt1 = await getOrCreateCheckoutSession(
     issueResult.contextId,
     activeSessionToken,
     { fetcher: inProcessRouteFetcher }
   );
-  assert.equal(postInvalidationAttempt.success, false, "Post-invalidation reuse must be blocked");
-  assert.equal(postInvalidationAttempt.statusCode, 410);
-  assert.equal(postInvalidationAttempt.errorCode, "INVALID_SESSION");
-  console.log("  ✔ Post-Invalidation Block Succeeded: Invalided session token blocked with 410 INVALID_SESSION even if client retains cookie!");
+  assert.equal(postInvalidationAttempt1.success, false, "Post-invalidation reuse on same instance must be blocked");
+  assert.equal(postInvalidationAttempt1.statusCode, 410);
+  assert.equal(postInvalidationAttempt1.errorCode, "INVALID_SESSION");
+  console.log("  ✔ Invalidation on Instance 1 Verified: Session rejected with 410 INVALID_SESSION");
+
+  // 7b. Simulate Instance 2 (Cold start: wipe all in-memory caches, both active sessions & in-memory blocklist)
+  clearCheckoutSessionCacheForTesting();
+  clearInvalidatedSessionsForTesting();
+
+  // Attacker or replayed client attempts to reuse the signed cookie on a completely new serverless container / Instance 2
+  const postInvalidationAttempt2 = await getOrCreateCheckoutSession(
+    issueResult.contextId,
+    activeSessionToken,
+    { fetcher: inProcessRouteFetcher }
+  );
+  assert.equal(postInvalidationAttempt2.success, false, "Post-invalidation reuse across cold instances must be blocked by Neon durable table");
+  assert.equal(postInvalidationAttempt2.statusCode, 410);
+  assert.equal(postInvalidationAttempt2.errorCode, "INVALID_SESSION");
+  console.log("  ✔ Cross-Instance Invalidation Succeeded: Retained cookie rejected with 410 INVALID_SESSION via durable Neon PostgreSQL record!");
 
   // Step 8: Revocation & Expiry Hydration Guard
   console.log("\nStep 8: Verifying that revoked & expired contexts cannot hydrate a session...");

@@ -1677,3 +1677,22 @@ export const dccContexts = pgTable(
 
 export type DccContextRow = typeof dccContexts.$inferSelect;
 export type NewDccContextRow = typeof dccContexts.$inferInsert;
+
+export const dccInvalidatedSessions = pgTable(
+  "dcc_invalidated_sessions",
+  {
+    sessionId: text("session_id").primaryKey(),
+    contextId: text("context_id").notNull(),
+    owner: text("owner").notNull(),
+    reason: text("reason"),
+    invalidatedAt: timestamp("invalidated_at", { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (table) => ({
+    contextIdx: index("dcc_invalidated_sessions_context_idx").on(table.contextId),
+    expiresAtIdx: index("dcc_invalidated_sessions_expires_at_idx").on(table.expiresAt),
+  })
+);
+
+export type DccInvalidatedSessionRow = typeof dccInvalidatedSessions.$inferSelect;
+export type NewDccInvalidatedSessionRow = typeof dccInvalidatedSessions.$inferInsert;

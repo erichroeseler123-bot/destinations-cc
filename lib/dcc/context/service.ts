@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { and, eq, gt } from "drizzle-orm";
 import { getDb, type DccDb } from "@/lib/db/client";
-import { dccContexts, type DccContextRow } from "@/lib/db/schema";
+import { dccContexts, dccInvalidatedSessions, type DccContextRow } from "@/lib/db/schema";
 import {
   DccContextIssueRequestSchema,
   DccContextRedeemResponseSchema,
@@ -492,4 +492,66 @@ export async function revokeContext(
     revokedAt: now.getTime(),
     revokedBy: requestedBy,
   };
+}
+
+/**
+ * Durably records an invalidated / completed session in Neon PostgreSQL.
+ */
+export async function invalidateDccSession(
+  sessionId: string,
+  contextId: string,
+  owner: string,
+  reason?: string,
+  options?: { dbOverride?: DccDb | null; expiresAt?: Date }
+): Promise<{ success: boolean }> {
+  const db = options?.dbOverride !== undefined ? options.dbOverride : getDb();
+  if (!db) return { success: false };
+
+  const expiresAt = options?.expiresAt || new Date(Date.now() + 3600 * 1000);
+  try {
+    await db
+      .insert(dccInvalidatedSessions)
+      .values({
+        sessionId,
+        contextId,
+        owner,
+        reason: reason || "Session completed or cancelled",
+        expiresAt,
+      })
+      .onConflictDoNothing();
+    return { success: true };
+  } catch (err) {
+    console.error("Failed to persist invalidated session:", err);
+    return { success: false };
+  }
+}
+
+/**
+ * Durably checks if a session ID is recorded in the Neon PostgreSQL invalidation table.
+ */
+export async function isDccSessionInvalidated(
+  sessionId: string,
+  options?: { dbOverride?: DccDb | null; now?: number }
+): Promise<boolean> {
+  const db = options?.dbOverride !== undefined ? options.dbOverride : getDb();
+  if (!db) return false;
+
+  const now = options?.now ? new Date(options.now) : new Date();
+  try {
+    const rows = await db
+      .select({ sessionId: dccInvalidatedSessions.sessionId })
+      .from(dccInvalidatedSessions)
+      .where(
+        and(
+          eq(dccInvalidatedSessions.sessionId, sessionId),
+          gt(dccInvalidatedSessions.expiresAt, now)
+        )
+      )
+      .limit(1);
+
+    return rows.length > 0;
+  } catch (err) {
+    console.error("Failed to check invalidated session:", err);
+    return false;
+  }
 }

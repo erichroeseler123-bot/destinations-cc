@@ -8,6 +8,13 @@
       "when": 1789574400000,
       "tag": "0001_dcc_contexts",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789660000000,
+      "tag": "0002_dcc_invalidated_sessions",
+      "breakpoints": true
     }
   ]
 }
