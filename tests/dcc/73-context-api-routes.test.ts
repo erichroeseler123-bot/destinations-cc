@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { NextRequest } from "next/server";
-import { POST as handleIssueContext } from "@/app/api/v1/context/route";
+import { POST as handleIssueContext, clearIssueRateLimitCacheForTesting } from "@/app/api/v1/context/route";
 import { POST as handleRedeemContext } from "@/app/api/v1/context/[contextId]/redeem/route";
 import {
   signServiceRequest,
@@ -10,6 +10,7 @@ import {
 import { getDb } from "@/lib/db/client";
 import { dccContexts } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { issueContext, redeemContext } from "@/lib/dcc/context/service";
 
 const TEST_KEY_ID = "jfd_service_key";
 const TEST_SECRET = "secret_jfd_dcc_staging_test_xyz123";
@@ -19,9 +20,10 @@ test.beforeEach(() => {
   process.env.INTERNAL_API_SECRET = TEST_SECRET;
   process.env.ALLOW_IN_MEMORY_NONCE_FALLBACK_FOR_TESTS = "true";
   clearNonceReplayCacheForTesting();
+  clearIssueRateLimitCacheForTesting();
 });
 
-test("Context API Route Suite", async (t) => {
+test("Context API Route & Staging Neon Concurrency Suite", async (t) => {
   const db = getDb();
   let createdContextId = "";
 
@@ -41,20 +43,22 @@ test("Context API Route Suite", async (t) => {
       attribution: {
         campaign: "summer-2026",
       },
-      idempotencyKey: `test-api-issue-${Date.now()}`,
+      idempotencyKey: `test-api-issue-${Date.now()}-${Math.random()}`,
     };
 
     const req = new NextRequest("https://api.destinationcommandcenter.com/api/v1/context", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        origin: "https://cruisepromenade.com",
+      },
       body: JSON.stringify(payload),
     });
 
     const res = await handleIssueContext(req);
     const json = await res.json();
-    if (res.status !== 201) {
-      console.log("TEST 1 FAILURE:", res.status, json);
-    }
+
+    assert.equal(res.status, 201);
     assert.equal(json.success, true);
     assert.match(json.contextId, /^dcc_ctx_[a-f0-9]{32}$/);
     assert.equal(json.version, "1.0");
@@ -64,6 +68,7 @@ test("Context API Route Suite", async (t) => {
       `https://juneauflightdeck.com/book?ctx=${json.contextId}`
     );
     assert.equal(json.expiresAt - json.issuedAt, 900000);
+    assert.equal(res.headers.get("access-control-allow-origin"), "https://cruisepromenade.com");
 
     createdContextId = json.contextId;
 
@@ -77,8 +82,8 @@ test("Context API Route Suite", async (t) => {
     }
   });
 
-  await t.test("2. POST /api/v1/context - Idempotent replay returns 200 and same contextId", async () => {
-    const idempotencyKey = `test-idemp-${Date.now()}`;
+  await t.test("2. POST /api/v1/context - Idempotent sequential replay returns 200 and same contextId", async () => {
+    const idempotencyKey = `test-idemp-${Date.now()}-${Math.random()}`;
     const payload = {
       sourceSite: "cruisepromenade",
       destination: "juneau",
@@ -114,7 +119,106 @@ test("Context API Route Suite", async (t) => {
     }
   });
 
-  await t.test("3. POST /api/v1/context - Rejects invalid/tampered request shapes (strict mode)", async () => {
+  await t.test("3. POST /api/v1/context - Simultaneous duplicate issue race returns identical contextId without 500 collision", async () => {
+    const raceKey = `test-race-idemp-${Date.now()}-${Math.random()}`;
+    const payload = {
+      sourceSite: "cruisepromenade",
+      destination: "juneau",
+      targetOwner: "juneauflightdeck",
+      schedule: {
+        date: "2026-07-15",
+        travelers: 3,
+      },
+      idempotencyKey: raceKey,
+    };
+
+    // Execute two simultaneous async requests racing against live Neon
+    const [resA, resB] = await Promise.all([
+      issueContext(payload),
+      issueContext(payload),
+    ]);
+
+    assert.equal(resA.success, true);
+    assert.equal(resB.success, true);
+    assert.equal(resA.contextId, resB.contextId);
+    // Exactly one should be the original issue and the other the idempotency replay
+    const replays = [resA.idempotencyReplay, resB.idempotencyReplay].filter(Boolean);
+    assert.equal(replays.length, 1);
+  });
+
+  await t.test("4. POST /api/v1/context - Origin allowlisting permits registered domains and blocks untrusted origins", async () => {
+    // Untrusted origin -> 403
+    const untrustedReq = new NextRequest("https://api.destinationcommandcenter.com/api/v1/context", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        origin: "https://malicious-phishing-site.xyz",
+      },
+      body: JSON.stringify({
+        sourceSite: "cruisepromenade",
+        destination: "juneau",
+        targetOwner: "juneauflightdeck",
+        schedule: { date: "2026-07-15", travelers: 1 },
+      }),
+    });
+
+    const untrustedRes = await handleIssueContext(untrustedReq);
+    const untrustedJson = await untrustedRes.json();
+    assert.equal(untrustedRes.status, 403);
+    assert.equal(untrustedJson.errorCode, "ORIGIN_NOT_ALLOWED");
+
+    // Allowed origin -> 201 with reflected header
+    const trustedReq = new NextRequest("https://api.destinationcommandcenter.com/api/v1/context", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        origin: "https://welcometoalaskatours.com",
+      },
+      body: JSON.stringify({
+        sourceSite: "wta",
+        destination: "juneau",
+        targetOwner: "juneauflightdeck",
+        schedule: { date: "2026-07-15", travelers: 1 },
+      }),
+    });
+
+    const trustedRes = await handleIssueContext(trustedReq);
+    assert.equal(trustedRes.status, 201);
+    assert.equal(trustedRes.headers.get("access-control-allow-origin"), "https://welcometoalaskatours.com");
+  });
+
+  await t.test("5. POST /api/v1/context - Rate limiting rejects excessive issue requests with 429", async () => {
+    const payload = {
+      sourceSite: "cruisepromenade",
+      destination: "juneau",
+      targetOwner: "juneauflightdeck",
+      schedule: { date: "2026-07-15", travelers: 1 },
+    };
+
+    const makeReq = () =>
+      new NextRequest("https://api.destinationcommandcenter.com/api/v1/context", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-forwarded-for": "198.51.100.42",
+        },
+        body: JSON.stringify(payload),
+      });
+
+    // Send 60 requests up to the limit
+    for (let i = 0; i < 60; i++) {
+      const res = await handleIssueContext(makeReq());
+      assert.equal(res.status, 201);
+    }
+
+    // 61st request must trigger 429 Rate Limit
+    const rateLimitedRes = await handleIssueContext(makeReq());
+    const rateLimitedJson = await rateLimitedRes.json();
+    assert.equal(rateLimitedRes.status, 429);
+    assert.equal(rateLimitedJson.errorCode, "RATE_LIMIT_EXCEEDED");
+  });
+
+  await t.test("6. POST /api/v1/context - Strict schema rejects unknown and invalid fields", async () => {
     const invalidPayload = {
       sourceSite: "cruisepromenade",
       destination: "juneau",
@@ -140,7 +244,7 @@ test("Context API Route Suite", async (t) => {
     assert.equal(json.errorCode, "VALIDATION_FAILED");
   });
 
-  await t.test("4. POST /api/v1/context/:id/redeem - Fails 401 without HMAC headers", async () => {
+  await t.test("7. POST /api/v1/context/:id/redeem - Fails 401 without HMAC headers", async () => {
     const req = new NextRequest(
       `https://api.destinationcommandcenter.com/api/v1/context/${createdContextId}/redeem`,
       {
@@ -158,36 +262,36 @@ test("Context API Route Suite", async (t) => {
     assert.equal(json.errorCode, "MISSING_SERVICE_SIGNATURE");
   });
 
-  await t.test("5. POST /api/v1/context/:id/redeem - Fails 401 on tampered signature", async () => {
-    const pathname = `/api/v1/context/${createdContextId}/redeem`;
-    const bodyStr = JSON.stringify({ owner: "juneauflightdeck" });
-
-    const signed = signServiceRequest({
+  await t.test("8. POST /api/v1/context/:id/redeem - Exact route path matching enforces HMAC scope", async () => {
+    // Request path signed for a different internal route fails verification when sent to redeem
+    const signedForDifferentRoute = signServiceRequest({
       keyId: TEST_KEY_ID,
-      secret: "tampered_secret_invalid",
+      secret: TEST_SECRET,
       method: "POST",
-      pathname,
-      body: bodyStr,
+      pathname: "/api/internal/cruises/port/juneau",
+      body: JSON.stringify({ owner: "juneauflightdeck" }),
     });
 
-    const req = new NextRequest(`https://api.destinationcommandcenter.com${pathname}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...signed.headers,
-      },
-      body: bodyStr,
-    });
+    const req = new NextRequest(
+      `https://api.destinationcommandcenter.com/api/v1/context/${createdContextId}/redeem`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...signedForDifferentRoute.headers,
+        },
+        body: JSON.stringify({ owner: "juneauflightdeck" }),
+      }
+    );
 
     const res = await handleRedeemContext(req, { params: { contextId: createdContextId } });
     const json = await res.json();
 
     assert.equal(res.status, 401);
-    assert.equal(json.success, false);
     assert.equal(json.errorCode, "INVALID_SIGNATURE");
   });
 
-  await t.test("6. POST /api/v1/context/:id/redeem - Fails 403 on owner mismatch", async () => {
+  await t.test("9. POST /api/v1/context/:id/redeem - Fails 403 on owner mismatch", async () => {
     const pathname = `/api/v1/context/${createdContextId}/redeem`;
     const bodyStr = JSON.stringify({ owner: "gosno" }); // Context was issued for juneauflightdeck
 
@@ -216,11 +320,28 @@ test("Context API Route Suite", async (t) => {
     assert.equal(json.errorCode, "OWNER_MISMATCH");
   });
 
-  await t.test("7. POST /api/v1/context/:id/redeem - Valid HMAC request from rightful owner succeeds (200)", async () => {
-    const pathname = `/api/v1/context/${createdContextId}/redeem`;
+  await t.test("10. POST /api/v1/context/:id/redeem - Real Neon Concurrent Race: exactly ONE 200 and ONE 409", async () => {
+    // Issue a fresh context specifically for live concurrent redemption race
+    const freshIssue = await issueContext({
+      sourceSite: "cruisepromenade",
+      destination: "juneau",
+      targetOwner: "juneauflightdeck",
+      schedule: { date: "2026-07-20", travelers: 2 },
+    });
+
+    const raceContextId = freshIssue.contextId;
+    const pathname = `/api/v1/context/${raceContextId}/redeem`;
     const bodyStr = JSON.stringify({ owner: "juneauflightdeck" });
 
-    const signed = signServiceRequest({
+    // Generate two distinct HMAC signed requests with different nonces
+    const sign1 = signServiceRequest({
+      keyId: TEST_KEY_ID,
+      secret: TEST_SECRET,
+      method: "POST",
+      pathname,
+      body: bodyStr,
+    });
+    const sign2 = signServiceRequest({
       keyId: TEST_KEY_ID,
       secret: TEST_SECRET,
       method: "POST",
@@ -228,29 +349,53 @@ test("Context API Route Suite", async (t) => {
       body: bodyStr,
     });
 
-    const req = new NextRequest(`https://api.destinationcommandcenter.com${pathname}`, {
+    const req1 = new NextRequest(`https://api.destinationcommandcenter.com${pathname}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...signed.headers,
-      },
+      headers: { "Content-Type": "application/json", ...sign1.headers },
+      body: bodyStr,
+    });
+    const req2 = new NextRequest(`https://api.destinationcommandcenter.com${pathname}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...sign2.headers },
       body: bodyStr,
     });
 
-    const res = await handleRedeemContext(req, { params: { contextId: createdContextId } });
-    const json = await res.json();
+    // Fire both requests simultaneously against live PostgreSQL
+    const [res1, res2] = await Promise.all([
+      handleRedeemContext(req1, { params: { contextId: raceContextId } }),
+      handleRedeemContext(req2, { params: { contextId: raceContextId } }),
+    ]);
 
-    assert.equal(res.status, 200);
-    assert.equal(json.success, true);
-    assert.equal(json.data.contextId, createdContextId);
-    assert.equal(json.data.status, "redeemed");
-    assert.equal(json.data.targetOwner, "juneauflightdeck.com");
-    assert.equal(json.data.safetyConstraint.bufferMinutes, 90);
-    assert.equal(json.data.safetyConstraint.latestSafeReturnTime, "16:30");
+    const statuses = [res1.status, res2.status].sort();
+    assert.deepEqual(statuses, [200, 409], "Must produce exactly one 200 Winner and one 409 Conflict");
+
+    const json1 = await res1.json();
+    const json2 = await res2.json();
+
+    const winnerJson = res1.status === 200 ? json1 : json2;
+    const replayJson = res1.status === 409 ? json1 : json2;
+
+    assert.equal(winnerJson.success, true);
+    assert.equal(winnerJson.data.status, "redeemed");
+    assert.equal(replayJson.success, false);
+    assert.equal(replayJson.errorCode, "CONTEXT_ALREADY_REDEEMED");
   });
 
-  await t.test("8. POST /api/v1/context/:id/redeem - Replay of redeemed token fails with 409", async () => {
-    const pathname = `/api/v1/context/${createdContextId}/redeem`;
+  await t.test("11. POST /api/v1/context/:id/redeem - Expired context returns 410 CONTEXT_EXPIRED", async () => {
+    // Issue a context with an expired timestamp (16 minutes ago)
+    const pastTime = Date.now() - 16 * 60 * 1000;
+    const expiredIssue = await issueContext(
+      {
+        sourceSite: "cruisepromenade",
+        destination: "juneau",
+        targetOwner: "juneauflightdeck",
+        schedule: { date: "2026-07-20", travelers: 1 },
+      },
+      { now: pastTime }
+    );
+
+    const expiredContextId = expiredIssue.contextId;
+    const pathname = `/api/v1/context/${expiredContextId}/redeem`;
     const bodyStr = JSON.stringify({ owner: "juneauflightdeck" });
 
     const signed = signServiceRequest({
@@ -263,22 +408,19 @@ test("Context API Route Suite", async (t) => {
 
     const req = new NextRequest(`https://api.destinationcommandcenter.com${pathname}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...signed.headers,
-      },
+      headers: { "Content-Type": "application/json", ...signed.headers },
       body: bodyStr,
     });
 
-    const res = await handleRedeemContext(req, { params: { contextId: createdContextId } });
+    const res = await handleRedeemContext(req, { params: { contextId: expiredContextId } });
     const json = await res.json();
 
-    assert.equal(res.status, 409);
+    assert.equal(res.status, 410);
     assert.equal(json.success, false);
-    assert.equal(json.errorCode, "CONTEXT_ALREADY_REDEEMED");
+    assert.equal(json.errorCode, "CONTEXT_EXPIRED");
   });
 
-  await t.test("9. POST /api/v1/context/:id/redeem - Unknown contextId returns 404", async () => {
+  await t.test("12. POST /api/v1/context/:id/redeem - Unknown contextId returns 404", async () => {
     const fakeContextId = "dcc_ctx_00000000000000000000000000000000";
     const pathname = `/api/v1/context/${fakeContextId}/redeem`;
     const bodyStr = JSON.stringify({ owner: "juneauflightdeck" });

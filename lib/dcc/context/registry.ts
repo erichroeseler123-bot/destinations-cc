@@ -259,3 +259,41 @@ export function resolveAuthoritativeBuffer(
 
   return authoritativeFloor; // Enforce authoritative safety floor
 }
+
+export const ALLOWED_DCC_DOMAINS = [
+  "cruisepromenade.com",
+  "welcometoalaskatours.com",
+  "welcometoneworleanstours.com",
+  "partyatredrocks.com",
+  "bluehillsoutpost.com",
+  "brinkberry.com",
+  "welcometothedells.com",
+  "juneauflightdeck.com",
+  "lastfrontiershoreexcursions.com",
+  "gosno.co",
+  "welcometotheswamp.com",
+  "vibearoundtown.com",
+  "destinationcommandcenter.com",
+] as const;
+
+export function isAllowedOrigin(originHeader: string | null | undefined): boolean {
+  if (!originHeader) return true; // Server-to-server or direct requests without origin
+  try {
+    const url = new URL(originHeader);
+    const host = url.hostname.toLowerCase();
+
+    if (
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host.endsWith(".vercel.app")
+    ) {
+      return true;
+    }
+
+    return ALLOWED_DCC_DOMAINS.some(
+      (domain) => host === domain || host.endsWith(`.${domain}`)
+    );
+  } catch {
+    return false;
+  }
+}

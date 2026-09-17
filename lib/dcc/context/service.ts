@@ -189,30 +189,58 @@ export async function issueContext(
 
   // 4. Persist to Database
   if (db) {
-    await db.insert(dccContexts).values({
-      contextId,
-      contextHash,
-      idempotencyKey: scopedKey,
-      version: "1.0",
-      status: "issued",
-      sourceSite: input.sourceSite,
-      destination: input.destination,
-      targetOwner: owner ? owner.canonicalDomain : input.targetOwner,
-      targetIntent: input.targetIntent || null,
-      timezone: profile.timezone,
-      scheduleDate: input.schedule.date,
-      arrival: input.schedule.arrival || null,
-      departure: input.schedule.departure || null,
-      travelers: input.schedule.travelers,
-      shipOrVenue: input.schedule.shipOrVenue || null,
-      bufferMinutes: authoritativeBuffer,
-      latestSafeReturnDate: scheduleCalc.latestSafeReturnDate,
-      latestSafeReturnTime: scheduleCalc.latestSafeReturnTime,
-      midnightCrossed: scheduleCalc.midnightCrossed,
-      attribution: input.attribution || null,
-      issuedAt: issuedAtDate,
-      expiresAt: expiresAtDate,
-    });
+    try {
+      await db.insert(dccContexts).values({
+        contextId,
+        contextHash,
+        idempotencyKey: scopedKey,
+        version: "1.0",
+        status: "issued",
+        sourceSite: input.sourceSite,
+        destination: input.destination,
+        targetOwner: owner ? owner.canonicalDomain : input.targetOwner,
+        targetIntent: input.targetIntent || null,
+        timezone: profile.timezone,
+        scheduleDate: input.schedule.date,
+        arrival: input.schedule.arrival || null,
+        departure: input.schedule.departure || null,
+        travelers: input.schedule.travelers,
+        shipOrVenue: input.schedule.shipOrVenue || null,
+        bufferMinutes: authoritativeBuffer,
+        latestSafeReturnDate: scheduleCalc.latestSafeReturnDate,
+        latestSafeReturnTime: scheduleCalc.latestSafeReturnTime,
+        midnightCrossed: scheduleCalc.midnightCrossed,
+        attribution: input.attribution || null,
+        issuedAt: issuedAtDate,
+        expiresAt: expiresAtDate,
+      });
+    } catch (insertError: any) {
+      // If concurrent race condition hit unique constraint on idempotencyKey
+      if (scopedKey && (insertError?.code === "23505" || String(insertError).includes("dcc_contexts_idempotency_uidx"))) {
+        const raceExisting = await db
+          .select()
+          .from(dccContexts)
+          .where(eq(dccContexts.idempotencyKey, scopedKey))
+          .limit(1);
+
+        if (raceExisting.length > 0) {
+          const row = raceExisting[0];
+          const rowOwner = resolveCanonicalOwner(row.targetOwner);
+          const bridgeUrl = `https://${rowOwner?.canonicalDomain || "destinationcommandcenter.com"}/book?ctx=${row.contextId}`;
+          return {
+            success: true,
+            contextId: row.contextId,
+            version: "1.0",
+            issuedAt: row.issuedAt.getTime(),
+            expiresAt: row.expiresAt.getTime(),
+            status: "issued",
+            bridgeUrl,
+            idempotencyReplay: true,
+          };
+        }
+      }
+      throw insertError;
+    }
   }
 
   const bridgeUrl = `https://${owner?.canonicalDomain || "destinationcommandcenter.com"}/book?ctx=${contextId}`;
