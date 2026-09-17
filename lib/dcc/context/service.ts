@@ -13,6 +13,8 @@ import {
   DCC_CANONICAL_OWNERS,
   getAuthoritativeSafetyProfile,
   resolveAuthoritativeBuffer,
+  resolveCanonicalOwner,
+  resolveSourceSite,
 } from "./registry";
 
 export const DCC_CONTEXT_TTL_MS = 15 * 60 * 1000; // 15 minutes (900,000 ms)
@@ -32,7 +34,7 @@ export type RedeemContextResult =
   | { success: true; data: DccContextRedeemResponse }
   | {
       success: false;
-      statusCode: 400 | 403 | 404 | 409 | 410;
+      statusCode: 400 | 403 | 404 | 409 | 410 | 500;
       errorCode:
         | "CONTEXT_NOT_FOUND"
         | "CONTEXT_ALREADY_REDEEMED"
@@ -134,6 +136,7 @@ export async function issueContext(
 
   // 1. Authoritative Safety & Timezone Resolution
   const profile = getAuthoritativeSafetyProfile(input.destination);
+  const owner = resolveCanonicalOwner(input.targetOwner);
   const authoritativeBuffer = resolveAuthoritativeBuffer(
     input.destination,
     input.safetyOverride?.bufferMinutes,
@@ -194,7 +197,7 @@ export async function issueContext(
       status: "issued",
       sourceSite: input.sourceSite,
       destination: input.destination,
-      targetOwner: input.targetOwner,
+      targetOwner: owner ? owner.canonicalDomain : input.targetOwner,
       targetIntent: input.targetIntent || null,
       timezone: profile.timezone,
       scheduleDate: input.schedule.date,
@@ -212,7 +215,6 @@ export async function issueContext(
     });
   }
 
-  const owner = DCC_CANONICAL_OWNERS[input.targetOwner];
   const bridgeUrl = `https://${owner?.canonicalDomain || "destinationcommandcenter.com"}/book?ctx=${contextId}`;
 
   return {
@@ -244,7 +246,8 @@ export async function redeemContext(
     };
   }
 
-  if (!(claimingOwner in DCC_CANONICAL_OWNERS)) {
+  const resolvedClaimingOwner = resolveCanonicalOwner(claimingOwner);
+  if (!resolvedClaimingOwner) {
     return {
       success: false,
       statusCode: 403,
@@ -265,6 +268,7 @@ export async function redeemContext(
 
   const now = options?.now ? new Date(options.now) : new Date();
   const contextHash = hashContextId(contextId);
+  const normalizedClaimingDomain = resolvedClaimingOwner.canonicalDomain;
 
   // 1. ATOMIC UPDATE QUERY (Guaranteed Single-Winner Concurrency Lock)
   const updated = await db
@@ -272,14 +276,14 @@ export async function redeemContext(
     .set({
       status: "redeemed",
       redeemedAt: now,
-      redeemedBy: claimingOwner,
+      redeemedBy: normalizedClaimingDomain,
       updatedAt: now,
     })
     .where(
       and(
         eq(dccContexts.contextHash, contextHash),
         eq(dccContexts.status, "issued"),
-        eq(dccContexts.targetOwner, claimingOwner),
+        eq(dccContexts.targetOwner, normalizedClaimingDomain),
         gt(dccContexts.expiresAt, now)
       )
     )
@@ -310,7 +314,7 @@ export async function redeemContext(
 
   const row = existing[0];
 
-  if (row.targetOwner !== claimingOwner) {
+  if (row.targetOwner !== normalizedClaimingDomain) {
     return {
       success: false,
       statusCode: 403,

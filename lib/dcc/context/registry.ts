@@ -189,22 +189,43 @@ export const DCC_SAFETY_PROFILES: Record<string, PortSafetyProfile> = {
   },
 };
 
-export function isValidSourceSite(siteId: string): boolean {
-  return siteId in DCC_SOURCE_SITES;
+export function resolveSourceSite(identifier: string): SourceSiteEntry | null {
+  if (!identifier) return null;
+  const id = identifier.trim().toLowerCase();
+  if (DCC_SOURCE_SITES[id]) return DCC_SOURCE_SITES[id];
+  for (const site of Object.values(DCC_SOURCE_SITES)) {
+    if (site.canonicalDomain.toLowerCase() === id) return site;
+  }
+  return null;
 }
 
-export function isValidCanonicalOwner(ownerId: string): boolean {
-  return ownerId in DCC_CANONICAL_OWNERS;
+export function isValidSourceSite(identifier: string): boolean {
+  return resolveSourceSite(identifier) !== null;
+}
+
+export function resolveCanonicalOwner(identifier: string): CanonicalOwnerEntry | null {
+  if (!identifier) return null;
+  const id = identifier.trim().toLowerCase();
+  if (DCC_CANONICAL_OWNERS[id]) return DCC_CANONICAL_OWNERS[id];
+  for (const owner of Object.values(DCC_CANONICAL_OWNERS)) {
+    if (owner.canonicalDomain.toLowerCase() === id) return owner;
+  }
+  return null;
+}
+
+export function isValidCanonicalOwner(identifier: string): boolean {
+  return resolveCanonicalOwner(identifier) !== null;
 }
 
 export function isValidDestination(destination: string): boolean {
-  return destination in DCC_SAFETY_PROFILES;
+  if (!destination) return false;
+  return destination.trim().toLowerCase() in DCC_SAFETY_PROFILES;
 }
 
-export function isOwnerValidForDestination(ownerId: string, destination: string): boolean {
-  const owner = DCC_CANONICAL_OWNERS[ownerId];
+export function isOwnerValidForDestination(ownerIdentifier: string, destination: string): boolean {
+  const owner = resolveCanonicalOwner(ownerIdentifier);
   if (!owner) return false;
-  return owner.allowedDestinations.includes(destination);
+  return owner.allowedDestinations.includes(destination.trim().toLowerCase());
 }
 
 export function getAuthoritativeSafetyProfile(destination: string): PortSafetyProfile {
