@@ -192,11 +192,17 @@ export function signServiceRequest(params: {
 }
 
 export function resolveServiceSecret(keyId: string): string | null {
-  // Check configured service keys
+  // Check configured feeder and owner service keys
   const cpKeyId = process.env.DCC_CP_SERVICE_KEY_ID?.trim() || "cp_service_key";
   const cpSecret = process.env.DCC_CP_SERVICE_SECRET?.trim();
   if (keyId === cpKeyId && cpSecret) {
     return cpSecret;
+  }
+
+  const jfdKeyId = process.env.DCC_JFD_SERVICE_KEY_ID?.trim() || "jfd_service_key";
+  const jfdSecret = process.env.DCC_JFD_SERVICE_SECRET?.trim();
+  if (keyId === jfdKeyId && jfdSecret) {
+    return jfdSecret;
   }
 
   // Check dynamic owner environment variables, e.g. DCC_SERVICE_SECRET_WTA_SERVICE_KEY
@@ -213,7 +219,7 @@ export function resolveServiceSecret(keyId: string): string | null {
   }
 
   // If secret is set and matches key or fallback
-  if (defaultSecret && (keyId === "default" || keyId === cpKeyId)) {
+  if (defaultSecret && (keyId === "default" || keyId === cpKeyId || keyId === jfdKeyId)) {
     return defaultSecret;
   }
 
