@@ -31,7 +31,7 @@ export interface IssueContextResult {
 }
 
 export type RedeemContextResult =
-  | { success: true; data: DccContextRedeemResponse }
+  | { success: true; data: DccContextRedeemResponse; idempotencyReplay?: boolean }
   | {
       success: false;
       statusCode: 400 | 403 | 404 | 409 | 410 | 500;
@@ -352,6 +352,15 @@ export async function redeemContext(
   }
 
   if (row.status === "redeemed") {
+    // If the claiming owner is the SAME owner that already redeemed it, return idempotent success
+    if (row.redeemedBy === normalizedClaimingId && row.targetOwner === normalizedClaimingId) {
+      return {
+        success: true,
+        data: formatRedeemedResponse(row),
+        idempotencyReplay: true,
+      };
+    }
+
     return {
       success: false,
       statusCode: 409,

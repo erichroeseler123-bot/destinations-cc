@@ -101,61 +101,68 @@ async function runAlaskaPilotTest() {
   assert.equal(row.bufferMinutes, 90);
   assert.equal(row.latestSafeReturnTime, "16:30");
 
-  // Step 3: Juneau Flight Deck Landing initializes Owner Checkout Session
-  console.log("\nStep 3: Traveler lands on /book?ctx=... ➔ Owner Checkout Session initialized...");
-  const session1 = await getOrCreateCheckoutSession(issueResult.contextId, null, {
-    fetcher: inProcessRouteFetcher,
-  });
+  // Step 3: Concurrent First-Load Race (Zero Pre-Existing Cookie Simulation - Prefetch / Double-click)
+  console.log("\nStep 3: Simulating concurrent first-load race (two simultaneous requests with zero cookies)...");
+  clearCheckoutSessionCacheForTesting();
 
-  assert.equal(session1.success, true);
-  assert(session1.sessionId, "Session ID must be generated");
-  assert.equal(session1.isExistingSession, false);
-  if (session1.success && session1.data) {
-    console.log("  ✔ Checkout Session Initialized:");
-    console.log("    Session ID:", session1.sessionId);
-    console.log("    Redeemed By (Canonical ID):", session1.data.redeemedBy);
-    console.log("    Status:", session1.data.status);
-    console.log("    Hydrated Date:", session1.data.schedule.date);
-    console.log("    Hydrated Travelers:", session1.data.schedule.travelers);
-    console.log("    Hydrated Return Deadline:", session1.data.safetyConstraint.latestSafeReturnTime);
+  const [raceSession1, raceSession2] = await Promise.all([
+    getOrCreateCheckoutSession(issueResult.contextId, null, { fetcher: inProcessRouteFetcher }),
+    getOrCreateCheckoutSession(issueResult.contextId, null, { fetcher: inProcessRouteFetcher }),
+  ]);
 
-    assert.equal(session1.data.status, "redeemed");
-    assert.equal(session1.data.targetOwner, "juneauflightdeck");
-    assert.equal(session1.data.redeemedBy, "juneauflightdeck");
-    assert.equal(session1.data.schedule.travelers, 2);
-    assert.equal(session1.data.safetyConstraint.latestSafeReturnTime, "16:30");
-  }
+  assert.equal(raceSession1.success, true, "First concurrent request must succeed");
+  assert.equal(raceSession2.success, true, "Second concurrent request must succeed (idempotent replay)");
+  assert.equal(raceSession1.data?.status, "redeemed");
+  assert.equal(raceSession2.data?.status, "redeemed");
+  assert.equal(raceSession1.data?.targetOwner, "juneauflightdeck");
+  assert.equal(raceSession2.data?.targetOwner, "juneauflightdeck");
+  console.log("  ✔ Concurrent First-Load Race Succeeded: Both requests returned 200 OK without 409 collision!");
 
-  // Step 4: Page Refresh & Retry Resilience (Must NOT fail with 409)
+  const activeSessionId = raceSession1.sessionId || raceSession2.sessionId;
+  assert(activeSessionId, "Active checkout session ID must be generated");
+
+  // Step 4: Session Cookie Hydration & Refresh Simulation
   console.log("\nStep 4: Simulating page refresh / back navigation with session cookie...");
-  const sessionRefresh = await getOrCreateCheckoutSession(issueResult.contextId, session1.sessionId, {
+  const sessionRefresh = await getOrCreateCheckoutSession(issueResult.contextId, activeSessionId, {
     fetcher: inProcessRouteFetcher,
   });
 
   assert.equal(sessionRefresh.success, true);
   assert.equal(sessionRefresh.isExistingSession, true);
-  assert.equal(sessionRefresh.sessionId, session1.sessionId);
+  assert.equal(sessionRefresh.sessionId, activeSessionId);
   assert.equal(sessionRefresh.data?.schedule.date, "2026-07-15");
-  console.log("  ✔ Refresh / Retry Survived without 409 Replay Collision (Cached in active checkout session)");
+  console.log("  ✔ Refresh / Retry Survived without 409 Replay Collision (Loaded from active checkout session)");
 
-  // Step 5: 3rd-Party Replay Attempt (Without active traveler session ➔ Blocked with 409)
-  console.log("\nStep 5: Testing 3rd-party replay attack against consumed token...");
+  // Step 5: Cookie Security & Privacy Verification
+  console.log("\nStep 5: Verifying session cookie security attributes & privacy...");
+  const { JFD_CHECKOUT_COOKIE_NAME, JFD_CHECKOUT_COOKIE_OPTIONS } = await import(
+    "../apps/juneauflightdeck/lib/dccContext"
+  );
+  assert.equal(JFD_CHECKOUT_COOKIE_NAME, "jfd_checkout_session");
+  assert.equal(JFD_CHECKOUT_COOKIE_OPTIONS.httpOnly, true, "Cookie must be HttpOnly");
+  assert.equal(JFD_CHECKOUT_COOKIE_OPTIONS.sameSite, "lax", "Cookie must be SameSite=Lax");
+  assert.equal(JFD_CHECKOUT_COOKIE_OPTIONS.maxAge, 3600, "Cookie must have 1-hour max age");
+  assert.match(activeSessionId, /^jfd_sess_/, "Cookie payload must be opaque session ID with zero traveler PII or payment data");
+  console.log("  ✔ Cookie Security Verified: HttpOnly=true, SameSite=Lax, MaxAge=3600s, Zero PII/Payment data in cookie");
+
+  // Step 6: Cross-Owner Redemption Hijack Attempt (Must fail with 403 OWNER_MISMATCH)
+  console.log("\nStep 6: Testing cross-owner redemption hijack attempt (LFSE attempting to claim JFD token)...");
   const { redeemContext } = await import("../lib/dcc/context/service");
-  const replayResult = await redeemContext(issueResult.contextId, "juneauflightdeck");
+  const crossOwnerResult = await redeemContext(issueResult.contextId, "lastfrontier");
 
-  assert.equal(replayResult.success, false);
-  if (!replayResult.success) {
-    console.log("  ✔ Unauthorized Replay Rejected with Expected Conflict:");
-    console.log("    HTTP Status:", replayResult.statusCode);
-    console.log("    Error Code:", replayResult.errorCode);
-    console.log("    Message:", replayResult.message);
+  assert.equal(crossOwnerResult.success, false);
+  if (!crossOwnerResult.success) {
+    console.log("  ✔ Cross-Owner Hijack Blocked with Expected 403:");
+    console.log("    HTTP Status:", crossOwnerResult.statusCode);
+    console.log("    Error Code:", crossOwnerResult.errorCode);
+    console.log("    Message:", crossOwnerResult.message);
 
-    assert.equal(replayResult.statusCode, 409);
-    assert.equal(replayResult.errorCode, "CONTEXT_ALREADY_REDEEMED");
+    assert.equal(crossOwnerResult.statusCode, 403);
+    assert.equal(crossOwnerResult.errorCode, "OWNER_MISMATCH");
   }
 
-  // Step 6: Final Database Audit Verification
-  console.log("\nStep 6: Verifying final Neon audit record...");
+  // Step 7: Final Database Audit Record Verification in Neon
+  console.log("\nStep 7: Verifying final Neon audit record...");
   const finalRows = await db
     .select()
     .from(dccContexts)
@@ -168,14 +175,14 @@ async function runAlaskaPilotTest() {
   assert.equal(finalRow.redeemedBy, "juneauflightdeck"); // Canonical ID
   assert(finalRow.redeemedAt, "redeemedAt timestamp must be set");
 
-  console.log("  ✔ Audit Trail Complete & Normalized:");
+  console.log("  ✔ Audit Trail Complete & Normalized in Staging Neon:");
   console.log("    Final Status:", finalRow.status);
   console.log("    Target Owner:", finalRow.targetOwner);
   console.log("    Redeemed By:", finalRow.redeemedBy);
   console.log("    Redeemed At:", finalRow.redeemedAt?.toISOString());
 
   console.log("\n==================================================================");
-  console.log("✔ ALL ALASKA PILOT INTEGRATION STEPS PASSED SUCCESSFULLY (6/6)");
+  console.log("✔ ALL ALASKA PILOT INTEGRATION STEPS PASSED SUCCESSFULLY (7/7)");
   console.log("==================================================================");
 }
 

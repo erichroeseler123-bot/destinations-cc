@@ -361,25 +361,26 @@ test("Context API Route & Staging Neon Concurrency Suite", async (t) => {
       body: bodyStr,
     });
 
-    // Fire both requests simultaneously against live PostgreSQL
+    // Fire both requests simultaneously against live PostgreSQL (Same owner retry/prefetch race)
     const [res1, res2] = await Promise.all([
       handleRedeemContext(req1, { params: { contextId: raceContextId } }),
       handleRedeemContext(req2, { params: { contextId: raceContextId } }),
     ]);
 
-    const statuses = [res1.status, res2.status].sort();
-    assert.deepEqual(statuses, [200, 409], "Must produce exactly one 200 Winner and one 409 Conflict");
+    const statuses = [res1.status, res2.status];
+    assert.deepEqual(statuses, [200, 200], "Same-owner concurrent race must both succeed with 200 OK (one atomic winner, one idempotent replay)");
 
     const json1 = await res1.json();
     const json2 = await res2.json();
 
-    const winnerJson = res1.status === 200 ? json1 : json2;
-    const replayJson = res1.status === 409 ? json1 : json2;
+    assert.equal(json1.success, true);
+    assert.equal(json2.success, true);
+    assert.equal(json1.data.status, "redeemed");
+    assert.equal(json2.data.status, "redeemed");
 
-    assert.equal(winnerJson.success, true);
-    assert.equal(winnerJson.data.status, "redeemed");
-    assert.equal(replayJson.success, false);
-    assert.equal(replayJson.errorCode, "CONTEXT_ALREADY_REDEEMED");
+    // At least one of the two responses was the idempotent replay
+    const hasReplay = json1.idempotencyReplay === true || json2.idempotencyReplay === true;
+    assert.equal(hasReplay, true, "One of the concurrent same-owner redemptions must be flagged as idempotent replay");
   });
 
   await t.test("11. POST /api/v1/context/:id/redeem - Expired context returns 410 CONTEXT_EXPIRED", async () => {

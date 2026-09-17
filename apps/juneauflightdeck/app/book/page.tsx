@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import SiteHeader from "../components/SiteHeader";
 import SiteFooter from "../components/SiteFooter";
-import { getOrCreateCheckoutSession } from "../../lib/dccContext";
+import { getOrCreateCheckoutSession, JFD_CHECKOUT_COOKIE_NAME } from "../../lib/dccContext";
 
 interface BookPageProps {
   searchParams: Promise<{ ctx?: string }> | { ctx?: string };
@@ -12,12 +13,14 @@ export const dynamic = "force-dynamic";
 export default async function BookPage(props: BookPageProps) {
   const searchParams = await Promise.resolve(props.searchParams);
   const contextId = searchParams.ctx?.trim();
+  const cookieStore = await cookies();
+  const existingSessionId = cookieStore.get(JFD_CHECKOUT_COOKIE_NAME)?.value;
 
   let contextData: any = null;
   let contextError: { code: string; message: string; status?: number } | null = null;
 
   if (contextId) {
-    const sessionResult = await getOrCreateCheckoutSession(contextId);
+    const sessionResult = await getOrCreateCheckoutSession(contextId, existingSessionId);
     if (sessionResult.success && sessionResult.data) {
       contextData = sessionResult.data;
     } else {

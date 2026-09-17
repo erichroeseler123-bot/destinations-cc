@@ -97,6 +97,16 @@ export async function redeemOpaqueContext(
   }
 }
 
+export const JFD_CHECKOUT_COOKIE_NAME = "jfd_checkout_session";
+
+export const JFD_CHECKOUT_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  maxAge: 3600, // 1 hour checkout window
+  path: "/",
+};
+
 interface CheckoutSession {
   contextId: string;
   data: DccContextRedeemResponse;
@@ -106,13 +116,21 @@ interface CheckoutSession {
 
 const activeCheckoutSessions = new Map<string, CheckoutSession>();
 
+function pruneExpiredSessions(now: number) {
+  for (const [id, session] of activeCheckoutSessions.entries()) {
+    if (session.expiresAt <= now) {
+      activeCheckoutSessions.delete(id);
+    }
+  }
+}
+
 export function clearCheckoutSessionCacheForTesting() {
   activeCheckoutSessions.clear();
 }
 
 /**
  * Safely resolves or initializes an owner checkout session.
- * Idempotent: Survives page refreshes, back button navigation, and crawler retries.
+ * Idempotent: Survives page refreshes, back button navigation, crawlers, and prefetch races.
  */
 export async function getOrCreateCheckoutSession(
   contextId: string,
@@ -125,6 +143,7 @@ export async function getOrCreateCheckoutSession(
   }
 ): Promise<ContextRedeemResult & { sessionId?: string; isExistingSession?: boolean }> {
   const now = Date.now();
+  pruneExpiredSessions(now);
 
   // 1. Check if session already exists for this session identifier
   if (sessionId && activeCheckoutSessions.has(sessionId)) {
