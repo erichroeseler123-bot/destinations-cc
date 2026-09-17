@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { NextRequest } from "next/server";
 import { POST as handleIssueContext, clearIssueRateLimitCacheForTesting } from "@/app/api/v1/context/route";
 import { POST as handleRedeemContext } from "@/app/api/v1/context/[contextId]/redeem/route";
+import { POST as handleRevokeContext } from "@/app/api/v1/context/[contextId]/revoke/route";
 import {
   signServiceRequest,
   clearNonceReplayCacheForTesting,
@@ -448,5 +449,66 @@ test("Context API Route & Staging Neon Concurrency Suite", async (t) => {
     assert.equal(res.status, 404);
     assert.equal(json.success, false);
     assert.equal(json.errorCode, "CONTEXT_NOT_FOUND");
+  });
+
+  await t.test("13. POST /api/v1/context/:id/revoke - Authenticated service revocation cancels token and prevents redemption", async () => {
+    // 1. Issue fresh token
+    const freshIssue = await issueContext({
+      sourceSite: "cruisepromenade",
+      destination: "juneau",
+      targetOwner: "juneauflightdeck",
+      schedule: { date: "2026-07-25", travelers: 2 },
+    });
+
+    const revokeContextId = freshIssue.contextId;
+    const revokePathname = `/api/v1/context/${revokeContextId}/revoke`;
+    const revokeBody = JSON.stringify({ reason: "Customer cancelled shore excursion" });
+
+    // 2. Sign revocation request
+    const revokeSigned = signServiceRequest({
+      keyId: TEST_KEY_ID,
+      secret: TEST_SECRET,
+      method: "POST",
+      pathname: revokePathname,
+      body: revokeBody,
+    });
+
+    const revokeReq = new NextRequest(`https://api.destinationcommandcenter.com${revokePathname}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...revokeSigned.headers },
+      body: revokeBody,
+    });
+
+    const revokeRes = await handleRevokeContext(revokeReq, { params: { contextId: revokeContextId } });
+    const revokeJson = await revokeRes.json();
+
+    assert.equal(revokeRes.status, 200);
+    assert.equal(revokeJson.success, true);
+    assert.equal(revokeJson.status, "revoked");
+
+    // 3. Attempting to redeem revoked token must be rejected
+    const redeemPathname = `/api/v1/context/${revokeContextId}/redeem`;
+    const redeemBody = JSON.stringify({ owner: "juneauflightdeck" });
+
+    const redeemSigned = signServiceRequest({
+      keyId: TEST_KEY_ID,
+      secret: TEST_SECRET,
+      method: "POST",
+      pathname: redeemPathname,
+      body: redeemBody,
+    });
+
+    const redeemReq = new NextRequest(`https://api.destinationcommandcenter.com${redeemPathname}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...redeemSigned.headers },
+      body: redeemBody,
+    });
+
+    const redeemRes = await handleRedeemContext(redeemReq, { params: { contextId: revokeContextId } });
+    const redeemJson = await redeemRes.json();
+
+    assert.equal(redeemRes.status, 400);
+    assert.equal(redeemJson.success, false);
+    assert.match(redeemJson.message, /revoked/);
   });
 });

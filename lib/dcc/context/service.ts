@@ -376,3 +376,101 @@ export async function redeemContext(
     message: `Context is in '${row.status}' state and cannot be claimed.`,
   };
 }
+
+export type RevokeContextResult =
+  | { success: true; contextId: string; status: "revoked"; revokedAt: number; revokedBy: string }
+  | {
+      success: false;
+      statusCode: 400 | 403 | 404 | 500;
+      errorCode: "CONTEXT_NOT_FOUND" | "UNAUTHORIZED" | "ALREADY_REDEEMED" | "DATABASE_UNAVAILABLE";
+      message: string;
+    };
+
+/**
+ * Authenticated revocation of an unredeemed context token.
+ */
+export async function revokeContext(
+  contextId: string,
+  requestedBy: string,
+  reason?: string,
+  options?: { now?: number; dbOverride?: DccDb | null }
+): Promise<RevokeContextResult> {
+  if (!contextId || !contextId.startsWith("dcc_ctx_")) {
+    return {
+      success: false,
+      statusCode: 404,
+      errorCode: "CONTEXT_NOT_FOUND",
+      message: "Invalid context identifier format.",
+    };
+  }
+
+  const db = options?.dbOverride !== undefined ? options.dbOverride : getDb();
+  if (!db) {
+    return {
+      success: false,
+      statusCode: 500,
+      errorCode: "DATABASE_UNAVAILABLE",
+      message: "Database connection is not configured.",
+    };
+  }
+
+  const now = options?.now ? new Date(options.now) : new Date();
+  const contextHash = hashContextId(contextId);
+
+  const updated = await db
+    .update(dccContexts)
+    .set({
+      status: "revoked",
+      updatedAt: now,
+    })
+    .where(
+      and(
+        eq(dccContexts.contextHash, contextHash),
+        eq(dccContexts.status, "issued")
+      )
+    )
+    .returning();
+
+  if (updated.length === 1) {
+    return {
+      success: true,
+      contextId,
+      status: "revoked",
+      revokedAt: now.getTime(),
+      revokedBy: requestedBy,
+    };
+  }
+
+  const existing = await db
+    .select()
+    .from(dccContexts)
+    .where(eq(dccContexts.contextHash, contextHash))
+    .limit(1);
+
+  if (existing.length === 0) {
+    return {
+      success: false,
+      statusCode: 404,
+      errorCode: "CONTEXT_NOT_FOUND",
+      message: "Context token does not exist.",
+    };
+  }
+
+  const row = existing[0];
+  if (row.status === "redeemed") {
+    return {
+      success: false,
+      statusCode: 400,
+      errorCode: "ALREADY_REDEEMED",
+      message: "Cannot revoke a context token that has already been redeemed.",
+    };
+  }
+
+  return {
+    success: true,
+    contextId,
+    status: "revoked",
+    revokedAt: now.getTime(),
+    revokedBy: requestedBy,
+  };
+}
