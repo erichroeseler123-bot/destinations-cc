@@ -38,6 +38,7 @@
     "test": "node --import tsx --env-file=.env.test.local --test tests/dcc/73-context-api-routes.test.ts",
     "test:dcc": "node --import tsx --env-file=.env.test.local --test tests/dcc/73-context-api-routes.test.ts",
     "test:pilot": "node --import tsx --env-file=.env.test.local scripts/test-pilot-cp-to-jfd-alaska.ts",
+    "dcc:cleanup:sessions": "node --import tsx --env-file=.env.test.local scripts/dcc/cleanup-expired-sessions.ts",
     "check": "npm run lint && npm run typecheck",
     "ports:build": "node scripts/import-ports-tsv.mjs && node scripts/ports-generate.mjs",
     "dcc:migrate:locations": "node scripts/dcc/migrate-locations-to-registry.mjs",
