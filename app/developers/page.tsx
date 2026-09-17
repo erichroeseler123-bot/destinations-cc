@@ -88,6 +88,39 @@ export default function DevelopersPage() {
           <p className="mt-5 text-sm leading-6 text-white/42">Each response includes per-source availability and checked timestamps. DCC uses source-specific revalidation plus a short shared response cache so repeated agent reads do not hammer public upstream services.</p>
         </section>
 
+        <section className="mt-8 rounded-[28px] border border-cyan-400/20 bg-cyan-500/[0.04] p-6 sm:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-2xl font-black text-white">OCTO Core API & Booking Distribution</h2>
+            <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-bold text-cyan-300">
+              5% Fixed DCC Share
+            </span>
+          </div>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-white/60">
+            DCC provides an authorized distribution layer built on the Open Connectivity for Tour Operators (OCTO) standard.
+            AI agents and applications query live operator availability and execute two-phase booking holds with explicit
+            <code className="text-cyan-200"> expirationMinutes</code>. Operators retain merchant-of-record status and direct fulfillment authority.
+          </p>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-300">GET /api/octo/participants</span>
+              <p className="mt-1 text-xs text-white/60">Registry of authorized operators, booking systems, and tech partners.</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-300">POST /api/octo/availability</span>
+              <p className="mt-1 text-xs text-white/60">Real-time availability check against upstream operator reservation systems.</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-300">POST /api/octo/hold</span>
+              <p className="mt-1 text-xs text-white/60">Two-phase reservation hold reserving seats for a 15-minute checkout window.</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-300">POST /api/octo/confirm</span>
+              <p className="mt-1 text-xs text-white/60">Confirm held reservation, generate digital voucher, and record 5% settlement.</p>
+            </div>
+          </div>
+        </section>
+
         <section className="mt-8 rounded-[28px] border border-white/10 bg-white/[0.025] p-6 sm:p-8">
           <h2 className="text-2xl font-black">Machine discovery</h2>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -96,6 +129,8 @@ export default function DevelopersPage() {
               ["Well-known agent contract", "/.well-known/agent.json"],
               ["LLM instructions", "/llms.txt"],
               ["OpenAPI schema", "/openapi.json"],
+              ["OCTO Participant Registry", "/api/octo/participants"],
+              ["Authorized Operators", "/operators"],
             ].map(([label, href]) => (
               <a key={href} href={href} className="rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:bg-white/[0.05]">
                 <strong className="text-sm text-white">{label}</strong>

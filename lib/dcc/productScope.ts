@@ -1,5 +1,5 @@
 export const DCC_PRODUCT_SCOPE = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   primaryProduct: {
     id: "coordinate-location-intelligence",
     description:
@@ -28,6 +28,13 @@ export const DCC_PRODUCT_SCOPE = {
       canonicalPath: "/api/public/portfolio-feed",
     },
     {
+      id: "octo-tourism-directory-and-booking-layer",
+      description:
+        "Authorized open connectivity (OCTO) tourism directory, operator registry, and two-phase booking distribution layer under negotiated operator commercial terms with direct operator authority.",
+      canonicalPath: "/octo",
+      machinePath: "/api/octo/participants",
+    },
+    {
       id: "legacy-travel-corridors",
       description:
         "Preserve governed travel decision corridors for compatibility without allowing them to redefine DCC's primary product.",
@@ -35,8 +42,8 @@ export const DCC_PRODUCT_SCOPE = {
     },
   ],
   outOfScopeAsPrimaryIdentity: [
-    "booking marketplace",
-    "travel agency",
+    "closed proprietary booking gatekeeper",
+    "arbitrary reseller markup agency",
     "city-only travel guide",
     "address directory",
     "IT command center",
@@ -48,6 +55,7 @@ export const DCC_PRODUCT_SCOPE = {
     "Commercial provider data must remain distinguishable from public-source observations.",
     "Legacy travel corridors remain secondary unless the scope contract is intentionally versioned.",
     "Coordinates remain the canonical location identity even when a place name, address, airport, port, venue, or device location is used for discovery.",
+    "OCTO booking operations connect directly to authorized operators under negotiated commercial terms with zero proprietary lock-in.",
   ],
 } as const;
 

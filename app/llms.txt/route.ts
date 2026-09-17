@@ -7,8 +7,13 @@ export const dynamic = "force-dynamic";
 const SITE_URL = "https://www.destinationcommandcenter.com";
 
 export async function GET() {
-  const h = await headers();
-  const hostHeader = h.get("x-forwarded-host") || h.get("host") || "";
+  let h: Headers | undefined;
+  try {
+    h = await headers();
+  } catch {
+    // Fallback when executed outside Next.js request dispatch (e.g., in unit tests)
+  }
+  const hostHeader = h?.get("x-forwarded-host") || h?.get("host") || "";
   const host = hostHeader.split(":")[0].toLowerCase();
 
   if (host.includes("shuttletosomersetamphitheater")) {
@@ -46,8 +51,8 @@ export async function GET() {
   logDiscoveryRequest({
     surface: "llms_txt",
     path: "/llms.txt",
-    userAgent: h.get("user-agent"),
-    referer: h.get("referer"),
+    userAgent: h?.get("user-agent") ?? null,
+    referer: h?.get("referer") ?? null,
   });
 
   const body = [
@@ -118,7 +123,7 @@ export async function GET() {
     "On the homepage, DCC may request browser location permission. If granted, device coordinates become the active DCC location. If a user enters another place, DCC geocodes that place to coordinates and opens the corresponding canonical location page.",
     "",
     "## Legacy travel subsystem",
-    "DCC also contains older governed travel decision corridors. That subsystem remains available, but it is secondary to the coordinate-native location intelligence model.",
+    "DCC also contains older governed travel decision corridors. For these corridors, DCC maintains canonical planning and decision authority. Downstream clients and AI agents should not restart a completed decision or duplicate destination state. That subsystem remains available, but it is secondary to the coordinate-native location intelligence model.",
     "",
   ].join("\n");
 

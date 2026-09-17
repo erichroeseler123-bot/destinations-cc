@@ -166,7 +166,7 @@ export class DccSquareWebhookService {
 
     if (db) {
       try {
-        await db
+        const rows = await db
           .update(dccSquareWebhookEvents)
           .set({
             processingStatus: status,
@@ -176,8 +176,11 @@ export class DccSquareWebhookService {
             ...(details?.orderId ? { orderId: details.orderId } : {}),
             updatedAt: now,
           })
-          .where(eq(dccSquareWebhookEvents.squareEventId, squareEventId));
-        return;
+          .where(eq(dccSquareWebhookEvents.squareEventId, squareEventId))
+          .returning();
+        if (rows.length > 0) {
+          return;
+        }
       } catch (err: any) {
         if (isProd) {
           throw new Error(`DCC_SQUARE_WEBHOOK_DATABASE_ERROR: ${err.message}`);

@@ -15,7 +15,7 @@ test("LFSE Juneau helicopter-glacier-tours uses direct verified Viator product l
   assert.notEqual(heliTour.provider, "Temsco Helicopters", "Viator 6251SHOREXICEWALK must be mapped to Coastal Helicopters, not Temsco");
   assert.equal(
     heliTour.officialUrl,
-    "https://www.viator.com/tours/Juneau/Juneau-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK"
+    "https://www.viator.com/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK"
   );
   assert.ok(!heliTour.officialUrl.includes("searchResults"), "Specific product officialUrl must never be a searchResults URL");
 });
@@ -37,7 +37,7 @@ test("LFSE product CTAs generate direct product URLs with intact affiliate track
   // Direct product path verification
   assert.equal(parsed.origin, "https://www.viator.com");
   assert.ok(
-    parsed.pathname.includes("/tours/Juneau/Juneau-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK"),
+    parsed.pathname.includes("/tours/Juneau/Juneau-Shore-Excursion-Helicopter-Tour-and-Guided-Icefield-Walk/d941-6251SHOREXICEWALK"),
     `Expected direct product path with 6251SHOREXICEWALK, got ${parsed.pathname}`
   );
   assert.ok(!parsed.pathname.includes("searchResults"), "Must not route to searchResults");

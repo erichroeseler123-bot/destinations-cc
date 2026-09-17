@@ -93,6 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header className="site-header shell">
           <Link className="brand" href="/">Last Frontier Shore Excursions</Link>
           <nav className="nav" aria-label="Primary navigation">
+            <Link href="/cruise-ships">Cruise Ships</Link>
             <Link href="/ports/juneau">Juneau</Link>
             <Link href="/ports/skagway">Skagway</Link>
             <Link href="/ports/ketchikan">Ketchikan</Link>
@@ -116,6 +117,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div>
                 <strong>Quick Links</strong>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8 }}>
+                  <Link href="/cruise-ships">Alaska Ships & Port Schedules</Link>
                   <Link href="/tours">Complete Tours Catalog</Link>
                   <Link href="/decision/best-excursion-for-each-port">Best Excursions by Port</Link>
                   <Link href="/decision/excursions-safe-for-cruise-ship-window">The 45-Minute Safety Rule</Link>

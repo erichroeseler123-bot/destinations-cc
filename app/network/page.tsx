@@ -64,6 +64,9 @@ export default function NetworkPage() {
           <div className="text-[11px] font-black uppercase tracking-[0.28em] text-cyan-300">Network contract</div>
           <h2 className="mt-3 text-2xl font-black uppercase tracking-[-0.03em]">{NETWORK_GRAPH.principle}</h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-white/68">A DCC page should solve the research problem on its own. Outbound links are the next action, not the reason the page exists. The specialist site owns its own commercial truth. We do not duplicate transaction pages across domains.</p>
+          <div className="mt-4 border-t border-white/10 pt-4 text-sm leading-7 text-white/68">
+            <p><strong>Earth OS & Destination Command Center Architecture:</strong> Satellite sites provide focused user journeys, while Fulfillment remains strictly governed. Fulfillment is replaceable across each approved partner, owned checkout, direct operator handoff, or partners like GetYourGuide based on live market truth.</p>
+          </div>
         </section>
 
         <section className="rounded-[2rem] border border-white/10 bg-[#0b1017] p-6 md:p-8">

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { AFFILIATE_CATALOG, matchCatalogExcursion } from "../../apps/last-frontier-shore-excursions/lib/affiliate/catalog";
 import { buildAffiliateUrl } from "../../apps/last-frontier-shore-excursions/lib/affiliate/links";
 import { DECISION_PAGES } from "../../apps/last-frontier-shore-excursions/lib/decisionPages";
+import { getAllAlaskaShips, getTrackedTourUrl } from "../../apps/last-frontier-shore-excursions/lib/alaska-ships";
 
 const VERIFIED_PRODUCT_IDS = [
   "331813P1",
@@ -273,4 +274,28 @@ describe("Last Frontier Shore Excursions - Viator Direct Link Verification", () 
       );
     }
   });
+
+  it("all cruise ship sample tours produce valid affiliate links with tracking parameters", () => {
+    const ships = getAllAlaskaShips();
+    assert.ok(ships.length > 0, "Must have ships in fleet");
+
+    for (const ship of ships) {
+      for (const [portKey, portLogistics] of Object.entries(ship.ports)) {
+        for (const tour of portLogistics.sampleTours) {
+          const url = getTrackedTourUrl(tour.title, portLogistics.portName, ship.slug);
+          assert.ok(url.startsWith("https://www.viator.com/"), `URL must start with viator.com: ${url}`);
+          
+          const parsed = new URL(url);
+          assert.equal(parsed.searchParams.get("pid"), "P00281144", `Expected pid=P00281144 in ${url}`);
+          assert.equal(parsed.searchParams.get("mcid"), "42383", `Expected mcid=42383 in ${url}`);
+          assert.equal(parsed.searchParams.get("medium"), "link", `Expected medium=link in ${url}`);
+          assert.ok(parsed.searchParams.get("campaign")?.startsWith("last-frontier-"), `Campaign missing prefix in ${url}`);
+          assert.equal(parsed.searchParams.get("utm_source"), "lastfrontiershoreexcursions.com", `Expected utm_source in ${url}`);
+          assert.equal(parsed.searchParams.get("utm_medium"), "affiliate", `Expected utm_medium in ${url}`);
+          assert.ok(parsed.searchParams.get("utm_campaign")?.startsWith("last-frontier-"), `utm_campaign missing prefix in ${url}`);
+        }
+      }
+    }
+  });
 });
+

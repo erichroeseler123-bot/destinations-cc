@@ -4,7 +4,7 @@ import { getGovernedRobotsTag } from "@/proxy";
 import { INDEXABLE_SURFACE_PATHS } from "@/src/data/indexable-surface";
 
 test("governed document paths emit index-follow only when indexable", () => {
-  for (const pathname of ["/", "/sedona/jeep-tours", "/new-orleans/swamp-tours"]) {
+  for (const pathname of ["/", "/about", "/developers", ...INDEXABLE_SURFACE_PATHS.slice(0, 3)]) {
     assert.equal(INDEXABLE_SURFACE_PATHS.includes(pathname), true);
     assert.equal(getGovernedRobotsTag(pathname), "index, follow");
   }
@@ -12,6 +12,8 @@ test("governed document paths emit index-follow only when indexable", () => {
 
 test("generic document surfaces emit noindex-nofollow when route governance does not expose them", () => {
   for (const pathname of [
+    "/sedona/jeep-tours",
+    "/new-orleans/swamp-tours",
     "/grand-canyon",
     "/hoover-dam",
     "/helicopter-tours",

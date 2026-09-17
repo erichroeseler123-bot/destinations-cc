@@ -120,11 +120,11 @@ test("save on the strip events are accepted by DCC analytics", () => {
 
 test("satellite handoff storage root stays writable in production runtimes", () => {
   if (process.env.VERCEL) {
-    assert.match(SATELLITE_STORAGE_ROOT, /^\/tmp\//);
+    assert.match(SATELLITE_STORAGE_ROOT.replace(/\\/g, "/"), /^\/tmp\//);
     return;
   }
 
-  assert.match(SATELLITE_STORAGE_ROOT, /data\/handoffs\/satellites$/);
+  assert.match(SATELLITE_STORAGE_ROOT.replace(/\\/g, "/"), /data\/handoffs\/satellites$/);
 });
 
 test("satellite handoff href includes DCC tracking and return URL", () => {

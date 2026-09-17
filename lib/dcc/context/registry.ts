@@ -277,19 +277,23 @@ export const ALLOWED_DCC_DOMAINS = [
 ] as const;
 
 export function isAllowedOrigin(originHeader: string | null | undefined): boolean {
-  if (!originHeader) return true; // Server-to-server or direct requests without origin
+  if (!originHeader) return true; // Server-to-server or direct calls without browser origin
   try {
     const url = new URL(originHeader);
     const host = url.hostname.toLowerCase();
+    const isProd = process.env.NODE_ENV === "production" && process.env.APP_ENV !== "staging";
 
-    if (
-      host === "localhost" ||
-      host === "127.0.0.1" ||
-      host.endsWith(".vercel.app")
-    ) {
-      return true;
+    if (!isProd) {
+      if (
+        host === "localhost" ||
+        host === "127.0.0.1" ||
+        host.endsWith(".vercel.app")
+      ) {
+        return true;
+      }
     }
 
+    // Exact domain or authentic subdomain with leading dot (e.g., www.cruisepromenade.com)
     return ALLOWED_DCC_DOMAINS.some(
       (domain) => host === domain || host.endsWith(`.${domain}`)
     );

@@ -1,27 +1,28 @@
 import IntentTourPage from "../components/IntentTourPage";
 
 export const metadata = {
-  title: "New Orleans Plantation and Swamp Tours | Compare Combo Options",
-  description: "Compare New Orleans plantation and swamp combination tours, including covered-boat and Oak Alley or Laura Plantation options with operator-confirmed logistics.",
+  title: "Combined Plantation & Swamp Tours New Orleans | Full-Day Excursions",
+  description: "Compare full-day New Orleans combination tours pairing a Louisiana swamp boat cruise with Oak Alley or Whitney Plantation, including round-trip coach transportation.",
 };
 
 export default function Page() {
   return <IntentTourPage
-    eyebrow="Plantation + swamp"
-    title="Want a plantation and swamp tour in the same day?"
-    intro="Combination tours can make sense when you want to see more of Louisiana beyond New Orleans without coordinating two separate operators. The tradeoff is a longer day, so compare total duration, transportation and the historic-site option before booking."
-    decisionTitle="Make sure the full-day format fits"
+    eyebrow="Plantation + Swamp Combos"
+    title="Combined Plantation and Swamp Tours in New Orleans"
+    intro="Combination tours allow you to experience two iconic Louisiana highlights—a guided bayou swamp boat cruise and a Great River Road plantation visit—in one seamlessly coordinated 7.5 to 8-hour day trip with round-trip transportation included."
+    decisionTitle="How Combination Tours Work"
     decisionPoints={[
-      "Expect a substantially longer outing than a standalone city or river tour.",
-      "Compare covered-boat and other swamp formats based on comfort and intensity, not just price.",
-      "The available plantation site and historical program should be confirmed in the operator's current booking details.",
-      "Review pickup, return timing and live availability before making dinner or evening plans around the tour."
+      "Morning Swamp & Afternoon Plantation: Tours depart downtown New Orleans in the morning for a swamp boat cruise, then continue directly to Oak Alley or Whitney Plantation.",
+      "Coordinated Coach Transportation: Eliminates renting a car or driving between separate rural locations 50 miles outside New Orleans.",
+      "Vessel Comfort: Features shaded, covered swamp boats suitable for all ages.",
+      "Full-Day Schedule: Runs approximately 7.5 to 8 hours door-to-door, returning in the late afternoon."
     ]}
-    productSlugs={["covered-boat-plantation-combo", "swamp-boat-oak-alley-combo", "oak-alley-or-laura-plantation-tour", "covered-tour-boat"]}
+    productSlugs={["swamp-boat-oak-alley-combo", "swamp-boat-whitney-combo", "covered-boat-plantation-combo", "oak-alley-plantation-tour-grey-line", "whitney-plantation-tour"]}
     relatedLinks={[
-      { href: "/best-swamp-tour-with-transportation", label: "Compare swamp transportation" },
-      { href: "/plantation-tours", label: "Plantation tours" },
-      { href: "/tours#combo-tours", label: "All combo tours" }
+      { href: "/compare/whitney-vs-oak-alley", label: "Whitney vs Oak Alley comparison" },
+      { href: "/plantation-tours", label: "All plantation tours" },
+      { href: "/swamp-tours", label: "All swamp tours" },
+      { href: "/tours#combo-tours", label: "Browse combination tours" }
     ]}
   />;
 }

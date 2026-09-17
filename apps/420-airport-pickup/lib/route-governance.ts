@@ -118,7 +118,7 @@ const AIRPORT420_ROUTE_GOVERNANCE = [
   },
   {
     path: "/denver-airport-pickup",
-    publishState: "indexable",
+    publishState: "live_unpromoted",
     networkRole: "operator",
     handoffPolicy: "bidirectional",
     priority: 0.9,

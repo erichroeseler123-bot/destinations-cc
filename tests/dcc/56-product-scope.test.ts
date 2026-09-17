@@ -25,15 +25,17 @@ test("DCC core module vocabulary is explicit and stable", () => {
   assert.deepEqual([...DCC_PRODUCT_SCOPE.primaryProduct.allowedCoreModules], requiredModules);
 });
 
-test("portfolio graph and travel corridors remain secondary products", () => {
+test("portfolio graph, OCTO directory, and travel corridors remain governed secondary products", () => {
   const ids = DCC_PRODUCT_SCOPE.secondaryProducts.map((product) => product.id);
   assert.ok(ids.includes("portfolio-relationship-graph"));
+  assert.ok(ids.includes("octo-tourism-directory-and-booking-layer"));
   assert.ok(ids.includes("legacy-travel-corridors"));
   assert.notEqual(DCC_PRODUCT_SCOPE.primaryProduct.id, "portfolio-relationship-graph");
+  assert.notEqual(DCC_PRODUCT_SCOPE.primaryProduct.id, "octo-tourism-directory-and-booking-layer");
   assert.notEqual(DCC_PRODUCT_SCOPE.primaryProduct.id, "legacy-travel-corridors");
 });
 
-test("booking marketplace cannot silently become DCC's primary identity", () => {
-  assert.ok(DCC_PRODUCT_SCOPE.outOfScopeAsPrimaryIdentity.includes("booking marketplace"));
+test("closed proprietary gatekeeper cannot silently become DCC's primary identity", () => {
+  assert.ok(DCC_PRODUCT_SCOPE.outOfScopeAsPrimaryIdentity.includes("closed proprietary booking gatekeeper"));
   assert.ok(DCC_PRODUCT_SCOPE.expansionRules.some((rule) => rule.includes("does not create a new DCC primary product")));
 });

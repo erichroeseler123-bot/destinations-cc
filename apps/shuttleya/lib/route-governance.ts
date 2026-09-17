@@ -66,6 +66,27 @@ const SHUTTLEYA_ROUTE_GOVERNANCE: readonly RouteGovernanceEntry[] = [
     changeFrequency: "monthly",
   },
   {
+    path: "/denver-to-argo-shuttle",
+    publishState: "live_unpromoted",
+    networkRole: "utility",
+    handoffPolicy: "none",
+    notes: "Retired acquisition route kept unpromoted.",
+  },
+  {
+    path: "/argo-shuttle-schedule",
+    publishState: "live_unpromoted",
+    networkRole: "utility",
+    handoffPolicy: "none",
+    notes: "Retired schedule route kept unpromoted.",
+  },
+  {
+    path: "/mighty-argo-cable-car-shuttle",
+    publishState: "live_unpromoted",
+    networkRole: "utility",
+    handoffPolicy: "none",
+    notes: "Retired brand route kept unpromoted.",
+  },
+  {
     path: "/book/argo-shuttle",
     publishState: "draft",
     networkRole: "utility",

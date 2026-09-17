@@ -268,16 +268,19 @@ export default async function SwampPlanPage({
         </div>
         <div className="wts-hero-copy">
           <p className="wts-eyebrow">New Orleans tours & local experiences</p>
-          <h1>New Orleans tours, swamp rides, and local experiences.</h1>
+          <h1>Book a New Orleans swamp tour.</h1>
           <p className="wts-hero-summary">
             Compare real bookable New Orleans tour options — from airboats and covered swamp boats to city tours and pickup-friendly experiences — then book directly through FareHarbor provider links.
           </p>
           <div className="wts-cta-row">
             <a
-              href="#tours"
+              href={gygAirboatHref}
               className="wts-button wts-button-primary"
+              data-warm-transfer-click="gyg_hero_airboat"
+              target="_blank"
+              rel="sponsored noopener noreferrer"
             >
-              Browse Tours
+              Book through GetYourGuide
             </a>
             <Link
               href="/airboat-vs-boat"
@@ -298,7 +301,7 @@ export default async function SwampPlanPage({
         <div className="wts-hero-booking" aria-labelledby="wts-gyg-booking">
           <div className="wts-section-head">
             <p className="wts-eyebrow">{hasFhConfig ? "Book through FareHarbor" : "Book through GetYourGuide"}</p>
-            <h2 id="wts-gyg-booking">Featured New Orleans Tours & Local Experiences</h2>
+            <h2 id="wts-gyg-booking">Book a New Orleans swamp tour</h2>
             <p>
               {hasFhConfig
                 ? "Compare real bookable New Orleans tour options directly through FareHarbor provider calendars."

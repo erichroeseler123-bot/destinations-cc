@@ -25,6 +25,9 @@ import { getViatorPolicy } from "@/lib/viator/policy";
 import { headers } from "next/headers";
 import LfsTrustStrip from "@/components/LfsTrustStrip";
 import DccNetworkStrip from "@/components/DccNetworkStrip";
+import { getDb } from "@/lib/db/client";
+import { octoNormalizedProducts, octoSupplierConnections } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -477,6 +480,35 @@ export default async function ToursPage({
     sourceSection,
   });
 
+  // Query verified bookable OCTO products from authorized operators only
+  const db = getDb();
+  let bookableOctoProducts: any[] = [];
+  if (db) {
+    try {
+      const rows = await db
+        .select({
+          id: octoNormalizedProducts.id,
+          title: octoNormalizedProducts.title,
+          description: octoNormalizedProducts.description,
+          destinationSlug: octoNormalizedProducts.destinationSlug,
+          locationName: octoNormalizedProducts.locationName,
+          defaultCurrency: octoNormalizedProducts.defaultCurrency,
+          durationMinutes: octoNormalizedProducts.durationMinutes,
+          pricingFrom: octoNormalizedProducts.pricingFrom,
+          operatorName: octoSupplierConnections.operatorName,
+        })
+        .from(octoNormalizedProducts)
+        .innerJoin(
+          octoSupplierConnections,
+          eq(octoNormalizedProducts.supplierConnectionId, octoSupplierConnections.id)
+        )
+        .where(eq(octoSupplierConnections.onboardingStage, "bookable"));
+      bookableOctoProducts = rows;
+    } catch {
+      bookableOctoProducts = [];
+    }
+  }
+
   if (isLfse) {
     return (
       <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
@@ -751,6 +783,89 @@ export default async function ToursPage({
             : FEATURED_TOUR_CATEGORIES.map((item) => item.label)
         }
       />
+
+      {/* OCTO Direct Operator Tours */}
+      <section className="rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/40 via-black/40 to-emerald-950/20 p-6 sm:p-8 space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cyan-300">
+                Direct Operator Authority
+              </span>
+              <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+                5% Platform Share
+              </span>
+            </div>
+            <h2 className="mt-2 text-2xl font-black text-white">Direct OCTO Bookable Tours</h2>
+            <p className="mt-1 text-sm text-zinc-300">
+              Reserved directly in authorized operator systems with live availability checks and 15-minute seat holds.
+            </p>
+          </div>
+          <Link
+            href="/octo"
+            className="text-xs font-bold text-cyan-300 hover:text-cyan-200 transition"
+          >
+            OCTO Registry & Protocol →
+          </Link>
+        </div>
+
+        {bookableOctoProducts.length > 0 ? (
+          <div className="grid gap-5 sm:grid-cols-2">
+            {bookableOctoProducts.map((prod) => (
+              <div
+                key={prod.id}
+                className="flex flex-col justify-between rounded-2xl border border-white/10 bg-black/40 p-5 hover:border-cyan-400/40 transition"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider">
+                      {prod.locationName || prod.destinationSlug}
+                    </span>
+                    {prod.pricingFrom ? (
+                      <span className="text-xs font-bold text-emerald-400">
+                        ${prod.pricingFrom} {prod.defaultCurrency}
+                      </span>
+                    ) : null}
+                  </div>
+                  <h3 className="mt-1.5 text-base font-bold text-white line-clamp-1">{prod.title}</h3>
+                  <p className="mt-1 text-xs text-zinc-400 line-clamp-2">{prod.description}</p>
+                  <p className="mt-2 text-[10px] text-zinc-500 uppercase tracking-wider font-mono">
+                    Direct Operator: {prod.operatorName}
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
+                  <span className="text-[11px] text-zinc-500 font-mono">
+                    {prod.durationMinutes ? `~${Math.round(prod.durationMinutes / 60)}h duration` : "Verified Direct"}
+                  </span>
+                  <Link
+                    href={`/tours/octo/${prod.id}`}
+                    className="rounded-lg bg-cyan-500 px-3.5 py-1.5 text-xs font-black text-black hover:bg-cyan-400 transition"
+                  >
+                    Check & Hold Seats →
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-white/5 bg-black/30 p-6 text-center space-y-3">
+            <p className="text-sm font-semibold text-cyan-300">
+              Direct OCTO Operator Connectivity Active
+            </p>
+            <p className="max-w-xl mx-auto text-xs text-zinc-400 leading-relaxed">
+              DCC connects directly to sovereign tour operator systems (Ventrata, Bókun, Rezdy, TourCMS) via the open OCTO standard. Only fully verified operators with active consent and tested inventory appear in live booking mode.
+            </p>
+            <div className="pt-2">
+              <Link
+                href="/octo"
+                className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-4 py-1.5 text-xs font-bold text-cyan-300 hover:bg-cyan-500/20 transition"
+              >
+                View OCTO Operator Network & Onboarding Pipeline →
+              </Link>
+            </div>
+          </div>
+        )}
+      </section>
 
       <section className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 p-6 space-y-4">
         <div className="space-y-1">

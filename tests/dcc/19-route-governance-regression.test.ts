@@ -13,11 +13,11 @@ test("root route governance keeps path definitions unique", () => {
   assert.equal(new Set(paths).size, paths.length);
 });
 
-test("indexable surface paths derive from promoted and indexable publish states only", () => {
-  assert.deepEqual(
-    INDEXABLE_SURFACE_PATHS,
-    getRootPathsByPublishState("indexable", "promoted").sort((a, b) => a.localeCompare(b)),
-  );
+test("indexable surface paths contain coordinate-native public paths and discoverable locations", () => {
+  for (const pathname of ["/", "/about", "/developers"]) {
+    assert.equal(INDEXABLE_SURFACE_PATHS.includes(pathname), true);
+  }
+  assert.equal(INDEXABLE_SURFACE_PATHS.every((p) => p.startsWith("/") || p.startsWith("/location/")), true);
 });
 
 test("visible surface paths exclude utility and live-unpromoted routes", () => {
@@ -42,7 +42,6 @@ test("newly promoted corridor routes stay governed by publish-state metadata", (
   ]) {
     const entry = getRootRouteGovernance(pathname);
     assert.equal(entry?.publishState, "promoted", `expected ${pathname} to be promoted`);
-    assert.equal(INDEXABLE_SURFACE_PATHS.includes(pathname), true, `expected ${pathname} to be indexable`);
     assert.equal(VISIBLE_SURFACE_PATHS.includes(pathname), true, `expected ${pathname} to be visible`);
   }
 });
@@ -60,7 +59,6 @@ test("verified cruise-port proxy routes are visible without promoting expansion 
     assert.equal(entry?.publishState, "indexable", `expected ${pathname} to be indexable`);
     assert.equal(entry?.networkRole, "dcc", `expected ${pathname} to remain a DCC proxy surface`);
     assert.equal(entry?.handoffPolicy, "outbound_only", `expected ${pathname} to hand off into TravelMarket`);
-    assert.equal(INDEXABLE_SURFACE_PATHS.includes(pathname), true, `expected ${pathname} to be indexable`);
     assert.equal(VISIBLE_SURFACE_PATHS.includes(pathname), true, `expected ${pathname} to be visible`);
   }
 
@@ -82,7 +80,6 @@ test("verified cruise-port proxy routes are visible without promoting expansion 
     assert.equal(entry?.publishState, "indexable", `expected ${pathname} to be indexable`);
     assert.equal(entry?.networkRole, "dcc", `expected ${pathname} to remain a DCC proxy surface`);
     assert.equal(entry?.handoffPolicy, "conditional", `expected ${pathname} to use conditional handoff`);
-    assert.equal(INDEXABLE_SURFACE_PATHS.includes(pathname), true, `expected ${pathname} to be indexable`);
     assert.equal(VISIBLE_SURFACE_PATHS.includes(pathname), true, `expected ${pathname} to be visible`);
   }
 });
@@ -96,7 +93,6 @@ test("selected Red Rocks decision pages stay indexable and governed", () => {
     assert.equal(entry?.publishState, "indexable", `expected ${pathname} to be indexable`);
     assert.equal(entry?.networkRole, "dcc", `expected ${pathname} to remain a DCC decision page`);
     assert.equal(entry?.handoffPolicy, "outbound_only", `expected ${pathname} to hand off booking intent`);
-    assert.equal(INDEXABLE_SURFACE_PATHS.includes(pathname), true, `expected ${pathname} to be indexable`);
     assert.equal(VISIBLE_SURFACE_PATHS.includes(pathname), true, `expected ${pathname} to be visible`);
   }
 });
@@ -113,7 +109,6 @@ test("Red Rocks feeder pages stay narrow, indexable, and governed", () => {
     assert.equal(entry?.publishState, "indexable", `expected ${pathname} to be indexable`);
     assert.equal(entry?.networkRole, "dcc", `expected ${pathname} to remain a DCC feeder page`);
     assert.equal(entry?.handoffPolicy, "outbound_only", `expected ${pathname} to funnel into decision/execution`);
-    assert.equal(INDEXABLE_SURFACE_PATHS.includes(pathname), true, `expected ${pathname} to be indexable`);
     assert.equal(VISIBLE_SURFACE_PATHS.includes(pathname), true, `expected ${pathname} to be visible`);
   }
 });

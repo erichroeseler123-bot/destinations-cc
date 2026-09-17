@@ -1031,70 +1031,71 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "pageIntent": "city tours",
     "canonicalRoute": "https://www.welcometoneworleanstours.com/city-tours",
     "heroEyebrow": "Explore the Big Easy",
-    "heroTitle": "City Tours of New Orleans",
-    "heroSubtitle": "Discover the French Quarter, Garden District, and beyond.",
-    "openingAnswer": "A city tour is the perfect way to get your bearings in New Orleans. Whether you want to explore the architecture, the history, or the culture, local guides bring the city to life.",
+    "heroTitle": "New Orleans City Tours",
+    "heroSubtitle": "Explore the French Quarter, Garden District, and historic above-ground cemeteries with narrated coach sightseeing.",
+    "openingAnswer": "Get your bearings in New Orleans with an air-conditioned, fully narrated city sightseeing tour. Discover the historic architecture of the French Quarter, the oak-canopied mansions of the Garden District along St. Charles Avenue, the Tremé neighborhood, and historic above-ground tombs at St. Louis Cemetery No. 3. Choose between Gray Line motorcoach tours departing from the French Quarter (400 Toulouse St) or Southern Style minibus tours with hotel pickup.",
     "topCta": "/tours",
-    "secondaryCta": null,
-    "whoItIsFor": "City tours are great for first-time visitors, history buffs, and anyone wanting to see the major landmarks without navigating traffic.",
-    "whoShouldChooseSomethingElse": null,
+    "secondaryCta": "/garden-district-tours",
+    "whoItIsFor": "First-time visitors, families, history enthusiasts, and anyone wanting to see New Orleans' iconic neighborhoods and cemeteries without exhausting walking.",
+    "whoShouldChooseSomethingElse": "Visitors looking exclusively for a 2-hour walking-only mansion tour should choose a dedicated walking guide.",
     "decisionFactors": [
-      "Riding Tours: Comfortable, air-conditioned bus tours covering large areas like the Garden District and cemeteries.",
-      "Walking Tours: Best for deeply exploring specific neighborhoods like the French Quarter on foot.",
-      "Hop-on/Hop-off Tours: Flexible double-decker bus tours to explore at your own pace.",
-      "Private Tours: Customized itineraries with a dedicated guide for your group."
+      "Motorcoach & Minibus Sightseeing: Comfortable, air-conditioned riding covering large geographic areas including the French Quarter, Tremé, Esplanade Ridge, and Garden District.",
+      "Garden District Coverage: See stunning antebellum architecture and Greek Revival mansions along St. Charles Avenue from panoramic coach windows with guided exterior stops.",
+      "Cemetery Access: Tours include a guided stop at St. Louis Cemetery No. 3 or Metairie Cemetery to explore historic above-ground family vaults.",
+      "Hotel Pickup vs. Central Departure: Southern Style Tours offers hotel pickup; Gray Line departs from 400 Toulouse St in the French Quarter."
     ],
     "comparisonColumns": [],
     "comparisonRows": [],
     "recommendedChoiceGuidance": null,
-    "planningConsiderations": "Morning tours are highly recommended to beat the heat and avoid afternoon showers in the summer. First-time visitors should prioritize a riding tour to learn the city layout before doing specialized walking tours.",
-    "transportationNotes": null,
-    "durationNotes": null,
-    "ageNotes": null,
-    "mobilityNotes": null,
-    "weatherNotes": null,
+    "planningConsiderations": "Morning city tours are great for learning the city layout early in your trip. Tours run approximately 2.5 to 3 hours, fitting comfortably before lunch or an evening riverboat cruise.",
+    "transportationNotes": "Air-conditioned motorcoach (Gray Line, departing 400 Toulouse St) or minibus with select hotel pickups (Southern Style Tours).",
+    "durationNotes": "Approximately 2.5 to 3 hours.",
+    "ageNotes": "All ages welcome.",
+    "mobilityNotes": "Minimal walking compared to walking tours; brief disembarkation for cemetery and photo stops over paved sidewalks.",
+    "weatherNotes": "Air-conditioned vehicle provides comfort during hot or rainy Louisiana weather.",
     "itineraryCombinations": [],
     "liveProductIds": [
-        "southernstyle-city-tour"
+      "city-cemetery-garden-district-tour",
+      "southernstyle-city-tour",
+      "southernstyle-city-plantation-combo"
     ],
     "futureProductCategoryIds": [],
-    "relatedPageIds": ["tours-for-first-time-visitors"],
+    "relatedPageIds": ["tours-for-first-time-visitors", "tours-for-limited-walking"],
     "relatedAreaIds": [],
-    "disclosure": "We are an independent marketplace. The city tours listed here are operated by participating local operators.",
+    "disclosure": "Welcome to New Orleans Tours partners directly with verified licensed operators Gray Line New Orleans and Southern Style Tours.",
     "faqs": [
       {
-        "question": "What parts of the city do you cover?",
-        "answer": "Most comprehensive city tours cover the French Quarter, Jackson Square, the Garden District, St. Charles Avenue, and one of the historic above-ground cemeteries."
+        "question": "What neighborhoods are covered on a New Orleans city tour?",
+        "answer": "Comprehensive city tours cover the French Quarter, Jackson Square, the Tremé, Esplanade Avenue, City Park, St. Charles Avenue, the Garden District, and a historic above-ground cemetery like St. Louis Cemetery No. 3."
+      },
+      {
+        "question": "Do New Orleans city tours include the Garden District?",
+        "answer": "Yes. Both Gray Line and Southern Style city tours include narrated sightseeing through the Garden District mansion corridor and St. Charles Avenue, providing historic context on Victorian architecture with minimal walking."
       },
       {
         "question": "Do city tours include hotel pickup?",
-        "answer": "Yes, our participating operator typically offers complimentary pickup from most major hotels in the downtown and French Quarter areas. You will confirm your pickup location during checkout."
-      },
-      {
-        "question": "Is there walking involved?",
-        "answer": "While most of the tour is conducted on a comfortable, air-conditioned minibus, there may be short stops where you can get off and walk around, such as at a cemetery or city park."
+        "answer": "Southern Style Tours offers complimentary pickup from select downtown and French Quarter hotels. Gray Line city tours depart centrally from 400 Toulouse Street in the French Quarter."
       },
       {
         "question": "How long do city tours last?",
-        "answer": "A standard New Orleans city tour generally lasts between 2.5 and 3 hours, making it easy to fit into a morning or afternoon itinerary."
+        "answer": "A standard New Orleans city tour lasts between 2.5 and 3 hours, making it easy to pair with an afternoon riverboat cruise or dinner."
       }
     ],
     "metadata": {
-      "title": "City Tours of New Orleans | Welcome to New Orleans Tours",
-      "description": "Explore the architecture, history, and culture of New Orleans with a comprehensive city tour.",
+      "title": "New Orleans City Tours | French Quarter, Garden District & Cemeteries",
+      "description": "Explore New Orleans with narrated city sightseeing tours: Garden District mansions, French Quarter history, and historic St. Louis Cemetery No. 3.",
       "canonicalRoute": "https://www.welcometoneworleanstours.com/city-tours",
       "robots": "index, follow",
-      "openGraphTitle": "City Tours of New Orleans | Welcome to New Orleans Tours",
+      "openGraphTitle": "New Orleans City Tours | French Quarter, Garden District & Cemeteries",
       "openGraphUrl": "https://www.welcometoneworleanstours.com/city-tours",
-      "twitterTitle": "City Tours of New Orleans | Welcome to New Orleans Tours"
+      "twitterTitle": "New Orleans City Tours | French Quarter, Garden District & Cemeteries"
     },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
-
-},
+  },
   "swamp-tours": {
     "id": "swamp-tours",
     "publicRoute": "/swamp-tours",
@@ -1132,7 +1133,9 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
       "large-airboat-swamp-adventure",
       "ragincajun-covered-boat",
       "ragincajun-airboat",
-      "swamp-boat-oak-alley-combo"
+      "swamp-boat-oak-alley-combo",
+      "swamp-boat-whitney-combo",
+      "ragincajun-covered-plantation-combo"
     ],
     "futureProductCategoryIds": [],
     "relatedPageIds": ["swamp-tours-airboat-vs-covered-boat"],
@@ -1141,11 +1144,19 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "faqs": [
       {
         "question": "Can I get a New Orleans swamp tour with transportation?",
-        "answer": "Yes. Round-trip transportation is included on Gray Line swamp tours departing from 400 Toulouse Street in the French Quarter. The total outing takes approximately 3 hours 45 minutes door-to-door, including the scenic drive through Louisiana wetlands."
+        "answer": "Yes. Round-trip coach transportation is included on Gray Line swamp tours departing from 400 Toulouse Street in the French Quarter. The total excursion takes approximately 3 hours 45 minutes door-to-door (including approx. 1 hour 45 minutes to 2 hours on the water)."
+      },
+      {
+        "question": "How long is the original swamp tour?",
+        "answer": "The water portion of the original covered swamp and bayou tour lasts approximately 1 hour 45 minutes to 2 hours. When booking an excursion with round-trip French Quarter coach transportation (departing 400 Toulouse St), the total door-to-door duration is approximately 3 hours 45 minutes."
+      },
+      {
+        "question": "VIP vs original swamp tour: What is the difference?",
+        "answer": "The original swamp tour uses a traditional covered passenger boat carrying larger groups at a relaxed, shaded pace. VIP or small airboat tours utilize intimate 6 to 9-passenger high-speed vessels that skim across shallow marshes and maneuver into tight, remote waterways."
       },
       {
         "question": "Which swamp tours offer hotel pickup in New Orleans?",
-        "answer": "Ragin Cajun Tours offers hotel pickup options from major downtown and French Quarter accommodations. You can select the hotel pickup variant during online checkout."
+        "answer": "Ragin Cajun Tours offers hotel pickup options from major downtown and French Quarter accommodations. You can select the hotel pickup option during online checkout."
       },
       {
         "question": "What is the difference between a covered boat and an airboat swamp tour?",
@@ -1183,48 +1194,66 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "canonicalRoute": "https://www.welcometoneworleanstours.com/airboat-tours",
     "heroEyebrow": "High Speed Adventure",
     "heroTitle": "New Orleans Airboat Tours",
-    "heroSubtitle": "Feel the rush of the bayou.",
-    "openingAnswer": "Airboats offer a high-speed, thrilling way to explore the Louisiana swamps. You'll cover more ground and access shallow areas that traditional boats can't reach.",
+    "heroSubtitle": "Feel the rush of the bayou on high-speed open-air airboat adventures.",
+    "openingAnswer": "Airboats offer a high-speed, thrilling way to explore shallow Louisiana marshes and bayous. Powered by giant aircraft propellers, these flat-bottom vessels skim across shallow waters and dense cypress swamps that traditional boats cannot reach.",
     "topCta": "/swamp-tours",
     "secondaryCta": null,
-    "whoItIsFor": "Thrill-seekers and those wanting an intimate, fast-paced encounter with the swamp.",
-    "whoShouldChooseSomethingElse": null,
-    "decisionFactors": ["Airboats are loud; ear protection is provided.","Not suitable for pregnant women or children under a certain age.","They access very shallow, remote parts of the bayou."],
+    "whoItIsFor": "Thrill-seekers, adventure travelers, and visitors wanting an intimate, fast-paced encounter with Louisiana alligators and wetlands.",
+    "whoShouldChooseSomethingElse": "Families with infants, pregnant travelers, or anyone seeking a quiet, shaded photography cruise should choose a covered tour boat.",
+    "decisionFactors": [
+      "Small vs. Large Airboat: Small airboats (6-9 passengers) provide an agile, VIP experience in narrow channels; large airboats (15-20+ passengers) offer a slightly smoother, budget-conscious ride.",
+      "Hearing Protection: Airboat fan engines are loud; premium noise-cancelling headsets or ear protection are provided.",
+      "Transportation Options: Gray Line airboat tours include French Quarter coach transit (400 Toulouse St); Ragin Cajun Tours offers hotel pickup options.",
+      "Safety Policies: Airboats have age minimums (typically 5+ years) and are not suitable for pregnant women or guests with back/neck issues."
+    ],
     "comparisonColumns": [],
     "comparisonRows": [],
     "recommendedChoiceGuidance": null,
-    "planningConsiderations": "Secure your belongings. Hats and loose items can easily fly off at high speeds.",
-    "transportationNotes": null,
-    "durationNotes": null,
-    "ageNotes": null,
-    "mobilityNotes": null,
-    "weatherNotes": null,
+    "planningConsiderations": "Secure your belongings. Hats, sunglasses, and loose items can fly off at high speeds. Bring sunscreen and bug spray.",
+    "transportationNotes": "Round-trip French Quarter coach departure (400 Toulouse St) or select hotel pickup available.",
+    "durationNotes": "Approximately 1h 45m on the water; 3h 45m total door-to-door with transportation.",
+    "ageNotes": "Age minimum of 5 years old on airboat rides.",
+    "mobilityNotes": "Boarding requires stepping down into bucket seating. Not wheelchair accessible.",
+    "weatherNotes": "Open-air rides operate weather permitting. Windbreaker recommended in cooler months.",
     "itineraryCombinations": [],
     "liveProductIds": [
-        "ragincajun-covered-boat",
-        "ragincajun-airboat"
+      "small-airboat-swamp-adventure",
+      "large-airboat-swamp-adventure",
+      "ragincajun-airboat"
     ],
     "futureProductCategoryIds": [],
-    "relatedPageIds": [],
+    "relatedPageIds": ["swamp-tours-small-vs-large-airboat", "swamp-tours-airboat-vs-covered-boat"],
     "relatedAreaIds": [],
-    "disclosure": "Airboat tours are operated by participating local operators.",
-    "faqs": [],
+    "disclosure": "Airboat tours are operated by verified licensed partners Gray Line New Orleans and Ragin Cajun Tours.",
+    "faqs": [
+      {
+        "question": "What is the difference between small and large airboats?",
+        "answer": "Small airboats (6–9 passengers) offer an intimate VIP experience with faster acceleration and access to tighter channels. Large airboats (15–20+ passengers) hold larger groups and provide a slightly smoother ride across open marsh areas."
+      },
+      {
+        "question": "Are airboat tours loud?",
+        "answer": "Yes. Airboat aircraft engines produce high decibel sound. High-grade hearing protection headsets are provided to all guests before departure."
+      },
+      {
+        "question": "Can I get hotel pickup for airboat tours?",
+        "answer": "Yes. Ragin Cajun Tours offers hotel pickup from select French Quarter and downtown hotels, while Gray Line departures meet centrally at 400 Toulouse Street."
+      }
+    ],
     "metadata": {
-      "title": "New Orleans Airboat Tours | Welcome to New Orleans Tours",
-      "description": "Experience a thrilling, high-speed ride deep into the shallow marshes surrounding New Orleans.",
+      "title": "New Orleans Airboat Tours | Small & Large High-Speed Swamp Rides",
+      "description": "Compare thrilling high-speed New Orleans airboat tours: small 6-9 passenger VIP boats, large airboats, with round-trip French Quarter transportation.",
       "canonicalRoute": "https://www.welcometoneworleanstours.com/airboat-tours",
       "robots": "index, follow",
-      "openGraphTitle": "New Orleans Airboat Tours | Welcome to New Orleans Tours",
+      "openGraphTitle": "New Orleans Airboat Tours | Small & Large High-Speed Swamp Rides",
       "openGraphUrl": "https://www.welcometoneworleanstours.com/airboat-tours",
-      "twitterTitle": "New Orleans Airboat Tours | Welcome to New Orleans Tours"
+      "twitterTitle": "New Orleans Airboat Tours | Small & Large High-Speed Swamp Rides"
     },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
-
-},
+  },
   "covered-swamp-boat-tours": {
     "id": "covered-swamp-boat-tours",
     "publicRoute": "/covered-swamp-boat-tours",
@@ -1232,49 +1261,65 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "pageIntent": "covered swamp boat tours",
     "canonicalRoute": "https://www.welcometoneworleanstours.com/covered-swamp-boat-tours",
     "heroEyebrow": "Leisurely Bayou Cruise",
-    "heroTitle": "Covered Swamp Boat Tours",
+    "heroTitle": "Covered Swamp Boat Tours in New Orleans",
     "heroSubtitle": "A comfortable, relaxed journey into nature.",
-    "openingAnswer": "Covered boats offer a relaxed, shaded, and slower-paced swamp experience, perfect for photography and taking in the serene bayou ecosystem.",
+    "openingAnswer": "Covered tour boats offer a relaxed, shaded, and slower-paced swamp experience, perfect for photography, wildlife observation, and taking in the serene bayou ecosystem with the whole family.",
     "topCta": "/swamp-tours",
     "secondaryCta": null,
-    "whoItIsFor": "Families with young children, elderly visitors, and anyone who prefers a shaded, quiet ride.",
-    "whoShouldChooseSomethingElse": null,
-    "decisionFactors": ["Boats have a roof for shade but open sides for viewing.","Slower pace allows for easier photography.","Suitable for all ages."],
+    "whoItIsFor": "Families with young children, elderly visitors, pregnant travelers, and anyone who prefers a shaded, comfortable ride.",
+    "whoShouldChooseSomethingElse": "Travelers seeking high-speed adrenaline rushes should choose an airboat tour instead.",
+    "decisionFactors": [
+      "Sun & Rain Protection: Solid overhead roof provides continuous shade and shelter from sudden Louisiana showers.",
+      "All-Ages Friendly: No age minimums; suitable for infants, grandparents, and guests with back/neck sensitivities.",
+      "Photography-Friendly: Steady cruising pace allows easy telephoto photography of alligators, herons, and bald eagles.",
+      "Transportation Included: Available with central French Quarter coach transit (400 Toulouse St) or hotel pickup."
+    ],
     "comparisonColumns": [],
     "comparisonRows": [],
     "recommendedChoiceGuidance": null,
-    "planningConsiderations": "These boats stay in the deeper channels of the swamp but offer excellent wildlife viewing opportunities.",
-    "transportationNotes": null,
-    "durationNotes": null,
-    "ageNotes": null,
-    "mobilityNotes": null,
-    "weatherNotes": null,
+    "planningConsiderations": "Covered boats navigate deeper bayou channels and provide comfortable bench seating with excellent visibility on all sides.",
+    "transportationNotes": "Round-trip coach transportation from 400 Toulouse St or hotel pickup available.",
+    "durationNotes": "Approx. 1h 45m on the water; approx. 3h 45m door-to-door with transportation.",
+    "ageNotes": "Suitable for all ages, including infants and seniors.",
+    "mobilityNotes": "Much easier boarding than airboats; select vessels accommodate standard wheelchairs.",
+    "weatherNotes": "Operates rain or shine under protective canopy.",
     "itineraryCombinations": [],
     "liveProductIds": [
-        "ragincajun-covered-boat",
-        "ragincajun-airboat"
+      "swamp-bayou-tour",
+      "ragincajun-covered-boat",
+      "swamp-boat-oak-alley-combo",
+      "swamp-boat-whitney-combo",
+      "ragincajun-covered-plantation-combo"
     ],
     "futureProductCategoryIds": [],
-    "relatedPageIds": [],
+    "relatedPageIds": ["swamp-tours-airboat-vs-covered-boat"],
     "relatedAreaIds": [],
-    "disclosure": "Covered boat tours are operated by participating local operators.",
-    "faqs": [],
+    "disclosure": "Covered boat tours are operated by verified licensed partners Gray Line New Orleans and Ragin Cajun Tours.",
+    "faqs": [
+      {
+        "question": "How long is the covered swamp tour?",
+        "answer": "The water tour lasts approximately 1 hour 45 minutes to 2 hours. Total duration with round-trip French Quarter coach transportation is approximately 3 hours 45 minutes."
+      },
+      {
+        "question": "Are covered swamp tours suitable for young children and seniors?",
+        "answer": "Yes. Covered boats have protective canopies, stable seating, and smooth cruising, making them safe and comfortable for all ages, including toddlers and seniors."
+      }
+    ],
     "metadata": {
-      "title": "Covered Swamp Boat Tours | Welcome to New Orleans Tours",
-      "description": "Enjoy a comfortable and shaded ride through the serene bayou ecosystem, perfect for wildlife photography.",
+      "title": "Covered Swamp Boat Tours | Relaxed & Shaded New Orleans Bayou Cruises",
+      "description": "Experience shaded, family-friendly covered swamp boat tours in New Orleans with round-trip transportation: all ages, alligators, and native guide narration.",
       "canonicalRoute": "https://www.welcometoneworleanstours.com/covered-swamp-boat-tours",
       "robots": "index, follow",
-      "openGraphTitle": "Covered Swamp Boat Tours | Welcome to New Orleans Tours",
+      "openGraphTitle": "Covered Swamp Boat Tours | Relaxed & Shaded New Orleans Bayou Cruises",
       "openGraphUrl": "https://www.welcometoneworleanstours.com/covered-swamp-boat-tours",
-      "twitterTitle": "Covered Swamp Boat Tours | Welcome to New Orleans Tours"
+      "twitterTitle": "Covered Swamp Boat Tours | Relaxed & Shaded New Orleans Bayou Cruises"
     },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
-
-},
+  },
   "plantation-tours": {
     "id": "plantation-tours",
     "publicRoute": "/plantation-tours",
@@ -1282,75 +1327,87 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "pageIntent": "plantation tours",
     "canonicalRoute": "https://www.welcometoneworleanstours.com/plantation-tours",
     "heroEyebrow": "River Road History",
-    "heroTitle": "Louisiana Plantation Tours",
-    "heroSubtitle": "Journey into the complex history of the Old South.",
-    "openingAnswer": "A short drive up the Great River Road brings you to the historic plantations of Louisiana, offering deep insights into the region's antebellum history and the lives of those enslaved there.",
+    "heroTitle": "New Orleans Plantation Tours",
+    "heroSubtitle": "Compare Oak Alley, Whitney, Laura, and combination tour options with round-trip transportation.",
+    "openingAnswer": "Discover Louisiana's Great River Road plantations on curated excursions departing directly from New Orleans. Choose Oak Alley for iconic 300-year-old live oak alleys and Greek Revival architecture, Whitney Plantation for an unflinching memorial museum dedicated entirely to the history of slavery, or Laura Plantation for Creole family heritage. Round-trip coach transportation from the French Quarter (400 Toulouse St) or hotel pickup options are included on verified tours.",
     "topCta": "/tours",
-    "secondaryCta": null,
-    "whoItIsFor": "History enthusiasts, students, and visitors wanting to understand the full story of Louisiana.",
+    "secondaryCta": "/compare/whitney-vs-oak-alley",
+    "whoItIsFor": "History enthusiasts, students, families, and visitors wanting to understand Louisiana's antebellum past and the lives of the enslaved people who built it.",
     "whoShouldChooseSomethingElse": null,
     "decisionFactors": [
-      "Transportation: Round-trip bus transit from downtown New Orleans is usually included.",
-      "Admission: Your tour ticket typically includes the formal admission costs for the properties.",
-      "Guided Site Access: Upon arrival, you'll join a structured, property-led guided tour of the main historical areas.",
-      "Grounds: You generally have free time to explore the gardens, exhibits, and grounds independently.",
-      "Historical Focus: Tours address the realities of slavery and the complex antebellum history of the region."
+      "Whitney vs. Oak Alley: Whitney is a solemn museum dedicated 100% to the enslaved perspective; Oak Alley emphasizes antebellum architecture, 28 iconic oaks, and sugarcane estate exhibits.",
+      "Round-Trip Transportation: River Road plantations sit 45–55 miles upriver (approx. 1 hour 15 minutes each way). Excursions include air-conditioned motorcoach or minibus transport to eliminate rental car needs.",
+      "Combined Plantation & Swamp Tours: Pair a morning swamp boat cruise with an afternoon Whitney or Oak Alley tour for a comprehensive 7.5 to 8-hour day trip.",
+      "Oak Alley or Laura Selection: Southern Style Tours offers a flexible excursion where you can explore either Oak Alley or Laura Creole plantation.",
+      "Admission & Guided Entry: All tours include pre-paid property admission and guided on-site access."
     ],
     "comparisonColumns": [],
     "comparisonRows": [],
     "recommendedChoiceGuidance": null,
-    "planningConsiderations": "Be prepared for walking outdoors. Comfortable shoes and sun protection are necessary.",
-    "transportationNotes": null,
-    "durationNotes": null,
+    "planningConsiderations": "Dedicated plantation tours run approximately 5 to 5.5 hours door-to-door with round-trip coach travel. Dress comfortably for outdoor walking and prepare for sun exposure.",
+    "transportationNotes": "Round-trip coach transportation is included: Gray Line departs from 400 Toulouse St in the French Quarter; Southern Style Tours offers select hotel pickups.",
+    "durationNotes": "Approx. 5h to 5h 30m total door-to-door for single plantation tours; 7h to 8h for combination tours.",
     "ageNotes": null,
-    "mobilityNotes": null,
-    "weatherNotes": null,
+    "mobilityNotes": "Walking over historic grounds, shell paths, and stairs into historic homes is required. Oak Alley has elevator access to the second floor of the Big House; Whitney and Laura involve mostly flat outdoor walking.",
+    "weatherNotes": "Tours operate rain or shine; bring an umbrella or sun protection for outdoor grounds exploration.",
     "itineraryCombinations": [],
     "liveProductIds": [
-        "southernstyle-plantation"
+      "whitney-plantation-tour",
+      "oak-alley-plantation-tour-grey-line",
+      "southernstyle-plantation",
+      "swamp-boat-whitney-combo",
+      "swamp-boat-oak-alley-combo",
+      "southernstyle-city-plantation-combo",
+      "ragincajun-covered-plantation-combo"
     ],
     "futureProductCategoryIds": [],
-    "relatedPageIds": ["plantation-tours-oak-alley-vs-laura"],
+    "relatedPageIds": [
+      "plantation-tours-oak-alley-vs-laura",
+      "tours-for-first-time-visitors"
+    ],
     "relatedAreaIds": [],
-    "disclosure": "We are an independent marketplace. Plantation tours are operated by local partners.",
+    "disclosure": "Welcome to New Orleans Tours partners directly with verified licensed operators Gray Line New Orleans, Southern Style Tours, and Ragin Cajun Tours.",
     "faqs": [
       {
-        "question": "Which plantation should I visit?",
-        "answer": "Oak Alley is famous for its stunning 300-year-old oak trees and traditional antebellum architecture. Laura Plantation offers a deep dive into Creole culture and a very detailed, historically rich narrative. Some tours allow you to visit both or choose one on the day."
+        "question": "Which plantation tour should I choose from New Orleans?",
+        "answer": "Oak Alley is world-famous for its iconic 28-oak canopy, Greek Revival mansion, and slavery exhibits. Whitney Plantation is the premier slavery museum in North America, focused entirely on the lives, voices, and memorials of enslaved people. Laura Plantation provides an intimate look at 200 years of Creole family and plantation history."
       },
       {
-        "question": "Is transportation provided?",
-        "answer": "Yes, our participating operator offers comfortable round-trip bus transportation from New Orleans, so you don't need to rent a car."
+        "question": "Can I visit both Oak Alley and Whitney Plantation in one day?",
+        "answer": "Standard public bus tours from New Orleans operate as dedicated single-plantation excursions (~5 hours 25 minutes door-to-door). If you want to visit both in one day, self-driving (they are only 5 miles apart on River Road) or booking private charter transportation is the most effective approach. For public guided combinations, swamp + plantation combo tours are available daily."
       },
       {
-        "question": "How long is the drive?",
-        "answer": "The drive from New Orleans to the plantations along the Great River Road takes about 1 hour to 1 hour and 15 minutes each way."
+        "question": "Are combined plantation and swamp tours available?",
+        "answer": "Yes. Gray Line and Ragin Cajun offer 7 to 8-hour combination tours that bundle a morning Louisiana swamp boat ride with an afternoon guided tour of Oak Alley or Whitney Plantation, with all transportation included."
       },
       {
-        "question": "How much walking is involved?",
-        "answer": "Expect a moderate amount of walking. You'll be touring large houses and expansive grounds, primarily outdoors and often on uneven terrain."
+        "question": "Where do New Orleans plantation tours depart from?",
+        "answer": "Gray Line plantation tours depart from the Lighthouse Ticket Office at 400 Toulouse Street in the French Quarter. Southern Style Tours offers pickup from select downtown and French Quarter hotels."
       },
       {
-        "question": "Do the tours discuss slavery?",
-        "answer": "Yes. Both Oak Alley and Laura Plantation explicitly address the history of the enslaved people who lived and labored on the properties through dedicated exhibits, memorials, and guided narratives."
+        "question": "How long is the drive to the plantations from New Orleans?",
+        "answer": "The drive along the Great River Road takes approximately 1 hour to 1 hour and 15 minutes each way (45–55 miles), with guided narration providing historical context along the route."
+      },
+      {
+        "question": "Do plantation tours discuss the history of slavery?",
+        "answer": "Yes. Whitney Plantation is exclusively dedicated to the enslaved experience. Oak Alley and Laura Plantation also feature dedicated exhibits, reconstructed slave quarters, and historical narratives detailing the lives of enslaved laborers."
       }
     ],
     "metadata": {
-      "title": "Louisiana Plantation Tours | Welcome to New Orleans Tours",
-      "description": "Gain deep insights into the region's complex antebellum history and the lives of those enslaved there.",
+      "title": "New Orleans Plantation Tours | Oak Alley, Whitney & Laura Tours",
+      "description": "Compare bookable New Orleans plantation tours with round-trip transportation: Oak Alley's iconic oak canopy, Whitney slavery museum, Laura Creole estate, and swamp combinations.",
       "canonicalRoute": "https://www.welcometoneworleanstours.com/plantation-tours",
       "robots": "index, follow",
-      "openGraphTitle": "Louisiana Plantation Tours | Welcome to New Orleans Tours",
+      "openGraphTitle": "New Orleans Plantation Tours | Oak Alley, Whitney & Laura Tours",
       "openGraphUrl": "https://www.welcometoneworleanstours.com/plantation-tours",
-      "twitterTitle": "Louisiana Plantation Tours | Welcome to New Orleans Tours"
+      "twitterTitle": "New Orleans Plantation Tours | Oak Alley, Whitney & Laura Tours"
     },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
-
-},
+  },
   "ghost-tours": {
     "id": "ghost-tours",
     "publicRoute": "/ghost-tours",
@@ -1834,49 +1891,63 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "pageIntent": "small vs large airboat",
     "canonicalRoute": "https://www.welcometoneworleanstours.com/swamp-tours/small-vs-large-airboat",
     "heroEyebrow": "Compare Airboats",
-    "heroTitle": "Small vs. Large Airboat",
-    "heroSubtitle": null,
-    "openingAnswer": "Small airboats (6-9 passengers) offer a more intimate, personalized experience. Large airboats (15-20+ passengers) are generally more budget-friendly and offer a slightly smoother ride.",
-    "topCta": "/swamp-tours",
-    "secondaryCta": null,
-    "whoItIsFor": "Those wanting a very personal experience, closer access to the guide, and deeper swamp penetration.",
-    "whoShouldChooseSomethingElse": "Large groups wanting to sit together, or those looking for a more economical option.",
-    "decisionFactors": ["Small boats are more expensive but intimate.","Large boats are cheaper and hold bigger groups.","Small boats can navigate slightly tighter channels."],
-    "comparisonColumns": [{"id":"feature","header":"Feature"}, {"id":"small","header":"Small Airboat"}, {"id":"large","header":"Large Airboat"}],
-    "comparisonRows": [{"label":"Group format","values":["smaller-format option","larger-format option"]},{"label":"Exact capacity","values":["verify during checkout","verify during checkout"]}],
-    "recommendedChoiceGuidance": null,
-    "planningConsiderations": "Book small airboats well in advance, as their limited seats sell out quickly.",
-    "transportationNotes": null,
-    "durationNotes": null,
-    "ageNotes": null,
-    "mobilityNotes": null,
-    "weatherNotes": null,
+    "heroTitle": "Small vs. Large Airboat Swamp Tours",
+    "heroSubtitle": "Choose between intimate VIP 6-9 passenger vessels and larger group airboats.",
+    "openingAnswer": "Small airboats (6–9 passengers) offer an agile, intimate VIP experience that penetrates narrow bayous and shallow marshes. Large airboats (15–20+ passengers) provide elevated seating, a smooth ride, and great value for families and groups.",
+    "topCta": "/airboat-tours",
+    "secondaryCta": "/swamp-tours",
+    "whoItIsFor": "Visitors seeking personalized interaction with the captain, faster acceleration, and access to tighter wetland passages.",
+    "whoShouldChooseSomethingElse": "Large families or groups wanting to ride together in one vessel, or those seeking a budget-friendly option.",
+    "decisionFactors": [
+      "Small Airboat (6-9 passengers): Highly agile, faster acceleration, intimate communication with your captain, and deeper access into narrow bayous.",
+      "Large Airboat (15-20+ passengers): Elevated stadium seating, slightly smoother ride across open water, and lower per-person price.",
+      "Transportation: Gray Line small and large airboat tours include French Quarter coach transportation (400 Toulouse St); Ragin Cajun offers hotel pickup options."
+    ],
+    "comparisonColumns": [{"id":"feature","header":"Feature"}, {"id":"small","header":"Small Airboat (VIP)"}, {"id":"large","header":"Large Airboat"}],
+    "comparisonRows": [
+      {"label":"Capacity","values":["6–9 passengers","15–20+ passengers"]},
+      {"label":"Experience Type","values":["Intimate VIP thrill ride","Group airboat excursion"]},
+      {"label":"Channel Access","values":["Accesses narrow, remote bayou cuts","Navigates primary marsh channels"]},
+      {"label":"Seating","values":["Close to water level, padded bucket seats","Elevated stadium-style bench seating"]}
+    ],
+    "recommendedChoiceGuidance": "Choose the small airboat if you want maximum agility, direct captain interaction, and a VIP feel. Choose the large airboat if you are traveling with a larger group or looking for best value.",
+    "planningConsiderations": "Book small airboats early, as limited seating (6-9 seats per boat) sells out rapidly on peak weekends and holidays.",
+    "transportationNotes": "Round-trip coach transportation from 400 Toulouse St (Gray Line) or hotel pickup (Ragin Cajun) available.",
+    "durationNotes": "Approx. 1h 45m on the water; approx. 3h 45m door-to-door with transportation.",
+    "ageNotes": "Age minimum of 5 years old on all airboat formats.",
+    "mobilityNotes": "Stepping down into low seating required; not wheelchair accessible.",
+    "weatherNotes": "Open-air rides operate weather permitting; protective ear gear provided.",
     "itineraryCombinations": [],
     "liveProductIds": [
-        "ragincajun-covered-boat",
-        "ragincajun-airboat"
+      "small-airboat-swamp-adventure",
+      "large-airboat-swamp-adventure",
+      "ragincajun-airboat"
     ],
     "futureProductCategoryIds": [],
-    "relatedPageIds": [],
+    "relatedPageIds": ["swamp-tours-airboat-vs-covered-boat"],
     "relatedAreaIds": [],
-    "disclosure": "We compare local airboat operators.",
-    "faqs": [],
+    "disclosure": "Airboat tours are operated by verified licensed partners Gray Line New Orleans and Ragin Cajun Tours.",
+    "faqs": [
+      {
+        "question": "What is the main difference between small and large airboats?",
+        "answer": "Small airboats carry just 6 to 9 passengers, offering faster maneuvering into tight swamp channels and close interaction with your captain. Large airboats seat 15 to 20+ guests with elevated stadium seating."
+      }
+    ],
     "metadata": {
-      "title": "Small vs. Large Airboat Tours in New Orleans",
-      "description": "Compare small, intimate airboats against larger, budget-friendly options to plan your Louisiana swamp tour.",
+      "title": "Small vs. Large Airboat Tours in New Orleans | VIP vs Standard",
+      "description": "Compare small intimate VIP airboats (6-9 passengers) against large airboats (15-20+ guests) for your Louisiana swamp tour.",
       "canonicalRoute": "https://www.welcometoneworleanstours.com/swamp-tours/small-vs-large-airboat",
       "robots": "index, follow",
-      "openGraphTitle": "Small vs. Large Airboat Tours in New Orleans",
+      "openGraphTitle": "Small vs. Large Airboat Tours in New Orleans | VIP vs Standard",
       "openGraphUrl": "https://www.welcometoneworleanstours.com/swamp-tours/small-vs-large-airboat",
-      "twitterTitle": "Small vs. Large Airboat Tours in New Orleans"
+      "twitterTitle": "Small vs. Large Airboat Tours in New Orleans | VIP vs Standard"
     },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
-
-},
+  },
   "swamp-tours-pickup-vs-self-drive": {
     "id": "swamp-tours-pickup-vs-self-drive",
     "publicRoute": "/swamp-tours/pickup-vs-self-drive",
@@ -1884,49 +1955,70 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "pageIntent": "pickup vs self drive",
     "canonicalRoute": "https://www.welcometoneworleanstours.com/swamp-tours/pickup-vs-self-drive",
     "heroEyebrow": "Compare Transportation",
-    "heroTitle": "Hotel Pickup vs. Self-Drive",
-    "heroSubtitle": null,
-    "openingAnswer": "Hotel pickup offers convenience and relaxation without the stress of navigating. Self-driving offers flexibility and often saves money if you already have a rental car.",
+    "heroTitle": "Swamp Tour Transportation: Coach Departure vs. Hotel Pickup vs. Self-Drive",
+    "heroSubtitle": "Choose the most convenient way to reach Louisiana swamp docks from New Orleans.",
+    "openingAnswer": "Louisiana swamp docks are located 35 to 45 minutes outside downtown New Orleans. Choose Gray Line for central French Quarter coach transportation departing from 400 Toulouse St; choose Ragin Cajun Tours for hotel pickup options; or choose self-drive if you have a rental car and prefer flexibility.",
     "topCta": "/swamp-tours",
-    "secondaryCta": null,
-    "whoItIsFor": "Visitors staying in the French Quarter without a rental car.",
-    "whoShouldChooseSomethingElse": "Those who already rented a car and want to explore other areas (like plantations) on the same day.",
-    "decisionFactors": ["Pickup adds about 1-1.5 hours to the total trip time.","Self-driving requires navigating to remote launch sites.","Pickup is highly convenient if you plan to drink in the city later."],
-    "comparisonColumns": [{"id":"feature","header":"Feature"}, {"id":"pickup","header":"Hotel Pickup"}, {"id":"drive","header":"Self-Drive"}],
-    "comparisonRows": [{"label":"Transportation","values":["operator-arranged option","traveler-arranged transportation"]},{"label":"Pickup availability","values":["verify during checkout","verify during checkout"]}],
-    "recommendedChoiceGuidance": null,
-    "planningConsiderations": "If you choose pickup, confirm your hotel is within the operator's pickup zone.",
-    "transportationNotes": null,
-    "durationNotes": null,
-    "ageNotes": null,
-    "mobilityNotes": null,
-    "weatherNotes": null,
+    "secondaryCta": "/guides/new-orleans-swamp-tour-without-a-car",
+    "whoItIsFor": "Visitors staying in the French Quarter or downtown without a rental car who want seamless transportation to the bayou.",
+    "whoShouldChooseSomethingElse": "Travelers with a rental car who want to explore River Road or other regional attractions independently on the same day.",
+    "decisionFactors": [
+      "French Quarter Coach Departure: Gray Line provides direct round-trip motorcoach transit from 400 Toulouse St in the French Quarter (approx. 3h 45m door-to-door).",
+      "Hotel Pickup Option: Ragin Cajun Tours offers pickup from select downtown and French Quarter hotels.",
+      "Self-Drive: Docks are 30–45 miles outside New Orleans (approx. 35–45 minutes drive). Requires navigating rural Louisiana highways.",
+      "No Rideshare Dependence: Rideshares out to rural bayou docks are risky because return drivers are rarely available in remote wetlands."
+    ],
+    "comparisonColumns": [
+      {"id":"feature","header":"Feature"},
+      {"id":"fq_coach","header":"French Quarter Coach (400 Toulouse)"},
+      {"id":"hotel_pickup","header":"Hotel Pickup"},
+      {"id":"self_drive","header":"Self-Drive"}
+    ],
+    "comparisonRows": [
+      {"label":"Meeting Point","values":["400 Toulouse St (French Quarter)","Select downtown/FQ hotel lobbies","Swamp boat dock"]},
+      {"label":"Total Time","values":["~3 hours 45 minutes","~3.5 to 4.5 hours","~2 hours on site + drive time"]},
+      {"label":"Rental Car Needed","values":["No","No","Yes (own vehicle)"]}
+    ],
+    "recommendedChoiceGuidance": "If staying in or near the French Quarter, the 400 Toulouse St coach departure offers the most reliable, scheduled departure. If your hotel is further away, select an operator with hotel pickup.",
+    "planningConsiderations": "Do not attempt to take an Uber/Lyft to a swamp tour without arranged return transportation, as drivers are scarce in rural bayous.",
+    "transportationNotes": "Round-trip coach from 400 Toulouse St, hotel pickup, or drive-out options.",
+    "durationNotes": "Approx. 3h 45m total door-to-door with transportation.",
+    "ageNotes": "All ages on covered boats; age 5+ on airboats.",
+    "mobilityNotes": "Motorcoach boarding involves stairs.",
+    "weatherNotes": "Transportation vehicles are fully enclosed and climate controlled.",
     "itineraryCombinations": [],
     "liveProductIds": [
-        "ragincajun-covered-boat",
-        "ragincajun-airboat"
+      "swamp-bayou-tour",
+      "small-airboat-swamp-adventure",
+      "large-airboat-swamp-adventure",
+      "ragincajun-covered-boat",
+      "ragincajun-airboat"
     ],
     "futureProductCategoryIds": [],
-    "relatedPageIds": [],
+    "relatedPageIds": ["swamp-tours", "swamp-tours-airboat-vs-covered-boat"],
     "relatedAreaIds": [],
-    "disclosure": "Transportation options depend on the local operator.",
-    "faqs": [],
+    "disclosure": "Transportation policies depend on the selected operator (Gray Line New Orleans or Ragin Cajun Tours).",
+    "faqs": [
+      {
+        "question": "Can I take an Uber or Lyft to a New Orleans swamp tour?",
+        "answer": "While an Uber/Lyft can take you to rural swamp docks (35–45 minutes away), getting a return rideshare back to New Orleans is extremely unreliable because drivers rarely service remote wetland areas. Booking a tour with included transportation is strongly recommended."
+      }
+    ],
     "metadata": {
-      "title": "Hotel Pickup vs. Self-Drive for Swamp Tours",
-      "description": "Evaluate the convenience of hotel pickup against the flexibility of driving yourself to a New Orleans swamp tour.",
+      "title": "New Orleans Swamp Tour Transportation | French Quarter Coach vs Hotel Pickup",
+      "description": "Compare New Orleans swamp tour transportation: French Quarter coach from 400 Toulouse St, hotel pickup options, and self-drive directions.",
       "canonicalRoute": "https://www.welcometoneworleanstours.com/swamp-tours/pickup-vs-self-drive",
       "robots": "index, follow",
-      "openGraphTitle": "Hotel Pickup vs. Self-Drive for Swamp Tours",
+      "openGraphTitle": "New Orleans Swamp Tour Transportation | French Quarter Coach vs Hotel Pickup",
       "openGraphUrl": "https://www.welcometoneworleanstours.com/swamp-tours/pickup-vs-self-drive",
-      "twitterTitle": "Hotel Pickup vs. Self-Drive for Swamp Tours"
+      "twitterTitle": "New Orleans Swamp Tour Transportation | French Quarter Coach vs Hotel Pickup"
     },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
-
-},
+  },
   "swamp-tours-honey-island-vs-jean-lafitte": {
     "id": "swamp-tours-honey-island-vs-jean-lafitte",
     "publicRoute": "/swamp-tours/honey-island-vs-jean-lafitte",
@@ -3128,49 +3220,60 @@ export const SEO_PAGES: Record<string, SeoPageRecord> = {
     "pageIntent": "how long does a swamp tour take",
     "canonicalRoute": "https://www.welcometoneworleanstours.com/guides/how-long-does-a-swamp-tour-take",
     "heroEyebrow": "Planning Your Trip",
-    "heroTitle": "How Long Does a Swamp Tour Take?",
-    "heroSubtitle": "Duration and schedules.",
-    "openingAnswer": "The boat ride itself typically lasts between 1.5 and 2 hours. If you add in hotel pickup and drop-off, expect the entire experience to take about 3.5 to 4 hours round-trip.",
+    "heroTitle": "How Long Does a New Orleans Swamp Tour Take?",
+    "heroSubtitle": "Breakdown of boat ride duration, drive time, and total door-to-door transit.",
+    "openingAnswer": "The boat ride portion of a New Orleans swamp tour typically lasts between 1.5 and 2 hours on the water. When booking an excursion with round-trip French Quarter coach transportation (departing 400 Toulouse St), the total door-to-door duration is approximately 3 hours 45 minutes (approx. 45 min drive each way + 1h 45m to 2h on water + boarding buffer). For tours with multi-hotel pickups, total door-to-door time is roughly 3.5 to 4.5 hours.",
     "topCta": "/swamp-tours",
-    "secondaryCta": null,
+    "secondaryCta": "/guides/new-orleans-swamp-tour-without-a-car",
     "whoItIsFor": null,
     "whoShouldChooseSomethingElse": null,
-    "decisionFactors": [],
+    "decisionFactors": [
+      "Water Time: Most covered boat and airboat excursions spend approximately 1 hour 45 minutes to 2 hours navigating the bayou.",
+      "Drive Time: Swamps are 30–45 miles from New Orleans (approx. 35–45 minutes highway drive each way).",
+      "French Quarter Coach vs Hotel Pickup: Coach departure from 400 Toulouse St is direct (~3h 45m total); hotel pickup routes take slightly longer (~4 to 4.5 hours total)."
+    ],
     "comparisonColumns": [],
     "comparisonRows": [],
     "recommendedChoiceGuidance": null,
-    "planningConsiderations": null,
-    "transportationNotes": null,
-    "durationNotes": null,
+    "planningConsiderations": "Schedule a 4-hour window in your itinerary. Morning departures (around 8:30–9:00 AM) return by 12:30–1:00 PM, leaving your afternoon free for city sightseeing or a riverboat cruise.",
+    "transportationNotes": "Round-trip coach transportation from 400 Toulouse St or hotel pickup available.",
+    "durationNotes": "1.5–2 hours on water; 3h 45m total door-to-door with transportation.",
     "ageNotes": null,
     "mobilityNotes": null,
     "weatherNotes": null,
     "itineraryCombinations": [],
     "liveProductIds": [
-        "ragincajun-covered-boat",
-        "ragincajun-airboat"
+      "swamp-bayou-tour",
+      "small-airboat-swamp-adventure",
+      "large-airboat-swamp-adventure",
+      "ragincajun-covered-boat",
+      "ragincajun-airboat"
     ],
     "futureProductCategoryIds": [],
-    "relatedPageIds": [],
+    "relatedPageIds": ["swamp-tours", "swamp-tours-pickup-vs-self-drive"],
     "relatedAreaIds": [],
-    "disclosure": null,
-    "faqs": [],
+    "disclosure": "Tour duration facts are based on verified Gray Line New Orleans and Ragin Cajun Tours operational schedules.",
+    "faqs": [
+      {
+        "question": "How long is the original swamp tour?",
+        "answer": "The water portion of the original covered swamp tour lasts approximately 1 hour 45 minutes to 2 hours. The total tour with French Quarter coach transportation from 400 Toulouse St is approximately 3 hours 45 minutes door-to-door."
+      }
+    ],
     "metadata": {
-      "title": "How Long Does a Swamp Tour Take in New Orleans?",
-      "description": "Plan your itinerary with details on boat ride durations and round-trip transit times from downtown New Orleans.",
+      "title": "How Long Does a New Orleans Swamp Tour Take? (Water & Transit Times)",
+      "description": "Discover exact New Orleans swamp tour durations: 1.5-2 hours on water, 35-45 minute drive each way, and 3h 45m door-to-door with French Quarter coach transport.",
       "canonicalRoute": "https://www.welcometoneworleanstours.com/guides/how-long-does-a-swamp-tour-take",
       "robots": "index, follow",
-      "openGraphTitle": "How Long Does a Swamp Tour Take in New Orleans?",
+      "openGraphTitle": "How Long Does a New Orleans Swamp Tour Take? (Water & Transit Times)",
       "openGraphUrl": "https://www.welcometoneworleanstours.com/guides/how-long-does-a-swamp-tour-take",
-      "twitterTitle": "How Long Does a Swamp Tour Take in New Orleans?"
+      "twitterTitle": "How Long Does a New Orleans Swamp Tour Take? (Water & Transit Times)"
     },
     "schemaEligibility": null,
     "visualMood": null,
     "imageAttributionIds": [],
     "status": "live",
     "isIndexable": true
-
-},
+  },
   "guides-what-to-wear-on-a-swamp-tour": {
     "id": "guides-what-to-wear-on-a-swamp-tour",
     "publicRoute": "/guides/what-to-wear-on-a-swamp-tour",

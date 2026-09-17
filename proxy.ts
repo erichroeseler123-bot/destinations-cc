@@ -6,6 +6,7 @@ import {
 import { SOMERSET_BASE_PATH, SOMERSET_PAGE_PATHS } from "@/lib/dcc/corridors/somersetPages";
 import { getEdgeSignalMapForSubjects } from "@/lib/dcc/routing/edge-signals";
 import { isIndexableSurfacePath } from "@/src/data/indexable-surface";
+import { verifyServiceRequestHeaders } from "@/lib/dcc/auth/hmac-service-auth";
 import {
   BRECKENRIDGE_SHARED_GO_PATH,
   JUNEAU_HELICOPTER_GO_PATH,
@@ -355,19 +356,62 @@ function readBearerToken(request: NextRequest): string {
   return raw.slice(7).trim();
 }
 
-function isInternalApiAuthorized(request: NextRequest) {
+function checkInternalApiAuthorization(request: NextRequest): {
+  authorized: boolean;
+  statusCode?: 401 | 403 | 429;
+  error?: string;
+  code?: string;
+} {
   if (request.nextUrl.pathname === "/api/internal/satellite-handoffs/events") {
-    return Boolean(request.headers.get("x-dcc-satellite-token") || request.nextUrl.searchParams.get("token"));
+    const hasToken = Boolean(
+      request.headers.get("x-dcc-satellite-token") ||
+        request.nextUrl.searchParams.get("token"),
+    );
+    return hasToken
+      ? { authorized: true }
+      : { authorized: false, statusCode: 401, error: "Missing satellite token." };
   }
   if (request.nextUrl.pathname === "/api/internal/hydrate-pipeline") {
-    return true;
+    return { authorized: true };
   }
 
+  // 1. HMAC Signature verification (e.g. CP-to-DCC service requests)
+  if (
+    request.headers.get("x-dcc-signature") ||
+    request.headers.get("x-dcc-key-id")
+  ) {
+    const result = verifyServiceRequestHeaders({
+      headers: request.headers,
+      method: request.method,
+      pathname: request.nextUrl.pathname,
+      searchParams: request.nextUrl.searchParams,
+    });
+    if (!result.authorized) {
+      return {
+        authorized: false,
+        statusCode: result.statusCode,
+        error: result.error,
+        code: result.code,
+      };
+    }
+    return { authorized: true };
+  }
+
+  // 2. Legacy internal secret header / Bearer fallback
   const internalSecret = process.env.INTERNAL_API_SECRET?.trim();
-  if (!internalSecret) return false;
+  if (!internalSecret)
+    return {
+      authorized: false,
+      statusCode: 401,
+      error: "Internal API unconfigured.",
+    };
   const headerSecret = request.headers.get("x-internal-secret")?.trim() || "";
   const bearerSecret = readBearerToken(request);
-  return internalSecret === headerSecret || internalSecret === bearerSecret;
+  if (internalSecret === headerSecret || internalSecret === bearerSecret) {
+    return { authorized: true };
+  }
+
+  return { authorized: false, statusCode: 401, error: "Unauthorized." };
 }
 
 function buildHandoffEventPayload(request: NextRequest, resolved: NonNullable<ReturnType<typeof resolveGoRedirect>>) {
@@ -578,8 +622,14 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     return NextResponse.redirect(`https://www.lastfrontiershoreexcursions.com${request.nextUrl.pathname}${request.nextUrl.search}`, 308);
   }
 
-  if (request.nextUrl.pathname.startsWith("/api/internal/") && !isInternalApiAuthorized(request)) {
-    return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });
+  if (request.nextUrl.pathname.startsWith("/api/internal/")) {
+    const auth = checkInternalApiAuthorization(request);
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { ok: false, error: auth.error || "Unauthorized.", code: auth.code },
+        { status: auth.statusCode || 401 },
+      );
+    }
   }
 
   // Time-decay routing for cruise ports based on hours until arrival parameter `t`

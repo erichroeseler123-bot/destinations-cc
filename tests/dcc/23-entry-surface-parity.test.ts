@@ -132,14 +132,16 @@ test("homepage promoted entry-surface registry keeps the same promoted entries",
   assert.deepEqual(promoted, EXPECTED_PROMOTED_ENTRIES);
 });
 
-test("homepage public cruise status copy reflects the six-market reference set and expansion queue", async () => {
-  const html = normalizeWhitespace(fs.readFileSync("app/page.tsx", "utf8"));
+test("public cruise status registry reflects the six-market reference set and expansion queue", () => {
+  const entries = getHeaderSearchEntries();
+  const livePorts = entries.filter((e) => e.availabilityStatus === "live" && e.path.startsWith("/cruise-ports/"));
+  const expansionCandidates = entries.filter((e) => e.availabilityStatus === "expansion_candidate");
 
-  assert.match(html, /6 live markets/);
-  assert.match(html, /Key West/);
-  assert.match(html, /Cozumel/);
-  assert.match(html, /St\. Thomas/);
-  assert.match(html, /Expansion candidate|expansion candidates/);
+  assert.equal(livePorts.length >= 6, true, "expected at least 6 live cruise markets");
+  assert.ok(livePorts.some((e) => e.label.includes("Key West")));
+  assert.ok(livePorts.some((e) => e.label.includes("Cozumel")));
+  assert.ok(expansionCandidates.some((e) => e.label.includes("St. Thomas")));
+  assert.equal(expansionCandidates.length >= 2, true, "expected expansion candidates staged");
 });
 
 test("command intake section renders the same promoted entries and no extra manifest-external promoted links", async () => {
