@@ -99,6 +99,8 @@ export async function redeemOpaqueContext(
 }
 
 export const JFD_CHECKOUT_COOKIE_NAME = "jfd_checkout_session";
+export const JFD_SESSION_AUDIENCE = "juneauflightdeck";
+export const JFD_SESSION_KEY_VERSION = "v1";
 
 export const JFD_CHECKOUT_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -113,31 +115,65 @@ export const JFD_CHECKOUT_COOKIE_DELETE_OPTIONS = {
   maxAge: 0,
 };
 
-interface SessionPayload {
+export interface SessionPayload {
+  v: 1;
+  kid: string;
   sid: string;
   ctx: string;
+  aud: string;
   exp: number;
+  iat: number;
 }
 
-function getSessionSigningSecret(options?: { secret?: string }): string {
+function getSessionSigningSecretMap(options?: {
+  sessionSecrets?: Record<string, string>;
+  sessionSecret?: string;
+}): Record<string, string> {
+  const envSecret =
+    process.env.JFD_SESSION_SECRET?.trim() ||
+    process.env.SESSION_SECRET?.trim();
+  const defaultSecret =
+    options?.sessionSecret ||
+    envSecret ||
+    "jfd_dev_session_secret_not_for_production";
+
   return (
-    options?.secret ||
-    process.env.DCC_JFD_SERVICE_SECRET?.trim() ||
-    process.env.INTERNAL_API_SECRET?.trim() ||
-    "jfd_fallback_session_secret"
+    options?.sessionSecrets || {
+      [JFD_SESSION_KEY_VERSION]: defaultSecret,
+    }
   );
 }
 
 export function signSessionToken(
-  payload: { sessionId: string; contextId: string; expiresAt: number },
-  options?: { secret?: string }
+  payload: {
+    sessionId: string;
+    contextId: string;
+    expiresAt: number;
+    audience?: string;
+    keyVersion?: string;
+  },
+  options?: {
+    sessionSecrets?: Record<string, string>;
+    sessionSecret?: string;
+  }
 ): string {
-  const secret = getSessionSigningSecret(options);
+  const kid = payload.keyVersion || JFD_SESSION_KEY_VERSION;
+  const secrets = getSessionSigningSecretMap(options);
+  const secret = secrets[kid];
+  if (!secret) {
+    throw new Error(`Unknown session signing key version '${kid}'`);
+  }
+
   const data: SessionPayload = {
+    v: 1,
+    kid,
     sid: payload.sessionId,
     ctx: payload.contextId,
+    aud: payload.audience || JFD_SESSION_AUDIENCE,
     exp: payload.expiresAt,
+    iat: Date.now(),
   };
+
   const encodedData = Buffer.from(JSON.stringify(data)).toString("base64url");
   const signature = crypto
     .createHmac("sha256", secret)
@@ -148,7 +184,11 @@ export function signSessionToken(
 
 export function verifySessionToken(
   token: string | null | undefined,
-  options?: { secret?: string }
+  expectedAudience: string = JFD_SESSION_AUDIENCE,
+  options?: {
+    sessionSecrets?: Record<string, string>;
+    sessionSecret?: string;
+  }
 ): SessionPayload | null {
   if (!token || typeof token !== "string" || !token.includes(".")) {
     return null;
@@ -157,28 +197,55 @@ export function verifySessionToken(
   if (!encodedData || !signature) {
     return null;
   }
-  const secret = getSessionSigningSecret(options);
+
+  let parsed: SessionPayload;
+  try {
+    parsed = JSON.parse(
+      Buffer.from(encodedData, "base64url").toString("utf8")
+    ) as SessionPayload;
+    if (
+      !parsed.sid ||
+      !parsed.ctx ||
+      !parsed.exp ||
+      !parsed.kid ||
+      parsed.v !== 1
+    ) {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+
+  // 1. Audience validation
+  if (parsed.aud !== expectedAudience) {
+    return null;
+  }
+
+  // 2. Expiration check
+  if (parsed.exp <= Date.now()) {
+    return null;
+  }
+
+  // 3. Signature verification with key rotation support
+  const secrets = getSessionSigningSecretMap(options);
+  const secret = secrets[parsed.kid];
+  if (!secret) {
+    return null; // Unknown key version
+  }
+
   const expectedSig = crypto
     .createHmac("sha256", secret)
     .update(encodedData)
     .digest("base64url");
 
-  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig))) {
+  if (
+    signature.length !== expectedSig.length ||
+    !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig))
+  ) {
     return null;
   }
 
-  try {
-    const parsed = JSON.parse(Buffer.from(encodedData, "base64url").toString("utf8")) as SessionPayload;
-    if (!parsed.sid || !parsed.ctx || !parsed.exp) {
-      return null;
-    }
-    if (parsed.exp <= Date.now()) {
-      return null;
-    }
-    return parsed;
-  } catch {
-    return null;
-  }
+  return parsed;
 }
 
 interface CheckoutSession {
@@ -189,11 +256,17 @@ interface CheckoutSession {
 }
 
 const activeCheckoutSessions = new Map<string, CheckoutSession>();
+const invalidatedSessionIds = new Map<string, number>();
 
 function pruneExpiredSessions(now: number) {
   for (const [id, session] of activeCheckoutSessions.entries()) {
     if (session.expiresAt <= now) {
       activeCheckoutSessions.delete(id);
+    }
+  }
+  for (const [id, exp] of invalidatedSessionIds.entries()) {
+    if (exp <= now) {
+      invalidatedSessionIds.delete(id);
     }
   }
 }
@@ -202,10 +275,26 @@ export function clearCheckoutSessionCacheForTesting() {
   activeCheckoutSessions.clear();
 }
 
-export function invalidateCheckoutSession(sessionIdOrToken: string) {
-  const verified = verifySessionToken(sessionIdOrToken);
+export function clearInvalidatedSessionsForTesting() {
+  invalidatedSessionIds.clear();
+}
+
+export function isSessionInvalidated(sessionId: string): boolean {
+  return invalidatedSessionIds.has(sessionId);
+}
+
+export function invalidateCheckoutSession(
+  sessionIdOrToken: string,
+  options?: {
+    sessionSecrets?: Record<string, string>;
+    sessionSecret?: string;
+  }
+) {
+  const verified = verifySessionToken(sessionIdOrToken, JFD_SESSION_AUDIENCE, options);
   const sid = verified ? verified.sid : sessionIdOrToken;
+  const exp = verified ? verified.exp : Date.now() + 3600 * 1000;
   activeCheckoutSessions.delete(sid);
+  invalidatedSessionIds.set(sid, exp);
 }
 
 /**
@@ -220,6 +309,8 @@ export async function getOrCreateCheckoutSession(
     baseUrl?: string;
     keyId?: string;
     secret?: string;
+    sessionSecret?: string;
+    sessionSecrets?: Record<string, string>;
     fetcher?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
   }
 ): Promise<
@@ -232,10 +323,20 @@ export async function getOrCreateCheckoutSession(
   const now = Date.now();
   pruneExpiredSessions(now);
 
-  const verified = verifySessionToken(sessionToken, options);
+  const verified = verifySessionToken(sessionToken, JFD_SESSION_AUDIENCE, options);
   const effectiveSessionId = verified?.sid || null;
 
-  // 1. Check if session already exists in instance memory for this verified session identifier
+  // 1. Check if session was explicitly invalidated by server
+  if (effectiveSessionId && isSessionInvalidated(effectiveSessionId)) {
+    return {
+      success: false,
+      errorCode: "INVALID_SESSION",
+      message: "Checkout session has been invalidated or completed.",
+      statusCode: 410,
+    };
+  }
+
+  // 2. Check if session already exists in instance memory for this verified session identifier
   if (effectiveSessionId && activeCheckoutSessions.has(effectiveSessionId)) {
     const session = activeCheckoutSessions.get(effectiveSessionId)!;
     if (session.contextId === contextId && session.expiresAt > now) {
@@ -250,7 +351,7 @@ export async function getOrCreateCheckoutSession(
     }
   }
 
-  // 2. Check if an active session exists in instance memory for this contextId (e.g. prefetch race on same instance)
+  // 3. Check if an active session exists in instance memory for this contextId (e.g. prefetch race on same instance)
   for (const [id, session] of activeCheckoutSessions.entries()) {
     if (session.contextId === contextId && session.expiresAt > now) {
       const token = signSessionToken(
@@ -268,14 +369,16 @@ export async function getOrCreateCheckoutSession(
     }
   }
 
-  // 3. Redeem or Re-hydrate from Durable Neon Database via DCC Authority
+  // 4. Redeem or Re-hydrate from Durable Neon Database via DCC Authority
   const result = await redeemOpaqueContext(contextId, options);
   if (!result.success || !result.data) {
     return result;
   }
 
-  // 4. Create signed session token and cache locally (1-hour checkout window, bounded by context TTL)
-  const newSessionId = effectiveSessionId || `jfd_sess_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  // 5. Create signed session token and cache locally (1-hour checkout window, bounded by context TTL)
+  const newSessionId =
+    effectiveSessionId ||
+    `jfd_sess_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
   const expiresAt = now + 60 * 60 * 1000;
   activeCheckoutSessions.set(newSessionId, {
     contextId,

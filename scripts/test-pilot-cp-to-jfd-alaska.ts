@@ -121,16 +121,63 @@ async function runAlaskaPilotTest() {
   const activeSessionToken = raceSession1.sessionToken || raceSession2.sessionToken;
   assert(activeSessionToken, "HMAC-signed session token must be generated");
 
-  // Step 4: HMAC Signed Session Token Verification
-  console.log("\nStep 4: Verifying HMAC cryptographic signature of session token...");
-  const { verifySessionToken, invalidateCheckoutSession } = await import(
-    "../apps/juneauflightdeck/lib/dccContext"
-  );
+  // Step 4: HMAC Signed Session Token Verification & Cryptographic Security
+  console.log("\nStep 4: Verifying HMAC cryptographic signature and security parameters...");
+  const {
+    verifySessionToken,
+    signSessionToken,
+    invalidateCheckoutSession,
+    clearInvalidatedSessionsForTesting,
+  } = await import("../apps/juneauflightdeck/lib/dccContext");
+
   const verifiedToken = verifySessionToken(activeSessionToken);
   assert(verifiedToken, "Session token signature must be valid");
   assert.equal(verifiedToken.ctx, issueResult.contextId);
+  assert.equal(verifiedToken.aud, "juneauflightdeck", "Audience must be bound to juneauflightdeck");
+  assert.equal(verifiedToken.kid, "v1", "Key version must be v1");
   assert(verifiedToken.exp > Date.now(), "Session token must not be expired");
-  console.log("  ✔ Session Token Signature Verified: Valid HMAC-SHA256 signature for context", verifiedToken.ctx);
+  console.log("  ✔ Session Token Signature Verified: Valid HMAC-SHA256 signature, aud=juneauflightdeck, kid=v1");
+
+  // Step 4b: Forgery, Tamper & Wrong-Audience Rejection Suite
+  console.log("\nStep 4b: Testing forged cookies, altered ctx, wrong audience, and key rotation...");
+  
+  // 4b.1: Forged signature
+  const forgedSigToken = activeSessionToken.slice(0, -6) + "bad123";
+  assert.equal(verifySessionToken(forgedSigToken), null, "Forged signature must be rejected");
+
+  // 4b.2: Altered contextId in payload
+  const [encData] = activeSessionToken.split(".");
+  const parsedData = JSON.parse(Buffer.from(encData, "base64url").toString("utf8"));
+  parsedData.ctx = "dcc_ctx_00000000000000000000000000000000";
+  const alteredEncData = Buffer.from(JSON.stringify(parsedData)).toString("base64url");
+  const alteredToken = `${alteredEncData}.${activeSessionToken.split(".")[1]}`;
+  assert.equal(verifySessionToken(alteredToken), null, "Altered payload with original signature must be rejected");
+
+  // 4b.3: Wrong audience (e.g. issued for lastfrontier)
+  const wrongAudToken = signSessionToken({
+    sessionId: "sess_wrong_aud",
+    contextId: issueResult.contextId,
+    expiresAt: Date.now() + 3600000,
+    audience: "lastfrontier",
+  });
+  assert.equal(verifySessionToken(wrongAudToken, "juneauflightdeck"), null, "Wrong audience token must be rejected");
+
+  // 4b.4: Unknown key version
+  const secretsMap = { v1: "secret_v1_xyz", v2: "secret_v2_rotated_abc" };
+  const rotatedToken = signSessionToken(
+    {
+      sessionId: "sess_v2_rotated",
+      contextId: issueResult.contextId,
+      expiresAt: Date.now() + 3600000,
+      keyVersion: "v2",
+    },
+    { sessionSecrets: secretsMap }
+  );
+  const verifiedRotated = verifySessionToken(rotatedToken, "juneauflightdeck", { sessionSecrets: secretsMap });
+  assert(verifiedRotated, "Rotated key v2 must verify with v2 secret");
+  assert.equal(verifiedRotated.kid, "v2");
+
+  console.log("  ✔ Tamper & Forgery Suite Passed: Forged sigs, altered ctx, wrong aud, and key rotation validated");
 
   // Step 5: Cross-Instance Serverless Resilience (Simulated Cold Serverless Instance)
   console.log("\nStep 5: Testing cross-instance serverless resilience (wiping local process memory)...");
@@ -158,10 +205,20 @@ async function runAlaskaPilotTest() {
   assert.equal(JFD_CHECKOUT_COOKIE_OPTIONS.maxAge, 3600, "Cookie must have 1-hour max age");
   console.log("  ✔ Cookie Security Verified: HttpOnly=true, SameSite=Lax, MaxAge=3600s, Zero PII/Payment data in cookie");
 
-  // Step 7: Session Invalidation on Checkout / Cancellation
-  console.log("\nStep 7: Testing session invalidation upon booking completion / cancellation...");
+  // Step 7: Server-Side Invalidation on Checkout / Cancellation & Post-Invalidation Block
+  console.log("\nStep 7: Testing server-side session invalidation & post-invalidation reuse block...");
   invalidateCheckoutSession(activeSessionToken);
-  console.log("  ✔ Session Invalidation Succeeded: Local instance state cleared cleanly");
+  
+  // Attacker or replayed client attempts to reuse the signed cookie string after server invalidation:
+  const postInvalidationAttempt = await getOrCreateCheckoutSession(
+    issueResult.contextId,
+    activeSessionToken,
+    { fetcher: inProcessRouteFetcher }
+  );
+  assert.equal(postInvalidationAttempt.success, false, "Post-invalidation reuse must be blocked");
+  assert.equal(postInvalidationAttempt.statusCode, 410);
+  assert.equal(postInvalidationAttempt.errorCode, "INVALID_SESSION");
+  console.log("  ✔ Post-Invalidation Block Succeeded: Invalided session token blocked with 410 INVALID_SESSION even if client retains cookie!");
 
   // Step 8: Revocation & Expiry Hydration Guard
   console.log("\nStep 8: Verifying that revoked & expired contexts cannot hydrate a session...");
