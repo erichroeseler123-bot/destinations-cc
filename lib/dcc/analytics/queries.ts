@@ -1,4 +1,4 @@
-﻿import { and, eq, not, sql } from "drizzle-orm";
+import { and, count, eq, gte, isNull, lte, or, sql, type SQL } from "drizzle-orm";
 import { getDb, type DccDb } from "@/lib/db/client";
 import { dccContexts } from "@/lib/db/schema";
 
@@ -28,8 +28,10 @@ export interface AnalyticsQueryParams {
  * 
  * CRITICAL SAFETY & ISOLATION RULE:
  * Staging test verification traffic (e.g. campaign: 'staging-verification-test',
- * or idempotency keys starting with 'live-staging-', 'pw-browser-', 'test-')
+ * 'test_campaign', or idempotency keys starting with 'live-staging-', 'pw-browser-', 'test-', 'expire-test-')
  * is STRICTLY EXCLUDED by default to maintain reporting integrity.
+ * 
+ * Filters and aggregates are pushed down directly to SQL for optimal performance.
  */
 export async function queryDccConversionMetrics(
   params: AnalyticsQueryParams = {}
@@ -59,108 +61,112 @@ export async function queryDccConversionMetrics(
   const excludeTest = params.excludeTestTraffic ?? true;
 
   try {
-    const allRows = await db.select().from(dccContexts);
-
-    let filteredRows = allRows;
-    let excludedCount = 0;
-
-    if (excludeTest) {
-      filteredRows = allRows.filter((row) => {
-        const attrStr = JSON.stringify(row.attribution || {});
-        const isStagingTest =
-          attrStr.includes("staging-verification-test") ||
-          attrStr.includes("test_campaign") ||
-          (row.idempotencyKey &&
-            (row.idempotencyKey.includes("staging") ||
-              row.idempotencyKey.includes("test") ||
-              row.idempotencyKey.includes("pw-browser")));
-
-        if (isStagingTest) {
-          excludedCount++;
-          return false;
-        }
-        return true;
-      });
-    }
+    const baseConditions: SQL[] = [];
 
     if (params.destination) {
-      filteredRows = filteredRows.filter(
-        (r) => r.destination.toLowerCase() === params.destination!.toLowerCase()
+      baseConditions.push(
+        sql`lower(${dccContexts.destination}) = ${params.destination.toLowerCase()}`
       );
     }
     if (params.sourceSite) {
-      filteredRows = filteredRows.filter(
-        (r) => r.sourceSite.toLowerCase() === params.sourceSite!.toLowerCase()
+      baseConditions.push(
+        sql`lower(${dccContexts.sourceSite}) = ${params.sourceSite.toLowerCase()}`
       );
     }
     if (params.targetOwner) {
-      filteredRows = filteredRows.filter(
-        (r) => r.targetOwner.toLowerCase() === params.targetOwner!.toLowerCase()
+      baseConditions.push(
+        sql`lower(${dccContexts.targetOwner}) = ${params.targetOwner.toLowerCase()}`
+      );
+    }
+    if (params.dateStart) {
+      const startDate = new Date(params.dateStart);
+      if (!isNaN(startDate.getTime())) {
+        baseConditions.push(gte(dccContexts.issuedAt, startDate));
+      }
+    }
+    if (params.dateEnd) {
+      const endDate = new Date(params.dateEnd);
+      if (!isNaN(endDate.getTime())) {
+        baseConditions.push(lte(dccContexts.issuedAt, endDate));
+      }
+    }
+
+    const conditions: SQL[] = [...baseConditions];
+
+    if (excludeTest) {
+      // Precise exclusion: exclude staging verification tests without blocking legitimate campaigns like "pro-contest"
+      conditions.push(
+        sql`COALESCE(${dccContexts.attribution}->>'campaign', '') NOT IN ('staging-verification-test', 'test_campaign')`
+      );
+      conditions.push(
+        sql`(${dccContexts.idempotencyKey} IS NULL OR (
+          ${dccContexts.idempotencyKey} NOT LIKE 'live-staging-%' AND
+          ${dccContexts.idempotencyKey} NOT LIKE 'pw-browser-%' AND
+          ${dccContexts.idempotencyKey} NOT LIKE 'test-%' AND
+          ${dccContexts.idempotencyKey} NOT LIKE 'expire-test-%'
+        ))`
       );
     }
 
-    // Grouping by corridor
-    const corridorMap = new Map<string, {
-      sourceSite: string;
-      targetOwner: string;
-      destination: string;
-      issued: number;
-      redeemed: number;
-      expired: number;
-      revoked: number;
-    }>();
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    // Direct SQL Grouping and Aggregation
+    const corridorRows = await db
+      .select({
+        sourceSite: dccContexts.sourceSite,
+        targetOwner: dccContexts.targetOwner,
+        destination: dccContexts.destination,
+        issuedCount: count(),
+        redeemedCount: sql<number>`count(CASE WHEN ${dccContexts.status} = 'redeemed' THEN 1 END)::int`,
+        expiredCount: sql<number>`count(CASE WHEN ${dccContexts.status} = 'expired' THEN 1 END)::int`,
+        revokedCount: sql<number>`count(CASE WHEN ${dccContexts.status} = 'revoked' THEN 1 END)::int`,
+      })
+      .from(dccContexts)
+      .where(whereClause)
+      .groupBy(dccContexts.sourceSite, dccContexts.targetOwner, dccContexts.destination);
 
     let totalIssued = 0;
     let totalRedeemed = 0;
     let totalExpired = 0;
     let totalRevoked = 0;
 
-    for (const row of filteredRows) {
-      const key = `${row.sourceSite}::${row.targetOwner}::${row.destination}`;
-      let entry = corridorMap.get(key);
-      if (!entry) {
-        entry = {
-          sourceSite: row.sourceSite,
-          targetOwner: row.targetOwner,
-          destination: row.destination,
-          issued: 0,
-          redeemed: 0,
-          expired: 0,
-          revoked: 0,
-        };
-        corridorMap.set(key, entry);
-      }
+    const corridors: CorridorMetricsSummary[] = corridorRows.map((r) => {
+      const issued = Number(r.issuedCount);
+      const redeemed = Number(r.redeemedCount);
+      const expired = Number(r.expiredCount);
+      const revoked = Number(r.revokedCount);
 
-      totalIssued++;
-      entry.issued++;
+      totalIssued += issued;
+      totalRedeemed += redeemed;
+      totalExpired += expired;
+      totalRevoked += revoked;
 
-      if (row.status === "redeemed") {
-        totalRedeemed++;
-        entry.redeemed++;
-      } else if (row.status === "expired") {
-        totalExpired++;
-        entry.expired++;
-      } else if (row.status === "revoked") {
-        totalRevoked++;
-        entry.revoked++;
-      }
-    }
-
-    const corridors: CorridorMetricsSummary[] = Array.from(corridorMap.values()).map(
-      (c) => ({
-        sourceSite: c.sourceSite,
-        targetOwner: c.targetOwner,
-        destination: c.destination,
-        issuedCount: c.issued,
-        redeemedCount: c.redeemed,
-        expiredCount: c.expired,
-        revokedCount: c.revoked,
-        conversionRate: c.issued > 0 ? Number(((c.redeemed / c.issued) * 100).toFixed(2)) : 0,
-      })
-    );
+      return {
+        sourceSite: r.sourceSite,
+        targetOwner: r.targetOwner,
+        destination: r.destination,
+        issuedCount: issued,
+        redeemedCount: redeemed,
+        expiredCount: expired,
+        revokedCount: revoked,
+        conversionRate: issued > 0 ? Number(((redeemed / issued) * 100).toFixed(2)) : 0,
+      };
+    });
 
     const overallConversionRate =
       totalIssued > 0 ? Number(((totalRedeemed / totalIssued) * 100).toFixed(2)) : 0;
+
+    let excludedCount = 0;
+    if (excludeTest) {
+      const baseWhereClause = baseConditions.length > 0 ? and(...baseConditions) : undefined;
+      const [totalWithTests] = await db
+        .select({ count: count() })
+        .from(dccContexts)
+        .where(baseWhereClause);
+
+      const rawCount = Number(totalWithTests?.count || 0);
+      excludedCount = Math.max(0, rawCount - totalIssued);
+    }
 
     return {
       success: true,

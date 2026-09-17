@@ -1,4 +1,4 @@
-﻿import test from "node:test";
+import test from "node:test";
 import assert from "node:assert/strict";
 import { issueContext, redeemContext, cleanupExpiredDccContexts, cleanupExpiredDccSessions } from "@/lib/dcc/context/service";
 import { isOwnerValidForDestination, resolveAuthoritativeBuffer } from "@/lib/dcc/context/registry";
@@ -115,8 +115,29 @@ test("DCC Multi-Port Alaska Corridor Protocol & Lifecycle Suite", async (t) => {
     assert.equal(sessionCleanup.success, true);
   });
 
-  // 5. Analytics Isolation Engine
-  await t.test("5. Analytics Engine Strictly Excludes Staging Test Traffic", async () => {
+  // 5. Analytics Isolation & SQL Pushdown Engine
+  await t.test("5. Analytics Engine Strictly Excludes Staging Test Traffic & Supports Date Range Filtering", async () => {
+    // 5a. Issue a test context and a legitimate production-like context
+    const testIssue = await issueContext({
+      sourceSite: "cruisepromenade",
+      destination: "juneau",
+      targetOwner: "juneauflightdeck",
+      schedule: { date: "2027-06-01", departure: "17:00", travelers: 2 },
+      attribution: { campaign: "staging-verification-test" },
+      idempotencyKey: `live-staging-${Date.now()}`,
+    });
+    assert.equal(testIssue.success, true);
+
+    const prodIssue = await issueContext({
+      sourceSite: "cruisepromenade",
+      destination: "juneau",
+      targetOwner: "juneauflightdeck",
+      schedule: { date: "2027-06-01", departure: "17:00", travelers: 4 },
+      attribution: { campaign: "latest-alaska-summer-promo" }, // Contains "test" in substring if naive, but is legitimate
+      idempotencyKey: `prod-promo-${Date.now()}`,
+    });
+    assert.equal(prodIssue.success, true);
+
     // Query metrics excluding test traffic
     const prodMetrics = await queryDccConversionMetrics({ excludeTestTraffic: true });
     assert.equal(prodMetrics.success, true);
@@ -130,5 +151,24 @@ test("DCC Multi-Port Alaska Corridor Protocol & Lifecycle Suite", async (t) => {
       typeof prodMetrics.excludedTestContextsCount === "number",
       "Must report count of segregated test contexts"
     );
+    assert.ok(
+      allMetrics.totalIssued >= prodMetrics.totalIssued,
+      "Total issued including test traffic must be >= production metrics"
+    );
+
+    // 5b. Date Range Query Filtering
+    const futureDateMetrics = await queryDccConversionMetrics({
+      dateStart: "2099-01-01",
+      dateEnd: "2099-12-31",
+    });
+    assert.equal(futureDateMetrics.success, true);
+    assert.equal(futureDateMetrics.totalIssued, 0, "No records should exist in 2099");
+
+    const pastDateMetrics = await queryDccConversionMetrics({
+      dateStart: "2020-01-01",
+      dateEnd: new Date(Date.now() + 60000).toISOString(),
+    });
+    assert.equal(pastDateMetrics.success, true);
+    assert.ok(pastDateMetrics.totalIssued > 0, "Current records should match wide valid date window");
   });
 });

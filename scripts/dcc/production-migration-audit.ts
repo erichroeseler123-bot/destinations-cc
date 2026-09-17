@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Production Readiness & Database Migration Pre-Flight Audit
  * 
  * Non-destructive pre-flight CLI tool for inspecting production environment variables,
@@ -12,14 +12,28 @@ import { getDb } from "@/lib/db/client";
 import { sql } from "drizzle-orm";
 
 async function runProductionAudit() {
+  const dbUrl = process.env.DATABASE_URL || "";
+  const isStaging =
+    dbUrl.includes("ep-muddy-waterfall") ||
+    dbUrl.includes("test") ||
+    process.env.NODE_ENV === "test" ||
+    process.argv.some((arg) => arg.includes(".env.test.local"));
+
+  const envLabel = isStaging ? "STAGING / PREVIEW (Neon Staging)" : "PRODUCTION (Neon Production)";
+
   console.log("==================================================================");
-  console.log("DCC CONTEXT PROTOCOL: PRODUCTION READINESS PRE-FLIGHT AUDIT");
+  console.log(`DCC CONTEXT PROTOCOL: PRE-FLIGHT AUDIT [${envLabel}]`);
+  if (isStaging) {
+    console.log("Note: Inspecting Staging / Preview database and secret configuration.");
+  } else {
+    console.log("Note: Non-destructive inspection of Production environment and database.");
+  }
   console.log("==================================================================");
 
   let issuesFound = 0;
 
   // 1. Environment & Secrets Check
-  console.log("\n1. Environment Variable & Secret Configuration:");
+  console.log(`\n1. Environment Variable & Secret Configuration [${envLabel}]:`);
 
   const checkSecret = (name: string, minLength: number = 32, isJson: boolean = false) => {
     const val = process.env[name]?.trim();
