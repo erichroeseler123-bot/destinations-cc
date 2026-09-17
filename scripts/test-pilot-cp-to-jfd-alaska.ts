@@ -235,6 +235,23 @@ async function runAlaskaPilotTest() {
   assert.equal(postInvalidationAttempt2.errorCode, "INVALID_SESSION");
   console.log("  ✔ Cross-Instance Invalidation Succeeded: Retained cookie rejected with 410 INVALID_SESSION via durable Neon PostgreSQL record!");
 
+  // 7c. Fail-Closed Verification: Simulate DB outage / error during invalidation check
+  const failClosedAttempt = await getOrCreateCheckoutSession(
+    issueResult.contextId,
+    activeSessionToken,
+    { fetcher: inProcessRouteFetcher, dbOverride: null }
+  );
+  assert.equal(failClosedAttempt.success, false, "Database outage must fail closed");
+  assert.equal(failClosedAttempt.statusCode, 503);
+  assert.equal(failClosedAttempt.errorCode, "DATABASE_UNAVAILABLE");
+  console.log("  ✔ Fail-Closed Verified: Database outage returns 503 DATABASE_UNAVAILABLE instead of allowing session");
+
+  // 7d. Scheduled Deletion / Cleanup Job Verification
+  const { cleanupExpiredDccSessions } = await import("../lib/dcc/context/service");
+  const cleanupRes = await cleanupExpiredDccSessions({ now: Date.now() + 4000 * 1000 }); // simulated future run
+  assert.equal(cleanupRes.success, true);
+  console.log(`  ✔ Scheduled Cleanup Job Verified: Purged ${cleanupRes.deletedCount} expired invalidation records from Neon`);
+
   // Step 8: Revocation & Expiry Hydration Guard
   console.log("\nStep 8: Verifying that revoked & expired contexts cannot hydrate a session...");
   const { revokeContext } = await import("../lib/dcc/context/service");

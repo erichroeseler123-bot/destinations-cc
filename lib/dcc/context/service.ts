@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, lte } from "drizzle-orm";
 import { getDb, type DccDb } from "@/lib/db/client";
 import { dccContexts, dccInvalidatedSessions, type DccContextRow } from "@/lib/db/schema";
 import {
@@ -526,15 +526,27 @@ export async function invalidateDccSession(
   }
 }
 
+export type CheckSessionInvalidationResult =
+  | { success: true; isInvalidated: boolean }
+  | { success: false; errorCode: "DATABASE_UNAVAILABLE"; message: string };
+
 /**
  * Durably checks if a session ID is recorded in the Neon PostgreSQL invalidation table.
+ * FAIL-CLOSED: If the database is unavailable or throws an error, returns success: false
+ * so caller can reject the hydration attempt rather than erroneously treating it as valid.
  */
 export async function isDccSessionInvalidated(
   sessionId: string,
   options?: { dbOverride?: DccDb | null; now?: number }
-): Promise<boolean> {
+): Promise<CheckSessionInvalidationResult> {
   const db = options?.dbOverride !== undefined ? options.dbOverride : getDb();
-  if (!db) return false;
+  if (!db) {
+    return {
+      success: false,
+      errorCode: "DATABASE_UNAVAILABLE",
+      message: "Durable database is unavailable for session verification.",
+    };
+  }
 
   const now = options?.now ? new Date(options.now) : new Date();
   try {
@@ -549,9 +561,42 @@ export async function isDccSessionInvalidated(
       )
       .limit(1);
 
-    return rows.length > 0;
+    return {
+      success: true,
+      isInvalidated: rows.length > 0,
+    };
+  } catch (err: any) {
+    console.error("Failed to check invalidated session in database:", err);
+    return {
+      success: false,
+      errorCode: "DATABASE_UNAVAILABLE",
+      message: err.message || "Failed to query session invalidation table.",
+    };
+  }
+}
+
+/**
+ * Scheduled cleanup job: purges expired records from dcc_invalidated_sessions.
+ */
+export async function cleanupExpiredDccSessions(
+  options?: { dbOverride?: DccDb | null; now?: number }
+): Promise<{ success: boolean; deletedCount: number }> {
+  const db = options?.dbOverride !== undefined ? options.dbOverride : getDb();
+  if (!db) return { success: false, deletedCount: 0 };
+
+  const now = options?.now ? new Date(options.now) : new Date();
+  try {
+    const deleted = await db
+      .delete(dccInvalidatedSessions)
+      .where(lte(dccInvalidatedSessions.expiresAt, now))
+      .returning({ sessionId: dccInvalidatedSessions.sessionId });
+
+    return {
+      success: true,
+      deletedCount: deleted.length,
+    };
   } catch (err) {
-    console.error("Failed to check invalidated session:", err);
-    return false;
+    console.error("Failed to clean up expired sessions:", err);
+    return { success: false, deletedCount: 0 };
   }
 }

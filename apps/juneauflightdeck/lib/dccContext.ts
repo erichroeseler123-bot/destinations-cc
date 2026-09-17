@@ -283,12 +283,15 @@ export function clearInvalidatedSessionsForTesting() {
 export async function isSessionInvalidated(
   sessionId: string,
   options?: { dbOverride?: any; now?: number }
-): Promise<boolean> {
+): Promise<
+  | { success: true; isInvalidated: boolean }
+  | { success: false; errorCode: "DATABASE_UNAVAILABLE"; message: string }
+> {
   // 1. Fast in-memory check
   if (invalidatedSessionIds.has(sessionId)) {
-    return true;
+    return { success: true, isInvalidated: true };
   }
-  // 2. Durable Neon database check (cross-instance safety)
+  // 2. Durable Neon database check (cross-instance safety) - FAIL CLOSED
   return await isDccSessionInvalidated(sessionId, options);
 }
 
@@ -351,14 +354,26 @@ export async function getOrCreateCheckoutSession(
   const verified = verifySessionToken(sessionToken, JFD_SESSION_AUDIENCE, options);
   const effectiveSessionId = verified?.sid || null;
 
-  // 1. Check if session was explicitly invalidated by server (in-memory or durable in Neon)
-  if (effectiveSessionId && (await isSessionInvalidated(effectiveSessionId, options))) {
-    return {
-      success: false,
-      errorCode: "INVALID_SESSION",
-      message: "Checkout session has been invalidated or completed.",
-      statusCode: 410,
-    };
+  // 1. Check if session was explicitly invalidated by server (in-memory or durable in Neon) - FAIL CLOSED
+  if (effectiveSessionId) {
+    const invalidationCheck = await isSessionInvalidated(effectiveSessionId, options);
+    if (!invalidationCheck.success) {
+      // FAIL CLOSED: If DB is unreachable, we cannot verify session validity. Reject rather than treat as valid!
+      return {
+        success: false,
+        errorCode: "DATABASE_UNAVAILABLE",
+        message: "Unable to verify session validity with durable authority.",
+        statusCode: 503,
+      };
+    }
+    if (invalidationCheck.isInvalidated) {
+      return {
+        success: false,
+        errorCode: "INVALID_SESSION",
+        message: "Checkout session has been invalidated or completed.",
+        statusCode: 410,
+      };
+    }
   }
 
   // 2. Check if session already exists in instance memory for this verified session identifier
