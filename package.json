@@ -37,6 +37,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --env-file=.env.test.local --test tests/dcc/73-context-api-routes.test.ts tests/dcc/74-alaska-multi-port-corridor.test.ts",
     "test:dcc": "node --import tsx --env-file=.env.test.local --test tests/dcc/73-context-api-routes.test.ts tests/dcc/74-alaska-multi-port-corridor.test.ts",
+    "test:wno": "node --import tsx --env-file=.env.test.local --test tests/new-orleans/*.test.ts",
     "test:multiport": "node --import tsx --env-file=.env.test.local --test tests/dcc/74-alaska-multi-port-corridor.test.ts",
     "test:pilot": "node --import tsx --env-file=.env.test.local scripts/test-pilot-cp-to-jfd-alaska.ts",
     "test:browser": "node --import tsx --env-file=.env.test.local scripts/test-deployed-browser-simulation.ts",
