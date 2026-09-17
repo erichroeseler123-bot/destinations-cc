@@ -507,9 +507,61 @@ test("Context API Route & Staging Neon Concurrency Suite", async (t) => {
 
     const redeemRes = await handleRedeemContext(redeemReq, { params: { contextId: revokeContextId } });
     const redeemJson = await redeemRes.json();
-
-    assert.equal(redeemRes.status, 400);
+    assert.equal(redeemRes.status, 410);
     assert.equal(redeemJson.success, false);
+    assert.equal(redeemJson.errorCode, "CONTEXT_REVOKED");
     assert.match(redeemJson.message, /revoked/);
+  });
+
+  await t.test("14. POST /api/v1/context/:id/redeem - Already-redeemed context that subsequently expires returns 410 CONTEXT_EXPIRED on replay", async () => {
+    // 1. Issue context in the past (16 minutes ago)
+    const pastTime = Date.now() - 16 * 60 * 1000;
+    const issue = await issueContext(
+      {
+        sourceSite: "cruisepromenade",
+        destination: "juneau",
+        targetOwner: "juneauflightdeck",
+        schedule: { date: "2026-07-28", travelers: 2 },
+      },
+      { now: pastTime }
+    );
+
+    // 2. Mark redeemed at past time in DB
+    const db = getDb();
+    if (db) {
+      await db
+        .update(dccContexts)
+        .set({
+          status: "redeemed",
+          redeemedBy: "juneauflightdeck",
+          redeemedAt: new Date(pastTime + 60000),
+        })
+        .where(eq(dccContexts.contextId, issue.contextId));
+    }
+
+    // 3. Attempt same-owner replay now (after expiry) ➔ Must be rejected with 410 CONTEXT_EXPIRED
+    const pathname = `/api/v1/context/${issue.contextId}/redeem`;
+    const bodyStr = JSON.stringify({ owner: "juneauflightdeck" });
+
+    const signed = signServiceRequest({
+      keyId: TEST_KEY_ID,
+      secret: TEST_SECRET,
+      method: "POST",
+      pathname,
+      body: bodyStr,
+    });
+
+    const req = new NextRequest(`https://api.destinationcommandcenter.com${pathname}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...signed.headers },
+      body: bodyStr,
+    });
+
+    const res = await handleRedeemContext(req, { params: { contextId: issue.contextId } });
+    const json = await res.json();
+
+    assert.equal(res.status, 410);
+    assert.equal(json.success, false);
+    assert.equal(json.errorCode, "CONTEXT_EXPIRED");
   });
 });

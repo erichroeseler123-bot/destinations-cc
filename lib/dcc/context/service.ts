@@ -39,6 +39,7 @@ export type RedeemContextResult =
         | "CONTEXT_NOT_FOUND"
         | "CONTEXT_ALREADY_REDEEMED"
         | "CONTEXT_EXPIRED"
+        | "CONTEXT_REVOKED"
         | "OWNER_MISMATCH"
         | "INVALID_OWNER"
         | "DATABASE_UNAVAILABLE";
@@ -342,6 +343,24 @@ export async function redeemContext(
 
   const row = existing[0];
 
+  if (row.status === "revoked") {
+    return {
+      success: false,
+      statusCode: 410,
+      errorCode: "CONTEXT_REVOKED",
+      message: "Context token has been revoked.",
+    };
+  }
+
+  if (row.expiresAt <= now || row.status === "expired") {
+    return {
+      success: false,
+      statusCode: 410,
+      errorCode: "CONTEXT_EXPIRED",
+      message: `Context token expired at ${row.expiresAt.toISOString()}.`,
+    };
+  }
+
   if (row.targetOwner !== normalizedClaimingId) {
     return {
       success: false,
@@ -352,7 +371,7 @@ export async function redeemContext(
   }
 
   if (row.status === "redeemed") {
-    // If the claiming owner is the SAME owner that already redeemed it, return idempotent success
+    // If the claiming owner is the SAME owner that already redeemed it, and context is not expired/revoked:
     if (row.redeemedBy === normalizedClaimingId && row.targetOwner === normalizedClaimingId) {
       return {
         success: true,
@@ -366,15 +385,6 @@ export async function redeemContext(
       statusCode: 409,
       errorCode: "CONTEXT_ALREADY_REDEEMED",
       message: `Context token was already redeemed at ${row.redeemedAt?.toISOString()} by '${row.redeemedBy}'. Replay attacks are prohibited.`,
-    };
-  }
-
-  if (row.expiresAt <= now || row.status === "expired") {
-    return {
-      success: false,
-      statusCode: 410,
-      errorCode: "CONTEXT_EXPIRED",
-      message: `Context token expired at ${row.expiresAt.toISOString()}.`,
     };
   }
 
