@@ -122,6 +122,21 @@ export function formatRedeemedResponse(row: DccContextRow): DccContextRedeemResp
   };
 }
 
+export function resolveOwnerBaseUrl(ownerId: string): string {
+  const sanitized = ownerId.replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
+  const stagingOverride =
+    process.env[`DCC_${sanitized}_BASE_URL`]?.trim() ||
+    process.env[`${sanitized}_STAGING_URL`]?.trim() ||
+    (ownerId === "juneauflightdeck" ? (process.env.JFD_STAGING_URL?.trim() || process.env.DCC_JFD_STAGING_BASE_URL?.trim() || process.env.DCC_JFD_BASE_URL?.trim()) : undefined);
+
+  if (stagingOverride) {
+    return stagingOverride.replace(/\/+$/, "");
+  }
+
+  const owner = resolveCanonicalOwner(ownerId);
+  return `https://${owner?.canonicalDomain || "destinationcommandcenter.com"}`;
+}
+
 /**
  * Issues a new opaque DCC context token.
  * Server strictly calculates authoritative buffer, return windows, and TTL.
@@ -168,8 +183,7 @@ export async function issueContext(
 
     if (existing.length > 0) {
       const row = existing[0];
-      const owner = DCC_CANONICAL_OWNERS[row.targetOwner];
-      const bridgeUrl = `https://${owner?.canonicalDomain || "destinationcommandcenter.com"}/book?ctx=${row.contextId}`;
+      const bridgeUrl = `${resolveOwnerBaseUrl(row.targetOwner)}/book?ctx=${row.contextId}`;
       return {
         success: true,
         contextId: row.contextId,
@@ -226,8 +240,7 @@ export async function issueContext(
 
         if (raceExisting.length > 0) {
           const row = raceExisting[0];
-          const rowOwner = resolveCanonicalOwner(row.targetOwner);
-          const bridgeUrl = `https://${rowOwner?.canonicalDomain || "destinationcommandcenter.com"}/book?ctx=${row.contextId}`;
+          const bridgeUrl = `${resolveOwnerBaseUrl(row.targetOwner)}/book?ctx=${row.contextId}`;
           return {
             success: true,
             contextId: row.contextId,
@@ -244,7 +257,7 @@ export async function issueContext(
     }
   }
 
-  const bridgeUrl = `https://${owner?.canonicalDomain || "destinationcommandcenter.com"}/book?ctx=${contextId}`;
+  const bridgeUrl = `${resolveOwnerBaseUrl(owner ? owner.id : input.targetOwner)}/book?ctx=${contextId}`;
 
   return {
     success: true,
