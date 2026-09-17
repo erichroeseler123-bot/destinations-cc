@@ -1,6 +1,6 @@
 /**
  * Authoritative Server-Side Registry of Known DCC Entities.
- * Used to validate source sites, canonical owners, destinations, and safety buffers.
+ * Synchronized with dcc-protocol specification standards.
  */
 
 export interface SourceSiteEntry {
@@ -15,11 +15,12 @@ export interface CanonicalOwnerEntry {
   id: string;
   name: string;
   canonicalDomain: string;
-  destination: string;
+  allowedDestinations: string[]; // Strict destination binding
   productCategories: string[];
 }
 
 export interface PortSafetyProfile {
+  destination: string;
   timezone: string;
   defaultBufferMinutes: number;
   operatorModifiers?: Record<string, { bufferMinutes: number; reason: string }>;
@@ -82,48 +83,49 @@ export const DCC_CANONICAL_OWNERS: Record<string, CanonicalOwnerEntry> = {
     id: "juneauflightdeck",
     name: "Juneau Flight Deck",
     canonicalDomain: "juneauflightdeck.com",
-    destination: "juneau",
+    allowedDestinations: ["juneau"],
     productCategories: ["helicopter", "flightseeing", "glacier_landing"],
   },
   lastfrontier: {
     id: "lastfrontier",
     name: "Last Frontier Shore Excursions",
     canonicalDomain: "lastfrontiershoreexcursions.com",
-    destination: "alaska_ports",
+    allowedDestinations: ["juneau", "skagway", "ketchikan"],
     productCategories: ["shore_excursions", "whale_watching", "custom_charter"],
   },
   gosno: {
     id: "gosno",
     name: "GoSno Production",
     canonicalDomain: "gosno.co",
-    destination: "colorado_montana",
+    allowedDestinations: ["denver", "morrison", "copper-mountain", "big-sky"],
     productCategories: ["mountain_shuttle", "airport_transfer", "flat_rate_corridor"],
   },
   partyatredrocks: {
     id: "partyatredrocks",
     name: "Party at Red Rocks",
     canonicalDomain: "partyatredrocks.com",
-    destination: "morrison",
+    allowedDestinations: ["morrison", "denver"],
     productCategories: ["concert_shuttle", "venue_pass"],
   },
   welcometotheswamp: {
     id: "welcometotheswamp",
     name: "Welcome to the Swamp",
     canonicalDomain: "welcometotheswamp.com",
-    destination: "new_orleans",
+    allowedDestinations: ["new-orleans"],
     productCategories: ["bayou_airboat", "swamp_tour"],
   },
   "vibing-around": {
     id: "vibing-around",
     name: "Vibe Around Town",
     canonicalDomain: "vibearoundtown.com",
-    destination: "multi_market",
+    allowedDestinations: ["juneau", "skagway", "ketchikan", "denver", "morrison", "new-orleans", "chetek", "wisconsin-dells"],
     productCategories: ["private_driver", "micro_fleet", "custom_tour"],
   },
 };
 
 export const DCC_SAFETY_PROFILES: Record<string, PortSafetyProfile> = {
   juneau: {
+    destination: "juneau",
     timezone: "America/Anchorage",
     defaultBufferMinutes: 90,
     operatorModifiers: {
@@ -133,6 +135,7 @@ export const DCC_SAFETY_PROFILES: Record<string, PortSafetyProfile> = {
     },
   },
   skagway: {
+    destination: "skagway",
     timezone: "America/Anchorage",
     defaultBufferMinutes: 60,
     operatorModifiers: {
@@ -141,6 +144,7 @@ export const DCC_SAFETY_PROFILES: Record<string, PortSafetyProfile> = {
     },
   },
   ketchikan: {
+    destination: "ketchikan",
     timezone: "America/Anchorage",
     defaultBufferMinutes: 75,
     operatorModifiers: {
@@ -149,30 +153,37 @@ export const DCC_SAFETY_PROFILES: Record<string, PortSafetyProfile> = {
     },
   },
   morrison: {
+    destination: "morrison",
     timezone: "America/Denver",
     defaultBufferMinutes: 60,
   },
   denver: {
+    destination: "denver",
     timezone: "America/Denver",
     defaultBufferMinutes: 60,
   },
   "copper-mountain": {
+    destination: "copper-mountain",
     timezone: "America/Denver",
     defaultBufferMinutes: 120,
   },
   "big-sky": {
+    destination: "big-sky",
     timezone: "America/Denver",
     defaultBufferMinutes: 90,
   },
   "new-orleans": {
+    destination: "new-orleans",
     timezone: "America/Chicago",
     defaultBufferMinutes: 45,
   },
   chetek: {
+    destination: "chetek",
     timezone: "America/Chicago",
     defaultBufferMinutes: 0,
   },
   "wisconsin-dells": {
+    destination: "wisconsin-dells",
     timezone: "America/Chicago",
     defaultBufferMinutes: 0,
   },
@@ -186,11 +197,44 @@ export function isValidCanonicalOwner(ownerId: string): boolean {
   return ownerId in DCC_CANONICAL_OWNERS;
 }
 
-export function resolveDestinationSafetyProfile(destination: string): PortSafetyProfile {
-  return (
-    DCC_SAFETY_PROFILES[destination] || {
-      timezone: "UTC",
-      defaultBufferMinutes: 60,
-    }
-  );
+export function isValidDestination(destination: string): boolean {
+  return destination in DCC_SAFETY_PROFILES;
+}
+
+export function isOwnerValidForDestination(ownerId: string, destination: string): boolean {
+  const owner = DCC_CANONICAL_OWNERS[ownerId];
+  if (!owner) return false;
+  return owner.allowedDestinations.includes(destination);
+}
+
+export function getAuthoritativeSafetyProfile(destination: string): PortSafetyProfile {
+  const profile = DCC_SAFETY_PROFILES[destination];
+  if (!profile) {
+    throw new Error(`Unknown destination '${destination}': no authoritative safety profile registered.`);
+  }
+  return profile;
+}
+
+/**
+ * Calculates authoritative safety buffer.
+ * Client override is ONLY permitted if it INCREASES safety (greater buffer).
+ * Client attempts to reduce the buffer below the authoritative safety floor are strictly ignored and clamped.
+ */
+export function resolveAuthoritativeBuffer(
+  destination: string,
+  clientRequestedBuffer?: number | null,
+  operatorModifierKey?: string | null
+): number {
+  const profile = getAuthoritativeSafetyProfile(destination);
+  let authoritativeFloor = profile.defaultBufferMinutes;
+
+  if (operatorModifierKey && profile.operatorModifiers && profile.operatorModifiers[operatorModifierKey]) {
+    authoritativeFloor = profile.operatorModifiers[operatorModifierKey].bufferMinutes;
+  }
+
+  if (typeof clientRequestedBuffer === "number" && clientRequestedBuffer > authoritativeFloor) {
+    return clientRequestedBuffer; // Client requested stricter safety
+  }
+
+  return authoritativeFloor; // Enforce authoritative safety floor
 }
