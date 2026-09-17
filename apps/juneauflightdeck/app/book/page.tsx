@@ -159,11 +159,11 @@ export default async function BookPage(props: BookPageProps) {
 
               <div className="pt-4 border-t border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <span className="text-xs text-slate-500">Estimated Rate (Confirmed with Operator)</span>
+                  <span className="text-xs text-slate-500">Estimated rate — final price confirmed by the operator before charge</span>
                   <div className="text-2xl font-black text-slate-900">
                     From $389 / traveler
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">Final departure slot, weight balance, and live fare confirmed prior to charge.</p>
+                  <p className="text-xs text-slate-500 mt-1">Final departure slot, passenger weights, and live fare confirmed prior to charge.</p>
                 </div>
                 <button
                   type="button"
