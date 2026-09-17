@@ -45,7 +45,7 @@ export default async function BookPage(props: BookPageProps) {
               Confirm Your Glacier Helicopter Flight
             </h1>
             <p className="text-slate-600 mt-2">
-              All flights are timeline-locked with guaranteed return to the cruise dock prior to departure.
+              Flights are scheduled with recommended port safety buffers prior to ship departure.
             </p>
           </div>
 
@@ -102,7 +102,7 @@ export default async function BookPage(props: BookPageProps) {
                   </div>
                 )}
                 <div>
-                  <span className="text-slate-500 text-xs font-semibold uppercase">Guaranteed Dock Return</span>
+                  <span className="text-slate-500 text-xs font-semibold uppercase">Calculated Safe Dock Return</span>
                   <div className="text-base font-bold text-emerald-800">
                     Latest Safe Return: {contextData.safetyConstraint.latestSafeReturnTime || "TBD"} (
                     {contextData.safetyConstraint.bufferMinutes}m Alaska Buffer)
@@ -157,18 +157,19 @@ export default async function BookPage(props: BookPageProps) {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
+              <div className="pt-4 border-t border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <span className="text-xs text-slate-500">Total Price (No Booking Fees)</span>
+                  <span className="text-xs text-slate-500">Estimated Rate (Confirmed with Operator)</span>
                   <div className="text-2xl font-black text-slate-900">
-                    ${389 * (contextData?.schedule?.travelers || 1)} USD
+                    From $389 / traveler
                   </div>
+                  <p className="text-xs text-slate-500 mt-1">Final departure slot, weight balance, and live fare confirmed prior to charge.</p>
                 </div>
                 <button
                   type="button"
                   className="px-6 py-3 bg-sky-700 hover:bg-sky-800 text-white font-bold rounded-lg shadow transition"
                 >
-                  Complete Direct Booking
+                  Confirm Reservation Details
                 </button>
               </div>
             </form>
