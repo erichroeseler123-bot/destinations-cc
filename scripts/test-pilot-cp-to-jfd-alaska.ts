@@ -1,12 +1,34 @@
 import { DccServiceClient } from "../../cruisepromenade/src/lib/server/dcc-client";
-import { redeemOpaqueContext } from "../apps/juneauflightdeck/lib/dccContext";
+import {
+  redeemOpaqueContext,
+  getOrCreateCheckoutSession,
+  clearCheckoutSessionCacheForTesting,
+} from "../apps/juneauflightdeck/lib/dccContext";
 import { getDb } from "../lib/db/client";
 import { dccContexts } from "../lib/db/schema";
 import { eq } from "drizzle-orm";
 import assert from "node:assert/strict";
+import { NextRequest } from "next/server";
+import { POST as handleRedeemRoute } from "../app/api/v1/context/[contextId]/redeem/route";
 
 const TEST_KEY_ID = "jfd_service_key";
 const TEST_SECRET = "secret_jfd_dcc_staging_test_xyz123";
+
+const inProcessRouteFetcher = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+  const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+  const match = url.match(/\/api\/v1\/context\/([^/]+)\/redeem/);
+  if (!match) {
+    throw new Error(`Unhandled route in test fetcher: ${url}`);
+  }
+  const contextId = match[1];
+  const req = new NextRequest(url, {
+    method: init?.method || "POST",
+    headers: init?.headers as Record<string, string>,
+    body: init?.body as string,
+  });
+  const res = await handleRedeemRoute(req, { params: { contextId } });
+  return res as unknown as Response;
+};
 
 async function runAlaskaPilotTest() {
   console.log("==================================================================");
@@ -18,6 +40,7 @@ async function runAlaskaPilotTest() {
   process.env.DCC_JFD_SERVICE_KEY_ID = TEST_KEY_ID;
   process.env.DCC_JFD_SERVICE_SECRET = TEST_SECRET;
   process.env.ALLOW_IN_MEMORY_NONCE_FALLBACK_FOR_TESTS = "true";
+  clearCheckoutSessionCacheForTesting();
 
   const db = getDb();
   assert(db, "Staging Neon database must be configured");
@@ -28,12 +51,11 @@ async function runAlaskaPilotTest() {
     baseUrl: "https://api.destinationcommandcenter.com",
   });
 
-  // Test issuance directly via service helper
   const { issueContext } = await import("../lib/dcc/context/service");
   const issueResult = await issueContext({
     sourceSite: "cruisepromenade",
     destination: "juneau",
-    targetOwner: "juneauflightdeck",
+    targetOwner: "juneauflightdeck", // Canonical owner ID
     targetIntent: "juneau-helicopter-glacier-landing",
     schedule: {
       date: "2026-07-15",
@@ -58,7 +80,7 @@ async function runAlaskaPilotTest() {
   assert.match(issueResult.contextId, /^dcc_ctx_[a-f0-9]{32}$/);
   assert.equal(issueResult.bridgeUrl, `https://juneauflightdeck.com/book?ctx=${issueResult.contextId}`);
 
-  // Step 2: Verify Initial DB State in Neon
+  // Step 2: Verify Initial DB State in Neon (Canonical ID, NOT domain)
   console.log("\nStep 2: Inspecting initial state in Neon database...");
   const initialRows = await db
     .select()
@@ -69,42 +91,61 @@ async function runAlaskaPilotTest() {
   const row = initialRows[0];
   console.log("  ✔ Database Row Verified:");
   console.log("    Status:", row.status);
-  console.log("    Target Owner:", row.targetOwner);
+  console.log("    Target Owner (Canonical ID):", row.targetOwner);
   console.log("    Buffer Minutes (Authoritative Alaska Floor):", row.bufferMinutes, "minutes");
   console.log("    Latest Safe Dock Return:", row.latestSafeReturnTime);
 
   assert.equal(row.status, "issued");
-  assert.equal(row.targetOwner, "juneauflightdeck.com");
+  assert.equal(row.targetOwner, "juneauflightdeck"); // Strict Canonical Owner ID
+  assert.notEqual(row.targetOwner, "juneauflightdeck.com"); // Domain must not be stored in targetOwner
   assert.equal(row.bufferMinutes, 90);
   assert.equal(row.latestSafeReturnTime, "16:30");
 
-  // Step 3: Juneau Flight Deck Server Redeems Token
-  console.log("\nStep 3: Booking Owner (Juneau Flight Deck) redeems token via HMAC...");
-  const { redeemContext } = await import("../lib/dcc/context/service");
-  const redeemResult = await redeemContext(issueResult.contextId, "juneauflightdeck");
+  // Step 3: Juneau Flight Deck Landing initializes Owner Checkout Session
+  console.log("\nStep 3: Traveler lands on /book?ctx=... ➔ Owner Checkout Session initialized...");
+  const session1 = await getOrCreateCheckoutSession(issueResult.contextId, null, {
+    fetcher: inProcessRouteFetcher,
+  });
 
-  assert.equal(redeemResult.success, true);
-  if (redeemResult.success) {
-    console.log("  ✔ Redemption Succeeded:");
-    console.log("    Redeemed By:", redeemResult.data.redeemedBy);
-    console.log("    Status:", redeemResult.data.status);
-    console.log("    Hydrated Date:", redeemResult.data.schedule.date);
-    console.log("    Hydrated Travelers:", redeemResult.data.schedule.travelers);
-    console.log("    Hydrated Return Deadline:", redeemResult.data.safetyConstraint.latestSafeReturnTime);
+  assert.equal(session1.success, true);
+  assert(session1.sessionId, "Session ID must be generated");
+  assert.equal(session1.isExistingSession, false);
+  if (session1.success && session1.data) {
+    console.log("  ✔ Checkout Session Initialized:");
+    console.log("    Session ID:", session1.sessionId);
+    console.log("    Redeemed By (Canonical ID):", session1.data.redeemedBy);
+    console.log("    Status:", session1.data.status);
+    console.log("    Hydrated Date:", session1.data.schedule.date);
+    console.log("    Hydrated Travelers:", session1.data.schedule.travelers);
+    console.log("    Hydrated Return Deadline:", session1.data.safetyConstraint.latestSafeReturnTime);
 
-    assert.equal(redeemResult.data.status, "redeemed");
-    assert.equal(redeemResult.data.targetOwner, "juneauflightdeck.com");
-    assert.equal(redeemResult.data.schedule.travelers, 2);
-    assert.equal(redeemResult.data.safetyConstraint.latestSafeReturnTime, "16:30");
+    assert.equal(session1.data.status, "redeemed");
+    assert.equal(session1.data.targetOwner, "juneauflightdeck");
+    assert.equal(session1.data.redeemedBy, "juneauflightdeck");
+    assert.equal(session1.data.schedule.travelers, 2);
+    assert.equal(session1.data.safetyConstraint.latestSafeReturnTime, "16:30");
   }
 
-  // Step 4: Verify Single-Use Lock (Replay must fail with 409)
-  console.log("\nStep 4: Testing Single-Use Lock (Replay attempt by JFD)...");
+  // Step 4: Page Refresh & Retry Resilience (Must NOT fail with 409)
+  console.log("\nStep 4: Simulating page refresh / back navigation with session cookie...");
+  const sessionRefresh = await getOrCreateCheckoutSession(issueResult.contextId, session1.sessionId, {
+    fetcher: inProcessRouteFetcher,
+  });
+
+  assert.equal(sessionRefresh.success, true);
+  assert.equal(sessionRefresh.isExistingSession, true);
+  assert.equal(sessionRefresh.sessionId, session1.sessionId);
+  assert.equal(sessionRefresh.data?.schedule.date, "2026-07-15");
+  console.log("  ✔ Refresh / Retry Survived without 409 Replay Collision (Cached in active checkout session)");
+
+  // Step 5: 3rd-Party Replay Attempt (Without active traveler session ➔ Blocked with 409)
+  console.log("\nStep 5: Testing 3rd-party replay attack against consumed token...");
+  const { redeemContext } = await import("../lib/dcc/context/service");
   const replayResult = await redeemContext(issueResult.contextId, "juneauflightdeck");
 
   assert.equal(replayResult.success, false);
   if (!replayResult.success) {
-    console.log("  ✔ Replay Rejected with Expected Conflict:");
+    console.log("  ✔ Unauthorized Replay Rejected with Expected Conflict:");
     console.log("    HTTP Status:", replayResult.statusCode);
     console.log("    Error Code:", replayResult.errorCode);
     console.log("    Message:", replayResult.message);
@@ -113,8 +154,8 @@ async function runAlaskaPilotTest() {
     assert.equal(replayResult.errorCode, "CONTEXT_ALREADY_REDEEMED");
   }
 
-  // Step 5: Final Database Verification
-  console.log("\nStep 5: Verifying final Neon audit record...");
+  // Step 6: Final Database Audit Verification
+  console.log("\nStep 6: Verifying final Neon audit record...");
   const finalRows = await db
     .select()
     .from(dccContexts)
@@ -123,16 +164,18 @@ async function runAlaskaPilotTest() {
   assert.equal(finalRows.length, 1);
   const finalRow = finalRows[0];
   assert.equal(finalRow.status, "redeemed");
-  assert.equal(finalRow.redeemedBy, "juneauflightdeck.com");
+  assert.equal(finalRow.targetOwner, "juneauflightdeck"); // Canonical ID
+  assert.equal(finalRow.redeemedBy, "juneauflightdeck"); // Canonical ID
   assert(finalRow.redeemedAt, "redeemedAt timestamp must be set");
 
-  console.log("  ✔ Audit Trail Complete:");
+  console.log("  ✔ Audit Trail Complete & Normalized:");
   console.log("    Final Status:", finalRow.status);
-  console.log("    Redeemed At:", finalRow.redeemedAt?.toISOString());
+  console.log("    Target Owner:", finalRow.targetOwner);
   console.log("    Redeemed By:", finalRow.redeemedBy);
+  console.log("    Redeemed At:", finalRow.redeemedAt?.toISOString());
 
   console.log("\n==================================================================");
-  console.log("✔ ALL ALASKA PILOT INTEGRATION STEPS PASSED SUCCESSFULLY (5/5)");
+  console.log("✔ ALL ALASKA PILOT INTEGRATION STEPS PASSED SUCCESSFULLY (6/6)");
   console.log("==================================================================");
 }
 

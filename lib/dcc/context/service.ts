@@ -198,7 +198,7 @@ export async function issueContext(
         status: "issued",
         sourceSite: input.sourceSite,
         destination: input.destination,
-        targetOwner: owner ? owner.canonicalDomain : input.targetOwner,
+        targetOwner: owner ? owner.id : input.targetOwner,
         targetIntent: input.targetIntent || null,
         timezone: profile.timezone,
         scheduleDate: input.schedule.date,
@@ -296,7 +296,7 @@ export async function redeemContext(
 
   const now = options?.now ? new Date(options.now) : new Date();
   const contextHash = hashContextId(contextId);
-  const normalizedClaimingDomain = resolvedClaimingOwner.canonicalDomain;
+  const normalizedClaimingId = resolvedClaimingOwner.id;
 
   // 1. ATOMIC UPDATE QUERY (Guaranteed Single-Winner Concurrency Lock)
   const updated = await db
@@ -304,14 +304,14 @@ export async function redeemContext(
     .set({
       status: "redeemed",
       redeemedAt: now,
-      redeemedBy: normalizedClaimingDomain,
+      redeemedBy: normalizedClaimingId,
       updatedAt: now,
     })
     .where(
       and(
         eq(dccContexts.contextHash, contextHash),
         eq(dccContexts.status, "issued"),
-        eq(dccContexts.targetOwner, normalizedClaimingDomain),
+        eq(dccContexts.targetOwner, normalizedClaimingId),
         gt(dccContexts.expiresAt, now)
       )
     )
@@ -342,7 +342,7 @@ export async function redeemContext(
 
   const row = existing[0];
 
-  if (row.targetOwner !== normalizedClaimingDomain) {
+  if (row.targetOwner !== normalizedClaimingId) {
     return {
       success: false,
       statusCode: 403,

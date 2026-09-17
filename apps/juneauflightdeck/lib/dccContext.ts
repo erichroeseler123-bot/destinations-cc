@@ -11,7 +11,12 @@ export interface ContextRedeemResult {
 
 export async function redeemOpaqueContext(
   contextId: string,
-  options?: { baseUrl?: string; keyId?: string; secret?: string }
+  options?: {
+    baseUrl?: string;
+    keyId?: string;
+    secret?: string;
+    fetcher?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+  }
 ): Promise<ContextRedeemResult> {
   if (!contextId || !contextId.startsWith("dcc_ctx_")) {
     return {
@@ -52,8 +57,10 @@ export async function redeemOpaqueContext(
     body,
   });
 
+  const fetchImpl = options?.fetcher || fetch;
+
   try {
-    const response = await fetch(`${baseUrl}${pathname}`, {
+    const response = await fetchImpl(`${baseUrl}${pathname}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -88,4 +95,82 @@ export async function redeemOpaqueContext(
       statusCode: 502,
     };
   }
+}
+
+interface CheckoutSession {
+  contextId: string;
+  data: DccContextRedeemResponse;
+  createdAt: number;
+  expiresAt: number;
+}
+
+const activeCheckoutSessions = new Map<string, CheckoutSession>();
+
+export function clearCheckoutSessionCacheForTesting() {
+  activeCheckoutSessions.clear();
+}
+
+/**
+ * Safely resolves or initializes an owner checkout session.
+ * Idempotent: Survives page refreshes, back button navigation, and crawler retries.
+ */
+export async function getOrCreateCheckoutSession(
+  contextId: string,
+  sessionId?: string | null,
+  options?: {
+    baseUrl?: string;
+    keyId?: string;
+    secret?: string;
+    fetcher?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+  }
+): Promise<ContextRedeemResult & { sessionId?: string; isExistingSession?: boolean }> {
+  const now = Date.now();
+
+  // 1. Check if session already exists for this session identifier
+  if (sessionId && activeCheckoutSessions.has(sessionId)) {
+    const session = activeCheckoutSessions.get(sessionId)!;
+    if (session.contextId === contextId && session.expiresAt > now) {
+      return {
+        success: true,
+        data: session.data,
+        statusCode: 200,
+        sessionId,
+        isExistingSession: true,
+      };
+    }
+  }
+
+  // 2. Check if an active session exists for this contextId (e.g. page refresh)
+  for (const [id, session] of activeCheckoutSessions.entries()) {
+    if (session.contextId === contextId && session.expiresAt > now) {
+      return {
+        success: true,
+        data: session.data,
+        statusCode: 200,
+        sessionId: id,
+        isExistingSession: true,
+      };
+    }
+  }
+
+  // 3. Redeem fresh token from DCC Authority
+  const result = await redeemOpaqueContext(contextId, options);
+  if (!result.success || !result.data) {
+    return result;
+  }
+
+  // 4. Cache in active checkout session store (1-hour checkout window)
+  const newSessionId = sessionId || `jfd_sess_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  activeCheckoutSessions.set(newSessionId, {
+    contextId,
+    data: result.data,
+    createdAt: now,
+    expiresAt: now + 60 * 60 * 1000,
+  });
+
+  return {
+    ...result,
+    sessionId: newSessionId,
+    isExistingSession: false,
+  };
 }

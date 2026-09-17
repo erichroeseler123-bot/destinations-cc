@@ -1,7 +1,7 @@
 import Link from "next/link";
 import SiteHeader from "../components/SiteHeader";
 import SiteFooter from "../components/SiteFooter";
-import { redeemOpaqueContext } from "../../lib/dccContext";
+import { getOrCreateCheckoutSession } from "../../lib/dccContext";
 
 interface BookPageProps {
   searchParams: Promise<{ ctx?: string }> | { ctx?: string };
@@ -17,14 +17,14 @@ export default async function BookPage(props: BookPageProps) {
   let contextError: { code: string; message: string; status?: number } | null = null;
 
   if (contextId) {
-    const redeemResult = await redeemOpaqueContext(contextId);
-    if (redeemResult.success && redeemResult.data) {
-      contextData = redeemResult.data;
+    const sessionResult = await getOrCreateCheckoutSession(contextId);
+    if (sessionResult.success && sessionResult.data) {
+      contextData = sessionResult.data;
     } else {
       contextError = {
-        code: redeemResult.errorCode || "REDEEM_ERROR",
-        message: redeemResult.message || "Failed to redeem travel context.",
-        status: redeemResult.statusCode,
+        code: sessionResult.errorCode || "REDEEM_ERROR",
+        message: sessionResult.message || "Failed to redeem travel context.",
+        status: sessionResult.statusCode,
       };
     }
   }

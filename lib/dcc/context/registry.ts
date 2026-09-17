@@ -280,17 +280,31 @@ export function isAllowedOrigin(originHeader: string | null | undefined): boolea
   if (!originHeader) return true; // Server-to-server or direct calls without browser origin
   try {
     const url = new URL(originHeader);
+    const protocol = url.protocol.toLowerCase();
     const host = url.hostname.toLowerCase();
+    const port = url.port;
     const isProd = process.env.NODE_ENV === "production" && process.env.APP_ENV !== "staging";
+
+    // Reject non-standard protocols
+    if (protocol !== "https:" && protocol !== "http:") {
+      return false;
+    }
 
     if (!isProd) {
       if (
-        host === "localhost" ||
-        host === "127.0.0.1" ||
-        host.endsWith(".vercel.app")
+        (host === "localhost" || host === "127.0.0.1") &&
+        (protocol === "http:" || protocol === "https:")
       ) {
         return true;
       }
+      if (host.endsWith(".vercel.app") && protocol === "https:") {
+        return true;
+      }
+    }
+
+    // In production, require HTTPS and standard port
+    if (isProd && (protocol !== "https:" || (port !== "" && port !== "443"))) {
+      return false;
     }
 
     // Exact domain or authentic subdomain with leading dot (e.g., www.cruisepromenade.com)
