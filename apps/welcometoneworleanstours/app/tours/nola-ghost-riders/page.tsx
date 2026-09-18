@@ -163,7 +163,7 @@ export default function NolaGhostRidersPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#080708] text-[#fdfbf7] selection:bg-[#d4af37] selection:text-black">
+    <div data-wno-surface="ghost-riders" className="min-h-screen w-full bg-[#080708] text-[#fdfbf7] selection:bg-[#d4af37] selection:text-black">
       {/* Structured Data */}
       <script
         type="application/ld+json"
@@ -195,7 +195,10 @@ export default function NolaGhostRidersPage() {
             </span>
           </div>
 
-          <h1 className="mt-5 font-serif text-4xl font-bold tracking-tight text-[#fdfbf7] md:text-6xl lg:text-7xl">
+          <h1
+            className="mt-5 font-serif text-4xl font-bold tracking-tight text-[#fdfbf7] md:text-6xl lg:text-7xl"
+            style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+          >
             NOLA GhostRiders Tours
           </h1>
 
@@ -204,33 +207,33 @@ export default function NolaGhostRidersPage() {
           </p>
 
           {/* Quick Trust Highlights Strip */}
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4 border-t border-white/10 pt-6 text-xs text-white/80">
-            <div className="flex items-center gap-2.5 rounded bg-white/5 p-3 border border-white/5">
+          <div data-ghost-trust-strip className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4 border-t border-white/10 pt-6 text-xs text-white/80">
+            <div className="flex items-center gap-2.5 rounded-lg bg-[#18151f] p-3 border border-[#d4af37]/30 shadow-md">
               <span className="text-xl">🚌</span>
               <div>
-                <p className="font-bold text-[#fdfbf7]">Air-Conditioned Buses</p>
-                <p className="text-[11px] text-white/60">Comfortable city & cemetery transit</p>
+                <p className="font-bold text-[#fdfbf7]" style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}>Air-Conditioned Buses</p>
+                <p className="text-[11px] text-white/70">Comfortable city & cemetery transit</p>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 rounded bg-white/5 p-3 border border-white/5">
+            <div className="flex items-center gap-2.5 rounded-lg bg-[#18151f] p-3 border border-[#d4af37]/30 shadow-md">
               <span className="text-xl">🍺</span>
               <div>
-                <p className="font-bold text-[#fdfbf7]">BYOB Allowed on Buses</p>
-                <p className="text-[11px] text-white/60">Cans & plastic cups welcome</p>
+                <p className="font-bold text-[#fdfbf7]" style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}>BYOB Allowed on Buses</p>
+                <p className="text-[11px] text-white/70">Cans & plastic cups welcome</p>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 rounded bg-white/5 p-3 border border-white/5">
+            <div className="flex items-center gap-2.5 rounded-lg bg-[#18151f] p-3 border border-[#d4af37]/30 shadow-md">
               <span className="text-xl">⚡</span>
               <div>
-                <p className="font-bold text-[#fdfbf7]">Paranormal Equipment</p>
-                <p className="text-[11px] text-white/60">EMF meters on ghost hunts</p>
+                <p className="font-bold text-[#fdfbf7]" style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}>Paranormal Equipment</p>
+                <p className="text-[11px] text-white/70">EMF meters on ghost hunts</p>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 rounded bg-white/5 p-3 border border-white/5">
+            <div className="flex items-center gap-2.5 rounded-lg bg-[#18151f] p-3 border border-[#d4af37]/30 shadow-md">
               <span className="text-xl">⭐</span>
               <div>
-                <p className="font-bold text-[#fdfbf7]">4.5★ Average Rating</p>
-                <p className="text-[11px] text-white/60">Across featured experiences</p>
+                <p className="font-bold text-[#fdfbf7]" style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}>4.5★ Average Rating</p>
+                <p className="text-[11px] text-white/70">Across featured experiences</p>
               </div>
             </div>
           </div>
@@ -242,10 +245,13 @@ export default function NolaGhostRidersPage() {
         <div className="mx-auto max-w-6xl">
           <div className="mb-8">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">Verified Experiences</p>
-            <h2 className="mt-2 font-serif text-3xl font-bold text-[#fdfbf7] md:text-4xl">
+            <h2
+              className="mt-2 font-serif text-3xl font-bold text-[#fdfbf7] md:text-4xl"
+              style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+            >
               Choose Your NOLA GhostRiders Experience
             </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/70">
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/75">
               Welcome to New Orleans Tours tracks live, verified experiences from NOLA GhostRiders. Review starting prices, durations, and traveler feedback below, then check dates and book securely through Viator.
             </p>
           </div>
@@ -260,24 +266,32 @@ export default function NolaGhostRidersPage() {
         <div className="mx-auto max-w-5xl">
           <div className="text-center">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">Decision Guide</p>
-            <h2 className="mt-2 font-serif text-3xl font-bold md:text-4xl">
+            <h2
+              className="mt-2 font-serif text-3xl font-bold text-[#fdfbf7] md:text-4xl"
+              style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+            >
               Which NOLA GhostRiders Tour Is Right for You?
             </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-sm text-white/70">
+            <p className="mx-auto mt-3 max-w-2xl text-sm text-white/75">
               Compare tour formats, walking distances, and supernatural intensity before booking.
             </p>
           </div>
 
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {/* Guide Card 1 */}
-            <div className="rounded-lg border border-white/10 bg-[#14121a] p-6 shadow-md">
+            <div data-ghost-guide-card className="rounded-xl border border-[#d4af37]/30 bg-[#14121a] p-6 shadow-lg">
               <div className="text-2xl mb-3">🚌</div>
-              <h3 className="font-serif text-xl font-bold text-[#fdfbf7]">BYOB Cemetery Bus Tour</h3>
+              <h3
+                className="font-serif text-xl font-bold text-[#fdfbf7]"
+                style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+              >
+                BYOB Cemetery Bus Tour
+              </h3>
               <p className="mt-1 text-xs font-bold text-[#d4af37]">Best For: Easy Comfort & Groups</p>
               <p className="mt-3 text-xs leading-relaxed text-white/75">
                 If you want to avoid humid walking and cover multiple historic cemetery locations across town, this is the #1 choice. The climate-controlled bus lets you relax with your favorite drinks while hearing dramatic stories, with short guided walks inside illuminated vaults.
               </p>
-              <ul className="mt-4 space-y-1.5 text-xs text-white/60">
+              <ul className="mt-4 space-y-1.5 text-xs text-white/70">
                 <li>• Walking: Minimal (under 0.5 miles)</li>
                 <li>• Drinks: BYOB allowed on board (cans/cups)</li>
                 <li>• Pace: Relaxed & social</li>
@@ -285,14 +299,19 @@ export default function NolaGhostRidersPage() {
             </div>
 
             {/* Guide Card 2 */}
-            <div className="rounded-lg border border-white/10 bg-[#14121a] p-6 shadow-md">
+            <div data-ghost-guide-card className="rounded-xl border border-[#d4af37]/30 bg-[#14121a] p-6 shadow-lg">
               <div className="text-2xl mb-3">⚡</div>
-              <h3 className="font-serif text-xl font-bold text-[#fdfbf7]">Paranormal Investigation Tour</h3>
+              <h3
+                className="font-serif text-xl font-bold text-[#fdfbf7]"
+                style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+              >
+                Paranormal Investigation Tour
+              </h3>
               <p className="mt-1 text-xs font-bold text-[#d4af37]">Best For: Hands-On Ghost Hunters</p>
               <p className="mt-3 text-xs leading-relaxed text-white/75">
                 For travelers who want real tools rather than just ghost stories. You are handed actual EMF meters and temperature sensors to measure anomalies firsthand at notorious burial grounds and murder scenes.
               </p>
-              <ul className="mt-4 space-y-1.5 text-xs text-white/60">
+              <ul className="mt-4 space-y-1.5 text-xs text-white/70">
                 <li>• Walking: Moderate cemetery strolls</li>
                 <li>• Tools: Real EMF detectors provided</li>
                 <li>• Pace: Analytical & atmospheric</li>
@@ -300,14 +319,19 @@ export default function NolaGhostRidersPage() {
             </div>
 
             {/* Guide Card 3 */}
-            <div className="rounded-lg border border-white/10 bg-[#14121a] p-6 shadow-md">
+            <div data-ghost-guide-card className="rounded-xl border border-[#d4af37]/30 bg-[#14121a] p-6 shadow-lg">
               <div className="text-2xl mb-3">🕯️</div>
-              <h3 className="font-serif text-xl font-bold text-[#fdfbf7]">Destrehan Plantation Night Tour</h3>
+              <h3
+                className="font-serif text-xl font-bold text-[#fdfbf7]"
+                style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+              >
+                Destrehan Plantation Night Tour
+              </h3>
               <p className="mt-1 text-xs font-bold text-[#d4af37]">Best For: History & Rare Night Access</p>
               <p className="mt-3 text-xs leading-relaxed text-white/75">
                 Destrehan is normally closed at sundown. This excursion transports you out along the Mississippi River for a rare lantern-lit tour of Louisiana&apos;s oldest plantation house, hearing authentic historical records and supernatural folklore.
               </p>
-              <ul className="mt-4 space-y-1.5 text-xs text-white/60">
+              <ul className="mt-4 space-y-1.5 text-xs text-white/70">
                 <li>• Transit: Roundtrip bus included</li>
                 <li>• Setting: 1787 River Road estate</li>
                 <li>• Pace: Exclusive small group</li>
@@ -325,7 +349,10 @@ export default function NolaGhostRidersPage() {
               <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#d4af37]">
                 Free Concierge Assistance
               </span>
-              <h2 className="mt-2 font-serif text-2xl font-bold md:text-3xl">
+              <h2
+                className="mt-2 font-serif text-2xl font-bold text-[#fdfbf7] md:text-3xl"
+                style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+              >
                 Need Help Choosing the Right Tour?
               </h2>
               <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/75">
@@ -355,14 +382,20 @@ export default function NolaGhostRidersPage() {
         <div className="mx-auto max-w-4xl">
           <div className="mb-10 text-center">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">Essential Info</p>
-            <h2 className="mt-2 font-serif text-3xl font-bold md:text-4xl">
+            <h2
+              className="mt-2 font-serif text-3xl font-bold text-[#fdfbf7] md:text-4xl"
+              style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+            >
               NOLA GhostRiders FAQs
             </h2>
           </div>
 
           <div className="space-y-6">
-            <div className="rounded-lg border border-white/10 bg-[#121016] p-6">
-              <h3 className="font-serif text-lg font-bold text-[#fdfbf7]">
+            <div data-ghost-faq-card className="rounded-xl border border-white/10 bg-[#121016] p-6">
+              <h3
+                className="font-serif text-lg font-bold text-[#fdfbf7]"
+                style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+              >
                 What is the BYOB policy on the NOLA GhostRiders bus tours?
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-white/70">
@@ -370,8 +403,11 @@ export default function NolaGhostRidersPage() {
               </p>
             </div>
 
-            <div className="rounded-lg border border-white/10 bg-[#121016] p-6">
-              <h3 className="font-serif text-lg font-bold text-[#fdfbf7]">
+            <div data-ghost-faq-card className="rounded-xl border border-white/10 bg-[#121016] p-6">
+              <h3
+                className="font-serif text-lg font-bold text-[#fdfbf7]"
+                style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+              >
                 What happens if it rains?
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-white/70">
@@ -379,8 +415,11 @@ export default function NolaGhostRidersPage() {
               </p>
             </div>
 
-            <div className="rounded-lg border border-white/10 bg-[#121016] p-6">
-              <h3 className="font-serif text-lg font-bold text-[#fdfbf7]">
+            <div data-ghost-faq-card className="rounded-xl border border-white/10 bg-[#121016] p-6">
+              <h3
+                className="font-serif text-lg font-bold text-[#fdfbf7]"
+                style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+              >
                 Where do the tours depart from?
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-white/70">
@@ -388,8 +427,11 @@ export default function NolaGhostRidersPage() {
               </p>
             </div>
 
-            <div className="rounded-lg border border-white/10 bg-[#121016] p-6">
-              <h3 className="font-serif text-lg font-bold text-[#fdfbf7]">
+            <div data-ghost-faq-card className="rounded-xl border border-white/10 bg-[#121016] p-6">
+              <h3
+                className="font-serif text-lg font-bold text-[#fdfbf7]"
+                style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+              >
                 What is the cancellation and refund policy?
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-white/70">
@@ -420,6 +462,6 @@ export default function NolaGhostRidersPage() {
           </div>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }

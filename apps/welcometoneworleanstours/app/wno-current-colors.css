@@ -60,29 +60,29 @@ header[class*="marketHeader"] [class*="marketMenuButton"] div {
 /* Homepage hero & discovery sections defer entirely to cinematic-home-gold.module.css (Light Parchment & Mardi Gras theme) */
 
 /* Internal pages — neutral cards with cobalt actions. */
-main:not(:has([class*="cinematic-home"])) {
+main:not(:has([class*="cinematic-home"])):not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) {
   background:
     radial-gradient(circle at 94% 4%, rgba(49,87,246,.045), transparent 23%),
     radial-gradient(circle at 5% 17%, rgba(255,107,93,.035), transparent 22%),
     linear-gradient(180deg, #fbfaf8 0%, #efede8 100%) !important;
 }
 
-main article,
-main details,
-main aside,
-main [class*="productCard"],
-main [class*="comparison"],
-main [class*="chooser"],
-main [class*="recommendation"] {
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) article,
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) details,
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) aside,
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) [class*="productCard"],
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) [class*="comparison"],
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) [class*="chooser"],
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) [class*="recommendation"] {
   background: #ffffff !important;
   color: var(--wno-now-ink) !important;
   border-color: var(--wno-now-line) !important;
   box-shadow: 0 12px 30px rgba(17, 24, 39, 0.07) !important;
 }
 
-main h1,
-main h2,
-main h3 {
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) h1,
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) h2,
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) h3 {
   color: var(--wno-now-ink) !important;
 }
 

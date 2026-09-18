@@ -432,3 +432,161 @@ body:has([data-wno-home-theme="black-gold-v2"]) [class*="greenAction"] small,
 [data-wno-home-theme="black-gold-v2"] [class*="greenAction"] small {
   color: #5C4638 !important;
 }
+
+/* -------------------------------------------------------------------------- */
+/* /tours/nola-ghost-riders — Midnight Obsidian & Antique Gold Surface        */
+/* Full protection from older broad `main ... !important` rules.              */
+/* -------------------------------------------------------------------------- */
+[data-wno-surface="ghost-riders"],
+main:has([data-wno-surface="ghost-riders"]),
+body:has([data-wno-surface="ghost-riders"]) main {
+  background: #080708 !important;
+  color: #fdfbf7 !important;
+}
+
+[data-wno-surface="ghost-riders"] header {
+  background: linear-gradient(180deg, #16121b 0%, #0d0b10 50%, #080708 100%) !important;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25) !important;
+}
+
+[data-wno-surface="ghost-riders"] h1,
+[data-wno-surface="ghost-riders"] header h1,
+[data-wno-surface="ghost-riders"] h2,
+[data-wno-surface="ghost-riders"] h3,
+[data-wno-surface="ghost-riders"] h4 {
+  color: #fdfbf7 !important;
+  -webkit-text-fill-color: #fdfbf7 !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-wno-surface="ghost-riders"] [data-ghost-trust-strip] > div {
+  background: rgba(24, 21, 31, 0.9) !important;
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+  border-radius: 8px !important;
+  color: #fdfbf7 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-wno-surface="ghost-riders"] [data-ghost-trust-strip] p:first-of-type {
+  color: #fdfbf7 !important;
+  -webkit-text-fill-color: #fdfbf7 !important;
+  font-weight: 700 !important;
+}
+
+[data-wno-surface="ghost-riders"] [data-ghost-trust-strip] p:last-of-type {
+  color: rgba(253, 251, 247, 0.72) !important;
+  -webkit-text-fill-color: rgba(253, 251, 247, 0.72) !important;
+}
+
+/* Tour Cards Overrides */
+[data-wno-surface="ghost-riders"] article,
+[data-wno-surface="ghost-riders"] [data-testid="ghost-tour-card"] {
+  background: #121016 !important;
+  border: 1px solid rgba(212, 175, 55, 0.32) !important;
+  border-radius: 14px !important;
+  color: #fdfbf7 !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6) !important;
+  overflow: hidden !important;
+}
+
+[data-wno-surface="ghost-riders"] article:hover,
+[data-wno-surface="ghost-riders"] [data-testid="ghost-tour-card"]:hover {
+  border-color: #d4af37 !important;
+  box-shadow: 0 12px 36px rgba(212, 175, 55, 0.25) !important;
+}
+
+[data-wno-surface="ghost-riders"] article [class*="p-6"],
+[data-wno-surface="ghost-riders"] [data-ghost-card-body] {
+  background: #121016 !important;
+  color: #fdfbf7 !important;
+}
+
+[data-wno-surface="ghost-riders"] article h3,
+[data-wno-surface="ghost-riders"] article h3 a {
+  color: #fdfbf7 !important;
+  -webkit-text-fill-color: #fdfbf7 !important;
+}
+
+[data-wno-surface="ghost-riders"] article h3 a:hover {
+  color: #d4af37 !important;
+  -webkit-text-fill-color: #d4af37 !important;
+}
+
+[data-wno-surface="ghost-riders"] article p {
+  color: rgba(253, 251, 247, 0.8) !important;
+  -webkit-text-fill-color: rgba(253, 251, 247, 0.8) !important;
+}
+
+[data-wno-surface="ghost-riders"] [data-ghost-highlights] li,
+[data-wno-surface="ghost-riders"] [data-ghost-highlights] span {
+  color: rgba(253, 251, 247, 0.9) !important;
+  -webkit-text-fill-color: rgba(253, 251, 247, 0.9) !important;
+}
+
+[data-wno-surface="ghost-riders"] [data-ghost-logistics] span {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: rgba(253, 251, 247, 0.85) !important;
+  -webkit-text-fill-color: rgba(253, 251, 247, 0.85) !important;
+}
+
+[data-wno-surface="ghost-riders"] [data-ghost-card-footer] {
+  background: #0b0a0e !important;
+  border-top: 1px solid rgba(212, 175, 55, 0.25) !important;
+}
+
+/* Comparison Guide Cards */
+[data-wno-surface="ghost-riders"] [data-ghost-guide-card] {
+  background: #14121a !important;
+  border: 1px solid rgba(212, 175, 55, 0.28) !important;
+  border-radius: 12px !important;
+  color: #fdfbf7 !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-wno-surface="ghost-riders"] [data-ghost-guide-card] h3 {
+  color: #fdfbf7 !important;
+  -webkit-text-fill-color: #fdfbf7 !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+}
+
+[data-wno-surface="ghost-riders"] [data-ghost-guide-card] p,
+[data-wno-surface="ghost-riders"] [data-ghost-guide-card] li {
+  color: rgba(253, 251, 247, 0.8) !important;
+  -webkit-text-fill-color: rgba(253, 251, 247, 0.8) !important;
+}
+
+/* Filter buttons */
+[data-wno-surface="ghost-riders"] button[data-ghost-filter] {
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background: #16141a !important;
+  color: rgba(253, 251, 247, 0.85) !important;
+  -webkit-text-fill-color: rgba(253, 251, 247, 0.85) !important;
+}
+
+[data-wno-surface="ghost-riders"] button[data-ghost-filter][data-active="true"] {
+  background: #d4af37 !important;
+  color: #080708 !important;
+  -webkit-text-fill-color: #080708 !important;
+  border-color: #d4af37 !important;
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.4) !important;
+}
+
+/* FAQs and Concierge */
+[data-wno-surface="ghost-riders"] [data-ghost-faq-card] {
+  background: #121016 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px !important;
+}
+
+[data-wno-surface="ghost-riders"] [data-ghost-faq-card] h3 {
+  color: #fdfbf7 !important;
+  -webkit-text-fill-color: #fdfbf7 !important;
+}
+
+[data-wno-surface="ghost-riders"] [data-ghost-faq-card] p {
+  color: rgba(253, 251, 247, 0.78) !important;
+  -webkit-text-fill-color: rgba(253, 251, 247, 0.78) !important;
+}
+

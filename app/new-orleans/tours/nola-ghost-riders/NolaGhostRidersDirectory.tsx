@@ -311,6 +311,8 @@ export default function NolaGhostRidersDirectory() {
           {filterTabs.map((tab) => (
             <button
               key={tab.id}
+              data-ghost-filter
+              data-active={selectedFilter === tab.id ? "true" : "false"}
               onClick={() => setSelectedFilter(tab.id)}
               className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
                 selectedFilter === tab.id
@@ -335,11 +337,11 @@ export default function NolaGhostRidersDirectory() {
             key={tour.code}
             data-testid="ghost-tour-card"
             data-tour-code={tour.code}
-            className="flex flex-col justify-between overflow-hidden rounded-lg border border-[#d4af37]/25 bg-[#121016] shadow-[0_8px_24px_rgba(0,0,0,0.45)] transition-all duration-300 hover:border-[#d4af37] hover:shadow-[0_12px_32px_rgba(212,175,55,0.2)]"
+            className="flex flex-col justify-between overflow-hidden rounded-xl border border-[#d4af37]/35 bg-[#121016] shadow-[0_8px_28px_rgba(0,0,0,0.6)] transition-all duration-300 hover:border-[#d4af37] hover:shadow-[0_12px_36px_rgba(212,175,55,0.25)]"
           >
             <div>
               {/* Card Image Header */}
-              <div className="relative h-52 w-full overflow-hidden bg-black/50">
+              <div className="relative h-52 w-full overflow-hidden bg-black/60">
                 <Image
                   src={tour.image}
                   alt={tour.title}
@@ -365,45 +367,61 @@ export default function NolaGhostRidersDirectory() {
                 )}
 
                 {/* Rating & Reviews on Image */}
-                <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded bg-black/75 px-2.5 py-1 text-xs backdrop-blur-sm">
+                <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded bg-black/80 px-2.5 py-1 text-xs backdrop-blur-sm">
                   <span className="text-[#d4af37] font-bold">★ {tour.rating > 0 ? tour.rating.toFixed(2) : "5.0"}</span>
-                  <span className="text-white/70">
+                  <span className="text-white/80">
                     ({tour.reviewCount > 0 ? `${tour.reviewCount.toLocaleString()} reviews` : "Verified Operator"})
                   </span>
                 </div>
               </div>
 
               {/* Card Body */}
-              <div className="p-6">
-                <h3 className="font-serif text-xl font-bold leading-snug text-[#fdfbf7] hover:text-[#d4af37] transition-colors">
-                  <a href={tour.viatorUrl} target="_blank" rel="noopener noreferrer">
+              <div data-ghost-card-body className="p-6 bg-[#121016]">
+                <h3
+                  className="font-serif text-xl font-bold leading-snug text-[#fdfbf7] hover:text-[#d4af37] transition-colors"
+                  style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+                >
+                  <a
+                    href={tour.viatorUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+                  >
                     {tour.title}
                   </a>
                 </h3>
 
                 {/* Logistics Badges */}
-                <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-medium text-white/70">
-                  <span className="inline-flex items-center gap-1 rounded bg-white/5 px-2 py-0.5 border border-white/10">
+                <div data-ghost-logistics className="mt-3 flex flex-wrap gap-2 text-[11px] font-medium text-white/80">
+                  <span className="inline-flex items-center gap-1 rounded bg-white/10 px-2.5 py-1 border border-white/15">
                     ⏱ {tour.duration}
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded bg-white/5 px-2 py-0.5 border border-white/10">
+                  <span className="inline-flex items-center gap-1 rounded bg-white/10 px-2.5 py-1 border border-white/15">
                     🚌 {tour.format}
                   </span>
                 </div>
 
                 {/* WNO Editorial Description */}
-                <p className="mt-4 text-sm leading-relaxed text-white/75">
+                <p
+                  className="mt-4 text-sm leading-relaxed text-[#fdfbf7]/85"
+                  style={{ color: 'rgba(253, 251, 247, 0.85)', WebkitTextFillColor: 'rgba(253, 251, 247, 0.85)' }}
+                >
                   {tour.editorialSummary}
                 </p>
 
                 {/* Inclusions / Highlights */}
                 <div className="mt-5 border-t border-white/10 pt-4">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#d4af37]">Tour Highlights</p>
-                  <ul className="mt-2 space-y-1.5 text-xs text-white/80">
+                  <ul data-ghost-highlights className="mt-2 space-y-2 text-xs">
                     {tour.highlights.slice(0, 3).map((hl, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-[#d4af37] mt-0.5">✔</span>
-                        <span>{hl}</span>
+                      <li key={idx} className="flex items-start gap-2.5">
+                        <span className="text-[#d4af37] font-bold shrink-0 mt-0.5">✔</span>
+                        <span
+                          className="text-[#fdfbf7] leading-relaxed"
+                          style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+                        >
+                          {hl}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -412,26 +430,29 @@ export default function NolaGhostRidersDirectory() {
             </div>
 
             {/* Card Footer: Pricing & Booking CTA */}
-            <div className="border-t border-[#d4af37]/20 bg-[#0d0c10] p-6">
+            <div data-ghost-card-footer className="border-t border-[#d4af37]/25 bg-[#0b0a0e] p-6">
               <div className="flex items-baseline justify-between mb-2">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-white/50">Verified Rate</span>
-                  <p className="text-2xl font-serif font-bold text-[#fdfbf7]">
-                    From ${tour.startingPrice} <span className="text-xs font-sans font-normal text-white/60">per person</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">Verified Rate</span>
+                  <p
+                    className="text-2xl font-serif font-bold text-[#fdfbf7]"
+                    style={{ color: '#fdfbf7', WebkitTextFillColor: '#fdfbf7' }}
+                  >
+                    From ${tour.startingPrice} <span className="text-xs font-sans font-normal text-white/70">per person</span>
                   </p>
                 </div>
                 <div className="text-right">
                   <span className={`text-[11px] font-semibold ${tour.cancellationType === "standard_24h" ? "text-emerald-400" : "text-amber-300"}`}>
                     {tour.cancellationType === "standard_24h" ? "Free Cancellation" : "Policy Varies"}
                   </span>
-                  <p className="text-[10px] text-white/50">
+                  <p className="text-[10px] text-white/60">
                     {tour.cancellationType === "standard_24h" ? "Up to 24h before" : "See checkout terms"}
                   </p>
                 </div>
               </div>
 
               {/* Product-Level Cancellation Text */}
-              <p className="mb-3 text-[11px] italic text-white/60">
+              <p className="mb-3 text-[11px] italic text-white/70">
                 {tour.cancellationText}
               </p>
 
@@ -439,13 +460,13 @@ export default function NolaGhostRidersDirectory() {
                 href={tour.viatorUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex w-full items-center justify-center gap-2 rounded bg-gradient-to-r from-[#d4af37] to-[#b38f28] px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#080708] shadow-[0_4px_14px_rgba(212,175,55,0.35)] transition-all duration-200 hover:brightness-110 hover:shadow-[0_6px_20px_rgba(212,175,55,0.5)]"
+                className="group flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#d4af37] to-[#b38f28] px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#080708] shadow-[0_4px_14px_rgba(212,175,55,0.35)] transition-all duration-200 hover:brightness-110 hover:shadow-[0_6px_20px_rgba(212,175,55,0.5)]"
               >
                 <span>Check Dates & Book on Viator</span>
                 <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
               </a>
 
-              <p className="mt-2 text-center text-[10px] text-white/40">
+              <p className="mt-2 text-center text-[10px] text-white/50">
                 Book securely on Viator • Live availability confirmed upon date selection
               </p>
             </div>
