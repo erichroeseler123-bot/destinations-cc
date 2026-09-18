@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllAlaskaShips, getShipPortPair, getTrackedTourUrl } from "@/lib/alaska-ships";
@@ -23,7 +23,7 @@ export function generateStaticParams() {
     Object.keys(ship.ports).forEach((portKey) => {
       paramsList.push({
         shipSlug: ship.slug,
-        portSlug: portKey,
+        portSlug: `${portKey}-shore-excursions`,
       });
     });
   });

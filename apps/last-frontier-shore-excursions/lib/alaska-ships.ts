@@ -102,7 +102,8 @@ export function getAllAlaskaShips(): AlaskaCruiseShip[] {
 export function getShipPortPair(shipSlug: string, portSlug: string): { ship: AlaskaCruiseShip; port: VerifiedPortLogistics } | undefined {
   const ship = ALASKA_SHIPS_FLEET[shipSlug];
   if (!ship) return undefined;
-  const port = ship.ports[portSlug];
+  const normalizedKey = portSlug.replace(/-shore-excursions$/, "");
+  const port = ship.ports[normalizedKey] || ship.ports[portSlug];
   if (!port) return undefined;
   return { ship, port };
 }
