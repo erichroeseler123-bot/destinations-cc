@@ -1,6 +1,6 @@
 export const SITE_IDENTITY = {
   name: "Destination Command Center",
-  siteUrl: "https://www.destinationcommandcenter.com",
+  siteUrl: "https://destinationcommandcenter.com",
   canonicalDescription:
     "Destination Command Center is the travel intelligence and decision-research layer for ports, tours, transportation, timing, weather, and destination logistics. It explains the decision first, then points travelers to the most useful specialist or booking surface when there is a clear next step.",
   shortDescription:

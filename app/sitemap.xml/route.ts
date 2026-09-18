@@ -136,7 +136,7 @@ export async function GET() {
   }
 
   const preSiteGuidePaths = ["/guides", "/ask", "/vibe-around", "/shuttleya", "/juneau-flightseeing", "/french-quarter-orientation", "/new-orleans-swamp-tours", ...DECISION_CATEGORIES.map((category) => `/guides/category/${category.slug}`), ...PUBLISHED_DECISION_GUIDES.map((guide) => `/guides/${guide.slug}`)];
-  const dccPaths = [...new Set([...INDEXABLE_SURFACE_PATHS, ...SOMERSET_PAGE_PATHS, ...preSiteGuidePaths])];
+  const dccPaths = [...new Set([...INDEXABLE_SURFACE_PATHS, ...preSiteGuidePaths])];
   const body = buildDccSitemapXml(dccPaths);
   return new Response(body, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
 }
