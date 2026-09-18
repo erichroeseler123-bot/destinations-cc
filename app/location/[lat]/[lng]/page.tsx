@@ -10,7 +10,7 @@ import Link from "next/link";
 import { readApplicableDccEndpoints } from "@/lib/dcc/endpointRegistry";
 import { DccLocationProductService } from "@/lib/octo/locationProductService";
 
-const SITE_URL = "https://www.destinationcommandcenter.com";
+const SITE_URL = "https://destinationcommandcenter.com";
 
 function parseCoordinate(value: string, min: number, max: number) {
   const decoded = decodeURIComponent(value);

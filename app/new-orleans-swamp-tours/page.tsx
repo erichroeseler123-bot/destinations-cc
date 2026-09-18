@@ -16,12 +16,38 @@ const DECISIONS = [
 export const metadata: Metadata = {
   title: "New Orleans Swamp Tour Decision Guide | DCC",
   description: "Decide whether to go, which ride style fits, how transportation changes the day, and when to go before comparing bookable swamp tours.",
-  alternates: { canonical: PAGE_PATH },
+  alternates: { canonical: "https://destinationcommandcenter.com/new-orleans-swamp-tours" },
 };
 
 export default function NewOrleansSwampDecisionCenter() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": "https://destinationcommandcenter.com/new-orleans-swamp-tours#collection",
+        name: "New Orleans Swamp Tour Decision Guide | DCC",
+        description: "Decide whether to go, which ride style fits, how transportation changes the day, and when to go before comparing bookable swamp tours.",
+        url: "https://destinationcommandcenter.com/new-orleans-swamp-tours",
+        isPartOf: { "@id": "https://destinationcommandcenter.com/#website" },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Destination Command Center", item: "https://destinationcommandcenter.com/" },
+          { "@type": "ListItem", position: 2, name: "New Orleans", item: "https://destinationcommandcenter.com/guides/category/new-orleans" },
+          { "@type": "ListItem", position: 3, name: "New Orleans Swamp Tours", item: "https://destinationcommandcenter.com/new-orleans-swamp-tours" },
+        ],
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-[#07110d] text-[#f3efe2]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 md:py-24">
         <p className="text-xs font-black uppercase tracking-[0.24em] text-emerald-300">DCC · New Orleans pre-site</p>
         <h1 className="mt-5 max-w-4xl text-5xl font-black tracking-[-0.05em] sm:text-6xl">

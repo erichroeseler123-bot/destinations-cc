@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "DCC Developers | Dense Coordinate Location API",
   description: "Use latitude and longitude to retrieve dense public location intelligence from Destination Command Center.",
-  alternates: { canonical: "/developers" },
+  alternates: { canonical: "https://destinationcommandcenter.com/developers" },
 };
 
 const exampleLat = "39.66540";
@@ -31,8 +31,34 @@ const SOURCES = [
 ] as const;
 
 export default function DevelopersPage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "@id": "https://destinationcommandcenter.com/developers#article",
+        url: "https://destinationcommandcenter.com/developers",
+        name: "DCC Developers | Dense Coordinate Location API",
+        headline: "One coordinate in. Dense public context out.",
+        description: "Use latitude and longitude to retrieve dense public location intelligence from Destination Command Center.",
+        isPartOf: { "@id": "https://destinationcommandcenter.com/#website" },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Destination Command Center", item: "https://destinationcommandcenter.com/" },
+          { "@type": "ListItem", position: 2, name: "Developers", item: "https://destinationcommandcenter.com/developers" },
+        ],
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-[#070b10] text-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="mx-auto max-w-5xl px-5 py-16 sm:px-8">
         <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300">Destination Command Center · Developers</p>
         <h1 className="mt-4 max-w-4xl text-4xl font-black tracking-[-0.045em] sm:text-6xl">One coordinate in. Dense public context out.</h1>
@@ -55,12 +81,12 @@ export default function DevelopersPage() {
         <section className="mt-8 grid gap-5 md:grid-cols-2">
           <article className="rounded-[26px] border border-white/10 bg-white/[0.035] p-6">
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-200/70">Human page</p>
-            <code className="mt-4 block break-all rounded-xl bg-black/30 p-4 text-sm text-white/72">https://www.destinationcommandcenter.com/location/{exampleLat}/{exampleLng}</code>
+            <code className="mt-4 block break-all rounded-xl bg-black/30 p-4 text-sm text-white/72">https://destinationcommandcenter.com/location/{exampleLat}/{exampleLng}</code>
             <Link href={`/location/${exampleLat}/${exampleLng}`} className="mt-5 inline-flex text-sm font-black text-cyan-200">Open example →</Link>
           </article>
           <article className="rounded-[26px] border border-white/10 bg-white/[0.035] p-6">
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-200/70">Machine endpoint</p>
-            <code className="mt-4 block break-all rounded-xl bg-black/30 p-4 text-sm text-white/72">https://www.destinationcommandcenter.com/api/location/{exampleLat}/{exampleLng}</code>
+            <code className="mt-4 block break-all rounded-xl bg-black/30 p-4 text-sm text-white/72">https://destinationcommandcenter.com/api/location/{exampleLat}/{exampleLng}</code>
             <a href={`/api/location/${exampleLat}/${exampleLng}`} className="mt-5 inline-flex text-sm font-black text-cyan-200">Open JSON →</a>
           </article>
         </section>

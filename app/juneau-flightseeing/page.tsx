@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PRE_SITE_GUIDES_JUNEAU } from "@/src/data/pre-site-guides-juneau";
 
-const ORIGIN = "https://www.destinationcommandcenter.com";
+const ORIGIN = "https://destinationcommandcenter.com";
 
 export const metadata: Metadata = {
   title: "Juneau Flightseeing Decision Center | Destination Command Center",

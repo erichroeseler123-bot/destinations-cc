@@ -4,6 +4,7 @@ import DccMachineContractExplainer from "@/app/components/dcc/DccMachineContract
 import LocationFirstHomeFast from "@/app/components/dcc/LocationFirstHomeFast";
 import JuneauFlightDeckHostPage from "@/app/juneau-flight-deck/page";
 import WisconsinDellsBrandPage from "@/app/wisconsin-dells-brand/page";
+import { getOrganizationSchema, getWebsiteSchema } from "@/src/data/site-identity";
 
 export const dynamic = "force-dynamic";
 
@@ -63,8 +64,21 @@ export default async function HomePage() {
   const host = await requestHost();
   if (JFD_HOSTS.has(host)) return <JuneauFlightDeckHostPage />;
   if (DELLS_HOSTS.has(host)) return <WisconsinDellsBrandPage />;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      getWebsiteSchema(),
+      getOrganizationSchema(),
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <LocationFirstHomeFast />
       <DccMachineContractExplainer />
     </>

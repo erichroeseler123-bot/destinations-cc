@@ -16,8 +16,33 @@ export const metadata: Metadata = {
 };
 
 export default function AboutDccPage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "AboutPage",
+        "@id": "https://destinationcommandcenter.com/about#webpage",
+        url: "https://destinationcommandcenter.com/about",
+        name: "About Destination Command Center | Coordinate Intelligence",
+        description: "Destination Command Center is a coordinate-intelligence system that organizes public machine-readable information by latitude and longitude.",
+        isPartOf: { "@id": "https://destinationcommandcenter.com/#website" },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Destination Command Center", item: "https://destinationcommandcenter.com/" },
+          { "@type": "ListItem", position: 2, name: "About", item: "https://destinationcommandcenter.com/about" },
+        ],
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="mx-auto max-w-4xl space-y-8 px-6 py-16">
         <header className="rounded-[2rem] border border-white/10 bg-zinc-900 p-8">
           <p className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-300">

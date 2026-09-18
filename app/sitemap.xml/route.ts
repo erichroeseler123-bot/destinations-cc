@@ -135,8 +135,24 @@ export async function GET() {
     );
   }
 
-  const preSiteGuidePaths = ["/guides", "/ask", "/vibe-around", "/shuttleya", "/juneau-flightseeing", "/french-quarter-orientation", "/new-orleans-swamp-tours", ...DECISION_CATEGORIES.map((category) => `/guides/category/${category.slug}`), ...PUBLISHED_DECISION_GUIDES.map((guide) => `/guides/${guide.slug}`)];
-  const dccPaths = [...new Set([...INDEXABLE_SURFACE_PATHS, ...preSiteGuidePaths])];
+  const DCC_NON_INDEXABLE_PATHS = new Set([
+    "/guides/juneau-glacier-landing-vs-scenic-flight",
+  ]);
+
+  const preSiteGuidePaths = [
+    "/guides",
+    "/ask",
+    "/vibe-around",
+    "/shuttleya",
+    "/juneau-flightseeing",
+    "/french-quarter-orientation",
+    "/new-orleans-swamp-tours",
+    ...DECISION_CATEGORIES.map((category) => `/guides/category/${category.slug}`),
+    ...PUBLISHED_DECISION_GUIDES.map((guide) => `/guides/${guide.slug}`),
+  ];
+  const dccPaths = [...new Set([...INDEXABLE_SURFACE_PATHS, ...preSiteGuidePaths])].filter(
+    (path) => !DCC_NON_INDEXABLE_PATHS.has(path)
+  );
   const body = buildDccSitemapXml(dccPaths);
   return new Response(body, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" } });
 }

@@ -17,12 +17,38 @@ const DECISIONS = [
 export const metadata: Metadata = {
   title: "French Quarter Orientation | First-Hour New Orleans Decision Guide",
   description: "Understand the French Quarter before you start spending the day solving navigation, meeting-point, nightlife, and walking-route questions one at a time.",
-  alternates: { canonical: PAGE_PATH },
+  alternates: { canonical: "https://destinationcommandcenter.com/french-quarter-orientation" },
 };
 
 export default function FrenchQuarterOrientationDecisionCenter() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": "https://destinationcommandcenter.com/french-quarter-orientation#collection",
+        name: "French Quarter Orientation | First-Hour New Orleans Decision Guide",
+        description: "Understand the French Quarter before you start spending the day solving navigation, meeting-point, nightlife, and walking-route questions one at a time.",
+        url: "https://destinationcommandcenter.com/french-quarter-orientation",
+        isPartOf: { "@id": "https://destinationcommandcenter.com/#website" },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Destination Command Center", item: "https://destinationcommandcenter.com/" },
+          { "@type": "ListItem", position: 2, name: "New Orleans", item: "https://destinationcommandcenter.com/guides/category/new-orleans" },
+          { "@type": "ListItem", position: 3, name: "French Quarter Orientation", item: "https://destinationcommandcenter.com/french-quarter-orientation" },
+        ],
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-[#0d0b10] text-[#f7f0e7]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 md:py-24">
         <p className="text-xs font-black uppercase tracking-[0.24em] text-amber-300">DCC · New Orleans pre-site</p>
         <h1 className="mt-5 max-w-4xl text-5xl font-black tracking-[-0.05em] sm:text-6xl">

@@ -5,12 +5,37 @@ import AskDccClient from "./AskDccClient";
 export const metadata: Metadata = {
   title: "Ask DCC | Travel Decision Assistant",
   description: "Ask Destination Command Center a travel decision question. DCC searches its published research graph first, then routes to the right specialist only when the decision is clear.",
-  alternates: { canonical: "/ask" },
+  alternates: { canonical: "https://destinationcommandcenter.com/ask" },
 };
 
 export default function AskDccPage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://destinationcommandcenter.com/ask#webpage",
+        url: "https://destinationcommandcenter.com/ask",
+        name: "Ask DCC | Travel Decision Assistant",
+        description: "Ask Destination Command Center a travel decision question.",
+        isPartOf: { "@id": "https://destinationcommandcenter.com/#website" },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Destination Command Center", item: "https://destinationcommandcenter.com/" },
+          { "@type": "ListItem", position: 2, name: "Ask", item: "https://destinationcommandcenter.com/ask" },
+        ],
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-[#090d13] text-slate-100">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <section className="mx-auto max-w-5xl px-5 pb-8 pt-16 text-center sm:px-8 md:pt-24">
         <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-300">Destination Command Center · conversational decision layer</p>
         <h1 className="mt-5 text-5xl font-black tracking-[-0.05em] text-white sm:text-6xl md:text-7xl">What are you trying to figure out?</h1>

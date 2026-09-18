@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { PUBLISHED_DECISION_GUIDES, getPublishedDecisionGuide } from "@/src/data/published-decision-guides";
 import { getDecisionCategory, relatedDecisionGuides } from "@/src/data/decision-taxonomy";
 
-const ORIGIN = "https://www.destinationcommandcenter.com";
+const ORIGIN = "https://destinationcommandcenter.com";
 const VIBE_ORIGIN = "https://vibearoundtown.com";
 
 type SearchParams = Record<string, string | string[] | undefined>;

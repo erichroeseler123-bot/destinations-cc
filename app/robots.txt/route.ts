@@ -37,6 +37,8 @@ export function buildRobotsTxt(host: string) {
   const isDcc = host === "destinationcommandcenter.com" || host === "www.destinationcommandcenter.com";
   const sitemapUrl = isWno
     ? "https://www.welcometoneworleanstours.com/sitemap.xml"
+    : isDcc
+    ? "https://destinationcommandcenter.com/sitemap.xml"
     : ALLOWED_HOSTS.has(host)
     ? `https://${host}/sitemap.xml`
     : "https://destinationcommandcenter.com/sitemap.xml";
@@ -51,7 +53,7 @@ export function buildRobotsTxt(host: string) {
   }
 
   const sitemaps = [`Sitemap: ${sitemapUrl}`];
-  if (isDcc) sitemaps.push("Sitemap: https://www.destinationcommandcenter.com/locations-sitemap.xml");
+  if (isDcc) sitemaps.push("Sitemap: https://destinationcommandcenter.com/locations-sitemap.xml");
 
   return [...groups, ...sitemaps].join("\n\n");
 }

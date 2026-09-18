@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PUBLISHED_DECISION_GUIDES } from "@/src/data/published-decision-guides";
 import { DECISION_CATEGORIES, guidesForCategory } from "@/src/data/decision-taxonomy";
 
-const ORIGIN = "https://www.destinationcommandcenter.com";
+const ORIGIN = "https://destinationcommandcenter.com";
 
 export const metadata: Metadata = {
   title: "Travel Decision Guides | Destination Command Center",

@@ -4,7 +4,7 @@ import { discoverableLocationPaths } from "@/lib/dcc/locationDiscovery";
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL = "https://www.destinationcommandcenter.com";
+const SITE_URL = "https://destinationcommandcenter.com";
 
 function xmlEscape(value: string) {
   return value

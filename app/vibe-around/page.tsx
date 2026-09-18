@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-const ORIGIN = "https://www.destinationcommandcenter.com";
+const ORIGIN = "https://destinationcommandcenter.com";
 const VIBE_ORIGIN = "https://vibearoundtown.com";
 
 type SearchParams = Record<string, string | string[] | undefined>;

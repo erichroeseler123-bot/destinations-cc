@@ -7,7 +7,7 @@ import {
   guidesForCategory,
 } from "@/src/data/decision-taxonomy";
 
-const ORIGIN = "https://www.destinationcommandcenter.com";
+const ORIGIN = "https://destinationcommandcenter.com";
 
 type Props = {
   params: Promise<{ category: string }>;
