@@ -22,6 +22,12 @@ import GrandparentsKidsGuide, { metadata as grandparentsKidsMetadata } from "@/a
 import PlanNewOrleans, { metadata as planNewOrleansMetadata } from "@/app/new-orleans/high-intent-tours/page";
 import BeforeCruise, { metadata as beforeCruiseMetadata } from "@/app/new-orleans/things-to-do-before-a-cruise-new-orleans/page";
 import AfterCruise, { metadata as afterCruiseMetadata } from "@/app/new-orleans/things-to-do-after-a-cruise-new-orleans/page";
+import LimitedMobilityGuide, { metadata as limitedMobilityMetadata } from "@/app/new-orleans/guides/new-orleans-tours-limited-mobility/page";
+import WithoutAllDayBusGuide, { metadata as withoutAllDayBusMetadata } from "@/app/new-orleans/guides/new-orleans-tours-without-an-all-day-bus-ride/page";
+import MinimalWalkingGuide, { metadata as minimalWalkingMetadata } from "@/app/new-orleans/guides/new-orleans-tours-with-minimal-walking/page";
+import FitBeforeDinnerGuide, { metadata as fitBeforeDinnerMetadata } from "@/app/new-orleans/guides/new-orleans-tours-that-fit-before-dinner/page";
+import OakAlleyVsWhitneyVsSwampGuide, { metadata as oakAlleyVsWhitneyVsSwampMetadata } from "@/app/new-orleans/guides/oak-alley-vs-whitney-plantation-vs-swamp-tour/page";
+import UnderFourOrSixHoursGuide, { metadata as underFourOrSixHoursMetadata } from "@/app/new-orleans/guides/best-new-orleans-tours-under-4-or-6-hours/page";
 
 const WNO_METADATA_BASE = new URL("https://www.welcometoneworleanstours.com");
 
@@ -67,6 +73,12 @@ const bridgedMetadata: Record<string, Metadata> = {
     ...afterCruiseMetadata,
     alternates: { canonical: "/guides/things-to-do-after-a-cruise-new-orleans" },
   },
+  "new-orleans-tours-limited-mobility": limitedMobilityMetadata,
+  "new-orleans-tours-without-an-all-day-bus-ride": withoutAllDayBusMetadata,
+  "new-orleans-tours-with-minimal-walking": minimalWalkingMetadata,
+  "new-orleans-tours-that-fit-before-dinner": fitBeforeDinnerMetadata,
+  "oak-alley-vs-whitney-plantation-vs-swamp-tour": oakAlleyVsWhitneyVsSwampMetadata,
+  "best-new-orleans-tours-under-4-or-6-hours": underFourOrSixHoursMetadata,
 };
 
 function onWnoHost(metadata: Metadata): Metadata {
@@ -119,6 +131,12 @@ const pages = {
   "plan-new-orleans-tours": PlanNewOrleans,
   "things-to-do-before-a-cruise-new-orleans": BeforeCruise,
   "things-to-do-after-a-cruise-new-orleans": AfterCruise,
+  "new-orleans-tours-limited-mobility": LimitedMobilityGuide,
+  "new-orleans-tours-without-an-all-day-bus-ride": WithoutAllDayBusGuide,
+  "new-orleans-tours-with-minimal-walking": MinimalWalkingGuide,
+  "new-orleans-tours-that-fit-before-dinner": FitBeforeDinnerGuide,
+  "oak-alley-vs-whitney-plantation-vs-swamp-tour": OakAlleyVsWhitneyVsSwampGuide,
+  "best-new-orleans-tours-under-4-or-6-hours": UnderFourOrSixHoursGuide,
 } as const;
 
 export default async function GuideBridgePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -139,3 +157,4 @@ export default async function GuideBridgePage({ params }: { params: Promise<{ sl
   }
   return <CanonicalGuidePage params={Promise.resolve({ slug })} />;
 }
+

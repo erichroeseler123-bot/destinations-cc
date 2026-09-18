@@ -41,6 +41,7 @@
     "node_modules",
     "apps/**/*",
     "tests/**/*",
+    "scripts/**/*",
     "**/*.test.ts"
   ]
 }

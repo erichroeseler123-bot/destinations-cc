@@ -68,7 +68,7 @@ export const COMMERCIAL_CATEGORY_PAGES: Record<string, SeoPageRecord> = {
       { question: "Do all New Orleans river cruises include a meal?", answer: "No. You can purchase sightseeing-only tickets or select meal-inclusive variants (brunch, lunch, or dinner) during online checkout." },
       { question: "How long is a Mississippi River cruise in New Orleans?", answer: "Standard daytime jazz and evening dinner cruises last 2 hours. The CITY of NEW ORLEANS harbor cruise offers a concise 75-minute sailing." }
     ],
-    metadata: metadata("/riverboat-cruises", "New Orleans Riverboat Cruises | Steamboat Natchez & Riverboat Tours", "Compare New Orleans riverboat cruises: daytime sightseeing, evening jazz with dinner options, Sunday brunch, and 75-minute Mississippi River cruises."),
+    metadata: metadata("/riverboat-cruises", "New Orleans Riverboat Cruises | Steamboat & Jazz Cruises", "Compare New Orleans riverboat cruises: daytime sightseeing, evening jazz with dinner options, Sunday brunch, and 75-minute Mississippi River cruises."),
     schemaEligibility: { productSchema: false, faqSchema: true, collectionSchema: true },
     visualMood: "Riverfront",
     imageAttributionIds: [],
@@ -163,7 +163,7 @@ export const COMMERCIAL_CATEGORY_PAGES: Record<string, SeoPageRecord> = {
       { question: "Do I need to be 21 to take a cocktail tour?", answer: "Yes. All participants sampling alcohol must be at least 21 years of age with a valid government-issued photo ID." },
       { question: "Where do cocktail walking tours meet?", answer: "Tours meet centrally in the French Quarter, such as the Gray Line Lighthouse Ticket Office at 400 Toulouse Street." }
     ],
-    metadata: metadata("/food-tours", "New Orleans Food & Cocktail Tours | French Quarter Walking Tours", "Compare New Orleans cocktail and culinary walking tours. Discover French Quarter mixology history, historic bars, and craft cocktail walks."),
+    metadata: metadata("/food-tours", "New Orleans Food & Cocktail Tours | French Quarter Walks", "Compare New Orleans cocktail and culinary walking tours. Discover French Quarter mixology history, historic bars, and craft cocktail walks."),
     schemaEligibility: { productSchema: false, faqSchema: true, collectionSchema: true },
     visualMood: "Warm",
     imageAttributionIds: [],

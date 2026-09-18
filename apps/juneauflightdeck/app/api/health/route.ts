@@ -1,9 +1,21 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export function GET() {
-  return NextResponse.json({
-    ok: true,
-    service: "juneauflightdeck",
-    canonicalHost: "juneauflightdeck.com",
-  });
+  return NextResponse.json(
+    {
+      ok: true,
+      service: "juneauflightdeck",
+      role: "owner",
+      canonicalHost: "juneauflightdeck.com",
+      environment: process.env.VERCEL_ENV || process.env.NODE_ENV || "staging",
+      commitSha: process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || "local",
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store, max-age=0",
+      },
+    }
+  );
 }

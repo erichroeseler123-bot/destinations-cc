@@ -63,7 +63,11 @@ export const ADDITIONAL_COMMERCIAL_CATEGORY_PAGES: Record<string, SeoPageRecord>
       { question: "Which operator runs the City, Cemetery and Garden District Tour?", answer: "Gray Line New Orleans operates the 3-hour tour, meeting at 400 Toulouse Street in the French Quarter. It includes narrated sightseeing through the Garden District and a guided stop at St. Louis Cemetery No. 3." },
       { question: "Are there hotel pickup options for city tours including the Garden District?", answer: "Yes. Southern Style Tours offers pickup from select downtown and French Quarter hotels for their comprehensive city tour, which also includes the Garden District corridor." }
     ],
-    metadata: metadata("/garden-district-tours", "New Orleans City Tours Featuring the Garden District | Bookable Sightseeing", "Looking for Garden District tours? WNO books comprehensive New Orleans city sightseeing tours that feature the Garden District and historic cemeteries—not walking-only tours. Compare Gray Line operator details, duration, and reserve."),
+    metadata: metadata(
+      "/garden-district-tours",
+      "New Orleans Garden District Tours | Mansions & Sightseeing",
+      "Compare New Orleans tours featuring the Garden District, St. Charles Ave mansions, and historic cemeteries by comfortable coach. Check Gray Line availability."
+    ),
     schemaEligibility: { productSchema: false, faqSchema: true, collectionSchema: true },
     visualMood: "Garden District",
     imageAttributionIds: [],

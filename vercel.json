@@ -1,6 +1,6 @@
 {
-  "buildCommand": "node scripts/vercel-build-monorepo.mjs 2>/dev/null || node ../../scripts/vercel-build-monorepo.mjs",
-  "ignoreCommand": "node scripts/vercel-ignore-monorepo.mjs 2>/dev/null || node ../../scripts/vercel-ignore-monorepo.mjs",
+  "buildCommand": "node scripts/vercel-build-monorepo.mjs",
+  "ignoreCommand": "node scripts/vercel-ignore-monorepo.mjs",
   "crons": [
     {
       "path": "/api/internal/hydrate-pipeline?key=aeb135f629cda8158eb0a62c949d28e7",
@@ -9,6 +9,10 @@
     {
       "path": "/api/wno/daily-brief",
       "schedule": "5 * * * *"
+    },
+    {
+      "path": "/api/v1/context/maintenance/cleanup",
+      "schedule": "*/15 * * * *"
     }
   ],
   "redirects": [

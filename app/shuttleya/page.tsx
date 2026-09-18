@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "ShuttleYa | Find the Right Ride",
   description:
     "Transportation discovery for airport transfers, mountain rides, concert transportation and cruise-port ground transportation. ShuttleYa helps you choose; the listed operator provides the ride.",
-  alternates: { canonical: `${truth.url}/` },
+  alternates: { canonical: "https://destinationcommandcenter.com/shuttleya" },
 };
 
 export default function ShuttleYaHome() {

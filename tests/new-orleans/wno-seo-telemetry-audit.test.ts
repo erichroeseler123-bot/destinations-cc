@@ -18,6 +18,12 @@ import { metadata as noCarMetadata } from "../../app/new-orleans/guides/new-orle
 import { metadata as grandparentsKidsMetadata } from "../../app/new-orleans/guides/new-orleans-tours-for-grandparents-and-kids/page";
 import { metadata as underFiftyMetadata } from "../../app/new-orleans/guides/new-orleans-tours-under-50-dollars/page";
 import { metadata as whitneyVsOakAlleyMetadata } from "../../app/new-orleans/guides/whitney-plantation-vs-oak-alley-history-focus/page";
+import { metadata as limitedMobilityMetadata } from "../../app/new-orleans/guides/new-orleans-tours-limited-mobility/page";
+import { metadata as withoutAllDayBusMetadata } from "../../app/new-orleans/guides/new-orleans-tours-without-an-all-day-bus-ride/page";
+import { metadata as minimalWalkingMetadata } from "../../app/new-orleans/guides/new-orleans-tours-with-minimal-walking/page";
+import { metadata as fitBeforeDinnerMetadata } from "../../app/new-orleans/guides/new-orleans-tours-that-fit-before-dinner/page";
+import { metadata as oakAlleyVsWhitneyVsSwampMetadata } from "../../app/new-orleans/guides/oak-alley-vs-whitney-plantation-vs-swamp-tour/page";
+import { metadata as underFourOrSixHoursMetadata } from "../../app/new-orleans/guides/best-new-orleans-tours-under-4-or-6-hours/page";
 
 function mockRequest(pathname: string) {
   return new NextRequest("https://www.welcometoneworleanstours.com" + pathname, {
@@ -173,6 +179,42 @@ test("WNO SEO, Telemetry, and Inventory Integrity Audit", async (t) => {
         meta: whitneyVsOakAlleyMetadata,
         expectedTitle: "Whitney vs Oak Alley: Which Plantation Tour for History?",
         expectedCanonical: "/guides/whitney-plantation-vs-oak-alley-history-focus",
+      },
+      {
+        slug: "new-orleans-tours-limited-mobility",
+        meta: limitedMobilityMetadata,
+        expectedTitle: "New Orleans Tours for Limited Mobility: What to Check Before Booking",
+        expectedCanonical: "/guides/new-orleans-tours-limited-mobility",
+      },
+      {
+        slug: "new-orleans-tours-without-an-all-day-bus-ride",
+        meta: withoutAllDayBusMetadata,
+        expectedTitle: "New Orleans Tours Without Spending All Day on a Bus",
+        expectedCanonical: "/guides/new-orleans-tours-without-an-all-day-bus-ride",
+      },
+      {
+        slug: "new-orleans-tours-with-minimal-walking",
+        meta: minimalWalkingMetadata,
+        expectedTitle: "New Orleans Tours With Minimal Walking: Easier Options to Compare",
+        expectedCanonical: "/guides/new-orleans-tours-with-minimal-walking",
+      },
+      {
+        slug: "new-orleans-tours-that-fit-before-dinner",
+        meta: fitBeforeDinnerMetadata,
+        expectedTitle: "New Orleans Tours That Fit Before Dinner: Shorter Afternoon Options",
+        expectedCanonical: "/guides/new-orleans-tours-that-fit-before-dinner",
+      },
+      {
+        slug: "oak-alley-vs-whitney-plantation-vs-swamp-tour",
+        meta: oakAlleyVsWhitneyVsSwampMetadata,
+        expectedTitle: "Oak Alley vs Whitney Plantation vs Swamp Tour: Which Should You Choose? (2026 Guide)",
+        expectedCanonical: "https://www.welcometoneworleanstours.com/guides/oak-alley-vs-whitney-plantation-vs-swamp-tour",
+      },
+      {
+        slug: "best-new-orleans-tours-under-4-or-6-hours",
+        meta: underFourOrSixHoursMetadata,
+        expectedTitle: "Best New Orleans Tours Under 4 or 6 Hours",
+        expectedCanonical: "/guides/best-new-orleans-tours-under-4-or-6-hours",
       },
     ];
 
