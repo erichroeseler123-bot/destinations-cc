@@ -46,7 +46,7 @@ export function trackAffiliateEvent(payload: AnalyticsEventPayload) {
     console.log(`[LFSE Analytics: ${payload.event}]`, eventData);
   }
 
-  // 2. Forward to Google Analytics gtag if initialized
+  // 2. Forward to Google Analytics gtag / dataLayer if initialized
   try {
     if (typeof window.gtag === "function") {
       window.gtag("event", payload.event, {
@@ -62,6 +62,8 @@ export function trackAffiliateEvent(payload: AnalyticsEventPayload) {
         campaign: payload.campaign,
       });
     }
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(eventData);
   } catch {
     // Non-blocking
   }

@@ -1,0 +1,910 @@
+{
+  "norwegian-jewel": {
+    "slug": "norwegian-jewel",
+    "name": "Norwegian Jewel",
+    "cruiseLine": "Norwegian Cruise Line",
+    "shipClass": "Jewel Class",
+    "passengerCapacity": 2376,
+    "debutYear": 2005,
+    "homeportOptions": [
+      "Seattle, WA",
+      "Vancouver, BC",
+      "Seward, AK"
+    ],
+    "summaryDescription": "The Norwegian Jewel is a mid-sized Alaska favorite offering classic Inside Passage and Gulf of Alaska itineraries.",
+    "ports": {
+      "juneau": {
+        "portSlug": "juneau",
+        "portName": "Juneau",
+        "portRegion": "Alaska",
+        "typicalDock": "AJ Dock (South Franklin)",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 8–9 hours",
+        "recommendedBufferMinutes": 90,
+        "maxTourDurationHours": 5.5,
+        "dockLogisticsNotes": "Norwegian Jewel commonly berths at the AJ Dock, positioned approximately 1 mile south of downtown Juneau. Shuttles or a 15–20 minute walk connect the dock to downtown tour staging areas.",
+        "recommendedExcursionTypes": [
+          "Helicopter Glacier Ice Walk",
+          "Auke Bay Whale Watching",
+          "Mendenhall Glacier Express"
+        ],
+        "sampleTours": [
+          {
+            "title": "Mendenhall Glacier Helicopter Landing & Guided Ice Walk",
+            "durationHours": 3,
+            "activityType": "Flightseeing & Glaciers",
+            "meetingLogistics": "Shuttle pickup from South Franklin / Mt. Roberts Tram staging area.",
+            "highlight": "Walk directly on the icefield with crampons and professional glaciology guides."
+          },
+          {
+            "title": "Auke Bay Guaranteed Whale Watching Safari",
+            "durationHours": 3.5,
+            "activityType": "Wildlife & Marine",
+            "meetingLogistics": "Bus transfer from downtown staging area to Auke Bay Marina (25 min each way).",
+            "highlight": "High-speed catamaran designed with outdoor viewing decks for humpback whale bubble-net feeding."
+          },
+          {
+            "title": "Mendenhall Glacier Visitor Center & Rainforest Trail",
+            "durationHours": 4,
+            "activityType": "Nature & Hiking",
+            "meetingLogistics": "Direct shuttle transfer from cruise dock staging zone.",
+            "highlight": "Explore Nugget Falls trail and the official US Forest Service exhibits at your own pace."
+          }
+        ]
+      },
+      "skagway": {
+        "portSlug": "skagway",
+        "portName": "Skagway",
+        "portRegion": "Alaska",
+        "typicalDock": "Railroad Dock or Ore Dock",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 10–12 hours",
+        "recommendedBufferMinutes": 60,
+        "maxTourDurationHours": 7,
+        "dockLogisticsNotes": "The Jewel usually docks within flat, easy walking distance of historic Broadway Street and the White Pass & Yukon Route railway platform.",
+        "recommendedExcursionTypes": [
+          "White Pass & Yukon Route Railway",
+          "Klondike Highway Yukon Explorer",
+          "Chilkoot Trail Rainforest Hike"
+        ],
+        "sampleTours": [
+          {
+            "title": "White Pass Scenic Railway Summit Excursion",
+            "durationHours": 3,
+            "activityType": "Scenic Rail",
+            "meetingLogistics": "Direct boarding adjacent to cruise dock platform.",
+            "highlight": "Climb nearly 3,000 feet past Bridal Veil Falls, Dead Horse Gulch, and vintage trestles."
+          },
+          {
+            "title": "Yukon Suspension Bridge & Klondike Highway Explorer",
+            "durationHours": 4.5,
+            "activityType": "Sightseeing & Border Crossing",
+            "meetingLogistics": "Mini-coach pickup near Broadway dock terminal.",
+            "highlight": "Cross into Canadian territory with panoramic mountain passes (Passports strictly required)."
+          }
+        ]
+      },
+      "ketchikan": {
+        "portSlug": "ketchikan",
+        "portName": "Ketchikan",
+        "portRegion": "Alaska",
+        "typicalDock": "Berth 2 or Berth 3 (Downtown Waterfront)",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 6–7 hours",
+        "recommendedBufferMinutes": 75,
+        "maxTourDurationHours": 4,
+        "dockLogisticsNotes": "As a mid-sized ship, Norwegian Jewel often docks at downtown berths (Berth 2/3), allowing passengers to walk directly onto Front Street and Creek Street.",
+        "recommendedExcursionTypes": [
+          "Misty Fjords Floatplane Flightseeing",
+          "Saxman Native Village Totem Park",
+          "Bering Sea Crab Fishermen Tour"
+        ],
+        "sampleTours": [
+          {
+            "title": "Misty Fjords National Monument Floatplane Safari",
+            "durationHours": 2,
+            "activityType": "Seaplane Flightseeing",
+            "meetingLogistics": "Short 5-minute walk to waterfront floatplane dock.",
+            "highlight": "Soar above 3,000-foot granite sea cliffs and pristine glacial fjords."
+          },
+          {
+            "title": "Bering Sea Crab Fishermen’s Tour aboard the Aleutian Ballad",
+            "durationHours": 3,
+            "activityType": "Maritime & Marine Wildlife",
+            "meetingLogistics": "Departs directly from downtown cruise dock pier.",
+            "highlight": "Live demonstration of king crab and sea creature hauling on a veteran fishing vessel."
+          }
+        ]
+      }
+    }
+  },
+  "norwegian-encore": {
+    "slug": "norwegian-encore",
+    "name": "Norwegian Encore",
+    "cruiseLine": "Norwegian Cruise Line",
+    "shipClass": "Breakaway Plus Class",
+    "passengerCapacity": 3998,
+    "debutYear": 2019,
+    "homeportOptions": [
+      "Seattle, WA"
+    ],
+    "summaryDescription": "The flagship of NCL’s Alaska fleet, featuring the Observation Lounge, race track, and Seattle roundtrips.",
+    "ports": {
+      "juneau": {
+        "portSlug": "juneau",
+        "portName": "Juneau",
+        "portRegion": "Alaska",
+        "typicalDock": "AJ Dock (South Franklin)",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 8–9 hours",
+        "recommendedBufferMinutes": 90,
+        "maxTourDurationHours": 5.5,
+        "dockLogisticsNotes": "Due to its large length, Norwegian Encore docks at AJ Dock. Plan for the AJ shuttle or a 15–20 minute waterfront stroll to reach downtown Juneau meeting points.",
+        "recommendedExcursionTypes": [
+          "Helicopter Glacier Trek",
+          "Auke Bay Whale Watching",
+          "Mendenhall Lake Canoe Adventure"
+        ],
+        "sampleTours": [
+          {
+            "title": "Auke Bay Whale Watching & Mendenhall Glacier Combo",
+            "durationHours": 4.5,
+            "activityType": "Wildlife & Nature",
+            "meetingLogistics": "Shuttle pickup at Mt. Roberts Tramway staging lot.",
+            "highlight": "Combine guaranteed humpback whale spotting with guided time at Mendenhall Glacier."
+          }
+        ]
+      },
+      "skagway": {
+        "portSlug": "skagway",
+        "portName": "Skagway",
+        "portRegion": "Alaska",
+        "typicalDock": "Railroad Dock Aft / Ore Dock",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 11–13 hours",
+        "recommendedBufferMinutes": 75,
+        "maxTourDurationHours": 7,
+        "dockLogisticsNotes": "Docks along the Railroad/Ore docks. Morning queues for the White Pass train can be long; pre-booking early departure slots is recommended.",
+        "recommendedExcursionTypes": [
+          "White Pass Scenic Rail",
+          "Yukon Dog Sledding & Glacier Camp"
+        ],
+        "sampleTours": [
+          {
+            "title": "White Pass & Yukon Route Classic Train Tour",
+            "durationHours": 3.2,
+            "activityType": "Scenic Rail",
+            "meetingLogistics": "Dockside train boarding directly next to vessel gangway.",
+            "highlight": "Ride vintage parlor cars through high mountain passes and historic gold-rush gorges."
+          }
+        ]
+      },
+      "ketchikan": {
+        "portSlug": "ketchikan",
+        "portName": "Ketchikan",
+        "portRegion": "Alaska",
+        "typicalDock": "Ward Cove Cruise Center (Approx. 7 miles north of downtown)",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 6–8 hours",
+        "recommendedBufferMinutes": 90,
+        "maxTourDurationHours": 4,
+        "dockLogisticsNotes": "CRITICAL LOGISTICS: Norwegian Encore typically docks at the Mill at Ward Cove, located 7 miles north of downtown Ketchikan. Complimentary shuttles (20–25 min ride) connect to Berth 4 in downtown Ketchikan. Allow extra transit time for downtown tours.",
+        "recommendedExcursionTypes": [
+          "Ward Cove Wilderness Kayak",
+          "Misty Fjords Seaplane",
+          "Totem Bight State Park"
+        ],
+        "sampleTours": [
+          {
+            "title": "Wilderness Sea Kayaking from Ward Cove",
+            "durationHours": 2.5,
+            "activityType": "Paddling & Coastal Nature",
+            "meetingLogistics": "Departs directly from the Ward Cove terminal staging area.",
+            "highlight": "No downtown shuttle required; paddle through protected Tongass National Forest bays."
+          }
+        ]
+      },
+      "victoria-bc": {
+        "portSlug": "victoria-bc",
+        "portName": "Victoria",
+        "portRegion": "Pacific / British Columbia",
+        "typicalDock": "Ogden Point Cruise Terminal",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 4–5 hours (evening port call)",
+        "recommendedBufferMinutes": 60,
+        "maxTourDurationHours": 3,
+        "dockLogisticsNotes": "Evening service call in Victoria. Tours to The Butchart Gardens require dedicated direct motorcoach transit.",
+        "recommendedExcursionTypes": [
+          "The Butchart Gardens Illuminated Evening Tour",
+          "Victoria Inner Harbour Walk"
+        ],
+        "sampleTours": [
+          {
+            "title": "The Butchart Gardens Evening Illuminations Tour",
+            "durationHours": 3,
+            "activityType": "Botanical Gardens",
+            "meetingLogistics": "Coach pickup directly at Ogden Point Terminal.",
+            "highlight": "Experience the 55-acre world-renowned sunken garden under atmospheric evening light."
+          }
+        ]
+      }
+    }
+  },
+  "norwegian-bliss": {
+    "slug": "norwegian-bliss",
+    "name": "Norwegian Bliss",
+    "cruiseLine": "Norwegian Cruise Line",
+    "shipClass": "Breakaway Plus Class",
+    "passengerCapacity": 4004,
+    "debutYear": 2018,
+    "homeportOptions": [
+      "Seattle, WA"
+    ],
+    "summaryDescription": "Custom-built for Alaska cruising with a 20,000-sq-ft Observation Lounge and outdoor viewing decks.",
+    "ports": {
+      "juneau": {
+        "portSlug": "juneau",
+        "portName": "Juneau",
+        "portRegion": "Alaska",
+        "typicalDock": "AJ Dock (South Franklin)",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 8–9 hours",
+        "recommendedBufferMinutes": 90,
+        "maxTourDurationHours": 5.5,
+        "dockLogisticsNotes": "Berths at AJ Dock. Take the port shuttle to the tram lot for fast connections to Auke Bay whale watch buses.",
+        "recommendedExcursionTypes": [
+          "Mendenhall Glacier Helicopter Landing",
+          "Auke Bay Whale Watching"
+        ],
+        "sampleTours": [
+          {
+            "title": "Auke Bay Catamaran Whale Watch Expedition",
+            "durationHours": 3.5,
+            "activityType": "Marine Wildlife",
+            "meetingLogistics": "Downtown staging point.",
+            "highlight": "Naturalist-guided search for humpback pods and orcas in favorite feeding channels."
+          }
+        ]
+      },
+      "skagway": {
+        "portSlug": "skagway",
+        "portName": "Skagway",
+        "portRegion": "Alaska",
+        "typicalDock": "Railroad Dock or Ore Dock",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 10–12 hours",
+        "recommendedBufferMinutes": 75,
+        "maxTourDurationHours": 6.5,
+        "dockLogisticsNotes": "Docks along the Railroad/Ore docks. Direct rail access available for pre-ticketed White Pass departures.",
+        "recommendedExcursionTypes": [
+          "White Pass Summit Railway",
+          "Klondike Highway Van Tour"
+        ],
+        "sampleTours": [
+          {
+            "title": "White Pass Scenic Railway Journey",
+            "durationHours": 3,
+            "activityType": "Historic Rail",
+            "meetingLogistics": "Trackside boarding at cruise pier.",
+            "highlight": "Vintage narrow-gauge rail climb along historic gold prospector cliff routes."
+          }
+        ]
+      },
+      "ketchikan": {
+        "portSlug": "ketchikan",
+        "portName": "Ketchikan",
+        "portRegion": "Alaska",
+        "typicalDock": "Ward Cove Cruise Center (7 miles north of downtown)",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 6–7 hours",
+        "recommendedBufferMinutes": 90,
+        "maxTourDurationHours": 4,
+        "dockLogisticsNotes": "Docks at Ward Cove. Use complimentary NCL shuttles to reach downtown Creek Street and Misty Fjords seaplane docks.",
+        "recommendedExcursionTypes": [
+          "Misty Fjords Floatplane",
+          "Saxman Native Totems"
+        ],
+        "sampleTours": [
+          {
+            "title": "Misty Fjords National Monument Flightseeing",
+            "durationHours": 2,
+            "activityType": "Seaplane Flightseeing",
+            "meetingLogistics": "Requires downtown shuttle transfer to floatplane harbor.",
+            "highlight": "Aerial panoramas over Punchbowl Cove, wilderness lakes, and dramatic coastal fjords."
+          }
+        ]
+      }
+    }
+  },
+  "quantum-of-the-seas": {
+    "slug": "quantum-of-the-seas",
+    "name": "Quantum of the Seas",
+    "cruiseLine": "Royal Caribbean",
+    "shipClass": "Quantum Class",
+    "passengerCapacity": 4180,
+    "debutYear": 2014,
+    "homeportOptions": [
+      "Seattle, WA"
+    ],
+    "summaryDescription": "Features the North Star observation capsule and expansive indoor viewing spaces for Seattle-based Alaska sailings.",
+    "ports": {
+      "juneau": {
+        "portSlug": "juneau",
+        "portName": "Juneau",
+        "portRegion": "Alaska",
+        "typicalDock": "Franklin Street Dock or AJ Dock",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 9 hours",
+        "recommendedBufferMinutes": 90,
+        "maxTourDurationHours": 5,
+        "dockLogisticsNotes": "Frequently berths at Franklin Dock (downtown) or AJ Dock. Afternoon port calls align well with evening whale watches and sunset glacier flights.",
+        "recommendedExcursionTypes": [
+          "Evening Whale Watching & Salmon Bake",
+          "Helicopter Glacier Landing",
+          "Mount Roberts Tramway"
+        ],
+        "sampleTours": [
+          {
+            "title": "Juneau Whale Watching with Traditional Alaskan Salmon Bake",
+            "durationHours": 4.5,
+            "activityType": "Wildlife & Dining",
+            "meetingLogistics": "Direct departure from Franklin dock staging area.",
+            "highlight": "Spot humpback whales in Favorite Channel followed by an all-you-can-eat campfire salmon dinner."
+          }
+        ]
+      },
+      "skagway": {
+        "portSlug": "skagway",
+        "portName": "Skagway",
+        "portRegion": "Alaska",
+        "typicalDock": "Ore Dock or Railroad Dock Aft",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 10–12 hours",
+        "recommendedBufferMinutes": 60,
+        "maxTourDurationHours": 6.5,
+        "dockLogisticsNotes": "Docked directly at Ore Dock with brief pedestrian path to historic downtown Broadway.",
+        "recommendedExcursionTypes": [
+          "White Pass Summit Railroad",
+          "Chilkoot Lake Wilderness Kayak"
+        ],
+        "sampleTours": [
+          {
+            "title": "White Pass Scenic Railroad Summit Pass",
+            "durationHours": 3,
+            "activityType": "Railroad Tour",
+            "meetingLogistics": "Short 5-minute walk to platform.",
+            "highlight": "Climb 2,865 feet to the White Pass Summit with narrated Gold Rush history."
+          }
+        ]
+      },
+      "sitka": {
+        "portSlug": "sitka",
+        "portName": "Sitka",
+        "portRegion": "Alaska",
+        "typicalDock": "Sitka Sound Cruise Terminal (Old Harbor Road)",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 8–9 hours",
+        "recommendedBufferMinutes": 75,
+        "maxTourDurationHours": 5,
+        "dockLogisticsNotes": "Quantum berths at the Sitka Sound Cruise Terminal (5 miles north of town). High-capacity free shuttle buses run continuously (approx. 10–15 min) between the terminal and Harrigan Centennial Hall in downtown Sitka.",
+        "recommendedExcursionTypes": [
+          "Sea Otter & Wildlife Quest",
+          "Fortress of the Bear Sanctuary",
+          "Sitka National Historical Park Totems"
+        ],
+        "sampleTours": [
+          {
+            "title": "Sitka Sound Wildlife Quest & Sea Otter Sanctuary",
+            "durationHours": 3,
+            "activityType": "Marine Wildlife",
+            "meetingLogistics": "Vessel departs directly from Sitka Sound Cruise Terminal deepwater dock.",
+            "highlight": "Explore pristine outer coast waters for sea otters, brown bears, and puffins."
+          },
+          {
+            "title": "Fortress of the Bear & Alaska Raptor Center Tour",
+            "durationHours": 3.5,
+            "activityType": "Wildlife Conservation",
+            "meetingLogistics": "Shuttle pickup at Harrigan Centennial Hall downtown terminal.",
+            "highlight": "Get close to rescued coastal brown bears and bald eagles with wildlife rescue experts."
+          }
+        ]
+      }
+    }
+  },
+  "discovery-princess": {
+    "slug": "discovery-princess",
+    "name": "Discovery Princess",
+    "cruiseLine": "Princess Cruises",
+    "shipClass": "Royal Class",
+    "passengerCapacity": 3660,
+    "debutYear": 2022,
+    "homeportOptions": [
+      "Seattle, WA"
+    ],
+    "summaryDescription": "The newest Royal-class ship in Princess Cruises’ Alaska fleet, designed for Inside Passage voyages.",
+    "ports": {
+      "juneau": {
+        "portSlug": "juneau",
+        "portName": "Juneau",
+        "portRegion": "Alaska",
+        "typicalDock": "Franklin Street Dock or Steamship Wharf (Downtown)",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 9–10 hours",
+        "recommendedBufferMinutes": 75,
+        "maxTourDurationHours": 6,
+        "dockLogisticsNotes": "Princess ships frequently dock directly at Franklin Street Dock or Steamship Wharf in downtown Juneau, steps from Marine Park and tour bus staging areas.",
+        "recommendedExcursionTypes": [
+          "Helicopter Glacier Trek",
+          "Auke Bay Whale Watching",
+          "Tracy Arm Fjord Add-on"
+        ],
+        "sampleTours": [
+          {
+            "title": "Mendenhall Glacier Helicopter Landing & Guided Walk",
+            "durationHours": 3,
+            "activityType": "Flightseeing & Glaciers",
+            "meetingLogistics": "Direct pickup from downtown Franklin dock lot.",
+            "highlight": "Fly over Juneau Icefield peaks before landing on the glacier surface."
+          },
+          {
+            "title": "Premier Whale Watching & Wildlife Exploration",
+            "durationHours": 3.5,
+            "activityType": "Wildlife Safari",
+            "meetingLogistics": "Coach transfer from downtown to Auke Bay harbor.",
+            "highlight": "Comfortable covered boat with onboard hydrophones to listen to underwater whale songs."
+          }
+        ]
+      },
+      "skagway": {
+        "portSlug": "skagway",
+        "portName": "Skagway",
+        "portRegion": "Alaska",
+        "typicalDock": "Railroad Dock (Forward / Aft)",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 12–14 hours",
+        "recommendedBufferMinutes": 60,
+        "maxTourDurationHours": 8,
+        "dockLogisticsNotes": "Discovery Princess docks at the Railroad Dock with trackside boarding for the White Pass & Yukon Route train.",
+        "recommendedExcursionTypes": [
+          "White Pass & Yukon Route Railway",
+          "Klondike Highway Yukon Excursion"
+        ],
+        "sampleTours": [
+          {
+            "title": "White Pass Scenic Railway Summit Climb",
+            "durationHours": 3,
+            "activityType": "Scenic Rail",
+            "meetingLogistics": "Board train directly alongside the ship.",
+            "highlight": "Iconic 40-mile roundtrip rail journey up to the 2,865-foot summit."
+          }
+        ]
+      },
+      "ketchikan": {
+        "portSlug": "ketchikan",
+        "portName": "Ketchikan",
+        "portRegion": "Alaska",
+        "typicalDock": "Berth 1 or Berth 2 (Downtown Waterfront)",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 6–7 hours",
+        "recommendedBufferMinutes": 60,
+        "maxTourDurationHours": 4,
+        "dockLogisticsNotes": "Docks right in downtown Ketchikan at Berth 1 or 2, allowing passengers to walk directly to Creek Street and floatplane docks.",
+        "recommendedExcursionTypes": [
+          "Misty Fjords Floatplane Flightseeing",
+          "Bering Sea Crab Fishermen Tour",
+          "Saxman Native Village"
+        ],
+        "sampleTours": [
+          {
+            "title": "Misty Fjords Wilderness Floatplane Expedition",
+            "durationHours": 2,
+            "activityType": "Seaplane Flightseeing",
+            "meetingLogistics": "Short 5-minute walk to waterfront floatplane dock.",
+            "highlight": "Floatplane lake landing in remote, glacier-carved wilderness valleys."
+          }
+        ]
+      }
+    }
+  },
+  "koningsdam": {
+    "slug": "koningsdam",
+    "name": "Koningsdam",
+    "cruiseLine": "Holland America Line",
+    "shipClass": "Pinnacle Class",
+    "passengerCapacity": 2650,
+    "debutYear": 2016,
+    "homeportOptions": [
+      "Vancouver, BC"
+    ],
+    "summaryDescription": "The flagship of Holland America’s Vancouver fleet, known for high-end dining, classical music venues, and classic 7-day Inside Passage roundtrips.",
+    "ports": {
+      "juneau": {
+        "portSlug": "juneau",
+        "portName": "Juneau",
+        "portRegion": "Alaska",
+        "typicalDock": "Steamship Wharf or Marine Park Dock (Downtown)",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 9–10 hours",
+        "recommendedBufferMinutes": 75,
+        "maxTourDurationHours": 6,
+        "dockLogisticsNotes": "Koningsdam typically docks right at Steamship Wharf or Marine Park in the heart of downtown Juneau.",
+        "recommendedExcursionTypes": [
+          "Mendenhall Glacier Dog Sledding by Helicopter",
+          "Auke Bay Whale Watching",
+          "Taku Lodge Salmon Feast"
+        ],
+        "sampleTours": [
+          {
+            "title": "Mendenhall Glacier Dog Sledding & Helicopter Flight",
+            "durationHours": 3,
+            "activityType": "Dog Sledding & Flightseeing",
+            "meetingLogistics": "Downtown tramway staging lot.",
+            "highlight": "Fly to an alpine glacier camp and mush a dog team with professional Iditarod veterans."
+          },
+          {
+            "title": "Auke Bay Catamaran Whale Watch Safari",
+            "durationHours": 3.5,
+            "activityType": "Marine Wildlife",
+            "meetingLogistics": "Downtown bus departure.",
+            "highlight": "Watch for humpbacks, Steller sea lions, harbor seals, and bald eagles."
+          }
+        ]
+      },
+      "skagway": {
+        "portSlug": "skagway",
+        "portName": "Skagway",
+        "portRegion": "Alaska",
+        "typicalDock": "Broadway Dock or Ore Dock",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 11–13 hours",
+        "recommendedBufferMinutes": 60,
+        "maxTourDurationHours": 7.5,
+        "dockLogisticsNotes": "Broadway Dock provides immediate walk-up access to historic Broadway Street and the White Pass train platform.",
+        "recommendedExcursionTypes": [
+          "White Pass & Yukon Route Railroad",
+          "Chilkoot Trail Rainforest Hike"
+        ],
+        "sampleTours": [
+          {
+            "title": "White Pass Summit Classic Train Ride",
+            "durationHours": 3,
+            "activityType": "Scenic Rail",
+            "meetingLogistics": "Direct trackside platform walk.",
+            "highlight": "Traverse wooden trestles and tunnels into the sub-arctic alpine tundra."
+          }
+        ]
+      },
+      "ketchikan": {
+        "portSlug": "ketchikan",
+        "portName": "Ketchikan",
+        "portRegion": "Alaska",
+        "typicalDock": "Berth 1 or Berth 2 (Downtown)",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 6–7 hours",
+        "recommendedBufferMinutes": 60,
+        "maxTourDurationHours": 4,
+        "dockLogisticsNotes": "Docks directly downtown; immediate access to Creek Street and local harbors.",
+        "recommendedExcursionTypes": [
+          "Misty Fjords Floatplane Safari",
+          "Bering Sea Crab Fishermen Tour"
+        ],
+        "sampleTours": [
+          {
+            "title": "Misty Fjords National Monument Floatplane Adventure",
+            "durationHours": 2,
+            "activityType": "Seaplane Flightseeing",
+            "meetingLogistics": "Short 5-minute waterfront walk.",
+            "highlight": "Dramatic bird’s-eye views of 1,000-foot waterfalls, sea cliffs, and glacial fjords."
+          }
+        ]
+      }
+    }
+  },
+  "celebrity-solstice": {
+    "slug": "celebrity-solstice",
+    "name": "Celebrity Solstice",
+    "cruiseLine": "Celebrity Cruises",
+    "shipClass": "Solstice Class",
+    "passengerCapacity": 2852,
+    "debutYear": 2008,
+    "homeportOptions": [
+      "Vancouver, BC",
+      "Seattle, WA"
+    ],
+    "summaryDescription": "Features the real glass lawn club and modern luxury spaces for classic Alaska fjord expeditions.",
+    "ports": {
+      "juneau": {
+        "portSlug": "juneau",
+        "portName": "Juneau",
+        "portRegion": "Alaska",
+        "typicalDock": "Franklin Street Dock or AJ Dock",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 8–9 hours",
+        "recommendedBufferMinutes": 90,
+        "maxTourDurationHours": 5.5,
+        "dockLogisticsNotes": "Berths at Franklin or AJ dock. Shuttles connect AJ dock to downtown tour gathering spots.",
+        "recommendedExcursionTypes": [
+          "Auke Bay Whale Watching",
+          "Helicopter Glacier Ice Walk"
+        ],
+        "sampleTours": [
+          {
+            "title": "Auke Bay Catamaran Whale Watch",
+            "durationHours": 3.5,
+            "activityType": "Marine Wildlife",
+            "meetingLogistics": "Downtown bus departure.",
+            "highlight": "Search for humpback whales in favorite feeding channels with a marine biologist guide."
+          }
+        ]
+      },
+      "skagway": {
+        "portSlug": "skagway",
+        "portName": "Skagway",
+        "portRegion": "Alaska",
+        "typicalDock": "Railroad Dock or Ore Dock",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 10–12 hours",
+        "recommendedBufferMinutes": 60,
+        "maxTourDurationHours": 6.5,
+        "dockLogisticsNotes": "Easy flat walk to historic downtown Broadway and the railway depot.",
+        "recommendedExcursionTypes": [
+          "White Pass Summit Railway",
+          "Klondike Highway Yukon Explorer"
+        ],
+        "sampleTours": [
+          {
+            "title": "White Pass Summit Rail Journey",
+            "durationHours": 3,
+            "activityType": "Historic Rail",
+            "meetingLogistics": "Pier trackside boarding.",
+            "highlight": "Scenic train ride through dramatic Alaskan coastal mountain passes."
+          }
+        ]
+      },
+      "ketchikan": {
+        "portSlug": "ketchikan",
+        "portName": "Ketchikan",
+        "portRegion": "Alaska",
+        "typicalDock": "Berth 3 or Berth 4",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 6–7 hours",
+        "recommendedBufferMinutes": 60,
+        "maxTourDurationHours": 4,
+        "dockLogisticsNotes": "Berths along the downtown boardwalk near the tunnel and lumberjack show grounds.",
+        "recommendedExcursionTypes": [
+          "Misty Fjords Floatplane",
+          "Saxman Totem Village"
+        ],
+        "sampleTours": [
+          {
+            "title": "Misty Fjords Wilderness Seaplane Flight",
+            "durationHours": 2,
+            "activityType": "Seaplane Flightseeing",
+            "meetingLogistics": "Short waterfront walk to floatplane dock.",
+            "highlight": "Soar past granite monoliths, waterfalls, and alpine wilderness lakes."
+          }
+        ]
+      },
+      "icy-strait-point": {
+        "portSlug": "icy-strait-point",
+        "portName": "Icy Strait Point",
+        "portRegion": "Alaska",
+        "typicalDock": "Wilderness Landing or Adventure Landing Dock",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 7–8 hours",
+        "recommendedBufferMinutes": 60,
+        "maxTourDurationHours": 4.5,
+        "dockLogisticsNotes": "Icy Strait Point (Hoonah) is a Native-owned port. Trams and gondolas connect Wilderness Landing to Adventure Landing.",
+        "recommendedExcursionTypes": [
+          "Spasski River Coastal Brown Bear Search",
+          "ZipRider High-Speed Cable Ride",
+          "Whale Watching in Point Adolphus"
+        ],
+        "sampleTours": [
+          {
+            "title": "Point Adolphus Guaranteed Whale Watching Safari",
+            "durationHours": 3,
+            "activityType": "Marine Wildlife",
+            "meetingLogistics": "Board directly at Icy Strait Point excursion marina.",
+            "highlight": "Point Adolphus features one of the highest concentrations of humpback feeding in Southeast Alaska."
+          }
+        ]
+      }
+    }
+  },
+  "carnival-spirit": {
+    "slug": "carnival-spirit",
+    "name": "Carnival Spirit",
+    "cruiseLine": "Carnival Cruise Line",
+    "shipClass": "Spirit Class",
+    "passengerCapacity": 2124,
+    "debutYear": 2001,
+    "homeportOptions": [
+      "Seattle, WA"
+    ],
+    "summaryDescription": "A classic Spirit-class ship offering family-friendly 7-day roundtrip Alaska sailings from Seattle.",
+    "ports": {
+      "juneau": {
+        "portSlug": "juneau",
+        "portName": "Juneau",
+        "portRegion": "Alaska",
+        "typicalDock": "AJ Dock or Marine Park Dock",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 9–10 hours",
+        "recommendedBufferMinutes": 90,
+        "maxTourDurationHours": 5.5,
+        "dockLogisticsNotes": "Carnival Spirit frequently berths at the AJ Dock. Take the port shuttle to the tram lot for fast connections to Auke Bay boat harbors.",
+        "recommendedExcursionTypes": [
+          "Auke Bay Whale Watching",
+          "Mendenhall Glacier Express"
+        ],
+        "sampleTours": [
+          {
+            "title": "Auke Bay Whale Watching Safari",
+            "durationHours": 3.5,
+            "activityType": "Marine Wildlife",
+            "meetingLogistics": "Shuttle pickup at tram lot.",
+            "highlight": "Comfortable catamaran search for humpback whale pods and sea lions."
+          }
+        ]
+      },
+      "skagway": {
+        "portSlug": "skagway",
+        "portName": "Skagway",
+        "portRegion": "Alaska",
+        "typicalDock": "Ore Dock or Railroad Dock",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 10–12 hours",
+        "recommendedBufferMinutes": 60,
+        "maxTourDurationHours": 6.5,
+        "dockLogisticsNotes": "Convenient walking access to town and railway platform.",
+        "recommendedExcursionTypes": [
+          "White Pass Summit Railway",
+          "Klondike Sled Dog Experience"
+        ],
+        "sampleTours": [
+          {
+            "title": "White Pass Scenic Railroad Summit Journey",
+            "durationHours": 3,
+            "activityType": "Scenic Rail",
+            "meetingLogistics": "Pier trackside boarding.",
+            "highlight": "Narrow-gauge train climb into alpine passes with Gold Rush history."
+          }
+        ]
+      },
+      "ketchikan": {
+        "portSlug": "ketchikan",
+        "portName": "Ketchikan",
+        "portRegion": "Alaska",
+        "typicalDock": "Berth 1 or Berth 2",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 6 hours",
+        "recommendedBufferMinutes": 60,
+        "maxTourDurationHours": 3.5,
+        "dockLogisticsNotes": "Direct downtown berthing at Berth 1 or 2 right off Front Street.",
+        "recommendedExcursionTypes": [
+          "Bering Sea Crab Fishermen Tour",
+          "Saxman Totem Village"
+        ],
+        "sampleTours": [
+          {
+            "title": "Bering Sea Crab Fishermen’s Tour",
+            "durationHours": 3,
+            "activityType": "Maritime Discovery",
+            "meetingLogistics": "Waterfront dock boarding.",
+            "highlight": "Authentic crabbing boat demonstration and wildlife encounters."
+          }
+        ]
+      },
+      "victoria-bc": {
+        "portSlug": "victoria-bc",
+        "portName": "Victoria",
+        "portRegion": "Pacific / British Columbia",
+        "typicalDock": "Ogden Point Cruise Terminal",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 4–5 hours (evening call)",
+        "recommendedBufferMinutes": 60,
+        "maxTourDurationHours": 3,
+        "dockLogisticsNotes": "Evening stop in Victoria. Shuttles connect Ogden Point to the Inner Harbour in 10 minutes.",
+        "recommendedExcursionTypes": [
+          "The Butchart Gardens Evening Tour",
+          "Victoria Inner Harbour Highlights"
+        ],
+        "sampleTours": [
+          {
+            "title": "The Butchart Gardens Illuminated Tour",
+            "durationHours": 3,
+            "activityType": "Botanical Gardens",
+            "meetingLogistics": "Coach pickup at terminal.",
+            "highlight": "Stroll illuminated floral paths in the historic sunken quarry garden."
+          }
+        ]
+      }
+    }
+  },
+  "disney-wonder": {
+    "slug": "disney-wonder",
+    "name": "Disney Wonder",
+    "cruiseLine": "Disney Cruise Line",
+    "shipClass": "Magic Class",
+    "passengerCapacity": 2713,
+    "debutYear": 1999,
+    "homeportOptions": [
+      "Vancouver, BC"
+    ],
+    "summaryDescription": "Dedicated to Vancouver-based 7-night Alaska sailings featuring family-oriented port logistics.",
+    "ports": {
+      "juneau": {
+        "portSlug": "juneau",
+        "portName": "Juneau",
+        "portRegion": "Alaska",
+        "typicalDock": "Franklin Street Dock or Steamship Wharf",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 9–10 hours",
+        "recommendedBufferMinutes": 75,
+        "maxTourDurationHours": 5.5,
+        "dockLogisticsNotes": "Disney Wonder frequently docks right in downtown Juneau, making stroller access and family transfers straightforward.",
+        "recommendedExcursionTypes": [
+          "Family Whale Watching Safari",
+          "Mendenhall Glacier Visitor Center & Trails"
+        ],
+        "sampleTours": [
+          {
+            "title": "Family-Friendly Auke Bay Whale Watching Cruise",
+            "durationHours": 3.5,
+            "activityType": "Marine Wildlife",
+            "meetingLogistics": "Downtown Franklin lot staging pickup.",
+            "highlight": "Heated indoor cabin, naturalist narration, and junior explorer viewing spots."
+          }
+        ]
+      },
+      "skagway": {
+        "portSlug": "skagway",
+        "portName": "Skagway",
+        "portRegion": "Alaska",
+        "typicalDock": "Railroad Dock or Broadway Dock",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 11–13 hours",
+        "recommendedBufferMinutes": 60,
+        "maxTourDurationHours": 6.5,
+        "dockLogisticsNotes": "Steps from historic Skagway boardwalks and direct White Pass train boarding.",
+        "recommendedExcursionTypes": [
+          "White Pass & Yukon Route Scenic Railway"
+        ],
+        "sampleTours": [
+          {
+            "title": "White Pass Scenic Railway Summit Tour",
+            "durationHours": 3,
+            "activityType": "Scenic Rail",
+            "meetingLogistics": "Direct trackside platform walk.",
+            "highlight": "Comfortable parlor car ride climbing 2,865 feet into Gold Rush mountains."
+          }
+        ]
+      },
+      "ketchikan": {
+        "portSlug": "ketchikan",
+        "portName": "Ketchikan",
+        "portRegion": "Alaska",
+        "typicalDock": "Berth 1 or Berth 2 (Downtown)",
+        "tenderRequired": false,
+        "typicalPortHours": "Approx. 6–7 hours",
+        "recommendedBufferMinutes": 60,
+        "maxTourDurationHours": 3.5,
+        "dockLogisticsNotes": "Downtown docking next to the Great Alaskan Lumberjack Show arena.",
+        "recommendedExcursionTypes": [
+          "Great Alaskan Lumberjack Show & Crab Feast",
+          "Saxman Totem Village"
+        ],
+        "sampleTours": [
+          {
+            "title": "Great Alaskan Lumberjack Show & Totem Discovery",
+            "durationHours": 2.5,
+            "activityType": "Family Entertainment & Culture",
+            "meetingLogistics": "Short 5-minute walk from cruise berth.",
+            "highlight": "Lively axe throwing, log rolling, and springboard chopping competition."
+          }
+        ]
+      }
+    }
+  }
+}
