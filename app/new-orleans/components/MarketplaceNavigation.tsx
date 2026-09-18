@@ -10,6 +10,7 @@ const usefulLinks = [
   { href: "/guides", label: "Planning Guides" },
   { href: "/guides/things-to-do-in-new-orleans-today", label: "Things To Do Today" },
   { href: "/guides/tonight", label: "Tonight" },
+  { href: "/french-quarter-welcome-stop", label: "Tour Concierge · $5" },
   { href: "/how-we-choose", label: "How We Choose" },
   { href: "/faq", label: "FAQ" },
   { href: "/booking-help", label: "Booking Help" },
@@ -48,6 +49,7 @@ export function HeaderNav() {
             <Link href="/guides/things-to-do-in-new-orleans-today">Today</Link>
             <Link href="/guides/tonight">Tonight</Link>
             <Link href="/compare">Compare</Link>
+            <Link href="/french-quarter-welcome-stop" className="!text-[#e3a72f] !font-bold">Concierge</Link>
           </nav>
           <div className={visualStyles.marketPhoneWrap}>
             <PhoneCta placement="WTONOT-HEADER-PHONE" isGroup className={visualStyles.marketPhone}>
@@ -66,7 +68,7 @@ export function HeaderNav() {
           </button>
         </div>
       </header>
-      {isOpen && <div className={`md:hidden ${styles.overlayDrawer}`} onClick={toggle}><div className={styles.drawerPanel} onClick={e => e.stopPropagation()}><div className="flex justify-between items-center mb-10"><span className="font-serif text-2xl font-medium text-[#c7a96b]">Menu</span><button onClick={toggle} className="text-2xl text-[#c7a96b]" aria-label="Close menu">&times;</button></div><nav className="flex flex-col gap-6 font-sans font-semibold text-base tracking-[0.12em] uppercase mb-10 text-[#fdfbf7]/80"><Link href="/tours" onClick={toggle}>Tours</Link><Link href="/help-me-choose" onClick={toggle}>Help Me Choose</Link><Link href="/guides/things-to-do-in-new-orleans-today" onClick={toggle}>Today</Link><Link href="/guides/tonight" onClick={toggle}>Tonight</Link><Link href="/compare" onClick={toggle}>Compare</Link><Link href="/guides/plan-new-orleans-tours" onClick={toggle}>Plan By Need</Link></nav><div className="mt-auto pt-8 border-t border-white/10"><PhoneCta placement="WTONOT-HEADER-PHONE" isGroup className="flex flex-col gap-2"><span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#fdfbf7]/50">Questions or groups</span><span className="text-2xl font-medium text-[#c7a96b]">504-484-9687</span></PhoneCta></div></div></div>}
+      {isOpen && <div className={`md:hidden ${styles.overlayDrawer}`} onClick={toggle}><div className={styles.drawerPanel} onClick={e => e.stopPropagation()}><div className="flex justify-between items-center mb-10"><span className="font-serif text-2xl font-medium text-[#c7a96b]">Menu</span><button onClick={toggle} className="text-2xl text-[#c7a96b]" aria-label="Close menu">&times;</button></div><nav className="flex flex-col gap-6 font-sans font-semibold text-base tracking-[0.12em] uppercase mb-10 text-[#fdfbf7]/80"><Link href="/tours" onClick={toggle}>Tours</Link><Link href="/help-me-choose" onClick={toggle}>Help Me Choose</Link><Link href="/guides/things-to-do-in-new-orleans-today" onClick={toggle}>Today</Link><Link href="/guides/tonight" onClick={toggle}>Tonight</Link><Link href="/compare" onClick={toggle}>Compare</Link><Link href="/guides/plan-new-orleans-tours" onClick={toggle}>Plan By Need</Link><Link href="/french-quarter-welcome-stop" onClick={toggle} className="text-[#e3a72f]">Tour Concierge <span className="normal-case tracking-normal text-xs font-normal opacity-75">· from $5</span></Link></nav><div className="mt-auto pt-8 border-t border-white/10"><PhoneCta placement="WTONOT-HEADER-PHONE" isGroup className="flex flex-col gap-2"><span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#fdfbf7]/50">Questions or groups</span><span className="text-2xl font-medium text-[#c7a96b]">504-484-9687</span></PhoneCta></div></div></div>}
     </>
   );
 }

@@ -12,6 +12,7 @@ import { resolveProductImage } from "../../lib/imageResolver";
 import RecommendationCallout from "./RecommendationCallout";
 import { getRecommendation, CHOOSER_CATEGORIES, CHOOSER_PREFERENCES, CategoryId } from "../../help-me-choose/recommendationRules";
 import TourLogisticsSummary from "../../components/TourLogisticsSummary";
+import DailyBriefSignup from "../../components/DailyBriefSignup";
 import { TOUR_RECORDS } from "../../lib/tourRecommendationRules";
 import { TOUR_DECISION_COPY } from "../../data/tourDecisionCopy";
 import { isApprovedProductSlug, resolveFareHarborSource } from "../../lib/fareHarborAttribution";
@@ -318,6 +319,8 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             </div>
           </section>
         )}
+
+        <DailyBriefSignup source="tour-detail" />
       </main>
     </div>
   );

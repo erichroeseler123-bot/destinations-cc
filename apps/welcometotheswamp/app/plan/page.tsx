@@ -62,19 +62,37 @@ function PlanCard({
   cta,
   external = false,
   trackingId,
+  operator,
+  price,
+  rating,
+  reviewCount,
 }: {
   eyebrow: string;
   title: string;
   body: string;
-  image?: typeof AIRBOAT_IMAGE;
+  image?: { src: string; alt: string };
   href: string;
   cta: string;
   external?: boolean;
   trackingId: string;
+  operator?: string;
+  price?: string;
+  rating?: number;
+  reviewCount?: number;
 }) {
   const isFareHarbor = href.includes("fareharbor.com/embeds/book/");
   const classes = isFareHarbor ? "wts-button wts-button-card fh-book" : "wts-button wts-button-card";
-  const operatorName = href.includes("southernstyletours") ? "Southern Style Tours" : (href.includes("ragincajuntours") ? "Ragin Cajun Tours" : null);
+  const operatorName =
+    operator ||
+    (href.includes("southernstyletours")
+      ? "Southern Style Tours"
+      : href.includes("ragincajuntours")
+      ? "Ragin Cajun Tours"
+      : href.includes("3780AIRBOAT") || href.includes("3780SWAMP")
+      ? "Gray Line New Orleans (via Viator)"
+      : href.includes("6953SWAMPTRANS")
+      ? "Cajun Encounters (via Viator)"
+      : null);
 
   return (
     <article className="wts-tour-card">
@@ -86,7 +104,21 @@ function PlanCard({
       <div className="wts-tour-copy">
         <div className="wts-card-topline">{eyebrow}</div>
         <h3>{title}</h3>
-        {operatorName ? <p className="wts-operator-name" style={{ margin: 0, fontWeight: 700, color: "#0f8f68", fontSize: "11px" }}>{operatorName}</p> : null}
+        {operatorName ? (
+          <p className="wts-operator-name" style={{ margin: 0, fontWeight: 700, color: "#0f8f68", fontSize: "11px" }}>
+            {operatorName}
+          </p>
+        ) : null}
+        {rating && reviewCount ? (
+          <p className="wts-rating-badge" style={{ margin: "3px 0 6px 0", fontSize: "12px", color: "#b45309", fontWeight: 700 }}>
+            ★ {rating.toFixed(1)} <span style={{ color: "#64748b", fontWeight: 500 }}>({reviewCount.toLocaleString()} reviews)</span>
+          </p>
+        ) : null}
+        {price ? (
+          <p className="wts-price-label" style={{ margin: "2px 0 6px 0", fontSize: "12px", color: "#0369a1", fontWeight: 700 }}>
+            {price}
+          </p>
+        ) : null}
         <p className="wts-tour-description" style={{ fontSize: "13px", color: "#475569", margin: "4px 0 12px 0", lineHeight: "1.5" }}>{body}</p>
         <Link
           href={href}
@@ -402,49 +434,60 @@ export default async function SwampPlanPage({
 
       <section className="wts-section" aria-labelledby="wts-plan-picks">
         <div className="wts-section-head">
-          <p className="wts-eyebrow">Viator fallback links</p>
-          <h2 id="wts-plan-picks">Use these only if GetYourGuide does not fit.</h2>
+          <p className="wts-eyebrow">Verified Viator options</p>
+          <h2 id="wts-plan-picks">Direct Viator Operator Excursions</h2>
           <p>
-            These attributed Viator links keep the backup booking path open. They are not the
-            primary WTS booking path.
+            Confirmed New Orleans swamp-tour inventory with live availability, transparent pricing, verified operator reviews, and direct Viator checkout.
           </p>
         </div>
         <div className="wts-tour-grid">
           <PlanCard
-            eyebrow="Loud / fast"
-            title="Airboat Swamp Tour"
-            body="For the friend who wants the ride to feel like the point. Wind, engine, open water, quick hit."
-            image={undefined}
+            eyebrow="Airboat Experience"
+            title="Airboat Ride with Optional Transportation"
+            operator="Gray Line New Orleans (Product Code: 3780AIRBOAT)"
+            rating={4.6}
+            reviewCount={429}
+            price="From $90.00 / adult"
+            body="Fast, high-energy airboat outing through the bayous operated by Gray Line New Orleans. Includes hearing protection and optional French Quarter pickup."
+            image={AIRBOAT_IMAGE}
             href={links.airboatHref}
-            cta="Book this tour"
+            cta="View & book on Viator"
             external
-            trackingId="card_airboat"
+            trackingId="card_airboat_viator"
           />
           <PlanCard
-            eyebrow="Slow / cinematic"
-            title="Covered Boat Swamp Tour"
-            body="For a moodier bayou pass: shade, slower pacing, and more time to actually look around."
-            image={undefined}
+            eyebrow="Covered Swamp Boat"
+            title="New Orleans Swamp & Bayou Alligator Tour"
+            operator="Gray Line New Orleans (Product Code: 3780SWAMP)"
+            rating={4.3}
+            reviewCount={1334}
+            price="From $55.25 / adult"
+            body="Calmer, shaded pontoon boat excursion through Barataria bayous. Best for wildlife photography, easy conversation, and family groups."
+            image={COVERED_BOAT_IMAGE}
             href={links.smallBoatHref}
-            cta="Book this tour"
+            cta="View & book on Viator"
             external
-            trackingId="card_covered_boat"
+            trackingId="card_covered_boat_viator"
           />
           <PlanCard
-            eyebrow="Easy move"
-            title="Swamp Tour With Pickup"
-            body="For the no-car plan. Get picked up, leave the city, see the swamp, come back clean."
-            image={undefined}
+            eyebrow="Hotel Pickup Included"
+            title="New Orleans Swamp Boat Tour with Transportation"
+            operator="Cajun Encounters (Product Code: 6953SWAMPTRANS)"
+            rating={4.9}
+            reviewCount={7100}
+            price="From $75.52 / adult"
+            body="Top-rated Honey Island Swamp outing with guaranteed round-trip French Quarter hotel transport and native Cajun boat captain guide."
+            image={swampBoatImage}
             href={links.pickupHref}
-            cta="Check availability"
+            cta="View & book on Viator"
             external
-            trackingId="card_pickup"
+            trackingId="card_pickup_viator"
           />
           <PlanCard
             eyebrow="Still deciding"
             title="Compare the styles"
-            body="Use this if the only real question is fast airboat versus slower covered boat."
-            image={undefined}
+            body="Use our quick guide if the only real question is fast airboat versus slower covered boat."
+            image={SWAMP_IMAGE}
             href="/airboat-vs-boat"
             cta="Compare styles"
             trackingId="card_compare_styles"

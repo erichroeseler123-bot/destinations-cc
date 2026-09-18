@@ -6,6 +6,7 @@ import { getProductById } from "../data/index";
 import { SEO_PAGES } from "../data/pages";
 import type { SeoPageRecord } from "../data/types";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
+import DailyBriefSignup from "./DailyBriefSignup";
 
 const FALLBACK_IMAGE = "/images/new-orleans/hero-french-quarter-balcony.jpg";
 
@@ -253,6 +254,7 @@ export function CinematicSeoGuide({ page }: { page: SeoPageRecord }) {
         ]}
       />
       <SeoGuideBody page={page} />
+      <DailyBriefSignup source="guide-article" />
     </>
   );
 }
@@ -271,6 +273,7 @@ export function CinematicIntentGuide({ config }: { config: IntentSeoLandingConfi
         ]}
       />
       <IntentSeoLanding config={config} showHero={false} />
+      <DailyBriefSignup source="guide-article" />
     </>
   );
 }

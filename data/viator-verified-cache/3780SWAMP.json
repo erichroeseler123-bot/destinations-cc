@@ -1,0 +1,75 @@
+{
+  "internalProductId": "covered-boat-swamp-tour",
+  "viatorProductCode": "3780SWAMP",
+  "status": "active",
+  "stable": {
+    "title": "New Orleans Swamp and Bayou Alligator Tour",
+    "supplier": "Gray Line New Orleans",
+    "destination": "New Orleans",
+    "destinationId": 675,
+    "canonicalViatorUrl": "https://www.viator.com/tours/New-Orleans/Swamp-and-Bayou-Sightseeing-Tour-with-Boat-Ride-from-New-Orleans/d675-3780SWAMP",
+    "durationMinutes": 120,
+    "durationText": "2 hours"
+  },
+  "slowlyChanging": {
+    "images": [
+      {
+        "url": "https://media.viator.com/swamp.jpg",
+        "source": "supplier"
+      }
+    ],
+    "description": "Cruise the bayous of southern Louisiana on a native-guided boat.",
+    "highlights": [
+      "See wild alligators",
+      "Guided bayou tour"
+    ],
+    "inclusions": [
+      "Boat tour",
+      "Local guide"
+    ],
+    "exclusions": [
+      "Hotel pickup (unless option selected)",
+      "Gratuities"
+    ],
+    "hasHotelPickup": false,
+    "cancellationPolicy": {
+      "description": "Standard 24h",
+      "freeCancellation": true
+    }
+  },
+  "frequentlyChanging": {
+    "availabilityStatus": "available",
+    "startingPrice": 55.25,
+    "currency": "USD",
+    "availableOptions": [
+      {
+        "code": "1045AM",
+        "title": "10:45 AM Departure",
+        "times": [
+          "10:45"
+        ]
+      }
+    ],
+    "operatingDays": [
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY",
+      "SUNDAY"
+    ],
+    "lastVerifiedTimestamp": "2026-09-18T15:08:31.225Z",
+    "isLiveAvailability": true
+  },
+  "affiliate": {
+    "internalProductId": "covered-boat-swamp-tour",
+    "viatorProductCode": "3780SWAMP",
+    "defaultCampaign": "wts-plan-covered-boat",
+    "allowedSites": [
+      "welcometotheswamp",
+      "welcometoneworleanstours"
+    ],
+    "status": "active"
+  }
+}

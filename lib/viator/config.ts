@@ -55,7 +55,7 @@ export type ViatorServerConfig = ViatorPublicConfig & {
 };
 
 const DEFAULT_CONFIG: ViatorPublicConfig = {
-  pid: "P00281144",
+  pid: "P00306962",
   mcid: "42383",
   medium: "api",
   locale: "en-US",
@@ -63,7 +63,7 @@ const DEFAULT_CONFIG: ViatorPublicConfig = {
   utmSource: "destinationcommandcenter",
   utmMedium: "affiliate",
   utmCampaign: "dcc-destination-lanes",
-  accessTier: "basic_access",
+  accessTier: "full_access",
 };
 
 export const VIATOR_SUPPORTED_CURRENCIES = [

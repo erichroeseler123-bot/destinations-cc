@@ -36,13 +36,19 @@ export default function WelcomeStopPage() {
             <h2 className="text-xl font-bold text-[#4A1A6B] mb-2 font-[var(--font-accent)]">
               Schedule Tour Help
             </h2>
+            <div className="mb-4 flex items-baseline gap-3">
+              <span className="text-3xl font-bold text-[#2C1810]">$5</span>
+              <span className="text-sm text-[#5A4535]">per person · 8:00 or 9:30 AM daily</span>
+            </div>
             <p className="text-[#2C1810] font-light mb-4">
               Meetings are arranged in advance, and the meeting location is agreed upon before the
               appointment. Availability varies, so visitors should call or text to schedule.
             </p>
-            <p className="text-[#5A4535] font-light mb-6 text-sm">
-              The service helps individuals, families, and groups compare available tour options.
-            </p>
+            <ul className="mb-6 space-y-1.5 text-sm text-[#5A4535] font-light">
+              <li className="flex items-start gap-2"><span className="text-[#C8831A] font-bold">✓</span> Compare city, swamp, plantation, and cruise options side by side</li>
+              <li className="flex items-start gap-2"><span className="text-[#C8831A] font-bold">✓</span> Get honest format and transportation advice for your group</li>
+              <li className="flex items-start gap-2"><span className="text-[#C8831A] font-bold">✓</span> Book on the spot or take time to decide — no pressure</li>
+            </ul>
             <div className="flex flex-col sm:flex-row gap-3">
               <a
                 href="tel:+15044849687"

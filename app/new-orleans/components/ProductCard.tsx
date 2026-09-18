@@ -84,6 +84,26 @@ export default function ProductCard({
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div className={visualStyles.productCardImageShade}></div>
+            {sourceProduct?.badges && sourceProduct.badges.length > 0 && (
+              <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
+                {sourceProduct.badges.map((badge, idx) => (
+                  <span
+                    key={idx}
+                    className={`inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm ${
+                      badge.type === 'urgency'
+                        ? 'bg-[#7c2d12]/85 text-[#fbbf24] border border-[#f59e0b]/40'
+                        : badge.type === 'concierge-pick'
+                          ? 'bg-[#11100d]/85 text-[#d4af37] border border-[#d4af37]/50'
+                          : badge.type === 'logistics'
+                            ? 'bg-[#11100d]/85 text-[#a3e635] border border-[#a3e635]/30'
+                            : 'bg-[#11100d]/85 text-[#22d3ee] border border-[#22d3ee]/30'
+                    }`}
+                  >
+                    {badge.label}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           {resolvedImage.attribution && (
             <div className={visualStyles.productCardCredit}>
@@ -109,6 +129,15 @@ export default function ProductCard({
         {(product.operatorAttribution || sourceProduct?.operatorName) && (
           <p className={visualStyles.productCardOperator}>
             Operated by {product.operatorAttribution || sourceProduct?.operatorName}
+          </p>
+        )}
+
+        {sourceProduct?.priceFrom && (
+          <p className="mt-1.5 text-base font-bold text-[#f6f1e8]">
+            From ${sourceProduct.priceFrom}
+            {sourceProduct.priceUnit && (
+              <span className="ml-1 text-xs font-normal text-[#9f9588]">/ {sourceProduct.priceUnit}</span>
+            )}
           </p>
         )}
 

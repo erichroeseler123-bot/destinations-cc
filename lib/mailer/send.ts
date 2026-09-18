@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import type { ReactElement } from "react";
 import { Resend } from "resend";
 import { brands, type BrandId } from "@/lib/mailer/brands";
+import { createResendClient } from "@/lib/mailer/resendClient";
 
 type MissionTemplateFactory<TContext extends Record<string, unknown>> = (
   context: TContext,
@@ -26,8 +27,6 @@ export type SendMissionNotificationInput<TContext extends Record<string, unknown
   context: TContext;
   subject?: string;
 };
-
-const resend = new Resend(process.env.DCC_RESEND_API_KEY || "re_mock_key");
 
 export function parseEmailList(value?: string): string[] {
   return (value || "")
@@ -71,13 +70,15 @@ export async function sendMissionNotification<TContext extends Record<string, un
     recipientsHash,
   };
 
-  if (!process.env.DCC_RESEND_API_KEY) {
+  const resendInfo = createResendClient();
+  if (!resendInfo) {
     return {
       success: false,
-      error: "DCC_RESEND_API_KEY is not configured",
+      error: "Resend API key is not configured (checked DCC_RESEND_API_KEY and RESEND_API_KEY)",
       ...baseResult,
     };
   }
+  const { resend } = resendInfo;
 
   if (!brand.from) {
     return {

@@ -107,6 +107,46 @@ export default function NewOrleansHomePage() {
 
       <DailyBriefSignup source="home-intents" />
 
+      <section className="border-y border-[var(--nola-gold)]/30 bg-gradient-to-b from-[#12100c] to-[#0b0b0c] py-12 md:py-16">
+        <div className="mx-auto w-[min(900px,calc(100%-3rem))]">
+          <div className="relative overflow-hidden border border-[var(--nola-gold)]/40 bg-[var(--nola-surface)] p-8 md:p-10 md:flex md:items-center md:gap-10">
+            <div className="absolute left-0 top-0 h-full w-1 bg-[var(--nola-gold)]" aria-hidden="true" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">In New Orleans Now?</p>
+              <h2 className={`mt-2 text-2xl md:text-3xl text-[var(--nola-ivory)] ${visualStyles.accentFont}`}>
+                Meet a Tour Concierge
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-[var(--nola-text-muted)]">
+                Talk through the available tours, compare formats, and get honest help choosing — before you book anything.
+                Concierge meetings are arranged in advance at a convenient French Quarter location.
+              </p>
+              <div className="mt-2 flex items-center gap-3">
+                <span className="text-xl font-bold text-[var(--nola-ivory)]">From $5</span>
+                <span className="text-xs text-[var(--nola-text-muted)]">per person · 8:00 or 9:30 AM daily</span>
+              </div>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-3 md:mt-0 md:flex-col md:items-stretch shrink-0">
+              <Link
+                href="/french-quarter-welcome-stop"
+                data-wno-event="concierge_cta_clicked"
+                data-wno-label="Schedule Tour Help"
+                className="inline-flex items-center justify-center bg-[var(--nola-gold)] px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[var(--nola-ivory)] transition"
+              >
+                Schedule Tour Help
+              </Link>
+              <a
+                href="tel:+15044849687"
+                data-wno-event="concierge_phone_clicked"
+                data-wno-label="Call Now"
+                className="inline-flex items-center justify-center border border-[var(--nola-gold)] px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-[var(--nola-ivory)] hover:bg-[var(--nola-gold)] hover:text-[#171717] transition"
+              >
+                Call 504-484-9687
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="chooser" className={visualStyles.homeChooserSection}>
         <div className={visualStyles.homeChooserInner}>
           <p className={visualStyles.homeSectionEyebrow}>Not sure?</p>

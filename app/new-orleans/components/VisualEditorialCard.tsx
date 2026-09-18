@@ -12,6 +12,8 @@ type VisualEditorialCardProps = {
   durationLabel?: string;
   pickupSummary?: string;
   inclusions?: string[];
+  priceFrom?: number;
+  priceUnit?: string;
   bookingHref?: string;
   bookingItemId?: string | number;
   bookingFlowId?: string | number;
@@ -31,6 +33,8 @@ export default function VisualEditorialCard({
   durationLabel,
   pickupSummary,
   inclusions,
+  priceFrom,
+  priceUnit,
   bookingHref,
   bookingItemId,
   bookingFlowId,
@@ -93,6 +97,15 @@ export default function VisualEditorialCard({
                 </span>
               )}
             </div>
+          )}
+
+          {priceFrom && (
+            <p className="mb-3 text-base font-bold text-[#f6f1e8]">
+              From ${priceFrom}
+              {priceUnit && (
+                <span className="ml-1 text-xs font-normal text-[#9d9587]">/ {priceUnit}</span>
+              )}
+            </p>
           )}
 
           {description && <p className="text-sm leading-6 text-[#b9b0a2]">{description}</p>}

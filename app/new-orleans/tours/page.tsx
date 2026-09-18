@@ -11,6 +11,7 @@ import {
   buildWnoWebPageJsonLd,
 } from "../lib/structuredData";
 import { NEW_ORLEANS_TOURS_PATH, METADATA, STOREFRONT_PRODUCTS } from "./pageConfig";
+import DailyBriefSignup from "../components/DailyBriefSignup";
 import { headers } from "next/headers";
 import { generateCategorySchemaGraph } from "../lib/schema";
 import { isHeldProduct } from "../data/truthPolicy";
@@ -121,6 +122,8 @@ export default async function NewOrleansToursPage() {
             );
           })}
         </div>
+
+        <DailyBriefSignup source="tour-catalog" />
       </main>
     </>
   );

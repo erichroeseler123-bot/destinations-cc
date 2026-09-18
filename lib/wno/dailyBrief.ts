@@ -1,8 +1,8 @@
 import "server-only";
 
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { Resend } from "resend";
 import { appendCorridorEventDurably, listRecentCorridorEvents } from "@/lib/dcc/telemetry/corridorEvents";
+import { createResendClient, getResendApiKey } from "@/lib/mailer/resendClient";
 
 const WNO_BASE_URL = "https://www.welcometoneworleanstours.com";
 const DCC_BASE_URL = "https://www.destinationcommandcenter.com";
@@ -93,7 +93,10 @@ export async function alreadySentToday(email: string, date = new Date()) {
 }
 
 function signingKey() {
-  return process.env.WNO_BRIEF_SIGNING_SECRET || process.env.DCC_RESEND_API_KEY || "";
+  const customSecret = process.env.WNO_BRIEF_SIGNING_SECRET?.trim();
+  if (customSecret) return customSecret;
+  const resendKey = getResendApiKey();
+  return resendKey ? resendKey.key : "";
 }
 
 export function unsubscribeToken(email: string) {
@@ -188,12 +191,24 @@ function buildBrief(context: LiveContext, email: string) {
 }
 
 export async function sendDailyBriefs() {
-  if (!process.env.DCC_RESEND_API_KEY) throw new Error("DCC_RESEND_API_KEY is not configured");
+  const clientInfo = createResendClient();
+  if (!clientInfo) {
+    throw new Error("Resend API key is not configured (neither DCC_RESEND_API_KEY nor RESEND_API_KEY found)");
+  }
+  const { resend, source: keySource } = clientInfo;
+  console.info("Initializing WNO daily brief send", { keySource });
+
   const context = await getLiveContext();
   const subscribers = await listActiveSubscribers();
-  const resend = new Resend(process.env.DCC_RESEND_API_KEY);
   const dateKey = localDateKey();
-  const result = { subscribers: subscribers.length, sent: 0, skipped: 0, failed: 0, localDate: dateKey };
+  const result: { subscribers: number; sent: number; skipped: number; failed: number; localDate: string; keySource: string; lastError?: string } = {
+    subscribers: subscribers.length,
+    sent: 0,
+    skipped: 0,
+    failed: 0,
+    localDate: dateKey,
+    keySource,
+  };
 
   for (const subscriber of subscribers) {
     if (await alreadySentToday(subscriber.email)) {
@@ -215,6 +230,9 @@ export async function sendDailyBriefs() {
     });
 
     if (error || !data?.id) {
+      const errorMsg = error?.message || "no_data_id";
+      console.error("WNO brief send failed", { email: subscriber.email, error: errorMsg });
+      result.lastError = errorMsg;
       result.failed += 1;
       continue;
     }

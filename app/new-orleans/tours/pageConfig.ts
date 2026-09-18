@@ -1,3 +1,10 @@
+export type ProductBadgeType = 'urgency' | 'trust' | 'logistics' | 'concierge-pick';
+
+export interface ProductBadge {
+  type: ProductBadgeType;
+  label: string;
+}
+
 export interface NolaFareHarborProduct {
   id: string;
   title: string;
@@ -11,6 +18,13 @@ export interface NolaFareHarborProduct {
   ctaLabel?: string;
   slug: string;
   relatedTourSlug: string;
+
+  // Pricing — displayed on tour cards, sticky bar, and guide pages
+  priceFrom?: number;
+  priceUnit?: string; // "per person" | "per adult" | "per group"
+
+  // Conversion badges — rendered on tour cards and category pages
+  badges?: ProductBadge[];
 
   // Booking variants for multi-option products
   bookingVariants?: {
@@ -84,6 +98,11 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "Southern Style Tours",
     description: "A comprehensive overview of New Orleans covering the French Quarter, Garden District, and more.",
     bestFor: "Best for first-time visitors",
+    priceFrom: 50,
+    priceUnit: "person",
+    badges: [
+      { type: "concierge-pick", label: "🏆 Concierge Pick" },
+    ],
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
     imageAlt: "French Quarter street in New Orleans",
     slug: "city-tour-of-new-orleans",
@@ -137,6 +156,11 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "Southern Style Tours",
     description: "Journey outside the city to explore historic Louisiana plantations and learn their complex history.",
     bestFor: "Best for a longer day trip",
+    priceFrom: 67,
+    priceUnit: "person",
+    badges: [
+      { type: "logistics", label: "🚐 Transportation Included" },
+    ],
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
     imagePresentation: "editorial",
     slug: "oak-alley-or-laura-plantation-tour",
@@ -192,6 +216,12 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "Ragin Cajun Tours",
     description: "A covered tour-boat experience offered through Ragin Cajun Tours.",
     bestFor: "Covered tour boat",
+    priceFrom: 35,
+    priceUnit: "person",
+    badges: [
+      { type: "concierge-pick", label: "🏆 Concierge Pick" },
+      { type: "logistics", label: "🚐 Pickup Available" },
+    ],
     imageUrl: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
     imageAlt: "Covered tour boat in a Louisiana swamp",
     slug: "covered-tour-boat",
@@ -238,6 +268,12 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "Ragin Cajun Tours",
     description: "The faster, more adventurous, open-air swamp format.",
     bestFor: "Airboat options",
+    priceFrom: 60,
+    priceUnit: "person",
+    badges: [
+      { type: "urgency", label: "⚡ Likely to Sell Out" },
+      { type: "logistics", label: "🚐 Pickup Available" },
+    ],
     imageUrl: "/images/travel-markets/new-orleans/airboat-swamp.png",
     imageAlt: "Airboat traveling through a Louisiana swamp",
     ctaLabel: "View Airboat Options →",
@@ -288,6 +324,12 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "Southern Style Tours",
     description: "An 8-hour combination of a New Orleans city tour and either Oak Alley or Laura Plantation.",
     bestFor: "City and plantation in one day",
+    priceFrom: 99,
+    priceUnit: "person",
+    badges: [
+      { type: "logistics", label: "🚐 Pickup Included" },
+      { type: "trust", label: "⏱️ Full Day" },
+    ],
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
     imageAlt: "French Quarter street in New Orleans",
     slug: "all-day-city-plantation-combo",
@@ -343,6 +385,12 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "Ragin Cajun Airboat Tours",
     description: "A covered boat and plantation combination lasting approximately 7 hours.",
     bestFor: "Covered boat and plantation in one outing",
+    priceFrom: 130,
+    priceUnit: "person",
+    badges: [
+      { type: "logistics", label: "🚐 Transport Included" },
+      { type: "trust", label: "⏱️ Full Day" },
+    ],
     imageUrl: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
     imageAlt: "Covered tour boat in a Louisiana swamp",
     slug: "covered-boat-plantation-combo",
@@ -397,6 +445,12 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "River Cruises",
     operatorName: "New Orleans Steamboat Company",
     description: "Experience the Mississippi River at night with live jazz and stunning city views.",
+    priceFrom: 58,
+    priceUnit: "person",
+    badges: [
+      { type: "urgency", label: "⚡ Likely to Sell Out" },
+      { type: "trust", label: "✅ Free 24h Cancel" },
+    ],
     imageUrl: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
     slug: "evening-jazz-cruise",
     relatedTourSlug: "daytime-jazz-cruise",
@@ -452,6 +506,11 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "River Cruises",
     operatorName: "New Orleans Steamboat Company",
     description: "Enjoy a relaxing daytime cruise on the Mississippi River with live jazz.",
+    priceFrom: 44,
+    priceUnit: "person",
+    badges: [
+      { type: "trust", label: "✅ Free 24h Cancel" },
+    ],
     imageUrl: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
     slug: "daytime-jazz-cruise",
     relatedTourSlug: "evening-jazz-cruise",
@@ -515,6 +574,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "River Cruises",
     operatorName: "New Orleans Steamboat Company",
     description: "A festive Sunday morning on the river featuring a jazz brunch.",
+    priceFrom: 44,
+    priceUnit: "person",
     imageUrl: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
     slug: "sunday-jazz-brunch-cruise",
     relatedTourSlug: "daytime-jazz-cruise",
@@ -561,6 +622,11 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Plantation Tours",
     operatorName: "Gray Line",
     description: "Explore the iconic Oak Alley Plantation with its famous canopy of southern live oak trees.",
+    priceFrom: 89,
+    priceUnit: "person",
+    badges: [
+      { type: "logistics", label: "🚐 Transportation Included" },
+    ],
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
     slug: "oak-alley-plantation-tour-grey-line",
     relatedTourSlug: "whitney-plantation-tour",
@@ -586,6 +652,11 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Plantation Tours",
     operatorName: "Gray Line",
     description: "Visit the Whitney Plantation, dedicated entirely to understanding the facts of slavery in Louisiana.",
+    priceFrom: 89,
+    priceUnit: "person",
+    badges: [
+      { type: "logistics", label: "🚐 Transportation Included" },
+    ],
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
     slug: "whitney-plantation-tour",
     relatedTourSlug: "oak-alley-plantation-tour-grey-line",
@@ -611,6 +682,11 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Swamp Tours",
     operatorName: "Gray Line",
     description: "A classic boat tour exploring the Louisiana swamp and bayou ecosystem.",
+    priceFrom: 35,
+    priceUnit: "person",
+    badges: [
+      { type: "logistics", label: "🚐 Pickup Available" },
+    ],
     imageUrl: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
     slug: "swamp-bayou-tour",
     relatedTourSlug: "small-airboat-swamp-adventure",
@@ -635,6 +711,11 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Airboat Rides",
     operatorName: "Gray Line",
     description: "An intimate and high-speed airboat ride through the Louisiana swamps.",
+    priceFrom: 89,
+    priceUnit: "person",
+    badges: [
+      { type: "urgency", label: "⚡ Likely to Sell Out" },
+    ],
     imageUrl: "/images/travel-markets/new-orleans/airboat-swamp.png",
     slug: "small-airboat-swamp-adventure",
     relatedTourSlug: "large-airboat-swamp-adventure",
@@ -659,6 +740,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Airboat Rides",
     operatorName: "Gray Line",
     description: "A fast-paced airboat ride on a larger vessel through the Louisiana swamps.",
+    priceFrom: 59,
+    priceUnit: "person",
     imageUrl: "/images/travel-markets/new-orleans/airboat-swamp.png",
     slug: "large-airboat-swamp-adventure",
     relatedTourSlug: "small-airboat-swamp-adventure",
@@ -683,6 +766,12 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Combo Tours",
     operatorName: "Gray Line",
     description: "Experience both a Louisiana swamp boat tour and the historic Oak Alley Plantation in one trip.",
+    priceFrom: 131,
+    priceUnit: "person",
+    badges: [
+      { type: "logistics", label: "🚐 Transportation Included" },
+      { type: "trust", label: "⏱️ Full Day" },
+    ],
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
     slug: "swamp-boat-oak-alley-combo",
     relatedTourSlug: "swamp-boat-whitney-combo",
@@ -708,6 +797,12 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Combo Tours",
     operatorName: "Gray Line",
     description: "Experience both a Louisiana swamp boat tour and the historic Whitney Plantation.",
+    priceFrom: 131,
+    priceUnit: "person",
+    badges: [
+      { type: "logistics", label: "🚐 Transportation Included" },
+      { type: "trust", label: "⏱️ Full Day" },
+    ],
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
     slug: "swamp-boat-whitney-combo",
     relatedTourSlug: "swamp-boat-oak-alley-combo",
@@ -733,6 +828,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Walking Tours",
     operatorName: "Gray Line",
     description: "A walking tour exploring New Orleans' historic cocktail culture.",
+    priceFrom: 28,
+    priceUnit: "person",
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
     slug: "cocktail-walking-tour",
     relatedTourSlug: "craft-cocktail-walking-tour",
@@ -757,6 +854,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Walking Tours",
     operatorName: "Gray Line",
     description: "Discover the craft cocktail scene and history in the French Quarter.",
+    priceFrom: 68,
+    priceUnit: "person",
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
     slug: "craft-cocktail-walking-tour",
     relatedTourSlug: "cocktail-walking-tour",
@@ -781,6 +880,12 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Walking Tours",
     operatorName: "Gray Line",
     description: "An interactive evening walking tour through the haunted history of New Orleans.",
+    priceFrom: 27,
+    priceUnit: "person",
+    badges: [
+      { type: "urgency", label: "⚡ Popular Evenings" },
+      { type: "trust", label: "🌙 After Dark" },
+    ],
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
     slug: "ghosts-spirits-walking-tour",
     relatedTourSlug: "craft-cocktail-walking-tour",
@@ -805,6 +910,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "City Tours",
     operatorName: "Gray Line",
     description: "A comprehensive tour covering the city's highlights, historic cemeteries, and the Garden District.",
+    priceFrom: 55,
+    priceUnit: "person",
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
     slug: "city-cemetery-garden-district-tour",
     relatedTourSlug: "city-of-new-orleans-riverboat-cruise",
@@ -829,6 +936,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "River Cruises",
     operatorName: "New Orleans Steamboat Company",
     description: "A 75-minute riverboat cruise offering a quick and scenic tour of the Mississippi River.",
+    priceFrom: 26,
+    priceUnit: "person",
     imageUrl: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
     slug: "city-of-new-orleans-riverboat-cruise",
     relatedTourSlug: "daytime-jazz-cruise",

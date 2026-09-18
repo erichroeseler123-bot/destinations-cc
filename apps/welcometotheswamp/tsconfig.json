@@ -35,6 +35,7 @@
       "@/lib/dcc/*": ["../../lib/dcc/*"],
       "@/lib/wta/*": ["../../lib/wta/*"],
       "@/lib/db/*": ["../../lib/db/*"],
+      "@/lib/redis": ["../../lib/redis"],
       "@/lib/route-governance": ["../../lib/route-governance"],
       "@/data/*": ["../../data/*"],
       "@/src/*": ["../../src/*"],

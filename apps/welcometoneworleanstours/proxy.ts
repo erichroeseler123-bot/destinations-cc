@@ -25,5 +25,8 @@ export function proxy(request: NextRequest) {
   if (request.nextUrl.pathname === "/new-orleans/restaurant-partners") {
     return NextResponse.redirect(new URL("/contact", request.url), 308);
   }
+  if (request.nextUrl.pathname === "/operators/nola-ghost-riders") {
+    return NextResponse.rewrite(new URL("/tours/nola-ghost-riders", request.url));
+  }
   return NextResponse.next();
 }

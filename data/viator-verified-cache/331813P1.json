@@ -1,0 +1,67 @@
+{
+  "internalProductId": "juneau-whale-small-group",
+  "viatorProductCode": "331813P1",
+  "status": "active",
+  "stable": {
+    "title": "Small-Group Juneau Whale Watching Cruise",
+    "supplier": "Alaska Galore Tours",
+    "destination": "Juneau",
+    "destinationId": 941,
+    "canonicalViatorUrl": "https://www.viator.com/tours/Juneau/Whale-Tours-in-Juneau-Alaska/d941-331813P1",
+    "durationMinutes": 210,
+    "durationText": "3.5 hours"
+  },
+  "slowlyChanging": {
+    "images": [
+      {
+        "url": "https://media.viator.com/whale.jpg",
+        "source": "supplier"
+      }
+    ],
+    "description": "Intimate catamaran safari in Auke Bay.",
+    "highlights": [
+      "Humpback whale guaranteed",
+      "Small group"
+    ],
+    "inclusions": [
+      "Round-trip port transfer",
+      "Naturalist guide"
+    ],
+    "exclusions": [
+      "Food and beverage"
+    ],
+    "meetingPoint": "Mount Roberts Tramway Plaza",
+    "hasHotelPickup": true,
+    "cancellationPolicy": {
+      "freeCancellation": true
+    }
+  },
+  "frequentlyChanging": {
+    "availabilityStatus": "available",
+    "startingPrice": 189,
+    "currency": "USD",
+    "availableOptions": [
+      {
+        "code": "OPT1",
+        "title": "Morning Departure"
+      }
+    ],
+    "operatingDays": [
+      "DAILY"
+    ],
+    "lastVerifiedTimestamp": "2026-09-18T15:08:31.226Z",
+    "isLiveAvailability": true
+  },
+  "affiliate": {
+    "internalProductId": "juneau-whale-small-group",
+    "viatorProductCode": "331813P1",
+    "defaultCampaign": "last-frontier-juneau-whale-small-group",
+    "allowedSites": [
+      "last-frontier-shore-excursions",
+      "welcometoalaskatours",
+      "cruisepromenade"
+    ],
+    "portSlug": "juneau",
+    "status": "active"
+  }
+}

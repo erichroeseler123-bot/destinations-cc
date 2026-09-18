@@ -12,6 +12,7 @@ import GeoDirectAnswerCard from "../../components/GeoDirectAnswerCard";
 import { getNolaGeoFact } from "../../data/nolaGeoFacts";
 
 import { STOREFRONT_PRODUCTS } from "../../tours/pageConfig";
+import DailyBriefSignup from "../../components/DailyBriefSignup";
 
 const CARD_EYEBROWS = [
   "Our first pick",
@@ -257,6 +258,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                 durationLabel={sourceProduct?.durationLabel}
                 pickupSummary={sourceProduct?.pickupSummary || sourceProduct?.transportationSummary}
                 inclusions={sourceProduct?.highlights || sourceProduct?.confirmedInclusions}
+                priceFrom={sourceProduct?.priceFrom}
+                priceUnit={sourceProduct?.priceUnit}
                 bookingItemId={sourceProduct?.itemId}
                 bookingFlowId={sourceProduct?.flowId}
                 companyShortname={sourceProduct?.companyShortname}
@@ -414,6 +417,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         {planningSection}
         {relatedLinksSection}
         {faqSection}
+
+        <DailyBriefSignup source="category-page" />
 
         <div className="mt-14 text-center">
           <Link

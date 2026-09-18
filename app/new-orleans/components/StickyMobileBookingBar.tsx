@@ -62,8 +62,16 @@ export default function StickyMobileBookingBar({
         <div className="mb-2 flex min-w-0 items-center justify-between gap-3 px-1">
           <div className="min-w-0">
             <div className="truncate font-serif text-[15px] font-medium text-[#f6f1e8]">{product.title}</div>
-            <div className="truncate text-[10px] font-medium uppercase tracking-[0.14em] text-[#c7a96b]">
-              {isHeld ? "Operator verification pending" : hasMultipleVariants ? "Multiple booking options" : `Operated by ${product.operatorName}`}
+            <div className="flex items-center gap-2">
+              {product.priceFrom && (
+                <span className="text-sm font-bold text-[#f6f1e8]">
+                  From ${product.priceFrom}
+                  {product.priceUnit && <span className="text-[10px] font-normal text-[#c7a96b]"> / {product.priceUnit}</span>}
+                </span>
+              )}
+              <span className="truncate text-[10px] font-medium uppercase tracking-[0.14em] text-[#c7a96b]">
+                {isHeld ? "Operator verification pending" : !product.priceFrom && hasMultipleVariants ? "Multiple booking options" : !product.priceFrom ? `Operated by ${product.operatorName}` : ""}
+              </span>
             </div>
           </div>
           <span className="shrink-0 text-[10px] text-[#f6f1e8]/45">Need help?</span>

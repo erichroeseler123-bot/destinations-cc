@@ -354,7 +354,7 @@ export function getViatorClient(): ViatorClient {
     async getProductReviews(productCode: string, body: Record<string, unknown> = {}) {
       const data = (await request("/reviews/product", {
         method: "POST",
-        body: { productCode, ...body },
+        body: { productCode, provider: "ALL", start: 1, count: 10, ...body },
       })) as { reviews?: unknown[] } | unknown[];
       const rows = Array.isArray(data) ? data : Array.isArray((data as { reviews?: unknown[] }).reviews) ? (data as { reviews?: unknown[] }).reviews || [] : [];
       return rows
@@ -432,7 +432,7 @@ export function getViatorClient(): ViatorClient {
         try {
           await request("/reviews/product", {
             method: "POST",
-            body: { productCode: sampleReviewProductCode, count: 1 },
+            body: { productCode: sampleReviewProductCode, provider: "ALL", count: 1, start: 1 },
           });
           snapshot.reviews = "ok";
         } catch (error) {
