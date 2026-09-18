@@ -286,7 +286,7 @@ const ADDITIONAL_GHOSTRIDERS_TOURS: GhostRiderTour[] = [
 const ALL_TOURS = [...FEATURED_GHOSTRIDERS_TOURS, ...ADDITIONAL_GHOSTRIDERS_TOURS];
 
 export default function NolaGhostRidersDirectory() {
-  const [selectedFilter, setSelectedFilter] = useState<string>("featured");
+  const [selectedFilter, setSelectedFilter] = useState<string>("all");
 
   const displayedTours = ALL_TOURS.filter((tour) => {
     if (selectedFilter === "all") return true;
@@ -295,12 +295,12 @@ export default function NolaGhostRidersDirectory() {
   });
 
   const filterTabs = [
+    { id: "all", label: "All Experiences", count: 9 },
     { id: "featured", label: "Featured Tours", count: 7 },
     { id: "nighttime", label: "Night Bus & BYOB", count: 4 },
     { id: "cemetery", label: "Cemetery Tours", count: 3 },
     { id: "ghost", label: "Ghost & Paranormal", count: 6 },
     { id: "walking", label: "Walking & Pub Crawls", count: 2 },
-    { id: "all", label: "All Experiences", count: 9 },
   ];
 
   return (
@@ -324,7 +324,7 @@ export default function NolaGhostRidersDirectory() {
         </div>
 
         <p className="text-xs font-medium text-white/60">
-          Showing <span className="text-[#d4af37] font-bold">{displayedTours.length}</span> {selectedFilter === "featured" ? "featured" : "verified"} experiences
+          Showing <span className="text-[#d4af37] font-bold">{displayedTours.length}</span> {selectedFilter === "all" ? "verified" : selectedFilter === "featured" ? "featured" : "matching"} experiences
         </p>
       </div>
 
@@ -333,6 +333,8 @@ export default function NolaGhostRidersDirectory() {
         {displayedTours.map((tour) => (
           <article
             key={tour.code}
+            data-testid="ghost-tour-card"
+            data-tour-code={tour.code}
             className="flex flex-col justify-between overflow-hidden rounded-lg border border-[#d4af37]/25 bg-[#121016] shadow-[0_8px_24px_rgba(0,0,0,0.45)] transition-all duration-300 hover:border-[#d4af37] hover:shadow-[0_12px_32px_rgba(212,175,55,0.2)]"
           >
             <div>
@@ -413,9 +415,9 @@ export default function NolaGhostRidersDirectory() {
             <div className="border-t border-[#d4af37]/20 bg-[#0d0c10] p-6">
               <div className="flex items-baseline justify-between mb-2">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-white/50">Starting from</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-white/50">Verified Rate</span>
                   <p className="text-2xl font-serif font-bold text-[#fdfbf7]">
-                    ${tour.startingPrice} <span className="text-xs font-sans font-normal text-white/60">per person</span>
+                    From ${tour.startingPrice} <span className="text-xs font-sans font-normal text-white/60">per person</span>
                   </p>
                 </div>
                 <div className="text-right">
