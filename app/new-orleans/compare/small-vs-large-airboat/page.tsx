@@ -33,7 +33,7 @@ export default function SmallVsLargeAirboatPage() {
           ticketType: "Small-group airboat ticket (6–12 passengers) with coach transfer",
           inclusions: "Round-trip coach transportation, 1h 45m airboat ride, hearing protection",
           meetingPoint: "400 Toulouse St (French Quarter) — fixed coach departure",
-          cancellationPolicy: "Full refund with 24 hours notice prior to departure",
+          cancellationPolicy: "Non-refundable; all sales final per Gray Line operator terms",
           href: "/tours/small-airboat-swamp-adventure",
           ctaText: "Book Small Airboat ($119)",
         },
@@ -49,7 +49,7 @@ export default function SmallVsLargeAirboatPage() {
           ticketType: "Standard airboat ticket (15–27 passengers) with coach transfer",
           inclusions: "Round-trip coach transportation, 1h 45m airboat ride, hearing protection",
           meetingPoint: "400 Toulouse St (French Quarter) — fixed coach departure",
-          cancellationPolicy: "Full refund with 24 hours notice prior to departure",
+          cancellationPolicy: "Non-refundable; all sales final per Gray Line operator terms",
           href: "/tours/large-airboat-swamp-adventure",
           ctaText: "Book Large Airboat ($90)",
         },
@@ -60,7 +60,7 @@ export default function SmallVsLargeAirboatPage() {
         { label: "Total Duration", left: "3h 45m (shuttle included)", right: "3h 45m (shuttle included)" },
         { label: "Minimum Age", left: "5 years old", right: "5 years old" },
         { label: "Departure Point", left: "400 Toulouse St (French Quarter)", right: "400 Toulouse St (French Quarter)" },
-        { label: "Cancellation Policy", left: "Full refund with 24h notice", right: "Full refund with 24h notice" },
+        { label: "Cancellation Policy", left: "Non-refundable; all sales final per Gray Line terms", right: "Non-refundable; all sales final per Gray Line terms" },
       ]}
       left={{
         heading: "Small Airboat",

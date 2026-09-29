@@ -27,31 +27,31 @@ const comparisonRows = [
     combo: "The ultimate full-day experience: authentic swamp boat cruise in the morning + Oak Alley tour in the afternoon.",
   },
   {
-    feature: "Price (w/ Hotel Transit)",
-    oakAlley: "$75–$95 per person (Includes entrance ticket + air-conditioned coach transportation)",
-    whitney: "$80–$100 per person (Includes museum admission + round-trip coach transport)",
-    swampTour: "$55–$75 per person (Covered boat) • $85–$120 (Airboat)",
-    combo: "$135–$165 per person (Saves 20% compared to booking two separate day trips)",
+    feature: "Price (w/ Coach / Shuttle Transit)",
+    oakAlley: "$89.00 flat rate per adult / $54 child (Includes house admission + round-trip coach from 400 Toulouse St)",
+    whitney: "$89.00 flat rate per adult / $54 child (Includes museum admission + round-trip coach from 400 Toulouse St)",
+    swampTour: "$60–$65 per adult (Covered boat w/ transit) • $90–$119 (Airboat w/ transit)",
+    combo: "$131.00 flat rate per adult / $79 child (Oak Alley + Swamp Boat combination with coach transit)",
   },
   {
     feature: "Total Time Commitment",
     oakAlley: "5 to 5.5 hours round-trip (~1 hour drive each way + 2.5 hours on-site)",
     whitney: "5 to 5.5 hours round-trip (~1 hour drive each way + 2.5 hours on-site)",
-    swampTour: "3.5 to 4 hours round-trip (~45 min drive each way + 2 hours on water)",
+    swampTour: "3.5 to 4 hours round-trip (~45 min drive each way + 1.5–2 hours on water)",
     combo: "7.5 to 8.5 hours total (A full-day excursion leaving dinner open in NOLA)",
   },
   {
-    feature: "Driving Distance from NOLA",
-    oakAlley: "~53 miles west of the French Quarter along the Mississippi River Road",
-    whitney: "~51 miles west of the French Quarter (Wallace, LA)",
-    swampTour: "~35 miles south to Barataria Preserve or east to Slidell/Honey Island",
-    combo: "Integrated route with direct transfer between swamp basin and River Road",
+    feature: "Driving Distance & Departure Point",
+    oakAlley: "~53 miles west along River Road. Coach departs 400 Toulouse St (French Quarter).",
+    whitney: "~51 miles west (Wallace, LA). Coach departs 400 Toulouse St (French Quarter).",
+    swampTour: "~35 miles south (Barataria basin). Central coach or hotel shuttle transit included.",
+    combo: "Coach departs 400 Toulouse St with seamless transfer between swamp and plantation.",
   },
   {
     feature: "Family & Age Fit",
     oakAlley: "Great for all ages. Expansive lawns, shade trees, and easy walking paths.",
     whitney: "Best for adults and teens. Deeply poignant, reflective, and educational subject matter.",
-    swampTour: "Outstanding for families and kids of all ages. High excitement seeing wild alligators.",
+    swampTour: "Outstanding for families (covered boat for all ages; airboat minimum age 5). High excitement seeing wild alligators.",
     combo: "Best for travelers who want to maximize a single day outside the city.",
   },
 ];
@@ -65,12 +65,12 @@ const faqs = [
   {
     question: "Can I do a swamp tour and a plantation tour on the same day?",
     answer:
-      "Yes. Booking a full-day combination tour (swamp boat + plantation) is one of the most popular day trips from New Orleans. The tour company handles all transit between downtown New Orleans, the swamp, and River Road, saving you hours of transit time and roughly 20% compared to separate bookings.",
+      "Yes. Booking an organized full-day combination tour (swamp boat + Oak Alley) is one of the most popular day trips from New Orleans ($131 flat rate adult). The tour company handles coach transit between the French Quarter, the swamp basin, and River Road, saving you hours of transit time compared to separate bookings.",
   },
   {
     question: "Do you need a rental car to visit Oak Alley or the Whitney Plantation?",
     answer:
-      "No. Booking an organized coach excursion with hotel pickup from the French Quarter or Canal Street is significantly easier and cheaper than renting a car, paying gas, and navigating rural River Road highways.",
+      "No. Booking an organized coach excursion departing conveniently from 400 Toulouse St in the French Quarter is significantly easier and cheaper than renting a car, paying gas, and navigating rural River Road highways.",
   },
   {
     question: "Is there enough time for dinner in New Orleans after a day trip?",

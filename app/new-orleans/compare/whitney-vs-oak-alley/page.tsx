@@ -39,7 +39,7 @@ export default function WhitneyVsOakAlleyPage() {
           ticketType: "Coach transportation & self-paced audio museum admission",
           inclusions: "Round-trip coach transportation, museum admission, self-paced audio tour with personal headset",
           meetingPoint: "400 Toulouse St (French Quarter) — fixed departure point, not hotel pickup",
-          cancellationPolicy: "Full refund with 24 hours notice prior to departure",
+          cancellationPolicy: "Non-refundable; all sales final per Gray Line operator terms",
           href: "/tours/whitney-plantation-tour?src=wtonot-compare",
           ctaText: "Book Whitney Plantation ($89)",
         },
@@ -55,7 +55,7 @@ export default function WhitneyVsOakAlleyPage() {
           ticketType: "Coach transportation & guided Big House tour admission",
           inclusions: "Round-trip coach transportation, guided Big House tour, 300-year oak allee, slavery exhibits & grounds",
           meetingPoint: "400 Toulouse St (French Quarter) — fixed departure point, not hotel pickup",
-          cancellationPolicy: "Full refund with 24 hours notice prior to departure",
+          cancellationPolicy: "Non-refundable; all sales final per Gray Line operator terms",
           href: "/tours/oak-alley-plantation-tour-grey-line?src=wtonot-compare",
           ctaText: "Book Oak Alley Tour ($89)",
         },
@@ -93,8 +93,8 @@ export default function WhitneyVsOakAlleyPage() {
         },
         {
           label: "Cancellation Policy",
-          left: "Full refund up to 24 hours before tour departure",
-          right: "Full refund up to 24 hours before tour departure",
+          left: "Non-refundable; all sales final per Gray Line terms",
+          right: "Non-refundable; all sales final per Gray Line terms",
         },
       ]}
       left={{ heading: "Whitney Plantation", href: "/tours/whitney-plantation-tour", cta: "Book Whitney Tour" }}

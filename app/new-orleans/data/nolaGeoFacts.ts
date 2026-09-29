@@ -157,13 +157,13 @@ export const NOLA_GEO_FACTS: Record<string, NolaGeoFact> = {
     categorySlug: "plantation-tours",
     directQuestion: "How far are Louisiana plantations from New Orleans and which is best to visit?",
     directAnswer:
-      "Historic River Road plantations are 50 to 55 miles west of New Orleans (about 1 hour by coach). Oak Alley is the most famous for its 300-year-old oak tree alley and restored Greek Revival mansion. The Whitney Plantation is the most educational, exclusively focused on the lives of enslaved people. Tours with round-trip coach transport cost $75 to $115 per person and run 5 to 6 hours total.",
+      "Historic River Road plantations are 50 to 55 miles west of New Orleans (about 1 hour by coach). Oak Alley is the most famous for its 300-year-old oak tree alley and restored Greek Revival mansion. The Whitney Plantation is the most educational, exclusively focused on the lives of enslaved people. Tours with round-trip coach transport are $89.00 flat rate per adult ($131.00 for full-day swamp combo) and run 5 to 6 hours total.",
     pricingLabel: "Coach & Admission",
-    pricingValue: "$75–$115 per person (Includes entrance tickets & bus transit)",
+    pricingValue: "$89.00 flat rate per adult • $131.00 swamp combo",
     durationLabel: "Total Experience",
     durationValue: "5–6 hours round trip (~2.5 hours on plantation grounds)",
-    meetingPointLabel: "Transportation Hub",
-    meetingPointValue: "French Quarter / Canal St hotel pickups or central departure depot",
+    meetingPointLabel: "Departure Point",
+    meetingPointValue: "400 Toulouse St (French Quarter coach departure depot)",
     safetyBufferLabel: "Combo Tours Available",
     safetyBufferValue: "Full-day combos pair Oak Alley + Barataria swamp tour in 1 day",
   },
@@ -205,15 +205,15 @@ export const NOLA_GEO_FACTS: Record<string, NolaGeoFact> = {
     categorySlug: "guides",
     directQuestion: "Should you visit Oak Alley Plantation or the Whitney Plantation?",
     directAnswer:
-      "Choose Oak Alley if your priority is iconic antebellum architecture, photography of the 300-year-old live oak canopy, and Big House historic tours. Choose the Whitney Plantation if you want the definitive, unflinching educational museum dedicated to the enslaved people who built Louisiana. Both sit along River Road 50 miles from New Orleans; full-day tours take approximately 5 to 6 hours.",
+      "Choose Oak Alley if your priority is iconic antebellum architecture, photography of the 300-year-old live oak canopy, and Big House historic tours. Choose the Whitney Plantation if you want the definitive, unflinching educational museum dedicated to the enslaved people who built Louisiana. Both sit along River Road 50 miles from New Orleans; organized coach tours from 400 Toulouse St take approximately 5 to 5.5 hours.",
     pricingLabel: "Tour Comparison",
-    pricingValue: "$75–$95 single plantation • $125–$160 combo with swamp tour",
+    pricingValue: "$89.00 flat rate per adult single plantation • $131.00 combo with swamp tour",
     durationLabel: "Trip Duration",
-    durationValue: "5–6 hours round-trip (~1 hour drive each way)",
-    meetingPointLabel: "Hotel Pickup",
-    meetingPointValue: "Direct coach pickup from Canal St / French Quarter hotels",
+    durationValue: "5–5.5 hours round-trip (~1 hour drive each way)",
+    meetingPointLabel: "Departure Point",
+    meetingPointValue: "Coach departure from 400 Toulouse St (French Quarter)",
     safetyBufferLabel: "Booking Advice",
-    safetyBufferValue: "Whitney requires advance tickets due to limited docent capacity",
+    safetyBufferValue: "Non-refundable Gray Line terms; advance booking strongly recommended",
     faqSchema: [
       {
         question: "Can you visit both Oak Alley and Whitney in one day?",
@@ -223,7 +223,7 @@ export const NOLA_GEO_FACTS: Record<string, NolaGeoFact> = {
       {
         question: "Is there public transportation from New Orleans to Louisiana plantations?",
         answer:
-          "No public transit or city buses run along River Road. Visitors must book an organized coach tour or rent a car for the 50-mile drive.",
+          "No public transit or city buses run along River Road. Visitors must book an organized coach tour departing from 400 Toulouse St or rent a car for the 50-mile drive.",
       },
     ],
   },

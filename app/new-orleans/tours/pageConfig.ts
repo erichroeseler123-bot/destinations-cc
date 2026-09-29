@@ -269,7 +269,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "Ragin Cajun Tours",
     description: "The faster, more adventurous, open-air swamp format.",
     bestFor: "Airboat options",
-    priceFrom: 60,
+    priceFrom: 65,
     priceUnit: "person",
     badges: [
       { type: "urgency", label: "⚡ Likely to Sell Out" },
@@ -281,7 +281,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     slug: "ragin-cajun-airboat-options",
     relatedTourSlug: "covered-tour-boat",
     detailPageTitle: "Ragin Cajun Airboat Options | Welcome to New Orleans Tours",
-    metaDescription: "The faster, more adventurous, open-air swamp format offered by Ragin Cajun Tours.",
+    metaDescription: "Airboat tour options in the Louisiana swamp with Ragin Cajun Tours. Self-drive and French Quarter hotel pickup options available.",
     durationLabel: "Duration confirmed during booking.",
     transportationSummary: "Boat formats confirmed during booking.",
     pickupSummary: "Transportation options confirmed during booking.",
@@ -289,7 +289,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     highlights: [
       "The operator describes the route as traveling through privately accessed swamp property"
     ],
-    detailSummary: "An open-air format. Current airboat configurations and available options are selected directly in the operator checkout. Eligibility, duration, transportation options, group format, and live pricing must all be verified during checkout.",
+    detailSummary: "Airboat options through private Louisiana bayous. Self-drive tour-only rates are $65 (large 16-passenger), $85 (medium 10-passenger), and $95 (small 6–10 passenger) flat rate per rider. Round-trip French Quarter hotel shuttle packages are $90, $110, and $120 respectively. Full refund with at least 24 hours advance notice.",
     bestFit: [
       "Visitors looking for a fast, adventurous ride",
       "Those who prefer an open-air outdoor experience"
@@ -688,17 +688,18 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Swamp Tours",
     operatorName: "Gray Line",
     description: "A classic boat tour exploring the Louisiana swamp and bayou ecosystem.",
-    priceFrom: 35,
-    priceUnit: "person",
+    priceFrom: 65,
+    priceUnit: "adult",
+    isFlatRate: true,
     badges: [
-      { type: "logistics", label: "🚐 Pickup Available" },
+      { type: "logistics", label: "🚐 Coach Transfer Included" },
     ],
     imageUrl: "/images/travel-markets/new-orleans/covered-boat-swamp.png",
     slug: "swamp-bayou-tour",
     relatedTourSlug: "small-airboat-swamp-adventure",
     detailPageTitle: "Swamp & Bayou Tour | Welcome to New Orleans Tours",
     metaDescription: "A classic boat tour exploring the Louisiana swamp and bayou ecosystem with Gray Line.",
-    detailSummary: "A guided boat tour into the Louisiana swamps and bayous.",
+    detailSummary: "A guided covered-boat tour into Louisiana swamps and bayous. Published $65.00 flat rate per adult ($32 child ages 6–12) includes round-trip coach transportation from 400 Toulouse St. Bookings are non-refundable per Gray Line operator terms.",
     bookingVariants: [
       {
         label: "CHECK AVAILABILITY",
@@ -717,8 +718,9 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Airboat Rides",
     operatorName: "Gray Line",
     description: "An intimate and high-speed airboat ride through the Louisiana swamps.",
-    priceFrom: 89,
+    priceFrom: 119,
     priceUnit: "person",
+    isFlatRate: true,
     badges: [
       { type: "urgency", label: "⚡ Likely to Sell Out" },
     ],
@@ -727,7 +729,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     relatedTourSlug: "large-airboat-swamp-adventure",
     detailPageTitle: "Small Airboat Swamp Adventure | Welcome to New Orleans Tours",
     metaDescription: "An intimate and high-speed airboat ride through the Louisiana swamps with Gray Line.",
-    detailSummary: "A fast-paced small airboat tour in the Louisiana bayou.",
+    detailSummary: "An intimate 6–12 passenger high-speed airboat tour in the Louisiana bayou. Published $119.00 flat rate per rider includes round-trip coach transportation from 400 Toulouse St. Bookings are non-refundable per Gray Line operator terms.",
     bookingVariants: [
       {
         label: "CHECK AVAILABILITY",
@@ -746,14 +748,15 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "Airboat Rides",
     operatorName: "Gray Line",
     description: "A fast-paced airboat ride on a larger vessel through the Louisiana swamps.",
-    priceFrom: 59,
+    priceFrom: 90,
     priceUnit: "person",
+    isFlatRate: true,
     imageUrl: "/images/travel-markets/new-orleans/airboat-swamp.png",
     slug: "large-airboat-swamp-adventure",
     relatedTourSlug: "small-airboat-swamp-adventure",
     detailPageTitle: "Large Airboat Swamp Adventure | Welcome to New Orleans Tours",
     metaDescription: "A fast-paced airboat ride on a larger vessel through the Louisiana swamps with Gray Line.",
-    detailSummary: "A fast-paced large airboat tour in the Louisiana bayou.",
+    detailSummary: "A fast-paced 15–27 passenger airboat tour in the Louisiana bayou. Published $90.00 flat rate per rider includes round-trip coach transportation from 400 Toulouse St. Bookings are non-refundable per Gray Line operator terms.",
     bookingVariants: [
       {
         label: "CHECK AVAILABILITY",
@@ -945,15 +948,15 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     category: "River Cruises",
     operatorName: "New Orleans Steamboat Company",
     description: "A 75-minute riverboat cruise offering a quick and scenic tour of the Mississippi River.",
-    priceFrom: 26,
+    priceFrom: 25.75,
     priceUnit: "adult",
     isFlatRate: true,
     imageUrl: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
     slug: "city-of-new-orleans-riverboat-cruise",
     relatedTourSlug: "daytime-jazz-cruise",
     detailPageTitle: "75-Minute CITY of NEW ORLEANS Riverboat Cruise | Welcome to New Orleans Tours",
-    metaDescription: "A 75-minute riverboat cruise offering a quick and scenic tour of the Mississippi River.",
-    detailSummary: "A shorter, 75-minute riverboat experience on the Mississippi.",
+    metaDescription: "A 75-minute riverboat cruise offering a scenic tour of the Mississippi River with New Orleans Steamboat Company.",
+    detailSummary: "A 75-minute riverboat cruise on the Mississippi. Published $25.75 flat rate per adult ($12.75 child ages 6–12, free under 6) departing from the Toulouse St. Wharf behind JAX Brewery. Bookings are non-refundable per operator policy.",
     bookingVariants: [
       {
         label: "CHECK AVAILABILITY",
