@@ -289,7 +289,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     highlights: [
       "The operator describes the route as traveling through privately accessed swamp property"
     ],
-    detailSummary: "Airboat options through private Louisiana bayous. Self-drive tour-only rates are $65 (large 16-passenger), $85 (medium 10-passenger), and $95 (small 6–10 passenger) flat rate per rider. Round-trip French Quarter hotel shuttle packages are $90, $110, and $120 respectively. Full refund with at least 24 hours advance notice.",
+    detailSummary: "Airboat options through private Louisiana bayous. Self-drive tour-only rates are $65 (large 16-passenger), $85 (medium 10-passenger), and $95 (small 6–10 passenger) flat rate per rider. Round-trip French Quarter hotel shuttle packages are $90, $110, and $120 respectively. Standard bookings require at least 48 hours notice for a full refund; inside 48 hours is non-refundable (optional Trip Protection purchased at checkout allows cancellation up to 24 hours prior, excluding protection and processing fees).",
     bestFit: [
       "Visitors looking for a fast, adventurous ride",
       "Those who prefer an open-air outdoor experience"
@@ -637,7 +637,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     relatedTourSlug: "whitney-plantation-tour",
     detailPageTitle: "Oak Alley Plantation Tour by Gray Line | Welcome to New Orleans Tours",
     metaDescription: "Explore the iconic Oak Alley Plantation with its famous canopy of southern live oak trees on this Gray Line tour.",
-    detailSummary: "A guided tour to Oak Alley Plantation operated by Gray Line.",
+    detailSummary: "A guided tour to Oak Alley Plantation operated by Gray Line. Published $89.00 flat rate per adult ($42.00 child ages 6–12) includes round-trip coach transportation from 400 Toulouse St. Bookings are non-refundable per Gray Line operator terms.",
     historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor. The depth and focus of historical interpretation vary by site. We encourage visitors to review the selected plantation’s specific historical program and educational approach.",
     bookingVariants: [
       {
@@ -668,7 +668,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     relatedTourSlug: "oak-alley-plantation-tour-grey-line",
     detailPageTitle: "Whitney Plantation Tour | Welcome to New Orleans Tours",
     metaDescription: "Visit the Whitney Plantation, dedicated entirely to understanding the facts of slavery in Louisiana.",
-    detailSummary: "A guided visit to the Whitney Plantation, with an exclusive focus on the lives of enslaved people.",
+    detailSummary: "A guided visit to the Whitney Plantation, with an exclusive focus on the lives of enslaved people. Published $89.00 flat rate per adult ($42.00 child ages 6–12) includes round-trip coach transportation from 400 Toulouse St. Bookings are non-refundable per Gray Line operator terms.",
     historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor. The Whitney Plantation focuses exclusively on the history and experiences of the enslaved population.",
     bookingVariants: [
       {
@@ -787,7 +787,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     relatedTourSlug: "swamp-boat-whitney-combo",
     detailPageTitle: "Swamp Boat and Oak Alley Combination | Welcome to New Orleans Tours",
     metaDescription: "Experience both a Louisiana swamp boat tour and the historic Oak Alley Plantation in one trip with Gray Line.",
-    detailSummary: "A full-day combination tour featuring Oak Alley Plantation and a swamp boat ride.",
+    detailSummary: "A full-day combination tour featuring Oak Alley Plantation and a swamp boat ride. Published $131.00 flat rate per adult ($69.00 child ages 6–12) includes round-trip coach transportation from 400 Toulouse St. Bookings are non-refundable per Gray Line operator terms.",
     historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor.",
     bookingVariants: [
       {
@@ -819,7 +819,7 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     relatedTourSlug: "swamp-boat-oak-alley-combo",
     detailPageTitle: "Swamp Boat and Whitney Combination | Welcome to New Orleans Tours",
     metaDescription: "Experience both a Louisiana swamp boat tour and the historic Whitney Plantation with Gray Line.",
-    detailSummary: "A full-day combination tour featuring Whitney Plantation and a swamp boat ride.",
+    detailSummary: "A full-day combination tour featuring Whitney Plantation and a swamp boat ride. Published $131.00 flat rate per adult ($69.00 child ages 6–12) includes round-trip coach transportation from 400 Toulouse St. Bookings are non-refundable per Gray Line operator terms.",
     historicalContextNote: "Plantation sites in Louisiana are inextricably connected to the history of slavery and forced labor.",
     bookingVariants: [
       {

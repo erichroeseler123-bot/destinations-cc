@@ -28,10 +28,10 @@ const comparisonRows = [
   },
   {
     feature: "Price (w/ Coach / Shuttle Transit)",
-    oakAlley: "$89.00 flat rate per adult / $54 child (Includes house admission + round-trip coach from 400 Toulouse St)",
-    whitney: "$89.00 flat rate per adult / $54 child (Includes museum admission + round-trip coach from 400 Toulouse St)",
-    swampTour: "$60–$65 per adult (Covered boat w/ transit) • $90–$119 (Airboat w/ transit)",
-    combo: "$131.00 flat rate per adult / $79 child (Oak Alley + Swamp Boat combination with coach transit)",
+    oakAlley: "$89.00 flat rate per adult / $42.00 child ages 6–12 (Includes house admission + round-trip coach from 400 Toulouse St)",
+    whitney: "$89.00 flat rate per adult / $42.00 child ages 6–12 (Includes museum admission + round-trip coach from 400 Toulouse St)",
+    swampTour: "$60–$65 per adult (Covered boat w/ transit; $32 child) • $90–$119 (Airboat w/ transit)",
+    combo: "$131.00 flat rate per adult / $69.00 child ages 6–12 (Oak Alley + Swamp Boat combination with coach transit)",
   },
   {
     feature: "Total Time Commitment",

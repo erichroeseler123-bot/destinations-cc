@@ -41,7 +41,7 @@ export default function CoveredBoatVsAirboatPage() {
           ticketType: "Covered pontoon excursion (self-drive or hotel shuttle)",
           inclusions: "Canopy shade, live guide narration, life jackets, wild bayou tour",
           meetingPoint: "1265 LA-3127, Luling, LA (self-drive) or downtown/French Quarter hotel pickup",
-          cancellationPolicy: "Full refund with at least 24 hours notice prior to departure (inside 24h non-refundable)",
+          cancellationPolicy: "Full refund with at least 48 hours notice prior to departure; inside 48h non-refundable (optional Trip Protection purchased at checkout allows cancellation up to 24h prior, excluding protection and processing fees)",
           href: "/tours/covered-tour-boat?src=wtonot-detail-covered",
           ctaText: "Book Covered Swamp Boat ($35 / $60)",
         },
@@ -57,7 +57,7 @@ export default function CoveredBoatVsAirboatPage() {
           ticketType: "High-speed fan-powered airboat excursion",
           inclusions: "Noise-canceling hearing protection, Coast Guard certified captain, marsh speed glides",
           meetingPoint: "Ragin Cajun Swamp dock (Luling) or downtown/French Quarter hotel pickup",
-          cancellationPolicy: "Full refund with at least 24 hours notice prior to departure (inside 24h non-refundable)",
+          cancellationPolicy: "Full refund with at least 48 hours notice prior to departure; inside 48h non-refundable (optional Trip Protection purchased at checkout allows cancellation up to 24h prior, excluding protection and processing fees)",
           href: "/tours/ragin-cajun-airboat-options?src=wtonot-detail-airboat",
           ctaText: "Book Airboat Swamp Tour",
         },
@@ -95,8 +95,8 @@ export default function CoveredBoatVsAirboatPage() {
         },
         {
           label: "Cancellation Policy",
-          left: "Full refund with 24 hours notice prior to departure",
-          right: "Full refund with 24 hours notice prior to departure",
+          left: "Full refund with at least 48h notice prior to departure (inside 48h non-refundable)",
+          right: "Full refund with at least 48h notice prior to departure (inside 48h non-refundable)",
         },
       ]}
       left={{

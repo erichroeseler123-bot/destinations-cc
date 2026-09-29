@@ -35,7 +35,7 @@ export default function WhitneyVsOakAlleyPage() {
           transportation: "Round-trip coach included (departs 400 Toulouse St in French Quarter)",
           historicalFocus: "First-person narratives, memorial art, restored outbuildings, and slavery education",
           walkingMobility: "Self-paced audio tour; uneven gravel on grounds; museum & restrooms accessible",
-          priceContext: "$89.00 flat rate per adult (includes round-trip coach from 400 Toulouse St + museum & grounds admission)",
+          priceContext: "$89.00 flat rate per adult ($42.00 child ages 6–12; includes round-trip coach from 400 Toulouse St + museum & grounds admission)",
           ticketType: "Coach transportation & self-paced audio museum admission",
           inclusions: "Round-trip coach transportation, museum admission, self-paced audio tour with personal headset",
           meetingPoint: "400 Toulouse St (French Quarter) — fixed departure point, not hotel pickup",
@@ -51,7 +51,7 @@ export default function WhitneyVsOakAlleyPage() {
           transportation: "Round-trip coach included (departs 400 Toulouse St in French Quarter)",
           historicalFocus: "Historic plantation landscape, Big House, slavery exhibits, sugarcane history & gardens",
           walkingMobility: "Guided Big House tour; mostly paved pathways; 22 stairs to 2nd floor (video alternative)",
-          priceContext: "$89.00 flat rate per adult (includes round-trip coach from 400 Toulouse St + Big House & grounds admission)",
+          priceContext: "$89.00 flat rate per adult ($42.00 child ages 6–12; includes round-trip coach from 400 Toulouse St + Big House & grounds admission)",
           ticketType: "Coach transportation & guided Big House tour admission",
           inclusions: "Round-trip coach transportation, guided Big House tour, 300-year oak allee, slavery exhibits & grounds",
           meetingPoint: "400 Toulouse St (French Quarter) — fixed departure point, not hotel pickup",
@@ -68,8 +68,8 @@ export default function WhitneyVsOakAlleyPage() {
         },
         {
           label: "Pricing Format",
-          left: "$89.00 flat rate per adult (includes coach + admission)",
-          right: "$89.00 flat rate per adult (includes coach + admission)",
+          left: "$89.00 flat rate per adult / $42.00 child ages 6–12 (includes coach + admission)",
+          right: "$89.00 flat rate per adult / $42.00 child ages 6–12 (includes coach + admission)",
         },
         {
           label: "Transportation",
