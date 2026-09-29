@@ -28,19 +28,19 @@ export const ADDITIONAL_COMMERCIAL_CATEGORY_PAGES: Record<string, SeoPageRecord>
     variant: "category",
     pageIntent: "Provide an honest, clear breakdown of New Orleans city tours that feature the Garden District, making it unmistakable that WNO books motorcoach/minibus city tours rather than dedicated walking tours.",
     canonicalRoute: `${ORIGIN}/garden-district-tours`,
-    heroEyebrow: "City Sightseeing · Includes Garden District",
-    heroTitle: "New Orleans City Tours Featuring the Garden District",
-    heroSubtitle: "Looking for Garden District tours? Welcome to New Orleans Tours books comprehensive city sightseeing tours that include the Garden District and historic cemeteries—not dedicated walking-only tours.",
-    openingAnswer: "Important booking note: Welcome to New Orleans Tours does not sell a standalone, walking-only Garden District tour. Instead, we book comprehensive 3-hour city sightseeing tours (by motorcoach or minibus) that include the Garden District, St. Charles Avenue, historic cemeteries, and the French Quarter. Choose a dedicated walking specialist if your priority is a 2-hour stroll inspecting individual private mansion gates on foot. Choose one of our verified city tours below if you want an air-conditioned overview of the Garden District and New Orleans' most famous neighborhoods with minimal walking.",
+    heroEyebrow: "Garden District & Mansions · Walking vs Coach Comparison",
+    heroTitle: "New Orleans Garden District Tours: Walking vs City Coach",
+    heroSubtitle: "Comparing Garden District walking tours with air-conditioned coach sightseeing. Welcome to New Orleans Tours books comprehensive 3-hour city tours that include the Garden District and St. Louis Cemetery No. 3—saving miles of walking in the Louisiana heat.",
+    openingAnswer: "Looking for a Garden District walking tour? Before committing to a 2-hour walk on uneven sidewalks in the Louisiana heat, compare your options. Standalone walking tours cover roughly 1 to 2 miles entirely on foot, focusing exclusively on residential mansion gates. If you prefer air conditioning, citywide context, and historic cemetery access, our verified 3-hour city sightseeing tours (by motorcoach or minibus) include the Garden District, St. Charles Avenue, French Quarter, and Tremé with minimal walking.",
     topCta: "/tours/city-cemetery-garden-district-tour",
     secondaryCta: "/tours/city-tour-of-new-orleans",
     whoItIsFor: "First-time visitors, families, and travelers who want to experience the Garden District's architecture and oak-lined avenues as part of a comfortable citywide tour without exhausting walking.",
     whoShouldChooseSomethingElse: "Visitors who strictly want a 100% walking-only tour focused exclusively on the Garden District. WNO does not sell walking-only Garden District tours.",
     decisionFactors: [
-      "Format difference: These are vehicle-based city sightseeing tours that feature the Garden District along with the French Quarter, Tremé, and cemeteries—not standalone 2-hour walking tours.",
-      "Bookable operator details: Gray Line New Orleans departs from 400 Toulouse St (3 hours, motorcoach); Southern Style Tours offers hotel pickup options (approx. 3 hours, minibus).",
-      "Walking requirements: Instead of walking miles in the Louisiana heat, these tours provide air-conditioned transit with guided commentary and an exterior cemetery/neighborhood stroll.",
-      "Inclusions: Professional licensed guide, narrated coach sightseeing through the Garden District mansion corridor, and a historic cemetery stop."
+      "Walking vs Coach format: Standalone walking tours require 1–2 miles on foot on historic, uneven sidewalks in Louisiana humidity. City sightseeing tours provide air-conditioned transit with an exterior guided cemetery stroll.",
+      "Neighborhood breadth: A dedicated walking tour stays strictly in the residential Garden District. A 3-hour city tour connects the French Quarter, Tremé, Esplanade Ridge, and the Garden District mansion corridor.",
+      "Cemetery access: Both Gray Line and Southern Style city tours include guided stops at historic St. Louis Cemetery No. 3, which is difficult to visit independently on foot from the Garden District.",
+      "Departure logistics: Gray Line departs centrally from 400 Toulouse St in the French Quarter; Southern Style Tours offers hotel pickup options across downtown and French Quarter hotels."
     ],
     comparisonColumns: [],
     comparisonRows: [],
@@ -60,13 +60,14 @@ export const ADDITIONAL_COMMERCIAL_CATEGORY_PAGES: Record<string, SeoPageRecord>
     faqs: [
       { question: "Does Welcome to New Orleans Tours offer a dedicated Garden District walking tour?", answer: "No. WNO does not sell standalone walking-only Garden District tours. We book comprehensive 3-hour city tours that feature the Garden District and cemeteries from an air-conditioned vehicle with a guided stroll." },
       { question: "What is the difference between a dedicated walking tour and a city tour that includes the Garden District?", answer: "A dedicated walking tour covers roughly 1 to 2 miles entirely on foot within the residential Garden District. A city tour covers 3 hours of citywide history across the French Quarter, Tremé, and Garden District aboard an air-conditioned motorcoach, providing a much broader introduction with far less physical exertion." },
+      { question: "Why do travelers choose a city coach tour over a Garden District walking tour?", answer: "The two main reasons are weather and breadth. In New Orleans heat or rain, a climate-controlled motorcoach covers St. Charles Avenue and the Garden District comfortably while also including the French Quarter, Tremé, and St. Louis Cemetery No. 3 in a single 3-hour itinerary." },
       { question: "Which operator runs the City, Cemetery and Garden District Tour?", answer: "Gray Line New Orleans operates the 3-hour tour, meeting at 400 Toulouse Street in the French Quarter. It includes narrated sightseeing through the Garden District and a guided stop at St. Louis Cemetery No. 3." },
       { question: "Are there hotel pickup options for city tours including the Garden District?", answer: "Yes. Southern Style Tours offers pickup from select downtown and French Quarter hotels for their comprehensive city tour, which also includes the Garden District corridor." }
     ],
     metadata: metadata(
       "/garden-district-tours",
-      "New Orleans Garden District Tours | Mansions & Sightseeing",
-      "Compare New Orleans tours featuring the Garden District, St. Charles Ave mansions, and historic cemeteries by comfortable coach. Check Gray Line availability."
+      "Garden District Tours New Orleans: Walking vs City Coach Comparison (2026)",
+      "Compare Garden District walking tours with air-conditioned city coach tours. Learn walking distances, mansion routes, and why a 3-hour city tour fits warm days best."
     ),
     schemaEligibility: { productSchema: false, faqSchema: true, collectionSchema: true },
     visualMood: "Garden District",
@@ -131,7 +132,7 @@ export const ADDITIONAL_COMMERCIAL_CATEGORY_PAGES: Record<string, SeoPageRecord>
     heroEyebrow: "French Quarter on Foot",
     heroTitle: "New Orleans Walking Tours",
     heroSubtitle: "Explore historic streets, cocktail culture, and haunted legends with local licensed guides.",
-    openingAnswer: "Walking tours in New Orleans are the best way to experience the intimate architecture, hidden courtyards, cocktail heritage, and haunted lore of the French Quarter on foot. Choose between afternoon cocktail history walks and evening haunted history tours, with all tours meeting centrally in the French Quarter.",
+    openingAnswer: "Walking tours in New Orleans are the best way to experience the intimate architecture, hidden courtyards, cocktail heritage, and haunted lore of the French Quarter on foot. Choose between afternoon cocktail history walks and evening haunted history tours, with all tours meeting centrally in the French Quarter. (Note: For Garden District and St. Charles Avenue mansion tours, see our air-conditioned Garden District city tours which avoid miles of walking in the Louisiana heat.)",
     topCta: "/tours/craft-cocktail-walking-tour",
     secondaryCta: "/tours/ghosts-spirits-walking-tour",
     whoItIsFor: "Visitors and groups who enjoy exploring historic neighborhoods on foot, hearing in-depth local stories, and sampling historic drinks or exploring haunted courtyards.",
@@ -160,6 +161,7 @@ export const ADDITIONAL_COMMERCIAL_CATEGORY_PAGES: Record<string, SeoPageRecord>
     faqs: [
       { question: "How far do New Orleans walking tours walk?", answer: "Most French Quarter walking tours cover approximately 1 to 1.5 miles at a relaxed, conversational pace with frequent stops for storytelling and refreshments." },
       { question: "Where do walking tours meet?", answer: "Walking tours meet at designated central French Quarter locations, such as 400 Toulouse Street. Exact meeting instructions are confirmed on your booking voucher." },
+      { question: "Do you offer walking tours of the Garden District?", answer: "No. Our walking tours focus exclusively on the historic French Quarter. For the Garden District, St. Charles Avenue mansions, and historic cemeteries, we book comprehensive 3-hour air-conditioned city tours by motorcoach or minibus." },
       { question: "Are drinks included on cocktail walking tours?", answer: "Sample tastings and signature drinks depend on the specific tour option selected during checkout. Bring photo ID as all venues require proof of age (21+)." },
       { question: "Do walking tours operate in the rain?", answer: "Yes, tours typically operate rain or shine. In the event of severe weather or lightning, the operator may reschedule or offer alternatives." }
     ],

@@ -25,30 +25,39 @@ export default function WhitneyVsOakAlleyPage() {
       title="Whitney Plantation vs. Oak Alley: Which Tour Should You Book?"
       intro="Both excursions depart from central New Orleans (400 Toulouse St in the French Quarter) with round-trip coach transportation included and take approximately 5 hours 25 minutes total door-to-door. However, the experience, historical focus, and visitor atmosphere are completely different."
       verdict="Choose Whitney Plantation if your priority is Louisiana's only museum dedicated exclusively to the history of slavery, featuring first-person enslaved narratives, memorial artwork, and historic outbuildings on a self-paced audio tour. Choose Oak Alley Plantation if you want a broader historic-estate visit featuring the iconic 300-year-old oak allee, a guided Greek Revival Big House tour, reconstructed cabins, sugarcane exhibits, and on-site dining."
+      topSummaryHeading="Key Comparison: Whitney Plantation vs Oak Alley Plantation"
       topCards={{
         left: {
           heading: "Whitney Plantation Tour",
           badge: "Slavery Museum & Memorial Focus",
           operator: "Gray Line New Orleans",
           duration: "5 hours 25 minutes total (door-to-door)",
-          transportation: "Round-trip coach included (departs 400 Toulouse St)",
+          transportation: "Round-trip coach included (departs 400 Toulouse St in French Quarter)",
           historicalFocus: "First-person narratives, memorial art, restored outbuildings, and slavery education",
           walkingMobility: "Self-paced audio tour; uneven gravel on grounds; museum & restrooms accessible",
-          priceContext: "Live rates, admissions, and seasonal departures confirmed in Gray Line checkout",
+          priceContext: "$89.00 flat rate per adult (includes round-trip coach from 400 Toulouse St + museum & grounds admission)",
+          ticketType: "Coach transportation & self-paced audio museum admission",
+          inclusions: "Round-trip coach transportation, museum admission, self-paced audio tour with personal headset",
+          meetingPoint: "400 Toulouse St (French Quarter) — fixed departure point, not hotel pickup",
+          cancellationPolicy: "Full refund with 24 hours notice prior to departure",
           href: "/tours/whitney-plantation-tour?src=wtonot-compare",
-          ctaText: "Check Live Dates & Book Whitney →",
+          ctaText: "Book Whitney Plantation ($89)",
         },
         right: {
           heading: "Oak Alley Plantation Tour",
           badge: "Iconic Grounds & Big House",
           operator: "Gray Line New Orleans",
           duration: "5 hours 25 minutes total (door-to-door)",
-          transportation: "Round-trip coach included (departs 400 Toulouse St)",
+          transportation: "Round-trip coach included (departs 400 Toulouse St in French Quarter)",
           historicalFocus: "Historic plantation landscape, Big House, slavery exhibits, sugarcane history & gardens",
           walkingMobility: "Guided Big House tour; mostly paved pathways; 22 stairs to 2nd floor (video alternative)",
-          priceContext: "Live rates, admissions, and seasonal departures confirmed in Gray Line checkout",
+          priceContext: "$89.00 flat rate per adult (includes round-trip coach from 400 Toulouse St + Big House & grounds admission)",
+          ticketType: "Coach transportation & guided Big House tour admission",
+          inclusions: "Round-trip coach transportation, guided Big House tour, 300-year oak allee, slavery exhibits & grounds",
+          meetingPoint: "400 Toulouse St (French Quarter) — fixed departure point, not hotel pickup",
+          cancellationPolicy: "Full refund with 24 hours notice prior to departure",
           href: "/tours/oak-alley-plantation-tour-grey-line?src=wtonot-compare",
-          ctaText: "Check Live Dates & Book Oak Alley →",
+          ctaText: "Book Oak Alley Tour ($89)",
         },
       }}
       topSummaryRows={[
@@ -58,9 +67,14 @@ export default function WhitneyVsOakAlleyPage() {
           right: "5 hours 25 minutes total (door-to-door)",
         },
         {
+          label: "Pricing Format",
+          left: "$89.00 flat rate per adult (includes coach + admission)",
+          right: "$89.00 flat rate per adult (includes coach + admission)",
+        },
+        {
           label: "Transportation",
-          left: "Round-trip coach included from 400 Toulouse St",
-          right: "Round-trip coach included from 400 Toulouse St",
+          left: "Round-trip coach from 400 Toulouse St (fixed meeting point, not hotel pickup)",
+          right: "Round-trip coach from 400 Toulouse St (fixed meeting point, not hotel pickup)",
         },
         {
           label: "Historical Focus",
@@ -78,9 +92,9 @@ export default function WhitneyVsOakAlleyPage() {
           right: "Paved pathways; 22 stairs to Big House second floor (video alternative available)",
         },
         {
-          label: "Booking Choices",
-          left: "Verified live Gray Line inventory via Welcome to New Orleans Tours",
-          right: "Verified live Gray Line inventory via Welcome to New Orleans Tours",
+          label: "Cancellation Policy",
+          left: "Full refund up to 24 hours before tour departure",
+          right: "Full refund up to 24 hours before tour departure",
         },
       ]}
       left={{ heading: "Whitney Plantation", href: "/tours/whitney-plantation-tour", cta: "Book Whitney Tour" }}
@@ -135,8 +149,8 @@ export default function WhitneyVsOakAlleyPage() {
           answer: "Laura Plantation is located nearby on River Road and specializes in Creole culture, French family records, and original slave cabins. WNO offers an Oak Alley or Laura option via Southern Style Tours, as well as full-day swamp and city combination tours.",
         },
         {
-          question: "Why visit Oak Alley and Whitney on separate trips?",
-          answer: "Oak Alley and Whitney provide complementary perspectives on Louisiana River Road history: Whitney provides an immersive, educational slavery museum experience, while Oak Alley offers an architectural and landscape overview of an antebellum sugar estate.",
+          question: "Where can I read an in-depth breakdown of the slavery history focus vs Big House architecture?",
+          answer: "Read our companion editorial guide: 'Whitney vs Oak Alley: Which Plantation Tour for History?' (/guides/whitney-plantation-vs-oak-alley-history-focus) for a deeper exploration of first-person enslaved narratives, memorials, and self-paced audio interpretation. If you are also deciding between a plantation and a bayou excursion, see our 3-way guide: 'Oak Alley vs Whitney vs Swamp Tour' (/guides/oak-alley-vs-whitney-plantation-vs-swamp-tour).",
         },
       ]}
       sources={[

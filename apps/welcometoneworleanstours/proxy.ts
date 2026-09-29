@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export function proxy(request: NextRequest) {
+  const host = (request.headers.get("x-forwarded-host") || request.headers.get("host") || request.nextUrl.hostname || "").split(":")[0].toLowerCase();
+  if (host === "welcometoneworleanstours.com") {
+    const targetUrl = new URL(request.url);
+    targetUrl.hostname = "www.welcometoneworleanstours.com";
+    targetUrl.protocol = "https:";
+    return NextResponse.redirect(targetUrl, 308);
+  }
+
   if (request.nextUrl.pathname === "/guides/tour-catalog") {
     return NextResponse.redirect(new URL("/tours", request.url), 308);
   }
@@ -27,6 +35,9 @@ export function proxy(request: NextRequest) {
   }
   if (request.nextUrl.pathname === "/operators/nola-ghost-riders") {
     return NextResponse.rewrite(new URL("/tours/nola-ghost-riders", request.url));
+  }
+  if (request.nextUrl.pathname === "/operators/airboat-adventures") {
+    return NextResponse.rewrite(new URL("/tours/airboat-adventures", request.url));
   }
   return NextResponse.next();
 }

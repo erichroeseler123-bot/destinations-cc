@@ -36,9 +36,10 @@ export default function Page() {
       ]}
       decisionTitle="Key differences that decide your tour"
       decisionPoints={[
-        "Transportation format: Gray Line departs from 400 Toulouse St in the French Quarter; Ragin Cajun offers hotel pickup options.",
-        "Boat format: Choose a covered boat for shade and calm cruising; choose an airboat for speed and open-air thrill.",
-        "Time budget: Standard transportation-inclusive tours take approximately 3 hours 45 minutes door-to-door.",
+        "Transportation formats: Gray Line departs non-stop from 400 Toulouse St in the French Quarter; Ragin Cajun offers hotel pickup options across downtown and the French Quarter.",
+        "Boat formats: Choose a covered boat for shade, calm cruising, and all ages; choose an airboat for high speed, open-air adventure, and shallow marsh access.",
+        "Door-to-door time: Standard tours with transportation take approximately 3 hours 45 minutes (~40 min driving each way + 1.5 to 2 hours on the water).",
+        "Rideshare alert: Never take an Uber or Lyft down to Lafitte on a self-drive ticket. Drivers will take you out, but return rides from the rural bayou back to New Orleans are not reliably available.",
         "Combination days: To combine a swamp boat ride with Oak Alley Plantation in a single day, choose the 7h 45m Gray Line combo.",
       ]}
       productSlugs={[
@@ -56,7 +57,11 @@ export default function Page() {
       faq={[
         {
           question: "How do I get to a swamp tour from New Orleans without a car?",
-          answer: "Book a tour that includes round-trip transportation. Gray Line departs from 400 Toulouse Street in the French Quarter, and Ragin Cajun Tours offers hotel pickup options.",
+          answer: "Book a tour that includes round-trip transportation. Gray Line departs centrally from 400 Toulouse Street in the French Quarter, and Ragin Cajun Tours offers hotel pickup options from major downtown and French Quarter hotels.",
+        },
+        {
+          question: "Can I take an Uber or Lyft to a swamp tour?",
+          answer: "No, operators strongly advise against this. While a rideshare driver will take you 35–45 minutes down to the swamp docks in Lafitte, return rideshares are virtually nonexistent in the rural bayou. Always book an excursion with round-trip transportation included unless you have a rental vehicle.",
         },
         {
           question: "How long does a swamp tour take including transportation?",

@@ -92,7 +92,7 @@ export default function TourLogisticsSummary({ tourRecord }: Props) {
           <p className="mt-2 text-xs text-[#888]">Operated by <Link href={`/operators/${operatorSlug(graph.operator)}`} className="font-bold text-[#d4af37] underline underline-offset-4">{graph.operator}</Link></p>
         </div>
         <span className={`text-[10px] font-bold uppercase tracking-widest ${graph.verificationStatus === "NEEDS_VERIFICATION" ? "text-[#b9a06b]" : "text-[#d4af37]"}`}>
-          {graph.verificationStatus === "NEEDS_VERIFICATION" ? "Verification in progress" : "Governed Experience Graph"}
+          {graph.verificationStatus === "NEEDS_VERIFICATION" ? "Verification in progress" : "Verified operator details"}
         </span>
       </div>
 

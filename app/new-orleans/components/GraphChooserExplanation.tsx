@@ -167,7 +167,7 @@ export default function GraphChooserExplanation() {
             <p className="mt-2 text-sm leading-6 text-[#bbb0a1]"><strong className="text-[#fdfbf7]">{ruledOut.title}</strong> — {ruledOut.reason}</p>
           </div>
         )}
-        <p className="mt-6 text-[11px] leading-5 text-white/45">This explanation only uses recommendation inputs and governed Experience Graph facts currently available to WNO. Variant-dependent details still must be confirmed during booking.</p>
+        <p className="mt-6 text-[11px] leading-5 text-white/45">This explanation only uses your recommendation inputs and verified tour details currently available to Welcome to New Orleans Tours. Variant-dependent details still must be confirmed during booking.</p>
       </div>
     </section>
   );

@@ -14,6 +14,7 @@ type VisualEditorialCardProps = {
   inclusions?: string[];
   priceFrom?: number;
   priceUnit?: string;
+  isFlatRate?: boolean;
   bookingHref?: string;
   bookingItemId?: string | number;
   bookingFlowId?: string | number;
@@ -35,6 +36,7 @@ export default function VisualEditorialCard({
   inclusions,
   priceFrom,
   priceUnit,
+  isFlatRate,
   bookingHref,
   bookingItemId,
   bookingFlowId,
@@ -101,7 +103,7 @@ export default function VisualEditorialCard({
 
           {priceFrom && (
             <p className="mb-3 text-base font-bold text-[#f6f1e8]">
-              From ${priceFrom}
+              {isFlatRate ? `Flat rate: $${priceFrom}` : `From $${priceFrom}`}
               {priceUnit && (
                 <span className="ml-1 text-xs font-normal text-[#9d9587]">/ {priceUnit}</span>
               )}

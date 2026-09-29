@@ -102,27 +102,27 @@ main:not(:has([class*="cinematic-home"])):not([data-wno-surface="ghost-riders"])
     linear-gradient(180deg, #fff9ef 0%, #f4e7d5 100%) !important;
 }
 
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) article,
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) details,
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) aside,
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) [class*="productCard"],
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) [class*="comparison"],
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) [class*="chooser"],
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) [class*="recommendation"] {
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])) article,
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])) details,
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])) aside,
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])) [class*="productCard"],
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])) [class*="comparison"],
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])) [class*="chooser"],
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])) [class*="recommendation"] {
   border: 1px solid rgba(23,60,43,.14) !important;
   border-radius: 22px !important;
   box-shadow: 0 13px 32px rgba(63,43,24,.09) !important;
 }
 
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) article:hover,
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) [class*="productCard"]:hover {
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])) article:hover,
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])) [class*="productCard"]:hover {
   border-color: rgba(139,47,77,.34) !important;
   box-shadow: 0 22px 44px rgba(63,43,24,.14) !important;
 }
 
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) h1,
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) h2,
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) h3 {
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])) h1,
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])) h2,
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])) h3 {
   letter-spacing: -0.015em !important;
 }
 

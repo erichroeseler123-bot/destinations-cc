@@ -590,3 +590,129 @@ body:has([data-wno-surface="ghost-riders"]) main {
   -webkit-text-fill-color: rgba(253, 251, 247, 0.78) !important;
 }
 
+/* -------------------------------------------------------------------------- */
+/* /tours/airboat-adventures — Deep Bayou Moss & Cajun Gold Surface           */
+/* Full protection from older broad `main ... !important` rules.              */
+/* -------------------------------------------------------------------------- */
+[data-wno-surface="airboat-adventures"],
+main:has([data-wno-surface="airboat-adventures"]),
+body:has([data-wno-surface="airboat-adventures"]) main {
+  background: #080708 !important;
+  color: #fdfbf7 !important;
+}
+
+[data-wno-surface="airboat-adventures"] header {
+  background: linear-gradient(180deg, #0f1d16 0%, #0b130f 50%, #080708 100%) !important;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25) !important;
+}
+
+[data-wno-surface="airboat-adventures"] h1,
+[data-wno-surface="airboat-adventures"] header h1,
+[data-wno-surface="airboat-adventures"] h2,
+[data-wno-surface="airboat-adventures"] h3,
+[data-wno-surface="airboat-adventures"] h4 {
+  color: #fdfbf7 !important;
+  -webkit-text-fill-color: #fdfbf7 !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-wno-surface="airboat-adventures"] [data-airboat-trust-strip] > div {
+  background: rgba(20, 29, 24, 0.9) !important;
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+  border-radius: 8px !important;
+  color: #fdfbf7 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-wno-surface="airboat-adventures"] [data-airboat-trust-strip] p:first-of-type {
+  color: #fdfbf7 !important;
+  -webkit-text-fill-color: #fdfbf7 !important;
+  font-weight: 700 !important;
+}
+
+[data-wno-surface="airboat-adventures"] [data-airboat-trust-strip] p:last-of-type {
+  color: rgba(253, 251, 247, 0.72) !important;
+  -webkit-text-fill-color: rgba(253, 251, 247, 0.72) !important;
+}
+
+/* Tour Cards Overrides */
+[data-wno-surface="airboat-adventures"] article,
+[data-wno-surface="airboat-adventures"] [data-testid="airboat-tour-card"],
+body:has([data-wno-surface="airboat-adventures"]) main article,
+main:has([data-wno-surface="airboat-adventures"]) article,
+main[data-wno-surface="airboat-adventures"] article {
+  background: #121016 !important;
+  background-color: #121016 !important;
+  border: 1px solid rgba(212, 175, 55, 0.32) !important;
+  border-radius: 14px !important;
+  color: #fdfbf7 !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6) !important;
+  overflow: hidden !important;
+}
+
+[data-wno-surface="airboat-adventures"] article:hover,
+[data-wno-surface="airboat-adventures"] [data-testid="airboat-tour-card"]:hover,
+body:has([data-wno-surface="airboat-adventures"]) main article:hover {
+  border-color: #d4af37 !important;
+  box-shadow: 0 12px 36px rgba(212, 175, 55, 0.25) !important;
+}
+
+[data-wno-surface="airboat-adventures"] article [class*="p-6"],
+[data-wno-surface="airboat-adventures"] [data-airboat-card-body],
+body:has([data-wno-surface="airboat-adventures"]) [data-airboat-card-body] {
+  background: #121016 !important;
+  background-color: #121016 !important;
+  color: #fdfbf7 !important;
+}
+
+[data-wno-surface="airboat-adventures"] article h3,
+[data-wno-surface="airboat-adventures"] article h3 a {
+  color: #fdfbf7 !important;
+  -webkit-text-fill-color: #fdfbf7 !important;
+}
+
+[data-wno-surface="airboat-adventures"] article h3 a:hover {
+  color: #d4af37 !important;
+  -webkit-text-fill-color: #d4af37 !important;
+}
+
+[data-wno-surface="airboat-adventures"] article p {
+  color: rgba(253, 251, 247, 0.8) !important;
+  -webkit-text-fill-color: rgba(253, 251, 247, 0.8) !important;
+}
+
+[data-wno-surface="airboat-adventures"] [data-airboat-highlights] li,
+[data-wno-surface="airboat-adventures"] [data-airboat-highlights] span {
+  color: rgba(253, 251, 247, 0.9) !important;
+  -webkit-text-fill-color: rgba(253, 251, 247, 0.9) !important;
+}
+
+[data-wno-surface="airboat-adventures"] [data-airboat-logistics] span {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: rgba(253, 251, 247, 0.85) !important;
+  -webkit-text-fill-color: rgba(253, 251, 247, 0.85) !important;
+}
+
+[data-wno-surface="airboat-adventures"] [data-airboat-card-footer] {
+  background: #0b0a0e !important;
+  border-top: 1px solid rgba(212, 175, 55, 0.25) !important;
+}
+
+/* Filter buttons */
+[data-wno-surface="airboat-adventures"] button[data-airboat-filter] {
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background: #16141a !important;
+  color: rgba(253, 251, 247, 0.85) !important;
+  -webkit-text-fill-color: rgba(253, 251, 247, 0.85) !important;
+}
+
+[data-wno-surface="airboat-adventures"] button[data-airboat-filter][data-active="true"] {
+  background: #d4af37 !important;
+  color: #080708 !important;
+  -webkit-text-fill-color: #080708 !important;
+  border-color: #d4af37 !important;
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.4) !important;
+}
+
+

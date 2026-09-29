@@ -92,13 +92,15 @@ test("WNO SEO, Telemetry, and Inventory Integrity Audit", async (t) => {
     assert.strictEqual(rootRedirect1.headers.get("location"), "https://www.welcometoneworleanstours.com/guides/tonight");
   });
 
-  await t.test("2. Sitemap URLs count is exactly 104 and contains all candidate guides", () => {
+  await t.test("2. Sitemap URLs count is exactly 107 and contains all candidate guides", () => {
     const paths = buildWtonotSitemapPaths();
-    assert.strictEqual(paths.length, 104, `Expected 104 sitemap paths, got ${paths.length}`);
+    assert.strictEqual(paths.length, 107, `Expected 107 sitemap paths, got ${paths.length}`);
 
     const expectedPaths = [
       "/walking-tours",
       "/help-me-choose",
+      "/tours/nola-ghost-riders",
+      "/tours/airboat-adventures",
       "/guides/4-hours-in-new-orleans",
       "/guides/best-new-orleans-tours-if-you-arrive-at-noon",
       "/guides/best-new-orleans-tours-with-kids-under-6",

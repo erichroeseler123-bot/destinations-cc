@@ -18,7 +18,7 @@ const principles = [
   },
   {
     title: "Editorial judgment is labeled as judgment",
-    text: "Best-for, avoid-if, trade-off, pace, and comparative recommendations are WNO's decision guidance. They are kept separate from operator-supplied facts in the Experience Graph so an editorial opinion cannot masquerade as a verified operating claim.",
+    text: "Best-for, avoid-if, trade-off, pace, and comparative recommendations are WNO's decision guidance. They are kept separate from operator-supplied facts in our verified tour records so an editorial opinion cannot masquerade as a verified operating claim.",
   },
   {
     title: "Hard constraints beat preference scoring",

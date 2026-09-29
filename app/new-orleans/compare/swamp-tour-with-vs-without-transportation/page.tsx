@@ -53,35 +53,35 @@ export default function SwampTransportationComparisonPage() {
           </div>
         </section>
 
-        <section className="grid gap-6 md:grid-cols-2">
+        <section className="grid gap-6 md:grid-cols-3">
           <div className="flex flex-col justify-between border-2 border-[#d4af37] bg-[#1a1a1a] p-6 shadow-xl">
             <div>
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">Ragin Cajun Tours</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">Gray Line New Orleans</span>
                 <span className="rounded bg-[#d4af37]/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#d4af37] border border-[#d4af37]/40">
-                  Transportation Included
+                  French Quarter Coach
                 </span>
               </div>
-              <h2 className="mt-3 font-[var(--font-accent)] text-2xl font-bold text-[#fdfbf7]">Transportation is usually the better fit if…</h2>
+              <h2 className="mt-3 font-[var(--font-accent)] text-2xl font-bold text-[#fdfbf7]">Central Coach Departure (400 Toulouse St)</h2>
               <ul className="mt-4 space-y-2.5 text-sm text-[#ccc]">
-                <li>✓ You are staying in the French Quarter or downtown without a car.</li>
-                <li>✓ You want one meeting point and fewer logistics to manage.</li>
-                <li>✓ You do not want to worry about driving, directions or parking.</li>
-                <li>✓ A longer fixed tour block (approx. 3.5–4 hrs total) is acceptable.</li>
+                <li>✓ Departs centrally from 400 Toulouse St at the Steamboat NATCHEZ dock.</li>
+                <li>✓ Direct nonstop motorcoach transfer to the swamp dock (approx. 40–45 min).</li>
+                <li>✓ Predictable schedule: no multi-hotel pickup loops or waiting in hotel lobbies.</li>
+                <li>✓ Total duration: approximately 3 hours 45 minutes door-to-door.</li>
               </ul>
               <p className="mt-4 text-xs text-[#aaa]">
-                <strong className="text-white">Pricing:</strong> From $60 per adult with round-trip shuttle (meeting point confirmed at checkout)
+                <strong className="text-white">Pricing:</strong> $65 adult / $32 child (Covered Boat) • $90 (Large Airboat) • $119 (Small Airboat)
               </p>
             </div>
             <div className="mt-6 pt-4 border-t border-[#333]">
               <Link
-                href="/tours/covered-tour-boat?src=wtonot-detail-covered"
+                href="/tours/swamp-bayou-tour?src=wtonot-compare-swamp"
                 data-wno-event="booking_button_clicked"
-                data-wno-label="Check Live Dates & Book Transported Tour"
-                data-wno-product="covered-tour-boat"
+                data-wno-label="Check Gray Line Coach Dates"
+                data-wno-product="swamp-bayou-tour"
                 className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb]"
               >
-                Check Live Dates & Book Transported Tour →
+                Check Gray Line Coach Dates →
               </Link>
             </div>
           </div>
@@ -91,29 +91,61 @@ export default function SwampTransportationComparisonPage() {
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">Ragin Cajun Tours</span>
                 <span className="rounded bg-[#d4af37]/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#d4af37] border border-[#d4af37]/40">
-                  Self-Drive (Meet at Dock)
+                  Hotel Pickup Shuttle
                 </span>
               </div>
-              <h2 className="mt-3 font-[var(--font-accent)] text-2xl font-bold text-[#fdfbf7]">Self drive is usually the better fit if…</h2>
+              <h2 className="mt-3 font-[var(--font-accent)] text-2xl font-bold text-[#fdfbf7]">Door-to-Door Hotel Pickup</h2>
               <ul className="mt-4 space-y-2.5 text-sm text-[#ccc]">
-                <li>✓ You already have a rental car or personal vehicle.</li>
-                <li>✓ You want to control your departure after the boat ride.</li>
-                <li>✓ You are comfortable driving to the swamp dock in Lafitte yourself.</li>
-                <li>✓ You understand that ride-share is not a reliable fallback at the swamp.</li>
+                <li>✓ Shuttle picks you up directly at select downtown and French Quarter hotels.</li>
+                <li>✓ Select your specific hotel during online checkout.</li>
+                <li>✓ Driver confirms your pickup window prior to departure.</li>
+                <li>✓ Great for travelers who want zero transit planning from their hotel.</li>
               </ul>
               <p className="mt-4 text-xs text-[#aaa]">
-                <strong className="text-white">Pricing:</strong> From $35 per adult self-drive (dock check-in confirmed at checkout)
+                <strong className="text-white">Pricing:</strong> From $60 per adult with round-trip hotel pickup (Covered Boat) • $85–$105 (Airboat)
               </p>
             </div>
             <div className="mt-6 pt-4 border-t border-[#333]">
               <Link
                 href="/tours/covered-tour-boat?src=wtonot-detail-covered"
                 data-wno-event="booking_button_clicked"
-                data-wno-label="Check Live Self-Drive Dates"
+                data-wno-label="Check Hotel Pickup Dates"
+                data-wno-product="covered-tour-boat"
+                className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb]"
+              >
+                Check Hotel Pickup Dates →
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex flex-col justify-between border-2 border-[#555] bg-[#1a1a1a] p-6 shadow-xl">
+            <div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#aaa]">Self-Drive</span>
+                <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#ccc] border border-white/20">
+                  Meet at Swamp Dock
+                </span>
+              </div>
+              <h2 className="mt-3 font-[var(--font-accent)] text-2xl font-bold text-[#fdfbf7]">Drive Yourself (Rental or Personal Car)</h2>
+              <ul className="mt-4 space-y-2.5 text-sm text-[#ccc]">
+                <li>✓ You drive to the swamp dock in Lafitte, LA (~35–45 min south of New Orleans).</li>
+                <li>✓ Free on-site parking at the dock; arrive 15–30 min before departure.</li>
+                <li>✓ Maximum schedule freedom after the boat ride concludes.</li>
+                <li>⚠️ <strong>Rideshare warning:</strong> Uber/Lyft will take you to Lafitte, but return rides are not reliably available from the swamp.</li>
+              </ul>
+              <p className="mt-4 text-xs text-[#aaa]">
+                <strong className="text-white">Pricing:</strong> From $35 per adult self-drive (Covered Boat) • From $60 (Airboat)
+              </p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-[#333]">
+              <Link
+                href="/tours/covered-tour-boat?src=wtonot-detail-covered"
+                data-wno-event="booking_button_clicked"
+                data-wno-label="Check Self-Drive Dates"
                 data-wno-product="covered-tour-boat"
                 className="block w-full text-center border border-[#d4af37] bg-transparent px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#d4af37] transition hover:bg-[#d4af37] hover:text-[#151515]"
               >
-                Check Live Self-Drive Dates →
+                Check Self-Drive Dates →
               </Link>
             </div>
           </div>

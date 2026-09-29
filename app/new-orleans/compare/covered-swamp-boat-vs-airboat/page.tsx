@@ -27,6 +27,7 @@ export default function CoveredBoatVsAirboatPage() {
       title="Covered Swamp Boat vs Airboat: Which Tour Should You Book?"
       intro="The single most important decision when booking a New Orleans swamp tour is the boat format. Covered tour boats provide continuous shade, stability, a calm pace, and conversational narration suitable for all ages. Airboats deliver a fast, loud, exhilarating ride across shallow coastal marsh with hearing protection required. Compare ride dynamics, eligibility restrictions, and travel logistics before you book."
       verdict="Choose a covered swamp boat if you are traveling with children under 5, grandparents, pregnant guests, or visitors with neck or back conditions, or if your priority is relaxed photography and shaded comfort. Choose an airboat if speed, open-air thrills, and deep marsh glides are your priority, and all passengers meet the 5+ age requirement with no health exclusions."
+      topSummaryHeading="Key Comparison: Covered Swamp Boat vs Airboat"
       topCards={{
         left: {
           heading: "Covered Swamp Tour Boat",
@@ -36,9 +37,13 @@ export default function CoveredBoatVsAirboatPage() {
           transportation: "Hotel pickup & return shuttle options available; confirmed at checkout",
           historicalFocus: "Bayou ecology, moss-draped cypress scenery, native wildlife, and local Cajun culture",
           walkingMobility: "Easy pontoon boarding; full canopy shade; comfortable bench seating",
-          priceContext: "From $35 self-drive / $60 with shuttle (live dates & rates confirmed at checkout)",
+          priceContext: "$35.00 flat rate per adult ($25.00 child) self-drive / $60.00 flat rate per adult ($50.00 child) with round-trip shuttle",
+          ticketType: "Covered pontoon excursion (self-drive or hotel shuttle)",
+          inclusions: "Canopy shade, live guide narration, life jackets, wild bayou tour",
+          meetingPoint: "1265 LA-3127, Luling, LA (self-drive) or downtown/French Quarter hotel pickup",
+          cancellationPolicy: "Full refund with 48 hours notice prior to departure",
           href: "/tours/covered-tour-boat?src=wtonot-detail-covered",
-          ctaText: "Check Live Covered Boat Dates →",
+          ctaText: "Book Covered Swamp Boat ($35 / $60)",
         },
         right: {
           heading: "High-Speed Airboat Tour",
@@ -48,9 +53,13 @@ export default function CoveredBoatVsAirboatPage() {
           transportation: "Round-trip hotel shuttle available or self-drive to dock",
           historicalFocus: "High-speed marsh glides, shallow bayous, gator sightings, and active thrill ride",
           walkingMobility: "Stadium-style tiered seating; hearing protection provided; not wheelchair accessible",
-          priceContext: "Live rates and departure times confirmed at checkout",
+          priceContext: "$60.00 flat rate per adult self-drive / $85–$95 with round-trip shuttle",
+          ticketType: "High-speed fan-powered airboat excursion",
+          inclusions: "Noise-canceling hearing protection, Coast Guard certified captain, marsh speed glides",
+          meetingPoint: "Ragin Cajun Swamp dock (Luling) or downtown/French Quarter hotel pickup",
+          cancellationPolicy: "Full refund with 48 hours notice prior to departure",
           href: "/tours/ragin-cajun-airboat-options?src=wtonot-detail-airboat",
-          ctaText: "Check Live Airboat Dates →",
+          ctaText: "Book Airboat Swamp Tour",
         },
       }}
       topSummaryRows={[
@@ -58,6 +67,11 @@ export default function CoveredBoatVsAirboatPage() {
           label: "Ride Style & Speed",
           left: "Gentle, slow cruising; flat bottom ensures stable movement for photography and viewing",
           right: "High-speed glides up to 35–40 mph; thrilling turns and acceleration over shallow marshes",
+        },
+        {
+          label: "Pricing Format",
+          left: "$35 flat rate adult self-drive / $60 with shuttle ($25 / $50 child)",
+          right: "$60 flat rate adult self-drive / $85–$95 with shuttle",
         },
         {
           label: "Noise & Audio",
@@ -78,6 +92,11 @@ export default function CoveredBoatVsAirboatPage() {
           label: "Wildlife Spotting",
           left: "Closer eye-level viewing from stable benches; guides gently maneuver near wildlife",
           right: "Accesses extremely shallow marsh and tidal flats where traditional boats cannot venture",
+        },
+        {
+          label: "Cancellation Policy",
+          left: "Full refund up to 48 hours before tour departure",
+          right: "Full refund up to 48 hours before tour departure",
         },
       ]}
       left={{

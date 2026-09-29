@@ -134,7 +134,7 @@ export default function ProductCard({
 
         {sourceProduct?.priceFrom && (
           <p className="mt-1.5 text-base font-bold text-[#f6f1e8]">
-            From ${sourceProduct.priceFrom}
+            {sourceProduct.isFlatRate ? `Flat rate: $${sourceProduct.priceFrom}` : `From $${sourceProduct.priceFrom}`}
             {sourceProduct.priceUnit && (
               <span className="ml-1 text-xs font-normal text-[#9f9588]">/ {sourceProduct.priceUnit}</span>
             )}

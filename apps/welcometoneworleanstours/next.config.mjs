@@ -14,6 +14,12 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "welcometoneworleanstours.com" }],
+        destination: "https://www.welcometoneworleanstours.com/:path*",
+        permanent: true,
+      },
       { source: "/guides/null", destination: "/guides", permanent: true },
       { source: "/categories/swamp-tours", destination: "/swamp-tours", permanent: true },
       { source: "/categories/food-and-cocktail-tours", destination: "/food-tours", permanent: true },

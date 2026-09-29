@@ -269,6 +269,10 @@ export function getWtonotHostRewrite(request: NextRequest) {
     url.pathname = "/new-orleans/tours/nola-ghost-riders";
     return url;
   }
+  if (pathname === "/operators/airboat-adventures") {
+    url.pathname = "/new-orleans/tours/airboat-adventures";
+    return url;
+  }
 
   // Block all other DCC/admin/operator pages on New Orleans tours domain by rewriting to /not-found
   url.pathname = "/not-found";
@@ -679,6 +683,13 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
   }
 
   if (WTONOT_HOSTS.has(host.toLowerCase())) {
+    if (host.toLowerCase() === "welcometoneworleanstours.com") {
+      const targetUrl = new URL(request.url);
+      targetUrl.hostname = "www.welcometoneworleanstours.com";
+      targetUrl.protocol = "https:";
+      return NextResponse.redirect(targetUrl, 308);
+    }
+
     const pathname = request.nextUrl.pathname;
     if (pathname === "/new-orleans/tonight" || pathname === "/guides/new-orleans-tours-tonight") {
       return NextResponse.redirect(new URL("/guides/tonight", request.url), 308);

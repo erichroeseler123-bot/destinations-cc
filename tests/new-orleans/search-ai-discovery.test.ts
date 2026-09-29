@@ -30,8 +30,12 @@ describe("WNO search and AI discovery", () => {
     assert.ok(paths.includes("/guides/best-new-orleans-swamp-tour"));
     assert.ok(!paths.includes("/guides/french-quarter-tour-timing"));
 
-    const tourPaths = paths.filter((path) => path.startsWith("/tours/"));
-    assert.strictEqual(tourPaths.length, STOREFRONT_PRODUCTS.length);
+    const storefrontTourPaths = paths.filter(
+      (path) => path.startsWith("/tours/") && path !== "/tours/nola-ghost-riders" && path !== "/tours/airboat-adventures"
+    );
+    assert.strictEqual(storefrontTourPaths.length, STOREFRONT_PRODUCTS.length);
+    assert.ok(paths.includes("/tours/nola-ghost-riders"));
+    assert.ok(paths.includes("/tours/airboat-adventures"));
 
     for (const path of paths) {
       assert.ok(!path.startsWith("/new-orleans/"), `internal host-rewrite path leaked into sitemap: ${path}`);

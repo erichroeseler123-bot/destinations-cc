@@ -22,6 +22,7 @@ export interface NolaFareHarborProduct {
   // Pricing — displayed on tour cards, sticky bar, and guide pages
   priceFrom?: number;
   priceUnit?: string; // "per person" | "per adult" | "per group"
+  isFlatRate?: boolean;
 
   // Conversion badges — rendered on tour cards and category pages
   badges?: ProductBadge[];
@@ -446,10 +447,11 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "New Orleans Steamboat Company",
     description: "Experience the Mississippi River at night with live jazz and stunning city views.",
     priceFrom: 58,
-    priceUnit: "person",
+    priceUnit: "adult",
+    isFlatRate: true,
     badges: [
       { type: "urgency", label: "⚡ Likely to Sell Out" },
-      { type: "trust", label: "✅ Free 24h Cancel" },
+      { type: "trust", label: "🎷 Live Jazz Quintet" },
     ],
     imageUrl: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
     slug: "evening-jazz-cruise",
@@ -507,9 +509,10 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "New Orleans Steamboat Company",
     description: "Enjoy a relaxing daytime cruise on the Mississippi River with live jazz.",
     priceFrom: 44,
-    priceUnit: "person",
+    priceUnit: "adult",
+    isFlatRate: true,
     badges: [
-      { type: "trust", label: "✅ Free 24h Cancel" },
+      { type: "trust", label: "🎷 Duke Heitger Jazz" },
     ],
     imageUrl: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
     slug: "daytime-jazz-cruise",
@@ -575,7 +578,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "New Orleans Steamboat Company",
     description: "A festive Sunday morning on the river featuring a jazz brunch.",
     priceFrom: 44,
-    priceUnit: "person",
+    priceUnit: "adult",
+    isFlatRate: true,
     imageUrl: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
     slug: "sunday-jazz-brunch-cruise",
     relatedTourSlug: "daytime-jazz-cruise",
@@ -623,7 +627,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "Gray Line",
     description: "Explore the iconic Oak Alley Plantation with its famous canopy of southern live oak trees.",
     priceFrom: 89,
-    priceUnit: "person",
+    priceUnit: "adult",
+    isFlatRate: true,
     badges: [
       { type: "logistics", label: "🚐 Transportation Included" },
     ],
@@ -653,7 +658,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "Gray Line",
     description: "Visit the Whitney Plantation, dedicated entirely to understanding the facts of slavery in Louisiana.",
     priceFrom: 89,
-    priceUnit: "person",
+    priceUnit: "adult",
+    isFlatRate: true,
     badges: [
       { type: "logistics", label: "🚐 Transportation Included" },
     ],
@@ -767,7 +773,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "Gray Line",
     description: "Experience both a Louisiana swamp boat tour and the historic Oak Alley Plantation in one trip.",
     priceFrom: 131,
-    priceUnit: "person",
+    priceUnit: "adult",
+    isFlatRate: true,
     badges: [
       { type: "logistics", label: "🚐 Transportation Included" },
       { type: "trust", label: "⏱️ Full Day" },
@@ -798,7 +805,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "Gray Line",
     description: "Experience both a Louisiana swamp boat tour and the historic Whitney Plantation.",
     priceFrom: 131,
-    priceUnit: "person",
+    priceUnit: "adult",
+    isFlatRate: true,
     badges: [
       { type: "logistics", label: "🚐 Transportation Included" },
       { type: "trust", label: "⏱️ Full Day" },
@@ -911,7 +919,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "Gray Line",
     description: "A comprehensive tour covering the city's highlights, historic cemeteries, and the Garden District.",
     priceFrom: 55,
-    priceUnit: "person",
+    priceUnit: "adult",
+    isFlatRate: true,
     imageUrl: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
     slug: "city-cemetery-garden-district-tour",
     relatedTourSlug: "city-of-new-orleans-riverboat-cruise",
@@ -937,7 +946,8 @@ export const STOREFRONT_PRODUCTS: NolaFareHarborProduct[] = [
     operatorName: "New Orleans Steamboat Company",
     description: "A 75-minute riverboat cruise offering a quick and scenic tour of the Mississippi River.",
     priceFrom: 26,
-    priceUnit: "person",
+    priceUnit: "adult",
+    isFlatRate: true,
     imageUrl: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
     slug: "city-of-new-orleans-riverboat-cruise",
     relatedTourSlug: "daytime-jazz-cruise",

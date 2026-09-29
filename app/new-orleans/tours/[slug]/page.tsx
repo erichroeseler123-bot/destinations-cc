@@ -284,6 +284,26 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
                 <div className={styles.bookingKicker}>Check live availability</div>
                 <h2 className={styles.bookingTitle}>{product.title}</h2>
                 <div className={styles.bookingOperator}>Operated by {product.operatorName}</div>
+                {product.priceFrom && (
+                  <div style={{ marginTop: 12, marginBottom: 8, fontSize: "1.1rem", fontWeight: 700, color: "#f6f1e8" }}>
+                    {product.isFlatRate ? `Flat rate: $${product.priceFrom}` : `From $${product.priceFrom}`}
+                    {product.priceUnit && (
+                      <span style={{ fontSize: "0.82rem", fontWeight: 400, color: "#d4af37", marginLeft: 4 }}>
+                        / {product.priceUnit}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {product.durationLabel && (
+                  <div style={{ fontSize: "0.82rem", color: "#dcd4c7", marginBottom: 4 }}>
+                    ⏱ {product.durationLabel}
+                  </div>
+                )}
+                {(product.pickupSummary || product.transportationSummary || product.logistics?.meetingPoint) && (
+                  <div style={{ fontSize: "0.82rem", color: "#aaa193", marginBottom: 8 }}>
+                    📍 {product.pickupSummary || product.transportationSummary || product.logistics?.meetingPoint}
+                  </div>
+                )}
                 <p className={styles.bookingNote}>Choose a date and variant in the participating operator’s FareHarbor checkout. Exact times, availability, inclusions, restrictions and terms are confirmed there.</p>
                 <div className={styles.bookingStack}>{bookingActions(styles.bookingButton)}</div>
               </div>

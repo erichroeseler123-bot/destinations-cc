@@ -62,7 +62,7 @@ function categoryCopy(layout: CategoryLayout) {
       optionsEyebrow: "Architecture · streets · stories",
       optionsTitle: "City Sightseeing Featuring the Garden District",
       optionsIntro: "These are comprehensive vehicle-based city sightseeing tours that include the Garden District as part of the route—not dedicated walking-only tours.",
-      cta: "See Garden District tours",
+      cta: "See City Coach Tours (Featuring Garden District)",
     };
   }
   return {
@@ -147,6 +147,22 @@ function getCategoryRelatedLinks(categorySlug: string) {
       { href: "/compare/whitney-vs-oak-alley", title: "Whitney vs Oak Alley", desc: "Slavery-focused history vs classic big house grounds." },
       { href: "/guides/new-orleans-plantation-and-swamp-tour", title: "Plantation & Swamp Combo", desc: "Combine two top Louisiana day trips into one booking." },
       { href: "/compare/best-new-orleans-tour-if-you-only-have-3-hours", title: "Tours Under 3 Hours", desc: "Need a shorter half-day option instead?" },
+    ];
+  }
+  if (categorySlug === "garden-district-tours") {
+    return [
+      { href: "/walking-tours", title: "French Quarter Walking Tours", desc: "Explore French Quarter cocktail and ghost walks on foot." },
+      { href: "/guides/new-orleans-tours-with-minimal-walking", title: "Minimal Walking Tours", desc: "Compare low-walking city and river options." },
+      { href: "/compare/best-new-orleans-tour-if-you-only-have-3-hours", title: "Tours Under 3 Hours", desc: "Short city excursions that fit tight schedules." },
+      { href: "/guides/first-time-new-orleans-tours", title: "First-Time Visitor Guide", desc: "Core tours and neighborhood orientation." },
+    ];
+  }
+  if (categorySlug === "walking-tours") {
+    return [
+      { href: "/garden-district-tours", title: "Garden District City Tours", desc: "See St. Charles Ave mansions by air-conditioned coach." },
+      { href: "/guides/new-orleans-tours-near-french-quarter", title: "Tours Near French Quarter", desc: "Easy departures within walking distance." },
+      { href: "/guides/new-orleans-tours-that-fit-before-dinner", title: "Tours Before Dinner", desc: "Afternoon walking and cocktail options." },
+      { href: "/compare/best-new-orleans-tour-if-you-only-have-3-hours", title: "Tours Under 3 Hours", desc: "Short excursions for a quick visit." },
     ];
   }
   return [
@@ -260,6 +276,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                 inclusions={sourceProduct?.highlights || sourceProduct?.confirmedInclusions}
                 priceFrom={sourceProduct?.priceFrom}
                 priceUnit={sourceProduct?.priceUnit}
+                isFlatRate={sourceProduct?.isFlatRate}
                 bookingItemId={sourceProduct?.itemId}
                 bookingFlowId={sourceProduct?.flowId}
                 companyShortname={sourceProduct?.companyShortname}

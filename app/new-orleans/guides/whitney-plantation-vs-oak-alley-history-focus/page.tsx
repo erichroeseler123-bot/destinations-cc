@@ -21,6 +21,12 @@ export default function PlantationHistoryFocusGuide() {
       </header>
 
       <div className="mx-auto max-w-5xl space-y-14 px-6 py-12 md:py-16">
+        <div className="border border-[#d4af37]/40 bg-[#d4af37]/10 p-5 text-sm leading-relaxed text-[#eee]">
+          <p>
+            <strong className="text-[#d4af37]">Need booking, schedule, or pricing details?</strong> This guide focuses strictly on the historical interpretation differences between Whitney and Oak Alley. For duration (5h 25m), French Quarter coach departure times (400 Toulouse St), ticket prices, and live booking, see our full <Link href="/compare/whitney-vs-oak-alley" className="font-bold text-[#d4af37] underline underline-offset-4">Whitney vs Oak Alley Tour Comparison</Link>.
+          </p>
+        </div>
+
         <section className="grid gap-6 md:grid-cols-2">
           <div className="border border-[#333] bg-[#1a1a1a] p-7">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d4af37]">Choose Whitney if...</p>
@@ -98,6 +104,7 @@ export default function PlantationHistoryFocusGuide() {
 
         <nav className="border-t border-[#2a2a2a] pt-8 text-sm flex flex-wrap gap-5">
           <Link href="/compare/whitney-vs-oak-alley" className="text-[#d4af37] underline underline-offset-4">Full Whitney vs Oak Alley comparison</Link>
+          <Link href="/guides/oak-alley-vs-whitney-plantation-vs-swamp-tour" className="text-[#d4af37] underline underline-offset-4">Oak Alley vs Whitney vs Swamp Tour</Link>
           <Link href="/plantation-tours" className="text-[#d4af37] underline underline-offset-4">Browse plantation tours</Link>
           <Link href="/help-me-choose" className="text-[#d4af37] underline underline-offset-4">Use Help Me Choose</Link>
         </nav>

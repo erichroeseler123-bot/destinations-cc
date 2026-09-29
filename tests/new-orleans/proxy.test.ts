@@ -62,6 +62,20 @@ test("getWtonotHostRewrite - WTONOT host rules", async (t) => {
     assert.strictEqual(result.pathname, "/new-orleans/guides/weekend-trip");
   });
 
+  await t.test("rewrites /operators/airboat-adventures to the Airboat Adventures tour page", () => {
+    const req = buildRequest("welcometoneworleanstours.com", "/operators/airboat-adventures");
+    const result = getWtonotHostRewrite(req);
+    assert.ok(result);
+    assert.strictEqual(result.pathname, "/new-orleans/tours/airboat-adventures");
+  });
+
+  await t.test("preserves /tours/airboat-adventures routing", () => {
+    const req = buildRequest("welcometoneworleanstours.com", "/tours/airboat-adventures");
+    const result = getWtonotHostRewrite(req);
+    assert.ok(result);
+    assert.strictEqual(result.pathname, "/new-orleans/tours/airboat-adventures");
+  });
+
   await t.test("another satellite host is unaffected", () => {
     const req = buildRequest("lastfrontiershoreexcursions.com", "/contact");
     const result = getWtonotHostRewrite(req);

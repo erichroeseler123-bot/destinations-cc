@@ -260,6 +260,12 @@ export default function PlantationVsSwampGuide() {
             >
               Explore Swamp Tours
             </Link>
+            <Link
+              href="/compare/whitney-vs-oak-alley"
+              className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/20 bg-black/40 px-8 py-3 text-xs font-bold uppercase tracking-wider text-[#dfd4c3] hover:bg-white/10 transition-colors"
+            >
+              Whitney vs Oak Alley Comparison
+            </Link>
           </div>
         </section>
       </div>

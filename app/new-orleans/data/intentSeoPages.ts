@@ -58,31 +58,33 @@ export const INTENT_SEO_PAGES: IntentSeoPage[] = [
   },
   {
     slug: "one-day-in-new-orleans-tours",
-    title: "One Day in New Orleans | Tour Planning for a Single Day",
-    description: "Plan one day in New Orleans by choosing one anchor experience, realistic travel time and a second activity only when the schedule supports it.",
+    title: "One Day in New Orleans | Tour Planning & 1-Day Itinerary Guide (2026)",
+    description: "Only have one day in New Orleans? Compare morning anchor tours (city or swamp), afternoon river cruises, and evening jazz or ghost walks with realistic timing buffers.",
     config: {
-      eyebrow: "One-day planning",
-      title: "How to choose tours when you have one day in New Orleans",
-      intro: "With one day, the biggest mistake is trying to stack too many major experiences. Pick the one experience that matters most, account for transportation and transition time, and add a second activity only if the schedule genuinely fits.",
-      decisionTitle: "Build the day around one anchor",
+      eyebrow: "1-Day New Orleans Planning",
+      title: "One Day in New Orleans: Best Tour Itineraries & Anchor Combinations",
+      intro: "With only one day in New Orleans, the secret to a great visit is choosing one major daytime anchor, allowing realistic transition time for lunch, and pairing it with a relaxed afternoon river cruise or evening jazz/ghost experience. Here is how to structure your 24 hours without spending half the day stuck in traffic.",
+      decisionTitle: "The 1-Day Formula: Morning Anchor + Relaxed Afternoon + Evening Highlight",
       decisionPoints: [
-        "Choose a city overview if your priority is understanding New Orleans itself on a first visit.",
-        "Choose a swamp experience if getting outside the city is the main reason you want a tour.",
-        "Choose a river cruise if you want a defined experience that stays centered on the Mississippi River setting.",
-        "Choose a combination product only when you are comfortable committing most of the day to structured touring."
+        "Morning Anchor (9:00 AM – 12:00 PM): Choose either a 3-hour city sightseeing tour (French Quarter, Tremé, Garden District & St. Louis Cemetery No. 3) OR an early morning swamp tour with round-trip transportation.",
+        "Afternoon Reset (1:00 PM – 4:30 PM): Enjoy a leisurely French Quarter lunch, followed by a 2-hour Mississippi River sightseeing cruise on Steamboat NATCHEZ or Riverboat CITY OF NEW ORLEANS.",
+        "Evening Highlight (6:30 PM – 9:30 PM): Cap your day with an Evening Jazz Dinner Cruise or a 2-hour French Quarter Ghost & Spirits Walking Tour.",
+        "Avoid the Double Day-Trip Trap: Never try to book both a standalone swamp tour AND a standalone plantation tour on the same day. If you want both outside-the-city experiences, book the pre-coordinated 7h 45m Swamp Boat + Oak Alley Combo."
       ],
-      productSlugs: ["city-tour-of-new-orleans", "covered-tour-boat", "ragin-cajun-airboat-options", "daytime-jazz-cruise", "all-day-city-plantation-combo", "swamp-boat-oak-alley-combo"],
-      productHeading: "Ways to anchor a one-day visit",
-      productIntro: "These represent different ways to spend a meaningful share of one day. Confirm total duration, transportation and current schedules before stacking anything else around them.",
+      productSlugs: ["city-cemetery-garden-district-tour", "city-tour-of-new-orleans", "swamp-bayou-tour", "daytime-jazz-cruise", "evening-jazz-cruise", "ghosts-spirits-walking-tour", "swamp-boat-oak-alley-combo"],
+      productHeading: "Recommended tours to anchor your single day",
+      productIntro: "These verified excursions fit cleanly into morning, afternoon, or evening time slots. Check live departure times and booking availability below.",
       relatedLinks: [
-        { href: "/guides/first-time-new-orleans-tours", label: "First-time visitors" },
+        { href: "/guides/first-time-new-orleans-tours", label: "First-time visitor guide" },
         { href: "/guides/4-hours-in-new-orleans", label: "Only have four hours" },
-        { href: "/guides/things-to-do-before-a-cruise-new-orleans", label: "Before a cruise" }
+        { href: "/guides/best-new-orleans-tours-if-you-arrive-at-noon", label: "Arriving at noon" },
+        { href: "/guides/new-orleans-tours-that-fit-before-dinner", label: "Tours before dinner" }
       ],
       faq: [
-        { question: "What should I prioritize with one day in New Orleans?", answer: "Choose one anchor based on what matters most to you: city context, the Mississippi River, the wetlands or a longer history-focused outing. Add a second timed experience only after the first tour's total travel and return window are clear." },
-        { question: "Can I do a city tour and an evening jazz cruise in one day?", answer: "Often that is one of the cleaner two-experience combinations because the city tour can provide daytime context and the evening cruise can anchor the night. Confirm the exact departure and return times for your date before booking both." },
-        { question: "Can I do a swamp tour and a plantation in one day?", answer: "Yes when you intentionally choose a coordinated combination or when separate schedules leave enough travel and transition time. Do not assume two standalone departures will connect cleanly." },
+        { question: "What should I prioritize with only one day in New Orleans?", answer: "Start with an air-conditioned city tour in the morning to get the full scope of New Orleans' architecture and history (French Quarter, Garden District, St. Louis Cemetery No. 3). Spend the afternoon walking Royal Street and enjoying local food, then take an evening jazz cruise or ghost tour to experience the city at night." },
+        { question: "Can I do a city tour and an evening jazz cruise in one day?", answer: "Yes, this is the most seamless 1-day combination in New Orleans. A 3-hour morning city tour finishes around noon, leaving your afternoon completely open for lunch and exploring before boarding your evening jazz cruise at the riverfront." },
+        { question: "Can I do a swamp tour and a plantation tour in one day?", answer: "Only if you book a coordinated full-day combination tour (such as the 7h 45m Swamp Boat + Oak Alley Combo). Trying to book two separate tours independently on the same day is risky due to traffic, differing meeting points, and tight schedules." },
+        { question: "What if I arrive at noon with only half a day?", answer: "If you arrive around midday, check into your hotel, grab lunch in the French Quarter, and take either a 2:30 PM riverboat harbor cruise or a late afternoon cocktail/city tour, followed by an evening ghost tour." }
       ]
     }
   },

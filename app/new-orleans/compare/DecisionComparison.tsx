@@ -28,6 +28,10 @@ export type TopCard = {
   historicalFocus: string;
   walkingMobility: string;
   priceContext?: string;
+  ticketType?: string;
+  inclusions?: string;
+  meetingPoint?: string;
+  cancellationPolicy?: string;
   href: string;
   ctaText: string;
 };
@@ -48,6 +52,7 @@ export default function DecisionComparison({
   breadcrumbs,
   topCards,
   topSummaryRows,
+  topSummaryHeading,
 }: {
   eyebrow: string;
   title: string;
@@ -64,6 +69,7 @@ export default function DecisionComparison({
   breadcrumbs?: { label: string; href: string }[];
   topCards?: { left: TopCard; right: TopCard };
   topSummaryRows?: ComparisonRow[];
+  topSummaryHeading?: string;
 }) {
   const faqSchema = faq.length ? {
     "@context": "https://schema.org",
@@ -149,6 +155,18 @@ export default function DecisionComparison({
                     <p><strong className="text-white">Transportation:</strong> {topCards.left.transportation}</p>
                     <p><strong className="text-white">Historical Focus:</strong> {topCards.left.historicalFocus}</p>
                     <p><strong className="text-white">Walking / Mobility:</strong> {topCards.left.walkingMobility}</p>
+                    {topCards.left.ticketType && (
+                      <p><strong className="text-white">Ticket Format:</strong> {topCards.left.ticketType}</p>
+                    )}
+                    {topCards.left.inclusions && (
+                      <p><strong className="text-white">Inclusions:</strong> {topCards.left.inclusions}</p>
+                    )}
+                    {topCards.left.meetingPoint && (
+                      <p><strong className="text-white">Departure Point:</strong> {topCards.left.meetingPoint}</p>
+                    )}
+                    {topCards.left.cancellationPolicy && (
+                      <p><strong className="text-white">Cancellation:</strong> {topCards.left.cancellationPolicy}</p>
+                    )}
                     {topCards.left.priceContext && (
                       <p><strong className="text-white">Pricing:</strong> {topCards.left.priceContext}</p>
                     )}
@@ -164,6 +182,9 @@ export default function DecisionComparison({
                   >
                     {topCards.left.ctaText}
                   </Link>
+                  <p className="mt-2 text-center text-[11px] text-[#888]">
+                    Verified live inventory · Hand-off to operator FareHarbor checkout
+                  </p>
                 </div>
               </div>
 
@@ -183,6 +204,18 @@ export default function DecisionComparison({
                     <p><strong className="text-white">Transportation:</strong> {topCards.right.transportation}</p>
                     <p><strong className="text-white">Historical Focus:</strong> {topCards.right.historicalFocus}</p>
                     <p><strong className="text-white">Walking / Mobility:</strong> {topCards.right.walkingMobility}</p>
+                    {topCards.right.ticketType && (
+                      <p><strong className="text-white">Ticket Format:</strong> {topCards.right.ticketType}</p>
+                    )}
+                    {topCards.right.inclusions && (
+                      <p><strong className="text-white">Inclusions:</strong> {topCards.right.inclusions}</p>
+                    )}
+                    {topCards.right.meetingPoint && (
+                      <p><strong className="text-white">Departure Point:</strong> {topCards.right.meetingPoint}</p>
+                    )}
+                    {topCards.right.cancellationPolicy && (
+                      <p><strong className="text-white">Cancellation:</strong> {topCards.right.cancellationPolicy}</p>
+                    )}
                     {topCards.right.priceContext && (
                       <p><strong className="text-white">Pricing:</strong> {topCards.right.priceContext}</p>
                     )}
@@ -198,6 +231,9 @@ export default function DecisionComparison({
                   >
                     {topCards.right.ctaText}
                   </Link>
+                  <p className="mt-2 text-center text-[11px] text-[#888]">
+                    Verified live inventory · Hand-off to operator FareHarbor checkout
+                  </p>
                 </div>
               </div>
             </div>
@@ -207,7 +243,9 @@ export default function DecisionComparison({
         {topSummaryRows && topSummaryRows.length > 0 && (
           <section aria-label="Key factor quick comparison" className="overflow-hidden border border-[#333]">
             <div className="bg-[#1f1f1f] px-4 py-3 border-b border-[#333]">
-              <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[#d4af37]">Top Comparison: Whitney vs Oak Alley</h3>
+              <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-[#d4af37]">
+                {topSummaryHeading || `Key Comparison: ${left.heading} vs ${right.heading}`}
+              </h3>
             </div>
             <div className="grid grid-cols-[minmax(120px,0.85fr)_1fr_1fr] bg-[#1b1b1b] text-sm font-bold">
               <div className="border-r border-[#333] p-4 text-[#aaa]">Decision Factor</div>

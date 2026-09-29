@@ -65,7 +65,7 @@ export default function StickyMobileBookingBar({
             <div className="flex items-center gap-2">
               {product.priceFrom && (
                 <span className="text-sm font-bold text-[#f6f1e8]">
-                  From ${product.priceFrom}
+                  {product.isFlatRate ? `Flat rate: $${product.priceFrom}` : `From $${product.priceFrom}`}
                   {product.priceUnit && <span className="text-[10px] font-normal text-[#c7a96b]"> / {product.priceUnit}</span>}
                 </span>
               )}
