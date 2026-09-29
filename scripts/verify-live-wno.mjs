@@ -28,15 +28,26 @@ async function verify() {
       if (url.includes('whitney-vs-oak-alley')) {
         console.log('  Includes "Key Comparison: Whitney Plantation vs Oak Alley Plantation":', text.includes('Key Comparison: Whitney Plantation vs Oak Alley Plantation'));
         console.log('  Includes "$89.00 flat rate":', text.includes('$89.00 flat rate'));
+        console.log('  Includes "$42.00 child ages 6–12":', text.includes('$42.00 child ages 6–12'));
         console.log('  Includes "400 Toulouse St":', text.includes('400 Toulouse St'));
         console.log('  Includes "Non-refundable; all sales final per Gray Line":', text.includes('Non-refundable; all sales final per Gray Line'));
         console.log('  Does NOT promise 24h refund for Gray Line:', !text.includes('Full refund with 24 hours notice'));
       }
       if (url.includes('swamp-tours') && !url.includes('best-swamp')) {
+        console.log('  GeoFact has "$60–$119 w/ Transportation":', text.includes('$60–$119 w/ Transportation'));
+        console.log('  GeoFact has "$35–$95 Self-Drive":', text.includes('$35–$95 Self-Drive'));
+        console.log('  Does NOT include old "$55–$95":', !text.includes('$55–$95'));
+        console.log('  Does NOT include old "$35–$60":', !text.includes('$35–$60'));
         console.log('  Gray Line Covered Boat Flat rate: $65:', text.includes('Operated by <!-- -->Gray Line</p><p class="mb-3 text-base font-bold text-[#f6f1e8]">Flat rate: $65'));
         console.log('  Gray Line Small Airboat Flat rate: $119:', text.includes('Operated by <!-- -->Gray Line</p><p class="mb-3 text-base font-bold text-[#f6f1e8]">Flat rate: $119'));
         console.log('  Gray Line Large Airboat Flat rate: $90:', text.includes('Operated by <!-- -->Gray Line</p><p class="mb-3 text-base font-bold text-[#f6f1e8]">Flat rate: $90'));
         console.log('  Gray Line does not have old From $59 / From $89:', !text.includes('From $59') && !text.includes('From $89'));
+      }
+      if (url.includes('guides/oak-alley-vs-whitney-plantation-vs-swamp-tour')) {
+        console.log('  Includes "$42.00 child":', text.includes('$42.00 child'));
+        console.log('  Includes "$69.00 child":', text.includes('$69.00 child'));
+        console.log('  Does NOT include old "$54 child":', !text.includes('$54 child'));
+        console.log('  Does NOT include old "$79 child":', !text.includes('$79 child'));
       }
       if (url.includes('compare/small-vs-large-airboat')) {
         console.log('  Includes "Non-refundable; all sales final per Gray Line":', text.includes('Non-refundable; all sales final per Gray Line'));
@@ -45,7 +56,9 @@ async function verify() {
       if (url.includes('compare/covered-swamp-boat-vs-airboat')) {
         console.log('  Includes Ragin Cajun self-drive rates ($65 / $85 / $95):', text.includes('$65 (large 16-pax)') && text.includes('$85 (medium 10-pax)') && text.includes('$95 (small 6–10 pax)'));
         console.log('  Includes Ragin Cajun shuttle rates ($90 / $110 / $120):', text.includes('$90 / $110 / $120 with round-trip shuttle'));
-        console.log('  Includes 24 hours cancellation notice:', text.includes('24 hours notice prior to departure'));
+        console.log('  Includes 48 hours cancellation notice:', text.includes('48 hours notice'));
+        console.log('  Includes trip protection 24h exception clause:', text.includes('optional Trip Protection'));
+        console.log('  Does NOT have unqualified 24h refund:', !text.includes('Full refund with 24 hours notice prior to departure'));
       }
       if (url.includes('garden-district-tours')) {
         console.log('  Includes "See City Coach Tours (Featuring Garden District)":', text.includes('See City Coach Tours (Featuring Garden District)'));

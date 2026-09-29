@@ -164,15 +164,18 @@ export default function PlantationVsSwampGuide() {
           </p>
 
           <div className="overflow-x-auto -mx-6 sm:mx-0">
-            <table className="w-full text-left border-collapse min-w-[700px]">
+            <table className="w-full text-left border-collapse min-w-[850px]">
               <thead>
                 <tr className="border-b-2 border-[#eee5d6] bg-[#fbf8f2]">
-                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-[#796e60] w-1/5">Trip Variable</th>
-                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-[#825e1a] bg-[#fefaf0] w-1/4">
+                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-[#796e60] w-[18%]">Trip Variable</th>
+                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-[#825e1a] bg-[#fefaf0] w-[20%]">
                     Oak Alley Plantation
                   </th>
-                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-[#171a1f] w-1/4">Whitney Plantation</th>
-                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-[#2d5a27] w-1/4">Barataria Swamp Tour</th>
+                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-[#171a1f] w-[20%]">Whitney Plantation</th>
+                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-[#2d5a27] w-[20%]">Barataria Swamp Tour</th>
+                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-[#9a6714] bg-[#fcf6e8] w-[22%]">
+                    Swamp + Oak Alley Combo
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#eee5d6] text-sm">
@@ -182,6 +185,7 @@ export default function PlantationVsSwampGuide() {
                     <td className="p-4 bg-[#fdf8ee] text-[#42341d] font-medium">{row.oakAlley}</td>
                     <td className="p-4 text-[#373129]">{row.whitney}</td>
                     <td className="p-4 text-[#203c1c] font-medium">{row.swampTour}</td>
+                    <td className="p-4 bg-[#fcf6e8] text-[#5c3e0c] font-medium">{row.combo}</td>
                   </tr>
                 ))}
               </tbody>
@@ -217,7 +221,7 @@ export default function PlantationVsSwampGuide() {
                 If your trip to New Orleans is 3 to 4 days long, dedicating two separate days to out-of-town trips eats up precious city exploration time.
               </p>
               <p>
-                By booking a <strong>Swamp & Plantation Combination Tour</strong>, a single comfortable tour coach picks you up at your French Quarter or Canal Street hotel around 8:30 AM, takes you for a 2-hour swamp boat ride through Barataria bayou waters to view wild alligators, stops for a local Cajun lunch, and then continues directly to River Road for your guided plantation tour. You return to downtown New Orleans around 5:00 PM, giving you the best of Louisiana history and nature in a single seamless day.
+                By booking an organized <strong>Swamp & Plantation Combination Tour</strong> ($131.00 flat rate per adult / $69.00 child ages 6–12), a single comfortable Gray Line coach departs 400 Toulouse St in the French Quarter around 8:30 AM, takes you for a guided swamp boat ride through Barataria bayou waters to view wild alligators, and then transfers directly to River Road for your guided Oak Alley tour. You return to the French Quarter around 5:00 PM, giving you the best of Louisiana history and nature in a single seamless day without needing a rental car.
               </p>
             </div>
           </div>
