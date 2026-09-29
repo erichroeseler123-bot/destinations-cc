@@ -23,9 +23,9 @@ export const NOLA_GEO_FACTS: Record<string, NolaGeoFact> = {
     categorySlug: "swamp-tours",
     directQuestion: "How much is a New Orleans swamp tour and do they include transportation?",
     directAnswer:
-      "New Orleans swamp tours cost $60 to $119 per person with round-trip transportation included ($60–$65 for covered tour boats; $90 for large airboats; $119 for small airboats), or $35 to $95 per person if you drive to the dock yourself ($35 covered boat; $65–$95 airboat). Tour docks are located in the Barataria basin (35 to 45 minutes from downtown). Departures offer central coach departure from 400 Toulouse St or French Quarter / CBD hotel shuttle pickup.",
+      "New Orleans swamp tours cost $60 to $120 per person with round-trip transportation included ($60–$65 for covered tour boats; $90–$120 for airboats), or $35 to $95 per person if you drive to the dock yourself ($35 covered boat; $65–$95 airboat). Tour docks are located in the Barataria basin (35 to 45 minutes from downtown). Departures offer central coach departure from 400 Toulouse St or French Quarter / CBD hotel shuttle pickup.",
     pricingLabel: "Tour Rates",
-    pricingValue: "$60–$119 w/ Transportation • $35–$95 Self-Drive",
+    pricingValue: "$60–$120 w/ Transportation • $35–$95 Self-Drive",
     durationLabel: "Duration & Drive",
     durationValue: "3.5–4 hours total (~1.5–2 hours on the water)",
     meetingPointLabel: "Transportation Options",
@@ -51,9 +51,9 @@ export const NOLA_GEO_FACTS: Record<string, NolaGeoFact> = {
     categorySlug: "airboat-tours",
     directQuestion: "What is the difference between an airboat tour and a traditional swamp boat in New Orleans?",
     directAnswer:
-      "Airboats are high-speed, fan-powered vessels carrying 6 to 27 passengers that glide over shallow coastal marshes unreachable by conventional boats. Tours cost $90 to $119 per person with transportation ($65–$95 self-drive) and deliver an exhilarating open-air ride. Traditional covered swamp boats are slower, shaded, carry 20 to 35 passengers, and cost less ($60–$65 with transit; $35 self-drive).",
+      "Airboats are high-speed, fan-powered vessels carrying 6 to 27 passengers that glide over shallow coastal marshes unreachable by conventional boats. Tours cost $90 to $120 per person with transportation ($65–$95 self-drive) and deliver an exhilarating open-air ride. Traditional covered swamp boats are slower, shaded, carry 20 to 35 passengers, and cost less ($60–$65 with transit; $35 self-drive).",
     pricingLabel: "Airboat Pricing",
-    pricingValue: "$90–$119 w/ Transportation • $65–$95 Self-Drive",
+    pricingValue: "$90–$120 w/ Transportation • $65–$95 Self-Drive",
     durationLabel: "Ride Duration",
     durationValue: "1.5–2 hours on water • ~3.5–4 hours with transit",
     meetingPointLabel: "Transportation",

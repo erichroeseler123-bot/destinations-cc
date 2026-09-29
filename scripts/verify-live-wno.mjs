@@ -34,8 +34,9 @@ async function verify() {
         console.log('  Does NOT promise 24h refund for Gray Line:', !text.includes('Full refund with 24 hours notice'));
       }
       if (url.includes('swamp-tours') && !url.includes('best-swamp')) {
-        console.log('  GeoFact has "$60–$119 w/ Transportation":', text.includes('$60–$119 w/ Transportation'));
+        console.log('  GeoFact has "$60–$120 w/ Transportation":', text.includes('$60–$120 w/ Transportation'));
         console.log('  GeoFact has "$35–$95 Self-Drive":', text.includes('$35–$95 Self-Drive'));
+        console.log('  Does NOT include old "$60–$119 w/ Transportation":', !text.includes('$60–$119 w/ Transportation'));
         console.log('  Does NOT include old "$55–$95":', !text.includes('$55–$95'));
         console.log('  Does NOT include old "$35–$60":', !text.includes('$35–$60'));
         console.log('  Gray Line Covered Boat Flat rate: $65:', text.includes('Operated by <!-- -->Gray Line</p><p class="mb-3 text-base font-bold text-[#f6f1e8]">Flat rate: $65'));
@@ -46,6 +47,10 @@ async function verify() {
       if (url.includes('guides/oak-alley-vs-whitney-plantation-vs-swamp-tour')) {
         console.log('  Includes "$42.00 child":', text.includes('$42.00 child'));
         console.log('  Includes "$69.00 child":', text.includes('$69.00 child'));
+        console.log('  Includes Manchac Swamp:', text.includes('Manchac Swamp'));
+        console.log('  Includes 7 hours 45 minutes:', text.includes('7 hours 45 minutes'));
+        console.log('  Does NOT include Barataria bayou waters in combo:', !text.includes('Barataria bayou waters'));
+        console.log('  Does NOT include old approximate times (8:30 AM / 5:00 PM):', !text.includes('8:30 AM') && !text.includes('5:00 PM'));
         console.log('  Does NOT include old "$54 child":', !text.includes('$54 child'));
         console.log('  Does NOT include old "$79 child":', !text.includes('$79 child'));
       }

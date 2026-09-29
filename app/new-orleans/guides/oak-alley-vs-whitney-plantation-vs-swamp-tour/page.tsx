@@ -24,13 +24,13 @@ const comparisonRows = [
     oakAlley: "Iconic 300-year-old live oak canopy, antebellum Greek Revival architecture, and historic River Road grounds.",
     whitney: "The only museum in America exclusively dedicated to the enslaved experience, with memorials and historic slave cabins.",
     swampTour: "Wild Louisiana bayou nature, live alligator encounters, moss-draped cypress swamps, and Cajun cultural lore.",
-    combo: "The ultimate full-day experience: authentic swamp boat cruise in the morning + Oak Alley tour in the afternoon.",
+    combo: "The ultimate full-day experience: authentic Manchac Swamp boat cruise + Oak Alley Plantation tour (7h 45m published duration).",
   },
   {
     feature: "Price (w/ Coach / Shuttle Transit)",
     oakAlley: "$89.00 flat rate per adult / $42.00 child ages 6–12 (Includes house admission + round-trip coach from 400 Toulouse St)",
     whitney: "$89.00 flat rate per adult / $42.00 child ages 6–12 (Includes museum admission + round-trip coach from 400 Toulouse St)",
-    swampTour: "$60–$65 per adult (Covered boat w/ transit; $32 child) • $90–$119 (Airboat w/ transit)",
+    swampTour: "$60–$65 per adult (Covered boat w/ transit; $32 child) • $90–$120 (Airboat w/ transit)",
     combo: "$131.00 flat rate per adult / $69.00 child ages 6–12 (Oak Alley + Swamp Boat combination with coach transit)",
   },
   {
@@ -38,14 +38,14 @@ const comparisonRows = [
     oakAlley: "5 to 5.5 hours round-trip (~1 hour drive each way + 2.5 hours on-site)",
     whitney: "5 to 5.5 hours round-trip (~1 hour drive each way + 2.5 hours on-site)",
     swampTour: "3.5 to 4 hours round-trip (~45 min drive each way + 1.5–2 hours on water)",
-    combo: "7.5 to 8.5 hours total (A full-day excursion leaving dinner open in NOLA)",
+    combo: "7 hours 45 minutes published duration (actual departure and return schedule confirmed during checkout)",
   },
   {
     feature: "Driving Distance & Departure Point",
     oakAlley: "~53 miles west along River Road. Coach departs 400 Toulouse St (French Quarter).",
     whitney: "~51 miles west (Wallace, LA). Coach departs 400 Toulouse St (French Quarter).",
     swampTour: "~35 miles south (Barataria basin). Central coach or hotel shuttle transit included.",
-    combo: "Coach departs 400 Toulouse St with seamless transfer between swamp and plantation.",
+    combo: "Coach departs 400 Toulouse St (French Quarter) with direct transfer between Manchac Swamp and River Road.",
   },
   {
     feature: "Family & Age Fit",
@@ -221,7 +221,7 @@ export default function PlantationVsSwampGuide() {
                 If your trip to New Orleans is 3 to 4 days long, dedicating two separate days to out-of-town trips eats up precious city exploration time.
               </p>
               <p>
-                By booking an organized <strong>Swamp & Plantation Combination Tour</strong> ($131.00 flat rate per adult / $69.00 child ages 6–12), a single comfortable Gray Line coach departs 400 Toulouse St in the French Quarter around 8:30 AM, takes you for a guided swamp boat ride through Barataria bayou waters to view wild alligators, and then transfers directly to River Road for your guided Oak Alley tour. You return to the French Quarter around 5:00 PM, giving you the best of Louisiana history and nature in a single seamless day without needing a rental car.
+                By booking an organized <strong>Swamp & Plantation Combination Tour</strong> ($131.00 flat rate per adult / $69.00 child ages 6–12), a single comfortable Gray Line coach departs 400 Toulouse St in the French Quarter for a published total duration of <strong>7 hours 45 minutes</strong>. The excursion features a guided boat cruise through <strong>Manchac Swamp</strong> to spot wild alligators and explore cypress bayous, followed by direct transfer to River Road for your guided Oak Alley tour. Specific departure and check-in times are confirmed during checkout, giving you the best of Louisiana history and nature in a single seamless day without needing a rental car.
               </p>
             </div>
           </div>
