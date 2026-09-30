@@ -16,7 +16,7 @@ Helpful tour concierge: compare experiences by group fit, time, transportation a
 
 ## Attribution
 
-One named contributor: Erich. Confirmed background: 30 years working in independent tours and transportation; lived in Juneau, Skagway, Ketchikan, New Orleans, Los Angeles, Wellington (New Zealand), and Charleston. Do not infer current residency, professional licenses, specific employers or experience on any particular tour. Use the actual business name for company-maintained content; do not invent an editorial staff. A personal byline is opt-in per article after Erich has shaped or reviewed and approved the piece. Existing articles retain business attribution until that happens.
+One named contributor: Erich. Confirmed background: 30 years working in independent tours and transportation; lived in Juneau, Skagway, Ketchikan, New Orleans, Los Angeles, Wellington (New Zealand), Charleston, and Denver; currently lives in Denver. Do not infer other current residences, professional licenses, specific employers or experience on any particular tour. Use the actual business name for company-maintained content; do not invent an editorial staff. A personal byline is opt-in per article after Erich has shaped or reviewed and approved the piece. Existing articles retain business attribution until that happens.
 
 The visible byline and Article/BlogPosting author must agree. Use Organization with name and url for business attribution, or Person with name `Erich`, url `https://www.welcometoneworleanstours.com/authors/erich` and @id `https://www.welcometoneworleanstours.com/authors/erich#person` for an approved personal article. Keep the business as publisher. Use Article markup for an actual article, not every service or product page.
 
