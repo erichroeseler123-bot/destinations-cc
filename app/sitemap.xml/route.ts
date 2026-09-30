@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export const WTONOT_ORIGIN = "https://www.welcometoneworleanstours.com";
 
 export const WTONOT_SUPPORT_PATHS = [
-  "/contact", "/about", "/how-we-choose", "/faq", "/booking-help", "/privacy", "/terms",
+  "/contact", "/about", "/authors/erich", "/editorial-policy", "/how-we-choose", "/faq", "/booking-help", "/privacy", "/terms",
   "/cancellation-policy", "/affiliate-disclosure", "/accessibility",
 ] as const;
 

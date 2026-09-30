@@ -15,6 +15,8 @@ const usefulLinks = [
   { href: "/faq", label: "FAQ" },
   { href: "/booking-help", label: "Booking Help" },
   { href: "/about", label: "About" },
+  { href: "/authors/erich", label: "Erich" },
+  { href: "/editorial-policy", label: "Editorial Policy" },
 ];
 
 const policyLinks = [
