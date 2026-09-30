@@ -2,17 +2,26 @@ import Link from "next/link";
 import CinematicPageHero from "./CinematicPageHero";
 import IntentSeoLanding, { type IntentSeoLandingConfig } from "./IntentSeoLanding";
 import ProductCard from "./ProductCard";
-import { getProductById } from "../data/index";
+import { getProductById, type LiveProductAdapter } from "../data/index";
 import { SEO_PAGES } from "../data/pages";
 import type { SeoPageRecord } from "../data/types";
 import { STOREFRONT_PRODUCTS } from "../tours/pageConfig";
 import DailyBriefSignup from "./DailyBriefSignup";
 
+import { resolveProductImage } from "../lib/imageResolver";
+
 const FALLBACK_IMAGE = "/images/new-orleans/hero-french-quarter-balcony.jpg";
+
+function isLiveProduct(product: ReturnType<typeof getProductById>): product is LiveProductAdapter {
+  return Boolean(product && product.status === "live" && "imageUrl" in product);
+}
 
 function liveProductImage(productId: string) {
   const product = getProductById(productId);
-  if (product && "imageUrl" in product && product.imageUrl) return product.imageUrl;
+  if (!isLiveProduct(product)) return null;
+  const resolved = resolveProductImage(product);
+  if (resolved?.src) return resolved.src;
+  if (product.imageUrl) return product.imageUrl;
   return null;
 }
 
@@ -27,7 +36,11 @@ function seoGuideImage(page: SeoPageRecord) {
 function intentGuideImage(config: IntentSeoLandingConfig) {
   for (const slug of config.productSlugs) {
     const product = STOREFRONT_PRODUCTS.find((candidate) => candidate.slug === slug);
-    if (product?.imageUrl) return product.imageUrl;
+    if (product) {
+      const resolved = resolveProductImage(product);
+      if (resolved?.src) return resolved.src;
+      if (product.imageUrl) return product.imageUrl;
+    }
   }
   return FALLBACK_IMAGE;
 }

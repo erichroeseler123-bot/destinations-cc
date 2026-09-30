@@ -34,6 +34,8 @@ export type TopCard = {
   cancellationPolicy?: string;
   href: string;
   ctaText: string;
+  imageUrl?: string;
+  imageAlt?: string;
 };
 
 export default function DecisionComparison({
@@ -139,8 +141,19 @@ export default function DecisionComparison({
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
-              <div className="flex flex-col justify-between border-2 border-[#d4af37] bg-[#1a1a1a] p-6 shadow-xl">
-                <div>
+              <div className="flex flex-col justify-between border-2 border-[#d4af37] bg-[#1a1a1a] shadow-xl overflow-hidden">
+                {topCards.left.imageUrl && (
+                  <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-[#333] bg-[#121212]">
+                    <img
+                      src={topCards.left.imageUrl}
+                      alt={topCards.left.imageAlt || topCards.left.heading}
+                      className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent opacity-80" />
+                  </div>
+                )}
+                <div className="p-6">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">{topCards.left.operator}</span>
                     {topCards.left.badge && (
@@ -172,24 +185,37 @@ export default function DecisionComparison({
                     )}
                   </div>
                 </div>
-                <div className="mt-6 pt-4 border-t border-[#333]">
-                  <Link
-                    href={topCards.left.href}
-                    data-wno-event="booking_button_clicked"
-                    data-wno-label={topCards.left.ctaText}
-                    data-wno-product={topCards.left.href.replace("/tours/", "").split("?")[0]}
-                    className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
-                  >
-                    {topCards.left.ctaText}
-                  </Link>
-                  <p className="mt-2 text-center text-[11px] text-[#888]">
-                    Verified live inventory · Hand-off to operator FareHarbor checkout
-                  </p>
+                <div className="p-6 pt-0">
+                  <div className="pt-4 border-t border-[#333]">
+                    <Link
+                      href={topCards.left.href}
+                      data-wno-event="booking_button_clicked"
+                      data-wno-label={topCards.left.ctaText}
+                      data-wno-product={topCards.left.href.replace("/tours/", "").split("?")[0]}
+                      className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+                    >
+                      {topCards.left.ctaText}
+                    </Link>
+                    <p className="mt-2 text-center text-[11px] text-[#888]">
+                      Verified live inventory · Hand-off to operator FareHarbor checkout
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex flex-col justify-between border-2 border-[#d4af37] bg-[#1a1a1a] p-6 shadow-xl">
-                <div>
+              <div className="flex flex-col justify-between border-2 border-[#d4af37] bg-[#1a1a1a] shadow-xl overflow-hidden">
+                {topCards.right.imageUrl && (
+                  <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-[#333] bg-[#121212]">
+                    <img
+                      src={topCards.right.imageUrl}
+                      alt={topCards.right.imageAlt || topCards.right.heading}
+                      className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent opacity-80" />
+                  </div>
+                )}
+                <div className="p-6">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">{topCards.right.operator}</span>
                     {topCards.right.badge && (
@@ -221,19 +247,21 @@ export default function DecisionComparison({
                     )}
                   </div>
                 </div>
-                <div className="mt-6 pt-4 border-t border-[#333]">
-                  <Link
-                    href={topCards.right.href}
-                    data-wno-event="booking_button_clicked"
-                    data-wno-label={topCards.right.ctaText}
-                    data-wno-product={topCards.right.href.replace("/tours/", "").split("?")[0]}
-                    className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
-                  >
-                    {topCards.right.ctaText}
-                  </Link>
-                  <p className="mt-2 text-center text-[11px] text-[#888]">
-                    Verified live inventory · Hand-off to operator FareHarbor checkout
-                  </p>
+                <div className="p-6 pt-0">
+                  <div className="pt-4 border-t border-[#333]">
+                    <Link
+                      href={topCards.right.href}
+                      data-wno-event="booking_button_clicked"
+                      data-wno-label={topCards.right.ctaText}
+                      data-wno-product={topCards.right.href.replace("/tours/", "").split("?")[0]}
+                      className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+                    >
+                      {topCards.right.ctaText}
+                    </Link>
+                    <p className="mt-2 text-center text-[11px] text-[#888]">
+                      Verified live inventory · Hand-off to operator FareHarbor checkout
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

@@ -54,8 +54,17 @@ export default function SwampTransportationComparisonPage() {
         </section>
 
         <section className="grid gap-6 md:grid-cols-3">
-          <div className="flex flex-col justify-between border-2 border-[#d4af37] bg-[#1a1a1a] p-6 shadow-xl">
-            <div>
+          <div className="flex flex-col justify-between border-2 border-[#d4af37] bg-[#1a1a1a] shadow-xl overflow-hidden">
+            <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-[#333] bg-[#121212]">
+              <img
+                src="/images/travel-markets/new-orleans/hotel-pickup-swamp-boat.png"
+                alt="Coach transportation departing for New Orleans swamp tour"
+                className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent opacity-80" />
+            </div>
+            <div className="p-6">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">Gray Line New Orleans</span>
                 <span className="rounded bg-[#d4af37]/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#d4af37] border border-[#d4af37]/40">
@@ -73,21 +82,32 @@ export default function SwampTransportationComparisonPage() {
                 <strong className="text-white">Pricing:</strong> $65 adult / $32 child (Covered Boat) • $90 (Large Airboat) • $119 (Small Airboat)
               </p>
             </div>
-            <div className="mt-6 pt-4 border-t border-[#333]">
-              <Link
-                href="/tours/swamp-bayou-tour?src=wtonot-compare-swamp"
-                data-wno-event="booking_button_clicked"
-                data-wno-label="Check Gray Line Coach Dates"
-                data-wno-product="swamp-bayou-tour"
-                className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb]"
-              >
-                Check Gray Line Coach Dates →
-              </Link>
+            <div className="p-6 pt-0">
+              <div className="pt-4 border-t border-[#333]">
+                <Link
+                  href="/tours/swamp-bayou-tour?src=wtonot-compare-swamp"
+                  data-wno-event="booking_button_clicked"
+                  data-wno-label="Check Gray Line Coach Dates"
+                  data-wno-product="swamp-bayou-tour"
+                  className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb]"
+                >
+                  Check Gray Line Coach Dates →
+                </Link>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col justify-between border-2 border-[#d4af37] bg-[#1a1a1a] p-6 shadow-xl">
-            <div>
+          <div className="flex flex-col justify-between border-2 border-[#d4af37] bg-[#1a1a1a] shadow-xl overflow-hidden">
+            <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-[#333] bg-[#121212]">
+              <img
+                src="/images/travel-markets/new-orleans/hotel-pickup-airboat.png"
+                alt="Hotel pickup shuttle for New Orleans airboat tour"
+                className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent opacity-80" />
+            </div>
+            <div className="p-6">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">Ragin Cajun Tours</span>
                 <span className="rounded bg-[#d4af37]/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#d4af37] border border-[#d4af37]/40">
@@ -102,24 +122,35 @@ export default function SwampTransportationComparisonPage() {
                 <li>✓ Great for travelers who want zero transit planning from their hotel.</li>
               </ul>
               <p className="mt-4 text-xs text-[#aaa]">
-                <strong className="text-white">Pricing:</strong> From $60 per adult with round-trip hotel pickup (Covered Boat) • $85–$105 (Airboat)
+                <strong className="text-white">Pricing:</strong> From $60 per adult with round-trip hotel pickup (Covered Boat) • $90–$120 (Airboat)
               </p>
             </div>
-            <div className="mt-6 pt-4 border-t border-[#333]">
-              <Link
-                href="/tours/covered-tour-boat?src=wtonot-detail-covered"
-                data-wno-event="booking_button_clicked"
-                data-wno-label="Check Hotel Pickup Dates"
-                data-wno-product="covered-tour-boat"
-                className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb]"
-              >
-                Check Hotel Pickup Dates →
-              </Link>
+            <div className="p-6 pt-0">
+              <div className="pt-4 border-t border-[#333]">
+                <Link
+                  href="/tours/covered-tour-boat?src=wtonot-detail-covered"
+                  data-wno-event="booking_button_clicked"
+                  data-wno-label="Check Hotel Pickup Dates"
+                  data-wno-product="covered-tour-boat"
+                  className="block w-full text-center bg-[#d4af37] px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#151515] transition hover:bg-[#fff8eb]"
+                >
+                  Check Hotel Pickup Dates →
+                </Link>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col justify-between border-2 border-[#555] bg-[#1a1a1a] p-6 shadow-xl">
-            <div>
+          <div className="flex flex-col justify-between border-2 border-[#555] bg-[#1a1a1a] shadow-xl overflow-hidden">
+            <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-[#333] bg-[#121212]">
+              <img
+                src="/images/travel-markets/new-orleans/covered-boat-swamp.png"
+                alt="Swamp tour boat at the bayou dock for self-drive visitors"
+                className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent opacity-80" />
+            </div>
+            <div className="p-6">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#aaa]">Self-Drive</span>
                 <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#ccc] border border-white/20">
@@ -134,19 +165,21 @@ export default function SwampTransportationComparisonPage() {
                 <li>⚠️ <strong>Rideshare warning:</strong> Uber/Lyft will take you to Lafitte, but return rides are not reliably available from the swamp.</li>
               </ul>
               <p className="mt-4 text-xs text-[#aaa]">
-                <strong className="text-white">Pricing:</strong> From $35 per adult self-drive (Covered Boat) • From $60 (Airboat)
+                <strong className="text-white">Pricing:</strong> From $35 per adult self-drive (Covered Boat) • From $65 (Airboat)
               </p>
             </div>
-            <div className="mt-6 pt-4 border-t border-[#333]">
-              <Link
-                href="/tours/covered-tour-boat?src=wtonot-detail-covered"
-                data-wno-event="booking_button_clicked"
-                data-wno-label="Check Self-Drive Dates"
-                data-wno-product="covered-tour-boat"
-                className="block w-full text-center border border-[#d4af37] bg-transparent px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#d4af37] transition hover:bg-[#d4af37] hover:text-[#151515]"
-              >
-                Check Self-Drive Dates →
-              </Link>
+            <div className="p-6 pt-0">
+              <div className="pt-4 border-t border-[#333]">
+                <Link
+                  href="/tours/covered-tour-boat?src=wtonot-detail-covered"
+                  data-wno-event="booking_button_clicked"
+                  data-wno-label="Check Self-Drive Dates"
+                  data-wno-product="covered-tour-boat"
+                  className="block w-full text-center border border-[#d4af37] bg-transparent px-5 py-3.5 text-sm font-bold uppercase tracking-wider text-[#d4af37] transition hover:bg-[#d4af37] hover:text-[#151515]"
+                >
+                  Check Self-Drive Dates →
+                </Link>
+              </div>
             </div>
           </div>
         </section>

@@ -42,6 +42,8 @@ const options = [
     fit: "Best if you want the broadest overview of the city and can devote the full three-hour block.",
     caution: "Because the published tour itself is 3 hours, do not use this as a tight pre-flight or hard-deadline activity without extra buffer.",
     href: "/tours/city-tour-of-new-orleans",
+    image: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    imageAlt: "French Quarter and Garden District city sightseeing tour",
   },
   {
     title: "Ghosts & Spirits Walking Tour",
@@ -50,6 +52,8 @@ const options = [
     fit: "Best for an evening window, especially if you are already in or near the French Quarter.",
     caution: "It is a walking tour on uneven sidewalks and streets; the operator notes alternate routes may be needed for wheelchairs.",
     href: "/tours/ghosts-spirits-walking-tour",
+    image: "/images/wikimedia/originals/french-quarter-night.jpg",
+    imageAlt: "Historic French Quarter streets after dark",
   },
   {
     title: "Craft Cocktail Walking Tour",
@@ -58,6 +62,8 @@ const options = [
     fit: "Best for adults who want a compact French Quarter experience with cocktails and history.",
     caution: "This is 21+ and involves walking; exact locations and cocktails may change.",
     href: "/tours/cocktail-walking-tour",
+    image: "https://upload.wikimedia.org/wikipedia/commons/f/fc/SazeracCocktail.jpg",
+    imageAlt: "Classic Sazerac cocktail on a New Orleans cocktail walking tour",
   },
   {
     title: "Upgraded Craft Cocktail Walking Tour",
@@ -66,6 +72,8 @@ const options = [
     fit: "Best if you have almost the full three hours and want a longer cocktail experience.",
     caution: "This leaves much less schedule buffer than the 2-hour version.",
     href: "/tours/craft-cocktail-walking-tour",
+    image: "https://upload.wikimedia.org/wikipedia/commons/f/fc/SazeracCocktail.jpg",
+    imageAlt: "Premium craft cocktail tour in the French Quarter",
   },
 ];
 
@@ -99,13 +107,28 @@ export default function ThreeHourTourGuidePage() {
           <h2 className="font-[var(--font-accent)] text-3xl font-bold">Four current options</h2>
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             {options.map((option) => (
-              <div key={option.title} className="border border-[#333] bg-[#1a1a1a] p-6">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#d4af37]">{option.duration}</p>
-                <h3 className="mt-3 font-[var(--font-accent)] text-2xl font-bold">{option.title}</h3>
-                <p className="mt-2 text-sm text-[#aaa]">{option.age}</p>
-                <p className="mt-5 leading-relaxed text-[#ccc]">{option.fit}</p>
-                <p className="mt-4 text-sm leading-relaxed text-[#aaa]"><strong className="text-[#ddd]">Schedule caution:</strong> {option.caution}</p>
-                <Link href={option.href} className="mt-6 inline-block text-sm font-bold text-[#d4af37] underline underline-offset-4">View tour details →</Link>
+              <div key={option.title} className="flex flex-col justify-between border border-[#333] bg-[#1a1a1a] overflow-hidden shadow-lg">
+                <div>
+                  <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-[#333] bg-[#121212]">
+                    <img
+                      src={option.image}
+                      alt={option.imageAlt}
+                      className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent opacity-80" />
+                  </div>
+                  <div className="p-6">
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#d4af37]">{option.duration}</p>
+                    <h3 className="mt-2 font-[var(--font-accent)] text-2xl font-bold text-[#fff8ec]">{option.title}</h3>
+                    <p className="mt-1 text-sm text-[#aaa]">{option.age}</p>
+                    <p className="mt-4 leading-relaxed text-[#ccc]">{option.fit}</p>
+                    <p className="mt-3 text-sm leading-relaxed text-[#aaa]"><strong className="text-[#ddd]">Schedule caution:</strong> {option.caution}</p>
+                  </div>
+                </div>
+                <div className="p-6 pt-0">
+                  <Link href={option.href} className="inline-block text-sm font-bold text-[#d4af37] underline underline-offset-4">View tour details →</Link>
+                </div>
               </div>
             ))}
           </div>

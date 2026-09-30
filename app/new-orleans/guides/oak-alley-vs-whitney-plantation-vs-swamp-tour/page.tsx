@@ -151,6 +151,127 @@ export default function PlantationVsSwampGuide() {
         {/* DIRECT ANSWER CARD TARGETED FOR AI OVERVIEWS */}
         <GeoDirectAnswerCard fact={geoFact} />
 
+        {/* VISUAL TOUR SHOWCASE */}
+        <section className="mt-12">
+          <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#b48535] mb-2">Visual Overview</div>
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-[#171a1f] mb-6">
+            The Four Main Day Trip Experiences
+          </h2>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="flex flex-col justify-between overflow-hidden rounded-2xl border border-[#e2d5c0] bg-[#fffdf9] shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+              <div>
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#201a14]">
+                  <img
+                    src="/images/wikimedia/originals/oak-alley-front.jpg"
+                    alt="Oak Alley Plantation 300-year-old live oak allee"
+                    className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                    loading="lazy"
+                  />
+                  <span className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#f5d799] backdrop-blur-sm">
+                    Antebellum Estate
+                  </span>
+                </div>
+                <div className="p-4">
+                  <h3 className="font-serif text-lg font-bold text-[#171a1f]">Oak Alley Plantation</h3>
+                  <p className="mt-1 text-xs text-[#6e6355] leading-relaxed">
+                    World-famous 28-oak canopy, Greek Revival Big House tour & River Road grounds.
+                  </p>
+                  <p className="mt-3 text-xs font-bold text-[#825e1a]">$89.00 flat rate w/ coach</p>
+                </div>
+              </div>
+              <div className="p-4 pt-0">
+                <Link href="/tours/oak-alley-plantation-tour-grey-line" className="block w-full text-center rounded-lg bg-[#f4ebe1] px-3 py-2 text-xs font-bold text-[#5c3e0c] hover:bg-[#ebd9c5] transition-colors">
+                  View Oak Alley →
+                </Link>
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-between overflow-hidden rounded-2xl border border-[#e2d5c0] bg-[#fffdf9] shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+              <div>
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#201a14]">
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/3/30/The_Big_House_-_Whitney_Plantation%2C_Louisiana.jpg"
+                    alt="Whitney Plantation museum Big House and memorial grounds"
+                    className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                    loading="lazy"
+                  />
+                  <span className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#f5d799] backdrop-blur-sm">
+                    Slavery Museum
+                  </span>
+                </div>
+                <div className="p-4">
+                  <h3 className="font-serif text-lg font-bold text-[#171a1f]">Whitney Plantation</h3>
+                  <p className="mt-1 text-xs text-[#6e6355] leading-relaxed">
+                    Exclusive focus on the enslaved experience with memorials, cabins & oral history.
+                  </p>
+                  <p className="mt-3 text-xs font-bold text-[#825e1a]">$89.00 flat rate w/ coach</p>
+                </div>
+              </div>
+              <div className="p-4 pt-0">
+                <Link href="/tours/whitney-plantation-tour" className="block w-full text-center rounded-lg bg-[#f4ebe1] px-3 py-2 text-xs font-bold text-[#5c3e0c] hover:bg-[#ebd9c5] transition-colors">
+                  View Whitney →
+                </Link>
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-between overflow-hidden rounded-2xl border border-[#e2d5c0] bg-[#fffdf9] shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+              <div>
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#201a14]">
+                  <img
+                    src="/images/travel-markets/new-orleans/airboat-swamp.png"
+                    alt="Airboat tour gliding across Louisiana bayou"
+                    className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                    loading="lazy"
+                  />
+                  <span className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#f5d799] backdrop-blur-sm">
+                    Bayou & Alligators
+                  </span>
+                </div>
+                <div className="p-4">
+                  <h3 className="font-serif text-lg font-bold text-[#171a1f]">Swamp & Airboat Tours</h3>
+                  <p className="mt-1 text-xs text-[#6e6355] leading-relaxed">
+                    Covered pontoon boats or exhilarating high-speed airboats to spot wild alligators.
+                  </p>
+                  <p className="mt-3 text-xs font-bold text-[#203c1c]">$60–$120 w/ transit</p>
+                </div>
+              </div>
+              <div className="p-4 pt-0">
+                <Link href="/swamp-tours" className="block w-full text-center rounded-lg bg-[#f4ebe1] px-3 py-2 text-xs font-bold text-[#5c3e0c] hover:bg-[#ebd9c5] transition-colors">
+                  Explore Swamps →
+                </Link>
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-between overflow-hidden rounded-2xl border-2 border-[#b48535] bg-[#fffdf9] shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+              <div>
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#201a14]">
+                  <img
+                    src="/images/travel-markets/new-orleans/swamp-plantation-combo.png"
+                    alt="Swamp boat cruise combined with Oak Alley Plantation tour"
+                    className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                    loading="lazy"
+                  />
+                  <span className="absolute bottom-2 left-2 rounded bg-[#7c2d12] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#fbbf24] backdrop-blur-sm">
+                    Best Value Full Day
+                  </span>
+                </div>
+                <div className="p-4">
+                  <h3 className="font-serif text-lg font-bold text-[#171a1f]">Swamp + Oak Alley Combo</h3>
+                  <p className="mt-1 text-xs text-[#6e6355] leading-relaxed">
+                    Full 7h 45m day trip: Manchac Swamp boat cruise + Oak Alley tour on one coach.
+                  </p>
+                  <p className="mt-3 text-xs font-bold text-[#9a6714]">$131.00 flat rate adult</p>
+                </div>
+              </div>
+              <div className="p-4 pt-0">
+                <Link href="/guides/new-orleans-plantation-and-swamp-tour" className="block w-full text-center rounded-lg bg-[#c9a86a] px-3 py-2 text-xs font-bold text-[#17130c] hover:bg-[#dfc488] transition-colors">
+                  View Combo Tour →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* COMPARISON MATRIX TABLE */}
         <section className="mt-12 rounded-2xl border border-[#e2d5c0] bg-[#fffdf9] p-6 sm:p-8 shadow-[0_10px_30px_rgba(43,33,24,0.06)]">
           <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#b48535] mb-2">
@@ -199,6 +320,30 @@ export default function PlantationVsSwampGuide() {
             <h2 className="font-serif text-2xl font-bold tracking-tight text-[#171a1f] mb-4">
               Oak Alley vs. Whitney: The Real Distinction
             </h2>
+            <div className="grid gap-6 md:grid-cols-2 mb-6">
+              <div className="overflow-hidden rounded-xl border border-[#e2d5c0]">
+                <img
+                  src="/images/wikimedia/originals/oak-alley-front.jpg"
+                  alt="Oak Alley Plantation 300-year-old live oak allee"
+                  className="aspect-[16/10] w-full object-cover"
+                  loading="lazy"
+                />
+                <div className="bg-[#fcfaf5] p-3 text-xs text-[#554b3f]">
+                  <strong>Oak Alley:</strong> Focused on antebellum grandeur, Greek Revival architecture, and the iconic live oak path.
+                </div>
+              </div>
+              <div className="overflow-hidden rounded-xl border border-[#e2d5c0]">
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/3/30/The_Big_House_-_Whitney_Plantation%2C_Louisiana.jpg"
+                  alt="Whitney Plantation museum Big House and memorial grounds"
+                  className="aspect-[16/10] w-full object-cover"
+                  loading="lazy"
+                />
+                <div className="bg-[#fcfaf5] p-3 text-xs text-[#554b3f]">
+                  <strong>Whitney Plantation:</strong> Focused exclusively on the lives, memorials, and oral histories of enslaved people.
+                </div>
+              </div>
+            </div>
             <div className="space-y-4 text-[#4a4135] leading-relaxed">
               <p>
                 The primary difference between Louisiana’s two most visited River Road plantations is the <strong>story each site tells</strong>.
@@ -216,6 +361,17 @@ export default function PlantationVsSwampGuide() {
             <h2 className="font-serif text-2xl font-bold tracking-tight text-[#171a1f] mb-4">
               Why Swamp & Plantation Combos Are the Smartest Choice
             </h2>
+            <div className="mb-6 overflow-hidden rounded-xl border border-[#e2d5c0]">
+              <img
+                src="/images/travel-markets/new-orleans/swamp-plantation-combo.png"
+                alt="Swamp boat cruise and Oak Alley Plantation combination tour"
+                className="aspect-[21/9] w-full object-cover"
+                loading="lazy"
+              />
+              <div className="bg-[#fcfaf5] p-3 text-xs text-[#554b3f]">
+                <strong>The Ultimate Full Day:</strong> Guided Manchac Swamp cruise in the morning + Oak Alley Plantation tour in the afternoon with central French Quarter coach departure (400 Toulouse St).
+              </div>
+            </div>
             <div className="space-y-4 text-[#4a4135] leading-relaxed">
               <p>
                 If your trip to New Orleans is 3 to 4 days long, dedicating two separate days to out-of-town trips eats up precious city exploration time.

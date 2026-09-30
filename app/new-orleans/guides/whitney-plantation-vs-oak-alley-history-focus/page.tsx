@@ -28,17 +28,39 @@ export default function PlantationHistoryFocusGuide() {
         </div>
 
         <section className="grid gap-6 md:grid-cols-2">
-          <div className="border border-[#333] bg-[#1a1a1a] p-7">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d4af37]">Choose Whitney if...</p>
-            <h2 className="mt-3 font-[var(--font-accent)] text-3xl font-bold">The slavery narrative is your first priority</h2>
-            <p className="mt-5 leading-relaxed text-[#ccc]">The current tour description centers first-person narratives, memorials, restored buildings and the history of slavery in Louisiana. The visit uses a self-paced audio experience rather than presenting the property primarily through the owner's house.</p>
-            <Link href="/tours/whitney-plantation-tour" className="mt-6 inline-block text-sm font-bold text-[#d4af37] underline underline-offset-4">View Whitney tour →</Link>
+          <div className="overflow-hidden border border-[#333] bg-[#1a1a1a]">
+            <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#111]">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/3/30/The_Big_House_-_Whitney_Plantation%2C_Louisiana.jpg"
+                alt="Whitney Plantation historic grounds and Big House in Wallace, Louisiana"
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent" />
+            </div>
+            <div className="p-7">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d4af37]">Choose Whitney if...</p>
+              <h2 className="mt-3 font-[var(--font-accent)] text-3xl font-bold">The slavery narrative is your first priority</h2>
+              <p className="mt-5 leading-relaxed text-[#ccc]">The current tour description centers first-person narratives, memorials, restored buildings and the history of slavery in Louisiana. The visit uses a self-paced audio experience rather than presenting the property primarily through the owner's house.</p>
+              <Link href="/tours/whitney-plantation-tour" className="mt-6 inline-block text-sm font-bold text-[#d4af37] underline underline-offset-4">View Whitney tour →</Link>
+            </div>
           </div>
-          <div className="border border-[#333] bg-[#1a1a1a] p-7">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d4af37]">Choose Oak Alley if...</p>
-            <h2 className="mt-3 font-[var(--font-accent)] text-3xl font-bold">You want a broader historic-property visit</h2>
-            <p className="mt-5 leading-relaxed text-[#ccc]">The current visit includes a guided Big House tour plus the Sugarcane Theater, reconstructed slave cabins and slavery exhibit, owners exhibit, gardens and blacksmith area. Food and drink options are also available on site.</p>
-            <Link href="/tours/oak-alley-plantation-tour-grey-line" className="mt-6 inline-block text-sm font-bold text-[#d4af37] underline underline-offset-4">View Oak Alley tour →</Link>
+          <div className="overflow-hidden border border-[#333] bg-[#1a1a1a]">
+            <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#111]">
+              <img
+                src="/images/wikimedia/originals/oak-alley-front.jpg"
+                alt="Oak Alley Plantation 300-year-old live oak tree canopy and Big House"
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent" />
+            </div>
+            <div className="p-7">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d4af37]">Choose Oak Alley if...</p>
+              <h2 className="mt-3 font-[var(--font-accent)] text-3xl font-bold">You want a broader historic-property visit</h2>
+              <p className="mt-5 leading-relaxed text-[#ccc]">The current visit includes a guided Big House tour plus the Sugarcane Theater, reconstructed slave cabins and slavery exhibit, owners exhibit, gardens and blacksmith area. Food and drink options are also available on site.</p>
+              <Link href="/tours/oak-alley-plantation-tour-grey-line" className="mt-6 inline-block text-sm font-bold text-[#d4af37] underline underline-offset-4">View Oak Alley tour →</Link>
+            </div>
           </div>
         </section>
 

@@ -13,6 +13,7 @@ import { getNolaGeoFact } from "../../data/nolaGeoFacts";
 
 import { STOREFRONT_PRODUCTS } from "../../tours/pageConfig";
 import DailyBriefSignup from "../../components/DailyBriefSignup";
+import { resolveProductImage } from "../../lib/imageResolver";
 
 const CARD_EYEBROWS = [
   "Our first pick",
@@ -185,7 +186,13 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
   }
 
   const products = record.liveProductIds.map((id) => getProductById(id)).filter(isLiveProduct);
-  const heroImage = products.find((product) => product.imageUrl)?.imageUrl;
+  const heroImage =
+    products
+      .map((product) => {
+        const sourceProduct = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug);
+        return resolveProductImage(sourceProduct || product)?.src;
+      })
+      .find(Boolean) || products.find((product) => product.imageUrl)?.imageUrl;
   const layout = categoryLayout(resolvedParams.categorySlug);
   const copy = categoryCopy(layout);
 
@@ -261,13 +268,15 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         <div data-wno-options-grid className="mt-9 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {products.map((product, index) => {
             const sourceProduct = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug);
+            const resolvedImg = resolveProductImage(sourceProduct || product);
+            const cardImageUrl = resolvedImg?.src || null;
             return (
               <VisualEditorialCard
                 key={product.id}
                 title={product.title}
                 slug={product.slug}
                 description={product.description}
-                imageUrl={product.imageUrl}
+                imageUrl={cardImageUrl}
                 eyebrow={cardEyebrow(resolvedParams.categorySlug, index, product.slug)}
                 badge={cardBadge(resolvedParams.categorySlug, product.slug)}
                 operatorName={sourceProduct?.operatorName}

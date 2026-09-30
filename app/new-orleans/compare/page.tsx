@@ -29,6 +29,33 @@ const planningGuides = [
 
 const cardStyle = { borderRadius: "18px" } as const;
 
+const COMPARISON_IMAGES: Record<string, { src: string; alt: string }> = {
+  "whitney-vs-oak-alley": {
+    src: "/images/wikimedia/originals/oak-alley-front.jpg",
+    alt: "Whitney Plantation vs Oak Alley Plantation",
+  },
+  "natchez-vs-city-of-new-orleans-riverboat": {
+    src: "/images/travel-markets/new-orleans/steamboat-natchez.jpg",
+    alt: "Steamboat NATCHEZ vs Riverboat CITY of NEW ORLEANS",
+  },
+  "covered-swamp-boat-vs-airboat": {
+    src: "/images/travel-markets/new-orleans/airboat-swamp.png",
+    alt: "Covered Swamp Boat vs Airboat Tour",
+  },
+  "small-vs-large-airboat": {
+    src: "/images/travel-markets/new-orleans/small-group-airboat.png",
+    alt: "Small Airboat vs Large Airboat Swamp Excursion",
+  },
+  "swamp-tour-with-vs-without-transportation": {
+    src: "/images/travel-markets/new-orleans/hotel-pickup-swamp-boat.png",
+    alt: "Swamp Tour With Transportation vs Self-Drive",
+  },
+  "best-new-orleans-tour-if-you-only-have-3-hours": {
+    src: "/images/travel-markets/new-orleans/french-quarter-street.jpg",
+    alt: "Best New Orleans Tours Under 3 Hours",
+  },
+};
+
 export default function CompareToursPage() {
   const ready = COMPARISON_OPPORTUNITIES.filter((item) => item.status === "READY_TO_PUBLISH");
 
@@ -60,23 +87,43 @@ export default function CompareToursPage() {
           <p className="mt-3 leading-7 text-[#cfc6ba]">These are compact reading cards on purpose. The headline, the actual decision, and the link should all be readable without squeezing text into decorative shapes.</p>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
-          {ready.map((item) => (
-            <Link
-              key={item.slug}
-              href={`/compare/${item.slug}`}
-              style={cardStyle}
-              className="group relative min-h-[230px] overflow-hidden border border-[#d4af37]/30 bg-[linear-gradient(145deg,#18151a,#0d0b0e)] p-7 shadow-[0_18px_45px_rgba(0,0,0,0.28)] transition-all hover:-translate-y-1 hover:border-[#d4af37] sm:p-8"
-            >
-              <div className="absolute inset-y-6 left-0 w-[3px] rounded-full bg-gradient-to-b from-[#e2bc48] via-[#b88727] to-transparent" />
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#e0b83e]">Tour comparison</p>
-              <h2 className="mt-3 max-w-[34rem] text-[1.55rem] font-black leading-[1.12] tracking-[-0.02em] text-[#fff8ec] sm:text-[1.8rem]">
-                {item.title}
-              </h2>
-              <p className="mt-4 max-w-[34rem] text-[0.98rem] leading-7 text-[#c9c0b5]">{item.queryIntent}</p>
-              <span className="mt-6 inline-flex items-center gap-2 text-sm font-black text-[#e0b83e]">Read comparison <span aria-hidden="true">→</span></span>
-            </Link>
-          ))}
+        <div className="grid gap-6 md:grid-cols-2">
+          {ready.map((item) => {
+            const cardImg = COMPARISON_IMAGES[item.slug];
+            return (
+              <Link
+                key={item.slug}
+                href={`/compare/${item.slug}`}
+                style={cardStyle}
+                className="group relative flex flex-col justify-between overflow-hidden border border-[#d4af37]/30 bg-[linear-gradient(145deg,#18151a,#0d0b0e)] shadow-[0_18px_45px_rgba(0,0,0,0.28)] transition-all hover:-translate-y-1 hover:border-[#d4af37]"
+              >
+                <div>
+                  {cardImg && (
+                    <div className="relative aspect-[16/9] w-full overflow-hidden border-b border-[#d4af37]/20 bg-[#121212]">
+                      <img
+                        src={cardImg.src}
+                        alt={cardImg.alt}
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#141217] via-transparent to-transparent opacity-80" />
+                    </div>
+                  )}
+                  <div className="p-7 sm:p-8">
+                    <div className="absolute inset-y-6 left-0 w-[3px] rounded-full bg-gradient-to-b from-[#e2bc48] via-[#b88727] to-transparent" />
+                    <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#e0b83e]">Tour comparison</p>
+                    <h2 className="mt-3 max-w-[34rem] text-[1.55rem] font-black leading-[1.12] tracking-[-0.02em] text-[#fff8ec] sm:text-[1.8rem]">
+                      {item.title}
+                    </h2>
+                    <p className="mt-4 max-w-[34rem] text-[0.98rem] leading-7 text-[#c9c0b5]">{item.queryIntent}</p>
+                  </div>
+                </div>
+                <div className="p-7 sm:p-8 pt-0">
+                  <span className="inline-flex items-center gap-2 text-sm font-black text-[#e0b83e]">Read comparison <span aria-hidden="true">→</span></span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
 
         <section className="mt-16 border-t border-[#d4af37]/20 pt-10">
