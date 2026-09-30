@@ -274,6 +274,11 @@ export function getWtonotHostRewrite(request: NextRequest) {
     return url;
   }
 
+  if (pathname === "/operators" || pathname.startsWith("/operators/")) {
+    url.pathname = `/new-orleans${pathname}`;
+    return url;
+  }
+
   // Block all other DCC/admin/operator pages on New Orleans tours domain by rewriting to /not-found
   url.pathname = "/not-found";
   return url;
