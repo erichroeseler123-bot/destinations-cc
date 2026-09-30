@@ -35,5 +35,9 @@ Use Keyword Planner or another authorized search-volume source to compare the ex
 ## Validation
 
 - WNO test suite: 156 passed, zero failures.
+- Full WNO satellite TypeScript check passed after installing declared dependencies.
+- Hosted WNO preview build passed for commit b19b45ef.
+- Rendered HTTP checks passed for /operators and all six profiles: HTTP 200, canonical metadata, ItemList schema, and attributed booking links. The sitemap includes all new profiles and the existing Airboat Adventures and NOLA Ghost Riders pages.
 - Diff whitespace validation passed.
-- Full satellite typecheck is blocked in this workspace by 13 missing external dependency imports (workflow, mapping, email, payment and telephony packages); no diagnostic identifies the added operator components or data. Full build and live mobile verification remain required before production deployment.
+- Automated visual browser checks could not run because this workspace could not download a usable browser. Responsive layouts use the site's existing mobile grid breakpoints; no screenshot-based verification is claimed.
+- The broad DCC system check reported missing DCC payment/telemetry/email configuration and unrelated portfolio endpoint failures. That check targets DCC deployment, rather than this standalone WNO content release.
