@@ -5,14 +5,22 @@ import ProductCard from "../../components/ProductCard";
 import { FAREHARBOR_SOURCES } from "../../lib/fareHarborAttribution";
 import { getWnoOperatorEntity, WNO_OPERATOR_ENTITIES } from "../../data/operatorRegistry";
 
+import { RESEARCHED_OPERATORS, getResearchedOperator } from "../../data/operatorDirectory";
+import ResearchedOperatorProfile from "../../components/ResearchedOperatorProfile";
+
 export function generateStaticParams() {
-  return WNO_OPERATOR_ENTITIES.map((operator) => ({ slug: operator.slug }));
+  return Array.from(new Set([...WNO_OPERATOR_ENTITIES, ...RESEARCHED_OPERATORS].map((operator) => operator.slug))).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const operator = getWnoOperatorEntity(slug);
-  if (!operator) return {};
+  if (!operator) {
+    const profile = getResearchedOperator(slug);
+    if (!profile) return {};
+    const title = `${profile.name} Tours & Booking | Welcome to New Orleans Tours`;
+    return { title, description: profile.summary, alternates: { canonical: `/operators/${profile.slug}` }, openGraph: { title, description: profile.summary, url: `/operators/${profile.slug}`, type: "website" } };
+  }
   const title = `${operator.name} New Orleans Tours | Welcome to New Orleans Tours`;
   const description = `See the ${operator.products.length} ${operator.name} experience${operator.products.length === 1 ? "" : "s"} currently represented on Welcome to New Orleans Tours, with operator identity, booking paths, and verification status kept explicit.`;
   return {
@@ -26,7 +34,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function OperatorPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const operator = getWnoOperatorEntity(slug);
-  if (!operator) notFound();
+  if (!operator) {
+    const profile = getResearchedOperator(slug);
+    if (!profile) notFound();
+    return <ResearchedOperatorProfile operator={profile} />;
+  }
 
   return (
     <main className="min-h-screen bg-[#080708] text-[#fdfbf7]">
