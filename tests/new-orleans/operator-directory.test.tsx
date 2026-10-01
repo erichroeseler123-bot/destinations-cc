@@ -6,7 +6,7 @@ import { NextRequest } from "next/server";
 import { RESEARCHED_OPERATORS, getOperatorBooking } from "../../app/new-orleans/data/operatorDirectory";
 import ResearchedOperatorProfile from "../../app/new-orleans/components/ResearchedOperatorProfile";
 import OperatorsPage from "../../app/new-orleans/operators/page";
-import { buildWtonotSitemapPaths } from "../../app/sitemap.xml/route";
+import { buildWtonotSitemapPaths } from "../../app/sitemap.xml/handler";
 import { getWtonotHostRewrite } from "../../proxy";
 
 test("researched operators have distinct profiles, official HTTPS links, and verified partner booking links", () => {

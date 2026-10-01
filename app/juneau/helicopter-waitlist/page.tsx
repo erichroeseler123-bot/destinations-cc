@@ -1,0 +1,4 @@
+import type { Metadata } from "next";
+import HelicopterWatchForm from "@/components/HelicopterWatchForm";
+export const metadata: Metadata = { title: "Helicopter Availability Requests | Juneau Flight Deck", description: "Request an availability watch for specific Juneau or Skagway helicopter tours on your cruise date.", alternates: { canonical: "https://destinationcommandcenter.com/juneau/helicopter-waitlist" } };
+export default function Page() { return <main style={{ maxWidth: 850, margin: "40px auto", padding: "0 20px 60px" }}><p>Juneau Flight Deck</p><h1>Still looking for helicopter tour seats?</h1><p>Tell us your port date, the tours you want, and who is traveling. We watch those requests more closely in the weeks before your ship arrives, when additional seats may be released.</p><p>Our team reviews matching openings before contacting you. Each tour’s current booking and cancellation terms apply.</p><HelicopterWatchForm/></main>; }

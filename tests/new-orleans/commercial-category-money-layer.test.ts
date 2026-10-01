@@ -8,7 +8,7 @@ import { COMMERCIAL_CATEGORY_PAGES } from "../../app/new-orleans/data/commercial
 import { CATEGORIES } from "../../app/new-orleans/data/categories";
 import { getSeoPageBySlug } from "../../app/new-orleans/data/pageMap";
 import { STOREFRONT_PRODUCTS } from "../../app/new-orleans/tours/pageConfig";
-import { buildWtonotSitemapPaths } from "../../app/sitemap.xml/route";
+import { buildWtonotSitemapPaths } from "../../app/sitemap.xml/handler";
 import { getWtonotHostRewrite } from "../../proxy";
 
 const PUBLIC_REVENUE_HUBS = ["riverboat-cruises", "ghost-tours", "food-tours"] as const;

@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next";
 const routes = [
   "",
   "/helicopter",
+  "/helicopter-waitlist",
   "/juneau/helicopter",
   "/juneau-whale-watching-tours",
   "/juneau/what-to-do-if-helicopter-tour-canceled",

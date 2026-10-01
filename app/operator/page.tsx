@@ -2,7 +2,7 @@ import { redis } from "@/lib/redis";
 import { authorizeTransmission, burnTransmission, broadcastCoordination } from "./actions";
 
 export const dynamic = "force-dynamic";
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 interface InviteRequest {
   transmissionId: string;

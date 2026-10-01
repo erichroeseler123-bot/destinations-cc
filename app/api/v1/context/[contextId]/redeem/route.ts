@@ -20,7 +20,7 @@ export async function OPTIONS() {
 }
 
 interface RouteParams {
-  params: Promise<{ contextId: string }> | { contextId: string };
+  params: Promise<{ contextId: string }>;
 }
 
 export async function POST(request: NextRequest, context: RouteParams) {

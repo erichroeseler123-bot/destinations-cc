@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { NextRequest } from "next/server";
-import { POST as handleIssueContext, clearIssueRateLimitCacheForTesting } from "@/app/api/v1/context/route";
+import { POST as handleIssueContext, clearIssueRateLimitCacheForTesting } from "@/app/api/v1/context/handler";
 import { POST as handleRedeemContext } from "@/app/api/v1/context/[contextId]/redeem/route";
 import { POST as handleRevokeContext } from "@/app/api/v1/context/[contextId]/revoke/route";
 import {

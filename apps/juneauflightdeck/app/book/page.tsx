@@ -5,7 +5,7 @@ import SiteFooter from "../components/SiteFooter";
 import { getOrCreateCheckoutSession, JFD_CHECKOUT_COOKIE_NAME } from "../../lib/dccContext";
 
 interface BookPageProps {
-  searchParams: Promise<{ ctx?: string }> | { ctx?: string };
+  searchParams: Promise<{ ctx?: string }>;
 }
 
 export const dynamic = "force-dynamic";

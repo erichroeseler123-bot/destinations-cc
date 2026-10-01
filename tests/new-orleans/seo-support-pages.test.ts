@@ -11,8 +11,8 @@ import {
   WTONOT_SUPERSEDED_SEO_PATHS,
   buildDccSitemapXml,
   buildWtonotSitemapPaths,
-} from "../../app/sitemap.xml/route";
-import { buildRobotsTxt } from "../../app/robots.txt/route";
+} from "../../app/sitemap.xml/handler";
+import { buildRobotsTxt } from "../../app/robots.txt/handler";
 import { STOREFRONT_PRODUCTS } from "../../app/new-orleans/tours/pageConfig";
 import { SEO_PAGES } from "../../app/new-orleans/data";
 import { getWtonotHostRewrite } from "../../proxy";

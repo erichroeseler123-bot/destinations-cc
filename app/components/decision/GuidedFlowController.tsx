@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   clearPersistedDecisionSession,
@@ -14,8 +14,8 @@ type GuidedFlowControllerProps = {
   initialMode: DecisionMode;
   intent: string;
   surface: string;
-  guided: React.ReactNode;
-  browse: React.ReactNode;
+  guided: ReactNode;
+  browse: ReactNode;
   wallLabel?: string;
   resetLabel?: string;
   browseHint?: string;

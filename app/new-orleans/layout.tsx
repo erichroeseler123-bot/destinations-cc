@@ -8,6 +8,7 @@ import ContextualPlanningPaths from "./components/ContextualPlanningPaths";
 import WnoMobileConversionMount from "./components/WnoMobileConversionMount";
 import FareHarborLightframeLoader from "./components/FareHarborLightframeLoader";
 import { buildWnoSiteGraph } from "./lib/structuredData";
+import visualStyles from "./components/newOrleansVisual.module.css";
 import siteTheme from "./components/siteWideTheme.module.css";
 
 const newOrleansDisplayFont = Playfair_Display({
@@ -56,7 +57,7 @@ export default function NewOrleansLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`${siteTheme.siteShell} flex flex-col min-h-screen ${newOrleansDisplayFont.variable} ${newOrleansScriptFont.variable}`}>
+    <div className={`${siteTheme.siteShell} ${visualStyles.theme} flex flex-col min-h-screen ${newOrleansDisplayFont.variable} ${newOrleansScriptFont.variable}`}>
       <JsonLd data={buildWnoSiteGraph()} />
       <FareHarborLightframeLoader />
       <WnoFunnelTracker />

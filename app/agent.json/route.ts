@@ -7,7 +7,7 @@ import {
 import { DCC_SITE_CONTRACT } from "@/lib/dcc/portfolioRegistry";
 import { DCC_PRODUCT_SCOPE } from "@/lib/dcc/productScope";
 
-import { SOMERSET_AGENT_PAYLOAD } from "@/app/somerset-wi/agent.json/route";
+import { SOMERSET_AGENT_PAYLOAD } from "@/app/somerset-wi/agent.json/handler";
 
 export const dynamic = "force-dynamic";
 

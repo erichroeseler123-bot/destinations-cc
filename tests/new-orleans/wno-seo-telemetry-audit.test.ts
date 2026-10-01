@@ -6,7 +6,7 @@ import { NextRequest } from "next/server";
 import { proxy as rootProxy } from "../../proxy";
 import { proxy as wnoProxy } from "../../apps/welcometoneworleanstours/proxy";
 import nextConfig from "../../apps/welcometoneworleanstours/next.config.mjs";
-import { buildWtonotSitemapPaths, WTONOT_ORIGIN } from "../../app/sitemap.xml/route";
+import { buildWtonotSitemapPaths, WTONOT_ORIGIN } from "../../app/sitemap.xml/handler";
 import { STOREFRONT_PRODUCTS } from "../../app/new-orleans/tours/pageConfig";
 import { getSeoPageBySlug } from "../../app/new-orleans/data/pageMap";
 import { getWnoAgentDirectory, getWnoProductsFeed, getWnoLocationsFeed, getWnoPricingFeed, getWnoPoliciesFeed, getWnoOperatingWindowsFeed } from "../../app/new-orleans/data/wnoFeedsData";

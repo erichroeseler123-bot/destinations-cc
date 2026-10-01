@@ -1,8 +1,8 @@
 import assert from "node:assert";
 import { describe, test } from "node:test";
-import { buildRobotsTxt } from "../../app/robots.txt/route";
-import { buildWtonotSitemapPaths } from "../../app/sitemap.xml/route";
-import { buildPublicTourCatalog } from "../../app/new-orleans/guides/tour-catalog/route";
+import { buildRobotsTxt } from "../../app/robots.txt/handler";
+import { buildWtonotSitemapPaths } from "../../app/sitemap.xml/handler";
+import { buildPublicTourCatalog } from "../../app/new-orleans/guides/tour-catalog/handler";
 import { classifyWnoEntrySource } from "../../app/new-orleans/lib/trafficSource";
 import { STOREFRONT_PRODUCTS } from "../../app/new-orleans/tours/pageConfig";
 

@@ -13,7 +13,8 @@
     {
       "path": "/api/v1/context/maintenance/cleanup",
       "schedule": "*/15 * * * *"
-    }
+    },
+    { "path": "/api/cron/helicopter-watch", "schedule": "*/5 * * * *" }
   ],
   "redirects": [
     {

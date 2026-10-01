@@ -1,5 +1,5 @@
 /* 1. Core Primitives, Typography, & Design Tokens */
-:root {
+.theme {
   --nola-bg-black: #0c0b0f;
   --nola-bg-charcoal: #151318;
   --nola-surface: rgba(17, 14, 20, 0.85);

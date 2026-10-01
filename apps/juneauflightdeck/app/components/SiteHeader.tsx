@@ -12,6 +12,7 @@ export default function SiteHeader() {
           <Link href="/helicopter">Helicopter</Link>
           <Link href="/juneau-whale-watching-tours">Whales</Link>
           <Link href="/skagway/helicopter">Skagway</Link>
+          <Link href="/helicopter-waitlist">Seat requests</Link>
           <Link href="/contact">Contact</Link>
         </nav>
       </div>
