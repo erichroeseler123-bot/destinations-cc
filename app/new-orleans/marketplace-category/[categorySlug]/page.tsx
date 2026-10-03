@@ -270,6 +270,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
             const sourceProduct = STOREFRONT_PRODUCTS.find((p) => p.slug === product.slug);
             const resolvedImg = resolveProductImage(sourceProduct || product);
             const cardImageUrl = resolvedImg?.src || null;
+            const cardImageAlt = resolvedImg?.alt || `${product.title} in New Orleans`;
             return (
               <VisualEditorialCard
                 key={product.id}
@@ -277,6 +278,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                 slug={product.slug}
                 description={product.description}
                 imageUrl={cardImageUrl}
+                imageAlt={cardImageAlt}
                 eyebrow={cardEyebrow(resolvedParams.categorySlug, index, product.slug)}
                 badge={cardBadge(resolvedParams.categorySlug, product.slug)}
                 operatorName={sourceProduct?.operatorName}

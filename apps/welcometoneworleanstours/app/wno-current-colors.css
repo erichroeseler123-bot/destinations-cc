@@ -80,10 +80,15 @@ main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-ri
   box-shadow: 0 12px 30px rgba(17, 24, 39, 0.07) !important;
 }
 
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])) h1,
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])) h2,
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])) h3 {
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])):not([data-wno-surface*="intent"]):not(:has([data-wno-surface*="intent"])):not([data-wno-surface*="dark"]):not(:has([data-wno-surface*="dark"])):not([data-wno-surface*="compare"]):not(:has([data-wno-surface*="compare"])) h1,
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])):not([data-wno-surface*="intent"]):not(:has([data-wno-surface*="intent"])):not([data-wno-surface*="dark"]):not(:has([data-wno-surface*="dark"])):not([data-wno-surface*="compare"]):not(:has([data-wno-surface*="compare"])) h2,
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface="airboat-adventures"]):not(:has([data-wno-surface="airboat-adventures"])):not([data-wno-surface*="intent"]):not(:has([data-wno-surface*="intent"])):not([data-wno-surface*="dark"]):not(:has([data-wno-surface*="dark"])):not([data-wno-surface*="compare"]):not(:has([data-wno-surface*="compare"])) h3 {
   color: var(--wno-now-ink) !important;
+}
+
+main [class*="productCardMedia"],
+main [class*="productCardImageShade"] {
+  background: transparent !important;
 }
 
 main [class*="eyebrow"],

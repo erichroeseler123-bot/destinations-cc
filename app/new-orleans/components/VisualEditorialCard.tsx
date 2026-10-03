@@ -6,6 +6,7 @@ type VisualEditorialCardProps = {
   slug: string;
   description?: string | null;
   imageUrl?: string | null;
+  imageAlt?: string | null;
   eyebrow?: string;
   badge?: string;
   operatorName?: string;
@@ -28,6 +29,7 @@ export default function VisualEditorialCard({
   slug,
   description,
   imageUrl,
+  imageAlt,
   eyebrow = "Our pick for this kind of day",
   badge,
   operatorName,
@@ -55,8 +57,7 @@ export default function VisualEditorialCard({
             {imageUrl ? (
               <img
                 src={imageUrl}
-                alt=""
-                aria-hidden="true"
+                alt={imageAlt || `${title} in New Orleans`}
                 loading="lazy"
                 decoding="async"
                 className="h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-[1.035] group-hover:opacity-95"

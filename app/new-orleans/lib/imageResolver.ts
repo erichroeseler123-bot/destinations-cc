@@ -40,16 +40,6 @@ export function resolveProductImage(product: LiveProductAdapter | NolaFareHarbor
 
   const imgRecord = PRODUCT_IMAGES[slug];
 
-  // The dedicated small-airboat binary is not currently present in the WNO
-  // deployment. Use the approved operator airboat image rather than emit a 404.
-  if (slug === "small-airboat-swamp-adventure" && imgRecord?.verifiedRights) {
-    return {
-      src: optimized("/images/travel-markets/new-orleans/airboat-swamp.png"),
-      alt: imgRecord.alt,
-      source: "operator",
-    };
-  }
-
   // The archival LaLaurie source scan is extremely large and does not optimize
   // reliably in production. Use the existing rights-cleared French Quarter
   // night image as an editorial ghost-tour visual instead of shipping ~27MB.

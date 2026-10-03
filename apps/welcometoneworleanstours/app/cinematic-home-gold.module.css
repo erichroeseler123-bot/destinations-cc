@@ -91,7 +91,7 @@
 .script {
   display: block;
   margin: 6px 0 8px;
-  color: #C8831A;
+  color: #854400;
   font-family: var(--font-new-orleans-script), "Pinyon Script", cursive;
   font-size: clamp(58px, 6.5vw, 92px);
   font-weight: 400;
@@ -256,7 +256,7 @@
 }
 
 .goldAction .actionIcon {
-  color: #C8831A;
+  color: #854400;
 }
 
 .goldAction strong {
@@ -264,7 +264,7 @@
 }
 
 .goldAction b {
-  color: #C8831A;
+  color: #854400;
 }
 
 .goldAction:hover {
@@ -452,7 +452,7 @@
   display: block;
   width: 100%;
   text-align: center;
-  background: #C8831A;
+  background: #854400;
   color: #FFFFFF;
   font-size: 13px;
   font-weight: 700;
@@ -462,7 +462,7 @@
   border-radius: 4px;
   text-decoration: none;
   transition: background 0.18s ease;
-  box-shadow: 0 3px 8px rgba(200, 131, 26, 0.25);
+  box-shadow: 0 3px 8px rgba(133, 68, 0, 0.25);
 }
 
 .bookCardCta:hover {
@@ -541,7 +541,7 @@
 }
 
 .decisionLink {
-  color: #C8831A;
+  color: #854400;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -593,7 +593,7 @@
 
 .discoveryTitle p {
   margin: 4px 0 0;
-  color: #C8831A;
+  color: #854400;
   font-size: 13px;
   font-style: italic;
   letter-spacing: 0.04em;
@@ -716,7 +716,7 @@
 }
 
 .exploreLink {
-  color: #C8831A;
+  color: #854400;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.08em;

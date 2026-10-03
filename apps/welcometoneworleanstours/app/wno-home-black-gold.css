@@ -29,7 +29,7 @@ body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] {
 
 header[class*="marketHeader"] [class*="marketBrandWelcome"],
 body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketBrandWelcome"] {
-  color: #C8831A !important;
+  color: #854400 !important;
   font-family: var(--font-new-orleans-script), cursive !important;
 }
 
@@ -72,13 +72,13 @@ body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [c
 
 header[class*="marketHeader"] [class*="marketPhoneNumber"],
 body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] [class*="marketPhoneNumber"] {
-  color: #C8831A !important;
+  color: #854400 !important;
   font-weight: 800 !important;
 }
 
 header[class*="marketHeader"] a[class*="md:hidden"] span:last-child,
 body:has([data-wno-home-theme="black-gold-v2"]) header[class*="marketHeader"] a[class*="md:hidden"] span:last-child {
-  color: #C8831A !important;
+  color: #854400 !important;
 }
 
 header[class*="marketHeader"] [class*="marketMenuButton"] div,
@@ -107,7 +107,7 @@ body:has([data-wno-home-theme="black-gold-v2"]) [class*="eyebrow"],
 
 body:has([data-wno-home-theme="black-gold-v2"]) [class*="script"],
 [data-wno-home-theme="black-gold-v2"] [class*="script"] {
-  color: #C8831A !important;
+  color: #854400 !important;
 }
 
 body:has([data-wno-home-theme="black-gold-v2"]) [class*="lede"],
@@ -159,7 +159,7 @@ body:has([data-wno-home-theme="black-gold-v2"]) [class*="goldAction"] b,
 body:has([data-wno-home-theme="black-gold-v2"]) [class*="goldAction"] [class*="actionIcon"],
 [data-wno-home-theme="black-gold-v2"] [class*="goldAction"] b,
 [data-wno-home-theme="black-gold-v2"] [class*="goldAction"] [class*="actionIcon"] {
-  color: #C8831A !important;
+  color: #854400 !important;
   background: transparent !important;
 }
 
@@ -191,7 +191,7 @@ body:has([data-wno-home-theme="black-gold-v2"]) [class*="border-\[#342b1d\]"] {
 }
 
 body:has([data-wno-home-theme="black-gold-v2"]) [class*="text-\[#c9a86a\]"] {
-  color: #C8831A !important;
+  color: #854400 !important;
 }
 
 body:has([data-wno-home-theme="black-gold-v2"]) [class*="text-\[#fff4dd\]"],
@@ -239,7 +239,7 @@ body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"
 }
 
 body:has([data-wno-home-theme="black-gold-v2"]) aside[aria-label="Planning help"] a span {
-  color: #C8831A !important;
+  color: #854400 !important;
 }
 
 /* ─── Footer: Light Vintage Paper & Ivory, NO Black ──────────────────── */

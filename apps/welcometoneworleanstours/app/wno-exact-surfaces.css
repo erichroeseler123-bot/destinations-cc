@@ -36,7 +36,8 @@
   -webkit-text-fill-color: #6f6255 !important;
 }
 
-[data-wno-surface="tours"] main [class*="productCard"].group {
+[data-wno-surface="tours"] main [class*="productCard"].group,
+main [class*="productCard"].group {
   overflow: hidden !important;
   border: 1px solid rgba(69,54,38,.18) !important;
   border-radius: 12px !important;
@@ -44,7 +45,8 @@
   box-shadow: 0 16px 38px rgba(48,37,24,.11) !important;
 }
 
-[data-wno-surface="tours"] main [class*="productCardMedia"] {
+[data-wno-surface="tours"] main [class*="productCardMedia"],
+main [class*="productCardMedia"] {
   position: relative !important;
   display: flex !important;
   overflow: hidden !important;
@@ -54,7 +56,8 @@
   box-shadow: none !important;
 }
 
-[data-wno-surface="tours"] main [class*="productCardMedia"] > div:first-child {
+[data-wno-surface="tours"] main [class*="productCardMedia"] > div:first-child,
+main [class*="productCardMedia"] > div:first-child {
   position: relative !important;
   min-height: 220px !important;
   background: #17140f !important;
@@ -62,14 +65,16 @@
   box-shadow: none !important;
 }
 
-[data-wno-surface="tours"] main [class*="productCardMedia"] img {
+[data-wno-surface="tours"] main [class*="productCardMedia"] img,
+main [class*="productCardMedia"] img {
   display: block !important;
   opacity: 1 !important;
   visibility: visible !important;
   filter: saturate(1.05) contrast(1.04) brightness(1.02) !important;
 }
 
-[data-wno-surface="tours"] main [class*="productCardImageShade"] {
+[data-wno-surface="tours"] main [class*="productCardImageShade"],
+main [class*="productCardImageShade"] {
   position: absolute !important;
   inset: 0 !important;
   z-index: 1 !important;
@@ -79,14 +84,16 @@
   pointer-events: none !important;
 }
 
-[data-wno-surface="tours"] main [class*="productCardCredit"] {
+[data-wno-surface="tours"] main [class*="productCardCredit"],
+main [class*="productCardCredit"] {
   background: #17140f !important;
   color: #f5ead6 !important;
   border-color: rgba(216,174,91,.24) !important;
   box-shadow: none !important;
 }
 
-[data-wno-surface="tours"] main [class*="productCardFallback"] {
+[data-wno-surface="tours"] main [class*="productCardFallback"],
+main [class*="productCardFallback"] {
   min-height: 220px !important;
   background-image:
     linear-gradient(180deg, rgba(8,7,6,.12), rgba(8,7,6,.62)),
@@ -98,25 +105,29 @@
   box-shadow: none !important;
 }
 
-[data-wno-surface="tours"] main [class*="productCardFallback"] span {
+[data-wno-surface="tours"] main [class*="productCardFallback"] span,
+main [class*="productCardFallback"] span {
   color: #fffdf8 !important;
   -webkit-text-fill-color: #fffdf8 !important;
   text-shadow: 0 2px 14px rgba(0,0,0,.7) !important;
 }
 
-[data-wno-surface="tours"] main [class*="productCardContent"] {
+[data-wno-surface="tours"] main [class*="productCardContent"],
+main [class*="productCardContent"] {
   background: #fffdf9 !important;
   color: #211c17 !important;
   border: 0 !important;
   box-shadow: none !important;
 }
 
-[data-wno-surface="tours"] main [class*="productCardTitle"] {
+[data-wno-surface="tours"] main [class*="productCardTitle"],
+main [class*="productCardTitle"] {
   color: #211c17 !important;
   -webkit-text-fill-color: #211c17 !important;
 }
 
-[data-wno-surface="tours"] main [class*="productCardDescription"] {
+[data-wno-surface="tours"] main [class*="productCardDescription"],
+main [class*="productCardDescription"] {
   color: #5b5147 !important;
   -webkit-text-fill-color: #5b5147 !important;
   opacity: 1 !important;
@@ -124,23 +135,29 @@
 
 [data-wno-surface="tours"] main [class*="productCardOperator"],
 [data-wno-surface="tours"] main [class*="productCardCue"],
-[data-wno-surface="tours"] main [class*="productCardFit"] {
+[data-wno-surface="tours"] main [class*="productCardFit"],
+main [class*="productCardOperator"],
+main [class*="productCardCue"],
+main [class*="productCardFit"] {
   color: #725b32 !important;
   -webkit-text-fill-color: #725b32 !important;
 }
 
-[data-wno-surface="tours"] main [class*="productCardCue"] {
+[data-wno-surface="tours"] main [class*="productCardCue"],
+main [class*="productCardCue"] {
   background: #f4ecdf !important;
   border-color: rgba(114,91,50,.22) !important;
 }
 
-[data-wno-surface="tours"] main [class*="productCardFooter"] {
+[data-wno-surface="tours"] main [class*="productCardFooter"],
+main [class*="productCardFooter"] {
   border-color: rgba(69,54,38,.14) !important;
   background: transparent !important;
   box-shadow: none !important;
 }
 
-[data-wno-surface="tours"] main [class*="productCardCta"] {
+[data-wno-surface="tours"] main [class*="productCardCta"],
+main [class*="productCardCta"] {
   border-radius: 6px !important;
   background: #b8872f !important;
   border-color: #b8872f !important;
@@ -714,5 +731,57 @@ body:has([data-wno-surface="airboat-adventures"]) [data-airboat-card-body] {
   border-color: #d4af37 !important;
   box-shadow: 0 0 16px rgba(212, 175, 55, 0.4) !important;
 }
+
+/* -------------------------------------------------------------------------- */
+/* High contrast typography for dark, intent, and comparison surfaces         */
+/* -------------------------------------------------------------------------- */
+[data-wno-surface*="intent"],
+[data-wno-surface*="dark"],
+[data-wno-surface*="compare"],
+div[class*="bg-[var(--nola-bg-charcoal)]"],
+article[class*="bg-[#151515]"],
+header[class*="bg-[#101010]"],
+section[class*="bg-[linear-gradient(135deg,#1f1a14"] {
+  color: #fdfbf7 !important;
+}
+
+[data-wno-surface*="intent"] h1,
+[data-wno-surface*="intent"] h2,
+[data-wno-surface*="intent"] h3,
+[data-wno-surface*="dark"] h1,
+[data-wno-surface*="dark"] h2,
+[data-wno-surface*="dark"] h3,
+[data-wno-surface*="compare"] h1,
+[data-wno-surface*="compare"] h2,
+[data-wno-surface*="compare"] h3,
+div[class*="bg-[var(--nola-bg-charcoal)]"] h1,
+div[class*="bg-[var(--nola-bg-charcoal)]"] h2,
+div[class*="bg-[var(--nola-bg-charcoal)]"] h3,
+article[class*="bg-[#151515]"] h1,
+article[class*="bg-[#151515]"] h2,
+article[class*="bg-[#151515]"] h3,
+header[class*="bg-[#101010]"] h1,
+section[class*="bg-[linear-gradient(135deg,#1f1a14"] h1 {
+  color: #fdfbf7 !important;
+  -webkit-text-fill-color: #fdfbf7 !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-wno-surface*="intent"] p:not([class*="gold"]):not([class*="badge"]),
+[data-wno-surface*="intent"] li,
+div[class*="bg-[var(--nola-bg-charcoal)]"] p:not([class*="gold"]):not([class*="badge"]),
+div[class*="bg-[var(--nola-bg-charcoal)]"] li {
+  color: #d5cec3 !important;
+  -webkit-text-fill-color: #d5cec3 !important;
+}
+
+[data-wno-surface*="intent"] a[class*="border"],
+div[class*="bg-[var(--nola-bg-charcoal)]"] a[class*="border"],
+article[class*="bg-[#151515]"] a[class*="border"] {
+  color: #fdfbf7 !important;
+  -webkit-text-fill-color: #fdfbf7 !important;
+  border-color: rgba(212, 175, 55, 0.45) !important;
+}
+
 
 

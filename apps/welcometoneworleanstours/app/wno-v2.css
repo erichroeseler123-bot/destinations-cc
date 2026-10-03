@@ -126,7 +126,7 @@ main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-ri
   letter-spacing: -0.015em !important;
 }
 
-main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])) h1 {
+main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-riders"])):not([data-wno-surface*="intent"]):not(:has([data-wno-surface*="intent"])):not([data-wno-surface*="dark"]):not(:has([data-wno-surface*="dark"])):not([data-wno-surface*="compare"]):not(:has([data-wno-surface*="compare"])) h1 {
   color: var(--wno-v2-green) !important;
 }
 

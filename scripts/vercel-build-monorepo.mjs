@@ -1,9 +1,9 @@
 import { spawnSync } from "node:child_process";
 import path from "node:path";
-
 import fs from "node:fs";
 
 const WNO_PROJECT_ID = "prj_G4aMmGzfGoWKyVZ9wTgUPf5D7rrS";
+const AIRPORT_420_PROJECT_ID = "prj_V8SeDn6xhYXvMSUestu5yT2hdbP0";
 const cwd = process.cwd();
 
 let root = "";
@@ -27,6 +27,7 @@ function run(command, args, options = {}) {
     cwd,
     stdio: "inherit",
     env: process.env,
+    shell: true,
     ...options,
   });
   if (result.error) {
@@ -36,7 +37,30 @@ function run(command, args, options = {}) {
   if (result.status !== 0) process.exit(result.status || 1);
 }
 
-if (process.env.VERCEL_PROJECT_ID === WNO_PROJECT_ID) {
+let detectedProjectId = process.env.VERCEL_PROJECT_ID?.trim();
+let detectedProjectName = process.env.VERCEL_PROJECT_NAME?.trim();
+
+if (!detectedProjectId || !detectedProjectName) {
+  try {
+    const pjPaths = [
+      path.join(root, ".vercel/project.json"),
+      path.join(cwd, ".vercel/project.json")
+    ];
+    for (const p of pjPaths) {
+      if (fs.existsSync(p)) {
+        const pj = JSON.parse(fs.readFileSync(p, "utf8"));
+        if (!detectedProjectId && pj.projectId) detectedProjectId = pj.projectId.trim();
+        if (!detectedProjectName && pj.projectName) detectedProjectName = pj.projectName.trim();
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+}
+
+console.log("[vercel-build-monorepo] Detected Project ID:", detectedProjectId, "| Name:", detectedProjectName);
+
+if (detectedProjectId === WNO_PROJECT_ID || detectedProjectName === "welcometoneworleanstours") {
   run("pnpm", [
     "-w",
     "exec",
@@ -47,5 +71,14 @@ if (process.env.VERCEL_PROJECT_ID === WNO_PROJECT_ID) {
   process.exit(0);
 }
 
+if (detectedProjectId === AIRPORT_420_PROJECT_ID || detectedProjectName === "420-airport-pickup") {
+  console.log("Building 420-airport-pickup for Vercel...");
+  const appDir = path.join(root, "apps/420-airport-pickup");
+  const isWin = process.platform === "win32";
+  run(isWin ? "npm.cmd" : "npm", ["run", "build"], { cwd: appDir });
+  process.exit(0);
+}
+
 process.env.SKIP_ENV_CHECK = "1";
+
 run("pnpm", ["run", "build"]);

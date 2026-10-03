@@ -110,16 +110,16 @@ export default function IntentTourPage({
   } : null;
 
   return (
-    <div className="bg-[var(--nola-bg-charcoal)] text-[var(--nola-ivory)] min-h-screen">
+    <div data-wno-surface="intent-dark" className="bg-[var(--nola-bg-charcoal)] text-[#fdfbf7] min-h-screen">
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
       <WnoBreadcrumbs items={activeBreadcrumbs} />
       <section className="mx-auto max-w-6xl px-6 pb-12 pt-8 md:pt-14">
         <p className="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]">{eyebrow}</p>
-        <h1 className="max-w-4xl font-serif text-4xl leading-tight md:text-6xl">{title}</h1>
-        <p className="mt-6 max-w-3xl text-lg leading-8 text-[var(--nola-text-muted)]">{intro}</p>
+        <h1 className="max-w-4xl font-serif text-4xl leading-tight text-[#fdfbf7] md:text-6xl">{title}</h1>
+        <p className="mt-6 max-w-3xl text-lg leading-8 text-[#dcd5ca]">{intro}</p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link href="#tour-options" className="bg-[var(--nola-gold)] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#171717]">Check Tour Options</Link>
-          <Link href="/help-me-choose" className="border border-[var(--nola-border)] px-5 py-3 text-xs font-bold uppercase tracking-widest">Help Me Choose</Link>
+          <Link href="#tour-options" className="bg-[var(--nola-gold)] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#171717] hover:bg-[#ffe494] transition">Check Tour Options</Link>
+          <Link href="/help-me-choose" className="border border-[rgba(212,175,55,0.5)] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#fdfbf7] hover:border-[var(--nola-gold)] transition">Help Me Choose</Link>
         </div>
       </section>
 
@@ -157,9 +157,9 @@ export default function IntentTourPage({
         <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 md:grid-cols-[0.85fr_1.15fr]">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--nola-gold)]">How to decide</p>
-            <h2 className="mt-3 font-serif text-3xl">{decisionTitle}</h2>
+            <h2 className="mt-3 font-serif text-3xl text-[#fdfbf7]">{decisionTitle}</h2>
           </div>
-          <ul className="space-y-4 text-[var(--nola-text-muted)]">
+          <ul className="space-y-4 text-[#dcd5ca]">
             {decisionPoints.map((point) => <li key={point} className="border-l-2 border-[var(--nola-gold)] pl-4">{point}</li>)}
           </ul>
         </div>
@@ -168,8 +168,8 @@ export default function IntentTourPage({
       <section id="tour-options" className="mx-auto max-w-6xl px-6 py-14">
         <div className="mb-8">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--nola-gold)]">Current tour options</p>
-          <h2 className="mt-3 font-serif text-3xl md:text-4xl">Tours worth comparing for this plan</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--nola-text-muted)]">Schedules, live pricing, pickup details, eligibility and availability are confirmed during booking and can change by operator and departure.</p>
+          <h2 className="mt-3 font-serif text-3xl md:text-4xl text-[#fdfbf7]">Tours worth comparing for this plan</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-[#dcd5ca]">Schedules, live pricing, pickup details, eligibility and availability are confirmed during booking and can change by operator and departure.</p>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => product && (
@@ -198,12 +198,12 @@ export default function IntentTourPage({
         <section className="border-y border-[var(--nola-border)] bg-[var(--nola-surface-subtle)] px-6 py-14">
           <div className="mx-auto max-w-6xl">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--nola-gold)]">Quick answers</p>
-            <h2 className="mt-3 font-serif text-3xl md:text-4xl">Questions people ask before choosing</h2>
+            <h2 className="mt-3 font-serif text-3xl md:text-4xl text-[#fdfbf7]">Questions people ask before choosing</h2>
             <div className="mt-8 grid gap-5 md:grid-cols-3">
               {faq.map((item) => (
                 <article key={item.question} className="border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)] p-5">
-                  <h3 className="font-serif text-xl">{item.question}</h3>
-                  <p className="mt-3 text-sm leading-6 text-[var(--nola-text-muted)]">{item.answer}</p>
+                  <h3 className="font-serif text-xl text-[#fdfbf7]">{item.question}</h3>
+                  <p className="mt-3 text-sm leading-6 text-[#dcd5ca]">{item.answer}</p>
                 </article>
               ))}
             </div>
@@ -213,12 +213,12 @@ export default function IntentTourPage({
 
       <section className="mx-auto max-w-6xl px-6 py-14">
         <div className="border-t border-[var(--nola-border)] pt-8">
-          <h2 className="font-serif text-2xl">Keep narrowing it down</h2>
+          <h2 className="font-serif text-2xl text-[#fdfbf7]">Keep narrowing it down</h2>
           <div className="mt-5 flex flex-wrap gap-3">
-            {relatedLinks.map((link) => <Link key={link.href} href={publicIntentHref(link.href)} className="border border-[var(--nola-border)] px-4 py-2 text-sm hover:border-[var(--nola-gold)]">{link.label}</Link>)}
-            <Link href="/guides/things-to-do-in-new-orleans-today" className="border border-[var(--nola-border)] px-4 py-2 text-sm hover:border-[var(--nola-gold)]">Things to do today</Link>
-            <Link href="/guides/tonight" className="border border-[var(--nola-border)] px-4 py-2 text-sm hover:border-[var(--nola-gold)]">What to do tonight</Link>
-            <Link href="/help-me-choose" className="bg-[var(--nola-gold)] px-4 py-2 text-sm font-bold text-[#171717]">Help Me Choose</Link>
+            {relatedLinks.map((link) => <Link key={link.href} href={publicIntentHref(link.href)} className="border border-[rgba(212,175,55,0.4)] px-4 py-2 text-sm text-[#fdfbf7] hover:border-[var(--nola-gold)] transition">{link.label}</Link>)}
+            <Link href="/guides/things-to-do-in-new-orleans-today" className="border border-[rgba(212,175,55,0.4)] px-4 py-2 text-sm text-[#fdfbf7] hover:border-[var(--nola-gold)] transition">Things to do today</Link>
+            <Link href="/guides/tonight" className="border border-[rgba(212,175,55,0.4)] px-4 py-2 text-sm text-[#fdfbf7] hover:border-[var(--nola-gold)] transition">What to do tonight</Link>
+            <Link href="/help-me-choose" className="bg-[var(--nola-gold)] px-4 py-2 text-sm font-bold text-[#171717] hover:bg-[#ffe494] transition">Help Me Choose</Link>
           </div>
         </div>
       </section>

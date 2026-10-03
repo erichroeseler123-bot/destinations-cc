@@ -95,7 +95,7 @@ export default function DecisionComparison({
   } : null;
 
   return (
-    <article className="bg-[#151515] text-[#fdfbf7] min-h-screen">
+    <article data-wno-surface="compare-dark" className="bg-[#151515] text-[#fdfbf7] min-h-screen">
       {faqSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />}
       {breadcrumbSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />}
       <header className="border-b border-[#2a2a2a] bg-[#101010] px-6 py-12 md:py-16">
@@ -115,7 +115,7 @@ export default function DecisionComparison({
             </nav>
           )}
           <p className="mb-4 text-xs font-bold uppercase tracking-[0.24em] text-[#d4af37]">{eyebrow}</p>
-          <h1 className="max-w-4xl font-[var(--font-accent)] text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">{title}</h1>
+          <h1 className="max-w-4xl font-[var(--font-accent)] text-4xl font-bold leading-tight text-[#fdfbf7] md:text-5xl lg:text-6xl">{title}</h1>
           <p className="mt-6 max-w-3xl text-lg leading-relaxed text-[#cccccc]">{intro}</p>
           <p className="mt-5 text-xs uppercase tracking-[0.16em] text-[#888]">Facts last checked {verifiedDate}</p>
           <div className="mt-7 flex flex-wrap gap-3">

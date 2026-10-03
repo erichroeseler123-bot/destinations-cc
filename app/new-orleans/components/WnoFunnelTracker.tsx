@@ -5,7 +5,7 @@ import { trackEvent } from "@/lib/analytics";
 import { captureDccTravelerContext, getStoredDccTravelerContext } from "@/lib/dcc/travelerContext";
 import { classifyWnoEntrySource } from "../lib/trafficSource";
 
-const TELEMETRY_URL = "https://www.destinationcommandcenter.com/api/wno/telemetry";
+const TELEMETRY_URL = "https://destinationcommandcenter.com/api/wno/telemetry";
 const SESSION_KEY = "wno_funnel_session";
 const ENTRY_PATH_KEY = "wno_entry_path";
 const ENTRY_SOURCE_KEY = "wno_entry_source";
@@ -50,6 +50,10 @@ export function sendWnoTelemetry(event: Record<string, unknown>) {
   const context = getWnoFunnelContext();
   if (!context) return;
   const body = JSON.stringify({ ...event, ...context, dccContext: context.dccContext || undefined });
+  if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+    const blob = new Blob([body], { type: "text/plain;charset=UTF-8" });
+    if (navigator.sendBeacon(TELEMETRY_URL, blob)) return;
+  }
   fetch(TELEMETRY_URL, {
     method: "POST",
     mode: "no-cors",

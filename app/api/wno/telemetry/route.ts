@@ -77,26 +77,43 @@ function mapEventName(eventName: string) {
   return "page_viewed";
 }
 
+function withCors(response: NextResponse) {
+  response.headers.set("Access-Control-Allow-Origin", "*");
+  response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  return response;
+}
+
+export async function OPTIONS() {
+  return withCors(new NextResponse(null, { status: 204 }));
+}
+
 export async function POST(request: NextRequest) {
+  let body: any;
   try {
     const raw = await request.text();
-    if (raw.length > 8000) return NextResponse.json({ ok: false }, { status: 413 });
-    const body = JSON.parse(raw || "{}");
-    const originalEventName = clean(body.eventName, 64);
-    if (!originalEventName) {
-      return NextResponse.json({ ok: false, error: "missing_event" }, { status: 400 });
-    }
+    if (raw.length > 8000) return withCors(NextResponse.json({ ok: false }, { status: 413 }));
+    body = JSON.parse(raw || "{}");
+  } catch {
+    return withCors(NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 }));
+  }
 
-    const sessionId = clean(body.sessionId, 96);
-    if (!sessionId || !sessionId.startsWith("wno_")) {
-      return NextResponse.json({ ok: false, error: "invalid_session" }, { status: 400 });
-    }
+  const originalEventName = clean(body.eventName, 64);
+  if (!originalEventName) {
+    return withCors(NextResponse.json({ ok: false, error: "missing_event" }, { status: 400 }));
+  }
 
-    const email = originalEventName === "lead_captured" ? cleanEmail(body.email) : undefined;
-    if (originalEventName === "lead_captured" && !email) {
-      return NextResponse.json({ ok: false, error: "invalid_email" }, { status: 400 });
-    }
+  const sessionId = clean(body.sessionId, 96);
+  if (!sessionId || !sessionId.startsWith("wno_")) {
+    return withCors(NextResponse.json({ ok: false, error: "invalid_session" }, { status: 400 }));
+  }
 
+  const email = originalEventName === "lead_captured" ? cleanEmail(body.email) : undefined;
+  if (originalEventName === "lead_captured" && !email) {
+    return withCors(NextResponse.json({ ok: false, error: "invalid_email" }, { status: 400 }));
+  }
+
+  try {
     const mappedEventName = mapEventName(originalEventName);
     const stored = await appendCorridorEventDurably({
       corridor_id: "wno-commerce",
@@ -157,8 +174,14 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ ok: stored.ok });
-  } catch {
-    return NextResponse.json({ ok: false, error: "invalid_payload" }, { status: 400 });
+    return withCors(NextResponse.json({ ok: stored.ok }));
+  } catch (err) {
+    console.error("WNO telemetry route error:", err);
+    return withCors(
+      NextResponse.json(
+        { ok: false, error: "storage_failed", message: err instanceof Error ? err.message : String(err) },
+        { status: 500 },
+      ),
+    );
   }
 }

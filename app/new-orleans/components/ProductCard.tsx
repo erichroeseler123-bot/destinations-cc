@@ -72,41 +72,39 @@ export default function ProductCard({
   return (
     <div className={`${visualStyles.productCard} group`}>
       {resolvedImage ? (
-        <div className={visualStyles.productCardMedia}>
-          <div className="relative flex-1 min-h-0">
-            <img
-              src={optimizedProductImageUrl(resolvedImage.src)}
-              alt={resolvedImage.alt}
-              loading="lazy"
-              decoding="async"
-              width={828}
-              height={518}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className={visualStyles.productCardImageShade}></div>
-            {sourceProduct?.badges && sourceProduct.badges.length > 0 && (
-              <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
-                {sourceProduct.badges.map((badge, idx) => (
-                  <span
-                    key={idx}
-                    className={`inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm ${
-                      badge.type === 'urgency'
-                        ? 'bg-[#7c2d12]/85 text-[#fbbf24] border border-[#f59e0b]/40'
-                        : badge.type === 'concierge-pick'
-                          ? 'bg-[#11100d]/85 text-[#d4af37] border border-[#d4af37]/50'
-                          : badge.type === 'logistics'
-                            ? 'bg-[#11100d]/85 text-[#a3e635] border border-[#a3e635]/30'
-                            : 'bg-[#11100d]/85 text-[#22d3ee] border border-[#22d3ee]/30'
-                    }`}
-                  >
-                    {badge.label}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#151318]">
+          <img
+            src={optimizedProductImageUrl(resolvedImage.src)}
+            alt={resolvedImage.alt}
+            loading="lazy"
+            decoding="async"
+            width={828}
+            height={518}
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+          <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/75 via-transparent to-transparent"></div>
+          {sourceProduct?.badges && sourceProduct.badges.length > 0 && (
+            <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
+              {sourceProduct.badges.map((badge, idx) => (
+                <span
+                  key={idx}
+                  className={`inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm ${
+                    badge.type === 'urgency'
+                      ? 'bg-[#7c2d12]/85 text-[#fbbf24] border border-[#f59e0b]/40'
+                      : badge.type === 'concierge-pick'
+                        ? 'bg-[#11100d]/85 text-[#d4af37] border border-[#d4af37]/50'
+                        : badge.type === 'logistics'
+                          ? 'bg-[#11100d]/85 text-[#a3e635] border border-[#a3e635]/30'
+                          : 'bg-[#11100d]/85 text-[#22d3ee] border border-[#22d3ee]/30'
+                  }`}
+                >
+                  {badge.label}
+                </span>
+              ))}
+            </div>
+          )}
           {resolvedImage.attribution && (
-            <div className={visualStyles.productCardCredit}>
+            <div className="absolute bottom-0 inset-x-0 z-10 bg-[#151318]/90 px-3 py-1.5 border-t border-[#d4af37]/20 text-[10px] text-[#fdfbf7]">
               {product.representativeCaption && (
                 <p className="text-[10px] text-[#d4af37] mb-1">{product.representativeCaption}</p>
               )}

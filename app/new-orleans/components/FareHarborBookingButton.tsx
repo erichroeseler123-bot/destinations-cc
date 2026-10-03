@@ -88,6 +88,9 @@ export default function FareHarborBookingButton({
       (entries) => {
         if (entries[0].isIntersecting) {
           trackEvent("fareharbor_cta_seen");
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("wno:load-fareharbor"));
+          }
           observer.disconnect();
         }
       },
@@ -162,6 +165,8 @@ export default function FareHarborBookingButton({
       ref={buttonRef}
       href={effectiveFallbackHref}
       onClick={handleClick}
+      onMouseEnter={() => { if (typeof window !== "undefined") window.dispatchEvent(new Event("wno:load-fareharbor")); }}
+      onFocus={() => { if (typeof window !== "undefined") window.dispatchEvent(new Event("wno:load-fareharbor")); }}
       data-wno-managed-click="true"
       data-wno-product={productSlug}
       data-cta-location={placement}

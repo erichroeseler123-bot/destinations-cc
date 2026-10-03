@@ -1696,3 +1696,70 @@ export const dccInvalidatedSessions = pgTable(
 
 export type DccInvalidatedSessionRow = typeof dccInvalidatedSessions.$inferSelect;
 export type NewDccInvalidatedSessionRow = typeof dccInvalidatedSessions.$inferInsert;
+
+
+// ============================================================================
+// 420 Friendly Airport Pickup: Isolated Inquiries & Transactional Outbox
+// ============================================================================
+
+export const fourtwentyOutboxStatusEnum = pgEnum("fourtwenty_outbox_status", [
+  "pending",
+  "claimed",
+  "dispatched",
+  "failed",
+  "dead_letter",
+]);
+
+export const fourtwentyInquiries = pgTable(
+  "fourtwenty_inquiries",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    referenceId: text("reference_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    customerName: text("customer_name").notNull(),
+    customerPhone: text("customer_phone").notNull(),
+    passengerCount: integer("passenger_count").notNull().default(1),
+    pickupLocation: text("pickup_location").notNull().default("Denver International Airport (DEN)"),
+    destinationAddress: text("destination_address").notNull(),
+    airline: text("airline").notNull(),
+    flightNumber: text("flight_number").notNull(),
+    arrivalTimestamp: timestamp("arrival_timestamp", { withTimezone: true }).notNull(),
+    baseRateQuoted: numeric("base_rate_quoted", { precision: 10, scale: 2 }).notNull().default("99.00"),
+    currency: text("currency").notNull().default("USD"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    referenceIdIdx: uniqueIndex("fourtwenty_inquiries_ref_uidx").on(table.referenceId),
+    idempotencyKeyIdx: uniqueIndex("fourtwenty_inquiries_idemp_uidx").on(table.idempotencyKey),
+    arrivalTimestampIdx: index("fourtwenty_inquiries_arrival_idx").on(table.arrivalTimestamp),
+  })
+);
+
+export type FourtwentyInquiryRow = typeof fourtwentyInquiries.$inferSelect;
+export type NewFourtwentyInquiryRow = typeof fourtwentyInquiries.$inferInsert;
+
+export const fourtwentyOutbox = pgTable(
+  "fourtwenty_outbox",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    inquiryId: uuid("inquiry_id").notNull().references(() => fourtwentyInquiries.id, { onDelete: "cascade" }),
+    referenceId: text("reference_id").notNull(),
+    channel: text("channel").notNull().default("email"),
+    payload: jsonb("payload").$type<Record<string, unknown>>().notNull(),
+    status: fourtwentyOutboxStatusEnum("status").notNull().default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    lockedAt: timestamp("locked_at", { withTimezone: true }),
+    lastError: text("last_error"),
+    nextRetryAt: timestamp("next_retry_at", { withTimezone: true }).notNull().defaultNow(),
+    dispatchedAt: timestamp("dispatched_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    queueIdx: index("fourtwenty_outbox_queue_idx").on(table.status, table.nextRetryAt),
+    referenceIdIdx: index("fourtwenty_outbox_ref_idx").on(table.referenceId),
+  })
+);
+
+export type FourtwentyOutboxRow = typeof fourtwentyOutbox.$inferSelect;
+export type NewFourtwentyOutboxRow = typeof fourtwentyOutbox.$inferInsert;

@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
-import { desc } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { dccCorridorCatalog, dccCorridorEvents, type DccCorridorEventRow } from "@/lib/db/schema";
 import { getCorridorCatalogEntry, LIVE_CORRIDOR_CATALOG } from "@/lib/dcc/telemetry/corridorCatalog";
@@ -202,11 +202,18 @@ function topCounts(map: Map<string, number>, limit = 3) {
 }
 
 function isSmokeIdentifier(value: string | null | undefined) {
-  return typeof value === "string" && value.toLowerCase().startsWith("smoke_");
+  if (typeof value !== "string") return false;
+  const lower = value.toLowerCase();
+  return (
+    lower.startsWith("smoke_") ||
+    lower.startsWith("test_") ||
+    lower.startsWith("wno_test_") ||
+    lower.startsWith("wno_verify_")
+  );
 }
 
 function isTestMetadata(metadata: Record<string, unknown> | null | undefined) {
-  return Boolean(metadata && metadata.test === true);
+  return Boolean(metadata && (metadata.test === true || metadata.synthetic === true));
 }
 
 function isProductionLikeEvent(event: DccCorridorEventRow) {
@@ -274,9 +281,73 @@ export async function readCruiseDebugBaseline(): Promise<CruiseDebugBaselineRow[
   }
 }
 
+export async function ensureCorridorTables() {
+  const db = getDb();
+  if (!db) return;
+
+  try {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS "dcc_corridor_catalog" (
+        "corridor_id" text PRIMARY KEY NOT NULL,
+        "corridor_name" text NOT NULL,
+        "family" text NOT NULL,
+        "app_path" text NOT NULL,
+        "status" text NOT NULL,
+        "continuity_level" text NOT NULL,
+        "pattern_family" text,
+        "created_at" timestamp with time zone DEFAULT now() NOT NULL,
+        "updated_at" timestamp with time zone DEFAULT now() NOT NULL
+      )
+    `);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS "dcc_corridor_catalog_family_idx" ON "dcc_corridor_catalog" ("family")`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS "dcc_corridor_catalog_status_idx" ON "dcc_corridor_catalog" ("status")`);
+
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS "dcc_corridor_events" (
+        "event_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+        "occurred_at" timestamp with time zone DEFAULT now() NOT NULL,
+        "corridor_id" text NOT NULL REFERENCES "dcc_corridor_catalog"("corridor_id") ON DELETE RESTRICT,
+        "family" text NOT NULL,
+        "event_name" text NOT NULL,
+        "handoff_id" text,
+        "session_id" text,
+        "user_id" text,
+        "source_page" text,
+        "landing_path" text,
+        "target_path" text,
+        "requested_lane" text,
+        "resolved_lane" text,
+        "topic" text,
+        "subtype" text,
+        "port" text,
+        "handoff_date" date,
+        "default_card_slug" text,
+        "clicked_product_slug" text,
+        "route_target" text,
+        "fit_signal" text,
+        "urgency" text,
+        "confidence_downgraded" boolean DEFAULT false NOT NULL,
+        "winning_rule_ids" text[] DEFAULT '{}'::text[] NOT NULL,
+        "winning_fields" jsonb DEFAULT '{}'::jsonb NOT NULL,
+        "page_variant" text,
+        "metadata" jsonb DEFAULT '{}'::jsonb NOT NULL
+      )
+    `);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS "dcc_corridor_events_corridor_time_idx" ON "dcc_corridor_events" ("corridor_id", "occurred_at")`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS "dcc_corridor_events_event_time_idx" ON "dcc_corridor_events" ("event_name", "occurred_at")`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS "dcc_corridor_events_flow_idx" ON "dcc_corridor_events" ("corridor_id", "handoff_id", "session_id")`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS "dcc_corridor_events_downgraded_idx" ON "dcc_corridor_events" ("corridor_id", "confidence_downgraded")`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS "dcc_corridor_events_family_idx" ON "dcc_corridor_events" ("family", "occurred_at")`);
+  } catch (err) {
+    console.error("ensureCorridorTables failed:", err);
+  }
+}
+
 export async function ensureCorridorCatalogRows() {
   const db = getDb();
   if (!db) return;
+
+  await ensureCorridorTables();
 
   try {
     for (const entry of LIVE_CORRIDOR_CATALOG) {

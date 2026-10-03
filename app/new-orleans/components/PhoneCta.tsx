@@ -9,6 +9,7 @@ interface PhoneCtaProps {
   productId?: string;
   productSlug?: string;
   className?: string;
+  ariaLabel?: string;
   children: React.ReactNode;
 }
 
@@ -18,6 +19,7 @@ export default function PhoneCta({
   productId,
   productSlug,
   className = "",
+  ariaLabel,
   children,
 }: PhoneCtaProps) {
   const linkRef = useRef<HTMLAnchorElement>(null);
@@ -72,7 +74,7 @@ export default function PhoneCta({
       data-wno-managed-click="phone"
       data-cta-location={placement}
       className={`focus:outline-none focus:ring-2 focus:ring-[#C5A059] focus:ring-offset-2 ${className}`}
-      aria-label="Call 504-484-9687"
+      {...(ariaLabel ? { "aria-label": ariaLabel } : {})}
     >
       {children}
     </a>
