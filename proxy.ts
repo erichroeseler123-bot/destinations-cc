@@ -147,10 +147,11 @@ export function getWtonotHostRewrite(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Allow static next/image/assets resources
+  // Allow static next/image/assets resources and API routes
   if (
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/images/") ||
+    pathname.startsWith("/api/") ||
     pathname === "/favicon.ico" ||
     pathname === "/sitemap.xml" ||
     pathname === "/robots.txt"
