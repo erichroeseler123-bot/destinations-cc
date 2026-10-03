@@ -23,5 +23,9 @@ export const metadata: Metadata = {
 };
 
 export default function HelicopterPage() {
-  return <HelicopterDispatchBoard portSlug="juneau" sourcePage="/helicopter" />;
+  return (
+    <main id="main-content">
+      <HelicopterDispatchBoard portSlug="juneau" sourcePage="/helicopter" />
+    </main>
+  );
 }

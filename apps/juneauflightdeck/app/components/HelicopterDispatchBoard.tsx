@@ -1,298 +1,405 @@
-import Link from "next/link";
-import { jfdMedia } from "../mediaRegistry";
+'use client';
 
-type PortSlug = "juneau" | "skagway";
+import React from 'react';
+import Link from 'next/link';
 
-type HelicopterDispatchBoardProps = {
-  portSlug: PortSlug;
+type PortSlug = 'juneau' | 'skagway';
+
+export interface HelicopterDispatchBoardProps {
+  portSlug?: PortSlug;
   sourcePage?: string;
   headline?: string;
   subhead?: string;
   primaryCtaLabel?: string;
-};
-
-const PORT_COPY: Record<
-  PortSlug,
-  {
-    label: string;
-    headline: string;
-    subhead: string;
-    verdict: string;
-    portNote: string;
-    crossLinkHref: string;
-    crossLinkLabel: string;
-  }
-> = {
-  juneau: {
-    label: "Juneau shore day",
-    headline: "Juneau Flight Deck: Juneau Helicopter & Glacier Tours",
-    subhead:
-      "Juneau Flight Deck helps cruise passengers compare Juneau helicopter glacier tours, whale-watching backups, weather policies, and ship-safe timing.",
-    verdict: "Start with the glacier flight. Keep whales ready.",
-    portNote: "Check pickup, flight time, return buffer, and weather policy.",
-    crossLinkHref: "/skagway/helicopter",
-    crossLinkLabel: "Need Skagway instead?",
-  },
-  skagway: {
-    label: "Skagway shore day",
-    headline: "Match the glacier to the ship.",
-    subhead: "Skagway flight options, ship timing, weather backup.",
-    verdict: "Use Skagway only when your ship stops there.",
-    portNote: "Check meeting point, total duration, and ship return margin.",
-    crossLinkHref: "/helicopter",
-    crossLinkLabel: "Need Juneau instead?",
-  },
-};
-
-const HERO_IMAGE = jfdMedia.juneauPortHero.src;
-const GLACIER_IMAGE = jfdMedia.mendenhallHero.src;
-const WHALE_IMAGE = jfdMedia.juneauWaterBackup.src;
-
-const TRUST_BADGES = [
-  {
-    label: "Cruise timing",
-    body: "Ship clock first.",
-  },
-  {
-    label: "Weather aware",
-    body: "Flight weather changes.",
-  },
-  {
-    label: "Glacier fit",
-    body: "Pick the ice level.",
-  },
-  {
-    label: "Whale backup",
-    body: "Still feels Alaska.",
-  },
-];
-
-const TOUR_CARDS = [
-  {
-    title: "Helicopter Glacier Tour",
-    kicker: "Signature Juneau",
-    image: GLACIER_IMAGE,
-    alt: jfdMedia.mendenhallHero.alt,
-    visual: "image" as const,
-    body: "Big ice, short clock, real Alaska payoff.",
-    meta: ["Glacier views", "Weather dependent", "Provider shown before booking"],
-    href: "/helicopter",
-    cta: "Compare glacier flights",
-  },
-  {
-    title: "Mendenhall Landing",
-    kicker: "Glacier focus",
-    image: jfdMedia.mendenhallSection.src,
-    alt: jfdMedia.mendenhallSection.alt,
-    visual: "image" as const,
-    body: "Glacier closeups when landing is the point.",
-    meta: ["Ice detail", "Provider shown", "Current terms at booking"],
-    href: "/juneau/helicopter",
-    cta: "Compare glacier options",
-  },
-  {
-    title: "Whale Watching Backup",
-    kicker: "Weather-smart fallback",
-    image: WHALE_IMAGE,
-    alt: jfdMedia.juneauWaterBackup.alt,
-    visual: "image" as const,
-    body: "Lower-risk Alaska when flight weather turns.",
-    meta: ["Cruise friendly", "Provider shown", "Backup option"],
-    href: "/juneau-whale-watching-tours",
-    cta: "Plan whale backup",
-  },
-  {
-    title: "Weather Pivot",
-    kicker: "Port-day save",
-    visual: "badge" as const,
-    body: "Know the pivot before the port day slips.",
-    meta: ["Weather policy", "Same-day pivot", "Ship first"],
-    href: "/juneau/what-to-do-if-helicopter-tour-canceled",
-    cta: "Weather plan",
-  },
-];
-
-const PLANNING_CARDS = [
-  {
-    label: "Availability",
-    title: "Check glacier flights",
-    body: "Start here when weather looks workable.",
-    href: "/helicopter",
-  },
-  {
-    label: "Backup",
-    title: "Compare whale backup",
-    body: "Keep one lower-risk Alaska move ready.",
-    href: "/what-to-do-in-juneau-cruise-port",
-  },
-  {
-    label: "Weather",
-    title: "Read the pivot",
-    body: "Know the switch before cancellation.",
-    href: "/juneau-whale-watching-tours",
-  },
-];
+}
 
 export default function HelicopterDispatchBoard({
-  portSlug,
+  portSlug = 'juneau',
+  sourcePage = '/',
   headline,
   subhead,
   primaryCtaLabel,
 }: HelicopterDispatchBoardProps) {
-  const copy = PORT_COPY[portSlug];
-  const renderedHeadline = headline || copy.headline;
-  const renderedSubhead = subhead || copy.subhead;
-  const renderedPrimaryCta =
-    primaryCtaLabel ||
-    (portSlug === "juneau" ? "Compare Juneau Helicopter Tours" : "Compare glacier flights");
+  const isSkagway = portSlug === 'skagway';
+
+  const defaultHeadline = isSkagway
+    ? 'Match Your Skagway Glacier Flight to Your Ship Schedule'
+    : 'Compare Juneau Helicopter Tours';
+
+  const defaultSubhead = isSkagway
+    ? 'Compare Skagway glacier helicopter operators, review ship-safe return buffers, and plan your weather backup.'
+    : 'Explore TEMSCO, Coastal, and NorthStar tours, plus cancellation guidance and planned backup options.';
+
+  const defaultPrimaryCta = isSkagway ? 'Compare Skagway Flights' : 'Compare Helicopter Tours';
+
+  const finalHeadline = headline || defaultHeadline;
+  const finalSubhead = subhead || defaultSubhead;
+  const finalPrimaryCta = primaryCtaLabel || defaultPrimaryCta;
 
   return (
-    <main className="page-shell dispatch-page">
-      <section className="dispatch-hero storefront-hero">
-        <div className="storefront-hero-media" aria-hidden="true">
-          <img src={HERO_IMAGE} alt="" />
-          <div className="storefront-hero-scrim" />
+    <div className="jfd-root">
+      {/* Prototype Status Bar */}
+      <div className="jfd-prototype-ribbon">
+        <div className="jfd-prototype-ribbon-inner">
+          <div>
+            <span className="jfd-badge-prototype">PROTOTYPE CONCEPT</span>
+            <span style={{ marginLeft: 8 }}>
+              Concept demo: Real-time operator monitoring and planned single-charge payment transfer are currently in prototype testing.
+            </span>
+          </div>
         </div>
-        <div className="dispatch-hero-copy">
-          <p className="eyebrow">{copy.label} · glacier flights · shore excursions</p>
-          <h1>{renderedHeadline}</h1>
-          <p className="dispatch-subhead">{renderedSubhead}</p>
-          <div className="dispatch-verdict">
-            <strong>Best first move</strong>
-            <span>{copy.verdict}</span>
-          </div>
-          <div className="dispatch-pills" aria-label="Booking filters">
-            <span>Cruise timing</span>
-            <span>Weather policy</span>
-            <span>Helicopter glacier tours</span>
-            <span>Whale backup</span>
-          </div>
-          <div className="hero-actions">
+      </div>
+
+      {/* 1. Concise Hero Section */}
+      <section className="jfd-concise-hero">
+        <div
+          style={{
+            display: 'inline-block',
+            fontSize: '0.75rem',
+            fontWeight: 800,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: 'var(--accent)',
+            marginBottom: 10,
+          }}
+        >
+          {isSkagway ? 'Skagway Glacier Flight Coordination' : 'Juneau Glacier Flight Coordination'}
+        </div>
+        <h1>{finalHeadline}</h1>
+        <p className="jfd-concise-hero-subhead">{finalSubhead}</p>
+        <div className="jfd-concise-hero-actions">
+          <Link href="#operators" className="button button-primary">
+            {finalPrimaryCta}
+          </Link>
+          <Link
+            href={isSkagway ? '/skagway/helicopter' : '/juneau-whale-watching-tours'}
+            className="button button-secondary"
+          >
+            {isSkagway ? 'View Skagway Options' : 'Explore Backup Options'}
+          </Link>
+        </div>
+      </section>
+
+      {/* 2. Three Compact Value Cards */}
+      <section className="jfd-cards-section" aria-label="Core Services">
+        <div className="jfd-cards-grid">
+          <div className="jfd-compact-card">
+            <div>
+              <div style={{ color: 'var(--ice)', fontSize: '0.75rem', fontWeight: 800, marginBottom: 4 }}>
+                01 · SELECTION
+              </div>
+              <h2 className="jfd-compact-card-title">Compare Flights</h2>
+              <p className="jfd-compact-card-body">
+                Direct access to TEMSCO, Coastal Helicopters, and NorthStar Trekking. Evaluate walkabouts, dog sledding, and ice treks side-by-side.
+              </p>
+            </div>
             <Link
-              className="button button-primary"
-              href={portSlug === "juneau" ? "/helicopter" : "/skagway/helicopter"}
+              href="#operators"
+              className="jfd-compact-card-action"
+              aria-label="View operator specs for Juneau helicopter companies"
             >
-              {renderedPrimaryCta}
-            </Link>
-            <Link className="button button-secondary" href={copy.crossLinkHref}>
-              {copy.crossLinkLabel}
+              View operator specs &rarr;
             </Link>
           </div>
-          <p className="storefront-disclosure">
-            Final price, pickup, weather policy, and terms stay with the provider.
+
+          <div className="jfd-compact-card">
+            <div>
+              <div style={{ color: 'var(--ice)', fontSize: '0.75rem', fontWeight: 800, marginBottom: 4 }}>
+                02 · OPERATIONS
+              </div>
+              <h2 className="jfd-compact-card-title">Cancellation Support</h2>
+              <p className="jfd-compact-card-body">
+                Glacier microclimates cause cancellations during low ceiling or fog events. Our local coordination team monitors operational updates.
+              </p>
+            </div>
+            <Link
+              href="#weather-mechanics"
+              className="jfd-compact-card-action"
+              aria-label="Weather realities for Southeast Alaska glacier flights"
+            >
+              Weather realities &rarr;
+            </Link>
+          </div>
+
+          <div className="jfd-compact-card">
+            <div>
+              <div style={{ color: 'var(--ice)', fontSize: '0.75rem', fontWeight: 800, marginBottom: 4 }}>
+                03 · CONTINGENCY
+              </div>
+              <h2 className="jfd-compact-card-title">
+                Explore Backup Options <span className="jfd-badge-planned">PLANNED</span>
+              </h2>
+              <p className="jfd-compact-card-body">
+                Explore whale-watching backup plans when weather grounds flights, including our concept for transferring payments to available boats without separate charges.
+              </p>
+            </div>
+            <Link
+              href="#payment-mechanics"
+              className="jfd-compact-card-action"
+              aria-label="Transfer mechanics for proposed backup tours"
+            >
+              Transfer mechanics &rarr;
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Operator Comparison Table */}
+      <section id="operators" className="jfd-table-section">
+        <div className="jfd-section-head">
+          <h2>{isSkagway ? 'Skagway Flight Operators' : 'Juneau Operator Overview'}</h2>
+          <p>
+            {isSkagway
+              ? 'Licensed FAA Part 135 glacier helicopter flight operators serving Skagway cruise passengers.'
+              : 'All 3 licensed FAA Part 135 glacier helicopter operators serving Juneau cruise passengers.'}
           </p>
         </div>
 
-        <aside className="dispatch-panel" aria-label="Juneau planning guidance">
-          <div>
-            <span className="dispatch-metric">Ship</span>
-            <span className="dispatch-metric-label">Buffer guidance</span>
-          </div>
-          <div>
-            <span className="dispatch-metric">Wx</span>
-            <span className="dispatch-metric-label">Weather criteria</span>
-          </div>
-          <div>
-            <span className="dispatch-metric">Alt</span>
-            <span className="dispatch-metric-label">Backup options</span>
-          </div>
-        </aside>
+        <div className="jfd-table-wrap">
+          <table className="jfd-table">
+            <thead>
+              <tr>
+                <th scope="col">Operator</th>
+                <th scope="col">Signature Excursions</th>
+                <th scope="col">Glacier Locations</th>
+                <th scope="col">Base Location</th>
+                <th scope="col">Booking Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <span className="jfd-op-name">TEMSCO Helicopters</span>
+                  <span className="jfd-op-sub">Pioneer Juneau Operator</span>
+                </td>
+                <td style={{ color: 'var(--muted)' }}>Mendenhall Glacier Landing, Dog Sledding on Herbert Glacier</td>
+                <td style={{ color: 'var(--text)' }}>Mendenhall, Herbert</td>
+                <td style={{ color: 'var(--muted)' }}>Near JNU Airport (Shuttle provided)</td>
+                <td>
+                  <Link
+                    href="/helicopter"
+                    className="button button-card"
+                    style={{ whiteSpace: 'nowrap' }}
+                    aria-label="View Flights - TEMSCO Helicopters"
+                  >
+                    View Flights
+                  </Link>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <span className="jfd-op-name">Coastal Helicopters</span>
+                  <span className="jfd-op-sub">Icefield Specialist</span>
+                </td>
+                <td style={{ color: 'var(--muted)' }}>Icefield Walkabout, Taku Glacier Lodge Seaplane/Helo combos</td>
+                <td style={{ color: 'var(--text)' }}>Herbert, Taku Icefield</td>
+                <td style={{ color: 'var(--muted)' }}>Juneau North Airport Ramp</td>
+                <td>
+                  <Link
+                    href="/juneau/helicopter"
+                    className="button button-card"
+                    style={{ whiteSpace: 'nowrap' }}
+                    aria-label="View Flights - Coastal Helicopters"
+                  >
+                    View Flights
+                  </Link>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <span className="jfd-op-name">NorthStar Trekking</span>
+                  <span className="jfd-op-sub">Small-Group Glacier Hiking</span>
+                </td>
+                <td style={{ color: 'var(--muted)' }}>Level 1–3 Glacier Treks, Technical Ice Climbing</td>
+                <td style={{ color: 'var(--text)' }}>Mendenhall Glacier High Ice</td>
+                <td style={{ color: 'var(--muted)' }}>Juneau Industrial Heliport</td>
+                <td>
+                  <Link
+                    href="/juneau-dogsled-helicopter-tours"
+                    className="button button-card"
+                    style={{ whiteSpace: 'nowrap' }}
+                    aria-label="View Treks - NorthStar Trekking"
+                  >
+                    View Treks
+                  </Link>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
-      <section className="section-block jfd-tour-section" aria-label="Popular Juneau tour choices">
-        <div className="section-heading">
-          <p className="eyebrow">Juneau picks</p>
-          <h2>Choose the big Alaska move.</h2>
+      {/* 4. How It Works (3 Short Steps) */}
+      <section className="jfd-steps-section">
+        <div className="jfd-section-head">
+          <h2>How It Works</h2>
+          <p>Streamlined coordination from initial reservation to dock return.</p>
         </div>
-        <div className="jfd-tour-grid">
-          {TOUR_CARDS.map((card) => (
-            <article className="jfd-tour-card" key={card.title}>
-              {card.visual === "image" ? (
-                <div className="jfd-tour-image">
-                  <img src={card.image} alt={card.alt} />
-                </div>
-              ) : (
-                <div className="jfd-tour-badge-visual" aria-hidden="true">
-                  <span>Wx</span>
-                  <strong>Ship clock first</strong>
-                </div>
-              )}
-              <div className="jfd-tour-copy">
-                <p>{card.kicker}</p>
-                <h3>{card.title}</h3>
-                <span>{card.body}</span>
-                <div className="jfd-tour-meta">
-                  {card.meta.map((item) => (
-                    <small key={item}>{item}</small>
-                  ))}
-                </div>
-                <Link className="button button-card" href={card.href}>
-                  {card.cta}
-                </Link>
-              </div>
-            </article>
-          ))}
+
+        <div className="jfd-steps-grid">
+          <div className="jfd-step-card">
+            <div className="jfd-step-number">STEP 01</div>
+            <h3 className="jfd-step-title">Select Your Preferred Flight</h3>
+            <p className="jfd-step-desc">
+              Choose your ideal flight, landing style, or glacier dog sledding tour across operators with ship-safe return buffers.
+            </p>
+          </div>
+
+          <div className="jfd-step-card">
+            <div className="jfd-step-number">STEP 02</div>
+            <h3 className="jfd-step-title">Monitor Glacier Operations</h3>
+            <p className="jfd-step-desc">
+              We track FAA airport observations and operator dispatch updates on tour day as coastal microclimates develop.
+            </p>
+          </div>
+
+          <div className="jfd-step-card">
+            <div className="jfd-step-number">STEP 03</div>
+            <h3 className="jfd-step-title">Fly or Explore Backups</h3>
+            <p className="jfd-step-desc">
+              If the operator cancels due to weather, receive a standard full refund or explore backup whale-watching tours based on available capacity.
+            </p>
+          </div>
         </div>
       </section>
 
-      <section
-        className="section-block dispatch-widget-block jfd-availability"
-        id="availability"
-        aria-label="Juneau availability path"
-      >
-        <div className="section-heading">
-          <p className="eyebrow">Availability path</p>
-          <h2>Pick here. Book there.</h2>
+      {/* 5. Expandable Deep-Dives: Weather, Payments, & FAQs */}
+      <section className="jfd-details-section" id="details-accordion">
+        <div className="jfd-section-head">
+          <h2>Operational Realities &amp; Policies</h2>
+          <p>Detailed technical explanations regarding Southeast Alaska weather, payment handling, and cruise timing.</p>
         </div>
 
-        <div className="dispatch-widget-grid">
-          {PLANNING_CARDS.map((card, index) => (
-            <div
-              className={`dispatch-widget-card${index === 0 ? " dispatch-widget-card-primary" : ""}`}
-              key={card.title}
-            >
-              <div className="dispatch-widget-heading">
-                <span>{card.label}</span>
-                <h3>{card.title}</h3>
-                <p>{index === 0 ? copy.portNote : card.body}</p>
-              </div>
-              <Link className="button button-card" href={card.href}>
-                {card.title}
-              </Link>
+        <div className="jfd-details-wrap">
+          {/* Weather Realities */}
+          <details className="jfd-details" id="weather-mechanics">
+            <summary className="jfd-summary">
+              <span>Airport Weather vs. Glacier Microclimates</span>
+              <span>&darr;</span>
+            </summary>
+            <div className="jfd-details-content">
+              <p>
+                A sunny, clear forecast at Juneau International Airport (PAJN) does not ensure that helicopters can reach the icefield. Helicopter operations require Visual Flight Rules (VFR) through mountain passes.
+              </p>
+              <ul style={{ paddingLeft: 20, margin: '8px 0' }}>
+                <li>
+                  <strong>Terminal Aerodrome Forecasts (TAF):</strong> PAJN observations reflect sea-level conditions at the airport.
+                </li>
+                <li>
+                  <strong>Mountain Microclimates:</strong> Passes leading to Mendenhall, Herbert, and Norris Glaciers can experience cloud ceilings below 1,000 feet, sudden downsloping wind shears, or dense fog while downtown Juneau remains pleasant.
+                </li>
+                <li>
+                  <strong>Flight Safety Determinations:</strong> Only the operating chief pilot and dispatch make the final call on weather go/no-go decisions, usually finalized 45–90 minutes prior to lift.
+                </li>
+              </ul>
             </div>
-          ))}
+          </details>
+
+          {/* Payment Mechanics */}
+          <details className="jfd-details" id="payment-mechanics">
+            <summary className="jfd-summary">
+              <span>
+                Proposed Same-Charge Backup Mechanics <span className="jfd-badge-planned">PLANNED</span>
+              </span>
+              <span>&darr;</span>
+            </summary>
+            <div className="jfd-details-content">
+              <p>
+                When an operator cancels due to weather, their standard policy is to issue a 100% refund. Because credit card issuers typically take several business days to return those funds, we are designing a feature allowing guests to opt to apply their original payment directly toward an available water tour, with any difference credited back.
+              </p>
+              <div
+                style={{
+                  background: 'rgba(3, 14, 23, 0.6)',
+                  border: '1px solid var(--line)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '12px 16px',
+                  marginTop: 8,
+                }}
+              >
+                <strong style={{ color: 'var(--accent)' }}>Proposed Workflow (Under Evaluation):</strong>
+                <p style={{ margin: '6px 0' }}>
+                  Under this planned feature, rather than paying out-of-pocket for an alternate tour while waiting for an operator refund to clear, eligible guests would have the option to apply their initial payment toward an available water tour, with any difference credited back.
+                </p>
+                <p style={{ margin: 0, fontStyle: 'italic', fontSize: '0.78rem' }}>
+                  Notice: Bank posting times vary by financial institution. Same-charge backup transfer is a proposed workflow currently in testing with merchant processors and is not yet active.
+                </p>
+              </div>
+            </div>
+          </details>
+
+          {/* Frequently Asked Questions */}
+          <details className="jfd-details">
+            <summary className="jfd-summary">
+              <span>Frequently Asked Questions</span>
+              <span>&darr;</span>
+            </summary>
+            <div className="jfd-details-content">
+              <div style={{ marginBottom: 14 }}>
+                <h4 style={{ color: 'var(--text)', margin: '0 0 4px', fontSize: '0.9rem' }}>
+                  What happens if my cruise ship misses Juneau or arrives late?
+                </h4>
+                <p style={{ margin: 0 }}>
+                  If your ship bypasses Juneau or alters port hours so that your flight cannot proceed, standard operator policy provides a 100% refund.
+                </p>
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <h4 style={{ color: 'var(--text)', margin: '0 0 4px', fontSize: '0.9rem' }}>
+                  Are whale-watching backup seats guaranteed?
+                </h4>
+                <p style={{ margin: 0 }}>
+                  No. Backup options depend on daily boat capacity and availability. If morning flights are grounded, coordinators help identify open seats on local Auke Bay whale-watching charters.
+                </p>
+              </div>
+              <div>
+                <h4 style={{ color: 'var(--text)', margin: '0 0 4px', fontSize: '0.9rem' }}>
+                  Can I request a full refund instead of the backup tour?
+                </h4>
+                <p style={{ margin: 0 }}>
+                  Yes. If your helicopter excursion is cancelled by the operator for safety or weather reasons, you are entitled to a 100% refund back to your original payment method. The backup option is voluntary.
+                </p>
+              </div>
+            </div>
+          </details>
         </div>
       </section>
 
-      <section className="trust-strip jfd-trust-strip" aria-label="Juneau booking trust badges">
-        {TRUST_BADGES.map((badge) => (
-          <div key={badge.label}>
-            <strong>{badge.label}</strong>
-            <span>{badge.body}</span>
+      {/* 6. Primary Action Footer / Contact Callout */}
+      <section
+        style={{
+          padding: '40px 20px',
+          background: 'var(--bg)',
+          borderBottom: '1px solid var(--line)',
+        }}
+      >
+        <div
+          style={{
+            width: 'min(calc(100% - 32px), var(--content))',
+            margin: '0 auto',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 20,
+          }}
+        >
+          <div>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, margin: '0 0 6px', color: 'var(--text)' }}>
+              Ready to plan your Juneau flight?
+            </h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', margin: 0 }}>
+              Speak with a local flight coordinator or reserve your glacier seat today.
+            </p>
           </div>
-        ))}
-      </section>
-
-      <section className="section-block dispatch-rules">
-        <div className="section-heading">
-          <p className="eyebrow">Before booking</p>
-          <h2>Ship clock. Weather. Backup.</h2>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <Link href="/helicopter" className="button button-primary">
+              Browse Glacier Flights
+            </Link>
+            <Link href="/juneau/what-to-do-if-helicopter-tour-canceled" className="button button-secondary">
+              Weather Cancellation Guide
+            </Link>
+          </div>
         </div>
-        <div className="dispatch-rule-grid">
-          <div>
-            <strong>Correct port</strong>
-            <span>{copy.label} must match your itinerary.</span>
-          </div>
-          <div>
-            <strong>Return margin</strong>
-            <span>Leave room for weather and boarding.</span>
-          </div>
-          <div>
-            <strong>Weather terms</strong>
-            <span>Helicopter tours can move or cancel.</span>
-          </div>
-        </div>
       </section>
-    </main>
+    </div>
   );
 }

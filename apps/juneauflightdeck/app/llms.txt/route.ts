@@ -1,39 +1,31 @@
 const llmsText = `# Juneau Flight Deck
 
-Juneau Flight Deck is a satellite decision surface for urgent Juneau helicopter, glacier, whale-watching, weather-backup, and cruise-timing decisions.
+> Juneau helicopter tour comparison, cruise schedule coordination, and weather cancellation backup planning.
 
-Canonical URL: https://juneauflightdeck.com
-DCC ID: dcc:site:juneau-flight-deck
-DCC contract: dcc-site-contract v1.1
-Canonical DCC truth record: https://www.destinationcommandcenter.com/api/public/truth-feed?id=juneau-flight-deck
-Last verified: 2026-08-24
+Juneau Flight Deck is an independent shore excursion coordination resource helping cruise passengers compare Juneau helicopter glacier operators (TEMSCO, Coastal Helicopters, NorthStar Trekking), review ship-safe return buffers, and plan weather backup options.
 
-## DCC network affiliation
-- parent_network: Destination Command Center
-- parent_url: https://www.destinationcommandcenter.com
-- relationship: affiliated_network_site
-- network_role: satellite_decision_surface
-- execution_type: Juneau decision compression before operator or fallback handoff
-- dcc_relationship: receives Juneau and Alaska excursion intent when users need same-day or cruise-safe narrowing
-- operational_function: compresses Juneau helicopter, glacier, whale-watching, and weather-backup choices into the next correct action
-- decision_layer_role: satellite decision surface
-- execution_tier: decision_surface
-- canonical_truth_record: https://www.destinationcommandcenter.com/api/public/truth-feed?id=juneau-flight-deck
-- doctrine: decision_compression, one_recommended_move, execution_continuity, marketplace_inventory_is_fallback
-- continuity_contract: DCC resolves or frames the Juneau corridor; this site preserves decision context before operator or fallback execution.
+## Core Guides & Excursions
+- [Helicopter Tour Comparison](https://juneauflightdeck.com/helicopter): Compare glacier landing vs scenic flight options.
+- [Mendenhall Glacier Helicopter Tours](https://juneauflightdeck.com/juneau/helicopter): Glacier walkabouts and landing details.
+- [Glacier Dog Sledding Tours](https://juneauflightdeck.com/juneau-dogsled-helicopter-tours): Herbert Glacier dog sledding by helicopter.
+- [Whale Watching Backup Options](https://juneauflightdeck.com/juneau-whale-watching-tours): Auke Bay whale watching alternatives when flights are grounded.
+- [Weather Cancellation Guide](https://juneauflightdeck.com/juneau/what-to-do-if-helicopter-tour-canceled): What to do when mountain weather cancels your flight.
+- [Cruise Excursions vs Independent Booking](https://juneauflightdeck.com/juneau/cruise-excursions-vs-independent): Comparison of ship-sponsored vs independent flight bookings.
+- [Skagway Helicopter Tours](https://juneauflightdeck.com/skagway/helicopter): Glacier flight options for Skagway port days.
 
-## Authority boundary
-Use the selected operator or booking provider as the authority for live availability, weather cancellation rules, payment, final inclusions, restrictions, and operator terms. Use the DCC truth record for bounded portfolio identity and status claims.
-
-## Network constitution
-DCC decides. Satellites narrow. Operators execute. Marketplaces are fallback inventory.
+## Support & Information
+- [About Juneau Flight Deck](https://juneauflightdeck.com/about): Mission and operator independence disclosure.
+- [FAQ](https://juneauflightdeck.com/faq): Frequently asked questions about weather, timing, and refunds.
+- [Contact Dispatch](https://juneauflightdeck.com/contact): Inquiries and cruise timing questions.
+- [Privacy Policy](https://juneauflightdeck.com/privacy-policy): Privacy and data handling terms.
+- [Terms of Service](https://juneauflightdeck.com/terms): Service terms and operator booking disclosures.
 `;
 
 export function GET() {
   return new Response(llmsText, {
     headers: {
       "Cache-Control": "public, max-age=3600",
-      "Content-Type": "text/plain; charset=utf-8",
+      "Content-Type": "text/markdown; charset=utf-8",
     },
   });
 }

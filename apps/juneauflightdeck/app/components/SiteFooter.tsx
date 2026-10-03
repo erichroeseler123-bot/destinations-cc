@@ -12,7 +12,7 @@ export default function SiteFooter() {
           </p>
           <p>Current prices, availability, pickup details, and final terms stay on the provider booking page.</p>
         </div>
-        <nav className="site-footer-links" aria-label="Footer">
+        <nav className="site-footer-links" aria-label="Footer navigation">
           <Link href="/about">About</Link>
           <Link href="/faq">FAQ</Link>
           <Link href="/privacy-policy">Privacy policy</Link>

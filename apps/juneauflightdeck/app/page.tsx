@@ -29,12 +29,12 @@ const CP =
 
 export default function HomePage() {
   return (
-    <>
+    <main id="main-content">
       <HelicopterDispatchBoard
         portSlug="juneau"
         sourcePage="/"
-        headline="Juneau Flight Deck: Juneau Helicopter & Glacier Tours"
-        subhead="Juneau Flight Deck helps cruise passengers compare Juneau helicopter glacier tours, whale-watching backups, weather policies, and ship-safe timing."
+        headline="Compare Juneau Helicopter Tours"
+        subhead="Explore TEMSCO, Coastal, and NorthStar tours, plus cancellation guidance and planned backup options."
         primaryCtaLabel="Compare Juneau Helicopter Tours"
       />
       <section
@@ -56,7 +56,7 @@ export default function HomePage() {
               fontWeight: 800,
               letterSpacing: ".08em",
               textTransform: "uppercase",
-              opacity: 0.7,
+              color: "#334155",
             }}
           >
             Planning more than Juneau?
@@ -64,18 +64,21 @@ export default function HomePage() {
           <h2 style={{ margin: "8px 0", fontSize: "clamp(24px,4vw,36px)" }}>
             Put the whole cruise in one shared plan.
           </h2>
-          <p style={{ margin: "0 0 16px", lineHeight: 1.6, maxWidth: 760 }}>
+          <p style={{ margin: "0 0 16px", lineHeight: 1.6, maxWidth: 760, color: "#1e293b" }}>
             Cruise Promenade gives your group one private cruise planner for port days,
             booked activities and the plans everyone needs to see.
           </p>
           <a
             href={CP}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Plan the whole cruise on Cruise Promenade (opens in new tab)"
             style={{
               display: "inline-block",
-              padding: "12px 16px",
+              padding: "12px 18px",
               borderRadius: 10,
               background: "#11293d",
-              color: "white",
+              color: "#ffffff",
               fontWeight: 800,
               textDecoration: "none",
             }}
@@ -84,6 +87,6 @@ export default function HomePage() {
           </a>
         </div>
       </section>
-    </>
+    </main>
   );
 }

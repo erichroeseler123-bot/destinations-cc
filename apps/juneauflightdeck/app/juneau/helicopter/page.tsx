@@ -9,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function JuneauHelicopterPage() {
-  return <HelicopterDispatchBoard portSlug="juneau" sourcePage="/juneau/helicopter" />;
+  return (
+    <main id="main-content">
+      <HelicopterDispatchBoard portSlug="juneau" sourcePage="/juneau/helicopter" />
+    </main>
+  );
 }

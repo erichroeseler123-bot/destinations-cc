@@ -8,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function SkagwayHelicopterPage() {
-  return <HelicopterDispatchBoard portSlug="skagway" sourcePage="/skagway/helicopter" />;
+  return (
+    <main id="main-content">
+      <HelicopterDispatchBoard portSlug="skagway" sourcePage="/skagway/helicopter" />
+    </main>
+  );
 }
