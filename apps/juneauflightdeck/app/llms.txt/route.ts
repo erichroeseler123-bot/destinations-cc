@@ -19,6 +19,8 @@ Juneau Flight Deck is an independent shore excursion coordination resource helpi
 - [Contact Dispatch](https://juneauflightdeck.com/contact): Inquiries and cruise timing questions.
 - [Privacy Policy](https://juneauflightdeck.com/privacy-policy): Privacy and data handling terms.
 - [Terms of Service](https://juneauflightdeck.com/terms): Service terms and operator booking disclosures.
+- [Canonical DCC Truth Record](https://www.destinationcommandcenter.com/api/public/truth-feed?id=juneau-flight-deck): Canonical portfolio truth record and verification status.
+- [Machine Contract](https://juneauflightdeck.com/agent.json): Agentic machine discovery contract.
 `;
 
 export function GET() {

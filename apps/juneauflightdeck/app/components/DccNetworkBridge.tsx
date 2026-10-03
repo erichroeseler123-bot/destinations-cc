@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const ENDPOINT = "https://www.destinationcommandcenter.com/api/network/telemetry";
+const ENDPOINT = "/api/network/telemetry";
 const SESSION_KEY = "dcc_network_session";
 const CONTEXT_KEY = "dcc_traveler_context_v1";
 

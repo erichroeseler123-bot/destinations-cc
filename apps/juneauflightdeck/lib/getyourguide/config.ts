@@ -11,7 +11,7 @@ export type GetYourGuideServerConfig = GetYourGuidePublicConfig & {
 };
 
 const DEFAULT_CONFIG: GetYourGuidePublicConfig = {
-  partnerId: "F2MMUUH",
+  partnerId: "",
 };
 
 const DEFAULT_SERVER_CONFIG = {
