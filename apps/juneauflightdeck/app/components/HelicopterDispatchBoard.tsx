@@ -229,6 +229,134 @@ export default function HelicopterDispatchBoard({
         </div>
       </section>
 
+      {/* 3.5 The Local Advantage / Beyond Raw Inventory */}
+      <section className="jfd-advantage-section" style={{ maxWidth: 'var(--content)', margin: '0 auto 40px', padding: '0 20px' }}>
+        <div
+          style={{
+            background: 'var(--panel)',
+            border: '1px solid var(--line-strong)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '36px 32px',
+            boxShadow: 'var(--shadow)',
+          }}
+        >
+          <div
+            style={{
+              color: 'var(--accent)',
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              marginBottom: 10,
+            }}
+          >
+            The Local Difference
+          </div>
+          <h2
+            style={{
+              fontSize: 'clamp(1.5rem, 3.2vw, 2.3rem)',
+              fontWeight: 900,
+              margin: '0 0 16px',
+              color: 'var(--text)',
+              lineHeight: 1.25,
+            }}
+          >
+            Juneau Flight Deck combines online booking with people who know how to work directly with the local operators.
+          </h2>
+          <p
+            style={{
+              fontSize: '1.05rem',
+              lineHeight: 1.6,
+              color: 'var(--muted)',
+              margin: '0 0 24px',
+              maxWidth: '920px',
+            }}
+          >
+            We book tours through the same three helicopter companies everyone else uses. Our booking platform provides the same direct inventory access as other booking companies; the cruise ship has its own allocated seats.
+          </p>
+
+          <div
+            style={{
+              background: 'rgba(3, 14, 23, 0.7)',
+              border: '1px solid var(--line)',
+              borderRadius: 'var(--radius-md)',
+              padding: '24px 26px',
+              marginBottom: '24px',
+            }}
+          >
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--accent)', margin: '0 0 10px' }}>
+              Our advantage is what we do beyond that inventory.
+            </h3>
+            <p style={{ fontSize: '0.98rem', lineHeight: 1.65, color: 'var(--text)', margin: '0 0 14px' }}>
+              We live here, do this for a living, know the operators and local conditions, and know when a phone call might uncover an option the website doesn’t show—such as asking whether a sixth passenger seat can be released for a lighter group based on aircraft weight and balance.
+            </p>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: '16px',
+                marginTop: '16px',
+              }}
+            >
+              <div
+                style={{
+                  background: 'rgba(7, 24, 36, 0.6)',
+                  border: '1px solid var(--line)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '16px 18px',
+                }}
+              >
+                <div style={{ color: 'var(--ice)', fontWeight: 800, fontSize: '0.78rem', marginBottom: 6 }}>
+                  SOLD-OUT DATES
+                </div>
+                <p style={{ margin: 0, fontSize: '0.88rem', lineHeight: 1.5, color: 'var(--muted)' }}>
+                  We monitor openings around the clock, secure matching seats when cancellation terms permit, and call the next eligible traveler on our waitlist with right of first refusal.
+                </p>
+              </div>
+
+              <div
+                style={{
+                  background: 'rgba(7, 24, 36, 0.6)',
+                  border: '1px solid var(--line)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '16px 18px',
+                }}
+              >
+                <div style={{ color: 'var(--ice)', fontWeight: 800, fontSize: '0.78rem', marginBottom: 6 }}>
+                  CANCELLATION &amp; WEATHER PIVOTS
+                </div>
+                <p style={{ margin: 0, fontSize: '0.88rem', lineHeight: 1.5, color: 'var(--muted)' }}>
+                  For anyone booking through us, we provide honest advice beforehand and actively help find another available activity (such as whale watching) if mountain weather scrubs your flight.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              paddingTop: '16px',
+              borderTop: '1px solid var(--line)',
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '14px',
+            }}
+          >
+            <span style={{ color: 'var(--accent-strong)', fontWeight: 700, fontSize: '1rem' }}>
+              Customers are booking both the tour and our local expertise, relationships, and follow-through.
+            </span>
+            <Link
+              href="/helicopter-waitlist"
+              className="button button-primary"
+              style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+            >
+              Join the Availability Watch &rarr;
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* 4. How It Works (3 Short Steps) */}
       <section className="jfd-steps-section">
         <div className="jfd-section-head">
