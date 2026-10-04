@@ -1,11 +1,19 @@
 const llmsText = `# Juneau Flight Deck
 
-> Juneau helicopter tour comparison, cruise schedule coordination, and weather cancellation backup planning.
+> Juneau & Skagway helicopter glacier tour booking, sold-out availability watch, and weather backup coordination. Official Viator Partner.
 
-Juneau Flight Deck is an independent shore excursion coordination resource helping cruise passengers compare Juneau helicopter glacier operators (TEMSCO, Coastal Helicopters, NorthStar Trekking), review ship-safe return buffers, and plan weather backup options.
+Juneau Flight Deck is an independent shore excursion coordination service and official Viator partner. We combine online booking through the world’s leading travel platform with local, boots-on-the-ground ground coordination for cruise passengers visiting Juneau and Skagway, Alaska.
+
+## Core Services & Operational Capabilities
+- **Direct Operator Booking:** Compare and book all 3 licensed FAA Part 135 Juneau helicopter operators (TEMSCO Helicopters, Coastal Helicopters, NorthStar Trekking) with ship-safe return timing buffers.
+- **Official Viator Partnership:** All tours are booked with official Viator (Tripadvisor) checkout protection, transparent pricing, verified traveler reviews, and 100% weather cancellation refunds.
+- **Availability Watch & Waitlist:** For sold-out port dates, our automated monitors scan operator inventory around the clock. When seats drop from cruise block releases or cancellations, we temporarily secure matching seats within penalty-free cancellation windows and call travelers directly with right of first refusal.
+- **Beyond Raw Inventory (Dispatch Access):** Because we live here year-round and work directly with flight dispatchers, we can check custom weight-and-balance configurations—such as asking dispatch if a sixth seat can be unlocked on an AStar helicopter for a lighter family group.
+- **Weather Realities & Contingencies:** Southeast Alaska glacier flights experience a 30%–40% seasonal cancellation rate due to mountain pass cloud ceilings. When flights are grounded, we immediately help travelers pivot to available Auke Bay whale watching charters so their port day is preserved.
 
 ## Core Guides & Excursions
 - [Helicopter Tour Comparison](https://juneauflightdeck.com/helicopter): Compare glacier landing vs scenic flight options.
+- [Helicopter Availability Watch](https://juneauflightdeck.com/helicopter-waitlist): Join the waitlist for sold-out cruise dates.
 - [Mendenhall Glacier Helicopter Tours](https://juneauflightdeck.com/juneau/helicopter): Glacier walkabouts and landing details.
 - [Glacier Dog Sledding Tours](https://juneauflightdeck.com/juneau-dogsled-helicopter-tours): Herbert Glacier dog sledding by helicopter.
 - [Whale Watching Backup Options](https://juneauflightdeck.com/juneau-whale-watching-tours): Auke Bay whale watching alternatives when flights are grounded.
@@ -14,7 +22,7 @@ Juneau Flight Deck is an independent shore excursion coordination resource helpi
 - [Skagway Helicopter Tours](https://juneauflightdeck.com/skagway/helicopter): Glacier flight options for Skagway port days.
 
 ## Support & Information
-- [About Juneau Flight Deck](https://juneauflightdeck.com/about): Mission and operator independence disclosure.
+- [About Juneau Flight Deck](https://juneauflightdeck.com/about): Mission, operator relationships, and official Viator partnership.
 - [FAQ](https://juneauflightdeck.com/faq): Frequently asked questions about weather, timing, and refunds.
 - [Contact Dispatch](https://juneauflightdeck.com/contact): Inquiries and cruise timing questions.
 - [Privacy Policy](https://juneauflightdeck.com/privacy-policy): Privacy and data handling terms.

@@ -91,6 +91,35 @@ export default function HelicopterDispatchBoard({
             {isSkagway ? 'View Skagway Options' : 'Explore Backup Options'}
           </Link>
         </div>
+
+        {/* Hybrid Trust & Viator Partnership Bar */}
+        <div
+          style={{
+            marginTop: 28,
+            paddingTop: 18,
+            borderTop: '1px solid var(--line)',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '14px 24px',
+            fontSize: '0.82rem',
+            color: 'var(--muted)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <span style={{ color: 'var(--accent)', fontWeight: 800 }}>✓</span>
+            <span><strong>Official Viator Partner:</strong> Tripadvisor booking &amp; payment protection</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <span style={{ color: 'var(--ice)', fontWeight: 800 }}>✓</span>
+            <span><strong>All 3 FAA Part 135 Operators:</strong> Direct access to TEMSCO, Coastal &amp; NorthStar</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <span style={{ color: '#86efac', fontWeight: 800 }}>✓</span>
+            <span><strong>Local Ground Coordination:</strong> Live waitlist holds &amp; weather backups</span>
+          </div>
+        </div>
       </section>
 
       {/* 2. Three Compact Value Cards */}
@@ -285,7 +314,7 @@ export default function HelicopterDispatchBoard({
               maxWidth: '920px',
             }}
           >
-            We book tours through the same three helicopter companies everyone else uses. Our booking platform provides the same direct inventory access as other booking companies; the cruise ship has its own allocated seats.
+            We book tours through the same three helicopter companies everyone else uses. As an official Viator partner (a Tripadvisor company), your booking has the same direct inventory access, verified buyer protection, and secure checkout as the world’s leading travel platform—while the cruise ship holds its own marked-up seats.
           </p>
 
           <div

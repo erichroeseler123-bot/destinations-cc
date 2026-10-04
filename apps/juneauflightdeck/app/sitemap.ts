@@ -4,6 +4,8 @@ const routes = [
   "",
   "/helicopter",
   "/helicopter-waitlist",
+  "/juneau-helicopter-tour-sold-out",
+  "/temsco-vs-coastal-vs-northstar-juneau",
   "/juneau/helicopter",
   "/juneau-whale-watching-tours",
   "/juneau/what-to-do-if-helicopter-tour-canceled",
