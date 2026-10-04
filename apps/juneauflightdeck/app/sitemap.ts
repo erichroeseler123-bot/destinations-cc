@@ -6,6 +6,8 @@ const routes = [
   "/helicopter-waitlist",
   "/juneau-helicopter-tour-sold-out",
   "/temsco-vs-coastal-vs-northstar-juneau",
+  "/best-time-for-glacier-dog-sledding-juneau",
+  "/juneau-helicopter-tour-weight-limits-and-seating",
   "/juneau/helicopter",
   "/juneau-whale-watching-tours",
   "/juneau/what-to-do-if-helicopter-tour-canceled",

@@ -13,6 +13,10 @@ Juneau Flight Deck is an independent shore excursion coordination service and of
 
 ## Core Guides & Excursions
 - [Helicopter Tour Comparison](https://juneauflightdeck.com/helicopter): Compare glacier landing vs scenic flight options.
+- [TEMSCO vs Coastal vs NorthStar](https://juneauflightdeck.com/temsco-vs-coastal-vs-northstar-juneau): Unbiased comparison of Juneau's 3 FAA Part 135 helicopter operators.
+- [Sold Out Helicopter Tours Guide](https://juneauflightdeck.com/juneau-helicopter-tour-sold-out): How cruise blocks drop and how our Availability Watch secures holds.
+- [Best Time for Glacier Dog Sledding](https://juneauflightdeck.com/best-time-for-glacier-dog-sledding-juneau): Month-by-month icefield conditions, weather cancellation risks, and camp operating windows.
+- [Helicopter Weight Limits & Seating Math](https://juneauflightdeck.com/juneau-helicopter-tour-weight-limits-and-seating): FAA Part 135 regulations, 250lb surcharges, and how dispatchers release 6th seats.
 - [Helicopter Availability Watch](https://juneauflightdeck.com/helicopter-waitlist): Join the waitlist for sold-out cruise dates.
 - [Mendenhall Glacier Helicopter Tours](https://juneauflightdeck.com/juneau/helicopter): Glacier walkabouts and landing details.
 - [Glacier Dog Sledding Tours](https://juneauflightdeck.com/juneau-dogsled-helicopter-tours): Herbert Glacier dog sledding by helicopter.
