@@ -161,7 +161,7 @@ export default function HelicopterWeightLimitsPage() {
         </ul>
         <div style={{ padding: "14px 18px", background: "rgba(52, 211, 153, 0.1)", border: "1px solid rgba(52, 211, 153, 0.3)", borderRadius: "var(--radius-sm)" }}>
           <p style={{ margin: 0, fontSize: "0.92rem", color: "#34d399", fontWeight: 700 }}>
-            Official Viator Partnership: Once dispatch approves a seat release, booking and payments are safely processed through our official Viator partner checkout with full customer protection.
+            Flexible Booking Options: Once dispatch approves a seat release, reservations can be confirmed directly with the operator or via our official Viator partner checkout under standard operator terms.
           </p>
         </div>
       </section>

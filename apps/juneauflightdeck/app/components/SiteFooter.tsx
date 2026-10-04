@@ -8,13 +8,13 @@ export default function SiteFooter() {
           {/* Brand & Mission */}
           <div className="site-footer-copy" style={{ maxWidth: "380px" }}>
             <p className="eyebrow" style={{ color: "var(--accent-strong)", margin: "0 0 6px" }}>
-              Juneau Flight Deck • Official Viator Partner
+              Juneau Flight Deck • Local Coordination &amp; Viator Partner
             </p>
             <p style={{ fontSize: "0.95rem", lineHeight: 1.6, margin: "0 0 10px" }}>
-              Practical Juneau shore-day coordination for glacier helicopter flights, sold-out waitlist monitoring, weather pivots, and cruise return timing.
+              Practical Juneau shore-day coordination for glacier helicopter flights, waitlist seat monitoring, weather pivots, and cruise return timing.
             </p>
             <p style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.5, margin: 0 }}>
-              All reservations are processed through official Viator (Tripadvisor) checkout with 100% weather refund protection. Local coordination provided by Juneau ground staff.
+              Bookings are completed directly with licensed flight operators or via our official Viator partner checkout, following published operator cancellation terms. Local support provided by Juneau ground staff.
             </p>
           </div>
 

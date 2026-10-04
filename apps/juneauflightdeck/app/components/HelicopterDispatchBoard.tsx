@@ -109,7 +109,7 @@ export default function HelicopterDispatchBoard({
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ color: 'var(--accent)', fontWeight: 800 }}>✓</span>
-            <span><strong>Official Viator Partner:</strong> Tripadvisor booking &amp; payment protection</span>
+            <span><strong>Official Viator Partner:</strong> Tripadvisor partner booking &amp; direct operator options</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ color: 'var(--ice)', fontWeight: 800 }}>✓</span>
@@ -117,7 +117,7 @@ export default function HelicopterDispatchBoard({
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ color: '#86efac', fontWeight: 800 }}>✓</span>
-            <span><strong>Local Ground Coordination:</strong> Live waitlist holds &amp; weather backups</span>
+            <span><strong>Local Ground Coordination:</strong> Daily waitlist sweeps &amp; weather backups</span>
           </div>
         </div>
       </section>
@@ -314,7 +314,7 @@ export default function HelicopterDispatchBoard({
               maxWidth: '920px',
             }}
           >
-            We book tours through the same three helicopter companies everyone else uses. As an official Viator partner (a Tripadvisor company), your booking has the same direct inventory access, verified buyer protection, and secure checkout as the world’s leading travel platform—while the cruise ship holds its own marked-up seats.
+            We help you compare and book flights with the same three helicopter companies everyone else uses. Whether booking through our official Viator partner checkout or directly with operators, you get real-time availability and standard operator cancellation terms—while avoiding the cruise ship’s marked-up excursion pricing.
           </p>
 
           <div
@@ -352,7 +352,7 @@ export default function HelicopterDispatchBoard({
                   SOLD-OUT DATES
                 </div>
                 <p style={{ margin: 0, fontSize: '0.88rem', lineHeight: 1.5, color: 'var(--muted)' }}>
-                  We monitor openings around the clock, secure matching seats when cancellation terms permit, and call the next eligible traveler on our waitlist with right of first refusal.
+                  Our automated scanner sweeps operator inventories every morning at 10:00 AM when cancellation desks process changes. When matching seats open up, we alert you immediately or place a hold where cancellation policies permit.
                 </p>
               </div>
 

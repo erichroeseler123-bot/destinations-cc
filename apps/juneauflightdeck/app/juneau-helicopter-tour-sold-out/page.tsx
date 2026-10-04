@@ -40,7 +40,7 @@ const faqSchema = {
       name: "How does Juneau Flight Deck's Availability Watch work?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Our automated monitoring scans operator schedules around the clock. When matching seats open up on your port date within penalty-free cancellation windows, our team secures temporary holds and calls the next eligible traveler on our waitlist with right of first refusal.",
+        text: "Our automated scanner sweeps operator fleet schedules daily at 10:00 AM when cancellation desks process updates. When matching seats open up on your port date within penalty-free cancellation windows, travelers receive instant alerts with direct booking options or coordination assistance.",
       },
     },
   ],
@@ -126,19 +126,19 @@ export default function SoldOutGuidePage() {
             <strong>You Submit Your Parameters:</strong> Port date, cruise ship, group size, and accepted tour styles.
           </li>
           <li>
-            <strong>Automated Monitoring:</strong> We monitor operator schedules around the clock for drops matching your ship window.
+            <strong>Daily Automated Sweeps:</strong> We sweep operator fleet schedules every morning at 10:00 AM as cancellation desks process itinerary adjustments and group block drops.
           </li>
           <li>
-            <strong>Risk-Free Seat Holds:</strong> When matching seats appear within free-cancellation windows, we place a hold on your behalf.
+            <strong>Cancellation Window Tracking:</strong> We monitor matching openings within penalty-free cancellation windows so you can decide risk-free.
           </li>
           <li>
-            <strong>Priority Notification:</strong> We call you with right of first refusal. If you confirm, your seats are secured via official Viator checkout. If not, the hold is released risk-free.
+            <strong>Instant Notification &amp; Booking:</strong> You receive an instant alert with direct links to book immediately with the flight operator or through our official Viator partner checkout.
           </li>
         </ol>
 
         <div style={{ padding: "14px 18px", background: "rgba(240, 179, 91, 0.12)", border: "1px solid rgba(240, 179, 91, 0.35)", borderRadius: "var(--radius-sm)" }}>
           <p style={{ margin: 0, fontSize: "0.92rem", color: "var(--accent-strong)", fontWeight: 700 }}>
-            Official Viator Partner Protection: When your seats are secured, booking and payment are processed with official Viator guarantees and 100% weather refund policies.
+            Standard Operator Protection: Whether booking directly with the operator or via Viator partner checkout, flights grounded by weather are eligible for a 100% refund under standard operator terms.
           </p>
         </div>
       </section>

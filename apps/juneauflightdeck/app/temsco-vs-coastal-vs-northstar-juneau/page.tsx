@@ -119,10 +119,10 @@ export default function OperatorComparisonPage() {
           Why Book Through Juneau Flight Deck?
         </h2>
         <p style={{ lineHeight: 1.65, color: "var(--text)", margin: "0 0 16px" }}>
-          We are an official Viator partner (a Tripadvisor company). When you book with us, your reservation is processed through the world’s most trusted booking platform with guaranteed secure checkout, transparent pricing, and 100% weather refunds.
+          We provide transparent comparison across Juneau’s three licensed operators, with options to book directly or via our official Viator partner checkout. All flights follow published operator cancellation policies, including full refunds if flights are grounded due to weather or safety.
         </p>
         <p style={{ lineHeight: 1.65, color: "var(--muted)", margin: "0 0 20px" }}>
-          Plus, you get our local ground team monitoring your ship&apos;s docking schedule, holding sold-out seats on your behalf, and immediately pivoting you to whale watching if mountain pass clouds ground your flight.
+          Plus, you get our local ground team monitoring your ship&apos;s docking schedule, tracking morning weather passes, and helping coordinate backup activities like whale watching if mountain pass clouds ground your flight.
         </p>
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
           <Link href="/" className="button button-primary">

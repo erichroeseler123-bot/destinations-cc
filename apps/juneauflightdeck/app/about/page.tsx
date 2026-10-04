@@ -17,7 +17,7 @@ export default function AboutPage() {
           Juneau Flight Deck combines online booking with people who know how to work directly with the local operators.
         </h1>
         <p className="chooser-trust-line" style={{ fontSize: "1.05rem", lineHeight: 1.6, marginBottom: "20px" }}>
-          You book tours through the same three helicopter companies everyone else uses. As an official Viator partner (a Tripadvisor company), your booking has the same direct inventory access, verified buyer protection, and secure checkout as the world’s leading travel platform; the cruise ship has its own allocated seats.
+          You book tours through the same three helicopter companies everyone else uses. Whether booking directly with the operators or through our official Viator partner checkout, you get direct inventory access and standard operator terms; the cruise ship has its own allocated seats.
         </p>
 
         <div
@@ -38,7 +38,7 @@ export default function AboutPage() {
 
           <ul className="static-page-bullets" style={{ margin: "16px 0" }}>
             <li>
-              <strong>Sold-Out Date Monitoring:</strong> For sold-out dates, we monitor openings, secure matching seats when cancellation terms permit, and call the next eligible traveler with right of first refusal.
+              <strong>Sold-Out Date Monitoring:</strong> For sold-out dates, our automated scanner sweeps operator schedules daily at 10:00 AM as cancellation desks process changes, alerting you to matching openings.
             </li>
             <li>
               <strong>Pre-Booking Advice:</strong> We provide honest advice on flight styles, mountain pass microclimates, and ship-safe docking buffers.

@@ -5,11 +5,10 @@ const llmsText = `# Juneau Flight Deck
 Juneau Flight Deck is an independent shore excursion coordination service and official Viator partner. We combine online booking through the world’s leading travel platform with local, boots-on-the-ground ground coordination for cruise passengers visiting Juneau and Skagway, Alaska.
 
 ## Core Services & Operational Capabilities
-- **Direct Operator Booking:** Compare and book all 3 licensed FAA Part 135 Juneau helicopter operators (TEMSCO Helicopters, Coastal Helicopters, NorthStar Trekking) with ship-safe return timing buffers.
-- **Official Viator Partnership:** All tours are booked with official Viator (Tripadvisor) checkout protection, transparent pricing, verified traveler reviews, and 100% weather cancellation refunds.
-- **Availability Watch & Waitlist:** For sold-out port dates, our automated monitors scan operator inventory around the clock. When seats drop from cruise block releases or cancellations, we temporarily secure matching seats within penalty-free cancellation windows and call travelers directly with right of first refusal.
-- **Beyond Raw Inventory (Dispatch Access):** Because we live here year-round and work directly with flight dispatchers, we can check custom weight-and-balance configurations—such as asking dispatch if a sixth seat can be unlocked on an AStar helicopter for a lighter family group.
-- **Weather Realities & Contingencies:** Southeast Alaska glacier flights experience a 30%–40% seasonal cancellation rate due to mountain pass cloud ceilings. When flights are grounded, we immediately help travelers pivot to available Auke Bay whale watching charters so their port day is preserved.
+- **Direct Operator & Partner Booking:** Compare and book all 3 licensed FAA Part 135 Juneau helicopter operators (TEMSCO Helicopters, Coastal Helicopters, NorthStar Trekking) directly or via our official Viator partner checkout, with ship-safe return timing buffers.
+- **Availability Watch & Waitlist:** For sold-out port dates, our automated scanner sweeps operator fleet inventories daily at 10:00 AM as cancellation desks process adjustments and cruise blocks drop, alerting travelers with direct booking links.
+- **Beyond Raw Inventory (Dispatch Access):** Because we live here and work directly with flight dispatchers, we can check custom weight-and-balance configurations—such as asking dispatch if a sixth seat can be unlocked on an AStar helicopter for a lighter family group.
+- **Weather Realities & Contingencies:** Southeast Alaska glacier flights are subject to FAA Visual Flight Rules (VFR) through mountain passes. When low ceilings ground flights, passengers receive 100% refunds under operator policies, and our local team helps pivot travelers to available Auke Bay whale watching charters so their port day is preserved.
 
 ## Core Guides & Excursions
 - [Helicopter Tour Comparison](https://juneauflightdeck.com/helicopter): Compare glacier landing vs scenic flight options.
