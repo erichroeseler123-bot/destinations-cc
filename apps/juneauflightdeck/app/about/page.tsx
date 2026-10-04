@@ -30,7 +30,7 @@ export default function AboutPage() {
           }}
         >
           <h2 style={{ fontSize: "1.25rem", color: "var(--accent)", margin: "0 0 12px", fontWeight: 800 }}>
-            Your advantage is what you do beyond that inventory.
+            Our advantage is what we do beyond that inventory.
           </h2>
           <p style={{ lineHeight: 1.65, color: "var(--text)", margin: "0 0 16px", fontSize: "0.98rem" }}>
             We live here, do this for a living, know the operators and local conditions, and know when a phone call might uncover an option the website doesn’t show—such as asking whether a sixth passenger seat can be released for a lighter group based on aircraft weight and balance.
@@ -57,7 +57,7 @@ export default function AboutPage() {
               color: "var(--accent-strong)",
             }}
           >
-            Customers are booking both the tour and your local expertise, relationships, and follow-through.
+            Customers are booking both the tour and our local expertise, relationships, and follow-through.
           </div>
         </div>
 

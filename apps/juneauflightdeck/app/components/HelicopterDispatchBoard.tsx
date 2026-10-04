@@ -38,13 +38,26 @@ export default function HelicopterDispatchBoard({
 
   return (
     <div className="jfd-root">
-      {/* Prototype Status Bar */}
+      {/* Service Status Bar */}
       <div className="jfd-prototype-ribbon">
         <div className="jfd-prototype-ribbon-inner">
           <div>
-            <span className="jfd-badge-prototype">PROTOTYPE CONCEPT</span>
+            <span
+              className="jfd-badge-prototype"
+              style={{
+                background: 'rgba(34, 197, 94, 0.15)',
+                color: '#86efac',
+                borderColor: 'rgba(34, 197, 94, 0.4)',
+              }}
+            >
+              ACTIVE SERVICE
+            </span>
+            <span style={{ marginLeft: 8, marginRight: 16 }}>
+              Availability watch &amp; waitlist seat monitoring are active and operating daily.
+            </span>
+            <span className="jfd-badge-planned">PLANNED FEATURE</span>
             <span style={{ marginLeft: 8 }}>
-              Concept demo: Real-time operator monitoring and planned single-charge payment transfer are currently in prototype testing.
+              Single-charge payment transfer for weather cancellations is currently in prototype testing.
             </span>
           </div>
         </div>
