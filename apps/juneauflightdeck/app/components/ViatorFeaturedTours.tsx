@@ -431,7 +431,7 @@ export default function ViatorFeaturedTours({
               margin: "0 0 12px",
             }}
           >
-            No Juneau Helicopter Tours Currently Available on Viator
+            No Juneau helicopter tours currently returned by our search
           </h3>
 
           <p

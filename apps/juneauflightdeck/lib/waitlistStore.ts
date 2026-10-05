@@ -241,20 +241,37 @@ const SEED_ENTRIES: WaitlistEntry[] = [
 
 let inMemoryStore: WaitlistEntry[] = [...SEED_ENTRIES];
 
-function getDataDir() {
+function getDataDirs(): string[] {
+  const dirs = [path.join(process.cwd(), "data", "waitlist")];
+  if (process.env.VERCEL) {
+    dirs.push(path.join("/tmp", "waitlist"));
+  }
+  return dirs;
+}
+
+function getWritableDataDir(): string {
+  if (process.env.VERCEL) {
+    return path.join("/tmp", "waitlist");
+  }
   return path.join(process.cwd(), "data", "waitlist");
 }
 
 export async function getAllWaitlistEntries(): Promise<WaitlistEntry[]> {
   try {
-    const dataDir = getDataDir();
-    const files = await fs.readdir(dataDir);
+    const dataDirs = getDataDirs();
     const diskEntries: WaitlistEntry[] = [];
 
-    for (const file of files) {
-      if (file.endsWith(".json")) {
-        const content = await fs.readFile(path.join(dataDir, file), "utf8");
-        diskEntries.push(JSON.parse(content));
+    for (const dir of dataDirs) {
+      try {
+        const files = await fs.readdir(dir);
+        for (const file of files) {
+          if (file.endsWith(".json")) {
+            const content = await fs.readFile(path.join(dir, file), "utf8");
+            diskEntries.push(JSON.parse(content));
+          }
+        }
+      } catch {
+        // Directory may not exist yet
       }
     }
 
@@ -280,7 +297,7 @@ export async function saveWaitlistEntry(entry: WaitlistEntry): Promise<void> {
   }
 
   try {
-    const dataDir = getDataDir();
+    const dataDir = getWritableDataDir();
     await fs.mkdir(dataDir, { recursive: true });
     await fs.writeFile(path.join(dataDir, `${entry.id}.json`), JSON.stringify(entry, null, 2), "utf8");
   } catch (err) {

@@ -700,7 +700,7 @@ export default function JuneauHomeClient({
                 >
                   Viator Availability Notice
                 </span>
-                <h3 style={{ margin: "0 0 10px" }}>No Juneau Helicopter Tours Currently Available on Viator</h3>
+                <h3 style={{ margin: "0 0 10px" }}>No Juneau helicopter tours currently returned by our search</h3>
                 <div className="slot-summary" style={{ marginBottom: 16, lineHeight: 1.6 }}>
                   No Juneau helicopter tours are currently available through our Viator search. Join our 2027 helicopter availability alerts to receive notifications when booking windows open.
                 </div>

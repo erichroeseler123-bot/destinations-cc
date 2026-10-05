@@ -147,7 +147,7 @@ export default function JuneauDogSleddingPage() {
               <span>Tour Availability Notice</span>
             </div>
             <h3 style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--text, #ffffff)", margin: "0 0 8px" }}>
-              Glacier Dog Sledding Tours Currently Unavailable on Viator
+              No Juneau helicopter tours currently returned by our search
             </h3>
             <p style={{ margin: "0 0 10px", fontSize: "0.88rem", color: "var(--muted)", lineHeight: 1.55 }}>
               Glacier dog sledding camps on high-altitude snowfields operate seasonally and are not currently bookable through our Viator search. Join our 2027 helicopter availability alerts to receive notifications when booking windows open.

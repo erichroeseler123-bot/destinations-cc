@@ -25,6 +25,9 @@ export interface NotificationPayload {
 }
 
 function getNotificationsDir() {
+  if (process.env.VERCEL) {
+    return path.join("/tmp", "notifications");
+  }
   return path.join(process.cwd(), "data", "notifications");
 }
 
