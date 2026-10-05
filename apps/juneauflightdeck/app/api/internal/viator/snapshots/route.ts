@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     body: JSON.stringify({
       filtering: { destination: "941" },
       searchTerm: "helicopter",
-      pagination: { start: 1, count: 50 },
+      pagination: { start: 51, count: 50 },
       currency: "USD",
     }),
     cache: "no-store",
