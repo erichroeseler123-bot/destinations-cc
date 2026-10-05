@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { getDb, ensureDbTables } from "./db";
 
 export interface NotificationPayload {
   deliveryId: string;
@@ -32,9 +33,9 @@ function getNotificationsDir() {
 }
 
 /**
- * Dispatches an honest seat drop notification alert.
+ * Dispatches a seat drop notification alert.
  * Includes direct operator booking link, accurate operator-specific cancellation policy,
- * and records verified delivery to data/notifications/ for auditability.
+ * deduplicates against persistent Postgres storage, and records delivery to jfd_waitlist_notifications.
  */
 export async function dispatchSeatDropNotification(params: {
   guestId: string;
@@ -51,7 +52,31 @@ export async function dispatchSeatDropNotification(params: {
   partySize: number;
   checkoutUrl: string;
   cancellationPolicy: string;
-}): Promise<NotificationPayload> {
+}): Promise<NotificationPayload | null> {
+  const sql = getDb();
+
+  // Deduplication check: Has a notification already been dispatched for this passenger + port date + departure slot?
+  if (sql) {
+    try {
+      await ensureDbTables();
+      const existing = await sql`
+        SELECT delivery_id, status FROM jfd_waitlist_notifications
+        WHERE entry_id = ${params.guestId}
+          AND port_date = ${params.portDate}
+          AND departure_time = ${params.departureTime}
+        LIMIT 1;
+      `;
+      if (existing.length > 0) {
+        console.log(
+          `[NotificationDispatcher] Duplicate notification suppressed for ${params.guestId} on ${params.portDate} (${params.departureTime})`
+        );
+        return null;
+      }
+    } catch (err) {
+      console.warn("[NotificationDispatcher] DB deduplication check error:", err);
+    }
+  }
+
   const deliveryId = `ALERT-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
   const dispatchedAt = new Date().toISOString();
 
@@ -77,7 +102,7 @@ ${params.checkoutUrl}
 --- OPERATOR CANCELLATION TERMS ---
 ${params.cancellationPolicy}
 
-IMPORTANT NOTICE: This is an instant notification of detected availability. Seats are NOT pre-held on your behalf and will remain open to the public until you complete checkout at the link above.
+IMPORTANT NOTICE: This is an automated notification of detected availability based on our 10:00 AM fleet scan. Seats are NOT pre-held on your behalf and will remain open to the public until you complete checkout at the link above.
 
 Juneau Flight Deck Dispatch Desk
 hello@juneauflightdeck.com
@@ -165,6 +190,28 @@ hello@juneauflightdeck.com
     emailBodyHtml,
     emailBodyText,
   };
+
+  // Persistent storage in shared PostgreSQL database
+  if (sql) {
+    try {
+      await ensureDbTables();
+      await sql`
+        INSERT INTO jfd_waitlist_notifications (
+          delivery_id, entry_id, recipient_email, recipient_phone,
+          tour_name, operator, port, port_date, departure_time,
+          status, payload, dispatched_at
+        ) VALUES (
+          ${deliveryId}, ${params.guestId}, ${params.email}, ${params.phone || null},
+          ${params.tourName}, ${params.operator}, ${params.port}, ${params.portDate},
+          ${params.departureTime}, ${deliveryStatus}, ${JSON.stringify(payload)}::jsonb,
+          ${new Date(dispatchedAt)}
+        )
+        ON CONFLICT (entry_id, port_date, departure_time) DO NOTHING;
+      `;
+    } catch (err) {
+      console.warn("[NotificationDispatcher] DB insert failed:", err);
+    }
+  }
 
   try {
     const dir = getNotificationsDir();

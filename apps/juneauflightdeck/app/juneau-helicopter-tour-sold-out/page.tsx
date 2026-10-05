@@ -40,7 +40,7 @@ const faqSchema = {
       name: "How does Juneau Flight Deck's Availability Watch work?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Our automated scanner sweeps operator fleet schedules daily at 10:00 AM when cancellation desks process updates. When matching seats open up on your port date within penalty-free cancellation windows, travelers receive instant alerts with direct booking options or coordination assistance.",
+        text: "Our automated scanner sweeps operator fleet schedules daily at 10:00 AM when cancellation desks process updates. When matching seats open up on your port date within penalty-free cancellation windows, travelers receive automated alerts with direct booking options or coordination assistance.",
       },
     },
   ],
@@ -132,7 +132,7 @@ export default function SoldOutGuidePage() {
             <strong>Cancellation Window Tracking:</strong> We monitor matching openings within penalty-free cancellation windows so you can decide risk-free.
           </li>
           <li>
-            <strong>Instant Notification &amp; Booking:</strong> You receive an instant alert with direct links to book immediately with the flight operator or through our official Viator partner checkout.
+            <strong>Automated Notification &amp; Booking:</strong> You receive an alert with direct links to book immediately with the flight operator or through our official Viator partner checkout.
           </li>
         </ol>
 

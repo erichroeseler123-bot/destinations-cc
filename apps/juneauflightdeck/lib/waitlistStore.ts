@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { getDb, ensureDbTables } from "./db";
 import {
   fetchFareHarborDateRange,
   filterOpenAvailabilities,
@@ -139,8 +140,8 @@ const SEED_ENTRIES: WaitlistEntry[] = [
     phone: "(206) 555-0194",
     cruiseLine: "Princess Cruises",
     shipName: "Discovery Princess",
-    portDate: "2026-07-14",
-    juneauDate: "2026-07-14",
+    portDate: "2027-07-14",
+    juneauDate: "2027-07-14",
     dateVerification: "passenger_supplied",
     portCity: "juneau",
     tourType: "dog_sledding",
@@ -162,8 +163,8 @@ const SEED_ENTRIES: WaitlistEntry[] = [
     phone: "(415) 555-8821",
     cruiseLine: "Holland America Line",
     shipName: "Eurodam",
-    portDate: "2026-07-22",
-    juneauDate: "2026-07-22",
+    portDate: "2027-07-22",
+    juneauDate: "2027-07-22",
     dateVerification: "passenger_supplied",
     portCity: "juneau",
     tourType: "glacier_landing",
@@ -181,7 +182,7 @@ const SEED_ENTRIES: WaitlistEntry[] = [
     cancellationPolicyNotes:
       "Coastal Helicopters published terms: 100% full refund at least 7 days (168 hours) prior to flight departure. 50% charge (50% refund) 4–6 days (96–144 hours) ahead. Non-refundable within 3 days (less than 72 hours). 100% full refund if flight is grounded due to weather or cruise delay.",
     dispatchAlertNotes:
-      "Opening detected: Coastal Helicopters Icefield Excursion on 2026-07-22 (2:15 PM Departure). Notification alert dispatched to dmiller99@yahoo.com. Status: contact_pending. Operator hold: not_held (direct operator checkout link provided).",
+      "Opening detected: Coastal Helicopters Icefield Excursion on 2027-07-22 (2:15 PM Departure). Notification alert dispatched to dmiller99@yahoo.com. Status: contact_pending. Operator hold: not_held (direct operator checkout link provided).",
     notificationDispatchedAt: "2026-10-01T10:00:00.000Z",
   },
   {
@@ -192,8 +193,8 @@ const SEED_ENTRIES: WaitlistEntry[] = [
     phone: "(303) 555-3419",
     cruiseLine: "Norwegian Cruise Line (NCL)",
     shipName: "Norwegian Encore",
-    portDate: "2026-08-03",
-    juneauDate: "2026-08-03",
+    portDate: "2027-08-03",
+    juneauDate: "2027-08-03",
     dateVerification: "passenger_supplied",
     portCity: "juneau",
     tourType: "any",
@@ -211,7 +212,7 @@ const SEED_ENTRIES: WaitlistEntry[] = [
     cancellationPolicyNotes:
       "TEMSCO Aviation Juneau terms: 100% full refund at least 48 hours prior to flight departure. Non-refundable within 48 hours. 100% refund for weather cancellations or cruise ship delay.",
     dispatchAlertNotes:
-      "Opening detected: TEMSCO Mendenhall Glacier Landing on 2026-08-03 (3:30 PM Departure). Direct checkout link sent to (303) 555-3419 and vance.tom@outlook.com. Status: contact_pending. Operator hold: not_held.",
+      "Opening detected: TEMSCO Mendenhall Glacier Landing on 2027-08-03 (3:30 PM Departure). Direct checkout link sent to (303) 555-3419 and vance.tom@outlook.com. Status: contact_pending. Operator hold: not_held.",
     notificationDispatchedAt: "2026-10-01T10:00:00.000Z",
   },
   {
@@ -222,8 +223,8 @@ const SEED_ENTRIES: WaitlistEntry[] = [
     phone: "(512) 555-7281",
     cruiseLine: "Royal Caribbean",
     shipName: "Ovation of the Seas",
-    portDate: "2026-08-18",
-    juneauDate: "2026-08-18",
+    portDate: "2027-08-18",
+    juneauDate: "2027-08-18",
     dateVerification: "passenger_supplied",
     portCity: "juneau",
     tourType: "ice_trek",
@@ -241,6 +242,19 @@ const SEED_ENTRIES: WaitlistEntry[] = [
 
 let inMemoryStore: WaitlistEntry[] = [...SEED_ENTRIES];
 
+export function getTodayAlaskaDate(): string {
+  try {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/Juneau",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+  } catch {
+    return new Date().toISOString().slice(0, 10);
+  }
+}
+
 function getDataDirs(): string[] {
   const dirs = [path.join(process.cwd(), "data", "waitlist")];
   if (process.env.VERCEL) {
@@ -257,6 +271,27 @@ function getWritableDataDir(): string {
 }
 
 export async function getAllWaitlistEntries(): Promise<WaitlistEntry[]> {
+  const sql = getDb();
+  if (sql) {
+    try {
+      await ensureDbTables();
+      const rows = await sql`
+        SELECT raw_entry FROM jfd_waitlist_submissions
+        ORDER BY port_date ASC;
+      `;
+      if (rows && rows.length > 0) {
+        const dbEntries = rows.map((r: any) => r.raw_entry as WaitlistEntry);
+        const map = new Map<string, WaitlistEntry>();
+        for (const item of inMemoryStore) map.set(item.id, item);
+        for (const item of dbEntries) map.set(item.id, item);
+        inMemoryStore = Array.from(map.values());
+        return [...inMemoryStore].sort((a, b) => a.portDate.localeCompare(b.portDate));
+      }
+    } catch (err) {
+      console.warn("[WaitlistStore] DB query failed, falling back to disk/in-memory:", err);
+    }
+  }
+
   try {
     const dataDirs = getDataDirs();
     const diskEntries: WaitlistEntry[] = [];
@@ -289,6 +324,33 @@ export async function getAllWaitlistEntries(): Promise<WaitlistEntry[]> {
 }
 
 export async function saveWaitlistEntry(entry: WaitlistEntry): Promise<void> {
+  const sql = getDb();
+  if (sql) {
+    await ensureDbTables();
+    await sql`
+      INSERT INTO jfd_waitlist_submissions (
+        id, name, email, phone, cruise_line, ship_name,
+        port_city, port_date, juneau_date, skagway_date,
+        tour_type, party_size, booking_mode, status,
+        operator_hold_status, notes, estimated_value,
+        last_scanned_at, raw_entry
+      ) VALUES (
+        ${entry.id}, ${entry.name}, ${entry.email}, ${entry.phone || null},
+        ${entry.cruiseLine}, ${entry.shipName}, ${entry.portCity},
+        ${entry.portDate}, ${entry.juneauDate || null}, ${entry.skagwayDate || null},
+        ${entry.tourType}, ${entry.partySize}, ${entry.bookingMode},
+        ${entry.status}, ${entry.operatorHoldStatus}, ${entry.notes || null},
+        ${entry.estimatedValue || 0}, ${entry.lastScannedAt ? new Date(entry.lastScannedAt) : null},
+        ${JSON.stringify(entry)}::jsonb
+      )
+      ON CONFLICT (id) DO UPDATE SET
+        status = EXCLUDED.status,
+        operator_hold_status = EXCLUDED.operator_hold_status,
+        last_scanned_at = EXCLUDED.last_scanned_at,
+        raw_entry = EXCLUDED.raw_entry;
+    `;
+  }
+
   const existingIdx = inMemoryStore.findIndex((e) => e.id === entry.id);
   if (existingIdx >= 0) {
     inMemoryStore[existingIdx] = entry;
@@ -351,7 +413,15 @@ export interface SweepResult {
  */
 export async function execute10AmDailySweep(): Promise<SweepResult> {
   const all = await getAllWaitlistEntries();
-  const activeEntries = all.filter((e) => e.status === "active_scanning");
+  const today = getTodayAlaskaDate();
+
+  // Strictly exclude expired watch dates (dates in the past)
+  const activeEntries = all.filter((e) => {
+    if (e.status !== "active_scanning") return false;
+    const targetDate = e.portDate || e.juneauDate || e.skagwayDate;
+    if (targetDate && targetDate < today) return false;
+    return true;
+  });
 
   const timestamp = new Date().toISOString();
   const openingsFound: SweepResult["openings"] = [];
@@ -476,6 +546,11 @@ export async function execute10AmDailySweep(): Promise<SweepResult> {
             checkoutUrl,
             cancellationPolicy: product.cancellationPolicy,
           });
+
+          if (!notification) {
+            // Duplicate notification prevented / already dispatched
+            continue;
+          }
 
           // Accurate lifecycle transition: opening_detected -> contact_pending
           // Do NOT claim "held" or "claimed" without verified operator hold reference

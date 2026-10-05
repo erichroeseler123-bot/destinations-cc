@@ -246,7 +246,7 @@ ${shareUrl}`;
         <div className="how-step">
           <span className="step-num">04</span>
           <h4>Direct Operator Booking</h4>
-          <p>You receive an instant alert with a direct link to lock in open seats directly with the flight operator.</p>
+          <p>You receive an automated alert with a direct link to lock in open seats directly with the flight operator.</p>
         </div>
       </div>
 
@@ -257,7 +257,7 @@ ${shareUrl}`;
             <h4 className="text-xl font-bold text-white">
               {formData.bookingMode === "concierge_dispatch"
                 ? "Concierge Dispatch Alert Activated!"
-                : "Instant Seat Drop Alert Activated!"}
+                : "Daily Seat Drop Alert Activated!"}
             </h4>
             <p className="text-slate-300 mt-1">
               Confirmation Code: <strong className="text-amber-400 font-mono">{submissionId}</strong>
@@ -355,11 +355,11 @@ ${shareUrl}`;
                   />
                   <div>
                     <div className="flex items-center gap-2">
-                      <strong className="text-white text-sm">📱 Instant Seat Drop Alert</strong>
+                      <strong className="text-white text-sm">📱 Daily Seat Drop Alert</strong>
                       <span className="mode-badge-recommended">Direct Link</span>
                     </div>
                     <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                      <strong>Free SMS &amp; Email Alert.</strong> When seats drop during our 10:00 AM sweep, we immediately send you a direct booking link to complete checkout with the flight operator.
+                      <strong>Free SMS &amp; Email Alert.</strong> When seats drop during our 10:00 AM sweep, we send you a direct booking link to complete checkout with the flight operator.
                     </p>
                   </div>
                 </div>
@@ -635,7 +635,7 @@ ${shareUrl}`;
               <span className="text-[11px] text-slate-400">
                 {formData.bookingMode === "concierge_dispatch"
                   ? "Required for phone/SMS dispatch call when seats open"
-                  : "Used for instant SMS drop alerts"}
+                  : "Used for SMS seat drop alerts"}
               </span>
             </div>
 
@@ -661,7 +661,7 @@ ${shareUrl}`;
                 ? "Activating Scanner..."
                 : formData.bookingMode === "concierge_dispatch"
                 ? "Activate Concierge Dispatch Alert (Free) →"
-                : "Activate Instant Seat Drop Alert (Free) →"}
+                : "Activate Daily Seat Drop Alert (Free) →"}
             </button>
             <p className="waitlist-legal-footnote">
               🔒 100% Free Service. We scan operator inventories. Cancellation terms are operator-specific (TEMSCO: 48h full refund; Coastal: 7+ days full refund, 50% 4–6 days, non-refundable &lt;3 days). All operators provide 100% full refund for weather cancellations.

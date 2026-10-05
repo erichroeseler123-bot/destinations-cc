@@ -204,7 +204,7 @@ export async function POST(request: Request) {
       message:
         entry.bookingMode === "concierge_dispatch"
           ? "Concierge Dispatch Alert activated! Our 10:00 AM daily sweep will monitor operator drops. If seats open, dispatch will alert you via phone and email with direct flight checkout."
-          : "Instant Seat Drop Alert activated! When seats open, you will receive an instant email and SMS with direct operator checkout links.",
+          : "Daily 10:00 AM Seat Drop Alert activated! Our automated daily sweep monitors operator cancellations. When seats open, you will receive an alert with direct operator checkout links.",
       details: {
         portDate: entry.portDate,
         juneauDate: entry.juneauDate,
