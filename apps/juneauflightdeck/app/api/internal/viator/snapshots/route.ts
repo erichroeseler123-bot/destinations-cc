@@ -10,6 +10,59 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: false, error: "Missing or invalid API key" }, { status: 500 });
   }
 
+  const url = new URL(request.url);
+  const codesParam = url.searchParams.get("codes");
+
+  if (codesParam) {
+    const codes = codesParam.split(",").map((c) => c.trim()).filter(Boolean);
+    const results = await Promise.all(
+      codes.map(async (code) => {
+        try {
+          const res = await fetch(`https://api.viator.com/partner/products/${code}`, {
+            headers: {
+              "exp-api-key": apiKey,
+              "Accept": "application/json;version=2.0",
+              "Accept-Language": "en-US",
+            },
+            cache: "no-store",
+          });
+          const text = await res.text();
+          let json = null;
+          try {
+            json = JSON.parse(text);
+          } catch {}
+          return {
+            code,
+            statusCode: res.status,
+            ok: res.ok,
+            data: json || text,
+          };
+        } catch (err: any) {
+          return {
+            code,
+            statusCode: 500,
+            ok: false,
+            error: err.message,
+          };
+        }
+      })
+    );
+
+    return NextResponse.json(
+      {
+        ok: true,
+        timestamp: new Date().toISOString(),
+        productResults: results,
+      },
+      {
+        headers: {
+          "X-Robots-Tag": "noindex, nofollow",
+          "Cache-Control": "no-store",
+        },
+      }
+    );
+  }
+
   const queries = [
     { name: "Alaska (270) Helicopter", body: { filtering: { destination: "270" }, searchTerm: "helicopter", pagination: { start: 1, count: 50 }, currency: "USD" } },
     { name: "Alaska (270) TEMSCO", body: { filtering: { destination: "270" }, searchTerm: "TEMSCO", pagination: { start: 1, count: 50 }, currency: "USD" } },
