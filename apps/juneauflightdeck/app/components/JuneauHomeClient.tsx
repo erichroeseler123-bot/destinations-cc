@@ -686,21 +686,37 @@ export default function JuneauHomeClient({
                 );
               })
             ) : (
-              <div className="slot-card">
-                <h3>No helicopter products are showing right now</h3>
-                <div className="slot-summary">
-                  {query.trim()
-                    ? `No helicopter tours matched "${query.trim()}" for this date. Clear the filter or try again.`
-                    : "No helicopter tours are showing for this date right now. Refresh once or try a nearby day."}
-                </div>
-                <a
-                  href={data.browseHref || `${DCC_ORIGIN}/juneau/helicopter-tours`}
-                  className="button button-secondary"
-                  target="_blank"
-                  rel="noreferrer"
+              <div className="slot-card" style={{ padding: "28px 24px" }}>
+                <span
+                  style={{
+                    display: "inline-block",
+                    fontSize: "0.75rem",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    color: "var(--accent, #f0b35b)",
+                    marginBottom: 8,
+                  }}
                 >
-                  Browse broader Juneau options
-                </a>
+                  Seasonal Cruise Schedule Alert
+                </span>
+                <h3 style={{ margin: "0 0 10px" }}>Juneau Helicopter Excursions Are Seasonally Closed on Viator</h3>
+                <div className="slot-summary" style={{ marginBottom: 16, lineHeight: 1.6 }}>
+                  Commercial flightseeing and glacier dog sledding in Juneau operate May through September. Direct helicopter listings on Viator are currently offline until 2027 schedules publish in spring.
+                </div>
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  <a href="/helicopter-waitlist" className="button button-primary">
+                    Join 2027 Priority Helicopter Waitlist &rarr;
+                  </a>
+                  <a
+                    href={data.browseHref || "https://www.viator.com/Juneau-tourism/d941-r8418047970-s323605581?pid=P00058396&mcid=42383&medium=api"}
+                    className="button button-secondary"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Browse Active Juneau Activities on Viator ↗
+                  </a>
+                </div>
               </div>
             )}
           </div>

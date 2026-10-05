@@ -27,13 +27,13 @@ export interface ViatorJuneauProductsResponse {
   ok: boolean;
   generatedAt: string;
   isLive: boolean;
-  status: "live_verified" | "cached_snapshot";
+  status: "live_verified" | "cached_snapshot" | "seasonally_unavailable";
   snapshotTimestamp?: string;
   selectedDate: string | null;
   passengerCount?: number;
   signals?: {
     headline?: string;
-    availabilityStatus?: "live_checked" | "calendar_check_required";
+    availabilityStatus?: "live_checked" | "calendar_check_required" | "seasonally_unavailable";
   };
   attribution: {
     source: string;
@@ -41,6 +41,7 @@ export interface ViatorJuneauProductsResponse {
     poweredBy: string;
   };
   browseHref: string;
+  waitlistHref?: string;
   products: ViatorJuneauProduct[];
 }
 

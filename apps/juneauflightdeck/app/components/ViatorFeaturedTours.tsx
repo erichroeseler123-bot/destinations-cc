@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   useViatorJuneauProducts,
   buildViatorBookingUrlWithPreferences,
@@ -382,6 +383,135 @@ export default function ViatorFeaturedTours({
               onOpenReviews={() => handleOpenReviews(product)}
             />
           ))}
+        </div>
+      )}
+
+      {/* Off-Season / Seasonally Unavailable Notice with Priority Waitlist CTA */}
+      {!loading && products.length === 0 && !error && (
+        <div
+          style={{
+            background: "linear-gradient(180deg, rgba(8, 28, 42, 0.95) 0%, rgba(5, 18, 28, 0.98) 100%)",
+            border: "1px solid var(--line, rgba(151, 211, 255, 0.25))",
+            borderRadius: "var(--radius-lg, 24px)",
+            padding: "36px 32px",
+            textAlign: "center",
+            maxWidth: 780,
+            margin: "0 auto",
+            boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.5)",
+          }}
+        >
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              background: "rgba(240, 179, 91, 0.15)",
+              border: "1px solid rgba(240, 179, 91, 0.35)",
+              color: "var(--accent, #f0b35b)",
+              fontSize: "0.75rem",
+              fontWeight: 800,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              padding: "5px 14px",
+              borderRadius: "999px",
+              marginBottom: 16,
+            }}
+          >
+            <span>2027 Alaska Cruise Season Alert</span>
+            <span>·</span>
+            <span>Off-Season Schedule</span>
+          </div>
+
+          <h3
+            style={{
+              fontSize: "clamp(1.35rem, 3vw, 1.85rem)",
+              fontWeight: 900,
+              color: "var(--text, #ffffff)",
+              lineHeight: 1.25,
+              margin: "0 0 12px",
+            }}
+          >
+            Juneau Helicopter Excursions Are Seasonally Closed on Viator
+          </h3>
+
+          <p
+            style={{
+              fontSize: "0.95rem",
+              color: "var(--muted, rgba(228, 239, 246, 0.78))",
+              lineHeight: 1.6,
+              maxWidth: 640,
+              margin: "0 auto 24px",
+            }}
+          >
+            Alaska commercial flightseeing and alpine dog sledding operate strictly during the cruise season (May through September). Juneau operators—TEMSCO, Coastal, and NorthStar—pause glacier flights for the winter season and will release their 2027 reservation calendars in early spring.
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: 14,
+              marginBottom: 24,
+            }}
+          >
+            <Link
+              href="/helicopter-waitlist"
+              className="button button-primary"
+              style={{
+                padding: "14px 26px",
+                fontSize: "0.95rem",
+                fontWeight: 800,
+              }}
+            >
+              Join 2027 Priority Helicopter Waitlist &rarr;
+            </Link>
+
+            <a
+              href={browseHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="button button-secondary"
+              style={{
+                padding: "14px 22px",
+                fontSize: "0.92rem",
+              }}
+            >
+              Browse Active Juneau Activities on Viator ↗
+            </a>
+          </div>
+
+          <div
+            style={{
+              paddingTop: 20,
+              borderTop: "1px solid rgba(151, 211, 255, 0.12)",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: 16,
+              textAlign: "left",
+              fontSize: "0.82rem",
+              color: "var(--muted, rgba(228, 239, 246, 0.78))",
+            }}
+          >
+            <div>
+              <div style={{ fontWeight: 800, color: "var(--ice, #9ed9ff)", marginBottom: 4 }}>
+                TEMSCO Helicopters
+              </div>
+              <div>Mendenhall Glacier landings &amp; Herbert Glacier dog sledding camps.</div>
+            </div>
+            <div>
+              <div style={{ fontWeight: 800, color: "var(--ice, #9ed9ff)", marginBottom: 4 }}>
+                Coastal Helicopters
+              </div>
+              <div>Herbert Glacier ice walkabouts &amp; Taku Glacier Lodge salmon feasts.</div>
+            </div>
+            <div>
+              <div style={{ fontWeight: 800, color: "var(--ice, #9ed9ff)", marginBottom: 4 }}>
+                NorthStar Trekking
+              </div>
+              <div>Level 1 &amp; Level 2 technical ice climbing and glacier trekking.</div>
+            </div>
+          </div>
         </div>
       )}
 

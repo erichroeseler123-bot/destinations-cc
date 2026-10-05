@@ -95,11 +95,12 @@ export interface UseViatorJuneauProductsReturn {
   selectedDate: string | null;
   passengerCount: number;
   isLive: boolean;
-  status: "live_verified" | "cached_snapshot";
+  status: "live_verified" | "cached_snapshot" | "seasonally_unavailable";
   snapshotTimestamp?: string;
   attribution: ViatorJuneauProductsResponse["attribution"] | null;
   signals?: ViatorJuneauProductsResponse["signals"];
   browseHref: string;
+  waitlistHref: string;
   refetch: () => Promise<void>;
 }
 
@@ -123,8 +124,8 @@ export function useViatorJuneauProducts({
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
   const [isLive, setIsLive] = useState<boolean>(baseData.isLive ?? false);
-  const [status, setStatus] = useState<"live_verified" | "cached_snapshot">(
-    baseData.status ?? "cached_snapshot"
+  const [status, setStatus] = useState<"live_verified" | "cached_snapshot" | "seasonally_unavailable">(
+    baseData.status ?? "seasonally_unavailable"
   );
   const [snapshotTimestamp, setSnapshotTimestamp] = useState<string | undefined>(
     baseData.snapshotTimestamp
@@ -138,6 +139,9 @@ export function useViatorJuneauProducts({
   const [browseHref, setBrowseHref] = useState<string>(
     baseData.browseHref ||
       "https://www.viator.com/Juneau-tourism/d941-r8418047970-s323605581?pid=P00058396&mcid=42383&medium=api"
+  );
+  const [waitlistHref, setWaitlistHref] = useState<string>(
+    baseData.waitlistHref || "/helicopter-waitlist"
   );
 
 
@@ -168,6 +172,7 @@ export function useViatorJuneauProducts({
       setAttribution(response.attribution);
       setSignals(response.signals);
       setBrowseHref(response.browseHref);
+      if (response.waitlistHref) setWaitlistHref(response.waitlistHref);
     } catch (err: any) {
       if (err.name !== "AbortError") {
         setError(err instanceof Error ? err : new Error(String(err)));
@@ -200,6 +205,7 @@ export function useViatorJuneauProducts({
     attribution,
     signals,
     browseHref,
+    waitlistHref,
     refetch: loadData,
   };
 }

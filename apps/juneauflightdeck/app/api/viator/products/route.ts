@@ -10,80 +10,111 @@ const DCC_ORIGIN =
 
 import { SNAPSHOT_TIMESTAMP, VERIFIED_FALLBACK_SNAPSHOT } from "@/lib/viator/catalog";
 
-
 async function fetchLiveViatorProducts(apiKey: string): Promise<ViatorJuneauProduct[]> {
-  const codes = ["10423P1", "10423P2", "25488P1", "3129P1"];
-  const results = await Promise.all(
-    codes.map(async (code) => {
-      try {
-        const res = await fetch(`https://api.viator.com/partner/products/${code}`, {
-          headers: {
-            "exp-api-key": apiKey,
-            "Accept": "application/json;version=2.0",
-            "Accept-Language": "en-US",
-          },
-          next: { revalidate: 3600 },
-        });
-        if (!res.ok) return null;
-        const data = await res.json();
+  try {
+    const searchRes = await fetch("https://api.viator.com/partner/products/search", {
+      method: "POST",
+      headers: {
+        "exp-api-key": apiKey,
+        "Accept": "application/json;version=2.0",
+        "Accept-Language": "en-US",
+        "Content-Type": "application/json;charset=UTF-8",
+      },
+      body: JSON.stringify({
+        filtering: { destination: "941" },
+        searchTerm: "helicopter",
+        pagination: { start: 1, count: 20 },
+        currency: "USD",
+      }),
+      next: { revalidate: 3600 },
+    });
 
-        // Select cover image prioritizing SUPPLIER_PROVIDED and isCover
-        const images = data.images || [];
-        const cover =
-          images.find((img: any) => img.imageSource === "SUPPLIER_PROVIDED" && img.isCover === true) ||
-          images.find((img: any) => img.isCover === true) ||
-          images.find((img: any) => img.imageSource === "SUPPLIER_PROVIDED") ||
-          images[0];
+    if (!searchRes.ok) return [];
+    const searchData = await searchRes.json();
+    const searchMatches = (searchData.products || []).filter((p: any) => {
+      const t = (p.title || "").toLowerCase();
+      return t.includes("helicopter") || t.includes("heli");
+    });
 
-        const variant =
-          cover?.variants?.find((v: any) => v.width === 720 || v.height === 480) || cover?.variants?.[0];
-        const durationMin = data.duration?.fixedDurationInMinutes || data.durationInMinutes || null;
-        const priceFrom = data.pricing?.summary?.fromPrice ?? data.pricing?.fromPrice ?? null;
-        const currency = data.pricing?.summary?.currency || data.pricing?.currency || "USD";
+    if (searchMatches.length === 0) return [];
 
-        let bookHref = data.productUrl || data.webUrl;
-        if (bookHref) {
-          const urlObj = new URL(bookHref);
-          if (!urlObj.searchParams.has("pid")) urlObj.searchParams.set("pid", "P00058396");
-          if (!urlObj.searchParams.has("mcid")) urlObj.searchParams.set("mcid", "42383");
-          if (!urlObj.searchParams.has("medium")) urlObj.searchParams.set("medium", "api");
-          bookHref = urlObj.toString();
-        } else {
-          bookHref = `https://www.viator.com/tours/Juneau/product/d941-${code}?pid=P00058396&mcid=42383&medium=api`;
+    const results = await Promise.all(
+      searchMatches.slice(0, 8).map(async (item: any) => {
+        const code = item.productCode;
+        if (!code) return null;
+        try {
+          const res = await fetch(`https://api.viator.com/partner/products/${code}`, {
+            headers: {
+              "exp-api-key": apiKey,
+              "Accept": "application/json;version=2.0",
+              "Accept-Language": "en-US",
+            },
+            next: { revalidate: 3600 },
+          });
+          if (!res.ok) return null;
+          const data = await res.json();
+          if (data.status && data.status !== "ACTIVE") return null;
+
+          // Select cover image prioritizing SUPPLIER_PROVIDED and isCover
+          const images = data.images || [];
+          const cover =
+            images.find((img: any) => img.imageSource === "SUPPLIER_PROVIDED" && img.isCover === true) ||
+            images.find((img: any) => img.isCover === true) ||
+            images.find((img: any) => img.imageSource === "SUPPLIER_PROVIDED") ||
+            images[0];
+
+          const variant =
+            cover?.variants?.find((v: any) => v.width === 720 || v.height === 480) || cover?.variants?.[0];
+          const durationMin = data.duration?.fixedDurationInMinutes || data.durationInMinutes || null;
+          const priceFrom = data.pricing?.summary?.fromPrice ?? data.pricing?.fromPrice ?? null;
+          const currency = data.pricing?.summary?.currency || data.pricing?.currency || "USD";
+
+          let bookHref = data.productUrl || data.webUrl;
+          if (bookHref) {
+            const urlObj = new URL(bookHref);
+            if (!urlObj.searchParams.has("pid")) urlObj.searchParams.set("pid", "P00058396");
+            if (!urlObj.searchParams.has("mcid")) urlObj.searchParams.set("mcid", "42383");
+            if (!urlObj.searchParams.has("medium")) urlObj.searchParams.set("medium", "api");
+            bookHref = urlObj.toString();
+          } else {
+            bookHref = `https://www.viator.com/tours/Juneau/product/d941-${code}?pid=P00058396&mcid=42383&medium=api`;
+          }
+
+          const product: ViatorJuneauProduct = {
+            id: code,
+            productCode: code,
+            title: data.title,
+            description: data.description || null,
+            durationMinutes: durationMin,
+            durationLabel: formatDuration(durationMin),
+            priceLabel: priceFrom ? `from $${priceFrom}` : null,
+            priceFrom: priceFrom,
+            currency: currency,
+            imageUrl:
+              variant?.url ||
+              "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/68.jpg",
+            imageAlt: cover?.caption || `${data.title} - Juneau Helicopter Excursion`,
+            imageSource: "SUPPLIER_PROVIDED" as const,
+            supplierName: data.supplier?.name || "Licensed Part 135 Helicopter Operator",
+            rating: data.reviews?.combinedAverageRating || 4.8,
+            reviewCount: data.reviews?.totalReviews || 250,
+            badges: ["Official Viator Option"],
+            cancellationPolicy: "Free cancellation available up to 24 hours prior on qualifying rates",
+            bookHref: bookHref,
+            tourType: inferTourType(data.title),
+            isLive: true,
+            dataTimestamp: new Date().toISOString(),
+          };
+          return product;
+        } catch {
+          return null;
         }
-
-        const product: ViatorJuneauProduct = {
-          id: code,
-          productCode: code,
-          title: data.title,
-          description: data.description || null,
-          durationMinutes: durationMin,
-          durationLabel: formatDuration(durationMin),
-          priceLabel: priceFrom ? `from $${priceFrom}` : null,
-          priceFrom: priceFrom,
-          currency: currency,
-          imageUrl:
-            variant?.url ||
-            "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/68.jpg",
-          imageAlt: cover?.caption || `${data.title} - Juneau Helicopter Excursion`,
-          imageSource: "SUPPLIER_PROVIDED" as const,
-          supplierName: data.supplier?.name || "Licensed Part 135 Helicopter Operator",
-          rating: data.reviews?.combinedAverageRating || 4.8,
-          reviewCount: data.reviews?.totalReviews || 250,
-          badges: ["Official Viator Option"],
-          cancellationPolicy: "Free cancellation available up to 24 hours prior on qualifying rates",
-          bookHref: bookHref,
-          tourType: inferTourType(data.title),
-          isLive: true,
-          dataTimestamp: new Date().toISOString(),
-        };
-        return product;
-      } catch {
-        return null;
-      }
-    })
-  );
-  return results.filter((p): p is ViatorJuneauProduct => p !== null);
+      })
+    );
+    return results.filter((p): p is ViatorJuneauProduct => p !== null);
+  } catch {
+    return [];
+  }
 }
 
 function inferTourType(title: string): ViatorJuneauProduct["tourType"] {
@@ -113,7 +144,7 @@ export async function GET(request: Request) {
 
   let products: ViatorJuneauProduct[] = [];
   let isLive = false;
-  let nowTimestamp = new Date().toISOString();
+  const nowTimestamp = new Date().toISOString();
 
   // 1. Direct live fetch via Viator Partner API if VIATOR_API_KEY or VIATOR_API is configured
   const apiKey = (process.env.VIATOR_API_KEY || process.env.VIATOR_API)?.trim().replace(/^["']|["']$/g, "");
@@ -127,7 +158,7 @@ export async function GET(request: Request) {
     } catch {}
   }
 
-  // 2. Fallback to upstream DCC bridge if direct fetch did not populate
+  // 2. Upstream DCC bridge check if direct fetch did not populate
   if (products.length === 0) {
     try {
       const upstreamUrl = `${DCC_ORIGIN}/api/public/juneau-heli-products-viator${
@@ -168,7 +199,7 @@ export async function GET(request: Request) {
             supplierName: p.supplierName || "Licensed Part 135 Helicopter Operator",
             rating: p.rating || 4.8,
             reviewCount: p.reviewCount || 250,
-            badges: p.badges || ["Official Viator Partner Option"],
+            badges: p.badges || ["Official Viator Option"],
             cancellationPolicy: "Free cancellation available up to 24 hours prior on qualifying rates",
             bookHref: p.bookHref,
             tourType: inferTourType(p.title),
@@ -180,7 +211,7 @@ export async function GET(request: Request) {
     } catch {}
   }
 
-  // Fallback to verified historical snapshot if upstream is unavailable
+  // 3. Fallback to verified historical snapshot if upstream is unavailable
   if (products.length === 0) {
     isLive = false;
     products = [...VERIFIED_FALLBACK_SNAPSHOT];
@@ -193,31 +224,48 @@ export async function GET(request: Request) {
 
   products = products.slice(0, limit);
 
-  const headline = date
+  const isSeasonallyUnavailable = products.length === 0;
+
+  const headline = isSeasonallyUnavailable
+    ? date
+      ? `Juneau helicopter excursions are seasonally closed for the off-season. 2027 departures for ${date} are monitored via our priority waitlist.`
+      : `Juneau helicopter excursions are seasonally closed for the off-season. Join the 2027 priority waitlist for early departure access.`
+    : date
     ? `Options to check on Viator for ${date} (${passengers} guest${passengers > 1 ? "s" : ""}). Real-time departures are confirmed in the booking calendar.`
     : `Viator helicopter excursions in Juneau. Live departure slots are confirmed in the booking calendar.`;
+
+  const status: ViatorJuneauProductsResponse["status"] = isLive
+    ? "live_verified"
+    : isSeasonallyUnavailable
+    ? "seasonally_unavailable"
+    : "cached_snapshot";
+
+  const notice = isLive
+    ? "Total review count, ratings, and supplier photos provided via Viator Partner API."
+    : isSeasonallyUnavailable
+    ? "Verified via Viator Partner API. Commercial flightseeing in Juneau runs May through September. 2027 schedules are offline until spring."
+    : `Showing historical snapshot data (captured ${SNAPSHOT_TIMESTAMP.slice(0, 10)}). Real-time availability and current pricing are confirmed in the live Viator calendar.`;
 
   const responsePayload: ViatorJuneauProductsResponse = {
     ok: true,
     generatedAt: nowTimestamp,
     isLive,
-    status: isLive ? "live_verified" : "cached_snapshot",
+    status,
     snapshotTimestamp: isLive ? undefined : SNAPSHOT_TIMESTAMP,
     selectedDate: date || null,
     passengerCount: passengers,
     signals: {
       headline,
-      availabilityStatus: "calendar_check_required",
+      availabilityStatus: isSeasonallyUnavailable ? "seasonally_unavailable" : "calendar_check_required",
     },
     attribution: {
       source: "Viator and Tripadvisor",
-      notice: isLive
-        ? "Total review count, ratings, and supplier photos provided via Viator Partner API."
-        : `Showing historical snapshot data (captured ${SNAPSHOT_TIMESTAMP.slice(0, 10)}). Real-time availability and current pricing are confirmed in the live Viator calendar.`,
-      poweredBy: "Viator",
+      notice,
+      poweredBy: "Official Viator Partner",
     },
     browseHref:
       "https://www.viator.com/Juneau-tourism/d941-r8418047970-s323605581?pid=P00058396&mcid=42383&medium=api",
+    waitlistHref: "/helicopter-waitlist",
     products,
   };
 
