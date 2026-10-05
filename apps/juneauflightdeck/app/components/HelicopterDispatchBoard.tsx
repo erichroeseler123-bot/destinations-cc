@@ -241,8 +241,8 @@ export default function HelicopterDispatchBoard({
                       }}
                     >
                       <Image
-                        src="https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/68.jpg"
-                        alt="TEMSCO Mendenhall Glacier landing tour photo from Viator"
+                        src="https://cdn.filestackcontent.com/GyqI6elSXKklaQiP9ULd"
+                        alt="TEMSCO Mendenhall Glacier landing helicopter tour in Juneau, Alaska"
                         fill
                         sizes="72px"
                         style={{ objectFit: 'cover' }}
@@ -291,8 +291,8 @@ export default function HelicopterDispatchBoard({
                       }}
                     >
                       <Image
-                        src="https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/09/c5/d2/c7.jpg"
-                        alt="Coastal Helicopters Juneau icefield landing tour photo from Viator"
+                        src="https://cdn.filestackcontent.com/NPg1gKoCQu6ewj2mnmsQ"
+                        alt="Coastal Helicopters Juneau icefield landing excursion in Alaska"
                         fill
                         sizes="72px"
                         style={{ objectFit: 'cover' }}
@@ -341,8 +341,8 @@ export default function HelicopterDispatchBoard({
                       }}
                     >
                       <Image
-                        src="https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/6a.jpg"
-                        alt="NorthStar Trekking glacier ice trek tour photo from Viator"
+                        src="https://cdn.filestackcontent.com/cOhoNqnERLmiIhpPY4bu"
+                        alt="NorthStar Trekking glacier ice trek and climb in Juneau, Alaska"
                         fill
                         sizes="72px"
                         style={{ objectFit: 'cover' }}

@@ -836,7 +836,7 @@ function TourCard({
         <Image
           src={
             imgError || !product.imageUrl
-              ? "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/68.jpg"
+              ? "https://cdn.filestackcontent.com/GyqI6elSXKklaQiP9ULd"
               : product.imageUrl
           }
           alt={product.imageAlt}

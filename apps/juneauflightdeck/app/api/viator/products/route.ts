@@ -104,7 +104,7 @@ async function fetchLiveViatorProducts(apiKey: string): Promise<ViatorJuneauProd
             currency: currency,
             imageUrl:
               variant?.url ||
-              "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/68.jpg",
+              "https://cdn.filestackcontent.com/GyqI6elSXKklaQiP9ULd",
             imageAlt: cover?.caption || `${data.title} - Juneau Helicopter Excursion`,
             imageSource: "SUPPLIER_PROVIDED" as const,
             supplierName: data.supplier?.name || "Licensed Part 135 Helicopter Operator",
@@ -205,7 +205,7 @@ export async function GET(request: Request) {
             currency: p.currency || "USD",
             imageUrl:
               p.imageUrl ||
-              "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/68.jpg",
+              "https://cdn.filestackcontent.com/GyqI6elSXKklaQiP9ULd",
             imageAlt: `${p.title} - Juneau Helicopter Excursion`,
             imageSource: "SUPPLIER_PROVIDED" as const,
             supplierName: p.supplierName || "Licensed Part 135 Helicopter Operator",

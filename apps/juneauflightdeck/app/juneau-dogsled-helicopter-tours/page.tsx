@@ -93,7 +93,7 @@ export default function JuneauDogSleddingPage() {
         {/* Hero Image Showcase */}
         <div className="rounded-3xl overflow-hidden border border-white/10 mb-8 shadow-2xl relative">
           <Image
-            src="https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/06/fa/b9/11.jpg"
+            src="https://cdn.filestackcontent.com/mjmYVT8aSPiQ6M0h9hb5"
             alt="Alaskan husky dog sled team on glacier snowfield in Juneau"
             width={1600}
             height={900}
