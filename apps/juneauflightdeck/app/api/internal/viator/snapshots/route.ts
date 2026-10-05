@@ -7,41 +7,68 @@ export async function GET(request: Request) {
   const apiKey = (process.env.VIATOR_API_KEY || process.env.VIATOR_API)?.trim().replace(/^["']|["']$/g, "");
 
   if (!apiKey || apiKey.length < 20) {
-    return NextResponse.json({ ok: false, error: "Missing API key" }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "Missing or invalid API key" }, { status: 500 });
   }
 
-  // Search 50 products matching 'helicopter' in Juneau
-  const searchRes = await fetch("https://api.viator.com/partner/products/search", {
-    method: "POST",
-    headers: {
-      "exp-api-key": apiKey,
-      "Accept": "application/json;version=2.0",
-      "Accept-Language": "en-US",
-      "Content-Type": "application/json;charset=UTF-8",
-    },
-    body: JSON.stringify({
-      filtering: { destination: "941" },
-      searchTerm: "helicopter",
-      pagination: { start: 51, count: 50 },
-      currency: "USD",
-    }),
-    cache: "no-store",
-  });
+  const queries = [
+    { name: "Juneau Helicopter (no dest)", body: { searchTerm: "Juneau helicopter", pagination: { start: 1, count: 50 }, currency: "USD" } },
+    { name: "Mendenhall Helicopter (no dest)", body: { searchTerm: "Mendenhall helicopter", pagination: { start: 1, count: 50 }, currency: "USD" } },
+    { name: "TEMSCO (no dest)", body: { searchTerm: "TEMSCO", pagination: { start: 1, count: 50 }, currency: "USD" } },
+    { name: "Coastal Helicopters (no dest)", body: { searchTerm: "Coastal Helicopters", pagination: { start: 1, count: 50 }, currency: "USD" } },
+    { name: "NorthStar Trekking (no dest)", body: { searchTerm: "NorthStar Trekking", pagination: { start: 1, count: 50 }, currency: "USD" } },
+    { name: "Alaska Helicopter (no dest)", body: { searchTerm: "Alaska helicopter", pagination: { start: 1, count: 50 }, currency: "USD" } },
+  ];
 
-  const searchData = await searchRes.json().catch(() => ({}));
-  const rawProducts = searchData?.products || [];
+  const searchResults: any[] = [];
+  const foundProductCodes = new Set<string>();
 
-  const helicopterFiltered = rawProducts.filter((p: any) => {
-    const t = (p.title || "").toLowerCase();
-    const d = (p.description || "").toLowerCase();
-    return t.includes("helicopter") || t.includes("heli") || t.includes("flight") || t.includes("glacier") || d.includes("helicopter");
-  });
+  for (const q of queries) {
+    try {
+      const res = await fetch("https://api.viator.com/partner/products/search", {
+        method: "POST",
+        headers: {
+          "exp-api-key": apiKey,
+          "Accept": "application/json;version=2.0",
+          "Accept-Language": "en-US",
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+        body: JSON.stringify(q.body),
+        cache: "no-store",
+      });
 
-  // Fetch full details for the top matching products
-  const detailedProducts: any[] = [];
-  for (const item of helicopterFiltered.slice(0, 8)) {
-    const code = item.productCode;
-    if (!code) continue;
+      if (res.ok) {
+        const data = await res.json();
+        const products = data.products || [];
+        const heliMatches = products.filter((p: any) => {
+          const t = (p.title || "").toLowerCase();
+          return t.includes("helicopter") || t.includes("heli") || t.includes("dog sled") || t.includes("glacier landing");
+        });
+
+        searchResults.push({
+          query: q.name,
+          totalCount: data.totalCount,
+          returnedCount: products.length,
+          heliMatches: heliMatches.map((p: any) => ({
+            code: p.productCode,
+            title: p.title,
+            destinations: p.destinations,
+          })),
+        });
+
+        for (const p of heliMatches) {
+          if (p.productCode) foundProductCodes.add(p.productCode);
+        }
+      } else {
+        searchResults.push({ query: q.name, status: res.status });
+      }
+    } catch (err: any) {
+      searchResults.push({ query: q.name, error: err.message });
+    }
+  }
+
+  // Fetch full details for every product code found
+  const fullDetails: any[] = [];
+  for (const code of Array.from(foundProductCodes)) {
     try {
       const pRes = await fetch(`https://api.viator.com/partner/products/${code}`, {
         headers: {
@@ -53,7 +80,7 @@ export async function GET(request: Request) {
       });
       if (pRes.ok) {
         const full = await pRes.json();
-        detailedProducts.push(full);
+        fullDetails.push(full);
       }
     } catch {}
   }
@@ -61,9 +88,10 @@ export async function GET(request: Request) {
   return NextResponse.json(
     {
       ok: true,
-      totalSearchResults: searchData?.totalCount,
-      allSearchTitles: rawProducts.map((p: any) => ({ code: p.productCode, title: p.title })),
-      detailedProducts,
+      timestamp: new Date().toISOString(),
+      searches: searchResults,
+      uniqueHeliProductsFound: fullDetails.length,
+      fullDetails,
     },
     {
       headers: {
