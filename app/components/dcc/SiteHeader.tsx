@@ -16,9 +16,10 @@ const PRIMARY_NAV_CONSOLE: NavItem[] = [
 ];
 
 const PRIMARY_NAV_PUBLIC: NavItem[] = [
-  { href: "/", label: "CORRIDORS" },
+  { href: "/widget", label: "VENUE WIDGET" },
+  { href: "/pricing", label: "PRICING" },
+  { href: "/developers", label: "API" },
   { href: "/about", label: "HOW IT WORKS" },
-  { href: "/internal/telemetry", label: "SYSTEM LOG" },
 ];
 
 export default function SiteHeader() {

@@ -6,6 +6,7 @@ import { normalizeGaugeStatuses, readHydroMarine } from "@/lib/dcc/hydroMarine";
 import { readExtendedCoordinateFeeds } from "@/lib/dcc/extendedCoordinateFeeds";
 import { readApplicableDccEndpoints } from "@/lib/dcc/endpointRegistry";
 import { DccLocationProductService } from "@/lib/octo/locationProductService";
+import { recordApiUsage } from "@/lib/billing/licenses";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -77,6 +78,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const canonicalApi = `/api/location/${canonicalLat}/${canonicalLng}`;
   const indexable = isIndexableCoordinate(lat, lng);
   const scope = requestedScope(request);
+  const authHeader = request.headers.get("authorization") || "";
+  const bearerKey = authHeader.toLowerCase().startsWith("bearer ") ? authHeader.slice(7).trim() : null;
+  const apiKey = request.headers.get("x-dcc-key") || request.nextUrl.searchParams.get("key") || bearerKey;
+  const usage = await recordApiUsage(apiKey);
 
   logDiscoveryRequest({
     surface: "location_api",
@@ -286,6 +291,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
         "X-DCC-Scope": scope,
         "X-DCC-Coordinate": `${canonicalLat},${canonicalLng}`,
         "X-DCC-Natural-Event-Relevance-Km": String(NATURAL_EVENT_RELEVANCE_KM),
+        "X-DCC-Plan": usage.plan,
+        "X-DCC-Quota-Remaining": String(usage.remaining),
       },
     });
   } catch (error) {

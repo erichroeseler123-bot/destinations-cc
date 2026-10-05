@@ -614,8 +614,8 @@ export class DccCanonicalPlaceService {
     if (!relPath) return;
 
     try {
-      const root = process.cwd();
-      const fullPath = path.join(root, relPath);
+      const cleanRel = relPath.replace(/^(\.\/)?data[\\/]/, "");
+      const fullPath = path.join(process.cwd(), "data", cleanRel);
       if (!fs.existsSync(fullPath)) return;
 
       const graphData = JSON.parse(fs.readFileSync(fullPath, "utf8"));

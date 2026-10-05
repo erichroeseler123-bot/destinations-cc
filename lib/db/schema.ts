@@ -1763,3 +1763,31 @@ export const fourtwentyOutbox = pgTable(
 
 export type FourtwentyOutboxRow = typeof fourtwentyOutbox.$inferSelect;
 export type NewFourtwentyOutboxRow = typeof fourtwentyOutbox.$inferInsert;
+
+export const dccLicenses = pgTable(
+  "dcc_licenses",
+  {
+    key: text("key").primaryKey().notNull(),
+    email: text("email").notNull(),
+    plan: text("plan").notNull(),
+    status: text("status").notNull().default("active"),
+    authorizedDomains: jsonb("authorized_domains").$type<string[]>().notNull().default([]),
+    stripeCustomerId: text("stripe_customer_id"),
+    stripeSubscriptionId: text("stripe_subscription_id"),
+    maxMonthlyRequests: integer("max_monthly_requests").notNull().default(25000),
+    currentPeriodRequests: integer("current_period_requests").notNull().default(0),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    emailIdx: index("dcc_licenses_email_idx").on(table.email),
+    stripeSubIdx: index("dcc_licenses_stripe_sub_idx").on(table.stripeSubscriptionId),
+    stripeCustIdx: index("dcc_licenses_stripe_cust_idx").on(table.stripeCustomerId),
+  })
+);
+
+export type DccLicenseRow = typeof dccLicenses.$inferSelect;
+export type NewDccLicenseRow = typeof dccLicenses.$inferInsert;
+

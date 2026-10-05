@@ -119,10 +119,10 @@ export type CategoryManifest = {
   }>;
 };
 
-const ROOT = process.cwd();
+const DATA_DIR = path.join(process.cwd(), "data");
 
-function readJsonFile<T>(segments: string[]): T | null {
-  const filePath = path.join(ROOT, ...segments);
+function readJsonFile<T>(subDir: string, fileName: string): T | null {
+  const filePath = path.join(DATA_DIR, subDir, fileName);
   if (!fs.existsSync(filePath)) return null;
   try {
     return JSON.parse(fs.readFileSync(filePath, "utf8")) as T;
@@ -132,19 +132,19 @@ function readJsonFile<T>(segments: string[]): T | null {
 }
 
 export function getCityManifest(citySlug: string): CityManifest | null {
-  return readJsonFile<CityManifest>(["data", "cities", `${citySlug}.json`]);
+  return readJsonFile<CityManifest>("cities", `${citySlug}.json`);
 }
 
 export function getAttractionsManifest(citySlug: string): AttractionManifest | null {
-  return readJsonFile<AttractionManifest>(["data", "attractions", `${citySlug}.json`]);
+  return readJsonFile<AttractionManifest>("attractions", `${citySlug}.json`);
 }
 
 export function getCategoriesManifest(citySlug: string): CategoryManifest | null {
-  return readJsonFile<CategoryManifest>(["data", "categories", `${citySlug}.json`]);
+  return readJsonFile<CategoryManifest>("categories", `${citySlug}.json`);
 }
 
 export function listManifestCitySlugs(): string[] {
-  const dir = path.join(ROOT, "data", "cities");
+  const dir = path.join(DATA_DIR, "cities");
   if (!fs.existsSync(dir)) return [];
   return fs
     .readdirSync(dir)
@@ -163,5 +163,5 @@ export function getManifestCategory(citySlug: string, slug: string) {
 }
 
 export function getCityRolloutManifest(rolloutSlug: string): CityRolloutEntry[] {
-  return readJsonFile<CityRolloutEntry[]>(["data", "cities", `${rolloutSlug}.json`]) || [];
+  return readJsonFile<CityRolloutEntry[]>("cities", `${rolloutSlug}.json`) || [];
 }
