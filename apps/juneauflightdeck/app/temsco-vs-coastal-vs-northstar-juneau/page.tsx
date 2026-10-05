@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "TEMSCO vs Coastal vs NorthStar: Juneau Helicopter Comparison",
@@ -71,45 +72,199 @@ export default function OperatorComparisonPage() {
         </table>
       </section>
 
-      {/* Operator Deep Dives */}
+      {/* Operator Deep Dives with Verified Viator API Photos */}
       <section style={{ display: "grid", gap: "28px", marginBottom: "40px" }}>
+        {/* TEMSCO */}
         <div style={{ background: "rgba(3, 14, 23, 0.6)", border: "1px solid var(--line)", borderRadius: "var(--radius-md)", padding: "26px" }}>
-          <h2 style={{ fontSize: "1.4rem", color: "var(--text)", margin: "0 0 10px" }}>1. TEMSCO Helicopters (The Pioneer Operator)</h2>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 16 }}>
+            <div>
+              <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                Official Viator Partner Operator
+              </span>
+              <h2 style={{ fontSize: "1.5rem", color: "var(--text)", margin: "4px 0 8px" }}>
+                1. TEMSCO Helicopters (The Pioneer Operator)
+              </h2>
+            </div>
+          </div>
+
+          {/* Tour Image Showcase */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 20 }}>
+            <div style={{ background: "rgba(7, 24, 36, 0.7)", borderRadius: 12, overflow: "hidden", border: "1px solid var(--line)" }}>
+              <div style={{ position: "relative", width: "100%", height: 180 }}>
+                <Image
+                  src="https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/68.jpg"
+                  alt="TEMSCO Mendenhall Glacier landing helicopter tour in Juneau - official photo via Viator API"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  style={{ objectFit: "cover" }}
+                />
+              </div>
+              <div style={{ padding: 14 }}>
+                <div style={{ fontSize: "0.75rem", color: "var(--accent)", fontWeight: 700 }}>SIGNATURE GLACIER LANDING</div>
+                <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#ffffff", margin: "4px 0" }}>
+                  Mendenhall Glacier Helicopter Tour &amp; Walk
+                </div>
+                <div style={{ fontSize: "0.82rem", color: "var(--muted)", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ color: "#fbbf24", fontWeight: 800 }}>★ 4.8</span>
+                  <span>(428 reviews)</span>
+                  <span>·</span>
+                  <span>2 hr 15 min</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ background: "rgba(7, 24, 36, 0.7)", borderRadius: 12, overflow: "hidden", border: "1px solid var(--line)" }}>
+              <div style={{ position: "relative", width: "100%", height: 180 }}>
+                <Image
+                  src="https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/06/fa/b9/11.jpg"
+                  alt="TEMSCO Helicopter glacier dog sledding tour in Juneau - official photo via Viator API"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  style={{ objectFit: "cover" }}
+                />
+              </div>
+              <div style={{ padding: 14 }}>
+                <div style={{ fontSize: "0.75rem", color: "var(--accent)", fontWeight: 700 }}>DOG SLEDDING COMBO</div>
+                <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#ffffff", margin: "4px 0" }}>
+                  Glacier Dog Sledding Tour from Juneau
+                </div>
+                <div style={{ fontSize: "0.82rem", color: "var(--muted)", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ color: "#fbbf24", fontWeight: 800 }}>★ 4.9</span>
+                  <span>(312 reviews)</span>
+                  <span>·</span>
+                  <span>2 hr 45 min</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 14px" }}>
             Founded in 1958, TEMSCO is the longest-operating commercial helicopter tour company in Alaska. They pioneered glacier landings on the Mendenhall Glacier and operate the legendary dog sledding camp on the snowfields of the Herbert Glacier.
           </p>
-          <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 14px" }}>
+          <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 18px" }}>
             <strong>Why choose TEMSCO:</strong> If you want the classic Alaska helicopter dog sledding experience or a quintessential 25-minute glacier landing walkabout, TEMSCO is the gold standard.
           </p>
-          <Link href="/helicopter" className="button button-card" style={{ display: "inline-block" }}>
-            View TEMSCO Flights &rarr;
-          </Link>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <a
+              href="https://www.viator.com/tours/Juneau/Mendenhall-Glacier-Helicopter-Tour-and-Guided-Walk/d941-10423P1?pid=P00058396&mcid=42383&medium=api"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="button button-primary"
+            >
+              Check TEMSCO Availability on Viator &rarr;
+            </a>
+            <Link href="/helicopter" className="button button-card">
+              View TEMSCO Specs
+            </Link>
+          </div>
         </div>
 
+        {/* Coastal */}
         <div style={{ background: "rgba(3, 14, 23, 0.6)", border: "1px solid var(--line)", borderRadius: "var(--radius-md)", padding: "26px" }}>
-          <h2 style={{ fontSize: "1.4rem", color: "var(--text)", margin: "0 0 10px" }}>2. Coastal Helicopters (The Icefield Specialists)</h2>
+          <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Official Viator Partner Operator
+          </span>
+          <h2 style={{ fontSize: "1.5rem", color: "var(--text)", margin: "4px 0 16px" }}>
+            2. Coastal Helicopters (The Icefield Specialists)
+          </h2>
+
+          <div style={{ background: "rgba(7, 24, 36, 0.7)", borderRadius: 12, overflow: "hidden", border: "1px solid var(--line)", marginBottom: 20, maxWidth: 440 }}>
+            <div style={{ position: "relative", width: "100%", height: 200 }}>
+              <Image
+                src="https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/09/c5/d2/c7.jpg"
+                alt="Coastal Helicopters Juneau icefield glacier landing - official photo via Viator API"
+                fill
+                sizes="(max-width: 768px) 100vw, 440px"
+                style={{ objectFit: "cover" }}
+              />
+            </div>
+            <div style={{ padding: 14 }}>
+              <div style={{ fontSize: "0.75rem", color: "var(--accent)", fontWeight: 700 }}>ICEFIELD LANDING &amp; SCENIC FLIGHT</div>
+              <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#ffffff", margin: "4px 0" }}>
+                Juneau Icefield Helicopter Tour with Glacier Landing
+              </div>
+              <div style={{ fontSize: "0.82rem", color: "var(--muted)", display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ color: "#fbbf24", fontWeight: 800 }}>★ 4.7</span>
+                <span>(265 reviews)</span>
+                <span>·</span>
+                <span>2 hr 30 min</span>
+              </div>
+            </div>
+          </div>
+
           <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 14px" }}>
             Coastal operates out of Juneau North Airport and is famed for diverse landing routes across the broader Juneau Icefield, including Herbert and Norris Glaciers. They also partner with historic Taku Glacier Lodge for famous fly-in salmon feasts.
           </p>
-          <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 14px" }}>
+          <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 18px" }}>
             <strong>Why choose Coastal:</strong> Outstanding extended icefield scenic routes and world-class culinary combo flights.
           </p>
-          <Link href="/juneau/helicopter" className="button button-card" style={{ display: "inline-block" }}>
-            View Coastal Flights &rarr;
-          </Link>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <a
+              href="https://www.viator.com/tours/Juneau/Juneau-Icefield-Helicopter-Tour/d941-25488P1?pid=P00058396&mcid=42383&medium=api"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="button button-primary"
+            >
+              Check Coastal Availability on Viator &rarr;
+            </a>
+            <Link href="/juneau/helicopter" className="button button-card">
+              View Coastal Specs
+            </Link>
+          </div>
         </div>
 
+        {/* NorthStar */}
         <div style={{ background: "rgba(3, 14, 23, 0.6)", border: "1px solid var(--line)", borderRadius: "var(--radius-md)", padding: "26px" }}>
-          <h2 style={{ fontSize: "1.4rem", color: "var(--text)", margin: "0 0 10px" }}>3. NorthStar Trekking (Small-Group Glacier Hiking)</h2>
+          <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Official Viator Partner Operator
+          </span>
+          <h2 style={{ fontSize: "1.5rem", color: "var(--text)", margin: "4px 0 16px" }}>
+            3. NorthStar Trekking (Small-Group Glacier Hiking)
+          </h2>
+
+          <div style={{ background: "rgba(7, 24, 36, 0.7)", borderRadius: 12, overflow: "hidden", border: "1px solid var(--line)", marginBottom: 20, maxWidth: 440 }}>
+            <div style={{ position: "relative", width: "100%", height: 200 }}>
+              <Image
+                src="https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/6a.jpg"
+                alt="NorthStar Trekking glacier ice trek and climb - official photo via Viator API"
+                fill
+                sizes="(max-width: 768px) 100vw, 440px"
+                style={{ objectFit: "cover" }}
+              />
+            </div>
+            <div style={{ padding: 14 }}>
+              <div style={{ fontSize: "0.75rem", color: "var(--accent)", fontWeight: 700 }}>SMALL-GROUP TECHNICAL TREK</div>
+              <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#ffffff", margin: "4px 0" }}>
+                Glacier Ice Trek &amp; Climb by Helicopter
+              </div>
+              <div style={{ fontSize: "0.82rem", color: "var(--muted)", display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ color: "#fbbf24", fontWeight: 800 }}>★ 4.9</span>
+                <span>(184 reviews)</span>
+                <span>·</span>
+                <span>4 hr</span>
+              </div>
+            </div>
+          </div>
+
           <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 14px" }}>
             NorthStar specializes exclusively in small-group guided glacier hiking and technical ice climbing on the high ice of Mendenhall Glacier. Rather than a brief photo stop, guests strap on crampons, harness up, and hike deep into crevasses and ice caves with experienced mountaineering guides.
           </p>
-          <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 14px" }}>
+          <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 18px" }}>
             <strong>Why choose NorthStar:</strong> Perfect for adventurous travelers who want real physical engagement with the glacier, small group ratios, and technical ice trekking.
           </p>
-          <Link href="/juneau-dogsled-helicopter-tours" className="button button-card" style={{ display: "inline-block" }}>
-            View NorthStar Treks &rarr;
-          </Link>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <a
+              href="https://www.viator.com/tours/Juneau/Glacier-Ice-Trek-by-Helicopter/d941-3129P1?pid=P00058396&mcid=42383&medium=api"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="button button-primary"
+            >
+              Check NorthStar Availability on Viator &rarr;
+            </a>
+            <Link href="/juneau-dogsled-helicopter-tours" className="button button-card">
+              View NorthStar Specs
+            </Link>
+          </div>
         </div>
       </section>
 

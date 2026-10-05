@@ -2,6 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import ViatorFeaturedTours from './ViatorFeaturedTours';
 
 type PortSlug = 'juneau' | 'skagway';
 
@@ -186,6 +188,16 @@ export default function HelicopterDispatchBoard({
         </div>
       </section>
 
+      {/* Featured Flights with Supplier Photos from Viator Partner API */}
+      <ViatorFeaturedTours
+        headline={isSkagway ? "Skagway Glacier Helicopter Options" : "Juneau Glacier Helicopter Flights & Landings"}
+        subhead={
+          isSkagway
+            ? "Compare live helicopter tours in Skagway with Part 135 safety standards and free 24-hour cancellation."
+            : "Explore Juneau glacier landings, dog sledding camps, and ice treks. Real-time availability confirmed in the official Viator calendar."
+        }
+      />
+
       {/* 3. Operator Comparison Table */}
       <section id="operators" className="jfd-table-section">
         <div className="jfd-section-head">
@@ -214,7 +226,38 @@ export default function HelicopterDispatchBoard({
                   <span className="jfd-op-name">TEMSCO Helicopters</span>
                   <span className="jfd-op-sub">Pioneer Juneau Operator</span>
                 </td>
-                <td style={{ color: 'var(--muted)' }}>Mendenhall Glacier Landing, Dog Sledding on Herbert Glacier</td>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div
+                      style={{
+                        position: 'relative',
+                        width: 72,
+                        height: 48,
+                        borderRadius: 8,
+                        overflow: 'hidden',
+                        flexShrink: 0,
+                        border: '1px solid var(--line)',
+                        backgroundColor: '#061521',
+                      }}
+                    >
+                      <Image
+                        src="https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/68.jpg"
+                        alt="TEMSCO Mendenhall Glacier landing tour photo from Viator"
+                        fill
+                        sizes="72px"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.88rem' }}>
+                        Mendenhall Glacier Landing
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
+                        Dog Sledding on Herbert Glacier
+                      </div>
+                    </div>
+                  </div>
+                </td>
                 <td style={{ color: 'var(--text)' }}>Mendenhall, Herbert</td>
                 <td style={{ color: 'var(--muted)' }}>Near JNU Airport (Shuttle provided)</td>
                 <td>
@@ -233,7 +276,38 @@ export default function HelicopterDispatchBoard({
                   <span className="jfd-op-name">Coastal Helicopters</span>
                   <span className="jfd-op-sub">Icefield Specialist</span>
                 </td>
-                <td style={{ color: 'var(--muted)' }}>Icefield Walkabout, Taku Glacier Lodge Seaplane/Helo combos</td>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div
+                      style={{
+                        position: 'relative',
+                        width: 72,
+                        height: 48,
+                        borderRadius: 8,
+                        overflow: 'hidden',
+                        flexShrink: 0,
+                        border: '1px solid var(--line)',
+                        backgroundColor: '#061521',
+                      }}
+                    >
+                      <Image
+                        src="https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/09/c5/d2/c7.jpg"
+                        alt="Coastal Helicopters Juneau icefield landing tour photo from Viator"
+                        fill
+                        sizes="72px"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.88rem' }}>
+                        Icefield Landing &amp; Walkabout
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
+                        Taku Glacier Lodge Combos
+                      </div>
+                    </div>
+                  </div>
+                </td>
                 <td style={{ color: 'var(--text)' }}>Herbert, Taku Icefield</td>
                 <td style={{ color: 'var(--muted)' }}>Juneau North Airport Ramp</td>
                 <td>
@@ -252,7 +326,38 @@ export default function HelicopterDispatchBoard({
                   <span className="jfd-op-name">NorthStar Trekking</span>
                   <span className="jfd-op-sub">Small-Group Glacier Hiking</span>
                 </td>
-                <td style={{ color: 'var(--muted)' }}>Level 1–3 Glacier Treks, Technical Ice Climbing</td>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div
+                      style={{
+                        position: 'relative',
+                        width: 72,
+                        height: 48,
+                        borderRadius: 8,
+                        overflow: 'hidden',
+                        flexShrink: 0,
+                        border: '1px solid var(--line)',
+                        backgroundColor: '#061521',
+                      }}
+                    >
+                      <Image
+                        src="https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/6a.jpg"
+                        alt="NorthStar Trekking glacier ice trek tour photo from Viator"
+                        fill
+                        sizes="72px"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.88rem' }}>
+                        Glacier Ice Trek &amp; Climb
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
+                        Level 1–3 Technical Glacier Hiking
+                      </div>
+                    </div>
+                  </div>
+                </td>
                 <td style={{ color: 'var(--text)' }}>Mendenhall Glacier High Ice</td>
                 <td style={{ color: 'var(--muted)' }}>Juneau Industrial Heliport</td>
                 <td>

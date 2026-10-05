@@ -17,6 +17,9 @@ const nextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "api.qrserver.com" },
       { protocol: "https", hostname: "media-cdn.tripadvisor.com" },
+      { protocol: "https", hostname: "hare-media-cdn.tripadvisor.com" },
+      { protocol: "https", hostname: "media.tacdn.com" },
+      { protocol: "https", hostname: "dynamic-media-cdn.tripadvisor.com" },
       { protocol: "https", hostname: "www.destinationcommandcenter.com" },
       { protocol: "https", hostname: "destinationcommandcenter.com" }
     ]

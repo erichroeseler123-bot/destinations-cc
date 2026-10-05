@@ -46,15 +46,15 @@ export const curatedTours: CuratedTour[] = [
     experienceNote:
       "Best if you want the iconic glacier landing without committing your entire port day to one experience block.",
     heroImage:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
-    imageAlt: "Helicopter above glacier ice near Juneau, Alaska",
+      "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/68.jpg",
+    imageAlt: "TEMSCO Mendenhall Glacier landing helicopter tour in Juneau, Alaska",
     gallery: [
       {
-        src: "https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?auto=format&fit=crop&w=1200&q=80",
+        src: "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/68.jpg",
         alt: "Helicopter approaching a glacier landing zone in Alaska",
       },
       {
-        src: "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80",
+        src: "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/6a.jpg",
         alt: "Blue glacier textures photographed during a Juneau helicopter tour",
       },
     ],
@@ -88,15 +88,15 @@ export const curatedTours: CuratedTour[] = [
     experienceNote:
       "This is the luxury-adventure choice when you want the highest ceiling memory and have enough port time to support it.",
     heroImage:
-      "https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=1600&q=80",
-    imageAlt: "Snowy Alaska landscape suited to glacier dogsled helicopter tours",
+      "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/06/fa/b9/11.jpg",
+    imageAlt: "Glacier dog sledding camp team on Juneau Icefield, Alaska",
     gallery: [
       {
-        src: "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=1200&q=80",
+        src: "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/06/fa/b9/11.jpg",
         alt: "Snowfield scenery for a Juneau dogsled helicopter combo",
       },
       {
-        src: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=1200&q=80",
+        src: "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/09/c5/d2/c7.jpg",
         alt: "Wide aerial Alaska icefield view on a helicopter adventure",
       },
     ],
@@ -130,15 +130,15 @@ export const curatedTours: CuratedTour[] = [
     experienceNote:
       "Ideal for scenic-first travelers, shorter port windows, and anyone who values the flight itself over the landing.",
     heroImage:
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80",
-    imageAlt: "Helicopter flightseeing above icy mountain ridges in Alaska",
+      "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/09/c5/d2/c7.jpg",
+    imageAlt: "Coastal Helicopters Juneau icefield flightseeing and glacier landing in Alaska",
     gallery: [
       {
-        src: "https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1200&q=80",
+        src: "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/09/c5/d2/c7.jpg",
         alt: "Icefield aerial view for Juneau helicopter flightseeing",
       },
       {
-        src: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80",
+        src: "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/68.jpg",
         alt: "Mountain and glacier panorama near Juneau, Alaska",
       },
     ],

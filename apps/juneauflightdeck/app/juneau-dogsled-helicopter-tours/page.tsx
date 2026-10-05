@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import HelicopterWaitlistForm from "../components/HelicopterWaitlistForm";
 import SeatScannerTicker from "../components/SeatScannerTicker";
 import LiveSeatDropsBadge from "../components/LiveSeatDropsBadge";
+import { VIATOR_TOURS_BY_CODE } from "@/lib/viator/catalog";
 
 export const metadata: Metadata = {
   title: "Juneau Helicopter Dog Sledding on Glacier | 24/7 Seat Scanner & Waitlist",
@@ -89,11 +91,14 @@ export default function JuneauDogSleddingPage() {
           </p>
         </div>
 
-        {/* Hero Image Showcase */}
-        <div className="rounded-3xl overflow-hidden border border-white/10 mb-12 shadow-2xl relative">
-          <img
-            src="https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=1600&q=80"
-            alt="Dog sledding team on an Alaska glacier snow camp"
+        {/* Hero Image Showcase with Official Viator API Photo */}
+        <div className="rounded-3xl overflow-hidden border border-white/10 mb-8 shadow-2xl relative">
+          <Image
+            src="https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/06/fa/b9/11.jpg"
+            alt="Alaskan husky dog sled team on glacier snowfield in Juneau - official tour photo via Viator API"
+            width={1600}
+            height={900}
+            priority
             className="w-full h-80 md:h-[450px] object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-6 md:p-10">
@@ -105,6 +110,73 @@ export default function JuneauDogSleddingPage() {
                 Herbert Glacier &amp; Norris Glacier Alpine Camps
               </h2>
             </div>
+          </div>
+        </div>
+
+        {/* Official Viator Partner Tour Spotlight Card */}
+        <div
+          style={{
+            background: "linear-gradient(180deg, rgba(8, 28, 42, 0.95) 0%, rgba(5, 18, 28, 0.98) 100%)",
+            border: "1px solid var(--line, rgba(151, 211, 255, 0.2))",
+            borderRadius: "var(--radius-lg, 24px)",
+            padding: "24px 28px",
+            marginBottom: "36px",
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 20,
+          }}
+        >
+          <div style={{ maxWidth: 580 }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: "0.75rem",
+                fontWeight: 800,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "var(--accent, #f0b35b)",
+                marginBottom: 6,
+              }}
+            >
+              <span>Official Viator Partner</span>
+              <span>·</span>
+              <span>TEMSCO Helicopters</span>
+            </div>
+            <h3 style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--text, #ffffff)", margin: "0 0 8px" }}>
+              Helicopter Glacier Dog Sledding Tour from Juneau
+            </h3>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: "0.88rem", color: "var(--muted)", marginBottom: 8 }}>
+              <span style={{ color: "#fbbf24", fontWeight: 800 }}>★ 4.9</span>
+              <span>(312 reviews on Viator)</span>
+              <span>·</span>
+              <span>2 hr 45 min</span>
+            </div>
+            <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted)", lineHeight: 1.5 }}>
+              Includes helicopter transit over Juneau Icefield, gear overboots, and 1 hour on the Herbert Glacier alpine dog camp with veteran mushers.
+            </p>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Historical snapshot rate</div>
+              <div style={{ fontSize: "1.4rem", fontWeight: 900, color: "var(--text)" }}>from $649</div>
+            </div>
+            <a
+              href="https://www.viator.com/tours/Juneau/Helicopter-Glacier-Dog-Sledding-Tour/d941-10423P2?pid=P00058396&mcid=42383&medium=api"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="button button-primary"
+              style={{ padding: "12px 22px", fontSize: "0.92rem", whiteSpace: "nowrap" }}
+            >
+              Check Availability on Viator &rarr;
+            </a>
+            <span style={{ fontSize: "0.72rem", color: "var(--muted)" }}>
+              Official checkout · Preserves booking terms
+            </span>
           </div>
         </div>
 

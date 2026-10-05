@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { type WaitlistEntry } from "../../lib/waitlistStore";
+import ViatorFeaturedTours from "../components/ViatorFeaturedTours";
 
 interface AdminMetrics {
   totalWatches: number;
@@ -410,6 +411,14 @@ export default function DispatchDashboardPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Live Viator Partner Excursion Feed */}
+        <div className="mt-12">
+          <ViatorFeaturedTours
+            headline="Live Fleet Availability & Viator Partner Excursions"
+            subhead="Monitor real-time Juneau glacier helicopter options, supplier imagery, and verified departure windows."
+          />
         </div>
 
         {/* Instructions & Help */}
