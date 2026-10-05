@@ -41,6 +41,8 @@ export async function GET(request: Request) {
         duration: data?.duration,
         reviews: data?.reviews,
         productUrl: data?.productUrl || data?.webUrl,
+        rawKeys: Object.keys(data || {}),
+        rawSnippet: JSON.stringify(data).slice(0, 500),
       });
     } catch (e: any) {
       results.push({ code, httpStatus: 0, ok: false, error: e.message });
