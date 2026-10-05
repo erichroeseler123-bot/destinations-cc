@@ -102,9 +102,7 @@ async function fetchLiveViatorProducts(apiKey: string): Promise<ViatorJuneauProd
             priceLabel: priceFrom ? `from $${priceFrom}` : null,
             priceFrom: priceFrom,
             currency: currency,
-            imageUrl:
-              variant?.url ||
-              "https://cdn.filestackcontent.com/GyqI6elSXKklaQiP9ULd",
+            imageUrl: variant?.url || null,
             imageAlt: cover?.caption || `${data.title} - Juneau Helicopter Excursion`,
             imageSource: "SUPPLIER_PROVIDED" as const,
             supplierName: data.supplier?.name || "Licensed Part 135 Helicopter Operator",
@@ -203,9 +201,7 @@ export async function GET(request: Request) {
             priceLabel: p.priceLabel || null,
             priceFrom: p.priceFrom || null,
             currency: p.currency || "USD",
-            imageUrl:
-              p.imageUrl ||
-              "https://cdn.filestackcontent.com/GyqI6elSXKklaQiP9ULd",
+            imageUrl: p.imageUrl || null,
             imageAlt: `${p.title} - Juneau Helicopter Excursion`,
             imageSource: "SUPPLIER_PROVIDED" as const,
             supplierName: p.supplierName || "Licensed Part 135 Helicopter Operator",

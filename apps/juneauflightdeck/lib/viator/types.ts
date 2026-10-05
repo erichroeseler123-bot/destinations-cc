@@ -9,7 +9,7 @@ export interface ViatorJuneauProduct {
   priceFrom: number | null;
   currency: string;
   priceDisclaimer?: string;
-  imageUrl: string;
+  imageUrl: string | null;
   imageAlt: string;
   imageSource: "SUPPLIER_PROVIDED";
   supplierName: string | null;
