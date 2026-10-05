@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/viator/reviews/", "/api/protected/"],
+      disallow: ["/api/viator/reviews/", "/api/protected/", "/api/internal/"],
     },
     sitemap: "https://juneauflightdeck.com/sitemap.xml",
     host: "https://juneauflightdeck.com",

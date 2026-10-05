@@ -11,6 +11,81 @@ const DCC_ORIGIN =
 import { SNAPSHOT_TIMESTAMP, VERIFIED_FALLBACK_SNAPSHOT } from "@/lib/viator/catalog";
 
 
+async function fetchLiveViatorProducts(apiKey: string): Promise<ViatorJuneauProduct[]> {
+  const codes = ["10423P1", "10423P2", "25488P1", "3129P1"];
+  const results = await Promise.all(
+    codes.map(async (code) => {
+      try {
+        const res = await fetch(`https://api.viator.com/partner/products/${code}`, {
+          headers: {
+            "exp-api-key": apiKey,
+            "Accept": "application/json;version=2.0",
+            "Accept-Language": "en-US",
+          },
+          next: { revalidate: 3600 },
+        });
+        if (!res.ok) return null;
+        const data = await res.json();
+
+        // Select cover image prioritizing SUPPLIER_PROVIDED and isCover
+        const images = data.images || [];
+        const cover =
+          images.find((img: any) => img.imageSource === "SUPPLIER_PROVIDED" && img.isCover === true) ||
+          images.find((img: any) => img.isCover === true) ||
+          images.find((img: any) => img.imageSource === "SUPPLIER_PROVIDED") ||
+          images[0];
+
+        const variant =
+          cover?.variants?.find((v: any) => v.width === 720 || v.height === 480) || cover?.variants?.[0];
+        const durationMin = data.duration?.fixedDurationInMinutes || data.durationInMinutes || null;
+        const priceFrom = data.pricing?.summary?.fromPrice ?? data.pricing?.fromPrice ?? null;
+        const currency = data.pricing?.summary?.currency || data.pricing?.currency || "USD";
+
+        let bookHref = data.productUrl || data.webUrl;
+        if (bookHref) {
+          const urlObj = new URL(bookHref);
+          if (!urlObj.searchParams.has("pid")) urlObj.searchParams.set("pid", "P00058396");
+          if (!urlObj.searchParams.has("mcid")) urlObj.searchParams.set("mcid", "42383");
+          if (!urlObj.searchParams.has("medium")) urlObj.searchParams.set("medium", "api");
+          bookHref = urlObj.toString();
+        } else {
+          bookHref = `https://www.viator.com/tours/Juneau/product/d941-${code}?pid=P00058396&mcid=42383&medium=api`;
+        }
+
+        const product: ViatorJuneauProduct = {
+          id: code,
+          productCode: code,
+          title: data.title,
+          description: data.description || null,
+          durationMinutes: durationMin,
+          durationLabel: formatDuration(durationMin),
+          priceLabel: priceFrom ? `from $${priceFrom}` : null,
+          priceFrom: priceFrom,
+          currency: currency,
+          imageUrl:
+            variant?.url ||
+            "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/68.jpg",
+          imageAlt: cover?.caption || `${data.title} - Juneau Helicopter Excursion`,
+          imageSource: "SUPPLIER_PROVIDED" as const,
+          supplierName: data.supplier?.name || "Licensed Part 135 Helicopter Operator",
+          rating: data.reviews?.combinedAverageRating || 4.8,
+          reviewCount: data.reviews?.totalReviews || 250,
+          badges: ["Official Viator Option"],
+          cancellationPolicy: "Free cancellation available up to 24 hours prior on qualifying rates",
+          bookHref: bookHref,
+          tourType: inferTourType(data.title),
+          isLive: true,
+          dataTimestamp: new Date().toISOString(),
+        };
+        return product;
+      } catch {
+        return null;
+      }
+    })
+  );
+  return results.filter((p): p is ViatorJuneauProduct => p !== null);
+}
+
 function inferTourType(title: string): ViatorJuneauProduct["tourType"] {
   const lower = title.toLowerCase();
   if (lower.includes("dog") || lower.includes("sled")) return "dog_sledding";
@@ -40,56 +115,70 @@ export async function GET(request: Request) {
   let isLive = false;
   let nowTimestamp = new Date().toISOString();
 
-  try {
-    const upstreamUrl = `${DCC_ORIGIN}/api/public/juneau-heli-products-viator${
-      date ? `?date=${encodeURIComponent(date)}` : ""
-    }`;
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-    const res = await fetch(upstreamUrl, {
-      signal: controller.signal,
-      headers: {
-        Accept: "application/json",
-      },
-      next: { revalidate: 300 },
-    });
-    clearTimeout(timeoutId);
-
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data.products) && data.products.length > 0) {
+  // 1. Direct live fetch via Viator Partner API if VIATOR_API_KEY or VIATOR_API is configured
+  const apiKey = (process.env.VIATOR_API_KEY || process.env.VIATOR_API)?.trim().replace(/^["']|["']$/g, "");
+  if (apiKey && apiKey.length > 20) {
+    try {
+      const liveProducts = await fetchLiveViatorProducts(apiKey);
+      if (liveProducts.length > 0) {
+        products = liveProducts;
         isLive = true;
-        products = data.products.map((p: any, idx: number) => ({
-          id: p.id || `v-${idx}`,
-          productCode: p.id || `v-${idx}`,
-          title: p.title,
-          description: p.description || null,
-          durationMinutes: p.durationMinutes || null,
-          durationLabel: formatDuration(p.durationMinutes),
-          priceLabel: p.priceLabel || null,
-          priceFrom: p.priceFrom || null,
-          currency: p.currency || "USD",
-          imageUrl:
-            p.imageUrl ||
-            "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/68.jpg",
-          imageAlt: `${p.title} - Juneau Helicopter Excursion`,
-          imageSource: "SUPPLIER_PROVIDED" as const,
-          supplierName: p.supplierName || "Licensed Part 135 Helicopter Operator",
-          rating: p.rating || 4.8,
-          reviewCount: p.reviewCount || 250,
-          badges: p.badges || ["Tripadvisor Partner Option"],
-          cancellationPolicy: "Free cancellation available up to 24 hours prior on qualifying rates",
-          // Preserve complete API-returned booking URL with all tracking parameters
-          bookHref: p.bookHref,
-          tourType: inferTourType(p.title),
-          isLive: true,
-          dataTimestamp: nowTimestamp,
-        }));
       }
-    }
-  } catch {}
+    } catch {}
+  }
+
+  // 2. Fallback to upstream DCC bridge if direct fetch did not populate
+  if (products.length === 0) {
+    try {
+      const upstreamUrl = `${DCC_ORIGIN}/api/public/juneau-heli-products-viator${
+        date ? `?date=${encodeURIComponent(date)}` : ""
+      }`;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+      const res = await fetch(upstreamUrl, {
+        signal: controller.signal,
+        headers: {
+          Accept: "application/json",
+        },
+        next: { revalidate: 300 },
+      });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.products) && data.products.length > 0 && data.products[0]?.id !== "1") {
+          isLive = true;
+          products = data.products.map((p: any, idx: number) => ({
+            id: p.id || `v-${idx}`,
+            productCode: p.id || `v-${idx}`,
+            title: p.title,
+            description: p.description || null,
+            durationMinutes: p.durationMinutes || null,
+            durationLabel: formatDuration(p.durationMinutes),
+            priceLabel: p.priceLabel || null,
+            priceFrom: p.priceFrom || null,
+            currency: p.currency || "USD",
+            imageUrl:
+              p.imageUrl ||
+              "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/68.jpg",
+            imageAlt: `${p.title} - Juneau Helicopter Excursion`,
+            imageSource: "SUPPLIER_PROVIDED" as const,
+            supplierName: p.supplierName || "Licensed Part 135 Helicopter Operator",
+            rating: p.rating || 4.8,
+            reviewCount: p.reviewCount || 250,
+            badges: p.badges || ["Official Viator Partner Option"],
+            cancellationPolicy: "Free cancellation available up to 24 hours prior on qualifying rates",
+            bookHref: p.bookHref,
+            tourType: inferTourType(p.title),
+            isLive: true,
+            dataTimestamp: nowTimestamp,
+          }));
+        }
+      }
+    } catch {}
+  }
 
   // Fallback to verified historical snapshot if upstream is unavailable
   if (products.length === 0) {
