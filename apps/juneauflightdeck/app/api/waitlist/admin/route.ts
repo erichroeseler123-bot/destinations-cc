@@ -8,19 +8,54 @@ import {
 
 export const dynamic = "force-dynamic";
 
+function isAuthorized(request: Request): boolean {
+  const authHeader = request.headers.get("authorization")?.trim();
+  const url = new URL(request.url);
+  const queryToken = url.searchParams.get("token")?.trim();
+
+  const validSecrets = [
+    process.env.CRON_SECRET,
+    process.env.ADMIN_SECRET,
+    process.env.JFD_ADMIN_KEY,
+    process.env.INTERNAL_API_SECRET,
+  ]
+    .filter(Boolean)
+    .map((s) => String(s).trim());
+
+  if (validSecrets.length === 0) {
+    // If no secret configured in dev mode, allow localhost; otherwise reject in production
+    if (process.env.NODE_ENV !== "production") {
+      return true;
+    }
+    return false;
+  }
+
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.slice(7).trim();
+    if (validSecrets.includes(token)) return true;
+  }
+
+  if (queryToken && validSecrets.includes(queryToken)) {
+    return true;
+  }
+
+  return false;
+}
+
 export async function GET(request: Request) {
   try {
+    if (!isAuthorized(request)) {
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized access. Valid Bearer token required." },
+        { status: 401 }
+      );
+    }
+
     const url = new URL(request.url);
     const action = url.searchParams.get("action");
 
     // Handle automated Vercel Cron sweep or manual GET trigger
     if (action === "sweep" || action === "run_sweep") {
-      const authHeader = request.headers.get("authorization");
-      if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-        // Optional verification if CRON_SECRET is configured
-        console.warn("[Admin API] Cron triggered with authorization check");
-      }
-
       const sweepResult = await execute10AmDailySweep();
       return NextResponse.json({
         ok: true,
@@ -66,6 +101,13 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    if (!isAuthorized(request)) {
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized access. Valid Bearer token required." },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const action = body.action;
 

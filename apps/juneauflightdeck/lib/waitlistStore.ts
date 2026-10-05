@@ -552,9 +552,16 @@ export async function execute10AmDailySweep(): Promise<SweepResult> {
             continue;
           }
 
-          // Accurate lifecycle transition: opening_detected -> contact_pending
-          // Do NOT claim "held" or "claimed" without verified operator hold reference
-          entry.status = "contact_pending";
+          // Accurate lifecycle transition:
+          // ONLY transition to contact_pending if the alert was actually DELIVERED to the traveler.
+          // Simulated or failed deliveries must NEVER stop active scanning for real customers!
+          if (notification.status === "delivered") {
+            entry.status = "contact_pending";
+          } else {
+            console.log(
+              `[DailySweep] Delivery status is ${notification.status} for ${entry.id}; preserving active_scanning status so scans continue.`
+            );
+          }
           entry.operatorHoldStatus = "not_held";
           entry.lastScannedAt = timestamp;
           entry.matchedPort = product.port;
@@ -564,7 +571,7 @@ export async function execute10AmDailySweep(): Promise<SweepResult> {
           entry.cancellationPolicyNotes = product.cancellationPolicy;
           entry.notificationDispatchedAt = notification.dispatchedAt;
           entry.notificationDeliveryId = notification.deliveryId;
-          entry.dispatchAlertNotes = `Opening detected for ${product.name} on ${slotDate} (${slotTime}). Direct operator checkout alert dispatched to ${entry.email} (Delivery ID: ${notification.deliveryId}). Status: contact_pending. Operator hold: not_held.`;
+          entry.dispatchAlertNotes = `Opening detected for ${product.name} on ${slotDate} (${slotTime}). Delivery status: ${notification.status}. Operator hold: not_held.`;
 
           await saveWaitlistEntry(entry);
 

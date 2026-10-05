@@ -122,12 +122,13 @@ export async function fetchFareHarborDateRange({
   startDate,
   endDate,
 }: FetchAvailabilitiesOptions): Promise<FareHarborMinimalAvailability[]> {
-  const appKey = process.env.FAREHARBOR_APP_KEY;
-  const userKey = process.env.FAREHARBOR_USER_KEY;
+  const appKey = process.env.FAREHARBOR_API_APP_KEY || process.env.FAREHARBOR_APP_KEY;
+  const userKey = process.env.FAREHARBOR_API_USER_KEY || process.env.FAREHARBOR_USER_KEY;
 
-  // In development/staging without credentials, simulate realistic availability responses
+  // Never return fabricated availability: return empty array if credentials not configured
   if (!appKey || !userKey) {
-    return simulateAvailabilities(itemPk, startDate, endDate);
+    console.warn("[FareHarbor API] Credentials not configured; returning 0 slots to maintain data integrity.");
+    return [];
   }
 
   const chunks = chunkDateRange(startDate, endDate, 14);
