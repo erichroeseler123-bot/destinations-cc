@@ -14,15 +14,17 @@ const nextConfig = {
   },
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "api.qrserver.com" },
-      { protocol: "https", hostname: "media-cdn.tripadvisor.com" },
-      { protocol: "https", hostname: "hare-media-cdn.tripadvisor.com" },
-      { protocol: "https", hostname: "media.tacdn.com" },
-      { protocol: "https", hostname: "dynamic-media-cdn.tripadvisor.com" },
-      { protocol: "https", hostname: "www.destinationcommandcenter.com" },
-      { protocol: "https", hostname: "destinationcommandcenter.com" }
-    ]
+      { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
+      { protocol: "https", hostname: "api.qrserver.com", pathname: "/**" },
+      { protocol: "https", hostname: "media-cdn.tripadvisor.com", pathname: "/**" },
+      { protocol: "https", hostname: "hare-media-cdn.tripadvisor.com", pathname: "/**" },
+      { protocol: "https", hostname: "media.tacdn.com", pathname: "/**" },
+      { protocol: "https", hostname: "dynamic-media-cdn.tripadvisor.com", pathname: "/**" },
+      { protocol: "https", hostname: "**.tripadvisor.com", pathname: "/**" },
+      { protocol: "https", hostname: "**.tacdn.com", pathname: "/**" },
+      { protocol: "https", hostname: "www.destinationcommandcenter.com", pathname: "/**" },
+      { protocol: "https", hostname: "destinationcommandcenter.com", pathname: "/**" },
+    ],
   },
   outputFileTracingRoot: '../../'
 };
