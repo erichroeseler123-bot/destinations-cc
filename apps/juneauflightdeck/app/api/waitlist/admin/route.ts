@@ -42,6 +42,19 @@ function isAuthorized(request: Request): boolean {
   return false;
 }
 
+function getAlaskaLocalHour(): number {
+  try {
+    const formatted = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Juneau",
+      hour: "numeric",
+      hour12: false,
+    }).format(new Date());
+    return parseInt(formatted, 10);
+  } catch {
+    return (new Date().getUTCHours() - 8 + 24) % 24;
+  }
+}
+
 export async function GET(request: Request) {
   try {
     if (!isAuthorized(request)) {
@@ -56,6 +69,19 @@ export async function GET(request: Request) {
 
     // Handle automated Vercel Cron sweep or manual GET trigger
     if (action === "sweep" || action === "run_sweep") {
+      const force = url.searchParams.get("force") === "true";
+      const alaskaHour = getAlaskaLocalHour();
+
+      // Enforce 10:00 AM Alaska local time year-round (handles AKDT UTC-8 in summer and AKST UTC-9 in winter)
+      if (!force && alaskaHour !== 10) {
+        return NextResponse.json({
+          ok: true,
+          skipped: true,
+          message: `Sweep skipped: Current Alaska local hour is ${alaskaHour}:00 (not 10:00 AM). Year-round daylight saving guard active.`,
+          alaskaHour,
+        });
+      }
+
       const sweepResult = await execute10AmDailySweep();
       return NextResponse.json({
         ok: true,

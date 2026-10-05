@@ -55,7 +55,8 @@ export async function dispatchSeatDropNotification(params: {
 }): Promise<NotificationPayload | null> {
   const sql = getDb();
 
-  // Deduplication check: Has a notification already been dispatched for this passenger + port date + departure slot?
+  // Deduplication check: Has a notification ALREADY been successfully delivered for this passenger + port date + departure slot?
+  // Failed or simulated records must NEVER block a subsequent real delivery retry!
   if (sql) {
     try {
       await ensureDbTables();
@@ -64,11 +65,12 @@ export async function dispatchSeatDropNotification(params: {
         WHERE entry_id = ${params.guestId}
           AND port_date = ${params.portDate}
           AND departure_time = ${params.departureTime}
+          AND status = 'delivered'
         LIMIT 1;
       `;
       if (existing.length > 0) {
         console.log(
-          `[NotificationDispatcher] Duplicate notification suppressed for ${params.guestId} on ${params.portDate} (${params.departureTime})`
+          `[NotificationDispatcher] Duplicate notification suppressed: already delivered to ${params.guestId} on ${params.portDate} (${params.departureTime})`
         );
         return null;
       }
@@ -206,7 +208,13 @@ hello@juneauflightdeck.com
           ${params.departureTime}, ${deliveryStatus}, ${JSON.stringify(payload)}::jsonb,
           ${new Date(dispatchedAt)}
         )
-        ON CONFLICT (entry_id, port_date, departure_time) DO NOTHING;
+        ON CONFLICT (entry_id, port_date, departure_time) 
+        DO UPDATE SET 
+          delivery_id = EXCLUDED.delivery_id,
+          status = EXCLUDED.status,
+          payload = EXCLUDED.payload,
+          dispatched_at = EXCLUDED.dispatched_at
+        WHERE jfd_waitlist_notifications.status != 'delivered';
       `;
     } catch (err) {
       console.warn("[NotificationDispatcher] DB insert failed:", err);
