@@ -698,15 +698,15 @@ export default function JuneauHomeClient({
                     marginBottom: 8,
                   }}
                 >
-                  Seasonal Cruise Schedule Alert
+                  Viator Availability Notice
                 </span>
-                <h3 style={{ margin: "0 0 10px" }}>Juneau Helicopter Excursions Are Seasonally Closed on Viator</h3>
+                <h3 style={{ margin: "0 0 10px" }}>No Juneau Helicopter Tours Currently Available on Viator</h3>
                 <div className="slot-summary" style={{ marginBottom: 16, lineHeight: 1.6 }}>
-                  Commercial flightseeing and glacier dog sledding in Juneau operate May through September. Direct helicopter listings on Viator are currently offline until 2027 schedules publish in spring.
+                  No Juneau helicopter tours are currently available through our Viator search. Join our 2027 helicopter availability alerts to receive notifications when booking windows open.
                 </div>
                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                   <a href="/helicopter-waitlist" className="button button-primary">
-                    Join 2027 Priority Helicopter Waitlist &rarr;
+                    Join 2027 Helicopter Availability Alerts &rarr;
                   </a>
                   <a
                     href={data.browseHref || "https://www.viator.com/Juneau-tourism/d941-r8418047970-s323605581?pid=P00058396&mcid=42383&medium=api"}
@@ -714,7 +714,7 @@ export default function JuneauHomeClient({
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Browse Active Juneau Activities on Viator ↗
+                    Browse Available Juneau Activities on Viator ↗
                   </a>
                 </div>
               </div>

@@ -9,14 +9,14 @@ export const SNAPSHOT_TIMESTAMP = "2026-10-05T18:00:00.000Z";
 
 /**
  * Authenticated API verification (Oct 2026):
- * - Direct queries for synthetic codes (10423P1, 10423P2, 25488P1, 3129P1) returned HTTP 404 Not Found.
- * - Verified historical Juneau helicopter code (6251SHOREXICEWALK) returned HTTP 200 with status INACTIVE.
- * - Authenticated destination searches across Juneau (941) and Skagway (943) confirmed 0 active commercial
- *   helicopter flightseeing tours currently published on Viator due to the seasonal winter cruise closure.
+ * - Direct queries for product codes 10423P1, 10423P2, 25488P1, and 3129P1 returned HTTP 404 (Not Found).
+ * - Verified product code 6251SHOREXICEWALK returned HTTP 200 with status INACTIVE.
+ * - Authenticated destination searches across Destination 941 (Juneau) on Viator returned zero active commercial
+ *   helicopter flightseeing products.
  *
  * Per provenance requirements, only genuine saved API responses establish catalog cards.
- * Because 0 active Juneau helicopter products exist in the authenticated API, this fallback is empty
- * and the site honestly indicates the seasonal closure with a priority waitlist CTA.
+ * Because zero active Juneau helicopter products are returned, this fallback is empty
+ * and the site directs travelers to 2027 helicopter availability alerts.
  */
 export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [];
 
@@ -39,13 +39,13 @@ export const DEFAULT_FALLBACK_RESPONSE: ViatorJuneauProductsResponse = {
   passengerCount: 2,
   signals: {
     headline:
-      "Juneau helicopter excursions are seasonally closed for the off-season. Join the 2027 priority waitlist for early departure access.",
+      "No Juneau helicopter tours are currently available through our Viator search. Join our 2027 helicopter availability alerts.",
     availabilityStatus: "seasonally_unavailable",
   },
   attribution: {
     source: "Viator Partner API",
     notice:
-      "Verified via Viator Partner API. Commercial flightseeing operations in Juneau resume for the 2027 Alaska cruise season (May–September).",
+      "Verified via Viator Partner API. No commercial Juneau helicopter excursions currently returned for this search.",
     poweredBy: "Official Viator Partner",
   },
   browseHref:

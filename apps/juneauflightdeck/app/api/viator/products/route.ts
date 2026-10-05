@@ -10,6 +10,19 @@ const DCC_ORIGIN =
 
 import { SNAPSHOT_TIMESTAMP, VERIFIED_FALLBACK_SNAPSHOT } from "@/lib/viator/catalog";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
 async function fetchLiveViatorProducts(apiKey: string): Promise<ViatorJuneauProduct[]> {
   try {
     const searchRes = await fetch("https://api.viator.com/partner/products/search", {
@@ -55,7 +68,6 @@ async function fetchLiveViatorProducts(apiKey: string): Promise<ViatorJuneauProd
           const data = await res.json();
           if (data.status && data.status !== "ACTIVE") return null;
 
-          // Select cover image prioritizing SUPPLIER_PROVIDED and isCover
           const images = data.images || [];
           const cover =
             images.find((img: any) => img.imageSource === "SUPPLIER_PROVIDED" && img.isCover === true) ||
@@ -228,8 +240,8 @@ export async function GET(request: Request) {
 
   const headline = isSeasonallyUnavailable
     ? date
-      ? `Juneau helicopter excursions are seasonally closed for the off-season. 2027 departures for ${date} are monitored via our priority waitlist.`
-      : `Juneau helicopter excursions are seasonally closed for the off-season. Join the 2027 priority waitlist for early departure access.`
+      ? `No Juneau helicopter tours are currently available through our Viator search for ${date}. Join our 2027 helicopter availability alerts.`
+      : `No Juneau helicopter tours are currently available through our Viator search. Join our 2027 helicopter availability alerts.`
     : date
     ? `Options to check on Viator for ${date} (${passengers} guest${passengers > 1 ? "s" : ""}). Real-time departures are confirmed in the booking calendar.`
     : `Viator helicopter excursions in Juneau. Live departure slots are confirmed in the booking calendar.`;
@@ -243,7 +255,7 @@ export async function GET(request: Request) {
   const notice = isLive
     ? "Total review count, ratings, and supplier photos provided via Viator Partner API."
     : isSeasonallyUnavailable
-    ? "Verified via Viator Partner API. Commercial flightseeing in Juneau runs May through September. 2027 schedules are offline until spring."
+    ? "Verified via Viator Partner API. No Juneau helicopter tours currently returned for this search."
     : `Showing historical snapshot data (captured ${SNAPSHOT_TIMESTAMP.slice(0, 10)}). Real-time availability and current pricing are confirmed in the live Viator calendar.`;
 
   const responsePayload: ViatorJuneauProductsResponse = {
@@ -272,6 +284,7 @@ export async function GET(request: Request) {
   return NextResponse.json(responsePayload, {
     headers: {
       "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      ...CORS_HEADERS,
     },
   });
 }

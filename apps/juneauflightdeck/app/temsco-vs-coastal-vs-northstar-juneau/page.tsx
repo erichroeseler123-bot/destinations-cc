@@ -85,19 +85,19 @@ export default function OperatorComparisonPage() {
               </h2>
             </div>
             <span style={{ fontSize: "0.8rem", color: "var(--ice)", background: "rgba(151, 211, 255, 0.1)", border: "1px solid rgba(151, 211, 255, 0.25)", padding: "4px 10px", borderRadius: 8, fontWeight: 700 }}>
-              2027 Season: May–September
+              Glacier Landings &amp; Year-Round Charters
             </span>
           </div>
 
           <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 14px" }}>
-            Founded in 1958, TEMSCO is the longest-operating commercial helicopter tour company in Alaska. Operating ASTAR 350 aircraft, they pioneered glacier landings on the Mendenhall Glacier and run the premier alpine dog sledding camp on the snowfields of Herbert Glacier.
+            Founded in 1958, TEMSCO is the longest-operating commercial helicopter tour company in Alaska. Operating ASTAR 350 aircraft, they run year-round utility and charter flights alongside seasonal summer glacier landing tours and alpine dog sledding camps on Herbert Glacier.
           </p>
           <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 18px" }}>
             <strong>Signature Excursions:</strong> Mendenhall Glacier Guided Walkabout (approx. 2 hr 15 min total) and Glacier Dog Sledding via Helicopter (approx. 2 hr 45 min total).
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <Link href="/helicopter-waitlist?operator=temsco" className="button button-primary">
-              Join TEMSCO 2027 Waitlist &rarr;
+              Join TEMSCO 2027 Alerts &rarr;
             </Link>
             <Link href="/helicopter" className="button button-card">
               View Helicopter Specs
@@ -117,19 +117,19 @@ export default function OperatorComparisonPage() {
               </h2>
             </div>
             <span style={{ fontSize: "0.8rem", color: "var(--ice)", background: "rgba(151, 211, 255, 0.1)", border: "1px solid rgba(151, 211, 255, 0.25)", padding: "4px 10px", borderRadius: 8, fontWeight: 700 }}>
-              2027 Season: May–September
+              Published Seasonal Tours
             </span>
           </div>
 
           <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 14px" }}>
-            Coastal operates out of Juneau North Airport ramp and is renowned for deep icefield scenic routing across Herbert and Norris glaciers. They are also the exclusive aviation partner for the historic Taku Glacier Lodge salmon bake fly-in excursions.
+            Coastal operates out of Juneau North Airport ramp and publishes seasonal icefield flightseeing tours on Herbert and Norris glaciers. They are also the exclusive aviation partner for the historic Taku Glacier Lodge salmon bake fly-in excursions.
           </p>
           <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 18px" }}>
             <strong>Signature Excursions:</strong> Juneau Icefield Helicopter Tour with Glacier Landing (approx. 2 hr 30 min) and Taku Glacier Lodge Flight &amp; Feast.
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <Link href="/helicopter-waitlist?operator=coastal" className="button button-primary">
-              Join Coastal 2027 Waitlist &rarr;
+              Join Coastal 2027 Alerts &rarr;
             </Link>
             <Link href="/juneau/helicopter" className="button button-card">
               View Coastal Specs
@@ -149,19 +149,19 @@ export default function OperatorComparisonPage() {
               </h2>
             </div>
             <span style={{ fontSize: "0.8rem", color: "var(--ice)", background: "rgba(151, 211, 255, 0.1)", border: "1px solid rgba(151, 211, 255, 0.25)", padding: "4px 10px", borderRadius: 8, fontWeight: 700 }}>
-              2027 Season: May–September
+              Seasonal Glacier Treks
             </span>
           </div>
 
           <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 14px" }}>
-            NorthStar specializes exclusively in small-group guided glacier hiking and technical ice climbing on the high ice of Mendenhall Glacier. Rather than a brief photo stop, guests strap on crampons, harness up, and explore moulins, blue ice crevasses, and ice formations with certified mountaineering guides.
+            NorthStar specializes in small-group guided glacier hiking and technical ice climbing on the high ice of Mendenhall Glacier. Guests strap on crampons, harness up, and explore moulins, blue ice crevasses, and ice formations with certified mountaineering guides.
           </p>
           <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 18px" }}>
             <strong>Signature Excursions:</strong> Level 1 Glacier Ice Trek (approx. 3 hr total) and Level 2 Advanced Glacier Ice Climb (approx. 4 hr total).
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <Link href="/helicopter-waitlist?operator=northstar" className="button button-primary">
-              Join NorthStar 2027 Waitlist &rarr;
+              Join NorthStar 2027 Alerts &rarr;
             </Link>
             <Link href="/helicopter" className="button button-card">
               View Trekking Specs

@@ -144,16 +144,16 @@ export default function JuneauDogSleddingPage() {
             >
               <span>Official Viator Partner</span>
               <span>·</span>
-              <span>2027 Cruise Season Advisory</span>
+              <span>Tour Availability Notice</span>
             </div>
             <h3 style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--text, #ffffff)", margin: "0 0 8px" }}>
-              Glacier Dog Sledding Camps Are Seasonally Closed on Viator
+              Glacier Dog Sledding Tours Currently Unavailable on Viator
             </h3>
             <p style={{ margin: "0 0 10px", fontSize: "0.88rem", color: "var(--muted)", lineHeight: 1.55 }}>
-              Dog sledding camps on Herbert and Norris glaciers operate exclusively in high-altitude snowfields from mid-May through August. When the seasonal snowpack recedes, dog teams return to their winter kennels, and all flightseeing pauses for winter.
+              Glacier dog sledding camps on high-altitude snowfields operate seasonally and are not currently bookable through our Viator search. Join our 2027 helicopter availability alerts to receive notifications when booking windows open.
             </p>
             <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--ice, #9ed9ff)", fontWeight: 600 }}>
-              2027 departures sell out 4–6 months in advance. Submit your cruise date below to lock in automated seat drop alerts the moment spring schedules publish on Viator.
+              Submit your cruise date below to receive notifications when 2027 departures and seat drops become available.
             </p>
           </div>
 
@@ -163,7 +163,7 @@ export default function JuneauDogSleddingPage() {
               className="button button-primary"
               style={{ padding: "12px 22px", fontSize: "0.92rem", whiteSpace: "nowrap" }}
             >
-              Join 2027 Priority Waitlist &darr;
+              Join 2027 Availability Alerts &darr;
             </a>
             <a
               href="https://www.viator.com/Juneau-tourism/d941-r8418047970-s323605581?pid=P00058396&mcid=42383&medium=api"
@@ -172,7 +172,7 @@ export default function JuneauDogSleddingPage() {
               className="button button-card"
               style={{ fontSize: "0.82rem", whiteSpace: "nowrap" }}
             >
-              Browse Year-Round Juneau Tours &rarr;
+              Browse Available Juneau Tours &rarr;
             </a>
           </div>
         </div>

@@ -417,9 +417,9 @@ export default function ViatorFeaturedTours({
               marginBottom: 16,
             }}
           >
-            <span>2027 Alaska Cruise Season Alert</span>
+            <span>Viator Search</span>
             <span>·</span>
-            <span>Off-Season Schedule</span>
+            <span>2027 Season</span>
           </div>
 
           <h3
@@ -431,7 +431,7 @@ export default function ViatorFeaturedTours({
               margin: "0 0 12px",
             }}
           >
-            Juneau Helicopter Excursions Are Seasonally Closed on Viator
+            No Juneau Helicopter Tours Currently Available on Viator
           </h3>
 
           <p
@@ -443,7 +443,7 @@ export default function ViatorFeaturedTours({
               margin: "0 auto 24px",
             }}
           >
-            Alaska commercial flightseeing and alpine dog sledding operate strictly during the cruise season (May through September). Juneau operators—TEMSCO, Coastal, and NorthStar—pause glacier flights for the winter season and will release their 2027 reservation calendars in early spring.
+            No Juneau helicopter tours are currently available through our Viator search. Tour availability varies based on operator schedules and seasonal offerings. Join our 2027 helicopter availability alerts to receive notifications when booking windows open.
           </p>
 
           <div
@@ -464,7 +464,7 @@ export default function ViatorFeaturedTours({
                 fontWeight: 800,
               }}
             >
-              Join 2027 Priority Helicopter Waitlist &rarr;
+              Join 2027 Helicopter Availability Alerts &rarr;
             </Link>
 
             <a
@@ -477,7 +477,7 @@ export default function ViatorFeaturedTours({
                 fontSize: "0.92rem",
               }}
             >
-              Browse Active Juneau Activities on Viator ↗
+              Browse Available Juneau Activities on Viator ↗
             </a>
           </div>
 
