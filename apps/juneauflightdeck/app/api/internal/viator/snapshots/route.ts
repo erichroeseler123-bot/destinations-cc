@@ -7,19 +7,43 @@ export async function GET(request: Request) {
   const apiKey = (process.env.VIATOR_API_KEY || process.env.VIATOR_API)?.trim().replace(/^["']|["']$/g, "");
 
   if (!apiKey || apiKey.length < 20) {
-    return NextResponse.json({ ok: false, error: "Missing or invalid API key" }, { status: 500 });
+    return NextResponse.json({ ok: false, error: "Missing API key" }, { status: 500 });
   }
 
-  const { searchParams } = new URL(request.url);
-  const requestedCodes = searchParams.get("codes") || searchParams.get("code");
-  const codes = requestedCodes
-    ? requestedCodes.split(",").map((c) => c.trim()).filter(Boolean)
-    : ["10423P1", "10423P2", "25488P1", "3129P1", "6251SHOREXICEWALK", "5010SYDNEY"];
+  // Search 50 products matching 'helicopter' in Juneau
+  const searchRes = await fetch("https://api.viator.com/partner/products/search", {
+    method: "POST",
+    headers: {
+      "exp-api-key": apiKey,
+      "Accept": "application/json;version=2.0",
+      "Accept-Language": "en-US",
+      "Content-Type": "application/json;charset=UTF-8",
+    },
+    body: JSON.stringify({
+      filtering: { destination: "941" },
+      searchTerm: "helicopter",
+      pagination: { start: 1, count: 50 },
+      currency: "USD",
+    }),
+    cache: "no-store",
+  });
 
-  const results: any[] = [];
-  for (const code of codes) {
+  const searchData = await searchRes.json().catch(() => ({}));
+  const rawProducts = searchData?.products || [];
+
+  const helicopterFiltered = rawProducts.filter((p: any) => {
+    const t = (p.title || "").toLowerCase();
+    const d = (p.description || "").toLowerCase();
+    return t.includes("helicopter") || t.includes("heli") || t.includes("flight") || t.includes("glacier") || d.includes("helicopter");
+  });
+
+  // Fetch full details for the top matching products
+  const detailedProducts: any[] = [];
+  for (const item of helicopterFiltered.slice(0, 8)) {
+    const code = item.productCode;
+    if (!code) continue;
     try {
-      const res = await fetch(`https://api.viator.com/partner/products/${code}`, {
+      const pRes = await fetch(`https://api.viator.com/partner/products/${code}`, {
         headers: {
           "exp-api-key": apiKey,
           "Accept": "application/json;version=2.0",
@@ -27,33 +51,19 @@ export async function GET(request: Request) {
         },
         cache: "no-store",
       });
-      const data = await res.json().catch(() => ({}));
-      results.push({
-        code,
-        httpStatus: res.status,
-        ok: res.ok,
-        title: data?.title || null,
-        supplierName: data?.supplier?.name || null,
-        message: data?.message || null,
-        imagesCount: data?.images?.length || 0,
-        images: data?.images || [],
-        pricing: data?.pricing,
-        duration: data?.duration,
-        reviews: data?.reviews,
-        productUrl: data?.productUrl || data?.webUrl,
-        rawKeys: Object.keys(data || {}),
-        rawSnippet: JSON.stringify(data).slice(0, 500),
-      });
-    } catch (e: any) {
-      results.push({ code, httpStatus: 0, ok: false, error: e.message });
-    }
+      if (pRes.ok) {
+        const full = await pRes.json();
+        detailedProducts.push(full);
+      }
+    } catch {}
   }
 
   return NextResponse.json(
     {
-      ok: results.some((r) => r.ok),
-      timestamp: new Date().toISOString(),
-      results,
+      ok: true,
+      totalSearchResults: searchData?.totalCount,
+      allSearchTitles: rawProducts.map((p: any) => ({ code: p.productCode, title: p.title })),
+      detailedProducts,
     },
     {
       headers: {
