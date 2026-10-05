@@ -11,16 +11,15 @@ export async function GET(request: Request) {
   }
 
   const queries = [
-    { name: "Juneau Helicopter (no dest)", body: { searchTerm: "Juneau helicopter", pagination: { start: 1, count: 50 }, currency: "USD" } },
-    { name: "Mendenhall Helicopter (no dest)", body: { searchTerm: "Mendenhall helicopter", pagination: { start: 1, count: 50 }, currency: "USD" } },
-    { name: "TEMSCO (no dest)", body: { searchTerm: "TEMSCO", pagination: { start: 1, count: 50 }, currency: "USD" } },
-    { name: "Coastal Helicopters (no dest)", body: { searchTerm: "Coastal Helicopters", pagination: { start: 1, count: 50 }, currency: "USD" } },
-    { name: "NorthStar Trekking (no dest)", body: { searchTerm: "NorthStar Trekking", pagination: { start: 1, count: 50 }, currency: "USD" } },
-    { name: "Alaska Helicopter (no dest)", body: { searchTerm: "Alaska helicopter", pagination: { start: 1, count: 50 }, currency: "USD" } },
+    { name: "Alaska (270) Helicopter", body: { filtering: { destination: "270" }, searchTerm: "helicopter", pagination: { start: 1, count: 50 }, currency: "USD" } },
+    { name: "Alaska (270) TEMSCO", body: { filtering: { destination: "270" }, searchTerm: "TEMSCO", pagination: { start: 1, count: 50 }, currency: "USD" } },
+    { name: "Alaska (270) Coastal", body: { filtering: { destination: "270" }, searchTerm: "Coastal Helicopters", pagination: { start: 1, count: 50 }, currency: "USD" } },
+    { name: "Alaska (270) NorthStar", body: { filtering: { destination: "270" }, searchTerm: "NorthStar Trekking", pagination: { start: 1, count: 50 }, currency: "USD" } },
+    { name: "Skagway (943) Helicopter", body: { filtering: { destination: "943" }, searchTerm: "helicopter", pagination: { start: 1, count: 50 }, currency: "USD" } },
   ];
 
   const searchResults: any[] = [];
-  const foundProductCodes = new Set<string>();
+  const foundProductMap = new Map<string, any>();
 
   for (const q of queries) {
     try {
@@ -39,24 +38,25 @@ export async function GET(request: Request) {
       if (res.ok) {
         const data = await res.json();
         const products = data.products || [];
-        const heliMatches = products.filter((p: any) => {
+        const matches = products.filter((p: any) => {
           const t = (p.title || "").toLowerCase();
-          return t.includes("helicopter") || t.includes("heli") || t.includes("dog sled") || t.includes("glacier landing");
+          return t.includes("helicopter") || t.includes("heli") || t.includes("sled") || t.includes("dog");
         });
 
         searchResults.push({
           query: q.name,
           totalCount: data.totalCount,
           returnedCount: products.length,
-          heliMatches: heliMatches.map((p: any) => ({
-            code: p.productCode,
-            title: p.title,
-            destinations: p.destinations,
-          })),
+          matchesCount: matches.length,
         });
 
-        for (const p of heliMatches) {
-          if (p.productCode) foundProductCodes.add(p.productCode);
+        for (const p of matches) {
+          if (p.productCode && !foundProductMap.has(p.productCode)) {
+            foundProductMap.set(p.productCode, {
+              code: p.productCode,
+              title: p.title,
+            });
+          }
         }
       } else {
         searchResults.push({ query: q.name, status: res.status });
@@ -66,9 +66,9 @@ export async function GET(request: Request) {
     }
   }
 
-  // Fetch full details for every product code found
+  // Fetch full details for the matching products
   const fullDetails: any[] = [];
-  for (const code of Array.from(foundProductCodes)) {
+  for (const [code] of Array.from(foundProductMap.entries()).slice(0, 10)) {
     try {
       const pRes = await fetch(`https://api.viator.com/partner/products/${code}`, {
         headers: {
@@ -90,7 +90,8 @@ export async function GET(request: Request) {
       ok: true,
       timestamp: new Date().toISOString(),
       searches: searchResults,
-      uniqueHeliProductsFound: fullDetails.length,
+      uniqueMatchesFound: foundProductMap.size,
+      allMatches: Array.from(foundProductMap.values()),
       fullDetails,
     },
     {
