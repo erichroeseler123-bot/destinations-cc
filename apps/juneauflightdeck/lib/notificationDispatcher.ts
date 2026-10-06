@@ -162,8 +162,7 @@ hello@juneauflightdeck.com
   let deliveryStatus: NotificationPayload["status"] = "simulated_delivery";
 
   // Check if live Resend API key is present
-  const resendApiKey = process.env.RESEND_API_KEY || process.env.DCC_RESEND_API_KEY;
-  if (resendApiKey && resendApiKey.startsWith("re_") && resendApiKey.length > 20) {
+  if (isRealProviderConfigured && resendApiKey) {
     try {
       const { Resend } = await import("resend");
       const resend = new Resend(resendApiKey);
@@ -343,8 +342,7 @@ Notes: ${entry.notes || "None"}
 `;
 
   let deliveryStatus: NotificationPayload["status"] = "simulated_delivery";
-  const resendApiKey = process.env.RESEND_API_KEY || process.env.DCC_RESEND_API_KEY;
-  if (resendApiKey && resendApiKey.startsWith("re_") && resendApiKey.length > 20) {
+  if (isRealProviderConfigured && resendApiKey) {
     try {
       const { Resend } = await import("resend");
       const resend = new Resend(resendApiKey);
