@@ -129,7 +129,12 @@ export default function HelicopterWaitlistForm({
       const matchedTour =
         TOUR_OPTIONS.find((t) => t.value.toLowerCase() === normalized) ||
         TOUR_OPTIONS.find((t) => t.value.toLowerCase().includes(normalized)) ||
-        TOUR_OPTIONS.find((t) => t.category.toLowerCase() === normalized);
+        TOUR_OPTIONS.find((t) => normalized.includes(t.value.toLowerCase())) ||
+        TOUR_OPTIONS.find((t) => t.category.toLowerCase() === normalized) ||
+        (normalized.includes("landing") ? TOUR_OPTIONS.find((t) => t.value === "temsco-mendenhall-glacier-walk") : null) ||
+        (normalized.includes("dog") ? TOUR_OPTIONS.find((t) => t.value === "temsco-glacier-dog-sledding") : null) ||
+        (normalized.includes("trek") ? TOUR_OPTIONS.find((t) => t.value === "northstar-glacier-ice-trek") : null) ||
+        (normalized.includes("flight") ? TOUR_OPTIONS.find((t) => t.value === "flightseeing") : null);
 
       if (matchedTour) {
         setPreselectedTour(matchedTour);

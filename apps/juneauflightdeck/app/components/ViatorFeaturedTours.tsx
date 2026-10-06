@@ -1134,7 +1134,7 @@ export function TourCard({
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Link
-                href={`/helicopter-waitlist?tour=${encodeURIComponent(product.productCode)}`}
+                href={`/helicopter-waitlist?tour=${encodeURIComponent(product.productCode)}${selectedDate ? `&date=${encodeURIComponent(selectedDate)}` : ""}`}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
