@@ -33,7 +33,7 @@ export default function HelicopterDispatchBoard({
 
   const defaultSubhead = isSkagway
     ? 'Compare Skagway glacier helicopter operators, review ship-safe return buffers, and plan your weather backup.'
-    : 'Fly with TEMSCO, Coastal, or NorthStar. Book through Viator or directly with the operator, with local help around your booking. Sold out for your port date? Join our availability watch. Weather cancels your flight? We’ll help you find an available alternative.';
+    : 'Fly with the same trusted helicopter companies your cruise line books—TEMSCO, Coastal, and NorthStar—with local help around your booking. Sold out? Join our availability watch. Weather cancels your flight? We’ll help you find an available alternative.';
 
   const defaultPrimaryCta = isSkagway ? 'Compare Skagway Flights' : 'Compare Helicopter Tours';
 
@@ -106,7 +106,7 @@ export default function HelicopterDispatchBoard({
               lineHeight: 1.45,
             }}
           >
-            * Price comparison reflects independent operator &amp; Viator rates compared against cruise-line excursion desk pricing for identical flight programs (savings vary by cruise line, ship, and booking window). Backup tours depend on real-time operator availability and are booked separately.
+            * Lower-price comparison is against cruise-line excursion desk pricing for tours with the same operators (savings vary by cruise line, ship, and sailing date). Backup tours depend on availability and are booked separately.
           </div>
         )}
 

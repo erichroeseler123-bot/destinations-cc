@@ -34,7 +34,7 @@ export default function HomePage() {
         portSlug="juneau"
         sourcePage="/"
         headline="Same helicopter tour. Lower price. And it comes with a backup plan."
-        subhead="Fly with TEMSCO, Coastal, or NorthStar. Book through Viator or directly with the operator, with local help around your booking. Sold out for your port date? Join our availability watch. Weather cancels your flight? We’ll help you find an available alternative."
+        subhead="Fly with the same trusted helicopter companies your cruise line books—TEMSCO, Coastal, and NorthStar—with local help around your booking. Sold out? Join our availability watch. Weather cancels your flight? We’ll help you find an available alternative."
         primaryCtaLabel="Explore Juneau Helicopter Tours"
       />
       <section
