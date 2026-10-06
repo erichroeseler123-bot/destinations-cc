@@ -791,7 +791,7 @@ export default function ViatorFeaturedTours({
   );
 }
 
-function TourCard({
+export function TourCard({
   product,
   selectedDate,
   passengerCount,
