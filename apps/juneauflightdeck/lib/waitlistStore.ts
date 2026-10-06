@@ -706,3 +706,47 @@ export async function execute10AmDailySweep(options?: {
     accessFailures,
   };
 }
+
+/**
+ * Purges marked test submissions and test notifications from persistent Postgres storage
+ * and the local in-memory store so they never pollute production metrics or scanning.
+ */
+export async function purgeTestWaitlistEntries(): Promise<{
+  deletedSubmissions: number;
+  deletedNotifications: number;
+}> {
+  const sql = getDb();
+  let deletedSubmissions = 0;
+  let deletedNotifications = 0;
+
+  if (sql) {
+    try {
+      await ensureDbTables();
+      const subRes = await sql`
+        DELETE FROM jfd_waitlist_submissions
+        WHERE is_test = true 
+           OR status = 'test_excluded' 
+           OR email = 'ops-test@juneauflightdeck.com'
+        RETURNING id;
+      `;
+      const notifRes = await sql`
+        DELETE FROM jfd_waitlist_notifications
+        WHERE is_test = true 
+           OR recipient_email = 'ops-test@juneauflightdeck.com'
+        RETURNING delivery_id;
+      `;
+      deletedSubmissions = subRes.length;
+      deletedNotifications = notifRes.length;
+    } catch (err) {
+      console.warn("[WaitlistStore] Database purge of test entries error:", err);
+    }
+  }
+
+  // Also clean inMemoryStore
+  inMemoryStore = inMemoryStore.filter(
+    (e) => !e.isTest && e.status !== "test_excluded" && e.email !== "ops-test@juneauflightdeck.com"
+  );
+
+  return { deletedSubmissions, deletedNotifications };
+}
+

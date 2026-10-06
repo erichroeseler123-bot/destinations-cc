@@ -3,6 +3,7 @@ import {
   getAllWaitlistEntries,
   execute10AmDailySweep,
   updateWaitlistStatus,
+  purgeTestWaitlistEntries,
   type WaitlistEntry,
 } from "../../../../lib/waitlistStore";
 import {
@@ -191,7 +192,17 @@ export async function GET(request: Request) {
       }
     }
 
-    // 3. Handle automated Vercel Cron sweep or manual GET trigger
+    // 3. Purge marked test entries from database
+    if (action === "purge_tests") {
+      const purgeResult = await purgeTestWaitlistEntries();
+      return NextResponse.json({
+        ok: true,
+        message: `Purged ${purgeResult.deletedSubmissions} test submissions and ${purgeResult.deletedNotifications} test notifications.`,
+        purgeResult,
+      });
+    }
+
+    // 4. Handle automated Vercel Cron sweep or manual GET trigger
     if (action === "sweep" || action === "run_sweep") {
       const force = url.searchParams.get("force") === "true";
       const includeTest = url.searchParams.get("include_test") === "true";

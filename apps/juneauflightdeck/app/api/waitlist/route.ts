@@ -43,8 +43,8 @@ export async function POST(request: Request) {
       partySize = 2,
       bookingMode = "instant_alert",
       notes,
-      isTest = false,
     } = body;
+    const isTest = Boolean(body.isTest ?? body.is_test ?? false);
 
     // 1. Basic Identity Validation
     if (!name || typeof name !== "string" || name.trim().length < 2) {
