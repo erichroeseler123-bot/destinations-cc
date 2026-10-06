@@ -31,7 +31,7 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     rating: null,
     reviewCount: null,
     badges: ["Signature Glacier Landing", "Part 135 Certified"],
-    cancellationPolicy: "Operator Weather Guarantee · 100% refund if flight is grounded due to weather",
+    cancellationPolicy: "48h customer cutoff · 100% refund if grounded for weather or ship delays",
     bookHref:
       "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Helicopters&pid=P00058396&mcid=42383&medium=api",
     tourType: "glacier_landing",
@@ -58,7 +58,7 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     rating: null,
     reviewCount: null,
     badges: ["Glacier Dog Sledding", "Part 135 Certified"],
-    cancellationPolicy: "Operator Weather Guarantee · 100% refund if flight is grounded due to weather",
+    cancellationPolicy: "48h customer cutoff · 100% refund if grounded for weather or ship delays",
     bookHref:
       "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+dog+sledding&pid=P00058396&mcid=42383&medium=api",
     tourType: "dog_sledding",
@@ -85,7 +85,7 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     rating: null,
     reviewCount: null,
     badges: ["Icefield Flight & Landing", "Part 135 Certified"],
-    cancellationPolicy: "Operator Weather Guarantee · 100% refund if flight is grounded due to weather",
+    cancellationPolicy: "7-day customer cutoff · 100% refund if grounded for weather or ship delays",
     bookHref:
       "https://www.viator.com/searchResults/all?text=Juneau+Coastal+Helicopters&pid=P00058396&mcid=42383&medium=api",
     tourType: "glacier_landing",
@@ -112,7 +112,7 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     rating: null,
     reviewCount: null,
     badges: ["Small-Group Adventure", "Part 135 Certified"],
-    cancellationPolicy: "Operator Weather Guarantee · 100% refund if flight is grounded due to weather",
+    cancellationPolicy: "48h customer cutoff · 100% refund if grounded for weather or ship delays",
     bookHref:
       "https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Trekking&pid=P00058396&mcid=42383&medium=api",
     tourType: "ice_trek",

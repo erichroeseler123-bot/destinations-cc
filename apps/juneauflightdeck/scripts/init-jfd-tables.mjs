@@ -1,31 +1,18 @@
-import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
+import dotenv from "dotenv";
+import { neon } from "@neondatabase/serverless";
 
-let cachedDb: NeonQueryFunction<false, false> | null = null;
+dotenv.config({ path: "./.env.local" });
 
-export function getDb(): NeonQueryFunction<false, false> | null {
-  const connectionString =
-    process.env.DATABASE_URL ||
-    process.env.POSTGRES_URL ||
-    process.env.DATABASE_POSTGRES_URL;
-
-  if (
-    !connectionString ||
-    connectionString === "[SENSITIVE]" ||
-    connectionString.length < 20 ||
-    !connectionString.startsWith("postgres")
-  ) {
-    return null;
-  }
-
-  if (!cachedDb) {
-    cachedDb = neon(connectionString);
-  }
-  return cachedDb;
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  console.error("No DATABASE_URL found");
+  process.exit(1);
 }
 
-export async function ensureDbTables(): Promise<void> {
-  const sql = getDb();
-  if (!sql) return;
+const sql = neon(connectionString);
+
+async function init() {
+  console.log("Creating/verifying JFD waitlist tables in Postgres...");
 
   await sql`
     CREATE TABLE IF NOT EXISTS jfd_waitlist_submissions (
@@ -47,15 +34,9 @@ export async function ensureDbTables(): Promise<void> {
       operator_hold_status text NOT NULL DEFAULT 'not_held',
       notes text,
       estimated_value integer,
-      is_test boolean NOT NULL DEFAULT false,
       last_scanned_at timestamptz,
       raw_entry jsonb NOT NULL
     );
-  `;
-
-  await sql`
-    ALTER TABLE jfd_waitlist_submissions
-    ADD COLUMN IF NOT EXISTS is_test boolean NOT NULL DEFAULT false;
   `;
 
   await sql`
@@ -75,14 +56,21 @@ export async function ensureDbTables(): Promise<void> {
       departure_time text NOT NULL,
       status text NOT NULL,
       payload jsonb NOT NULL,
-      is_test boolean NOT NULL DEFAULT false,
       dispatched_at timestamptz NOT NULL DEFAULT now(),
       UNIQUE(entry_id, port_date, departure_time)
     );
   `;
 
-  await sql`
-    ALTER TABLE jfd_waitlist_notifications
-    ADD COLUMN IF NOT EXISTS is_test boolean NOT NULL DEFAULT false;
+  console.log("Tables verified successfully!");
+
+  const tables = await sql`
+    SELECT table_name FROM information_schema.tables 
+    WHERE table_name IN ('jfd_waitlist_submissions', 'jfd_waitlist_notifications');
   `;
+  console.log("Created tables:", tables.map(t => t.table_name));
 }
+
+init().catch(err => {
+  console.error("Initialization failed:", err);
+  process.exit(1);
+});

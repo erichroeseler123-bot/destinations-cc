@@ -43,6 +43,7 @@ export async function POST(request: Request) {
       partySize = 2,
       bookingMode = "instant_alert",
       notes,
+      isTest = false,
     } = body;
 
     // 1. Basic Identity Validation
@@ -191,7 +192,8 @@ export async function POST(request: Request) {
       partySize: parsedPartySize,
       bookingMode: normalizedMode,
       notes: notes ? String(notes).trim() : undefined,
-      status: "active_scanning",
+      status: isTest ? "test_excluded" : "active_scanning",
+      isTest: Boolean(isTest),
       operatorHoldStatus: "not_held",
       estimatedValue: parsedPartySize * perSeat,
     };
@@ -211,6 +213,7 @@ export async function POST(request: Request) {
       submissionId,
       notificationDispatched,
       bookingMode: entry.bookingMode,
+      isTest: entry.isTest,
       message:
         entry.bookingMode === "concierge_dispatch"
           ? "Concierge Dispatch Alert activated! Our 10:00 AM daily sweep will monitor operator drops. If seats open, dispatch will alert you via phone and email with direct flight checkout."
@@ -224,7 +227,7 @@ export async function POST(request: Request) {
         dateVerification: entry.dateVerification,
         operatorHoldStatus: entry.operatorHoldStatus,
         cancellationNotice:
-          "All bookings are backed by operator-specific cancellation terms (TEMSCO/NorthStar: 48h full refund; Coastal: 7+ days full refund, 4–6 days 50%, non-refundable <3 days) and 100% full refund for weather cancellations or cruise ship itinerary delays.",
+          "• Customer Cancellation Cutoff: Full refund according to operator policy (TEMSCO/NorthStar: 48h prior; Coastal: 7+ days prior). • Operator Weather & Port Policy: 100% full refund if flight is grounded due to weather/safety or if ship misses port (independent of the customer cancellation cutoff).",
       },
     });
   } catch (err: any) {

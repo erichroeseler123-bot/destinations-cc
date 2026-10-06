@@ -30,7 +30,7 @@ export const SCANNED_PRODUCTS: ScannedProduct[] = [
     itemPk: 214810,
     companyShortname: "temscoair-juneau",
     cancellationPolicy:
-      "TEMSCO Aviation Juneau terms: 100% full refund at least 48 hours prior to flight departure. Non-refundable within 48 hours. 100% refund for weather cancellations or cruise ship delay.",
+      "TEMSCO Aviation Juneau terms: • Customer Cancellation Cutoff: 100% full refund at least 48 hours prior to flight departure; non-refundable within 48 hours. • Weather & Port Policy: 100% full refund if the flight is grounded due to weather or if your cruise ship misses port (independent of customer 48h cutoff).",
   },
   {
     key: "temsco_juneau_glacier_landing",
@@ -41,7 +41,7 @@ export const SCANNED_PRODUCTS: ScannedProduct[] = [
     itemPk: 214803,
     companyShortname: "temscoair-juneau",
     cancellationPolicy:
-      "TEMSCO Aviation Juneau terms: 100% full refund at least 48 hours prior to flight departure. Non-refundable within 48 hours. 100% refund for weather cancellations or cruise ship delay.",
+      "TEMSCO Aviation Juneau terms: • Customer Cancellation Cutoff: 100% full refund at least 48 hours prior to flight departure; non-refundable within 48 hours. • Weather & Port Policy: 100% full refund if the flight is grounded due to weather or if your cruise ship misses port (independent of customer 48h cutoff).",
   },
   {
     key: "coastal_juneau_icefield",
@@ -52,7 +52,7 @@ export const SCANNED_PRODUCTS: ScannedProduct[] = [
     itemPk: 413056,
     companyShortname: "coastalhelicopters",
     cancellationPolicy:
-      "Coastal Helicopters published terms: 100% full refund at least 7 days (168 hours) prior to flight departure. 50% charge (50% refund) 4–6 days (96–144 hours) ahead. Non-refundable within 3 days (less than 72 hours). 100% full refund if flight is grounded due to weather or cruise delay.",
+      "Coastal Helicopters terms: • Customer Cancellation Cutoff: 100% full refund at least 7 days (168 hours) prior; 50% refund 4–6 days ahead; non-refundable within 3 days (72 hours). • Weather & Port Policy: 100% full refund if flight is grounded due to weather or cruise delay (independent of customer cancellation cutoff).",
   },
   {
     key: "northstar_juneau_ice_trek",
@@ -63,7 +63,7 @@ export const SCANNED_PRODUCTS: ScannedProduct[] = [
     itemPk: 116035,
     companyShortname: "northstartrekking",
     cancellationPolicy:
-      "NorthStar Trekking terms: 100% full refund at least 48 hours prior to flight departure. Non-refundable within 48 hours. 100% refund for weather cancellations or cruise ship delay.",
+      "NorthStar Trekking terms: • Customer Cancellation Cutoff: 100% full refund at least 48 hours prior to flight departure; non-refundable within 48 hours. • Weather & Port Policy: 100% full refund if flight is grounded due to weather or cruise ship delay (independent of customer 48h cutoff).",
   },
   {
     key: "temsco_skagway_dog_sledding",
@@ -74,7 +74,7 @@ export const SCANNED_PRODUCTS: ScannedProduct[] = [
     itemPk: 213556,
     companyShortname: "temscoair-skagway",
     cancellationPolicy:
-      "TEMSCO Aviation Skagway terms: 100% full refund with 48 hours notice prior to tour departure time. Non-refundable within 48 hours. 100% refund if weather prevents safe flying or cruise ship bypasses Skagway.",
+      "TEMSCO Aviation Skagway terms: • Customer Cancellation Cutoff: 100% full refund with at least 48 hours notice prior to tour departure; non-refundable within 48 hours. • Weather & Port Policy: 100% full refund if weather prevents safe flying or cruise ship bypasses Skagway (independent of customer 48h cutoff).",
   },
   {
     key: "temsco_skagway_glacier_landing",
@@ -85,7 +85,7 @@ export const SCANNED_PRODUCTS: ScannedProduct[] = [
     itemPk: 213561,
     companyShortname: "temscoair-skagway",
     cancellationPolicy:
-      "TEMSCO Aviation Skagway terms: 100% full refund with 48 hours notice prior to tour departure time. Non-refundable within 48 hours. 100% refund if weather prevents safe flying or cruise ship bypasses Skagway.",
+      "TEMSCO Aviation Skagway terms: • Customer Cancellation Cutoff: 100% full refund with at least 48 hours notice prior to tour departure; non-refundable within 48 hours. • Weather & Port Policy: 100% full refund if weather prevents safe flying or cruise ship bypasses Skagway (independent of customer 48h cutoff).",
   },
 ];
 
@@ -95,7 +95,8 @@ export type WaitlistStatus =
   | "contact_pending"   // Notification/dispatch alert sent, awaiting passenger checkout
   | "held"              // ONLY when an operator hold is placed with holdReference and holdExpiresAt
   | "booking_confirmed" // Verified completed booking via checkout URL / operator confirmation
-  | "cancelled";        // Passenger declined or expired
+  | "cancelled"         // Passenger declined or expired
+  | "test_excluded";    // Test/synthetic request excluded from active scanning and business metrics
 
 export interface WaitlistEntry {
   id: string;
@@ -116,6 +117,7 @@ export interface WaitlistEntry {
   preferredOperator?: "temsco" | "coastal" | "northstar" | "any";
   bookingMode: "instant_alert" | "concierge_dispatch" | "priority_hold" | "sms_alert";
   status: WaitlistStatus;
+  isTest?: boolean;
   lastScannedAt?: string;
   matchedPort?: "juneau" | "skagway";
   matchedOperator?: string;
@@ -333,19 +335,21 @@ export async function saveWaitlistEntry(entry: WaitlistEntry): Promise<void> {
         port_city, port_date, juneau_date, skagway_date,
         tour_type, party_size, booking_mode, status,
         operator_hold_status, notes, estimated_value,
-        last_scanned_at, raw_entry
+        is_test, last_scanned_at, raw_entry
       ) VALUES (
         ${entry.id}, ${entry.name}, ${entry.email}, ${entry.phone || null},
         ${entry.cruiseLine}, ${entry.shipName}, ${entry.portCity},
         ${entry.portDate}, ${entry.juneauDate || null}, ${entry.skagwayDate || null},
         ${entry.tourType}, ${entry.partySize}, ${entry.bookingMode},
         ${entry.status}, ${entry.operatorHoldStatus}, ${entry.notes || null},
-        ${entry.estimatedValue || 0}, ${entry.lastScannedAt ? new Date(entry.lastScannedAt) : null},
+        ${entry.estimatedValue || 0}, ${Boolean(entry.isTest || entry.status === "test_excluded")},
+        ${entry.lastScannedAt ? new Date(entry.lastScannedAt) : null},
         ${JSON.stringify(entry)}::jsonb
       )
       ON CONFLICT (id) DO UPDATE SET
         status = EXCLUDED.status,
         operator_hold_status = EXCLUDED.operator_hold_status,
+        is_test = EXCLUDED.is_test,
         last_scanned_at = EXCLUDED.last_scanned_at,
         raw_entry = EXCLUDED.raw_entry;
     `;
@@ -415,9 +419,9 @@ export async function execute10AmDailySweep(): Promise<SweepResult> {
   const all = await getAllWaitlistEntries();
   const today = getTodayAlaskaDate();
 
-  // Strictly exclude expired watch dates (dates in the past)
+  // Strictly exclude expired watch dates (dates in the past) and test entries
   const activeEntries = all.filter((e) => {
-    if (e.status !== "active_scanning") return false;
+    if (e.status !== "active_scanning" || e.isTest) return false;
     const targetDate = e.portDate || e.juneauDate || e.skagwayDate;
     if (targetDate && targetDate < today) return false;
     return true;

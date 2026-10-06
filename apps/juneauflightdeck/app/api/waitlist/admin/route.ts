@@ -90,16 +90,19 @@ export async function GET(request: Request) {
       });
     }
 
-    const entries: WaitlistEntry[] = await getAllWaitlistEntries();
-    const activeEntries = entries.filter((e: WaitlistEntry) => e.status === "active_scanning");
-    const alertedEntries = entries.filter(
+    const allEntries: WaitlistEntry[] = await getAllWaitlistEntries();
+    const productionEntries = allEntries.filter((e: WaitlistEntry) => !e.isTest && e.status !== "test_excluded");
+    const testEntries = allEntries.filter((e: WaitlistEntry) => Boolean(e.isTest || e.status === "test_excluded"));
+
+    const activeEntries = productionEntries.filter((e: WaitlistEntry) => e.status === "active_scanning");
+    const alertedEntries = productionEntries.filter(
       (e: WaitlistEntry) => e.status === "contact_pending" || e.status === "opening_detected" || e.status === "held"
     );
-    const confirmedEntries = entries.filter((e: WaitlistEntry) => e.status === "booking_confirmed");
+    const confirmedEntries = productionEntries.filter((e: WaitlistEntry) => e.status === "booking_confirmed");
 
     const uniqueDates = Array.from(new Set(activeEntries.map((e: WaitlistEntry) => e.portDate))).sort();
 
-    const totalPotentialValue = entries.reduce((acc: number, curr: WaitlistEntry) => {
+    const totalPotentialValue = productionEntries.reduce((acc: number, curr: WaitlistEntry) => {
       const perSeat = curr.tourType === "dog_sledding" ? 649 : curr.tourType === "ice_trek" ? 599 : 449;
       return acc + (curr.estimatedValue || curr.partySize * perSeat);
     }, 0);
@@ -109,16 +112,18 @@ export async function GET(request: Request) {
     return NextResponse.json({
       ok: true,
       metrics: {
-        totalWatches: entries.length,
+        totalWatches: productionEntries.length,
         activeScanning: activeEntries.length,
         contactPending: alertedEntries.length,
         confirmedBookings: confirmedEntries.length,
         uniqueWatchDates: uniqueDates.length,
         totalPotentialValue,
         estimatedCommission,
+        testExcludedCount: testEntries.length,
       },
       activeDates: uniqueDates,
-      entries,
+      entries: productionEntries,
+      testEntries,
     });
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: err?.message || "Failed to process admin request" }, { status: 500 });

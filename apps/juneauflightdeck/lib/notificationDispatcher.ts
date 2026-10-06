@@ -52,11 +52,11 @@ export async function dispatchSeatDropNotification(params: {
   partySize: number;
   checkoutUrl: string;
   cancellationPolicy: string;
+  isTest?: boolean;
 }): Promise<NotificationPayload | null> {
   const sql = getDb();
 
-  // Deduplication check: Has a notification ALREADY been successfully delivered for this passenger + port date + departure slot?
-  // Failed or simulated records must NEVER block a subsequent real delivery retry!
+  // Deduplication check: Has a notification ALREADY been dispatched/delivered for this passenger + port date + departure slot?
   if (sql) {
     try {
       await ensureDbTables();
@@ -65,7 +65,7 @@ export async function dispatchSeatDropNotification(params: {
         WHERE entry_id = ${params.guestId}
           AND port_date = ${params.portDate}
           AND departure_time = ${params.departureTime}
-          AND status = 'delivered'
+          AND status IN ('delivered', 'simulated_delivery')
         LIMIT 1;
       `;
       if (existing.length > 0) {
@@ -101,7 +101,7 @@ Party Size: ${params.partySize} passenger(s)
 Lock in your seats directly with the operator before public inventory fills:
 ${params.checkoutUrl}
 
---- OPERATOR CANCELLATION TERMS ---
+--- OPERATOR POLICIES & GUARANTEES ---
 ${params.cancellationPolicy}
 
 IMPORTANT NOTICE: This is an automated notification of detected availability based on our 10:00 AM fleet scan. Seats are NOT pre-held on your behalf and will remain open to the public until you complete checkout at the link above.
@@ -134,9 +134,11 @@ hello@juneauflightdeck.com
       </a>
     </div>
 
-    <div style="background-color: #fffbeb; border: 1px solid #fef3c7; padding: 14px; border-radius: 6px; font-size: 13px; color: #92400e; margin-bottom: 20px;">
-      <strong>Operator Cancellation Policy:</strong><br/>
-      ${params.cancellationPolicy}
+    <div style="background-color: #fffbeb; border: 1px solid #fef3c7; padding: 16px; border-radius: 6px; font-size: 13px; color: #92400e; margin-bottom: 20px;">
+      <strong style="color: #78350f; font-size: 14px;">Operator Cancellation & Weather Policies:</strong>
+      <div style="margin-top: 8px; line-height: 1.6;">
+        ${params.cancellationPolicy.split("•").filter(Boolean).map((part: string) => `<p style="margin: 4px 0;">• ${part.trim()}</p>`).join("")}
+      </div>
     </div>
 
     <p style="font-size: 12px; color: #64748b; line-height: 1.5;">
@@ -201,11 +203,12 @@ hello@juneauflightdeck.com
         INSERT INTO jfd_waitlist_notifications (
           delivery_id, entry_id, recipient_email, recipient_phone,
           tour_name, operator, port, port_date, departure_time,
-          status, payload, dispatched_at
+          status, payload, is_test, dispatched_at
         ) VALUES (
           ${deliveryId}, ${params.guestId}, ${params.email}, ${params.phone || null},
           ${params.tourName}, ${params.operator}, ${params.port}, ${params.portDate},
           ${params.departureTime}, ${deliveryStatus}, ${JSON.stringify(payload)}::jsonb,
+          ${Boolean(params.isTest)},
           ${new Date(dispatchedAt)}
         )
         ON CONFLICT (entry_id, port_date, departure_time) 
@@ -213,6 +216,7 @@ hello@juneauflightdeck.com
           delivery_id = EXCLUDED.delivery_id,
           status = EXCLUDED.status,
           payload = EXCLUDED.payload,
+          is_test = EXCLUDED.is_test,
           dispatched_at = EXCLUDED.dispatched_at
         WHERE jfd_waitlist_notifications.status != 'delivered';
       `;
@@ -255,8 +259,31 @@ export async function dispatchWaitlistIntakeNotification(entry: {
   partySize: number;
   bookingMode: string;
   notes?: string;
+  isTest?: boolean;
 }): Promise<NotificationPayload | null> {
   const sql = getDb();
+
+  // Deduplication check: Do not re-dispatch intake alert if already recorded
+  if (sql) {
+    try {
+      await ensureDbTables();
+      const existing = await sql`
+        SELECT delivery_id, status FROM jfd_waitlist_notifications
+        WHERE entry_id = ${entry.id}
+          AND port_date = ${entry.portDate}
+          AND departure_time = 'Intake Alert'
+          AND status IN ('delivered', 'simulated_delivery')
+        LIMIT 1;
+      `;
+      if (existing.length > 0) {
+        console.log(`[NotificationDispatcher] Intake notification suppressed for ${entry.id}: already recorded.`);
+        return null;
+      }
+    } catch (err) {
+      console.warn("[NotificationDispatcher] DB intake deduplication check error:", err);
+    }
+  }
+
   const deliveryId = `INTAKE-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
   const dispatchedAt = new Date().toISOString();
   const teamEmail = process.env.TEAM_NOTIFICATION_EMAIL || process.env.DISPATCH_NOTIFICATION_EMAIL || "dispatch@juneauflightdeck.com";
@@ -348,11 +375,12 @@ Notes: ${entry.notes || "None"}
         INSERT INTO jfd_waitlist_notifications (
           delivery_id, entry_id, recipient_email, recipient_phone,
           tour_name, operator, port, port_date, departure_time,
-          status, payload, dispatched_at
+          status, payload, is_test, dispatched_at
         ) VALUES (
           ${deliveryId}, ${entry.id}, ${teamEmail}, ${entry.phone || null},
           ${entry.tourType}, ${'Juneau Flight Deck Dispatch'}, ${entry.portCity}, ${entry.portDate},
           ${'Intake Alert'}, ${deliveryStatus}, ${JSON.stringify(payload)}::jsonb,
+          ${Boolean(entry.isTest)},
           ${new Date(dispatchedAt)}
         )
         ON CONFLICT (entry_id, port_date, departure_time)
@@ -360,6 +388,7 @@ Notes: ${entry.notes || "None"}
           delivery_id = EXCLUDED.delivery_id,
           status = EXCLUDED.status,
           payload = EXCLUDED.payload,
+          is_test = EXCLUDED.is_test,
           dispatched_at = EXCLUDED.dispatched_at;
       `;
     } catch (err) {
