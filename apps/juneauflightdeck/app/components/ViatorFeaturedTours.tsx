@@ -404,7 +404,7 @@ export default function ViatorFeaturedTours({
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: "1rem" }}>🔔</span>
             <span>
-              <strong>Operator Flight Scheduling:</strong> Live booking calendar departures are currently syncing. Explore verified operator flight profiles below and select <em>Get Availability Alert</em> for seat opening notices.
+              <strong>Operator Flight Scheduling:</strong> Live online booking inventory is currently unavailable through the direct API feed. Explore verified operator flight profiles below and select <em>Get Availability Alert</em> to monitor openings on your cruise date.
             </span>
           </div>
           <Link
@@ -1157,11 +1157,12 @@ export function TourCard({
                 href={finalBookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                title={`Check ${product.title} on Viator`}
+                title={`Search ${product.supplierName || product.title} on Viator`}
+                aria-label={`Search ${product.supplierName || product.title} listings on Viator`}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  padding: "8px 10px",
+                  padding: "8px 12px",
                   borderRadius: "var(--radius-md, 18px)",
                   background: "rgba(151, 211, 255, 0.08)",
                   border: "1px solid rgba(151, 211, 255, 0.2)",
@@ -1171,7 +1172,7 @@ export function TourCard({
                   textDecoration: "none",
                 }}
               >
-                Viator ↗
+                {product.supplierName ? `${product.supplierName.split(" ")[0]} on Viator ↗` : "Viator ↗"}
               </a>
             </div>
           )}

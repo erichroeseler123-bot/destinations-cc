@@ -19,12 +19,69 @@ const CRUISE_LINES = [
   "Other / Independent Hotel Stay",
 ];
 
-const TOUR_OPTIONS = [
-  { value: "any", label: "Any Available Helicopter Seat (Highest Success Rate)" },
-  { value: "glacier_landing", label: "Classic Glacier Landing (Walk on Mendenhall/Herbert Ice)" },
-  { value: "dog_sledding", label: "Helicopter Glacier Dog Sledding (High Demand — Sold Out Months Early)" },
-  { value: "ice_trek", label: "Glacier Ice Trek (Crampons, Harnesses & 2hr Crevasse Hike)" },
-  { value: "flightseeing", label: "5-Glacier Scenic Flightseeing (Pure Airtime, No Ice Landing)" },
+export interface TourOption {
+  value: string;
+  label: string;
+  operator?: string;
+  category: "glacier_landing" | "dog_sledding" | "ice_trek" | "flightseeing" | "any";
+  highlight?: string;
+}
+
+export const TOUR_OPTIONS: TourOption[] = [
+  {
+    value: "temsco-mendenhall-glacier-walk",
+    label: "TEMSCO: Mendenhall Glacier Tour & Guided Ice Walk",
+    operator: "TEMSCO Helicopters",
+    category: "glacier_landing",
+    highlight: "Landing directly on Mendenhall Glacier ice with guided walk",
+  },
+  {
+    value: "temsco-glacier-dog-sledding",
+    label: "TEMSCO: Helicopter Glacier Dog Sledding Tour",
+    operator: "TEMSCO Helicopters",
+    category: "dog_sledding",
+    highlight: "High demand — authentic high-altitude glacier dog sled camp",
+  },
+  {
+    value: "coastal-icefield-landing",
+    label: "Coastal: Juneau Icefield Flight & Glacier Landing",
+    operator: "Coastal Helicopters",
+    category: "glacier_landing",
+    highlight: "Herbert Glacier deep crevasses and cascading icefall landing",
+  },
+  {
+    value: "northstar-glacier-ice-trek",
+    label: "NorthStar: Small-Group Glacier Ice Trek & Mountaineering",
+    operator: "NorthStar Trekking",
+    category: "ice_trek",
+    highlight: "Crampons, harnesses & 2hr deep crevasse exploration",
+  },
+  {
+    value: "any",
+    label: "Any Available Helicopter Seat (Highest Success Rate)",
+    category: "any",
+    highlight: "Scans all 3 operators for any open passenger space",
+  },
+  {
+    value: "glacier_landing",
+    label: "Any Glacier Landing (TEMSCO or Coastal Helicopters)",
+    category: "glacier_landing",
+  },
+  {
+    value: "dog_sledding",
+    label: "Any Glacier Dog Sledding (TEMSCO Juneau or Skagway)",
+    category: "dog_sledding",
+  },
+  {
+    value: "ice_trek",
+    label: "Any Glacier Ice Trek / Climb (NorthStar Trekking)",
+    category: "ice_trek",
+  },
+  {
+    value: "flightseeing",
+    label: "Scenic Flightseeing (Pure Airtime, No Ice Landing)",
+    category: "flightseeing",
+  },
 ];
 
 export default function HelicopterWaitlistForm({
@@ -50,6 +107,7 @@ export default function HelicopterWaitlistForm({
     bookingMode: "instant_alert" as "instant_alert" | "concierge_dispatch",
   });
 
+  const [preselectedTour, setPreselectedTour] = useState<TourOption | null>(null);
   const [selectedShipData, setSelectedShipData] = useState<AlaskaShipData | null>(null);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -64,6 +122,23 @@ export default function HelicopterWaitlistForm({
     const shipParam = params.get("ship");
     const dateParam = params.get("date");
     const modeParam = params.get("mode");
+    const tourParam = params.get("tour");
+
+    if (tourParam) {
+      const normalized = tourParam.toLowerCase().trim();
+      const matchedTour =
+        TOUR_OPTIONS.find((t) => t.value.toLowerCase() === normalized) ||
+        TOUR_OPTIONS.find((t) => t.value.toLowerCase().includes(normalized)) ||
+        TOUR_OPTIONS.find((t) => t.category.toLowerCase() === normalized);
+
+      if (matchedTour) {
+        setPreselectedTour(matchedTour);
+        setFormData((prev) => ({
+          ...prev,
+          tourType: matchedTour.value,
+        }));
+      }
+    }
 
     if (shipParam) {
       const matched = ALASKA_CRUISE_FLEET.find(
@@ -226,6 +301,27 @@ ${shareUrl}`;
           When an open space appears on your ship&apos;s date, <strong>we alert you immediately with direct booking links</strong>.
         </p>
       </div>
+
+      {preselectedTour && (
+        <div className="waitlist-preselected-banner">
+          <div className="waitlist-preselected-banner-inner">
+            <span className="waitlist-preselected-icon">🎯</span>
+            <div>
+              <div className="waitlist-preselected-eyebrow">
+                Selected Tour Experience
+              </div>
+              <h4 className="waitlist-preselected-title">
+                {preselectedTour.label}
+              </h4>
+              {preselectedTour.highlight && (
+                <p className="waitlist-preselected-highlight">
+                  {preselectedTour.highlight}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="waitlist-how-it-works-grid">
         <div className="how-step">
@@ -571,13 +667,27 @@ ${shareUrl}`;
               <select
                 id="tourType"
                 value={formData.tourType}
-                onChange={(e) => setFormData({ ...formData, tourType: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormData({ ...formData, tourType: val });
+                  const found = TOUR_OPTIONS.find((t) => t.value === val);
+                  setPreselectedTour(found || null);
+                }}
               >
-                {TOUR_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
+                <optgroup label="Operator-Specific Flight Profiles">
+                  {TOUR_OPTIONS.filter((opt) => opt.operator).map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Broad Helicopter Categories">
+                  {TOUR_OPTIONS.filter((opt) => !opt.operator).map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </optgroup>
               </select>
             </div>
 

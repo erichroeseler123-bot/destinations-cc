@@ -235,3 +235,149 @@ hello@juneauflightdeck.com
 
   return payload;
 }
+
+/**
+ * Dispatches an intake notification to the operations/dispatch team when a new waitlist request is submitted.
+ * Records the intake event in persistent database (jfd_waitlist_notifications) and backup storage.
+ */
+export async function dispatchWaitlistIntakeNotification(entry: {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  cruiseLine: string;
+  shipName: string;
+  portCity: string;
+  portDate: string;
+  juneauDate?: string;
+  skagwayDate?: string;
+  tourType: string;
+  partySize: number;
+  bookingMode: string;
+  notes?: string;
+}): Promise<NotificationPayload | null> {
+  const sql = getDb();
+  const deliveryId = `INTAKE-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const dispatchedAt = new Date().toISOString();
+  const teamEmail = process.env.TEAM_NOTIFICATION_EMAIL || process.env.DISPATCH_NOTIFICATION_EMAIL || "dispatch@juneauflightdeck.com";
+
+  const emailSubject = `✈️ NEW WAITLIST REQUEST: ${entry.name} (${entry.partySize}p) - ${entry.shipName} on ${entry.portDate}`;
+
+  const emailBodyText = `NEW HELICOPTER SEAT REQUEST RECEIVED:
+ID: ${entry.id}
+Passenger: ${entry.name}
+Email: ${entry.email}
+Phone: ${entry.phone || "Not provided"}
+Ship: ${entry.shipName} (${entry.cruiseLine})
+Port Date: ${entry.portDate}
+Port: ${entry.portCity}
+Tour Requested: ${entry.tourType}
+Party Size: ${entry.partySize}
+Alert Preference: ${entry.bookingMode}
+Notes: ${entry.notes || "None"}
+`;
+
+  const emailBodyHtml = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #081c2a; color: #eef6fb; border-radius: 14px;">
+  <h2 style="color: #f0b35b; margin-top: 0;">✈️ New Waitlist Request Received</h2>
+  <p style="font-size: 14px; color: #9ed9ff;">A new passenger availability-alert watch has been activated.</p>
+  <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0;">
+    <tr><td style="padding: 6px 0; color: #94a3b8;">Request ID:</td><td style="font-weight: bold; color: #ffffff;">${entry.id}</td></tr>
+    <tr><td style="padding: 6px 0; color: #94a3b8;">Passenger:</td><td style="font-weight: bold; color: #ffffff;">${entry.name}</td></tr>
+    <tr><td style="padding: 6px 0; color: #94a3b8;">Email:</td><td style="color: #38bdf8;">${entry.email}</td></tr>
+    <tr><td style="padding: 6px 0; color: #94a3b8;">Phone:</td><td style="color: #ffffff;">${entry.phone || "None"}</td></tr>
+    <tr><td style="padding: 6px 0; color: #94a3b8;">Ship:</td><td style="color: #ffffff;">${entry.shipName} (${entry.cruiseLine})</td></tr>
+    <tr><td style="padding: 6px 0; color: #94a3b8;">Port Date:</td><td style="color: #ffffff;">${entry.portDate}</td></tr>
+    <tr><td style="padding: 6px 0; color: #94a3b8;">Tour Type:</td><td style="color: #ffd596; font-weight: bold;">${entry.tourType}</td></tr>
+    <tr><td style="padding: 6px 0; color: #94a3b8;">Party Size:</td><td style="color: #ffffff;">${entry.partySize}</td></tr>
+    <tr><td style="padding: 6px 0; color: #94a3b8;">Mode:</td><td style="color: #86efac;">${entry.bookingMode}</td></tr>
+    <tr><td style="padding: 6px 0; color: #94a3b8;">Notes:</td><td style="color: #ffffff;">${entry.notes || "None"}</td></tr>
+  </table>
+</div>
+`;
+
+  let deliveryStatus: NotificationPayload["status"] = "simulated_delivery";
+  const resendApiKey = process.env.RESEND_API_KEY || process.env.DCC_RESEND_API_KEY;
+  if (resendApiKey && resendApiKey.startsWith("re_") && resendApiKey.length > 20) {
+    try {
+      const { Resend } = await import("resend");
+      const resend = new Resend(resendApiKey);
+      const res = await resend.emails.send({
+        from: process.env.DEPLOY_TEST_EMAIL_FROM || "press@juneauflightdeck.com",
+        to: teamEmail,
+        subject: emailSubject,
+        html: emailBodyHtml,
+        text: emailBodyText,
+      });
+      if (res.data?.id) {
+        deliveryStatus = "delivered";
+      }
+    } catch (err) {
+      console.warn("[NotificationDispatcher] Intake email delivery failed:", err);
+      deliveryStatus = "simulated_delivery";
+    }
+  }
+
+  const payload: NotificationPayload = {
+    deliveryId,
+    dispatchedAt,
+    recipientEmail: teamEmail,
+    recipientPhone: entry.phone,
+    recipientName: "Team Dispatch",
+    shipName: entry.shipName,
+    cruiseLine: entry.cruiseLine,
+    port: entry.portCity === "skagway" ? "skagway" : "juneau",
+    portDate: entry.portDate,
+    operator: "Juneau Flight Deck Dispatch",
+    tourName: entry.tourType,
+    departureTime: "Intake Alert",
+    partySize: entry.partySize,
+    checkoutUrl: "https://juneauflightdeck.com/helicopter-waitlist",
+    cancellationPolicy: "Part 135 Operator Weather Guarantee",
+    channel: "email",
+    status: deliveryStatus,
+    emailSubject,
+    emailBodyHtml,
+    emailBodyText,
+  };
+
+  if (sql) {
+    try {
+      await ensureDbTables();
+      await sql`
+        INSERT INTO jfd_waitlist_notifications (
+          delivery_id, entry_id, recipient_email, recipient_phone,
+          tour_name, operator, port, port_date, departure_time,
+          status, payload, dispatched_at
+        ) VALUES (
+          ${deliveryId}, ${entry.id}, ${teamEmail}, ${entry.phone || null},
+          ${entry.tourType}, ${'Juneau Flight Deck Dispatch'}, ${entry.portCity}, ${entry.portDate},
+          ${'Intake Alert'}, ${deliveryStatus}, ${JSON.stringify(payload)}::jsonb,
+          ${new Date(dispatchedAt)}
+        )
+        ON CONFLICT (entry_id, port_date, departure_time)
+        DO UPDATE SET
+          delivery_id = EXCLUDED.delivery_id,
+          status = EXCLUDED.status,
+          payload = EXCLUDED.payload,
+          dispatched_at = EXCLUDED.dispatched_at;
+      `;
+    } catch (err) {
+      console.warn("[NotificationDispatcher] DB intake notification insert failed:", err);
+    }
+  }
+
+  try {
+    const dir = getNotificationsDir();
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(
+      path.join(dir, `${deliveryId}.json`),
+      JSON.stringify(payload, null, 2),
+      "utf8"
+    );
+  } catch (err) {
+    console.warn("[NotificationDispatcher] Failed writing intake notification to disk:", err);
+  }
+
+  return payload;
+}

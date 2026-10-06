@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { saveWaitlistEntry, type WaitlistEntry } from "../../../lib/waitlistStore";
+import { dispatchWaitlistIntakeNotification } from "../../../lib/notificationDispatcher";
 
 export const dynamic = "force-dynamic";
 
@@ -197,9 +198,18 @@ export async function POST(request: Request) {
 
     await saveWaitlistEntry(entry);
 
+    let notificationDispatched = false;
+    try {
+      const intakeNotification = await dispatchWaitlistIntakeNotification(entry);
+      notificationDispatched = Boolean(intakeNotification);
+    } catch (notifErr) {
+      console.warn("[WaitlistAPI] Intake notification dispatch error:", notifErr);
+    }
+
     return NextResponse.json({
       ok: true,
       submissionId,
+      notificationDispatched,
       bookingMode: entry.bookingMode,
       message:
         entry.bookingMode === "concierge_dispatch"

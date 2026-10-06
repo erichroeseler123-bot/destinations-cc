@@ -33,7 +33,7 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     badges: ["Signature Glacier Landing", "Part 135 Certified"],
     cancellationPolicy: "Operator Weather Guarantee · 100% refund if flight is grounded due to weather",
     bookHref:
-      "https://www.viator.com/Juneau-tourism/d941-r8418047970-s323605581?pid=P00058396&mcid=42383&medium=api",
+      "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Helicopters&pid=P00058396&mcid=42383&medium=api",
     tourType: "glacier_landing",
     isLive: false,
     dataTimestamp: SNAPSHOT_TIMESTAMP,
@@ -60,7 +60,7 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     badges: ["Glacier Dog Sledding", "Part 135 Certified"],
     cancellationPolicy: "Operator Weather Guarantee · 100% refund if flight is grounded due to weather",
     bookHref:
-      "https://www.viator.com/Juneau-tourism/d941-r8418047970-s323605581?pid=P00058396&mcid=42383&medium=api",
+      "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+dog+sledding&pid=P00058396&mcid=42383&medium=api",
     tourType: "dog_sledding",
     isLive: false,
     dataTimestamp: SNAPSHOT_TIMESTAMP,
@@ -87,7 +87,7 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     badges: ["Icefield Flight & Landing", "Part 135 Certified"],
     cancellationPolicy: "Operator Weather Guarantee · 100% refund if flight is grounded due to weather",
     bookHref:
-      "https://www.viator.com/Juneau-tourism/d941-r8418047970-s323605581?pid=P00058396&mcid=42383&medium=api",
+      "https://www.viator.com/searchResults/all?text=Juneau+Coastal+Helicopters&pid=P00058396&mcid=42383&medium=api",
     tourType: "glacier_landing",
     isLive: false,
     dataTimestamp: SNAPSHOT_TIMESTAMP,
@@ -114,7 +114,7 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     badges: ["Small-Group Adventure", "Part 135 Certified"],
     cancellationPolicy: "Operator Weather Guarantee · 100% refund if flight is grounded due to weather",
     bookHref:
-      "https://www.viator.com/Juneau-tourism/d941-r8418047970-s323605581?pid=P00058396&mcid=42383&medium=api",
+      "https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Trekking&pid=P00058396&mcid=42383&medium=api",
     tourType: "ice_trek",
     isLive: false,
     dataTimestamp: SNAPSHOT_TIMESTAMP,
@@ -145,7 +145,7 @@ export const DEFAULT_FALLBACK_RESPONSE: ViatorJuneauProductsResponse = {
   passengerCount: 2,
   signals: {
     headline:
-      "Live Viator booking calendar currently syncing. Explore Juneau operator flight profiles below and set up availability alerts.",
+      "Live Viator booking calendar currently unavailable through the direct API feed. Explore verified Juneau operator flight profiles below and set up availability alerts.",
     availabilityStatus: "calendar_check_required",
   },
   attribution: {
