@@ -357,14 +357,14 @@ ${shareUrl}`;
             <div className="success-icon inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 text-2xl mb-3">✓</div>
             <h4 className="text-xl font-bold text-white">
               {formData.bookingMode === "concierge_dispatch"
-                ? "Concierge Dispatch Alert Activated!"
-                : "Daily Seat Drop Alert Activated!"}
+                ? "Concierge Dispatch Request Received"
+                : "Availability Watch Request Received"}
             </h4>
             <p className="text-slate-300 mt-1">
               Confirmation Code: <strong className="text-amber-400 font-mono">{submissionId}</strong>
             </p>
             <p className="text-sm text-slate-300 mt-2">
-              We are actively scanning Southeast Alaska fleet inventory for your date (<strong>{formData.portDate}</strong>
+              Your request is saved. We scan Southeast Alaska fleet inventory for your date (<strong>{formData.portDate}</strong>
               {formData.portCity === "either" && formData.skagwayDate ? ` and Skagway: ${formData.skagwayDate}` : ""}) 
               for <strong>{formData.partySize} guest(s)</strong> on <strong>{resolvedShipName}</strong> ({formData.cruiseLine}).
             </p>
@@ -372,8 +372,8 @@ ${shareUrl}`;
 
           <div className="success-reassurance bg-slate-900/80 border border-slate-700/60 rounded-xl p-4 text-xs text-slate-300 leading-relaxed">
             {formData.bookingMode === "concierge_dispatch"
-              ? "🛎️ Concierge Alert Active: If a matching flight slot is found during our 10:00 AM sweep, our local dispatch team will immediately alert your phone and email with direct flight checkout."
-              : "📱 Keep your mobile phone and email handy. The moment a seat drops at 10:00 AM, we will send you a direct booking link to pay the operator directly before public inventory fills."}
+              ? "🛎️ Request Logged: When an opening is detected during our 10:00 AM sweep, our local dispatch team contacts you with direct flight checkout details."
+              : "📱 Request Logged: When an opening is detected during our 10:00 AM sweep, a direct booking link is generated so you can complete checkout directly with the operator."}
           </div>
 
           {/* Viral Cruise Critic & Facebook Roll Call Share Box */}

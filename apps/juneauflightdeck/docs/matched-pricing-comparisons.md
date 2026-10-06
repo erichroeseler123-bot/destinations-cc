@@ -1,7 +1,7 @@
-# Juneau Helicopter Tour Price Comparison Documentation
+# Juneau Helicopter Tour Price Comparison — Research Pending Evidence
+**Document Status:** RESEARCH PENDING VERIFIABLE EVIDENCE  
 **Last Updated:** October 2026  
-**Audience:** Internal Dispatch, Compliance, and Customer Support  
-**Scope:** Verified 1:1 Matched Programs between Local FAA Part 135 Helicopter Operators and Major Cruise Line Shore Excursion Desks in Juneau, Alaska.
+**Notice:** This document catalogs potential tour pairings between local operators and cruise line excursion descriptors. Because cruise line shore excursion pricing is dynamically managed behind passenger reservation logins (e.g. Princess Cruise Personalizer, Holland America Navigator) and is not publicly audited, any claim of savings remains an unverified research hypothesis until specific, paired passenger booking receipts for identical dates and times are verified on file. Replacement numbers must NOT be invented.
 
 ---
 
