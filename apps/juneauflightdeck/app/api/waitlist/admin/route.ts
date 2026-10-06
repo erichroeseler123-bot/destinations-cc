@@ -74,8 +74,9 @@ export async function GET(request: Request) {
     // 1. Live Operator Inventory Diagnostic Pre-Flight Check
     if (action === "diagnose_fareharbor") {
       const results = [];
-      const testStart = "2026-07-01";
-      const testEnd = "2026-07-14";
+      // Use upcoming summer 2027 cruise season dates for schedule inspection
+      const testStart = url.searchParams.get("start") || "2027-07-01";
+      const testEnd = url.searchParams.get("end") || "2027-07-14";
 
       const targets = [
         { operator: "TEMSCO Helicopters (Juneau)", shortname: OPERATOR_ENDPOINTS.temsco_juneau.shortname, itemPk: OPERATOR_ENDPOINTS.temsco_juneau.items.glacier_landing, itemName: "Mendenhall Glacier and Guided Walk" },
@@ -129,8 +130,7 @@ export async function GET(request: Request) {
           {
             ok: false,
             configured: false,
-            error: "RESEND_API_KEY not configured or invalid on Vercel environment. Key must start with re_ and be > 20 characters.",
-            receivedKeyPrefix: resendApiKey ? resendApiKey.slice(0, 3) + "..." : "none",
+            error: "RESEND_API_KEY not configured on Vercel environment.",
           },
           { status: 400 }
         );
