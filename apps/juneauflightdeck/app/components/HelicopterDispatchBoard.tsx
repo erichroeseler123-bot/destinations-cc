@@ -82,29 +82,18 @@ export default function HelicopterDispatchBoard({
         </div>
         <h1>{finalHeadline}</h1>
         <p className="jfd-concise-hero-subhead">{finalSubhead}</p>
-        <div className="jfd-concise-hero-actions">
-          <Link href="#operators" className="button button-primary">
-            {finalPrimaryCta}
-          </Link>
-          <Link
-            href={isSkagway ? '/skagway/helicopter' : '/juneau-whale-watching-tours'}
-            className="button button-secondary"
-          >
-            {isSkagway ? 'View Skagway Options' : 'Explore Backup Options'}
-          </Link>
-        </div>
 
         {/* Hybrid Trust & Viator Partnership Bar */}
         <div
           style={{
-            marginTop: 28,
-            paddingTop: 18,
+            marginTop: 20,
+            paddingTop: 16,
             borderTop: '1px solid var(--line)',
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '14px 24px',
+            gap: '12px 24px',
             fontSize: '0.82rem',
             color: 'var(--muted)',
           }}
@@ -115,26 +104,37 @@ export default function HelicopterDispatchBoard({
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ color: 'var(--ice)', fontWeight: 800 }}>✓</span>
-            <span><strong>All 3 FAA Part 135 Operators:</strong> Direct access to TEMSCO, Coastal &amp; NorthStar</span>
+            <span><strong>All 3 FAA Part 135 Operators:</strong> TEMSCO, Coastal &amp; NorthStar</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ color: '#86efac', fontWeight: 800 }}>✓</span>
-            <span><strong>Local Ground Coordination:</strong> Daily waitlist sweeps &amp; weather backups</span>
+            <span><strong>Local Coordination:</strong> Daily waitlist sweeps &amp; weather backups</span>
           </div>
         </div>
       </section>
 
-      {/* 2. Three Compact Value Cards */}
+      {/* Featured Flights & Real-Time Filter Toolbar */}
+      <ViatorFeaturedTours
+        showHeader={false}
+        headline={isSkagway ? "Skagway Glacier Helicopter Options" : "Juneau Glacier Helicopter Flights & Landings"}
+        subhead={
+          isSkagway
+            ? "Compare live helicopter tours in Skagway with Part 135 safety standards and free 24-hour cancellation."
+            : "Explore Juneau glacier landings, dog sledding camps, and ice treks. Real-time availability confirmed in the official Viator calendar."
+        }
+      />
+
+      {/* 2. Core Service Protections */}
       <section className="jfd-cards-section" aria-label="Core Services">
         <div className="jfd-cards-grid">
           <div className="jfd-compact-card">
             <div>
-              <div style={{ color: 'var(--ice)', fontSize: '0.75rem', fontWeight: 800, marginBottom: 4 }}>
+              <div style={{ color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 800, marginBottom: 4 }}>
                 01 · SELECTION
               </div>
-              <h2 className="jfd-compact-card-title">Compare Flights</h2>
+              <h2 className="jfd-compact-card-title">Compare All 3 Operators</h2>
               <p className="jfd-compact-card-body">
-                Direct access to TEMSCO, Coastal Helicopters, and NorthStar Trekking. Evaluate walkabouts, dog sledding, and ice treks side-by-side.
+                Direct access to TEMSCO, Coastal, and NorthStar. Compare glacier walkabouts, dog sledding, and ice treks side-by-side.
               </p>
             </div>
             <Link
@@ -151,9 +151,9 @@ export default function HelicopterDispatchBoard({
               <div style={{ color: 'var(--ice)', fontSize: '0.75rem', fontWeight: 800, marginBottom: 4 }}>
                 02 · OPERATIONS
               </div>
-              <h2 className="jfd-compact-card-title">Cancellation Support</h2>
+              <h2 className="jfd-compact-card-title">Weather Monitoring</h2>
               <p className="jfd-compact-card-body">
-                Glacier microclimates cause cancellations during low ceiling or fog events. Our local coordination team monitors operational updates.
+                Glacier microclimates cause cancellations during low ceiling or fog events. Our local ground team tracks flight clearances daily.
               </p>
             </div>
             <Link
@@ -167,36 +167,26 @@ export default function HelicopterDispatchBoard({
 
           <div className="jfd-compact-card">
             <div>
-              <div style={{ color: 'var(--ice)', fontSize: '0.75rem', fontWeight: 800, marginBottom: 4 }}>
+              <div style={{ color: '#86efac', fontSize: '0.75rem', fontWeight: 800, marginBottom: 4 }}>
                 03 · CONTINGENCY
               </div>
               <h2 className="jfd-compact-card-title">
-                Explore Backup Options <span className="jfd-badge-planned">PLANNED</span>
+                Cruise-Safe Whale Backup
               </h2>
               <p className="jfd-compact-card-body">
-                Explore whale-watching backup plans when weather grounds flights, including our concept for transferring payments to available boats without separate charges.
+                If weather grounds your flight, seamlessly pivot to available whale watching boats so you never miss your port day in Juneau.
               </p>
             </div>
             <Link
-              href="#payment-mechanics"
+              href={isSkagway ? '/skagway/helicopter' : '/juneau-whale-watching-tours'}
               className="jfd-compact-card-action"
-              aria-label="Transfer mechanics for proposed backup tours"
+              aria-label="Backup options"
             >
-              Transfer mechanics &rarr;
+              Explore backup options &rarr;
             </Link>
           </div>
         </div>
       </section>
-
-      {/* Featured Flights with Supplier Photos from Viator Partner API */}
-      <ViatorFeaturedTours
-        headline={isSkagway ? "Skagway Glacier Helicopter Options" : "Juneau Glacier Helicopter Flights & Landings"}
-        subhead={
-          isSkagway
-            ? "Compare live helicopter tours in Skagway with Part 135 safety standards and free 24-hour cancellation."
-            : "Explore Juneau glacier landings, dog sledding camps, and ice treks. Real-time availability confirmed in the official Viator calendar."
-        }
-      />
 
       {/* 3. Operator Comparison Table */}
       <section id="operators" className="jfd-table-section">

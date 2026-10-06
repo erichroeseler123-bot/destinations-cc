@@ -19,6 +19,7 @@ interface ViatorFeaturedToursProps {
   headline?: string;
   subhead?: string;
   className?: string;
+  showHeader?: boolean;
 }
 
 const FILTER_TABS: Array<{ label: string; value: "all" | "glacier_landing" | "dog_sledding" | "ice_trek" }> = [
@@ -33,6 +34,7 @@ export default function ViatorFeaturedTours({
   headline = "Juneau Helicopter Excursions via Viator",
   subhead = "Compare glacier flights and dog sledding camps. Real-time departures and party availability are confirmed in the live Viator reservation calendar.",
   className = "",
+  showHeader = true,
 }: ViatorFeaturedToursProps) {
   const [selectedTab, setSelectedTab] = useState<"all" | "glacier_landing" | "dog_sledding" | "ice_trek">("all");
   const [dateFilter, setDateFilter] = useState<string>(initialDate || "");
@@ -79,48 +81,53 @@ export default function ViatorFeaturedTours({
     >
       <div className="jfd-viator-container">
         {/* Section Header */}
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              fontSize: "0.75rem",
-              fontWeight: 800,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: "var(--accent, #f0b35b)",
-              marginBottom: 10,
-            }}
-          >
-            <span>Official Viator Partner</span>
-            <span>·</span>
-            <span>Tripadvisor Partner Network</span>
+        {showHeader && (
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: "0.75rem",
+                fontWeight: 800,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--accent, #f0b35b)",
+                marginBottom: 10,
+              }}
+            >
+              <span>Official Viator Partner</span>
+              <span>·</span>
+              <span>Tripadvisor Partner Network</span>
+            </div>
+            <h2
+              style={{
+                fontSize: "clamp(1.85rem, 3.8vw, 2.5rem)",
+                fontWeight: 900,
+                margin: "0 0 12px 0",
+                color: "#ffffff",
+                letterSpacing: "-0.02em",
+                textShadow: "0 2px 12px rgba(0, 0, 0, 0.45)",
+              }}
+            >
+              {headline}
+            </h2>
+            <p
+              style={{
+                maxWidth: 740,
+                margin: "0 auto",
+                fontSize: "1rem",
+                lineHeight: 1.6,
+                color: "rgba(228, 239, 246, 0.85)",
+              }}
+            >
+              {subhead}
+            </p>
           </div>
-          <h2
-            style={{
-              fontSize: "clamp(1.85rem, 3.8vw, 2.5rem)",
-              fontWeight: 900,
-              margin: "0 0 12px 0",
-              color: "#ffffff",
-              letterSpacing: "-0.02em",
-              textShadow: "0 2px 12px rgba(0, 0, 0, 0.45)",
-            }}
-          >
-            {headline}
-          </h2>
-          <p
-            style={{
-              maxWidth: 740,
-              margin: "0 auto",
-              fontSize: "1rem",
-              lineHeight: 1.6,
-              color: "rgba(228, 239, 246, 0.85)",
-            }}
-          >
-            {subhead}
-          </p>
+        )}
 
+        {/* Filter Controls & Transparency Banner */}
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
           {/* Live vs Snapshot Transparency Banner */}
           <div
             style={{
@@ -425,36 +432,34 @@ export default function ViatorFeaturedTours({
               textTransform: "uppercase",
               padding: "5px 14px",
               borderRadius: "999px",
-              marginBottom: 16,
+              marginBottom: 14,
             }}
           >
-            <span>Viator Search</span>
-            <span>·</span>
-            <span>2027 Season</span>
+            <span>2027 Alaska Season</span>
           </div>
 
           <h3
             style={{
-              fontSize: "clamp(1.35rem, 3vw, 1.85rem)",
+              fontSize: "clamp(1.4rem, 3.2vw, 1.85rem)",
               fontWeight: 900,
-              color: "var(--text, #ffffff)",
+              color: "#ffffff",
               lineHeight: 1.25,
-              margin: "0 0 12px",
+              margin: "0 0 10px",
             }}
           >
-            No Juneau helicopter tours currently returned by our search
+            2027 Glacier Flights Opening Soon
           </h3>
 
           <p
             style={{
               fontSize: "0.95rem",
-              color: "var(--muted, rgba(228, 239, 246, 0.78))",
-              lineHeight: 1.6,
-              maxWidth: 640,
-              margin: "0 auto 24px",
+              color: "rgba(228, 239, 246, 0.85)",
+              lineHeight: 1.55,
+              maxWidth: 580,
+              margin: "0 auto 20px",
             }}
           >
-            No Juneau helicopter tours are currently available through our Viator search. Tour availability varies based on operator schedules and seasonal offerings. Join our 2027 helicopter availability alerts to receive notifications when booking windows open.
+            Juneau operators (TEMSCO, Coastal, NorthStar) load summer flight schedules in rolling waves. Join our priority alerts to get notified the minute seats drop.
           </p>
 
           <div
@@ -462,66 +467,31 @@ export default function ViatorFeaturedTours({
               display: "flex",
               flexWrap: "wrap",
               justifyContent: "center",
-              gap: 14,
-              marginBottom: 24,
+              gap: 12,
             }}
           >
             <Link
               href="/helicopter-waitlist"
               className="button button-primary"
               style={{
-                padding: "14px 26px",
-                fontSize: "0.95rem",
+                padding: "12px 24px",
+                fontSize: "0.92rem",
                 fontWeight: 800,
               }}
             >
-              Join 2027 Helicopter Availability Alerts &rarr;
+              Join 2027 Availability Alerts &rarr;
             </Link>
 
-            <a
-              href={browseHref}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/juneau-whale-watching-tours"
               className="button button-secondary"
               style={{
-                padding: "14px 22px",
+                padding: "12px 20px",
                 fontSize: "0.92rem",
               }}
             >
-              Browse Available Juneau Activities on Viator ↗
-            </a>
-          </div>
-
-          <div
-            style={{
-              paddingTop: 20,
-              borderTop: "1px solid rgba(151, 211, 255, 0.12)",
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: 16,
-              textAlign: "left",
-              fontSize: "0.82rem",
-              color: "var(--muted, rgba(228, 239, 246, 0.78))",
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: 800, color: "var(--ice, #9ed9ff)", marginBottom: 4 }}>
-                TEMSCO Helicopters
-              </div>
-              <div>Mendenhall Glacier landings &amp; Herbert Glacier dog sledding camps.</div>
-            </div>
-            <div>
-              <div style={{ fontWeight: 800, color: "var(--ice, #9ed9ff)", marginBottom: 4 }}>
-                Coastal Helicopters
-              </div>
-              <div>Herbert Glacier ice walkabouts &amp; Taku Glacier Lodge salmon feasts.</div>
-            </div>
-            <div>
-              <div style={{ fontWeight: 800, color: "var(--ice, #9ed9ff)", marginBottom: 4 }}>
-                NorthStar Trekking
-              </div>
-              <div>Level 1 &amp; Level 2 technical ice climbing and glacier trekking.</div>
-            </div>
+              Explore Backup Whale Tours
+            </Link>
           </div>
         </div>
       )}
