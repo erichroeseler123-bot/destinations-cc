@@ -11,10 +11,10 @@ export interface ViatorJuneauProduct {
   priceDisclaimer?: string;
   imageUrl: string | null;
   imageAlt: string;
-  imageSource: "SUPPLIER_PROVIDED";
+  imageSource: "SUPPLIER_PROVIDED" | "LOCAL_AUTHORITY";
   supplierName: string | null;
-  rating: number;
-  reviewCount: number;
+  rating?: number | null;
+  reviewCount?: number | null;
   badges: string[];
   cancellationPolicy: string;
   bookHref: string;
@@ -27,13 +27,13 @@ export interface ViatorJuneauProductsResponse {
   ok: boolean;
   generatedAt: string;
   isLive: boolean;
-  status: "live_verified" | "cached_snapshot" | "seasonally_unavailable";
+  status: "live_verified" | "cached_snapshot" | "operator_profiles" | "inventory_unavailable";
   snapshotTimestamp?: string;
   selectedDate: string | null;
   passengerCount?: number;
   signals?: {
     headline?: string;
-    availabilityStatus?: "live_checked" | "calendar_check_required" | "seasonally_unavailable";
+    availabilityStatus?: "live_checked" | "calendar_check_required" | "inventory_unavailable";
   };
   attribution: {
     source: string;

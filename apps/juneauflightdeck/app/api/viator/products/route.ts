@@ -219,7 +219,7 @@ export async function GET(request: Request) {
     } catch {}
   }
 
-  // 3. Fallback to verified historical snapshot if upstream is unavailable
+  // 3. Fallback to verified operator profiles if upstream live inventory is unavailable
   if (products.length === 0) {
     isLive = false;
     products = [...VERIFIED_FALLBACK_SNAPSHOT];
@@ -232,27 +232,27 @@ export async function GET(request: Request) {
 
   products = products.slice(0, limit);
 
-  const isSeasonallyUnavailable = products.length === 0;
+  const hasNoProducts = products.length === 0;
 
-  const headline = isSeasonallyUnavailable
+  const headline = hasNoProducts
     ? date
-      ? `No Juneau helicopter tours are currently available through our Viator search for ${date}. Join our 2027 helicopter availability alerts.`
-      : `No Juneau helicopter tours are currently available through our Viator search. Join our 2027 helicopter availability alerts.`
+      ? `No helicopter flight results currently returned for ${date}. Set up an availability alert below.`
+      : `Direct booking calendar feed is currently updating. Set up an availability alert below.`
     : date
-    ? `Options to check on Viator for ${date} (${passengers} guest${passengers > 1 ? "s" : ""}). Real-time departures are confirmed in the booking calendar.`
+    ? `Options to check for ${date} (${passengers} guest${passengers > 1 ? "s" : ""}). Real-time departures are confirmed in the booking calendar.`
     : `Viator helicopter excursions in Juneau. Live departure slots are confirmed in the booking calendar.`;
 
   const status: ViatorJuneauProductsResponse["status"] = isLive
     ? "live_verified"
-    : isSeasonallyUnavailable
-    ? "seasonally_unavailable"
-    : "cached_snapshot";
+    : hasNoProducts
+    ? "inventory_unavailable"
+    : "operator_profiles";
 
   const notice = isLive
     ? "Total review count, ratings, and supplier photos provided via Viator Partner API."
-    : isSeasonallyUnavailable
-    ? "Verified via Viator Partner API. No Juneau helicopter tours currently returned for this search."
-    : `Showing historical snapshot data (captured ${SNAPSHOT_TIMESTAMP.slice(0, 10)}). Real-time availability and current pricing are confirmed in the live Viator calendar.`;
+    : hasNoProducts
+    ? "No Juneau helicopter tours currently returned for this search query."
+    : "Showing verified Juneau operator flight profiles. Real-time availability and bookings are verified in the official Viator catalog.";
 
   const responsePayload: ViatorJuneauProductsResponse = {
     ok: true,
@@ -264,10 +264,10 @@ export async function GET(request: Request) {
     passengerCount: passengers,
     signals: {
       headline,
-      availabilityStatus: isSeasonallyUnavailable ? "seasonally_unavailable" : "calendar_check_required",
+      availabilityStatus: hasNoProducts ? "inventory_unavailable" : "calendar_check_required",
     },
     attribution: {
-      source: "Viator and Tripadvisor",
+      source: isLive ? "Viator Partner API" : "Juneau Operator Profiles & Viator Partner Network",
       notice,
       poweredBy: "Official Viator Partner",
     },

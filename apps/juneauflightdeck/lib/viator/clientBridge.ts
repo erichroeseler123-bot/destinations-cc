@@ -95,7 +95,7 @@ export interface UseViatorJuneauProductsReturn {
   selectedDate: string | null;
   passengerCount: number;
   isLive: boolean;
-  status: "live_verified" | "cached_snapshot" | "seasonally_unavailable";
+  status: ViatorJuneauProductsResponse["status"];
   snapshotTimestamp?: string;
   attribution: ViatorJuneauProductsResponse["attribution"] | null;
   signals?: ViatorJuneauProductsResponse["signals"];
@@ -124,8 +124,8 @@ export function useViatorJuneauProducts({
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
   const [isLive, setIsLive] = useState<boolean>(baseData.isLive ?? false);
-  const [status, setStatus] = useState<"live_verified" | "cached_snapshot" | "seasonally_unavailable">(
-    baseData.status ?? "seasonally_unavailable"
+  const [status, setStatus] = useState<ViatorJuneauProductsResponse["status"]>(
+    baseData.status ?? "operator_profiles"
   );
   const [snapshotTimestamp, setSnapshotTimestamp] = useState<string | undefined>(
     baseData.snapshotTimestamp

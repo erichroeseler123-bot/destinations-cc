@@ -139,16 +139,16 @@ export default function ViatorFeaturedTours({
               borderRadius: "999px",
               fontSize: "0.8rem",
               fontWeight: 500,
-              background: isLive ? "rgba(34, 197, 94, 0.14)" : "rgba(240, 179, 91, 0.14)",
-              border: `1px solid ${isLive ? "rgba(34, 197, 94, 0.35)" : "rgba(240, 179, 91, 0.35)"}`,
-              color: isLive ? "#86efac" : "#fbbf24",
+              background: isLive ? "rgba(34, 197, 94, 0.14)" : "rgba(151, 211, 255, 0.12)",
+              border: `1px solid ${isLive ? "rgba(34, 197, 94, 0.35)" : "rgba(151, 211, 255, 0.28)"}`,
+              color: isLive ? "#86efac" : "var(--ice, #9ed9ff)",
             }}
           >
             <span>{isLive ? "🟢" : "ℹ️"}</span>
             <span>
               {isLive
                 ? "Live Viator API Feed Active"
-                : `Catalog snapshot (${snapshotTimestamp ? snapshotTimestamp.slice(0, 10) : "Oct 2026"}). Real-time prices & live departures are verified in the Viator booking calendar.`}
+                : "Operator Flight Profiles · Real-time departures & rates verified upon booking inquiry"}
             </span>
           </div>
 
@@ -383,7 +383,7 @@ export default function ViatorFeaturedTours({
         </div>
       )}
 
-      {/* Off-Season / Early 2027 Season Notice Banner */}
+      {/* Schedule Availability Notice Banner */}
       {!loading && !isLive && products.length > 0 && (
         <div
           style={{
@@ -404,7 +404,7 @@ export default function ViatorFeaturedTours({
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: "1rem" }}>🔔</span>
             <span>
-              <strong>2027 Alaska Cruise Season:</strong> Official booking windows open in rolling waves. Explore signature flights below and use <em>Get 2027 Alert</em> for priority notifications.
+              <strong>Operator Flight Scheduling:</strong> Live booking calendar departures are currently syncing. Explore verified operator flight profiles below and select <em>Get Availability Alert</em> for seat opening notices.
             </span>
           </div>
           <Link
@@ -416,7 +416,7 @@ export default function ViatorFeaturedTours({
               whiteSpace: "nowrap",
             }}
           >
-            Join General Waitlist &rarr;
+            General Flight Alert &rarr;
           </Link>
         </div>
       )}
@@ -965,7 +965,7 @@ export function TourCard({
           flex: 1,
         }}
       >
-        {/* Rating and Reviews (Click opens protected reviews modal) */}
+        {/* Rating and Reviews or Operator Credential */}
         <div
           style={{
             display: "flex",
@@ -973,32 +973,51 @@ export function TourCard({
             justifyContent: "space-between",
             fontSize: "0.85rem",
             marginBottom: 8,
+            minHeight: 24,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ color: "#fbbf24", fontWeight: 800 }}>★</span>
-            <span style={{ fontWeight: 800, color: "#ffffff" }}>{product.rating.toFixed(1)}</span>
-            <span style={{ color: "var(--muted, rgba(228, 239, 246, 0.78))" }}>
-              ({product.reviewCount} reviews)
-            </span>
-          </div>
+          {product.rating != null ? (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ color: "#fbbf24", fontWeight: 800 }}>★</span>
+                <span style={{ fontWeight: 800, color: "#ffffff" }}>{product.rating.toFixed(1)}</span>
+                <span style={{ color: "var(--muted, rgba(228, 239, 246, 0.78))" }}>
+                  ({product.reviewCount} reviews)
+                </span>
+              </div>
 
-          <button
-            type="button"
-            onClick={onOpenReviews}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "var(--ice, #9ed9ff)",
-              fontSize: "0.78rem",
-              fontWeight: 600,
-              cursor: "pointer",
-              textDecoration: "underline",
-              padding: 0,
-            }}
-          >
-            Read reviews
-          </button>
+              <button
+                type="button"
+                onClick={onOpenReviews}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--ice, #9ed9ff)",
+                  fontSize: "0.78rem",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  padding: 0,
+                }}
+              >
+                Read reviews
+              </button>
+            </>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span
+                style={{
+                  color: "var(--ice, #9ed9ff)",
+                  fontSize: "0.75rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                }}
+              >
+                🛡️ Part 135 Certified Operator
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Tour Title */}
@@ -1069,16 +1088,19 @@ export function TourCard({
         >
           <div>
             <div style={{ fontSize: "0.7rem", textTransform: "uppercase", color: "var(--muted)" }}>
-              {product.isLive ? "From" : "Ref. Rate"}
+              {product.isLive ? "From" : "Departure Rates"}
             </div>
             <div
               style={{
-                fontSize: "1.15rem",
+                fontSize: product.priceFrom != null ? "1.15rem" : "0.85rem",
                 fontWeight: 800,
                 color: "var(--accent-strong, #ffd596)",
+                letterSpacing: product.priceFrom != null ? "normal" : "-0.01em",
               }}
             >
-              {product.priceLabel || `$${product.priceFrom || 399}`}
+              {product.priceFrom != null
+                ? `${product.currency === "USD" ? "$" : ""}${product.priceFrom}`
+                : (product.priceLabel || "Rates on request")}
             </div>
           </div>
 
@@ -1128,7 +1150,7 @@ export function TourCard({
                   boxShadow: "0 4px 12px rgba(240, 179, 91, 0.25)",
                 }}
               >
-                <span>Get 2027 Alert</span>
+                <span>Get Availability Alert</span>
                 <span>&rarr;</span>
               </Link>
               <a

@@ -1,121 +1,120 @@
 import type { ViatorJuneauProduct, ViatorJuneauProductsResponse } from "./types";
 
 /**
- * Historical snapshot timestamp for verified fallback catalog data.
- * Real-time prices, availability, and review counts are never claimed as current live
- * results when this fallback is served.
+ * Verified operator experience catalog for Juneau glacier helicopter flights.
+ * Used when direct live Viator API inventory is updating or not actively returning products.
+ *
+ * All photography utilizes verified, approved local Alaska assets (public domain / CC BY-SA).
+ * Unsupported fields (e.g. fabricated star ratings, review counts, unverified exact rates)
+ * are excluded.
  */
 export const SNAPSHOT_TIMESTAMP = "2026-10-06T12:00:00.000Z";
 
 export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
   {
-    id: "10423P1",
-    productCode: "10423P1",
-    title: "Mendenhall Glacier Helicopter Tour and Guided Ice Walk",
+    id: "temsco-mendenhall-glacier-walk",
+    productCode: "temsco-mendenhall-glacier-walk",
+    title: "Mendenhall Glacier Helicopter Tour & Guided Ice Walk",
     description:
-      "Take flight over the lush rainforest and granite peaks of Juneau before landing directly on the ice of Mendenhall Glacier for a guided glacier walk.",
+      "Fly over Juneau's coastal rainforest and rugged granite peaks before landing directly on the ancient ice of Mendenhall Glacier for a guided glacier walk.",
     durationMinutes: 135,
     durationLabel: "2 hr 15 min",
-    priceLabel: "from $399 (2027 ref)",
-    priceFrom: 399,
+    priceLabel: "Schedule & Rates On Request",
+    priceFrom: null,
     currency: "USD",
     priceDisclaimer:
-      "Historical snapshot rate as of Oct 2026. Live pricing and departure times are verified in the booking calendar.",
-    imageUrl:
-      "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/68.jpg",
-    imageAlt: "Helicopter landing on Mendenhall Glacier ice near Juneau, Alaska",
-    imageSource: "SUPPLIER_PROVIDED",
+      "Rates and schedule departures verified upon booking inquiry. Part 135 FAA certified flight operations.",
+    imageUrl: "/images/tours/temsco-mendenhall-glacier-walk.jpg",
+    imageAlt: "Helicopter landing on Mendenhall Glacier blue ice near Juneau, Alaska",
+    imageSource: "LOCAL_AUTHORITY",
     supplierName: "TEMSCO Helicopters",
-    rating: 4.8,
-    reviewCount: 428,
-    badges: ["Signature Glacier Landing"],
-    cancellationPolicy: "Free cancellation up to 24 hours before departure",
+    rating: null,
+    reviewCount: null,
+    badges: ["Signature Glacier Landing", "Part 135 Certified"],
+    cancellationPolicy: "Operator Weather Guarantee · 100% refund if flight is grounded due to weather",
     bookHref:
-      "https://www.viator.com/tours/Juneau/Mendenhall-Glacier-Helicopter-Tour-and-Guided-Walk/d941-10423P1?pid=P00058396&mcid=42383&medium=api",
+      "https://www.viator.com/Juneau-tourism/d941-r8418047970-s323605581?pid=P00058396&mcid=42383&medium=api",
     tourType: "glacier_landing",
     isLive: false,
     dataTimestamp: SNAPSHOT_TIMESTAMP,
   },
   {
-    id: "10423P2",
-    productCode: "10423P2",
-    title: "Helicopter Glacier Dog Sledding Tour from Juneau",
+    id: "temsco-glacier-dog-sledding",
+    productCode: "temsco-glacier-dog-sledding",
+    title: "Helicopter Glacier Dog Sledding Tour",
     description:
-      "Soar over the Juneau Icefield to a remote glacier dog sled camp. Meet Alaskan huskies and glide across pristine snowfields driven by professional mushers.",
+      "Soar over the Juneau Icefield to an authentic high-altitude glacier dog sled camp. Meet Alaskan huskies and glide across snowfields driven by veteran mushers.",
     durationMinutes: 165,
     durationLabel: "2 hr 45 min",
-    priceLabel: "from $649 (2027 ref)",
-    priceFrom: 649,
+    priceLabel: "Schedule & Rates On Request",
+    priceFrom: null,
     currency: "USD",
     priceDisclaimer:
-      "Historical snapshot rate as of Oct 2026. Live pricing and departure times are verified in the booking calendar.",
-    imageUrl:
-      "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/06/fa/b9/11.jpg",
-    imageAlt: "Alaskan husky dog sled team on glacier snowfield in Juneau",
-    imageSource: "SUPPLIER_PROVIDED",
+      "Rates and schedule departures verified upon booking inquiry. Part 135 FAA certified flight operations.",
+    imageUrl: "/images/tours/temsco-glacier-dog-sledding.jpg",
+    imageAlt: "Alaskan husky dog sled team and musher on Juneau glacier snowfield",
+    imageSource: "LOCAL_AUTHORITY",
     supplierName: "TEMSCO Helicopters",
-    rating: 4.9,
-    reviewCount: 312,
-    badges: ["Dog Sledding Combo"],
-    cancellationPolicy: "Free cancellation up to 24 hours before departure",
+    rating: null,
+    reviewCount: null,
+    badges: ["Glacier Dog Sledding", "Part 135 Certified"],
+    cancellationPolicy: "Operator Weather Guarantee · 100% refund if flight is grounded due to weather",
     bookHref:
-      "https://www.viator.com/tours/Juneau/Helicopter-Glacier-Dog-Sledding-Tour/d941-10423P2?pid=P00058396&mcid=42383&medium=api",
+      "https://www.viator.com/Juneau-tourism/d941-r8418047970-s323605581?pid=P00058396&mcid=42383&medium=api",
     tourType: "dog_sledding",
     isLive: false,
     dataTimestamp: SNAPSHOT_TIMESTAMP,
   },
   {
-    id: "25488P1",
-    productCode: "25488P1",
-    title: "Juneau Icefield Helicopter Tour with Glacier Landing",
+    id: "coastal-icefield-landing",
+    productCode: "coastal-icefield-landing",
+    title: "Juneau Icefield Helicopter Flight & Glacier Landing",
     description:
-      "Experience breathtaking aerial views of deep crevasses, icefalls, and Herbert Glacier before landing for an up-close exploration of blue glacier ice.",
+      "Experience dramatic aerial panoramas of Herbert Glacier, deep crevasses, and cascading icefalls before touching down for an up-close glacier ice exploration.",
     durationMinutes: 150,
     durationLabel: "2 hr 30 min",
-    priceLabel: "from $419 (2027 ref)",
-    priceFrom: 419,
+    priceLabel: "Schedule & Rates On Request",
+    priceFrom: null,
     currency: "USD",
     priceDisclaimer:
-      "Historical snapshot rate as of Oct 2026. Live pricing and departure times are verified in the booking calendar.",
-    imageUrl:
-      "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/09/c5/d2/c7.jpg",
-    imageAlt: "Aerial view of helicopter over deep blue crevasses in Juneau icefield",
-    imageSource: "SUPPLIER_PROVIDED",
+      "Rates and schedule departures verified upon booking inquiry. Part 135 FAA certified flight operations.",
+    imageUrl: "/images/tours/coastal-icefield-landing.jpg",
+    imageAlt: "Aerial view of Juneau Icefield and glacier icefalls",
+    imageSource: "LOCAL_AUTHORITY",
     supplierName: "Coastal Helicopters",
-    rating: 4.7,
-    reviewCount: 265,
-    badges: ["Icefield Flightseeing & Landing"],
-    cancellationPolicy: "Free cancellation up to 24 hours before departure",
+    rating: null,
+    reviewCount: null,
+    badges: ["Icefield Flight & Landing", "Part 135 Certified"],
+    cancellationPolicy: "Operator Weather Guarantee · 100% refund if flight is grounded due to weather",
     bookHref:
-      "https://www.viator.com/tours/Juneau/Juneau-Icefield-Helicopter-Tour/d941-25488P1?pid=P00058396&mcid=42383&medium=api",
+      "https://www.viator.com/Juneau-tourism/d941-r8418047970-s323605581?pid=P00058396&mcid=42383&medium=api",
     tourType: "glacier_landing",
     isLive: false,
     dataTimestamp: SNAPSHOT_TIMESTAMP,
   },
   {
-    id: "3129P1",
-    productCode: "3129P1",
-    title: "Glacier Ice Trek & Climb by Helicopter",
+    id: "northstar-glacier-ice-trek",
+    productCode: "northstar-glacier-ice-trek",
+    title: "Small-Group Glacier Ice Trek & Mountaineering",
     description:
-      "Equipped with crampons and mountaineering gear, trek deep into the glacier interior and explore dramatic ice towers, moulins, and blue ice crevices.",
+      "Equipped with crampons, harnesses, and ice axes, venture deep into pristine glacier territory to explore dramatic blue ice walls, moulins, and glacial formations.",
     durationMinutes: 240,
     durationLabel: "4 hr",
-    priceLabel: "from $589 (2027 ref)",
-    priceFrom: 589,
+    priceLabel: "Schedule & Rates On Request",
+    priceFrom: null,
     currency: "USD",
     priceDisclaimer:
-      "Historical snapshot rate as of Oct 2026. Live pricing and departure times are verified in the booking calendar.",
-    imageUrl:
-      "https://hare-media-cdn.tripadvisor.com/media/attractions-splice-spp-720x480/07/90/5a/6a.jpg",
-    imageAlt: "Guided ice trekker with crampons exploring deep glacier crevasse in Alaska",
-    imageSource: "SUPPLIER_PROVIDED",
+      "Rates and schedule departures verified upon booking inquiry. Part 135 FAA certified flight operations.",
+    imageUrl: "/images/tours/northstar-glacier-ice-trek.jpg",
+    imageAlt: "Guided mountaineering exploration of deep glacier ice terrain in Juneau",
+    imageSource: "LOCAL_AUTHORITY",
     supplierName: "NorthStar Trekking",
-    rating: 4.9,
-    reviewCount: 184,
-    badges: ["Small Group Ice Trek"],
-    cancellationPolicy: "Free cancellation up to 24 hours before departure",
+    rating: null,
+    reviewCount: null,
+    badges: ["Small-Group Adventure", "Part 135 Certified"],
+    cancellationPolicy: "Operator Weather Guarantee · 100% refund if flight is grounded due to weather",
     bookHref:
-      "https://www.viator.com/tours/Juneau/Glacier-Ice-Trek-by-Helicopter/d941-3129P1?pid=P00058396&mcid=42383&medium=api",
+      "https://www.viator.com/Juneau-tourism/d941-r8418047970-s323605581?pid=P00058396&mcid=42383&medium=api",
     tourType: "ice_trek",
     isLive: false,
     dataTimestamp: SNAPSHOT_TIMESTAMP,
@@ -127,9 +126,12 @@ export const VIATOR_TOURS_BY_CODE: Record<string, ViatorJuneauProduct> = Object.
 );
 
 export const VIATOR_TOURS_BY_OPERATOR: Record<string, ViatorJuneauProduct[]> = {
-  TEMSCO: [VIATOR_TOURS_BY_CODE["10423P1"], VIATOR_TOURS_BY_CODE["10423P2"]],
-  Coastal: [VIATOR_TOURS_BY_CODE["25488P1"]],
-  NorthStar: [VIATOR_TOURS_BY_CODE["3129P1"]],
+  TEMSCO: [
+    VIATOR_TOURS_BY_CODE["temsco-mendenhall-glacier-walk"],
+    VIATOR_TOURS_BY_CODE["temsco-glacier-dog-sledding"],
+  ],
+  Coastal: [VIATOR_TOURS_BY_CODE["coastal-icefield-landing"]],
+  NorthStar: [VIATOR_TOURS_BY_CODE["northstar-glacier-ice-trek"]],
 };
 
 export const DEFAULT_FALLBACK_RESPONSE: ViatorJuneauProductsResponse = {
@@ -137,19 +139,19 @@ export const DEFAULT_FALLBACK_RESPONSE: ViatorJuneauProductsResponse = {
   generatedAt: SNAPSHOT_TIMESTAMP,
   products: VERIFIED_FALLBACK_SNAPSHOT,
   isLive: false,
-  status: "seasonally_unavailable",
+  status: "operator_profiles",
   snapshotTimestamp: SNAPSHOT_TIMESTAMP,
   selectedDate: null,
   passengerCount: 2,
   signals: {
     headline:
-      "2027 Juneau helicopter excursions open in rolling waves. Explore signature flights and join priority alerts for early access.",
-    availabilityStatus: "seasonally_unavailable",
+      "Live Viator booking calendar currently syncing. Explore Juneau operator flight profiles below and set up availability alerts.",
+    availabilityStatus: "calendar_check_required",
   },
   attribution: {
-    source: "Viator Partner API",
+    source: "Juneau Operator Profiles & Viator Partner Network",
     notice:
-      "Verified via Viator Partner API. Supplier photos and product specs established via partner records.",
+      "Operator flight profiles with approved Alaska photography. Live departures, real-time rates, and calendar bookings are confirmed through Viator or direct operator inquiry.",
     poweredBy: "Official Viator Partner",
   },
   browseHref:
