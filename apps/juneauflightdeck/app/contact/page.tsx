@@ -10,14 +10,17 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <StaticPage
-      eyebrow="Contact"
-      title="Need help narrowing your Juneau shore day?"
-      intro="Use the planning tools on the homepage to compare the right experience shape first. For an existing reservation, payment, pickup, cancellation, or operator-specific question, contact the provider shown on your booking confirmation."
+      eyebrow="Dispatch Desk &amp; Booking Support"
+      title="Need help with your booking, availability watch, or weather backup?"
+      intro="Our Juneau dispatch coordination desk assists cruise travelers with port-day flight timing, availability watch requests, and same-day backup options when weather affects helicopter schedules."
       bullets={[
-        "Juneau Flight Deck is a planning and referral surface, not the tour operator.",
-        "Provider booking pages are the source of truth for live prices, availability, meeting instructions, and cancellation terms.",
-        "For cruise timing questions, have your ship name, Juneau date, arrival time, and all-aboard time available.",
+        "Email Dispatch: Reach our coordination desk directly at dispatch@juneauflightdeck.com with your Confirmation Code (e.g. JFD-SCAN-...), ship name, and port date.",
+        "Flight Weather Pivots: If your helicopter flight is grounded due to weather, we help identify same-day sea-level alternatives—such as Auke Bay whale watching or Mendenhall glacier land shuttles—that fit your ship's remaining port window.",
+        "How Alternatives Are Booked: Backup tours depend on live operator availability and are booked directly with the respective tour operator (or via Viator) to keep billing transparent and avoid bundled markups.",
+        "Operator Source of Truth: For active payments, immediate morning pickup adjustments, or flight manifests, the operating flight company (TEMSCO, Coastal, or NorthStar) listed on your voucher remains the ultimate operational authority.",
       ]}
+      ctaHref="/juneau/what-to-do-if-helicopter-tour-canceled"
+      ctaLabel="Review Weather Backup Plan →"
     />
   );
 }
