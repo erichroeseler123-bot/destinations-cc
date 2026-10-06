@@ -195,6 +195,7 @@ export async function GET(request: Request) {
     if (action === "sweep" || action === "run_sweep") {
       const force = url.searchParams.get("force") === "true";
       const includeTest = url.searchParams.get("include_test") === "true";
+      const testMatch = url.searchParams.get("test_match") === "true";
       const alaskaHour = getAlaskaLocalHour();
 
       // Enforce 10:00 AM Alaska local time year-round (handles AKDT UTC-8 in summer and AKST UTC-9 in winter)
@@ -207,7 +208,10 @@ export async function GET(request: Request) {
         });
       }
 
-      const sweepResult = await execute10AmDailySweep({ includeTests: includeTest });
+      const sweepResult = await execute10AmDailySweep({
+        includeTests: includeTest || testMatch,
+        testMatch,
+      });
       return NextResponse.json({
         ok: true,
         message: `Sweep completed for ${sweepResult.totalDatesSwept} active watch dates. Openings: ${sweepResult.openingsFound}, Access Failures: ${sweepResult.accessFailuresCount}.`,

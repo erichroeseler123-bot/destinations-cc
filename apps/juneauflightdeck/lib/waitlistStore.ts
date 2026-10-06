@@ -434,14 +434,17 @@ export interface SweepResult {
  * Status Lifecycle:
  * active_scanning -> opening_detected -> contact_pending -> held (if confirmed by operator) -> booking_confirmed
  */
-export async function execute10AmDailySweep(options?: { includeTests?: boolean }): Promise<SweepResult> {
+export async function execute10AmDailySweep(options?: {
+  includeTests?: boolean;
+  testMatch?: boolean;
+}): Promise<SweepResult> {
   const all = await getAllWaitlistEntries();
   const today = getTodayAlaskaDate();
 
   // Strictly exclude expired watch dates (dates in the past) and test entries unless explicitly requested for verification
   const activeEntries = all.filter((e) => {
     if (e.status !== "active_scanning") return false;
-    if (e.isTest && !options?.includeTests) return false;
+    if (e.isTest && !options?.includeTests && !options?.testMatch) return false;
     const targetDate = e.portDate || e.juneauDate || e.skagwayDate;
     if (targetDate && targetDate < today) return false;
     return true;
@@ -549,6 +552,31 @@ export async function execute10AmDailySweep(options?: { includeTests?: boolean }
       }
 
       const openSlots = filterOpenAvailabilities(fetchResult.availabilities, 1);
+
+      // In controlled test sweeps, synthesize a test departure for marked test requests if operator has 0 openings
+      if (options?.testMatch && candidateEntries.some((e) => e.isTest) && openSlots.length === 0) {
+        const testCandidate = candidateEntries.find((e) => e.isTest);
+        if (testCandidate) {
+          const targetDate =
+            product.port === "juneau"
+              ? testCandidate.juneauDate || (testCandidate.portCity === "juneau" ? testCandidate.portDate : undefined)
+              : testCandidate.skagwayDate || (testCandidate.portCity === "skagway" ? testCandidate.portDate : undefined);
+          if (targetDate) {
+            openSlots.push({
+              pk: 999901,
+              start_at: `${targetDate}T13:30:00-08:00`,
+              end_at: `${targetDate}T15:45:00-08:00`,
+              capacity: Math.max(testCandidate.partySize, 4),
+              spots_total: 6,
+              item: {
+                pk: product.itemPk,
+                name: product.name,
+              },
+              is_bookable: true,
+            });
+          }
+        }
+      }
 
       operatorReports.push({
         operator: product.operator,
