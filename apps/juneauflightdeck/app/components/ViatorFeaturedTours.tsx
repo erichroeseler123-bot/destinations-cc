@@ -877,7 +877,7 @@ function TourCard({
               {product.supplierName || "Juneau Flight Operator"}
             </span>
             <span style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: 4 }}>
-              Photo provided by operator on Viator
+              Photo unavailable
             </span>
           </div>
         )}
