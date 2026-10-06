@@ -4,6 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import ViatorFeaturedTours from './ViatorFeaturedTours';
+import HelicopterArrival from './HelicopterArrival';
+import arrivalStyles from './HelicopterArrival.module.css';
 
 type PortSlug = 'juneau' | 'skagway';
 
@@ -23,6 +25,7 @@ export default function HelicopterDispatchBoard({
   primaryCtaLabel,
 }: HelicopterDispatchBoardProps) {
   const isSkagway = portSlug === 'skagway';
+  const showArrivalHero = sourcePage === '/' && !isSkagway;
 
   const defaultHeadline = isSkagway
     ? 'Match Your Skagway Glacier Flight to Your Ship Schedule'
@@ -66,7 +69,14 @@ export default function HelicopterDispatchBoard({
       </div>
 
       {/* 1. Concise Hero Section */}
-      <section className="jfd-concise-hero">
+      <section className={`jfd-concise-hero ${showArrivalHero ? arrivalStyles.hero : ''}`}>
+        {showArrivalHero && <>
+          <Image src="/images/tours/temsco-mendenhall-glacier-walk.jpg" alt="A helicopter on the glacier beneath snow-covered Alaska mountains" fill priority sizes="100vw" className={arrivalStyles.photo} />
+          <div className={arrivalStyles.scrim} />
+          <HelicopterArrival />
+          <a className={arrivalStyles.credit} href="https://commons.wikimedia.org/wiki/File:Helicopter,_Mendenhall_Glacier,_Alaska.jpg" target="_blank" rel="noopener noreferrer">Photo: Robert Raines · CC BY-SA 2.0</a>
+        </>}
+        <div className={showArrivalHero ? arrivalStyles.copy : undefined}>
         <div
           style={{
             display: 'inline-block',
@@ -110,6 +120,7 @@ export default function HelicopterDispatchBoard({
             <span style={{ color: '#86efac', fontWeight: 800 }}>✓</span>
             <span><strong>Local Coordination:</strong> Daily waitlist sweeps &amp; weather backups</span>
           </div>
+        </div>
         </div>
       </section>
 
