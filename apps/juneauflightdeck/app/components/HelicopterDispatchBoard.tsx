@@ -179,9 +179,9 @@ export default function HelicopterDispatchBoard({
               <div style={{ color: 'var(--ice)', fontSize: '0.75rem', fontWeight: 800, marginBottom: 4 }}>
                 02 · OPERATIONS
               </div>
-              <h2 className="jfd-compact-card-title">Weather Monitoring</h2>
+              <h2 className="jfd-compact-card-title">Early Weather Detection</h2>
               <p className="jfd-compact-card-body">
-                Glacier microclimates cause cancellations during low ceiling or fog events. Our local ground team tracks flight clearances daily.
+                Mountain ridge cams and pass weather signal groundings hours early. We track conditions so you aren&apos;t surprised at lift time.
               </p>
             </div>
             <Link
@@ -199,14 +199,14 @@ export default function HelicopterDispatchBoard({
                 03 · CONTINGENCY
               </div>
               <h2 className="jfd-compact-card-title">
-                Cruise-Safe Whale Backup
+                Proactive Alternative Backup
               </h2>
               <p className="jfd-compact-card-body">
-                If weather grounds your flight, seamlessly pivot to available whale watching boats so you never miss your port day in Juneau.
+                If weather deteriorates, we start securing alternative activities before your tour is even canceled, beating the dock rush.
               </p>
             </div>
             <Link
-              href={isSkagway ? '/skagway/helicopter' : '/juneau-whale-watching-tours'}
+              href={isSkagway ? '/skagway/helicopter' : '/juneau/what-to-do-if-helicopter-tour-canceled'}
               className="jfd-compact-card-action"
               aria-label="Backup options"
             >
@@ -540,17 +540,17 @@ export default function HelicopterDispatchBoard({
 
           <div className="jfd-step-card">
             <div className="jfd-step-number">STEP 02</div>
-            <h3 className="jfd-step-title">Monitor Glacier Operations</h3>
+            <h3 className="jfd-step-title">Early Weather Detection</h3>
             <p className="jfd-step-desc">
-              We track FAA airport observations and operator dispatch updates on tour day as coastal microclimates develop.
+              We monitor FAA ridge webcams and pass ceilings. We often know conditions are deteriorating 2–3 hours before official cutoff calls.
             </p>
           </div>
 
           <div className="jfd-step-card">
             <div className="jfd-step-number">STEP 03</div>
-            <h3 className="jfd-step-title">Fly or Explore Backups</h3>
+            <h3 className="jfd-step-title">Proactive Backup Staging</h3>
             <p className="jfd-step-desc">
-              If the operator cancels due to weather, receive a standard full refund or explore backup whale-watching tours based on available capacity.
+              Before your flight is even officially canceled, we are already working on securing available alternative tours before dockside inventory sells out.
             </p>
           </div>
         </div>
@@ -576,13 +576,19 @@ export default function HelicopterDispatchBoard({
               </p>
               <ul style={{ paddingLeft: 20, margin: '8px 0' }}>
                 <li>
-                  <strong>Terminal Aerodrome Forecasts (TAF):</strong> PAJN observations reflect sea-level conditions at the airport.
+                  <strong>Terminal Aerodrome Forecasts (TAF):</strong> PAJN observations reflect sea-level conditions at the airport, while glacier basins have separate mountain weather patterns.
                 </li>
                 <li>
                   <strong>Mountain Microclimates:</strong> Passes leading to Mendenhall, Herbert, and Norris Glaciers can experience cloud ceilings below 1,000 feet, sudden downsloping wind shears, or dense fog while downtown Juneau remains pleasant.
                 </li>
                 <li>
-                  <strong>Flight Safety Determinations:</strong> Only the operating chief pilot and dispatch make the final call on weather go/no-go decisions, usually finalized 45–90 minutes prior to lift.
+                  <strong>2–3 Hour Early Warning:</strong> By tracking ridge-top weather stations, FAA pass webcams (Gastineau Channel, Herbert Glacier, Mendenhall Valley), and ceiling trends, our local team often knows a flight is heading toward a weather grounding hours before the official call.
+                </li>
+                <li>
+                  <strong>Securing Alternatives Ahead of the Dock Rush:</strong> When 400+ helicopter guests get cancelled simultaneously across 3–4 cruise ships, remaining whale watching boats and land tours sell out in minutes. We start working on alternative activities before your flight is even officially cancelled, keeping your port day intact.
+                </li>
+                <li>
+                  <strong>Flight Safety Determinations &amp; Refunds:</strong> Operating chief pilots make the final safety go/no-go call (usually finalized 45–90 minutes prior to lift). Weather cancellations receive a 100% refund from the operator or booking platform; backup activities are booked separately based on real-time availability.
                 </li>
               </ul>
             </div>
