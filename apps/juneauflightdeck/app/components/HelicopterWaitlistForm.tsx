@@ -451,11 +451,11 @@ ${shareUrl}`;
                   />
                   <div>
                     <div className="flex items-center gap-2">
-                      <strong className="text-white text-sm">📱 Daily Seat Drop Alert</strong>
+                      <strong className="text-white text-sm">📧 Daily Seat Drop Alert</strong>
                       <span className="mode-badge-recommended">Direct Link</span>
                     </div>
                     <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                      <strong>Free SMS &amp; Email Alert.</strong> When seats drop during our 10:00 AM sweep, we send you a direct booking link to complete checkout with the flight operator.
+                      <strong>Free Email Alert.</strong> When seats drop during our 10:00 AM sweep, we send you a direct booking link to complete checkout with the flight operator.
                     </p>
                   </div>
                 </div>
@@ -478,10 +478,10 @@ ${shareUrl}`;
                   <div>
                     <div className="flex items-center gap-2">
                       <strong className="text-white text-sm">🛎️ Concierge Dispatch Alert</strong>
-                      <span className="mode-badge-free">Phone + Email</span>
+                      <span className="mode-badge-free">Personal Follow-Up</span>
                     </div>
                     <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                      <strong>Dedicated local assistance.</strong> Our Juneau dispatch team notifies you via phone and email the moment openings are detected to help coordinate your booking.
+                      <strong>Dedicated local assistance.</strong> Our Juneau dispatch team notifies you via email and coordinates directly when openings are detected to help secure your booking.
                     </p>
                   </div>
                 </div>
@@ -744,8 +744,8 @@ ${shareUrl}`;
               />
               <span className="text-[11px] text-slate-400">
                 {formData.bookingMode === "concierge_dispatch"
-                  ? "Required for phone/SMS dispatch call when seats open"
-                  : "Used for SMS seat drop alerts"}
+                  ? "Used by Juneau dispatch team for direct flight coordination"
+                  : "Optional direct contact for tour operator coordination"}
               </span>
             </div>
 

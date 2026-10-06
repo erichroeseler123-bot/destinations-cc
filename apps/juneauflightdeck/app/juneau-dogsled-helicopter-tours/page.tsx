@@ -36,7 +36,7 @@ const dogSledFaqJsonLd = {
       name: "How does the Juneau Flight Deck seat scanner help if dog sledding is sold out?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Because cruise travelers frequently change itineraries or cancel trips, dog sledding slots open up without warning. Our 24/7 automated monitor polls operator booking engines. When a seat is dropped on your cruise date, our system grabs it immediately. Because tour operators provide a 100% full refund up to 48 hours before flight, we hold seats risk-free and alert you immediately via SMS and email.",
+        text: "Because cruise travelers frequently change itineraries or cancel trips, dog sledding slots open up as schedules change. Our automated monitor polls operator booking engines daily at 10:00 AM. When an opening is detected on your cruise date, we alert you immediately via email with a direct booking link so you can secure seats with the operator.",
       },
     },
     {

@@ -55,8 +55,15 @@ export async function dispatchSeatDropNotification(params: {
   isTest?: boolean;
 }): Promise<NotificationPayload | null> {
   const sql = getDb();
+  const resendApiKey = process.env.RESEND_API_KEY || process.env.DCC_RESEND_API_KEY;
+  const isRealProviderConfigured = Boolean(
+    resendApiKey && resendApiKey.startsWith("re_") && resendApiKey.length > 20
+  );
 
-  // Deduplication check: Has a notification ALREADY been dispatched/delivered for this passenger + port date + departure slot?
+  // Deduplication check:
+  // - If real delivery is configured, ONLY an actual 'delivered' record suppresses dispatch.
+  //   Simulation records must NEVER block the first real delivery to an actual inbox.
+  // - If running in simulated mode, suppress redundant duplicate simulations.
   if (sql) {
     try {
       await ensureDbTables();
@@ -65,12 +72,16 @@ export async function dispatchSeatDropNotification(params: {
         WHERE entry_id = ${params.guestId}
           AND port_date = ${params.portDate}
           AND departure_time = ${params.departureTime}
-          AND status IN ('delivered', 'simulated_delivery')
+          AND ${
+            isRealProviderConfigured
+              ? sql`status = 'delivered'`
+              : sql`status IN ('delivered', 'simulated_delivery')`
+          }
         LIMIT 1;
       `;
       if (existing.length > 0) {
         console.log(
-          `[NotificationDispatcher] Duplicate notification suppressed: already delivered to ${params.guestId} on ${params.portDate} (${params.departureTime})`
+          `[NotificationDispatcher] Duplicate notification suppressed: already ${existing[0].status} for ${params.guestId} on ${params.portDate} (${params.departureTime})`
         );
         return null;
       }
@@ -188,7 +199,7 @@ hello@juneauflightdeck.com
     partySize: params.partySize,
     checkoutUrl: params.checkoutUrl,
     cancellationPolicy: params.cancellationPolicy,
-    channel: params.phone ? "both" : "email",
+    channel: "email",
     status: deliveryStatus,
     emailSubject,
     emailBodyHtml,
@@ -262,6 +273,10 @@ export async function dispatchWaitlistIntakeNotification(entry: {
   isTest?: boolean;
 }): Promise<NotificationPayload | null> {
   const sql = getDb();
+  const resendApiKey = process.env.RESEND_API_KEY || process.env.DCC_RESEND_API_KEY;
+  const isRealProviderConfigured = Boolean(
+    resendApiKey && resendApiKey.startsWith("re_") && resendApiKey.length > 20
+  );
 
   // Deduplication check: Do not re-dispatch intake alert if already recorded
   if (sql) {
@@ -272,11 +287,15 @@ export async function dispatchWaitlistIntakeNotification(entry: {
         WHERE entry_id = ${entry.id}
           AND port_date = ${entry.portDate}
           AND departure_time = 'Intake Alert'
-          AND status IN ('delivered', 'simulated_delivery')
+          AND ${
+            isRealProviderConfigured
+              ? sql`status = 'delivered'`
+              : sql`status IN ('delivered', 'simulated_delivery')`
+          }
         LIMIT 1;
       `;
       if (existing.length > 0) {
-        console.log(`[NotificationDispatcher] Intake notification suppressed for ${entry.id}: already recorded.`);
+        console.log(`[NotificationDispatcher] Intake notification suppressed for ${entry.id}: already ${existing[0].status}.`);
         return null;
       }
     } catch (err) {

@@ -85,7 +85,7 @@ export async function POST(request: Request) {
         {
           ok: false,
           error:
-            "A valid phone number is required for Concierge Dispatch so our team can alert you via phone/SMS when seats drop.",
+            "A valid contact phone number is required for Concierge Dispatch so our dispatch team can coordinate directly with you when seats drop.",
         },
         { status: 400 }
       );
@@ -216,8 +216,8 @@ export async function POST(request: Request) {
       isTest: entry.isTest,
       message:
         entry.bookingMode === "concierge_dispatch"
-          ? "Concierge Dispatch Alert activated! Our 10:00 AM daily sweep will monitor operator drops. If seats open, dispatch will alert you via phone and email with direct flight checkout."
-          : "Daily 10:00 AM Seat Drop Alert activated! Our automated daily sweep monitors operator cancellations. When seats open, you will receive an alert with direct operator checkout links.",
+          ? "Concierge Dispatch Alert activated! Our 10:00 AM daily sweep will monitor operator drops. If seats open, dispatch will alert you via email and personal coordination with direct flight checkout."
+          : "Daily 10:00 AM Seat Drop Alert activated! Our automated daily sweep monitors operator cancellations. When seats open, you will receive an email alert with direct operator checkout links.",
       details: {
         portDate: entry.portDate,
         juneauDate: entry.juneauDate,
