@@ -33,7 +33,7 @@ export default function HomePage() {
       <HelicopterDispatchBoard
         portSlug="juneau"
         sourcePage="/"
-        headline="Planning a cruise in summer 2027?"
+        headline="The new way to book Juneau helicopter tours"
         subhead="Explore Juneau helicopter tours and request an availability alert for your port date. We’ll check for matching departures as operators release their schedules."
         primaryCtaLabel="Explore Juneau Helicopter Tours"
       />
