@@ -33,9 +33,9 @@ export default function HomePage() {
       <HelicopterDispatchBoard
         portSlug="juneau"
         sourcePage="/"
-        headline="Compare Juneau Helicopter Tours"
-        subhead="Explore TEMSCO, Coastal, and NorthStar tours, plus cancellation guidance and planned backup options."
-        primaryCtaLabel="Compare Juneau Helicopter Tours"
+        headline="Planning a cruise in summer 2027?"
+        subhead="Explore Juneau helicopter tours and request an availability alert for your port date. We’ll check for matching departures as operators release their schedules."
+        primaryCtaLabel="Explore Juneau Helicopter Tours"
       />
       <section
         aria-label="Plan the rest of your cruise"

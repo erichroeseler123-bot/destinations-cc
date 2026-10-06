@@ -26,11 +26,11 @@ export default function HelicopterDispatchBoard({
 
   const defaultHeadline = isSkagway
     ? 'Match Your Skagway Glacier Flight to Your Ship Schedule'
-    : 'Compare Juneau Helicopter Tours';
+    : 'Planning a cruise in summer 2027?';
 
   const defaultSubhead = isSkagway
     ? 'Compare Skagway glacier helicopter operators, review ship-safe return buffers, and plan your weather backup.'
-    : 'Explore TEMSCO, Coastal, and NorthStar tours, plus cancellation guidance and planned backup options.';
+    : 'Explore Juneau helicopter tours and request an availability alert for your port date. We’ll check for matching departures as operators release their schedules.';
 
   const defaultPrimaryCta = isSkagway ? 'Compare Skagway Flights' : 'Compare Helicopter Tours';
 
