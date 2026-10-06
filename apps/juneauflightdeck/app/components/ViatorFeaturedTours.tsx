@@ -76,245 +76,256 @@ export default function ViatorFeaturedTours({
       id="viator-featured-tours"
       className={`jfd-viator-section ${className}`}
       aria-label="Viator Featured Helicopter Excursions"
-      style={{
-        maxWidth: "var(--content, 1240px)",
-        margin: "48px auto",
-        padding: "0 20px",
-      }}
     >
-      {/* Section Header */}
-      <div style={{ textAlign: "center", marginBottom: 28 }}>
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            fontSize: "0.75rem",
-            fontWeight: 800,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "var(--accent, #f0b35b)",
-            marginBottom: 8,
-          }}
-        >
-          <span>Official Viator Partner</span>
-          <span>·</span>
-          <span>Tripadvisor Partner Network</span>
-        </div>
-        <h2
-          style={{
-            fontSize: "clamp(1.75rem, 3.5vw, 2.4rem)",
-            fontWeight: 800,
-            margin: "0 0 10px 0",
-            color: "var(--text, #eef6fb)",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          {headline}
-        </h2>
-        <p
-          style={{
-            maxWidth: 740,
-            margin: "0 auto",
-            fontSize: "0.95rem",
-            lineHeight: 1.6,
-            color: "var(--muted, rgba(228, 239, 246, 0.78))",
-          }}
-        >
-          {subhead}
-        </p>
-
-        {/* Live vs Snapshot Transparency Banner */}
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            marginTop: 14,
-            padding: "5px 14px",
-            borderRadius: "var(--radius-md, 18px)",
-            fontSize: "0.78rem",
-            background: isLive ? "rgba(34, 197, 94, 0.12)" : "rgba(245, 158, 11, 0.12)",
-            border: `1px solid ${isLive ? "rgba(34, 197, 94, 0.3)" : "rgba(245, 158, 11, 0.3)"}`,
-            color: isLive ? "#86efac" : "#fcd34d",
-          }}
-        >
-          <span>{isLive ? "🟢" : "ℹ️"}</span>
-          <span>
-            {isLive
-              ? "Live Viator API Feed Active"
-              : `Catalog snapshot (${snapshotTimestamp ? snapshotTimestamp.slice(0, 10) : "Oct 2026"}). Real-time prices & live departures are verified in the Viator booking calendar.`}
-          </span>
-        </div>
-
-        {/* Date & Filter Toolbar */}
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 12,
-            marginTop: 20,
-          }}
-        >
-          {/* Category Tabs */}
+      <div className="jfd-viator-container">
+        {/* Section Header */}
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
           <div
-            role="tablist"
-            aria-label="Tour Type Filter"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: "0.75rem",
+              fontWeight: 800,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--accent, #f0b35b)",
+              marginBottom: 10,
+            }}
+          >
+            <span>Official Viator Partner</span>
+            <span>·</span>
+            <span>Tripadvisor Partner Network</span>
+          </div>
+          <h2
+            style={{
+              fontSize: "clamp(1.85rem, 3.8vw, 2.5rem)",
+              fontWeight: 900,
+              margin: "0 0 12px 0",
+              color: "#ffffff",
+              letterSpacing: "-0.02em",
+              textShadow: "0 2px 12px rgba(0, 0, 0, 0.45)",
+            }}
+          >
+            {headline}
+          </h2>
+          <p
+            style={{
+              maxWidth: 740,
+              margin: "0 auto",
+              fontSize: "1rem",
+              lineHeight: 1.6,
+              color: "rgba(228, 239, 246, 0.85)",
+            }}
+          >
+            {subhead}
+          </p>
+
+          {/* Live vs Snapshot Transparency Banner */}
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              marginTop: 16,
+              padding: "6px 16px",
+              borderRadius: "999px",
+              fontSize: "0.8rem",
+              fontWeight: 500,
+              background: isLive ? "rgba(34, 197, 94, 0.14)" : "rgba(240, 179, 91, 0.14)",
+              border: `1px solid ${isLive ? "rgba(34, 197, 94, 0.35)" : "rgba(240, 179, 91, 0.35)"}`,
+              color: isLive ? "#86efac" : "#fbbf24",
+            }}
+          >
+            <span>{isLive ? "🟢" : "ℹ️"}</span>
+            <span>
+              {isLive
+                ? "Live Viator API Feed Active"
+                : `Catalog snapshot (${snapshotTimestamp ? snapshotTimestamp.slice(0, 10) : "Oct 2026"}). Real-time prices & live departures are verified in the Viator booking calendar.`}
+            </span>
+          </div>
+
+          {/* Date & Filter Toolbar */}
+          <div
             style={{
               display: "flex",
               flexWrap: "wrap",
-              gap: 6,
-              background: "rgba(7, 24, 36, 0.75)",
-              border: "1px solid var(--line, rgba(151, 211, 255, 0.15))",
-              borderRadius: "var(--radius-md, 18px)",
-              padding: 4,
-            }}
-          >
-            {FILTER_TABS.map((tab) => {
-              const active = selectedTab === tab.value;
-              return (
-                <button
-                  key={tab.value}
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => setSelectedTab(tab.value)}
-                  style={{
-                    border: "none",
-                    background: active
-                      ? "linear-gradient(135deg, #113854, #1b4d73)"
-                      : "transparent",
-                    color: active ? "#ffffff" : "var(--muted, rgba(228, 239, 246, 0.78))",
-                    fontWeight: active ? 700 : 500,
-                    fontSize: "0.85rem",
-                    padding: "8px 14px",
-                    borderRadius: 12,
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Date Picker Filter */}
-          <div
-            style={{
-              display: "flex",
               alignItems: "center",
-              gap: 8,
-              background: "rgba(7, 24, 36, 0.75)",
-              border: "1px solid var(--line, rgba(151, 211, 255, 0.15))",
-              borderRadius: "var(--radius-md, 18px)",
-              padding: "6px 14px",
+              justifyContent: "center",
+              gap: 12,
+              marginTop: 24,
             }}
           >
-            <label
-              htmlFor="viator-port-date"
+            {/* Category Tabs */}
+            <div
+              role="tablist"
+              aria-label="Tour Type Filter"
               style={{
-                fontSize: "0.8rem",
-                color: "var(--ice, #9ed9ff)",
-                fontWeight: 600,
+                display: "inline-flex",
+                flexWrap: "wrap",
+                gap: 4,
+                background: "rgba(4, 17, 27, 0.85)",
+                border: "1px solid rgba(151, 211, 255, 0.22)",
+                borderRadius: "999px",
+                padding: 4,
+                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.25)",
               }}
             >
-              Port Date:
-            </label>
-            <input
-              id="viator-port-date"
-              type="date"
-              value={dateFilter}
-              min="2027-05-01"
-              max="2027-09-30"
-              onChange={(e) => setDateFilter(e.target.value)}
+              {FILTER_TABS.map((tab) => {
+                const active = selectedTab === tab.value;
+                return (
+                  <button
+                    key={tab.value}
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setSelectedTab(tab.value)}
+                    style={{
+                      border: "none",
+                      background: active
+                        ? "linear-gradient(135deg, #1b4f73, #256693)"
+                        : "transparent",
+                      color: active ? "#ffffff" : "rgba(228, 239, 246, 0.75)",
+                      fontWeight: active ? 700 : 500,
+                      fontSize: "0.85rem",
+                      padding: "8px 16px",
+                      borderRadius: "999px",
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                      boxShadow: active ? "0 2px 8px rgba(0, 0, 0, 0.35)" : "none",
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Date Picker Filter */}
+            <div
               style={{
-                background: "transparent",
-                border: "none",
-                color: "#ffffff",
-                fontSize: "0.85rem",
-                fontFamily: "inherit",
-                cursor: "pointer",
-                outline: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                background: "rgba(4, 17, 27, 0.85)",
+                border: "1px solid rgba(151, 211, 255, 0.22)",
+                borderRadius: "999px",
+                padding: "7px 16px",
+                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.25)",
               }}
-            />
-            {dateFilter && (
-              <button
-                type="button"
-                onClick={() => setDateFilter("")}
-                aria-label="Clear date filter"
+            >
+              <label
+                htmlFor="viator-port-date"
+                style={{
+                  fontSize: "0.82rem",
+                  color: "var(--ice, #9ed9ff)",
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                }}
+              >
+                <span>📅</span> Port Date:
+              </label>
+              <input
+                id="viator-port-date"
+                type="date"
+                value={dateFilter}
+                min="2027-05-01"
+                max="2027-09-30"
+                onChange={(e) => setDateFilter(e.target.value)}
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "var(--muted)",
+                  color: "#ffffff",
+                  fontSize: "0.85rem",
+                  fontFamily: "inherit",
                   cursor: "pointer",
-                  fontSize: "0.9rem",
-                  padding: "0 4px",
+                  outline: "none",
+                  colorScheme: "dark",
+                }}
+              />
+              {dateFilter && (
+                <button
+                  type="button"
+                  onClick={() => setDateFilter("")}
+                  aria-label="Clear date filter"
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--muted)",
+                    cursor: "pointer",
+                    fontSize: "0.9rem",
+                    padding: "0 4px",
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Passenger Count Selector */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                background: "rgba(4, 17, 27, 0.85)",
+                border: "1px solid rgba(151, 211, 255, 0.22)",
+                borderRadius: "999px",
+                padding: "7px 16px",
+                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.25)",
+              }}
+            >
+              <label
+                htmlFor="viator-passengers"
+                style={{
+                  fontSize: "0.82rem",
+                  color: "var(--ice, #9ed9ff)",
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
                 }}
               >
-                ✕
-              </button>
-            )}
+                <span>👥</span> Travelers:
+              </label>
+              <select
+                id="viator-passengers"
+                value={passengerCount}
+                onChange={(e) => setPassengerCount(parseInt(e.target.value, 10))}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#ffffff",
+                  fontSize: "0.85rem",
+                  fontFamily: "inherit",
+                  cursor: "pointer",
+                  outline: "none",
+                  colorScheme: "dark",
+                }}
+              >
+                {[1, 2, 3, 4, 5, 6].map((num) => (
+                  <option key={num} value={num} style={{ background: "#081c2a", color: "#ffffff" }}>
+                    {num} {num === 1 ? "Guest" : "Guests"}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {/* Passenger Count Selector */}
-          <div
+          {/* Honest Availability Disclaimer */}
+          <p
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              background: "rgba(7, 24, 36, 0.75)",
-              border: "1px solid var(--line, rgba(151, 211, 255, 0.15))",
-              borderRadius: "var(--radius-md, 18px)",
-              padding: "6px 14px",
+              fontSize: "0.8rem",
+              color: "rgba(158, 217, 255, 0.72)",
+              margin: "14px auto 0",
+              maxWidth: 680,
+              lineHeight: 1.5,
             }}
           >
-            <label
-              htmlFor="viator-passengers"
-              style={{
-                fontSize: "0.8rem",
-                color: "var(--ice, #9ed9ff)",
-                fontWeight: 600,
-              }}
-            >
-              Travelers:
-            </label>
-            <select
-              id="viator-passengers"
-              value={passengerCount}
-              onChange={(e) => setPassengerCount(parseInt(e.target.value, 10))}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "#ffffff",
-                fontSize: "0.85rem",
-                fontFamily: "inherit",
-                cursor: "pointer",
-                outline: "none",
-              }}
-            >
-              {[1, 2, 3, 4, 5, 6].map((num) => (
-                <option key={num} value={num} style={{ background: "#081c2a", color: "#ffffff" }}>
-                  {num} {num === 1 ? "Guest" : "Guests"}
-                </option>
-              ))}
-            </select>
-          </div>
+            *Selecting a cruise date and passenger count pre-fills your preferences. Exact departure time slots and live seating are confirmed in the official Viator booking calendar before reservation.
+          </p>
         </div>
-
-        {/* Honest Availability Disclaimer */}
-        <p
-          style={{
-            fontSize: "0.78rem",
-            color: "var(--muted)",
-            margin: "12px auto 0",
-            maxWidth: 680,
-          }}
-        >
-          *Selecting a cruise date and passenger count pre-fills your preferences. Exact departure time slots and live seating are confirmed in the official Viator booking calendar before reservation.
-        </p>
-      </div>
 
       {/* Loading Skeleton */}
       {loading && (
@@ -787,6 +798,7 @@ export default function ViatorFeaturedTours({
           </div>
         </div>
       )}
+      </div>
     </section>
   );
 }

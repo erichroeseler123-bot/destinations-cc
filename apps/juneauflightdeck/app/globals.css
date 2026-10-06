@@ -1751,6 +1751,18 @@ body.dcc-guided-mode footer {
   gap: 4px;
 }
 
+.jfd-viator-section {
+  padding: 56px 20px;
+  background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+  border-bottom: 1px solid var(--line);
+  position: relative;
+}
+
+.jfd-viator-container {
+  width: min(calc(100% - 32px), var(--content));
+  margin: 0 auto;
+}
+
 .jfd-table-section {
   padding: 44px 20px;
   background: var(--bg-2);
