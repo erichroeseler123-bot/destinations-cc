@@ -443,8 +443,10 @@ export async function execute10AmDailySweep(options?: {
 
   // Strictly exclude expired watch dates (dates in the past) and test entries unless explicitly requested for verification
   const activeEntries = all.filter((e) => {
-    if (e.status !== "active_scanning") return false;
-    if (e.isTest && !options?.includeTests && !options?.testMatch) return false;
+    const isTestAllowed = Boolean(options?.includeTests || options?.testMatch);
+    if (e.isTest && !isTestAllowed) return false;
+    const isScanningStatus = e.status === "active_scanning" || (e.isTest && isTestAllowed && e.status === "test_excluded");
+    if (!isScanningStatus) return false;
     const targetDate = e.portDate || e.juneauDate || e.skagwayDate;
     if (targetDate && targetDate < today) return false;
     return true;
@@ -472,7 +474,7 @@ export async function execute10AmDailySweep(options?: {
   for (const product of SCANNED_PRODUCTS) {
     // 1. Identify active entries that want this port AND match this tour type
     const candidateEntries = activeEntries.filter((entry) => {
-      if (entry.status !== "active_scanning") return false;
+      if (entry.status !== "active_scanning" && !(entry.isTest && (options?.includeTests || options?.testMatch))) return false;
 
       const wantsPort =
         entry.portCity === "either" ||
@@ -595,7 +597,7 @@ export async function execute10AmDailySweep(options?: {
 
         // Find candidate entries waiting specifically on this date for this port
         const matchingEntries = candidateEntries.filter((entry) => {
-          if (entry.status !== "active_scanning") return false;
+          if (entry.status !== "active_scanning" && !(entry.isTest && (options?.includeTests || options?.testMatch))) return false;
           const targetDate =
             product.port === "juneau"
               ? entry.juneauDate || (entry.portCity === "juneau" ? entry.portDate : undefined)
@@ -642,9 +644,9 @@ export async function execute10AmDailySweep(options?: {
           }
 
           // Accurate lifecycle transition:
-          // ONLY transition to contact_pending if the alert was actually DELIVERED to the traveler.
+          // ONLY transition to contact_pending if the alert was actually DELIVERED to the traveler (or marked test).
           // Simulated or failed deliveries must NEVER stop active scanning for real customers!
-          if (notification.status === "delivered") {
+          if (notification.status === "delivered" || entry.isTest) {
             entry.status = "contact_pending";
           } else {
             console.log(
