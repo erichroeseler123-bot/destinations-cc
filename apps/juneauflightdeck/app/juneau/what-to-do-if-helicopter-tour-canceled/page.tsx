@@ -256,6 +256,154 @@ export default function JuneauHelicopterCanceledPage() {
         </div>
       </section>
 
+      {/* Side-by-Side Timeline: A Tale of Two Port Days */}
+      <section
+        style={{
+          background: "linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(15, 23, 42, 0.85) 100%)",
+          border: "1px solid rgba(56, 189, 248, 0.35)",
+          borderRadius: "var(--radius-lg, 16px)",
+          padding: "32px 26px",
+          marginBottom: "36px",
+        }}
+      >
+        <div style={{ textAlign: "center", maxWidth: 740, margin: "0 auto 28px" }}>
+          <span
+            style={{
+              fontSize: "0.78rem",
+              fontWeight: 800,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--accent, #f0b35b)",
+              display: "block",
+              marginBottom: 8,
+            }}
+          >
+            Side-By-Side Timeline
+          </span>
+          <h2 style={{ fontSize: "clamp(1.4rem, 3.5vw, 1.9rem)", fontWeight: 900, color: "#ffffff", margin: "0 0 10px" }}>
+            A Tale of Two Port Days: What Actually Happens on Tour Day
+          </h2>
+          <p style={{ color: "var(--muted, #cbd5e1)", fontSize: "0.95rem", lineHeight: 1.6, margin: 0 }}>
+            Here is what the exact same rainy Tuesday in Juneau looks like for a passenger without a backup plan versus a Juneau Flight Deck guest:
+          </p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(290px, 1fr))", gap: 20 }}>
+          {/* Column 1 */}
+          <div
+            style={{
+              background: "rgba(3, 14, 23, 0.8)",
+              border: "1px solid rgba(239, 68, 68, 0.35)",
+              borderRadius: 14,
+              padding: "22px 20px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+              <span style={{ fontSize: "1.2rem" }}>❌</span>
+              <h3 style={{ color: "#f87171", fontSize: "1.05rem", margin: 0, fontWeight: 800 }}>
+                Standard Ship / OTA Booking
+              </h3>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, fontSize: "0.86rem", lineHeight: 1.55, color: "#cbd5e1" }}>
+              <div style={{ paddingBottom: 10, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                <strong style={{ color: "#ffffff" }}>8:30 AM:</strong> Ship ties up. Overcast skies at port. Ship excursion desk claims &ldquo;all tours running as scheduled.&rdquo;
+              </div>
+              <div style={{ paddingBottom: 10, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                <strong style={{ color: "#ffffff" }}>10:00 AM:</strong> Mountain pass closes. Excursion desk issues a &ldquo;rolling 90-minute delay.&rdquo; Guests told to wait in the theater.
+              </div>
+              <div style={{ paddingBottom: 10, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                <strong style={{ color: "#ffffff" }}>1:15 PM:</strong> Official cancellation announced over loudspeaker. 400 passengers stampede the shore desks and dock kiosks in a panic.
+              </div>
+              <div style={{ paddingBottom: 10, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                <strong style={{ color: "#ffffff" }}>1:45 PM:</strong> Every whale watching boat, tram car, and shuttle in Juneau is 100% sold out.
+              </div>
+              <div style={{ color: "#ef4444", fontWeight: 700, paddingTop: 4 }}>
+                🛑 Result: Entire port day wasted sitting in waiting rooms. $0 spent on tours, but thousands wasted in lost Alaska vacation time.
+              </div>
+            </div>
+          </div>
+
+          {/* Column 2 */}
+          <div
+            style={{
+              background: "rgba(3, 14, 23, 0.8)",
+              border: "1px solid rgba(34, 197, 94, 0.4)",
+              borderRadius: 14,
+              padding: "22px 20px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+              <span style={{ fontSize: "1.2rem" }}>✅</span>
+              <h3 style={{ color: "#86efac", fontSize: "1.05rem", margin: 0, fontWeight: 800 }}>
+                With Juneau Flight Deck
+              </h3>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, fontSize: "0.86rem", lineHeight: 1.55, color: "#cbd5e1" }}>
+              <div style={{ paddingBottom: 10, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                <strong style={{ color: "#ffffff" }}>8:00 AM:</strong> We look out our Juneau window and inspect FAA ridge webcams. We spot dropping cloud decks and diagnose imminent pass closure.
+              </div>
+              <div style={{ paddingBottom: 10, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                <strong style={{ color: "#ffffff" }}>9:30 AM:</strong> Hours ahead of the official cutoff, we contact you and pre-stage available seats on a heated Auke Bay whale watch (at your expense).
+              </div>
+              <div style={{ paddingBottom: 10, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                <strong style={{ color: "#ffffff" }}>11:30 AM:</strong> Flight officially cancels. Your 100% helicopter refund is triggered automatically back to your payment card.
+              </div>
+              <div style={{ paddingBottom: 10, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                <strong style={{ color: "#ffffff" }}>12:15 PM:</strong> While dock crowds panic, you board a heated catamaran to spend 3 hours viewing humpback whales feeding in the fjords.
+              </div>
+              <div style={{ color: "#86efac", fontWeight: 700, paddingTop: 4 }}>
+                🌟 Result: Port day completely saved. World-class Alaska wildlife adventure completed, returned to the pier 2 hours before all-aboard.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* The Vacation Math: Why This Service Is An Incredible Value */}
+      <section
+        style={{
+          background: "linear-gradient(135deg, rgba(240, 179, 91, 0.12) 0%, rgba(3, 14, 23, 0.9) 100%)",
+          border: "1px solid rgba(240, 179, 91, 0.35)",
+          borderRadius: "var(--radius-lg, 16px)",
+          padding: "32px 26px",
+          marginBottom: "36px",
+        }}
+      >
+        <div style={{ color: "var(--accent, #f0b35b)", fontSize: "0.78rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>
+          The Real Vacation Economics
+        </div>
+        <h2 style={{ fontSize: "1.45rem", fontWeight: 900, color: "#ffffff", margin: "0 0 12px" }}>
+          What Is One Day in Juneau Actually Worth to You?
+        </h2>
+        <p style={{ lineHeight: 1.65, color: "#e2e8f0", margin: "0 0 16px", fontSize: "0.98rem" }}>
+          The average family of four invests <strong>$8,000 to $15,000+</strong> between cruise fares, airfare, hotels, and time off work for their Alaska vacation. In an entire 7-day sailing, you only get <strong>one single 8-to-10 hour window in Juneau</strong>—the undisputed capital of Alaska glacier aviation and marine wildlife.
+        </p>
+        <p style={{ lineHeight: 1.65, color: "#e2e8f0", margin: "0 0 20px", fontSize: "0.98rem" }}>
+          If your helicopter cancels and you have no backup plan, you don&apos;t just lose an excursion—<strong>you lose 100% of your Juneau port experience.</strong> That comes out to roughly $1,500 to $2,500 of your total vacation investment flushed down the drain while sitting on a damp bench.
+        </p>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 14 }}>
+          <div style={{ background: "rgba(3, 14, 23, 0.7)", borderRadius: 10, padding: "16px", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ color: "#86efac", fontWeight: 800, fontSize: "1.1rem", marginBottom: 4 }}>Save Upfront</div>
+            <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted, #cbd5e1)", lineHeight: 1.5 }}>
+              Pay less than the cruise line excursion desk markup for the exact same Part 135 helicopter operators.
+            </p>
+          </div>
+          <div style={{ background: "rgba(3, 14, 23, 0.7)", borderRadius: 10, padding: "16px", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ color: "#86efac", fontWeight: 800, fontSize: "1.1rem", marginBottom: 4 }}>Zero Downside</div>
+            <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted, #cbd5e1)", lineHeight: 1.5 }}>
+              100% money back from the operator or Viator if weather cancels your flight. No airline-style vouchers or stranded deposits.
+            </p>
+          </div>
+          <div style={{ background: "rgba(3, 14, 23, 0.7)", borderRadius: 10, padding: "16px", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ color: "#86efac", fontWeight: 800, fontSize: "1.1rem", marginBottom: 4 }}>Day Protected</div>
+            <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted, #cbd5e1)", lineHeight: 1.5 }}>
+              A local team that lives here watching acute weather out our window, ready with pre-staged whale watching seats so your day is never lost.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* The 2-3 Hour Early Warning Callout */}
       <section
         style={{

@@ -556,6 +556,141 @@ export default function HelicopterDispatchBoard({
         </div>
       </section>
 
+      {/* 4b. The Local Difference: A Tale of Two Port Days */}
+      <section
+        style={{
+          width: 'min(calc(100% - 32px), var(--content))',
+          margin: '0 auto 48px',
+        }}
+      >
+        <div
+          style={{
+            background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(15, 23, 42, 0.9) 100%)',
+            border: '1px solid rgba(56, 189, 248, 0.35)',
+            borderRadius: 'var(--radius-lg, 16px)',
+            padding: '36px 28px',
+          }}
+        >
+          <div style={{ textAlign: 'center', maxWidth: 760, margin: '0 auto 28px' }}>
+            <span
+              style={{
+                fontSize: '0.78rem',
+                fontWeight: 800,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: 'var(--accent, #f0b35b)',
+                display: 'block',
+                marginBottom: 8,
+              }}
+            >
+              The Real Ground Advantage
+            </span>
+            <h2 style={{ fontSize: 'clamp(1.4rem, 3.5vw, 2rem)', fontWeight: 900, color: '#ffffff', margin: '0 0 10px' }}>
+              We Look Out the Window. Here&apos;s What That Means for Your Shore Day.
+            </h2>
+            <p style={{ color: 'var(--muted, #cbd5e1)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
+              No website algorithm or Miami cruise desk lives here. We do. This is our livelihood, and we take protecting your port day seriously.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 18 }}>
+            {/* The Unprepared Passenger */}
+            <div
+              style={{
+                background: 'rgba(3, 14, 23, 0.75)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: 14,
+                padding: '22px 20px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <span style={{ fontSize: '1.2rem' }}>❌</span>
+                <h3 style={{ color: '#f87171', fontSize: '1.05rem', margin: 0, fontWeight: 800 }}>
+                  Standard Cruise Ship / OTA Booking
+                </h3>
+              </div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 14px', fontSize: '0.86rem', lineHeight: 1.6, color: '#cbd5e1' }}>
+                <li style={{ marginBottom: 8 }}>
+                  <strong>8:30 AM:</strong> Ship docks. Mountain clouds gather, but ship staff gives no updates.
+                </li>
+                <li style={{ marginBottom: 8 }}>
+                  <strong>10:00 AM:</strong> &ldquo;Rolling Weather Delay.&rdquo; You are told to wait inside the ship lounge.
+                </li>
+                <li style={{ marginBottom: 8 }}>
+                  <strong>1:15 PM:</strong> Official cancellation announced. 400 passengers rush the pier desks in a panic.
+                </li>
+                <li style={{ marginBottom: 8 }}>
+                  <strong>1:45 PM:</strong> All whale watches, trams, and glacier shuttles sell out completely.
+                </li>
+                <li style={{ color: '#ef4444', fontWeight: 700, marginTop: 10 }}>
+                  🛑 Result: Day wasted. Spent 5 hours waiting and left Juneau having seen nothing.
+                </li>
+              </ul>
+            </div>
+
+            {/* The Juneau Flight Deck Guest */}
+            <div
+              style={{
+                background: 'rgba(3, 14, 23, 0.75)',
+                border: '1px solid rgba(34, 197, 94, 0.35)',
+                borderRadius: 14,
+                padding: '22px 20px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <span style={{ fontSize: '1.2rem' }}>✅</span>
+                <h3 style={{ color: '#86efac', fontSize: '1.05rem', margin: 0, fontWeight: 800 }}>
+                  With Juneau Flight Deck Coordination
+                </h3>
+              </div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 14px', fontSize: '0.86rem', lineHeight: 1.6, color: '#cbd5e1' }}>
+                <li style={{ marginBottom: 8 }}>
+                  <strong>8:00 AM:</strong> We look out our window, check FAA pass webcams, and spot deteriorating ridge ceilings.
+                </li>
+                <li style={{ marginBottom: 8 }}>
+                  <strong>9:30 AM:</strong> Hours ahead of the official call, we pre-stage available whale watch seats (at your expense).
+                </li>
+                <li style={{ marginBottom: 8 }}>
+                  <strong>11:30 AM:</strong> Flight officially cancels. 100% helicopter refund processed back to your card.
+                </li>
+                <li style={{ marginBottom: 8 }}>
+                  <strong>12:15 PM:</strong> While dock crowds panic, you board a heated catamaran in Auke Bay.
+                </li>
+                <li style={{ color: '#86efac', fontWeight: 700, marginTop: 10 }}>
+                  🌟 Result: Port day saved. 3 hours viewing humpbacks in the fjords, safely back before all-aboard.
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 22,
+              padding: '14px 18px',
+              background: 'rgba(240, 179, 91, 0.12)',
+              border: '1px solid rgba(240, 179, 91, 0.3)',
+              borderRadius: 10,
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+            }}
+          >
+            <div style={{ fontSize: '0.88rem', color: '#ffffff', maxWidth: 700 }}>
+              <strong>The Math is Simple:</strong> Save money upfront vs. cruise line excursion desk markups, get a 100% refund if weather grounds your flight, and have our local team ready with a whale watch so your once-in-a-lifetime vacation day is never wasted.
+            </div>
+            <Link
+              href="/juneau/what-to-do-if-helicopter-tour-canceled"
+              className="button button-primary"
+              style={{ fontSize: '0.82rem', padding: '8px 14px', whiteSpace: 'nowrap' }}
+            >
+              See Weather Guide &rarr;
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* 5. Expandable Deep-Dives: Weather, Payments, & FAQs */}
       <section className="jfd-details-section" id="details-accordion">
         <div className="jfd-section-head">
