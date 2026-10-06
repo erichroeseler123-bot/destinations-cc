@@ -33,8 +33,8 @@ export default function HomePage() {
       <HelicopterDispatchBoard
         portSlug="juneau"
         sourcePage="/"
-        headline="The new way to book Juneau helicopter tours"
-        subhead="Explore Juneau helicopter tours and request an availability alert for your port date. We’ll check for matching departures as operators release their schedules."
+        headline="Same helicopter tour. Lower price. And it comes with a backup plan."
+        subhead="Fly with TEMSCO, Coastal, or NorthStar. Book through Viator or directly with the operator, with local help around your booking. Sold out for your port date? Join our availability watch. Weather cancels your flight? We’ll help you find an available alternative."
         primaryCtaLabel="Explore Juneau Helicopter Tours"
       />
       <section

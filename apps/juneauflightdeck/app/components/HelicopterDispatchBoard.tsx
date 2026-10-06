@@ -29,11 +29,11 @@ export default function HelicopterDispatchBoard({
 
   const defaultHeadline = isSkagway
     ? 'Match Your Skagway Glacier Flight to Your Ship Schedule'
-    : 'Planning a cruise in summer 2027?';
+    : 'Same helicopter tour. Lower price. And it comes with a backup plan.';
 
   const defaultSubhead = isSkagway
     ? 'Compare Skagway glacier helicopter operators, review ship-safe return buffers, and plan your weather backup.'
-    : 'Explore Juneau helicopter tours and request an availability alert for your port date. We’ll check for matching departures as operators release their schedules.';
+    : 'Fly with TEMSCO, Coastal, or NorthStar. Book through Viator or directly with the operator, with local help around your booking. Sold out for your port date? Join our availability watch. Weather cancels your flight? We’ll help you find an available alternative.';
 
   const defaultPrimaryCta = isSkagway ? 'Compare Skagway Flights' : 'Compare Helicopter Tours';
 
@@ -92,6 +92,23 @@ export default function HelicopterDispatchBoard({
         </div>
         <h1>{finalHeadline}</h1>
         <p className="jfd-concise-hero-subhead">{finalSubhead}</p>
+
+        {showArrivalHero && (
+          <div
+            style={{
+              fontSize: '0.78rem',
+              color: '#d1e6f5',
+              background: 'rgba(6, 17, 29, 0.72)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: 8,
+              padding: '8px 12px',
+              margin: '12px 0 16px',
+              lineHeight: 1.45,
+            }}
+          >
+            * Price comparison reflects independent operator &amp; Viator rates compared against cruise-line excursion desk pricing for identical flight programs (savings vary by cruise line, ship, and booking window). Backup tours depend on real-time operator availability and are booked separately.
+          </div>
+        )}
 
         {/* Hybrid Trust & Viator Partnership Bar */}
         <div
