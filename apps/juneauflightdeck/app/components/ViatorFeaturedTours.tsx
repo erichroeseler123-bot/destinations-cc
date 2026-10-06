@@ -383,6 +383,44 @@ export default function ViatorFeaturedTours({
         </div>
       )}
 
+      {/* Off-Season / Early 2027 Season Notice Banner */}
+      {!loading && !isLive && products.length > 0 && (
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            padding: "12px 18px",
+            borderRadius: "var(--radius-md, 18px)",
+            background: "rgba(240, 179, 91, 0.12)",
+            border: "1px solid rgba(240, 179, 91, 0.3)",
+            marginBottom: 24,
+            fontSize: "0.85rem",
+            color: "var(--text, #ffffff)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: "1rem" }}>🔔</span>
+            <span>
+              <strong>2027 Alaska Cruise Season:</strong> Official booking windows open in rolling waves. Explore signature flights below and use <em>Get 2027 Alert</em> for priority notifications.
+            </span>
+          </div>
+          <Link
+            href="/helicopter-waitlist"
+            style={{
+              color: "var(--accent, #f0b35b)",
+              fontWeight: 800,
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Join General Waitlist &rarr;
+          </Link>
+        </div>
+      )}
+
       {/* Product Cards Grid */}
       {!loading && products.length > 0 && (
         <div
@@ -1044,32 +1082,77 @@ export function TourCard({
             </div>
           </div>
 
-          <a
-            href={finalBookingUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Check availability for ${product.title} on Viator`}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              padding: "10px 16px",
-              borderRadius: "var(--radius-md, 18px)",
-              background: "linear-gradient(135deg, var(--accent, #f0b35b), #df9b3a)",
-              color: "#082134",
-              fontWeight: 800,
-              fontSize: "0.85rem",
-              textDecoration: "none",
-              boxShadow: "0 4px 14px rgba(240, 179, 91, 0.25)",
-              transition: "transform 0.15s ease",
-            }}
-          >
-            <span>
-              {selectedDate ? `Check ${selectedDate.slice(5)} (${passengerCount}p)` : "Check Live Dates"}
-            </span>
-            <span>&rarr;</span>
-          </a>
+          {product.isLive ? (
+            <a
+              href={finalBookingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Check availability for ${product.title} on Viator`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                padding: "10px 16px",
+                borderRadius: "var(--radius-md, 18px)",
+                background: "linear-gradient(135deg, var(--accent, #f0b35b), #df9b3a)",
+                color: "#082134",
+                fontWeight: 800,
+                fontSize: "0.85rem",
+                textDecoration: "none",
+                boxShadow: "0 4px 14px rgba(240, 179, 91, 0.25)",
+                transition: "transform 0.15s ease",
+              }}
+            >
+              <span>
+                {selectedDate ? `Check ${selectedDate.slice(5)} (${passengerCount}p)` : "Check Live Dates"}
+              </span>
+              <span>&rarr;</span>
+            </a>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Link
+                href={`/helicopter-waitlist?tour=${encodeURIComponent(product.productCode)}`}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 5,
+                  padding: "9px 15px",
+                  borderRadius: "var(--radius-md, 18px)",
+                  background: "linear-gradient(135deg, var(--accent, #f0b35b), #df9b3a)",
+                  color: "#082134",
+                  fontWeight: 800,
+                  fontSize: "0.82rem",
+                  textDecoration: "none",
+                  boxShadow: "0 4px 12px rgba(240, 179, 91, 0.25)",
+                }}
+              >
+                <span>Get 2027 Alert</span>
+                <span>&rarr;</span>
+              </Link>
+              <a
+                href={finalBookingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`Check ${product.title} on Viator`}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  padding: "8px 10px",
+                  borderRadius: "var(--radius-md, 18px)",
+                  background: "rgba(151, 211, 255, 0.08)",
+                  border: "1px solid rgba(151, 211, 255, 0.2)",
+                  color: "var(--ice, #9ed9ff)",
+                  fontSize: "0.78rem",
+                  fontWeight: 700,
+                  textDecoration: "none",
+                }}
+              >
+                Viator ↗
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </article>
