@@ -3,6 +3,7 @@ import path from "node:path";
 import { getDb, ensureDbTables } from "./db";
 import {
   fetchFareHarborDateRange,
+  fetchFareHarborDateRangeDetailed,
   filterOpenAvailabilities,
   buildFareHarborDirectBookingUrl,
   JUNEAU_OPERATORS,
@@ -390,11 +391,24 @@ export async function updateWaitlistStatus(
   return updated;
 }
 
+export interface OperatorScanReport {
+  operator: string;
+  companyShortname: string;
+  itemPk: number | string;
+  port: "juneau" | "skagway";
+  tourType: string;
+  status: "success" | "access_error";
+  httpStatus?: number;
+  openingsCount: number;
+  error?: string;
+}
+
 export interface SweepResult {
   sweptAt: string;
   totalDatesSwept: number;
   dates: string[];
   openingsFound: number;
+  accessFailuresCount: number;
   openings: Array<{
     port: "juneau" | "skagway";
     portDate: string;
@@ -405,6 +419,8 @@ export interface SweepResult {
     bookingMode?: string;
     notificationDeliveryId?: string;
   }>;
+  operatorReports: OperatorScanReport[];
+  accessFailures: OperatorScanReport[];
 }
 
 /**
@@ -412,16 +428,20 @@ export interface SweepResult {
  * Skagway inventory is NEVER swept against Juneau port dates, and Juneau inventory
  * is NEVER swept against Skagway port dates.
  * 
+ * Reports inventory-access failures (HTTP 401/403/500/network) separately from
+ * successful searches with 0 openings to ensure data transparency.
+ * 
  * Status Lifecycle:
  * active_scanning -> opening_detected -> contact_pending -> held (if confirmed by operator) -> booking_confirmed
  */
-export async function execute10AmDailySweep(): Promise<SweepResult> {
+export async function execute10AmDailySweep(options?: { includeTests?: boolean }): Promise<SweepResult> {
   const all = await getAllWaitlistEntries();
   const today = getTodayAlaskaDate();
 
-  // Strictly exclude expired watch dates (dates in the past) and test entries
+  // Strictly exclude expired watch dates (dates in the past) and test entries unless explicitly requested for verification
   const activeEntries = all.filter((e) => {
-    if (e.status !== "active_scanning" || e.isTest) return false;
+    if (e.status !== "active_scanning") return false;
+    if (e.isTest && !options?.includeTests) return false;
     const targetDate = e.portDate || e.juneauDate || e.skagwayDate;
     if (targetDate && targetDate < today) return false;
     return true;
@@ -430,6 +450,8 @@ export async function execute10AmDailySweep(): Promise<SweepResult> {
   const timestamp = new Date().toISOString();
   const openingsFound: SweepResult["openings"] = [];
   const scannedDates = new Set<string>();
+  const operatorReports: OperatorScanReport[] = [];
+  const accessFailures: OperatorScanReport[] = [];
 
   if (activeEntries.length === 0) {
     return {
@@ -437,7 +459,10 @@ export async function execute10AmDailySweep(): Promise<SweepResult> {
       totalDatesSwept: 0,
       dates: [],
       openingsFound: 0,
+      accessFailuresCount: 0,
       openings: [],
+      operatorReports: [],
+      accessFailures: [],
     };
   }
 
@@ -496,14 +521,45 @@ export async function execute10AmDailySweep(): Promise<SweepResult> {
     const endDate = sortedDates[sortedDates.length - 1];
 
     try {
-      const availabilities = await fetchFareHarborDateRange({
+      const fetchResult = await fetchFareHarborDateRangeDetailed({
         companyShortname: product.companyShortname,
         itemPk: product.itemPk,
         startDate,
         endDate,
       });
 
-      const openSlots = filterOpenAvailabilities(availabilities, 1);
+      if (!fetchResult.success) {
+        const failureReport: OperatorScanReport = {
+          operator: product.operator,
+          companyShortname: product.companyShortname,
+          itemPk: product.itemPk,
+          port: product.port,
+          tourType: product.tourType,
+          status: "access_error",
+          httpStatus: fetchResult.httpStatus,
+          openingsCount: 0,
+          error: fetchResult.error,
+        };
+        accessFailures.push(failureReport);
+        operatorReports.push(failureReport);
+        console.error(
+          `[DailySweep] Access failure for ${product.operator} (${product.companyShortname} item ${product.itemPk}): ${fetchResult.error}`
+        );
+        continue;
+      }
+
+      const openSlots = filterOpenAvailabilities(fetchResult.availabilities, 1);
+
+      operatorReports.push({
+        operator: product.operator,
+        companyShortname: product.companyShortname,
+        itemPk: product.itemPk,
+        port: product.port,
+        tourType: product.tourType,
+        status: "success",
+        httpStatus: 200,
+        openingsCount: openSlots.length,
+      });
 
       for (const slot of openSlots) {
         const slotDate = slot.start_at.slice(0, 10);
@@ -549,6 +605,7 @@ export async function execute10AmDailySweep(): Promise<SweepResult> {
             partySize: entry.partySize,
             checkoutUrl,
             cancellationPolicy: product.cancellationPolicy,
+            isTest: entry.isTest,
           });
 
           if (!notification) {
@@ -613,6 +670,9 @@ export async function execute10AmDailySweep(): Promise<SweepResult> {
     totalDatesSwept: allDates.length,
     dates: allDates,
     openingsFound: openingsFound.length,
+    accessFailuresCount: accessFailures.length,
     openings: openingsFound,
+    operatorReports,
+    accessFailures,
   };
 }

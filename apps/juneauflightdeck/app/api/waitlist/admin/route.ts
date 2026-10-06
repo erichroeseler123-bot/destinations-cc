@@ -5,6 +5,10 @@ import {
   updateWaitlistStatus,
   type WaitlistEntry,
 } from "../../../../lib/waitlistStore";
+import {
+  fetchFareHarborDateRangeDetailed,
+  OPERATOR_ENDPOINTS,
+} from "../../../../lib/fareharborRange";
 
 export const dynamic = "force-dynamic";
 
@@ -67,9 +71,130 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const action = url.searchParams.get("action");
 
-    // Handle automated Vercel Cron sweep or manual GET trigger
+    // 1. Live Operator Inventory Diagnostic Pre-Flight Check
+    if (action === "diagnose_fareharbor") {
+      const results = [];
+      const testStart = "2026-07-01";
+      const testEnd = "2026-07-14";
+
+      const targets = [
+        { operator: "TEMSCO Helicopters (Juneau)", shortname: OPERATOR_ENDPOINTS.temsco_juneau.shortname, itemPk: OPERATOR_ENDPOINTS.temsco_juneau.items.glacier_landing, itemName: "Mendenhall Glacier and Guided Walk" },
+        { operator: "TEMSCO Helicopters (Skagway)", shortname: OPERATOR_ENDPOINTS.temsco_skagway.shortname, itemPk: OPERATOR_ENDPOINTS.temsco_skagway.items.glacier_landing, itemName: "Meade Glacier Landing" },
+        { operator: "Coastal Helicopters", shortname: OPERATOR_ENDPOINTS.coastal.shortname, itemPk: OPERATOR_ENDPOINTS.coastal.items.icefield, itemName: "Icefield Excursion" },
+        { operator: "NorthStar Trekking", shortname: OPERATOR_ENDPOINTS.northstar.shortname, itemPk: OPERATOR_ENDPOINTS.northstar.items.ice_trek, itemName: "Helicopter Glacier Trek" },
+      ];
+
+      for (const target of targets) {
+        const fetchRes = await fetchFareHarborDateRangeDetailed({
+          companyShortname: target.shortname,
+          itemPk: target.itemPk,
+          startDate: testStart,
+          endDate: testEnd,
+        });
+
+        results.push({
+          operator: target.operator,
+          shortname: target.shortname,
+          itemPk: target.itemPk,
+          itemName: target.itemName,
+          status: fetchRes.success ? "success" : "access_error",
+          httpStatus: fetchRes.httpStatus || (fetchRes.success ? 200 : 500),
+          error: fetchRes.error || null,
+          openSlotsFound: fetchRes.availabilities.length,
+          queryWindow: `${testStart} to ${testEnd}`,
+        });
+      }
+
+      const allSuccess = results.every((r) => r.status === "success");
+
+      return NextResponse.json({
+        ok: true,
+        allOperatorsConnected: allSuccess,
+        timestamp: new Date().toISOString(),
+        operators: results,
+      });
+    }
+
+    // 2. Resend Live Email Delivery Verification
+    if (action === "verify_email") {
+      const resendApiKey = process.env.RESEND_API_KEY || process.env.DCC_RESEND_API_KEY;
+      const isKeyPresent = Boolean(
+        resendApiKey && resendApiKey.startsWith("re_") && resendApiKey.length > 20
+      );
+      const to = url.searchParams.get("to") || process.env.DEPLOY_TEST_EMAIL_TO || "erichroeseler123@gmail.com";
+      const from = process.env.DEPLOY_TEST_EMAIL_FROM || "alerts@juneauflightdeck.com";
+
+      if (!isKeyPresent) {
+        return NextResponse.json(
+          {
+            ok: false,
+            configured: false,
+            error: "RESEND_API_KEY not configured or invalid on Vercel environment. Key must start with re_ and be > 20 characters.",
+            receivedKeyPrefix: resendApiKey ? resendApiKey.slice(0, 3) + "..." : "none",
+          },
+          { status: 400 }
+        );
+      }
+
+      try {
+        const { Resend } = await import("resend");
+        const resend = new Resend(resendApiKey);
+        const result = await resend.emails.send({
+          from,
+          to,
+          subject: `[Juneau Flight Deck] Live Provider Verification - ${new Date().toISOString()}`,
+          html: `
+            <div style="font-family: sans-serif; padding: 24px; background-color: #f8fafc; border-radius: 8px;">
+              <h2 style="color: #0f172a; margin-top: 0;">Juneau Flight Deck Notification Service</h2>
+              <p style="color: #334155; font-size: 15px;">This email verifies that the Resend email delivery pipeline is active and accepting requests for <strong>juneauflightdeck.com</strong>.</p>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px;">
+                <tr><td style="padding: 8px 0; color: #64748b;">Dispatched At:</td><td style="font-family: monospace;">${new Date().toISOString()}</td></tr>
+                <tr><td style="padding: 8px 0; color: #64748b;">Sender:</td><td style="font-family: monospace;">${from}</td></tr>
+                <tr><td style="padding: 8px 0; color: #64748b;">Recipient:</td><td style="font-family: monospace;">${to}</td></tr>
+              </table>
+            </div>
+          `,
+          text: `Juneau Flight Deck delivery pipeline verified. Sent to ${to} from ${from} at ${new Date().toISOString()}.`,
+        });
+
+        if (result.error) {
+          return NextResponse.json(
+            {
+              ok: false,
+              configured: true,
+              provider: "resend",
+              error: result.error,
+            },
+            { status: 502 }
+          );
+        }
+
+        return NextResponse.json({
+          ok: true,
+          configured: true,
+          provider: "resend",
+          providerMessageId: result.data?.id,
+          from,
+          to,
+          dispatchedAt: new Date().toISOString(),
+        });
+      } catch (err: any) {
+        return NextResponse.json(
+          {
+            ok: false,
+            configured: true,
+            provider: "resend",
+            error: err?.message || String(err),
+          },
+          { status: 500 }
+        );
+      }
+    }
+
+    // 3. Handle automated Vercel Cron sweep or manual GET trigger
     if (action === "sweep" || action === "run_sweep") {
       const force = url.searchParams.get("force") === "true";
+      const includeTest = url.searchParams.get("include_test") === "true";
       const alaskaHour = getAlaskaLocalHour();
 
       // Enforce 10:00 AM Alaska local time year-round (handles AKDT UTC-8 in summer and AKST UTC-9 in winter)
@@ -82,10 +207,10 @@ export async function GET(request: Request) {
         });
       }
 
-      const sweepResult = await execute10AmDailySweep();
+      const sweepResult = await execute10AmDailySweep({ includeTests: includeTest });
       return NextResponse.json({
         ok: true,
-        message: `10:00 AM sweep completed for ${sweepResult.totalDatesSwept} active watch dates.`,
+        message: `Sweep completed for ${sweepResult.totalDatesSwept} active watch dates. Openings: ${sweepResult.openingsFound}, Access Failures: ${sweepResult.accessFailuresCount}.`,
         sweepResult,
       });
     }

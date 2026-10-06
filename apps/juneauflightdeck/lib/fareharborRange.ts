@@ -111,24 +111,43 @@ export interface FetchAvailabilitiesOptions {
   endDate: string; // YYYY-MM-DD
 }
 
+export interface FareHarborFetchResult {
+  companyShortname: string;
+  itemPk: number | string;
+  startDate: string;
+  endDate: string;
+  success: boolean;
+  httpStatus?: number;
+  error?: string;
+  availabilities: FareHarborMinimalAvailability[];
+}
+
 /**
- * Fetches minimal availabilities for an item across a date range.
- * If API credentials are not provided in environment variables, returns simulated
- * availability for testing/staging.
+ * Fetches minimal availabilities for an item across a date range with detailed error reporting.
+ * Distinguishes authentication/network/endpoint failures (HTTP 401/403/404/500) from successful
+ * searches that return 0 open slots.
  */
-export async function fetchFareHarborDateRange({
-  companyShortname = "welcometoalaskatours",
+export async function fetchFareHarborDateRangeDetailed({
+  companyShortname = "temscoair-juneau",
   itemPk,
   startDate,
   endDate,
-}: FetchAvailabilitiesOptions): Promise<FareHarborMinimalAvailability[]> {
+}: FetchAvailabilitiesOptions): Promise<FareHarborFetchResult> {
   const appKey = process.env.FAREHARBOR_API_APP_KEY || process.env.FAREHARBOR_APP_KEY;
   const userKey = process.env.FAREHARBOR_API_USER_KEY || process.env.FAREHARBOR_USER_KEY;
 
-  // Never return fabricated availability: return empty array if credentials not configured
   if (!appKey || !userKey) {
-    console.warn("[FareHarbor API] Credentials not configured; returning 0 slots to maintain data integrity.");
-    return [];
+    const errorMsg = "FareHarbor credentials (FAREHARBOR_API_APP_KEY / FAREHARBOR_API_USER_KEY) not configured.";
+    console.warn(`[FareHarbor API] ${errorMsg}`);
+    return {
+      companyShortname,
+      itemPk,
+      startDate,
+      endDate,
+      success: false,
+      error: errorMsg,
+      availabilities: [],
+    };
   }
 
   const chunks = chunkDateRange(startDate, endDate, 14);
@@ -145,13 +164,28 @@ export async function fetchFareHarborDateRange({
           "X-FareHarbor-API-User": userKey,
           Accept: "application/json",
         },
-        // Cache for 60 seconds to prevent rapid redundant calls
         next: { revalidate: 60 },
       });
 
       if (!res.ok) {
-        console.warn(`[FareHarbor API] HTTP ${res.status} fetching ${url}`);
-        continue;
+        let errBody = "";
+        try {
+          errBody = await res.text();
+        } catch {
+          // ignore
+        }
+        const errorMsg = `HTTP ${res.status} (${res.statusText}): ${errBody.slice(0, 160)}`;
+        console.error(`[FareHarbor API] Access failure for ${companyShortname} item ${itemPk} chunk ${chunk.start}..${chunk.end}: ${errorMsg}`);
+        return {
+          companyShortname,
+          itemPk,
+          startDate,
+          endDate,
+          success: false,
+          httpStatus: res.status,
+          error: errorMsg,
+          availabilities: allAvailabilities,
+        };
       }
 
       const data: FareHarborDateRangeResponse = await res.json();
@@ -159,11 +193,40 @@ export async function fetchFareHarborDateRange({
         allAvailabilities.push(...data.availabilities);
       }
     } catch (err) {
-      console.error(`[FareHarbor API] Fetch error for chunk ${chunk.start}..${chunk.end}:`, err);
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.error(`[FareHarbor API] Fetch network error for ${companyShortname} item ${itemPk} chunk ${chunk.start}..${chunk.end}:`, errorMsg);
+      return {
+        companyShortname,
+        itemPk,
+        startDate,
+        endDate,
+        success: false,
+        error: errorMsg,
+        availabilities: allAvailabilities,
+      };
     }
   }
 
-  return allAvailabilities;
+  return {
+    companyShortname,
+    itemPk,
+    startDate,
+    endDate,
+    success: true,
+    httpStatus: 200,
+    availabilities: allAvailabilities,
+  };
+}
+
+/**
+ * Fetches minimal availabilities for an item across a date range.
+ * Returns empty array on either zero availability or error (see fetchFareHarborDateRangeDetailed for diagnostics).
+ */
+export async function fetchFareHarborDateRange(
+  options: FetchAvailabilitiesOptions
+): Promise<FareHarborMinimalAvailability[]> {
+  const result = await fetchFareHarborDateRangeDetailed(options);
+  return result.availabilities;
 }
 
 /**
