@@ -588,7 +588,10 @@ export default function HelicopterDispatchBoard({
                   <strong>Securing Alternatives Ahead of the Dock Rush:</strong> When 400+ helicopter guests get cancelled simultaneously across 3–4 cruise ships, remaining whale watching boats and land tours sell out in minutes. We start working on alternative activities before your flight is even officially cancelled, keeping your port day intact.
                 </li>
                 <li>
-                  <strong>Flight Safety Determinations &amp; Refunds:</strong> Operating chief pilots make the final safety go/no-go call (usually finalized 45–90 minutes prior to lift). Weather cancellations receive a 100% refund from the operator or booking platform; backup activities are booked separately based on real-time availability.
+                  <strong>The Local Eye (We Look Out the Window):</strong> No booking algorithm or cruise desk can look out the window at the Gastineau Channel, Mount Roberts, and the Herbert Glacier basin. We live right here in Juneau. We take this seriously because this is our livelihood—diagnosing acute microclimates and having an available whale watch lined up at your expense the moment a flight cancels.
+                </li>
+                <li>
+                  <strong>Flight Safety Determinations &amp; Refunds:</strong> Operating chief pilots make the final safety go/no-go call (usually finalized 45–90 minutes prior to lift). Weather cancellations receive a 100% refund from the operator or booking platform; backup whale watches are booked separately at your expense based on real-time availability.
                 </li>
               </ul>
             </div>

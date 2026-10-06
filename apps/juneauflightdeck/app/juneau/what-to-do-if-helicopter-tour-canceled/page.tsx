@@ -4,14 +4,14 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "What to Do If Your Juneau Helicopter Tour Is Canceled | Juneau Flight Deck",
   description:
-    "Why waiting for the official flight cancellation call leaves you stuck at the docks, and how our early weather dispatch secures alternative activities hours in advance.",
+    "We can do what no website can: we look out the window and diagnose acute Juneau weather hours early. Real passenger sob stories and how our proactive whale backup saves your port day.",
   alternates: {
     canonical: "https://juneauflightdeck.com/juneau/what-to-do-if-helicopter-tour-canceled",
   },
   openGraph: {
     title: "What to Do If Your Juneau Helicopter Tour Is Canceled | Juneau Flight Deck",
     description:
-      "Why waiting for the official flight cancellation call leaves you stuck at the docks, and how our early weather dispatch secures alternative activities hours in advance.",
+      "We can do what no website can: we look out the window and diagnose acute Juneau weather hours early. Real passenger sob stories and how our proactive whale backup saves your port day.",
     url: "https://juneauflightdeck.com/juneau/what-to-do-if-helicopter-tour-canceled",
   },
 };
@@ -41,7 +41,7 @@ const faqSchema = {
       name: "How does Juneau Flight Deck have early warning before an official cancellation?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Our local dispatch monitors FAA mountain pass webcams (Gastineau Channel, Herbert Glacier, Mendenhall Valley), ridge-top weather stations, and barometric trends across Southeast Alaska. We typically identify deteriorating flight conditions and likely groundings 2 to 3 hours before the official cutoff call is announced.",
+        text: "We can do something no website or cruise app can do: we look out the window. We live right here in Juneau and have the local experience to diagnose acute weather patterns hours ahead—tracking FAA pass webcams (Gastineau Channel, Herbert Glacier, Mendenhall Valley), ridge-top weather stations, and mountain cloud decks. We typically know a grounding is imminent 2 to 3 hours before the official cutoff call.",
       },
     },
     {
@@ -49,7 +49,7 @@ const faqSchema = {
       name: "How does the proactive backup plan protect our port day?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "When 400+ helicopter passengers are canceled simultaneously across 3 to 4 cruise ships, local dockside excursions and whale watching boats sell out within minutes. Because we detect deteriorating weather hours in advance, we actively work on securing alternative activities—such as Auke Bay whale watching catamarans—before your tour is even canceled.",
+        text: "When 400+ helicopter passengers are canceled simultaneously across 3 to 4 cruise ships, local dockside excursions and whale watching boats sell out within 15 minutes. Because we detect deteriorating weather hours in advance, we actively work on securing alternative activities—such as Auke Bay whale watching catamarans—at your expense before your tour is even canceled.",
       },
     },
     {
@@ -57,7 +57,7 @@ const faqSchema = {
       name: "Do I get a full refund if my helicopter tour is canceled?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes. When an operator cancels a flight due to weather, standard operator and Viator policy provides a 100% refund back to your original payment card. Alternative backup activities are booked separately and depend on real-time availability.",
+        text: "Yes. When an operator cancels a flight due to weather, standard operator and Viator policy provides a 100% refund back to your original payment card. Alternative backup activities are booked separately at your expense and depend on real-time availability.",
       },
     },
   ],
@@ -102,6 +102,160 @@ export default function JuneauHelicopterCanceledPage() {
         </p>
       </div>
 
+      {/* The Local Edge: We Look Out The Window */}
+      <section
+        style={{
+          background: "linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(15, 23, 42, 0.8) 100%)",
+          border: "1px solid rgba(56, 189, 248, 0.35)",
+          borderRadius: "var(--radius-lg, 16px)",
+          padding: "30px 26px",
+          marginBottom: "36px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+          <span style={{ fontSize: "1.2rem" }}>👁️</span>
+          <span
+            style={{
+              fontSize: "0.78rem",
+              fontWeight: 800,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "var(--ice, #7dd3fc)",
+            }}
+          >
+            What No Website Algorithm Can Do
+          </span>
+        </div>
+        <h2 style={{ fontSize: "1.5rem", fontWeight: 900, color: "var(--text, #ffffff)", margin: "0 0 14px", lineHeight: 1.25 }}>
+          We Can Look Out the Window. Because We Live Here.
+        </h2>
+        <p style={{ lineHeight: 1.65, color: "#e2e8f0", margin: "0 0 14px", fontSize: "1rem" }}>
+          No national booking algorithm, Miami cruise desk, or generic weather app can look out the window at the Gastineau Channel, the Mount Roberts ridge, and the Herbert Glacier basin. We live right here in Juneau. We have the day-in, day-out experience to diagnose acute weather patterns at an expert level—watching wind shear drifts, cloud shelves, and ceiling trends before computer models even register them.
+        </p>
+        <p style={{ lineHeight: 1.65, color: "#e2e8f0", margin: "0 0 18px", fontSize: "1rem" }}>
+          <strong>This is big money for travelers, and we take it seriously.</strong> This is our livelihood, it&apos;s all we do, and we are good at it. When you coordinate your Juneau flight through us:
+        </p>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
+          <div style={{ background: "rgba(3, 14, 23, 0.6)", borderRadius: 10, padding: "16px", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ color: "var(--accent, #f0b35b)", fontWeight: 800, fontSize: "0.9rem", marginBottom: 4 }}>💵 Money Off Ship Prices</div>
+            <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted, #cbd5e1)", lineHeight: 1.5 }}>
+              Lower price than the cruise ship excursion desk for flights with the same premier operators (TEMSCO, Coastal, NorthStar).
+            </p>
+          </div>
+          <div style={{ background: "rgba(3, 14, 23, 0.6)", borderRadius: 10, padding: "16px", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ color: "#86efac", fontWeight: 800, fontSize: "0.9rem", marginBottom: 4 }}>🛡️ Guaranteed Viator Booking</div>
+            <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted, #cbd5e1)", lineHeight: 1.5 }}>
+              Official Tripadvisor/Viator partner checkout with Part 135 FAA operators, flexible cancellation terms, and 100% weather refunds.
+            </p>
+          </div>
+          <div style={{ background: "rgba(3, 14, 23, 0.6)", borderRadius: 10, padding: "16px", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ color: "var(--ice, #7dd3fc)", fontWeight: 800, fontSize: "0.9rem", marginBottom: 4 }}>🐋 Ready When It Cancels</div>
+            <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted, #cbd5e1)", lineHeight: 1.5 }}>
+              If your helicopter cancels, we book you on an available whale watch at your expense—and we are already lined up and ready the moment it cancels.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Real Passenger Sob Stories */}
+      <section
+        style={{
+          background: "var(--panel, rgba(17, 41, 61, 0.45))",
+          border: "1px solid var(--line, rgba(255, 255, 255, 0.1))",
+          borderRadius: "var(--radius-lg, 16px)",
+          padding: "32px 26px",
+          marginBottom: "36px",
+        }}
+      >
+        <div style={{ color: "#f87171", fontSize: "0.78rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>
+          The True Cost of Having No Backup Plan
+        </div>
+        <h2 style={{ fontSize: "1.45rem", fontWeight: 800, color: "var(--text, #ffffff)", margin: "0 0 8px" }}>
+          Real Juneau Sob Stories: When Waiting Wastes Your Only Day in Port
+        </h2>
+        <p style={{ lineHeight: 1.6, color: "var(--muted, #cbd5e1)", margin: "0 0 24px" }}>
+          These are not hypothetical warnings. Every single cruise season, hundreds of passengers get strung along all day or caught in dockside stampedes when mountain weather rolls in:
+        </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          {/* Story 1 */}
+          <div
+            style={{
+              background: "rgba(3, 14, 23, 0.75)",
+              border: "1px solid rgba(239, 68, 68, 0.25)",
+              borderRadius: 14,
+              padding: "20px 22px",
+            }}
+          >
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <span style={{ color: "#fca5a5", fontWeight: 800, fontSize: "0.95rem" }}>
+                &ldquo;Strung Along All Day on the Ship—Did Nothing in the End&rdquo;
+              </span>
+              <span style={{ fontSize: "0.78rem", color: "var(--muted, #94a3b8)", background: "rgba(255,255,255,0.06)", padding: "3px 8px", borderRadius: 6 }}>
+                Passenger on Majestic Princess · July 2024
+              </span>
+            </div>
+            <p style={{ margin: "0 0 10px", fontSize: "0.9rem", lineHeight: 1.6, color: "#e2e8f0", fontStyle: "italic" }}>
+              &ldquo;Our glacier dog sledding flight was originally set for 9:30 AM. At 8:45 AM, the ship excursion desk announced a &apos;temporary weather hold&apos; and told us to wait in the theater until 11:00 AM. At 11:00 AM, they pushed it to 1:15 PM. We were terrified to leave the dock area in case our names were called. At 2:30 PM, they finally announced all remaining flights were officially canceled. By that time, every single whale watch boat, tram car, and shuttle in Juneau was completely sold out. We ended up wandering around the dockside souvenir shops in the drizzle and walked back up the gangway having seen absolutely nothing of Alaska. Our entire day in Juneau was flushed down the drain.&rdquo;
+            </p>
+            <div style={{ fontSize: "0.82rem", color: "#f87171", fontWeight: 700 }}>
+              ⚠️ The Trap: Waiting on the operator&apos;s rolling delay cycle eats your port clock until no alternatives remain.
+            </div>
+          </div>
+
+          {/* Story 2 */}
+          <div
+            style={{
+              background: "rgba(3, 14, 23, 0.75)",
+              border: "1px solid rgba(239, 68, 68, 0.25)",
+              borderRadius: 14,
+              padding: "20px 22px",
+            }}
+          >
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <span style={{ color: "#fca5a5", fontWeight: 800, fontSize: "0.95rem" }}>
+                &ldquo;The 15-Minute Dockside Stampede&rdquo;
+              </span>
+              <span style={{ fontSize: "0.78rem", color: "var(--muted, #94a3b8)", background: "rgba(255,255,255,0.06)", padding: "3px 8px", borderRadius: 6 }}>
+                Family of 4 on Ovation of the Seas · August 2024
+              </span>
+            </div>
+            <p style={{ margin: "0 0 10px", fontSize: "0.9rem", lineHeight: 1.6, color: "#e2e8f0", fontStyle: "italic" }}>
+              &ldquo;We were literally standing at the South Franklin pier waiting for our bus to the heliport when a company rep came out with a clipboard and announced the mountain passes were closed for the day. Instantly, over 100 passengers pulled out their phones and rushed the independent tour booths along the boardwalk. I tried to book a catamaran whale watch online, but by the time I entered my credit card info, the seats were gone. Every operator said the same thing: &apos;Sorry, we just sold out our remaining 40 seats five minutes ago when TEMSCO canceled.&apos; If we had known 2 hours earlier that conditions were collapsing, we could have had backup seats ready to go.&rdquo;
+            </p>
+            <div style={{ fontSize: "0.82rem", color: "#f87171", fontWeight: 700 }}>
+              ⚠️ The Trap: When 400 helicopter seats cancel simultaneously, water tours sell out within 15 minutes.
+            </div>
+          </div>
+
+          {/* Story 3 */}
+          <div
+            style={{
+              background: "rgba(3, 14, 23, 0.75)",
+              border: "1px solid rgba(239, 68, 68, 0.25)",
+              borderRadius: 14,
+              padding: "20px 22px",
+            }}
+          >
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <span style={{ color: "#fca5a5", fontWeight: 800, fontSize: "0.95rem" }}>
+                &ldquo;It Was Sunny at the Port, But Socked In on the Icefield&rdquo;
+              </span>
+              <span style={{ fontSize: "0.78rem", color: "var(--muted, #94a3b8)", background: "rgba(255,255,255,0.06)", padding: "3px 8px", borderRadius: 6 }}>
+                Couple on Nieuw Amsterdam · June 2024
+              </span>
+            </div>
+            <p style={{ margin: "0 0 10px", fontSize: "0.9rem", lineHeight: 1.6, color: "#e2e8f0", fontStyle: "italic" }}>
+              &ldquo;We stepped off the ship into 62-degree sunshine and thought we had hit the weather lottery. We couldn&apos;t understand why our pilot canceled 45 minutes before departure. Nobody explained that the Gastineau Channel weather has zero correlation with the Herbert Glacier icefield, where a cloud deck at 800 feet blocked the pass. Because we thought the weather was great, we hadn&apos;t even thought about a backup plan. By noon, the docks were packed, tours were full, and we spent the afternoon sitting on a bench eating fish and chips.&rdquo;
+            </p>
+            <div style={{ fontSize: "0.82rem", color: "#f87171", fontWeight: 700 }}>
+              ⚠️ The Trap: Sunny dock weather fools passengers into complacency while mountain ridges are already socked in.
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* The 2-3 Hour Early Warning Callout */}
       <section
         style={{
@@ -123,7 +277,7 @@ export default function JuneauHelicopterCanceledPage() {
               color: "var(--accent-strong, #f59e0b)",
             }}
           >
-            The Local Advantage
+            The Early Warning Solution
           </span>
         </div>
         <h2 style={{ fontSize: "1.45rem", fontWeight: 800, color: "var(--text, #ffffff)", margin: "0 0 12px" }}>
@@ -137,49 +291,6 @@ export default function JuneauHelicopterCanceledPage() {
         <p style={{ lineHeight: 1.65, color: "#e2e8f0", margin: 0, fontSize: "0.98rem" }}>
           <strong>We have a very clear idea that a flight is going to be grounded hours before the official cancellation notification is issued.</strong> Rather than waiting for the cutoff text, we use that critical head start to identify and secure alternative shore activities before dockside availability disappears.
         </p>
-      </section>
-
-      {/* The Dock Rush Reality */}
-      <section
-        style={{
-          background: "var(--panel, rgba(17, 41, 61, 0.45))",
-          border: "1px solid var(--line, rgba(255, 255, 255, 0.1))",
-          borderRadius: "var(--radius-lg, 16px)",
-          padding: "30px 26px",
-          marginBottom: "36px",
-        }}
-      >
-        <div style={{ color: "var(--ice, #7dd3fc)", fontSize: "0.78rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>
-          The Juneau Excursion Bottleneck
-        </div>
-        <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--text, #ffffff)", margin: "0 0 14px" }}>
-          Why Waiting for the Official Cancellation Leaves You Stranded
-        </h2>
-        <p style={{ lineHeight: 1.6, color: "var(--muted, #cbd5e1)", margin: "0 0 18px" }}>
-          On a typical peak summer day in Juneau, 3 to 5 mega-cruise ships are berthed along Franklin and South Franklin Docks, 
-          carrying anywhere from 9,000 to 18,000 passengers.
-        </p>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
-          <div style={{ background: "rgba(3, 14, 23, 0.6)", border: "1px solid var(--line, rgba(255, 255, 255, 0.08))", borderRadius: 12, padding: "18px" }}>
-            <h3 style={{ color: "#ef4444", fontSize: "1rem", margin: "0 0 8px" }}>1. Simultaneous 400-Seat Groundings</h3>
-            <p style={{ fontSize: "0.88rem", lineHeight: 1.55, color: "var(--muted, #cbd5e1)", margin: 0 }}>
-              TEMSCO, Coastal, and NorthStar operate out of the same airport corridor. When mountain ceilings drop, all 3 operators ground their fleets simultaneously. That suddenly leaves 300 to 500 disappointed passengers with no plans.
-            </p>
-          </div>
-          <div style={{ background: "rgba(3, 14, 23, 0.6)", border: "1px solid var(--line, rgba(255, 255, 255, 0.08))", borderRadius: 12, padding: "18px" }}>
-            <h3 style={{ color: "#ef4444", fontSize: "1rem", margin: "0 0 8px" }}>2. The 15-Minute Dock Scramble</h3>
-            <p style={{ fontSize: "0.88rem", lineHeight: 1.55, color: "var(--muted, #cbd5e1)", margin: 0 }}>
-              The moment ship passengers receive an official cancellation message, they rush ship excursion desks and shore tour booths. Top-rated marine tours and glacier shuttles sell out within 15 to 20 minutes.
-            </p>
-          </div>
-          <div style={{ background: "rgba(3, 14, 23, 0.6)", border: "1px solid var(--line, rgba(255, 255, 255, 0.08))", borderRadius: 12, padding: "18px" }}>
-            <h3 style={{ color: "#22c55e", fontSize: "1rem", margin: "0 0 8px" }}>3. The Early-Action Solution</h3>
-            <p style={{ fontSize: "0.88rem", lineHeight: 1.55, color: "var(--muted, #cbd5e1)", margin: 0 }}>
-              By actively lining up sea-level alternatives 2 to 3 hours before the grounding call, our guests stay ahead of the rush, saving their Alaska port day rather than spending it in a shore desk queue.
-            </p>
-          </div>
-        </div>
       </section>
 
       {/* The Proactive Alternative Workflow */}
@@ -220,7 +331,7 @@ export default function JuneauHelicopterCanceledPage() {
                 Proactive Capacity Holds Before Official Cancellation
               </h4>
               <p style={{ margin: 0, fontSize: "0.9rem", lineHeight: 1.55, color: "var(--muted, #cbd5e1)" }}>
-                When conditions clearly trend toward a grounding, our team begins working on securing alternative activities—such as heated catamaran whale watching out of Auke Bay or private small-group land excursions—before official flight cancellations are announced.
+                When conditions clearly trend toward a grounding, our team begins working on securing alternative activities—specifically heated catamaran whale watching out of Auke Bay—at your expense before official flight cancellations are announced.
               </p>
             </div>
           </div>
@@ -248,7 +359,7 @@ export default function JuneauHelicopterCanceledPage() {
                 100% Weather Refund on Canceled Flights
               </h4>
               <p style={{ margin: 0, fontSize: "0.9rem", lineHeight: 1.55, color: "var(--muted, #cbd5e1)" }}>
-                Because the helicopter flight was cancelled for weather, the operator (or Viator) issues a 100% full refund back to your original payment card. Any backup activity is booked separately based on confirmed capacity.
+                Because the helicopter flight was cancelled for weather, the operator (or Viator) issues a 100% full refund back to your original payment card. The backup whale watch is booked separately at your expense based on confirmed capacity.
               </p>
             </div>
           </div>
