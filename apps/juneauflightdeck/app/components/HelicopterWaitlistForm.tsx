@@ -5,6 +5,7 @@ import {
   ALASKA_CRUISE_FLEET,
   type AlaskaShipData,
 } from "../../lib/alaskaCruiseFleet";
+import { sendJfdTelemetry } from "./DccNetworkBridge";
 
 const CRUISE_LINES = [
   "Princess Cruises",
@@ -254,6 +255,23 @@ export default function HelicopterWaitlistForm({
 
       setSubmissionId(data.submissionId);
       setStatus("success");
+
+      // Dispatch telemetry event for waitlist conversion
+      const perSeat =
+        formData.tourType === "dog_sledding" ? 649 : formData.tourType === "ice_trek" ? 599 : 449;
+      const parsedParty = parseInt(String(formData.partySize), 10) || 2;
+      sendJfdTelemetry("waitlist_submitted", {
+        submissionId: data.submissionId,
+        tourType: formData.tourType,
+        partySize: parsedParty,
+        portDate: formData.portDate,
+        bookingMode: formData.bookingMode,
+        shipName: finalShipName,
+        cruiseLine: formData.cruiseLine,
+        portCity: formData.portCity,
+        estimatedValue: parsedParty * perSeat,
+        sourcePage: window.location.pathname,
+      });
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to submit request.");
       setStatus("error");

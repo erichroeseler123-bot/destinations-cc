@@ -657,7 +657,7 @@ export default function OperatorComparisonPage() {
               ✓ 100% Weather Refund Guarantee
             </h3>
             <p style={{ fontSize: "0.85rem", color: "#d1fae5", lineHeight: 1.5, margin: 0 }}>
-              If your flight is cancelled by TEMSCO, Coastal, or NorthStar due to weather or flight safety, you receive an immediate <strong>100% full refund</strong>. You are never penalized for Alaska weather.
+              If your flight is cancelled by TEMSCO, Coastal, or NorthStar due to weather or flight safety, you receive a <strong>100% full refund</strong>. You are never penalized for Alaska weather.
             </p>
           </div>
 

@@ -45,7 +45,9 @@ type WidgetTelemetryEvent =
   | "shortlist_rendered"
   | "certainty_cta_clicked"
   | "entered_guided_flow"
-  | "primary_recommendation_clicked";
+  | "primary_recommendation_clicked"
+  | "booking_clicked"
+  | "waitlist_submitted";
 
 type WidgetEventProps = Record<string, unknown> & {
   widget_id?: string;
