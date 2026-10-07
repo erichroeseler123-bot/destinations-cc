@@ -74,7 +74,8 @@ We help Alaska cruise passengers compare and book helicopter, glacier, dog-sledd
   3. *Level 2 Ice Climbing Tour:* 2+ hours of technical climbing on steep vertical ice formations with ice axes and top ropes (published direct rate from $599 base, ages 12+).
   4. *Helicopter Glacier Dogsled Adventure:* Helicopter flight to Norris Glacier snowfields for dog sledding with an Iditarod musher partner camp (published direct rate from $739 base, ages 2+).
 - **Published Cancellation & Refund Policy:**
-  - 100% full refund with 48 hours notice. 100% refund for weather or ship delays.
+  - NorthStar Trekking Direct (per official FAQ): Cancellation more than 24 hours prior receives a refund minus 10%; non-refundable within 24 hours. (Third-party channels like Viator may specify standard 24-hour full refund windows).
+  - 100% full refund if flight is grounded due to weather or if cruise ship misses port.
 
 ---
 

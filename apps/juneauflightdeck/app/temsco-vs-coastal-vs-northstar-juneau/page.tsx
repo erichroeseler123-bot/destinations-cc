@@ -663,10 +663,18 @@ export default function OperatorComparisonPage() {
 
           <div style={{ background: "rgba(245, 158, 11, 0.1)", border: "1px solid rgba(245, 158, 11, 0.3)", borderRadius: 8, padding: "16px" }}>
             <h3 style={{ fontSize: "1rem", color: "#fcd34d", margin: "0 0 6px" }}>
-              ⚠️ Passenger Change Cutoffs
+              ⚠️ Voluntary Cancellation &amp; Booking Channel Terms
             </h3>
-            <p style={{ fontSize: "0.85rem", color: "#fef3c7", lineHeight: 1.5, margin: 0 }}>
-              If you cancel voluntarily, TEMSCO and NorthStar require 48 hours notice for a full refund; Coastal requires 7 days notice. However, if your cruise ship skips Juneau or arrives too late to make your tour, all three operators issue full refunds upon verification.
+            <p style={{ fontSize: "0.85rem", color: "#fef3c7", lineHeight: 1.5, margin: "0 0 8px" }}>
+              Voluntary cancellation terms differ by operator and booking channel:
+            </p>
+            <ul style={{ fontSize: "0.82rem", color: "#fef3c7", lineHeight: 1.5, paddingLeft: 18, margin: "0 0 8px" }}>
+              <li><strong>TEMSCO Helicopters:</strong> 100% full refund with at least 48 hours advance notice; non-refundable within 48 hours.</li>
+              <li><strong>Coastal Helicopters:</strong> 100% full refund with at least 7 days advance notice; non-refundable within 7 days.</li>
+              <li><strong>NorthStar Trekking (Direct):</strong> Official published FAQ states cancellation more than 24 hours prior receives a refund minus 10%; non-refundable within 24 hours. (Third-party channels like Viator may specify standard 24-hour full refund windows—always check your specific booking channel terms).</li>
+            </ul>
+            <p style={{ fontSize: "0.82rem", color: "#fef3c7", lineHeight: 1.4, margin: 0 }}>
+              <em>Cruise Delays &amp; Weather:</em> If your cruise ship skips Juneau or arrives too late to make your departure, or if the flight is grounded due to weather or FAA flight minimums, all three operators issue full 100% refunds upon verification.
             </p>
           </div>
         </div>
