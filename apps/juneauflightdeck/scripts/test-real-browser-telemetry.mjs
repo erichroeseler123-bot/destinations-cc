@@ -105,6 +105,11 @@ async function runBrowserTest() {
   await cdp.send('DOM.enable');
   await cdp.send('Network.enable');
 
+  // Ensure all pages opened in test browser automatically have test session IDs
+  await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
+    source: `sessionStorage.setItem('dcc_network_session', 'test_browser_action_session_' + Date.now());`
+  });
+
   const capturedTelemetryRequests = [];
 
   cdp.on('Network.requestWillBeSent', (params) => {
