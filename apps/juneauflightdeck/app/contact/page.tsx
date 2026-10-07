@@ -1,27 +1,25 @@
 import type { Metadata } from "next";
-import StaticPage from "../components/StaticPage";
+import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Contact",
-  description: "Contact and booking-help information for Juneau Flight Deck.",
+  title: "Tour Planning & Booking Help",
+  description: "Ask Juneau Flight Deck about tour choices, cruise pickup and timing, availability requests, and weather alternatives.",
   alternates: { canonical: "https://juneauflightdeck.com/contact" },
 };
 
 export default function ContactPage() {
   return (
-    <StaticPage
-      eyebrow="Dispatch Desk &amp; Booking Support"
-      title="Need help with your booking, availability watch, or weather backup?"
-      intro="Our Juneau dispatch coordination desk assists cruise travelers with port-day flight timing, availability watch requests, and same-day backup options when weather affects helicopter schedules."
-      bullets={[
-        "Email Coordination: Reach our team at dispatch@juneauflightdeck.com (or info@juneauflightdeck.com) with your Confirmation Code (e.g. JFD-SCAN-...), ship name, and port date.",
-        "Support Hours & Monitoring: Forwarded directly to our dispatch desk. During Alaska cruise season (May–September), inbox is monitored 7:00 AM – 7:00 PM Alaska Time with prioritized same-day response for active port dates. Off-season planning inquiries are answered within 24–48 hours.",
-        "Flight Weather Pivots: If your helicopter flight is grounded due to weather, we help identify same-day sea-level alternatives—such as Auke Bay whale watching or Mendenhall glacier land shuttles—that fit your ship's remaining port window.",
-        "How Alternatives Are Booked: Backup tours depend on live operator availability and are booked directly with the respective tour operator (or via Viator) to keep billing transparent and avoid bundled markups.",
-        "Operator Source of Truth: For active payments, immediate morning pickup adjustments, or flight manifests, the operating flight company (TEMSCO, Coastal, or NorthStar) listed on your voucher remains the ultimate operational authority.",
-      ]}
-      ctaHref="/juneau/what-to-do-if-helicopter-tour-canceled"
-      ctaLabel="Review Weather Backup Plan →"
-    />
+    <main className="page-shell static-page-shell">
+      <section className="static-page-card">
+        <p className="eyebrow">Juneau Flight Deck planning help</p>
+        <h1 className="static-page-title">Let’s find the right experience for your port day.</h1>
+        <p className="chooser-trust-line">Ask us about glacier tour choices, meeting points, cruise timing, or alternatives if weather changes your plans.</p>
+        <p><a href="mailto:dispatch@juneauflightdeck.com">dispatch@juneauflightdeck.com</a></p>
+        <p>Include your ship, Juneau date, party size, confirmed arrival and all-aboard times, and the tour you are considering. For an existing availability request, include your JFD request code.</p>
+        <h2>For an existing reservation</h2>
+        <p>Contact the operator or booking provider shown on your confirmation for payment, changes, refunds, or urgent pickup and departure updates. We can help you explore other activities, but your provider controls your reservation. Alternatives depend on availability and require separate booking.</p>
+        <Link href="/helicopter" className="primary-cta">Compare and Book Tours</Link>
+      </section>
+    </main>
   );
 }

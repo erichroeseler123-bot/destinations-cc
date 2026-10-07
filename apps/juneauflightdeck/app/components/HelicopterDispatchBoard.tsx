@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { SITE_DESCRIPTION, BOOKING_ROLES, BOOKING_BENEFITS, BOOKING_FAQS } from '@/lib/sitePositioning';
 import Link from 'next/link';
 import Image from 'next/image';
 import ViatorFeaturedTours from './ViatorFeaturedTours';
@@ -33,7 +34,7 @@ export default function HelicopterDispatchBoard({
 
   const defaultSubhead = isSkagway
     ? 'Compare Skagway glacier helicopter operators, review ship-safe return buffers, and plan your weather backup.'
-    : 'Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.';
+    : SITE_DESCRIPTION;
 
   const defaultPrimaryCta = isSkagway ? 'Compare Skagway Flights' : 'Find Your Tour';
 
@@ -43,31 +44,6 @@ export default function HelicopterDispatchBoard({
 
   return (
     <div className="jfd-root">
-      {/* Service Status Bar */}
-      <div className="jfd-prototype-ribbon">
-        <div className="jfd-prototype-ribbon-inner">
-          <div>
-            <span
-              className="jfd-badge-prototype"
-              style={{
-                background: 'rgba(34, 197, 94, 0.15)',
-                color: '#86efac',
-                borderColor: 'rgba(34, 197, 94, 0.4)',
-              }}
-            >
-              ACTIVE SERVICE
-            </span>
-            <span style={{ marginLeft: 8, marginRight: 16 }}>
-              Availability watch &amp; waitlist seat monitoring are active and operating daily.
-            </span>
-            <span className="jfd-badge-planned">PLANNED FEATURE</span>
-            <span style={{ marginLeft: 8 }}>
-              Single-charge payment transfer for weather cancellations is currently in prototype testing.
-            </span>
-          </div>
-        </div>
-      </div>
-
       {/* 1. Concise Hero Section */}
       <section className={`jfd-concise-hero ${showArrivalHero ? arrivalStyles.hero : ''}`}>
         {showArrivalHero && <>
@@ -109,24 +85,9 @@ export default function HelicopterDispatchBoard({
           </Link>
         </div>
 
-        {showArrivalHero && (
-          <div
-            style={{
-              fontSize: '0.78rem',
-              color: '#d1e6f5',
-              background: 'rgba(6, 17, 29, 0.72)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              borderRadius: 8,
-              padding: '8px 12px',
-              margin: '12px 0 16px',
-              lineHeight: 1.45,
-            }}
-          >
-            * Lower-price comparison is against cruise-line excursion desk pricing for tours with the same operators (savings vary by cruise line, ship, and sailing date). Backup tours depend on availability and are booked separately.
-          </div>
-        )}
+        <p style={{ fontSize: '0.85rem', lineHeight: 1.55, marginTop: 20 }}>{BOOKING_ROLES}</p>
 
-        {/* Hybrid Trust & Viator Partnership Bar */}
+        {/* Booking benefits and channel choices */}
         <div
           style={{
             marginTop: 20,
@@ -143,15 +104,15 @@ export default function HelicopterDispatchBoard({
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ color: 'var(--accent)', fontWeight: 800 }}>✓</span>
-            <span><strong>Official Viator Partner:</strong> Tripadvisor partner booking &amp; direct operator options</span>
+            <span><strong>Booking choices:</strong> Direct operator pages &amp; Viator links</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ color: 'var(--ice)', fontWeight: 800 }}>✓</span>
-            <span><strong>All 3 FAA Part 135 Operators:</strong> TEMSCO, Coastal &amp; NorthStar</span>
+            <span><strong>Operator comparisons:</strong> TEMSCO, Coastal &amp; NorthStar</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ color: '#86efac', fontWeight: 800 }}>✓</span>
-            <span><strong>Local Coordination:</strong> Daily waitlist sweeps &amp; weather backups</span>
+            <span><strong>Cruise planning help:</strong> Pickup, port timing &amp; weather alternatives</span>
           </div>
         </div>
         </div>
@@ -165,7 +126,7 @@ export default function HelicopterDispatchBoard({
           subhead={
             isSkagway
               ? "Compare live helicopter tours in Skagway with Part 135 safety standards and free 24-hour cancellation."
-              : "Explore Juneau glacier landings, dog sledding camps, and ice treks. Real-time availability confirmed in the official Viator calendar."
+              : "Explore Juneau glacier landings, dog sledding camps, and ice treks. Check current dates, prices, and terms on the selected booking page."
           }
         />
       </div>
@@ -197,7 +158,7 @@ export default function HelicopterDispatchBoard({
               <div style={{ color: 'var(--ice)', fontSize: '0.75rem', fontWeight: 800, marginBottom: 4 }}>
                 02 · OPERATIONS
               </div>
-              <h2 className="jfd-compact-card-title">Early Weather Detection</h2>
+              <h2 className="jfd-compact-card-title">Check Pickup &amp; Port Timing</h2>
               <p className="jfd-compact-card-body">
                 Mountain ridge cams and pass weather signal groundings hours early. We track conditions so you aren&apos;t surprised at lift time.
               </p>
@@ -419,7 +380,7 @@ export default function HelicopterDispatchBoard({
                   </div>
                 </td>
                 <td style={{ color: 'var(--text)' }}>Mendenhall &amp; Norris Glaciers</td>
-                <td style={{ color: 'var(--muted)' }}>Juneau Industrial Heliport</td>
+                <td style={{ color: 'var(--muted)' }}>Airport (treks); Douglas Island (dog sledding)</td>
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
                     <a
@@ -448,139 +409,29 @@ export default function HelicopterDispatchBoard({
         </div>
       </section>
 
-      {/* 3.5 The Local Advantage / Beyond Raw Inventory */}
       <section className="jfd-advantage-section" style={{ maxWidth: 'var(--content)', margin: '0 auto 40px', padding: '0 20px' }}>
-        <div
-          style={{
-            background: 'var(--panel)',
-            border: '1px solid var(--line-strong)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '36px 32px',
-            boxShadow: 'var(--shadow)',
-          }}
-        >
-          <div
-            style={{
-              color: 'var(--accent)',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              marginBottom: 10,
-            }}
-          >
-            The Local Difference
-          </div>
-          <h2
-            style={{
-              fontSize: 'clamp(1.5rem, 3.2vw, 2.3rem)',
-              fontWeight: 900,
-              margin: '0 0 16px',
-              color: 'var(--text)',
-              lineHeight: 1.25,
-            }}
-          >
-            Juneau Flight Deck combines online booking with people who know how to work directly with the local operators.
-          </h2>
-          <p
-            style={{
-              fontSize: '1.05rem',
-              lineHeight: 1.6,
-              color: 'var(--muted)',
-              margin: '0 0 24px',
-              maxWidth: '920px',
-            }}
-          >
-            We help you compare and book flights with the same three helicopter companies everyone else uses. Whether booking through our official Viator partner checkout or directly with operators, you get real-time availability and standard operator cancellation terms—while avoiding the cruise ship’s marked-up excursion pricing.
-          </p>
-
-          <div
-            style={{
-              background: 'rgba(3, 14, 23, 0.7)',
-              border: '1px solid var(--line)',
-              borderRadius: 'var(--radius-md)',
-              padding: '24px 26px',
-              marginBottom: '24px',
-            }}
-          >
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--accent)', margin: '0 0 10px' }}>
-              Our advantage is what we do beyond that inventory.
-            </h3>
-            <p style={{ fontSize: '0.98rem', lineHeight: 1.65, color: 'var(--text)', margin: '0 0 14px' }}>
-              We live here, do this for a living, know the operators and local conditions, and know when a phone call might uncover an option the website doesn’t show—such as asking whether a sixth passenger seat can be released for a lighter group based on aircraft weight and balance.
-            </p>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                gap: '16px',
-                marginTop: '16px',
-              }}
-            >
-              <div
-                style={{
-                  background: 'rgba(7, 24, 36, 0.6)',
-                  border: '1px solid var(--line)',
-                  borderRadius: 'var(--radius-sm)',
-                  padding: '16px 18px',
-                }}
-              >
-                <div style={{ color: 'var(--ice)', fontWeight: 800, fontSize: '0.78rem', marginBottom: 6 }}>
-                  SOLD-OUT DATES
-                </div>
-                <p style={{ margin: 0, fontSize: '0.88rem', lineHeight: 1.5, color: 'var(--muted)' }}>
-                  Our automated scanner sweeps operator inventories every morning at 10:00 AM when cancellation desks process changes. When matching seats open up, we alert you immediately or place a hold where cancellation policies permit.
-                </p>
-              </div>
-
-              <div
-                style={{
-                  background: 'rgba(7, 24, 36, 0.6)',
-                  border: '1px solid var(--line)',
-                  borderRadius: 'var(--radius-sm)',
-                  padding: '16px 18px',
-                }}
-              >
-                <div style={{ color: 'var(--ice)', fontWeight: 800, fontSize: '0.78rem', marginBottom: 6 }}>
-                  CANCELLATION &amp; WEATHER PIVOTS
-                </div>
-                <p style={{ margin: 0, fontSize: '0.88rem', lineHeight: 1.5, color: 'var(--muted)' }}>
-                  For anyone booking through us, we provide honest advice beforehand and actively help find another available activity (such as whale watching) if mountain weather scrubs your flight.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div
-            style={{
-              paddingTop: '16px',
-              borderTop: '1px solid var(--line)',
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '14px',
-            }}
-          >
-            <span style={{ color: 'var(--accent-strong)', fontWeight: 700, fontSize: '1rem' }}>
-              Customers are booking both the tour and our local expertise, relationships, and follow-through.
-            </span>
-            <Link
-              href="/helicopter-waitlist"
-              className="button button-primary"
-              style={{ padding: '8px 16px', fontSize: '0.85rem' }}
-            >
-              Join the Availability Watch &rarr;
-            </Link>
-          </div>
+        <div className="jfd-section-head">
+          <h2>Why book with Juneau Flight Deck?</h2>
+          <p>Make the right choice before you reach checkout.</p>
         </div>
+        <div className="jfd-steps-grid">
+          {BOOKING_BENEFITS.map((benefit) => (
+            <article className="jfd-step-card" key={benefit.title}>
+              <h3 className="jfd-step-title">{benefit.title}</h3>
+              <p className="jfd-step-desc">{benefit.description}</p>
+              <Link href={benefit.href}>{benefit.label} →</Link>
+            </article>
+          ))}
+        </div>
+        <p style={{ lineHeight: 1.6, marginTop: 24 }}>{BOOKING_ROLES}</p>
+        <Link href="/about">More about booking with us →</Link>
       </section>
 
       {/* 4. How It Works (3 Short Steps) */}
       <section className="jfd-steps-section">
         <div className="jfd-section-head">
           <h2>How It Works</h2>
-          <p>Streamlined coordination from initial reservation to dock return.</p>
+          <p>Compare experiences, plan your port day, and choose your booking channel.</p>
         </div>
 
         <div className="jfd-steps-grid">
@@ -594,17 +445,17 @@ export default function HelicopterDispatchBoard({
 
           <div className="jfd-step-card">
             <div className="jfd-step-number">STEP 02</div>
-            <h3 className="jfd-step-title">Early Weather Detection</h3>
+            <h3 className="jfd-step-title">Check Pickup &amp; Port Timing</h3>
             <p className="jfd-step-desc">
-              We monitor FAA ridge webcams and pass ceilings. We often know conditions are deteriorating 2–3 hours before official cutoff calls.
+              Check the tour’s meeting point and duration against your confirmed ship schedule. Allow time for transfers and return before all-aboard.
             </p>
           </div>
 
           <div className="jfd-step-card">
             <div className="jfd-step-number">STEP 03</div>
-            <h3 className="jfd-step-title">Proactive Backup Staging</h3>
+            <h3 className="jfd-step-title">Complete Your Reservation</h3>
             <p className="jfd-step-desc">
-              Before your flight is even officially canceled, we are already working on securing available alternative tours before dockside inventory sells out.
+              Follow the operator or Viator link shown. Select your date and party size there, review the final price and terms, and keep the provider’s confirmation.
             </p>
           </div>
         </div>
@@ -658,109 +509,15 @@ export default function HelicopterDispatchBoard({
         </div>
       </section>
 
-      {/* 5. Expandable Deep-Dives: Weather, Payments, & FAQs */}
       <section className="jfd-details-section" id="details-accordion">
-        <div className="jfd-section-head">
-          <h2>Operational Realities &amp; Policies</h2>
-          <p>Detailed technical explanations regarding Southeast Alaska weather, payment handling, and cruise timing.</p>
-        </div>
-
+        <div className="jfd-section-head"><h2>Booking with Juneau Flight Deck</h2></div>
         <div className="jfd-details-wrap">
-          {/* Weather Realities */}
-          <details className="jfd-details" id="weather-mechanics">
-            <summary className="jfd-summary">
-              <span>Airport Weather vs. Glacier Microclimates</span>
-              <span>&darr;</span>
-            </summary>
-            <div className="jfd-details-content">
-              <p>
-                A sunny, clear forecast at Juneau International Airport (PAJN) does not ensure that helicopters can reach the icefield. Helicopter operations require Visual Flight Rules (VFR) through mountain passes.
-              </p>
-              <ul style={{ paddingLeft: 20, margin: '8px 0' }}>
-                <li>
-                  <strong>Terminal Aerodrome Forecasts (TAF):</strong> PAJN observations reflect sea-level conditions at the airport, while glacier basins have separate mountain weather patterns.
-                </li>
-                <li>
-                  <strong>Mountain Microclimates:</strong> Passes leading to Mendenhall, Herbert, and Norris Glaciers can experience cloud ceilings below 1,000 feet, sudden downsloping wind shears, or dense fog while downtown Juneau remains pleasant.
-                </li>
-                <li>
-                  <strong>Local Weather Monitoring:</strong> Local ground observations, FAA pass webcams (Gastineau Channel, Herbert Glacier, Mendenhall Valley), and mountain ceiling trends provide insight into weather developments before departure.
-                </li>
-                <li>
-                  <strong>Port-Day Backup Support:</strong> If weather cancels your helicopter flight, we help you explore available alternatives that fit your remaining port time. Backup tours are optional, booked separately, and subject to availability. Refunds follow your booking&apos;s cancellation terms.
-                </li>
-                <li>
-                  <strong>Flight Safety Determinations:</strong> Operating chief pilots make the final safety go/no-go call (typically finalized 45–90 minutes prior to scheduled departure).
-                </li>
-              </ul>
-            </div>
-          </details>
-
-          {/* Payment Mechanics */}
-          <details className="jfd-details" id="payment-mechanics">
-            <summary className="jfd-summary">
-              <span>
-                Proposed Same-Charge Backup Mechanics <span className="jfd-badge-planned">PLANNED</span>
-              </span>
-              <span>&darr;</span>
-            </summary>
-            <div className="jfd-details-content">
-              <p>
-                When an operator cancels due to weather, their standard policy is to issue a 100% refund. Because credit card issuers typically take several business days to return those funds, we are designing a feature allowing guests to opt to apply their original payment directly toward an available water tour, with any difference credited back.
-              </p>
-              <div
-                style={{
-                  background: 'rgba(3, 14, 23, 0.6)',
-                  border: '1px solid var(--line)',
-                  borderRadius: 'var(--radius-sm)',
-                  padding: '12px 16px',
-                  marginTop: 8,
-                }}
-              >
-                <strong style={{ color: 'var(--accent)' }}>Proposed Workflow (Under Evaluation):</strong>
-                <p style={{ margin: '6px 0' }}>
-                  Under this planned feature, rather than paying out-of-pocket for an alternate tour while waiting for an operator refund to clear, eligible guests would have the option to apply their initial payment toward an available water tour, with any difference credited back.
-                </p>
-                <p style={{ margin: 0, fontStyle: 'italic', fontSize: '0.78rem' }}>
-                  Notice: Bank posting times vary by financial institution. Same-charge backup transfer is a proposed workflow currently in testing with merchant processors and is not yet active.
-                </p>
-              </div>
-            </div>
-          </details>
-
-          {/* Frequently Asked Questions */}
-          <details className="jfd-details">
-            <summary className="jfd-summary">
-              <span>Frequently Asked Questions</span>
-              <span>&darr;</span>
-            </summary>
-            <div className="jfd-details-content">
-              <div style={{ marginBottom: 14 }}>
-                <h4 style={{ color: 'var(--text)', margin: '0 0 4px', fontSize: '0.9rem' }}>
-                  What happens if my cruise ship misses Juneau or arrives late?
-                </h4>
-                <p style={{ margin: 0 }}>
-                  If your ship bypasses Juneau or alters port hours so that your flight cannot proceed, standard operator policy provides a 100% refund.
-                </p>
-              </div>
-              <div style={{ marginBottom: 14 }}>
-                <h4 style={{ color: 'var(--text)', margin: '0 0 4px', fontSize: '0.9rem' }}>
-                  Are whale-watching backup seats guaranteed?
-                </h4>
-                <p style={{ margin: 0 }}>
-                  No. Backup options depend on daily boat capacity and availability. If morning flights are grounded, coordinators help identify open seats on local Auke Bay whale-watching charters.
-                </p>
-              </div>
-              <div>
-                <h4 style={{ color: 'var(--text)', margin: '0 0 4px', fontSize: '0.9rem' }}>
-                  Can I request a full refund instead of the backup tour?
-                </h4>
-                <p style={{ margin: 0 }}>
-                  Yes. If your helicopter excursion is cancelled by the operator for safety or weather reasons, you are entitled to a 100% refund back to your original payment method. The backup option is voluntary.
-                </p>
-              </div>
-            </div>
-          </details>
+          {BOOKING_FAQS.map(({ question, answer }) => (
+            <details className="jfd-details" key={question}>
+              <summary className="jfd-summary">{question}</summary>
+              <div className="jfd-details-content"><p>{answer}</p></div>
+            </details>
+          ))}
         </div>
       </section>
 
@@ -788,15 +545,15 @@ export default function HelicopterDispatchBoard({
               Ready to plan your Juneau flight?
             </h2>
             <p style={{ fontSize: '0.85rem', color: 'var(--muted)', margin: 0 }}>
-              Speak with a local flight coordinator or reserve your glacier seat today.
+              Compare tours or ask our team for help with your port-day plans.
             </p>
           </div>
-          <div style={{ display: 'flex', gap: 12 }}>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <Link href="/helicopter" className="button button-primary">
               Browse Glacier Flights
             </Link>
-            <Link href="/juneau/what-to-do-if-helicopter-tour-canceled" className="button button-secondary">
-              Weather Cancellation Guide
+            <Link href="/contact" className="button button-secondary">
+              Ask Our Team
             </Link>
           </div>
         </div>
