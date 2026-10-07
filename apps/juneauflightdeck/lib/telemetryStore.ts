@@ -1,3 +1,5 @@
+import { getDb } from "./db";
+
 export interface TelemetryEventPayload {
   site?: string;
   eventName?: string;
@@ -6,6 +8,8 @@ export interface TelemetryEventPayload {
   landingPath?: string;
   targetPath?: string;
   context?: Record<string, unknown> | null;
+  isTest?: boolean;
+  is_test?: boolean;
   outcome?: {
     provider?: string;
     tourSlug?: string;
@@ -17,6 +21,8 @@ export interface TelemetryEventPayload {
     partySize?: number | string;
     portDate?: string;
     shipName?: string;
+    isTest?: boolean;
+    is_test?: boolean;
     [key: string]: unknown;
   };
   metadata?: Record<string, unknown>;
@@ -35,10 +41,11 @@ export interface TelemetryRecord {
   provider?: string;
   tourSlug?: string;
   tourName?: string;
+  isTest: boolean;
   outcome?: Record<string, unknown>;
 }
 
-// In-memory circular buffer for telemetry events (persists across requests during server runtime)
+// In-memory circular buffer for telemetry events (fallback when database is disconnected)
 const MAX_TELEMETRY_RECORDS = 500;
 const globalTelemetryState = globalThis as unknown as {
   __jfd_telemetry_events__?: TelemetryRecord[];
@@ -65,6 +72,15 @@ export function recordTelemetryEvent(payload: TelemetryEventPayload): TelemetryR
 
   const tourName = payload.outcome?.tourName;
 
+  const isTest = Boolean(
+    payload.isTest ??
+    payload.is_test ??
+    payload.outcome?.isTest ??
+    payload.outcome?.is_test ??
+    (typeof payload.sessionId === "string" && payload.sessionId.includes("test")) ??
+    false
+  );
+
   const record: TelemetryRecord = {
     id: `jfd_evt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     timestamp: new Date().toISOString(),
@@ -77,6 +93,7 @@ export function recordTelemetryEvent(payload: TelemetryEventPayload): TelemetryR
     provider,
     tourSlug,
     tourName,
+    isTest,
     outcome: payload.outcome,
   };
 
@@ -85,19 +102,119 @@ export function recordTelemetryEvent(payload: TelemetryEventPayload): TelemetryR
     events.shift();
   }
 
+  // Asynchronously persist to Neon PostgreSQL table jfd_telemetry_events
+  const sql = getDb();
+  if (sql) {
+    sql`
+      INSERT INTO jfd_telemetry_events (
+        id, site, event_name, session_id, source_page, landing_path, target_path, provider, tour_slug, tour_name, is_test, payload
+      ) VALUES (
+        ${record.id}, ${record.site}, ${record.eventName}, ${record.sessionId},
+        ${record.sourcePage}, ${record.landingPath || null}, ${record.targetPath || null},
+        ${record.provider || null}, ${record.tourSlug || null}, ${record.tourName || null},
+        ${record.isTest}, ${JSON.stringify(payload)}
+      )
+    `.catch((dbErr) => {
+      console.warn("[TelemetryStore] DB insert error:", dbErr?.message || dbErr);
+    });
+  }
+
   return record;
 }
 
-export function getRecentTelemetryEvents(limit = 50): TelemetryRecord[] {
+export async function getRecentTelemetryEvents(limit = 50, includeTest = false): Promise<TelemetryRecord[]> {
+  const sql = getDb();
+  if (sql) {
+    try {
+      const rows = includeTest
+        ? await sql`
+            SELECT id, created_at as timestamp, site, event_name, session_id, source_page, landing_path, target_path, provider, tour_slug, tour_name, is_test, payload
+            FROM jfd_telemetry_events
+            ORDER BY created_at DESC
+            LIMIT ${limit}
+          `
+        : await sql`
+            SELECT id, created_at as timestamp, site, event_name, session_id, source_page, landing_path, target_path, provider, tour_slug, tour_name, is_test, payload
+            FROM jfd_telemetry_events
+            WHERE is_test = false
+            ORDER BY created_at DESC
+            LIMIT ${limit}
+          `;
+
+      return rows.map((r: any) => ({
+        id: r.id,
+        timestamp: r.timestamp instanceof Date ? r.timestamp.toISOString() : String(r.timestamp),
+        site: r.site,
+        eventName: r.event_name,
+        sessionId: r.session_id,
+        sourcePage: r.source_page,
+        landingPath: r.landing_path,
+        targetPath: r.target_path,
+        provider: r.provider,
+        tourSlug: r.tour_slug,
+        tourName: r.tour_name,
+        isTest: Boolean(r.is_test),
+        outcome: (r.payload as any)?.outcome,
+      }));
+    } catch (err) {
+      console.warn("[TelemetryStore] DB query error, falling back to memory:", err);
+    }
+  }
+
   const events = globalTelemetryState.__jfd_telemetry_events__ || [];
-  return [...events].slice(-limit).reverse();
+  const filtered = includeTest ? events : events.filter((e) => !e.isTest);
+  return [...filtered].slice(-limit).reverse();
 }
 
-export function getTelemetrySummary() {
-  const events = globalTelemetryState.__jfd_telemetry_events__ || [];
+export async function getTelemetrySummary(includeTest = false) {
+  const sql = getDb();
+  let events: TelemetryRecord[] = [];
+
+  if (sql) {
+    try {
+      const rows = includeTest
+        ? await sql`
+            SELECT id, created_at as timestamp, site, event_name, session_id, source_page, landing_path, target_path, provider, tour_slug, tour_name, is_test, payload
+            FROM jfd_telemetry_events
+            ORDER BY created_at DESC
+            LIMIT 1000
+          `
+        : await sql`
+            SELECT id, created_at as timestamp, site, event_name, session_id, source_page, landing_path, target_path, provider, tour_slug, tour_name, is_test, payload
+            FROM jfd_telemetry_events
+            WHERE is_test = false
+            ORDER BY created_at DESC
+            LIMIT 1000
+          `;
+
+      events = rows.map((r: any) => ({
+        id: r.id,
+        timestamp: r.timestamp instanceof Date ? r.timestamp.toISOString() : String(r.timestamp),
+        site: r.site,
+        eventName: r.event_name,
+        sessionId: r.session_id,
+        sourcePage: r.source_page,
+        landingPath: r.landing_path,
+        targetPath: r.target_path,
+        provider: r.provider,
+        tourSlug: r.tour_slug,
+        tourName: r.tour_name,
+        isTest: Boolean(r.is_test),
+        outcome: (r.payload as any)?.outcome,
+      }));
+    } catch (err) {
+      console.warn("[TelemetryStore] DB summary error, falling back to memory:", err);
+      const memEvents = globalTelemetryState.__jfd_telemetry_events__ || [];
+      events = includeTest ? memEvents : memEvents.filter((e) => !e.isTest);
+    }
+  } else {
+    const memEvents = globalTelemetryState.__jfd_telemetry_events__ || [];
+    events = includeTest ? memEvents : memEvents.filter((e) => !e.isTest);
+  }
 
   const summary = {
     totalEvents: events.length,
+    includesTestTraffic: includeTest,
     byEventName: {} as Record<string, number>,
     bookingClicks: {
       total: 0,
