@@ -1,3 +1,4 @@
+import { SITE_DESCRIPTION } from "@/lib/sitePositioning";
 import type { Metadata } from "next";
 import PartnerAnalyticsScript from "./components/PartnerAnalyticsScript";
 import SiteFooter from "./components/SiteFooter";
@@ -11,21 +12,18 @@ export const metadata: Metadata = {
     default: "Juneau Flight Deck",
     template: "%s | Juneau Flight Deck",
   },
-  description:
-    "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.",
+  description: SITE_DESCRIPTION,
   alternates: { canonical: "/" },
   openGraph: {
     title: "Juneau Flight Deck | Alaska Cruise Excursions & Helicopter Tours",
-    description:
-      "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans.",
+    description: SITE_DESCRIPTION,
     url: "https://juneauflightdeck.com/",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "Juneau Flight Deck | Alaska Cruise Excursions & Helicopter Tours",
-    description:
-      "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans.",
+    description: SITE_DESCRIPTION,
   },
 };
 
@@ -37,8 +35,7 @@ const siteJsonLd = {
       "@id": "https://juneauflightdeck.com/#organization",
       name: "Juneau Flight Deck",
       url: "https://juneauflightdeck.com",
-      description:
-        "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.",
+      description: SITE_DESCRIPTION,
       address: {
         "@type": "PostalAddress",
         addressLocality: "Juneau",
@@ -56,8 +53,7 @@ const siteJsonLd = {
       "@id": "https://juneauflightdeck.com/#website",
       name: "Juneau Flight Deck",
       url: "https://juneauflightdeck.com",
-      description:
-        "Compare and book Alaska cruise excursions: Juneau helicopter glacier tours, dog sledding, whale watching backups, and sold-out availability alerts.",
+      description: SITE_DESCRIPTION,
       publisher: { "@id": "https://juneauflightdeck.com/#organization" },
     },
     {
@@ -77,8 +73,7 @@ const siteJsonLd = {
       "@id": "https://juneauflightdeck.com/#service-helicopter",
       name: "Juneau Helicopter & Shore Excursion Booking & Comparison",
       url: "https://juneauflightdeck.com/helicopter",
-      description:
-        "Compare and book Juneau and Skagway helicopter glacier tours, dog sledding, and whale-watching excursions with port timing guidance, sold-out alerts, and weather alternatives.",
+      description: SITE_DESCRIPTION,
       provider: { "@id": "https://juneauflightdeck.com/#organization" },
       areaServed: [
         { "@type": "City", name: "Juneau" },
@@ -100,14 +95,14 @@ const siteJsonLd = {
             "@type": "Offer",
             itemOffered: {
               "@type": "Service",
-              name: "Sold-Out Availability Watch & Risk-Free Seat Holds",
+              name: "Availability Requests for Unavailable Dates",
             },
           },
           {
             "@type": "Offer",
             itemOffered: {
               "@type": "Service",
-              name: "Weather Cancellation Rebooking & Whale Watching Pivots",
+              name: "Weather Alternative Planning Guidance",
             },
           },
         ],

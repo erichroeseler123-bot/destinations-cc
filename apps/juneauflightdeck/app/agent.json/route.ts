@@ -1,3 +1,4 @@
+import { SITE_DESCRIPTION, BOOKING_ROLES, BOOKING_BENEFITS } from "@/lib/sitePositioning";
 const baseUrl = "https://juneauflightdeck.com";
 const portfolioFeed = "https://www.destinationcommandcenter.com/api/public/portfolio-feed";
 const truthRecord = "https://www.destinationcommandcenter.com/api/public/truth-feed?id=juneau-flight-deck";
@@ -11,9 +12,8 @@ const agentPayload = {
     id: "juneau-flight-deck",
     name: "Juneau Flight Deck",
     url: baseUrl,
-    type: "juneau_excursion_discovery",
-    description:
-      "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.",
+    type: "juneau_excursion_booking_and_comparison",
+    description: SITE_DESCRIPTION,
   },
   status: { state: "active", last_verified: "2026-10-07" },
   authority: ["juneau_excursion_context", "operator_comparisons", "cruise_port_timing", "sold_out_alerts", "weather_alternatives"],
@@ -26,7 +26,7 @@ const agentPayload = {
   entry_points: [
     { path: "/", method: "GET", purpose: "Compare and book Juneau cruise excursions, operator comparisons, and port timing" },
     { path: "/helicopter", method: "GET", purpose: "Compare and book Juneau helicopter glacier tours" },
-    { path: "/helicopter-waitlist", method: "GET", purpose: "Sold-out tour availability watch and 10:00 AM seat drop alerts" },
+    { path: "/helicopter-waitlist", method: "GET", purpose: "Availability requests for dates without a suitable online option" },
     { path: "/temsco-vs-coastal-vs-northstar-juneau", method: "GET", purpose: "Unbiased comparison of Juneau commercial helicopter operators" },
   ],
   machine: {
@@ -35,14 +35,17 @@ const agentPayload = {
     portfolio_graph: portfolioFeed,
     truth_record: truthRecord,
   },
+  customer_benefits: BOOKING_BENEFITS,
+  booking_channels: ["Direct operator booking pages, including FareHarbor", "Viator product or search links"],
   booking_boundary: {
+    roles: BOOKING_ROLES,
     rule:
       "Use the selected operator or booking provider as the authority for live availability, weather cancellation rules, payment, final inclusions, restrictions, and operator terms.",
   },
   network: {
     parent_dcc_id: "dcc:site:destination-command-center",
     parent_url: "https://www.destinationcommandcenter.com",
-    relationship: "affiliated Juneau decision-support property",
+    relationship: "affiliated Juneau excursion booking and comparison service",
     portfolio_feed: portfolioFeed,
     truth_record: truthRecord,
   },

@@ -32,7 +32,7 @@ const FILTER_TABS: Array<{ label: string; value: "all" | "glacier_landing" | "do
 export default function ViatorFeaturedTours({
   initialDate = null,
   headline = "Juneau Helicopter Excursions via Viator",
-  subhead = "Compare glacier flights and dog sledding camps. Real-time departures and party availability are confirmed in the live Viator reservation calendar.",
+  subhead = "Compare glacier flights and dog sledding camps. Confirm dates, party size, current prices, and terms on the selected booking page.",
   className = "",
   showHeader = true,
 }: ViatorFeaturedToursProps) {
@@ -330,7 +330,7 @@ export default function ViatorFeaturedTours({
               lineHeight: 1.5,
             }}
           >
-            *Selecting a cruise date and passenger count pre-fills your preferences. Exact departure time slots and live seating are confirmed in the official Viator booking calendar before reservation.
+            Your selections help narrow your tour choices here. Confirm or re-enter your date and party size on the booking provider’s page before reserving.
           </p>
         </div>
 
@@ -800,7 +800,7 @@ export default function ViatorFeaturedTours({
                 className="button button-primary"
                 style={{ fontSize: "0.85rem", padding: "10px 18px" }}
               >
-                Check Real-Time Availability on Viator &rarr;
+                Check Dates on Viator &rarr;
               </a>
             </div>
           </div>
