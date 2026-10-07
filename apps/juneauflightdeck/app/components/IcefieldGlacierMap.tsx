@@ -22,106 +22,127 @@ interface GlacierPoint {
 const GLACIER_DATA: Record<string, GlacierPoint> = {
   mendenhall: {
     id: "mendenhall",
-    category: "Featured Glacier Landing & Treks",
+    category: "Geographic Glacier Location",
     title: "Mendenhall Glacier",
-    subtitle: "Terminates into Mendenhall Lake • 8–12 min helicopter flight from Juneau Airport",
-    badge: "Ice Walks & Treks",
+    subtitle: "Outlet glacier terminating into Mendenhall Lake • Primary ice walk & trek area",
+    badge: "Geographic Location",
     badgeColor: "#38bdf8",
-    geo: "13 miles long; drops from the Juneau Icefield down to 100 ft elevation. Closest glacier to airport heliports.",
-    operators: "TEMSCO Helicopters & NorthStar Trekking. Departures every 30–45 mins.",
+    geo: "13-mile valley glacier flowing from the Juneau Icefield. Primary landing zone for guided walks and ice treks. Note: Pilots and guides evaluate ice conditions and cloud ceilings daily; landing locations can adjust to alternate icefield zones (such as Lemon Creek or Herbert Glacier) for safety.",
+    operators: "TEMSCO Helicopters (guided walks) & NorthStar Trekking (glacier walkabouts and ice treks).",
     pricing: [
-      "TEMSCO Guided Walk: From $409 base (~$442 at checkout)",
-      "NorthStar 1-Hour Walkabout: From $499 base (~$539 at checkout · Ages 8+)",
-      "NorthStar Level 1 Ice Trek: From $549 base (~$593 at checkout · 2 hrs on ice)",
+      "TEMSCO Guided Walk: From $409 published base rate",
+      "NorthStar 1-Hour Walkabout: From $499 published base rate (Ages 8+)",
+      "NorthStar Level 1 Ice Trek: From $549 published base rate (2 hrs on ice · Ages 12+)",
     ],
-    note: "💡 Best for first-time flyers, families with kids (ages 2+), and active hikers wanting 1 to 2 hours exploring deep ice features.",
+    note: "💡 Most treks land on Mendenhall, but landing locations adjust with weather and glacier conditions. Taxes and operator fees calculated at checkout.",
     primaryActionText: "Check Mendenhall Walk on Viator →",
     primaryActionHref: "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Helicopters&pid=P00058396&mcid=42383&medium=api",
   },
   herbert: {
     id: "herbert",
-    category: "Scenic Landing & Summer Dog Camps",
+    category: "Geographic Glacier Location & Seasonal Camps",
     title: "Herbert Glacier",
-    subtitle: "Northwest outlet of the icefield • 12–15 min scenic flight via Lynn Canal coast",
-    badge: "Landings & Dog Sledding",
+    subtitle: "Valley glacier northwest of Juneau • Landings & seasonal dog mushing camps",
+    badge: "Geographic Location",
     badgeColor: "#ef4444",
-    geo: "Large, dramatic valley glacier terminating in the Herbert River. High alpine snowfields host active summer dog camps at 3,500 ft elevation.",
-    operators: "TEMSCO Helicopters & Coastal Helicopters.",
+    geo: "Large valley glacier terminating in the Herbert River. High alpine snowfield plateau hosts seasonal dog mushing camps from mid-May through August. Camp locations are approximate and relocated seasonally.",
+    operators: "Coastal Helicopters (glacier landings & dog sledding) & TEMSCO Helicopters (dog sledding).",
     pricing: [
-      "Coastal Icefield Landing: From $429 base (~$463 at checkout)",
-      "TEMSCO Glacier Dog Sledding: From $659 base (~$712 at checkout)",
-      "Coastal Herbert Dog Sled Tour: From $709 base (~$766 at checkout)",
+      "Coastal Icefield Landing: From $429 published base rate",
+      "TEMSCO Glacier Dog Sledding: From $659 published base rate",
+      "Coastal Herbert Dog Sled Tour: From $709 published base rate",
     ],
-    note: "💡 Houses 100+ Alaskan huskies mid-May through late August; quiet, pristine alpine snowfields away from Mendenhall crowds.",
+    note: "💡 Dog sledding camps are seasonal (mid-May through late August) on upper snowfields. Camp locations are approximate and adjust with snow conditions.",
     primaryActionText: "Book Herbert Dog Sled (FH 214810) ↗",
     primaryActionHref: "https://fareharbor.com/embeds/book/temscoair-juneau/items/214810/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes",
     isDirectLink: true,
   },
   norris: {
     id: "norris",
-    category: "Alpine Dog Sledding Excursion",
+    category: "Geographic Glacier Location & Seasonal Camp",
     title: "Norris Glacier",
-    subtitle: "Southeast Juneau Icefield • Flown by NorthStar Trekking",
-    badge: "Glacier Dog Sledding",
+    subtitle: "Southeast Juneau Icefield • Approximate Summer Dog Sled Camp",
+    badge: "Approximate Camp",
     badgeColor: "#a855f7",
-    geo: "Located west of Taku Inlet with sweeping snowfields and jagged granite nunatak peaks.",
-    operators: "NorthStar Trekking partner musher camp.",
+    geo: "Located northwest of Taku Inlet with sweeping snowfields and jagged granite nunatak peaks. Hosts NorthStar's partner musher camp (mid-May to August).",
+    operators: "NorthStar Trekking (flights depart from NorthStar Douglas Island base).",
     pricing: [
-      "NorthStar Helicopter Glacier Dogsled Adventure: From $739 base (~$798 at checkout · FareHarbor item 115991)",
+      "NorthStar Helicopter Glacier Dogsled Adventure: From $739 published base rate (FareHarbor item 115991 · Ages 2+)",
     ],
-    note: "💡 Small-group mushing adventure with veteran Iditarod partners; ages 2+ welcome on the sled.",
+    note: "💡 Mushing camp location on Norris Glacier is approximate and seasonal. Excursions depart from NorthStar's Douglas Island base.",
     primaryActionText: "Book NorthStar Dogsled (FH 115991) ↗",
     primaryActionHref: "https://fareharbor.com/embeds/book/northstartrekking/items/115991/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes",
     isDirectLink: true,
   },
   taku: {
     id: "taku",
-    category: "Deepest Icefield Glacier & Historic Lodge",
-    title: "Taku Glacier & Taku Glacier Lodge",
-    subtitle: "Largest icefield glacier (over 4,000 ft thick) • Flown via de Havilland Otter seaplanes",
-    badge: "Seaplane & Wilderness Feast",
+    category: "Geographic Glacier Location & Excursions",
+    title: "Taku Glacier & Taku River Basin",
+    subtitle: "Thickest icefield glacier • Distinct helicopter/airboat and seaplane lodge excursions",
+    badge: "Geographic Location",
     badgeColor: "#10b981",
-    geo: "The only advancing glacier in the Juneau Icefield; terminates directly into Taku Inlet southeast of Juneau.",
-    operators: "Wings Airways operates classic floatplane tours from downtown Juneau waterfront to Taku Lodge.",
+    geo: "The only advancing glacier in the Juneau Icefield; terminates into Taku Inlet southeast of Juneau. Two distinct wilderness excursions operate here across different aviation modes.",
+    operators: "NorthStar Trekking (Helicopter & Airboat tour departing from Douglas Island) and Wings Airways (classic floatplane tour to Taku Glacier Lodge from downtown waterfront).",
     pricing: [
-      "Taku Glacier Lodge Flight & Feast: ~$385–$415 seaplane tour (Wings Airways)",
-      "NorthStar Taku Glacier Airboat Combo: $688 base",
+      "NorthStar Taku Glacier Helicopter & Airboat Adventure: From $688 published base rate (departs NorthStar Douglas base)",
+      "Wings Airways Taku Glacier Lodge Feast & Flight: From $385–$415 published fare (classic de Havilland seaplane from downtown waterfront)",
     ],
-    note: "💡 Note: Taku Glacier Lodge is an iconic seaplane dining tour operated by Wings Airways, not a commercial helicopter landing.",
+    note: "💡 Two distinct Taku tours: NorthStar operates a helicopter + airboat adventure from Douglas Island; Wings Airways operates the historic dining seaplane tour to Taku Glacier Lodge.",
     primaryActionText: "Compare Helicopter Tours →",
     primaryActionHref: "/temsco-vs-coastal-vs-northstar-juneau#effort-comparison",
   },
   airport: {
     id: "airport",
-    category: "Commercial Heliport Operations",
-    title: "Juneau International Airport (JNU) Heliports",
-    subtitle: "North Airport Ramp & Industrial Heliport • 9 miles northwest of downtown cruise docks",
-    badge: "Flight Departure Base",
+    category: "Aviation Base Locations",
+    title: "Juneau International Airport (JNU) Bases",
+    subtitle: "TEMSCO Base, Coastal Base & NorthStar Trekking Base",
+    badge: "Airport Bases",
     badgeColor: "#0284c7",
-    geo: "Primary operating bases for TEMSCO Helicopters, Coastal Helicopters, and NorthStar Trekking.",
-    operators: "All 3 licensed FAA Part 135 commercial helicopter operators depart from this area.",
+    geo: "North airport aviation corridor (~9 miles northwest of downtown). TEMSCO base is at 1650 Maplesden Way. Coastal base is at 8995 Alex Holden Way. NorthStar operates its Trekking Base at 1890 Renshaw Way for glacier walkabouts and ice treks.",
+    operators: "TEMSCO (all Juneau tours), Coastal (all tours), and NorthStar (glacier trekking and walkabouts only).",
     pricing: [
-      "Complimentary round-trip shuttles included from all 4 cruise berths (15–20 min transit)",
+      "NorthStar Treks: Depart from Airport Base (1890 Renshaw Way)",
+      "Coastal Tours: Depart from Alex Holden Way base",
+      "TEMSCO Tours: Depart from Maplesden Way base",
     ],
-    note: "💡 Allow 60–90 minutes buffer time after ship docking before your scheduled flight departure.",
-    primaryActionText: "See Port Dock Buffers →",
+    note: "💡 Direct-booking cruise passengers should follow operator-specific pickup instructions rather than expecting universal ship gangway pickup.",
+    primaryActionText: "See Pickup & Meeting Details →",
     primaryActionHref: "#cruise-timing-pickup",
+  },
+  douglas: {
+    id: "douglas",
+    category: "Aviation Base Locations",
+    title: "NorthStar Douglas Island Heliport",
+    subtitle: "6910 North Douglas Highway • Dedicated Dogsledding & Airboat Base",
+    badge: "Douglas Island Base",
+    badgeColor: "#a855f7",
+    geo: "Located on North Douglas Island across Gastineau Channel. NorthStar Trekking operates this dedicated second heliport facility specifically for Norris Glacier dog sledding tours and Taku Glacier helicopter/airboat adventures.",
+    operators: "NorthStar Trekking (dog sledding and airboat adventures).",
+    pricing: [
+      "NorthStar Dog Sledding on Norris Glacier: From $739 published base rate",
+      "NorthStar Taku Glacier Helicopter & Airboat: From $688 published base rate",
+    ],
+    note: "💡 NorthStar operates two separate bases: Airport base for ice treks; Douglas Island heliport for dog sledding and airboat adventures.",
+    primaryActionText: "Compare Dog Sledding Tours →",
+    primaryActionHref: "#dog-sledding-options",
   },
   docks: {
     id: "docks",
-    category: "Cruise Ship Terminals",
-    title: "Downtown Juneau Cruise Ship Berths",
-    subtitle: "AJ Dock • Franklin Dock • Steamship Wharf (CT) • Marine Park",
-    badge: "Port Logistics",
+    category: "Cruise Passenger Logistics",
+    title: "Downtown Meeting Hub & Cruise Berths",
+    subtitle: "Goldbelt Tramway (Mt. Roberts Tram) & Central Waterfront Meeting Points",
+    badge: "Meeting Points",
     badgeColor: "#f59e0b",
-    geo: "All 4 berths sit along Gastineau Channel. AJ Dock is 1.0 mile south with dedicated gate vans; CT & Franklin are in downtown core.",
-    operators: "Marked shuttle vans pick up passengers curbside at each security gate exit.",
+    geo: "Cruise ships berth at AJ Dock (1 mi south), Franklin Dock, Steamship Wharf (CT), or Marine Park. Direct-booking passengers do not receive universal gangway pickup; operators utilize designated downtown meeting points:",
+    operators: "NorthStar & Coastal direct-booking guests meet at Goldbelt Tramway (490 S Franklin St). TEMSCO coordinates pickup at a central downtown meeting location specified on confirmation.",
     pricing: [
-      "Complimentary ground transfers included in all helicopter excursion tickets",
+      "NorthStar: Direct cruise guests meet at Goldbelt Tramway (490 S Franklin St)",
+      "Coastal: Direct cruise guests meet at Goldbelt Tramway (1 hr before flight)",
+      "TEMSCO: Central downtown meeting point (arrive 15 min prior to tour departure)",
     ],
-    note: "💡 Port Rule: Select flights returning to dock at least 60–90 minutes before ship All Aboard time.",
-    primaryActionText: "Alaska Cruise Fleet Waitlist →",
-    primaryActionHref: "/helicopter-waitlist",
+    note: "💡 Important: Check your booking confirmation for your exact downtown meeting point rather than waiting at the ship gangway.",
+    primaryActionText: "Review Port Timing Guide →",
+    primaryActionHref: "#cruise-timing-pickup",
   },
 };
 
@@ -251,7 +272,7 @@ export default function IcefieldGlacierMap() {
               cursor: "pointer",
             }}
           >
-            🚢 Docks &amp; Heliports
+            🚢 Bases &amp; Meeting Points
           </button>
         </div>
       </div>
@@ -296,13 +317,26 @@ export default function IcefieldGlacierMap() {
           <g opacity="0.9">
             {/* Lynn Canal / Favorite Channel (NW) */}
             <path d="M 0 0 L 220 0 L 160 320 L 80 440 L 0 500 Z" fill="url(#waterGradMap)" />
-            {/* Gastineau Channel */}
+            {/* Gastineau Channel (separating Douglas Island from Mainland Juneau) */}
             <path d="M 120 450 Q 240 480 340 520 L 390 560 L 460 650 L 380 650 L 280 570 L 100 480 Z" fill="url(#waterGradMap)" />
             {/* Taku Inlet (SE) */}
             <path d="M 680 650 Q 720 540 760 480 Q 820 460 880 450 L 920 650 Z" fill="url(#waterGradMap)" opacity="0.85" />
           </g>
 
-          {/* Mountains & Land Base */}
+          {/* Douglas Island Landmass */}
+          <g>
+            <path
+              d="M 100 480 Q 200 510 270 560 L 250 650 L 0 650 L 0 530 Z"
+              fill="#0a1e28"
+              stroke="#164e63"
+              strokeWidth="1.5"
+            />
+            <text x="140" y="590" fill="#64748b" fontSize="12" fontWeight="700" letterSpacing="1" opacity="0.8">
+              DOUGLAS ISLAND
+            </text>
+          </g>
+
+          {/* Mainland Juneau & Coast Mountains */}
           <path
             d="M 160 0 Q 300 120 400 80 Q 600 50 850 0 L 1000 0 L 1000 650 L 920 650 Q 880 440 750 480 Q 680 540 650 650 L 460 650 Q 380 550 320 510 Q 180 460 160 0 Z"
             fill="#0c2430"
@@ -331,7 +365,7 @@ export default function IcefieldGlacierMap() {
             </text>
           </g>
 
-          {/* Herbert Glacier */}
+          {/* Herbert Glacier (Geographic Location) */}
           <g
             style={{ cursor: "pointer" }}
             onClick={() => setActivePoint("herbert")}
@@ -342,15 +376,18 @@ export default function IcefieldGlacierMap() {
               stroke={activePoint === "herbert" ? "#facc15" : "#38bdf8"}
               strokeWidth={activePoint === "herbert" ? "3.5" : "2"}
             />
-            <text x="180" y="220" fill="#e0f2fe" fontSize="12" fontWeight="800" textAnchor="end">
+            <text x="180" y="215" fill="#e0f2fe" fontSize="12" fontWeight="800" textAnchor="end">
               HERBERT GLACIER
             </text>
-            <text x="180" y="235" fill="#38bdf8" fontSize="10" fontWeight="600" textAnchor="end">
-              Landing ($429) &amp; Dog Sled ($659–$709)
+            <text x="180" y="230" fill="#94a3b8" fontSize="9.5" fontWeight="600" textAnchor="end">
+              (Geographic Glacier Location)
+            </text>
+            <text x="180" y="245" fill="#38bdf8" fontSize="10" fontWeight="600" textAnchor="end">
+              Coastal Landing ($429) &amp; Dog Sleds ($659–$709)
             </text>
           </g>
 
-          {/* Mendenhall Glacier */}
+          {/* Mendenhall Glacier (Geographic Location) */}
           <g
             style={{ cursor: "pointer" }}
             onClick={() => setActivePoint("mendenhall")}
@@ -362,15 +399,18 @@ export default function IcefieldGlacierMap() {
               strokeWidth={activePoint === "mendenhall" ? "4" : "2.5"}
             />
             <ellipse cx="365" cy="442" rx="20" ry="12" fill="#0369a1" stroke="#38bdf8" strokeWidth="1.5" />
-            <text x="440" y="380" fill="#ffffff" fontSize="13" fontWeight="900">
+            <text x="440" y="375" fill="#ffffff" fontSize="13" fontWeight="900">
               MENDENHALL GLACIER
             </text>
-            <text x="440" y="396" fill="#38bdf8" fontSize="10" fontWeight="700">
-              Walk ($409) · Walkabout ($499) · Trek ($549)
+            <text x="440" y="390" fill="#94a3b8" fontSize="9.5" fontWeight="600">
+              (Geographic Glacier Location · Conditions Dictate Ice Site)
+            </text>
+            <text x="440" y="405" fill="#38bdf8" fontSize="10" fontWeight="700">
+              TEMSCO Walk ($409) · NorthStar Walkabout ($499) · Trek ($549)
             </text>
           </g>
 
-          {/* Taku Glacier */}
+          {/* Taku Glacier (Geographic Location) */}
           <g
             style={{ cursor: "pointer" }}
             onClick={() => setActivePoint("taku")}
@@ -381,15 +421,18 @@ export default function IcefieldGlacierMap() {
               stroke={activePoint === "taku" ? "#facc15" : "#38bdf8"}
               strokeWidth={activePoint === "taku" ? "3.5" : "2.5"}
             />
-            <text x="840" y="430" fill="#ffffff" fontSize="13" fontWeight="900">
+            <text x="840" y="425" fill="#ffffff" fontSize="13" fontWeight="900">
               TAKU GLACIER
             </text>
-            <text x="840" y="446" fill="#f0b35b" fontSize="10" fontWeight="700">
-              Largest Glacier • Taku Lodge Seaplanes
+            <text x="840" y="440" fill="#94a3b8" fontSize="9.5" fontWeight="600">
+              (Geographic Glacier Location)
+            </text>
+            <text x="840" y="455" fill="#f0b35b" fontSize="10" fontWeight="700">
+              NorthStar Airboat Tour · Wings Airways Seaplane Lodge
             </text>
           </g>
 
-          {/* Norris Glacier */}
+          {/* Norris Glacier (Geographic Location) */}
           <g
             style={{ cursor: "pointer" }}
             onClick={() => setActivePoint("norris")}
@@ -400,59 +443,86 @@ export default function IcefieldGlacierMap() {
               stroke={activePoint === "norris" ? "#facc15" : "#38bdf8"}
               strokeWidth={activePoint === "norris" ? "3.5" : "2"}
             />
-            <text x="635" y="435" fill="#e0f2fe" fontSize="12" fontWeight="800" textAnchor="end">
+            <text x="635" y="430" fill="#e0f2fe" fontSize="12" fontWeight="800" textAnchor="end">
               NORRIS GLACIER
             </text>
-            <text x="635" y="450" fill="#38bdf8" fontSize="10" fontWeight="600" textAnchor="end">
-              NorthStar Dog Sled Camp ($739)
+            <text x="635" y="445" fill="#94a3b8" fontSize="9.5" fontWeight="600" textAnchor="end">
+              (Geographic Glacier Location)
+            </text>
+            <text x="635" y="460" fill="#38bdf8" fontSize="10" fontWeight="600" textAnchor="end">
+              NorthStar Dogsled Camp ($739 · Approx. Camp)
             </text>
           </g>
 
-          {/* Flight Routes */}
+          {/* Illustrative Flight Corridors (Weather & FAA Dependent) */}
           <g opacity="0.8">
-            <path d="M 310 470 Q 330 440 375 380" fill="none" stroke="#38bdf8" strokeWidth="2.5" strokeDasharray="6,6" />
-            <path d="M 310 470 Q 230 400 230 230" fill="none" stroke="#f0b35b" strokeWidth="2.5" strokeDasharray="6,6" />
-            <path d="M 310 470 Q 480 490 680 400" fill="none" stroke="#a855f7" strokeWidth="2.5" strokeDasharray="6,6" />
+            <path d="M 310 470 Q 330 440 375 380" fill="none" stroke="#38bdf8" strokeWidth="2" strokeDasharray="6,6" />
+            <path d="M 310 470 Q 230 400 230 230" fill="none" stroke="#f0b35b" strokeWidth="2" strokeDasharray="6,6" />
+            <path d="M 230 520 Q 450 510 680 400" fill="none" stroke="#a855f7" strokeWidth="2" strokeDasharray="6,6" />
+            <path d="M 230 520 Q 520 540 810 470" fill="none" stroke="#38bdf8" strokeWidth="2" strokeDasharray="6,6" />
             <path d="M 390 560 Q 560 590 810 510" fill="none" stroke="#10b981" strokeWidth="2" strokeDasharray="4,4" />
           </g>
 
-          {/* Heliport Base */}
+          {/* Corridor Legend Label */}
+          <text x="500" y="490" fill="#94a3b8" fontSize="9.5" fontStyle="italic" textAnchor="middle" opacity="0.85">
+            Illustrative flight corridors (weather, cloud ceiling &amp; FAA dependent; actual flight paths vary)
+          </text>
+
+          {/* Airport Bases (Mainland) */}
           <g style={{ cursor: "pointer" }} onClick={() => setActivePoint("airport")}>
             <circle cx="310" cy="470" r="14" fill="#0284c7" stroke="#ffffff" strokeWidth="2.5" />
             <circle cx="310" cy="470" r="6" fill="#ffffff" />
-            <rect x="230" y="490" width="160" height="34" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="1.5" />
-            <text x="310" y="504" fill="#ffffff" fontSize="11" fontWeight="800" textAnchor="middle">
-              🚁 JUNEAU AIRPORT HELIPORTS
+            <rect x="210" y="430" width="190" height="34" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="1.5" />
+            <text x="305" y="444" fill="#ffffff" fontSize="10.5" fontWeight="800" textAnchor="middle">
+              🚁 AIRPORT BASES (JNU)
             </text>
-            <text x="310" y="518" fill="#94a3b8" fontSize="9" fontWeight="600" textAnchor="middle">
-              TEMSCO • Coastal • NorthStar Bases
+            <text x="305" y="458" fill="#94a3b8" fontSize="8.5" fontWeight="600" textAnchor="middle">
+              TEMSCO • Coastal • NorthStar Treks
             </text>
           </g>
 
-          {/* Cruise Docks */}
+          {/* NorthStar Douglas Island Base */}
+          <g style={{ cursor: "pointer" }} onClick={() => setActivePoint("douglas")}>
+            <circle cx="230" cy="520" r="13" fill="#a855f7" stroke="#ffffff" strokeWidth="2.5" />
+            <circle cx="230" cy="520" r="5" fill="#ffffff" />
+            <rect x="135" y="538" width="180" height="34" rx="6" fill="#0f172a" stroke="#a855f7" strokeWidth="1.5" />
+            <text x="225" y="552" fill="#ffffff" fontSize="10" fontWeight="800" textAnchor="middle">
+              🚁 DOUGLAS HELIPORT (NorthStar)
+            </text>
+            <text x="225" y="565" fill="#cbd5e1" fontSize="8.5" textAnchor="middle">
+              Dog Sledding &amp; Airboat Tours Base
+            </text>
+          </g>
+
+          {/* Downtown Meeting Hub / Goldbelt Tramway & Cruise Docks */}
           <g style={{ cursor: "pointer" }} onClick={() => setActivePoint("docks")}>
-            <circle cx="390" cy="560" r="14" fill="#f59e0b" stroke="#ffffff" strokeWidth="2.5" />
-            <circle cx="390" cy="560" r="6" fill="#ffffff" />
-            <rect x="320" y="580" width="160" height="46" rx="6" fill="#0f172a" stroke="#f59e0b" strokeWidth="1.5" />
-            <text x="400" y="594" fill="#ffffff" fontSize="11" fontWeight="800" textAnchor="middle">
-              🚢 CRUISE SHIP BERTHS
+            <circle cx="390" cy="570" r="14" fill="#f59e0b" stroke="#ffffff" strokeWidth="2.5" />
+            <circle cx="390" cy="570" r="6" fill="#ffffff" />
+            <rect x="300" y="590" width="195" height="46" rx="6" fill="#0f172a" stroke="#f59e0b" strokeWidth="1.5" />
+            <text x="397" y="604" fill="#ffffff" fontSize="10.5" fontWeight="800" textAnchor="middle">
+              📍 GOLDBELT TRAMWAY &amp; DOCKS
             </text>
-            <text x="400" y="608" fill="#cbd5e1" fontSize="9" textAnchor="middle">
-              AJ Dock • Franklin • CT • Marine Park
+            <text x="397" y="618" fill="#cbd5e1" fontSize="8.5" textAnchor="middle">
+              Direct-Booking Meeting Hub (490 S Franklin)
             </text>
-            <text x="400" y="620" fill="#f59e0b" fontSize="8.5" fontWeight="700" textAnchor="middle">
-              Free 15-20 min Shuttle to Heliport
+            <text x="397" y="630" fill="#f59e0b" fontSize="8" fontWeight="700" textAnchor="middle">
+              Operator Shuttles to Airport &amp; Douglas
             </text>
           </g>
 
-          {/* Pins */}
+          {/* Herbert Dog Camp Pin (Approximate Seasonal Camp) */}
           {(filter === "all" || filter === "dogsled" || filter === "landing") && (
             <g style={{ cursor: "pointer" }} onClick={() => setActivePoint("herbert")}>
               <circle cx="230" cy="230" r="13" fill="#ef4444" stroke="#ffffff" strokeWidth="2.5" />
               <text x="230" y="235" fontSize="11" textAnchor="middle">🐕</text>
+              <rect x="150" y="250" width="160" height="20" rx="4" fill="#0f172a" stroke="#ef4444" strokeWidth="1" opacity="0.9" />
+              <text x="230" y="263" fill="#fca5a5" fontSize="8.5" fontWeight="700" textAnchor="middle">
+                Herbert Camp (Approx. Seasonal)
+              </text>
             </g>
           )}
 
+          {/* Mendenhall Pin (Geographic Location) */}
           {(filter === "all" || filter === "landing") && (
             <g style={{ cursor: "pointer" }} onClick={() => setActivePoint("mendenhall")}>
               <circle cx="375" cy="380" r="13" fill="#06b6d4" stroke="#ffffff" strokeWidth="2.5" />
@@ -460,13 +530,19 @@ export default function IcefieldGlacierMap() {
             </g>
           )}
 
+          {/* Norris Dog Camp Pin (Approximate Seasonal Camp) */}
           {(filter === "all" || filter === "dogsled") && (
             <g style={{ cursor: "pointer" }} onClick={() => setActivePoint("norris")}>
               <circle cx="680" cy="400" r="13" fill="#8b5cf6" stroke="#ffffff" strokeWidth="2.5" />
               <text x="680" y="405" fontSize="11" textAnchor="middle">🐕</text>
+              <rect x="600" y="365" width="160" height="20" rx="4" fill="#0f172a" stroke="#8b5cf6" strokeWidth="1" opacity="0.9" />
+              <text x="680" y="378" fill="#d8b4fe" fontSize="8.5" fontWeight="700" textAnchor="middle">
+                Norris Camp (Approx. Seasonal)
+              </text>
             </g>
           )}
 
+          {/* Taku Pin */}
           {(filter === "all" || filter === "landing") && (
             <g style={{ cursor: "pointer" }} onClick={() => setActivePoint("taku")}>
               <circle cx="810" cy="510" r="11" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
