@@ -3,24 +3,24 @@ import HelicopterDispatchBoard from "./components/HelicopterDispatchBoard";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Juneau Flight Deck | Juneau Helicopter & Glacier Tours",
+    absolute: "Juneau Helicopter Tours & Glacier Excursions | Compare & Book | Juneau Flight Deck",
   },
   description:
-    "Juneau Flight Deck helps cruise passengers compare Juneau helicopter glacier tours, whale-watching backups, weather policies, and ship-safe timing.",
+    "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.",
   alternates: { canonical: "https://juneauflightdeck.com/" },
   openGraph: {
-    title: "Juneau Flight Deck | Juneau Helicopter & Glacier Tours",
+    title: "Juneau Helicopter Tours & Glacier Excursions | Compare & Book | Juneau Flight Deck",
     description:
-      "Juneau Flight Deck helps cruise passengers compare Juneau helicopter glacier tours, whale-watching backups, weather policies, and ship-safe timing.",
+      "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans.",
     url: "https://juneauflightdeck.com/",
     siteName: "Juneau Flight Deck",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Juneau Flight Deck | Juneau Helicopter & Glacier Tours",
+    title: "Juneau Helicopter Tours & Glacier Excursions | Compare & Book",
     description:
-      "Juneau Flight Deck helps cruise passengers compare Juneau helicopter glacier tours, whale-watching backups, weather policies, and ship-safe timing.",
+      "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans.",
   },
 };
 
@@ -33,9 +33,9 @@ export default function HomePage() {
       <HelicopterDispatchBoard
         portSlug="juneau"
         sourcePage="/"
-        headline="Same helicopter tour. Lower price. And it comes with a backup plan."
-        subhead="Fly with the same trusted helicopter companies your cruise line books—TEMSCO, Coastal, and NorthStar—with local help around your booking. Sold out? Join our availability watch. Weather cancels your flight? We’ll help you find an available alternative."
-        primaryCtaLabel="Explore Juneau Helicopter Tours"
+        headline="Compare & Book Juneau Helicopter & Glacier Excursions"
+        subhead="Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers."
+        primaryCtaLabel="Find Your Tour"
       />
       <section
         aria-label="Plan the rest of your cruise"

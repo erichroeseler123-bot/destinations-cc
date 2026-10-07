@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Cruise Ship Excursion Desk vs. Independent Helicopter Booking in Juneau",
     description:
-      "Save $80-$150 per person on the exact same helicopters. Learn about pier pickups, on-time ship guarantees, and our 24/7 seat scanner.",
+      "Save $80-$150 per person on the exact same helicopters. Learn about pier pickups, 90-120 minute ship return buffers, and our 24/7 seat scanner.",
     url: "https://juneauflightdeck.com/juneau/cruise-excursions-vs-independent",
     type: "article",
   },
@@ -129,7 +129,7 @@ export default function CruiseExcursionsVsIndependentPage() {
                 <tr>
                   <td><strong>Port Return Buffer</strong></td>
                   <td>Varies by group size</td>
-                  <td>Guaranteed 90 to 120-minute safety buffer</td>
+                  <td>Scheduled 90 to 120-minute safety buffer</td>
                 </tr>
                 <tr>
                   <td><strong>Weather Cancellation</strong></td>

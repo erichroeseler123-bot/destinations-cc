@@ -144,35 +144,43 @@ export default function JuneauDogSleddingPage() {
             >
               <span>Official Viator Partner</span>
               <span>·</span>
-              <span>Tour Availability Notice</span>
+              <span>TEMSCO Herbert Glacier Dog Camp</span>
             </div>
             <h3 style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--text, #ffffff)", margin: "0 0 8px" }}>
-              No Juneau helicopter tours currently returned by our search
+              Compare &amp; Book Glacier Dog Sledding Excursions
             </h3>
             <p style={{ margin: "0 0 10px", fontSize: "0.88rem", color: "var(--muted)", lineHeight: 1.55 }}>
-              Glacier dog sledding camps on high-altitude snowfields operate seasonally and are not currently bookable through our Viator search. Join our 2027 helicopter availability alerts to receive notifications when booking windows open.
+              Herbert Glacier dog sled camps operate mid-May through August with limited daily capacity (~120 total seats across all ships). Check real-time dates below via our official Viator partner link or direct TEMSCO FareHarbor checkout.
             </p>
             <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--ice, #9ed9ff)", fontWeight: 600 }}>
-              Submit your cruise date below to receive notifications when 2027 departures and seat drops become available.
+              Sold out on your ship? Register below for daily 10:00 AM seat drop alerts to claim cancellation releases.
             </p>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
             <a
-              href="#waitlist-form"
+              href="https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+dog+sledding&pid=P00058396&mcid=42383&medium=api"
+              target="_blank"
+              rel="noopener noreferrer"
               className="button button-primary"
               style={{ padding: "12px 22px", fontSize: "0.92rem", whiteSpace: "nowrap" }}
             >
-              Join 2027 Availability Alerts &darr;
+              Check Dog Sledding on Viator &rarr;
             </a>
             <a
-              href="https://www.viator.com/Juneau-tourism/d941-r8418047970-s323605581?pid=P00058396&mcid=42383&medium=api"
+              href="https://fareharbor.com/embeds/book/temscoair-juneau/items/214810/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
               target="_blank"
               rel="noopener noreferrer"
               className="button button-card"
               style={{ fontSize: "0.82rem", whiteSpace: "nowrap" }}
             >
-              Browse Available Juneau Tours &rarr;
+              🏢 Book TEMSCO Direct (FareHarbor) ↗
+            </a>
+            <a
+              href="#waitlist-form"
+              style={{ fontSize: "0.78rem", color: "var(--accent, #f0b35b)", fontWeight: 700, textDecoration: "none" }}
+            >
+              Sold out? Join Seat Drop Watch &darr;
             </a>
           </div>
         </div>

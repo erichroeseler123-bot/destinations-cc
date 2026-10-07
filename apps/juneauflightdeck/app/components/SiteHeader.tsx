@@ -9,14 +9,14 @@ export default function SiteHeader() {
       <div className="site-shell site-header-inner">
         <Link href="/" className="site-brand">
           <span className="site-brand-title">Juneau Flight Deck</span>
-          <span className="site-brand-tag">Glacier flights, whale backups, cruise-safe timing.</span>
+          <span className="site-brand-tag">Alaska cruise excursion booking &amp; flight coordination.</span>
         </Link>
         <nav className="site-nav" aria-label="Primary">
-          <Link href="/helicopter">Helicopter</Link>
-          <Link href="/juneau-helicopter-tour-sold-out" aria-label="Sold Out Help - Juneau helicopter tour openings">Sold Out?</Link>
-          <Link href="/juneau-whale-watching-tours" aria-label="Whales - Juneau whale watching tours">Whales</Link>
-          <Link href="/skagway/helicopter" aria-label="Skagway - Skagway helicopter tours">Skagway</Link>
-          <Link href="/helicopter-waitlist" aria-label="Seat requests - Helicopter waitlist">Seat requests</Link>
+          <Link href="/helicopter">Book Tours</Link>
+          <Link href="/temsco-vs-coastal-vs-northstar-juneau">Compare Operators</Link>
+          <Link href="/helicopter-waitlist">Ship Port Timing</Link>
+          <Link href="/juneau-helicopter-tour-sold-out">Sold Out Alerts</Link>
+          <Link href="/juneau/what-to-do-if-helicopter-tour-canceled">Weather Backups</Link>
           <Link href="/about">About</Link>
           <Link href="/contact">Contact</Link>
         </nav>

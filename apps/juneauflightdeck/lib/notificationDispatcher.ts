@@ -167,7 +167,7 @@ hello@juneauflightdeck.com
       const { Resend } = await import("resend");
       const resend = new Resend(resendApiKey);
       const res = await resend.emails.send({
-        from: process.env.DEPLOY_TEST_EMAIL_FROM || "press@juneauflightdeck.com",
+        from: process.env.DEPLOY_TEST_EMAIL_FROM || "alerts@juneauflightdeck.com",
         to: params.email,
         subject: emailSubject,
         html: emailBodyHtml,

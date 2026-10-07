@@ -46,6 +46,25 @@ const faqSchema = {
   ],
 };
 
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: "https://juneauflightdeck.com/",
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Sold Out Tours Guide",
+      item: "https://juneauflightdeck.com/juneau-helicopter-tour-sold-out",
+    },
+  ],
+};
+
 export default function SoldOutGuidePage() {
   return (
     <main className="page-shell" style={{ maxWidth: 920, margin: "auto", padding: "40px 20px 80px" }}>
@@ -53,14 +72,32 @@ export default function SoldOutGuidePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
 
       <p className="eyebrow">Juneau Port Day Solutions</p>
       <h1 style={{ fontSize: "clamp(2rem, 4vw, 2.7rem)", fontWeight: 900, lineHeight: 1.2, margin: "10px 0 18px", color: "var(--text)" }}>
         Juneau Helicopter Tours Sold Out? Don&apos;t Panic.
       </h1>
-      <p style={{ fontSize: "1.1rem", lineHeight: 1.6, color: "var(--muted)", marginBottom: "30px" }}>
+      <p style={{ fontSize: "1.08rem", lineHeight: 1.6, color: "var(--ice)", marginBottom: "16px" }}>
+        Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
+      </p>
+      <p style={{ fontSize: "1rem", lineHeight: 1.6, color: "var(--muted)", marginBottom: "24px" }}>
         Glacier walkabouts and helicopter dog sledding are the first excursions to sell out in Alaska. But in Southeast Alaska aviation, <strong>&ldquo;Sold Out&rdquo; rarely means zero chance of flying.</strong>
       </p>
+      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "32px" }}>
+        <Link href="/helicopter" className="primary-cta" style={{ fontSize: "0.9rem", padding: "10px 18px" }}>
+          Check Live Open Tours →
+        </Link>
+        <Link href="/temsco-vs-coastal-vs-northstar-juneau" className="button button-secondary" style={{ fontSize: "0.9rem", padding: "10px 18px" }}>
+          Compare Operators
+        </Link>
+        <Link href="/helicopter-waitlist" className="button button-secondary" style={{ fontSize: "0.9rem", padding: "10px 18px" }}>
+          Set Ship Availability Alert
+        </Link>
+      </div>
 
       {/* The Block Release Reality */}
       <section
@@ -161,6 +198,21 @@ export default function SoldOutGuidePage() {
           <li>
             <Link href="/helicopter" style={{ color: "var(--ice)", textDecoration: "none", fontWeight: 700 }}>
               &rarr; Compare all 3 Juneau Helicopter Operators (TEMSCO, Coastal, NorthStar)
+            </Link>
+          </li>
+          <li>
+            <Link href="/helicopter-waitlist" style={{ color: "var(--ice)", textDecoration: "none", fontWeight: 700 }}>
+              &rarr; Browse Helicopter Waitlists by Alaska Cruise Ship (All Lines &amp; Berths)
+            </Link>
+          </li>
+          <li>
+            <Link href="/juneau/cruise-excursions-vs-independent" style={{ color: "var(--ice)", textDecoration: "none", fontWeight: 700 }}>
+              &rarr; Cruise Excursion Desk vs. Independent Booking ($80–$150 savings)
+            </Link>
+          </li>
+          <li>
+            <Link href="/best-time-for-glacier-dog-sledding-juneau" style={{ color: "var(--ice)", textDecoration: "none", fontWeight: 700 }}>
+              &rarr; Best Time for Glacier Dog Sledding (Operating Dates &amp; Weather Realities)
             </Link>
           </li>
           <li>

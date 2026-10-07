@@ -6,15 +6,15 @@ export default function SiteFooter() {
       <div className="site-shell" style={{ display: "grid", gap: "32px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "28px" }}>
           {/* Brand & Mission */}
-          <div className="site-footer-copy" style={{ maxWidth: "380px" }}>
+          <div className="site-footer-copy" style={{ maxWidth: "420px" }}>
             <p className="eyebrow" style={{ color: "var(--accent-strong)", margin: "0 0 6px" }}>
-              Juneau Flight Deck • Local Coordination &amp; Viator Partner
+              Juneau Flight Deck • Cruise Excursion Booking &amp; Coordination
             </p>
-            <p style={{ fontSize: "0.95rem", lineHeight: 1.6, margin: "0 0 10px" }}>
-              Practical Juneau shore-day coordination for glacier helicopter flights, waitlist seat monitoring, weather pivots, and cruise return timing.
+            <p style={{ fontSize: "0.92rem", lineHeight: 1.6, margin: "0 0 10px", color: "var(--text)" }}>
+              Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
             </p>
-            <p style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.5, margin: 0 }}>
-              Bookings are completed directly with licensed flight operators or via our official Viator partner checkout, following published operator cancellation terms. Local support provided by Juneau ground staff.
+            <p style={{ fontSize: "0.8rem", color: "var(--muted)", lineHeight: 1.5, margin: 0 }}>
+              Bookings are completed directly with licensed flight and marine operators or via our official Viator partner checkout. Local ground coordination provided in Juneau, Alaska.
             </p>
           </div>
 

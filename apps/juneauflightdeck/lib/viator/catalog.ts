@@ -34,6 +34,9 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     cancellationPolicy: "48h customer cutoff · 100% refund if grounded for weather or ship delays",
     bookHref:
       "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Helicopters&pid=P00058396&mcid=42383&medium=api",
+    directOperatorHref:
+      "https://fareharbor.com/embeds/book/temscoair-juneau/items/214803/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes",
+    directOperatorName: "TEMSCO Direct (FareHarbor)",
     tourType: "glacier_landing",
     isLive: false,
     dataTimestamp: SNAPSHOT_TIMESTAMP,
@@ -61,6 +64,9 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     cancellationPolicy: "48h customer cutoff · 100% refund if grounded for weather or ship delays",
     bookHref:
       "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+dog+sledding&pid=P00058396&mcid=42383&medium=api",
+    directOperatorHref:
+      "https://fareharbor.com/embeds/book/temscoair-juneau/items/214810/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes",
+    directOperatorName: "TEMSCO Direct (FareHarbor)",
     tourType: "dog_sledding",
     isLive: false,
     dataTimestamp: SNAPSHOT_TIMESTAMP,
@@ -88,6 +94,9 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     cancellationPolicy: "7-day customer cutoff · 100% refund if grounded for weather or ship delays",
     bookHref:
       "https://www.viator.com/searchResults/all?text=Juneau+Coastal+Helicopters&pid=P00058396&mcid=42383&medium=api",
+    directOperatorHref:
+      "https://fareharbor.com/embeds/book/coastalhelicopters/items/413056/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes",
+    directOperatorName: "Coastal Direct (FareHarbor)",
     tourType: "glacier_landing",
     isLive: false,
     dataTimestamp: SNAPSHOT_TIMESTAMP,
@@ -115,6 +124,9 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     cancellationPolicy: "48h customer cutoff · 100% refund if grounded for weather or ship delays",
     bookHref:
       "https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Trekking&pid=P00058396&mcid=42383&medium=api",
+    directOperatorHref:
+      "https://fareharbor.com/embeds/book/northstartrekking/items/116035/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes",
+    directOperatorName: "NorthStar Direct (FareHarbor)",
     tourType: "ice_trek",
     isLive: false,
     dataTimestamp: SNAPSHOT_TIMESTAMP,

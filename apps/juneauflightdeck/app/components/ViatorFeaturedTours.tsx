@@ -1051,7 +1051,7 @@ export function TourCard({
           </p>
         )}
 
-        {/* Highlights: Duration & Policy */}
+        {/* Highlights: Duration, Shuttle, & Cancellation Policy */}
         <div
           style={{
             display: "flex",
@@ -1068,43 +1068,47 @@ export function TourCard({
           {product.durationLabel && (
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span>⏱</span>
-              <span>{product.durationLabel} flight &amp; experience</span>
+              <span>{product.durationLabel} flight &amp; experience (Safe dock-return buffer included)</span>
             </div>
           )}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--ice, #9ed9ff)" }}>
+            <span>🚐</span>
+            <span>Port shuttle included from all cruise docks (Franklin, AJ, Marine Park)</span>
+          </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#86efac" }}>
             <span>✓</span>
             <span>{product.cancellationPolicy}</span>
           </div>
         </div>
 
-        {/* Price & Booking Button */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-          }}
-        >
-          <div>
-            <div style={{ fontSize: "0.7rem", textTransform: "uppercase", color: "var(--muted)" }}>
-              {product.isLive ? "From" : "Departure Rates"}
+        {/* Price & Primary Checkout Options */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <div>
+              <div style={{ fontSize: "0.7rem", textTransform: "uppercase", color: "var(--muted)" }}>
+                {product.isLive ? "From" : "Departure Rates"}
+              </div>
+              <div
+                style={{
+                  fontSize: product.priceFrom != null ? "1.15rem" : "0.88rem",
+                  fontWeight: 800,
+                  color: "var(--accent-strong, #ffd596)",
+                  letterSpacing: product.priceFrom != null ? "normal" : "-0.01em",
+                }}
+              >
+                {product.priceFrom != null
+                  ? `${product.currency === "USD" ? "$" : ""}${product.priceFrom}`
+                  : (product.priceLabel || "Rates on request")}
+              </div>
             </div>
-            <div
-              style={{
-                fontSize: product.priceFrom != null ? "1.15rem" : "0.85rem",
-                fontWeight: 800,
-                color: "var(--accent-strong, #ffd596)",
-                letterSpacing: product.priceFrom != null ? "normal" : "-0.01em",
-              }}
-            >
-              {product.priceFrom != null
-                ? `${product.currency === "USD" ? "$" : ""}${product.priceFrom}`
-                : (product.priceLabel || "Rates on request")}
-            </div>
-          </div>
 
-          {product.isLive ? (
             <a
               href={finalBookingUrl}
               target="_blank"
@@ -1115,7 +1119,7 @@ export function TourCard({
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 6,
-                padding: "10px 16px",
+                padding: "10px 18px",
                 borderRadius: "var(--radius-md, 18px)",
                 background: "linear-gradient(135deg, var(--accent, #f0b35b), #df9b3a)",
                 color: "#082134",
@@ -1127,55 +1131,66 @@ export function TourCard({
               }}
             >
               <span>
-                {selectedDate ? `Check ${selectedDate.slice(5)} (${passengerCount}p)` : "Check Live Dates"}
+                {selectedDate
+                  ? `Check ${selectedDate.slice(5)} on Viator`
+                  : (product.isLive ? "Book on Viator" : "Check Viator Dates")}
               </span>
               <span>&rarr;</span>
             </a>
-          ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Link
-                href={`/helicopter-waitlist?tour=${encodeURIComponent(product.productCode)}${selectedDate ? `&date=${encodeURIComponent(selectedDate)}` : ""}`}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 5,
-                  padding: "9px 15px",
-                  borderRadius: "var(--radius-md, 18px)",
-                  background: "linear-gradient(135deg, var(--accent, #f0b35b), #df9b3a)",
-                  color: "#082134",
-                  fontWeight: 800,
-                  fontSize: "0.82rem",
-                  textDecoration: "none",
-                  boxShadow: "0 4px 12px rgba(240, 179, 91, 0.25)",
-                }}
-              >
-                <span>Get Availability Alert</span>
-                <span>&rarr;</span>
-              </Link>
+          </div>
+
+          {/* Secondary Direct Operator Booking & Availability Watch */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 8,
+              paddingTop: 8,
+              borderTop: "1px dashed var(--line, rgba(151, 211, 255, 0.15))",
+            }}
+          >
+            {product.directOperatorHref ? (
               <a
-                href={finalBookingUrl}
+                href={product.directOperatorHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                title={`Search ${product.supplierName || product.title} on Viator`}
-                aria-label={`Search ${product.supplierName || product.title} listings on Viator`}
+                title={`Book directly with ${product.supplierName || 'operator'} on FareHarbor`}
                 style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  padding: "8px 12px",
-                  borderRadius: "var(--radius-md, 18px)",
-                  background: "rgba(151, 211, 255, 0.08)",
-                  border: "1px solid rgba(151, 211, 255, 0.2)",
+                  fontSize: "0.76rem",
                   color: "var(--ice, #9ed9ff)",
-                  fontSize: "0.78rem",
                   fontWeight: 700,
                   textDecoration: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
                 }}
               >
-                {product.supplierName ? `${product.supplierName.split(" ")[0]} on Viator ↗` : "Viator ↗"}
+                <span>🏢 {product.directOperatorName || "Direct Operator (FareHarbor)"} ↗</span>
               </a>
-            </div>
-          )}
+            ) : (
+              <span style={{ fontSize: "0.76rem", color: "var(--muted)" }}>
+                Verified Part 135 Operator
+              </span>
+            )}
+
+            <Link
+              href={`/helicopter-waitlist?tour=${encodeURIComponent(product.productCode)}${selectedDate ? `&date=${encodeURIComponent(selectedDate)}` : ""}`}
+              style={{
+                fontSize: "0.76rem",
+                color: "var(--accent, #f0b35b)",
+                fontWeight: 700,
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                marginLeft: "auto",
+              }}
+            >
+              <span>🔔 Seat Drop Alert &rarr;</span>
+            </Link>
+          </div>
         </div>
       </div>
     </article>

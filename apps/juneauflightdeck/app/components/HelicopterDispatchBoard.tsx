@@ -29,13 +29,13 @@ export default function HelicopterDispatchBoard({
 
   const defaultHeadline = isSkagway
     ? 'Match Your Skagway Glacier Flight to Your Ship Schedule'
-    : 'Same helicopter tour. Lower price. And it comes with a backup plan.';
+    : 'Compare & Book Juneau Helicopter & Glacier Excursions';
 
   const defaultSubhead = isSkagway
     ? 'Compare Skagway glacier helicopter operators, review ship-safe return buffers, and plan your weather backup.'
-    : 'Fly with the same trusted helicopter companies your cruise line books—TEMSCO, Coastal, and NorthStar—with local help around your booking. Sold out? Join our availability watch. Weather cancels your flight? We’ll help you find an available alternative.';
+    : 'Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.';
 
-  const defaultPrimaryCta = isSkagway ? 'Compare Skagway Flights' : 'Compare Helicopter Tours';
+  const defaultPrimaryCta = isSkagway ? 'Compare Skagway Flights' : 'Find Your Tour';
 
   const finalHeadline = headline || defaultHeadline;
   const finalSubhead = subhead || defaultSubhead;
@@ -93,6 +93,22 @@ export default function HelicopterDispatchBoard({
         <h1>{finalHeadline}</h1>
         <p className="jfd-concise-hero-subhead">{finalSubhead}</p>
 
+        {/* Clear Action Buttons */}
+        <div className="jfd-hero-actions-responsive">
+          <a
+            href="#tours"
+            className="jfd-hero-btn-primary"
+          >
+            {finalPrimaryCta} →
+          </a>
+          <Link
+            href="/helicopter-waitlist"
+            className="jfd-hero-btn-secondary"
+          >
+            Sold-Out Availability Alerts
+          </Link>
+        </div>
+
         {showArrivalHero && (
           <div
             style={{
@@ -142,15 +158,17 @@ export default function HelicopterDispatchBoard({
       </section>
 
       {/* Featured Flights & Real-Time Filter Toolbar */}
-      <ViatorFeaturedTours
-        showHeader={false}
-        headline={isSkagway ? "Skagway Glacier Helicopter Options" : "Juneau Glacier Helicopter Flights & Landings"}
-        subhead={
-          isSkagway
-            ? "Compare live helicopter tours in Skagway with Part 135 safety standards and free 24-hour cancellation."
-            : "Explore Juneau glacier landings, dog sledding camps, and ice treks. Real-time availability confirmed in the official Viator calendar."
-        }
-      />
+      <div id="tours">
+        <ViatorFeaturedTours
+          showHeader={false}
+          headline={isSkagway ? "Skagway Glacier Helicopter Options" : "Juneau Glacier Helicopter Flights & Landings"}
+          subhead={
+            isSkagway
+              ? "Compare live helicopter tours in Skagway with Part 135 safety standards and free 24-hour cancellation."
+              : "Explore Juneau glacier landings, dog sledding camps, and ice treks. Real-time availability confirmed in the official Viator calendar."
+          }
+        />
+      </div>
 
       {/* 2. Core Service Protections */}
       <section className="jfd-cards-section" aria-label="Core Services">
@@ -279,14 +297,26 @@ export default function HelicopterDispatchBoard({
                 <td style={{ color: 'var(--text)' }}>Mendenhall, Herbert</td>
                 <td style={{ color: 'var(--muted)' }}>Near JNU Airport (Shuttle provided)</td>
                 <td>
-                  <Link
-                    href="/helicopter"
-                    className="button button-card"
-                    style={{ whiteSpace: 'nowrap' }}
-                    aria-label="View Flights - TEMSCO Helicopters"
-                  >
-                    View Flights
-                  </Link>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
+                    <a
+                      href="#tours"
+                      className="button button-primary"
+                      style={{ whiteSpace: 'nowrap', fontSize: '0.82rem', padding: '6px 12px' }}
+                      aria-label="View TEMSCO Helicopter Flights"
+                    >
+                      View Flights &darr;
+                    </a>
+                    <a
+                      href="https://fareharbor.com/embeds/book/temscoair-juneau/items/214803/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="button button-card"
+                      style={{ whiteSpace: 'nowrap', fontSize: '0.76rem', padding: '4px 8px' }}
+                      aria-label="Book TEMSCO Direct on FareHarbor"
+                    >
+                      TEMSCO Direct ↗
+                    </a>
+                  </div>
                 </td>
               </tr>
               <tr>
@@ -329,14 +359,26 @@ export default function HelicopterDispatchBoard({
                 <td style={{ color: 'var(--text)' }}>Herbert, Taku Icefield</td>
                 <td style={{ color: 'var(--muted)' }}>Juneau North Airport Ramp</td>
                 <td>
-                  <Link
-                    href="/juneau/helicopter"
-                    className="button button-card"
-                    style={{ whiteSpace: 'nowrap' }}
-                    aria-label="View Flights - Coastal Helicopters"
-                  >
-                    View Flights
-                  </Link>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
+                    <a
+                      href="#tours"
+                      className="button button-primary"
+                      style={{ whiteSpace: 'nowrap', fontSize: '0.82rem', padding: '6px 12px' }}
+                      aria-label="View Coastal Helicopter Flights"
+                    >
+                      View Flights &darr;
+                    </a>
+                    <a
+                      href="https://fareharbor.com/embeds/book/coastalhelicopters/items/413056/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="button button-card"
+                      style={{ whiteSpace: 'nowrap', fontSize: '0.76rem', padding: '4px 8px' }}
+                      aria-label="Book Coastal Direct on FareHarbor"
+                    >
+                      Coastal Direct ↗
+                    </a>
+                  </div>
                 </td>
               </tr>
               <tr>
@@ -379,14 +421,26 @@ export default function HelicopterDispatchBoard({
                 <td style={{ color: 'var(--text)' }}>Mendenhall Glacier High Ice</td>
                 <td style={{ color: 'var(--muted)' }}>Juneau Industrial Heliport</td>
                 <td>
-                  <Link
-                    href="/juneau-dogsled-helicopter-tours"
-                    className="button button-card"
-                    style={{ whiteSpace: 'nowrap' }}
-                    aria-label="View Treks - NorthStar Trekking"
-                  >
-                    View Treks
-                  </Link>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
+                    <a
+                      href="#tours"
+                      className="button button-primary"
+                      style={{ whiteSpace: 'nowrap', fontSize: '0.82rem', padding: '6px 12px' }}
+                      aria-label="View NorthStar Glacier Treks"
+                    >
+                      View Treks &darr;
+                    </a>
+                    <a
+                      href="https://fareharbor.com/embeds/book/northstartrekking/items/116035/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="button button-card"
+                      style={{ whiteSpace: 'nowrap', fontSize: '0.76rem', padding: '4px 8px' }}
+                      aria-label="Book NorthStar Direct on FareHarbor"
+                    >
+                      NorthStar Direct ↗
+                    </a>
+                  </div>
                 </td>
               </tr>
             </tbody>

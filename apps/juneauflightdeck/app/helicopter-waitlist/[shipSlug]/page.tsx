@@ -72,12 +72,32 @@ export default async function ShipWaitlistPage({ params }: ShipWaitlistPageProps
           </div>
 
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-3">
-            {ship.shipName} Helicopter Tour Waitlist &amp; Seat Scanner
+            {ship.shipName} Juneau Helicopter Excursions &amp; Availability Alerts
           </h1>
-          <p className="text-base md:text-lg text-slate-300 leading-relaxed">
-            Sold out on the {ship.shipName} excursion app? Our automated scanner sweeps local operators (TEMSCO, Coastal, NorthStar) daily at 10:00 AM. 
-            All tours carry flexible operator cancellation terms (24–48 hours prior) and 100% full refunds if flights are canceled due to weather.
+          <p className="text-base md:text-lg text-slate-300 leading-relaxed mb-4">
+            Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
           </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
+            <Link
+              href="/helicopter"
+              className="inline-flex items-center px-5 py-2.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-sm transition-colors"
+            >
+              Compare &amp; Book Open Tours →
+            </Link>
+            <Link
+              href="/temsco-vs-coastal-vs-northstar-juneau"
+              className="inline-flex items-center px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm border border-slate-700 transition-colors"
+            >
+              Compare Operators
+            </Link>
+            <a
+              href="#waitlist-form"
+              className="inline-flex items-center px-4 py-2.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-sky-300 font-semibold text-sm border border-sky-500/30 transition-colors"
+            >
+              Join 10 AM Seat Watch
+            </a>
+          </div>
         </div>
 
         {/* Live Urgency Badge */}
@@ -139,7 +159,7 @@ export default async function ShipWaitlistPage({ params }: ShipWaitlistPageProps
         )}
 
         {/* The Intake Form (Pre-populated to this ship) */}
-        <div className="mb-12">
+        <div id="waitlist-form" className="mb-12">
           <HelicopterWaitlistForm defaultPort="juneau" />
         </div>
 

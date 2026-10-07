@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "About | Juneau Flight Deck",
+  title: "About Juneau Flight Deck | Alaska Cruise Excursions & Coordination",
   description:
-    "Juneau Flight Deck combines online booking with people who know how to work directly with the local helicopter operators.",
+    "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons, port timing, sold-out alerts, and weather alternatives.",
   alternates: { canonical: "https://juneauflightdeck.com/about" },
 };
 
@@ -14,63 +14,99 @@ export default function AboutPage() {
       <section className="static-page-card">
         <p className="eyebrow">About Juneau Flight Deck</p>
         <h1 className="static-page-title" style={{ lineHeight: 1.25, marginBottom: "18px" }}>
-          Juneau Flight Deck combines online booking with people who know how to work directly with the local operators.
+          Compare &amp; Book Juneau Cruise Excursions with Confidence
         </h1>
-        <p className="chooser-trust-line" style={{ fontSize: "1.05rem", lineHeight: 1.6, marginBottom: "20px" }}>
-          You book tours through the same three helicopter companies everyone else uses. Whether booking directly with the operators or through our official Viator partner checkout, you get direct inventory access and standard operator terms; the cruise ship has its own allocated seats.
+        <p className="chooser-trust-line" style={{ fontSize: "1.1rem", lineHeight: 1.6, marginBottom: "24px", color: "var(--ice)" }}>
+          Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
         </p>
 
-        <div
-          style={{
-            background: "rgba(3, 14, 23, 0.6)",
-            border: "1px solid var(--line-strong)",
-            borderRadius: "var(--radius-md)",
-            padding: "24px 22px",
-            margin: "24px 0",
-          }}
-        >
-          <h2 style={{ fontSize: "1.25rem", color: "var(--accent)", margin: "0 0 12px", fontWeight: 800 }}>
-            Our advantage is what we do beyond that inventory.
-          </h2>
-          <p style={{ lineHeight: 1.65, color: "var(--text)", margin: "0 0 16px", fontSize: "0.98rem" }}>
-            We live here, do this for a living, know the operators and local conditions, and know when a phone call might uncover an option the website doesn’t show—such as asking whether a sixth passenger seat can be released for a lighter group based on aircraft weight and balance.
-          </p>
-
-          <ul className="static-page-bullets" style={{ margin: "16px 0" }}>
-            <li>
-              <strong>Sold-Out Date Monitoring:</strong> For sold-out dates, our automated scanner sweeps operator schedules daily at 10:00 AM as cancellation desks process changes, alerting you to matching openings.
-            </li>
-            <li>
-              <strong>Pre-Booking Advice:</strong> We provide honest advice on flight styles, mountain pass microclimates, and ship-safe docking buffers.
-            </li>
-            <li>
-              <strong>Cancellation &amp; Weather Support:</strong> For anyone booking through us, we provide advice beforehand and actively help find another activity (such as whale watching) if your flight is canceled.
-            </li>
-          </ul>
+        {/* 4 Operational Pillars */}
+        <div style={{ display: "grid", gap: "20px", margin: "28px 0" }}>
+          <div
+            style={{
+              background: "rgba(3, 14, 23, 0.6)",
+              border: "1px solid var(--line-strong)",
+              borderRadius: "var(--radius-md)",
+              padding: "20px 22px",
+            }}
+          >
+            <h2 style={{ fontSize: "1.15rem", color: "var(--accent)", margin: "0 0 8px", fontWeight: 800 }}>
+              1. What We Provide
+            </h2>
+            <p style={{ lineHeight: 1.6, color: "var(--text)", margin: 0, fontSize: "0.95rem" }}>
+              We provide side-by-side operator comparisons across TEMSCO, Coastal, and NorthStar, ship-safe port timing calculations (with conservative 90 to 120-minute safety buffers), daily 10:00 AM availability alerts when sold-out dates reopen, and ground assistance if weather impacts your flight.
+            </p>
+          </div>
 
           <div
             style={{
-              marginTop: "20px",
-              paddingTop: "14px",
-              borderTop: "1px solid var(--line)",
-              fontWeight: 700,
-              color: "var(--accent-strong)",
+              background: "rgba(3, 14, 23, 0.6)",
+              border: "1px solid var(--line-strong)",
+              borderRadius: "var(--radius-md)",
+              padding: "20px 22px",
             }}
           >
-            Customers are booking both the tour and our local expertise, relationships, and follow-through.
+            <h2 style={{ fontSize: "1.15rem", color: "var(--accent)", margin: "0 0 8px", fontWeight: 800 }}>
+              2. Who Operates Your Tour
+            </h2>
+            <p style={{ lineHeight: 1.6, color: "var(--text)", margin: 0, fontSize: "0.95rem" }}>
+              All flights, glacier landings, and dog sledding camps are operated directly by Juneau&apos;s licensed FAA Part 135 commercial helicopter operators: <strong>TEMSCO Helicopters</strong>, <strong>Coastal Helicopters</strong>, and <strong>NorthStar Trekking</strong>. Marine wildlife tours are operated by licensed local Auke Bay whale watching captains.
+            </p>
+          </div>
+
+          <div
+            style={{
+              background: "rgba(3, 14, 23, 0.6)",
+              border: "1px solid var(--line-strong)",
+              borderRadius: "var(--radius-md)",
+              padding: "20px 22px",
+            }}
+          >
+            <h2 style={{ fontSize: "1.15rem", color: "var(--accent)", margin: "0 0 8px", fontWeight: 800 }}>
+              3. Who Handles Payment &amp; Policies
+            </h2>
+            <p style={{ lineHeight: 1.6, color: "var(--text)", margin: 0, fontSize: "0.95rem" }}>
+              Tours are booked at published operator and partner rates via FareHarbor or our official Viator partner checkout (powered by Tripadvisor). Juneau Flight Deck does not add separate platform booking fees or hold passenger funds; transactions, ticket delivery, and refunds are governed directly by the booking provider&apos;s and operating carrier&apos;s published terms.
+            </p>
+          </div>
+
+          <div
+            style={{
+              background: "rgba(3, 14, 23, 0.6)",
+              border: "1px solid var(--line-strong)",
+              borderRadius: "var(--radius-md)",
+              padding: "20px 22px",
+            }}
+          >
+            <h2 style={{ fontSize: "1.15rem", color: "var(--accent)", margin: "0 0 8px", fontWeight: 800 }}>
+              4. How Availability Alerts &amp; Weather Alternatives Work
+            </h2>
+            <p style={{ lineHeight: 1.6, color: "var(--text)", margin: "0 0 10px", fontSize: "0.95rem" }}>
+              <strong>Sold-Out Alerts:</strong> When cruise line excursion desks show sold out, our automated sweep engine monitors operator schedules daily at 10:00 AM AKDT as cancellation desks process adjustments and unbooked wholesale allocations are returned to operator inventory. If matching seats open, we send direct booking links so you can reserve under standard provider terms. (Openings depend on passenger cancellations and operator capacity; availability is not guaranteed on every sailing date.)
+            </p>
+            <p style={{ lineHeight: 1.6, color: "var(--text)", margin: 0, fontSize: "0.95rem" }}>
+              <strong>Weather Alternatives:</strong> Southeast Alaska glacier flights operate strictly under FAA Visual Flight Rules (VFR). If cloud ceilings or dense fog close mountain passes, full refunds are issued directly by the booking provider and operating carrier under their published weather policies. Our local team assists by identifying available alternatives—such as Auke Bay whale watching charters or land-based glacier tours—which operate subject to boat capacity and require separate booking.
+            </p>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "24px" }}>
-          <Link href="/" className="primary-cta">
-            Compare Juneau Flights
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "28px" }}>
+          <Link href="/helicopter" className="primary-cta">
+            Find Your Tour
+          </Link>
+          <Link
+            href="/temsco-vs-coastal-vs-northstar-juneau"
+            className="primary-cta"
+            style={{ background: "transparent", border: "1px solid var(--line)", color: "var(--text)" }}
+          >
+            Compare Operators
           </Link>
           <Link
             href="/helicopter-waitlist"
             className="primary-cta"
             style={{ background: "transparent", border: "1px solid var(--line)", color: "var(--text)" }}
           >
-            Join Availability Watch
+            Sold-Out Availability Alerts
           </Link>
         </div>
       </section>

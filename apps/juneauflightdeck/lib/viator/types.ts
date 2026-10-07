@@ -18,6 +18,8 @@ export interface ViatorJuneauProduct {
   badges: string[];
   cancellationPolicy: string;
   bookHref: string;
+  directOperatorHref?: string;
+  directOperatorName?: string;
   tourType: "glacier_landing" | "dog_sledding" | "flightseeing" | "ice_trek" | "combo";
   isLive: boolean;
   dataTimestamp: string;

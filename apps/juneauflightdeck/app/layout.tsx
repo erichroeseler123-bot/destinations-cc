@@ -12,20 +12,20 @@ export const metadata: Metadata = {
     template: "%s | Juneau Flight Deck",
   },
   description:
-    "Official Viator partner combining direct booking with local ground coordination for Juneau & Skagway helicopter glacier tours, sold-out seat monitoring, and weather backups.",
+    "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Juneau Flight Deck | Alaska Helicopter & Glacier Tours",
+    title: "Juneau Flight Deck | Alaska Cruise Excursions & Helicopter Tours",
     description:
-      "Official Viator partner combining direct booking with local ground coordination for Alaska glacier flights, sold-out seat monitoring, and weather backups.",
+      "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans.",
     url: "https://juneauflightdeck.com/",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Juneau Flight Deck | Alaska Helicopter & Glacier Tours",
+    title: "Juneau Flight Deck | Alaska Cruise Excursions & Helicopter Tours",
     description:
-      "Official Viator partner combining direct booking with local ground coordination for Alaska glacier flights, sold-out seat monitoring, and weather backups.",
+      "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans.",
   },
 };
 
@@ -38,7 +38,7 @@ const siteJsonLd = {
       name: "Juneau Flight Deck",
       url: "https://juneauflightdeck.com",
       description:
-        "Local Juneau shore excursion coordination service and official Viator partner. Combining online booking with local ground dispatch coordination, sold-out seat monitoring, and weather backups.",
+        "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.",
       address: {
         "@type": "PostalAddress",
         addressLocality: "Juneau",
@@ -57,7 +57,7 @@ const siteJsonLd = {
       name: "Juneau Flight Deck",
       url: "https://juneauflightdeck.com",
       description:
-        "Alaska glacier helicopter tour booking, sold-out availability watch, and weather backup coordination.",
+        "Compare and book Alaska cruise excursions: Juneau helicopter glacier tours, dog sledding, whale watching backups, and sold-out availability alerts.",
       publisher: { "@id": "https://juneauflightdeck.com/#organization" },
     },
     {
@@ -75,10 +75,10 @@ const siteJsonLd = {
     {
       "@type": "Service",
       "@id": "https://juneauflightdeck.com/#service-helicopter",
-      name: "Juneau Helicopter Tour Booking & Availability Watch",
+      name: "Juneau Helicopter & Shore Excursion Booking & Comparison",
       url: "https://juneauflightdeck.com/helicopter",
       description:
-        "Direct booking for TEMSCO, Coastal, and NorthStar glacier helicopter tours, automated waitlist seat monitoring, and weather contingency support.",
+        "Compare and book Juneau and Skagway helicopter glacier tours, dog sledding, and whale-watching excursions with port timing guidance, sold-out alerts, and weather alternatives.",
       provider: { "@id": "https://juneauflightdeck.com/#organization" },
       areaServed: [
         { "@type": "City", name: "Juneau" },

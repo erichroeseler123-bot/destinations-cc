@@ -21,19 +21,26 @@ export function buildShipWaitlistMetadata({
       ? "5-Glacier Scenic Flight"
       : "Helicopter Glacier Tour";
 
-  const title = `${ship.shipName} Juneau ${tourName} Waitlist & 24/7 Seat Scanner | ${ship.typicalScheduledBerth.split("(")[0].trim()}`;
+  const title = `${ship.shipName} Juneau Helicopter Tours & Excursions | Compare, Book & Availability Alerts`;
   
-  const description = `Helicopter tour sold out on ${ship.shipName} (${ship.cruiseLine})? Scheduled at ${ship.typicalScheduledBerth} in Juneau (${ship.dockHours}). Our automated scanner monitors operator cancellation drops with flexible operator-backed refund terms.`;
+  const description = `Compare and book Juneau helicopter, glacier, and dog-sledding excursions for ${ship.shipName} (${ship.cruiseLine}). Includes port timing for ${ship.typicalScheduledBerth.split("(")[0].trim()}, operator comparisons, and sold-out availability alerts.`;
 
   const canonicalUrl = `https://juneauflightdeck.com/helicopter-waitlist/${ship.slug}`;
 
   return {
     title,
     description,
-    // Explicitly prevent indexing on programmatic ship waitlist pages (draft state pending live itinerary verification)
     robots: {
-      index: false,
-      follow: false,
+      index: true,
+      follow: true,
+      nocache: false,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
     alternates: {
       canonical: canonicalUrl,

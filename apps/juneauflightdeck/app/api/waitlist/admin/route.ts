@@ -124,7 +124,10 @@ export async function GET(request: Request) {
         resendApiKey && resendApiKey.startsWith("re_") && resendApiKey.length > 20
       );
       const to = url.searchParams.get("to") || process.env.DEPLOY_TEST_EMAIL_TO || "erichroeseler123@gmail.com";
-      const from = process.env.DEPLOY_TEST_EMAIL_FROM || "alerts@juneauflightdeck.com";
+      const from =
+        url.searchParams.get("from") ||
+        process.env.DEPLOY_TEST_EMAIL_FROM ||
+        "alerts@juneauflightdeck.com";
 
       if (!isKeyPresent) {
         return NextResponse.json(
@@ -192,7 +195,31 @@ export async function GET(request: Request) {
       }
     }
 
-    // 3. Purge marked test entries from database
+    // 2b. Resend Domains Status & Verify Check
+    if (action === "resend_domains") {
+      const resendApiKey = process.env.RESEND_API_KEY || process.env.DCC_RESEND_API_KEY;
+      if (!resendApiKey) {
+        return NextResponse.json({ ok: false, error: "RESEND_API_KEY missing" }, { status: 400 });
+      }
+      try {
+        const { Resend } = await import("resend");
+        const resend = new Resend(resendApiKey);
+        const domainId = url.searchParams.get("id");
+        if (domainId && url.searchParams.get("trigger_verify") === "true") {
+          const verifyRes = await resend.domains.verify(domainId);
+          return NextResponse.json({ ok: true, action: "verify", result: verifyRes });
+        }
+        if (domainId) {
+          const domainRes = await resend.domains.get(domainId);
+          return NextResponse.json({ ok: true, action: "get", result: domainRes });
+        }
+        const listRes = await resend.domains.list();
+        return NextResponse.json({ ok: true, action: "list", result: listRes });
+      } catch (err: any) {
+        return NextResponse.json({ ok: false, error: err?.message || String(err) }, { status: 500 });
+      }
+    }
+
     if (action === "purge_tests") {
       const purgeResult = await purgeTestWaitlistEntries();
       return NextResponse.json({
