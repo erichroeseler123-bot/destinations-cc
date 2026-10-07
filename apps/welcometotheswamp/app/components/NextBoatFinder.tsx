@@ -531,10 +531,13 @@ export default function NextBoatFinder() {
                   </p>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <span style={{ fontSize: "0.8rem", color: "#a8a29e" }}>Total for Group ({searchResponse.totalGroupSize}):</span>
+                  <span style={{ fontSize: "0.8rem", color: "#a8a29e" }}>Base Fare ({searchResponse.totalGroupSize} travelers):</span>
                   <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "#10b981" }}>
                     ${searchResponse.winningDeparture.totalPrice}
                   </div>
+                  <span style={{ display: "block", fontSize: "0.72rem", color: "#a8a29e", marginTop: "2px" }}>
+                    ${searchResponse.winningDeparture.pricePerAdult}/person base • + 3% card fee & taxes at checkout
+                  </span>
                 </div>
               </div>
 
@@ -542,10 +545,12 @@ export default function NextBoatFinder() {
               <div style={{ marginTop: "1rem", padding: "0.75rem", background: "#1c1917", borderRadius: "0.5rem", fontSize: "0.85rem", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0.75rem" }}>
                 {searchResponse.winningDeparture.transportation === "hotel_pickup" && searchResponse.winningDeparture.pickupWindowDisplay ? (
                   <div>
-                    <strong style={{ color: "#d6d3d1" }}>Estimated Hotel Pickup Window:</strong>
+                    <strong style={{ color: "#d6d3d1" }}>Hotel Pickup Scheduled:</strong>
                     <p style={{ margin: "2px 0 0 0", color: "#fbbf24" }}>
                       {searchResponse.winningDeparture.pickupWindowDisplay}
-                      <span style={{ display: "block", fontSize: "0.75rem", color: "#a8a29e" }}>Exact time confirmed by operator upon booking</span>
+                      <span style={{ display: "block", fontSize: "0.75rem", color: "#a8a29e" }}>
+                        Operator policy: pickup is 1 hr 15 min prior to tour. Select your hotel at checkout.
+                      </span>
                     </p>
                   </div>
                 ) : (
@@ -617,7 +622,7 @@ export default function NextBoatFinder() {
                       </span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                      <span style={{ color: "#10b981", fontWeight: 700 }}>${dep.totalPrice}</span>
+                      <span style={{ color: "#10b981", fontWeight: 700 }}>${dep.totalPrice} base</span>
                       <a
                         href={dep.bookingUrl}
                         target={dep.bookingUrl.includes("welcometotheswamp.com") ? undefined : "_blank"}

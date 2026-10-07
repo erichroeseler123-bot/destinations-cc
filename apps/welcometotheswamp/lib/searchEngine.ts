@@ -241,16 +241,11 @@ function computeDockArrivalTime(departureTime: string, leadMinutes: number): str
 function computePickupWindow(departureTime: string, leadMinutes: number): string {
   const [h, m] = departureTime.split(":").map(Number);
   const total = h * 60 + m - leadMinutes;
-  const startTotal = total - 15;
-  const startH = Math.floor(startTotal / 60);
-  const startM = startTotal % 60;
-  const endH = Math.floor(total / 60);
-  const endM = total % 60;
+  const targetH = Math.floor(total / 60);
+  const targetM = total % 60;
+  const targetStr = `${targetH.toString().padStart(2, "0")}:${targetM.toString().padStart(2, "0")}`;
 
-  const startStr = `${startH.toString().padStart(2, "0")}:${startM.toString().padStart(2, "0")}`;
-  const endStr = `${endH.toString().padStart(2, "0")}:${endM.toString().padStart(2, "0")}`;
-
-  return `${formatTimeNewOrleans(startStr)} - ${formatTimeNewOrleans(endStr)}`;
+  return `${formatTimeNewOrleans(targetStr)} (1 hr 15 min prior to tour)`;
 }
 
 /**

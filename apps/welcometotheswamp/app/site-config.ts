@@ -23,9 +23,8 @@ export const SITE_CONFIG = {
       id: "ragincajun-airboat",
       companyShortname: "ragincajuntours",
       itemId: "228524",
-      flowId: "940162",
-      title: "Airboat Tour",
-      description: "Fast, open-air swamp ride for travelers who want the most action and wind-in-your-face energy.",
+      title: "Standard Airboat Tour (Up to 10 Passengers)",
+      description: "Fast, open-air swamp ride for travelers who want the most action and wind-in-your-face energy. Small group up to 10 passengers.",
       eyebrow: "Speed-first option",
       type: "airboat"
     },
