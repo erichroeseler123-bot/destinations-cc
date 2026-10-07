@@ -35,7 +35,7 @@ const GLACIER_DATA: Record<string, GlacierPoint> = {
       "NorthStar Level 1 Ice Trek: From $549 published base rate (2 hrs on ice · Ages 12+)",
     ],
     note: "💡 Most treks land on Mendenhall, but landing locations adjust with weather and glacier conditions. Taxes and operator fees calculated at checkout.",
-    primaryActionText: "Check Mendenhall Walk on Viator →",
+    primaryActionText: "Search on Viator →",
     primaryActionHref: "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Helicopters&pid=P00058396&mcid=42383&medium=api",
   },
   herbert: {

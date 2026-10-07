@@ -416,7 +416,7 @@ export default function OperatorComparisonPage() {
                 className="button button-primary"
                 style={{ fontSize: "0.78rem", padding: "6px 10px" }}
               >
-                Viator →
+                Search on Viator →
               </a>
               <a
                 href="https://fareharbor.com/embeds/book/temscoair-juneau/items/214810/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
@@ -450,7 +450,7 @@ export default function OperatorComparisonPage() {
                 className="button button-primary"
                 style={{ fontSize: "0.78rem", padding: "6px 10px" }}
               >
-                Viator →
+                Search on Viator →
               </a>
               <a
                 href="https://coastalhelicopters.com/tours/dog-sled-tours/"
@@ -484,7 +484,7 @@ export default function OperatorComparisonPage() {
                 className="button button-primary"
                 style={{ fontSize: "0.78rem", padding: "6px 10px" }}
               >
-                Viator →
+                Search on Viator →
               </a>
               <a
                 href="https://fareharbor.com/embeds/book/northstartrekking/items/115991/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
@@ -715,7 +715,7 @@ export default function OperatorComparisonPage() {
                 className="button button-primary"
                 style={{ fontSize: "0.85rem", padding: "8px 16px" }}
               >
-                Check Mendenhall Walk on Viator →
+                Search on Viator →
               </a>
               <a
                 href="https://fareharbor.com/embeds/book/temscoair-juneau/items/214803/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
@@ -753,7 +753,7 @@ export default function OperatorComparisonPage() {
                 className="button button-primary"
                 style={{ fontSize: "0.85rem", padding: "8px 16px" }}
               >
-                Check Coastal on Viator →
+                Search on Viator →
               </a>
               <a
                 href="https://fareharbor.com/embeds/book/coastalhelicopters/items/413056/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
