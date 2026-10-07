@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import IcefieldGlacierMap from "../components/IcefieldGlacierMap";
 
 export const metadata: Metadata = {
   title: "TEMSCO vs Coastal vs NorthStar: Juneau Helicopter Tour Comparison",
@@ -111,6 +112,7 @@ export default function OperatorComparisonPage() {
       {/* Navigation Quick Bar */}
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "36px", padding: "14px 18px", background: "rgba(15, 23, 42, 0.6)", borderRadius: "var(--radius-md, 12px)", border: "1px solid var(--line, #334155)" }}>
         <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--accent, #f0b35b)", alignSelf: "center", marginRight: 6 }}>Jump to:</span>
+        <a href="#icefield-map" style={{ fontSize: "0.85rem", color: "var(--accent, #f0b35b)", textDecoration: "none", padding: "4px 10px", background: "rgba(240, 179, 91, 0.12)", borderRadius: 6, fontWeight: 700 }}>🗺️ Icefield &amp; Glacier Map</a>
         <a href="#effort-comparison" style={{ fontSize: "0.85rem", color: "var(--ice, #e0f2fe)", textDecoration: "none", padding: "4px 10px", background: "rgba(255,255,255,0.06)", borderRadius: 6 }}>1. Walk vs. Trek</a>
         <a href="#dog-sledding-options" style={{ fontSize: "0.85rem", color: "var(--ice, #e0f2fe)", textDecoration: "none", padding: "4px 10px", background: "rgba(255,255,255,0.06)", borderRadius: 6 }}>2. Dog Sledding</a>
         <a href="#pricing-inclusions" style={{ fontSize: "0.85rem", color: "var(--ice, #e0f2fe)", textDecoration: "none", padding: "4px 10px", background: "rgba(255,255,255,0.06)", borderRadius: 6 }}>3. Prices &amp; Inclusions</a>
@@ -118,6 +120,11 @@ export default function OperatorComparisonPage() {
         <a href="#cancellation-weather" style={{ fontSize: "0.85rem", color: "var(--ice, #e0f2fe)", textDecoration: "none", padding: "4px 10px", background: "rgba(255,255,255,0.06)", borderRadius: 6 }}>5. Weather &amp; Refunds</a>
         <a href="#recommendations" style={{ fontSize: "0.85rem", color: "var(--accent, #f0b35b)", fontWeight: 700, textDecoration: "none", padding: "4px 10px", background: "rgba(240, 179, 91, 0.15)", borderRadius: 6 }}>Top Recommendations ↓</a>
       </div>
+
+      {/* INTERACTIVE ICEFIELD & GLACIER MAP */}
+      <section id="icefield-map">
+        <IcefieldGlacierMap />
+      </section>
 
       {/* MASTER SPECIFIC TOUR COMPARISON TABLE */}
       <section style={{ marginBottom: "48px" }}>
