@@ -16,9 +16,9 @@ const siteJsonLd = buildNetworkEntityGraph({
   description: SITE_CONFIG.mission,
   relationshipToDcc: "parentOrganization",
   service: {
-    name: "New Orleans swamp tour decision support",
+    name: "Next available New Orleans airboat swamp tour dispatch",
     description:
-      "A focused decision surface that narrows New Orleans swamp tour options before travelers move into a booking fit.",
+      "Real-time dispatch engine monitoring live airboat departures across New Orleans swamp operators with French Quarter hotel pickup.",
     areaServed: [
       { "@type": "City", name: "New Orleans" },
       { "@type": "AdministrativeArea", name: "Louisiana" },
@@ -27,14 +27,14 @@ const siteJsonLd = buildNetworkEntityGraph({
 });
 
 export const metadata: Metadata = {
-  title: "Welcome to the Swamp",
+  title: "Next Available Airboat Swamp Tours in New Orleans | Welcome to the Swamp",
   description:
-    "Decision-first guidance for choosing the right swamp tour near New Orleans right now without reopening the whole market.",
+    "Looking for a New Orleans swamp tour? Skip sold-out boats. Check today's NEXT AVAILABLE AIRBOAT departures with French Quarter hotel pickup. Live seat availability updated daily.",
   alternates: { canonical: `${SITE_CONFIG.url}/` },
   openGraph: {
-    title: "Welcome to the Swamp",
+    title: "Next Available Airboat Swamp Tours in New Orleans | Live Departures",
     description:
-      "Fast decision-first guidance on choosing the right swamp tour from New Orleans right now before you move into booking.",
+      "Looking for a New Orleans swamp tour? Skip sold-out boats. Check today's next open departures with hotel pickup.",
     url: `${SITE_CONFIG.url}/`,
     type: "website",
   },

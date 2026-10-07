@@ -17,10 +17,15 @@ export function GET() {
         id: "welcome-to-the-swamp",
         name: SITE_CONFIG.name,
         url: SITE_CONFIG.url,
-        type: "swamp_tour_discovery",
+        type: "swamp_tour_dispatch_and_discovery",
         description: SITE_CONFIG.mission,
       },
-      authority: ["swamp_tour_discovery", "new_orleans_swamp_experience_context", "published_decision_guides"],
+      authority: [
+        "next_available_airboat_dispatch",
+        "swamp_tour_discovery",
+        "new_orleans_swamp_experience_context",
+        "published_decision_guides",
+      ],
       service_area: {
         dcc_id: "dcc:destination:new-orleans",
         city: "New Orleans",

@@ -21,31 +21,33 @@ export const swampStorefrontConfig: NetworkCommercialPageConfig = {
   id: "wts-home",
   path: "/",
   metadata: {
-    title: "Welcome to the Swamp | New Orleans Swamp Tours",
+    title: "Next Available Airboat Swamp Tours in New Orleans | Live Departures",
     description:
-      "Compare New Orleans swamp-tour formats: airboats, calmer covered boats, pickup logistics, family fit, private options, and current provider booking paths.",
+      "Looking for a New Orleans swamp tour? Skip sold-out boats. Check today's NEXT AVAILABLE AIRBOAT departures with French Quarter hotel pickup. Live seat availability updated daily.",
     keywords: [
       "New Orleans swamp tours",
+      "next available airboat",
       "New Orleans airboat tours",
-      "covered swamp boat New Orleans",
-      "swamp tour with pickup",
+      "same day swamp tour New Orleans",
+      "airboat tour with hotel pickup",
+      "small airboat New Orleans",
     ],
   },
   hero: {
-    eyebrow: "New Orleans swamp-tour specialist",
-    title: "Choose the swamp ride that fits your day.",
+    eyebrow: "Real-Time New Orleans Airboat Dispatch",
+    title: "Looking for a Swamp Tour? You Probably Want the Airboat.",
     summary:
-      "Airboat or covered boat? Pickup or self-drive? Family trip or high-energy ride? Welcome to the Swamp narrows the swamp decision, then sends you to the provider page for current prices, availability, restrictions, and checkout.",
+      "In New Orleans, you have two choices: slow 60-passenger pontoon boats, or fast fan-powered airboats that reach shallow marshes where wild alligators live. We are the only platform monitoring live seat availability so you can find and book the next available airboat today or tomorrow.",
     primaryCta: {
-      label: "Compare swamp options",
-      href: "/plan",
-      ariaLabel: "Compare current New Orleans swamp tour options",
+      label: "Check Next Available Airboat ↓",
+      href: "#next-boat",
+      ariaLabel: "Check next available airboat departures",
     },
     secondaryCta: {
-      label: "Airboat vs covered boat",
+      label: "Airboat vs Covered Boat",
       href: "/airboat-vs-boat",
     },
-    trustChips: ["Swamp-focused", "Pickup notes", "Family-fit guidance", "Provider checkout"],
+    trustChips: ["Real-Time Dispatch", "Hotel Pickup Included", "Small & Large Airboats", "Direct Operator Checkout"],
     media: {
       eyebrow: "Start with the ride style",
       title: "Airboats, covered boats, and private swamp options",

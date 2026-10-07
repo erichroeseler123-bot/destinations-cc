@@ -15,13 +15,14 @@ export const SITE_CONFIG = {
   domain: "welcometotheswamp.com",
   url: "https://welcometotheswamp.com",
   mission:
-    "Welcome to the Swamp helps visitors choose, time, and understand swamp tours near New Orleans with practical, tourist-first advice — before they book anything.",
+    "Welcome to the Swamp is New Orleans' dedicated swamp tour dispatch service featuring the only real-time 'Next Available Airboat' finder. We help visitors compare airboats vs slow covered boats, check live seat availability, and book open departures with hotel pickup.",
   dccOrigin: process.env.DCC_ORIGIN || "https://www.destinationcommandcenter.com",
   fareharborSwampAsn: process.env.NEXT_PUBLIC_FAREHARBOR_SWAMP_ASN || "aktourcenter",
   swampFareHarborProducts: [
     {
       id: "ragincajun-airboat",
       companyShortname: "ragincajuntours",
+      itemId: "228524",
       flowId: "940162",
       title: "Airboat Tour",
       description: "Fast, open-air swamp ride for travelers who want the most action and wind-in-your-face energy.",
