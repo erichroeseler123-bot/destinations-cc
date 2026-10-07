@@ -46,8 +46,8 @@ We help Alaska cruise passengers compare and book helicopter, glacier, dog-sledd
 - **Base of Operations:** Juneau International Airport (JNU) heliport and Skagway waterfront heliport.
 - **Aircraft Fleet:** Eurocopter AS350 AStar and MD 500 helicopters.
 - **Primary Excursions:**
-  1. *Mendenhall Glacier Helicopter Tour & Guided Walk:* 15-minute scenic flight each way over temperate rainforest and rock spires, plus a 20-25 minute guided walking exploration on the ice.
-  2. *Glacier Dog Sledding by Helicopter:* Flight to Herbert Glacier dog sledding camp (Juneau) or Denver Glacier dog sledding camp (Skagway). Includes 1-hour camp tour, dog team ride, and musher interaction.
+  1. *Mendenhall Glacier Helicopter Tour & Guided Ice Walk:* 15-minute scenic flight each way over temperate rainforest and rock spires, plus a 20-25 minute guided walking exploration on the ice with provided traction overboots (from $409 base).
+  2. *Glacier Dog Sledding by Helicopter:* Flight to high-altitude Herbert Glacier dog sledding camp (Juneau; from $659 base) or Denver Glacier dog camp (Skagway). Includes 1-hour camp tour, dog team ride, and musher interaction (operates mid-May through late August).
 - **Published Cancellation & Refund Policy:**
   - 100% full refund for customer cancellations made at least 48 hours prior to scheduled flight departure. Non-refundable within 48 hours.
   - 100% full refund if the flight is grounded due to weather conditions or if the cruise ship misses port / changes arrival times.
@@ -56,8 +56,9 @@ We help Alaska cruise passengers compare and book helicopter, glacier, dog-sledd
 - **Base of Operations:** Juneau International Airport (JNU).
 - **Aircraft Fleet:** AStar 350 B2 and B3 helicopters.
 - **Primary Excursions:**
-  1. *Icefield Excursion & Glacier Landing:* Deep flight over the Juneau Icefield with a landing on Herbert, Taku, or Norris Glacier depending on daily ice and weather conditions.
-  2. *Extended Icefield Trek:* Longer ground time with specialized walking boots.
+  1. *Icefield Tour with Glacier Landing:* Scenic flight over Juneau mountains with a 25-30 minute landing on Herbert Glacier (published direct rate from $429 base).
+  2. *Dog Sled Tour on Herbert Glacier:* Helicopter flight to a dedicated alpine dog mushing camp on Herbert Glacier snowfields with sled run and musher interaction (published direct rate from $709 base; operates mid-May to mid-August).
+  *(Note on Taku Lodge: The historic Taku Glacier Lodge flight and feast is operated by Wings Airways using classic de Havilland Otter floatplanes; Coastal Helicopters operates helicopter icefield landings and dog sledding).*
 - **Published Cancellation & Refund Policy:**
   - 100% full refund for customer cancellations made at least 7 days (168 hours) in advance.
   - 50% refund for cancellations between 4 and 6 days (96–144 hours) in advance.
@@ -66,11 +67,12 @@ We help Alaska cruise passengers compare and book helicopter, glacier, dog-sledd
 
 ### C. NorthStar Trekking
 - **Base of Operations:** Juneau International Airport (JNU).
-- **Specialty Focus:** Small-group, active glacier ice hiking and climbing.
+- **Specialty Focus:** Small-group glacier ice walking, crampon trekking, ice climbing, and dog mushing.
 - **Primary Excursions:**
-  1. *Level 1 Glacier Walk:* Easy-to-moderate walking on Mendenhall Glacier with mountaineering boots and crampons.
-  2. *Level 2 Glacier Trek:* 2 hours of active trekking, examining crevasses, moulins, and ice features.
-  3. *Level 3 Ice Climbing:* 3 hours of technical rope climbing and ice wall exploration.
+  1. *Helicopter Glacier Walkabout:* Full 1 hour on Mendenhall Glacier ice equipped with crampons and trekking poles for gentle-to-moderate walking (published direct rate from $499 base, ages 8+).
+  2. *Level 1 Glacier Ice Trek:* 2 hours of active trekking on Mendenhall Glacier with mountaineering boots, crampons, and harness exploring crevasses, moulins, and blue ice walls (published direct rate from $549 base, ages 12+).
+  3. *Level 2 Ice Climbing Tour:* 2+ hours of technical climbing on steep vertical ice formations with ice axes and top ropes (published direct rate from $599 base, ages 12+).
+  4. *Helicopter Glacier Dogsled Adventure:* Helicopter flight to Norris Glacier snowfields for dog sledding with an Iditarod musher partner camp (published direct rate from $739 base, ages 2+).
 - **Published Cancellation & Refund Policy:**
   - 100% full refund with 48 hours notice. 100% refund for weather or ship delays.
 

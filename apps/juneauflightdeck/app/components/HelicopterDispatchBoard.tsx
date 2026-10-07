@@ -348,15 +348,15 @@ export default function HelicopterDispatchBoard({
                     </div>
                     <div>
                       <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.88rem' }}>
-                        Icefield Landing &amp; Walkabout
+                        Icefield Landing &amp; Dog Sledding
                       </div>
                       <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
-                        Taku Glacier Lodge Combos
+                        Herbert Glacier Landing ($429) &amp; Dog Sled ($709)
                       </div>
                     </div>
                   </div>
                 </td>
-                <td style={{ color: 'var(--text)' }}>Herbert, Taku Icefield</td>
+                <td style={{ color: 'var(--text)' }}>Herbert Glacier</td>
                 <td style={{ color: 'var(--muted)' }}>Juneau North Airport Ramp</td>
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
@@ -384,7 +384,7 @@ export default function HelicopterDispatchBoard({
               <tr>
                 <td>
                   <span className="jfd-op-name">NorthStar Trekking</span>
-                  <span className="jfd-op-sub">Small-Group Glacier Hiking</span>
+                  <span className="jfd-op-sub">Glacier Walk &amp; Treks</span>
                 </td>
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -410,15 +410,15 @@ export default function HelicopterDispatchBoard({
                     </div>
                     <div>
                       <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.88rem' }}>
-                        Glacier Ice Trek &amp; Climb
+                        Glacier Walkabout, Treks &amp; Dog Sled
                       </div>
                       <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
-                        Level 1–3 Technical Glacier Hiking
+                        Walkabout ($499), Trek ($549), Dogsled ($739)
                       </div>
                     </div>
                   </div>
                 </td>
-                <td style={{ color: 'var(--text)' }}>Mendenhall Glacier High Ice</td>
+                <td style={{ color: 'var(--text)' }}>Mendenhall &amp; Norris Glaciers</td>
                 <td style={{ color: 'var(--muted)' }}>Juneau Industrial Heliport</td>
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>

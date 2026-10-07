@@ -28,7 +28,7 @@ const dogSledFaqJsonLd = {
       name: "Why is helicopter glacier dog sledding in Juneau almost always sold out?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Glacier dog sledding camps on Herbert and Norris glaciers operate in a fragile alpine snowpack zone strictly regulated by the US Forest Service. Each camp maintains only 10 to 14 active dog teams per day to preserve the environment and animal welfare. When 5 cruise ships with 15,000+ passengers visit Juneau in a single day, total available dog sledding seats rarely exceed 120. Most dates sell out 4 to 6 months in advance.",
+        text: "Glacier dog sledding camps on Herbert and Norris glaciers operate in a fragile alpine snowpack zone strictly regulated by US Forest Service special-use permits. Because daily flight slots and active dog teams are strictly capped across operators to protect animal welfare and alpine terrain, daily capacity across all ships is limited. As a result, peak summer dates frequently book out months in advance.",
       },
     },
     {
@@ -144,13 +144,13 @@ export default function JuneauDogSleddingPage() {
             >
               <span>Official Viator Partner</span>
               <span>·</span>
-              <span>TEMSCO Herbert Glacier Dog Camp</span>
+              <span>Herbert &amp; Norris Glacier Camps</span>
             </div>
             <h3 style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--text, #ffffff)", margin: "0 0 8px" }}>
               Compare &amp; Book Glacier Dog Sledding Excursions
             </h3>
             <p style={{ margin: "0 0 10px", fontSize: "0.88rem", color: "var(--muted)", lineHeight: 1.55 }}>
-              Herbert Glacier dog sled camps operate mid-May through August with limited daily capacity (~120 total seats across all ships). Check real-time dates below via our official Viator partner link or direct TEMSCO FareHarbor checkout.
+              Dog sled camps operate mid-May through August across Herbert Glacier (TEMSCO from $659, Coastal from $709) and Norris Glacier (NorthStar from $739). Daily capacity is strictly regulated by the US Forest Service. Check real-time dates below via our official Viator partner search or operator direct booking.
             </p>
             <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--ice, #9ed9ff)", fontWeight: 600 }}>
               Sold out on your ship? Register below for daily 10:00 AM seat drop alerts to claim cancellation releases.
@@ -159,7 +159,7 @@ export default function JuneauDogSleddingPage() {
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
             <a
-              href="https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+dog+sledding&pid=P00058396&mcid=42383&medium=api"
+              href="https://www.viator.com/searchResults/all?text=Juneau+glacier+dog+sledding&pid=P00058396&mcid=42383&medium=api"
               target="_blank"
               rel="noopener noreferrer"
               className="button button-primary"
@@ -167,15 +167,35 @@ export default function JuneauDogSleddingPage() {
             >
               Check Dog Sledding on Viator &rarr;
             </a>
-            <a
-              href="https://fareharbor.com/embeds/book/temscoair-juneau/items/214810/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="button button-card"
-              style={{ fontSize: "0.82rem", whiteSpace: "nowrap" }}
-            >
-              🏢 Book TEMSCO Direct (FareHarbor) ↗
-            </a>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+              <a
+                href="https://fareharbor.com/embeds/book/temscoair-juneau/items/214810/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="button button-card"
+                style={{ fontSize: "0.78rem", padding: "6px 10px", whiteSpace: "nowrap" }}
+              >
+                TEMSCO ($659) ↗
+              </a>
+              <a
+                href="https://coastalhelicopters.com/tours/dog-sled-tours/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="button button-card"
+                style={{ fontSize: "0.78rem", padding: "6px 10px", whiteSpace: "nowrap" }}
+              >
+                Coastal ($709) ↗
+              </a>
+              <a
+                href="https://fareharbor.com/embeds/book/northstartrekking/items/115991/?ref=juneauflightdeck&asn=welcometoalaskatours&full_items=yes"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="button button-card"
+                style={{ fontSize: "0.78rem", padding: "6px 10px", whiteSpace: "nowrap" }}
+              >
+                NorthStar ($739) ↗
+              </a>
+            </div>
             <a
               href="#waitlist-form"
               style={{ fontSize: "0.78rem", color: "var(--accent, #f0b35b)", fontWeight: 700, textDecoration: "none" }}
@@ -270,8 +290,8 @@ export default function JuneauDogSleddingPage() {
                 </tr>
                 <tr>
                   <td><strong>Direct Operator Price</strong></td>
-                  <td>~$629 – $699 per person</td>
-                  <td>Ship excursion desks frequently charge $750 – $895</td>
+                  <td>From $659 (TEMSCO) · $709 (Coastal) · $739 (NorthStar)</td>
+                  <td>Ship excursion desks frequently charge $795 – $925+</td>
                 </tr>
                 <tr>
                   <td><strong>Weather Policy</strong></td>
