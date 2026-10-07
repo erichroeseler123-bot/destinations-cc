@@ -227,7 +227,7 @@ export async function POST(request: Request) {
         dateVerification: entry.dateVerification,
         operatorHoldStatus: entry.operatorHoldStatus,
         cancellationNotice:
-          "• Customer Cancellation Cutoff: Full refund according to operator policy (TEMSCO/NorthStar: 48h prior; Coastal: 7+ days prior). • Operator Weather & Port Policy: 100% full refund if flight is grounded due to weather/safety or if ship misses port (independent of the customer cancellation cutoff).",
+          "• Customer Cancellation Cutoff: Terms vary by provider (TEMSCO: 48h full refund; Coastal: 7+ days; NorthStar direct: 24h+ minus 10% fee; third-party channels vary). • Weather Policy: 100% refund if flight is grounded due to weather. Ship delay and missed-port terms depend on specific provider and booking-channel voucher terms.",
       },
     });
   } catch (err: any) {

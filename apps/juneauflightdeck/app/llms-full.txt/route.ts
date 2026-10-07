@@ -50,7 +50,7 @@ We help Alaska cruise passengers compare and book helicopter, glacier, dog-sledd
   2. *Glacier Dog Sledding by Helicopter:* Flight to high-altitude Herbert Glacier dog sledding camp (Juneau; from $659 base) or Denver Glacier dog camp (Skagway). Includes 1-hour camp tour, dog team ride, and musher interaction (operates mid-May through late August).
 - **Published Cancellation & Refund Policy:**
   - 100% full refund for customer cancellations made at least 48 hours prior to scheduled flight departure. Non-refundable within 48 hours.
-  - 100% full refund if the flight is grounded due to weather conditions or if the cruise ship misses port / changes arrival times.
+  - 100% full refund if flight is grounded due to weather conditions. Missed-port refund eligibility depends on operator verification and booking-channel voucher terms.
 
 ### B. Coastal Helicopters
 - **Base of Operations:** Juneau International Airport (JNU).
@@ -63,7 +63,7 @@ We help Alaska cruise passengers compare and book helicopter, glacier, dog-sledd
   - 100% full refund for customer cancellations made at least 7 days (168 hours) in advance.
   - 50% refund for cancellations between 4 and 6 days (96–144 hours) in advance.
   - Non-refundable within 3 days (less than 72 hours).
-  - 100% full refund if flight is grounded due to weather or cruise ship delay.
+  - 100% full refund if flight is grounded due to weather. Ship delay terms depend on specific provider and booking-channel voucher terms.
 
 ### C. NorthStar Trekking
 - **Base of Operations:** Juneau International Airport (JNU).
@@ -75,7 +75,7 @@ We help Alaska cruise passengers compare and book helicopter, glacier, dog-sledd
   4. *Helicopter Glacier Dogsled Adventure:* Helicopter flight to Norris Glacier snowfields for dog sledding with an Iditarod musher partner camp (published direct rate from $739 base, ages 2+).
 - **Published Cancellation & Refund Policy:**
   - NorthStar Trekking Direct (per official FAQ): Cancellation more than 24 hours prior receives a refund minus 10%; non-refundable within 24 hours. (Third-party channels like Viator may specify standard 24-hour full refund windows).
-  - 100% full refund if flight is grounded due to weather or if cruise ship misses port.
+  - 100% full refund if flight is grounded due to weather. Ship delay and missed-port terms depend on specific provider and booking-channel terms.
 
 ---
 

@@ -43,7 +43,7 @@ const vsShipFaqJsonLd = {
       name: "What happens if the cruise ship arrives late or skips Juneau entirely?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "If your cruise ship is delayed or unable to dock due to mechanical, weather, or maritime reasons, independent operators provide a 100% full refund with zero cancellation fees.",
+        text: "Refund eligibility when a vessel misses port depends on the specific operator and booking channel. Many direct operators and third-party ticket sellers offer full refunds for verified ship cancellations, but terms vary. Always check the missed-port terms on your specific tour voucher.",
       },
     },
     {
@@ -138,8 +138,8 @@ export default function CruiseExcursionsVsIndependentPage() {
                 </tr>
                 <tr>
                   <td><strong>Ship Itinerary Change / Missed Port</strong></td>
-                  <td>Refunded</td>
-                  <td>100% full refund with zero penalty</td>
+                  <td>Refunded by cruise line</td>
+                  <td>Subject to provider &amp; booking-channel terms (verify voucher)</td>
                 </tr>
               </tbody>
             </table>

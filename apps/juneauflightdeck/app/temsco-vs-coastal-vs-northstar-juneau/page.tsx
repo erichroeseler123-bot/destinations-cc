@@ -673,8 +673,11 @@ export default function OperatorComparisonPage() {
               <li><strong>Coastal Helicopters:</strong> 100% full refund with at least 7 days advance notice; non-refundable within 7 days.</li>
               <li><strong>NorthStar Trekking (Direct):</strong> Official published FAQ states cancellation more than 24 hours prior receives a refund minus 10%; non-refundable within 24 hours. (Third-party channels like Viator may specify standard 24-hour full refund windows—always check your specific booking channel terms).</li>
             </ul>
-            <p style={{ fontSize: "0.82rem", color: "#fef3c7", lineHeight: 1.4, margin: 0 }}>
-              <em>Cruise Delays &amp; Weather:</em> If your cruise ship skips Juneau or arrives too late to make your departure, or if the flight is grounded due to weather or FAA flight minimums, all three operators issue full 100% refunds upon verification.
+            <p style={{ fontSize: "0.82rem", color: "#fef3c7", lineHeight: 1.4, margin: "6px 0 0" }}>
+              <em>Weather Grounding:</em> When an operator cancels a flight due to mountain pass clouds, fog, or FAA safety limits, a 100% refund is provided.
+            </p>
+            <p style={{ fontSize: "0.82rem", color: "#fef3c7", lineHeight: 1.4, margin: "6px 0 0" }}>
+              <em>Ship Delays &amp; Missed Ports:</em> Refund terms if your cruise ship bypasses Juneau or arrives too late to make your departure vary by provider and booking channel. Do not assume a blanket guarantee across all channels: check the specific missed-port policy on your direct operator confirmation or third-party booking voucher.
             </p>
           </div>
         </div>
