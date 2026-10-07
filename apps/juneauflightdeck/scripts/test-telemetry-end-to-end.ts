@@ -1,4 +1,4 @@
-import { recordTelemetryEvent, getTelemetrySummary, getRecentTelemetryEvents } from '../lib/telemetryStore.ts';
+import { recordTelemetryEvent, getTelemetrySummary, getRecentTelemetryEvents } from '../lib/telemetryStore';
 
 console.log("=== Testing JFD Telemetry Pipeline End-to-End ===\n");
 
