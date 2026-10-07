@@ -677,6 +677,16 @@ export default function IcefieldGlacierMap() {
           )}
         </div>
       </div>
+      <div style={{ marginTop: 14, paddingTop: 10, borderTop: "1px solid #1e293b", fontSize: "0.75rem", color: "#64748b", display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 8 }}>
+        <span>
+          Checked on <strong>October 7, 2026</strong> against official sources:{" "}
+          <a href="https://temscoair.com/juneau-faq/" target="_blank" rel="noopener noreferrer" style={{ color: "#94a3b8", textDecoration: "underline" }}>TEMSCO FAQ</a> •{" "}
+          <a href="https://coastalhelicopters.com/tours/" target="_blank" rel="noopener noreferrer" style={{ color: "#94a3b8", textDecoration: "underline" }}>Coastal Tours</a> •{" "}
+          <a href="https://northstartrekking.com/faqs/" target="_blank" rel="noopener noreferrer" style={{ color: "#94a3b8", textDecoration: "underline" }}>NorthStar FAQ</a> •{" "}
+          <a href="https://wingsairways.com/world-of-wings-airways/" target="_blank" rel="noopener noreferrer" style={{ color: "#94a3b8", textDecoration: "underline" }}>Wings Airways</a>
+        </span>
+        <span>Landing locations adjust with daily ice and weather conditions</span>
+      </div>
     </div>
   );
 }

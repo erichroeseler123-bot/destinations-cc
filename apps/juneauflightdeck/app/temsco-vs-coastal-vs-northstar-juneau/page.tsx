@@ -309,6 +309,18 @@ export default function OperatorComparisonPage() {
         <p style={{ fontSize: "0.82rem", color: "#94a3b8", lineHeight: 1.5, margin: "10px 0 0" }}>
           * Published direct base rates shown. Local City and Borough of Juneau sales tax (5%) and provider processing fees are calculated by each operator at final checkout. Most glacier treks use Mendenhall Glacier, but actual landing locations can change based on weather and ice safety conditions. Dog sled camps on Herbert and Norris are approximate seasonal locations (mid-May to August).
         </p>
+        <div style={{ marginTop: 12, padding: "12px 16px", background: "rgba(15, 23, 42, 0.8)", border: "1px solid #1e293b", borderRadius: 8, fontSize: "0.82rem", color: "#94a3b8", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+          <div>
+            <strong style={{ color: "#38bdf8" }}>Official Operator Sources &amp; Verification:</strong> Checked on <strong>October 7, 2026</strong> directly against published operator listings:
+            <span style={{ marginLeft: 6 }}>
+              <a href="https://temscoair.com/juneau-faq/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>TEMSCO Juneau FAQ</a> •{" "}
+              <a href="https://coastalhelicopters.com/tours/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>Coastal Tours</a> •{" "}
+              <a href="https://northstartrekking.com/faqs/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>NorthStar FAQ</a> •{" "}
+              <a href="https://wingsairways.com/world-of-wings-airways/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>Wings Airways</a>
+            </span>
+          </div>
+          <span style={{ color: "#64748b", fontSize: "0.75rem" }}>Rates &amp; logistics subject to provider change</span>
+        </div>
       </section>
 
       {/* QUESTION 1: GLACIER LANDING VS GUIDED WALK VS ICE TREK */}
@@ -564,9 +576,21 @@ export default function OperatorComparisonPage() {
             </tbody>
           </table>
         </div>
-        <p style={{ fontSize: "0.85rem", color: "#94a3b8", lineHeight: 1.5, margin: 0 }}>
-          <strong>Fee Breakdown Disclosure:</strong> All three operators publish direct base rates. Local City and Borough of Juneau sales tax (5%) and booking/merchant processing fees are calculated by each provider at final checkout. Standard FAA weight and balance regulations apply across all three operators for guests weighing 250 lbs or more.
-        </p>
+        <div style={{ marginTop: 14, padding: "14px 18px", background: "#0c121e", border: "1px solid #1e293b", borderRadius: 8 }}>
+          <p style={{ fontSize: "0.85rem", color: "#cbd5e1", lineHeight: 1.5, margin: "0 0 10px" }}>
+            <strong>Fee Breakdown &amp; Published Rate Terms:</strong> All three operators publish direct base rates. Local City and Borough of Juneau sales tax (5%) and provider processing fees are calculated by each operator at final checkout. Standard FAA weight and balance regulations apply across all three operators for guests weighing 250 lbs or more.
+          </p>
+          <div style={{ fontSize: "0.8rem", color: "#94a3b8", lineHeight: 1.5, borderTop: "1px solid #1e293b", paddingTop: 10, display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+            <div>
+              📅 <strong>Checked on: October 7, 2026</strong> • Official published pricing sources:{" "}
+              <a href="https://temscoair.com/juneau-faq/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>TEMSCO Pricing FAQ</a> |{" "}
+              <a href="https://coastalhelicopters.com/tours/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>Coastal Tours Directory</a> |{" "}
+              <a href="https://northstartrekking.com/treks/tours/helicopter-glacier-walkabout/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>NorthStar Walkabout</a> |{" "}
+              <a href="https://northstartrekking.com/adventures/helicopter-glacier-dogsled-adventure/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>NorthStar Dogsled</a>
+            </div>
+            <span style={{ color: "#64748b", fontSize: "0.75rem" }}>Rates verified from current operator schedules</span>
+          </div>
+        </div>
       </section>
 
       {/* QUESTION 4: CRUISE TIMING AND PICKUP */}
@@ -585,11 +609,14 @@ export default function OperatorComparisonPage() {
             <p style={{ fontSize: "0.85rem", color: "#cbd5e1", lineHeight: 1.5, margin: "0 0 8px" }}>
               Direct-booking cruise passengers should check their confirmations rather than expecting universal ship gangway pickup:
             </p>
-            <ul style={{ fontSize: "0.83rem", color: "#94a3b8", lineHeight: 1.5, paddingLeft: 18, margin: 0 }}>
-              <li><strong>NorthStar Trekking:</strong> Operates two bases: <em>Airport Base</em> (1890 Renshaw Way) for ice treks/walkabouts, and <em>Douglas Island Heliport</em> (6910 N Douglas Hwy) for dog sledding and airboat tours. Direct-booking cruise guests meet at the <strong>Goldbelt Tramway (490 S Franklin St)</strong>.</li>
-              <li><strong>Coastal Helicopters:</strong> Base at 8995 Alex Holden Way near the airport. Cruise shuttle meets at the <strong>Goldbelt Mt. Roberts Tram</strong> scheduled 1 hour prior to flight takeoff.</li>
-              <li><strong>TEMSCO Helicopters:</strong> Base at 1650 Maplesden Way near the airport. Shuttles transfer from a central downtown meeting point (arrive 15 min prior to tour start time).</li>
+            <ul style={{ fontSize: "0.83rem", color: "#94a3b8", lineHeight: 1.5, paddingLeft: 18, margin: "0 0 10px" }}>
+              <li><strong>NorthStar Trekking:</strong> Operates two bases: <em>Airport Base</em> (1890 Renshaw Way) for ice treks/walkabouts, and <em>Douglas Island Heliport</em> (6910 N Douglas Hwy) for dog sledding and airboat tours. Direct-booking cruise guests meet at the <strong>Goldbelt Tramway (490 S Franklin St)</strong> (<a href="https://northstartrekking.com/faqs/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>NorthStar FAQ Source</a>).</li>
+              <li><strong>Coastal Helicopters:</strong> Base at 8995 Alex Holden Way near the airport. Cruise shuttle meets at the <strong>Goldbelt Mt. Roberts Tram</strong> scheduled 1 hour prior to flight takeoff (<a href="https://coastalhelicopters.com/tours/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>Coastal Tour Logistics Source</a>).</li>
+              <li><strong>TEMSCO Helicopters:</strong> Base at 1650 Maplesden Way near the airport. Shuttles transfer from a central downtown meeting location specified on confirmation, arriving 15 min prior to tour start (<a href="https://temscoair.com/juneau-faq/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent, #f0b35b)", textDecoration: "underline" }}>TEMSCO Juneau FAQ Source</a>).</li>
             </ul>
+            <div style={{ fontSize: "0.78rem", color: "#64748b", borderTop: "1px solid #1e293b", paddingTop: 8 }}>
+              📅 Meeting logistics verified on <strong>October 7, 2026</strong> directly with operator operational dispatch policies.
+            </div>
           </div>
 
           <div style={{ background: "#0c121e", border: "1px solid #1e293b", borderRadius: 8, padding: "16px" }}>
