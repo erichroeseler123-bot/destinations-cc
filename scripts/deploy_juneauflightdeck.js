@@ -19,7 +19,9 @@ try {
   swappedProjectJson = true;
 
   console.log('2. Swapping root vercel.json with juneauflightdeck vercel.json...');
-  fs.copyFileSync(rootVercelJson, bakVercelJson);
+  if (fs.existsSync(rootVercelJson)) {
+    fs.copyFileSync(rootVercelJson, bakVercelJson);
+  }
   fs.copyFileSync(jfdVercelJson, rootVercelJson);
   swappedVercelJson = true;
 
@@ -31,9 +33,13 @@ try {
   process.exit(1);
 } finally {
   console.log('4. Restoring original configurations...');
-  if (swappedVercelJson && fs.existsSync(bakVercelJson)) {
-    fs.copyFileSync(bakVercelJson, rootVercelJson);
-    fs.unlinkSync(bakVercelJson);
+  if (swappedVercelJson) {
+    if (fs.existsSync(bakVercelJson)) {
+      fs.copyFileSync(bakVercelJson, rootVercelJson);
+      fs.unlinkSync(bakVercelJson);
+    } else if (fs.existsSync(rootVercelJson)) {
+      fs.unlinkSync(rootVercelJson);
+    }
     console.log('Original root vercel.json restored.');
   }
   if (swappedProjectJson && fs.existsSync(bakProjectJson)) {
