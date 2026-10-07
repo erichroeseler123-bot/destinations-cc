@@ -10,8 +10,6 @@ export const dynamic = "force-dynamic";
 
 function isAuthorized(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization")?.trim();
-  const url = new URL(request.url);
-  const queryToken = url.searchParams.get("token")?.trim();
 
   const validSecrets = [
     process.env.CRON_SECRET,
@@ -29,13 +27,10 @@ function isAuthorized(request: NextRequest): boolean {
     return false;
   }
 
+  // Strictly require Authorization: Bearer <token> header to prevent secrets in URLs/query params
   if (authHeader && authHeader.startsWith("Bearer ")) {
     const token = authHeader.slice(7).trim();
     if (validSecrets.includes(token)) return true;
-  }
-
-  if (queryToken && validSecrets.includes(queryToken)) {
-    return true;
   }
 
   return false;
@@ -81,7 +76,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: "Unauthorized access. Valid Bearer token or admin token required to inspect telemetry.",
+        error: "Unauthorized access. Valid Bearer token required in Authorization header to inspect telemetry.",
       },
       { status: 401 }
     );

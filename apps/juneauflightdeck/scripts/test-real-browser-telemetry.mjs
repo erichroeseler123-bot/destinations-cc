@@ -334,16 +334,29 @@ async function runBrowserTest() {
     console.log('Latest 10 rows in Neon PostgreSQL table jfd_telemetry_events:');
     console.table(storedEvents);
 
-    // Test Authenticated GET /api/network/telemetry
-    console.log('\nChecking live Authenticated Telemetry endpoint:');
-    const authSummaryRes = await fetch(`https://juneauflightdeck.com/api/network/telemetry?token=${adminToken}`);
+    // Test Authenticated GET /api/network/telemetry using Authorization: Bearer
+    console.log('\nChecking live Authenticated Telemetry endpoint (via Authorization: Bearer header):');
+    const authSummaryRes = await fetch(`https://juneauflightdeck.com/api/network/telemetry`, {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
     const authSummaryJson = await authSummaryRes.json();
     console.log('Live Authenticated Summary (excludes test traffic):', JSON.stringify(authSummaryJson.summary, null, 2));
 
     // Test with ?include_test=true
-    const testSummaryRes = await fetch(`https://juneauflightdeck.com/api/network/telemetry?token=${adminToken}&include_test=true`);
+    const testSummaryRes = await fetch(`https://juneauflightdeck.com/api/network/telemetry?include_test=true`, {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
     const testSummaryJson = await testSummaryRes.json();
     console.log('\nLive Authenticated Summary with ?include_test=true:', JSON.stringify(testSummaryJson.summary, null, 2));
+
+    // Verify ?token=<secret> in URL query param is rejected with 401
+    const queryTokenRes = await fetch(`https://juneauflightdeck.com/api/network/telemetry?token=${adminToken}`);
+    console.log('Query param ?token rejection check (HTTP status):', queryTokenRes.status);
+    if (queryTokenRes.status !== 401) {
+      console.warn(`Query param was not rejected with 401 (got ${queryTokenRes.status})`);
+    } else {
+      console.log('✅ Query param token successfully rejected with 401 Unauthorized!');
+    }
 
     // -------------------------------------------------------------
     // STEP 5: Check Central DCC Telemetry Hub Receipt Separately
