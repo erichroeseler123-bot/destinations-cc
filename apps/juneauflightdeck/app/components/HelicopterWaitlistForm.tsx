@@ -290,9 +290,9 @@ export default function HelicopterWaitlistForm({
 
   const rollCallPostText = `Hey everyone on ${resolvedShipName} for our ${formData.portDate || "upcoming"} port call in Juneau! 
 
-If you were looking for glacier helicopter landings or dog sledding and found them sold out through the ship's excursion desk, check out Juneau Flight Deck's automated seat scanner. 
+If you were looking for glacier helicopter landings or dog sledding and found them sold out through the ship's excursion desk, check out Juneau Flight Deck's daily availability check. 
 
-They monitor local helicopter operators (TEMSCO, Coastal, NorthStar) daily at 10:00 AM when cancellations and group holds drop, and help you lock in seats:
+They provide operator comparisons, ship port timing guidance, and a daily availability check across local helicopter operators (TEMSCO, Coastal, NorthStar) with direct booking links:
 ${shareUrl}`;
 
   const copyToClipboard = async (text: string, type: "rollcall" | "link") => {
@@ -315,13 +315,13 @@ ${shareUrl}`;
       <div className="waitlist-card-header">
         <div className="waitlist-pill">
           <span className="waitlist-pill-dot" />
-          <span>Automated Seat Scanner • Availability Alerts</span>
+          <span>Daily Availability Check • Direct Operator Booking</span>
         </div>
-        <h3>Sold Out on Your Ship? Put Our Scanner on Your Date.</h3>
+        <h3>Sold Out on Your Ship? Request a Daily Availability Check.</h3>
         <p className="waitlist-explainer">
           Helicopter companies experience frequent cancellations and group releases. 
-          Our automated scanner monitors local operators (TEMSCO, Coastal, NorthStar) daily at 10:00 AM. 
-          When an open space appears on your ship&apos;s date, <strong>we alert you immediately with direct booking links</strong>.
+          We perform a daily availability check across local operators (TEMSCO, Coastal, NorthStar). 
+          When an open space appears on your ship&apos;s date, <strong>we alert you with direct booking links to secure open seats directly with the operator</strong>.
         </p>
       </div>
 
@@ -349,13 +349,13 @@ ${shareUrl}`;
       <div className="waitlist-how-it-works-grid">
         <div className="how-step">
           <span className="step-num">01</span>
-          <h4>10:00 AM Daily Sweep</h4>
-          <p>Our program sweeps fleet inventories every morning at 10:00 AM when cancellation desks process changes.</p>
+          <h4>Daily Availability Check</h4>
+          <p>We check local operator schedules each day for released seats and cancellation openings.</p>
         </div>
         <div className="how-step">
           <span className="step-num">02</span>
           <h4>Targeted Date &amp; Port Scan</h4>
-          <p>We specifically monitor the exact passenger-supplied cruise dates for Juneau and Skagway.</p>
+          <p>We check the exact passenger-supplied cruise dates for Juneau and Skagway.</p>
         </div>
         <div className="how-step">
           <span className="step-num">03</span>
@@ -365,7 +365,7 @@ ${shareUrl}`;
         <div className="how-step">
           <span className="step-num">04</span>
           <h4>Direct Operator Booking</h4>
-          <p>You receive an automated alert with a direct link to lock in open seats directly with the flight operator.</p>
+          <p>You receive an alert with a direct link to lock in open seats directly with the flight operator.</p>
         </div>
       </div>
 
@@ -376,13 +376,13 @@ ${shareUrl}`;
             <h4 className="text-xl font-bold text-white">
               {formData.bookingMode === "concierge_dispatch"
                 ? "Concierge Dispatch Request Received"
-                : "Availability Watch Request Received"}
+                : "Daily Availability Check Request Received"}
             </h4>
             <p className="text-slate-300 mt-1">
               Confirmation Code: <strong className="text-amber-400 font-mono">{submissionId}</strong>
             </p>
             <p className="text-sm text-slate-300 mt-2">
-              Your request is saved. We scan Southeast Alaska fleet inventory for your date (<strong>{formData.portDate}</strong>
+              Your request is saved. We check Southeast Alaska fleet availability for your date (<strong>{formData.portDate}</strong>
               {formData.portCity === "either" && formData.skagwayDate ? ` and Skagway: ${formData.skagwayDate}` : ""}) 
               for <strong>{formData.partySize} guest(s)</strong> on <strong>{resolvedShipName}</strong> ({formData.cruiseLine}).
             </p>
@@ -390,21 +390,21 @@ ${shareUrl}`;
 
           <div className="success-reassurance bg-slate-900/80 border border-slate-700/60 rounded-xl p-4 text-xs text-slate-300 leading-relaxed">
             {formData.bookingMode === "concierge_dispatch"
-              ? "🛎️ Request Logged: When an opening is detected during our 10:00 AM sweep, our local dispatch team contacts you with direct flight checkout details."
-              : "📱 Request Logged: When an opening is detected during our 10:00 AM sweep, a direct booking link is generated so you can complete checkout directly with the operator."}
+              ? "🛎️ Request Logged: When an opening is detected during our daily availability check, our local dispatch team contacts you with direct flight checkout details."
+              : "📱 Request Logged: When an opening is detected during our daily availability check, a direct booking link is generated so you can complete checkout directly with the operator."}
           </div>
 
-          {/* Viral Cruise Critic & Facebook Roll Call Share Box */}
+          {/* Group Roll Call Share Box (Where Group Rules Allow) */}
           <div className="bg-sky-950/40 border border-sky-500/30 rounded-2xl p-5 text-left">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-lg">🛳️</span>
               <h5 className="text-sm font-bold text-white uppercase tracking-wider">
-                Share With Your Ship&apos;s Cruise Critic &amp; Facebook Roll Call
+                Share With Your Ship&apos;s Cruise Critic &amp; Facebook Roll Call (Where Group Rules Allow)
               </h5>
             </div>
             <p className="text-xs text-sky-200/90 leading-relaxed mb-4">
               Glacier helicopter flights sell out 3–6 months early. Most guests on <strong>{resolvedShipName}</strong> do not 
-              know daily cancellations open up seats. Share this scanner with your shipmates so your sailing group can get booked together:
+              know daily cancellations open up seats. Where group rules allow, share this daily availability check with your shipmates so your sailing group can get booked:
             </p>
 
             <div className="bg-slate-950/80 rounded-xl p-3 border border-slate-800 text-xs font-mono text-slate-300 leading-relaxed whitespace-pre-wrap select-all mb-3 max-h-36 overflow-y-auto">
@@ -474,11 +474,11 @@ ${shareUrl}`;
                   />
                   <div>
                     <div className="flex items-center gap-2">
-                      <strong className="text-white text-sm">📧 Daily Seat Drop Alert</strong>
+                      <strong className="text-white text-sm">📧 Daily Availability Alert</strong>
                       <span className="mode-badge-recommended">Direct Link</span>
                     </div>
                     <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                      <strong>Free Email Alert.</strong> When seats drop during our 10:00 AM sweep, we send you a direct booking link to complete checkout with the flight operator.
+                      <strong>Free Email Alert.</strong> When seats open during our daily check, we send you a direct booking link to complete checkout with the flight operator.
                     </p>
                   </div>
                 </div>
@@ -791,13 +791,13 @@ ${shareUrl}`;
               className="button button-primary waitlist-submit-btn"
             >
               {status === "submitting"
-                ? "Activating Scanner..."
+                ? "Submitting Request..."
                 : formData.bookingMode === "concierge_dispatch"
                 ? "Activate Concierge Dispatch Alert (Free) →"
-                : "Activate Daily Seat Drop Alert (Free) →"}
+                : "Request Daily Availability Check (Free) →"}
             </button>
             <p className="waitlist-legal-footnote">
-              🔒 100% Free Service. We scan operator inventories. Cancellation terms are operator-specific (TEMSCO: 48h full refund; Coastal: 7+ days full refund, 50% 4–6 days, non-refundable &lt;3 days). All operators provide 100% full refund for weather cancellations.
+              🔒 100% Free Service. We perform daily availability checks across local operator schedules. Cancellation terms are operator-specific (TEMSCO: 48h full refund; Coastal: 7+ days full refund, 50% 4–6 days, non-refundable &lt;3 days). All operators provide 100% full refund for weather cancellations.
             </p>
           </div>
         </form>

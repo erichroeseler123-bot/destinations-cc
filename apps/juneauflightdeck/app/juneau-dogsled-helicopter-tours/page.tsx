@@ -153,7 +153,7 @@ export default function JuneauDogSleddingPage() {
               Dog sled camps operate mid-May through August across Herbert Glacier (TEMSCO from $659, Coastal from $709) and Norris Glacier (NorthStar from $739). Daily capacity is strictly regulated by the US Forest Service. Check real-time dates below via our official Viator partner search or operator direct booking.
             </p>
             <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--ice, #9ed9ff)", fontWeight: 600 }}>
-              Sold out on your ship? Register below for daily 10:00 AM seat drop alerts to claim cancellation releases.
+              Sold out on your ship? Register below for our daily availability check across local helicopter operators.
             </p>
           </div>
 
@@ -200,7 +200,7 @@ export default function JuneauDogSleddingPage() {
               href="#waitlist-form"
               style={{ fontSize: "0.78rem", color: "var(--accent, #f0b35b)", fontWeight: 700, textDecoration: "none" }}
             >
-              Sold out? Join Seat Drop Watch &darr;
+              Sold out? Daily Availability Check &darr;
             </a>
           </div>
         </div>

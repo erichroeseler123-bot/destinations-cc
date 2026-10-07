@@ -140,7 +140,7 @@ export default function Page() {
                 fontSize: "0.9rem",
               }}
             >
-              10 AM Seat Drop Alerts ↓
+              Daily Availability Check ↓
             </a>
           </div>
         </div>
@@ -234,10 +234,10 @@ export default function Page() {
               Step 2 · Availability Watch
             </span>
             <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#ffffff", margin: "6px 0 8px" }}>
-              Can&apos;t Find an Open Seat? Join the 10:00 AM Seat Drop Watch
+              Can&apos;t Find an Open Seat? Request a Daily Availability Check
             </h2>
             <p style={{ fontSize: "0.95rem", color: "var(--muted)", maxWidth: 680, margin: "0 auto", lineHeight: 1.5 }}>
-              If your desired tour or departure time is fully booked through your cruise line, submit your port date below. Our automated scanner monitors operator cancellations daily at 10:00 AM AKDT.
+              If your desired tour or departure time is fully booked through your cruise line, submit your port date below. We perform a daily availability check across local helicopter operators (TEMSCO, Coastal, NorthStar) and send direct booking links if seats open.
             </p>
           </div>
           <HelicopterWaitlistForm />
