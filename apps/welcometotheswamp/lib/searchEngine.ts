@@ -152,9 +152,12 @@ export function parseViatorAvailability(
  * Checks connected local Louisiana swamp tour operators.
  * Evaluates current day schedule cutoffs and age eligibility.
  */
-async function checkDirectOperators(params: SearchParams): Promise<ProviderCheckResult> {
+async function checkDirectOperators(
+  params: SearchParams,
+  currentTimeOverride?: string
+): Promise<ProviderCheckResult> {
   const isToday = params.travelDate === getTodayNewOrleansDate();
-  const currentCtTime = getCurrentNewOrleansTime(); // "HH:MM:SS"
+  const currentCtTime = currentTimeOverride || getCurrentNewOrleansTime(); // "HH:MM:SS"
   const departures: TourDeparture[] = [];
 
   const totalParty = params.adults + params.childrenAges.length;
@@ -275,7 +278,8 @@ function computePickupWindow(departureTime: string, leadMinutes: number): string
  * the honest 4-state response: AVAILABLE, PARTIAL, NO_MATCH, or UNCHECKED.
  */
 export async function searchNextAirboatDepartures(
-  params: SearchParams
+  params: SearchParams,
+  currentTimeOverride?: string
 ): Promise<SearchResponse> {
   const checkedAt = new Date().toISOString();
   const totalGroupSize = params.adults + params.childrenAges.length;
@@ -283,7 +287,7 @@ export async function searchNextAirboatDepartures(
   // Run provider checks in parallel
   const [viatorResult, directResult] = await Promise.all([
     checkViatorLive(params),
-    checkDirectOperators(params),
+    checkDirectOperators(params, currentTimeOverride),
   ]);
 
   const providerStatuses = [

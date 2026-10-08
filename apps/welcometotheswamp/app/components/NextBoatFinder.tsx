@@ -547,8 +547,11 @@ export default function NextBoatFinder() {
                   </div>
                 ) : (
                   <div>
-                    <strong style={{ color: "#d6d3d1" }}>Self-Drive Dock Arrival:</strong>
+                    <strong style={{ color: "#d6d3d1" }}>Self-Drive Check-In:</strong>
                     <p style={{ margin: "2px 0 0 0", color: "#fbbf24" }}>Arrive 30 min prior ({searchResponse.winningDeparture.dockArrivalTimeDisplay})</p>
+                    <span style={{ display: "block", fontSize: "0.75rem", color: "#a8a29e", marginTop: "2px" }}>
+                      Meeting location: Operators use multiple launch locations. Confirm your exact dock address and directions in your booking confirmation.
+                    </span>
                   </div>
                 )}
                 <div>
