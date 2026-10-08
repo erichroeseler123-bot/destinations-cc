@@ -583,7 +583,7 @@ export default function NextBoatFinder() {
                         cursor: "pointer",
                       }}
                     >
-                      {verifyingDepId === searchResponse.winningDeparture.id ? "Checking Seats..." : "⚡ Live Confirm Seats"}
+                      {verifyingDepId === searchResponse.winningDeparture.id ? "Checking Seats..." : "Check Seats & Booking Options"}
                     </button>
                   </div>
                   {verifiedBadges[searchResponse.winningDeparture.id]?.note && (
@@ -718,7 +718,7 @@ export default function NextBoatFinder() {
                           cursor: "pointer",
                         }}
                       >
-                        {verifyingDepId === dep.id ? "Checking..." : "⚡ Live Check"}
+                        {verifyingDepId === dep.id ? "Checking..." : "Check Seats & Booking Options"}
                       </button>
                       <span style={{ marginLeft: "0.5rem", color: "#a8a29e", fontSize: "0.85rem" }}>
                         {dep.operatorName} ({dep.transportation === "hotel_pickup" ? "With Pickup" : "Self-Drive"})
@@ -758,12 +758,12 @@ export default function NextBoatFinder() {
             Alert Me When Seats Open (Opening List)
           </h3>
           <p style={{ fontSize: "0.85rem", color: "#a8a29e", lineHeight: "1.5", margin: "0 0 1.25rem 0" }}>
-            Save your request for {activeDate} (group of {adults + childrenCount}). <strong>Automated alert monitor runs every 30 minutes</strong> to check open inventory and notify you if matching seats become available.
+            Save your request for {activeDate} (group of {adults + childrenCount}). <strong>Automated seat-opening alerts are not yet active.</strong>
           </p>
 
           {waitlistSuccess ? (
             <div style={{ padding: "1rem", background: "#064e3b", borderRadius: "0.5rem", border: "1px solid #10b981" }}>
-              <h4 style={{ color: "#6ee7b7", margin: "0 0 0.5rem 0" }}>✓ Alert Request Active</h4>
+              <h4 style={{ color: "#6ee7b7", margin: "0 0 0.5rem 0" }}>✓ Request Saved</h4>
               <p style={{ color: "#d1fae5", fontSize: "0.9rem", margin: "0 0 0.75rem 0" }}>{waitlistSuccess.message}</p>
               <p style={{ color: "#a7f3d0", fontSize: "0.8rem", margin: 0 }}>
                 Submission ID: <code>{waitlistSuccess.submissionId}</code>. You can cancel anytime using your{" "}

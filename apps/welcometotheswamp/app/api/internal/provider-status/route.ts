@@ -49,7 +49,7 @@ export async function GET() {
     database: {
       status: dbStatus,
       activeWaitlistSubmissions: activeWaitlistCount,
-      totalNotificationsDelivered: notificationsCount,
+      totalNotificationsRecorded: notificationsCount,
     },
     providers: {
       viator: {

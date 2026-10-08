@@ -90,7 +90,7 @@ export async function POST(request: Request) {
       unsubscribeUrl,
       status: submission.status,
       message:
-        "Your alert request is active. We will monitor open departures for your date and party size.",
+        "Your request is saved. Automated seat-opening alerts are not yet active.",
       details: {
         travelDate: submission.travelDate,
         partySize: submission.adults + submission.childrenCount,

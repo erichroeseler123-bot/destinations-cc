@@ -151,11 +151,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       ok: true,
-      confirmed: true,
+      confirmed: false,
       liveHandshakeAvailable: false,
       availabilityType: "scheduled_departure",
       statusText: "Scheduled departure—confirm seats",
-      message: "Departure is active on local operator schedule. Complete checkout to lock seats.",
+      message: "Departure is active on local operator schedule. Confirm seat availability through provider checkout.",
       checkedAt: nowIso,
     });
   } catch (err: any) {
