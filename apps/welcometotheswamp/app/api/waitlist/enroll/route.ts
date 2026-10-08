@@ -90,7 +90,7 @@ export async function POST(request: Request) {
       unsubscribeUrl,
       status: submission.status,
       message:
-        "Enrolled in the opening list. Automated real-time seat alerts are currently inactive; we will record your requested date and party size and notify you if scheduling or inventory opens.",
+        "Your request is saved. Automated alerts are currently inactive.",
       details: {
         travelDate: submission.travelDate,
         partySize: submission.adults + submission.childrenCount,

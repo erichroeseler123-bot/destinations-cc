@@ -24,6 +24,7 @@ export interface TourDeparture {
   totalPrice: number;
   currency: string;
   availabilityType: "live_inventory" | "scheduled_departure";
+  availabilityStatusText: string; // e.g. "Live availability checked 10:15 AM CT" or "Scheduled departure—confirm seats"
   available: boolean;
   bookingUrl: string;
   checkedAt: string;

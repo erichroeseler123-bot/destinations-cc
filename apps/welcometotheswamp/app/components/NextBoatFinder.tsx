@@ -164,7 +164,7 @@ export default function NextBoatFinder() {
           letterSpacing: "0.15em",
           margin: "0 0 0.5rem 0"
         }}>
-          Real-Time Departure Check • New Orleans
+          How do I find the next airboat departure?
         </p>
         <h2 style={{
           fontSize: "clamp(1.35rem, 5vw, 1.85rem)",
@@ -175,10 +175,10 @@ export default function NextBoatFinder() {
           wordBreak: "normal",
           overflowWrap: "break-word"
         }}>
-          Find the Next Available Airboat Tour
+          Compare and Book New Orleans Swamp & Airboat Tours
         </h2>
         <p style={{ color: "#a8a29e", fontSize: "0.95rem", margin: "0.5rem 0 0 0" }}>
-          Check connected departures for your exact party and see what you can actually book right now.
+          Find upcoming departures that fit your group, transportation needs, and schedule—all in one place.
         </p>
       </div>
 
@@ -514,15 +514,19 @@ export default function NextBoatFinder() {
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.5rem" }}>
                 <div>
-                  {searchResponse.winningDeparture.availabilityType === "live_inventory" ? (
-                    <span style={{ background: "#059669", color: "#ffffff", padding: "0.25rem 0.65rem", borderRadius: "0.25rem", fontSize: "0.75rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                      Live Availability Checked
-                    </span>
-                  ) : (
-                    <span style={{ background: "#d97706", color: "#ffffff", padding: "0.25rem 0.65rem", borderRadius: "0.25rem", fontSize: "0.75rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                      Next Scheduled Departure
-                    </span>
-                  )}
+                  <span style={{
+                    background: searchResponse.winningDeparture.availabilityType === "live_inventory" ? "#065f46" : "#292524",
+                    color: searchResponse.winningDeparture.availabilityType === "live_inventory" ? "#6ee7b7" : "#fcd34d",
+                    border: searchResponse.winningDeparture.availabilityType === "live_inventory" ? "1px solid #10b981" : "1px solid #78716c",
+                    padding: "0.25rem 0.65rem",
+                    borderRadius: "0.25rem",
+                    fontSize: "0.75rem",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em"
+                  }}>
+                    {searchResponse.winningDeparture.availabilityStatusText}
+                  </span>
                   <h3 style={{ fontSize: "1.5rem", fontWeight: 900, color: "#fff", margin: "0.5rem 0 0.25rem 0" }}>
                     {searchResponse.winningDeparture.departureTimeDisplay} Departure
                   </h3>
@@ -567,37 +571,45 @@ export default function NextBoatFinder() {
                 </div>
               </div>
 
-              <div style={{ marginTop: "1.25rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
-                <div style={{ fontSize: "0.82rem", color: "#d6d3d1" }}>
-                  {searchResponse.winningDeparture.availabilityType === "live_inventory" ? (
-                    <span>
-                      <strong style={{ color: "#34d399" }}>Seats available for group of {searchResponse.totalGroupSize} when checked</strong> · Subject to checkout availability
-                    </span>
-                  ) : (
-                    <span>
-                      <strong style={{ color: "#fbbf24" }}>Next scheduled departure: {searchResponse.winningDeparture.departureTimeDisplay}</strong> · Eligibility confirmed for {searchResponse.totalGroupSize} · Confirm open seats with operator
-                    </span>
-                  )}
+              {/* PROMINENT BOOKING SECTION */}
+              <div style={{
+                marginTop: "1.25rem",
+                padding: "1rem",
+                background: "#1c1917",
+                borderRadius: "0.5rem",
+                border: "1px solid #333",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: "1rem"
+              }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: "0.95rem", fontWeight: 800, color: "#ffffff" }}>
+                    Choose your tour here and complete your reservation through the checkout shown.
+                  </p>
+                  <span style={{ fontSize: "0.78rem", color: "#a8a29e", marginTop: "2px", display: "block" }}>
+                    {searchResponse.winningDeparture.availabilityStatusText}
+                  </span>
                 </div>
                 <a
                   href={searchResponse.winningDeparture.bookingUrl}
-                  target={searchResponse.winningDeparture.bookingUrl.includes("welcometotheswamp.com") ? undefined : "_blank"}
-                  rel={searchResponse.winningDeparture.bookingUrl.includes("welcometotheswamp.com") ? undefined : "noopener noreferrer"}
+                  target={searchResponse.winningDeparture.bookingUrl.includes("welcometotheswamp.com/tours/") ? undefined : "_blank"}
+                  rel={searchResponse.winningDeparture.bookingUrl.includes("welcometotheswamp.com/tours/") ? undefined : "noopener noreferrer"}
                   style={{
-                    padding: "0.75rem 1.5rem",
-                    background: searchResponse.winningDeparture.availabilityType === "live_inventory" ? "#10b981" : "#fbbf24",
+                    padding: "0.85rem 1.75rem",
+                    background: "#fbbf24",
                     color: "#0c0a09",
-                    fontWeight: 800,
+                    fontWeight: 900,
                     borderRadius: "0.5rem",
                     textDecoration: "none",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.3)"
+                    boxShadow: "0 4px 14px rgba(251, 191, 36, 0.3)",
+                    whiteSpace: "nowrap"
                   }}
                 >
-                  {searchResponse.winningDeparture.bookingUrl.includes("welcometotheswamp.com/tours/")
-                    ? "View Tour & Check Seats →"
-                    : searchResponse.winningDeparture.availabilityType === "live_inventory"
-                    ? "Book Live Seats →"
-                    : "Check Seats on Operator Checkout →"}
+                  {searchResponse.winningDeparture.bookingUrl.includes("/checkout") || searchResponse.winningDeparture.bookingUrl.includes("/book") || searchResponse.winningDeparture.bookingUrl.includes("fareharbor.com/embeds/book")
+                    ? "Continue to Checkout →"
+                    : "View Tour & Booking Options →"}
                 </a>
               </div>
             </div>
@@ -614,8 +626,17 @@ export default function NextBoatFinder() {
                   <div key={dep.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#0c0a09", padding: "0.75rem 1rem", borderRadius: "0.5rem", border: "1px solid #333", flexWrap: "wrap", gap: "0.5rem" }}>
                     <div>
                       <strong style={{ color: "#fff" }}>{dep.departureTimeDisplay}</strong>
-                      <span style={{ marginLeft: "0.5rem", background: dep.availabilityType === "live_inventory" ? "#064e3b" : "#451a03", color: dep.availabilityType === "live_inventory" ? "#6ee7b7" : "#fcd34d", padding: "0.15rem 0.4rem", borderRadius: "3px", fontSize: "0.7rem", fontWeight: 700 }}>
-                        {dep.availabilityType === "live_inventory" ? "Live" : "Scheduled"}
+                      <span style={{
+                        marginLeft: "0.5rem",
+                        background: dep.availabilityType === "live_inventory" ? "#064e3b" : "#292524",
+                        color: dep.availabilityType === "live_inventory" ? "#6ee7b7" : "#fcd34d",
+                        border: dep.availabilityType === "live_inventory" ? "1px solid #10b981" : "1px solid #78716c",
+                        padding: "0.15rem 0.45rem",
+                        borderRadius: "3px",
+                        fontSize: "0.7rem",
+                        fontWeight: 700
+                      }}>
+                        {dep.availabilityStatusText}
                       </span>
                       <span style={{ marginLeft: "0.5rem", color: "#a8a29e", fontSize: "0.85rem" }}>
                         {dep.operatorName} ({dep.transportation === "hotel_pickup" ? "With Pickup" : "Self-Drive"})
@@ -625,11 +646,13 @@ export default function NextBoatFinder() {
                       <span style={{ color: "#10b981", fontWeight: 700 }}>${dep.totalPrice} base</span>
                       <a
                         href={dep.bookingUrl}
-                        target={dep.bookingUrl.includes("welcometotheswamp.com") ? undefined : "_blank"}
-                        rel={dep.bookingUrl.includes("welcometotheswamp.com") ? undefined : "noopener noreferrer"}
-                        style={{ padding: "0.4rem 0.8rem", background: dep.availabilityType === "live_inventory" ? "#10b981" : "#fbbf24", color: "#0c0a09", textDecoration: "none", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 700 }}
+                        target={dep.bookingUrl.includes("welcometotheswamp.com/tours/") ? undefined : "_blank"}
+                        rel={dep.bookingUrl.includes("welcometotheswamp.com/tours/") ? undefined : "noopener noreferrer"}
+                        style={{ padding: "0.45rem 0.9rem", background: "#fbbf24", color: "#0c0a09", textDecoration: "none", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 800 }}
                       >
-                        {dep.bookingUrl.includes("welcometotheswamp.com/tours/") ? "View Tour →" : "Check Seats →"}
+                        {dep.bookingUrl.includes("/checkout") || dep.bookingUrl.includes("/book") || dep.bookingUrl.includes("fareharbor.com/embeds/book")
+                          ? "Continue to Checkout →"
+                          : "View Tour & Booking Options →"}
                       </a>
                     </div>
                   </div>
@@ -653,12 +676,12 @@ export default function NextBoatFinder() {
             Alert Me When Seats Open (Opening List)
           </h3>
           <p style={{ fontSize: "0.85rem", color: "#a8a29e", lineHeight: "1.5", margin: "0 0 1.25rem 0" }}>
-            Enroll in the opening list. <strong>Automated real-time seat alerts are currently inactive;</strong> we will record your requested date ({activeDate}) and party size ({adults + childrenCount}) and notify you if scheduling or inventory opens.
+            Save your request for {activeDate} (group of {adults + childrenCount}). <strong>Automated alerts are currently inactive.</strong>
           </p>
 
           {waitlistSuccess ? (
             <div style={{ padding: "1rem", background: "#064e3b", borderRadius: "0.5rem", border: "1px solid #10b981" }}>
-              <h4 style={{ color: "#6ee7b7", margin: "0 0 0.5rem 0" }}>✓ Enrollment Confirmed</h4>
+              <h4 style={{ color: "#6ee7b7", margin: "0 0 0.5rem 0" }}>✓ Request Saved</h4>
               <p style={{ color: "#d1fae5", fontSize: "0.9rem", margin: "0 0 0.75rem 0" }}>{waitlistSuccess.message}</p>
               <p style={{ color: "#a7f3d0", fontSize: "0.8rem", margin: 0 }}>
                 Submission ID: <code>{waitlistSuccess.submissionId}</code>. You can cancel anytime using your{" "}

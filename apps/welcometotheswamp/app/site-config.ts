@@ -15,7 +15,7 @@ export const SITE_CONFIG = {
   domain: "welcometotheswamp.com",
   url: "https://welcometotheswamp.com",
   mission:
-    "Welcome to the Swamp is New Orleans' dedicated swamp tour dispatch service featuring the only real-time 'Next Available Airboat' finder. We help visitors compare airboats vs slow covered boats, check live seat availability, and book open departures with hotel pickup.",
+    "Compare and book New Orleans swamp and airboat tours. Find upcoming departures that fit your group, transportation needs, and schedule—all in one place.",
   dccOrigin: process.env.DCC_ORIGIN || "https://www.destinationcommandcenter.com",
   fareharborSwampAsn: process.env.NEXT_PUBLIC_FAREHARBOR_SWAMP_ASN || "aktourcenter",
   swampFareHarborProducts: [
