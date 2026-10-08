@@ -69,18 +69,37 @@ export default function AirportPickupHomeClient({
     <main className="stack">
       <section className="hero">
         <div>
-          <p className="eyebrow">Private Colorado airport transfers · adults 21+</p>
-          <h1>Land at DEN or COS. Start Colorado your way.</h1>
+          <p className="eyebrow">Denver International Airport (DEN) · Private 420 Transportation · Adults 21+</p>
+          <h1>420 Airport Pickup Denver: Private DEN Transportation</h1>
           <p className="arrival-line">
-            Private airport transportation from Denver International Airport and Colorado Springs Airport, with an optional lawful dispensary stop when practical for the route and timing.
+            Pre-arranged private airport pickup from Denver International Airport (DEN) with optional lawful dispensary-stop planning for adults 21+, direct to Denver metro hotels or Colorado mountain resorts.
           </p>
           <p className="hero-copy">
-            Go straight to your destination or build a legal retail stop into the route when practical. No shared shuttle, no random rideshare match, and no cannabis consumption in the vehicle.
+            Touch down at DEN, collect your bags at Level 5 baggage claim, and meet your dedicated driver curbside at Terminal Level 5 Island 2. Travel comfortably in a private all-wheel-drive SUV with room for your group and luggage, plus an optional licensed retail dispensary stop along your route before final drop-off. No shared shuttles, no surge pricing, and no consumption in the vehicle.
           </p>
           <div className="cta-row">
-            <a className="button" href={checkoutHref} onClick={() => trackCheckout("primary_booking_cta")}>Continue to GoSno</a>
-            <Link className="button-secondary" href="/colorado-springs-airport">Flying into COS?</Link>
-            <Link className="button-secondary" href="/colorado">See DEN transfers</Link>
+            <a className="button" href={checkoutHref} onClick={() => trackCheckout("primary_booking_cta")}>Book Denver Airport Pickup</a>
+            <Link className="button-secondary" href="/denver-airport-420-friendly-pickup">View 420 Route Guide</Link>
+            <Link className="button-secondary" href="/colorado">See All DEN Transfers</Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="panel" aria-labelledby="booking-steps-title">
+        <p className="eyebrow">How DEN Pickup &amp; Booking Works</p>
+        <h2 id="booking-steps-title">Clear 3-Step Service &amp; Booking Process</h2>
+        <div className="trust-grid" style={{ marginTop: 16 }}>
+          <div className="trust-item">
+            <strong>1. Book Online or Request Dispatch</strong>
+            <p className="muted">Reserve your private transfer in advance with your arrival date, flight number, and drop-off destination. Choose direct transfer or the optional 21+ retail stop.</p>
+          </div>
+          <div className="trust-item">
+            <strong>2. Seamless DEN Airport Meetup</strong>
+            <p className="muted">Provide your flight number when reserving so your driver can monitor your flight arrival time. Grab luggage on Level 5 and step out to Island 2 (Commercial Livery / Limousine) where your private AWD SUV meets you curbside.</p>
+          </div>
+          <div className="trust-item">
+            <strong>3. En Route Stop &amp; Direct Drop-Off</strong>
+            <p className="muted">Enjoy smooth 420 transportation to a licensed Denver dispensary for independent retail shopping, then continue straight to your lodging, residence, or ski condo.</p>
           </div>
         </div>
       </section>
