@@ -21,12 +21,12 @@ export const swampStorefrontConfig: NetworkCommercialPageConfig = {
   id: "wts-home",
   path: "/",
   metadata: {
-    title: "Compare & Book New Orleans Swamp & Airboat Tours | Next Departures",
+    title: "Next Scheduled Airboat Swamp Tours in New Orleans | Welcome to the Swamp",
     description:
-      "Compare and book New Orleans swamp and airboat tours. Find upcoming departures that fit your group, transportation needs, and schedule—all in one place.",
+      "Find the next scheduled airboat departure matching your date, group, transportation, and booking cutoffs. Confirm open seats at checkout. Requests can be saved; automated seat-opening alerts are currently inactive.",
     keywords: [
       "New Orleans swamp tours",
-      "next available airboat",
+      "next scheduled airboat",
       "New Orleans airboat tours",
       "compare swamp tours New Orleans",
       "airboat tour with hotel pickup",
@@ -37,7 +37,7 @@ export const swampStorefrontConfig: NetworkCommercialPageConfig = {
     eyebrow: "New Orleans Swamp & Airboat Tours",
     title: "Compare and Book New Orleans Swamp & Airboat Tours",
     summary:
-      "Find upcoming departures that fit your group, transportation needs, and schedule—all in one place. Choose your tour here and complete your reservation through the checkout shown.",
+      "Find the next scheduled airboat departure matching your date, group, transportation, and booking cutoffs. Confirm open seats at checkout. Requests can be saved; automated seat-opening alerts are currently inactive.",
     primaryCta: {
       label: "Find Next Departure ↓",
       href: "#next-boat",

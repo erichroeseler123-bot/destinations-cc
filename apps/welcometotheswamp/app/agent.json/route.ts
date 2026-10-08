@@ -12,20 +12,29 @@ export function GET() {
       spec: "dcc-site-contract",
       version: "1.1",
       dcc_id: "dcc:site:welcome-to-the-swamp",
-      schema_version: "2026-08-24",
+      schema_version: "2026-10-08",
+      last_verified: "2026-10-08",
       site: {
         id: "welcome-to-the-swamp",
         name: SITE_CONFIG.name,
         url: SITE_CONFIG.url,
         type: "swamp_tour_comparison_and_booking",
-        description: SITE_CONFIG.mission,
+        description:
+          "Find the next scheduled airboat departure matching your date, group, transportation, and booking cutoffs. Confirm open seats at checkout. Requests can be saved; automated seat-opening alerts are currently inactive.",
       },
       authority: [
         "swamp_tour_comparison",
-        "upcoming_airboat_departures",
+        "scheduled_airboat_departures",
+        "saved_tour_requests",
         "new_orleans_swamp_experience_context",
         "published_decision_guides",
       ],
+      capabilities: {
+        departure_finder:
+          "Matches travel date, party size, transportation, and booking cutoffs against scheduled operator departures. Open seats confirmed at checkout.",
+        saved_requests:
+          "Visitors can save tour preferences and party details. Automated seat-opening alerts are currently inactive.",
+      },
       service_area: {
         dcc_id: "dcc:destination:new-orleans",
         city: "New Orleans",
@@ -57,7 +66,7 @@ export function GET() {
       },
       booking_boundary: {
         rule:
-          "Use the participating operator or booking provider as the authority for live availability, final inclusions, restrictions, payment, and operator terms.",
+          "Use the participating operator or booking provider as the authority for live availability, open seats at checkout, final inclusions, restrictions, payment, and operator terms.",
       },
       network: {
         parent_dcc_id: "dcc:site:destination-command-center",

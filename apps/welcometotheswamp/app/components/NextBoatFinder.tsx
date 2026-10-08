@@ -24,19 +24,6 @@ export default function NextBoatFinder() {
   const [searchResponse, setSearchResponse] = useState<SearchResponse | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
 
-  // Waitlist Enrollment State
-  const [showWaitlist, setShowWaitlist] = useState(false);
-  const [waitlistEmail, setWaitlistEmail] = useState("");
-  const [waitlistName, setWaitlistName] = useState("");
-  const [waitlistWindow, setWaitlistWindow] = useState<"any" | "morning" | "afternoon">("any");
-  const [waitlistSubmitting, setWaitlistSubmitting] = useState(false);
-  const [waitlistSuccess, setWaitlistSuccess] = useState<{
-    submissionId: string;
-    message: string;
-    unsubscribeUrl: string;
-  } | null>(null);
-  const [waitlistError, setWaitlistError] = useState<string | null>(null);
-
   // Interactive Live Seat Verification State
   const [verifyingDepId, setVerifyingDepId] = useState<string | null>(null);
   const [verifiedBadges, setVerifiedBadges] = useState<
@@ -113,7 +100,6 @@ export default function NextBoatFinder() {
     if (e) e.preventDefault();
     setIsSearching(true);
     setSearchError(null);
-    setWaitlistSuccess(null);
 
     try {
       const res = await fetch("/api/search", {
@@ -134,52 +120,10 @@ export default function NextBoatFinder() {
       }
 
       setSearchResponse(data.data);
-      if (data.data.state === "NO_MATCH") {
-        setShowWaitlist(true);
-      }
     } catch (err: any) {
       setSearchError(err?.message || "Search failed.");
     } finally {
       setIsSearching(false);
-    }
-  };
-
-  const handleEnrollWaitlist = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setWaitlistSubmitting(true);
-    setWaitlistError(null);
-
-    try {
-      const res = await fetch("/api/waitlist/enroll", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: waitlistEmail,
-          name: waitlistName,
-          travelDate: activeDate,
-          adults,
-          childrenCount,
-          childrenAges,
-          transportation,
-          boatType,
-          timeWindow: waitlistWindow,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Failed to enroll.");
-      }
-
-      setWaitlistSuccess({
-        submissionId: data.submissionId,
-        message: data.message,
-        unsubscribeUrl: data.unsubscribeUrl,
-      });
-    } catch (err: any) {
-      setWaitlistError(err?.message || "Enrollment failed.");
-    } finally {
-      setWaitlistSubmitting(false);
     }
   };
 
@@ -439,7 +383,7 @@ export default function NextBoatFinder() {
             type="submit"
             disabled={isSearching}
             style={{
-              flex: "2",
+              flex: "1",
               padding: "0.9rem 1.5rem",
               background: "#fbbf24",
               color: "#0c0a09",
@@ -452,23 +396,6 @@ export default function NextBoatFinder() {
             }}
           >
             {isSearching ? "Checking Live Departures..." : "Find Next Available Departure"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowWaitlist(!showWaitlist)}
-            style={{
-              flex: "1",
-              padding: "0.9rem 1rem",
-              background: "transparent",
-              color: "#fbbf24",
-              fontWeight: 700,
-              fontSize: "0.95rem",
-              borderRadius: "0.5rem",
-              border: "1px solid #fbbf24",
-              cursor: "pointer"
-            }}
-          >
-            {showWaitlist ? "Hide Opening List" : "Alert Me When Seats Open"}
           </button>
         </div>
       </form>
@@ -505,11 +432,8 @@ export default function NextBoatFinder() {
               <h3 style={{ color: "#fbbf24", margin: "0 0 0.5rem 0", fontSize: "1.1rem" }}>
                 No matching departures found
               </h3>
-              <p style={{ color: "#d6d3d1", fontSize: "0.9rem", margin: "0 0 1rem 0" }}>
-                All connected options for your group ({searchResponse.totalGroupSize} travelers) on {searchResponse.travelDate} are either booked, past cutoff deadlines, or do not fit vessel age requirements.
-              </p>
-              <p style={{ color: "#fbbf24", fontSize: "0.85rem", fontWeight: 600, margin: 0 }}>
-                You can enroll below to be notified if schedules or inventory open up.
+              <p style={{ color: "#d6d3d1", fontSize: "0.9rem", margin: 0 }}>
+                All connected options for your group ({searchResponse.totalGroupSize} travelers) on {searchResponse.travelDate} are either booked, past cutoff deadlines, or do not fit vessel age requirements. Try adjusting your party size, date, or transportation choice.
               </p>
             </div>
           )}
@@ -603,8 +527,8 @@ export default function NextBoatFinder() {
                   <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "#10b981" }}>
                     ${searchResponse.winningDeparture.totalPrice}
                   </div>
-                  <span style={{ display: "block", fontSize: "0.72rem", color: "#a8a29e", marginTop: "2px" }}>
-                    ${searchResponse.winningDeparture.pricePerAdult}/person base • + 3% card fee & taxes at checkout
+                  <span style={{ display: "block", fontSize: "0.75rem", color: "#a8a29e", marginTop: "2px" }}>
+                    ${searchResponse.winningDeparture.pricePerAdult}/person base • Booking fees may apply; confirm total at checkout
                   </span>
                 </div>
               </div>
@@ -655,6 +579,9 @@ export default function NextBoatFinder() {
                   <span style={{ fontSize: "0.78rem", color: "#a8a29e", marginTop: "2px", display: "block" }}>
                     {searchResponse.winningDeparture.availabilityStatusText}
                   </span>
+                  <p style={{ margin: "6px 0 0 0", fontSize: "0.78rem", color: "#fcd34d" }}>
+                    Important: You will re-select your date, departure time, and passenger count on the operator's checkout screen.
+                  </p>
                 </div>
                 <a
                   href={searchResponse.winningDeparture.bookingUrl}
@@ -682,9 +609,12 @@ export default function NextBoatFinder() {
           {/* OTHER DEPARTURES */}
           {searchResponse.allDepartures.length > 1 && (
             <div>
-              <h4 style={{ fontSize: "1rem", color: "#d6d3d1", marginBottom: "0.75rem" }}>
+              <h4 style={{ fontSize: "1rem", color: "#d6d3d1", marginBottom: "0.25rem" }}>
                 Later Departures Today:
               </h4>
+              <p style={{ fontSize: "0.78rem", color: "#a8a29e", margin: "0 0 0.75rem 0" }}>
+                Departures link directly to operator checkout, where you will re-select your date, time, and passenger count.
+              </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                 {searchResponse.allDepartures.slice(1).map((dep) => (
                   <div key={dep.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#0c0a09", padding: "0.75rem 1rem", borderRadius: "0.5rem", border: "1px solid #333", flexWrap: "wrap", gap: "0.5rem" }}>
@@ -725,7 +655,10 @@ export default function NextBoatFinder() {
                       </span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                      <span style={{ color: "#10b981", fontWeight: 700 }}>${dep.totalPrice} base</span>
+                      <div style={{ textAlign: "right" }}>
+                        <span style={{ color: "#10b981", fontWeight: 700 }}>${dep.totalPrice} base</span>
+                        <span style={{ display: "block", fontSize: "0.68rem", color: "#a8a29e" }}>Fees may apply</span>
+                      </div>
                       <a
                         href={dep.bookingUrl}
                         target={dep.bookingUrl.includes("welcometotheswamp.com/tours/") ? undefined : "_blank"}
@@ -741,123 +674,6 @@ export default function NextBoatFinder() {
                 ))}
               </div>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* WAITLIST / OPENING LIST ENROLLMENT FORM */}
-      {showWaitlist && (
-        <div style={{
-          marginTop: "2rem",
-          background: "#0c0a09",
-          border: "1px solid #44403c",
-          borderRadius: "0.75rem",
-          padding: "1.5rem"
-        }}>
-          <h3 style={{ margin: "0 0 0.5rem 0", color: "#fbbf24", fontSize: "1.25rem" }}>
-            Alert Me When Seats Open (Opening List)
-          </h3>
-          <p style={{ fontSize: "0.85rem", color: "#a8a29e", lineHeight: "1.5", margin: "0 0 1.25rem 0" }}>
-            Save your request for {activeDate} (group of {adults + childrenCount}). <strong>Automated seat-opening alerts are not yet active.</strong>
-          </p>
-
-          {waitlistSuccess ? (
-            <div style={{ padding: "1rem", background: "#064e3b", borderRadius: "0.5rem", border: "1px solid #10b981" }}>
-              <h4 style={{ color: "#6ee7b7", margin: "0 0 0.5rem 0" }}>✓ Request Saved</h4>
-              <p style={{ color: "#d1fae5", fontSize: "0.9rem", margin: "0 0 0.75rem 0" }}>{waitlistSuccess.message}</p>
-              <p style={{ color: "#a7f3d0", fontSize: "0.8rem", margin: 0 }}>
-                Submission ID: <code>{waitlistSuccess.submissionId}</code>. You can cancel anytime using your{" "}
-                <a href={waitlistSuccess.unsubscribeUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#fff", textDecoration: "underline" }}>
-                  one-click unsubscribe link
-                </a>.
-              </p>
-            </div>
-          ) : (
-            <form onSubmit={handleEnrollWaitlist} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                <div>
-                  <label style={{ display: "block", fontSize: "0.8rem", color: "#d6d3d1", marginBottom: "0.25rem" }}>
-                    Your Email (Required)
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={waitlistEmail}
-                    onChange={(e) => setWaitlistEmail(e.target.value)}
-                    placeholder="name@example.com"
-                    style={{
-                      width: "100%",
-                      padding: "0.6rem",
-                      borderRadius: "0.5rem",
-                      background: "#1c1917",
-                      border: "1px solid #444",
-                      color: "#fff"
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: "block", fontSize: "0.8rem", color: "#d6d3d1", marginBottom: "0.25rem" }}>
-                    Your Name (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={waitlistName}
-                    onChange={(e) => setWaitlistName(e.target.value)}
-                    placeholder="Family or Traveler Name"
-                    style={{
-                      width: "100%",
-                      padding: "0.6rem",
-                      borderRadius: "0.5rem",
-                      background: "#1c1917",
-                      border: "1px solid #444",
-                      color: "#fff"
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: "0.8rem", color: "#d6d3d1", marginBottom: "0.25rem" }}>
-                  Preferred Time of Day:
-                </label>
-                <div style={{ display: "flex", gap: "1rem" }}>
-                  {(["any", "morning", "afternoon"] as const).map((win) => (
-                    <label key={win} style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.85rem", color: "#e7e5e4", cursor: "pointer" }}>
-                      <input
-                        type="radio"
-                        name="timeWindow"
-                        value={win}
-                        checked={waitlistWindow === win}
-                        onChange={() => setWaitlistWindow(win)}
-                      />
-                      {win === "any" ? "Any Time" : win === "morning" ? "Morning (Before Noon)" : "Afternoon (Noon or Later)"}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {waitlistError && (
-                <p style={{ color: "#ef4444", fontSize: "0.85rem", margin: 0 }}>{waitlistError}</p>
-              )}
-
-              <button
-                type="submit"
-                disabled={waitlistSubmitting}
-                style={{
-                  padding: "0.75rem 1.25rem",
-                  background: "#44403c",
-                  color: "#fbbf24",
-                  fontWeight: 700,
-                  fontSize: "0.95rem",
-                  borderRadius: "0.5rem",
-                  border: "1px solid #fbbf24",
-                  cursor: waitlistSubmitting ? "not-allowed" : "pointer",
-                  alignSelf: "flex-start"
-                }}
-              >
-                {waitlistSubmitting ? "Enrolling..." : "Enroll in Opening List"}
-              </button>
-            </form>
           )}
         </div>
       )}

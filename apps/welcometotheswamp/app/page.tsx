@@ -27,9 +27,9 @@ export default function HomePage() {
     "@type": "TouristTrip",
     name: "New Orleans Swamp & Airboat Tours",
     description:
-      "Compare and book New Orleans swamp and airboat tours. Find upcoming departures that fit your group, transportation needs, and schedule—all in one place.",
+      "Find the next scheduled airboat departure matching your date, group, transportation, and booking cutoffs. Confirm open seats at checkout. Requests can be saved; automated seat-opening alerts are currently inactive.",
     disambiguatingDescription:
-      "Service comparing upcoming airboat and covered swamp tour departures across Louisiana bayou operators.",
+      "Service comparing scheduled airboat and covered swamp tour departures across Louisiana bayou operators.",
     touristType: ["Adventure Tourists", "Nature Lovers", "Cruise Visitors"],
     additionalType: [
       "https://en.wikipedia.org/wiki/Airboat",
@@ -40,8 +40,8 @@ export default function HomePage() {
       priceCurrency: "USD",
       lowPrice: "65.00",
       highPrice: "135.00",
-      offerCount: "12",
-      availability: "https://schema.org/InStock",
+      description:
+        "Prices vary by operator, boat type, and transportation option. Availability and open seats are confirmed directly at checkout for your specific travel date and party size.",
       url: "https://welcometotheswamp.com/",
     },
     itinerary: {
@@ -77,7 +77,7 @@ export default function HomePage() {
         name: "How do I find the next airboat departure in New Orleans?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "To find the next airboat departure, choose your travel date (today, tomorrow, or a chosen date), enter your party size and children's ages, and select whether you need French Quarter hotel pickup or plan to drive to the dock. The departure finder compares upcoming departures across local airboat operators, accounts for New Orleans time and booking cutoffs, and presents the earliest option that matches your party so you can choose your tour here and complete your reservation through the checkout shown.",
+          text: "To find the next airboat departure, choose your travel date (today, tomorrow, or a chosen date), enter your party size and children's ages, and select whether you need French Quarter hotel pickup or plan to drive to the dock. The departure finder compares scheduled departures across local airboat operators, accounts for New Orleans time and booking cutoffs, and presents the earliest option that matches your party so you can choose your tour here and complete your reservation through the checkout shown.",
         },
       },
       {
@@ -93,7 +93,15 @@ export default function HomePage() {
         name: "How do I know if a departure has confirmed seats?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Each result on Welcome to the Swamp clearly states its availability status: either 'Live availability checked [time]' when verified through real-time provider systems, or 'Scheduled departure—confirm seats' when showing scheduled operator timetables.",
+          text: "Each result on Welcome to the Swamp displays scheduled departure timetables and booking cutoff logic. Confirm open seats directly at checkout for your chosen date and party size. Travel requests can also be saved, though automated seat-opening alerts are currently inactive.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Can I save a request if no matching airboat departures are open?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes. You can save your tour request with your travel date, party size, and timing preferences. Requests are recorded for planning, but automated seat-opening alerts are currently inactive.",
         },
       },
     ],
@@ -156,7 +164,7 @@ export default function HomePage() {
           <div className="mt-8 rounded-xl border border-amber-400/30 bg-amber-950/20 p-5">
             <h4 className="text-sm font-bold text-amber-300">Choose your tour here and complete your reservation through the checkout shown.</h4>
             <p className="mt-1 text-xs leading-5 text-stone-300">
-              Each option clearly indicates whether it is a scheduled departure (requiring seat confirmation at checkout) or live availability verified for your exact party size.
+              Each option displays scheduled operator timetables and cutoff requirements. Confirm open seats at checkout. Requests can be saved for your party; automated seat-opening alerts are currently inactive.
             </p>
           </div>
         </div>

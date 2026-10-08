@@ -83,7 +83,7 @@ export const CURATED_SWAMP_CATALOG: CuratedSwampTour[] = [
     pricePerChild: 85,
     dockDriveMinutes: 35,
     pickupLeadMinutes: 0,
-    bookingCutoffMinutes: 60,
+    bookingCutoffMinutes: 120,
     bookingUrl: "https://welcometotheswamp.com/tours/airboat-tour",
   },
   {
