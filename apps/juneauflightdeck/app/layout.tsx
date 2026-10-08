@@ -12,12 +12,12 @@ export const metadata: Metadata = {
     template: "%s | Juneau Flight Deck",
   },
   description:
-    "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.",
+    "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, waitlists for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Juneau Flight Deck | Alaska Cruise Excursions & Helicopter Tours",
     description:
-      "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans.",
+      "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, waitlists for sold-out tours, and alternatives when weather disrupts plans.",
     url: "https://juneauflightdeck.com/",
     type: "website",
   },
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Juneau Flight Deck | Alaska Cruise Excursions & Helicopter Tours",
     description:
-      "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans.",
+      "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, waitlists for sold-out tours, and alternatives when weather disrupts plans.",
   },
 };
 
@@ -38,7 +38,7 @@ const siteJsonLd = {
       name: "Juneau Flight Deck",
       url: "https://juneauflightdeck.com",
       description:
-        "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.",
+        "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, waitlists for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.",
       address: {
         "@type": "PostalAddress",
         addressLocality: "Juneau",
@@ -57,7 +57,7 @@ const siteJsonLd = {
       name: "Juneau Flight Deck",
       url: "https://juneauflightdeck.com",
       description:
-        "Compare and book Alaska cruise excursions: Juneau helicopter glacier tours, dog sledding, whale watching backups, and sold-out availability alerts.",
+        "Compare and book Alaska cruise excursions: Juneau helicopter glacier tours, dog sledding, whale watching backups, and sold-out tour waitlists.",
       publisher: { "@id": "https://juneauflightdeck.com/#organization" },
     },
     {

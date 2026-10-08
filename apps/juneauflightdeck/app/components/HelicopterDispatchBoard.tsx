@@ -33,7 +33,7 @@ export default function HelicopterDispatchBoard({
 
   const defaultSubhead = isSkagway
     ? 'Compare Skagway glacier helicopter operators, review ship-safe return buffers, and plan your weather backup.'
-    : 'Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.';
+    : 'Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, waitlists for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.';
 
   const defaultPrimaryCta = isSkagway ? 'Compare Skagway Flights' : 'Find Your Tour';
 
@@ -105,7 +105,7 @@ export default function HelicopterDispatchBoard({
             href="/helicopter-waitlist"
             className="jfd-hero-btn-secondary"
           >
-            Sold-Out Availability Alerts
+            Sold-Out Tour Waitlist
           </Link>
         </div>
 
@@ -529,7 +529,7 @@ export default function HelicopterDispatchBoard({
                   SOLD-OUT DATES
                 </div>
                 <p style={{ margin: 0, fontSize: '0.88rem', lineHeight: 1.5, color: 'var(--muted)' }}>
-                  Our automated scanner sweeps operator inventories every morning at 10:00 AM when cancellation desks process changes. When matching seats open up, we alert you immediately or place a hold where cancellation policies permit.
+                  Submit your ship, port date, tour preference, and party size for a helicopter availability request. We perform daily availability checks across local operator schedules and notify you by email when matching openings or alternatives are found.
                 </p>
               </div>
 

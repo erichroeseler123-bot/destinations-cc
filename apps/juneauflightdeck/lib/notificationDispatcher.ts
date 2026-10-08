@@ -98,7 +98,7 @@ export async function dispatchSeatDropNotification(params: {
 
   const emailBodyText = `Hello ${params.guestName},
 
-An open helicopter slot matching your cruise port date on ${params.shipName} has just been detected by Juneau Flight Deck's 10:00 AM inventory sweep.
+An open helicopter slot matching your cruise port date on ${params.shipName} has just been detected by Juneau Flight Deck's daily availability check.
 
 --- FLIGHT DETAILS ---
 Tour: ${params.tourName}
@@ -115,7 +115,7 @@ ${params.checkoutUrl}
 --- OPERATOR POLICIES & GUARANTEES ---
 ${params.cancellationPolicy}
 
-IMPORTANT NOTICE: This is an automated notification of detected availability based on our 10:00 AM fleet scan. Seats are NOT pre-held on your behalf and will remain open to the public until you complete checkout at the link above.
+IMPORTANT NOTICE: This is an alert of detected availability based on our daily schedule check. Seats are NOT pre-held on your behalf and will remain open to the public until you complete checkout at the link above.
 
 Juneau Flight Deck Dispatch Desk
 hello@juneauflightdeck.com
@@ -124,11 +124,11 @@ hello@juneauflightdeck.com
   const emailBodyHtml = `
 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; line-height: 1.6;">
   <div style="background-color: #0f172a; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-    <h2 style="color: #38bdf8; margin: 0; font-size: 20px;">Juneau Flight Deck • Seat Drop Alert</h2>
+    <h2 style="color: #38bdf8; margin: 0; font-size: 20px;">Juneau Flight Deck • Availability Alert</h2>
   </div>
   <div style="border: 1px solid #e2e8f0; border-top: none; padding: 24px; border-radius: 0 0 8px 8px;">
     <p>Hello <strong>${params.guestName}</strong>,</p>
-    <p>An open helicopter flight slot matching your cruise port date on <strong>${params.shipName}</strong> (${params.cruiseLine}) was just detected during our 10:00 AM fleet sweep.</p>
+    <p>An open helicopter flight slot matching your cruise port date on <strong>${params.shipName}</strong> (${params.cruiseLine}) was detected during our daily availability check.</p>
     
     <div style="background-color: #f8fafc; border-left: 4px solid #0284c7; padding: 16px; margin: 20px 0; border-radius: 4px;">
       <h3 style="margin-top: 0; color: #0f172a;">${params.tourName}</h3>

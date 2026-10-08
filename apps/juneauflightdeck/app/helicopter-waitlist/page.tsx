@@ -4,14 +4,14 @@ import HelicopterWaitlistForm from "../components/HelicopterWaitlistForm";
 import { ALASKA_CRUISE_FLEET } from "../../lib/alaskaCruiseFleet";
 
 export const metadata: Metadata = {
-  title: "Helicopter Tour Availability Watch & Waitlist | Juneau Flight Deck",
+  title: "Helicopter Tour Availability Check & Request | Juneau Flight Deck",
   description:
-    "Put our daily 10:00 AM seat scanner on your cruise port date. Automated monitoring of TEMSCO, Coastal, and NorthStar glacier helicopter flights with direct operator booking links.",
+    "Compare and book Juneau excursions, and submit your ship, port date, tour preference, and party size for a helicopter availability request. We perform daily availability checks across TEMSCO, Coastal, and NorthStar.",
   alternates: { canonical: "https://juneauflightdeck.com/helicopter-waitlist" },
   openGraph: {
-    title: "Helicopter Tour Availability Watch | Juneau Flight Deck",
+    title: "Helicopter Tour Availability Check | Juneau Flight Deck",
     description:
-      "Daily seat drop monitoring for Juneau & Skagway helicopter glacier tours. Direct operator booking and concierge dispatch alerts.",
+      "Daily availability checks for Juneau & Skagway helicopter glacier tours. Direct operator booking links and excursion coordination.",
     url: "https://juneauflightdeck.com/helicopter-waitlist",
   },
 };
@@ -25,7 +25,7 @@ const waitlistFaqSchema = {
       name: "When do sold-out Juneau helicopter seats usually open up?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Seats drop back into live inventory when cruise lines reach contractual cutoff deadlines (typically 30, 14, and 7 days prior to sailing) and return unsold block allocations to operators. Cancellations and aircraft weight rebalances also open seats daily at 10:00 AM AKDT.",
+        text: "Seats can reopen when cruise line group blocks are adjusted, when other travelers change plans or cancel, or when dispatchers finalize aircraft weight and balance manifests. We conduct daily availability checks across local operator schedules to find matching openings.",
       },
     },
     {
@@ -33,7 +33,7 @@ const waitlistFaqSchema = {
       name: "Can I monitor both Juneau and Skagway for glacier dog sledding?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes. Many Alaska cruise sailings visit both Juneau and Skagway. TEMSCO operates dog sledding camps on both Herbert Glacier (Juneau) and Denver Glacier (Skagway). Our waitlist form allows you to scan both port dates simultaneously.",
+        text: "Yes. Many Alaska cruise sailings visit both Juneau and Skagway. TEMSCO operates dog sledding camps on both Herbert Glacier (Juneau) and Denver Glacier (Skagway). Our form allows you to submit availability requests for both port dates.",
       },
     },
     {
@@ -260,7 +260,7 @@ export default function Page() {
               </Link>
             </h3>
             <p style={{ fontSize: "0.85rem", color: "var(--muted)", margin: 0, lineHeight: 1.5 }}>
-              How cruise line block allocations expire and why prime glacier seats reappear 7 to 30 days before sailing.
+              How independent operator capacity differs from cruise line blocks and how to check for reopened seats.
             </p>
           </div>
 

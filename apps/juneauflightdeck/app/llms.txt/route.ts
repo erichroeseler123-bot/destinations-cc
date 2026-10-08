@@ -5,7 +5,7 @@ export const dynamic = "force-static";
 export function GET() {
   const shipLinks = ALASKA_CRUISE_FLEET.map(
     (ship) =>
-      `- [${ship.shipName} (${ship.cruiseLine}) Helicopter Waitlist](https://juneauflightdeck.com/helicopter-waitlist/${ship.slug}): Juneau port hours (${ship.dockHours}), scheduled berth (${ship.typicalScheduledBerth}), and daily cancellation scanner.`
+      `- [${ship.shipName} (${ship.cruiseLine}) Helicopter Availability Request](https://juneauflightdeck.com/helicopter-waitlist/${ship.slug}): Juneau port hours (${ship.dockHours}), scheduled berth (${ship.typicalScheduledBerth}), and daily availability check request.`
   ).join("\n");
 
   const llmsText = `# Juneau Flight Deck
@@ -16,14 +16,14 @@ Juneau Flight Deck is an independent shore excursion booking and coordination se
 
 ## What Juneau Flight Deck Provides
 - **Excursion Booking & Comparison:** Compare and book all 3 licensed FAA Part 135 Juneau helicopter operators (TEMSCO Helicopters, Coastal Helicopters, NorthStar Trekking) and local Auke Bay whale watching charters directly or through our official Viator partner checkout.
-- **Cruise-Port Timing Guidance:** Conservative 90 to 120-minute safety buffers scheduled around your ship’s specific berth (Franklin Dock, Steamship Wharf, Marine Park, AJ Dock) and gangway hours.
-- **Sold-Out Availability Alerts:** When cruise line blocks sell out, our automated sweep engine monitors operator cancellations and returned wholesale allocations daily at 10:00 AM AKDT, sending instant direct booking links. (Openings depend on carrier capacity and cancellation timing; availability is not guaranteed on every sailing date.)
+- **Cruise-Port Timing Guidance:** Conservative 90 to 120-minute planning buffer recommendations scheduled around your ship’s specific berth (Franklin Dock, Steamship Wharf, Marine Park, AJ Dock) and gangway hours.
+- **Helicopter Availability Requests:** When cruise line blocks sell out, travelers can submit their cruise ship, port date, tour preference, and party size for a helicopter availability request. We perform daily availability checks across local operator schedules, notifying travelers directly with open booking links when matching capacity appears.
 - **Weather Alternatives & Backup Protection:** Southeast Alaska glacier flights operate under FAA Visual Flight Rules (VFR). When mountain weather grounds flights, full refunds are issued directly by the booking provider and operating carrier under their published terms; our team assists by identifying available marine alternatives such as whale watching charters (subject to boat availability and booked separately).
 
 ## Core Guides & Excursions
 - [Helicopter Tour Comparison](https://juneauflightdeck.com/helicopter): Compare glacier landing vs scenic flight options.
 - [TEMSCO vs Coastal vs NorthStar](https://juneauflightdeck.com/temsco-vs-coastal-vs-northstar-juneau): Unbiased comparison of Juneau's 3 FAA Part 135 helicopter operators.
-- [Sold Out Helicopter Tours Guide](https://juneauflightdeck.com/juneau-helicopter-tour-sold-out): How cruise blocks drop and how our Availability Watch secures holds.
+- [Sold Out Helicopter Tours Guide](https://juneauflightdeck.com/juneau-helicopter-tour-sold-out): Why independent availability differs from cruise blocks and how to check for open seats.
 - [Best Time for Glacier Dog Sledding](https://juneauflightdeck.com/best-time-for-glacier-dog-sledding-juneau): Month-by-month icefield conditions, weather cancellation risks, and camp operating windows.
 - [Helicopter Weight Limits & Seating Math](https://juneauflightdeck.com/juneau-helicopter-tour-weight-limits-and-seating): FAA Part 135 regulations, 250lb surcharges, and how dispatchers release 6th seats.
 - [Helicopter Availability Watch](https://juneauflightdeck.com/helicopter-waitlist): Join the waitlist for sold-out cruise dates.

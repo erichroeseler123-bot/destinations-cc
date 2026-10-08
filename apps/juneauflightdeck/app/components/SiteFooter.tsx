@@ -11,7 +11,7 @@ export default function SiteFooter() {
               Juneau Flight Deck • Cruise Excursion Booking &amp; Coordination
             </p>
             <p style={{ fontSize: "0.92rem", lineHeight: 1.6, margin: "0 0 10px", color: "var(--text)" }}>
-              Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
+              Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, waitlists for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
             </p>
             <p style={{ fontSize: "0.8rem", color: "var(--muted)", lineHeight: 1.5, margin: 0 }}>
               Bookings are completed directly with licensed flight and marine operators or via our official Viator partner checkout. Local ground coordination provided in Juneau, Alaska.
@@ -49,7 +49,7 @@ export default function SiteFooter() {
             </h4>
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "8px" }} className="site-footer-links">
               <li>
-                <Link href="/helicopter-waitlist">Helicopter Availability Watch</Link>
+                <Link href="/helicopter-waitlist">Helicopter Tour Waitlist</Link>
               </li>
               <li>
                 <Link href="/helicopter">Juneau Helicopter Tours</Link>

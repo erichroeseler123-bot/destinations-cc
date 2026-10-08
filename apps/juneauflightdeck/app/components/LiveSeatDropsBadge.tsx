@@ -22,17 +22,17 @@ export default function LiveSeatDropsBadge({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
-                Live 10:00 AM Inventory Sweep
+                Daily Availability Checks
               </span>
               <span className="bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                Active Today
+                Active Service
               </span>
             </div>
             <p className="text-sm font-semibold text-white mt-0.5 mb-0">
-              <strong className="text-amber-400 font-bold">Automated Daily Sweep</strong> active for 2026 Alaska Cruise Season
+              <strong className="text-amber-400 font-bold">Daily Schedule Checks</strong> active for Alaska Cruise Season
               <span className="hidden md:inline text-slate-300 text-xs font-normal">
                 {" "}
-                • Monitoring TEMSCO, Coastal &amp; NorthStar inventory at 10:00 AM AKDT
+                • Checking TEMSCO, Coastal &amp; NorthStar capacity for open seats
               </span>
             </p>
           </div>
@@ -44,7 +44,7 @@ export default function LiveSeatDropsBadge({
               href="/helicopter-waitlist"
               className="text-xs font-bold text-sky-300 hover:text-white bg-sky-950/60 hover:bg-sky-900 border border-sky-500/40 rounded-xl px-3 py-1.5 transition flex items-center gap-1"
             >
-              <span>Scan Your Cruise Date</span>
+              <span>Check Your Cruise Date</span>
               <span>→</span>
             </Link>
           </div>
