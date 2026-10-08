@@ -112,21 +112,23 @@ export async function dispatchWaitlistAlert(
     }
   }
 
-  // Durably record the notification to prevent duplicates
-  await recordNotification({
-    submissionId: submission.id,
-    departureId: departure.id,
-    travelDate: submission.travelDate,
-    recipientEmail: submission.email,
-    operatorName: departure.operatorName,
-    departureTime: departure.departureTime,
-    status: dispatchError ? "failed" : channel === "email" ? "delivered" : "simulated",
-  });
+  // Durably record the notification to prevent duplicates ONLY if real email was sent
+  if (channel === "email" && !dispatchError) {
+    await recordNotification({
+      submissionId: submission.id,
+      departureId: departure.id,
+      travelDate: submission.travelDate,
+      recipientEmail: submission.email,
+      operatorName: departure.operatorName,
+      departureTime: departure.departureTime,
+      status: "delivered",
+    });
+  }
 
   return {
-    sent: !dispatchError,
+    sent: channel === "email" && !dispatchError,
     channel,
-    error: dispatchError,
+    error: dispatchError || (channel === "simulated" ? "Email channel inactive" : undefined),
     unsubscribeUrl,
   };
 }

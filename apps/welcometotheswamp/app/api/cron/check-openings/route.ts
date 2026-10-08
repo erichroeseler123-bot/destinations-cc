@@ -28,14 +28,42 @@ export async function GET(request: Request) {
       }
     }
 
-    // 2. Expire past travel dates
+    // 2. Expire past travel dates (safe hygiene)
     const expiredCount = await expireOutdatedWaitlistSubmissions();
 
-    // 3. Fetch active submissions
+    // 3. HARD GATE: Monitoring requires authenticated live inventory AND active email delivery
+    const viatorKey = (process.env.VIATOR_API_KEY || "").trim();
+    const liveInventoryReady =
+      Boolean(viatorKey) && viatorKey.length > 20 && !viatorKey.includes("[SENSITIVE]");
+
+    const resendKey = (process.env.RESEND_API_KEY || "").trim();
+    const emailDeliveryReady =
+      Boolean(resendKey) && resendKey.length > 20 && !resendKey.includes("[SENSITIVE]");
+
+    const monitoringActive = liveInventoryReady && emailDeliveryReady;
+
+    if (!monitoringActive) {
+      return NextResponse.json({
+        ok: true,
+        sweepActive: false,
+        message:
+          "Automated seat-opening sweep is gated off while live inventory credentials and email delivery are inactive. No matches were evaluated and no deduplication records were written.",
+        expiredCount,
+        evaluatedCount: 0,
+        alertsSent: 0,
+        prerequisites: {
+          liveInventoryReady,
+          emailDeliveryReady,
+        },
+      });
+    }
+
+    // 4. Fetch active submissions (only if monitoring prerequisites are active)
     const activeSubmissions = await getActiveWaitlistSubmissions();
     if (activeSubmissions.length === 0) {
       return NextResponse.json({
         ok: true,
+        sweepActive: true,
         message: "No active waitlist submissions to evaluate.",
         expiredCount,
         evaluatedCount: 0,
