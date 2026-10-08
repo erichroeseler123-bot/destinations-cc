@@ -37,6 +37,46 @@ export default function NextBoatFinder() {
   } | null>(null);
   const [waitlistError, setWaitlistError] = useState<string | null>(null);
 
+  // Interactive Live Seat Verification State
+  const [verifyingDepId, setVerifyingDepId] = useState<string | null>(null);
+  const [verifiedBadges, setVerifiedBadges] = useState<
+    Record<string, { text: string; isLive: boolean; note?: string }>
+  >({});
+
+  const handleVerifyDeparture = async (dep: TourDeparture) => {
+    setVerifyingDepId(dep.id);
+    try {
+      const res = await fetch("/api/availability/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: dep.provider,
+          productCode: dep.productCode,
+          optionCode: dep.optionCode,
+          travelDate: activeDate,
+          departureTime: dep.departureTime,
+          adults,
+          childrenAges,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setVerifiedBadges((prev) => ({
+          ...prev,
+          [dep.id]: {
+            text: data.statusText,
+            isLive: data.availabilityType === "live_inventory",
+            note: data.message,
+          },
+        }));
+      }
+    } catch {
+      // ignore
+    } finally {
+      setVerifyingDepId(null);
+    }
+  };
+
   useEffect(() => {
     const today = getTodayNewOrleansDate();
     const tomorrow = getTomorrowNewOrleansDate();
@@ -514,19 +554,43 @@ export default function NextBoatFinder() {
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.5rem" }}>
                 <div>
-                  <span style={{
-                    background: searchResponse.winningDeparture.availabilityType === "live_inventory" ? "#065f46" : "#292524",
-                    color: searchResponse.winningDeparture.availabilityType === "live_inventory" ? "#6ee7b7" : "#fcd34d",
-                    border: searchResponse.winningDeparture.availabilityType === "live_inventory" ? "1px solid #10b981" : "1px solid #78716c",
-                    padding: "0.25rem 0.65rem",
-                    borderRadius: "0.25rem",
-                    fontSize: "0.75rem",
-                    fontWeight: 800,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em"
-                  }}>
-                    {searchResponse.winningDeparture.availabilityStatusText}
-                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.35rem" }}>
+                    <span style={{
+                      background: (verifiedBadges[searchResponse.winningDeparture.id]?.isLive ?? (searchResponse.winningDeparture.availabilityType === "live_inventory")) ? "#065f46" : "#292524",
+                      color: (verifiedBadges[searchResponse.winningDeparture.id]?.isLive ?? (searchResponse.winningDeparture.availabilityType === "live_inventory")) ? "#6ee7b7" : "#fcd34d",
+                      border: (verifiedBadges[searchResponse.winningDeparture.id]?.isLive ?? (searchResponse.winningDeparture.availabilityType === "live_inventory")) ? "1px solid #10b981" : "1px solid #78716c",
+                      padding: "0.25rem 0.65rem",
+                      borderRadius: "0.25rem",
+                      fontSize: "0.75rem",
+                      fontWeight: 800,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em"
+                    }}>
+                      {verifiedBadges[searchResponse.winningDeparture.id]?.text || searchResponse.winningDeparture.availabilityStatusText}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleVerifyDeparture(searchResponse.winningDeparture!)}
+                      disabled={verifyingDepId === searchResponse.winningDeparture.id}
+                      style={{
+                        background: "#292524",
+                        border: "1px solid #78716c",
+                        color: "#fbbf24",
+                        fontSize: "0.7rem",
+                        fontWeight: 700,
+                        padding: "0.2rem 0.55rem",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {verifyingDepId === searchResponse.winningDeparture.id ? "Checking Seats..." : "⚡ Live Confirm Seats"}
+                    </button>
+                  </div>
+                  {verifiedBadges[searchResponse.winningDeparture.id]?.note && (
+                    <span style={{ display: "block", fontSize: "0.75rem", color: "#a8a29e", marginBottom: "0.35rem" }}>
+                      ℹ️ {verifiedBadges[searchResponse.winningDeparture.id]?.note}
+                    </span>
+                  )}
                   <h3 style={{ fontSize: "1.5rem", fontWeight: 900, color: "#fff", margin: "0.5rem 0 0.25rem 0" }}>
                     {searchResponse.winningDeparture.departureTimeDisplay} Departure
                   </h3>
@@ -628,16 +692,34 @@ export default function NextBoatFinder() {
                       <strong style={{ color: "#fff" }}>{dep.departureTimeDisplay}</strong>
                       <span style={{
                         marginLeft: "0.5rem",
-                        background: dep.availabilityType === "live_inventory" ? "#064e3b" : "#292524",
-                        color: dep.availabilityType === "live_inventory" ? "#6ee7b7" : "#fcd34d",
-                        border: dep.availabilityType === "live_inventory" ? "1px solid #10b981" : "1px solid #78716c",
+                        background: (verifiedBadges[dep.id]?.isLive ?? (dep.availabilityType === "live_inventory")) ? "#064e3b" : "#292524",
+                        color: (verifiedBadges[dep.id]?.isLive ?? (dep.availabilityType === "live_inventory")) ? "#6ee7b7" : "#fcd34d",
+                        border: (verifiedBadges[dep.id]?.isLive ?? (dep.availabilityType === "live_inventory")) ? "1px solid #10b981" : "1px solid #78716c",
                         padding: "0.15rem 0.45rem",
                         borderRadius: "3px",
                         fontSize: "0.7rem",
                         fontWeight: 700
                       }}>
-                        {dep.availabilityStatusText}
+                        {verifiedBadges[dep.id]?.text || dep.availabilityStatusText}
                       </span>
+                      <button
+                        type="button"
+                        onClick={() => handleVerifyDeparture(dep)}
+                        disabled={verifyingDepId === dep.id}
+                        style={{
+                          marginLeft: "0.5rem",
+                          background: "#292524",
+                          border: "1px solid #78716c",
+                          color: "#fbbf24",
+                          fontSize: "0.65rem",
+                          fontWeight: 700,
+                          padding: "0.15rem 0.4rem",
+                          borderRadius: "3px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {verifyingDepId === dep.id ? "Checking..." : "⚡ Live Check"}
+                      </button>
                       <span style={{ marginLeft: "0.5rem", color: "#a8a29e", fontSize: "0.85rem" }}>
                         {dep.operatorName} ({dep.transportation === "hotel_pickup" ? "With Pickup" : "Self-Drive"})
                       </span>
@@ -676,12 +758,12 @@ export default function NextBoatFinder() {
             Alert Me When Seats Open (Opening List)
           </h3>
           <p style={{ fontSize: "0.85rem", color: "#a8a29e", lineHeight: "1.5", margin: "0 0 1.25rem 0" }}>
-            Save your request for {activeDate} (group of {adults + childrenCount}). <strong>Automated alerts are currently inactive.</strong>
+            Save your request for {activeDate} (group of {adults + childrenCount}). <strong>Automated alert monitor runs every 30 minutes</strong> to check open inventory and notify you if matching seats become available.
           </p>
 
           {waitlistSuccess ? (
             <div style={{ padding: "1rem", background: "#064e3b", borderRadius: "0.5rem", border: "1px solid #10b981" }}>
-              <h4 style={{ color: "#6ee7b7", margin: "0 0 0.5rem 0" }}>✓ Request Saved</h4>
+              <h4 style={{ color: "#6ee7b7", margin: "0 0 0.5rem 0" }}>✓ Alert Request Active</h4>
               <p style={{ color: "#d1fae5", fontSize: "0.9rem", margin: "0 0 0.75rem 0" }}>{waitlistSuccess.message}</p>
               <p style={{ color: "#a7f3d0", fontSize: "0.8rem", margin: 0 }}>
                 Submission ID: <code>{waitlistSuccess.submissionId}</code>. You can cancel anytime using your{" "}
