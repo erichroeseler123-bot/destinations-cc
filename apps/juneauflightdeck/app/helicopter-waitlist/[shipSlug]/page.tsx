@@ -13,6 +13,7 @@ import {
 import HelicopterWaitlistForm from "../../components/HelicopterWaitlistForm";
 import SeatScannerTicker from "../../components/SeatScannerTicker";
 import LiveSeatDropsBadge from "../../components/LiveSeatDropsBadge";
+import CrossPortBackup from "../../components/CrossPortBackup";
 
 interface ShipWaitlistPageProps {
   params: Promise<{
@@ -186,6 +187,11 @@ export default async function ShipWaitlistPage({ params }: ShipWaitlistPageProps
             )}
           </div>
         )}
+
+        {/* Smart Cross-Port Backup Alternative */}
+        <div className="mb-8">
+          <CrossPortBackup currentPort="Juneau" desiredTourType="dogsled" cruiseShipName={ship.shipName} />
+        </div>
 
         {/* The Intake Form (Pre-populated to this ship) */}
         <div id="waitlist-form" className="mb-12">

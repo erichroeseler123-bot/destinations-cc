@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import HelicopterWaitlistForm from "../components/HelicopterWaitlistForm";
+import ExcursionPortBufferSolver from "../components/ExcursionPortBufferSolver";
+import CrossPortBackup from "../components/CrossPortBackup";
 import { ALASKA_CRUISE_FLEET } from "../../lib/alaskaCruiseFleet";
 
 export const metadata: Metadata = {
@@ -140,6 +142,23 @@ export default function Page() {
               Compare &amp; Book Open Tours →
             </Link>
             <Link
+              href="/juneau-helicopter-tour-weight-limits-and-seating"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "10px 18px",
+                borderRadius: 8,
+                background: "rgba(14, 165, 233, 0.15)",
+                border: "1px solid rgba(56, 189, 248, 0.4)",
+                color: "#38bdf8",
+                fontWeight: 700,
+                textDecoration: "none",
+                fontSize: "0.9rem",
+              }}
+            >
+              Seat Math &amp; Weight Simulator ✈️
+            </Link>
+            <Link
               href="/temsco-vs-coastal-vs-northstar-juneau"
               style={{
                 display: "inline-flex",
@@ -175,6 +194,11 @@ export default function Page() {
             </a>
           </div>
         </div>
+
+        {/* Dynamic Shore Excursion Port Buffer Calculator */}
+        <section style={{ marginBottom: 40 }}>
+          <ExcursionPortBufferSolver />
+        </section>
 
         {/* 1. Cruise Port Timing & Fleet Directory Section (Top priority) */}
         <section
@@ -256,6 +280,11 @@ export default function Page() {
               </div>
             ))}
           </div>
+        </section>
+
+        {/* Cross-Port Backup Funnel */}
+        <section style={{ marginBottom: 40 }}>
+          <CrossPortBackup currentPort="Juneau" desiredTourType="dogsled" />
         </section>
 
         {/* 2. Primary Waitlist Intake Form */}

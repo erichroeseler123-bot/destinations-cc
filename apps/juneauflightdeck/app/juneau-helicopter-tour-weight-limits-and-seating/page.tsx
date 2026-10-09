@@ -1,17 +1,39 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import HelicopterWaitlistForm from "../components/HelicopterWaitlistForm";
+import HelicopterCabinSimulator from "../components/HelicopterCabinSimulator";
+import CrossPortBackup from "../components/CrossPortBackup";
 
 export const metadata: Metadata = {
   title: "Juneau Helicopter Tour Weight Limits, Surcharges & Seating Math | Juneau Flight Deck",
   description:
-    "Guide to FAA Part 135 weight & balance rules for Juneau glacier flights, 250 lb surcharges, seat assignments, and how dispatchers release 6th passenger seats.",
+    "Interactive Airbus AStar 350 helicopter weight & balance simulator, FAA Part 135 rules, 250 lb comfort surcharges, and how dispatchers release 6th passenger seats.",
   alternates: { canonical: "https://juneauflightdeck.com/juneau-helicopter-tour-weight-limits-and-seating" },
   openGraph: {
     title: "Juneau Helicopter Tour Weight Limits, Surcharges & Seating Math",
     description:
-      "Insider guide to helicopter weight limits, 250 lb surcharges, seat assignments, and how local dispatch math can unlock sold-out seats.",
+      "Interactive Airbus AStar 350 helicopter weight & balance simulator, FAA Part 135 rules, 250 lb comfort surcharges, and how dispatchers release 6th passenger seats.",
     url: "https://juneauflightdeck.com/juneau-helicopter-tour-weight-limits-and-seating",
+  },
+};
+
+const simulatorAppSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Juneau Helicopter Cabin Payload & Seating Math Simulator",
+  applicationCategory: "TravelApplication",
+  operatingSystem: "All",
+  description:
+    "Interactive Airbus AStar 350 helicopter weight & balance simulator. Calculates combined party payload, FAA Part 135 comfort surcharges (250 lb threshold), center of gravity distribution, and 6th-seat manual dispatch unlock probability for Juneau glacier tours.",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
+  provider: {
+    "@type": "Organization",
+    name: "Juneau Flight Deck",
+    url: "https://juneauflightdeck.com",
   },
 };
 
@@ -59,6 +81,10 @@ export default function HelicopterWeightLimitsPage() {
     <main className="page-shell" style={{ maxWidth: 940, margin: "auto", padding: "40px 20px 80px" }}>
       <script
         type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(simulatorAppSchema) }}
+      />
+      <script
+        type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(weightFaqSchema) }}
       />
 
@@ -69,6 +95,11 @@ export default function HelicopterWeightLimitsPage() {
       <p style={{ fontSize: "1.1rem", lineHeight: 1.6, color: "var(--muted)", marginBottom: "32px" }}>
         Weight and balance isn&apos;t just tour company policy—it is federal aviation law under FAA Part 135. Understanding how helicopter weight math works can save you money, prevent check-in surprises, and even uncover seats on flights that appear sold out.
       </p>
+
+      {/* Interactive Helicopter Cabin Payload Simulator */}
+      <section style={{ marginBottom: "40px" }}>
+        <HelicopterCabinSimulator />
+      </section>
 
       {/* Overview Card */}
       <section
@@ -164,6 +195,11 @@ export default function HelicopterWeightLimitsPage() {
             Flexible Booking Options: Once dispatch approves a seat release, reservations can be confirmed directly with the operator or via our official Viator partner checkout under standard operator terms.
           </p>
         </div>
+      </section>
+
+      {/* Cross-Port Backup Routing */}
+      <section style={{ marginBottom: "40px" }}>
+        <CrossPortBackup currentPort="Juneau" desiredTourType="dogsled" />
       </section>
 
       {/* Intake / Waitlist Section */}
