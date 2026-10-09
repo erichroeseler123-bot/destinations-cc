@@ -10,9 +10,12 @@ export interface BufferAnalysisResult {
   dockTypeLabel: string;
   disembarkMinutes: number;
   transitMinutes: number;
+  allAboardOffsetMinutes: number;
   allAboardCushionMinutes: number;
   arrivalTimeStr: string;
-  departureTimeStr: string;
+  shipDepartureTimeStr: string;
+  allAboardTimeStr: string;
+  pierReturnTargetStr: string;
   earliestSafeFlightDepartureStr: string;
   latestSafeFlightReturnStr: string;
   totalPortMinutes: number;
@@ -57,9 +60,9 @@ export default function ExcursionPortBufferSolver({
       ? defaultShipSlug
       : "discovery-princess"
   );
-  const [sailingDate, setSailingDate] = useState<string>("");
   const [arrivalStr, setArrivalStr] = useState<string>("13:00");
   const [departureStr, setDepartureStr] = useState<string>("22:00");
+  const [allAboardOffsetMinutes, setAllAboardOffsetMinutes] = useState<number>(45); // 45m standard for major lines
   const [cushionMinutes, setCushionMinutes] = useState<number>(90); // 90 min standard target
 
   const selectedShip = useMemo(() => {
@@ -76,16 +79,22 @@ export default function ExcursionPortBufferSolver({
     const transitMinutes = isAjDock ? 20 : 15;
     // Tour check-in buffer before flight
     const checkinBuffer = 15;
-    // Safe return cushion before ship all-aboard (harmonized to 90-120m standard)
+    // Safe return cushion before ship all-aboard (90m standard target or 120m max)
     const allAboardCushionMinutes = cushionMinutes;
 
     const arrivalMins = parseTimeToMinutes(arrivalStr);
-    const departureMins = parseTimeToMinutes(departureStr);
+    const shipDepartureMins = parseTimeToMinutes(departureStr);
+    
+    // Explicitly decouple ship sail away time from captain's all-aboard cutoff
+    const allAboardMins = shipDepartureMins - allAboardOffsetMinutes;
+    // Target time to be back on the downtown pier
+    const pierReturnMins = allAboardMins - allAboardCushionMinutes;
+    // Latest safe helicopter landing at Juneau heliport so shuttle returns passenger to pier on time
+    const latestSafeReturnMins = pierReturnMins - transitMinutes;
     
     const earliestSafeMins = arrivalMins + disembarkMinutes + transitMinutes + checkinBuffer;
-    const latestSafeReturnMins = departureMins - allAboardCushionMinutes - transitMinutes;
     
-    const totalPortMinutes = departureMins >= arrivalMins ? departureMins - arrivalMins : (1440 - arrivalMins) + departureMins;
+    const totalPortMinutes = shipDepartureMins >= arrivalMins ? shipDepartureMins - arrivalMins : (1440 - arrivalMins) + shipDepartureMins;
     const netExcursionWindowMinutes = Math.max(0, latestSafeReturnMins - earliestSafeMins);
 
     let safetyStatus: "optimal" | "standard" | "tight" | "incompatible" = "optimal";
@@ -99,11 +108,17 @@ export default function ExcursionPortBufferSolver({
       safetyStatus = "incompatible";
     }
 
-    let logisticsNotice = `Your port stay provides comfortable clearance with a ${allAboardCushionMinutes}-minute safety return buffer before all-aboard.`;
+    const shipDepartureTimeStr = formatMinutesToTime(shipDepartureMins);
+    const allAboardTimeStr = formatMinutesToTime(allAboardMins);
+    const pierReturnTargetStr = formatMinutesToTime(pierReturnMins);
+    const earliestSafeFlightDepartureStr = formatMinutesToTime(earliestSafeMins);
+    const latestSafeFlightReturnStr = formatMinutesToTime(latestSafeReturnMins);
+
+    let logisticsNotice = `Your port stay provides comfortable clearance. Landing by ${latestSafeFlightReturnStr} returns you to the downtown pier by ${pierReturnTargetStr}, giving you a full ${allAboardCushionMinutes}-minute safety cushion before your ${allAboardTimeStr} all-aboard cutoff (${shipDepartureTimeStr} scheduled departure).`;
     if (isAjDock) {
-      logisticsNotice = `⚠️ AJ Dock Advisory: Your ship berths at the South Berth (AJD). Passengers must board the terminal shuttle or meet direct operator transfers outside the security gate. A ${allAboardCushionMinutes}-minute return cushion is active.`;
+      logisticsNotice = `⚠️ AJ Dock Advisory: Your ship berths at the South Berth (AJD). Passengers must board the terminal shuttle or meet direct operator transfers outside the security gate. Direct operator transfers take ~20 min. Return to AJ dock security by ${pierReturnTargetStr} (${allAboardCushionMinutes}m cushion before ${allAboardTimeStr} all-aboard).`;
     } else if (safetyStatus === "tight") {
-      logisticsNotice = `⚠️ Tight Port Window: Based on your docking timeframe, only midday flight slots (between ${formatMinutesToTime(earliestSafeMins)} and ${formatMinutesToTime(latestSafeReturnMins)}) are safe. Do not book flights landing after ${formatMinutesToTime(latestSafeReturnMins)}.`;
+      logisticsNotice = `⚠️ Tight Port Window: Based on your docking timeframe, only midday flight slots (between ${earliestSafeFlightDepartureStr} and ${latestSafeFlightReturnStr}) are safe. Do not book flights landing after ${latestSafeFlightReturnStr}.`;
     }
 
     return {
@@ -112,17 +127,20 @@ export default function ExcursionPortBufferSolver({
       dockTypeLabel,
       disembarkMinutes,
       transitMinutes,
+      allAboardOffsetMinutes,
       allAboardCushionMinutes,
       arrivalTimeStr: formatMinutesToTime(arrivalMins),
-      departureTimeStr: formatMinutesToTime(departureMins),
-      earliestSafeFlightDepartureStr: formatMinutesToTime(earliestSafeMins),
-      latestSafeFlightReturnStr: formatMinutesToTime(latestSafeReturnMins),
+      shipDepartureTimeStr,
+      allAboardTimeStr,
+      pierReturnTargetStr,
+      earliestSafeFlightDepartureStr,
+      latestSafeFlightReturnStr,
       totalPortMinutes,
       netExcursionWindowMinutes,
       safetyStatus,
       logisticsNotice,
     };
-  }, [selectedShip, arrivalStr, departureStr, cushionMinutes]);
+  }, [selectedShip, arrivalStr, departureStr, allAboardOffsetMinutes, cushionMinutes]);
 
   return (
     <div
@@ -148,7 +166,7 @@ export default function ExcursionPortBufferSolver({
           </h2>
         </div>
         <div style={{ fontSize: "0.82rem", color: "var(--muted)", textAlign: "right" }}>
-          <span>Automated All-Aboard &amp; Dock Buffer Calculations</span>
+          <span>Decoupled Sail Away &amp; All-Aboard Safety Solvers</span>
         </div>
       </div>
 
@@ -218,14 +236,14 @@ export default function ExcursionPortBufferSolver({
             }}
           />
           <div style={{ fontSize: "0.76rem", color: "var(--muted)", marginTop: 6 }}>
-            Typical: {selectedShip.dockHours}
+            Typical Port Call: {selectedShip.dockHours}
           </div>
         </div>
 
-        {/* Departure Time */}
+        {/* Ship Departure / Sail Time */}
         <div>
           <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ice)", marginBottom: 6 }}>
-            Step 3: Ship Sail / All-Aboard Time
+            Step 3: Ship Departure (Sail Away)
           </label>
           <input
             type="time"
@@ -244,53 +262,90 @@ export default function ExcursionPortBufferSolver({
             }}
           />
           <div style={{ fontSize: "0.76rem", color: "var(--muted)", marginTop: 6 }}>
-            All-aboard is strictly 30 min before lines cast off.
+            Scheduled time lines cast off from Juneau dock.
           </div>
         </div>
 
-        {/* Cushion Selector */}
+        {/* All-Aboard Offset Protocol */}
         <div>
           <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ice)", marginBottom: 6 }}>
-            Step 4: Return Cushion Target
+            Step 4: Ship All-Aboard Protocol
           </label>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 6 }}>
+            {[
+              { label: "45m (Major Lines)", val: 45 },
+              { label: "30m (Compact)", val: 30 },
+              { label: "60m (Conservative)", val: 60 },
+            ].map((opt) => (
+              <button
+                key={opt.val}
+                type="button"
+                onClick={() => setAllAboardOffsetMinutes(opt.val)}
+                style={{
+                  flex: 1,
+                  padding: "8px 6px",
+                  borderRadius: 8,
+                  background: allAboardOffsetMinutes === opt.val ? "rgba(56, 189, 248, 0.25)" : "#081d2c",
+                  border: allAboardOffsetMinutes === opt.val ? "1px solid #38bdf8" : "1px solid var(--line)",
+                  color: allAboardOffsetMinutes === opt.val ? "#38bdf8" : "var(--muted)",
+                  fontSize: "0.74rem",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ fontSize: "0.76rem", color: "var(--muted)", marginTop: 6 }}>
+            All-Aboard Cutoff: <strong style={{ color: "#38bdf8" }}>{analysis.allAboardTimeStr}</strong> ({allAboardOffsetMinutes}m before sail).
+          </div>
+        </div>
+
+        {/* Excursion Return Cushion Selector */}
+        <div style={{ gridColumn: "1 / -1" }}>
+          <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ice)", marginBottom: 6 }}>
+            Step 5: Downtown Pier Safety Cushion (Before All-Aboard)
+          </label>
+          <div style={{ display: "flex", gap: 12, maxWidth: 440 }}>
             <button
               type="button"
               onClick={() => setCushionMinutes(90)}
               style={{
                 flex: 1,
-                padding: "8px 10px",
+                padding: "8px 12px",
                 borderRadius: 8,
                 background: cushionMinutes === 90 ? "rgba(56, 189, 248, 0.25)" : "#081d2c",
                 border: cushionMinutes === 90 ? "1px solid #38bdf8" : "1px solid var(--line)",
                 color: cushionMinutes === 90 ? "#38bdf8" : "var(--muted)",
-                fontSize: "0.78rem",
+                fontSize: "0.82rem",
                 fontWeight: 700,
                 cursor: "pointer",
               }}
             >
-              90 Min Target
+              90 Min Target (Recommended)
             </button>
             <button
               type="button"
               onClick={() => setCushionMinutes(120)}
               style={{
                 flex: 1,
-                padding: "8px 10px",
+                padding: "8px 12px",
                 borderRadius: 8,
                 background: cushionMinutes === 120 ? "rgba(56, 189, 248, 0.25)" : "#081d2c",
                 border: cushionMinutes === 120 ? "1px solid #38bdf8" : "1px solid var(--line)",
                 color: cushionMinutes === 120 ? "#38bdf8" : "var(--muted)",
-                fontSize: "0.78rem",
+                fontSize: "0.82rem",
                 fontWeight: 700,
                 cursor: "pointer",
               }}
             >
-              120 Min Max
+              120 Min Max Cushion
             </button>
           </div>
           <div style={{ fontSize: "0.76rem", color: "var(--muted)", marginTop: 6 }}>
-            Back before all-aboard call (90–120m target)
+            Arrive back at downtown dock by <strong style={{ color: "#34d399" }}>{analysis.pierReturnTargetStr}</strong> ({cushionMinutes}m before {analysis.allAboardTimeStr} all-aboard call).
           </div>
         </div>
       </div>
@@ -334,13 +389,25 @@ export default function ExcursionPortBufferSolver({
 
         <div style={{ background: "rgba(7, 24, 36, 0.8)", border: "1px solid var(--line)", borderRadius: 14, padding: "14px 16px", textAlign: "center" }}>
           <div style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--muted)", marginBottom: 4 }}>
-            Latest Safe Landing
+            Latest Flight Landing
           </div>
           <div style={{ fontSize: "1.25rem", fontWeight: 900, color: "#f59e0b", fontFamily: "monospace" }}>
             {analysis.latestSafeFlightReturnStr}
           </div>
           <div style={{ fontSize: "0.7rem", color: "var(--muted)", marginTop: 2 }}>
-            -{analysis.allAboardCushionMinutes}m all-aboard safety buffer
+            +{analysis.transitMinutes}m shuttle back to pier
+          </div>
+        </div>
+
+        <div style={{ background: "rgba(7, 24, 36, 0.8)", border: "1px solid var(--line)", borderRadius: 14, padding: "14px 16px", textAlign: "center" }}>
+          <div style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--muted)", marginBottom: 4 }}>
+            Pier Target / All-Aboard
+          </div>
+          <div style={{ fontSize: "1.25rem", fontWeight: 900, color: "#34d399", fontFamily: "monospace" }}>
+            {analysis.pierReturnTargetStr}
+          </div>
+          <div style={{ fontSize: "0.7rem", color: "var(--muted)", marginTop: 2 }}>
+            {analysis.allAboardCushionMinutes}m before {analysis.allAboardTimeStr} All-Aboard
           </div>
         </div>
 
@@ -348,11 +415,11 @@ export default function ExcursionPortBufferSolver({
           <div style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--muted)", marginBottom: 4 }}>
             Net Flight Window
           </div>
-          <div style={{ fontSize: "1.25rem", fontWeight: 900, color: analysis.safetyStatus === "optimal" ? "#34d399" : "#fbbf24", fontFamily: "monospace" }}>
+          <div style={{ fontSize: "1.25rem", fontWeight: 900, color: analysis.safetyStatus === "optimal" ? "#38bdf8" : "#fbbf24", fontFamily: "monospace" }}>
             {(analysis.netExcursionWindowMinutes / 60).toFixed(1)} Hours
           </div>
           <div style={{ fontSize: "0.7rem", color: "var(--muted)", marginTop: 2 }}>
-            {analysis.safetyStatus === "optimal" ? "Broad slot availability" : "Target specific departures"}
+            Ship sails at {analysis.shipDepartureTimeStr}
           </div>
         </div>
       </div>

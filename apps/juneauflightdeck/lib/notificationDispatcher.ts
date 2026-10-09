@@ -25,7 +25,7 @@ export interface NotificationPayload {
   emailBodyText: string;
 }
 
-function getNotificationsDir() {
+export function getNotificationsDir() {
   if (process.env.VERCEL) {
     return path.join("/tmp", "notifications");
   }
@@ -90,6 +90,29 @@ export async function dispatchSeatDropNotification(params: {
     } catch (err) {
       console.warn("[NotificationDispatcher] DB deduplication check error:", err);
     }
+  } else {
+    // Disk fallback deduplication check for local / testing runs
+    try {
+      const dir = getNotificationsDir();
+      const files = await fs.readdir(dir).catch(() => []);
+      for (const file of files) {
+        if (!file.endsWith(".json")) continue;
+        const raw = await fs.readFile(path.join(dir, file), "utf8");
+        const parsed = JSON.parse(raw);
+        if (
+          parsed.recipientEmail === params.email &&
+          parsed.portDate === params.portDate &&
+          parsed.departureTime === params.departureTime
+        ) {
+          console.log(
+            `[NotificationDispatcher] Disk deduplication suppressed duplicate alert for ${params.email} on ${params.portDate} (${params.departureTime})`
+          );
+          return null;
+        }
+      }
+    } catch {
+      // ignore
+    }
   }
 
   const deliveryId = `ALERT-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -129,6 +152,8 @@ Juneau Flight Deck Dispatch Desk
 hello@juneauflightdeck.com
 `;
 
+  const remainingSeats = params.isSplitMatch ? params.partySize - (params.seatsAvailable || 0) : 0;
+
   const emailBodyHtml = `
 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; line-height: 1.6;">
   <div style="background-color: #0f172a; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
@@ -136,7 +161,16 @@ hello@juneauflightdeck.com
   </div>
   <div style="border: 1px solid #e2e8f0; border-top: none; padding: 24px; border-radius: 0 0 8px 8px;">
     <p>Hello <strong>${params.guestName}</strong>,</p>
-    <p>An open helicopter flight slot matching your cruise port date on <strong>${params.shipName}</strong> (${params.cruiseLine}) was detected during our daily availability check.</p>
+    ${
+      params.isSplitMatch
+        ? `<div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 14px 16px; margin: 16px 0; color: #166534; font-size: 14px; line-height: 1.5;">
+            <strong>⚡ Split-Party Opening Detected:</strong> You indicated willingness to split your party across adjacent departure times. An open helicopter slot with <strong>${params.seatsAvailable} seat(s)</strong> matching your cruise port date on <strong>${params.shipName}</strong> has just been detected for your party of <strong>${params.partySize}</strong>.
+            <div style="margin-top: 6px; font-size: 13px; color: #15803d;">
+              <em>We will continue active scanning for your remaining ${remainingSeats} seat(s).</em>
+            </div>
+          </div>`
+        : `<p>An open helicopter flight slot matching your cruise port date on <strong>${params.shipName}</strong> (${params.cruiseLine}) was detected during our daily availability check.</p>`
+    }
     
     <div style="background-color: #f8fafc; border-left: 4px solid #0284c7; padding: 16px; margin: 20px 0; border-radius: 4px;">
       <h3 style="margin-top: 0; color: #0f172a;">${params.tourName}</h3>
@@ -144,7 +178,11 @@ hello@juneauflightdeck.com
       <p style="margin: 4px 0;"><strong>Port:</strong> ${portTitle}, Alaska</p>
       <p style="margin: 4px 0;"><strong>Date:</strong> ${params.portDate}</p>
       <p style="margin: 4px 0;"><strong>Departure:</strong> ${params.departureTime}</p>
-      <p style="margin: 4px 0;"><strong>Party Size:</strong> ${params.partySize} Passenger(s)</p>
+      ${
+        params.isSplitMatch
+          ? `<p style="margin: 4px 0;"><strong>Seats on This Flight:</strong> <span style="color: #0284c7; font-weight: bold;">${params.seatsAvailable} seat(s)</span> (of your ${params.partySize} total group)</p>`
+          : `<p style="margin: 4px 0;"><strong>Party Size:</strong> ${params.partySize} Passenger(s)</p>`
+      }
     </div>
 
     <div style="text-align: center; margin: 28px 0;">

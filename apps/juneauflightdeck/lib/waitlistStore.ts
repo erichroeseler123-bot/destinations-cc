@@ -8,7 +8,7 @@ import {
   buildFareHarborDirectBookingUrl,
   JUNEAU_OPERATORS,
 } from "./fareharborRange";
-import { dispatchSeatDropNotification } from "./notificationDispatcher";
+import { dispatchSeatDropNotification, getNotificationsDir } from "./notificationDispatcher";
 
 export interface ScannedProduct {
   key: string;
@@ -160,6 +160,8 @@ export interface WaitlistEntry {
   tourType: "any" | "glacier_landing" | "dog_sledding" | "ice_trek" | "flightseeing";
   partySize: number;
   allowSplitParty?: boolean;
+  partialAlertsCount?: number;
+  lastPartialAlertAt?: string;
   notes?: string;
   preferredOperator?: "temsco" | "coastal" | "northstar" | "any";
   bookingMode: "instant_alert" | "concierge_dispatch" | "priority_hold" | "sms_alert";
@@ -372,6 +374,11 @@ export async function getAllWaitlistEntries(): Promise<WaitlistEntry[]> {
   return [...inMemoryStore].sort((a, b) => a.portDate.localeCompare(b.portDate));
 }
 
+export async function getWaitlistEntryById(id: string): Promise<WaitlistEntry | null> {
+  const all = await getAllWaitlistEntries();
+  return all.find((e) => e.id === id) || null;
+}
+
 export async function saveWaitlistEntry(entry: WaitlistEntry): Promise<void> {
   const sql = getDb();
   if (sql) {
@@ -483,13 +490,14 @@ export interface SweepResult {
 export async function execute10AmDailySweep(options?: {
   includeTests?: boolean;
   testMatch?: boolean;
+  testSplitMatch?: boolean;
 }): Promise<SweepResult> {
   const all = await getAllWaitlistEntries();
   const today = getTodayAlaskaDate();
 
   // Strictly exclude expired watch dates (dates in the past) and test entries unless explicitly requested for verification
   const activeEntries = all.filter((e) => {
-    const isTestAllowed = Boolean(options?.includeTests || options?.testMatch);
+    const isTestAllowed = Boolean(options?.includeTests || options?.testMatch || options?.testSplitMatch);
     if (e.isTest && !isTestAllowed) return false;
     const isScanningStatus = e.status === "active_scanning" || (e.isTest && isTestAllowed && e.status === "test_excluded");
     if (!isScanningStatus) return false;
@@ -597,16 +605,19 @@ export async function execute10AmDailySweep(options?: {
         };
         accessFailures.push(failureReport);
         operatorReports.push(failureReport);
-        console.error(
-          `[DailySweep] Access failure for ${product.operator} (${product.companyShortname} item ${product.itemPk}): ${fetchResult.error}`
-        );
-        continue;
+        if (!options?.testMatch && !options?.testSplitMatch) {
+          continue;
+        }
       }
 
-      const openSlots = filterOpenAvailabilities(fetchResult.availabilities, 1);
+      const openSlots = fetchResult.success ? filterOpenAvailabilities(fetchResult.availabilities, 1) : [];
 
       // In controlled test sweeps, synthesize a test departure for marked test requests if operator has 0 openings
-      if (options?.testMatch && candidateEntries.some((e) => e.isTest) && openSlots.length === 0) {
+      if (
+        (options?.testMatch || options?.testSplitMatch) &&
+        candidateEntries.some((e) => e.isTest) &&
+        openSlots.length === 0
+      ) {
         const testCandidate = candidateEntries.find((e) => e.isTest);
         if (testCandidate) {
           const targetDate =
@@ -614,11 +625,15 @@ export async function execute10AmDailySweep(options?: {
               ? testCandidate.juneauDate || (testCandidate.portCity === "juneau" ? testCandidate.portDate : undefined)
               : testCandidate.skagwayDate || (testCandidate.portCity === "skagway" ? testCandidate.portDate : undefined);
           if (targetDate) {
+            const isSplitTest = Boolean(options.testSplitMatch);
+            const syntheticPk = isSplitTest ? 999901 : 999902;
+            const syntheticStart = isSplitTest ? `${targetDate}T13:30:00-08:00` : `${targetDate}T10:30:00-08:00`;
+            const syntheticCapacity = isSplitTest ? 2 : Math.max(testCandidate.partySize, 4);
             openSlots.push({
-              pk: 999901,
-              start_at: `${targetDate}T13:30:00-08:00`,
+              pk: syntheticPk,
+              start_at: syntheticStart,
               end_at: `${targetDate}T15:45:00-08:00`,
-              capacity: Math.max(testCandidate.partySize, 4),
+              capacity: syntheticCapacity,
               spots_total: 6,
               item: {
                 pk: product.itemPk,
@@ -704,9 +719,17 @@ export async function execute10AmDailySweep(options?: {
           }
 
           // Accurate lifecycle transition:
-          // ONLY transition to contact_pending if the alert was actually DELIVERED to the traveler (or marked test).
-          // Simulated or failed deliveries must NEVER stop active scanning for real customers!
-          if (notification.status === "delivered" || entry.isTest) {
+          // If this is a split-party match (e.g. 2 seats found for party of 4), the group still needs the remaining seats,
+          // or may evaluate alternative slots. Keep status as 'active_scanning' so subsequent sweeps continue.
+          // ONLY transition to contact_pending if the FULL party was satisfied and delivered (or marked test).
+          if (isSplitMatch) {
+            entry.status = "active_scanning";
+            entry.partialAlertsCount = (entry.partialAlertsCount || 0) + 1;
+            entry.lastPartialAlertAt = notification.dispatchedAt;
+            console.log(
+              `[DailySweep] Split-party match (${slot.capacity}/${entry.partySize} seats) for ${entry.id}; preserving active_scanning status so scans continue.`
+            );
+          } else if (notification.status === "delivered" || entry.isTest) {
             entry.status = "contact_pending";
           } else {
             console.log(
@@ -806,6 +829,28 @@ export async function purgeTestWaitlistEntries(): Promise<{
   inMemoryStore = inMemoryStore.filter(
     (e) => !e.isTest && e.status !== "test_excluded" && e.email !== "ops-test@juneauflightdeck.com"
   );
+
+  // Also clean test notifications from disk
+  try {
+    const dir = getNotificationsDir();
+    const files = await fs.readdir(dir).catch(() => []);
+    for (const f of files) {
+      if (f.endsWith(".json")) {
+        const filePath = path.join(dir, f);
+        const raw = await fs.readFile(filePath, "utf8");
+        const parsed = JSON.parse(raw);
+        if (
+          parsed.isTest ||
+          parsed.recipientEmail?.includes("test") ||
+          parsed.recipientEmail === "ops-test@juneauflightdeck.com"
+        ) {
+          await fs.unlink(filePath).catch(() => {});
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
 
   return { deletedSubmissions, deletedNotifications };
 }
