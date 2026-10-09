@@ -104,6 +104,7 @@ export default function HelicopterWaitlistForm({
     portCity: defaultPort,
     tourType: "any",
     partySize: "2",
+    allowSplitParty: false,
     notes: "",
     bookingMode: "instant_alert" as "instant_alert" | "concierge_dispatch",
   });
@@ -728,6 +729,28 @@ ${shareUrl}`;
                 ))}
               </select>
             </div>
+
+            {/* Split Party Optimization Option */}
+            {parseInt(String(formData.partySize), 10) >= 2 && (
+              <div className="form-field full-width bg-emerald-950/30 border border-emerald-500/30 rounded-xl p-3 text-xs" style={{ background: "rgba(6, 78, 59, 0.25)", border: "1px solid rgba(16, 185, 129, 0.4)", borderRadius: 10, padding: 12 }}>
+                <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", color: "#e2e8f0" }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.allowSplitParty}
+                    onChange={(e) => setFormData({ ...formData, allowSplitParty: e.target.checked })}
+                    style={{ marginTop: 2, accentColor: "#10b981", width: 16, height: 16 }}
+                  />
+                  <div>
+                    <strong style={{ color: "#6ee7b7", display: "block", fontSize: "0.82rem" }}>
+                      ⚡ Double Your Booking Odds (Party Split Option)
+                    </strong>
+                    <span style={{ color: "var(--muted)", fontSize: "0.76rem", lineHeight: 1.5, display: "block", marginTop: 2 }}>
+                      We are willing to split our group across two separate helicopters (e.g., 2 and 2) or consecutive departure times if it secures flights for everyone on our port date.
+                    </span>
+                  </div>
+                </label>
+              </div>
+            )}
 
             <div className="form-field">
               <label htmlFor="name">Full Name *</label>
