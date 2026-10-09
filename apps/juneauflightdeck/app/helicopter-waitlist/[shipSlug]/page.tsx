@@ -51,10 +51,39 @@ export default async function ShipWaitlistPage({ params }: ShipWaitlistPageProps
   }
 
   const faqJsonLd = buildShipFaqSchema(ship);
+  const serviceJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: `${ship.shipName} Helicopter Excursion Availability & Timing Assistance`,
+    serviceType: "Helicopter Excursion Availability Assistance",
+    provider: {
+      "@type": "Organization",
+      name: "Juneau Flight Deck",
+      url: "https://juneauflightdeck.com",
+      logo: "https://juneauflightdeck.com/images/jfd-logo.png",
+    },
+    areaServed: {
+      "@type": "City",
+      name: "Juneau",
+      addressRegion: "Alaska",
+      addressCountry: "US",
+    },
+    description: `Independent availability check, operator comparisons, and ship-safe port timing for ${ship.shipName} (${ship.cruiseLine}) passengers visiting Juneau, Alaska.`,
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+      description: "Free availability check and notification service for Alaska cruise travelers.",
+    },
+  };
   const context = calculateSailingContext(ship.slug, "2026-07-14");
 
   return (
     <main className="page-shell py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}

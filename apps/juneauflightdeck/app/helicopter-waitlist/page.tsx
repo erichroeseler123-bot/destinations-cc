@@ -47,6 +47,33 @@ const waitlistFaqSchema = {
   ],
 };
 
+const waitlistServiceSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Juneau Helicopter Sold-Out Tour Waitlist & Availability Assistance",
+  serviceType: "Helicopter Excursion Availability Assistance",
+  provider: {
+    "@type": "Organization",
+    name: "Juneau Flight Deck",
+    url: "https://juneauflightdeck.com",
+    logo: "https://juneauflightdeck.com/images/jfd-logo.png",
+  },
+  areaServed: {
+    "@type": "City",
+    name: "Juneau",
+    addressRegion: "Alaska",
+    addressCountry: "US",
+  },
+  description:
+    "Helps Alaska cruise passengers compare and book open seats, or request availability checks for sold-out Juneau helicopter and glacier dog sledding tours across local Part 135 operators (TEMSCO, Coastal, NorthStar) with cruise ship port timing guidance.",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+    description: "Free availability check and notification service for Alaska cruise travelers.",
+  },
+};
+
 export default function Page() {
   // Group ships by cruise line
   const shipsByLine = ALASKA_CRUISE_FLEET.reduce((acc, ship) => {
@@ -58,6 +85,10 @@ export default function Page() {
 
   return (
     <main id="main-content" className="jfd-root waitlist-page-container">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(waitlistServiceSchema) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(waitlistFaqSchema) }}
