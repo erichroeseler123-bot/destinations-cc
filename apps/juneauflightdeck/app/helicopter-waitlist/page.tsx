@@ -167,7 +167,7 @@ export default function Page() {
               Select Your Alaska Cruise Ship for Port Hours &amp; Berth Guidance
             </h2>
             <p style={{ fontSize: "0.95rem", color: "var(--muted, #94a3b8)", lineHeight: 1.5, margin: "0 0 16px" }}>
-              Each ship operates on unique gangway hours and assigned Juneau docks. Choose your ship to see recommended flight windows, dock transit logistics, and live availability:
+              Each ship operates on unique gangway hours and assigned Juneau docks. Choose your ship to see port timing guidance, dock transit logistics, and availability assistance:
             </p>
 
             {/* Quick Port Timing Rules */}
@@ -260,7 +260,7 @@ export default function Page() {
               </Link>
             </h3>
             <p style={{ fontSize: "0.85rem", color: "var(--muted)", margin: 0, lineHeight: 1.5 }}>
-              How cruise line block allocations expire and why prime glacier seats reappear 7 to 30 days before sailing.
+              How to ask operators about alternatives when your preferred tour is sold out.
             </p>
           </div>
 

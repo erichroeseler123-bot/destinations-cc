@@ -188,7 +188,7 @@ export default async function ShipWaitlistPage({ params }: ShipWaitlistPageProps
             <div className="p-5 rounded-xl bg-white/5 border border-white/10">
               <strong className="text-amber-400 block mb-1 text-sm">Port Day Backup Option</strong>
               <p className="text-xs text-slate-300 leading-relaxed">
-                If helicopter seats remain full, our dispatch team offers verified live availability for top-rated Auke Bay whale watching.
+                If helicopter seats remain full, compare Auke Bay whale-watching options. Availability and reservations are confirmed by the operator.
               </p>
             </div>
           </div>

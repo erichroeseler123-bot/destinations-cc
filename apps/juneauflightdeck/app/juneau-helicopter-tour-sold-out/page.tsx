@@ -113,29 +113,29 @@ export default function SoldOutGuidePage() {
           Inside the Industry
         </div>
         <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--text)", margin: "0 0 14px" }}>
-          Why Sold-Out Seats Reappear 7 to 30 Days Before Port Day
+          Ask the Operator About Current Options
         </h2>
         <p style={{ lineHeight: 1.65, color: "var(--muted)", margin: "0 0 16px" }}>
-          The cruise lines hold enormous blocks of helicopter seats with all three FAA Part 135 operators (TEMSCO, Coastal, and NorthStar) months before the season starts. Here is what happens behind the scenes:
+          A sold-out listing does not establish availability through another booking channel. Ask the operator about your date, party size, and suitable alternatives.
         </p>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "16px", marginTop: "20px" }}>
           <div style={{ background: "rgba(3, 14, 23, 0.6)", border: "1px solid var(--line)", borderRadius: "var(--radius-sm)", padding: "18px" }}>
-            <h3 style={{ color: "var(--ice)", fontSize: "1rem", margin: "0 0 8px" }}>1. Cruise Line Block Drops</h3>
+            <h3 style={{ color: "var(--ice)", fontSize: "1rem", margin: "0 0 8px" }}>1. Check Booking Channels</h3>
             <p style={{ fontSize: "0.88rem", lineHeight: 1.5, color: "var(--muted)", margin: 0 }}>
-              Cruise lines have contractual release deadlines (often 30, 14, or 7 days out). Any seat they fail to sell gets handed back to the local operator for open public sale.
+              Availability may differ between booking channels. We do not promise a release date or time; the operator must confirm any opening.
             </p>
           </div>
           <div style={{ background: "rgba(3, 14, 23, 0.6)", border: "1px solid var(--line)", borderRadius: "var(--radius-sm)", padding: "18px" }}>
-            <h3 style={{ color: "var(--ice)", fontSize: "1rem", margin: "0 0 8px" }}>2. Ship Itinerary Shifts</h3>
+            <h3 style={{ color: "var(--ice)", fontSize: "1rem", margin: "0 0 8px" }}>2. Confirm Port Timing</h3>
             <p style={{ fontSize: "0.88rem", lineHeight: 1.5, color: "var(--muted)", margin: 0 }}>
-              Ships frequently modify arrival hours or swap port schedules due to tides or weather. When their port window shifts, groups cancel their bookings, instantly opening up flights.
+              Use your current ship itinerary to confirm arrival and all-aboard times. Ask the operator whether the excursion and transfers fit your port window.
             </p>
           </div>
           <div style={{ background: "rgba(3, 14, 23, 0.6)", border: "1px solid var(--line)", borderRadius: "var(--radius-sm)", padding: "18px" }}>
-            <h3 style={{ color: "var(--ice)", fontSize: "1rem", margin: "0 0 8px" }}>3. Aircraft Weight Manifests</h3>
+            <h3 style={{ color: "var(--ice)", fontSize: "1rem", margin: "0 0 8px" }}>3. Confirm Party Requirements</h3>
             <p style={{ fontSize: "0.88rem", lineHeight: 1.5, color: "var(--muted)", margin: 0 }}>
-              Helicopters operate under strict FAA weight limits. When passenger weights balance out favorably, dispatchers often release a 5th or 6th seat that was previously locked by the booking engine.
+              Party size alone does not confirm flight suitability. The operator assesses passenger requirements, aircraft capacity, and weight and balance before confirming a reservation.
             </p>
           </div>
         </div>
