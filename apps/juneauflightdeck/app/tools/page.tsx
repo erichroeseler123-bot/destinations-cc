@@ -4,16 +4,17 @@ import HelicopterCabinSimulator from "../components/HelicopterCabinSimulator";
 import ExcursionPortBufferSolver from "../components/ExcursionPortBufferSolver";
 import ExcursionSpecsGrid from "../components/ExcursionSpecsGrid";
 import CrossPortBackup from "../components/CrossPortBackup";
+import GlacierFlightCams from "../components/GlacierFlightCams";
 
 export const metadata: Metadata = {
   title: "Alaska Cruise Helicopter Flight & Port Logistics Toolkit | Juneau Flight Deck",
   description:
-    "Interactive Airbus AStar 350 weight & balance simulator, 19-ship cruise port buffer solver, technical excursion comparison matrix, and cross-port backup routing.",
+    "Interactive Airbus AStar 350 weight & balance simulator, live FAA aviation weathercams, 19-ship cruise port buffer solver, technical excursion matrix, and cross-port backup routing.",
   alternates: { canonical: "https://juneauflightdeck.com/tools" },
   openGraph: {
     title: "Alaska Cruise Helicopter Flight & Port Logistics Toolkit",
     description:
-      "Interactive cabin weight & balance simulator, cruise port buffer solver, and technical excursion matrix for Alaska Inside Passage travelers.",
+      "Interactive cabin weight & balance simulator, live FAA mountain pass weathercams, cruise port buffer solver, and technical excursion matrix for Alaska Inside Passage travelers.",
     url: "https://juneauflightdeck.com/tools",
   },
 };
@@ -27,7 +28,7 @@ const toolkitJsonLd = {
       applicationCategory: "TravelApplication",
       operatingSystem: "All",
       description:
-        "Suite of interactive tools for Alaska cruise passengers: AStar 350 helicopter weight & balance simulator, 19-ship docking buffer solver, and excursion alternative comparisons.",
+        "Suite of interactive tools for Alaska cruise passengers: AStar 350 helicopter weight & balance simulator, live FAA mountain pass weathercams, 19-ship docking buffer solver, and excursion alternative comparisons.",
       offers: {
         "@type": "Offer",
         price: "0",
@@ -75,7 +76,7 @@ export default function ToolsDashboardPage() {
             margin: "0 auto 24px",
           }}
         >
-          Independent calculators solving the four hardest friction points in Alaska excursion planning: aircraft weight &amp; balance, ship dock transit buffers, operator comparisons, and sold-out cross-port alternatives.
+          Independent tools solving the critical friction points in Alaska excursion planning: aircraft weight &amp; balance, mountain pass visibility cams, ship dock transit buffers, operator comparisons, and sold-out cross-port alternatives.
         </p>
 
         {/* Quick Nav Anchors */}
@@ -96,6 +97,21 @@ export default function ToolsDashboardPage() {
             1. Weight &amp; Balance Simulator ↓
           </a>
           <a
+            href="#live-cams"
+            style={{
+              padding: "8px 16px",
+              borderRadius: 8,
+              background: "rgba(16, 185, 129, 0.15)",
+              border: "1px solid rgba(16, 185, 129, 0.35)",
+              color: "#34d399",
+              fontSize: "0.84rem",
+              fontWeight: 700,
+              textDecoration: "none",
+            }}
+          >
+            2. Live FAA WeatherCams ↓
+          </a>
+          <a
             href="#port-solver"
             style={{
               padding: "8px 16px",
@@ -108,7 +124,7 @@ export default function ToolsDashboardPage() {
               textDecoration: "none",
             }}
           >
-            2. Port Buffer Solver ↓
+            3. Port Buffer Solver ↓
           </a>
           <a
             href="#specs-matrix"
@@ -123,7 +139,7 @@ export default function ToolsDashboardPage() {
               textDecoration: "none",
             }}
           >
-            3. Excursion Specs Grid ↓
+            4. Excursion Specs Grid ↓
           </a>
           <a
             href="#cross-port"
@@ -138,7 +154,7 @@ export default function ToolsDashboardPage() {
               textDecoration: "none",
             }}
           >
-            4. Skagway / Ketchikan Backup ↓
+            5. Skagway / Ketchikan Backup ↓
           </a>
         </div>
       </div>
@@ -148,17 +164,22 @@ export default function ToolsDashboardPage() {
         <HelicopterCabinSimulator />
       </section>
 
-      {/* Tool 2: 19-Ship Cruise Excursion Port Buffer Solver */}
+      {/* Tool 2: Live FAA WeatherCams */}
+      <section id="live-cams" style={{ scrollMarginTop: 80, marginBottom: 50 }}>
+        <GlacierFlightCams />
+      </section>
+
+      {/* Tool 3: 19-Ship Cruise Excursion Port Buffer Solver */}
       <section id="port-solver" style={{ scrollMarginTop: 80, marginBottom: 50 }}>
         <ExcursionPortBufferSolver />
       </section>
 
-      {/* Tool 3: Technical Excursion Specs Matrix */}
+      {/* Tool 4: Technical Excursion Specs Matrix */}
       <section id="specs-matrix" style={{ scrollMarginTop: 80, marginBottom: 50 }}>
         <ExcursionSpecsGrid />
       </section>
 
-      {/* Tool 4: Cross-Port Itinerary Backup */}
+      {/* Tool 5: Cross-Port Itinerary Backup */}
       <section id="cross-port" style={{ scrollMarginTop: 80, marginBottom: 50 }}>
         <CrossPortBackup currentPort="Juneau" desiredTourType="dogsled" />
       </section>
