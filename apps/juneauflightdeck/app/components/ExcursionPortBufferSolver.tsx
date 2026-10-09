@@ -45,8 +45,18 @@ function formatMinutesToTime(totalMinutes: number): string {
   return `${displayH}:${displayM} ${ampm}`;
 }
 
-export default function ExcursionPortBufferSolver() {
-  const [selectedShipSlug, setSelectedShipSlug] = useState<string>("discovery-princess");
+export interface ExcursionPortBufferSolverProps {
+  defaultShipSlug?: string;
+}
+
+export default function ExcursionPortBufferSolver({
+  defaultShipSlug,
+}: ExcursionPortBufferSolverProps = {}) {
+  const [selectedShipSlug, setSelectedShipSlug] = useState<string>(
+    defaultShipSlug && ALASKA_CRUISE_FLEET.some((s) => s.slug === defaultShipSlug)
+      ? defaultShipSlug
+      : "discovery-princess"
+  );
   const [arrivalStr, setArrivalStr] = useState<string>("13:00");
   const [departureStr, setDepartureStr] = useState<string>("22:00");
 

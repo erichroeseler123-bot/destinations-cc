@@ -14,6 +14,9 @@ import HelicopterWaitlistForm from "../../components/HelicopterWaitlistForm";
 import SeatScannerTicker from "../../components/SeatScannerTicker";
 import LiveSeatDropsBadge from "../../components/LiveSeatDropsBadge";
 import CrossPortBackup from "../../components/CrossPortBackup";
+import ExcursionPortBufferSolver from "../../components/ExcursionPortBufferSolver";
+import ExcursionRateComparison from "../../components/ExcursionRateComparison";
+import ExcursionSpecsGrid from "../../components/ExcursionSpecsGrid";
 
 interface ShipWaitlistPageProps {
   params: Promise<{
@@ -135,61 +138,23 @@ export default async function ShipWaitlistPage({ params }: ShipWaitlistPageProps
           <LiveSeatDropsBadge showLink={false} />
         </div>
 
-        {/* Dynamic Ship Port Schedule & Flight Window Box */}
-        {context && (
-          <div className="bg-slate-900/90 border border-slate-700/80 rounded-2xl p-5 mb-8 text-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-700/60 pb-3 mb-4">
-              <span className="font-bold text-white text-base flex items-center gap-2">
-                <span>⏱️</span> {ship.shipName} Juneau Port Timing Guide
-              </span>
-              <span className="bg-sky-500/20 text-sky-300 border border-sky-500/40 text-xs px-2.5 py-0.5 rounded-full font-mono">
-                Typical Scheduled Port Call
-              </span>
-            </div>
+        {/* Interactive Port Departure Buffer Solver (Pre-selected to this ship) */}
+        <section className="mb-10" aria-label="Port Departure Buffer Calculation">
+          <ExcursionPortBufferSolver defaultShipSlug={ship.slug} />
+        </section>
 
-            <div className="grid md:grid-cols-3 gap-4 mb-4">
-              <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-                <span className="text-xs text-slate-400 block mb-1">Scheduled Juneau Berth</span>
-                <strong className="text-white block">{context.juneauBerth}</strong>
-                <small className="text-xs text-slate-400">Subject to CBJ harbor master assignment</small>
-              </div>
-              <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-                <span className="text-xs text-slate-400 block mb-1">Typical Port Hours</span>
-                <strong className="text-white block">{context.juneauPortHours}</strong>
-                <small className="text-xs text-slate-400">Verify against your ship daily program</small>
-              </div>
-              <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-                <span className="text-xs text-slate-400 block mb-1">Safety Return Buffer</span>
-                <strong className="text-emerald-400 block">90–120 Min Target</strong>
-                <small className="text-xs text-slate-400">Back before ship all-aboard call</small>
-              </div>
-            </div>
+        {/* Rate Transparency Audit Matrix */}
+        <section className="mb-10" aria-label="Independent vs Cruise Desk Rates">
+          <ExcursionRateComparison />
+        </section>
 
-            {/* Skagway Next-Day Arbitrage Notice */}
-            {ship.callsAtSkagway && (
-              <div className="bg-amber-950/40 border border-amber-500/40 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div>
-                  <strong className="text-amber-400 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
-                    <span>💡</span> Skagway Glacier Alternative (If on your sailing)
-                  </strong>
-                  <p className="text-xs text-slate-300 mt-1 mb-0">
-                    If your sailing visits Skagway ({ship.skagwayHours} at {ship.skagwayBerth}), TEMSCO Skagway operates dog mushing camps on the <strong>Denver Glacier</strong>. 
-                    You can enter your Skagway date in the form below to scan both ports.
-                  </p>
-                </div>
-                <Link
-                  href="/skagway/helicopter"
-                  className="button button-secondary text-xs py-1.5 px-3 flex-shrink-0"
-                >
-                  View Skagway Flights →
-                </Link>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Technical Excursion Specs & Operator Capabilities Matrix */}
+        <section className="mb-10" aria-label="Excursion Specifications Matrix">
+          <ExcursionSpecsGrid />
+        </section>
 
         {/* Smart Cross-Port Backup Alternative */}
-        <div className="mb-8">
+        <div className="mb-10">
           <CrossPortBackup currentPort="Juneau" desiredTourType="dogsled" cruiseShipName={ship.shipName} />
         </div>
 
