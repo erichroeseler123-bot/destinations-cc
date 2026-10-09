@@ -402,9 +402,9 @@ export default function ViatorFeaturedTours({
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: "1rem" }}>🔔</span>
+            <span style={{ fontSize: "1rem" }}>🚁</span>
             <span>
-              <strong>Operator Flight Scheduling:</strong> Live online booking inventory is currently unavailable through the direct API feed. Explore verified operator flight profiles below and select <em>Get Availability Alert</em> to monitor openings on your cruise date.
+              <strong>Direct Operator Flight Inventory:</strong> Compare verified Juneau operator flight profiles below. Live real-time departure times, passenger space, and instant bookings are verified and confirmed directly on the official reservation calendar.
             </span>
           </div>
           <Link
@@ -416,7 +416,7 @@ export default function ViatorFeaturedTours({
               whiteSpace: "nowrap",
             }}
           >
-            General Flight Alert &rarr;
+            Waitlist Seat Alerts &rarr;
           </Link>
         </div>
       )}

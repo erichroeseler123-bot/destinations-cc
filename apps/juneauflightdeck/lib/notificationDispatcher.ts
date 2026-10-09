@@ -53,6 +53,8 @@ export async function dispatchSeatDropNotification(params: {
   checkoutUrl: string;
   cancellationPolicy: string;
   isTest?: boolean;
+  isSplitMatch?: boolean;
+  seatsAvailable?: number;
 }): Promise<NotificationPayload | null> {
   const sql = getDb();
   const resendApiKey = process.env.RESEND_API_KEY || process.env.DCC_RESEND_API_KEY;
@@ -94,11 +96,17 @@ export async function dispatchSeatDropNotification(params: {
   const dispatchedAt = new Date().toISOString();
 
   const portTitle = params.port === "juneau" ? "Juneau" : "Skagway";
-  const emailSubject = `🚨 OPENING DETECTED: ${params.tourName} on ${params.portDate} (${portTitle})`;
+  const emailSubject = params.isSplitMatch
+    ? `⚡ SPLIT PARTY OPENING: ${params.seatsAvailable || "Open"} seat(s) on ${params.tourName} (${params.portDate})`
+    : `🚨 OPENING DETECTED: ${params.tourName} on ${params.portDate} (${portTitle})`;
 
   const emailBodyText = `Hello ${params.guestName},
 
-An open helicopter slot matching your cruise port date on ${params.shipName} has just been detected by Juneau Flight Deck's daily availability check.
+${
+  params.isSplitMatch
+    ? `Great news! You indicated willingness to split your party across adjacent departure times. An open helicopter slot with ${params.seatsAvailable} seat(s) matching your cruise port date on ${params.shipName} has just been detected for your party of ${params.partySize}.`
+    : `An open helicopter slot matching your cruise port date on ${params.shipName} has just been detected by Juneau Flight Deck's daily availability check.`
+}
 
 --- FLIGHT DETAILS ---
 Tour: ${params.tourName}
@@ -106,7 +114,7 @@ Operator: ${params.operator}
 Port: ${portTitle}, Alaska
 Port Date: ${params.portDate}
 Departure Time: ${params.departureTime}
-Party Size: ${params.partySize} passenger(s)
+${params.isSplitMatch ? `Seats Available on This Flight: ${params.seatsAvailable} (of your ${params.partySize} total group)` : `Party Size: ${params.partySize} passenger(s)`}
 
 --- DIRECT OPERATOR BOOKING LINK ---
 Lock in your seats directly with the operator before public inventory fills:

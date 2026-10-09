@@ -57,8 +57,10 @@ export default function ExcursionPortBufferSolver({
       ? defaultShipSlug
       : "discovery-princess"
   );
+  const [sailingDate, setSailingDate] = useState<string>("");
   const [arrivalStr, setArrivalStr] = useState<string>("13:00");
   const [departureStr, setDepartureStr] = useState<string>("22:00");
+  const [cushionMinutes, setCushionMinutes] = useState<number>(90); // 90 min standard target
 
   const selectedShip = useMemo(() => {
     return ALASKA_CRUISE_FLEET.find((s) => s.slug === selectedShipSlug) || ALASKA_CRUISE_FLEET[0];
@@ -74,8 +76,8 @@ export default function ExcursionPortBufferSolver({
     const transitMinutes = isAjDock ? 20 : 15;
     // Tour check-in buffer before flight
     const checkinBuffer = 15;
-    // Safe return cushion before ship all-aboard
-    const allAboardCushionMinutes = isAjDock ? 60 : 45;
+    // Safe return cushion before ship all-aboard (harmonized to 90-120m standard)
+    const allAboardCushionMinutes = cushionMinutes;
 
     const arrivalMins = parseTimeToMinutes(arrivalStr);
     const departureMins = parseTimeToMinutes(departureStr);
@@ -97,11 +99,11 @@ export default function ExcursionPortBufferSolver({
       safetyStatus = "incompatible";
     }
 
-    let logisticsNotice = "Your port stay provides comfortable clearance for a standard 2.25-hour glacier helicopter tour.";
+    let logisticsNotice = `Your port stay provides comfortable clearance with a ${allAboardCushionMinutes}-minute safety return buffer before all-aboard.`;
     if (isAjDock) {
-      logisticsNotice = "⚠️ AJ Dock Advisory: Your ship berths at the South Berth (AJD). Passengers must board the city-contracted shuttle bus to get downtown or schedule direct operator pickups at the South Security gate. We have incorporated a 20-minute shuttle buffer each way.";
+      logisticsNotice = `⚠️ AJ Dock Advisory: Your ship berths at the South Berth (AJD). Passengers must board the terminal shuttle or meet direct operator transfers outside the security gate. A ${allAboardCushionMinutes}-minute return cushion is active.`;
     } else if (safetyStatus === "tight") {
-      logisticsNotice = "⚠️ Tight Port Window: Due to your docking timeframe, only midday flight slots (between " + formatMinutesToTime(earliestSafeMins) + " and " + formatMinutesToTime(latestSafeReturnMins) + ") are safe. Do not book flights that land after " + formatMinutesToTime(latestSafeReturnMins) + ".";
+      logisticsNotice = `⚠️ Tight Port Window: Based on your docking timeframe, only midday flight slots (between ${formatMinutesToTime(earliestSafeMins)} and ${formatMinutesToTime(latestSafeReturnMins)}) are safe. Do not book flights landing after ${formatMinutesToTime(latestSafeReturnMins)}.`;
     }
 
     return {
@@ -120,7 +122,7 @@ export default function ExcursionPortBufferSolver({
       safetyStatus,
       logisticsNotice,
     };
-  }, [selectedShip, arrivalStr, departureStr]);
+  }, [selectedShip, arrivalStr, departureStr, cushionMinutes]);
 
   return (
     <div
@@ -245,6 +247,68 @@ export default function ExcursionPortBufferSolver({
             All-aboard is strictly 30 min before lines cast off.
           </div>
         </div>
+
+        {/* Cushion Selector */}
+        <div>
+          <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ice)", marginBottom: 6 }}>
+            Step 4: Return Cushion Target
+          </label>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              type="button"
+              onClick={() => setCushionMinutes(90)}
+              style={{
+                flex: 1,
+                padding: "8px 10px",
+                borderRadius: 8,
+                background: cushionMinutes === 90 ? "rgba(56, 189, 248, 0.25)" : "#081d2c",
+                border: cushionMinutes === 90 ? "1px solid #38bdf8" : "1px solid var(--line)",
+                color: cushionMinutes === 90 ? "#38bdf8" : "var(--muted)",
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              90 Min Target
+            </button>
+            <button
+              type="button"
+              onClick={() => setCushionMinutes(120)}
+              style={{
+                flex: 1,
+                padding: "8px 10px",
+                borderRadius: 8,
+                background: cushionMinutes === 120 ? "rgba(56, 189, 248, 0.25)" : "#081d2c",
+                border: cushionMinutes === 120 ? "1px solid #38bdf8" : "1px solid var(--line)",
+                color: cushionMinutes === 120 ? "#38bdf8" : "var(--muted)",
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              120 Min Max
+            </button>
+          </div>
+          <div style={{ fontSize: "0.76rem", color: "var(--muted)", marginTop: 6 }}>
+            Back before all-aboard call (90–120m target)
+          </div>
+        </div>
+      </div>
+
+      {/* Voyage Schedule Clarification Notice */}
+      <div
+        style={{
+          background: "rgba(15, 30, 48, 0.6)",
+          border: "1px solid rgba(158, 217, 255, 0.15)",
+          borderRadius: 10,
+          padding: "10px 14px",
+          marginBottom: 20,
+          fontSize: "0.78rem",
+          lineHeight: 1.5,
+          color: "var(--muted)",
+        }}
+      >
+        <strong style={{ color: "#93c5fd" }}>🗓️ Voyage Itinerary Notice:</strong> Port hours vary across different sailing dates for the same vessel (for example, official CLA Alaska schedules show {selectedShip.shipName} docking times shift between early morning and afternoon calls across May, July, and August). Confirm your voyage&apos;s exact docking time on your cruise booking confirmation and adjust the arrival/departure inputs above.
       </div>
 
       {/* TIMELINE METRICS BAR */}

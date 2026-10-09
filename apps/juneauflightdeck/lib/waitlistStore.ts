@@ -99,6 +99,51 @@ export type WaitlistStatus =
   | "cancelled"         // Passenger declined or expired
   | "test_excluded";    // Test/synthetic request excluded from active scanning and business metrics
 
+export function normalizeTourPreference(
+  rawTourType?: string,
+  rawOperator?: string
+): {
+  tourType: "any" | "glacier_landing" | "dog_sledding" | "ice_trek" | "flightseeing";
+  preferredOperator: "temsco" | "coastal" | "northstar" | "any";
+} {
+  const lower = (rawTourType || "").toLowerCase().trim();
+  let operator: "temsco" | "coastal" | "northstar" | "any" = (rawOperator as any) || "any";
+
+  if (lower === "temsco-mendenhall-glacier-walk") {
+    return { tourType: "glacier_landing", preferredOperator: "temsco" };
+  }
+  if (lower === "temsco-glacier-dog-sledding") {
+    return { tourType: "dog_sledding", preferredOperator: "temsco" };
+  }
+  if (lower === "coastal-icefield-landing") {
+    return { tourType: "glacier_landing", preferredOperator: "coastal" };
+  }
+  if (lower === "northstar-glacier-ice-trek") {
+    return { tourType: "ice_trek", preferredOperator: "northstar" };
+  }
+  if (lower.includes("dog")) {
+    return { tourType: "dog_sledding", preferredOperator: operator };
+  }
+  if (lower.includes("landing") || lower.includes("walk")) {
+    return { tourType: "glacier_landing", preferredOperator: operator };
+  }
+  if (lower.includes("trek") || lower.includes("climb")) {
+    return { tourType: "ice_trek", preferredOperator: operator };
+  }
+  if (lower.includes("flight") || lower.includes("scenic")) {
+    return { tourType: "flightseeing", preferredOperator: operator };
+  }
+  if (
+    lower === "glacier_landing" ||
+    lower === "dog_sledding" ||
+    lower === "ice_trek" ||
+    lower === "flightseeing"
+  ) {
+    return { tourType: lower as any, preferredOperator: operator };
+  }
+  return { tourType: "any", preferredOperator: operator };
+}
+
 export interface WaitlistEntry {
   id: string;
   createdAt: string;
@@ -114,6 +159,7 @@ export interface WaitlistEntry {
   portCity: "juneau" | "skagway" | "either";
   tourType: "any" | "glacier_landing" | "dog_sledding" | "ice_trek" | "flightseeing";
   partySize: number;
+  allowSplitParty?: boolean;
   notes?: string;
   preferredOperator?: "temsco" | "coastal" | "northstar" | "any";
   bookingMode: "instant_alert" | "concierge_dispatch" | "priority_hold" | "sms_alert";
@@ -482,15 +528,19 @@ export async function execute10AmDailySweep(options?: {
         (entry.portCity === "skagway" && product.port === "skagway");
       if (!wantsPort) return false;
 
+      const { tourType: normalizedTour, preferredOperator: normalizedOp } =
+        normalizeTourPreference(entry.tourType, entry.preferredOperator);
+
       const wantsTour =
-        entry.tourType === "any" || entry.tourType === product.tourType;
+        normalizedTour === "any" || normalizedTour === product.tourType;
       if (!wantsTour) return false;
 
       // Operator preference check
-      if (entry.preferredOperator && entry.preferredOperator !== "any") {
+      const effectiveOp = normalizedOp !== "any" ? normalizedOp : entry.preferredOperator;
+      if (effectiveOp && effectiveOp !== "any") {
         const matchesOp = product.operator
           .toLowerCase()
-          .includes(entry.preferredOperator.toLowerCase());
+          .includes(effectiveOp.toLowerCase());
         if (!matchesOp) return false;
       }
 
@@ -603,10 +653,18 @@ export async function execute10AmDailySweep(options?: {
               ? entry.juneauDate || (entry.portCity === "juneau" ? entry.portDate : undefined)
               : entry.skagwayDate || (entry.portCity === "skagway" ? entry.portDate : undefined);
 
-          return targetDate === slotDate && entry.partySize <= slot.capacity;
+          if (targetDate !== slotDate) return false;
+
+          const isFullMatch = entry.partySize <= slot.capacity;
+          const isSplitMatch = Boolean(entry.allowSplitParty && slot.capacity >= 1 && entry.partySize > 1);
+
+          return isFullMatch || isSplitMatch;
         });
 
         for (const entry of matchingEntries) {
+          const isFullMatch = entry.partySize <= slot.capacity;
+          const isSplitMatch = Boolean(entry.allowSplitParty && !isFullMatch && slot.capacity >= 1);
+
           const slotTime = new Date(slot.start_at).toLocaleTimeString("en-US", {
             hour: "numeric",
             minute: "2-digit",
@@ -636,6 +694,8 @@ export async function execute10AmDailySweep(options?: {
             checkoutUrl,
             cancellationPolicy: product.cancellationPolicy,
             isTest: entry.isTest,
+            isSplitMatch,
+            seatsAvailable: slot.capacity,
           });
 
           if (!notification) {
@@ -662,7 +722,7 @@ export async function execute10AmDailySweep(options?: {
           entry.cancellationPolicyNotes = product.cancellationPolicy;
           entry.notificationDispatchedAt = notification.dispatchedAt;
           entry.notificationDeliveryId = notification.deliveryId;
-          entry.dispatchAlertNotes = `Opening detected for ${product.name} on ${slotDate} (${slotTime}). Delivery status: ${notification.status}. Operator hold: not_held.`;
+          entry.dispatchAlertNotes = `${isSplitMatch ? `Split-party opening (${slot.capacity} seats for party of ${entry.partySize})` : "Opening"} detected for ${product.name} on ${slotDate} (${slotTime}). Delivery status: ${notification.status}. Operator hold: not_held.`;
 
           await saveWaitlistEntry(entry);
 
