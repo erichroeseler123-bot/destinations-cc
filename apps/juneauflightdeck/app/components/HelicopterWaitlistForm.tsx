@@ -742,10 +742,10 @@ ${shareUrl}`;
                   />
                   <div>
                     <strong style={{ color: "#6ee7b7", display: "block", fontSize: "0.82rem" }}>
-                      ⚡ Double Your Booking Odds (Party Split Option)
+                      Allow separate departures for our group
                     </strong>
                     <span style={{ color: "var(--muted)", fontSize: "0.76rem", lineHeight: 1.5, display: "block", marginTop: 2 }}>
-                      We are willing to split our group across two separate helicopters (e.g., 2 and 2) or consecutive departure times if it secures flights for everyone on our port date.
+                      We are willing to consider partial openings or separate departure times across our party if seats appear on our port date.
                     </span>
                   </div>
                 </label>
