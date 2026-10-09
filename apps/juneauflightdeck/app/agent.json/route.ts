@@ -13,7 +13,7 @@ const agentPayload = {
     url: baseUrl,
     type: "juneau_excursion_discovery",
     description:
-      "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.",
+      "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability assistance for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.",
   },
   status: { state: "active", last_verified: "2026-10-07" },
   authority: ["juneau_excursion_context", "operator_comparisons", "cruise_port_timing", "sold_out_alerts", "weather_alternatives"],
@@ -26,7 +26,7 @@ const agentPayload = {
   entry_points: [
     { path: "/", method: "GET", purpose: "Compare and book Juneau cruise excursions, operator comparisons, and port timing" },
     { path: "/helicopter", method: "GET", purpose: "Compare and book Juneau helicopter glacier tours" },
-    { path: "/helicopter-waitlist", method: "GET", purpose: "Sold-out tour availability watch and 10:00 AM seat drop alerts" },
+    { path: "/helicopter-waitlist", method: "GET", purpose: "Helicopter tour availability assistance on request; operator-confirmed reservations" },
     { path: "/temsco-vs-coastal-vs-northstar-juneau", method: "GET", purpose: "Unbiased comparison of Juneau commercial helicopter operators" },
   ],
   machine: {

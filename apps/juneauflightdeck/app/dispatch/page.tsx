@@ -213,7 +213,8 @@ export default function DispatchDashboardPage() {
             <span className="text-xs text-slate-400 font-bold uppercase mr-2">Filter:</span>
             {[
               { id: "all", label: "All Watches" },
-              { id: "active_scanning", label: "Active Scanning" },
+              { id: "inquiry_received", label: "Availability Inquiries" },
+              { id: "active_scanning", label: "Legacy Scanning" },
               { id: "claimed", label: "Seats Claimed" },
               { id: "alert_sent", label: "Alert Sent" },
               { id: "confirmed", label: "Confirmed" },
@@ -362,7 +363,7 @@ export default function DispatchDashboardPage() {
 
                     <td>
                       <div className="flex flex-col gap-1.5">
-                        {entry.status === "active_scanning" && (
+                        {(entry.status === "active_scanning" || entry.status === "inquiry_received") && (
                           <button
                             onClick={() => handleUpdateStatus(entry.id, "contact_pending")}
                             className="text-xs px-2.5 py-1 bg-amber-400 text-slate-950 font-bold rounded hover:bg-amber-300"

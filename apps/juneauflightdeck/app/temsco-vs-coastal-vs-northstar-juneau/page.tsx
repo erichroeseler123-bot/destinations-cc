@@ -829,7 +829,7 @@ export default function OperatorComparisonPage() {
                 href="/helicopter-waitlist?tour=dogsled"
                 style={{ fontSize: "0.82rem", color: "var(--accent, #f0b35b)", fontWeight: 700, textDecoration: "none", marginLeft: 4 }}
               >
-                Sold out? Join Waitlist →
+                Sold out? Request Help →
               </Link>
             </div>
           </div>
@@ -873,7 +873,7 @@ export default function OperatorComparisonPage() {
                 href="/helicopter-waitlist?operator=northstar"
                 style={{ fontSize: "0.82rem", color: "var(--accent, #f0b35b)", fontWeight: 700, textDecoration: "none", marginLeft: 4 }}
               >
-                Sold out? Join Waitlist →
+                Sold out? Request Help →
               </Link>
             </div>
           </div>

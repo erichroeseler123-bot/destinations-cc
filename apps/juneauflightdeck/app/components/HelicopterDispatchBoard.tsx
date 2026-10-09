@@ -33,7 +33,7 @@ export default function HelicopterDispatchBoard({
 
   const defaultSubhead = isSkagway
     ? 'Compare Skagway glacier helicopter operators, review ship-safe return buffers, and plan your weather backup.'
-    : 'Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.';
+    : 'Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability assistance for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.';
 
   const defaultPrimaryCta = isSkagway ? 'Compare Skagway Flights' : 'Find Your Tour';
 
@@ -58,7 +58,7 @@ export default function HelicopterDispatchBoard({
               ACTIVE SERVICE
             </span>
             <span style={{ marginLeft: 8, marginRight: 16 }}>
-              Availability watch &amp; waitlist seat monitoring are active and operating daily.
+              Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.
             </span>
             <span className="jfd-badge-planned">PLANNED FEATURE</span>
             <span style={{ marginLeft: 8 }}>
@@ -105,7 +105,7 @@ export default function HelicopterDispatchBoard({
             href="/helicopter-waitlist"
             className="jfd-hero-btn-secondary"
           >
-            Sold-Out Availability Alerts
+            Sold-Out Availability Assistance
           </Link>
         </div>
 
@@ -151,7 +151,7 @@ export default function HelicopterDispatchBoard({
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ color: '#86efac', fontWeight: 800 }}>✓</span>
-            <span><strong>Local Coordination:</strong> Daily waitlist sweeps &amp; weather backups</span>
+            <span><strong>Local Coordination:</strong> Availability inquiries &amp; weather guidance</span>
           </div>
         </div>
         </div>
@@ -529,7 +529,7 @@ export default function HelicopterDispatchBoard({
                   SOLD-OUT DATES
                 </div>
                 <p style={{ margin: 0, fontSize: '0.88rem', lineHeight: 1.5, color: 'var(--muted)' }}>
-                  Our automated scanner sweeps operator inventories every morning at 10:00 AM when cancellation desks process changes. When matching seats open up, we alert you immediately or place a hold where cancellation policies permit.
+                  Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.
                 </p>
               </div>
 
@@ -570,7 +570,7 @@ export default function HelicopterDispatchBoard({
               className="button button-primary"
               style={{ padding: '8px 16px', fontSize: '0.85rem' }}
             >
-              Join the Availability Watch &rarr;
+              Request Availability Help &rarr;
             </Link>
           </div>
         </div>

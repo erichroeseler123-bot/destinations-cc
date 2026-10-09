@@ -59,7 +59,7 @@ export const TOUR_OPTIONS: TourOption[] = [
   },
   {
     value: "any",
-    label: "Any Available Helicopter Seat (Highest Success Rate)",
+    label: "Any Helicopter Experience",
     category: "any",
     highlight: "Scans all 3 operators for any open passenger space",
   },
@@ -105,7 +105,7 @@ export default function HelicopterWaitlistForm({
     tourType: "any",
     partySize: "2",
     notes: "",
-    bookingMode: "instant_alert" as "instant_alert" | "concierge_dispatch",
+    bookingMode: "availability_inquiry",
   });
 
   const [preselectedTour, setPreselectedTour] = useState<TourOption | null>(null);
@@ -113,6 +113,7 @@ export default function HelicopterWaitlistForm({
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [submissionId, setSubmissionId] = useState("");
+  const [dispatchNotice, setDispatchNotice] = useState("");
   const [copiedRollCall, setCopiedRollCall] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -122,7 +123,6 @@ export default function HelicopterWaitlistForm({
     const params = new URLSearchParams(window.location.search);
     const shipParam = params.get("ship");
     const dateParam = params.get("date");
-    const modeParam = params.get("mode");
     const tourParam = params.get("tour");
 
     if (tourParam) {
@@ -166,9 +166,6 @@ export default function HelicopterWaitlistForm({
       setFormData((prev) => ({ ...prev, portDate: dateParam }));
     }
 
-    if (modeParam === "concierge" || modeParam === "concierge_dispatch") {
-      setFormData((prev) => ({ ...prev, bookingMode: "concierge_dispatch" }));
-    }
   }, []);
 
   const handleShipSelect = (shipName: string) => {
@@ -203,17 +200,12 @@ export default function HelicopterWaitlistForm({
 
     if (formData.portCity === "either" && !formData.skagwayDate) {
       setErrorMessage(
-        "Please enter your separate Skagway port date from your cruise itinerary to scan both ports."
+        "Please enter your separate Skagway port date from your cruise itinerary to request help for both ports."
       );
       setStatus("error");
       return;
     }
 
-    if (formData.bookingMode === "concierge_dispatch" && (!formData.phone || formData.phone.trim().length < 7)) {
-      setErrorMessage("Please provide a valid phone number so our dispatch team can contact you when seats open.");
-      setStatus("error");
-      return;
-    }
 
     const todayStr = new Date().toISOString().slice(0, 10);
     if (formData.portDate < todayStr) {
@@ -250,10 +242,11 @@ export default function HelicopterWaitlistForm({
 
       const data = await res.json();
       if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Unable to join waitlist. Please check inputs and try again.");
+        throw new Error(data.error || "Unable to submit inquiry. Please check inputs and try again.");
       }
 
       setSubmissionId(data.submissionId);
+      setDispatchNotice(data.notificationDispatched ? "" : data.message);
       setStatus("success");
 
       // Dispatch telemetry event for waitlist conversion
@@ -288,11 +281,11 @@ export default function HelicopterWaitlistForm({
       ? `${window.location.origin}/helicopter-waitlist?ship=${encodeURIComponent(resolvedShipName)}&date=${encodeURIComponent(formData.portDate)}`
       : `https://juneauflightdeck.com/helicopter-waitlist?ship=${encodeURIComponent(resolvedShipName)}&date=${encodeURIComponent(formData.portDate)}`;
 
-  const rollCallPostText = `Hey everyone on ${resolvedShipName} for our ${formData.portDate || "upcoming"} port call in Juneau! 
+  const rollCallPostText = `Hey everyone on ${resolvedShipName} for our ${formData.portDate || "upcoming"} port call in Juneau!
 
-If you were looking for glacier helicopter landings or dog sledding and found them sold out through the ship's excursion desk, check out Juneau Flight Deck's daily availability check. 
+If you were looking for glacier helicopter landings or dog sledding and found them sold out through the ship's excursion desk, check out Juneau Flight Deck's availability assistance.
 
-They provide operator comparisons, ship port timing guidance, and a daily availability check across local helicopter operators (TEMSCO, Coastal, NorthStar) with direct booking links:
+They provide operator comparisons, ship port timing guidance, and an option to request availability assistance for your port date and party size. Availability and reservations are confirmed by the operator:
 ${shareUrl}`;
 
   const copyToClipboard = async (text: string, type: "rollcall" | "link") => {
@@ -315,14 +308,10 @@ ${shareUrl}`;
       <div className="waitlist-card-header">
         <div className="waitlist-pill">
           <span className="waitlist-pill-dot" />
-          <span>Daily Availability Check • Direct Operator Booking</span>
+          <span>Availability Inquiry • Operator Confirmation</span>
         </div>
-        <h3>Sold Out on Your Ship? Request a Daily Availability Check.</h3>
-        <p className="waitlist-explainer">
-          Helicopter companies experience frequent cancellations and group releases. 
-          We perform a daily availability check across local operators (TEMSCO, Coastal, NorthStar). 
-          When an open space appears on your ship&apos;s date, <strong>we alert you with direct booking links to secure open seats directly with the operator</strong>.
-        </p>
+        <h3>Helicopter Tour Availability Inquiry</h3>
+        <p className="waitlist-explainer">Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.</p>
       </div>
 
       {preselectedTour && (
@@ -347,26 +336,10 @@ ${shareUrl}`;
       )}
 
       <div className="waitlist-how-it-works-grid">
-        <div className="how-step">
-          <span className="step-num">01</span>
-          <h4>Daily Availability Check</h4>
-          <p>We check local operator schedules each day for released seats and cancellation openings.</p>
-        </div>
-        <div className="how-step">
-          <span className="step-num">02</span>
-          <h4>Targeted Date &amp; Port Scan</h4>
-          <p>We check the exact passenger-supplied cruise dates for Juneau and Skagway.</p>
-        </div>
-        <div className="how-step">
-          <span className="step-num">03</span>
-          <h4>Operator-Specific Policies</h4>
-          <p>Published terms apply (TEMSCO: 48h full refund; Coastal: 7+ days full refund, 4–6 days 50%). 100% weather refund.</p>
-        </div>
-        <div className="how-step">
-          <span className="step-num">04</span>
-          <h4>Direct Operator Booking</h4>
-          <p>You receive an alert with a direct link to lock in open seats directly with the flight operator.</p>
-        </div>
+        <div className="how-step"><span className="step-num">01</span><h4>Your Port Details</h4><p>Provide your port date, party size, tour preference, and ship timing.</p></div>
+        <div className="how-step"><span className="step-num">02</span><h4>Request Assistance</h4><p>This is an inquiry, not an automated alert subscription or reservation.</p></div>
+        <div className="how-step"><span className="step-num">03</span><h4>Check Provider Terms</h4><p>Review current pricing, pickup instructions, and cancellation terms with the booking provider.</p></div>
+        <div className="how-step"><span className="step-num">04</span><h4>Operator Confirmation</h4><p>Only the operator or authorized booking provider can confirm availability and reservations.</p></div>
       </div>
 
       {status === "success" ? (
@@ -374,25 +347,23 @@ ${shareUrl}`;
           <div className="text-center">
             <div className="success-icon inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 text-2xl mb-3">✓</div>
             <h4 className="text-xl font-bold text-white">
-              {formData.bookingMode === "concierge_dispatch"
-                ? "Concierge Dispatch Request Received"
-                : "Daily Availability Check Request Received"}
+              Availability Inquiry Received
             </h4>
             <p className="text-slate-300 mt-1">
-              Confirmation Code: <strong className="text-amber-400 font-mono">{submissionId}</strong>
+              Inquiry Reference: <strong className="text-amber-400 font-mono">{submissionId}</strong>
             </p>
             <p className="text-sm text-slate-300 mt-2">
-              Your request is saved. We check Southeast Alaska fleet availability for your date (<strong>{formData.portDate}</strong>
-              {formData.portCity === "either" && formData.skagwayDate ? ` and Skagway: ${formData.skagwayDate}` : ""}) 
+              Your inquiry is saved for your date (<strong>{formData.portDate}</strong>
+              {formData.portCity === "either" && formData.skagwayDate ? ` and Skagway: ${formData.skagwayDate}` : ""})
               for <strong>{formData.partySize} guest(s)</strong> on <strong>{resolvedShipName}</strong> ({formData.cruiseLine}).
             </p>
           </div>
 
           <div className="success-reassurance bg-slate-900/80 border border-slate-700/60 rounded-xl p-4 text-xs text-slate-300 leading-relaxed">
-            {formData.bookingMode === "concierge_dispatch"
-              ? "🛎️ Request Logged: When an opening is detected during our daily availability check, our local dispatch team contacts you with direct flight checkout details."
-              : "📱 Request Logged: When an opening is detected during our daily availability check, a direct booking link is generated so you can complete checkout directly with the operator."}
+            This inquiry does not hold seats or confirm a booking. Availability and reservations are confirmed by the operator. No automated monitoring is activated.
           </div>
+
+          {dispatchNotice && <p role="status" className="text-sm text-amber-200">{dispatchNotice}</p>}
 
           {/* Group Roll Call Share Box (Where Group Rules Allow) */}
           <div className="bg-sky-950/40 border border-sky-500/30 rounded-2xl p-5 text-left">
@@ -403,8 +374,7 @@ ${shareUrl}`;
               </h5>
             </div>
             <p className="text-xs text-sky-200/90 leading-relaxed mb-4">
-              Glacier helicopter flights sell out 3–6 months early. Most guests on <strong>{resolvedShipName}</strong> do not 
-              know daily cancellations open up seats. Where group rules allow, share this daily availability check with your shipmates so your sailing group can get booked:
+              Where group rules allow, share these operator comparisons and availability inquiry options with guests on <strong>{resolvedShipName}</strong>:
             </p>
 
             <div className="bg-slate-950/80 rounded-xl p-3 border border-slate-800 text-xs font-mono text-slate-300 leading-relaxed whitespace-pre-wrap select-all mb-3 max-h-36 overflow-y-auto">
@@ -451,66 +421,6 @@ ${shareUrl}`;
               {errorMessage}
             </div>
           )}
-
-          {/* Mode Selector */}
-          <div className="mb-6">
-            <span className="text-xs font-bold text-sky-300 uppercase tracking-widest block mb-2">
-              Choose Your Notification Alert Preference:
-            </span>
-            <div className="grid md:grid-cols-2 gap-3">
-              <label
-                className={`booking-mode-card ${
-                  formData.bookingMode === "instant_alert" ? "booking-mode-selected" : ""
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <input
-                    type="radio"
-                    name="bookingMode"
-                    value="instant_alert"
-                    checked={formData.bookingMode === "instant_alert"}
-                    onChange={() => setFormData({ ...formData, bookingMode: "instant_alert" })}
-                    className="mt-1"
-                  />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <strong className="text-white text-sm">📧 Daily Availability Alert</strong>
-                      <span className="mode-badge-recommended">Direct Link</span>
-                    </div>
-                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                      <strong>Free Email Alert.</strong> When seats open during our daily check, we send you a direct booking link to complete checkout with the flight operator.
-                    </p>
-                  </div>
-                </div>
-              </label>
-
-              <label
-                className={`booking-mode-card ${
-                  formData.bookingMode === "concierge_dispatch" ? "booking-mode-selected" : ""
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <input
-                    type="radio"
-                    name="bookingMode"
-                    value="concierge_dispatch"
-                    checked={formData.bookingMode === "concierge_dispatch"}
-                    onChange={() => setFormData({ ...formData, bookingMode: "concierge_dispatch" })}
-                    className="mt-1"
-                  />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <strong className="text-white text-sm">🛎️ Concierge Dispatch Alert</strong>
-                      <span className="mode-badge-free">Personal Follow-Up</span>
-                    </div>
-                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                      <strong>Dedicated local assistance.</strong> Our Juneau dispatch team notifies you via email and coordinates directly when openings are detected to help secure your booking.
-                    </p>
-                  </div>
-                </div>
-              </label>
-            </div>
-          </div>
 
           <div className="form-grid">
             {/* Ship Selection with Auto-Match */}
@@ -628,7 +538,7 @@ ${shareUrl}`;
                         onClick={() => setFormData({ ...formData, portCity: "either" })}
                         className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] py-1 px-2.5 rounded transition flex-shrink-0"
                       >
-                        Scan Both Ports
+                        Include Both Ports
                       </button>
                     )}
                   </div>
@@ -638,14 +548,14 @@ ${shareUrl}`;
                 <div className="text-[11px] text-slate-300 flex items-center gap-1.5 pt-1 border-t border-sky-900/50">
                   <span>🛡️</span>
                   <span>
-                    <strong>Port Day Backup Option:</strong> If helicopter seats remain full on your date, our dispatch team checks verified live availability for Juneau&apos;s top-rated Auke Bay Whale Watching.
+                    <strong>Port Day Backup Option:</strong> You can also ask about whale watching alternatives. Separate booking and operator confirmation are required.
                   </span>
                 </div>
               </div>
             )}
 
             <div className="form-field">
-              <label htmlFor="portCity">Port Location to Scan</label>
+              <label htmlFor="portCity">Port Location</label>
               <select
                 id="portCity"
                 value={formData.portCity}
@@ -742,7 +652,7 @@ ${shareUrl}`;
             </div>
 
             <div className="form-field">
-              <label htmlFor="email">Email Address (For Seat Alerts) *</label>
+              <label htmlFor="email">Email Address *</label>
               <input
                 id="email"
                 type="email"
@@ -755,20 +665,18 @@ ${shareUrl}`;
 
             <div className="form-field">
               <label htmlFor="phone">
-                Mobile Phone {formData.bookingMode === "concierge_dispatch" ? "*" : "(Optional)"}
+                Mobile Phone (Optional)
               </label>
               <input
                 id="phone"
                 type="tel"
-                required={formData.bookingMode === "concierge_dispatch"}
+
                 placeholder="(555) 123-4567"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
               <span className="text-[11px] text-slate-400">
-                {formData.bookingMode === "concierge_dispatch"
-                  ? "Used by Juneau dispatch team for direct flight coordination"
-                  : "Optional direct contact for tour operator coordination"}
+                Optional contact number for your inquiry
               </span>
             </div>
 
@@ -792,12 +700,10 @@ ${shareUrl}`;
             >
               {status === "submitting"
                 ? "Submitting Request..."
-                : formData.bookingMode === "concierge_dispatch"
-                ? "Activate Concierge Dispatch Alert (Free) →"
-                : "Request Daily Availability Check (Free) →"}
+                : "Submit Availability Inquiry →"}
             </button>
             <p className="waitlist-legal-footnote">
-              🔒 100% Free Service. We perform daily availability checks across local operator schedules. Cancellation terms are operator-specific (TEMSCO: 48h full refund; Coastal: 7+ days full refund, 50% 4–6 days, non-refundable &lt;3 days). All operators provide 100% full refund for weather cancellations.
+              This inquiry does not reserve seats or activate automated alerts. Prices, pickup arrangements, cancellation terms, and weather or missed-port refunds depend on the operator and booking channel.
             </p>
           </div>
         </form>

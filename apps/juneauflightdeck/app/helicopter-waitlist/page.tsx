@@ -4,14 +4,14 @@ import HelicopterWaitlistForm from "../components/HelicopterWaitlistForm";
 import { ALASKA_CRUISE_FLEET } from "../../lib/alaskaCruiseFleet";
 
 export const metadata: Metadata = {
-  title: "Helicopter Tour Availability Watch & Waitlist | Juneau Flight Deck",
+  title: "Helicopter Tour Availability Inquiry",
   description:
-    "Put our daily 10:00 AM seat scanner on your cruise port date. Automated monitoring of TEMSCO, Coastal, and NorthStar glacier helicopter flights with direct operator booking links.",
+    "Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.",
   alternates: { canonical: "https://juneauflightdeck.com/helicopter-waitlist" },
   openGraph: {
-    title: "Helicopter Tour Availability Watch | Juneau Flight Deck",
+    title: "Helicopter Tour Availability Inquiry",
     description:
-      "Daily seat drop monitoring for Juneau & Skagway helicopter glacier tours. Direct operator booking and concierge dispatch alerts.",
+      "Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.",
     url: "https://juneauflightdeck.com/helicopter-waitlist",
   },
 };
@@ -25,15 +25,15 @@ const waitlistFaqSchema = {
       name: "When do sold-out Juneau helicopter seats usually open up?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Seats drop back into live inventory when cruise lines reach contractual cutoff deadlines (typically 30, 14, and 7 days prior to sailing) and return unsold block allocations to operators. Cancellations and aircraft weight rebalances also open seats daily at 10:00 AM AKDT.",
+        text: "Availability can change when bookings are canceled or operator schedules change. There is no verified universal release time. Confirm seats with the operator for your date and party size.",
       },
     },
     {
       "@type": "Question",
-      name: "Can I monitor both Juneau and Skagway for glacier dog sledding?",
+      name: "Can I request help for both Juneau and Skagway?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes. Many Alaska cruise sailings visit both Juneau and Skagway. TEMSCO operates dog sledding camps on both Herbert Glacier (Juneau) and Denver Glacier (Skagway). Our waitlist form allows you to scan both port dates simultaneously.",
+        text: "Yes. Many Alaska cruise sailings visit both Juneau and Skagway. TEMSCO operates dog sledding camps on both Herbert Glacier (Juneau) and Denver Glacier (Skagway). Our inquiry form accepts separate dates for both ports. The operator confirms available experiences.",
       },
     },
     {
@@ -78,7 +78,7 @@ export default function Page() {
               letterSpacing: "-0.02em",
             }}
           >
-            Alaska Cruise Ship Port Timing &amp; Availability Alerts
+            Alaska Cruise Ship Port Timing &amp; Availability Assistance
           </h1>
           <p
             style={{
@@ -89,7 +89,7 @@ export default function Page() {
               margin: "0 auto 20px",
             }}
           >
-            Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
+            Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability assistance for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
           </p>
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", marginBottom: 8 }}>
             <Link
@@ -140,7 +140,7 @@ export default function Page() {
                 fontSize: "0.9rem",
               }}
             >
-              Daily Availability Check ↓
+              Request Availability Help ↓
             </a>
           </div>
         </div>
@@ -231,13 +231,13 @@ export default function Page() {
         <section id="waitlist-form" style={{ marginBottom: 48 }}>
           <div style={{ textAlign: "center", marginBottom: 24 }}>
             <span style={{ fontSize: "0.75rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--accent, #f0b35b)" }}>
-              Step 2 · Availability Watch
+              Step 2 · Availability Inquiry
             </span>
             <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#ffffff", margin: "6px 0 8px" }}>
-              Can&apos;t Find an Open Seat? Request a Daily Availability Check
+              Request Help Checking Availability
             </h2>
             <p style={{ fontSize: "0.95rem", color: "var(--muted)", maxWidth: 680, margin: "0 auto", lineHeight: 1.5 }}>
-              If your desired tour or departure time is fully booked through your cruise line, submit your port date below. We perform a daily availability check across local helicopter operators (TEMSCO, Coastal, NorthStar) and send direct booking links if seats open.
+              Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.
             </p>
           </div>
           <HelicopterWaitlistForm />

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getDb } from "../../../lib/db";
 import { saveWaitlistEntry, type WaitlistEntry } from "../../../lib/waitlistStore";
 import { dispatchWaitlistIntakeNotification } from "../../../lib/notificationDispatcher";
 
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
       portCity = "juneau",
       tourType = "any",
       partySize = 2,
-      bookingMode = "instant_alert",
+      bookingMode = "availability_inquiry",
       notes,
     } = body;
     const isTest = Boolean(body.isTest ?? body.is_test ?? false);
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
 
     if (!email || typeof email !== "string" || !EMAIL_REGEX.test(email.trim())) {
       return NextResponse.json(
-        { ok: false, error: "Please enter a valid email address to receive seat notifications." },
+        { ok: false, error: "Please enter a valid email address for your availability inquiry." },
         { status: 400 }
       );
     }
@@ -74,22 +75,8 @@ export async function POST(request: Request) {
     const normalizedPortCity =
       portCity === "skagway" ? "skagway" : portCity === "either" ? "either" : "juneau";
 
-    // 4. Booking Mode & Phone Validation
-    const normalizedMode =
-      bookingMode === "concierge_dispatch" || bookingMode === "priority_hold"
-        ? "concierge_dispatch"
-        : "instant_alert";
-
-    if (normalizedMode === "concierge_dispatch" && (!phone || String(phone).replace(/\D/g, "").length < 7)) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error:
-            "A valid contact phone number is required for Concierge Dispatch so our dispatch team can coordinate directly with you when seats drop.",
-        },
-        { status: 400 }
-      );
-    }
+    // Public submissions are on-demand inquiries, never automated alert enrollment.
+    const normalizedMode = "availability_inquiry" as const;
 
     // 5. Date Validation
     const today = getTodayAlaskaDate();
@@ -135,7 +122,7 @@ export async function POST(request: Request) {
         return NextResponse.json(
           {
             ok: false,
-            error: "A valid Juneau port date (YYYY-MM-DD) is required when scanning both ports.",
+            error: "A valid Juneau port date (YYYY-MM-DD) is required when requesting help for both ports.",
           },
           { status: 400 }
         );
@@ -152,7 +139,7 @@ export async function POST(request: Request) {
           {
             ok: false,
             error:
-              "A valid Skagway port date (YYYY-MM-DD) is required when scanning both ports. Check your ship itinerary for your Skagway call date.",
+              "A valid Skagway port date (YYYY-MM-DD) is required when requesting help for both ports. Check your ship itinerary for your Skagway call date.",
           },
           { status: 400 }
         );
@@ -170,7 +157,7 @@ export async function POST(request: Request) {
 
     const primaryPortDate = resolvedJuneauDate || resolvedSkagwayDate || String(portDate).trim();
     const randomSuffix = Math.floor(10000 + Math.random() * 90000);
-    const submissionId = `JFD-SCAN-${Date.now().toString(36).toUpperCase()}-${randomSuffix}`;
+    const submissionId = `JFD-INQUIRY-${Date.now().toString(36).toUpperCase()}-${randomSuffix}`;
 
     const perSeat =
       tourType === "dog_sledding" ? 649 : tourType === "ice_trek" ? 599 : 449;
@@ -192,7 +179,7 @@ export async function POST(request: Request) {
       partySize: parsedPartySize,
       bookingMode: normalizedMode,
       notes: notes ? String(notes).trim() : undefined,
-      status: isTest ? "test_excluded" : "active_scanning",
+      status: isTest ? "test_excluded" : "inquiry_received",
       isTest: Boolean(isTest),
       operatorHoldStatus: "not_held",
       estimatedValue: parsedPartySize * perSeat,
@@ -203,9 +190,13 @@ export async function POST(request: Request) {
     let notificationDispatched = false;
     try {
       const intakeNotification = await dispatchWaitlistIntakeNotification(entry);
-      notificationDispatched = Boolean(intakeNotification);
+      notificationDispatched = intakeNotification?.status === "delivered";
     } catch (notifErr) {
       console.warn("[WaitlistAPI] Intake notification dispatch error:", notifErr);
+    }
+
+    if (!notificationDispatched && !getDb()) {
+      return NextResponse.json({ok: false, error: "We could not reliably deliver your inquiry. Please email dispatch@juneauflightdeck.com directly."}, {status: 503});
     }
 
     return NextResponse.json({
@@ -214,10 +205,9 @@ export async function POST(request: Request) {
       notificationDispatched,
       bookingMode: entry.bookingMode,
       isTest: entry.isTest,
-      message:
-        entry.bookingMode === "concierge_dispatch"
-          ? "Concierge Dispatch Alert activated! Our 10:00 AM daily sweep will monitor operator drops. If seats open, dispatch will alert you via email and personal coordination with direct flight checkout."
-          : "Daily 10:00 AM Seat Drop Alert activated! Our automated daily sweep monitors operator cancellations. When seats open, you will receive an email alert with direct operator checkout links.",
+      message: notificationDispatched
+        ? "Availability inquiry received. This is not a reservation or an automated alert subscription."
+        : "Your inquiry was saved, but dispatch email could not be confirmed. Contact dispatch@juneauflightdeck.com with your inquiry reference.",
       details: {
         portDate: entry.portDate,
         juneauDate: entry.juneauDate,
@@ -227,7 +217,7 @@ export async function POST(request: Request) {
         dateVerification: entry.dateVerification,
         operatorHoldStatus: entry.operatorHoldStatus,
         cancellationNotice:
-          "• Customer Cancellation Cutoff: Terms vary by provider (TEMSCO: 48h full refund; Coastal: 7+ days; NorthStar direct: 24h+ minus 10% fee; third-party channels vary). • Weather Policy: 100% refund if flight is grounded due to weather. Ship delay and missed-port terms depend on specific provider and booking-channel voucher terms.",
+          "Cancellation, weather, and missed-port terms depend on your operator and booking channel. Verify current terms before booking.",
       },
     });
   } catch (err: any) {

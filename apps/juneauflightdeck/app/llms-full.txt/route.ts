@@ -14,13 +14,13 @@ export function GET() {
         : "Direct downtown dock with immediate pedestrian access and curbside operator shuttle pickup."
     }
 - **Recommended Flight Window:** Earliest flight 90 minutes after gangway; latest flight return 90 minutes before all-aboard.
-- **Seat Scanner:** Active daily 10:00 AM AKDT sweep for TEMSCO, Coastal, and NorthStar cancellations.
+- **Availability Assistance:** Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.
 `
   ).join("\n");
 
   const fullContent = `# Juneau Flight Deck — Complete Operational & Excursion Knowledge Base
 
-> Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
+> Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability assistance for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
 > Spec URL: https://juneauflightdeck.com/llms-full.txt
 > Summary Spec: https://juneauflightdeck.com/llms.txt
 > Machine Contract: https://juneauflightdeck.com/agent.json
@@ -28,14 +28,14 @@ export function GET() {
 ---
 
 ## 1. About Juneau Flight Deck
-Juneau Flight Deck is an independent shore excursion booking and coordination service and official Viator partner based in Juneau, Alaska. 
+Juneau Flight Deck is an independent shore excursion booking and coordination service and official Viator partner based in Juneau, Alaska.
 
-We help Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers (TEMSCO Helicopters, Coastal Helicopters, NorthStar Trekking, and local marine captains).
+We help Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability assistance for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers (TEMSCO Helicopters, Coastal Helicopters, NorthStar Trekking, and local marine captains).
 
 ### What Juneau Flight Deck Provides:
 - **Direct Operator & Partner Booking:** Compare live excursions across all 3 licensed FAA Part 135 Juneau helicopter operators and book with clear pricing and terms.
 - **Cruise-Port Timing Guidance:** Safe 90 to 120-minute buffers calculated from your cruise ship gangway and specific berth.
-- **Availability Alerts for Sold-Out Tours:** Real-time 10:00 AM daily inventory sweeps catching cancellation drops and returned cruise allocations.
+- **Availability Alerts for Sold-Out Tours:** Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.
 - **Weather Alternatives:** Automatic 100% weather refunds plus same-day rebooking assistance to Auke Bay whale watching charters.
 
 ---
@@ -79,12 +79,9 @@ We help Alaska cruise passengers compare and book helicopter, glacier, dog-sledd
 
 ---
 
-## 3. The 10:00 AM Inventory Sweep Engine & Sold-Out Recovery
-When cruise line excursion desks show "SOLD OUT" for glacier dog sledding or ice landings, seats are not permanently gone. They regularly reappear due to three industry mechanisms:
-
-1. **Cruise Line Block Cutoffs:** Cruise lines place wholesale holds on operator seats months in advance. Contracts mandate that unsold seats must be released back to the local operator at 30-day, 14-day, and 7-day milestones.
-2. **FAA Part 135 Weight & Balance Rebalancing:** Helicopters operate under strict FAA maximum gross takeoff weights. When passenger manifest weights are finalized, dispatchers frequently find they have 1 or 2 seats of remaining lift capacity on previously capped flights.
-3. **Daily 10:00 AM Sweep:** Every morning at 10:00 AM Alaska local time, local dispatchers process previous-day cancellations and block releases. Juneau Flight Deck's automated engine sweeps commercial availability across TEMSCO, Coastal, and NorthStar, immediately notifying waitlisted passengers with direct booking links.
+## 3. Sold-Out Availability Assistance
+Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.
+There is no guaranteed release time, automated alert subscription, or seat hold created by an inquiry.
 
 ---
 

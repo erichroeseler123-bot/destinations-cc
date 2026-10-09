@@ -22,8 +22,8 @@ export function buildShipWaitlistMetadata({
       : "Helicopter Glacier Tour";
 
   const title = `${ship.shipName} Juneau Helicopter Tours & Excursions | Compare, Book & Availability Alerts`;
-  
-  const description = `Compare and book Juneau helicopter, glacier, and dog-sledding excursions for ${ship.shipName} (${ship.cruiseLine}). Includes port timing for ${ship.typicalScheduledBerth.split("(")[0].trim()}, operator comparisons, and sold-out availability alerts.`;
+
+  const description = `Compare and book Juneau helicopter, glacier, and dog-sledding excursions for ${ship.shipName} (${ship.cruiseLine}). Includes port timing for ${ship.typicalScheduledBerth.split("(")[0].trim()}, operator comparisons, and sold-out availability assistance.`;
 
   const canonicalUrl = `https://juneauflightdeck.com/helicopter-waitlist/${ship.slug}`;
 
@@ -78,7 +78,7 @@ export function buildShipFaqSchema(ship: AlaskaShipData) {
         name: `What happens if helicopter tours are sold out on ${ship.shipName}?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `When ${ship.shipName} shows sold out through the cruise line excursion desk, our 24/7 automated scanner monitors local FAA Part 135 operators (TEMSCO, Coastal, NorthStar) daily at 10:00 AM when cancellation drops occur. When an open seat drops, we alert or place a concierge courtesy hold under standard operator cancellation rules.`,
+          text: `If ${ship.shipName} shows sold out through the cruise line, you can request assistance. Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.`,
         },
       },
       {

@@ -129,7 +129,7 @@ hello@juneauflightdeck.com
   <div style="border: 1px solid #e2e8f0; border-top: none; padding: 24px; border-radius: 0 0 8px 8px;">
     <p>Hello <strong>${params.guestName}</strong>,</p>
     <p>An open helicopter flight slot matching your cruise port date on <strong>${params.shipName}</strong> (${params.cruiseLine}) was just detected during our 10:00 AM fleet sweep.</p>
-    
+
     <div style="background-color: #f8fafc; border-left: 4px solid #0284c7; padding: 16px; margin: 20px 0; border-radius: 4px;">
       <h3 style="margin-top: 0; color: #0f172a;">${params.tourName}</h3>
       <p style="margin: 4px 0;"><strong>Operator:</strong> ${params.operator}</p>
@@ -221,8 +221,8 @@ hello@juneauflightdeck.com
           ${Boolean(params.isTest)},
           ${new Date(dispatchedAt)}
         )
-        ON CONFLICT (entry_id, port_date, departure_time) 
-        DO UPDATE SET 
+        ON CONFLICT (entry_id, port_date, departure_time)
+        DO UPDATE SET
           delivery_id = EXCLUDED.delivery_id,
           status = EXCLUDED.status,
           payload = EXCLUDED.payload,
@@ -306,7 +306,7 @@ export async function dispatchWaitlistIntakeNotification(entry: {
   const dispatchedAt = new Date().toISOString();
   const teamEmail = process.env.TEAM_NOTIFICATION_EMAIL || process.env.DISPATCH_NOTIFICATION_EMAIL || "dispatch@juneauflightdeck.com";
 
-  const emailSubject = `✈️ NEW WAITLIST REQUEST: ${entry.name} (${entry.partySize}p) - ${entry.shipName} on ${entry.portDate}`;
+  const emailSubject = `✈️ NEW AVAILABILITY INQUIRY: ${entry.name} (${entry.partySize}p) - ${entry.shipName} on ${entry.portDate}`;
 
   const emailBodyText = `NEW HELICOPTER SEAT REQUEST RECEIVED:
 ID: ${entry.id}
@@ -318,14 +318,14 @@ Port Date: ${entry.portDate}
 Port: ${entry.portCity}
 Tour Requested: ${entry.tourType}
 Party Size: ${entry.partySize}
-Alert Preference: ${entry.bookingMode}
+Request Type: ${entry.bookingMode}
 Notes: ${entry.notes || "None"}
 `;
 
   const emailBodyHtml = `
 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #081c2a; color: #eef6fb; border-radius: 14px;">
-  <h2 style="color: #f0b35b; margin-top: 0;">✈️ New Waitlist Request Received</h2>
-  <p style="font-size: 14px; color: #9ed9ff;">A new passenger availability-alert watch has been activated.</p>
+  <h2 style="color: #f0b35b; margin-top: 0;">✈️ New Availability Inquiry Received</h2>
+  <p style="font-size: 14px; color: #9ed9ff;">A passenger has requested on-demand availability assistance. No automated monitoring or seat hold has been activated.</p>
   <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0;">
     <tr><td style="padding: 6px 0; color: #94a3b8;">Request ID:</td><td style="font-weight: bold; color: #ffffff;">${entry.id}</td></tr>
     <tr><td style="padding: 6px 0; color: #94a3b8;">Passenger:</td><td style="font-weight: bold; color: #ffffff;">${entry.name}</td></tr>

@@ -128,7 +128,7 @@ export default function BestTimeDogSleddingPage() {
             June delivers 18+ hours of daylight and consistently firm morning trail conditions. Sled dog mushers favor this period because trails hold their shape well after overnight freezes.
           </p>
           <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: 0, fontSize: "0.92rem" }}>
-            <strong>Operational note:</strong> June is among the fastest months to book out on cruise ship excursion desks. Entering the waitlist early helps monitor cancellation releases.
+            <strong>Operational note:</strong> June is among the fastest months to book out on cruise ship excursion desks. You can request help checking options for your port date. Availability is confirmed by the operator.
           </p>
         </div>
 
@@ -226,7 +226,7 @@ export default function BestTimeDogSleddingPage() {
           Looking for Dog Sledding Openings?
         </h2>
         <p style={{ color: "var(--muted)", marginBottom: "20px" }}>
-          Our scanner sweeps operator fleet schedules daily at 10:00 AM as cancellations and group blocks process. Submit your details below to receive availability alerts.
+          Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.
         </p>
         <HelicopterWaitlistForm />
       </section>

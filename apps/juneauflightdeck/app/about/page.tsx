@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "About Juneau Flight Deck | Alaska Cruise Excursions & Coordination",
   description:
-    "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons, port timing, sold-out alerts, and weather alternatives.",
+    "Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons, port timing, availability assistance, and weather alternatives.",
   alternates: { canonical: "https://juneauflightdeck.com/about" },
 };
 
@@ -17,7 +17,7 @@ export default function AboutPage() {
           Compare &amp; Book Juneau Cruise Excursions with Confidence
         </h1>
         <p className="chooser-trust-line" style={{ fontSize: "1.1rem", lineHeight: 1.6, marginBottom: "24px", color: "var(--ice)" }}>
-          Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
+          Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability assistance for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
         </p>
 
         {/* 4 Operational Pillars */}
@@ -34,7 +34,7 @@ export default function AboutPage() {
               1. What We Provide
             </h2>
             <p style={{ lineHeight: 1.6, color: "var(--text)", margin: 0, fontSize: "0.95rem" }}>
-              We provide side-by-side operator comparisons across TEMSCO, Coastal, and NorthStar, ship-safe port timing calculations (with conservative 90 to 120-minute safety buffers), daily 10:00 AM availability alerts when sold-out dates reopen, and ground assistance if weather impacts your flight.
+              We provide side-by-side operator comparisons across TEMSCO, Coastal, and NorthStar, ship-safe port timing calculations (with conservative 90 to 120-minute safety buffers), availability assistance on request, and ground assistance if weather impacts your flight.
             </p>
           </div>
 
@@ -82,7 +82,7 @@ export default function AboutPage() {
               4. How Availability Alerts &amp; Weather Alternatives Work
             </h2>
             <p style={{ lineHeight: 1.6, color: "var(--text)", margin: "0 0 10px", fontSize: "0.95rem" }}>
-              <strong>Sold-Out Alerts:</strong> When cruise line excursion desks show sold out, our automated sweep engine monitors operator schedules daily at 10:00 AM AKDT as cancellation desks process adjustments and unbooked wholesale allocations are returned to operator inventory. If matching seats open, we send direct booking links so you can reserve under standard provider terms. (Openings depend on passenger cancellations and operator capacity; availability is not guaranteed on every sailing date.)
+              <strong>Sold-Out Alerts:</strong> Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.
             </p>
             <p style={{ lineHeight: 1.6, color: "var(--text)", margin: 0, fontSize: "0.95rem" }}>
               <strong>Weather Alternatives:</strong> Southeast Alaska glacier flights operate strictly under FAA Visual Flight Rules (VFR). If cloud ceilings or dense fog close mountain passes, full refunds are issued directly by the booking provider and operating carrier under their published weather policies. Our local team assists by identifying available alternatives—such as Auke Bay whale watching charters or land-based glacier tours—which operate subject to boat capacity and require separate booking.
@@ -106,7 +106,7 @@ export default function AboutPage() {
             className="primary-cta"
             style={{ background: "transparent", border: "1px solid var(--line)", color: "var(--text)" }}
           >
-            Sold-Out Availability Alerts
+            Sold-Out Availability Assistance
           </Link>
         </div>
       </section>

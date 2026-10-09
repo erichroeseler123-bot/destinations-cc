@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Cruise Ship Excursion Desk vs. Independent Helicopter Booking in Juneau",
     description:
-      "Save $80-$150 per person on the exact same helicopters. Learn about pier pickups, 90-120 minute ship return buffers, and our 24/7 seat scanner.",
+      "Compare independent and cruise-line booking options, pickup arrangements, port timing, and availability assistance.",
     url: "https://juneauflightdeck.com/juneau/cruise-excursions-vs-independent",
     type: "article",
   },
@@ -72,7 +72,7 @@ export default function CruiseExcursionsVsIndependentPage() {
             Booking Independent vs. The Cruise Ship Shore Excursion Desk
           </h1>
           <p className="text-lg text-slate-300 leading-relaxed">
-            The honest truth about Juneau helicopter excursions: fleet safety, pricing markups, 
+            The honest truth about Juneau helicopter excursions: fleet safety, pricing markups,
             dock pickups, and the &ldquo;miss the ship&rdquo; fear myth.
           </p>
         </div>
@@ -81,9 +81,9 @@ export default function CruiseExcursionsVsIndependentPage() {
         <div className="p-6 md:p-8 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 mb-10">
           <h2 className="text-xl font-bold text-white mb-2">The #1 Fact Most Cruise Passengers Don&apos;t Know</h2>
           <p className="text-sm md:text-base leading-relaxed text-amber-100">
-            Cruise ships do not own helicopters, maintain landing pads, or hire pilots in Alaska. 
-            When you purchase a helicopter tour through Princess, Holland America, Royal Caribbean, or NCL, 
-            <strong> you are placed on the exact same helicopter operated by TEMSCO, Coastal, or NorthStar</strong>. 
+            Cruise ships do not own helicopters, maintain landing pads, or hire pilots in Alaska.
+            When you purchase a helicopter tour through Princess, Holland America, Royal Caribbean, or NCL,
+            <strong> you are placed on the exact same helicopter operated by TEMSCO, Coastal, or NorthStar</strong>.
             The only difference is that the cruise line adds a $80 to $150 per-person markup to your bill.
           </p>
         </div>
@@ -119,7 +119,7 @@ export default function CruiseExcursionsVsIndependentPage() {
                 <tr>
                   <td><strong>When Seats Show Sold Out</strong></td>
                   <td>Marked &ldquo;SOLD OUT&rdquo; — no waitlist</td>
-                  <td><strong className="text-amber-400">24/7 scanner captures cancellations</strong></td>
+                  <td><strong className="text-amber-400">Request help checking operator availability</strong></td>
                 </tr>
                 <tr>
                   <td><strong>Pier Pickup &amp; Return</strong></td>
@@ -175,10 +175,10 @@ export default function CruiseExcursionsVsIndependentPage() {
             What to Do When the Cruise Excursion Shows Sold Out
           </h2>
           <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
-            Cruise lines are only allocated a portion of each operator&apos;s total daily flight seats. 
-            When the ship desk says a tour is full, independent seats or dropped cancellation blocks 
-            often remain open directly with the operators. 
-            Our 24/7 scanner monitors these openings in real-time.
+            Cruise lines are only allocated a portion of each operator&apos;s total daily flight seats.
+            When the ship desk says a tour is full, independent seats or dropped cancellation blocks
+            often remain open directly with the operators.
+            Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.
           </p>
 
           <HelicopterWaitlistForm compact={true} defaultPort="juneau" />

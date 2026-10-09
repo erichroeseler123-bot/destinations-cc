@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: ShipWaitlistPageProps): Promi
   if (!ship) {
     return {
       title: "Alaska Cruise Ship Helicopter Waitlist | Juneau Flight Deck",
-      description: "24/7 automated helicopter cancellation seat scanner for Alaska cruise ships in Juneau and Skagway.",
+      description: "Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.",
     };
   }
 
@@ -72,10 +72,10 @@ export default async function ShipWaitlistPage({ params }: ShipWaitlistPageProps
           </div>
 
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-3">
-            {ship.shipName} Juneau Helicopter Excursions &amp; Availability Alerts
+            {ship.shipName} Juneau Helicopter Excursions &amp; Availability Assistance
           </h1>
           <p className="text-base md:text-lg text-slate-300 leading-relaxed mb-4">
-            Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
+            Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability assistance for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
@@ -95,7 +95,7 @@ export default async function ShipWaitlistPage({ params }: ShipWaitlistPageProps
               href="#waitlist-form"
               className="inline-flex items-center px-4 py-2.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-sky-300 font-semibold text-sm border border-sky-500/30 transition-colors"
             >
-              Join 10 AM Seat Watch
+              Request Availability Help
             </a>
           </div>
         </div>
@@ -143,8 +143,8 @@ export default async function ShipWaitlistPage({ params }: ShipWaitlistPageProps
                     <span>💡</span> Skagway Glacier Alternative (If on your sailing)
                   </strong>
                   <p className="text-xs text-slate-300 mt-1 mb-0">
-                    If your sailing visits Skagway ({ship.skagwayHours} at {ship.skagwayBerth}), TEMSCO Skagway operates dog mushing camps on the <strong>Denver Glacier</strong>. 
-                    You can enter your Skagway date in the form below to scan both ports.
+                    If your sailing visits Skagway ({ship.skagwayHours} at {ship.skagwayBerth}), TEMSCO Skagway operates dog mushing camps on the <strong>Denver Glacier</strong>.
+                    You can enter your Skagway date in the form below to request help for both ports.
                   </p>
                 </div>
                 <Link

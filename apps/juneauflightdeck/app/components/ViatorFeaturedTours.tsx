@@ -404,7 +404,7 @@ export default function ViatorFeaturedTours({
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: "1rem" }}>🔔</span>
             <span>
-              <strong>Operator Flight Scheduling:</strong> Live online booking inventory is currently unavailable through the direct API feed. Explore verified operator flight profiles below and select <em>Get Availability Alert</em> to monitor openings on your cruise date.
+              <strong>Operator Flight Scheduling:</strong> Live online booking inventory is currently unavailable through the direct API feed. Explore verified operator flight profiles below and select <em>Request Availability Help</em> to request assistance for your cruise date.
             </span>
           </div>
           <Link
@@ -416,7 +416,7 @@ export default function ViatorFeaturedTours({
               whiteSpace: "nowrap",
             }}
           >
-            General Flight Alert &rarr;
+            Request Availability Help &rarr;
           </Link>
         </div>
       )}
@@ -517,7 +517,7 @@ export default function ViatorFeaturedTours({
                 fontWeight: 800,
               }}
             >
-              Join 2027 Availability Alerts &rarr;
+              Request 2027 Availability Help &rarr;
             </Link>
 
             <Link
@@ -1188,7 +1188,7 @@ export function TourCard({
                 marginLeft: "auto",
               }}
             >
-              <span>🔔 Seat Drop Alert &rarr;</span>
+              <span>🔔 Request Availability Help &rarr;</span>
             </Link>
           </div>
         </div>

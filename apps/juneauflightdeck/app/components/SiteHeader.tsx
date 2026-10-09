@@ -15,7 +15,7 @@ export default function SiteHeader() {
           <Link href="/helicopter">Book Tours</Link>
           <Link href="/temsco-vs-coastal-vs-northstar-juneau">Compare Operators</Link>
           <Link href="/helicopter-waitlist">Ship Port Timing</Link>
-          <Link href="/juneau-helicopter-tour-sold-out">Sold Out Alerts</Link>
+          <Link href="/juneau-helicopter-tour-sold-out">Sold-Out Help</Link>
           <Link href="/juneau/what-to-do-if-helicopter-tour-canceled">Weather Backups</Link>
           <Link href="/about">About</Link>
           <Link href="/contact">Contact</Link>

@@ -5,7 +5,7 @@ import HelicopterWaitlistForm from "../components/HelicopterWaitlistForm";
 export const metadata: Metadata = {
   title: "Juneau Helicopter Tours Sold Out? How to Get Seats | Juneau Flight Deck",
   description:
-    "Glacier flights and dog sledding showing sold out for your Juneau port date? Learn how cruise blocks release seats and how our Availability Watch secures holds on your behalf.",
+    "Glacier flights and dog sledding showing sold out for your Juneau port date? Learn how cruise blocks release seats and how to request help comparing operator availability.",
   alternates: { canonical: "https://juneauflightdeck.com/juneau-helicopter-tour-sold-out" },
   openGraph: {
     title: "Juneau Helicopter Tours Sold Out? How to Find Open Seats",
@@ -37,10 +37,10 @@ const faqSchema = {
     },
     {
       "@type": "Question",
-      name: "How does Juneau Flight Deck's Availability Watch work?",
+      name: "How can I request availability assistance?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Our automated scanner sweeps operator fleet schedules daily at 10:00 AM when cancellation desks process updates. When matching seats open up on your port date within penalty-free cancellation windows, travelers receive automated alerts with direct booking options or coordination assistance.",
+        text: "Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.",
       },
     },
   ],
@@ -82,7 +82,7 @@ export default function SoldOutGuidePage() {
         Juneau Helicopter Tours Sold Out? Don&apos;t Panic.
       </h1>
       <p style={{ fontSize: "1.08rem", lineHeight: 1.6, color: "var(--ice)", marginBottom: "16px" }}>
-        Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
+        Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability assistance for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
       </p>
       <p style={{ fontSize: "1rem", lineHeight: 1.6, color: "var(--muted)", marginBottom: "24px" }}>
         Glacier walkabouts and helicopter dog sledding are the first excursions to sell out in Alaska. But in Southeast Alaska aviation, <strong>&ldquo;Sold Out&rdquo; rarely means zero chance of flying.</strong>
@@ -152,10 +152,10 @@ export default function SoldOutGuidePage() {
         }}
       >
         <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--text)", margin: "0 0 12px" }}>
-          How Our Availability Watch Puts You First in Line
+          Request Help With Sold-Out Tours
         </h2>
         <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 20px" }}>
-          You shouldn&apos;t have to spend your vacation constantly refreshing websites on sluggish ship Wi-Fi. Our automated monitors and local team do the work for you:
+          Request help checking helicopter tour availability for your port date and party size. Availability and reservations are confirmed by the operator.
         </p>
 
         <ol style={{ paddingLeft: "20px", lineHeight: 1.8, color: "var(--text)", margin: "0 0 24px" }}>
@@ -163,13 +163,13 @@ export default function SoldOutGuidePage() {
             <strong>You Submit Your Parameters:</strong> Port date, cruise ship, group size, and accepted tour styles.
           </li>
           <li>
-            <strong>Daily Automated Sweeps:</strong> We sweep operator fleet schedules every morning at 10:00 AM as cancellation desks process itinerary adjustments and group block drops.
+            <strong>Availability Inquiry:</strong> Request assistance with your date, party size, and preferred experience.
           </li>
           <li>
-            <strong>Cancellation Window Tracking:</strong> We monitor matching openings within penalty-free cancellation windows so you can decide risk-free.
+            <strong>Provider Terms:</strong> Review current cancellation and missed-port terms before paying.
           </li>
           <li>
-            <strong>Automated Notification &amp; Booking:</strong> You receive an alert with direct links to book immediately with the flight operator or through our official Viator partner checkout.
+            <strong>Operator Confirmation:</strong> Complete any reservation through the operator or authorized booking provider.
           </li>
         </ol>
 

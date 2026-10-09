@@ -91,6 +91,7 @@ export const SCANNED_PRODUCTS: ScannedProduct[] = [
 ];
 
 export type WaitlistStatus =
+  | "inquiry_received" // On-demand assistance request; not enrolled in automated scanning
   | "active_scanning"    // Actively querying operator inventories
   | "opening_detected"  // Seat opening detected by scanner for passenger's date/party
   | "contact_pending"   // Notification/dispatch alert sent, awaiting passenger checkout
@@ -116,7 +117,7 @@ export interface WaitlistEntry {
   partySize: number;
   notes?: string;
   preferredOperator?: "temsco" | "coastal" | "northstar" | "any";
-  bookingMode: "instant_alert" | "concierge_dispatch" | "priority_hold" | "sms_alert";
+  bookingMode: "availability_inquiry" | "instant_alert" | "concierge_dispatch" | "priority_hold" | "sms_alert";
   status: WaitlistStatus;
   isTest?: boolean;
   lastScannedAt?: string;
@@ -427,10 +428,10 @@ export interface SweepResult {
  * Sweeps fleet inventories strictly grouping by operator + product + port + date.
  * Skagway inventory is NEVER swept against Juneau port dates, and Juneau inventory
  * is NEVER swept against Skagway port dates.
- * 
+ *
  * Reports inventory-access failures (HTTP 401/403/500/network) separately from
  * successful searches with 0 openings to ensure data transparency.
- * 
+ *
  * Status Lifecycle:
  * active_scanning -> opening_detected -> contact_pending -> held (if confirmed by operator) -> booking_confirmed
  */
@@ -724,14 +725,14 @@ export async function purgeTestWaitlistEntries(): Promise<{
       await ensureDbTables();
       const subRes = await sql`
         DELETE FROM jfd_waitlist_submissions
-        WHERE is_test = true 
-           OR status = 'test_excluded' 
+        WHERE is_test = true
+           OR status = 'test_excluded'
            OR email = 'ops-test@juneauflightdeck.com'
         RETURNING id;
       `;
       const notifRes = await sql`
         DELETE FROM jfd_waitlist_notifications
-        WHERE is_test = true 
+        WHERE is_test = true
            OR recipient_email = 'ops-test@juneauflightdeck.com'
         RETURNING delivery_id;
       `;
