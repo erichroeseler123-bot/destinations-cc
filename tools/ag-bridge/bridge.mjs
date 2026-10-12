@@ -6,6 +6,14 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 
 export const MARKER = '<!-- ag-bridge:v1 -->';
+export function validateWindowsCheckout(paths) {
+  for (const file of paths.split('\0').filter(Boolean)) {
+    if (file.startsWith('data/memory/')) continue;
+    if (file.split('/').some(part => /[<>:"\\|?*\x00-\x1f]/.test(part) || /[. ]$/.test(part) || /^(con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/i.test(part) || /^(\.git|git~[0-9]+)$/i.test(part))) {
+      throw new Error('Windows-incompatible path outside the excluded memory dataset. Checkout paused.');
+    }
+  }
+}
 export function parseTask(issue, config) {
   if (issue.pull_request || !config.trustedAuthors.includes(issue.user?.login)) return null;
   if (!issue.body?.startsWith(MARKER)) return null;
@@ -110,6 +118,11 @@ export class Bridge {
       // Configure sparse checkout before the first checkout; also repairs
       // a clone interrupted by Git's initial Windows checkout failure.
       if (site.repo === 'erichroeseler123-bot/destinations-cc') {
+        // Windows Git validates even excluded index entries. Permit those
+        // entries only in this isolated clone after checking every path
+        // that sparse checkout will actually write to disk.
+        validateWindowsCheckout(await this.command('git', ['ls-tree', '-r', '--name-only', '-z', 'HEAD'], { cwd: dir }));
+        await this.command('git', ['config', '--local', 'core.protectNTFS', 'false'], { cwd: dir });
         await this.command('git', ['sparse-checkout', 'set', '--no-cone', '--stdin'], { cwd: dir, input: '/*\n!/data/memory/\n', log: path.join(this.home, `sparse-${issue}.log`) });
       }
       // Populate a no-checkout clone while respecting sparse exclusions.
@@ -188,8 +201,8 @@ export class Bridge {
     const entry = this.state[issue.number] ?? { status: 'new', site: task.site, mode: task.mode, fixes: 0 };
     this.state[issue.number] = entry;
     if (entry.site !== task.site || entry.mode !== task.mode) throw new Error('Task identity changed. Create a new task.');
-    const recovery = 'workspace-file-tools-v3';
-    if (entry.status === 'blocked' && task.mode === 'audit' && entry.recoveredFor !== recovery && /^(gh exited 1\.|git exited 128\.|AG completed without response text\.|AG did not acknowledge the bridge protocol\.)/.test(entry.error ?? '')) {
+    const recovery = 'windows-index-v4';
+    if (entry.status === 'blocked' && task.mode === 'audit' && entry.recoveredFor !== recovery && /^(gh exited 1\.|git exited 128\.|git read-tree exited 128\.|AG completed without response text\.|AG did not acknowledge the bridge protocol\.)/.test(entry.error ?? '')) {
       // One read-only retry for the two diagnosed first-install failures.
       entry.status = 'new'; entry.recoveredFor = recovery; this.save();
     }
