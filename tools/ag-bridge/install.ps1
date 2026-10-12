@@ -20,7 +20,7 @@ Refresh-BridgePath
 Ensure-BridgeProgram 'git' 'Git.Git'
 Ensure-BridgeProgram 'gh' 'GitHub.cli'
 Ensure-BridgeProgram 'node' 'OpenJS.NodeJS.LTS'
-$nodeMajor = (& node -p 'process.versions.node.split(".")[0]')
+$nodeMajor = (& node -p 'process.versions.node.match(/^[0-9]+/)[0]')
 if ([int]$nodeMajor -lt 24) { throw 'Node.js 24 or newer is required. Update Node.js and run setup again. Your site checks may specifically require Node 24.' }
 if (!(Get-Command agy -ErrorAction SilentlyContinue)) {
     $agyInstaller = Join-Path $env:TEMP 'ag-bridge-agy-install.ps1'
