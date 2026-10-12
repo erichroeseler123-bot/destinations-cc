@@ -101,6 +101,8 @@ export class Bridge {
       if (site.repo === 'erichroeseler123-bot/destinations-cc') {
         await this.command('git', ['sparse-checkout', 'set', '--no-cone', '--stdin'], { cwd: dir, input: '/*\n!/data/memory/\n', log: path.join(this.home, `sparse-${issue}.log`) });
       }
+      // Only the worker-owned, pre-task clone is reset; no AG edits exist yet.
+      await this.command('git', ['reset', '--hard', 'HEAD'], { cwd: dir });
       entry.base = await this.command('git', ['branch', '--show-current'], { cwd: dir });
       entry.baseSha = await this.command('git', ['rev-parse', 'HEAD'], { cwd: dir });
       entry.branch = `ag-bridge/task-${issue}`;
@@ -174,6 +176,11 @@ export class Bridge {
     const entry = this.state[issue.number] ?? { status: 'new', site: task.site, mode: task.mode, fixes: 0 };
     this.state[issue.number] = entry;
     if (entry.site !== task.site || entry.mode !== task.mode) throw new Error('Task identity changed. Create a new task.');
+    const recovery = 'windows-sparse-v2';
+    if (entry.status === 'blocked' && task.mode === 'audit' && entry.recoveredFor !== recovery && /^(gh exited 1\.|AG did not acknowledge the bridge protocol\.)/.test(entry.error ?? '')) {
+      // One read-only retry for the two diagnosed first-install failures.
+      entry.status = 'new'; entry.recoveredFor = recovery; this.save();
+    }
     if (['done', 'blocked', 'ready'].includes(entry.status)) return;
     if (entry.status === 'running') { entry.status = 'blocked'; this.save(); await this.comment(issue.number, 'Task interrupted during execution. Paused to prevent duplicate work. Check the local state before retrying.'); return; }
     try {

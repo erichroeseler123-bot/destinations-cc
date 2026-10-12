@@ -100,6 +100,13 @@ test('full audit receives task, executes AG, posts metadata and persists complet
   await h.b.process(i, parseTask(i, config)); assert.equal(h.runs(), 1);
   const restored = new Bridge(config, h.b.home, h.b.command); assert.equal(restored.state[1].status, 'done');
 });
+test('updated worker recovers diagnosed read-only install failures once', async t => {
+  const h = harness(t); const i = issue(1); const task = parseTask(i, config);
+  h.b.state[1] = { status: 'blocked', site: 'jfd', mode: 'audit', fixes: 0, error: 'AG did not acknowledge the bridge protocol.' };
+  await h.b.process(i, task); assert.equal(h.b.state[1].status, 'done'); assert.equal(h.runs(), 1);
+  h.b.state[1].status = 'blocked'; h.b.state[1].error = 'gh exited 1.';
+  await h.b.process(i, task); assert.equal(h.b.state[1].status, 'blocked'); assert.equal(h.runs(), 1);
+});
 test('full code flow checks, publishes, consumes current review, fixes and rereviews', async t => {
   const h = harness(t); const i = issue(1, 'code'); const task = parseTask(i, config);
   await h.b.process(i, task);
