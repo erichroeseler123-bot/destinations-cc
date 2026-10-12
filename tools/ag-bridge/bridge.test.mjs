@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { Bridge, MARKER, parseTask, allowedFile, findingsForHead, parseAgent, run, refreshWorker } from './bridge.mjs';
+import { Bridge, MARKER, parseTask, allowedFile, findingsForHead, parseAgent, run, refreshWorker, validateWindowsCheckout } from './bridge.mjs';
 import { createHash } from 'node:crypto';
 
 const config = JSON.parse(fs.readFileSync(new URL('./config.json', import.meta.url)));
@@ -55,6 +55,10 @@ test('real process transport passes shell metacharacters only through stdin', as
   const raw = await run(process.execPath, [fake], { input: JSON.stringify({ event: 'user', message: { content: prompt } }) + '\n' });
   assert.equal(parseAgent(raw).response, 'AG_BRIDGE_OK ' + prompt);
 });
+test('Windows checkout permits invalid names only inside the excluded dataset', () => {
+  validateWindowsCheckout('data/memory/dcc:place.json\0apps/juneauflightdeck/page.tsx\0');
+  for (const name of ['app/a:b.json', 'app/NUL.txt', 'app/COM1', 'app/trailing.', 'app/GIT~1/config', 'app/.git/config', 'app/back\\slash']) assert.throws(() => validateWindowsCheckout(name + '\0'), /outside the excluded/);
+});
 test('real Git sparse checkout excludes Windows-invalid memory files and retains site source', async t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bridge-sparse-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   await run('git', ['init', '-b', 'main'], { cwd: dir });
@@ -66,6 +70,8 @@ test('real Git sparse checkout excludes Windows-invalid memory files and retains
   await run('git', ['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture'], { cwd: dir });
   const clone = path.join(dir, 'worker-clone');
   await run('git', ['clone', '--single-branch', '--no-checkout', dir, clone]);
+  validateWindowsCheckout(await run('git', ['ls-tree', '-r', '--name-only', '-z', 'HEAD'], { cwd: clone }));
+  await run('git', ['config', '--local', 'core.protectNTFS', 'false'], { cwd: clone });
   await run('git', ['sparse-checkout', 'set', '--no-cone', '--stdin'], { cwd: clone, input: '/*\n!/data/memory/\n' });
   await run('git', ['read-tree', '-mu', 'HEAD'], { cwd: clone });
   await run('git', ['switch', '-c', 'ag-bridge/test'], { cwd: clone });
@@ -120,7 +126,7 @@ test('full audit receives task, executes AG, posts metadata and persists complet
 });
 test('updated worker recovers diagnosed read-only install failures once', async t => {
   const h = harness(t); const i = issue(1); const task = parseTask(i, config);
-  h.b.state[1] = { status: 'blocked', site: 'jfd', mode: 'audit', fixes: 0, error: 'AG did not acknowledge the bridge protocol.' };
+  h.b.state[1] = { status: 'blocked', site: 'jfd', mode: 'audit', fixes: 0, recoveredFor: 'workspace-file-tools-v3', error: 'git read-tree exited 128. Details are in the local log; they were not uploaded.' };
   await h.b.process(i, task); assert.equal(h.b.state[1].status, 'done'); assert.equal(h.runs(), 1);
   h.b.state[1].status = 'blocked'; h.b.state[1].error = 'gh exited 1.';
   await h.b.process(i, task); assert.equal(h.b.state[1].status, 'blocked'); assert.equal(h.runs(), 1);
