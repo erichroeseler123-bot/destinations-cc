@@ -1,0 +1,47 @@
+{
+  "queueRepo": "erichroeseler123-bot/destinations-cc",
+  "trustedAuthors": ["erichroeseler123-bot"],
+  "reviewBots": ["chatgpt-codex-connector[bot]"],
+  "pollSeconds": 30,
+  "maxFixes": 3,
+  "reviewTimeoutMinutes": 60,
+  "sites": {
+    "jfd": {
+      "name": "Juneau Flight Deck",
+      "repo": "erichroeseler123-bot/destinations-cc",
+      "directory": "apps/juneauflightdeck",
+      "domain": "juneauflightdeck.com",
+      "project": "juneauflightdeck",
+      "allowedPaths": ["apps/juneauflightdeck/"],
+      "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "typecheck"], ["npm", "run", "build"]]
+    },
+    "wno": {
+      "name": "Welcome to New Orleans Tours",
+      "repo": "erichroeseler123-bot/destinations-cc",
+      "directory": ".",
+      "domain": "www.welcometoneworleanstours.com",
+      "project": "welcometoneworleanstours",
+      "allowedPaths": ["app/new-orleans/", "apps/welcometoneworleanstours/"],
+      "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "typecheck"], ["npm", "run", "build"]],
+      "mappingNote": "Older ledger says root destinations-cc; newer Vercel project has the brand name. Audit before code work."
+    },
+    "wta": {
+      "name": "Welcome to Alaska Tours",
+      "repo": "erichroeseler123-bot/wta-renderer",
+      "directory": ".",
+      "domain": "welcometoalaskatours.com",
+      "project": "wta-ui",
+      "allowedPaths": ["app/", "src/", "lib/", "components/", "public/", "scripts/", "tests/"],
+      "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "test"], ["npm", "run", "build"]]
+    },
+    "swamp": {
+      "name": "Welcome to the Swamp",
+      "repo": "erichroeseler123-bot/destinations-cc",
+      "directory": "apps/welcometotheswamp",
+      "domain": "www.welcometotheswamp.com",
+      "project": "welcometotheswamp",
+      "allowedPaths": ["apps/welcometotheswamp/"],
+      "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "typecheck"], ["npm", "run", "build"]]
+    }
+  }
+}
