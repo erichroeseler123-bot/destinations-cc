@@ -18,8 +18,8 @@ export function parseTask(issue, config) {
 export function allowedFile(file, site) {
   if (!file || file.includes('\\') || file.split('/').some(p => p === '..' || p.startsWith('.env'))) return false;
   if (/(^|\/)(\.git|\.github|\.vercel|\.agents|node_modules|ag-bridge)(\/|$)/.test(file)) return false;
-  if (/(^|\/)(AGENTS\.md|MASTER_DOMAIN_LEDGER\.md|vercel\.json|proxy\.[^/]+|middleware\.[^/]+)$/.test(file)) return false;
-  return site.allowedPaths.some(prefix => file.startsWith(prefix));
+  if (/(^|\/)(AGENTS\.md|MASTER_DOMAIN_LEDGER\.md|vercel\.json|package\.json|package-lock\.json|pnpm-lock\.yaml|yarn\.lock|proxy\.[^/]+|middleware\.[^/]+)$/.test(file)) return false;
+  return site.allowedPaths.some(prefix => prefix.endsWith('/') ? file.startsWith(prefix) : file === prefix);
 }
 export function findingsForHead(reviews, comments, sha, bots) {
   const current = reviews.filter(r => r.commit_id === sha && bots.includes(r.user?.login));
@@ -137,6 +137,7 @@ export class Bridge {
   async publish(issue, task, site, dir, entry, feedback = []) {
     if (!fs.existsSync(path.join(dir, site.directory, 'package.json'))) throw new Error('Configured app has no package.json. Source mapping needs correction.');
     await this.agent(dir, issue, task, site, feedback);
+    if (await this.command('git', ['branch', '--show-current'], { cwd: dir }) !== entry.branch) throw new Error('AG switched away from the task branch. Paused.');
     if (await this.command('git', ['rev-parse', 'HEAD'], { cwd: dir }) !== entry.sha && entry.sha) throw new Error('AG changed commit history. Paused.');
     if (!entry.sha && await this.command('git', ['rev-parse', 'HEAD'], { cwd: dir }) !== entry.baseSha) throw new Error('AG changed commit history. Paused.');
     await this.checkFiles(dir, site, entry.baseSha);

@@ -13,7 +13,7 @@
       "domain": "juneauflightdeck.com",
       "project": "juneauflightdeck",
       "allowedPaths": ["apps/juneauflightdeck/"],
-      "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "typecheck"], ["npm", "run", "build"]]
+      "checks": [["npm", "install", "--ignore-scripts", "--package-lock=false"], ["npm", "run", "typecheck"], ["npm", "run", "build"]]
     },
     "wno": {
       "name": "Welcome to New Orleans Tours",
@@ -31,7 +31,7 @@
       "directory": ".",
       "domain": "welcometoalaskatours.com",
       "project": "wta-ui",
-      "allowedPaths": ["app/", "src/", "lib/", "components/", "public/", "scripts/", "tests/"],
+      "allowedPaths": ["app/", "src/", "lib/", "components/", "public/", "scripts/", "tests/", "next-env.d.ts"],
       "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "test"], ["npm", "run", "build"]]
     },
     "swamp": {
@@ -41,7 +41,7 @@
       "domain": "www.welcometotheswamp.com",
       "project": "welcometotheswamp",
       "allowedPaths": ["apps/welcometotheswamp/"],
-      "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "typecheck"], ["npm", "run", "build"]]
+      "checks": [["npm", "install", "--ignore-scripts", "--package-lock=false"], ["npm", "run", "typecheck"], ["npm", "run", "build"]]
     }
   }
 }
