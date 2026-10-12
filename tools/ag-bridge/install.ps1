@@ -72,7 +72,7 @@ if ($script:BridgeNativeExitCode -ne 0) {
 $nodeExe = (Get-Command node).Source
 $worker = Join-Path $bridgeRoot 'bridge.mjs'
 $launcher = Join-Path $bridgeRoot 'Start-AG-Bridge.cmd'
-$launcherContent = "@echo off`r`n`"$nodeExe`" `"$worker`"`r`npause`r`n"
+$launcherContent = "@echo off`r`n:run`r`n`"$nodeExe`" `"$worker`"`r`nif `"%ERRORLEVEL%`"==`"75`" goto run`r`npause`r`n"
 Set-Content $launcher $launcherContent -Encoding ascii
 if (!$NoStartup) {
     $startup = [Environment]::GetFolderPath('Startup')

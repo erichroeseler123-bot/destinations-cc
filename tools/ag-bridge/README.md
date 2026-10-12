@@ -10,6 +10,8 @@ Enable Codex Code Review for **destinations-cc** and **wta-renderer** in [Codex 
 
 Keep the worker window open. The Startup shortcut reopens it at Windows sign-in. Closing the window stops polling; a running task interrupted by a close is marked blocked on the next run to avoid duplicate work. To disable startup, remove `AG Bridge.lnk` from `shell:startup`.
 
+The worker checks its fixed setup branch for updates at idle checkpoints. It validates Git's content checksum and JavaScript syntax, replaces only `bridge.mjs`, then exits with code 75 so the launcher can restart it. Local configuration, credentials, logs and task state are preserved. This allows subsequent worker repairs without repeating the installation command. Close the window to stop the worker and its update checks.
+
 ## Queue protocol
 
 Create an issue in `erichroeseler123-bot/destinations-cc` with a body starting with the marker and one JSON block:
@@ -54,6 +56,8 @@ State: `%USERPROFILE%\.ag-bridge\state.json`; heartbeat: `heartbeat.json`; priva
 After correcting a blocked task, create a follow-up task rather than deleting state blindly. Branches/workspaces are preserved for investigation. Task clones do not receive existing local `.env` files automatically. JFD and Swamp have no committed app lockfiles; their checks use `npm install --ignore-scripts --package-lock=false` without changing repository dependency files. WNO and WTA use their committed npm lockfiles with `npm ci --ignore-scripts`. Site runtime constraints may require Node 24 even if the bridge itself supports newer versions. Build-generated changes outside approved paths pause before push; adjust a task's scope deliberately if required.
 
 Antigravity permissions remain scoped to its existing policy. Read/write tools inside its workspace are supported; shell tools may be denied in headless mode. The bridge runs the checks and Git publishing itself. Repository instructions/feedback are not treated as additional authorization.
+
+AG is instructed to use only workspace file/list/edit tools, and to leave terminal commands to the worker. A `denied_actions` result is reported as a permission failure even if the CLI labels the run SUCCESS; an empty response never counts as completed work. Git failures report the failing operation and a classified reason, without uploading raw stderr.
 
 ## Verification
 

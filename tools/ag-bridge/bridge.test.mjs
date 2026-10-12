@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { Bridge, MARKER, parseTask, allowedFile, findingsForHead, parseAgent, run } from './bridge.mjs';
+import { Bridge, MARKER, parseTask, allowedFile, findingsForHead, parseAgent, run, refreshWorker } from './bridge.mjs';
+import { createHash } from 'node:crypto';
 
 const config = JSON.parse(fs.readFileSync(new URL('./config.json', import.meta.url)));
 const issue = (number, mode = 'audit', site = 'jfd') => ({ number, user: { login: 'erichroeseler123-bot' }, body: MARKER + '\n```json\n' + JSON.stringify({ site, mode, instructions: 'Read the source mapping.' }) + '\n```' });
@@ -32,6 +33,19 @@ test('agent status and acknowledgement are checked even after exit zero', () => 
   assert.throws(() => parseAgent('{"event":"result","result":{"status":"WAITING","response":"AG_BRIDGE_OK"}}'));
   assert.throws(() => parseAgent('{"event":"result","result":{"status":"SUCCESS","response":""}}'));
   assert.equal(parseAgent('{"event":"result","result":{"status":"SUCCESS","response":"Source inspection completed."}}').response, 'Source inspection completed.');
+  assert.throws(() => parseAgent('{"event":"result","result":{"status":"SUCCESS","response":"","denied_actions":[{"action":"command"}]}}'), /permission blocked: command/);
+});
+test('automatic worker update validates content and syntax before replacing only the worker', async t => {
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'bridge-update-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
+  fs.writeFileSync(path.join(dir,'bridge.mjs'),'export const version=1;');
+  fs.writeFileSync(path.join(dir,'config.json'),'LOCAL USER CONFIG');
+  const bytes=Buffer.from('export const version=2;');
+  const sha=createHash('sha1').update(Buffer.from(`blob ${bytes.length}\0`)).update(bytes).digest('hex');
+  const transport=async (exe,args,options)=>exe==='gh'?JSON.stringify({encoding:'base64',path:'tools/ag-bridge/bridge.mjs',size:bytes.length,sha,content:bytes.toString('base64')}):run(exe,args,options);
+  assert.equal(await refreshWorker(dir,transport),true);
+  assert.equal(await refreshWorker(dir,transport),false);
+  assert.equal(fs.readFileSync(path.join(dir,'config.json'),'utf8'),'LOCAL USER CONFIG');
+  await assert.rejects(refreshWorker(dir,async()=>JSON.stringify({encoding:'base64',path:'tools/ag-bridge/bridge.mjs',sha:'bad',content:bytes.toString('base64')})),/checksum mismatch/);
 });
 test('real process transport passes shell metacharacters only through stdin', async t => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'bridge-transport-')); t.after(() => fs.rmSync(home, { recursive: true, force: true }));
@@ -50,10 +64,14 @@ test('real Git sparse checkout excludes Windows-invalid memory files and retains
   fs.writeFileSync(path.join(dir, 'apps/juneauflightdeck/package.json'), '{}');
   await run('git', ['add', '.'], { cwd: dir });
   await run('git', ['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture'], { cwd: dir });
-  await run('git', ['sparse-checkout', 'set', '--no-cone', '--stdin'], { cwd: dir, input: '/*\n!/data/memory/\n' });
-  assert.ok(!fs.existsSync(path.join(dir, 'data/memory')));
-  assert.ok(fs.existsSync(path.join(dir, 'apps/juneauflightdeck/package.json')));
-  assert.equal(await run('git', ['status', '--porcelain'], { cwd: dir }), '');
+  const clone = path.join(dir, 'worker-clone');
+  await run('git', ['clone', '--single-branch', '--no-checkout', dir, clone]);
+  await run('git', ['sparse-checkout', 'set', '--no-cone', '--stdin'], { cwd: clone, input: '/*\n!/data/memory/\n' });
+  await run('git', ['read-tree', '-mu', 'HEAD'], { cwd: clone });
+  await run('git', ['switch', '-c', 'ag-bridge/test'], { cwd: clone });
+  assert.ok(!fs.existsSync(path.join(clone, 'data/memory')));
+  assert.ok(fs.existsSync(path.join(clone, 'apps/juneauflightdeck/package.json')));
+  assert.equal(await run('git', ['status', '--porcelain'], { cwd: clone }), '');
 });
 
 function harness(t) {
