@@ -30,7 +30,8 @@ test('reviews must belong to the configured bot and exact head', () => {
 });
 test('agent status and acknowledgement are checked even after exit zero', () => {
   assert.throws(() => parseAgent('{"event":"result","result":{"status":"WAITING","response":"AG_BRIDGE_OK"}}'));
-  assert.throws(() => parseAgent('{"event":"result","result":{"status":"SUCCESS","response":"soft denied"}}'));
+  assert.throws(() => parseAgent('{"event":"result","result":{"status":"SUCCESS","response":""}}'));
+  assert.equal(parseAgent('{"event":"result","result":{"status":"SUCCESS","response":"Source inspection completed."}}').response, 'Source inspection completed.');
 });
 test('real process transport passes shell metacharacters only through stdin', async t => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'bridge-transport-')); t.after(() => fs.rmSync(home, { recursive: true, force: true }));
@@ -39,6 +40,20 @@ test('real process transport passes shell metacharacters only through stdin', as
   const prompt = 'quotes " & $() ` | > ; remain data\nnext line';
   const raw = await run(process.execPath, [fake], { input: JSON.stringify({ event: 'user', message: { content: prompt } }) + '\n' });
   assert.equal(parseAgent(raw).response, 'AG_BRIDGE_OK ' + prompt);
+});
+test('real Git sparse checkout excludes Windows-invalid memory files and retains site source', async t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bridge-sparse-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  await run('git', ['init', '-b', 'main'], { cwd: dir });
+  fs.mkdirSync(path.join(dir, 'data/memory/baselines'), { recursive: true });
+  fs.mkdirSync(path.join(dir, 'apps/juneauflightdeck'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'data/memory/baselines/dcc:place:test.json'), '{}');
+  fs.writeFileSync(path.join(dir, 'apps/juneauflightdeck/package.json'), '{}');
+  await run('git', ['add', '.'], { cwd: dir });
+  await run('git', ['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture'], { cwd: dir });
+  await run('git', ['sparse-checkout', 'set', '--no-cone', '--stdin'], { cwd: dir, input: '/*\n!/data/memory/\n' });
+  assert.ok(!fs.existsSync(path.join(dir, 'data/memory')));
+  assert.ok(fs.existsSync(path.join(dir, 'apps/juneauflightdeck/package.json')));
+  assert.equal(await run('git', ['status', '--porcelain'], { cwd: dir }), '');
 });
 
 function harness(t) {

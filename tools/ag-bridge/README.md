@@ -28,7 +28,7 @@ The worker ignores unrelated issues, pull requests, unknown site IDs, malformed 
 
 ## What it does
 
-Each task gets a separate clean Git checkout under `%USERPROFILE%\.ag-bridge\workspaces` and an `ag-bridge/task-N` branch. Your existing working directories and unsaved AG changes are untouched. The worker reads applicable repository governance. It does not copy `.env` files, tokens, customer records, or raw agent/build logs to GitHub. Missing build configuration pauses the task rather than inventing credentials or claiming validation passed.
+Each task gets a separate clean Git checkout under `%USERPROFILE%\.ag-bridge\workspaces` and an `ag-bridge/task-N` branch. Destinations CC checkouts exclude `data/memory/` because 2,343 filenames contain colons that Windows cannot check out; the dataset stays tracked in Git and is not deleted or renamed. Checks requiring that dataset must run on a compatible environment. Your existing working directories and unsaved AG changes are untouched. The worker reads applicable repository governance. It does not copy `.env` files, tokens, customer records, or raw agent/build logs to GitHub. Missing build configuration pauses the task rather than inventing credentials or claiming validation passed.
 
 For code tasks it checks the allowed path list, runs the configured install/typecheck/build/test commands itself, stages only eligible files, commits, pushes the task branch, and opens a PR. Build/check output stays in local logs. Source checks do not establish visual/mobile behavior, booking functionality, or live production correctness; those require additional task-specific verification.
 

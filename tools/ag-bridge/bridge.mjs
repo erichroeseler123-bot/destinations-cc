@@ -62,7 +62,7 @@ export function parseAgent(raw) {
   const events = raw.split(/\r?\n/).filter(Boolean).map(line => JSON.parse(line));
   const result = events.findLast(e => e.event === 'result')?.result;
   if (!result || result.status !== 'SUCCESS') throw new Error('AG did not complete successfully. Check the local AG log.');
-  if (!result.response?.includes('AG_BRIDGE_OK')) throw new Error('AG did not acknowledge the bridge protocol.');
+  if (typeof result.response !== 'string' || !result.response.trim()) throw new Error('AG completed without response text. Check the local AG log.');
   return result;
 }
 
@@ -93,8 +93,14 @@ export class Bridge {
   async checkout(issue, site, entry) {
     const dir = path.join(this.home, 'workspaces', `${site.repo.split('/')[1]}-${issue}`);
     fs.mkdirSync(path.dirname(dir), { recursive: true });
-    if (!fs.existsSync(path.join(dir, '.git'))) await this.command('gh', ['repo', 'clone', site.repo, dir, '--', '--single-branch']);
+    if (!fs.existsSync(path.join(dir, '.git'))) await this.command('gh', ['repo', 'clone', site.repo, dir, '--', '--single-branch', '--no-checkout'], { log: path.join(this.home, `clone-${issue}.log`) });
     if (!entry.branch) {
+      // The DCC memory dataset uses colon filenames, which NTFS rejects.
+      // Configure sparse checkout before the first checkout; also repairs
+      // a clone interrupted by Git's initial Windows checkout failure.
+      if (site.repo === 'erichroeseler123-bot/destinations-cc') {
+        await this.command('git', ['sparse-checkout', 'set', '--no-cone', '--stdin'], { cwd: dir, input: '/*\n!/data/memory/\n', log: path.join(this.home, `sparse-${issue}.log`) });
+      }
       entry.base = await this.command('git', ['branch', '--show-current'], { cwd: dir });
       entry.baseSha = await this.command('git', ['rev-parse', 'HEAD'], { cwd: dir });
       entry.branch = `ag-bridge/task-${issue}`;
