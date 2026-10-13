@@ -8,39 +8,42 @@ import {
 import { SITE_URL } from "../lib/content";
 
 test("Welcome to the Dells only promotes governed indexable routes", () => {
-  const expectedIndexablePaths = [
-    "/",
-    "/adults",
-    "/boat-tours",
-    "/downtown",
-    "/families",
-    "/first-time",
-    "/lake-delton",
-    "/large-groups",
-    "/lounge",
-    "/parkway",
-    "/rainy-day",
-    "/things-to-do",
-    "/tonight",
-    "/waterparks",
-  ];
+  const governanceEntries = getWelcomeToTheDellsRouteGovernanceEntries();
+  assert.equal(governanceEntries.length, 15);
 
-  assert.deepEqual(WELCOME_TO_THE_DELLS_INDEXABLE_ROUTE_PATHS, expectedIndexablePaths);
-  assert.equal(getWelcomeToTheDellsRouteGovernanceEntries().length, 15);
-  assert.ok(
-    getWelcomeToTheDellsRouteGovernanceEntries().some(
-      (entry) =>
-        entry.path === "/river-ops/jet-boat-adventures" &&
-        entry.publishState === "live_unpromoted" &&
-        entry.networkRole === "operator",
-    ),
+  // Retain explicit operator-route governance assertion
+  const operatorEntry = governanceEntries.find(
+    (entry) => entry.path === "/river-ops/jet-boat-adventures",
   );
+  assert.ok(operatorEntry, "Expected /river-ops/jet-boat-adventures in route governance");
+  assert.equal(operatorEntry.publishState, "live_unpromoted");
+  assert.equal(operatorEntry.networkRole, "operator");
+
+  // Derive expected paths directly from authoritative governance entries
+  const expectedGovernedPaths = governanceEntries
+    .filter((entry) => entry.publishState === "indexable" || entry.publishState === "promoted")
+    .map((entry) => entry.path);
+
+  assert.deepEqual(WELCOME_TO_THE_DELLS_INDEXABLE_ROUTE_PATHS, expectedGovernedPaths);
+  assert.equal(expectedGovernedPaths.length, 14);
+
+  const expectedUrls = expectedGovernedPaths.map((pathname) => `${SITE_URL}${pathname}`);
 
   const entries = sitemap();
+  const actualUrls = entries.map((entry) => entry.url);
+
+  // Exhaustively compare the complete sitemap URL set against authoritative governance
+  assert.deepEqual(actualUrls, expectedUrls);
   assert.equal(entries.length, 14);
+
+  // Verify explicit governance properties on primary entry
   assert.equal(entries[0]?.url, `${SITE_URL}/`);
   assert.equal(entries[0]?.priority, 1);
-  assert.ok(entries.some((entry) => entry.url === `${SITE_URL}/lounge`));
-  assert.ok(entries.some((entry) => entry.url === `${SITE_URL}/tonight`));
-  assert.ok(!entries.some((entry) => entry.url.includes("/river-ops")));
+
+  // Retain explicit operator-route exclusion assertion to verify it is never present in sitemap
+  assert.ok(
+    !entries.some((entry) => entry.url.includes("/river-ops")),
+    "Operator routes must be explicitly excluded from the sitemap",
+  );
 });
+
