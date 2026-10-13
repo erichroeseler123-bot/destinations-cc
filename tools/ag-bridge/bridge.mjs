@@ -103,6 +103,7 @@ export class Bridge {
     const results = [];
     for (let page = 1; ; page++) {
       const rows = await this.api(`${endpoint}${endpoint.includes('?') ? '&' : '?'}per_page=100&page=${page}`);
+      if (!Array.isArray(rows)) return results;
       results.push(...rows); if (rows.length < 100) return results;
     }
   }
@@ -128,7 +129,7 @@ export class Bridge {
       // Populate a no-checkout clone while respecting sparse exclusions.
       // Avoid a full reset that revalidates the NTFS-invalid dataset paths.
       await this.command('git', ['read-tree', '-mu', 'HEAD'], { cwd: dir, log: path.join(this.home, `index-${issue}.log`) });
-      entry.base = await this.command('git', ['branch', '--show-current'], { cwd: dir });
+      entry.base = site.baseBranch ?? await this.command('git', ['branch', '--show-current'], { cwd: dir });
       entry.baseSha = await this.command('git', ['rev-parse', 'HEAD'], { cwd: dir });
       entry.branch = `ag-bridge/task-${issue}`;
       await this.command('git', ['switch', '-c', entry.branch], { cwd: dir });
@@ -215,6 +216,14 @@ export class Bridge {
         if (pr.head.sha !== entry.sha) throw new Error('PR changed outside this worker. Paused to protect those changes.');
         const reviews = await this.all(`repos/${site.repo}/pulls/${entry.pr}/reviews`);
         const comments = await this.all(`repos/${site.repo}/pulls/${entry.pr}/comments`);
+        if (!reviews.some(r => r.commit_id === entry.sha && this.config.reviewBots.includes(r.user?.login))) {
+          const issueComments = await this.all(`repos/${site.repo}/issues/${entry.pr}/comments`);
+          for (const c of issueComments) {
+            if (this.config.reviewBots.includes(c.user?.login) && (c.body?.includes(entry.sha) || c.body?.includes(entry.sha.slice(0, 10)))) {
+              reviews.push({ id: c.id, commit_id: entry.sha, user: c.user, state: /\[P[012]\]/.test(c.body ?? '') ? 'CHANGES_REQUESTED' : 'COMMENTED', body: c.body });
+            }
+          }
+        }
         const review = findingsForHead(reviews, comments, entry.sha, this.config.reviewBots);
         if (!review.reviewed) {
           if (Date.now() - entry.reviewAt > this.config.reviewTimeoutMinutes * 60000) throw new Error('No Codex review received. Enable Code Review for this repository in Codex settings, then create a follow-up task.');
@@ -246,7 +255,7 @@ export class Bridge {
   async tick() {
     const issues = await this.all(`repos/${this.config.queueRepo}/issues?state=open&sort=created&direction=asc`);
     for (const issue of issues) { const task = parseTask(issue, this.config); if (task) await this.process(issue, task); }
-    fs.writeFileSync(path.join(this.home, 'heartbeat.json'), JSON.stringify({ time: new Date().toISOString(), tasks: this.state }, null, 2));
+    fs.writeFileSync(path.join(this.home, 'heartbeat.json'), JSON.stringify({ time: new Date().toISOString(), sites: Object.keys(this.config.sites), tasks: this.state }, null, 2));
   }
 }
 
@@ -279,7 +288,7 @@ async function main() {
   process.on('exit', () => { try { fs.unlinkSync(lock); } catch {} });
   const bridge = new Bridge(config, home);
   await run('gh', ['auth', 'status']); await run(config.agyPath ?? 'agy', ['--version']);
-  console.log('AG Bridge running: JFD, WNO, WTA, Swamp. Close this window to stop.');
+  console.log(`AG Bridge running: ${Object.keys(config.sites).map(k => config.sites[k].name).join(', ')}. Close this window to stop.`);
   do {
     if (!process.argv.includes('--once')) {
       try {
