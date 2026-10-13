@@ -62,12 +62,12 @@ test('Windows checkout permits invalid names only inside the excluded dataset', 
 test('real Git sparse checkout excludes Windows-invalid memory files and retains site source', async t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bridge-sparse-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   await run('git', ['init', '-b', 'main'], { cwd: dir });
-  fs.mkdirSync(path.join(dir, 'data/memory/baselines'), { recursive: true });
   fs.mkdirSync(path.join(dir, 'apps/juneauflightdeck'), { recursive: true });
-  fs.writeFileSync(path.join(dir, 'data/memory/baselines/dcc:place:test.json'), '{}');
   fs.writeFileSync(path.join(dir, 'apps/juneauflightdeck/package.json'), '{}');
-  await run('git', ['add', '.'], { cwd: dir });
-  await run('git', ['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture'], { cwd: dir });
+  await run('git', ['add', 'apps/juneauflightdeck/package.json'], { cwd: dir });
+  const blobSha = (await run('git', ['hash-object', '-w', '--stdin'], { cwd: dir, input: '{}' })).trim();
+  await run('git', ['-c', 'core.protectNTFS=false', 'update-index', '--add', '--cacheinfo', '100644', blobSha, 'data/memory/baselines/dcc:place:test.json'], { cwd: dir });
+  await run('git', ['-c', 'core.protectNTFS=false', '-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-m', 'fixture'], { cwd: dir });
   const clone = path.join(dir, 'worker-clone');
   await run('git', ['clone', '--single-branch', '--no-checkout', dir, clone]);
   validateWindowsCheckout(await run('git', ['ls-tree', '-r', '--name-only', '-z', 'HEAD'], { cwd: clone }));
