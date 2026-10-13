@@ -8,8 +8,25 @@ import {
 import { SITE_URL } from "../lib/content";
 
 test("Welcome to the Dells only promotes governed indexable routes", () => {
-  assert.deepEqual(WELCOME_TO_THE_DELLS_INDEXABLE_ROUTE_PATHS, ["/", "/lounge"]);
-  assert.equal(getWelcomeToTheDellsRouteGovernanceEntries().length, 3);
+  const expectedIndexablePaths = [
+    "/",
+    "/adults",
+    "/boat-tours",
+    "/downtown",
+    "/families",
+    "/first-time",
+    "/lake-delton",
+    "/large-groups",
+    "/lounge",
+    "/parkway",
+    "/rainy-day",
+    "/things-to-do",
+    "/tonight",
+    "/waterparks",
+  ];
+
+  assert.deepEqual(WELCOME_TO_THE_DELLS_INDEXABLE_ROUTE_PATHS, expectedIndexablePaths);
+  assert.equal(getWelcomeToTheDellsRouteGovernanceEntries().length, 15);
   assert.ok(
     getWelcomeToTheDellsRouteGovernanceEntries().some(
       (entry) =>
@@ -20,8 +37,10 @@ test("Welcome to the Dells only promotes governed indexable routes", () => {
   );
 
   const entries = sitemap();
-  assert.equal(entries.length, 2);
+  assert.equal(entries.length, 14);
   assert.equal(entries[0]?.url, `${SITE_URL}/`);
   assert.equal(entries[0]?.priority, 1);
-  assert.equal(entries[1]?.url, `${SITE_URL}/lounge`);
+  assert.ok(entries.some((entry) => entry.url === `${SITE_URL}/lounge`));
+  assert.ok(entries.some((entry) => entry.url === `${SITE_URL}/tonight`));
+  assert.ok(!entries.some((entry) => entry.url.includes("/river-ops")));
 });
