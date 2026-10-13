@@ -781,13 +781,6 @@ body.dcc-guided-mode .site-footer {
   .shell {
     padding: 14px;
   }
-}
-
-@media (max-width: 360px) {
-  .shell {
-    padding-left: 8px;
-    padding-right: 8px;
-  }
 
   .site-header {
     padding: 16px 16px 18px;
