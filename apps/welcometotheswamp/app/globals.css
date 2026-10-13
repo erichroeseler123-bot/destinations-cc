@@ -789,10 +789,6 @@ body.dcc-guided-mode .site-footer {
     padding-right: 8px;
   }
 
-  .wts-tour-grid {
-    grid-template-columns: 1fr !important;
-  }
-
   .site-header {
     padding: 16px 16px 18px;
   }
@@ -2622,6 +2618,17 @@ body {
     border: none !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .shell {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .wts-tour-grid {
+    grid-template-columns: 1fr !important;
   }
 }
 
