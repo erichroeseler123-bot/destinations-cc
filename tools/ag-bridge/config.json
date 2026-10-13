@@ -42,6 +42,60 @@
       "project": "welcometotheswamp",
       "allowedPaths": ["apps/welcometotheswamp/"],
       "checks": [["npm", "install", "--ignore-scripts", "--package-lock=false"], ["npm", "run", "typecheck"], ["npm", "run", "build"]]
+    },
+    "cruisepromenade": {
+      "name": "Cruise Promenade",
+      "repo": "erichroeseler123-bot/cruisepromenade",
+      "directory": ".",
+      "domain": "cruisepromenade.com",
+      "project": "cruisepromenade",
+      "allowedPaths": ["src/", "app/", "components/", "lib/", "public/"],
+      "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "build"]]
+    },
+    "brinkberry": {
+      "name": "Brinkberry",
+      "repo": "erichroeseler123-bot/brinkberry",
+      "directory": ".",
+      "domain": "brinkberry.com",
+      "project": "brinkberry",
+      "allowedPaths": ["api/", "public/", "src/", "test/"],
+      "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "test"]]
+    },
+    "dells": {
+      "name": "Welcome to the Dells",
+      "repo": "erichroeseler123-bot/destinations-cc",
+      "directory": "apps/welcometothedells",
+      "domain": "www.welcometothedells.com",
+      "project": "welcometothedells",
+      "allowedPaths": ["apps/welcometothedells/"],
+      "checks": [["npm", "install", "--ignore-scripts", "--package-lock=false"], ["npm", "run", "typecheck"], ["npm", "run", "build"]]
+    },
+    "dcc": {
+      "name": "Destination Command Center",
+      "repo": "erichroeseler123-bot/destinations-cc",
+      "directory": ".",
+      "domain": "destinationcommandcenter.com",
+      "project": "destinations-cc",
+      "allowedPaths": ["app/", "components/", "lib/", "src/", "public/"],
+      "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "typecheck"], ["npm", "run", "build"]]
+    },
+    "socializor": {
+      "name": "Socializor",
+      "repo": "erichroeseler123-bot/socializor",
+      "directory": ".",
+      "domain": "socializor.app",
+      "project": "socializor",
+      "allowedPaths": ["src/", "api/", "index.html", "public/"],
+      "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "build"]]
+    },
+    "oddjobs": {
+      "name": "Eau Claire Odd Jobs",
+      "repo": "erichroeseler123-bot/eauclaireoddjobs",
+      "directory": ".",
+      "domain": "eauclaireoddjobs.com",
+      "project": "modern-portfolio",
+      "allowedPaths": ["src/", "public/"],
+      "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "build"]]
     }
   }
 }
