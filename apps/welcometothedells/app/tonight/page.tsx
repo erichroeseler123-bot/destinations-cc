@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "What to Do Tonight in Wisconsin Dells",
   description:
     "A fast Wisconsin Dells evening plan for dinner, downtown, river experiences, shows, and after-dark options.",
+  alternates: { canonical: "/tonight" },
 };
 
 export default function Page() {
