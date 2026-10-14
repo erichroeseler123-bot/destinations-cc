@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "What to Do Tonight in Wisconsin Dells",
   description:
     "A fast Wisconsin Dells evening plan for dinner, downtown, river experiences, shows, and after-dark options.",
+  // Relative path resolves against root metadataBase (SITE_URL) so canonical and sitemap stay aligned.
   alternates: { canonical: "/tonight" },
 };
 

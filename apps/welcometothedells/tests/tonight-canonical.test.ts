@@ -35,6 +35,7 @@ test("/tonight defines a self-referential canonical and does not fall back to th
   );
 
   const resolvedTonightCanonical = resolveCanonicalWithLayoutFallback(tonightMetadata);
+  const expectedTonightCanonical = new URL("/tonight", METADATA_BASE).toString();
   assert.notEqual(
     resolvedTonightCanonical,
     SITE_URL,
@@ -47,16 +48,17 @@ test("/tonight defines a self-referential canonical and does not fall back to th
   );
   assert.equal(
     resolvedTonightCanonical,
-    "https://welcometothedells.com/tonight",
+    expectedTonightCanonical,
   );
 });
 
 test("/tonight remains in the governed sitemap and preserves its title, description, H1, copy, and three next-step links", () => {
   const entries = sitemap();
+  const expectedTonightCanonical = new URL("/tonight", METADATA_BASE).toString();
   const tonightSitemapEntry = entries.find(
-    (entry) => entry.url === "https://welcometothedells.com/tonight",
+    (entry) => entry.url === expectedTonightCanonical,
   );
-  assert.ok(tonightSitemapEntry, "Expected https://welcometothedells.com/tonight in sitemap()");
+  assert.ok(tonightSitemapEntry, "Expected /tonight entry in sitemap()");
   assert.equal(
     tonightSitemapEntry.url,
     resolveCanonicalWithLayoutFallback(tonightMetadata),
@@ -125,18 +127,18 @@ test("/tonight remains in the governed sitemap and preserves its title, descript
 test("Control pages (/boat-tours, /things-to-do, /waterparks, /first-time) keep their existing self-canonicals", () => {
   assert.equal(
     resolveCanonicalWithLayoutFallback(boatToursMetadata),
-    "https://welcometothedells.com/boat-tours",
+    new URL("/boat-tours", METADATA_BASE).toString(),
   );
   assert.equal(
     resolveCanonicalWithLayoutFallback(thingsToDoMetadata),
-    "https://welcometothedells.com/things-to-do",
+    new URL("/things-to-do", METADATA_BASE).toString(),
   );
   assert.equal(
     resolveCanonicalWithLayoutFallback(waterparksMetadata),
-    "https://welcometothedells.com/waterparks",
+    new URL("/waterparks", METADATA_BASE).toString(),
   );
   assert.equal(
     resolveCanonicalWithLayoutFallback(firstTimeMetadata),
-    "https://welcometothedells.com/first-time",
+    new URL("/first-time", METADATA_BASE).toString(),
   );
 });
