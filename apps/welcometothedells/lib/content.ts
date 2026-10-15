@@ -43,7 +43,7 @@ export type RiverOpsCard = {
   href: string;
 };
 
-export const SITE_URL = "https://welcometothedells.com";
+export const SITE_URL = "https://www.welcometothedells.com";
 export const OUTBOUND_BASE_URL = `${SITE_URL}/out/wisconsin-dells`;
 export const DCC_DELLS_URL = "https://www.destinationcommandcenter.com/wisconsin-dells";
 export const FEASTLY_DELLS_URL = "https://feastlyspread.com/book";
