@@ -47,7 +47,7 @@ export function run(exe, args, options = {}) {
       command = process.execPath;
       argv = [path.join(path.dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js'), ...args];
     }
-    const child = spawn(command, argv, { cwd: options.cwd, env: { ...process.env, GH_PROMPT_DISABLED: '1', GIT_TERMINAL_PROMPT: '0' }, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
+    const child = spawn(command, argv, { cwd: options.cwd, env: { ...process.env, GH_PROMPT_DISABLED: '1', GIT_TERMINAL_PROMPT: '0', NODE_OPTIONS: process.env.NODE_OPTIONS || '--max-old-space-size=6144' }, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
     let stdout = '', stderr = '', finished = false;
     const timer = setTimeout(() => {
       if (process.platform === 'win32') spawn('taskkill', ['/pid', String(child.pid), '/t', '/f'], { windowsHide: true });
