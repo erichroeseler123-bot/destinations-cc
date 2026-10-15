@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { Bridge, MARKER, parseTask, allowedFile, findingsForHead, parseAgent, run, refreshWorker, validateWindowsCheckout } from './bridge.mjs';
+import { Bridge, MARKER, parseTask, allowedFile, findingsForHead, parseAgent, run, refreshWorker, validateWindowsCheckout, classifyBlocker, computeTaskHash, summarizePortfolioState } from './bridge.mjs';
 import { createHash } from 'node:crypto';
 
 const config = JSON.parse(fs.readFileSync(new URL('./config.json', import.meta.url)));
-const issue = (number, mode = 'audit', site = 'jfd') => ({ number, user: { login: 'erichroeseler123-bot' }, body: MARKER + '\n```json\n' + JSON.stringify({ site, mode, instructions: 'Read the source mapping.' }) + '\n```' });
+const issue = (number, mode = 'audit', site = 'jfd', extra = {}) => ({ number, user: { login: 'erichroeseler123-bot' }, body: MARKER + '\n```json\n' + JSON.stringify({ site, mode, instructions: 'Read the source mapping.', ...extra }) + '\n```' });
 
 test('queue ignores unrelated, untrusted, malformed and excluded-site tasks', () => {
   assert.equal(parseTask(issue(1), config).site, 'jfd');
@@ -82,16 +82,18 @@ test('real Git sparse checkout excludes Windows-invalid memory files and retains
 
 function harness(t) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'bridge-flow-')); t.after(() => fs.rmSync(home, { recursive: true, force: true }));
-  const calls = [], notes = [], reviews = [], reviewComments = []; let head = 'base', dirty = false;
+  const calls = [], notes = [], reviews = [], reviewComments = []; let head = 'base', dirty = false, branch = 'main';
   const command = async (exe, args, options = {}) => {
     calls.push([exe, ...args]);
     if (exe === 'gh' && args[0] === 'repo') {
       fs.mkdirSync(path.join(args[3], '.git'), { recursive: true });
       fs.mkdirSync(path.join(args[3], 'apps/juneauflightdeck'), { recursive: true });
-      fs.writeFileSync(path.join(args[3], 'apps/juneauflightdeck/package.json'), '{}'); return '';
+      fs.writeFileSync(path.join(args[3], 'apps/juneauflightdeck/package.json'), '{}');
+      fs.writeFileSync(path.join(args[3], 'package.json'), '{}'); return '';
     }
     if (exe === 'git') {
-      if (args[0] === 'branch') return calls.some(c => c[0] === 'git' && c[1] === 'switch') ? 'ag-bridge/task-1' : 'main';
+      if (args[0] === 'switch' && args[1] === '-c') { branch = args[2]; return ''; }
+      if (args[0] === 'branch') return branch;
       if (args[0] === 'rev-parse') return head;
       if (args[0] === 'diff') return dirty || head !== 'base' ? 'apps/juneauflightdeck/app/page.tsx\0' : '';
       if (args.includes('commit')) { head = head === 'base' ? 'v1' : 'v2'; dirty = false; }
@@ -157,5 +159,118 @@ test('check failures never push source or request review', async t => {
   const h = harness(t); const original = h.b.command;
   h.b.command = async (exe, args, options) => { if (exe === 'npm') throw new Error('check failed'); return original(exe, args, options); };
   const i = issue(1, 'code'); await h.b.process(i, parseTask(i, config));
-  assert.equal(h.b.state[1].status, 'blocked'); assert.ok(!h.calls.some(c => c.includes('push')));
+  assert.equal(h.b.state[1].status, 'blocked');
+  assert.equal(h.b.state[1].blocker.category, 'check_failed');
+  assert.equal(h.b.state[1].stalled, true);
+  assert.ok(!h.calls.some(c => c.includes('push')));
+});
+test('classifyBlocker categorizes permission, transient, check, scope, review and git failures', () => {
+  assert.deepEqual(classifyBlocker(new Error('AG permission blocked: command. No completion was assumed.')).category, 'ag_permission_denied');
+  assert.equal(classifyBlocker(new Error('AG permission blocked: command. No completion was assumed.')).retryable, true);
+  assert.equal(classifyBlocker(new Error('AG did not complete successfully. Check the local AG log.')).category, 'ag_transient_or_incomplete');
+  assert.equal(classifyBlocker(new Error('npm.cmd run exited 1.'), 'check').category, 'check_failed');
+  assert.equal(classifyBlocker(new Error('npm.cmd run exited 1.'), 'check').retryable, false);
+  assert.equal(classifyBlocker(new Error('Change outside approved task paths: package.json. Paused before push.')).category, 'scope_violation');
+  assert.equal(classifyBlocker(new Error('No Codex review received.')).category, 'review_timeout');
+  assert.equal(classifyBlocker(new Error('Reached 3 correction rounds.')).category, 'review_fix_limit');
+  assert.equal(classifyBlocker(new Error('git read-tree exited 128.')).category, 'git_checkout_or_index');
+});
+test('bounded retries recover transient or permission failures after cooldown and stall when exhausted without duplicate comments', async t => {
+  const h = harness(t);
+  h.b.config = { ...config, maxTaskRetries: 2, retryCooldownMinutes: 0 };
+  let attempt = 0;
+  h.b.agent = async () => {
+    attempt++;
+    if (attempt <= 2) throw new Error('AG permission blocked: command. No completion was assumed.');
+    return { response: 'Recovered AG_BRIDGE_OK', conversation_id: 'recovered-session' };
+  };
+  const i = issue(1, 'audit', 'dells');
+  const task = parseTask(i, h.b.config);
+  // Attempt 1 fails -> blocked, retries: 0, eligible for retry 1/2
+  await h.b.process(i, task);
+  assert.equal(h.b.state[1].status, 'blocked');
+  assert.equal(h.b.state[1].blocker.category, 'ag_permission_denied');
+  assert.equal(h.b.state[1].stalled, false);
+  assert.equal(h.b.state[1].retries, 0);
+  // Retry 1 fails -> blocked, retries: 1, eligible for retry 2/2
+  await h.b.process(i, task);
+  assert.equal(h.b.state[1].status, 'blocked');
+  assert.equal(h.b.state[1].retries, 1);
+  assert.equal(h.b.state[1].stalled, false);
+  // Retry 2 succeeds -> done!
+  await h.b.process(i, task);
+  assert.equal(h.b.state[1].status, 'done');
+  assert.equal(attempt, 3);
+});
+test('stalled task can be revisited when instructions or revisit token change', async t => {
+  const h = harness(t);
+  let shouldFail = true;
+  const original = h.b.command;
+  h.b.command = async (exe, args, options) => {
+    if (exe === 'npm' && shouldFail) throw new Error('check failed');
+    return original(exe, args, options);
+  };
+  const i1 = issue(1, 'code', 'jfd', { instructions: 'Initial instructions with failing test.' });
+  await h.b.process(i1, parseTask(i1, config));
+  assert.equal(h.b.state[1].status, 'blocked');
+  assert.equal(h.b.state[1].stalled, true);
+  const notesAfterBlock = h.notes.length;
+  // Repeated cycle with unchanged instructions does not re-run or re-comment
+  await h.b.process(i1, parseTask(i1, config));
+  assert.equal(h.runs(), 1);
+  assert.equal(h.notes.length, notesAfterBlock);
+  // Updating instructions or revisit token triggers a clean revisit
+  shouldFail = false;
+  const i1Updated = issue(1, 'code', 'jfd', { instructions: 'Updated instructions with deterministic test paths.', revisit: '2026-10-15T05:00:00Z' });
+  await h.b.process(i1Updated, parseTask(i1Updated, config));
+  assert.equal(h.runs(), 2);
+  assert.equal(h.b.state[1].status, 'review');
+  assert.equal(h.b.state[1].stalled, false);
+});
+test('tick isolates per-site failures so one blocked site never stops the other nine sites and separates reporting', async t => {
+  const h = harness(t);
+  const blockedIssue = issue(10, 'code', 'dells', { instructions: 'Blocked Dells task' });
+  const healthyIssue = issue(11, 'audit', 'wta', { instructions: 'Healthy WTA audit' });
+  h.b.state[10] = {
+    status: 'blocked',
+    site: 'dells',
+    mode: 'code',
+    fixes: 0,
+    retries: 2,
+    maxRetries: 2,
+    stalled: true,
+    blocker: { category: 'ag_permission_denied', retryable: true },
+    error: 'AG permission blocked: command.',
+    taskHash: computeTaskHash(parseTask(blockedIssue, config))
+  };
+  h.b.all = async (endpoint) => {
+    if (endpoint.includes('/issues?state=open')) return [blockedIssue, healthyIssue];
+    return [];
+  };
+  const heartbeat = await h.b.tick();
+  assert.equal(h.b.state[10].status, 'blocked');
+  assert.equal(h.b.state[11].status, 'done');
+  assert.deepEqual(heartbeat.summary.productionReleases, []);
+  assert.equal(heartbeat.summary.completed.length, 1);
+  assert.equal(heartbeat.summary.completed[0].site, 'wta');
+  assert.equal(heartbeat.summary.blocked.length, 1);
+  assert.equal(heartbeat.summary.blocked[0].site, 'dells');
+  assert.equal(heartbeat.summary.blocked[0].category, 'ag_permission_denied');
+});
+test('agent prompt injects existing allowed workspace files and forbids invoke_subagent and run_command', async t => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'bridge-manifest-')); t.after(() => fs.rmSync(home, { recursive: true, force: true }));
+  let capturedInput = '';
+  const command = async (exe, args, options = {}) => {
+    if (exe === 'git' && args[0] === 'ls-files') {
+      return 'apps/welcometothedells/tests/content-regression.test.ts\0apps/welcometothedells/tests/sitemap-regression.test.ts\0apps/welcometothedells/package.json\0';
+    }
+    capturedInput = options.input ?? '';
+    return JSON.stringify({ event: 'result', result: { status: 'SUCCESS', response: 'Done AG_BRIDGE_OK' } });
+  };
+  const b = new Bridge(config, home, command);
+  await b.agent(home, 157, { site: 'dells', mode: 'code', instructions: 'Add canonical test' }, config.sites.dells);
+  assert.ok(capturedInput.includes('apps/welcometothedells/tests/content-regression.test.ts'));
+  assert.ok(capturedInput.includes('apps/welcometothedells/tests/sitemap-regression.test.ts'));
+  assert.ok(!capturedInput.includes('apps/welcometothedells/package.json'));
+  assert.ok(capturedInput.includes('never invoke subagents (invoke_subagent)'));
 });

@@ -1,4 +1,4 @@
-# AG Bridge: JFD, WNO, WTA, Welcome to the Swamp
+# AG Bridge: Ten-Site Portfolio Worker
 
 This worker replaces manually relaying task instructions, code changes and code-review findings between ChatGPT/Codex and Antigravity. It uses GitHub issues as the queue and Antigravity's native CLI on Windows as the executor. It does not attach to an existing IDE conversation.
 
@@ -6,7 +6,7 @@ This worker replaces manually relaying task instructions, code changes and code-
 
 Run `install.ps1` from a permanent extracted copy of this directory. It installs missing Git, GitHub CLI, Node and Antigravity CLI when possible, handles initial sign-in, writes a Startup shortcut, and starts the worker. Use `-NoStartup` to skip the shortcut. It does not change AG's permission settings or skip permissions. The worker uses Node's standard library; no bridge dependencies or API keys are required. AG quota/credit usage follows your existing Google account plan.
 
-Enable Codex Code Review for **destinations-cc** and **wta-renderer** in [Codex settings](https://chatgpt.com/codex/settings/code-review). The worker explicitly requests `@codex review` after each code push, so enabling automatic review triggers is optional. A missing review times out and pauses the task; it never counts as approval.
+Enable Codex Code Review for configured repositories in [Codex settings](https://chatgpt.com/codex/settings/code-review). The worker explicitly requests `@codex review` after each code push, so enabling automatic review triggers is optional. A missing review times out and pauses the task; it never counts as approval.
 
 Keep the worker window open. The Startup shortcut reopens it at Windows sign-in. Closing the window stops polling; a running task interrupted by a close is marked blocked on the next run to avoid duplicate work. To disable startup, remove `AG Bridge.lnk` from `shell:startup`.
 
@@ -24,45 +24,33 @@ Create an issue in `erichroeseler123-bot/destinations-cc` with a body starting w
 {"site":"jfd","mode":"code","instructions":"Describe the requested change and acceptance criteria here."}
 ```
 
-Sites: `jfd`, `wno`, `wta`, `swamp`. Modes: `audit` (read-only connection/source check) and `code` (edit/check/push/review). Only issues created by a configured trusted GitHub author are accepted. Comments do not expand the original task; create a follow-up issue for changed scope. The owner can submit tasks through ChatGPT's GitHub tools, eliminating manual transfer to AG.
+Sites: `jfd`, `wno`, `wta`, `swamp`, `cruisepromenade`, `brinkberry`, `dells`, `dcc`, `socializor`, `oddjobs`. Modes: `audit` (read-only connection/source check) and `code` (edit/check/push/review). Optional `"revisit"` string in the JSON block (or updating `"instructions"`) triggers a clean revisit of a previously blocked/stalled task. Only issues created by a configured trusted GitHub author are accepted.
 
 The worker ignores unrelated issues, pull requests, unknown site IDs, malformed task JSON, and tasks from other authors. Closing an issue removes it from future polling, but does not cancel a task already executing; close the worker window to stop it.
 
-## What it does
+## Resilience, Blocker Classification, Bounded Retries & Per-Site Isolation
 
-Each task gets a separate clean Git checkout under `%USERPROFILE%\.ag-bridge\workspaces` and an `ag-bridge/task-N` branch. Destinations CC checkouts exclude `data/memory/` because 2,343 filenames contain colons that Windows cannot check out; the dataset stays tracked in Git and is not deleted or renamed. Checks requiring that dataset must run on a compatible environment. Your existing working directories and unsaved AG changes are untouched. The worker reads applicable repository governance. It does not copy `.env` files, tokens, customer records, or raw agent/build logs to GitHub. Missing build configuration pauses the task rather than inventing credentials or claiming validation passed.
-
-For code tasks it checks the allowed path list, runs the configured install/typecheck/build/test commands itself, stages only eligible files, commits, pushes the task branch, and opens a PR. Build/check output stays in local logs. Source checks do not establish visual/mobile behavior, booking functionality, or live production correctness; those require additional task-specific verification.
-
-The review loop accepts only configured Codex bot reviews on the exact latest commit, forwards findings to AG, reruns checks, and requests a fresh review. It pauses after three correction rounds. Stale reviews, missing reviews, external branch edits, unexpected history changes, failed checks, and interrupted execution do not advance the task to ready. A review without findings means ready for owner review, not guaranteed correctness.
-
-The worker does not merge, alter production branches, deploy, change domains/DNS, modify project ownership, or run database/payment mutations. Git pushes may create preview deployments according to your existing Vercel integration. Production publication is a separate explicitly authorized action.
+- **Workspace Allowed-Path Manifest & Tool Safeguards**: Before invoking AG, `Bridge.agent()` runs `git ls-files` scoped to `site.allowedPaths` and injects the exact list of existing allowed files into the prompt so AG never guesses test or source paths. It explicitly instructs AG to use only synchronous workspace file tools (`view_file`, `list_dir`, `find_by_name`, `grep_search`, `replace_file_content`, `multi_replace_file_content`, `write_to_file`) and never invoke `run_command` or `invoke_subagent`.
+- **Automatic Blocker Classification (`classifyBlocker`)**: Every failure is classified into a structured category (`ag_permission_denied`, `ag_transient_or_incomplete`, `check_failed`, `git_checkout_or_index`, `scope_violation`, `review_timeout`, `review_fix_limit`, `external_mutation`, `config_or_mapping`, `agent_reported_blocked`, `interrupted`, or `unclassified`).
+- **Bounded Retries & Stalled Task Revisit**: Retryable pre-PR failures (`ag_permission_denied`, `ag_transient_or_incomplete`, `git_checkout_or_index`) and `review_timeout` automatically schedule up to `maxTaskRetries` (`2`) retries after `retryCooldownMinutes` (`15` minutes), resetting uncommitted working-tree changes cleanly to `baseSha` before retrying. Non-retryable failures (such as `check_failed` or `scope_violation`) or tasks that exhaust their retry budget transition to `stalled: true`. Updating `instructions` or adding/changing `"revisit"` in the issue JSON resets the retry counter and revisits a stalled task cleanly.
+- **Deduplicated Blocker Comments**: Repeated ticks never spam identical blocker comments on the same issue (`lastReportedErrorHash`).
+- **Per-Site Queue Isolation & Separated Reporting**: `Bridge.tick()` sorts active/new tasks ahead of blocked tasks and isolates each task in its own `try / catch` block so one blocked site never blocks the other nine sites. `heartbeat.json` writes a `summary` object that separately reports `productionReleases` (always empty at the worker layer, since production deploys require separate verification), `completed` (`done` / `ready`), `inProgress` (`running` / `review`), `blocked` (with category, retry count, and stalled state), and `bySite`.
 
 ## Source mappings
 
-| Site | Repository | Candidate code directory | Vercel project record |
-| --- | --- | --- | --- |
-| JFD | destinations-cc | apps/juneauflightdeck | juneauflightdeck |
-| WNO | destinations-cc | root; app/new-orleans plus apps/welcometoneworleanstours | welcometoneworleanstours |
-| WTA | wta-renderer | root | wta-ui |
-| Swamp | destinations-cc | apps/welcometotheswamp | welcometotheswamp |
-
-These code directories were inspected on GitHub, and domain/project associations were read from Vercel. The older MASTER_DOMAIN_LEDGER differs in several rows; these are candidate code mappings, not a new declaration of production ownership. The initial four tasks only confirm source access and agent communication. WNO's app folder lacks a committed package.json, so its configured checks use the repository root. Any task needing shared files outside a site's allowed paths pauses for a scoped follow-up/configuration change. PARR and Gosno are excluded.
-
-## Local status and troubleshooting
-
-State: `%USERPROFILE%\.ag-bridge\state.json`; heartbeat: `heartbeat.json`; private logs: `agent-N-*.log` and `check-N-*.log`. Queue issues receive progress and PR links. Use one worker per queue. A local PID lock prevents duplicate processes on the same computer; do not install the same queue on two computers simultaneously.
-
-After correcting a blocked task, create a follow-up task rather than deleting state blindly. Branches/workspaces are preserved for investigation. Task clones do not receive existing local `.env` files automatically. JFD and Swamp have no committed app lockfiles; their checks use `npm install --ignore-scripts --package-lock=false` without changing repository dependency files. WNO and WTA use their committed npm lockfiles with `npm ci --ignore-scripts`. Site runtime constraints may require Node 24 even if the bridge itself supports newer versions. Build-generated changes outside approved paths pause before push; adjust a task's scope deliberately if required.
-
-Antigravity permissions remain scoped to its existing policy. Read/write tools inside its workspace are supported; shell tools may be denied in headless mode. The bridge runs the checks and Git publishing itself. Repository instructions/feedback are not treated as additional authorization.
-
-AG is instructed to use only workspace file/list/edit tools, and to leave terminal commands to the worker. A `denied_actions` result is reported as a permission failure even if the CLI labels the run SUCCESS; an empty response never counts as completed work. Git failures report the failing operation and a classified reason, without uploading raw stderr.
+| Site Key | Site | Repository | Configured directory | Vercel project record |
+| --- | --- | --- | --- | --- |
+| `jfd` | Juneau Flight Deck | `destinations-cc` | `apps/juneauflightdeck` | `juneauflightdeck` |
+| `wno` | Welcome to New Orleans Tours | `destinations-cc` | `.` (`app/new-orleans/`, `apps/welcometoneworleanstours/`) | `welcometoneworleanstours` |
+| `wta` | Welcome to Alaska Tours | `wta-renderer` | `.` | `wta-ui` |
+| `swamp` | Welcome to the Swamp | `destinations-cc` | `apps/welcometotheswamp` | `welcometotheswamp` |
+| `cruisepromenade` | Cruise Promenade | `cruisepromenade` (`phase31c-clean-rebuild`) | `.` | `cruisepromenade` |
+| `brinkberry` | Brinkberry | `brinkberry` | `.` | `brinkberry` |
+| `dells` | Welcome to the Dells | `destinations-cc` | `apps/welcometothedells` | `welcometothedells` |
+| `dcc` | Destination Command Center | `destinations-cc` | `.` | `destinations-cc` |
+| `socializor` | Socializor | `socializor` | `.` | `socializor` |
+| `oddjobs` | Eau Claire Odd Jobs | `eauclaireoddjobs` | `.` | `modern-portfolio` |
 
 ## Verification
 
-Run `node --test bridge.test.mjs`. Tests exercise the stdin protocol, a full audit round trip, a code-change/review/fix round trip, stale/foreign reviews, allowed paths, retry limits and interrupted-task handling using a fake agent/GitHub transport. Native Windows installation, Google/GitHub sign-in and real AG execution must be confirmed on the user's computer. The four queued audits provide that final check.
-
-Official references: [AG headless mode](https://antigravity.google/docs/cli/headless/), [Windows installation](https://antigravity.google/docs/cli/install/), [Codex GitHub reviews](https://learn.chatgpt.com/docs/third-party/github).
-
-Windows index compatibility: the worker checks all tracked paths outside the excluded `data/memory/` dataset for Windows-invalid characters, device names and Git-directory aliases before checkout. It sets `core.protectNTFS=false` only in each private DCC task clone so Git can index excluded colon filenames. Sparse checkout keeps the dataset off disk. Global Git settings and existing working repositories are not modified. The updated worker retries previously blocked read-only index failures once.
+Run `node --test tools/ag-bridge/bridge.test.mjs`. Tests exercise the stdin protocol, a full audit round trip, a code-change/review/fix round trip, stale/foreign reviews, allowed paths, blocker classification, bounded retries, stalled task revisit, per-site isolation, separated reporting, workspace manifest injection, and interrupted-task handling.

@@ -4,6 +4,9 @@
   "reviewBots": ["chatgpt-codex-connector[bot]"],
   "pollSeconds": 30,
   "maxFixes": 3,
+  "maxTaskRetries": 2,
+  "retryCooldownMinutes": 15,
+  "recoveryVersion": "resilience-v5",
   "reviewTimeoutMinutes": 60,
   "sites": {
     "jfd": {
