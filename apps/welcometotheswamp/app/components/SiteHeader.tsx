@@ -23,7 +23,12 @@ export function SiteHeader() {
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href;
           return (
-            <Link key={item.href} href={item.href} className={`nav-pill${active ? " is-active" : ""}`}>
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`nav-pill${active ? " is-active" : ""}`}
+              aria-current={active ? "page" : undefined}
+            >
               {item.label}
             </Link>
           );

@@ -170,12 +170,13 @@ export default function NextBoatFinder() {
       <form onSubmit={handleSearch} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
         {/* WHEN SELECTOR */}
         <div>
-          <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.5rem" }}>
+          <label id={`${fieldId}-when-label`} style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.5rem" }}>
             1. When are you going? (New Orleans Time)
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0.5rem" }}>
+          <div role="group" aria-labelledby={`${fieldId}-when-label`} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0.5rem" }}>
             <button
               type="button"
+              aria-pressed={selectedDateMode === "today"}
               onClick={() => setSelectedDateMode("today")}
               style={{
                 padding: "0.75rem 0.5rem",
@@ -193,6 +194,7 @@ export default function NextBoatFinder() {
             </button>
             <button
               type="button"
+              aria-pressed={selectedDateMode === "tomorrow"}
               onClick={() => setSelectedDateMode("tomorrow")}
               style={{
                 padding: "0.75rem 0.5rem",
@@ -210,6 +212,7 @@ export default function NextBoatFinder() {
             </button>
             <button
               type="button"
+              aria-pressed={selectedDateMode === "custom"}
               onClick={() => setSelectedDateMode("custom")}
               style={{
                 padding: "0.75rem 0.5rem",
@@ -252,7 +255,7 @@ export default function NextBoatFinder() {
           <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.5rem" }}>
             2. Who is in your group?
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "1rem" }}>
             <div>
               <label htmlFor={`${fieldId}-adults`} style={{ fontSize: "0.8rem", color: "#a8a29e" }}>Adults (Age 13+)</label>
               <select
@@ -409,14 +412,14 @@ export default function NextBoatFinder() {
 
       {/* SEARCH ERROR */}
       {searchError && (
-        <div style={{ marginTop: "1.5rem", padding: "1rem", background: "#450a0a", borderRadius: "0.5rem", border: "1px solid #ef4444" }}>
+        <div role="alert" style={{ marginTop: "1.5rem", padding: "1rem", background: "#450a0a", borderRadius: "0.5rem", border: "1px solid #ef4444" }}>
           <p style={{ color: "#fca5a5", margin: 0, fontWeight: 600 }}>{searchError}</p>
         </div>
       )}
 
       {/* SEARCH RESULTS DISPLAY */}
       {searchResponse && (
-        <div style={{ marginTop: "2rem", borderTop: "1px solid #333", paddingTop: "1.5rem" }}>
+        <div aria-live="polite" style={{ marginTop: "2rem", borderTop: "1px solid #333", paddingTop: "1.5rem" }}>
           {/* STATE BANNER */}
           {searchResponse.state === "AVAILABLE" && (
             <div style={{ padding: "0.75rem 1rem", background: "#064e3b", borderRadius: "0.5rem", border: "1px solid #10b981", marginBottom: "1rem" }}>
