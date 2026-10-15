@@ -33,11 +33,6 @@ const projectPaths = {
 const projectId = process.env.VERCEL_PROJECT_ID;
 const relevantProjectPaths = projectPaths[projectId];
 
-// Vercel ignoreCommand semantics: 0 = skip deployment, 1 = continue building.
-if (!relevantProjectPaths) {
-  process.exit(1);
-}
-
 const head = process.env.VERCEL_GIT_COMMIT_SHA || "HEAD";
 const sharedBuildInputs = [
   "package.json",
@@ -47,6 +42,16 @@ const sharedBuildInputs = [
   "vercel.json",
   "scripts/vercel-build-monorepo.mjs",
   "scripts/vercel-ignore-monorepo.mjs",
+];
+
+const standaloneOnlyPrefixes = [
+  "apps/juneauflightdeck/",
+  "apps/welcometotheswamp/",
+  "apps/420-airport-pickup/",
+  "apps/saveonthestrip/",
+  "apps/welcometothedells/",
+  "apps/frenchquarterorientation/",
+  "tools/ag-bridge/",
 ];
 
 const changed = spawnSync(
@@ -64,6 +69,22 @@ const changedPaths = changed.stdout
   .split(/\r?\n/)
   .map((value) => value.trim())
   .filter(Boolean);
+
+// Vercel ignoreCommand semantics: 0 = skip deployment, 1 = continue building.
+if (!relevantProjectPaths) {
+  if (
+    changedPaths.length > 0 &&
+    changedPaths.every((changedPath) =>
+      standaloneOnlyPrefixes.some((prefix) => changedPath.startsWith(prefix)),
+    )
+  ) {
+    console.log(
+      `Vercel project ${projectId}: commit only touches standalone app/tooling paths; skipping root deployment.`,
+    );
+    process.exit(0);
+  }
+  process.exit(1);
+}
 
 const relevant = changedPaths.some((changedPath) =>
   [...relevantProjectPaths, ...sharedBuildInputs].some(

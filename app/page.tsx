@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import CommercialHomePage from "@/app/components/commercial/CommercialHomePage";
+import DccMachineContractExplainer from "@/app/components/dcc/DccMachineContractExplainer";
+import LocationFirstHomeFast from "@/app/components/dcc/LocationFirstHomeFast";
 import JuneauFlightDeckHostPage from "@/app/juneau-flight-deck/page";
 import WisconsinDellsBrandPage from "@/app/wisconsin-dells-brand/page";
 import { getOrganizationSchema, getWebsiteSchema } from "@/src/data/site-identity";
@@ -47,12 +48,12 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   return {
-    title: "Destination Command Center | Live Venue Weather & Coordinate Intelligence",
-    description: "Equip your venue or tour website with live weather, hourly rain timelines, NWS hazard alerts, and NOAA river flow gauges in 60 seconds, or build directly on our Coordinate API.",
+    title: "Destination Command Center | The Open Booking Layer for Tours and Experiences",
+    description: "DCC connects two layers: live public destination intelligence by coordinates (weather, hazards, water, transit) and an authorized open connectivity (OCTO) standard for direct operator tourism commerce.",
     alternates: { canonical: "/" },
     openGraph: {
-      title: "Destination Command Center | Live Venue Weather & Coordinate Intelligence",
-      description: "Equip your venue or tour website with live weather, hourly rain timelines, NWS hazard alerts, and NOAA river flow gauges in 60 seconds, or build directly on our Coordinate API.",
+      title: "Destination Command Center",
+      description: "The open booking layer for tours and experiences.",
       url: "https://destinationcommandcenter.com",
       type: "website",
     },
@@ -78,7 +79,8 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <CommercialHomePage />
+      <LocationFirstHomeFast />
+      <DccMachineContractExplainer />
     </>
   );
 }
