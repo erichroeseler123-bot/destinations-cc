@@ -1,56 +1,54 @@
-# AG Bridge: Ten-Site Portfolio Worker
+# AG Bridge: 10-Site Portfolio Continuous Improvement Worker
 
-This worker replaces manually relaying task instructions, code changes and code-review findings between ChatGPT/Codex and Antigravity. It uses GitHub issues as the queue and Antigravity's native CLI on Windows as the executor. It does not attach to an existing IDE conversation.
+This worker continuously researches, improves, tests, reviews, and prepares updates across the 10-website portfolio using GitHub issues (`erichroeseler123-bot/destinations-cc`) as the queue, Antigravity's native CLI (`agy.exe`) on Windows as the executor, and Codex (`@codex review`) as the automated PR reviewer.
 
-## Install on Windows
+## Configured Portfolio & Rotation Order
 
-Run `install.ps1` from a permanent extracted copy of this directory. It installs missing Git, GitHub CLI, Node and Antigravity CLI when possible, handles initial sign-in, writes a Startup shortcut, and starts the worker. Use `-NoStartup` to skip the shortcut. It does not change AG's permission settings or skip permissions. The worker uses Node's standard library; no bridge dependencies or API keys are required. AG quota/credit usage follows your existing Google account plan.
+The worker rotates across 10 configured sites (`DEFAULT_SITE_ROTATION_ORDER`) on a 2-hour (`autoDiscoverIntervalMinutes: 120`) cycle when the active queue is empty:
 
-Enable Codex Code Review for configured repositories in [Codex settings](https://chatgpt.com/codex/settings/code-review). The worker explicitly requests `@codex review` after each code push, so enabling automatic review triggers is optional. A missing review times out and pauses the task; it never counts as approval.
+| Order | Site ID | Name | Domain | Repository | Directory | Vercel Project |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | `cruisepromenade` | Cruise Promenade | `cruisepromenade.com` | `erichroeseler123-bot/cruisepromenade` (`phase31c-clean-rebuild`) | `.` | `cruisepromenade` |
+| 2 | `wta` | Welcome to Alaska Tours | `welcometoalaskatours.com` | `erichroeseler123-bot/wta-renderer` | `.` | `wta-ui` |
+| 3 | `dells` | Welcome to the Dells | `www.welcometothedells.com` | `erichroeseler123-bot/destinations-cc` | `apps/welcometothedells` | `welcometothedells` |
+| 4 | `brinkberry` | Brinkberry | `brinkberry.com` | `erichroeseler123-bot/brinkberry` | `.` | `brinkberry` |
+| 5 | `swamp` | Welcome to the Swamp | `www.welcometotheswamp.com` | `erichroeseler123-bot/destinations-cc` | `apps/welcometotheswamp` | `welcometotheswamp` |
+| 6 | `wno` | Welcome to New Orleans Tours | `www.welcometoneworleanstours.com` | `erichroeseler123-bot/destinations-cc` | `.` (`app/new-orleans/`, `apps/welcometoneworleanstours/`) | `welcometoneworleanstours` |
+| 7 | `jfd` | Juneau Flight Deck | `juneauflightdeck.com` | `erichroeseler123-bot/destinations-cc` | `apps/juneauflightdeck` | `juneauflightdeck` |
+| 8 | `oddjobs` | Eau Claire Odd Jobs | `eauclaireoddjobs.com` | `erichroeseler123-bot/eauclaireoddjobs` | `.` | `eauclaireoddjobs` |
+| 9 | `dcc` | Destination Command Center | `destinationcommandcenter.com` | `erichroeseler123-bot/destinations-cc` | `.` | `destinations-cc` |
+| 10 | `socializor` | Socializor | `socializor.app` | `erichroeseler123-bot/socializor` | `.` | `socializor` |
 
-Keep the worker window open. The Startup shortcut reopens it at Windows sign-in. Closing the window stops polling; a running task interrupted by a close is marked blocked on the next run to avoid duplicate work. To disable startup, remove `AG Bridge.lnk` from `shell:startup`.
+## Startup, Watchdog & Windows Task Scheduler
 
-The worker checks its fixed setup branch for updates at idle checkpoints. It validates Git's content checksum and JavaScript syntax, replaces only `bridge.mjs`, then exits with code 75 so the launcher can restart it. Local configuration, credentials, logs and task state are preserved. This allows subsequent worker repairs without repeating the installation command. Close the window to stop the worker and its update checks.
+Run `install.ps1` from `C:\Users\erich\AppData\Local\AG-Bridge`. It configures:
+1. **Supervisor loop (`Start-AG-Bridge.cmd` + `Ensure-AG-Bridge.vbs`)**:
+   - Sets `AG_BRIDGE_SUPERVISED=1` and runs `node.exe bridge.mjs`.
+   - Exit code `75` (self-update installed from `codex/ag-bridge-20261012`) restarts immediately. If `bridge.mjs` was ever started outside `Start-AG-Bridge.cmd`, it spawns a detached replacement before exiting so self-updates never stop the worker.
+   - Exit code `78` (`EALREADY_RUNNING` when another live `node.exe` worker holds `C:\Users\erich\.ag-bridge\worker.lock`) exits cleanly (`exit /b 0`) so duplicate launches never loop or open extra windows.
+   - Unexpected non-zero exit codes wait 15 seconds (`timeout /t 15`) and automatically restart.
+2. **Stale Lock Protection (`acquireWorkerLock` & `isWorkerPidAlive`)**:
+   - Checks both `process.kill(pid, 0)` and Windows `tasklist /FI "PID eq <pid>"` so that if a PID in `worker.lock` was recycled by Windows after a reboot into a non-`node.exe` process, the stale lock is automatically detected and replaced.
+   - Registers `exit`, `SIGINT`, `SIGTERM`, `SIGHUP`, and `SIGBREAK` cleanup handlers.
+3. **Windows Task Scheduler Limitation & Working Solution**:
+   - **Limitation**: Standard (non-elevated) Windows user accounts (`IsAdmin: False`) receive `Access is denied` when registering system boot triggers (`New-ScheduledTaskTrigger -AtStartup`) or `-RunLevel Highest`.
+   - **Working Solution**: `install.ps1` registers the user-scoped Scheduled Task `AG-Bridge-Worker` combining an `-AtLogOn -User $env:USERNAME` trigger and a repeating 15-minute watchdog trigger (`-RepetitionInterval (New-TimeSpan -Minutes 15)`) launching `wscript.exe Ensure-AG-Bridge.vbs` (`MultipleInstances = IgnoreNew`), alongside the Startup folder shortcut (`%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\AG Bridge.lnk`). This starts the worker automatically at sign-in and recovers it within 15 minutes if terminated, with zero elevation required and zero console window popups.
 
-## Queue protocol
+## Verified Commit Author Identity (Vercel Private Repo Compatibility)
 
-Create an issue in `erichroeseler123-bot/destinations-cc` with a body starting with the marker and one JSON block:
+Private repositories connected to Vercel (`cruisepromenade`, `socializor`, `eauclaireoddjobs`) enforce Vercel commit-author verification (`<!-- vercel-commit-author-required -->`). Unlinked noreply addresses (`ag-bridge@users.noreply.github.com`) have `author: null` on GitHub and are blocked by Vercel from deploying previews.
 
-```text
-<!-- ag-bridge:v1 -->
-```
+`config.json` and `bridge.mjs` use the repository owner's verified GitHub and Vercel identity (`commitAuthorName: "erichroeseler123-bot"`, `commitAuthorEmail: "erichroeseler123@gmail.com"`), ensuring every worker commit is linked to `erichroeseler123-bot` on GitHub and passes Vercel deployment verification legitimately without weakening security.
 
-```json
-{"site":"jfd","mode":"code","instructions":"Describe the requested change and acceptance criteria here."}
-```
+## Automatic Task Discovery & PR Merge Reconciliation
 
-Sites: `jfd`, `wno`, `wta`, `swamp`, `cruisepromenade`, `brinkberry`, `dells`, `dcc`, `socializor`, `oddjobs`. Modes: `audit` (read-only connection/source check) and `code` (edit/check/push/review). Optional `"revisit"` string in the JSON block (or updating `"instructions"`) triggers a clean revisit of a previously blocked/stalled task. Only issues created by a configured trusted GitHub author are accepted.
+- **Automatic `ready -> done` Reconciliation (`reconcileReadyTask`)**: On each tick, before checking whether the queue is empty, the worker inspects any `ready` task's PR. Once the PR is merged or closed, the worker automatically marks the task `done`, records `mergedSha`, and closes the corresponding queue issue on `erichroeseler123-bot/destinations-cc`.
+- **Automatic Task Discovery (`discoverNextTaskIfEmpty` & `selectNextRotationSite`)**: When no open issue is in `new`, `running`, `review`, or `ready` status and at least `autoDiscoverIntervalMinutes` (`120` minutes) have elapsed since `rotation.lastCreatedAt`, the worker selects the next eligible site in rotation (`skip`ping busy/stalled sites and already-dispatched task keys/hashes) and creates the next scoped GitHub issue automatically.
+- **Multi-Pass Discovery Backlog (`DEFAULT_SITE_DISCOVERY_BACKLOG`)**: Each site has verified, file-specific UX, mobile usability (`320px`/`375px`), accessibility (WCAG 2.2), Core Web Vitals (CLS/LCP), conversion clarity, and technical SEO improvements. Pass 0 completes across all eligible sites before advancing to `followUps` (Pass 1).
 
-The worker ignores unrelated issues, pull requests, unknown site IDs, malformed task JSON, and tasks from other authors. Closing an issue removes it from future polling, but does not cancel a task already executing; close the worker window to stop it.
+## Safeguards & Verification
 
-## Resilience, Blocker Classification, Bounded Retries & Per-Site Isolation
-
-- **Workspace Allowed-Path Manifest & Tool Safeguards**: Before invoking AG, `Bridge.agent()` runs `git ls-files` scoped to `site.allowedPaths` and injects the exact list of existing allowed files into the prompt so AG never guesses test or source paths. It explicitly instructs AG to use only synchronous workspace file tools (`view_file`, `list_dir`, `find_by_name`, `grep_search`, `replace_file_content`, `multi_replace_file_content`, `write_to_file`) and never invoke `run_command` or `invoke_subagent`.
-- **Automatic Blocker Classification (`classifyBlocker`)**: Every failure is classified into a structured category (`ag_permission_denied`, `ag_transient_or_incomplete`, `check_failed`, `git_checkout_or_index`, `scope_violation`, `review_timeout`, `review_fix_limit`, `external_mutation`, `config_or_mapping`, `agent_reported_blocked`, `interrupted`, or `unclassified`).
-- **Bounded Retries & Stalled Task Revisit**: Retryable pre-PR failures (`ag_permission_denied`, `ag_transient_or_incomplete`, `git_checkout_or_index`) and `review_timeout` automatically schedule up to `maxTaskRetries` (`2`) retries after `retryCooldownMinutes` (`15` minutes), resetting uncommitted working-tree changes cleanly to `baseSha` before retrying. Non-retryable failures (such as `check_failed` or `scope_violation`) or tasks that exhaust their retry budget transition to `stalled: true`. Updating `instructions` or adding/changing `"revisit"` in the issue JSON resets the retry counter and revisits a stalled task cleanly.
-- **Deduplicated Blocker Comments**: Repeated ticks never spam identical blocker comments on the same issue (`lastReportedErrorHash`).
-- **Per-Site Queue Isolation & Separated Reporting**: `Bridge.tick()` sorts active/new tasks ahead of blocked tasks and isolates each task in its own `try / catch` block so one blocked site never blocks the other nine sites. `heartbeat.json` writes a `summary` object that separately reports `productionReleases` (always empty at the worker layer, since production deploys require separate verification), `completed` (`done` / `ready`), `inProgress` (`running` / `review`), `blocked` (with category, retry count, and stalled state), and `bySite`.
-
-## Source mappings
-
-| Site Key | Site | Repository | Configured directory | Vercel project record |
-| --- | --- | --- | --- | --- |
-| `jfd` | Juneau Flight Deck | `destinations-cc` | `apps/juneauflightdeck` | `juneauflightdeck` |
-| `wno` | Welcome to New Orleans Tours | `destinations-cc` | `.` (`app/new-orleans/`, `apps/welcometoneworleanstours/`) | `welcometoneworleanstours` |
-| `wta` | Welcome to Alaska Tours | `wta-renderer` | `.` | `wta-ui` |
-| `swamp` | Welcome to the Swamp | `destinations-cc` | `apps/welcometotheswamp` | `welcometotheswamp` |
-| `cruisepromenade` | Cruise Promenade | `cruisepromenade` (`phase31c-clean-rebuild`) | `.` | `cruisepromenade` |
-| `brinkberry` | Brinkberry | `brinkberry` | `.` | `brinkberry` |
-| `dells` | Welcome to the Dells | `destinations-cc` | `apps/welcometothedells` | `welcometothedells` |
-| `dcc` | Destination Command Center | `destinations-cc` | `.` | `destinations-cc` |
-| `socializor` | Socializor | `socializor` | `.` | `socializor` |
-| `oddjobs` | Eau Claire Odd Jobs | `eauclaireoddjobs` | `.` | `modern-portfolio` |
-
-## Verification
-
-Run `node --test tools/ag-bridge/bridge.test.mjs`. Tests exercise the stdin protocol, a full audit round trip, a code-change/review/fix round trip, stale/foreign reviews, allowed paths, blocker classification, bounded retries, stalled task revisit, per-site isolation, separated reporting, workspace manifest injection, and interrupted-task handling.
+- **Path & Governance Safeguards**: `allowedFile()` blocks `.env*`, `.git`, `.github`, `.vercel`, `AGENTS.md`, `MASTER_DOMAIN_LEDGER.md`, `vercel.json`, `package.json`, lockfiles, and `middleware`/`proxy` files.
+- **Pre-PR Crash Recovery**: If the worker is interrupted while a task is `running` before a PR is opened, the next tick marks it `blocked` with a 15-minute cooldown and `needsCleanReset = true`, then automatically resets the workspace and retries up to `maxTaskRetries`. Post-PR interruptions remain paused to prevent duplicate PR commits.
+- **Independent Site Checks & Exact-SHA Codex Review**: Every code task runs its configured `npm ci` / `typecheck` / `test` / `build` checks before pushing, requests `@codex review` on the exact commit SHA, and only transitions to `ready` when `chatgpt-codex-connector[bot]` reviews that exact commit SHA with zero findings.
+- **Unit Test Suite**: Run `node --test bridge.test.mjs` (`24/24` tests covering queue parsing, path guards, review matching, self-update checksums, NTFS sparse checkout, bounded retries, crash recovery, lock management, PR merge reconciliation, and multi-pass auto-discovery).

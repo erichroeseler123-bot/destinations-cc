@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { Bridge, MARKER, parseTask, allowedFile, findingsForHead, parseAgent, run, refreshWorker, validateWindowsCheckout, classifyBlocker, computeTaskHash, summarizePortfolioState, selectNextRotationSite } from './bridge.mjs';
+import { Bridge, MARKER, parseTask, allowedFile, findingsForHead, parseAgent, run, refreshWorker, validateWindowsCheckout, classifyBlocker, computeTaskHash, summarizePortfolioState, selectNextRotationSite, DEFAULT_SITE_DISCOVERY_BACKLOG, readJsonFile, acquireWorkerLock, isWorkerPidAlive } from './bridge.mjs';
 import { createHash } from 'node:crypto';
 
 const config = JSON.parse(fs.readFileSync(new URL('./config.json', import.meta.url)));
@@ -313,8 +313,8 @@ test('tick automatically discovers and queues next rotated task when active queu
     return [];
   };
   // Write an external state entry to disk and verify reloadState() picks it up
-  fs.writeFileSync(h.b.stateFile, JSON.stringify({ 150: { site: 'wno', mode: 'code', status: 'done' } }));
-  fs.writeFileSync(h.b.rotationFile, JSON.stringify({ lastSite: 'wno' }));
+  fs.writeFileSync(h.b.stateFile, '\uFEFF' + JSON.stringify({ 150: { site: 'wno', mode: 'code', status: 'done' } }));
+  fs.writeFileSync(h.b.rotationFile, '\uFEFF' + JSON.stringify({ lastSite: 'wno' }));
   const heartbeat = await h.b.tick();
   assert.equal(h.b.state[150].status, 'done');
   assert.ok(createdPayload, 'Expected a new task issue to be created when queue is empty');
@@ -322,4 +322,101 @@ test('tick automatically discovers and queues next rotated task when active queu
   assert.equal(heartbeat.rotation.lastIssue, 165);
   assert.equal(h.b.state[165].site, 'jfd');
   assert.equal(h.b.state[165].status, 'review');
+  // Verify commit uses verified GitHub/Vercel author identity from config
+  const commitCall = h.calls.find(c => c[0] === 'git' && c.includes('commit'));
+  assert.ok(commitCall, 'Expected git commit call');
+  assert.ok(commitCall.includes(`user.name=${config.commitAuthorName}`));
+  assert.ok(commitCall.includes(`user.email=${config.commitAuthorEmail}`));
 });
+test('acquireWorkerLock recovers stale or recycled non-Node PIDs and blocks live duplicate workers', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bridge-lock-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const lock = path.join(dir, 'worker.lock');
+  // Stale lock with dead PID is automatically replaced
+  fs.writeFileSync(lock, '999999');
+  const release = acquireWorkerLock(lock, () => false);
+  assert.equal(fs.readFileSync(lock, 'utf8'), String(process.pid));
+  // Duplicate worker while lock is held throws EALREADY_RUNNING
+  assert.throws(() => acquireWorkerLock(lock, () => true), err => err.code === 'EALREADY_RUNNING');
+  release();
+  assert.equal(fs.existsSync(lock), false);
+});
+test('pre-PR interrupted task pauses immediately and recovers cleanly after cooldown while post-PR interrupted stays stalled', async t => {
+  const h = harness(t);
+  h.b.config = { ...config, maxTaskRetries: 2, retryCooldownMinutes: 15 };
+  const i = issue(1, 'code', 'jfd');
+  const task = parseTask(i, h.b.config);
+  h.b.state[1] = { status: 'running', site: 'jfd', mode: 'code', branch: 'ag-bridge/task-1', baseSha: 'base', retries: 0 };
+  // First pass after restart marks it blocked with a cooldown and does NOT run immediately
+  await h.b.process(i, task);
+  assert.equal(h.b.state[1].status, 'blocked');
+  assert.equal(h.b.state[1].stalled, false);
+  assert.equal(h.b.state[1].needsCleanReset, true);
+  assert.equal(h.runs(), 0);
+  // Once cooldown elapses, it resets cleanly and executes
+  h.b.state[1].nextRetryAt = Date.now() - 1000;
+  await h.b.process(i, task);
+  assert.equal(h.runs(), 1);
+  assert.equal(h.b.state[1].status, 'review');
+  assert.equal(h.b.state[1].retries, 1);
+});
+test('tick reconciles merged ready PR to done, closes queue issue, and auto-discovers next site task', async t => {
+  const h = harness(t);
+  h.b.config = { ...config, autoDiscoverWhenEmpty: true, autoDiscoverIntervalMinutes: 120 };
+  const readyIssue = issue(165, 'code', 'cruisepromenade', { instructions: 'Mobile nav fix' });
+  h.b.state[165] = {
+    status: 'ready',
+    site: 'cruisepromenade',
+    mode: 'code',
+    pr: 61,
+    sha: '3901b18421',
+    url: 'https://github.com/erichroeseler123-bot/cruisepromenade/pull/61'
+  };
+  fs.writeFileSync(h.b.stateFile, JSON.stringify(h.b.state));
+  fs.writeFileSync(h.b.rotationFile, JSON.stringify({
+    lastSite: 'cruisepromenade',
+    lastCreatedAt: Date.now() - 3 * 3600 * 1000,
+    lastIssue: 165,
+    dispatchedKeys: ['cruisepromenade-mobile-nav-accessibility']
+  }));
+  let closedIssue = false;
+  let createdNext = null;
+  const origApi = h.b.api.bind(h.b);
+  h.b.api = async (endpoint, method = 'GET', data) => {
+    if (endpoint === 'repos/erichroeseler123-bot/cruisepromenade/pulls/61') {
+      return { state: 'closed', merged: true, merge_commit_sha: '12e987ce7d4922fa854be09accedfe13505b8d7d' };
+    }
+    if (endpoint === `repos/${config.queueRepo}/issues/165` && method === 'PATCH' && data?.state === 'closed') {
+      closedIssue = true;
+      return { number: 165, state: 'closed' };
+    }
+    if (endpoint === `repos/${config.queueRepo}/issues` && method === 'POST') {
+      createdNext = data;
+      return {
+        number: 166,
+        title: data.title,
+        body: data.body,
+        user: { login: config.trustedAuthors[0] }
+      };
+    }
+    return origApi(endpoint, method, data);
+  };
+  h.b.all = async (endpoint) => {
+    if (endpoint.includes('/issues?state=open')) return [readyIssue];
+    return [];
+  };
+  const heartbeat = await h.b.tick();
+  assert.equal(h.b.state[165].status, 'done');
+  assert.equal(h.b.state[165].mergedSha, '12e987ce7d4922fa854be09accedfe13505b8d7d');
+  assert.equal(closedIssue, true);
+  assert.ok(createdNext, 'Expected next site task to be auto-discovered after ready PR merged');
+  assert.equal(heartbeat.rotation.lastSite, 'wta');
+  assert.equal(heartbeat.rotation.lastIssue, 166);
+});
+test('selectNextRotationSite advances to follow-up backlog pass after all first-pass keys are dispatched', () => {
+  const allPass0Keys = Object.values(DEFAULT_SITE_DISCOVERY_BACKLOG).map(s => s.key);
+  const secondPass = selectNextRotationSite(config, {}, { lastSite: 'socializor', dispatchedKeys: allPass0Keys });
+  assert.ok(secondPass);
+  assert.equal(secondPass.site, 'cruisepromenade');
+  assert.equal(secondPass.key, 'cruisepromenade-hero-sample-context-clarity');
+});
+

@@ -1,11 +1,70 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { spawn } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 
 export const MARKER = '<!-- ag-bridge:v1 -->';
+export function readJsonFile(filePath, fallback = {}) {
+  if (!fs.existsSync(filePath)) return fallback;
+  const raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '').trim();
+  if (!raw) return fallback;
+  return JSON.parse(raw);
+}
+export function isWorkerPidAlive(pid, execSyncFn = execFileSync) {
+  if (!Number.isInteger(pid) || pid <= 0 || pid === process.pid) return false;
+  let exists = false;
+  try {
+    process.kill(pid, 0);
+    exists = true;
+  } catch (e) {
+    if (e.code === 'ESRCH') return false;
+    exists = true;
+  }
+  if (process.platform === 'win32' && exists) {
+    try {
+      const out = execSyncFn('tasklist', ['/FI', `PID eq ${pid}`, '/FO', 'CSV', '/NH'], {
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 5000
+      });
+      return /^"node(?:\.exe)?"/i.test(String(out).trim());
+    } catch {
+      return true;
+    }
+  }
+  return exists;
+}
+export function acquireWorkerLock(lockPath, checkAlive = isWorkerPidAlive) {
+  fs.mkdirSync(path.dirname(lockPath), { recursive: true });
+  if (fs.existsSync(lockPath)) {
+    const raw = fs.readFileSync(lockPath, 'utf8').replace(/^\uFEFF/, '').trim();
+    let pid = Number(raw);
+    if (!Number.isInteger(pid)) {
+      try { pid = Number(JSON.parse(raw)?.pid); } catch {}
+    }
+    if (checkAlive(pid)) {
+      const err = new Error(`Another bridge worker is already running (PID ${pid}).`);
+      err.code = 'EALREADY_RUNNING';
+      err.pid = pid;
+      throw err;
+    }
+    try { fs.unlinkSync(lockPath); } catch {}
+  }
+  fs.writeFileSync(lockPath, String(process.pid), { flag: 'wx' });
+  let released = false;
+  return function releaseWorkerLock() {
+    if (released) return;
+    released = true;
+    try {
+      if (fs.existsSync(lockPath)) {
+        const current = fs.readFileSync(lockPath, 'utf8').replace(/^\uFEFF/, '').trim();
+        if (current === String(process.pid)) fs.unlinkSync(lockPath);
+      }
+    } catch {}
+  };
+}
 export function validateWindowsCheckout(paths) {
   for (const file of paths.split('\0').filter(Boolean)) {
     if (file.startsWith('data/memory/')) continue;
@@ -151,54 +210,69 @@ export const DEFAULT_SITE_DISCOVERY_BACKLOG = {
   cruisepromenade: {
     key: 'cruisepromenade-mobile-nav-accessibility',
     title: 'Cruise Promenade: mobile primary navigation and active route aria-current state',
-    instructions: 'In `src/components/site-header.tsx` and `src/app/globals.css`, `.cp-nav { display: none; }` at `max-width: 860px` currently hides all primary navigation links (`How it works`, `Activities`, `My cruise plan`, `Explore ports`, `Group bookings`, `Find my cruise`) on mobile and tablet viewports with no mobile replacement, and `SiteHeader` has no `aria-current="page"` indicator. Update `src/components/site-header.tsx` and `src/app/globals.css` so that: (1) `SiteHeader` marks the active route link (`/planner`, `/ports`, `/group-cruise-planner`) with `aria-current="page"`, and (2) on mobile/tablet (`max-width: 860px`), primary navigation remains visible and usable by wrapping cleanly inside `.cp-header-inner` / `.cp-nav` without horizontal overflow at `375px` and `320px` viewports. Preserve all existing link destinations, brand styling, and tests.'
+    instructions: 'In `src/components/site-header.tsx` and `src/app/globals.css`, `.cp-nav { display: none; }` at `max-width: 860px` currently hides all primary navigation links (`How it works`, `Activities`, `My cruise plan`, `Explore ports`, `Group bookings`, `Find my cruise`) on mobile and tablet viewports with no mobile replacement, and `SiteHeader` has no `aria-current="page"` indicator. Update `src/components/site-header.tsx` and `src/app/globals.css` so that: (1) `SiteHeader` marks the active route link (`/planner`, `/ports`, `/group-cruise-planner`) with `aria-current="page"`, and (2) on mobile/tablet (`max-width: 860px`), primary navigation remains visible and usable by wrapping cleanly inside `.cp-header-inner` / `.cp-nav` without horizontal overflow at `375px` and `320px` viewports. Preserve all existing link destinations, brand styling, and tests.',
+    followUps: [
+      {
+        key: 'cruisepromenade-hero-sample-context-clarity',
+        title: 'Cruise Promenade: clarify sample docking board context and direct port-plan actions',
+        instructions: 'In `src/app/page.tsx`, the hero live-style board (`.cp-hero-card`) displays illustrative ship timings (`Icon of the Seas`, `08:00 - 17:00`, `4h 30m safe window`) and step pills (`1. Pick your ship`, `2. See what fits`, `3. Book with confidence`) without clarifying that the board is an illustrative sample or linking visitors directly to `/planner` to load their real sailing. Update `src/app/page.tsx` and `tests/cruise-fleet-seo.test.ts` so the board clearly indicates it is a sample port-day window, exposes an accessible region label, and includes a direct action link to `/planner` while preserving mobile layout at `320px` and `375px` and keeping all existing tests passing.'
+      }
+    ]
   },
   wta: {
     key: 'wta-port-nav-aria-current-filter-live',
-    title: 'Welcome to Alaska Tours: port navigation aria-current and accessible filter status',
-    instructions: 'Inspect `components/` and `app/` in `erichroeseler123-bot/wta-renderer` to ensure primary port/category navigation exposes `aria-current="page"` on the active route and interactive tour filter controls announce result counts via an `aria-live="polite"` status region without causing horizontal overflow at `320px` or `375px`.'
+    title: 'Welcome to Alaska Tours: mobile primary navigation, active route aria-current, and accessible trip-style hint status',
+    instructions: 'In `app/components/site/PublicStorefrontShell.tsx` and `app/components/home/HomepageForm.tsx`, improve mobile navigation usability, active route semantics, and assistive status feedback: (1) In `app/components/site/PublicStorefrontShell.tsx`, `<nav className="hidden items-center gap-6 md:flex">` currently hides primary navigation (`Ports`, `Tours`, `Guides`, `About`) on viewports under `768px` (`md`) and omits `aria-label` and `aria-current="page"`. Add `aria-label="Primary navigation"`, set `aria-current={active ? "page" : undefined}` on active `NAV_LINKS` items, and make the primary navigation visible and usable on mobile (`320px` and `375px`) by wrapping cleanly inside `.wta-site-header` without horizontal overflow; (2) In `app/components/home/HomepageForm.tsx`, associate the dynamic trip-style hint box with `#style-select` using `id="style-select-hint"`, `aria-describedby="style-select-hint"`, and `role="status"` + `aria-live="polite"` so screen readers announce the updated guidance when a visitor changes trip style. Keep `npm run test` and `npm run build` passing without modifying checkout or payment files.'
   },
   dells: {
     key: 'dells-category-filter-aria-mobile',
-    title: 'Welcome to the Dells: accessible category filter controls and mobile comparison layout',
-    instructions: 'Inspect `apps/welcometothedells/app/` and `apps/welcometothedells/components/` to ensure interactive category/planning controls expose explicit `aria-pressed` or `aria-current` states and fit `320px` and `375px` mobile screens without horizontal overflow. Keep existing tests in `apps/welcometothedells/tests/content-regression.test.ts` and `apps/welcometothedells/tests/sitemap-regression.test.ts` passing.'
+    title: 'Welcome to the Dells: prevent live-banner layout shift and add accessible navigation landmarks',
+    instructions: 'In `apps/welcometothedells/app/components/DellsLiveNow.tsx`, `apps/welcometothedells/app/components/DellsHomeClient.tsx`, and `apps/welcometothedells/tests/content-regression.test.ts`, improve Core Web Vitals (CLS), landmark accessibility, and mobile usability: (1) In `DellsLiveNow.tsx`, replace `if (!data) return null;` with a reserved minimum-height status shell and `aria-live="polite"` so asynchronous `/api/dells-status` hydration does not shift the hero down on load; (2) In `DellsHomeClient.tsx`, add explicit `aria-label` attributes to the header primary `<nav>` and quick-jump `<nav>` bars and ensure zero horizontal overflow at `320px` and `375px`. Keep `apps/welcometothedells/tests/content-regression.test.ts` and `apps/welcometothedells/tests/sitemap-regression.test.ts` passing.'
   },
   brinkberry: {
     key: 'brinkberry-empty-state-filter-summary',
     title: 'Brinkberry: accessible empty-state recovery and active filter summary clarity',
-    instructions: 'Inspect `public/index.html`, `public/app.js`, and `public/styles.css` to ensure active event filter pills and empty-state reset controls expose clear accessible names, keyboard focus visibility, and `320px` mobile reflow without altering API routes or ingest logic. Keep `npm run test` passing.'
+    instructions: 'In `public/index.html`, `public/app.js`, and `public/styles.css`, improve event discovery and filter usability on desktop and mobile: (1) Ensure active filter pills and empty-state reset controls expose explicit `type="button"`, clear `aria-pressed` / accessible names, and an `aria-live="polite"` result summary when filtering events; (2) Ensure visible `:focus-visible` keyboard focus styles and clean `320px` and `375px` mobile wrapping without altering API routes or ingest logic. Keep `npm run test` passing.'
   },
   swamp: {
     key: 'swamp-comparison-table-caption-mobile',
     title: 'Welcome to the Swamp: accessible comparison table caption and mobile card reflow',
-    instructions: 'Inspect `apps/welcometotheswamp/app/page.tsx` and `apps/welcometotheswamp/app/globals.css` to ensure comparison tables include descriptive accessible captions/headers and all cards and CTAs fit `320px` and `375px` viewports without horizontal overflow.'
+    instructions: 'In `apps/welcometotheswamp/app/page.tsx` and `apps/welcometotheswamp/app/globals.css`, improve tour comparison clarity, table accessibility, and mobile layout: (1) Add a descriptive `<caption>` (or visually hidden caption) and `scope="col"` / `scope="row"` headers to the boat comparison `<table>` in `apps/welcometotheswamp/app/page.tsx`, and ensure its scroll wrapper never causes document-level horizontal overflow on `320px` and `375px` viewports; (2) Ensure hero and section navigation links expose clear landmarks and visible keyboard focus states while keeping `npm run typecheck` and `npm run build` passing.'
   },
   wno: {
     key: 'wno-category-jump-nav-table-a11y',
     title: 'Welcome to New Orleans Tours: mobile category jump-navigation and table accessibility',
-    instructions: 'Inspect `app/new-orleans/page.tsx` to ensure category jump links and tour comparison tables expose clear accessible labels and fit `320px` and `375px` mobile viewports with zero horizontal overflow.'
+    instructions: 'In `app/new-orleans/page.tsx`, improve mobile category jump-navigation and comparison table accessibility: (1) Ensure the category jump-link bar exposes `<nav aria-label="Tour categories">` and wraps cleanly on `320px` and `375px` mobile screens with zero horizontal overflow; (2) Add a descriptive `<caption>` and explicit `scope="col"` / `scope="row"` headers to the tour comparison table so visitors and screen readers can compare tour durations, pickup logistics, and prices clearly. Keep `npm run typecheck`, `npm run test:wno`, and `npm run build:wno` passing.'
   },
   jfd: {
     key: 'jfd-faq-disclosure-waitlist-form-a11y',
-    title: 'Juneau Flight Deck: accessible FAQ disclosure states and mobile waitlist form clarity',
-    instructions: 'Inspect `apps/juneauflightdeck/app/helicopter-waitlist/page.tsx` and `apps/juneauflightdeck/app/components/` to ensure form helper descriptions, error states, and disclosure summaries have explicit accessible associations and zero horizontal overflow at `320px` and `375px`.'
+    title: 'Juneau Flight Deck: accessible waitlist notification radio group and mobile form field associations',
+    instructions: 'In `apps/juneauflightdeck/app/components/HelicopterWaitlistForm.tsx` and `apps/juneauflightdeck/app/helicopter-waitlist/page.tsx`, improve waitlist form accessibility and mobile conversion usability: (1) Group the notification mode radio options (`name="bookingMode"`) inside a semantic `<fieldset>` with a `<legend>` (or `role="radiogroup"` with `aria-labelledby`), and add `role="status" aria-live="polite"` to `.waitlist-success-banner`; (2) Associate the helper descriptions for `#portDate`, `#skagwayDate`, and `#phone` via `id` and `aria-describedby`, add `autoComplete` (`name`, `email`, `tel`) to the contact inputs, and ensure zero horizontal overflow at `320px` and `375px`. Keep `npm run typecheck` and `npm run build` passing.'
   },
   oddjobs: {
     key: 'oddjobs-header-aria-current-mobile-cards',
     title: 'Eau Claire Odd Jobs: active navigation aria-current and mobile service card accessibility',
-    instructions: 'Inspect `src/components/Header.tsx` and `src/components/Footer.tsx` to ensure navigation links expose `aria-current="page"` on the active route and mobile navigation controls maintain 44px minimum touch targets and zero horizontal overflow at `320px`.'
+    instructions: 'In `src/components/Header.tsx` and `src/components/Footer.tsx`, improve navigation semantics and mobile touch usability: (1) Ensure primary navigation links expose `aria-current="page"` on the active route inside `<nav aria-label="Primary navigation">`; (2) Ensure mobile navigation controls use explicit `type="button"`, maintain at least `44px` touch target height, and fit `320px` and `375px` viewports with zero horizontal overflow. Keep `npm run build` passing.'
   },
   dcc: {
     key: 'dcc-hub-nav-search-semantics',
-    title: 'Destination Command Center: accessible hub navigation and search control semantics',
-    instructions: 'Inspect `app/page.tsx` and `components/` to ensure primary destination search and hub filter controls have explicit accessible labels, `aria-live="polite"` status feedback, and clean `320px`/`375px` mobile wrapping.'
+    title: 'Destination Command Center: accessible coordinate search status region and case-study heading hierarchy',
+    instructions: 'In `app/components/dcc/LocationFirstHomeFast.tsx`, improve coordinate search accessibility, live status feedback, and heading hierarchy: (1) Add `role="search"` and `aria-label="Coordinate and venue search"` to the location search `<form>`, and announce multi-location disambiguation results and status/error messages via an `aria-live="polite"` container; (2) Fix the heading hierarchy in the "Live Production Demonstrations" section by changing the three case-study card headings (`Red Rocks Concert Amphitheatre`, `Breckenridge & I-70 Corridor`, `Clear Creek Whitewater Rafting`) from `<h4>` to `<h3>` under the `<h2>` section heading while preserving clean `320px` and `375px` mobile layout. Keep `npm run typecheck`, `npm run test:dcc`, and `npm run build` passing.'
   },
   socializor: {
     key: 'socializor-bottom-nav-aria-current-empty-reset',
     title: 'Socializor: accessible bottom navigation aria-current and empty-state filter reset controls',
-    instructions: 'Inspect `src/components/BottomNavigation.tsx` and `src/components/NearbyGrid.tsx` to add `aria-label="Primary navigation"` on the bottom `<nav>`, `type="button"` and `aria-current={currentTab === ... ? "page" : undefined}` on each bottom tab button, and `type="button"` on empty-state filter action buttons.'
+    instructions: 'In `src/components/BottomNavigation.tsx` and `src/components/NearbyGrid.tsx`, add `aria-label="Primary navigation"` on the bottom `<nav>`, `type="button"` and `aria-current={currentTab === ... ? "page" : undefined}` on each bottom tab button, and `type="button"` on empty-state filter action buttons while keeping `320px` and `375px` mobile layout clean and `npm run build` passing.'
   }
 };
+
+function getSiteDiscoverySpecs(config, site) {
+  const raw = config?.discoveryBacklog?.[site] ?? DEFAULT_SITE_DISCOVERY_BACKLOG[site];
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.filter(Boolean);
+  const { followUps, ...primary } = raw;
+  return [primary, ...(Array.isArray(followUps) ? followUps.filter(Boolean) : [])];
+}
 
 export function selectNextRotationSite(config, state = {}, rotation = {}) {
   const configuredSites = Object.keys(config?.sites ?? {});
@@ -208,33 +282,41 @@ export function selectNextRotationSite(config, state = {}, rotation = {}) {
     ...configuredSites.filter(s => !DEFAULT_SITE_ROTATION_ORDER.includes(s))
   ];
   const busySites = new Set();
+  const dispatchedKeys = new Set(rotation?.dispatchedKeys ?? []);
+  const existingTaskHashes = new Set();
   for (const [issueKey, entry] of Object.entries(state ?? {})) {
     if (!Number.isInteger(Number(issueKey)) || !entry?.site) continue;
     if (['new', 'running', 'review', 'ready'].includes(entry.status) || (entry.status === 'blocked' && entry.stalled)) {
       busySites.add(entry.site);
     }
+    if (entry.discoveryKey) dispatchedKeys.add(entry.discoveryKey);
+    if (entry.taskHash) existingTaskHashes.add(entry.taskHash);
   }
-  const dispatchedKeys = new Set(rotation?.dispatchedKeys ?? []);
   const prevSite = rotation?.lastSite ?? rotation?.lastSeededSite ?? null;
   const lastIdx = prevSite ? order.indexOf(prevSite) : -1;
-  for (let offset = 1; offset <= order.length; offset++) {
-    const candidate = order[(lastIdx + offset + order.length) % order.length];
-    if (busySites.has(candidate)) continue;
-    const spec = config?.discoveryBacklog?.[candidate] ?? DEFAULT_SITE_DISCOVERY_BACKLOG[candidate];
-    if (!spec) continue;
-    const key = spec.key ?? `${candidate}-default`;
-    if (dispatchedKeys.has(key)) continue;
-    const taskSpec = {
-      key,
-      title: spec.title,
-      mode: spec.mode ?? 'code',
-      instructions: spec.instructions
-    };
-    return {
-      site: candidate,
-      ...taskSpec,
-      task: taskSpec
-    };
+  const maxPass = Math.max(0, ...order.map(s => getSiteDiscoverySpecs(config, s).length));
+  for (let pass = 0; pass < maxPass; pass++) {
+    for (let offset = 1; offset <= order.length; offset++) {
+      const candidate = order[(lastIdx + offset + order.length) % order.length];
+      if (busySites.has(candidate)) continue;
+      const spec = getSiteDiscoverySpecs(config, candidate)[pass];
+      if (!spec) continue;
+      const key = spec.key ?? `${candidate}-default-${pass}`;
+      const mode = spec.mode ?? 'code';
+      const hash = computeTaskHash({ site: candidate, mode, instructions: spec.instructions });
+      if (dispatchedKeys.has(key) || existingTaskHashes.has(hash)) continue;
+      const taskSpec = {
+        key,
+        title: spec.title,
+        mode,
+        instructions: spec.instructions
+      };
+      return {
+        site: candidate,
+        ...taskSpec,
+        task: taskSpec
+      };
+    }
   }
   return null;
 }
@@ -249,7 +331,7 @@ export function summarizePortfolioState(state, config) {
     if (!Number.isInteger(issue) || !entry || typeof entry !== 'object' || !entry.site) continue;
     const siteBucket = bySite[entry.site] ?? (bySite[entry.site] = { completed: [], inProgress: [], blocked: [] });
     if (entry.status === 'done' || entry.status === 'ready') {
-      const item = { issue, site: entry.site, mode: entry.mode, status: entry.status, pr: entry.pr ?? null, url: entry.url ?? null, sha: entry.sha ?? entry.baseSha ?? null };
+      const item = { issue, site: entry.site, mode: entry.mode, status: entry.status, pr: entry.pr ?? null, url: entry.url ?? null, sha: entry.sha ?? entry.baseSha ?? null, mergedSha: entry.mergedSha ?? null };
       completed.push(item); siteBucket.completed.push(issue);
     } else if (entry.status === 'running' || entry.status === 'review') {
       const item = { issue, site: entry.site, mode: entry.mode, status: entry.status, pr: entry.pr ?? null, url: entry.url ?? null, sha: entry.sha ?? null, fixes: entry.fixes ?? 0 };
@@ -287,16 +369,16 @@ export class Bridge {
     fs.mkdirSync(home, { recursive: true });
     this.stateFile = path.join(home, 'state.json');
     this.rotationFile = path.join(home, 'rotation.json');
-    this.state = fs.existsSync(this.stateFile) ? JSON.parse(fs.readFileSync(this.stateFile, 'utf8')) : {};
+    this.state = readJsonFile(this.stateFile, {});
   }
   reloadState() {
     if (fs.existsSync(this.stateFile)) {
-      try { this.state = JSON.parse(fs.readFileSync(this.stateFile, 'utf8')); } catch {}
+      try { this.state = readJsonFile(this.stateFile, this.state); } catch {}
     }
   }
   loadRotation() {
     if (fs.existsSync(this.rotationFile)) {
-      try { return JSON.parse(fs.readFileSync(this.rotationFile, 'utf8')); } catch {}
+      try { return readJsonFile(this.rotationFile, {}); } catch {}
     }
     return {};
   }
@@ -326,8 +408,9 @@ export class Bridge {
   async checkout(issue, site, entry) {
     const dir = path.join(this.home, 'workspaces', `${site.repo.split('/')[1]}-${issue}`);
     fs.mkdirSync(path.dirname(dir), { recursive: true });
-    if (!fs.existsSync(path.join(dir, '.git'))) await this.command('gh', ['repo', 'clone', site.repo, dir, '--', '--single-branch', '--no-checkout'], { log: path.join(this.home, `clone-${issue}.log`) });
-    if (!entry.branch) {
+    const freshClone = !fs.existsSync(path.join(dir, '.git'));
+    if (freshClone) await this.command('gh', ['repo', 'clone', site.repo, dir, '--', '--single-branch', '--no-checkout'], { log: path.join(this.home, `clone-${issue}.log`) });
+    if (!entry.branch || freshClone) {
       // The DCC memory dataset uses colon filenames, which NTFS rejects.
       // Configure sparse checkout before the first checkout; also repairs
       // a clone interrupted by Git's initial Windows checkout failure.
@@ -419,7 +502,9 @@ export class Bridge {
     }
     const files = await this.checkFiles(dir, site, entry.baseSha);
     await this.command('git', ['add', '--', ...files], { cwd: dir });
-    await this.command('git', ['-c', 'user.name=AG Bridge', '-c', 'user.email=ag-bridge@users.noreply.github.com', 'commit', '-m', `AG: ${task.site} task ${issue}`], { cwd: dir });
+    const authorName = this.config.commitAuthorName ?? 'erichroeseler123-bot';
+    const authorEmail = this.config.commitAuthorEmail ?? 'erichroeseler123@gmail.com';
+    await this.command('git', ['-c', `user.name=${authorName}`, '-c', `user.email=${authorEmail}`, 'commit', '-m', `AG: ${task.site} task ${issue}`], { cwd: dir });
     entry.sha = await this.command('git', ['rev-parse', 'HEAD'], { cwd: dir });
     // Persist before network writes; an interrupted task never auto-repeats.
     this.save();
@@ -432,6 +517,22 @@ export class Bridge {
     await this.api(`repos/${site.repo}/issues/${entry.pr}/comments`, 'POST', { body: `@codex review\nReview commit ${entry.sha}. Check the requested behavior and consequential bugs.\n\nIndependent checks passed:\n${checked.map(c => '- ' + c).join('\n')}` });
     entry.status = 'review'; entry.reviewAt = Date.now(); this.save();
     await this.comment(issue, `${site.name}: changes pushed for review. ${entry.url}\nIndependent checks passed. Waiting for Codex; this is not a production completion claim.`);
+  }
+  async reconcileReadyTask(issueNumber, site, entry) {
+    if (entry?.status !== 'ready' || !entry?.pr || !site?.repo) return false;
+    try {
+      const pr = await this.api(`repos/${site.repo}/pulls/${entry.pr}`);
+      if (pr && (pr.merged || pr.state !== 'open')) {
+        entry.status = 'done';
+        if (pr.merge_commit_sha) entry.mergedSha = pr.merge_commit_sha;
+        this.save();
+        try {
+          await this.api(`repos/${this.config.queueRepo}/issues/${issueNumber}`, 'PATCH', { state: 'closed' });
+        } catch {}
+        return true;
+      }
+    } catch {}
+    return false;
   }
   shouldRevisitOrRetry(entry, task) {
     const currentHash = computeTaskHash(task);
@@ -454,6 +555,10 @@ export class Bridge {
     const entry = this.state[issue.number] ?? { status: 'new', site: task.site, mode: task.mode, fixes: 0, retries: 0, taskHash: currentTaskHash, revisitToken: task.revisit ?? null };
     this.state[issue.number] = entry;
     if (entry.site !== task.site || entry.mode !== task.mode) throw new Error('Task identity changed. Create a new task.');
+    if (entry.status === 'ready') {
+      await this.reconcileReadyTask(issue.number, site, entry);
+      return;
+    }
     const recovery = 'windows-index-v4';
     if (entry.status === 'blocked' && task.mode === 'audit' && entry.recoveredFor !== recovery && /^(gh exited 1\.|git exited 128\.|git read-tree exited 128\.|AG completed without response text\.|AG did not acknowledge the bridge protocol\.)/.test(entry.error ?? '')) {
       // One read-only retry for the two diagnosed first-install failures.
@@ -484,19 +589,33 @@ export class Bridge {
     }
     if (['done', 'blocked', 'ready'].includes(entry.status)) return;
     if (entry.status === 'running') {
+      const maxRetries = this.config.maxTaskRetries ?? 2;
+      const cooldownMinutes = this.config.retryCooldownMinutes ?? 15;
+      const retries = entry.retries ?? 0;
+      const canAutoRecover = !entry.pr && retries < maxRetries;
       entry.status = 'blocked';
       entry.error = 'Task interrupted during execution.';
-      entry.blocker = classifyBlocker(new Error(entry.error), 'interrupted');
-      entry.stalled = true;
+      entry.blocker = {
+        ...classifyBlocker(new Error(entry.error), 'interrupted'),
+        retryable: canAutoRecover
+      };
+      entry.retries = retries;
+      entry.maxRetries = maxRetries;
+      entry.stalled = !canAutoRecover;
+      entry.needsCleanReset = canAutoRecover;
+      entry.blockedAt = Date.now();
+      entry.nextRetryAt = canAutoRecover ? Date.now() + cooldownMinutes * 60000 : null;
       entry.taskHash = currentTaskHash;
       this.save();
-      await this.comment(issue.number, 'Task interrupted during execution. Paused to prevent duplicate work. Check the local state before retrying.');
+      await this.comment(issue.number, canAutoRecover
+        ? `Task interrupted during execution before PR creation. Paused and scheduled for clean retry (${retries + 1}/${maxRetries}) after ${cooldownMinutes}m cooldown.`
+        : 'Task interrupted during execution. Paused to prevent duplicate work. Check the local state before retrying.');
       return;
     }
     try {
       if (entry.status === 'review') {
         const pr = await this.api(`repos/${site.repo}/pulls/${entry.pr}`);
-        if (pr.state !== 'open') { entry.status = 'done'; this.save(); return; }
+        if (pr.state !== 'open') { entry.status = 'done'; if (pr.merge_commit_sha) entry.mergedSha = pr.merge_commit_sha; this.save(); return; }
         if (pr.head.sha !== entry.sha) throw new Error('PR changed outside this worker. Paused to protect those changes.');
         const reviews = await this.all(`repos/${site.repo}/pulls/${entry.pr}/reviews`);
         const comments = await this.all(`repos/${site.repo}/pulls/${entry.pr}/comments`);
@@ -601,6 +720,13 @@ export class Bridge {
       const task = parseTask(issue, this.config);
       if (task) parsed.push({ issue, task });
     }
+    // Reconcile any ready tasks whose PRs have already been merged or closed before checking if the queue is empty.
+    for (const { issue, task } of parsed) {
+      const entry = this.state[issue.number];
+      if (entry?.status === 'ready') {
+        await this.reconcileReadyTask(issue.number, this.config.sites[task.site], entry);
+      }
+    }
     try {
       const discovered = await this.discoverNextTaskIfEmpty(parsed);
       if (discovered) parsed.push(discovered);
@@ -653,29 +779,77 @@ export async function refreshWorker(root, command = run) {
   return true;
 }
 
+function appendWorkerLog(home, message) {
+  try {
+    const logPath = path.join(home, 'worker.log');
+    const line = `[${new Date().toISOString()}] [PID ${process.pid}] ${message}\n`;
+    if (fs.existsSync(logPath) && fs.statSync(logPath).size > 2000000) {
+      const tail = fs.readFileSync(logPath, 'utf8').slice(-500000);
+      fs.writeFileSync(logPath, tail + line);
+    } else {
+      fs.appendFileSync(logPath, line);
+    }
+  } catch {}
+}
+
 async function main() {
   const root = path.dirname(fileURLToPath(import.meta.url));
-  const config = JSON.parse(fs.readFileSync(path.join(root, 'config.json'), 'utf8').replace(/^\uFEFF/, ''));
+  const config = readJsonFile(path.join(root, 'config.json'), {});
   const home = path.join(os.homedir(), '.ag-bridge');
-  const lock = path.join(home, 'worker.lock'); fs.mkdirSync(home, { recursive: true });
-  if (fs.existsSync(lock)) {
-    const pid = Number(fs.readFileSync(lock, 'utf8'));
-    try { process.kill(pid, 0); throw new Error('Another bridge worker is already running.'); }
-    catch (e) { if (e.code !== 'ESRCH') throw e; fs.unlinkSync(lock); }
+  const lock = path.join(home, 'worker.lock');
+  let releaseLock;
+  try {
+    releaseLock = acquireWorkerLock(lock);
+  } catch (e) {
+    if (e.code === 'EALREADY_RUNNING') {
+      console.log(e.message);
+      process.exitCode = 78;
+      return;
+    }
+    throw e;
   }
-  fs.writeFileSync(lock, String(process.pid), { flag: 'wx' });
-  process.on('exit', () => { try { fs.unlinkSync(lock); } catch {} });
+  process.on('exit', releaseLock);
+  for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGBREAK']) {
+    process.on(sig, () => { releaseLock(); process.exit(0); });
+  }
   const bridge = new Bridge(config, home);
   await run('gh', ['auth', 'status']); await run(config.agyPath ?? 'agy', ['--version']);
-  console.log(`AG Bridge running: ${Object.keys(config.sites).map(k => config.sites[k].name).join(', ')}. Close this window to stop.`);
+  const startMsg = `AG Bridge running: ${Object.keys(config.sites).map(k => config.sites[k].name).join(', ')}. Close this window to stop.`;
+  console.log(startMsg);
+  appendWorkerLog(home, startMsg);
   do {
     if (!process.argv.includes('--once')) {
       try {
-        if (await refreshWorker(root)) { console.log('Installed worker update. Restarting at an idle checkpoint.'); process.exitCode = 75; break; }
-      } catch (e) { console.error(`Worker update check: ${e.message}`); }
+        if (await refreshWorker(root)) {
+          const updateMsg = 'Installed worker update. Restarting at an idle checkpoint.';
+          console.log(updateMsg);
+          appendWorkerLog(home, updateMsg);
+          releaseLock();
+          if (process.env.AG_BRIDGE_SUPERVISED !== '1') {
+            const child = spawn(process.execPath, [path.join(root, 'bridge.mjs')], {
+              cwd: root,
+              detached: true,
+              stdio: 'ignore',
+              windowsHide: true
+            });
+            child.unref();
+          }
+          process.exitCode = 75;
+          break;
+        }
+      } catch (e) {
+        console.error(`Worker update check: ${e.message}`);
+        appendWorkerLog(home, `Worker update check: ${e.message}`);
+      }
     }
-    try { await bridge.tick(); console.log(`${new Date().toISOString()} Queue checked.`); }
-    catch (e) { console.error(e.message); }
+    try {
+      await bridge.tick();
+      console.log(`${new Date().toISOString()} Queue checked.`);
+      appendWorkerLog(home, 'Queue checked.');
+    } catch (e) {
+      console.error(e.message);
+      appendWorkerLog(home, `Tick error: ${e.message}`);
+    }
     if (process.argv.includes('--once')) break;
     await new Promise(resolve => setTimeout(resolve, config.pollSeconds * 1000));
   } while (true);

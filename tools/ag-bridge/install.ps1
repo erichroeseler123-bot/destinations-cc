@@ -58,7 +58,9 @@ if ($script:BridgeNativeExitCode -ne 0) { throw 'Signed-in GitHub account cannot
 $configPath = Join-Path $bridgeRoot 'config.json'
 $config = Get-Content $configPath -Raw | ConvertFrom-Json
 $config | Add-Member -NotePropertyName agyPath -NotePropertyValue $agyCommand.Source -Force
-$config | ConvertTo-Json -Depth 12 | Set-Content $configPath -Encoding utf8
+if (-not $config.commitAuthorName) { $config | Add-Member -NotePropertyName commitAuthorName -NotePropertyValue 'erichroeseler123-bot' -Force }
+if (-not $config.commitAuthorEmail) { $config | Add-Member -NotePropertyName commitAuthorEmail -NotePropertyValue 'erichroeseler123@gmail.com' -Force }
+[System.IO.File]::WriteAllText($configPath, ($config | ConvertTo-Json -Depth 12), (New-Object System.Text.UTF8Encoding($false)))
 
 Write-Host 'Checking AG sign-in. If requested, sign in with your Google account.'
 Invoke-BridgeNative { & $agyCommand.Source -p 'Reply exactly AG_BRIDGE_OK. Do not use tools.' --output-format json --print-timeout 2m }
@@ -72,18 +74,34 @@ if ($script:BridgeNativeExitCode -ne 0) {
 $nodeExe = (Get-Command node).Source
 $worker = Join-Path $bridgeRoot 'bridge.mjs'
 $launcher = Join-Path $bridgeRoot 'Start-AG-Bridge.cmd'
-$launcherContent = "@echo off`r`n:run`r`n`"$nodeExe`" `"$worker`"`r`nif `"%ERRORLEVEL%`"==`"75`" goto run`r`npause`r`n"
+$vbsLauncher = Join-Path $bridgeRoot 'Ensure-AG-Bridge.vbs'
+$launcherContent = "@echo off`r`nset AG_BRIDGE_SUPERVISED=1`r`n:run`r`n`"$nodeExe`" `"$worker`"`r`nif `"%ERRORLEVEL%`"==`"75`" goto run`r`nif `"%ERRORLEVEL%`"==`"78`" exit /b 0`r`nif `"%ERRORLEVEL%`"==`"0`" exit /b 0`r`ntimeout /t 15 /nobreak >nul`r`ngoto run`r`n"
 Set-Content $launcher $launcherContent -Encoding ascii
+$vbsContent = "Set WshShell = CreateObject(`"WScript.Shell`")`r`nWshShell.CurrentDirectory = `"$bridgeRoot`"`r`nWshShell.Run `"`"`"$launcher`"`"`", 0, False`r`n"
+Set-Content $vbsLauncher $vbsContent -Encoding ascii
+
 if (!$NoStartup) {
     $startup = [Environment]::GetFolderPath('Startup')
     $shell = New-Object -ComObject WScript.Shell
     $shortcut = $shell.CreateShortcut((Join-Path $startup 'AG Bridge.lnk'))
-    $shortcut.TargetPath = $launcher
+    $shortcut.TargetPath = 'wscript.exe'
+    $shortcut.Arguments = "`"$vbsLauncher`""
     $shortcut.WorkingDirectory = $bridgeRoot
-    $shortcut.Description = 'JFD, WNO, WTA and Welcome to the Swamp task worker'
+    $shortcut.Description = 'AG Bridge 10-site portfolio worker'
     $shortcut.Save()
+
+    # Standard Windows user accounts cannot register boot-level (-AtStartup) or Highest-privilege tasks
+    # without Administrator elevation ("Access is denied"). Register a user-scoped logon + 15-minute
+    # watchdog scheduled task instead, which succeeds without elevation.
+    try {
+        $action = New-ScheduledTaskAction -Execute 'wscript.exe' -Argument "`"$vbsLauncher`"" -WorkingDirectory $bridgeRoot
+        $triggerLogon = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+        $triggerWatchdog = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 15)
+        $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit ([TimeSpan]::Zero) -MultipleInstances IgnoreNew
+        Register-ScheduledTask -TaskName 'AG-Bridge-Worker' -Action $action -Trigger @($triggerLogon, $triggerWatchdog) -Settings $settings -Description 'AG Bridge portfolio worker user-logon and 15-minute watchdog' -Force | Out-Null
+    } catch {
+        Write-Warning "Could not register Scheduled Task AG-Bridge-Worker: $($_.Exception.Message). Startup folder shortcut remains active."
+    }
 }
-Write-Host 'Setup complete. Starting the four connection checks. Keep the worker window open while it works.'
-Write-Host 'Codex Code Review must be enabled for destinations-cc and wta-renderer before code tasks can finish their review loop.'
-Write-Host 'Settings: https://chatgpt.com/codex/settings/code-review'
-Start-Process $launcher
+Write-Host 'Setup complete. Starting AG Bridge worker.'
+Start-Process 'wscript.exe' -ArgumentList "`"$vbsLauncher`""
