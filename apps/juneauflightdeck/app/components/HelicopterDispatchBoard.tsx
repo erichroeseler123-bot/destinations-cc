@@ -512,7 +512,7 @@ export default function HelicopterDispatchBoard({
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
                 gap: '16px',
                 marginTop: '16px',
               }}
@@ -651,7 +651,7 @@ export default function HelicopterDispatchBoard({
           <Link
             href="/juneau/what-to-do-if-helicopter-tour-canceled"
             className="button button-secondary"
-            style={{ fontSize: '0.85rem', padding: '10px 18px', whiteSpace: 'nowrap' }}
+            style={{ fontSize: '0.85rem', padding: '10px 18px' }}
           >
             Weather Cancellation Guide &rarr;
           </Link>
@@ -791,7 +791,7 @@ export default function HelicopterDispatchBoard({
               Speak with a local flight coordinator or reserve your glacier seat today.
             </p>
           </div>
-          <div style={{ display: 'flex', gap: 12 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
             <Link href="/helicopter" className="button button-primary">
               Browse Glacier Flights
             </Link>
