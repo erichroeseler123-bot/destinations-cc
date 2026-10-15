@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { buildWtonotSitemapPaths } from "../../../app/sitemap.xml/route";
+import { buildWtonotSitemapPaths } from "../../../app/sitemap.xml/handler";
+
 
 const CANONICAL_ORIGIN = "https://www.welcometoneworleanstours.com";
 
