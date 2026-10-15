@@ -149,13 +149,14 @@ export function summarizePortfolioState(state, config) {
       const item = { issue, site: entry.site, mode: entry.mode, status: entry.status, pr: entry.pr ?? null, url: entry.url ?? null, sha: entry.sha ?? null, fixes: entry.fixes ?? 0 };
       inProgress.push(item); siteBucket.inProgress.push(issue);
     } else if (entry.status === 'blocked') {
+      const fallbackBlocker = classifyBlocker(new Error(entry.error ?? ''), entry.pr ? 'review' : 'execution');
       const item = {
         issue,
         site: entry.site,
         mode: entry.mode,
         status: entry.status,
-        stalled: Boolean(entry.stalled),
-        category: entry.blocker?.category ?? 'unclassified',
+        stalled: Boolean(entry.stalled ?? !fallbackBlocker.retryable),
+        category: entry.blocker?.category ?? fallbackBlocker.category,
         retries: entry.retries ?? 0,
         maxRetries: entry.maxRetries ?? config?.maxTaskRetries ?? 2,
         nextRetryAt: entry.nextRetryAt ?? null,
@@ -353,7 +354,7 @@ export class Bridge {
           entry.reviewAt = Date.now();
         } else if (!entry.pr) {
           entry.status = 'new';
-          entry.needsCleanReset = Boolean(entry.branch);
+          entry.needsCleanReset = decision.action === 'retry' ? Boolean(entry.branch) : Boolean(task.cleanReset);
         }
         this.save();
       }
