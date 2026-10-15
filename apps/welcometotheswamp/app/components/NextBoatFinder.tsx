@@ -418,8 +418,9 @@ export default function NextBoatFinder() {
       )}
 
       {/* SEARCH RESULTS DISPLAY */}
+      <div aria-live="polite">
       {searchResponse && (
-        <div aria-live="polite" style={{ marginTop: "2rem", borderTop: "1px solid #333", paddingTop: "1.5rem" }}>
+        <div style={{ marginTop: "2rem", borderTop: "1px solid #333", paddingTop: "1.5rem" }}>
           {/* STATE BANNER */}
           {searchResponse.state === "AVAILABLE" && (
             <div style={{ padding: "0.75rem 1rem", background: "#064e3b", borderRadius: "0.5rem", border: "1px solid #10b981", marginBottom: "1rem" }}>
@@ -690,6 +691,7 @@ export default function NextBoatFinder() {
           )}
         </div>
       )}
+      </div>
     </section>
   );
 }
