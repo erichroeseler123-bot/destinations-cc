@@ -188,13 +188,6 @@ if (missingFromExample.length) {
 }
 
 if (missing.length) {
-  if (mode === "build" && !process.env.VERCEL_ENV) {
-    console.warn(`env check warning for ${contract.project || "project"} (local build mode without .env.local):`);
-    for (const item of missing) {
-      console.warn(`- Missing ${item.name} [${item.requirement}] - ${item.description || "Check docs/env-wiring-plan.md"}`);
-    }
-    process.exit(0);
-  }
   console.error(`env check failed for ${contract.project || "project"} (${mode} mode):`);
   for (const item of missing) {
     console.error(`- Missing ${item.name} [${item.requirement}] - ${item.description || "Check docs/env-wiring-plan.md"}`);
