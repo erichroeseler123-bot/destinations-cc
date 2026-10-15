@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { Bridge, MARKER, parseTask, allowedFile, findingsForHead, parseAgent, run, refreshWorker, validateWindowsCheckout, classifyBlocker, computeTaskHash, summarizePortfolioState } from './bridge.mjs';
+import { Bridge, MARKER, parseTask, allowedFile, findingsForHead, parseAgent, run, refreshWorker, validateWindowsCheckout, classifyBlocker, computeTaskHash, summarizePortfolioState, selectNextRotationSite } from './bridge.mjs';
 import { createHash } from 'node:crypto';
 
 const config = JSON.parse(fs.readFileSync(new URL('./config.json', import.meta.url)));
@@ -273,4 +273,53 @@ test('agent prompt injects existing allowed workspace files and forbids invoke_s
   assert.ok(capturedInput.includes('apps/welcometothedells/tests/sitemap-regression.test.ts'));
   assert.ok(!capturedInput.includes('apps/welcometothedells/package.json'));
   assert.ok(capturedInput.includes('never invoke subagents (invoke_subagent)'));
+});
+test('selectNextRotationSite rotates across verified sites and skips active or stalled sites', () => {
+  const first = selectNextRotationSite(config, {}, { lastSite: 'socializor' });
+  assert.equal(first.site, 'cruisepromenade');
+  assert.equal(first.task.key, 'cruisepromenade-mobile-nav-accessibility');
+  const skippedStalled = selectNextRotationSite(
+    config,
+    { 200: { site: 'cruisepromenade', status: 'blocked', stalled: true } },
+    { lastSite: 'socializor' }
+  );
+  assert.equal(skippedStalled.site, 'wta');
+  const nextAfterDispatched = selectNextRotationSite(
+    config,
+    {},
+    { lastSite: 'socializor', dispatchedKeys: ['cruisepromenade-mobile-nav-accessibility'] }
+  );
+  assert.equal(nextAfterDispatched.site, 'wta');
+});
+test('tick automatically discovers and queues next rotated task when active queue is empty and reloads state.json', async t => {
+  const h = harness(t);
+  h.b.config = { ...config, autoDiscoverWhenEmpty: true, autoDiscoverIntervalMinutes: 120 };
+  let createdPayload = null;
+  const origApi = h.b.api.bind(h.b);
+  h.b.api = async (endpoint, method = 'GET', data) => {
+    if (endpoint === `repos/${config.queueRepo}/issues` && method === 'POST') {
+      createdPayload = data;
+      return {
+        number: 165,
+        title: data.title,
+        body: data.body,
+        user: { login: config.trustedAuthors[0] }
+      };
+    }
+    return origApi(endpoint, method, data);
+  };
+  h.b.all = async (endpoint) => {
+    if (endpoint.includes('/issues?state=open')) return [];
+    return [];
+  };
+  // Write an external state entry to disk and verify reloadState() picks it up
+  fs.writeFileSync(h.b.stateFile, JSON.stringify({ 150: { site: 'wno', mode: 'code', status: 'done' } }));
+  fs.writeFileSync(h.b.rotationFile, JSON.stringify({ lastSite: 'wno' }));
+  const heartbeat = await h.b.tick();
+  assert.equal(h.b.state[150].status, 'done');
+  assert.ok(createdPayload, 'Expected a new task issue to be created when queue is empty');
+  assert.equal(heartbeat.rotation.lastSite, 'jfd');
+  assert.equal(heartbeat.rotation.lastIssue, 165);
+  assert.equal(h.b.state[165].site, 'jfd');
+  assert.equal(h.b.state[165].status, 'review');
 });

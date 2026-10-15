@@ -134,6 +134,111 @@ export function classifyBlocker(error, stage = 'execution') {
   return { category: 'unclassified', retryable: false, stage: actualStage, reason: reason ?? 'unclassified blocker', summary: msg };
 }
 
+export const DEFAULT_SITE_ROTATION_ORDER = [
+  'cruisepromenade',
+  'wta',
+  'dells',
+  'brinkberry',
+  'swamp',
+  'wno',
+  'jfd',
+  'oddjobs',
+  'dcc',
+  'socializor'
+];
+
+export const DEFAULT_SITE_DISCOVERY_BACKLOG = {
+  cruisepromenade: {
+    key: 'cruisepromenade-mobile-nav-accessibility',
+    title: 'Cruise Promenade: mobile primary navigation and active route aria-current state',
+    instructions: 'In `src/components/site-header.tsx` and `src/app/globals.css`, `.cp-nav { display: none; }` at `max-width: 860px` currently hides all primary navigation links (`How it works`, `Activities`, `My cruise plan`, `Explore ports`, `Group bookings`, `Find my cruise`) on mobile and tablet viewports with no mobile replacement, and `SiteHeader` has no `aria-current="page"` indicator. Update `src/components/site-header.tsx` and `src/app/globals.css` so that: (1) `SiteHeader` marks the active route link (`/planner`, `/ports`, `/group-cruise-planner`) with `aria-current="page"`, and (2) on mobile/tablet (`max-width: 860px`), primary navigation remains visible and usable by wrapping cleanly inside `.cp-header-inner` / `.cp-nav` without horizontal overflow at `375px` and `320px` viewports. Preserve all existing link destinations, brand styling, and tests.'
+  },
+  wta: {
+    key: 'wta-port-nav-aria-current-filter-live',
+    title: 'Welcome to Alaska Tours: port navigation aria-current and accessible filter status',
+    instructions: 'Inspect `components/` and `app/` in `erichroeseler123-bot/wta-renderer` to ensure primary port/category navigation exposes `aria-current="page"` on the active route and interactive tour filter controls announce result counts via an `aria-live="polite"` status region without causing horizontal overflow at `320px` or `375px`.'
+  },
+  dells: {
+    key: 'dells-category-filter-aria-mobile',
+    title: 'Welcome to the Dells: accessible category filter controls and mobile comparison layout',
+    instructions: 'Inspect `apps/welcometothedells/app/` and `apps/welcometothedells/components/` to ensure interactive category/planning controls expose explicit `aria-pressed` or `aria-current` states and fit `320px` and `375px` mobile screens without horizontal overflow. Keep existing tests in `apps/welcometothedells/tests/content-regression.test.ts` and `apps/welcometothedells/tests/sitemap-regression.test.ts` passing.'
+  },
+  brinkberry: {
+    key: 'brinkberry-empty-state-filter-summary',
+    title: 'Brinkberry: accessible empty-state recovery and active filter summary clarity',
+    instructions: 'Inspect `public/index.html`, `public/app.js`, and `public/styles.css` to ensure active event filter pills and empty-state reset controls expose clear accessible names, keyboard focus visibility, and `320px` mobile reflow without altering API routes or ingest logic. Keep `npm run test` passing.'
+  },
+  swamp: {
+    key: 'swamp-comparison-table-caption-mobile',
+    title: 'Welcome to the Swamp: accessible comparison table caption and mobile card reflow',
+    instructions: 'Inspect `apps/welcometotheswamp/app/page.tsx` and `apps/welcometotheswamp/app/globals.css` to ensure comparison tables include descriptive accessible captions/headers and all cards and CTAs fit `320px` and `375px` viewports without horizontal overflow.'
+  },
+  wno: {
+    key: 'wno-category-jump-nav-table-a11y',
+    title: 'Welcome to New Orleans Tours: mobile category jump-navigation and table accessibility',
+    instructions: 'Inspect `app/new-orleans/page.tsx` to ensure category jump links and tour comparison tables expose clear accessible labels and fit `320px` and `375px` mobile viewports with zero horizontal overflow.'
+  },
+  jfd: {
+    key: 'jfd-faq-disclosure-waitlist-form-a11y',
+    title: 'Juneau Flight Deck: accessible FAQ disclosure states and mobile waitlist form clarity',
+    instructions: 'Inspect `apps/juneauflightdeck/app/helicopter-waitlist/page.tsx` and `apps/juneauflightdeck/app/components/` to ensure form helper descriptions, error states, and disclosure summaries have explicit accessible associations and zero horizontal overflow at `320px` and `375px`.'
+  },
+  oddjobs: {
+    key: 'oddjobs-header-aria-current-mobile-cards',
+    title: 'Eau Claire Odd Jobs: active navigation aria-current and mobile service card accessibility',
+    instructions: 'Inspect `src/components/Header.tsx` and `src/components/Footer.tsx` to ensure navigation links expose `aria-current="page"` on the active route and mobile navigation controls maintain 44px minimum touch targets and zero horizontal overflow at `320px`.'
+  },
+  dcc: {
+    key: 'dcc-hub-nav-search-semantics',
+    title: 'Destination Command Center: accessible hub navigation and search control semantics',
+    instructions: 'Inspect `app/page.tsx` and `components/` to ensure primary destination search and hub filter controls have explicit accessible labels, `aria-live="polite"` status feedback, and clean `320px`/`375px` mobile wrapping.'
+  },
+  socializor: {
+    key: 'socializor-bottom-nav-aria-current-empty-reset',
+    title: 'Socializor: accessible bottom navigation aria-current and empty-state filter reset controls',
+    instructions: 'Inspect `src/components/BottomNavigation.tsx` and `src/components/NearbyGrid.tsx` to add `aria-label="Primary navigation"` on the bottom `<nav>`, `type="button"` and `aria-current={currentTab === ... ? "page" : undefined}` on each bottom tab button, and `type="button"` on empty-state filter action buttons.'
+  }
+};
+
+export function selectNextRotationSite(config, state = {}, rotation = {}) {
+  const configuredSites = Object.keys(config?.sites ?? {});
+  if (!configuredSites.length) return null;
+  const order = [
+    ...DEFAULT_SITE_ROTATION_ORDER.filter(s => configuredSites.includes(s)),
+    ...configuredSites.filter(s => !DEFAULT_SITE_ROTATION_ORDER.includes(s))
+  ];
+  const busySites = new Set();
+  for (const [issueKey, entry] of Object.entries(state ?? {})) {
+    if (!Number.isInteger(Number(issueKey)) || !entry?.site) continue;
+    if (['new', 'running', 'review', 'ready'].includes(entry.status) || (entry.status === 'blocked' && entry.stalled)) {
+      busySites.add(entry.site);
+    }
+  }
+  const dispatchedKeys = new Set(rotation?.dispatchedKeys ?? []);
+  const prevSite = rotation?.lastSite ?? rotation?.lastSeededSite ?? null;
+  const lastIdx = prevSite ? order.indexOf(prevSite) : -1;
+  for (let offset = 1; offset <= order.length; offset++) {
+    const candidate = order[(lastIdx + offset + order.length) % order.length];
+    if (busySites.has(candidate)) continue;
+    const spec = config?.discoveryBacklog?.[candidate] ?? DEFAULT_SITE_DISCOVERY_BACKLOG[candidate];
+    if (!spec) continue;
+    const key = spec.key ?? `${candidate}-default`;
+    if (dispatchedKeys.has(key)) continue;
+    const taskSpec = {
+      key,
+      title: spec.title,
+      mode: spec.mode ?? 'code',
+      instructions: spec.instructions
+    };
+    return {
+      site: candidate,
+      ...taskSpec,
+      task: taskSpec
+    };
+  }
+  return null;
+}
+
 export function summarizePortfolioState(state, config) {
   const completed = [], inProgress = [], blocked = [], bySite = {};
   for (const siteKey of Object.keys(config?.sites ?? {})) {
@@ -141,6 +246,7 @@ export function summarizePortfolioState(state, config) {
   }
   for (const [issueKey, entry] of Object.entries(state ?? {})) {
     const issue = Number(issueKey);
+    if (!Number.isInteger(issue) || !entry || typeof entry !== 'object' || !entry.site) continue;
     const siteBucket = bySite[entry.site] ?? (bySite[entry.site] = { completed: [], inProgress: [], blocked: [] });
     if (entry.status === 'done' || entry.status === 'ready') {
       const item = { issue, site: entry.site, mode: entry.mode, status: entry.status, pr: entry.pr ?? null, url: entry.url ?? null, sha: entry.sha ?? entry.baseSha ?? null };
@@ -180,7 +286,24 @@ export class Bridge {
     this.config = config; this.home = home; this.command = command;
     fs.mkdirSync(home, { recursive: true });
     this.stateFile = path.join(home, 'state.json');
+    this.rotationFile = path.join(home, 'rotation.json');
     this.state = fs.existsSync(this.stateFile) ? JSON.parse(fs.readFileSync(this.stateFile, 'utf8')) : {};
+  }
+  reloadState() {
+    if (fs.existsSync(this.stateFile)) {
+      try { this.state = JSON.parse(fs.readFileSync(this.stateFile, 'utf8')); } catch {}
+    }
+  }
+  loadRotation() {
+    if (fs.existsSync(this.rotationFile)) {
+      try { return JSON.parse(fs.readFileSync(this.rotationFile, 'utf8')); } catch {}
+    }
+    return {};
+  }
+  saveRotation(rotation) {
+    const tmp = this.rotationFile + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(rotation, null, 2));
+    fs.renameSync(tmp, this.rotationFile);
   }
   save() { const tmp = this.stateFile + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(this.state, null, 2)); fs.renameSync(tmp, this.stateFile); }
   async api(endpoint, method = 'GET', data) {
@@ -437,12 +560,52 @@ export class Bridge {
       }
     }
   }
+  async discoverNextTaskIfEmpty(parsed) {
+    if (!this.config.autoDiscoverWhenEmpty) return null;
+    const hasActiveOrReadyWork = parsed.some(({ issue }) => {
+      const status = this.state[issue.number]?.status ?? 'new';
+      return status === 'new' || status === 'running' || status === 'review' || status === 'ready';
+    });
+    if (hasActiveOrReadyWork) return null;
+    const rotation = this.loadRotation();
+    const minIntervalMs = (this.config.autoDiscoverIntervalMinutes ?? 120) * 60000;
+    if (!rotation.forceNext && rotation.lastCreatedAt && (Date.now() - Number(rotation.lastCreatedAt)) < minIntervalMs) {
+      return null;
+    }
+    const candidate = selectNextRotationSite(this.config, this.state, rotation);
+    if (!candidate) return null;
+    const body = `${MARKER}\n\`\`\`json\n${JSON.stringify({
+      site: candidate.site,
+      mode: candidate.mode ?? 'code',
+      instructions: candidate.instructions
+    }, null, 2)}\n\`\`\``;
+    const created = await this.api(`repos/${this.config.queueRepo}/issues`, 'POST', {
+      title: candidate.title,
+      body
+    });
+    if (!created?.number) return null;
+    rotation.lastSite = candidate.site;
+    rotation.lastCreatedAt = Date.now();
+    rotation.lastIssue = created.number;
+    rotation.dispatchedKeys = [...new Set([...(rotation.dispatchedKeys ?? []), candidate.key])];
+    delete rotation.forceNext;
+    this.saveRotation(rotation);
+    const task = parseTask(created, this.config);
+    return task ? { issue: created, task } : null;
+  }
   async tick() {
+    this.reloadState();
     const issues = await this.all(`repos/${this.config.queueRepo}/issues?state=open&sort=created&direction=asc`);
     const parsed = [];
     for (const issue of issues) {
       const task = parseTask(issue, this.config);
       if (task) parsed.push({ issue, task });
+    }
+    try {
+      const discovered = await this.discoverNextTaskIfEmpty(parsed);
+      if (discovered) parsed.push(discovered);
+    } catch (err) {
+      console.error(`Auto-discovery error: ${err.message}`);
     }
     // Prioritize active/new work on unblocked sites first so a blocked site never delays other sites.
     parsed.sort((a, b) => {
@@ -468,7 +631,8 @@ export class Bridge {
       }
     }
     const summary = summarizePortfolioState(this.state, this.config);
-    const heartbeat = { time: new Date().toISOString(), sites: Object.keys(this.config.sites), summary, tickErrors, tasks: this.state };
+    const rotation = this.loadRotation();
+    const heartbeat = { time: new Date().toISOString(), sites: Object.keys(this.config.sites), rotation, summary, tickErrors, tasks: this.state };
     fs.writeFileSync(path.join(this.home, 'heartbeat.json'), JSON.stringify(heartbeat, null, 2));
     return heartbeat;
   }
