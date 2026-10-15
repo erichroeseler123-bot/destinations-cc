@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node ./scripts/check-env.js --mode=dev && next dev",
     "start": "next start",
-    "prebuild": "node ./scripts/check-env.js --mode=build",
+    "prebuild": "node -e \"require('fs').rmSync('.next/cache',{recursive:true,force:true})\" && node ./scripts/check-env.js --mode=build",
     "build": "next build",
     "build:wno": "next build apps/welcometoneworleanstours",
     "clean": "rm -rf .next out .turbo",
