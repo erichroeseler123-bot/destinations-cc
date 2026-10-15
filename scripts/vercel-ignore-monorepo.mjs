@@ -50,6 +50,7 @@ const standaloneOnlyPrefixes = [
   "apps/420-airport-pickup/",
   "apps/saveonthestrip/",
   "apps/welcometothedells/",
+  "apps/welcometoneworleanstours/",
   "apps/frenchquarterorientation/",
   "tools/ag-bridge/",
 ];
