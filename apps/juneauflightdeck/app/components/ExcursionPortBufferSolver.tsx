@@ -174,7 +174,7 @@ export default function ExcursionPortBufferSolver({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 240px), 1fr))",
           gap: 16,
           background: "rgba(3, 14, 23, 0.7)",
           border: "1px solid var(--line)",
@@ -185,10 +185,15 @@ export default function ExcursionPortBufferSolver({
       >
         {/* Ship Selector */}
         <div>
-          <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ice)", marginBottom: 6 }}>
+          <label
+            htmlFor="port-buffer-ship-select"
+            style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ice)", marginBottom: 6 }}
+          >
             Step 1: Select Your Cruise Ship
           </label>
           <select
+            id="port-buffer-ship-select"
+            aria-describedby="port-buffer-ship-dock"
             value={selectedShipSlug}
             onChange={(e) => setSelectedShipSlug(e.target.value)}
             style={{
@@ -209,17 +214,21 @@ export default function ExcursionPortBufferSolver({
               </option>
             ))}
           </select>
-          <div style={{ fontSize: "0.76rem", color: "var(--muted)", marginTop: 6 }}>
+          <div id="port-buffer-ship-dock" style={{ fontSize: "0.76rem", color: "var(--muted)", marginTop: 6 }}>
             Assigned Dock: <strong style={{ color: "var(--ice)" }}>{selectedShip.typicalScheduledBerth}</strong>
           </div>
         </div>
 
         {/* Arrival Time */}
         <div>
-          <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ice)", marginBottom: 6 }}>
+          <label
+            htmlFor="port-buffer-arrival-time"
+            style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ice)", marginBottom: 6 }}
+          >
             Step 2: Gangway Arrival Time
           </label>
           <input
+            id="port-buffer-arrival-time"
             type="time"
             value={arrivalStr}
             onChange={(e) => setArrivalStr(e.target.value)}
@@ -242,10 +251,14 @@ export default function ExcursionPortBufferSolver({
 
         {/* Ship Departure / Sail Time */}
         <div>
-          <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ice)", marginBottom: 6 }}>
+          <label
+            htmlFor="port-buffer-departure-time"
+            style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ice)", marginBottom: 6 }}
+          >
             Step 3: Ship Departure (Sail Away)
           </label>
           <input
+            id="port-buffer-departure-time"
             type="time"
             value={departureStr}
             onChange={(e) => setDepartureStr(e.target.value)}
@@ -268,10 +281,17 @@ export default function ExcursionPortBufferSolver({
 
         {/* All-Aboard Offset Protocol */}
         <div>
-          <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ice)", marginBottom: 6 }}>
+          <div
+            id="port-buffer-all-aboard-label"
+            style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ice)", marginBottom: 6 }}
+          >
             Step 4: Ship All-Aboard Protocol
-          </label>
-          <div style={{ display: "flex", gap: 6 }}>
+          </div>
+          <div
+            role="group"
+            aria-labelledby="port-buffer-all-aboard-label"
+            style={{ display: "flex", flexWrap: "wrap", gap: 6 }}
+          >
             {[
               { label: "45m (Major Lines)", val: 45 },
               { label: "30m (Compact)", val: 30 },
@@ -280,9 +300,10 @@ export default function ExcursionPortBufferSolver({
               <button
                 key={opt.val}
                 type="button"
+                aria-pressed={allAboardOffsetMinutes === opt.val}
                 onClick={() => setAllAboardOffsetMinutes(opt.val)}
                 style={{
-                  flex: 1,
+                  flex: "1 1 92px",
                   padding: "8px 6px",
                   borderRadius: 8,
                   background: allAboardOffsetMinutes === opt.val ? "rgba(56, 189, 248, 0.25)" : "#081d2c",
@@ -305,15 +326,23 @@ export default function ExcursionPortBufferSolver({
 
         {/* Excursion Return Cushion Selector */}
         <div style={{ gridColumn: "1 / -1" }}>
-          <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ice)", marginBottom: 6 }}>
+          <div
+            id="port-buffer-safety-cushion-label"
+            style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ice)", marginBottom: 6 }}
+          >
             Step 5: Downtown Pier Safety Cushion (Before All-Aboard)
-          </label>
-          <div style={{ display: "flex", gap: 12, maxWidth: 440 }}>
+          </div>
+          <div
+            role="group"
+            aria-labelledby="port-buffer-safety-cushion-label"
+            style={{ display: "flex", flexWrap: "wrap", gap: 12, maxWidth: 440 }}
+          >
             <button
               type="button"
+              aria-pressed={cushionMinutes === 90}
               onClick={() => setCushionMinutes(90)}
               style={{
-                flex: 1,
+                flex: "1 1 160px",
                 padding: "8px 12px",
                 borderRadius: 8,
                 background: cushionMinutes === 90 ? "rgba(56, 189, 248, 0.25)" : "#081d2c",
@@ -328,9 +357,10 @@ export default function ExcursionPortBufferSolver({
             </button>
             <button
               type="button"
+              aria-pressed={cushionMinutes === 120}
               onClick={() => setCushionMinutes(120)}
               style={{
-                flex: 1,
+                flex: "1 1 160px",
                 padding: "8px 12px",
                 borderRadius: 8,
                 background: cushionMinutes === 120 ? "rgba(56, 189, 248, 0.25)" : "#081d2c",
