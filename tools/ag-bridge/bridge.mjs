@@ -380,7 +380,7 @@ export class Bridge {
         if (!reviews.some(r => r.commit_id === entry.sha && this.config.reviewBots.includes(r.user?.login))) {
           const issueComments = await this.all(`repos/${site.repo}/issues/${entry.pr}/comments`);
           for (const c of issueComments) {
-            if (this.config.reviewBots.includes(c.user?.login) && (c.body?.includes(entry.sha) || c.body?.includes(entry.sha.slice(0, 10)))) {
+            if (this.config.reviewBots.includes(c.user?.login) && !c.body?.includes('<!-- codex-pull-request-review-summary -->') && (c.body?.includes(entry.sha) || c.body?.includes(entry.sha.slice(0, 10)))) {
               reviews.push({ id: c.id, commit_id: entry.sha, user: c.user, state: /\[P[012]\]/.test(c.body ?? '') ? 'CHANGES_REQUESTED' : 'COMMENTED', body: c.body });
             }
           }
