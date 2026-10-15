@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/content";
 import DellsDecisionPage from "../components/DellsDecisionPage";
 
-const URL = "https://welcometothedells.com/first-time";
+const URL = `${SITE_URL}/first-time`;
 
 export const metadata: Metadata = {
   title: "Wisconsin Dells First-Time Visitor Guide | What to Do First",
