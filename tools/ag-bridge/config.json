@@ -16,7 +16,7 @@
       "domain": "juneauflightdeck.com",
       "project": "juneauflightdeck",
       "allowedPaths": ["apps/juneauflightdeck/"],
-      "checks": [["npm", "install", "--ignore-scripts", "--package-lock=false"], ["npm", "run", "typecheck"], ["npm", "run", "build"]]
+      "checks": [["npm", "ci", "--prefix", "../..", "--ignore-scripts"], ["npm", "install", "--ignore-scripts", "--package-lock=false"], ["npm", "run", "typecheck"], ["npm", "run", "build"]]
     },
     "wno": {
       "name": "Welcome to New Orleans Tours",
@@ -25,8 +25,8 @@
       "domain": "www.welcometoneworleanstours.com",
       "project": "welcometoneworleanstours",
       "allowedPaths": ["app/new-orleans/", "apps/welcometoneworleanstours/"],
-      "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "typecheck"], ["npm", "run", "test:wno"], ["npm", "run", "build"]],
-      "mappingNote": "Older ledger says root destinations-cc; newer Vercel project has the brand name. Audit before code work."
+      "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "typecheck"], ["npm", "run", "test:wno"], ["npm", "run", "build:wno"]],
+      "mappingNote": "WNO serves via apps/welcometoneworleanstours backed by app/new-orleans and app/sitemap.xml."
     },
     "wta": {
       "name": "Welcome to Alaska Tours",
@@ -44,7 +44,7 @@
       "domain": "www.welcometotheswamp.com",
       "project": "welcometotheswamp",
       "allowedPaths": ["apps/welcometotheswamp/"],
-      "checks": [["npm", "install", "--ignore-scripts", "--package-lock=false"], ["npm", "run", "typecheck"], ["npm", "run", "build"]]
+      "checks": [["npm", "ci", "--prefix", "../..", "--ignore-scripts"], ["npm", "install", "--ignore-scripts", "--package-lock=false"], ["npm", "run", "typecheck"], ["npm", "run", "build"]]
     },
     "cruisepromenade": {
       "name": "Cruise Promenade",
@@ -89,6 +89,9 @@
       "directory": ".",
       "domain": "socializor.app",
       "project": "socializor",
+      "vercelProjectId": "prj_HAcGvbpgDo7j40IPlkLTgfrG6VYY",
+      "verified": true,
+      "mappingNote": "Verified 2026-10-15 against live deployment dpl_CEnPCQS6X9A1VzdxRaS73PW46ZDX (59/59 frontend/component/hook/migration files match SHA-1 byte-for-byte; connected to GitHub erichroeseler123-bot/socializor).",
       "allowedPaths": ["src/", "api/", "index.html", "public/"],
       "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "build"]]
     },
@@ -97,7 +100,10 @@
       "repo": "erichroeseler123-bot/eauclaireoddjobs",
       "directory": ".",
       "domain": "eauclaireoddjobs.com",
-      "project": "modern-portfolio",
+      "project": "eauclaireoddjobs",
+      "vercelProjectId": "prj_BlmPyHtlFGMKmuVOjGDEM49I8lgS",
+      "verified": true,
+      "mappingNote": "Verified 2026-10-15 against live deployment dpl_EQbP2v45EfwSggdCxLc239KsucB5 (30/30 files match SHA-1 byte-for-byte; connected to GitHub erichroeseler123-bot/eauclaireoddjobs).",
       "allowedPaths": ["src/", "public/"],
       "checks": [["npm", "ci", "--ignore-scripts"], ["npm", "run", "build"]]
     }
