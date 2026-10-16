@@ -54,14 +54,29 @@ export default function DellsLiveNow() {
     return () => controller.abort();
   }, []);
 
-  if (!data) return null;
-
-  const weather = data.weather;
-  const river = data.river;
+  const weather = data?.weather ?? null;
+  const river = data?.river ?? null;
   const riverTime = timeLabel(river?.observedAt);
+  const guidance = data?.guidance ?? {
+    headline: "Check conditions before locking the day in.",
+    detail:
+      "Loading current National Weather Service and USGS river observations for Wisconsin Dells.",
+    href: "/things-to-do",
+    cta: "Browse things to do",
+  };
+  const caveat =
+    data?.caveat ??
+    "Live public observations are planning context only. They do not confirm that any attraction, tour, waterpark, river operator, road, or venue is open or operating.";
 
   return (
-    <section className="section-shell" aria-labelledby="dells-live-heading">
+    <section
+      id="live-conditions"
+      className="section-shell"
+      aria-labelledby="dells-live-heading"
+      aria-live="polite"
+      aria-busy={!data}
+      style={{ minHeight: "360px" }}
+    >
       <div className="section-heading">
         <p className="eyebrow">Dells right now · public live feeds</p>
         <h2 id="dells-live-heading">Use current conditions to choose the shape of the day.</h2>
@@ -75,10 +90,16 @@ export default function DellsLiveNow() {
           <p className="river-category">Weather · NWS</p>
           <h3>{weather?.temperatureF != null ? `${weather.temperatureF}°F` : "Weather updating"}</h3>
           <p>{weather?.shortForecast || "Current National Weather Service context is temporarily unavailable."}</p>
-          {weather?.precipitationProbabilityPct != null ? (
-            <p><strong>{weather.precipitationProbabilityPct}%</strong> precipitation chance</p>
-          ) : null}
-          {weather?.windSpeed ? <p>Wind: {weather.windSpeed}</p> : null}
+          <p>
+            {weather?.precipitationProbabilityPct != null ? (
+              <>
+                <strong>{weather.precipitationProbabilityPct}%</strong> precipitation chance
+              </>
+            ) : (
+              "Precipitation probability updating"
+            )}
+          </p>
+          <p>{weather?.windSpeed ? `Wind: ${weather.windSpeed}` : "Wind conditions updating"}</p>
         </article>
 
         <article className="action-card">
@@ -89,19 +110,23 @@ export default function DellsLiveNow() {
               ? `${river.dischargeCfs.toLocaleString()} cubic feet per second at the Wisconsin River gauge near Wisconsin Dells.`
               : "Current USGS river observations are temporarily unavailable."}
           </p>
-          {riverTime ? <p>Observed about {riverTime}{river?.provisional ? " · provisional data" : ""}</p> : null}
+          <p>
+            {riverTime
+              ? `Observed about ${riverTime}${river?.provisional ? " · provisional data" : ""}`
+              : "Observation timestamp updating"}
+          </p>
         </article>
 
         <article className="action-card">
           <p className="river-category">Planning implication</p>
-          <h3>{data.guidance.headline}</h3>
-          <p>{data.guidance.detail}</p>
-          <Link className="text-button" href={data.guidance.href}>{data.guidance.cta}</Link>
+          <h3>{guidance.headline}</h3>
+          <p>{guidance.detail}</p>
+          <Link className="text-button" href={guidance.href}>{guidance.cta}</Link>
         </article>
       </div>
 
       <p style={{ marginTop: 18, opacity: 0.72, fontSize: 13 }}>
-        {data.caveat} Sources: National Weather Service and U.S. Geological Survey.
+        {caveat} Sources: National Weather Service and U.S. Geological Survey.
       </p>
     </section>
   );

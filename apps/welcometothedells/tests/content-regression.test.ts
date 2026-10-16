@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import { ACTION_CARDS, HUBS, RIVER_OPS_OUTBOUND_TARGETS, RIVER_OPS_TERMINAL, SITE_URL } from "../lib/content";
 
 test("Dells Next Stop MVP has the three physical hubs", () => {
@@ -75,3 +77,31 @@ test("promoted Dells content excludes hotels and waterparks", () => {
   assert.equal(promotedText.includes("hotel"), false);
   assert.equal(promotedText.includes("waterpark"), false);
 });
+
+test("DellsLiveNow reserves a minimum-height status shell with aria-live polite instead of returning null", () => {
+  const liveNowSource = fs.readFileSync(
+    fileURLToPath(new URL("../app/components/DellsLiveNow.tsx", import.meta.url)),
+    "utf8",
+  );
+
+  assert.equal(
+    /if\s*\(\s*!data\s*\)\s*return\s+null/.test(liveNowSource),
+    false,
+    "DellsLiveNow must not return null when data is pending hydration",
+  );
+  assert.match(liveNowSource, /aria-live="polite"/);
+  assert.match(liveNowSource, /minHeight:\s*"360px"/);
+});
+
+test("DellsHomeClient provides explicit aria-label attributes on header primary and quick-jump nav bars with mobile overflow protection", () => {
+  const homeClientSource = fs.readFileSync(
+    fileURLToPath(new URL("../app/components/DellsHomeClient.tsx", import.meta.url)),
+    "utf8",
+  );
+
+  assert.match(homeClientSource, /<header[\s\S]*?<nav[\s\S]*?aria-label="Primary navigation"/);
+  assert.match(homeClientSource, /<nav[\s\S]*?aria-label="Quick-jump navigation"/);
+  assert.match(homeClientSource, /flexWrap:\s*"wrap"/);
+  assert.match(homeClientSource, /overflowX:\s*"hidden"/);
+});
+
