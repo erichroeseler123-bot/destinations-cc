@@ -223,6 +223,29 @@ function firstUnansweredStep(answers: Partial<RecommendationInputs>, startIndex 
   return -1;
 }
 
+function isCompleteRecommendationInputs(value: unknown): value is RecommendationInputs {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const candidate = value as Partial<RecommendationInputs>;
+  return Boolean(
+    candidate.availableTime &&
+      candidate.transportation &&
+      candidate.groupStyle &&
+      candidate.mixedAges &&
+      candidate.historicalInterest,
+  );
+}
+
+function readSavedRecommendationInputs(): RecommendationInputs | null {
+  try {
+    const savedAnswers = sessionStorage.getItem(CHOOSER_ANSWERS);
+    if (!savedAnswers) return null;
+    const parsed = JSON.parse(savedAnswers) as unknown;
+    return isCompleteRecommendationInputs(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 function buildRecommendationOutcome(result: RecommendationResult, bundle: BundleRecommendation | null): DccRecommendationOutcomeV1 {
   return {
     version: 1,
@@ -257,11 +280,14 @@ export default function NewOrleansRecommendationFlow() {
     sendWnoTelemetry({ eventName, sourcePage: typeof window !== "undefined" ? window.location.pathname : undefined, ...extra });
   };
 
-  const completeChooser = (completedInputs: RecommendationInputs, contextForDecision: LiveRecommendationContext = liveContext) => {
-    const nextResult = evaluateRecommendation(completedInputs, contextForDecision);
+  const syncPersistedOutcome = (
+    completedInputs: RecommendationInputs,
+    nextResult: RecommendationResult,
+    contextForDecision: LiveRecommendationContext,
+    prefillCount = dccPrefillCount,
+    emitEvents = true,
+  ) => {
     const bundle = chooseBundle(completedInputs, nextResult, contextForDecision);
-    setAnswers(completedInputs);
-    setResult(nextResult);
     const primarySlug = nextResult.primary?.slug || null;
     const secondarySlug = nextResult.secondary?.slug || null;
     const tertiarySlug = nextResult.tertiary?.slug || null;
@@ -273,6 +299,7 @@ export default function NewOrleansRecommendationFlow() {
     } catch {
       // Analytics state must never block the recommendation.
     }
+    if (!emitEvents) return;
     emitChooserEvent("chooser_completed", {
       ...completedInputs,
       live_period: contextForDecision.period,
@@ -287,7 +314,7 @@ export default function NewOrleansRecommendationFlow() {
       no_fit: nextResult.isNoFit,
       chooserInput: completedInputs,
       recommendationOutput: buildRecommendationOutcome(nextResult, bundle),
-      dcc_prefill_count: dccPrefillCount,
+      dcc_prefill_count: prefillCount,
     });
     if (bundle) {
       emitChooserEvent("chooser_bundle_shown", {
@@ -298,46 +325,54 @@ export default function NewOrleansRecommendationFlow() {
     }
   };
 
+  const completeChooser = (
+    completedInputs: RecommendationInputs,
+    contextForDecision: LiveRecommendationContext = liveContext,
+    prefillCount = dccPrefillCount,
+  ) => {
+    const nextResult = evaluateRecommendation(completedInputs, contextForDecision);
+    setAnswers(completedInputs);
+    setResult(nextResult);
+    syncPersistedOutcome(completedInputs, nextResult, contextForDecision, prefillCount, true);
+  };
+
   useEffect(() => {
+    const savedInputs = readSavedRecommendationInputs();
     const dccContext = getStoredDccTravelerContext();
     if (isNewOrleansContext(dccContext)) {
       const prefilled = contextToRecommendationInputs(dccContext);
       const count = Object.values(prefilled).filter(Boolean).length;
       if (count > 0) {
         setDccPrefillCount(count);
-        setAnswers(prefilled);
-        const missingIndex = firstUnansweredStep(prefilled);
+        const mergedPrefill: Partial<RecommendationInputs> = savedInputs
+          ? { ...savedInputs, ...prefilled }
+          : prefilled;
+        setAnswers(mergedPrefill);
+        const inboundLive: LiveRecommendationContext = dccContext?.liveContext || {};
+        if (savedInputs && isCompleteRecommendationInputs(mergedPrefill)) {
+          setLiveContext(inboundLive);
+          const restoredResult = evaluateRecommendation(mergedPrefill, inboundLive);
+          setResult(restoredResult);
+          syncPersistedOutcome(mergedPrefill, restoredResult, inboundLive, count, false);
+          return;
+        }
+        const missingIndex = firstUnansweredStep(mergedPrefill);
         if (missingIndex >= 0) {
           setStepIndex(missingIndex);
           return;
         }
 
-        const inboundLive: LiveRecommendationContext = dccContext?.liveContext || {};
         setLiveContext(inboundLive);
-        completeChooser(prefilled as RecommendationInputs, inboundLive);
+        completeChooser(mergedPrefill as RecommendationInputs, inboundLive, count);
         return;
       }
     }
 
-    try {
-      const savedAnswers = sessionStorage.getItem(CHOOSER_ANSWERS);
-      if (!savedAnswers) return;
-      const parsed = JSON.parse(savedAnswers) as Partial<RecommendationInputs>;
-      if (
-        parsed &&
-        typeof parsed === "object" &&
-        parsed.availableTime &&
-        parsed.transportation &&
-        parsed.groupStyle &&
-        parsed.mixedAges &&
-        parsed.historicalInterest
-      ) {
-        const restoredInputs = parsed as RecommendationInputs;
-        setAnswers(restoredInputs);
-        setResult(evaluateRecommendation(restoredInputs, liveContext));
-      }
-    } catch {
-      // Ignore unavailable or malformed sessionStorage state.
+    if (savedInputs) {
+      setAnswers(savedInputs);
+      const restoredResult = evaluateRecommendation(savedInputs, liveContext);
+      setResult(restoredResult);
+      syncPersistedOutcome(savedInputs, restoredResult, liveContext, 0, false);
     }
     // The inbound handoff is consumed once on mount; later live updates should not re-run the chooser.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -357,33 +392,38 @@ export default function NewOrleansRecommendationFlow() {
           outdoorFriendly: Boolean(value.outdoorFriendly),
         };
         setLiveContext(nextLiveContext);
+        const savedInputs = readSavedRecommendationInputs();
+        if (!savedInputs) return;
+        const rerankedResult = evaluateRecommendation(savedInputs, nextLiveContext);
+        let previousPrimary: string | null = null;
+        try {
+          previousPrimary = sessionStorage.getItem(CHOOSER_RECOMMENDATION);
+        } catch {
+          previousPrimary = null;
+        }
+        const nextPrimary = rerankedResult.primary?.slug || null;
+        const rankingChanged =
+          previousPrimary !== nextPrimary;
         setResult((currentResult) => {
           if (!currentResult) return currentResult;
-          try {
-            const savedAnswers = sessionStorage.getItem(CHOOSER_ANSWERS);
-            if (!savedAnswers) return currentResult;
-            const parsed = JSON.parse(savedAnswers) as Partial<RecommendationInputs>;
-            if (
-              parsed &&
-              typeof parsed === "object" &&
-              parsed.availableTime &&
-              parsed.transportation &&
-              parsed.groupStyle &&
-              parsed.mixedAges &&
-              parsed.historicalInterest
-            ) {
-              return evaluateRecommendation(parsed as RecommendationInputs, nextLiveContext);
-            }
-          } catch {
-            // Ignore unavailable or malformed sessionStorage state.
-          }
-          return currentResult;
+          const primaryChanged = (currentResult.primary?.slug || null) !== nextPrimary;
+          const secondaryChanged = (currentResult.secondary?.slug || null) !== (rerankedResult.secondary?.slug || null);
+          const tertiaryChanged = (currentResult.tertiary?.slug || null) !== (rerankedResult.tertiary?.slug || null);
+          syncPersistedOutcome(
+            savedInputs,
+            rerankedResult,
+            nextLiveContext,
+            dccPrefillCount,
+            rankingChanged || primaryChanged || secondaryChanged || tertiaryChanged,
+          );
+          return rerankedResult;
         });
       })
       .catch(() => {
         // Fail soft: the chooser remains usable from traveler answers alone.
       });
     return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const currentStepId = STEPS[stepIndex];
