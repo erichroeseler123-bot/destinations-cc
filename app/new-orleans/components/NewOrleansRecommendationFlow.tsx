@@ -283,23 +283,32 @@ export default function NewOrleansRecommendationFlow() {
   const syncPersistedOutcome = (
     completedInputs: RecommendationInputs,
     nextResult: RecommendationResult,
-    contextForDecision: LiveRecommendationContext,
-    prefillCount = dccPrefillCount,
-    emitEvents = true,
+    options: {
+      recordCompletion?: boolean;
+      contextForDecision?: LiveRecommendationContext;
+      prefillCount?: number;
+    } = {},
   ) => {
+    const {
+      recordCompletion = false,
+      contextForDecision = liveContext,
+      prefillCount = dccPrefillCount,
+    } = options;
     const bundle = chooseBundle(completedInputs, nextResult, contextForDecision);
     const primarySlug = nextResult.primary?.slug || null;
     const secondarySlug = nextResult.secondary?.slug || null;
     const tertiarySlug = nextResult.tertiary?.slug || null;
     try {
-      sessionStorage.setItem(CHOOSER_COMPLETED_AT, String(Date.now()));
+      if (recordCompletion) {
+        sessionStorage.setItem(CHOOSER_COMPLETED_AT, String(Date.now()));
+      }
       sessionStorage.setItem(CHOOSER_ANSWERS, JSON.stringify(completedInputs));
       if (primarySlug) sessionStorage.setItem(CHOOSER_RECOMMENDATION, primarySlug);
       else sessionStorage.removeItem(CHOOSER_RECOMMENDATION);
     } catch {
       // Analytics state must never block the recommendation.
     }
-    if (!emitEvents) return;
+    if (!recordCompletion) return;
     emitChooserEvent("chooser_completed", {
       ...completedInputs,
       live_period: contextForDecision.period,
@@ -333,7 +342,11 @@ export default function NewOrleansRecommendationFlow() {
     const nextResult = evaluateRecommendation(completedInputs, contextForDecision);
     setAnswers(completedInputs);
     setResult(nextResult);
-    syncPersistedOutcome(completedInputs, nextResult, contextForDecision, prefillCount, true);
+    syncPersistedOutcome(completedInputs, nextResult, {
+      recordCompletion: true,
+      contextForDecision,
+      prefillCount,
+    });
   };
 
   useEffect(() => {
@@ -345,7 +358,7 @@ export default function NewOrleansRecommendationFlow() {
       if (count > 0) {
         setDccPrefillCount(count);
         const mergedPrefill: Partial<RecommendationInputs> = savedInputs
-          ? { ...savedInputs, ...prefilled }
+          ? { ...prefilled, ...savedInputs }
           : prefilled;
         setAnswers(mergedPrefill);
         const inboundLive: LiveRecommendationContext = dccContext?.liveContext || {};
@@ -353,7 +366,11 @@ export default function NewOrleansRecommendationFlow() {
           setLiveContext(inboundLive);
           const restoredResult = evaluateRecommendation(mergedPrefill, inboundLive);
           setResult(restoredResult);
-          syncPersistedOutcome(mergedPrefill, restoredResult, inboundLive, count, false);
+          syncPersistedOutcome(mergedPrefill, restoredResult, {
+            recordCompletion: false,
+            contextForDecision: inboundLive,
+            prefillCount: count,
+          });
           return;
         }
         const missingIndex = firstUnansweredStep(mergedPrefill);
@@ -372,7 +389,11 @@ export default function NewOrleansRecommendationFlow() {
       setAnswers(savedInputs);
       const restoredResult = evaluateRecommendation(savedInputs, liveContext);
       setResult(restoredResult);
-      syncPersistedOutcome(savedInputs, restoredResult, liveContext, 0, false);
+      syncPersistedOutcome(savedInputs, restoredResult, {
+        recordCompletion: false,
+        contextForDecision: liveContext,
+        prefillCount: 0,
+      });
     }
     // The inbound handoff is consumed once on mount; later live updates should not re-run the chooser.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -395,29 +416,12 @@ export default function NewOrleansRecommendationFlow() {
         const savedInputs = readSavedRecommendationInputs();
         if (!savedInputs) return;
         const rerankedResult = evaluateRecommendation(savedInputs, nextLiveContext);
-        let previousPrimary: string | null = null;
-        try {
-          previousPrimary = sessionStorage.getItem(CHOOSER_RECOMMENDATION);
-        } catch {
-          previousPrimary = null;
-        }
-        const nextPrimary = rerankedResult.primary?.slug || null;
-        const rankingChanged =
-          previousPrimary !== nextPrimary;
-        setResult((currentResult) => {
-          if (!currentResult) return currentResult;
-          const primaryChanged = (currentResult.primary?.slug || null) !== nextPrimary;
-          const secondaryChanged = (currentResult.secondary?.slug || null) !== (rerankedResult.secondary?.slug || null);
-          const tertiaryChanged = (currentResult.tertiary?.slug || null) !== (rerankedResult.tertiary?.slug || null);
-          syncPersistedOutcome(
-            savedInputs,
-            rerankedResult,
-            nextLiveContext,
-            dccPrefillCount,
-            rankingChanged || primaryChanged || secondaryChanged || tertiaryChanged,
-          );
-          return rerankedResult;
+        syncPersistedOutcome(savedInputs, rerankedResult, {
+          recordCompletion: false,
+          contextForDecision: nextLiveContext,
+          prefillCount: dccPrefillCount,
         });
+        setResult((currentResult) => (currentResult ? rerankedResult : currentResult));
       })
       .catch(() => {
         // Fail soft: the chooser remains usable from traveler answers alone.
