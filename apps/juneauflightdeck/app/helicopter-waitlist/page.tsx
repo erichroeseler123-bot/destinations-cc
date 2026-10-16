@@ -86,7 +86,11 @@ export default function Page() {
   }, {} as Record<string, typeof ALASKA_CRUISE_FLEET>);
 
   return (
-    <main id="main-content" className="jfd-root waitlist-page-container">
+    <main
+      id="main-content"
+      className="jfd-root waitlist-page-container"
+      style={{ overflowX: "clip" }}
+    >
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(waitlistServiceSchema) }}
@@ -96,14 +100,23 @@ export default function Page() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(waitlistFaqSchema) }}
       />
 
-      <div className="site-shell" style={{ maxWidth: 960, margin: "0 auto", padding: "44px 20px 80px" }}>
+      <div
+        className="site-shell"
+        style={{
+          maxWidth: 960,
+          width: "100%",
+          margin: "0 auto",
+          padding: "clamp(28px, 5vw, 44px) clamp(12px, 4vw, 20px) 80px",
+          boxSizing: "border-box",
+        }}
+      >
         <div style={{ textAlign: "center", marginBottom: 36 }}>
           <p className="eyebrow" style={{ color: "var(--accent, #f0b35b)", marginBottom: 8 }}>
             Cruise Logistics &amp; Excursion Planning
           </p>
           <h1
             style={{
-              fontSize: "clamp(2rem, 4.5vw, 2.85rem)",
+              fontSize: "clamp(1.75rem, 4.5vw, 2.85rem)",
               fontWeight: 900,
               lineHeight: 1.15,
               color: "#ffffff",
@@ -115,7 +128,7 @@ export default function Page() {
           </h1>
           <p
             style={{
-              fontSize: "1.05rem",
+              fontSize: "1.02rem",
               lineHeight: 1.6,
               color: "rgba(228, 239, 246, 0.9)",
               maxWidth: 760,
@@ -124,19 +137,23 @@ export default function Page() {
           >
             Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
           </p>
-          <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", marginBottom: 8 }}>
+          <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap", marginBottom: 8 }}>
             <Link
               href="/helicopter"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                padding: "10px 20px",
+                justifyContent: "center",
+                padding: "10px 16px",
                 borderRadius: 8,
                 background: "var(--accent, #f0b35b)",
                 color: "#04101d",
                 fontWeight: 800,
                 textDecoration: "none",
-                fontSize: "0.9rem",
+                fontSize: "0.88rem",
+                maxWidth: "100%",
+                boxSizing: "border-box",
+                textAlign: "center",
               }}
             >
               Compare &amp; Book Open Tours →
@@ -146,14 +163,18 @@ export default function Page() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                padding: "10px 18px",
+                justifyContent: "center",
+                padding: "10px 16px",
                 borderRadius: 8,
                 background: "rgba(14, 165, 233, 0.15)",
                 border: "1px solid rgba(56, 189, 248, 0.4)",
                 color: "#38bdf8",
                 fontWeight: 700,
                 textDecoration: "none",
-                fontSize: "0.9rem",
+                fontSize: "0.88rem",
+                maxWidth: "100%",
+                boxSizing: "border-box",
+                textAlign: "center",
               }}
             >
               Seat Math &amp; Weight Simulator ✈️
@@ -163,14 +184,18 @@ export default function Page() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                padding: "10px 18px",
+                justifyContent: "center",
+                padding: "10px 16px",
                 borderRadius: 8,
                 background: "rgba(255, 255, 255, 0.08)",
                 border: "1px solid rgba(255, 255, 255, 0.2)",
                 color: "#ffffff",
                 fontWeight: 700,
                 textDecoration: "none",
-                fontSize: "0.9rem",
+                fontSize: "0.88rem",
+                maxWidth: "100%",
+                boxSizing: "border-box",
+                textAlign: "center",
               }}
             >
               Operator Specs
@@ -180,14 +205,18 @@ export default function Page() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                padding: "10px 18px",
+                justifyContent: "center",
+                padding: "10px 16px",
                 borderRadius: 8,
                 background: "rgba(255, 255, 255, 0.08)",
                 border: "1px solid rgba(255, 255, 255, 0.2)",
                 color: "var(--ice, #9ed9ff)",
                 fontWeight: 700,
                 textDecoration: "none",
-                fontSize: "0.9rem",
+                fontSize: "0.88rem",
+                maxWidth: "100%",
+                boxSizing: "border-box",
+                textAlign: "center",
               }}
             >
               Daily Availability Check ↓
@@ -196,7 +225,7 @@ export default function Page() {
         </div>
 
         {/* Dynamic Shore Excursion Port Buffer Calculator */}
-        <section style={{ marginBottom: 40 }}>
+        <section style={{ marginBottom: 40, minWidth: 0 }}>
           <ExcursionPortBufferSolver />
         </section>
 
@@ -206,8 +235,9 @@ export default function Page() {
             background: "rgba(3, 14, 23, 0.8)",
             border: "1px solid var(--line)",
             borderRadius: "var(--radius-lg, 16px)",
-            padding: "32px 28px",
+            padding: "clamp(20px, 4vw, 32px) clamp(14px, 4vw, 28px)",
             marginBottom: 44,
+            boxSizing: "border-box",
           }}
           aria-labelledby="fleet-directory-heading"
         >
@@ -217,7 +247,7 @@ export default function Page() {
             </span>
             <h2
               id="fleet-directory-heading"
-              style={{ fontSize: "1.5rem", fontWeight: 800, color: "#ffffff", margin: "6px 0 10px" }}
+              style={{ fontSize: "clamp(1.25rem, 3.5vw, 1.5rem)", fontWeight: 800, color: "#ffffff", margin: "6px 0 10px" }}
             >
               Select Your Alaska Cruise Ship for Port Hours &amp; Berth Guidance
             </h2>
@@ -226,18 +256,25 @@ export default function Page() {
             </p>
 
             {/* Quick Port Timing Rules */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12, marginBottom: 20 }}>
-              <div style={{ background: "rgba(6, 21, 33, 0.6)", border: "1px solid var(--line)", borderRadius: 8, padding: "12px 14px" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))",
+                gap: 12,
+                marginBottom: 20,
+              }}
+            >
+              <div style={{ background: "rgba(6, 21, 33, 0.6)", border: "1px solid var(--line)", borderRadius: 8, padding: "12px 14px", minWidth: 0 }}>
                 <span style={{ fontSize: "0.75rem", color: "var(--accent)", fontWeight: 700, display: "block" }}>DOWNTOWN BERTHS</span>
                 <strong style={{ fontSize: "0.85rem", color: "#ffffff" }}>Franklin, CT &amp; Marine Park</strong>
                 <span style={{ fontSize: "0.75rem", color: "var(--muted)", display: "block", marginTop: 2 }}>15-min shuttle to airport heliports</span>
               </div>
-              <div style={{ background: "rgba(6, 21, 33, 0.6)", border: "1px solid var(--line)", borderRadius: 8, padding: "12px 14px" }}>
+              <div style={{ background: "rgba(6, 21, 33, 0.6)", border: "1px solid var(--line)", borderRadius: 8, padding: "12px 14px", minWidth: 0 }}>
                 <span style={{ fontSize: "0.75rem", color: "var(--accent)", fontWeight: 700, display: "block" }}>SOUTH BERTH</span>
                 <strong style={{ fontSize: "0.85rem", color: "#ffffff" }}>AJ Dock (AJD)</strong>
                 <span style={{ fontSize: "0.75rem", color: "var(--muted)", display: "block", marginTop: 2 }}>20-min shuttle from south security gate</span>
               </div>
-              <div style={{ background: "rgba(6, 21, 33, 0.6)", border: "1px solid var(--line)", borderRadius: 8, padding: "12px 14px" }}>
+              <div style={{ background: "rgba(6, 21, 33, 0.6)", border: "1px solid var(--line)", borderRadius: 8, padding: "12px 14px", minWidth: 0 }}>
                 <span style={{ fontSize: "0.75rem", color: "#86efac", fontWeight: 700, display: "block" }}>SAFETY BUFFER</span>
                 <strong style={{ fontSize: "0.85rem", color: "#ffffff" }}>90–120 Minutes</strong>
                 <span style={{ fontSize: "0.75rem", color: "var(--muted)", display: "block", marginTop: 2 }}>Scheduled return prior to all-aboard</span>
@@ -247,7 +284,7 @@ export default function Page() {
 
           <div style={{ display: "grid", gap: 20 }}>
             {Object.entries(shipsByLine).map(([line, ships]) => (
-              <div key={line} style={{ borderTop: "1px solid rgba(151, 211, 255, 0.12)", paddingTop: 14 }}>
+              <div key={line} style={{ borderTop: "1px solid rgba(151, 211, 255, 0.12)", paddingTop: 14, minWidth: 0 }}>
                 <h3 style={{ fontSize: "0.92rem", fontWeight: 700, color: "var(--ice, #9ed9ff)", marginBottom: 8 }}>
                   ⚓ {line}
                 </h3>
@@ -258,6 +295,7 @@ export default function Page() {
                       href={`/helicopter-waitlist/${ship.slug}`}
                       style={{
                         display: "inline-flex",
+                        flexWrap: "wrap",
                         alignItems: "center",
                         gap: 6,
                         padding: "6px 12px",
@@ -268,6 +306,8 @@ export default function Page() {
                         borderRadius: 8,
                         textDecoration: "none",
                         transition: "all 0.15s ease",
+                        maxWidth: "100%",
+                        boxSizing: "border-box",
                       }}
                     >
                       <span style={{ fontWeight: 600 }}>{ship.shipName}</span>
@@ -283,17 +323,17 @@ export default function Page() {
         </section>
 
         {/* Cross-Port Backup Funnel */}
-        <section style={{ marginBottom: 40 }}>
+        <section style={{ marginBottom: 40, minWidth: 0 }}>
           <CrossPortBackup currentPort="Juneau" desiredTourType="dogsled" />
         </section>
 
         {/* 2. Primary Waitlist Intake Form */}
-        <section id="waitlist-form" style={{ marginBottom: 48 }}>
+        <section id="waitlist-form" style={{ marginBottom: 48, minWidth: 0 }}>
           <div style={{ textAlign: "center", marginBottom: 24 }}>
             <span style={{ fontSize: "0.75rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--accent, #f0b35b)" }}>
               Step 2 · Availability Watch
             </span>
-            <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#ffffff", margin: "6px 0 8px" }}>
+            <h2 style={{ fontSize: "clamp(1.3rem, 3.8vw, 1.5rem)", fontWeight: 800, color: "#ffffff", margin: "6px 0 8px" }}>
               Can&apos;t Find an Open Seat? Request a Daily Availability Check
             </h2>
             <p style={{ fontSize: "0.95rem", color: "var(--muted)", maxWidth: 680, margin: "0 auto", lineHeight: 1.5 }}>
@@ -309,11 +349,11 @@ export default function Page() {
             borderTop: "1px solid var(--line)",
             paddingTop: 32,
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))",
             gap: 20,
           }}
         >
-          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20 }}>
+          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20, minWidth: 0 }}>
             <h3 style={{ fontSize: "1rem", color: "#ffffff", margin: "0 0 8px" }}>
               <Link href="/juneau-helicopter-tour-sold-out" style={{ color: "var(--ice, #9ed9ff)", textDecoration: "none" }}>
                 Sold-Out Seats Guide &rarr;
@@ -324,7 +364,7 @@ export default function Page() {
             </p>
           </div>
 
-          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20 }}>
+          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20, minWidth: 0 }}>
             <h3 style={{ fontSize: "1rem", color: "#ffffff", margin: "0 0 8px" }}>
               <Link href="/temsco-vs-coastal-vs-northstar-juneau" style={{ color: "var(--ice, #9ed9ff)", textDecoration: "none" }}>
                 Operator Comparison &rarr;
@@ -335,7 +375,7 @@ export default function Page() {
             </p>
           </div>
 
-          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20 }}>
+          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20, minWidth: 0 }}>
             <h3 style={{ fontSize: "1rem", color: "#ffffff", margin: "0 0 8px" }}>
               <Link href="/juneau-helicopter-tour-weight-limits-and-seating" style={{ color: "var(--ice, #9ed9ff)", textDecoration: "none" }}>
                 Weight Limits &amp; 6th Seat Math &rarr;
@@ -346,7 +386,18 @@ export default function Page() {
             </p>
           </div>
 
-          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20 }}>
+          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20, minWidth: 0 }}>
+            <h3 style={{ fontSize: "1rem", color: "#ffffff", margin: "0 0 8px" }}>
+              <Link href="/juneau/what-to-do-if-helicopter-tour-canceled" style={{ color: "var(--ice, #9ed9ff)", textDecoration: "none" }}>
+                Weather Cancellation Backup Guide &rarr;
+              </Link>
+            </h3>
+            <p style={{ fontSize: "0.85rem", color: "var(--muted)", margin: 0, lineHeight: 1.5 }}>
+              100% weather refund terms and how to pivot to Auke Bay whale watching if mountain pass ceilings drop.
+            </p>
+          </div>
+
+          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20, minWidth: 0 }}>
             <h3 style={{ fontSize: "1rem", color: "#ffffff", margin: "0 0 8px" }}>
               <Link href="/skagway/helicopter" style={{ color: "var(--ice, #9ed9ff)", textDecoration: "none" }}>
                 Skagway Helicopter Tours &rarr;
