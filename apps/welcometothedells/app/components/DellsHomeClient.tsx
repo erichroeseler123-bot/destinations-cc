@@ -28,133 +28,278 @@ const QUICK_DECISIONS = [
   { title: "Big group", body: "Keep meals, transportation, and one anchor activity from becoming group-chat chaos.", href: "/large-groups" },
 ] as const;
 
+const PRIMARY_NAV_LINKS = [
+  { label: "Things to do", href: "/things-to-do" },
+  { label: "Boat tours & Ducks", href: "/boat-tours" },
+  { label: "Waterparks", href: "/waterparks" },
+  { label: "Rainy day", href: "/rainy-day" },
+  { label: "Tonight", href: "/tonight" },
+  { label: "The Lounge", href: "/lounge" },
+] as const;
+
+const QUICK_JUMP_LINKS = [
+  { label: "Live conditions", href: "#live-conditions" },
+  { label: "Browse by intent", href: "#browse-by-intent" },
+  { label: "Pick your situation", href: "#pick-situation" },
+  { label: "River experiences", href: "#signature" },
+  { label: "Three easy zones", href: "#three-zones" },
+  { label: "Large group meals", href: "#group-meals" },
+] as const;
+
 export default function DellsHomeClient() {
   return (
-    <main>
-      <LandingTracker source="homepage" />
-
-      <section className="hero-section">
-        <div className="hero-media" aria-hidden="true">
-          <Image src={HERO_IMAGE} alt="" fill priority sizes="100vw" />
-        </div>
-        <div className="hero-copy">
-          <p className="eyebrow">Wisconsin Dells trip shortcut</p>
-          <h1>Do the Dells without doing everything.</h1>
-          <p>
-            Waterparks, Ducks, boat tours, downtown, shows, giant attractions, and too many choices. Start with the kind of day you actually want, then make one good decision at a time.
-          </p>
-          <div className="hero-actions">
-            <Link className="primary-button" href="/things-to-do">Find things to do</Link>
-            <Link className="secondary-button" href="/boat-tours">Compare boat tours</Link>
-          </div>
-        </div>
-      </section>
-
-      <DellsLiveNow />
-
-      <section className="section-shell">
-        <div className="section-heading">
-          <p className="eyebrow">Browse the Dells</p>
-          <h2>Start with what you actually came here for.</h2>
-          <p>These are the fastest paths into the parts of Wisconsin Dells people most often need to decide between.</p>
-        </div>
-        <div className="action-grid">
-          {BROWSE_BY_INTENT.map((item) => (
-            <Link className="action-card" href={item.href} key={item.href}>
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
-              <span className="text-button">Explore this</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="section-shell">
-        <div className="section-heading">
-          <p className="eyebrow">Pick your situation</p>
-          <h2>What kind of Dells day are you trying to solve?</h2>
-          <p>Already know the problem? Jump straight into the plan that matches it.</p>
-        </div>
-        <div className="action-grid">
-          {QUICK_DECISIONS.map((item) => (
-            <Link className="action-card" href={item.href} key={item.href}>
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
-              <span className="text-button">Open this plan</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="section-shell river-terminal" id="signature">
-        <div className="section-heading">
-          <p className="eyebrow">Book the signature Dells experiences</p>
-          <h2>If it is your first trip, start with the river.</h2>
-          <p>
-            Wisconsin Dells existed before the waterparks. The sandstone river scenery, Ducks, boat tours, and after-dark canyon experiences are what make the destination different from every other family-entertainment town.
-          </p>
-          <Link className="text-button" href="/boat-tours">Compare all river experiences</Link>
-        </div>
-        <div className="river-grid">
-          {RIVER_OPS_TERMINAL.map((card) => (
-            <a
-              className="river-card"
-              href={card.href}
-              key={card.slug}
-              onClick={() => trackDellsEvent("product_opened", {
-                corridor: "wisconsin-dells-signature",
-                card_id: card.slug,
-                clicked_product_slug: card.slug,
-                decision_product: card.slug,
-                decision_option: card.category,
-                decision_action: "operator",
-                decision_cta: card.ctaLabel,
-                target_path: card.href,
-              })}
+    <>
+      <header
+        className="site-header"
+        style={{
+          width: "min(100% - 18px, 1180px)",
+          maxWidth: "100%",
+          margin: "12px auto 0",
+          padding: "12px 14px",
+          border: "1px solid var(--line)",
+          borderRadius: 8,
+          background: "rgba(35, 32, 26, 0.92)",
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "10px 16px",
+          boxSizing: "border-box",
+        }}
+      >
+        <Link
+          href="/"
+          style={{
+            fontWeight: 900,
+            fontSize: "0.95rem",
+            letterSpacing: "0.02em",
+            textTransform: "uppercase",
+            color: "var(--paper)",
+            maxWidth: "100%",
+            overflowWrap: "break-word",
+          }}
+        >
+          Welcome to the Dells
+        </Link>
+        <nav
+          className="primary-nav"
+          aria-label="Primary navigation"
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: "6px 8px",
+            maxWidth: "100%",
+            minWidth: 0,
+          }}
+        >
+          {PRIMARY_NAV_LINKS.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                minHeight: 36,
+                padding: "4px 10px",
+                borderRadius: 6,
+                border: "1px solid var(--line)",
+                background: "rgba(255, 247, 234, 0.05)",
+                fontSize: "0.82rem",
+                fontWeight: 700,
+                maxWidth: "100%",
+                overflowWrap: "break-word",
+              }}
             >
-              <div className="river-image" aria-hidden="true">
-                <Image src={card.imageUrl} alt={card.imageAlt} fill placeholder="blur" blurDataURL={card.blurDataURL} sizes="(max-width: 820px) 100vw, 280px" />
-              </div>
-              <div>
-                <p className="river-category">{card.category.replace("-", " ")}</p>
-                <h3>{card.title}</h3>
-                <p>{card.loungeIntel}</p>
-              </div>
-              <strong>{card.ctaLabel}</strong>
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </header>
+
+      <main style={{ maxWidth: "100%", overflowX: "hidden" }}>
+        <LandingTracker source="homepage" />
+
+        <section className="hero-section">
+          <div className="hero-media" aria-hidden="true">
+            <Image src={HERO_IMAGE} alt="" fill priority sizes="100vw" />
+          </div>
+          <div
+            className="hero-copy"
+            style={{ minWidth: 0, maxWidth: "100%", padding: "clamp(16px, 5vw, 64px)" }}
+          >
+            <p className="eyebrow">Wisconsin Dells trip shortcut</p>
+            <h1 style={{ fontSize: "clamp(2rem, 7vw, 6.4rem)", overflowWrap: "break-word" }}>
+              Do the Dells without doing everything.
+            </h1>
+            <p>
+              Waterparks, Ducks, boat tours, downtown, shows, giant attractions, and too many choices. Start with the kind of day you actually want, then make one good decision at a time.
+            </p>
+            <div className="hero-actions">
+              <Link className="primary-button" href="/things-to-do">Find things to do</Link>
+              <Link className="secondary-button" href="/boat-tours">Compare boat tours</Link>
+            </div>
+          </div>
+        </section>
+
+        <nav
+          className="quick-jump-nav"
+          aria-label="Quick-jump navigation"
+          style={{
+            marginTop: 16,
+            padding: "12px 14px",
+            border: "1px solid var(--line)",
+            borderRadius: 8,
+            background: "rgba(35, 32, 26, 0.86)",
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: "6px 8px",
+            maxWidth: "100%",
+            minWidth: 0,
+            boxSizing: "border-box",
+          }}
+        >
+          <span
+            style={{
+              color: "var(--sandstone)",
+              fontSize: 11,
+              fontWeight: 800,
+              textTransform: "uppercase",
+              marginRight: 4,
+            }}
+          >
+            Quick jump:
+          </span>
+          {QUICK_JUMP_LINKS.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                minHeight: 36,
+                padding: "4px 10px",
+                borderRadius: 6,
+                border: "1px solid var(--line)",
+                background: "rgba(255, 247, 234, 0.05)",
+                fontSize: "0.82rem",
+                fontWeight: 700,
+                maxWidth: "100%",
+                overflowWrap: "break-word",
+              }}
+            >
+              {item.label}
             </a>
           ))}
-        </div>
-      </section>
+        </nav>
 
-      <section className="mission-strip" aria-label="Simple Dells planning rules">
-        <div><strong>Choose one anchor.</strong><span>Waterpark, river, or major attraction first.</span></div>
-        <div><strong>Stay in one area.</strong><span>Do not spend the day crossing Hwy 12 for every new idea.</span></div>
-        <div><strong>Keep a weather backup.</strong><span>The best Dells plan survives a storm.</span></div>
-      </section>
+        <DellsLiveNow />
 
-      <section className="section-shell">
-        <div className="section-heading">
-          <p className="eyebrow">Three easy zones</p>
-          <h2>Plan by area instead of bouncing all over town.</h2>
-        </div>
-        <div className="action-grid">
-          <article className="action-card"><h3>Downtown & Broadway</h3><p>Walkable food, Riverwalk, classic kitsch, boat-tour staging, and easy short stops.</p><Link className="text-button" href="/downtown">Explore downtown</Link></article>
-          <article className="action-card"><h3>Wisconsin Dells Parkway</h3><p>The big attractions, waterparks, signs, mini golf, and high-energy family entertainment corridor.</p><Link className="text-button" href="/parkway">Explore the Parkway</Link></article>
-          <article className="action-card"><h3>Lake Delton & resort zone</h3><p>Resorts, rentals, larger groups, calmer resets, and places where staying put can be the better plan.</p><Link className="text-button" href="/lake-delton">Explore Lake Delton</Link></article>
-        </div>
-      </section>
+        <section className="section-shell" id="browse-by-intent">
+          <div className="section-heading">
+            <p className="eyebrow">Browse the Dells</p>
+            <h2>Start with what you actually came here for.</h2>
+            <p>These are the fastest paths into the parts of Wisconsin Dells people most often need to decide between.</p>
+          </div>
+          <div className="action-grid">
+            {BROWSE_BY_INTENT.map((item) => (
+              <Link className="action-card" href={item.href} key={item.href}>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+                <span className="text-button">Explore this</span>
+              </Link>
+            ))}
+          </div>
+        </section>
 
-      <section className="section-shell support-band">
-        <div>
-          <p className="eyebrow">Large rental house?</p>
-          <h2>Solve the group meal before everyone gets hungry.</h2>
-          <p>For a large group, the hardest Dells decision is often not the attraction. It is getting everyone fed without splitting into cars and waiting for a giant table.</p>
-        </div>
-        <div className="support-actions">
-          <a href={`${FEASTLY_DELLS_URL}?utm_source=welcometothedells&utm_medium=referral&utm_campaign=dells-large-groups`}>See group food options</a>
-          <Link href="/large-groups">Plan a large-group Dells day</Link>
-        </div>
-      </section>
-    </main>
+        <section className="section-shell" id="pick-situation">
+          <div className="section-heading">
+            <p className="eyebrow">Pick your situation</p>
+            <h2>What kind of Dells day are you trying to solve?</h2>
+            <p>Already know the problem? Jump straight into the plan that matches it.</p>
+          </div>
+          <div className="action-grid">
+            {QUICK_DECISIONS.map((item) => (
+              <Link className="action-card" href={item.href} key={item.href}>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+                <span className="text-button">Open this plan</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="section-shell river-terminal" id="signature">
+          <div className="section-heading">
+            <p className="eyebrow">Book the signature Dells experiences</p>
+            <h2>If it is your first trip, start with the river.</h2>
+            <p>
+              Wisconsin Dells existed before the waterparks. The sandstone river scenery, Ducks, boat tours, and after-dark canyon experiences are what make the destination different from every other family-entertainment town.
+            </p>
+            <Link className="text-button" href="/boat-tours">Compare all river experiences</Link>
+          </div>
+          <div className="river-grid">
+            {RIVER_OPS_TERMINAL.map((card) => (
+              <a
+                className="river-card"
+                href={card.href}
+                key={card.slug}
+                onClick={() => trackDellsEvent("product_opened", {
+                  corridor: "wisconsin-dells-signature",
+                  card_id: card.slug,
+                  clicked_product_slug: card.slug,
+                  decision_product: card.slug,
+                  decision_option: card.category,
+                  decision_action: "operator",
+                  decision_cta: card.ctaLabel,
+                  target_path: card.href,
+                })}
+              >
+                <div className="river-image" aria-hidden="true">
+                  <Image src={card.imageUrl} alt={card.imageAlt} fill placeholder="blur" blurDataURL={card.blurDataURL} sizes="(max-width: 820px) 100vw, 280px" />
+                </div>
+                <div>
+                  <p className="river-category">{card.category.replace("-", " ")}</p>
+                  <h3>{card.title}</h3>
+                  <p>{card.loungeIntel}</p>
+                </div>
+                <strong>{card.ctaLabel}</strong>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <section className="mission-strip" aria-label="Simple Dells planning rules">
+          <div><strong>Choose one anchor.</strong><span>Waterpark, river, or major attraction first.</span></div>
+          <div><strong>Stay in one area.</strong><span>Do not spend the day crossing Hwy 12 for every new idea.</span></div>
+          <div><strong>Keep a weather backup.</strong><span>The best Dells plan survives a storm.</span></div>
+        </section>
+
+        <section className="section-shell" id="three-zones">
+          <div className="section-heading">
+            <p className="eyebrow">Three easy zones</p>
+            <h2>Plan by area instead of bouncing all over town.</h2>
+          </div>
+          <div className="action-grid">
+            <article className="action-card"><h3>Downtown & Broadway</h3><p>Walkable food, Riverwalk, classic kitsch, boat-tour staging, and easy short stops.</p><Link className="text-button" href="/downtown">Explore downtown</Link></article>
+            <article className="action-card"><h3>Wisconsin Dells Parkway</h3><p>The big attractions, waterparks, signs, mini golf, and high-energy family entertainment corridor.</p><Link className="text-button" href="/parkway">Explore the Parkway</Link></article>
+            <article className="action-card"><h3>Lake Delton & resort zone</h3><p>Resorts, rentals, larger groups, calmer resets, and places where staying put can be the better plan.</p><Link className="text-button" href="/lake-delton">Explore Lake Delton</Link></article>
+          </div>
+        </section>
+
+        <section className="section-shell support-band" id="group-meals">
+          <div>
+            <p className="eyebrow">Large rental house?</p>
+            <h2>Solve the group meal before everyone gets hungry.</h2>
+            <p>For a large group, the hardest Dells decision is often not the attraction. It is getting everyone fed without splitting into cars and waiting for a giant table.</p>
+          </div>
+          <div className="support-actions">
+            <a href={`${FEASTLY_DELLS_URL}?utm_source=welcometothedells&utm_medium=referral&utm_campaign=dells-large-groups`}>See group food options</a>
+            <Link href="/large-groups">Plan a large-group Dells day</Link>
+          </div>
+        </section>
+      </main>
+    </>
   );
 }
