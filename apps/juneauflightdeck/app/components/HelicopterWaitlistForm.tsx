@@ -78,11 +78,6 @@ export const TOUR_OPTIONS: TourOption[] = [
     label: "Any Glacier Ice Trek / Climb (NorthStar Trekking)",
     category: "ice_trek",
   },
-  {
-    value: "flightseeing",
-    label: "Scenic Flightseeing (Pure Airtime, No Ice Landing)",
-    category: "flightseeing",
-  },
 ];
 
 export default function HelicopterWaitlistForm({
@@ -136,7 +131,7 @@ export default function HelicopterWaitlistForm({
         (normalized.includes("landing") ? TOUR_OPTIONS.find((t) => t.value === "temsco-mendenhall-glacier-walk") : null) ||
         (normalized.includes("dog") ? TOUR_OPTIONS.find((t) => t.value === "temsco-glacier-dog-sledding") : null) ||
         (normalized.includes("trek") ? TOUR_OPTIONS.find((t) => t.value === "northstar-glacier-ice-trek") : null) ||
-        (normalized.includes("flight") ? TOUR_OPTIONS.find((t) => t.value === "flightseeing") : null);
+        (normalized.includes("flight") ? TOUR_OPTIONS.find((t) => t.value === "any") : null);
 
       if (matchedTour) {
         setPreselectedTour(matchedTour);

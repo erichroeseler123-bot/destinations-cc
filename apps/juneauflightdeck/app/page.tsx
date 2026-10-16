@@ -37,9 +37,9 @@ const FIT_GUIDE_EXPERIENCES = [
     rateRange: "$409 – $429",
     badge: "Best All-Around Fit",
     badgeColor: "#38bdf8",
-    portWindowRequired: "3.5 – 4.0 hrs dock-to-dock",
+    portWindowRequired: "4.5 – 4.75 hrs dock-to-dock",
     portWindowDetail:
-      "2h 15m tour duration + 15–20m shuttle transfer each way (Downtown / AJ Dock to airport heliports) + 15m check-in & 90m pre-all-aboard buffer. Includes ~20–30m walking on blue glacier ice.",
+      "2h 15m tour duration + 30–40m round-trip shuttle transfer (15–20m each way between Downtown / AJ Dock and airport heliports) + 15m check-in + 90m pre-all-aboard buffer (4h 30m – 4h 40m total). Includes ~20–30m walking on blue glacier ice.",
     activityLevel: "Easy to Moderate",
     activityDetail:
       "Guided walk across undulating glacier ice and meltwater crevasses. Slip-on traction overboots are provided over your regular closed-toe walking shoes.",
@@ -58,9 +58,9 @@ const FIT_GUIDE_EXPERIENCES = [
     rateRange: "$659 – $739",
     badge: "Sells Out Fastest",
     badgeColor: "#f0b35b",
-    portWindowRequired: "4.0 – 4.5 hrs dock-to-dock",
+    portWindowRequired: "5.0 – 5.75 hrs dock-to-dock",
     portWindowDetail:
-      "2h 45m – 3h 15m tour duration + 15–20m round-trip heliport shuttle + check-in & 90m all-aboard safety cushion. Includes ~60m on the upper snowfield with professional mushers and huskies.",
+      "2h 45m – 3h 15m tour duration + 30–40m round-trip heliport shuttle (15–20m each way) + 15m check-in + 90m pre-all-aboard safety buffer (5h 00m – 5h 40m total). Includes ~60m on the upper snowfield with professional mushers and huskies.",
     activityLevel: "Easy (Family-Friendly)",
     activityDetail:
       "Flat, packed snow surface at the high-altitude mushing camp. Stand on the sled runners or sit inside the sled basket; glacier overshoes and wind gear provided.",
@@ -79,9 +79,9 @@ const FIT_GUIDE_EXPERIENCES = [
     rateRange: "$249 – $299",
     badge: "Shortest Port Window",
     badgeColor: "#86efac",
-    portWindowRequired: "2.5 – 3.0 hrs dock-to-dock",
+    portWindowRequired: "3.5 – 4.0 hrs dock-to-dock",
     portWindowDetail:
-      "1h 15m – 1h 30m tour duration + round-trip dock shuttle transfer + check-in buffer. Ideal for shorter half-day cruise calls or late-afternoon gangway arrivals.",
+      "1h 15m – 1h 30m tour duration + 30–40m round-trip dock shuttle transfer (15–20m each way) + 15m check-in + 90m pre-all-aboard buffer (3h 30m – 3h 55m total). Ideal for shorter half-day cruise calls or late-afternoon gangway arrivals.",
     activityLevel: "None (Seated Airtime Only)",
     activityDetail:
       "Zero walking on snow or uneven ice. Continuous aerial views of deep blue crevasses, granite spires, and glacial valleys from wraparound aircraft windows.",
@@ -89,8 +89,8 @@ const FIT_GUIDE_EXPERIENCES = [
       "250 lb (113 kg) threshold on helicopter departures; balanced cabin seating assigned by flight dispatch at check-in with private scale readout.",
     weatherBackup:
       "Highest weather resilience—because no glacier touchdown is required, pilots can often adjust flight paths around localized valley fog. 100% weather refund or sea-level marine backup if grounded.",
-    waitlistHref: "/helicopter-waitlist?tour=flightseeing",
-    waitlistLabel: "Request Flightseeing Availability",
+    waitlistHref: "/helicopter",
+    waitlistLabel: "Compare Scenic vs. Landing Options",
   },
 ];
 
