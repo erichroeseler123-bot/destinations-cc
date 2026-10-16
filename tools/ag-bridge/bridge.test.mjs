@@ -419,4 +419,51 @@ test('selectNextRotationSite advances to follow-up backlog pass after all first-
   assert.equal(secondPass.site, 'cruisepromenade');
   assert.equal(secondPass.key, 'cruisepromenade-hero-sample-context-clarity');
 });
+test('discoverNextTaskIfEmpty rotates to next unblocked site after 2-hour interval even if another site has an unmerged ready PR', async t => {
+  const h = harness(t);
+  h.b.config = { ...config, autoDiscoverWhenEmpty: true, autoDiscoverIntervalMinutes: 120 };
+  const readyIssue = issue(166, 'code', 'wta', { instructions: 'Mobile nav fix' });
+  h.b.state[166] = {
+    status: 'ready',
+    site: 'wta',
+    mode: 'code',
+    pr: 13,
+    sha: '043df8066c',
+    url: 'https://github.com/erichroeseler123-bot/wta-renderer/pull/13'
+  };
+  fs.writeFileSync(h.b.stateFile, JSON.stringify(h.b.state));
+  fs.writeFileSync(h.b.rotationFile, JSON.stringify({
+    lastSite: 'wta',
+    lastCreatedAt: Date.now() - 3 * 3600 * 1000,
+    lastIssue: 166,
+    dispatchedKeys: ['cruisepromenade-mobile-nav-accessibility', 'wta-port-nav-aria-current-filter-live']
+  }));
+  let createdNext = null;
+  const origApi = h.b.api.bind(h.b);
+  h.b.api = async (endpoint, method = 'GET', data) => {
+    if (endpoint === 'repos/erichroeseler123-bot/wta-renderer/pulls/13') {
+      return { state: 'open', merged: false, head: { sha: '043df8066c' } };
+    }
+    if (endpoint === `repos/${config.queueRepo}/issues` && method === 'POST') {
+      createdNext = data;
+      return {
+        number: 167,
+        title: data.title,
+        body: data.body,
+        user: { login: config.trustedAuthors[0] }
+      };
+    }
+    return origApi(endpoint, method, data);
+  };
+  h.b.all = async (endpoint) => {
+    if (endpoint.includes('/issues?state=open')) return [readyIssue];
+    return [];
+  };
+  const heartbeat = await h.b.tick();
+  assert.equal(h.b.state[166].status, 'ready');
+  assert.ok(createdNext, 'Expected next unblocked site task to be discovered after interval even while WTA PR is ready');
+  assert.equal(heartbeat.rotation.lastSite, 'dells');
+  assert.equal(heartbeat.rotation.lastIssue, 167);
+});
+
 

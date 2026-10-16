@@ -681,11 +681,11 @@ export class Bridge {
   }
   async discoverNextTaskIfEmpty(parsed) {
     if (!this.config.autoDiscoverWhenEmpty) return null;
-    const hasActiveOrReadyWork = parsed.some(({ issue }) => {
+    const hasActiveWork = parsed.some(({ issue }) => {
       const status = this.state[issue.number]?.status ?? 'new';
-      return status === 'new' || status === 'running' || status === 'review' || status === 'ready';
+      return status === 'new' || status === 'running' || status === 'review';
     });
-    if (hasActiveOrReadyWork) return null;
+    if (hasActiveWork) return null;
     const rotation = this.loadRotation();
     const minIntervalMs = (this.config.autoDiscoverIntervalMinutes ?? 120) * 60000;
     if (!rotation.forceNext && rotation.lastCreatedAt && (Date.now() - Number(rotation.lastCreatedAt)) < minIntervalMs) {
