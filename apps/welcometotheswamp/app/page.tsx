@@ -161,6 +161,43 @@ export default function HomePage() {
             </div>
           </div>
 
+          <div className="wts-comparison-wrap">
+            <table className="wts-comparison-table">
+              <caption className="wts-comparison-caption">
+                Side-by-side comparison of New Orleans airboat tours and covered bayou boats: minimum child age, hearing protection, canopy shade, and hotel pickup vs. self-drive timing.
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Decision Factor</th>
+                  <th scope="col">Airboat Tours</th>
+                  <th scope="col">Covered Bayou Boats</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Child Age &amp; Family Fit</th>
+                  <td>Minimum child age 5+ on small high-speed airboats (2+ on select large airboats); not permitted for infants or pregnant travelers.</td>
+                  <td>All-ages welcome (infants to seniors); calm, stable deck ideal for mixed-age family groups.</td>
+                </tr>
+                <tr>
+                  <th scope="row">Ride &amp; Ear / Sun Protection</th>
+                  <td>Open-air, high-speed marsh ride with headset ear protection provided for loud fan noise; full sun and wind exposure.</td>
+                  <td>All-ages shaded canopy roof with open sides and quiet motors for easy conversation and wildlife photography.</td>
+                </tr>
+                <tr>
+                  <th scope="row">Hotel Pickup Timing</th>
+                  <td>4–4.5 hours door-to-door; French Quarter / Downtown shuttle pickup begins 60–80 minutes before dock departure.</td>
+                  <td>4–4.5 hours door-to-door; round-trip hotel shuttle pickup starts 45–60 minutes early and avoids rural rideshare strandings.</td>
+                </tr>
+                <tr>
+                  <th scope="row">Self-Drive Dock Timing</th>
+                  <td>35–45 minute drive from New Orleans; arrive 30 minutes before departure (free dock parking; 45–120 min booking cutoff).</td>
+                  <td>35–45 minute drive to Barataria or Honey Island docks; arrive 30 minutes early for dockside check-in.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
           <div className="mt-8 rounded-xl border border-amber-400/30 bg-amber-950/20 p-5">
             <h4 className="text-sm font-bold text-amber-300">Choose your tour here and complete your reservation through the checkout shown.</h4>
             <p className="mt-1 text-xs leading-5 text-stone-300">
