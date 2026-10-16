@@ -40,27 +40,45 @@ function timeLabel(iso: string | null | undefined) {
 
 export default function DellsLiveNow() {
   const [data, setData] = useState<LivePayload | null>(null);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
     const controller = new AbortController();
 
     fetch("/api/live", { signal: controller.signal })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((payload) => {
-        if (payload) setData(payload);
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Live conditions request failed: ${response.status}`);
+        }
+        return response.json();
       })
-      .catch(() => undefined);
+      .then((payload: LivePayload | null) => {
+        if (controller.signal.aborted) return;
+        if (payload) {
+          setData(payload);
+          setStatus("ready");
+        } else {
+          setStatus("error");
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setStatus("error");
+        }
+      });
 
     return () => controller.abort();
   }, []);
 
+  const isLoading = status === "loading";
   const weather = data?.weather ?? null;
   const river = data?.river ?? null;
   const riverTime = timeLabel(river?.observedAt);
   const guidance = data?.guidance ?? {
     headline: "Check conditions before locking the day in.",
-    detail:
-      "Loading current National Weather Service and USGS river observations for Wisconsin Dells.",
+    detail: isLoading
+      ? "Loading current National Weather Service and USGS river observations for Wisconsin Dells."
+      : "Live weather and river observations are temporarily unavailable, so keep an indoor backup and confirm operator schedules directly.",
     href: "/things-to-do",
     cta: "Browse things to do",
   };
@@ -74,7 +92,7 @@ export default function DellsLiveNow() {
       className="section-shell"
       aria-labelledby="dells-live-heading"
       aria-live="polite"
-      aria-busy={!data}
+      aria-busy={isLoading}
       style={{ minHeight: "360px" }}
     >
       <div className="section-heading">
@@ -88,32 +106,61 @@ export default function DellsLiveNow() {
       <div className="action-grid">
         <article className="action-card">
           <p className="river-category">Weather · NWS</p>
-          <h3>{weather?.temperatureF != null ? `${weather.temperatureF}°F` : "Weather updating"}</h3>
-          <p>{weather?.shortForecast || "Current National Weather Service context is temporarily unavailable."}</p>
+          <h3>
+            {weather?.temperatureF != null
+              ? `${weather.temperatureF}°F`
+              : isLoading
+                ? "Weather updating"
+                : "Weather unavailable"}
+          </h3>
+          <p>
+            {weather?.shortForecast ||
+              (isLoading
+                ? "Loading current National Weather Service context."
+                : "Current National Weather Service context is temporarily unavailable.")}
+          </p>
           <p>
             {weather?.precipitationProbabilityPct != null ? (
               <>
                 <strong>{weather.precipitationProbabilityPct}%</strong> precipitation chance
               </>
-            ) : (
+            ) : isLoading ? (
               "Precipitation probability updating"
+            ) : (
+              "Precipitation probability unavailable"
             )}
           </p>
-          <p>{weather?.windSpeed ? `Wind: ${weather.windSpeed}` : "Wind conditions updating"}</p>
+          <p>
+            {weather?.windSpeed
+              ? `Wind: ${weather.windSpeed}`
+              : isLoading
+                ? "Wind conditions updating"
+                : "Wind conditions unavailable"}
+          </p>
         </article>
 
         <article className="action-card">
           <p className="river-category">Wisconsin River · USGS 05404000</p>
-          <h3>{river?.gageHeightFt != null ? `${river.gageHeightFt} ft` : "River data updating"}</h3>
+          <h3>
+            {river?.gageHeightFt != null
+              ? `${river.gageHeightFt} ft`
+              : isLoading
+                ? "River data updating"
+                : "River data unavailable"}
+          </h3>
           <p>
             {river?.dischargeCfs != null
               ? `${river.dischargeCfs.toLocaleString()} cubic feet per second at the Wisconsin River gauge near Wisconsin Dells.`
-              : "Current USGS river observations are temporarily unavailable."}
+              : isLoading
+                ? "Loading current USGS river observations near Wisconsin Dells."
+                : "Current USGS river observations are temporarily unavailable."}
           </p>
           <p>
             {riverTime
               ? `Observed about ${riverTime}${river?.provisional ? " · provisional data" : ""}`
-              : "Observation timestamp updating"}
+              : isLoading
+                ? "Observation timestamp updating"
+                : "Observation timestamp unavailable"}
           </p>
         </article>
 

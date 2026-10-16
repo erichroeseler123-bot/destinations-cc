@@ -78,7 +78,7 @@ test("promoted Dells content excludes hotels and waterparks", () => {
   assert.equal(promotedText.includes("waterpark"), false);
 });
 
-test("DellsLiveNow reserves a minimum-height status shell with aria-live polite instead of returning null", () => {
+test("DellsLiveNow reserves a minimum-height status shell with aria-live polite instead of returning null and clears aria-busy on failed requests", () => {
   const liveNowSource = fs.readFileSync(
     fileURLToPath(new URL("../app/components/DellsLiveNow.tsx", import.meta.url)),
     "utf8",
@@ -89,7 +89,16 @@ test("DellsLiveNow reserves a minimum-height status shell with aria-live polite 
     false,
     "DellsLiveNow must not return null when data is pending hydration",
   );
+  assert.equal(
+    /aria-busy=\{\s*!data\s*\}/.test(liveNowSource),
+    false,
+    "DellsLiveNow must not tie aria-busy directly to !data so failed requests clear busy state",
+  );
   assert.match(liveNowSource, /aria-live="polite"/);
+  assert.match(liveNowSource, /aria-busy=\{isLoading\}/);
+  assert.match(liveNowSource, /setStatus\("error"\)/);
+  assert.match(liveNowSource, /Weather unavailable/);
+  assert.match(liveNowSource, /River data unavailable/);
   assert.match(liveNowSource, /minHeight:\s*"360px"/);
 });
 
