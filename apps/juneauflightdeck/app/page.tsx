@@ -89,8 +89,8 @@ const FIT_GUIDE_EXPERIENCES = [
       "250 lb (113 kg) threshold on helicopter departures; balanced cabin seating assigned by flight dispatch at check-in with private scale readout.",
     weatherBackup:
       "Highest weather resilience—because no glacier touchdown is required, pilots can often adjust flight paths around localized valley fog. 100% weather refund or sea-level marine backup if grounded.",
-    waitlistHref: "/helicopter",
-    waitlistLabel: "Compare Scenic vs. Landing Options",
+    waitlistHref: "/helicopter-waitlist?tour=flightseeing",
+    waitlistLabel: "Request Scenic Flightseeing Availability Check",
   },
 ];
 
