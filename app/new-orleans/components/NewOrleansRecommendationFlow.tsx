@@ -349,12 +349,35 @@ export default function NewOrleansRecommendationFlow() {
       .then((response) => (response.ok ? response.json() : null))
       .then((value) => {
         if (!active || !value) return;
-        setLiveContext({
+        const nextLiveContext: LiveRecommendationContext = {
           period: value.period,
           rainRisk: value.rainRisk,
           heatRisk: value.heatRisk,
           liveMusicSignal: Boolean(value.liveMusicSignal),
           outdoorFriendly: Boolean(value.outdoorFriendly),
+        };
+        setLiveContext(nextLiveContext);
+        setResult((currentResult) => {
+          if (!currentResult) return currentResult;
+          try {
+            const savedAnswers = sessionStorage.getItem(CHOOSER_ANSWERS);
+            if (!savedAnswers) return currentResult;
+            const parsed = JSON.parse(savedAnswers) as Partial<RecommendationInputs>;
+            if (
+              parsed &&
+              typeof parsed === "object" &&
+              parsed.availableTime &&
+              parsed.transportation &&
+              parsed.groupStyle &&
+              parsed.mixedAges &&
+              parsed.historicalInterest
+            ) {
+              return evaluateRecommendation(parsed as RecommendationInputs, nextLiveContext);
+            }
+          } catch {
+            // Ignore unavailable or malformed sessionStorage state.
+          }
+          return currentResult;
         });
       })
       .catch(() => {

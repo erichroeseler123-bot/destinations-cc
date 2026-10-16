@@ -47,42 +47,42 @@ const formatComparisonRows = [
   {
     format: "City & Garden District",
     href: "/city-tours",
-    time: "~3 hrs",
-    logistics: "AC minibus · Hotel pickup options",
+    time: "~3 hr tour (+ pickup window)",
+    logistics: "AC minibus · Confirm pickup at booking",
     bestFit: "First-time overview, low walking",
   },
   {
     format: "Covered Swamp Boat",
     href: "/swamp-tours",
-    time: "~3.5–4 hrs w/ shuttle",
+    time: "1.5–2 hr boat (confirm shuttle total)",
     logistics: "Hotel shuttle or self-drive",
     bestFit: "All ages, shaded & calm bayou ride",
   },
   {
     format: "Airboat Adventure",
     href: "/swamp-tours",
-    time: "~3.5–4 hrs w/ shuttle",
+    time: "1.5–2 hr boat (confirm shuttle total)",
     logistics: "Hotel shuttle or self-drive",
     bestFit: "Fast open-air ride (min. age 5)",
   },
   {
     format: "Riverboat Jazz Cruise",
     href: "/riverboat-cruises",
-    time: "~2–2.5 hrs",
+    time: "2–2.5 hr cruise (+ early check-in)",
     logistics: "Meet at Toulouse St Wharf",
     bestFit: "Live jazz, seated river views",
   },
   {
     format: "Plantation History",
     href: "/plantation-tours",
-    time: "~5.5 hrs door-to-door",
+    time: "~5.5 hrs round-trip",
     logistics: "Round-trip coach / minibus",
     bestFit: "Whitney or Oak Alley history",
   },
   {
     format: "Quarter Walking Tours",
     href: "/ghost-tours",
-    time: "~2–2.5 hrs",
+    time: "2–2.5 hr walk (+ 15 min check-in)",
     logistics: "Meet in French Quarter",
     bestFit: "Evening ghosts or craft cocktails",
   },
@@ -171,13 +171,13 @@ export default function NewOrleansHomePage() {
               Compare New Orleans Tour Formats
             </h2>
             <p className="mt-3 text-sm leading-6 text-[var(--nola-text-muted)]">
-              Check total door-to-door time, pickup vs. departure-point logistics, and group fit before you book.
+              Check published activity durations, pickup vs. departure-point logistics, and group fit—confirm exact door-to-door return timing during booking when choosing hotel pickup.
             </p>
           </div>
           <div className="w-full overflow-x-auto border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)]">
             <table className="w-full table-fixed border-collapse text-left text-[11px] leading-snug sm:text-sm">
               <caption className="border-b border-[var(--nola-border)] bg-[#121016] px-2.5 py-2.5 text-left text-xs font-semibold text-[var(--nola-gold)] sm:px-4 sm:py-3">
-                Side-by-side comparison of New Orleans tour formats by total time commitment, pickup logistics, and group fit
+                Side-by-side comparison of New Orleans tour formats by activity duration, pickup or check-in logistics, and group fit
               </caption>
               <thead>
                 <tr className="border-b border-[var(--nola-border)] bg-[#17141d] text-[10px] font-bold uppercase tracking-wider text-[var(--nola-gold)] sm:text-xs">
