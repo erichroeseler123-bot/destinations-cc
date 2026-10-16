@@ -73,6 +73,7 @@ const QUESTIONS: Record<keyof RecommendationInputs, { title: string; options: st
 
 const CHOOSER_COMPLETED_AT = "wno_chooser_completed_at";
 const CHOOSER_RECOMMENDATION = "wno_chooser_recommendation";
+const CHOOSER_ANSWERS = "wno_chooser_answers";
 
 type BundleRecommendation = {
   id: "city-jazz" | "swamp-plantation" | "food-ghosts" | "city-whitney";
@@ -266,6 +267,7 @@ export default function NewOrleansRecommendationFlow() {
     const tertiarySlug = nextResult.tertiary?.slug || null;
     try {
       sessionStorage.setItem(CHOOSER_COMPLETED_AT, String(Date.now()));
+      sessionStorage.setItem(CHOOSER_ANSWERS, JSON.stringify(completedInputs));
       if (primarySlug) sessionStorage.setItem(CHOOSER_RECOMMENDATION, primarySlug);
       else sessionStorage.removeItem(CHOOSER_RECOMMENDATION);
     } catch {
@@ -298,22 +300,45 @@ export default function NewOrleansRecommendationFlow() {
 
   useEffect(() => {
     const dccContext = getStoredDccTravelerContext();
-    if (!isNewOrleansContext(dccContext)) return;
-    const prefilled = contextToRecommendationInputs(dccContext);
-    const count = Object.values(prefilled).filter(Boolean).length;
-    if (!count) return;
+    if (isNewOrleansContext(dccContext)) {
+      const prefilled = contextToRecommendationInputs(dccContext);
+      const count = Object.values(prefilled).filter(Boolean).length;
+      if (count > 0) {
+        setDccPrefillCount(count);
+        setAnswers(prefilled);
+        const missingIndex = firstUnansweredStep(prefilled);
+        if (missingIndex >= 0) {
+          setStepIndex(missingIndex);
+          return;
+        }
 
-    setDccPrefillCount(count);
-    setAnswers(prefilled);
-    const missingIndex = firstUnansweredStep(prefilled);
-    if (missingIndex >= 0) {
-      setStepIndex(missingIndex);
-      return;
+        const inboundLive: LiveRecommendationContext = dccContext?.liveContext || {};
+        setLiveContext(inboundLive);
+        completeChooser(prefilled as RecommendationInputs, inboundLive);
+        return;
+      }
     }
 
-    const inboundLive: LiveRecommendationContext = dccContext?.liveContext || {};
-    setLiveContext(inboundLive);
-    completeChooser(prefilled as RecommendationInputs, inboundLive);
+    try {
+      const savedAnswers = sessionStorage.getItem(CHOOSER_ANSWERS);
+      if (!savedAnswers) return;
+      const parsed = JSON.parse(savedAnswers) as Partial<RecommendationInputs>;
+      if (
+        parsed &&
+        typeof parsed === "object" &&
+        parsed.availableTime &&
+        parsed.transportation &&
+        parsed.groupStyle &&
+        parsed.mixedAges &&
+        parsed.historicalInterest
+      ) {
+        const restoredInputs = parsed as RecommendationInputs;
+        setAnswers(restoredInputs);
+        setResult(evaluateRecommendation(restoredInputs, liveContext));
+      }
+    } catch {
+      // Ignore unavailable or malformed sessionStorage state.
+    }
     // The inbound handoff is consumed once on mount; later live updates should not re-run the chooser.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -365,6 +390,13 @@ export default function NewOrleansRecommendationFlow() {
   };
 
   const restart = () => {
+    try {
+      sessionStorage.removeItem(CHOOSER_ANSWERS);
+      sessionStorage.removeItem(CHOOSER_RECOMMENDATION);
+      sessionStorage.removeItem(CHOOSER_COMPLETED_AT);
+    } catch {
+      // Ignore storage errors on reset.
+    }
     emitChooserEvent("chooser_restarted");
     setAnswers({});
     setDccPrefillCount(0);
@@ -424,7 +456,7 @@ export default function NewOrleansRecommendationFlow() {
               <RecommendationCard
                 slug={result.secondary.slug}
                 reasons={result.secondary.reasons}
-                cautions={[]}
+                cautions={result.secondary.cautionReasons}
                 rank="secondary"
                 href={getTourHref(result.secondary.slug)}
                 onClick={() => handleRecommendationClick(result.secondary!.slug, "secondary")}
@@ -434,7 +466,7 @@ export default function NewOrleansRecommendationFlow() {
               <RecommendationCard
                 slug={result.tertiary.slug}
                 reasons={result.tertiary.reasons}
-                cautions={[]}
+                cautions={result.tertiary.cautionReasons}
                 rank="tertiary"
                 href={getTourHref(result.tertiary.slug)}
                 onClick={() => handleRecommendationClick(result.tertiary!.slug, "tertiary")}
@@ -486,14 +518,14 @@ export default function NewOrleansRecommendationFlow() {
 function RecommendationCard({
   slug,
   reasons,
-  cautions,
+  cautions = [],
   rank = "secondary",
   href,
   onClick,
 }: {
   slug: string;
   reasons: string[];
-  cautions: string[];
+  cautions?: string[];
   rank?: "primary" | "secondary" | "tertiary";
   href: string;
   onClick: () => void;

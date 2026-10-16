@@ -43,6 +43,51 @@ const guideCards = [
   { href: "/guides", title: "Plan by trip type", copy: "Families, couples, first timers, and cruise visitors." },
 ];
 
+const formatComparisonRows = [
+  {
+    format: "City & Garden District",
+    href: "/city-tours",
+    time: "~3 hrs",
+    logistics: "AC minibus · Hotel pickup options",
+    bestFit: "First-time overview, low walking",
+  },
+  {
+    format: "Covered Swamp Boat",
+    href: "/swamp-tours",
+    time: "~3.5–4 hrs w/ shuttle",
+    logistics: "Hotel shuttle or self-drive",
+    bestFit: "All ages, shaded & calm bayou ride",
+  },
+  {
+    format: "Airboat Adventure",
+    href: "/swamp-tours",
+    time: "~3.5–4 hrs w/ shuttle",
+    logistics: "Hotel shuttle or self-drive",
+    bestFit: "Fast open-air ride (min. age 5)",
+  },
+  {
+    format: "Riverboat Jazz Cruise",
+    href: "/riverboat-cruises",
+    time: "~2–2.5 hrs",
+    logistics: "Meet at Toulouse St Wharf",
+    bestFit: "Live jazz, seated river views",
+  },
+  {
+    format: "Plantation History",
+    href: "/plantation-tours",
+    time: "~5.5 hrs door-to-door",
+    logistics: "Round-trip coach / minibus",
+    bestFit: "Whitney or Oak Alley history",
+  },
+  {
+    format: "Quarter Walking Tours",
+    href: "/ghost-tours",
+    time: "~2–2.5 hrs",
+    logistics: "Meet in French Quarter",
+    bestFit: "Evening ghosts or craft cocktails",
+  },
+];
+
 export default function NewOrleansHomePage() {
   const productBySlug = (slug: string) => STOREFRONT_PRODUCTS.find((product) => product.slug === slug);
 
@@ -87,6 +132,19 @@ export default function NewOrleansHomePage() {
               <h2 className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>Handpicked experiences. Local help. Better decisions.</h2>
             </div>
           </div>
+          <nav aria-label="Tour categories" className="mt-6 flex flex-wrap gap-2">
+            {categoryLinks.map((category, index) => (
+              <Link
+                key={`jump-${category.label}-${index}`}
+                href={category.href}
+                data-wno-event="category_jump_clicked"
+                data-wno-label={category.label}
+                className="border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)]/90 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--nola-ivory)] transition hover:border-[var(--nola-gold)] hover:text-[var(--nola-gold)]"
+              >
+                {category.label}
+              </Link>
+            ))}
+          </nav>
           <div className={visualStyles.homeCategoryGrid}>
             {categoryLinks.map((category, index) => (
               <Link key={`${category.label}-${index}`} href={category.href} data-wno-event="intent_tile_clicked" data-wno-label={category.label} className={visualStyles.homeCategoryCard}>
@@ -101,6 +159,49 @@ export default function NewOrleansHomePage() {
                 </div>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="quick-comparison" aria-labelledby="quick-comparison-heading" className="border-b border-[var(--nola-border)] bg-[#0e0d11] py-12 md:py-16">
+        <div className="mx-auto w-[min(1240px,calc(100%-1.5rem))] sm:w-[min(1240px,calc(100%-3rem))]">
+          <div className="mb-6 max-w-3xl">
+            <p className={visualStyles.homeSectionEyebrow}>Compare at a glance</p>
+            <h2 id="quick-comparison-heading" className={`${visualStyles.homeSectionTitle} ${visualStyles.displayFont}`}>
+              Compare New Orleans Tour Formats
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-[var(--nola-text-muted)]">
+              Check total door-to-door time, pickup vs. departure-point logistics, and group fit before you book.
+            </p>
+          </div>
+          <div className="w-full overflow-x-auto border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)]">
+            <table className="w-full table-fixed border-collapse text-left text-[11px] leading-snug sm:text-sm">
+              <caption className="border-b border-[var(--nola-border)] bg-[#121016] px-2.5 py-2.5 text-left text-xs font-semibold text-[var(--nola-gold)] sm:px-4 sm:py-3">
+                Side-by-side comparison of New Orleans tour formats by total time commitment, pickup logistics, and group fit
+              </caption>
+              <thead>
+                <tr className="border-b border-[var(--nola-border)] bg-[#17141d] text-[10px] font-bold uppercase tracking-wider text-[var(--nola-gold)] sm:text-xs">
+                  <th scope="col" className="w-[26%] break-words px-1.5 py-2.5 sm:px-4 sm:py-3">Format</th>
+                  <th scope="col" className="w-[22%] break-words px-1.5 py-2.5 sm:px-4 sm:py-3">Time</th>
+                  <th scope="col" className="w-[26%] break-words px-1.5 py-2.5 sm:px-4 sm:py-3">Pickup / Meet</th>
+                  <th scope="col" className="w-[26%] break-words px-1.5 py-2.5 sm:px-4 sm:py-3">Best Fit</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--nola-border)] text-[var(--nola-ivory)]">
+                {formatComparisonRows.map((row) => (
+                  <tr key={row.format} className="hover:bg-white/[0.02]">
+                    <th scope="row" className="break-words px-1.5 py-2.5 font-semibold text-[var(--nola-ivory)] sm:px-4 sm:py-3">
+                      <Link href={row.href} className="text-[var(--nola-gold)] underline-offset-2 hover:underline">
+                        {row.format}
+                      </Link>
+                    </th>
+                    <td className="break-words px-1.5 py-2.5 text-[var(--nola-text-muted)] sm:px-4 sm:py-3">{row.time}</td>
+                    <td className="break-words px-1.5 py-2.5 text-[var(--nola-text-muted)] sm:px-4 sm:py-3">{row.logistics}</td>
+                    <td className="break-words px-1.5 py-2.5 text-[var(--nola-text-muted)] sm:px-4 sm:py-3">{row.bestFit}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
