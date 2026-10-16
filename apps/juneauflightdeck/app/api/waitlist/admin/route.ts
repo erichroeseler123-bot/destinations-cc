@@ -270,7 +270,14 @@ export async function GET(request: Request) {
     const uniqueDates = Array.from(new Set(activeEntries.map((e: WaitlistEntry) => e.portDate))).sort();
 
     const totalPotentialValue = productionEntries.reduce((acc: number, curr: WaitlistEntry) => {
-      const perSeat = curr.tourType === "dog_sledding" ? 649 : curr.tourType === "ice_trek" ? 599 : 449;
+      const perSeat =
+        curr.tourType === "dog_sledding"
+          ? 649
+          : curr.tourType === "ice_trek"
+          ? 599
+          : curr.tourType === "flightseeing"
+          ? 299
+          : 449;
       return acc + (curr.estimatedValue || curr.partySize * perSeat);
     }, 0);
 
