@@ -319,16 +319,7 @@ export default function DispatchDashboardPage() {
                         {entry.partySize} {entry.partySize === 1 ? "Passenger" : "Passengers"}
                       </span>
                       <small className="text-slate-400 block">
-                        Est: $
-                        {(
-                          entry.estimatedValue ||
-                          entry.partySize *
-                            (entry.tourType === "dog_sledding"
-                              ? 649
-                              : entry.tourType === "ice_trek"
-                              ? 599
-                              : 449)
-                        ).toLocaleString()}
+                        Est: ${(entry.estimatedValue || entry.partySize * 450).toLocaleString()}
                       </small>
                     </td>
 

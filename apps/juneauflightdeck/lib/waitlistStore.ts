@@ -15,7 +15,7 @@ export interface ScannedProduct {
   name: string;
   operator: string;
   port: "juneau" | "skagway";
-  tourType: "dog_sledding" | "glacier_landing" | "ice_trek";
+  tourType: "dog_sledding" | "glacier_landing" | "ice_trek" | "flightseeing";
   itemPk: number;
   companyShortname: string;
   cancellationPolicy: string;
@@ -103,7 +103,7 @@ export function normalizeTourPreference(
   rawTourType?: string,
   rawOperator?: string
 ): {
-  tourType: "any" | "glacier_landing" | "dog_sledding" | "ice_trek";
+  tourType: "any" | "glacier_landing" | "dog_sledding" | "ice_trek" | "flightseeing";
   preferredOperator: "temsco" | "coastal" | "northstar" | "any";
 } {
   const lower = (rawTourType || "").toLowerCase().trim();
@@ -130,10 +130,14 @@ export function normalizeTourPreference(
   if (lower.includes("trek") || lower.includes("climb")) {
     return { tourType: "ice_trek", preferredOperator: operator };
   }
+  if (lower.includes("flight") || lower.includes("scenic")) {
+    return { tourType: "flightseeing", preferredOperator: operator };
+  }
   if (
     lower === "glacier_landing" ||
     lower === "dog_sledding" ||
-    lower === "ice_trek"
+    lower === "ice_trek" ||
+    lower === "flightseeing"
   ) {
     return { tourType: lower as any, preferredOperator: operator };
   }
@@ -153,7 +157,7 @@ export interface WaitlistEntry {
   skagwayDate?: string; // explicit Skagway port date if multi-port or Skagway scan
   dateVerification: "passenger_supplied" | "verified_itinerary";
   portCity: "juneau" | "skagway" | "either";
-  tourType: "any" | "glacier_landing" | "dog_sledding" | "ice_trek";
+  tourType: "any" | "glacier_landing" | "dog_sledding" | "ice_trek" | "flightseeing";
   partySize: number;
   allowSplitParty?: boolean;
   partialAlertsCount?: number;

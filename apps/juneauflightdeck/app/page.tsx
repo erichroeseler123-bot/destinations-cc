@@ -37,7 +37,6 @@ export default function HomePage() {
         subhead="Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, waitlists for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers."
         primaryCtaLabel="Find Your Tour"
       />
-
       <section
         aria-label="Plan the rest of your cruise"
         style={{ maxWidth: 1120, margin: "0 auto 52px", padding: "0 20px" }}

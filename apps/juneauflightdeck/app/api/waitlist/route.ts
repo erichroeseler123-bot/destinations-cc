@@ -178,11 +178,7 @@ export async function POST(request: Request) {
       normalizeTourPreference(tourType, preferredOperator);
 
     const perSeat =
-      normalizedTourType === "dog_sledding"
-        ? 649
-        : normalizedTourType === "ice_trek"
-        ? 599
-        : 449;
+      normalizedTourType === "dog_sledding" ? 649 : normalizedTourType === "ice_trek" ? 599 : 449;
 
     const entry: WaitlistEntry = {
       id: submissionId,

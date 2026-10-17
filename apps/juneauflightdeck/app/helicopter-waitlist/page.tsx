@@ -388,17 +388,6 @@ export default function Page() {
 
           <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20, minWidth: 0 }}>
             <h3 style={{ fontSize: "1rem", color: "#ffffff", margin: "0 0 8px" }}>
-              <Link href="/juneau/what-to-do-if-helicopter-tour-canceled" style={{ color: "var(--ice, #9ed9ff)", textDecoration: "none" }}>
-                Weather Cancellation Backup Guide &rarr;
-              </Link>
-            </h3>
-            <p style={{ fontSize: "0.85rem", color: "var(--muted)", margin: 0, lineHeight: 1.5 }}>
-              100% weather refund terms and how to pivot to Auke Bay whale watching if mountain pass ceilings drop.
-            </p>
-          </div>
-
-          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20, minWidth: 0 }}>
-            <h3 style={{ fontSize: "1rem", color: "#ffffff", margin: "0 0 8px" }}>
               <Link href="/skagway/helicopter" style={{ color: "var(--ice, #9ed9ff)", textDecoration: "none" }}>
                 Skagway Helicopter Tours &rarr;
               </Link>
