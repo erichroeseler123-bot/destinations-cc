@@ -171,8 +171,8 @@ export const TOUR_RECORDS: Record<string, TourRecord> = Object.fromEntries(
 
 export interface RecommendationResult {
   primary: { slug: string; reasons: string[]; cautionReasons: string[] } | null;
-  secondary?: { slug: string; reasons: string[] };
-  tertiary?: { slug: string; reasons: string[] };
+  secondary?: { slug: string; reasons: string[]; cautionReasons: string[] };
+  tertiary?: { slug: string; reasons: string[]; cautionReasons: string[] };
   isNoFit: boolean;
 }
 
@@ -274,7 +274,10 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
 
     if (inputs.transportation === "We need pickup or transportation") {
       if (profile.transportation === "included") { score += 4; reasons.push("Transportation is built into or described with this experience."); }
-      if (profile.transportation === "self") score -= 2;
+      if (profile.transportation === "self") {
+        score -= 2;
+        cautions.push("Requires meeting at the departure point rather than hotel pickup.");
+      }
     }
 
     if (!governedMinutes && inputs.availableTime !== "Most of the day" && product.slug !== HELD_COMBO_SLUG) {
@@ -356,10 +359,12 @@ export function evaluateRecommendation(inputs: RecommendationInputs, live: LiveR
     secondary: secondary ? {
       slug: secondary.slug,
       reasons: secondary.reasons.slice(0, 2).length ? secondary.reasons.slice(0, 2) : ["A strong alternative if you want a slightly different pace or format."],
+      cautionReasons: secondary.cautions.slice(0, 2),
     } : undefined,
     tertiary: tertiary ? {
       slug: tertiary.slug,
       reasons: tertiary.reasons.slice(0, 2).length ? tertiary.reasons.slice(0, 2) : ["Another verified option that matches your timing and party criteria."],
+      cautionReasons: tertiary.cautions.slice(0, 2),
     } : undefined,
     isNoFit: false,
   };
