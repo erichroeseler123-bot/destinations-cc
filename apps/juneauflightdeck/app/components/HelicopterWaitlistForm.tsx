@@ -393,11 +393,9 @@ ${shareUrl}`;
       {status === "success" ? (
         <div
           className="waitlist-success-banner space-y-6"
-          role="status"
-          aria-live="polite"
           style={{ display: "grid", gap: 20, minWidth: 0 }}
         >
-          <div className="text-center" style={{ textAlign: "center" }}>
+          <div className="text-center" role="status" aria-live="polite" style={{ textAlign: "center" }}>
             <div className="success-icon inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 text-2xl mb-3">✓</div>
             <h4 className="text-xl font-bold text-white" style={{ margin: "8px 0 4px" }}>
               {formData.bookingMode === "concierge_dispatch"
@@ -506,6 +504,15 @@ ${shareUrl}`;
               </button>
             </div>
           </div>
+
+          <p
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clipPath: "inset(50%)", whiteSpace: "nowrap", border: 0 }}
+          >
+            {copiedRollCall ? "Roll call post copied." : copiedLink ? "Share link copied." : ""}
+          </p>
 
           <div className="text-center pt-2" style={{ textAlign: "center" }}>
             <button
