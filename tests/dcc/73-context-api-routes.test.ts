@@ -120,7 +120,10 @@ test("Context API Route & Staging Neon Concurrency Suite", async (t) => {
     }
   });
 
-  await t.test("3. POST /api/v1/context - Simultaneous duplicate issue race returns identical contextId without 500 collision", async () => {
+  await t.test(
+    "3. POST /api/v1/context - Simultaneous duplicate issue race returns identical contextId without 500 collision",
+    { skip: !db ? "Requires DATABASE_URL (.env.test.local)" : false },
+    async () => {
     const raceKey = `test-race-idemp-${Date.now()}-${Math.random()}`;
     const payload = {
       sourceSite: "cruisepromenade",
@@ -292,7 +295,10 @@ test("Context API Route & Staging Neon Concurrency Suite", async (t) => {
     assert.equal(json.errorCode, "INVALID_SIGNATURE");
   });
 
-  await t.test("9. POST /api/v1/context/:id/redeem - Fails 403 on owner mismatch", async () => {
+  await t.test(
+    "9. POST /api/v1/context/:id/redeem - Fails 403 on owner mismatch",
+    { skip: !db ? "Requires DATABASE_URL (.env.test.local)" : false },
+    async () => {
     const pathname = `/api/v1/context/${createdContextId}/redeem`;
     const bodyStr = JSON.stringify({ owner: "gosno" }); // Context was issued for juneauflightdeck
 
@@ -321,7 +327,10 @@ test("Context API Route & Staging Neon Concurrency Suite", async (t) => {
     assert.equal(json.errorCode, "OWNER_MISMATCH");
   });
 
-  await t.test("10. POST /api/v1/context/:id/redeem - Real Neon Concurrent Race: exactly ONE 200 and ONE 409", async () => {
+  await t.test(
+    "10. POST /api/v1/context/:id/redeem - Real Neon Concurrent Race: exactly ONE 200 and ONE 409",
+    { skip: !db ? "Requires DATABASE_URL (.env.test.local)" : false },
+    async () => {
     // Issue a fresh context specifically for live concurrent redemption race
     const freshIssue = await issueContext({
       sourceSite: "cruisepromenade",
@@ -383,7 +392,10 @@ test("Context API Route & Staging Neon Concurrency Suite", async (t) => {
     assert.equal(hasReplay, true, "One of the concurrent same-owner redemptions must be flagged as idempotent replay");
   });
 
-  await t.test("11. POST /api/v1/context/:id/redeem - Expired context returns 410 CONTEXT_EXPIRED", async () => {
+  await t.test(
+    "11. POST /api/v1/context/:id/redeem - Expired context returns 410 CONTEXT_EXPIRED",
+    { skip: !db ? "Requires DATABASE_URL (.env.test.local)" : false },
+    async () => {
     // Issue a context with an expired timestamp (16 minutes ago)
     const pastTime = Date.now() - 16 * 60 * 1000;
     const expiredIssue = await issueContext(
@@ -422,7 +434,10 @@ test("Context API Route & Staging Neon Concurrency Suite", async (t) => {
     assert.equal(json.errorCode, "CONTEXT_EXPIRED");
   });
 
-  await t.test("12. POST /api/v1/context/:id/redeem - Unknown contextId returns 404", async () => {
+  await t.test(
+    "12. POST /api/v1/context/:id/redeem - Unknown contextId returns 404",
+    { skip: !db ? "Requires DATABASE_URL (.env.test.local)" : false },
+    async () => {
     const fakeContextId = "dcc_ctx_00000000000000000000000000000000";
     const pathname = `/api/v1/context/${fakeContextId}/redeem`;
     const bodyStr = JSON.stringify({ owner: "juneauflightdeck" });
@@ -452,7 +467,10 @@ test("Context API Route & Staging Neon Concurrency Suite", async (t) => {
     assert.equal(json.errorCode, "CONTEXT_NOT_FOUND");
   });
 
-  await t.test("13. POST /api/v1/context/:id/revoke - Authenticated service revocation cancels token and prevents redemption", async () => {
+  await t.test(
+    "13. POST /api/v1/context/:id/revoke - Authenticated service revocation cancels token and prevents redemption",
+    { skip: !db ? "Requires DATABASE_URL (.env.test.local)" : false },
+    async () => {
     // 1. Issue fresh token
     const freshIssue = await issueContext({
       sourceSite: "cruisepromenade",
@@ -513,7 +531,10 @@ test("Context API Route & Staging Neon Concurrency Suite", async (t) => {
     assert.match(redeemJson.message, /revoked/);
   });
 
-  await t.test("14. POST /api/v1/context/:id/redeem - Already-redeemed context that subsequently expires returns 410 CONTEXT_EXPIRED on replay", async () => {
+  await t.test(
+    "14. POST /api/v1/context/:id/redeem - Already-redeemed context that subsequently expires returns 410 CONTEXT_EXPIRED on replay",
+    { skip: !db ? "Requires DATABASE_URL (.env.test.local)" : false },
+    async () => {
     // 1. Issue context in the past (16 minutes ago)
     const pastTime = Date.now() - 16 * 60 * 1000;
     const issue = await issueContext(
