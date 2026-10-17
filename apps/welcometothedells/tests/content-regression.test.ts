@@ -162,10 +162,20 @@ test("/boat-tours and /first-time include the 60-Second Fit Guide comparing asho
   const ducks = BOAT_TOUR_FIT_GUIDE.find((entry) => entry.id === "original-wisconsin-ducks");
   assert.ok(ducks);
   assert.match(ducks.splashThrill, /Land-to-water Duck/i);
+  assert.match(ducks.comfort, /ladder-style steps/i);
 
   const jetBoat = BOAT_TOUR_FIT_GUIDE.find((entry) => entry.id === "jet-boat-adventures");
   assert.ok(jetBoat);
   assert.match(jetBoat.splashThrill, /jet boat/i);
+  assert.match(jetBoat.ashoreWalks, /Upper Dells jet boat \(~75 min\).*Witches Gulch/i);
+  assert.match(jetBoat.ashoreWalks, /Lower Dells jet boat \(~50 min\).*no shore walks/i);
+  assert.match(jetBoat.duration, /50 minutes on Lower Dells/i);
+  assert.match(jetBoat.duration, /75 minutes on Upper Dells/i);
+
+  assert.match(
+    boatToursSource,
+    /Need zero stairs vs\. a 1-hour ride\?[\s\S]*?Lower Dells Scenic Cruise[\s\S]*?steep ladder-style steps to board/,
+  );
 
   for (const entry of BOAT_TOUR_FIT_GUIDE) {
     assert.ok(entry.ashoreWalks.length > 10);
@@ -178,7 +188,7 @@ test("/boat-tours and /first-time include the 60-Second Fit Guide comparing asho
   assert.match(firstTimeSource, /\/boat-tours#fit-guide/);
   assert.match(firstTimeSource, /Witches Gulch/);
   assert.match(firstTimeSource, /Stand Rock/);
+  assert.match(firstTimeSource, /75-minute Upper Dells/);
+  assert.match(firstTimeSource, /50-minute Lower Dells/);
   assert.match(firstTimeSource, /60-Second Fit Guide/);
 });
-
-

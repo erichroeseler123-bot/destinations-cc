@@ -109,18 +109,20 @@ export const BOAT_TOUR_FIT_GUIDE: RiverFitComparison[] = [
   },
   {
     id: "jet-boat-adventures",
-    title: "Jet Boat Adventures",
+    title: "Jet Boat Adventures (Upper vs. Lower Dells)",
     badge: "High-speed wet thrill",
-    bestFor: "Teens, adults, and thrill-seekers who want fast canyon spins instead of a slow narrated cruise.",
+    bestFor:
+      "Teens, adults, and thrill-seekers who want fast canyon spins instead of a slow narrated cruise.",
     ashoreWalks:
-      "No shore walks — nonstop high-speed river run past the sandstone formations.",
+      "Upper Dells jet boat (~75 min) includes one shore landing to walk through Witches Gulch (not Stand Rock); Lower Dells jet boat (~50 min) has no shore walks and stays 100% on the water.",
     splashThrill:
-      "High-splash jet boat — power stops, 360-degree spins, and heavy river spray (expect to get wet).",
-    duration: "~50 minutes on the water (allow 20–30 extra minutes to dry off afterward).",
+      "High-splash jet boat — power stops, 360-degree spins, and heavy river spray on both routes (expect to get wet).",
+    duration:
+      "~50 minutes on Lower Dells (no shore stop) or ~75 minutes on Upper Dells (includes Witches Gulch walk); allow 20–30 extra minutes to dry off afterward.",
     comfort:
-      "40-inch minimum height requirement; skip for toddlers, expectant mothers, or anyone avoiding hard turns and cold spray.",
+      "40-inch minimum height requirement; skip for toddlers, expectant mothers, or anyone avoiding hard turns and cold spray (plus canyon steps if choosing the Upper Dells route).",
     href: "/out/wisconsin-dells/jet-boat-primary",
-    cta: "Check jet boat times",
+    cta: "Compare Upper & Lower jet boats",
   },
 ];
 
@@ -177,9 +179,9 @@ export default function Page() {
             Upper Dells vs. Lower Dells vs. Original Wisconsin Ducks: 60-Second Fit Guide
           </h2>
           <p>
-            The Kilbourn Dam divides the Wisconsin River into two distinct sightseeing zones, and only the Upper Dells
-            boat tour goes ashore inside the narrow sandstone canyons. Compare shore walks, splash level, total time,
-            and mobility comfort before booking.
+            The Kilbourn Dam divides the Wisconsin River into two distinct sightseeing zones: Upper Dells trips can go
+            ashore inside narrow sandstone canyons, while Lower Dells trips and Original Wisconsin Ducks stay aboard
+            below the dam. Compare shore walks, splash level, total time, and mobility comfort before booking.
           </p>
         </div>
 
@@ -187,20 +189,22 @@ export default function Page() {
           <div>
             <strong>Want ashore canyon walks?</strong>
             <span>
-              Choose the Upper Dells Scenic Boat Tour—the only route that docks for Witches Gulch and Stand Rock.
+              Choose the Upper Dells Scenic Boat Tour for both Witches Gulch and Stand Rock, or the 75-minute Upper
+              Dells Jet Boat for Witches Gulch with high-speed spins.
             </span>
           </div>
           <div>
-            <strong>Want 1 hour or zero stairs?</strong>
+            <strong>Need zero stairs vs. a 1-hour ride?</strong>
             <span>
-              Pick Lower Dells for a calm seated cruise or Original Wisconsin Ducks for a land-to-water trail splash.
+              For zero canyon stairs and easiest boarding, pick the 1-hour Lower Dells Scenic Cruise. Original Wisconsin
+              Ducks also run ~1 hour with no shore walks, but require climbing steep ladder-style steps to board.
             </span>
           </div>
           <div>
             <strong>Want speed and spray?</strong>
             <span>
-              Book Jet Boat Adventures for 50 minutes of fast canyon spins and power stops where getting wet is part of
-              the ride.
+              Book Jet Boat Adventures in either the 50-minute Lower Dells nonstop splash run or the 75-minute Upper
+              Dells run with a Witches Gulch shore stop.
             </span>
           </div>
         </div>
