@@ -161,6 +161,48 @@ export default function HomePage() {
             </div>
           </div>
 
+          <div className="wts-comparison-wrap">
+            <table className="wts-comparison-table">
+              <caption className="wts-comparison-caption">
+                Understand the practical difference between open airboats and calmer covered swamp boats before opening checkout.
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Decision Factor</th>
+                  <th scope="col">Airboat</th>
+                  <th scope="col">Covered Swamp Boat</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Ride style</th>
+                  <td>Faster, louder, open-air, and more ride-driven.</td>
+                  <td>Slower, calmer, and easier to treat as a scenic bayou outing.</td>
+                </tr>
+                <tr>
+                  <th scope="row">Noise</th>
+                  <td>Expect a high-noise experience and follow the operator&apos;s hearing-protection and safety instructions.</td>
+                  <td>Usually the easier choice when lower noise and conversation matter to the group.</td>
+                </tr>
+                <tr>
+                  <th scope="row">Weather exposure</th>
+                  <td>More exposed to sun, wind, rain, and operating-condition changes.</td>
+                  <td>More shelter is typical, although it is still an outdoor swamp experience.</td>
+                </tr>
+                <tr>
+                  <th scope="row">Families and mixed groups</th>
+                  <td>Can be a great fit when everyone wants the intensity and meets the current operator rules.</td>
+                  <td>The safer default for a mixed group when comfort and broad fit matter more than thrill.</td>
+                </tr>
+                <tr>
+                  <th scope="row">Pickup and logistics</th>
+                  <td>Compare the specific operator&apos;s meeting point, transportation option, total duration, and return plan.</td>
+                  <td>Compare the specific operator&apos;s meeting point, transportation option, total duration, and return plan.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
           <div className="mt-8 rounded-xl border border-amber-400/30 bg-amber-950/20 p-5">
             <h4 className="text-sm font-bold text-amber-300">Choose your tour here and complete your reservation through the checkout shown.</h4>
             <p className="mt-1 text-xs leading-5 text-stone-300">
