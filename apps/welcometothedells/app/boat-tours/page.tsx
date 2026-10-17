@@ -65,30 +65,30 @@ export const BOAT_TOUR_FIT_GUIDE: RiverFitComparison[] = [
   {
     id: "upper-dells-scenic",
     title: "Upper Dells Scenic Boat Tour",
-    badge: "Only route with canyon walks",
-    bestFor: "First-time visitors who want to walk inside the signature sandstone slot canyons.",
+    badge: "Only route with both canyon walks",
+    bestFor: "First-time visitors who want to walk inside both signature sandstone slot canyons.",
     ashoreWalks:
       "Yes — two exclusive shore landings with boardwalk walks through Witches Gulch and up to Stand Rock (site of the famous dog leap).",
     splashThrill:
       "Calm scenic cruise — dry, relaxed double-decker riverboat above the Kilbourn Dam with open upper and covered lower decks.",
     duration: "~2 hours total (budget 2.5 hours with downtown parking and boarding).",
     comfort:
-      "Smooth boat ride for kids and seniors, but shore stops include narrow canyon steps at Witches Gulch and a steep incline at Stand Rock (strollers remain on the boat during walks).",
+      "Smooth boat ride for kids and seniors, but shore stops include narrow canyon steps at Witches Gulch and a steep incline at Stand Rock (strollers remain on the boat during walks, and wheelchair users must leave wheelchairs at the dock and be able to transfer and sit without assistance).",
     href: "/out/wisconsin-dells/classic-upper",
     cta: "Check Upper Dells tours",
   },
   {
     id: "lower-dells-scenic",
     title: "Lower Dells Scenic Cruise",
-    badge: "Easiest seated comfort",
-    bestFor: "Seniors, low-mobility groups, and travelers wanting calm river bluffs in half the time.",
+    badge: "Zero canyon stairs",
+    bestFor: "Seniors, families, and travelers wanting calm river bluffs in half the time without canyon walks.",
     ashoreWalks:
       "No shore walks — stays 100% on the water below the dam past Rocky Islands and wide sculpted sandstone cliffs.",
     splashThrill:
       "Calm scenic cruise — dry, gentle sightseeing on wider river channels without dock transfers.",
     duration: "~1 hour total (easy to fit before lunch or a downtown Broadway walk).",
     comfort:
-      "Highest kid, senior, and mobility comfort — board once and stay seated with zero canyon stairs or trail bounce.",
+      "Board once and stay seated with zero canyon stairs or trail bounce, though passengers using wheelchairs must leave wheelchairs at the dock and be able to transfer onto the boat and sit without assistance.",
     href: "/out/wisconsin-dells/classic-upper",
     cta: "Check scenic tour times",
   },
@@ -112,7 +112,7 @@ export const BOAT_TOUR_FIT_GUIDE: RiverFitComparison[] = [
     title: "Jet Boat Adventures (Upper vs. Lower Dells)",
     badge: "High-speed wet thrill",
     bestFor:
-      "Teens, adults, and thrill-seekers who want fast canyon spins instead of a slow narrated cruise.",
+      "Kids ages 4+, teens, and adults who want fast canyon spins instead of a slow narrated cruise.",
     ashoreWalks:
       "Upper Dells jet boat (~75 min) includes one shore landing to walk through Witches Gulch (not Stand Rock); Lower Dells jet boat (~50 min) has no shore walks and stays 100% on the water.",
     splashThrill:
@@ -120,7 +120,7 @@ export const BOAT_TOUR_FIT_GUIDE: RiverFitComparison[] = [
     duration:
       "~50 minutes on Lower Dells (no shore stop) or ~75 minutes on Upper Dells (includes Witches Gulch walk); allow 20–30 extra minutes to dry off afterward.",
     comfort:
-      "40-inch minimum height requirement; skip for toddlers, expectant mothers, or anyone avoiding hard turns and cold spray (plus canyon steps if choosing the Upper Dells route).",
+      "Open to ages 4+ (children age 3 and younger are not permitted); skip for expectant mothers or anyone avoiding hard turns and cold spray (plus canyon steps if choosing the Upper Dells route).",
     href: "/out/wisconsin-dells/jet-boat-primary",
     cta: "Compare Upper & Lower jet boats",
   },
@@ -189,22 +189,23 @@ export default function Page() {
           <div>
             <strong>Want ashore canyon walks?</strong>
             <span>
-              Choose the Upper Dells Scenic Boat Tour for both Witches Gulch and Stand Rock, or the 75-minute Upper
-              Dells Jet Boat for Witches Gulch with high-speed spins.
+              Choose the Upper Dells Scenic Boat Tour for the only route with both Witches Gulch and Stand Rock, or the
+              75-minute Upper Dells Jet Boat for Witches Gulch with high-speed spins.
             </span>
           </div>
           <div>
             <strong>Need zero stairs vs. a 1-hour ride?</strong>
             <span>
-              For zero canyon stairs and easiest boarding, pick the 1-hour Lower Dells Scenic Cruise. Original Wisconsin
-              Ducks also run ~1 hour with no shore walks, but require climbing steep ladder-style steps to board.
+              For zero canyon stairs, pick the 1-hour Lower Dells Scenic Cruise (note: wheelchairs must remain at the
+              dock and guests must transfer and sit unassisted). Original Wisconsin Ducks also run ~1 hour with no shore
+              walks, but require climbing steep ladder-style steps to board.
             </span>
           </div>
           <div>
             <strong>Want speed and spray?</strong>
             <span>
-              Book Jet Boat Adventures in either the 50-minute Lower Dells nonstop splash run or the 75-minute Upper
-              Dells run with a Witches Gulch shore stop.
+              Book Jet Boat Adventures (ages 4+) in either the 50-minute Lower Dells nonstop splash run or the 75-minute
+              Upper Dells run with a Witches Gulch shore stop.
             </span>
           </div>
         </div>

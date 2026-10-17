@@ -150,14 +150,18 @@ test("/boat-tours and /first-time include the 60-Second Fit Guide comparing asho
 
   const upperDells = BOAT_TOUR_FIT_GUIDE.find((entry) => entry.id === "upper-dells-scenic");
   assert.ok(upperDells);
+  assert.match(upperDells.badge, /Only route with both canyon walks/i);
   assert.match(upperDells.ashoreWalks, /Witches Gulch/);
   assert.match(upperDells.ashoreWalks, /Stand Rock/);
   assert.match(upperDells.splashThrill, /Calm scenic cruise/i);
+  assert.match(upperDells.comfort, /leave wheelchairs at the dock/i);
 
   const lowerDells = BOAT_TOUR_FIT_GUIDE.find((entry) => entry.id === "lower-dells-scenic");
   assert.ok(lowerDells);
   assert.match(lowerDells.ashoreWalks, /No shore walks/i);
   assert.match(lowerDells.splashThrill, /Calm scenic cruise/i);
+  assert.match(lowerDells.comfort, /leave wheelchairs at the dock/i);
+  assert.match(lowerDells.comfort, /sit without assistance/i);
 
   const ducks = BOAT_TOUR_FIT_GUIDE.find((entry) => entry.id === "original-wisconsin-ducks");
   assert.ok(ducks);
@@ -171,10 +175,13 @@ test("/boat-tours and /first-time include the 60-Second Fit Guide comparing asho
   assert.match(jetBoat.ashoreWalks, /Lower Dells jet boat \(~50 min\).*no shore walks/i);
   assert.match(jetBoat.duration, /50 minutes on Lower Dells/i);
   assert.match(jetBoat.duration, /75 minutes on Upper Dells/i);
+  assert.match(jetBoat.comfort, /ages 4\+/i);
+  assert.match(jetBoat.comfort, /age 3 and younger are not permitted/i);
+  assert.equal(/40-inch/i.test(jetBoat.comfort), false);
 
   assert.match(
     boatToursSource,
-    /Need zero stairs vs\. a 1-hour ride\?[\s\S]*?Lower Dells Scenic Cruise[\s\S]*?steep ladder-style steps to board/,
+    /Need zero stairs vs\. a 1-hour ride\?[\s\S]*?Lower Dells Scenic Cruise[\s\S]*?wheelchairs must remain at the\s+dock[\s\S]*?steep ladder-style steps to board/,
   );
 
   for (const entry of BOAT_TOUR_FIT_GUIDE) {
