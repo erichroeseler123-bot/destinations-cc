@@ -539,6 +539,37 @@ test('discoverNextTaskIfEmpty rotates to next unblocked site after 2-hour interv
   assert.equal(heartbeat.rotation.lastSite, 'dells');
   assert.equal(heartbeat.rotation.lastIssue, 167);
 });
+test('review stage waits for pending Vercel statuses and blocks on failing Vercel deployments before reporting ready', async t => {
+  const h = harness(t);
+  const i = issue(1, 'code');
+  const task = parseTask(i, config);
+  await h.b.process(i, task);
+  assert.equal(h.b.state[1].status, 'review');
+  h.reviews.push({ id: 1, commit_id: 'v1', user: { login: config.reviewBots[0] }, state: 'COMMENTED', body: '' });
+  let vercelStatuses = [{ context: 'Vercel – juneauflightdeck', state: 'pending', description: 'Deploying' }];
+  const origApi = h.b.api.bind(h.b);
+  h.b.api = async (endpoint, method = 'GET', data) => {
+    if (endpoint.endsWith('/commits/v1/status')) {
+      return { state: vercelStatuses[0].state, statuses: vercelStatuses };
+    }
+    return origApi(endpoint, method, data);
+  };
+  await h.b.process(i, task);
+  assert.equal(h.b.state[1].status, 'review', 'Pending Vercel deployment must keep task in review');
+  assert.ok(!h.notes.some(n => n.includes('Ready for owner review')));
 
+  vercelStatuses = [{ context: 'Vercel – web', state: 'failure', description: 'Deployment has failed' }];
+  await h.b.process(i, task);
+  assert.equal(h.b.state[1].status, 'blocked', 'Failed Vercel deployment must block task');
+  assert.equal(h.b.state[1].blocker.category, 'check_failed');
+  assert.ok(!h.notes.some(n => n.includes('Ready for owner review')));
 
-
+  h.b.state[1].status = 'review';
+  vercelStatuses = [
+    { context: 'Vercel – juneauflightdeck', state: 'success', description: 'Deployment has completed' },
+    { context: 'Vercel – web', state: 'success', description: 'Canceled by Ignored Build Step' }
+  ];
+  await h.b.process(i, task);
+  assert.equal(h.b.state[1].status, 'ready');
+  assert.ok(h.notes.some(n => n.includes('Ready for owner review')));
+});

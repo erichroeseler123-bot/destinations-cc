@@ -692,7 +692,38 @@ export class Bridge {
           if (Date.now() - entry.reviewAt > this.config.reviewTimeoutMinutes * 60000) throw new Error('No Codex review received. Enable Code Review for this repository in Codex settings, then create a follow-up task.');
           return;
         }
-        if (!review.findings.length) { entry.status = 'ready'; entry.stalled = false; entry.blocker = null; this.save(); await this.comment(issue.number, `${site.name}: independent checks passed and Codex posted a review without findings on commit ${entry.sha}. Ready for owner review: ${entry.url}. Not merged or live-verified.`); return; }
+        if (!review.findings.length) {
+          const commitStatus = await this.api(`repos/${site.repo}/commits/${entry.sha}/status`);
+          const vercelStatuses = Array.isArray(commitStatus?.statuses)
+            ? commitStatus.statuses.filter(s => typeof s?.context === 'string' && /^Vercel\b/i.test(s.context))
+            : [];
+          const failedVercel = vercelStatuses.filter(s => s.state === 'failure' || s.state === 'error');
+          if (failedVercel.length > 0) {
+            const summary = failedVercel.map(s => `${s.context} (${s.description || s.state})`).join(', ');
+            const err = new Error(`Vercel check failed on commit ${entry.sha}: ${summary}`);
+            err.stage = 'check';
+            throw err;
+          }
+          const pendingVercel = vercelStatuses.filter(s => s.state === 'pending');
+          if (pendingVercel.length > 0) {
+            if (Date.now() - entry.reviewAt > this.config.reviewTimeoutMinutes * 60000) {
+              const summary = pendingVercel.map(s => s.context).join(', ');
+              const err = new Error(`Vercel check timed out in pending state on commit ${entry.sha}: ${summary}`);
+              err.stage = 'check';
+              throw err;
+            }
+            return;
+          }
+          entry.status = 'ready';
+          entry.stalled = false;
+          entry.blocker = null;
+          this.save();
+          await this.comment(
+            issue.number,
+            `${site.name}: independent checks passed and Codex posted a review without findings on commit ${entry.sha}. Ready for owner review: ${entry.url}. Not merged or live-verified.`
+          );
+          return;
+        }
         if (entry.fixes >= this.config.maxFixes) throw new Error(`Reached ${this.config.maxFixes} correction rounds. Human review needed: ${entry.url}`);
         entry.fixes++; entry.status = 'running'; this.save();
         const dir = await this.checkout(issue.number, site, entry);
