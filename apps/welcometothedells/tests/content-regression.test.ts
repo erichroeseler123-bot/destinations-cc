@@ -2,8 +2,42 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { BOAT_TOUR_FIT_GUIDE, BOAT_TOUR_ITEMS } from "../app/boat-tours/page";
+import ts from "typescript";
 import { ACTION_CARDS, HUBS, RIVER_OPS_OUTBOUND_TARGETS, RIVER_OPS_TERMINAL, SITE_URL } from "../lib/content";
+
+// Page modules expose only Next.js-supported exports. Inspect the literal comparison
+// data with the installed TypeScript parser rather than exporting test-only page fields
+// or evaluating source. Browser tests separately verify that these cards render.
+const boatPageSource = fs.readFileSync(
+  fileURLToPath(new URL("../app/boat-tours/page.tsx", import.meta.url)), "utf8",
+);
+const boatPageAst = ts.createSourceFile("page.tsx", boatPageSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+function readGuideData(name: string): Record<string, string>[] {
+  const declaration = boatPageAst.statements
+    .filter(ts.isVariableStatement)
+    .flatMap((statement) => [...statement.declarationList.declarations])
+    .find((entry) => ts.isIdentifier(entry.name) && entry.name.text === name);
+  assert.ok(declaration?.initializer && ts.isArrayLiteralExpression(declaration.initializer));
+  return declaration.initializer.elements.map((element) => {
+    assert.ok(ts.isObjectLiteralExpression(element));
+    return Object.fromEntries(element.properties.map((property) => {
+      assert.ok(ts.isPropertyAssignment(property));
+      assert.ok(ts.isIdentifier(property.name) || ts.isStringLiteral(property.name));
+      assert.ok(ts.isStringLiteral(property.initializer));
+      return [property.name.text, property.initializer.text];
+    }));
+  });
+}
+const BOAT_TOUR_ITEMS = readGuideData("BOAT_TOUR_ITEMS");
+const BOAT_TOUR_FIT_GUIDE = readGuideData("BOAT_TOUR_FIT_GUIDE");
+
+test("boat page has no arbitrary named data exports", () => {
+  const exports = boatPageAst.statements.filter((statement) =>
+    ts.canHaveModifiers(statement) && ts.getModifiers(statement)?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword),
+  );
+  assert.equal(exports.length, 2); // metadata and default Page only
+  assert.equal(/export\s+(?:const|type)\s+(?:BOAT_TOUR|RiverFitComparison)/.test(boatPageSource), false);
+});
 
 test("Dells Next Stop MVP has the three physical hubs", () => {
   assert.deepEqual(

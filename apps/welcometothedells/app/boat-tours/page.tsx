@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/boat-tours" },
 };
 
-export const BOAT_TOUR_ITEMS: DellsCategoryItem[] = [
+const BOAT_TOUR_ITEMS: DellsCategoryItem[] = [
   {
     title: "Original Wisconsin Ducks",
     body: "The classic amphibious road-to-river experience and an easy first-timer answer.",
@@ -48,7 +48,7 @@ export const BOAT_TOUR_ITEMS: DellsCategoryItem[] = [
   },
 ];
 
-export type RiverFitComparison = {
+type RiverFitComparison = {
   id: string;
   title: string;
   badge: string;
@@ -61,7 +61,7 @@ export type RiverFitComparison = {
   cta: string;
 };
 
-export const BOAT_TOUR_FIT_GUIDE: RiverFitComparison[] = [
+const BOAT_TOUR_FIT_GUIDE: RiverFitComparison[] = [
   {
     id: "upper-dells-scenic",
     title: "Upper Dells Scenic Boat Tour",
