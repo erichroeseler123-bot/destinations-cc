@@ -1,6 +1,11 @@
 import Link from "next/link";
 
-export type DellsDecisionSection = { title: string; body: string };
+export type DellsDecisionSection = {
+  title: string;
+  body: string;
+  href?: string;
+  cta?: string;
+};
 
 export default function DellsDecisionPage({
   eyebrow,
@@ -30,6 +35,11 @@ export default function DellsDecisionPage({
             <article className="action-card" key={section.title}>
               <h2>{section.title}</h2>
               <p>{section.body}</p>
+              {section.href && section.cta ? (
+                <Link className="text-button" href={section.href}>
+                  {section.cta}
+                </Link>
+              ) : null}
             </article>
           ))}
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useId } from "react";
 import {
   getTodayNewOrleansDate,
   getTomorrowNewOrleansDate,
@@ -9,6 +9,7 @@ import type { TourDeparture } from "../../lib/providerAdapter";
 import type { SearchResponse } from "../../lib/searchEngine";
 
 export default function NextBoatFinder() {
+  const fieldId = useId();
   const [todayDate, setTodayDate] = useState("");
   const [tomorrowDate, setTomorrowDate] = useState("");
   const [selectedDateMode, setSelectedDateMode] = useState<"today" | "tomorrow" | "custom">("today");
@@ -169,12 +170,13 @@ export default function NextBoatFinder() {
       <form onSubmit={handleSearch} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
         {/* WHEN SELECTOR */}
         <div>
-          <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.5rem" }}>
+          <label id={`${fieldId}-when-label`} style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.5rem" }}>
             1. When are you going? (New Orleans Time)
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0.5rem" }}>
+          <div role="group" aria-labelledby={`${fieldId}-when-label`} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0.5rem" }}>
             <button
               type="button"
+              aria-pressed={selectedDateMode === "today"}
               onClick={() => setSelectedDateMode("today")}
               style={{
                 padding: "0.75rem 0.5rem",
@@ -192,6 +194,7 @@ export default function NextBoatFinder() {
             </button>
             <button
               type="button"
+              aria-pressed={selectedDateMode === "tomorrow"}
               onClick={() => setSelectedDateMode("tomorrow")}
               style={{
                 padding: "0.75rem 0.5rem",
@@ -209,6 +212,7 @@ export default function NextBoatFinder() {
             </button>
             <button
               type="button"
+              aria-pressed={selectedDateMode === "custom"}
               onClick={() => setSelectedDateMode("custom")}
               style={{
                 padding: "0.75rem 0.5rem",
@@ -229,6 +233,7 @@ export default function NextBoatFinder() {
             <div style={{ marginTop: "0.5rem" }}>
               <input
                 type="date"
+                aria-label="Tour date (New Orleans time)"
                 value={customDate}
                 min={todayDate}
                 onChange={(e) => setCustomDate(e.target.value)}
@@ -250,10 +255,11 @@ export default function NextBoatFinder() {
           <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.5rem" }}>
             2. Who is in your group?
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "1rem" }}>
             <div>
-              <span style={{ fontSize: "0.8rem", color: "#a8a29e" }}>Adults (Age 13+)</span>
+              <label htmlFor={`${fieldId}-adults`} style={{ fontSize: "0.8rem", color: "#a8a29e" }}>Adults (Age 13+)</label>
               <select
+                id={`${fieldId}-adults`}
                 value={adults}
                 onChange={(e) => setAdults(parseInt(e.target.value, 10))}
                 style={{
@@ -272,8 +278,9 @@ export default function NextBoatFinder() {
               </select>
             </div>
             <div>
-              <span style={{ fontSize: "0.8rem", color: "#a8a29e" }}>Children (Age 0–12)</span>
+              <label htmlFor={`${fieldId}-children`} style={{ fontSize: "0.8rem", color: "#a8a29e" }}>Children (Age 0–12)</label>
               <select
+                id={`${fieldId}-children`}
                 value={childrenCount}
                 onChange={(e) => handleChildrenCountChange(parseInt(e.target.value, 10))}
                 style={{
@@ -308,8 +315,9 @@ export default function NextBoatFinder() {
               <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
                 {childrenAges.map((age, idx) => (
                   <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                    <span style={{ fontSize: "0.8rem", color: "#d6d3d1" }}>Child {idx + 1}:</span>
+                    <label htmlFor={`${fieldId}-child-age-${idx}`} style={{ fontSize: "0.8rem", color: "#d6d3d1" }}>Child {idx + 1}:</label>
                     <select
+                      id={`${fieldId}-child-age-${idx}`}
                       value={age}
                       onChange={(e) => handleChildAgeChange(idx, parseInt(e.target.value, 10))}
                       style={{
@@ -335,10 +343,11 @@ export default function NextBoatFinder() {
         {/* LOGISTICS & BOAT PREFERENCE */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
           <div>
-            <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.25rem" }}>
+            <label htmlFor={`${fieldId}-transportation`} style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.25rem" }}>
               3. Transportation
             </label>
             <select
+              id={`${fieldId}-transportation`}
               value={transportation}
               onChange={(e) => setTransportation(e.target.value as any)}
               style={{
@@ -356,10 +365,11 @@ export default function NextBoatFinder() {
             </select>
           </div>
           <div>
-            <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.25rem" }}>
+            <label htmlFor={`${fieldId}-boat-type`} style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.25rem" }}>
               4. Boat Size Preference
             </label>
             <select
+              id={`${fieldId}-boat-type`}
               value={boatType}
               onChange={(e) => setBoatType(e.target.value as any)}
               style={{
@@ -402,12 +412,13 @@ export default function NextBoatFinder() {
 
       {/* SEARCH ERROR */}
       {searchError && (
-        <div style={{ marginTop: "1.5rem", padding: "1rem", background: "#450a0a", borderRadius: "0.5rem", border: "1px solid #ef4444" }}>
+        <div role="alert" style={{ marginTop: "1.5rem", padding: "1rem", background: "#450a0a", borderRadius: "0.5rem", border: "1px solid #ef4444" }}>
           <p style={{ color: "#fca5a5", margin: 0, fontWeight: 600 }}>{searchError}</p>
         </div>
       )}
 
       {/* SEARCH RESULTS DISPLAY */}
+      <div aria-live="polite">
       {searchResponse && (
         <div style={{ marginTop: "2rem", borderTop: "1px solid #333", paddingTop: "1.5rem" }}>
           {/* STATE BANNER */}
@@ -680,6 +691,8 @@ export default function NextBoatFinder() {
           )}
         </div>
       )}
+      </div>
     </section>
   );
 }
+
