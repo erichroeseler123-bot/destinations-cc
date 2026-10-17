@@ -3,8 +3,10 @@ import assert from "node:assert/strict";
 import { issueContext, redeemContext, cleanupExpiredDccContexts, cleanupExpiredDccSessions } from "@/lib/dcc/context/service";
 import { isOwnerValidForDestination, resolveAuthoritativeBuffer } from "@/lib/dcc/context/registry";
 import { queryDccConversionMetrics } from "@/lib/dcc/analytics/queries";
+import { getDb } from "@/lib/db/client";
 
 test("DCC Multi-Port Alaska Corridor Protocol & Lifecycle Suite", async (t) => {
+  const db = getDb();
   // 1. Port Safety Profiles & Authoritative Buffers
   await t.test("1. Multi-Port Safety Buffers (Juneau, Skagway, Ketchikan)", () => {
     // Juneau
@@ -47,7 +49,10 @@ test("DCC Multi-Port Alaska Corridor Protocol & Lifecycle Suite", async (t) => {
   });
 
   // 3. Multi-Port Issue & Redemption Simulation
-  await t.test("3. WTA ➔ LFSE Multi-Port Issuance & Redemption", async () => {
+  await t.test(
+    "3. WTA ➔ LFSE Multi-Port Issuance & Redemption",
+    { skip: !db ? "Requires DATABASE_URL (.env.test.local)" : false },
+    async () => {
     // 3a. WTA issues Ketchikan excursion context
     const ketchikanIssue = await issueContext({
       sourceSite: "wta",
@@ -92,7 +97,10 @@ test("DCC Multi-Port Alaska Corridor Protocol & Lifecycle Suite", async (t) => {
   });
 
   // 4. Context Lifecycle & Cleanup
-  await t.test("4. Context Lifecycle Cleanup (Issued ➔ Expired Transition)", async () => {
+  await t.test(
+    "4. Context Lifecycle Cleanup (Issued ➔ Expired Transition)",
+    { skip: !db ? "Requires DATABASE_URL (.env.test.local)" : false },
+    async () => {
     const expiredContext = await issueContext({
       sourceSite: "wta",
       destination: "skagway",
@@ -116,7 +124,10 @@ test("DCC Multi-Port Alaska Corridor Protocol & Lifecycle Suite", async (t) => {
   });
 
   // 5. Analytics Isolation & SQL Pushdown Engine
-  await t.test("5. Analytics Engine Strictly Excludes Staging Test Traffic & Supports Date Range Filtering", async () => {
+  await t.test(
+    "5. Analytics Engine Strictly Excludes Staging Test Traffic & Supports Date Range Filtering",
+    { skip: !db ? "Requires DATABASE_URL (.env.test.local)" : false },
+    async () => {
     // 5a. Issue a test context and a legitimate production-like context
     const testIssue = await issueContext({
       sourceSite: "cruisepromenade",

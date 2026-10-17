@@ -312,7 +312,7 @@ export default async function SwampPlanPage({
               target="_blank"
               rel="sponsored noopener noreferrer"
             >
-              Book through GetYourGuide
+              {fhAirboat && asn ? "Book direct via FareHarbor" : "Book through GetYourGuide"}
             </a>
             <Link
               href="/airboat-vs-boat"
@@ -409,7 +409,7 @@ export default async function SwampPlanPage({
              )}
             <div className="wts-tour-grid">
               <PlanCard
-                eyebrow="GetYourGuide / airboat"
+                eyebrow={fhAirboat && asn ? "FareHarbor / airboat" : "GetYourGuide / airboat"}
                 title="Airboat swamp tours"
                 body="Use this if speed, wind, and a louder ride are the point of the trip."
                 image={undefined}
@@ -419,7 +419,7 @@ export default async function SwampPlanPage({
                 trackingId="gyg_card_airboat"
               />
               <PlanCard
-                eyebrow="GetYourGuide / covered boat"
+                eyebrow={fhBoat && asn ? "FareHarbor / covered boat" : "GetYourGuide / covered boat"}
                 title="Covered swamp boat tours"
                 body="Use this if shade, slower water, and a calmer ride are the better fit."
                 image={undefined}
