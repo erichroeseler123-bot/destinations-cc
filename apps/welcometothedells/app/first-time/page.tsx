@@ -27,7 +27,7 @@ const faq = [
   {
     question: "Do first-time visitors need to do both a Duck tour and a scenic boat tour?",
     answer:
-      "No. Pick the format that fits your group and schedule rather than stacking similar sightseeing into one day. You can use the site's boat-comparison guide to choose between them.",
+      "No. Compare one format that fits your group: the two-hour Upper Dells scenic tour includes Witches Gulch and Stand Rock landings; the Lower Dells scenic tour takes about one hour; Original Wisconsin Ducks combines land and water in about one hour. Jet Boat Adventures lists a 75-minute Upper Dells option with Witches Gulch and a separate 50-minute Lower Dells option. Dells Boat Tours and Original Wisconsin Ducks say wheelchairs must be left at the dock and passengers must sit without assistance, with dispatchers assisting with loading and unloading. Confirm current boarding needs and jet-boat rider restrictions with the operator. Use the 60-Second Fit Guide on the boat tours page to compare.",
   },
   {
     question: "What if it rains in Wisconsin Dells?",
@@ -61,7 +61,9 @@ export default function Page() {
           },
           {
             title: "2. Choose Ducks or a scenic boat tour—do not automatically stack both",
-            body: "Both can introduce the scenery, but they are different experiences. Pick the one that best fits your group, mobility, weather, and available time, then use the rest of the day for something different.",
+            body: "Compare the two-hour Upper Dells scenic tour with Witches Gulch and Stand Rock landings, the one-hour Lower Dells scenic tour, or the one-hour land-and-water Original Wisconsin Ducks route. For a high-speed format, Jet Boat Adventures lists a 75-minute Upper Dells option with Witches Gulch and a 50-minute Lower Dells option. Dells Boat Tours and Original Wisconsin Ducks require passengers to sit without assistance and leave wheelchairs at the dock, with dispatchers helping load and unload; confirm boarding needs directly. Check current jet-boat rider restrictions before booking.",
+            href: "/boat-tours#fit-guide",
+            cta: "Open 60-Second Fit Guide",
           },
           {
             title: "3. Pick one major attraction as the day's anchor",
