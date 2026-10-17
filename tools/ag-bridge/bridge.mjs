@@ -593,7 +593,13 @@ export class Bridge {
     const entry = this.state[issue.number] ?? { status: 'new', site: task.site, mode: task.mode, fixes: 0, retries: 0, taskHash: currentTaskHash, revisitToken: task.revisit ?? null };
     this.state[issue.number] = entry;
     if (entry.site !== task.site || entry.mode !== task.mode) throw new Error('Task identity changed. Create a new task.');
-    if (entry.status === 'ready') {
+    // A controller can explicitly request a correction on the existing PR.
+    // Previously ready tasks ignored updates and blocked post-PR tasks stayed
+    // blocked even after acknowledging a new revisit token.
+    const explicitCorrection = task.mode === 'code' && entry.pr &&
+      ['ready', 'blocked'].includes(entry.status) && typeof task.revisit === 'string' &&
+      task.revisit.length > 0 && task.revisit !== entry.revisitToken;
+    if (entry.status === 'ready' && !explicitCorrection) {
       await this.reconcileReadyTask(issue.number, site, entry);
       return;
     }
@@ -602,7 +608,7 @@ export class Bridge {
       // One read-only retry for the two diagnosed first-install failures.
       entry.status = 'new'; entry.recoveredFor = recovery; this.save();
     }
-    if (entry.status === 'blocked') {
+    if (entry.status === 'blocked' && !explicitCorrection) {
       const decision = this.shouldRevisitOrRetry(entry, task);
       if (decision) {
         entry.taskHash = decision.taskHash;
@@ -625,7 +631,7 @@ export class Bridge {
         this.save();
       }
     }
-    if (['done', 'blocked', 'ready'].includes(entry.status)) return;
+    if (['done', 'blocked', 'ready'].includes(entry.status) && !explicitCorrection) return;
     if (entry.status === 'running') {
       const maxRetries = this.config.maxTaskRetries ?? 2;
       const cooldownMinutes = this.config.retryCooldownMinutes ?? 15;
@@ -651,6 +657,22 @@ export class Bridge {
       return;
     }
     try {
+      if (explicitCorrection) {
+        const pr = await this.api(`repos/${site.repo}/pulls/${entry.pr}`);
+        if (pr.state !== 'open') {
+          entry.status = 'done'; this.save(); return;
+        }
+        if (pr.head.sha !== entry.sha) throw new Error('PR changed outside this worker. Paused to protect those changes.');
+        entry.status = 'running';
+        entry.taskHash = currentTaskHash;
+        entry.revisitToken = task.revisit;
+        entry.fixes = 0;
+        entry.stalled = false;
+        this.save();
+        const dir = await this.checkout(issue.number, site, entry);
+        await this.publish(issue.number, task, site, dir, entry, ['Apply the explicit owner/controller correction in the updated task instructions to this existing PR. Preserve local unpushed edits. Do not reset, duplicate or merge the task.']);
+        return;
+      }
       if (entry.status === 'review') {
         const pr = await this.api(`repos/${site.repo}/pulls/${entry.pr}`);
         if (pr.state !== 'open') { entry.status = 'done'; if (pr.merge_commit_sha) entry.mergedSha = pr.merge_commit_sha; this.save(); return; }

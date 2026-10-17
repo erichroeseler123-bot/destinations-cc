@@ -163,6 +163,33 @@ function harness(t) {
   b.agent = async (dir, number, task, site, feedback) => { agentRuns++; if (task.mode === 'code') dirty = true; return { response: 'Private output AG_BRIDGE_OK', conversation_id: 'fake-test-session' }; };
   return { b, notes, calls, reviews, reviewComments, runs: () => agentRuns, head: () => head };
 }
+test('explicit correction revisits the existing ready PR once without reset or duplicate task', async t => {
+  const h = harness(t); const i = issue(1, 'code'); const task = parseTask(i, config);
+  await h.b.process(i, task);
+  h.reviews.push({ id: 1, commit_id: 'v1', user: { login: config.reviewBots[0] }, state: 'COMMENTED', body: '' });
+  await h.b.process(i, task);
+  assert.equal(h.b.state[1].status, 'ready');
+  const correction = { ...task, revisit: 'owner-correction-20261017', instructions: 'Remove unsupported new comparison claims; preserve semantic form improvements.' };
+  await h.b.process(i, correction);
+  assert.equal(h.runs(), 2);
+  assert.equal(h.b.state[1].sha, 'v2');
+  assert.equal(h.b.state[1].pr, 99);
+  assert.equal(h.b.state[1].status, 'review');
+  await h.b.process(i, correction);
+  assert.equal(h.runs(), 2);
+  assert.ok(!h.calls.some(c => c.includes('reset') || c.includes('clean')));
+});
+test('explicit post-PR correction preserves a changed remote head and never invokes AG', async t => {
+  const h = harness(t);const i = issue(1, 'code');const task = parseTask(i, config);
+  await h.b.process(i, task);
+  h.b.state[1].status = 'blocked';
+  h.b.state[1].blocker = { category: 'check_failed' };
+  h.b.api = async () => ({ state: 'open', head: { sha: 'owner-newer-head' } });
+  await h.b.process(i, { ...task, revisit: 'correct-existing-pr' });
+  assert.equal(h.runs(), 1);
+  assert.equal(h.b.state[1].status, 'blocked');
+  assert.match(h.b.state[1].error, /changed outside/);
+});
 test('full audit receives task, executes AG, posts metadata and persists completion once', async t => {
   const h = harness(t); const i = issue(1);
   await h.b.process(i, parseTask(i, config));
