@@ -7,7 +7,10 @@ import { eq } from "drizzle-orm";
 
 test("DCC Corridor Telemetry Persistence Suite", async (t) => {
   const db = getDb();
-  assert.ok(db, "Database connection must be established");
+  if (!db) {
+    t.skip("Requires DATABASE_URL (.env.test.local)");
+    return;
+  }
 
   await t.test("1. Catalog contains live wno-commerce corridor entry", async () => {
     const rows = await db.select().from(dccCorridorCatalog).where(eq(dccCorridorCatalog.corridorId, "wno-commerce"));
