@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { BOAT_TOUR_FIT_GUIDE, BOAT_TOUR_ITEMS } from "../app/boat-tours/page";
 import { ACTION_CARDS, HUBS, RIVER_OPS_OUTBOUND_TARGETS, RIVER_OPS_TERMINAL, SITE_URL } from "../lib/content";
 
 test("Dells Next Stop MVP has the three physical hubs", () => {
@@ -73,7 +74,13 @@ test("WTD teaches DCC satellite to Feastly execution continuity", () => {
 });
 
 test("promoted Dells content excludes hotels and waterparks", () => {
-  const promotedText = JSON.stringify({ ACTION_CARDS, HUBS, RIVER_OPS_TERMINAL }).toLowerCase();
+  const promotedText = JSON.stringify({
+    ACTION_CARDS,
+    HUBS,
+    RIVER_OPS_TERMINAL,
+    BOAT_TOUR_ITEMS,
+    BOAT_TOUR_FIT_GUIDE,
+  }).toLowerCase();
   assert.equal(promotedText.includes("hotel"), false);
   assert.equal(promotedText.includes("waterpark"), false);
 });
@@ -113,4 +120,65 @@ test("DellsHomeClient provides explicit aria-label attributes on header primary 
   assert.match(homeClientSource, /flexWrap:\s*"wrap"/);
   assert.match(homeClientSource, /overflowX:\s*"hidden"/);
 });
+
+test("/boat-tours and /first-time include the 60-Second Fit Guide comparing ashore canyon walks, splash/thrill level, duration, and mobility comfort", () => {
+  const boatToursSource = fs.readFileSync(
+    fileURLToPath(new URL("../app/boat-tours/page.tsx", import.meta.url)),
+    "utf8",
+  );
+  const firstTimeSource = fs.readFileSync(
+    fileURLToPath(new URL("../app/first-time/page.tsx", import.meta.url)),
+    "utf8",
+  );
+
+  assert.match(
+    boatToursSource,
+    /Upper Dells vs\. Lower Dells vs\. Original Wisconsin Ducks: 60-Second Fit Guide/,
+  );
+  assert.match(boatToursSource, /overflowX:\s*"hidden"/);
+  assert.match(boatToursSource, /overflowWrap:\s*"break-word"/);
+
+  assert.deepEqual(
+    BOAT_TOUR_FIT_GUIDE.map((entry) => entry.id),
+    [
+      "upper-dells-scenic",
+      "lower-dells-scenic",
+      "original-wisconsin-ducks",
+      "jet-boat-adventures",
+    ],
+  );
+
+  const upperDells = BOAT_TOUR_FIT_GUIDE.find((entry) => entry.id === "upper-dells-scenic");
+  assert.ok(upperDells);
+  assert.match(upperDells.ashoreWalks, /Witches Gulch/);
+  assert.match(upperDells.ashoreWalks, /Stand Rock/);
+  assert.match(upperDells.splashThrill, /Calm scenic cruise/i);
+
+  const lowerDells = BOAT_TOUR_FIT_GUIDE.find((entry) => entry.id === "lower-dells-scenic");
+  assert.ok(lowerDells);
+  assert.match(lowerDells.ashoreWalks, /No shore walks/i);
+  assert.match(lowerDells.splashThrill, /Calm scenic cruise/i);
+
+  const ducks = BOAT_TOUR_FIT_GUIDE.find((entry) => entry.id === "original-wisconsin-ducks");
+  assert.ok(ducks);
+  assert.match(ducks.splashThrill, /Land-to-water Duck/i);
+
+  const jetBoat = BOAT_TOUR_FIT_GUIDE.find((entry) => entry.id === "jet-boat-adventures");
+  assert.ok(jetBoat);
+  assert.match(jetBoat.splashThrill, /jet boat/i);
+
+  for (const entry of BOAT_TOUR_FIT_GUIDE) {
+    assert.ok(entry.ashoreWalks.length > 10);
+    assert.ok(entry.splashThrill.length > 10);
+    assert.ok(entry.duration.length > 5);
+    assert.ok(entry.comfort.length > 10);
+    assert.ok(entry.href.startsWith("/out/wisconsin-dells/"));
+  }
+
+  assert.match(firstTimeSource, /\/boat-tours#fit-guide/);
+  assert.match(firstTimeSource, /Witches Gulch/);
+  assert.match(firstTimeSource, /Stand Rock/);
+  assert.match(firstTimeSource, /60-Second Fit Guide/);
+});
+
 

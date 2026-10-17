@@ -27,7 +27,7 @@ const faq = [
   {
     question: "Do first-time visitors need to do both a Duck tour and a scenic boat tour?",
     answer:
-      "No. Pick the format that fits your group and schedule rather than stacking similar sightseeing into one day. You can use the site's boat-comparison guide to choose between them.",
+      "No. Upper Dells scenic cruises (~2 hours) include ashore canyon walks at Witches Gulch and Stand Rock, Lower Dells cruises (~1 hour) stay seated on calmer water, Original Wisconsin Ducks (~1 hour) splash from forest trails into the river without shore hikes, and jet boats (~50 minutes) deliver high-speed wet spins. Use the 60-Second Fit Guide on the boat tours page to pick one format that fits your group.",
   },
   {
     question: "What if it rains in Wisconsin Dells?",
@@ -61,7 +61,9 @@ export default function Page() {
           },
           {
             title: "2. Choose Ducks or a scenic boat tour—do not automatically stack both",
-            body: "Both can introduce the scenery, but they are different experiences. Pick the one that best fits your group, mobility, weather, and available time, then use the rest of the day for something different.",
+            body: "Upper Dells scenic tours (~2 hours) are the only cruise with ashore canyon walks at Witches Gulch and Stand Rock; Lower Dells cruises (~1 hour) offer calm seated bluff views with easiest senior and mobility comfort; Original Wisconsin Ducks (~1 hour) splash from forest trails into the river with zero shore hikes; and jet boats (~50 minutes) trade calm narration for high-speed wet spins.",
+            href: "/boat-tours#fit-guide",
+            cta: "Open 60-Second Fit Guide",
           },
           {
             title: "3. Pick one major attraction as the day's anchor",
