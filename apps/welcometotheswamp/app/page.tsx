@@ -164,35 +164,40 @@ export default function HomePage() {
           <div className="wts-comparison-wrap">
             <table className="wts-comparison-table">
               <caption className="wts-comparison-caption">
-                Side-by-side comparison of New Orleans airboat tours and covered bayou boats: minimum child age, hearing protection, canopy shade, and hotel pickup vs. self-drive timing.
+                Understand the practical difference between open airboats and calmer covered swamp boats before opening checkout.
               </caption>
               <thead>
                 <tr>
                   <th scope="col">Decision Factor</th>
-                  <th scope="col">Airboat Tours</th>
-                  <th scope="col">Covered Bayou Boats</th>
+                  <th scope="col">Airboat</th>
+                  <th scope="col">Covered Swamp Boat</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <th scope="row">Child Age &amp; Family Fit</th>
-                  <td>Minimum child age 5+ on small high-speed airboats (2+ on select large airboats); not permitted for infants or pregnant travelers.</td>
-                  <td>All-ages welcome (infants to seniors); calm, stable deck ideal for mixed-age family groups.</td>
+                  <th scope="row">Ride style</th>
+                  <td>Faster, louder, open-air, and more ride-driven.</td>
+                  <td>Slower, calmer, and easier to treat as a scenic bayou outing.</td>
                 </tr>
                 <tr>
-                  <th scope="row">Ride &amp; Ear / Sun Protection</th>
-                  <td>Open-air, high-speed marsh ride with headset ear protection provided for loud fan noise; full sun and wind exposure.</td>
-                  <td>All-ages shaded canopy roof with open sides and quiet motors for easy conversation and wildlife photography.</td>
+                  <th scope="row">Noise</th>
+                  <td>Expect a high-noise experience and follow the operator&apos;s hearing-protection and safety instructions.</td>
+                  <td>Usually the easier choice when lower noise and conversation matter to the group.</td>
                 </tr>
                 <tr>
-                  <th scope="row">Hotel Pickup Timing</th>
-                  <td>4–4.5 hours door-to-door; French Quarter / Downtown shuttle pickup begins 60–80 minutes before dock departure.</td>
-                  <td>4–4.5 hours door-to-door; round-trip hotel shuttle pickup starts 45–60 minutes early and avoids rural rideshare strandings.</td>
+                  <th scope="row">Weather exposure</th>
+                  <td>More exposed to sun, wind, rain, and operating-condition changes.</td>
+                  <td>More shelter is typical, although it is still an outdoor swamp experience.</td>
                 </tr>
                 <tr>
-                  <th scope="row">Self-Drive Dock Timing</th>
-                  <td>35–45 minute drive from New Orleans; arrive 30 minutes before departure (free dock parking; 45–120 min booking cutoff).</td>
-                  <td>35–45 minute drive to Barataria or Honey Island docks; arrive 30 minutes early for dockside check-in.</td>
+                  <th scope="row">Families and mixed groups</th>
+                  <td>Can be a great fit when everyone wants the intensity and meets the current operator rules.</td>
+                  <td>The safer default for a mixed group when comfort and broad fit matter more than thrill.</td>
+                </tr>
+                <tr>
+                  <th scope="row">Pickup and logistics</th>
+                  <td>Compare the specific operator&apos;s meeting point, transportation option, total duration, and return plan.</td>
+                  <td>Compare the specific operator&apos;s meeting point, transportation option, total duration, and return plan.</td>
                 </tr>
               </tbody>
             </table>
