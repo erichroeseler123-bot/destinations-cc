@@ -5,6 +5,7 @@ import { getGovernedExperienceGraphRecord } from "../data/experienceGraphGoverna
 import { TOUR_RECORDS } from "../lib/tourRecommendationRules";
 
 const CHOOSER_RECOMMENDATION = "wno_chooser_recommendation";
+const CHOOSER_ANSWERS = "wno_chooser_answers";
 
 type CapturedAnswers = {
   availableTime?: string;
@@ -122,6 +123,15 @@ export default function GraphChooserExplanation() {
     const readRecommendation = () => {
       try {
         setSlug(sessionStorage.getItem(CHOOSER_RECOMMENDATION));
+        const rawAnswers = sessionStorage.getItem(CHOOSER_ANSWERS);
+        if (rawAnswers) {
+          const parsed = JSON.parse(rawAnswers) as unknown;
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+            setAnswers(parsed as CapturedAnswers);
+          }
+        } else {
+          setAnswers({});
+        }
       } catch {
         setSlug(null);
       }

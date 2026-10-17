@@ -246,6 +246,20 @@ function readSavedRecommendationInputs(): RecommendationInputs | null {
   }
 }
 
+function mergeSavedInputsWithPrefill(
+  saved: RecommendationInputs,
+  prefilled: Partial<RecommendationInputs>,
+): RecommendationInputs {
+  const merged: Partial<RecommendationInputs> = { ...prefilled };
+  for (const step of STEPS) {
+    const savedValue = saved[step];
+    if (savedValue) {
+      merged[step] = savedValue as never;
+    }
+  }
+  return merged as RecommendationInputs;
+}
+
 function buildRecommendationOutcome(result: RecommendationResult, bundle: BundleRecommendation | null): DccRecommendationOutcomeV1 {
   return {
     version: 1,
@@ -358,7 +372,7 @@ export default function NewOrleansRecommendationFlow() {
       if (count > 0) {
         setDccPrefillCount(count);
         const mergedPrefill: Partial<RecommendationInputs> = savedInputs
-          ? { ...prefilled, ...savedInputs }
+          ? mergeSavedInputsWithPrefill(savedInputs, prefilled)
           : prefilled;
         setAnswers(mergedPrefill);
         const inboundLive: LiveRecommendationContext = dccContext?.liveContext || {};
@@ -415,8 +429,11 @@ export default function NewOrleansRecommendationFlow() {
         setLiveContext(nextLiveContext);
         const savedInputs = readSavedRecommendationInputs();
         if (!savedInputs) return;
-        const rerankedResult = evaluateRecommendation(savedInputs, nextLiveContext);
-        syncPersistedOutcome(savedInputs, rerankedResult, {
+        const dccContext = getStoredDccTravelerContext();
+        const prefilled = isNewOrleansContext(dccContext) ? contextToRecommendationInputs(dccContext) : {};
+        const effectiveInputs = mergeSavedInputsWithPrefill(savedInputs, prefilled);
+        const rerankedResult = evaluateRecommendation(effectiveInputs, nextLiveContext);
+        syncPersistedOutcome(effectiveInputs, rerankedResult, {
           recordCompletion: false,
           contextForDecision: nextLiveContext,
           prefillCount: dccPrefillCount,
