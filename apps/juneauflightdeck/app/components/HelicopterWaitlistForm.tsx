@@ -116,6 +116,7 @@ export default function HelicopterWaitlistForm({
   const [submissionId, setSubmissionId] = useState("");
   const [copiedRollCall, setCopiedRollCall] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState("");
 
   // Read URL search parameters on mount
   useEffect(() => {
@@ -298,7 +299,9 @@ ${shareUrl}`;
 
   const copyToClipboard = async (text: string, type: "rollcall" | "link") => {
     try {
+      setCopyFeedback("");
       await navigator.clipboard.writeText(text);
+      setCopyFeedback(type === "rollcall" ? "Roll call post copied." : "Share link copied.");
       if (type === "rollcall") {
         setCopiedRollCall(true);
         setTimeout(() => setCopiedRollCall(false), 3000);
@@ -312,9 +315,24 @@ ${shareUrl}`;
   };
 
   return (
-    <div className={`waitlist-card-wrapper ${compact ? "waitlist-card-compact" : ""}`}>
+    <div
+      className={`waitlist-card-wrapper ${compact ? "waitlist-card-compact" : ""}`}
+      style={{
+        maxWidth: "100%",
+        boxSizing: "border-box",
+        padding: compact ? "16px" : "clamp(16px, 4vw, 36px)",
+      }}
+    >
       <div className="waitlist-card-header">
-        <div className="waitlist-pill">
+        <div
+          className="waitlist-pill"
+          style={{
+            maxWidth: "100%",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            textAlign: "center",
+          }}
+        >
           <span className="waitlist-pill-dot" />
           <span>Daily Availability Check • Direct Operator Booking</span>
         </div>
@@ -330,7 +348,7 @@ ${shareUrl}`;
         <div className="waitlist-preselected-banner">
           <div className="waitlist-preselected-banner-inner">
             <span className="waitlist-preselected-icon">🎯</span>
-            <div>
+            <div style={{ minWidth: 0 }}>
               <div className="waitlist-preselected-eyebrow">
                 Selected Tour Experience
               </div>
@@ -347,7 +365,12 @@ ${shareUrl}`;
         </div>
       )}
 
-      <div className="waitlist-how-it-works-grid">
+      <div
+        className="waitlist-how-it-works-grid"
+        style={{
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 170px), 1fr))",
+        }}
+      >
         <div className="how-step">
           <span className="step-num">01</span>
           <h4>Daily Availability Check</h4>
@@ -371,52 +394,98 @@ ${shareUrl}`;
       </div>
 
       {status === "success" ? (
-        <div className="waitlist-success-banner space-y-6">
-          <div className="text-center">
+        <div
+          className="waitlist-success-banner space-y-6"
+          style={{ display: "grid", gap: 20, minWidth: 0 }}
+        >
+          <div className="text-center" role="status" aria-live="polite" style={{ textAlign: "center" }}>
             <div className="success-icon inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 text-2xl mb-3">✓</div>
-            <h4 className="text-xl font-bold text-white">
+            <h4 className="text-xl font-bold text-white" style={{ margin: "8px 0 4px" }}>
               {formData.bookingMode === "concierge_dispatch"
                 ? "Concierge Dispatch Request Received"
                 : "Daily Availability Check Request Received"}
             </h4>
-            <p className="text-slate-300 mt-1">
-              Confirmation Code: <strong className="text-amber-400 font-mono">{submissionId}</strong>
+            <p className="text-slate-300 mt-1" style={{ margin: "4px 0" }}>
+              Confirmation Code: <strong className="text-amber-400 font-mono" style={{ color: "var(--accent, #f0b35b)" }}>{submissionId}</strong>
             </p>
-            <p className="text-sm text-slate-300 mt-2">
+            <p className="text-sm text-slate-300 mt-2" style={{ margin: "8px 0 0", lineHeight: 1.55 }}>
               Your request is saved. We check Southeast Alaska fleet availability for your date (<strong>{formData.portDate}</strong>
               {formData.portCity === "either" && formData.skagwayDate ? ` and Skagway: ${formData.skagwayDate}` : ""}) 
               for <strong>{formData.partySize} guest(s)</strong> on <strong>{resolvedShipName}</strong> ({formData.cruiseLine}).
             </p>
           </div>
 
-          <div className="success-reassurance bg-slate-900/80 border border-slate-700/60 rounded-xl p-4 text-xs text-slate-300 leading-relaxed">
+          <div
+            className="success-reassurance bg-slate-900/80 border border-slate-700/60 rounded-xl p-4 text-xs text-slate-300 leading-relaxed"
+            style={{
+              background: "rgba(4, 17, 27, 0.85)",
+              border: "1px solid rgba(151, 211, 255, 0.2)",
+              borderRadius: 12,
+              padding: 14,
+              fontSize: "0.82rem",
+              lineHeight: 1.55,
+            }}
+          >
             {formData.bookingMode === "concierge_dispatch"
               ? "🛎️ Request Logged: When an opening is detected during our daily availability check, our local dispatch team contacts you with direct flight checkout details."
               : "📱 Request Logged: When an opening is detected during our daily availability check, a direct booking link is generated so you can complete checkout directly with the operator."}
           </div>
 
           {/* Group Roll Call Share Box (Where Group Rules Allow) */}
-          <div className="bg-sky-950/40 border border-sky-500/30 rounded-2xl p-5 text-left">
-            <div className="flex items-center gap-2 mb-2">
+          <div
+            className="bg-sky-950/40 border border-sky-500/30 rounded-2xl p-5 text-left"
+            style={{
+              background: "rgba(8, 28, 42, 0.75)",
+              border: "1px solid rgba(56, 189, 248, 0.3)",
+              borderRadius: 16,
+              padding: "clamp(14px, 3vw, 20px)",
+              minWidth: 0,
+            }}
+          >
+            <div className="flex items-center gap-2 mb-2" style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
               <span className="text-lg">🛳️</span>
-              <h5 className="text-sm font-bold text-white uppercase tracking-wider">
+              <h5 className="text-sm font-bold text-white uppercase tracking-wider" style={{ margin: 0, fontSize: "0.85rem" }}>
                 Share With Your Ship&apos;s Cruise Critic &amp; Facebook Roll Call (Where Group Rules Allow)
               </h5>
             </div>
-            <p className="text-xs text-sky-200/90 leading-relaxed mb-4">
+            <p className="text-xs text-sky-200/90 leading-relaxed mb-4" style={{ fontSize: "0.8rem", lineHeight: 1.55, margin: "0 0 12px" }}>
               Glacier helicopter flights sell out 3–6 months early. Most guests on <strong>{resolvedShipName}</strong> do not 
               know daily cancellations open up seats. Where group rules allow, share this daily availability check with your shipmates so your sailing group can get booked:
             </p>
 
-            <div className="bg-slate-950/80 rounded-xl p-3 border border-slate-800 text-xs font-mono text-slate-300 leading-relaxed whitespace-pre-wrap select-all mb-3 max-h-36 overflow-y-auto">
+            <div
+              className="bg-slate-950/80 rounded-xl p-3 border border-slate-800 text-xs font-mono text-slate-300 leading-relaxed whitespace-pre-wrap select-all mb-3 max-h-36 overflow-y-auto"
+              style={{
+                background: "rgba(2, 11, 18, 0.85)",
+                border: "1px solid rgba(151, 211, 255, 0.16)",
+                borderRadius: 10,
+                padding: 12,
+                fontSize: "0.76rem",
+                fontFamily: "monospace",
+                lineHeight: 1.5,
+                whiteSpace: "pre-wrap",
+                overflowWrap: "anywhere",
+                wordBreak: "break-word",
+                maxHeight: 150,
+                overflowY: "auto",
+                marginBottom: 12,
+              }}
+            >
               {rollCallPostText}
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               <button
                 type="button"
                 onClick={() => copyToClipboard(rollCallPostText, "rollcall")}
                 className="button button-primary text-xs py-2 px-4 flex items-center gap-1.5"
+                style={{
+                  minHeight: 40,
+                  padding: "8px 14px",
+                  fontSize: "0.76rem",
+                  whiteSpace: "normal",
+                  textAlign: "center",
+                }}
               >
                 <span>{copiedRollCall ? "✓" : "📋"}</span>
                 <span>{copiedRollCall ? "Copied Roll Call Post!" : "Copy Cruise Critic Post (1-Click)"}</span>
@@ -425,6 +494,13 @@ ${shareUrl}`;
                 type="button"
                 onClick={() => copyToClipboard(shareUrl, "link")}
                 className="button button-secondary text-xs py-2 px-4 flex items-center gap-1.5"
+                style={{
+                  minHeight: 40,
+                  padding: "8px 14px",
+                  fontSize: "0.76rem",
+                  whiteSpace: "normal",
+                  textAlign: "center",
+                }}
               >
                 <span>{copiedLink ? "✓" : "🔗"}</span>
                 <span>{copiedLink ? "Link Copied!" : "Copy Share Link"}</span>
@@ -432,11 +508,29 @@ ${shareUrl}`;
             </div>
           </div>
 
-          <div className="text-center pt-2">
+          <p
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clipPath: "inset(50%)", whiteSpace: "nowrap", border: 0 }}
+          >
+            {copyFeedback}
+          </p>
+
+          <div className="text-center pt-2" style={{ textAlign: "center" }}>
             <button
               type="button"
               className="text-xs text-slate-400 hover:text-white underline transition"
+              style={{
+                background: "transparent",
+                border: 0,
+                color: "var(--ice, #9ed9ff)",
+                textDecoration: "underline",
+                cursor: "pointer",
+                fontSize: "0.82rem",
+              }}
               onClick={() => {
+                setCopyFeedback("");
                 setStatus("idle");
                 setFormData((prev) => ({ ...prev, name: "", email: "", phone: "", notes: "" }));
               }}
@@ -446,25 +540,58 @@ ${shareUrl}`;
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="waitlist-form">
+        <form onSubmit={handleSubmit} className="waitlist-form" style={{ minWidth: 0 }}>
           {status === "error" && (
             <div className="form-error-alert" role="alert">
               {errorMessage}
             </div>
           )}
 
-          {/* Mode Selector */}
-          <div className="mb-6">
-            <span className="text-xs font-bold text-sky-300 uppercase tracking-widest block mb-2">
+          {/* Mode Selector grouped in semantic fieldset + legend */}
+          <fieldset
+            className="mb-6"
+            style={{
+              border: 0,
+              padding: 0,
+              margin: "0 0 24px 0",
+              minWidth: 0,
+              maxWidth: "100%",
+            }}
+          >
+            <legend
+              className="text-xs font-bold text-sky-300 uppercase tracking-widest block mb-2"
+              style={{
+                padding: 0,
+                marginBottom: 10,
+                fontSize: "0.76rem",
+                fontWeight: 800,
+                color: "var(--ice, #9ed9ff)",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                display: "block",
+                width: "100%",
+              }}
+            >
               Choose Your Notification Alert Preference:
-            </span>
-            <div className="grid md:grid-cols-2 gap-3">
+            </legend>
+            <div
+              className="grid md:grid-cols-2 gap-3"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 240px), 1fr))",
+                gap: 12,
+              }}
+            >
               <label
                 className={`booking-mode-card ${
                   formData.bookingMode === "instant_alert" ? "booking-mode-selected" : ""
                 }`}
+                style={{ minWidth: 0, boxSizing: "border-box" }}
               >
-                <div className="flex items-start gap-3">
+                <div
+                  className="flex items-start gap-3"
+                  style={{ display: "flex", alignItems: "flex-start", gap: 10, minWidth: 0 }}
+                >
                   <input
                     type="radio"
                     name="bookingMode"
@@ -472,14 +599,23 @@ ${shareUrl}`;
                     checked={formData.bookingMode === "instant_alert"}
                     onChange={() => setFormData({ ...formData, bookingMode: "instant_alert" })}
                     className="mt-1"
+                    style={{ marginTop: 4, flexShrink: 0 }}
                   />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <strong className="text-white text-sm">📧 Daily Availability Alert</strong>
+                  <div style={{ minWidth: 0 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}
+                    >
+                      <strong className="text-white text-sm" style={{ fontSize: "0.9rem", color: "#ffffff" }}>
+                        📧 Daily Availability Alert
+                      </strong>
                       <span className="mode-badge-recommended">Direct Link</span>
                     </div>
-                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                      <strong>Free Email Alert.</strong> When seats open during our daily check, we send you a direct booking link to complete checkout with the flight operator.
+                    <p
+                      className="text-xs text-slate-300 mt-1 leading-relaxed"
+                      style={{ margin: "6px 0 0", fontSize: "0.8rem", lineHeight: 1.5, color: "var(--muted)" }}
+                    >
+                      <strong style={{ color: "#ffffff" }}>Free Email Alert.</strong> When seats open during our daily check, we send you a direct booking link to complete checkout with the flight operator.
                     </p>
                   </div>
                 </div>
@@ -489,8 +625,12 @@ ${shareUrl}`;
                 className={`booking-mode-card ${
                   formData.bookingMode === "concierge_dispatch" ? "booking-mode-selected" : ""
                 }`}
+                style={{ minWidth: 0, boxSizing: "border-box" }}
               >
-                <div className="flex items-start gap-3">
+                <div
+                  className="flex items-start gap-3"
+                  style={{ display: "flex", alignItems: "flex-start", gap: 10, minWidth: 0 }}
+                >
                   <input
                     type="radio"
                     name="bookingMode"
@@ -498,24 +638,33 @@ ${shareUrl}`;
                     checked={formData.bookingMode === "concierge_dispatch"}
                     onChange={() => setFormData({ ...formData, bookingMode: "concierge_dispatch" })}
                     className="mt-1"
+                    style={{ marginTop: 4, flexShrink: 0 }}
                   />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <strong className="text-white text-sm">🛎️ Concierge Dispatch Alert</strong>
+                  <div style={{ minWidth: 0 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}
+                    >
+                      <strong className="text-white text-sm" style={{ fontSize: "0.9rem", color: "#ffffff" }}>
+                        🛎️ Concierge Dispatch Alert
+                      </strong>
                       <span className="mode-badge-free">Personal Follow-Up</span>
                     </div>
-                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                      <strong>Dedicated local assistance.</strong> Our Juneau dispatch team notifies you via email and coordinates directly when openings are detected to help secure your booking.
+                    <p
+                      className="text-xs text-slate-300 mt-1 leading-relaxed"
+                      style={{ margin: "6px 0 0", fontSize: "0.8rem", lineHeight: 1.5, color: "var(--muted)" }}
+                    >
+                      <strong style={{ color: "#ffffff" }}>Dedicated local assistance.</strong> Our Juneau dispatch team notifies you via email and coordinates directly when openings are detected to help secure your booking.
                     </p>
                   </div>
                 </div>
               </label>
             </div>
-          </div>
+          </fieldset>
 
-          <div className="form-grid">
+          <div className="form-grid" style={{ minWidth: 0 }}>
             {/* Ship Selection with Auto-Match */}
-            <div className="form-field">
+            <div className="form-field" style={{ minWidth: 0 }}>
               <label htmlFor="shipName">Your Cruise Ship</label>
               <select
                 id="shipName"
@@ -567,7 +716,7 @@ ${shareUrl}`;
             </div>
 
             {formData.shipName === "Other" && (
-              <div className="form-field">
+              <div className="form-field" style={{ minWidth: 0 }}>
                 <label htmlFor="customShip">Enter Ship Name</label>
                 <input
                   id="customShip"
@@ -580,7 +729,7 @@ ${shareUrl}`;
               </div>
             )}
 
-            <div className="form-field">
+            <div className="form-field" style={{ minWidth: 0 }}>
               <label htmlFor="cruiseLine">Cruise Line</label>
               <select
                 id="cruiseLine"
@@ -598,28 +747,62 @@ ${shareUrl}`;
 
             {/* Pier & Port Timing Badge + Skagway Cross-Port Info */}
             {selectedShipData && (
-              <div className="form-field full-width bg-sky-950/40 border border-sky-500/30 rounded-xl p-3.5 text-xs space-y-2.5">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-sky-800/40 pb-2">
-                  <span className="font-bold text-sky-300 flex items-center gap-1.5">
+              <div
+                className="form-field full-width bg-sky-950/40 border border-sky-500/30 rounded-xl p-3.5 text-xs space-y-2.5"
+                style={{
+                  minWidth: 0,
+                  background: "rgba(8, 28, 42, 0.7)",
+                  border: "1px solid rgba(56, 189, 248, 0.3)",
+                  borderRadius: 12,
+                  padding: 14,
+                  fontSize: "0.8rem",
+                }}
+              >
+                <div
+                  className="flex flex-wrap items-center justify-between gap-2 border-b border-sky-800/40 pb-2"
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 8,
+                    borderBottom: "1px solid rgba(56, 189, 248, 0.2)",
+                    paddingBottom: 8,
+                  }}
+                >
+                  <span className="font-bold text-sky-300 flex items-center gap-1.5" style={{ fontWeight: 700, color: "var(--ice)" }}>
                     <span>⚓</span> Typical Berth: {selectedShipData.typicalScheduledBerth}
                   </span>
-                  <span className="text-slate-300 font-mono">
+                  <span className="text-slate-300 font-mono" style={{ fontFamily: "monospace" }}>
                     Port Window: {selectedShipData.dockHours}
                   </span>
                 </div>
-                <p className="text-slate-300 m-0">
-                  <span className="text-emerald-400 font-semibold">Berth Logistics:</span> {selectedShipData.notes}
-                  <span className="text-slate-400 ml-1">(Passenger-supplied dates — check cruise line app to verify arrival/departure times.)</span>
+                <p className="text-slate-300 m-0" style={{ margin: 0, lineHeight: 1.5 }}>
+                  <span className="text-emerald-400 font-semibold" style={{ color: "#34d399", fontWeight: 700 }}>Berth Logistics:</span> {selectedShipData.notes}
+                  <span className="text-slate-400 ml-1" style={{ color: "var(--muted)" }}> (Passenger-supplied dates — check cruise line app to verify arrival/departure times.)</span>
                 </p>
 
                 {/* Cross-Port Skagway Connection */}
                 {selectedShipData.callsAtSkagway && (
-                  <div className="bg-amber-950/50 border border-amber-500/40 rounded-lg p-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mt-2">
-                    <div>
-                      <strong className="text-amber-400 font-bold flex items-center gap-1">
+                  <div
+                    className="bg-amber-950/50 border border-amber-500/40 rounded-lg p-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mt-2"
+                    style={{
+                      background: "rgba(120, 53, 15, 0.3)",
+                      border: "1px solid rgba(245, 158, 11, 0.4)",
+                      borderRadius: 10,
+                      padding: 10,
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 8,
+                    }}
+                  >
+                    <div style={{ minWidth: 0, flex: "1 1 200px" }}>
+                      <strong className="text-amber-400 font-bold flex items-center gap-1" style={{ color: "var(--accent)", display: "block", marginBottom: 2 }}>
                         <span>💡</span> Skagway Glacier Alternative Available:
                       </strong>
-                      <p className="text-slate-300 text-[11px] m-0">
+                      <p className="text-slate-300 text-[11px] m-0" style={{ margin: 0, fontSize: "0.75rem", lineHeight: 1.45 }}>
                         {selectedShipData.shipName} also typically calls at Skagway on Inside Passage routes ({selectedShipData.skagwayHours} at {selectedShipData.skagwayBerth}). If Juneau is full, TEMSCO Skagway operates Denver Glacier Dog Sledding &amp; Meade Ice Landings.
                       </p>
                     </div>
@@ -628,6 +811,16 @@ ${shareUrl}`;
                         type="button"
                         onClick={() => setFormData({ ...formData, portCity: "either" })}
                         className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] py-1 px-2.5 rounded transition flex-shrink-0"
+                        style={{
+                          background: "var(--accent)",
+                          color: "#04101d",
+                          fontWeight: 800,
+                          fontSize: "0.75rem",
+                          padding: "6px 10px",
+                          borderRadius: 6,
+                          border: 0,
+                          cursor: "pointer",
+                        }}
                       >
                         Scan Both Ports
                       </button>
@@ -636,8 +829,16 @@ ${shareUrl}`;
                 )}
 
                 {/* Backup Option Badge */}
-                <div className="text-[11px] text-slate-300 flex items-center gap-1.5 pt-1 border-t border-sky-900/50">
-                  <span>🛡️</span>
+                <div
+                  className="text-[11px] text-slate-300 flex items-center gap-1.5 pt-1 border-t border-sky-900/50"
+                  style={{
+                    fontSize: "0.75rem",
+                    lineHeight: 1.45,
+                    paddingTop: 8,
+                    borderTop: "1px solid rgba(56, 189, 248, 0.2)",
+                  }}
+                >
+                  <span>🛡️ </span>
                   <span>
                     <strong>Port Day Backup Option:</strong> If helicopter seats remain full on your date, our dispatch team checks verified live availability for Juneau&apos;s top-rated Auke Bay Whale Watching.
                   </span>
@@ -645,7 +846,7 @@ ${shareUrl}`;
               </div>
             )}
 
-            <div className="form-field">
+            <div className="form-field" style={{ minWidth: 0 }}>
               <label htmlFor="portCity">Port Location to Scan</label>
               <select
                 id="portCity"
@@ -658,7 +859,7 @@ ${shareUrl}`;
               </select>
             </div>
 
-            <div className="form-field">
+            <div className="form-field" style={{ minWidth: 0 }}>
               <label htmlFor="portDate">
                 {formData.portCity === "skagway" ? "Skagway Port Date *" : "Juneau Port Date *"}
               </label>
@@ -666,27 +867,41 @@ ${shareUrl}`;
                 id="portDate"
                 type="date"
                 required
+                aria-describedby="portDate-description"
                 value={formData.portDate}
                 onChange={(e) => setFormData({ ...formData, portDate: e.target.value })}
               />
-              <span className="text-[11px] text-slate-400">Passenger-supplied date from cruise itinerary</span>
+              <span
+                id="portDate-description"
+                className="text-[11px] text-slate-400"
+                style={{ fontSize: "0.75rem", color: "var(--muted)" }}
+              >
+                Passenger-supplied date from cruise itinerary
+              </span>
             </div>
 
             {formData.portCity === "either" && (
-              <div className="form-field">
+              <div className="form-field" style={{ minWidth: 0 }}>
                 <label htmlFor="skagwayDate">Skagway Port Date *</label>
                 <input
                   id="skagwayDate"
                   type="date"
                   required
+                  aria-describedby="skagwayDate-description"
                   value={formData.skagwayDate}
                   onChange={(e) => setFormData({ ...formData, skagwayDate: e.target.value })}
                 />
-                <span className="text-[11px] text-slate-400">From cruise itinerary (distinct Skagway port call)</span>
+                <span
+                  id="skagwayDate-description"
+                  className="text-[11px] text-slate-400"
+                  style={{ fontSize: "0.75rem", color: "var(--muted)" }}
+                >
+                  From cruise itinerary (distinct Skagway port call)
+                </span>
               </div>
             )}
 
-            <div className="form-field full-width">
+            <div className="form-field full-width" style={{ minWidth: 0 }}>
               <label htmlFor="tourType">Tour Experience Preference</label>
               <select
                 id="tourType"
@@ -715,7 +930,7 @@ ${shareUrl}`;
               </select>
             </div>
 
-            <div className="form-field">
+            <div className="form-field" style={{ minWidth: 0 }}>
               <label htmlFor="partySize">Number of Seats / Party Size</label>
               <select
                 id="partySize"
@@ -732,15 +947,24 @@ ${shareUrl}`;
 
             {/* Split Party Optimization Option */}
             {parseInt(String(formData.partySize), 10) >= 2 && (
-              <div className="form-field full-width bg-emerald-950/30 border border-emerald-500/30 rounded-xl p-3 text-xs" style={{ background: "rgba(6, 78, 59, 0.25)", border: "1px solid rgba(16, 185, 129, 0.4)", borderRadius: 10, padding: 12 }}>
+              <div
+                className="form-field full-width bg-emerald-950/30 border border-emerald-500/30 rounded-xl p-3 text-xs"
+                style={{
+                  minWidth: 0,
+                  background: "rgba(6, 78, 59, 0.25)",
+                  border: "1px solid rgba(16, 185, 129, 0.4)",
+                  borderRadius: 10,
+                  padding: 12,
+                }}
+              >
                 <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", color: "#e2e8f0" }}>
                   <input
                     type="checkbox"
                     checked={formData.allowSplitParty}
                     onChange={(e) => setFormData({ ...formData, allowSplitParty: e.target.checked })}
-                    style={{ marginTop: 2, accentColor: "#10b981", width: 16, height: 16 }}
+                    style={{ marginTop: 2, accentColor: "#10b981", width: 16, height: 16, flexShrink: 0 }}
                   />
-                  <div>
+                  <div style={{ minWidth: 0 }}>
                     <strong style={{ color: "#6ee7b7", display: "block", fontSize: "0.82rem" }}>
                       Allow separate departures for our group
                     </strong>
@@ -752,11 +976,13 @@ ${shareUrl}`;
               </div>
             )}
 
-            <div className="form-field">
+            <div className="form-field" style={{ minWidth: 0 }}>
               <label htmlFor="name">Full Name *</label>
               <input
                 id="name"
+                name="name"
                 type="text"
+                autoComplete="name"
                 required
                 placeholder="Your full name"
                 value={formData.name}
@@ -764,11 +990,13 @@ ${shareUrl}`;
               />
             </div>
 
-            <div className="form-field">
+            <div className="form-field" style={{ minWidth: 0 }}>
               <label htmlFor="email">Email Address (For Seat Alerts) *</label>
               <input
                 id="email"
+                name="email"
                 type="email"
+                autoComplete="email"
                 required
                 placeholder="name@example.com"
                 value={formData.email}
@@ -776,26 +1004,33 @@ ${shareUrl}`;
               />
             </div>
 
-            <div className="form-field">
+            <div className="form-field" style={{ minWidth: 0 }}>
               <label htmlFor="phone">
                 Mobile Phone {formData.bookingMode === "concierge_dispatch" ? "*" : "(Optional)"}
               </label>
               <input
                 id="phone"
+                name="phone"
                 type="tel"
+                autoComplete="tel"
+                aria-describedby="phone-description"
                 required={formData.bookingMode === "concierge_dispatch"}
                 placeholder="(555) 123-4567"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
-              <span className="text-[11px] text-slate-400">
+              <span
+                id="phone-description"
+                className="text-[11px] text-slate-400"
+                style={{ fontSize: "0.75rem", color: "var(--muted)" }}
+              >
                 {formData.bookingMode === "concierge_dispatch"
                   ? "Used by Juneau dispatch team for direct flight coordination"
                   : "Optional direct contact for tour operator coordination"}
               </span>
             </div>
 
-            <div className="form-field full-width">
+            <div className="form-field full-width" style={{ minWidth: 0 }}>
               <label htmlFor="notes">Port Schedule / Docking Notes (Optional)</label>
               <input
                 id="notes"
@@ -812,6 +1047,13 @@ ${shareUrl}`;
               type="submit"
               disabled={status === "submitting"}
               className="button button-primary waitlist-submit-btn"
+              style={{
+                whiteSpace: "normal",
+                height: "auto",
+                minHeight: 48,
+                lineHeight: 1.35,
+                padding: "12px 18px",
+              }}
             >
               {status === "submitting"
                 ? "Submitting Request..."
