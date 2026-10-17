@@ -5,6 +5,53 @@ import os from 'node:os';
 import path from 'node:path';
 import { Bridge, MARKER, parseTask, allowedFile, findingsForHead, parseAgent, run, refreshWorker, validateWindowsCheckout, classifyBlocker, computeTaskHash, summarizePortfolioState, selectNextRotationSite, DEFAULT_SITE_DISCOVERY_BACKLOG, readJsonFile, acquireWorkerLock, isWorkerPidAlive } from './bridge.mjs';
 import { createHash } from 'node:crypto';
+import { summarizeCheckLog } from './bridge.mjs';
+
+test('check diagnostics publish only known categories and hashes, not private log values', () => {
+  const result = summarizeCheckLog('secret=PRIVATE email=customer@example.invalid\nType error: error TS2322\nCannot find module private-path\nAssertionError ERR_ASSERTION\nnpm error code ERESOLVE');
+  assert.deepEqual(result.codes, ['ERESOLVE', 'ERR_ASSERTION', 'TS2322']);
+  assert.ok(result.signals.includes('module resolution failure'));
+  assert.ok(result.signals.includes('test assertion failure'));
+  assert.ok(result.signals.includes('type checking failure'));
+  assert.ok(!JSON.stringify(result).includes('PRIVATE'));
+  assert.ok(!JSON.stringify(result).includes('customer@'));
+  assert.match(result.logSha256, /^[a-f0-9]{64}$/);
+});
+
+test('blocked check backfills timestamp-matched evidence once without executing or changing edits', async t => {
+  const h = harness(t);
+  const now = Date.now();
+  h.b.state[169] = { site: 'brinkberry', status: 'blocked', blocker: { category: 'check_failed' }, blockedAt: now };
+  const log = path.join(h.b.home, 'check-169-1.log');
+  fs.writeFileSync(log, 'AssertionError ERR_ASSERTION private customer record');
+  await h.b.reportBlockedCheck(169, { site: 'brinkberry' });
+  await h.b.reportBlockedCheck(169, { site: 'brinkberry' });
+  assert.equal(h.notes.length, 1);
+  assert.equal(h.b.state[169].checkEvidence.check.command, 'npm run test');
+  assert.equal(h.b.state[169].status, 'blocked');
+  assert.equal(h.runs(), 0);
+  assert.ok(!h.notes[0].includes('private customer'));
+  assert.ok(!h.calls.some(c => c.includes('reset') || c.includes('push') || c.includes('commit')));
+});
+
+test('diagnostics never attribute stale check logs to a later failure', async t => {
+  const h = harness(t);
+  h.b.state[169] = { site: 'brinkberry', status: 'blocked', blocker: { category: 'check_failed' }, blockedAt: Date.now() };
+  const log = path.join(h.b.home, 'check-169-1.log');
+  fs.writeFileSync(log, 'AssertionError ERR_ASSERTION');
+  fs.utimesSync(log, new Date(0), new Date(0));
+  await h.b.reportBlockedCheck(169, { site: 'brinkberry' });
+  assert.equal(h.b.state[169].checkEvidence.check, null);
+  assert.equal(h.b.state[169].checkEvidence.diagnostic, null);
+});
+
+test('transport retains exit code while keeping raw stderr private', async () => {
+  await assert.rejects(run(process.execPath, ['-e', 'console.error("PRIVATE"); process.exit(7)']), err => {
+    assert.equal(err.exitCode, 7);
+    assert.ok(!err.message.includes('PRIVATE'));
+    return true;
+  });
+});
 
 const config = JSON.parse(fs.readFileSync(new URL('./config.json', import.meta.url)));
 const issue = (number, mode = 'audit', site = 'jfd', extra = {}) => ({ number, user: { login: 'erichroeseler123-bot' }, body: MARKER + '\n```json\n' + JSON.stringify({ site, mode, instructions: 'Read the source mapping.', ...extra }) + '\n```' });
@@ -465,5 +512,6 @@ test('discoverNextTaskIfEmpty rotates to next unblocked site after 2-hour interv
   assert.equal(heartbeat.rotation.lastSite, 'dells');
   assert.equal(heartbeat.rotation.lastIssue, 167);
 });
+
 
 
