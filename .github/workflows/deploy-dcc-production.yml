@@ -3,17 +3,23 @@ name: Deploy DCC Production
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
-    types: [closed]
+    paths-ignore:
+      - 'tools/ag-bridge/**'
+      - '.github/workflows/deploy-juneauflightdeck.yml'
+      - '.github/workflows/deploy-welcometotheswamp.yml'
+      - '.github/workflows/deploy-420-airport-pickup.yml'
+      - '.github/workflows/deploy-saveonthestrip.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: deploy-dcc-production
+  cancel-in-progress: true
+
 jobs:
   deploy:
-    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -22,25 +28,50 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: '24'
 
+      - name: Check if root DCC build is required
+        id: check_changed
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          set +e
+          VERCEL_GIT_COMMIT_SHA="${GITHUB_SHA}" node scripts/vercel-ignore-monorepo.mjs
+          CODE=$?
+          set -e
+          if [ "$CODE" -eq 0 ]; then
+            echo "Skipping root DCC deployment because commit only touches isolated sub-apps."
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install pnpm
+        if: steps.check_changed.outputs.should_build == 'true'
         run: npm install -g pnpm@10
 
       - name: Install Vercel CLI
+        if: steps.check_changed.outputs.should_build == 'true'
         run: npm install -g vercel@latest
 
       - name: Validate deploy credential
+        if: steps.check_changed.outputs.should_build == 'true'
         run: test -n "${{ secrets.VERCEL_TOKEN }}" || (echo "Missing VERCEL_TOKEN" && exit 1)
 
       - name: Pull production environment
+        if: steps.check_changed.outputs.should_build == 'true'
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build production
+        if: steps.check_changed.outputs.should_build == 'true'
         shell: bash
         run: |
           set -a
@@ -49,4 +80,5 @@ jobs:
           vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy production
+        if: steps.check_changed.outputs.should_build == 'true'
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

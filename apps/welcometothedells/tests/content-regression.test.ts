@@ -150,10 +150,11 @@ test("/boat-tours and /first-time include the 60-Second Fit Guide comparing asho
 
   const upperDells = BOAT_TOUR_FIT_GUIDE.find((entry) => entry.id === "upper-dells-scenic");
   assert.ok(upperDells);
-  assert.match(upperDells.badge, /Only route with both canyon walks/i);
+  assert.match(upperDells.badge, /Two signature shore landings/i);
   assert.match(upperDells.ashoreWalks, /Witches Gulch/);
   assert.match(upperDells.ashoreWalks, /Stand Rock/);
-  assert.match(upperDells.splashThrill, /Calm scenic cruise/i);
+  assert.match(upperDells.splashThrill, /Scenic sightseeing cruise above the dam/i);
+  assert.match(upperDells.duration, /2 hours/);
   assert.match(upperDells.comfort, /leave wheelchairs at the dock/i);
   assert.match(upperDells.comfort, /sit without assistance/i);
   assert.match(upperDells.comfort, /dispatchers/i);
@@ -161,8 +162,9 @@ test("/boat-tours and /first-time include the 60-Second Fit Guide comparing asho
 
   const lowerDells = BOAT_TOUR_FIT_GUIDE.find((entry) => entry.id === "lower-dells-scenic");
   assert.ok(lowerDells);
-  assert.match(lowerDells.ashoreWalks, /No shore walks/i);
-  assert.match(lowerDells.splashThrill, /Calm scenic cruise/i);
+  assert.match(lowerDells.ashoreWalks, /below the dam.*Rocky Islands.*Hawk's Bill/i);
+  assert.match(lowerDells.splashThrill, /Scenic sightseeing cruise below the dam/i);
+  assert.match(lowerDells.duration, /1 hour/);
   assert.match(lowerDells.comfort, /leave wheelchairs at the dock/i);
   assert.match(lowerDells.comfort, /sit without assistance/i);
   assert.match(lowerDells.comfort, /dispatchers assist with loading and unloading/i);
@@ -171,26 +173,37 @@ test("/boat-tours and /first-time include the 60-Second Fit Guide comparing asho
   const ducks = BOAT_TOUR_FIT_GUIDE.find((entry) => entry.id === "original-wisconsin-ducks");
   assert.ok(ducks);
   assert.match(ducks.splashThrill, /Land-to-water Duck/i);
-  assert.match(ducks.comfort, /ladder-style steps/i);
+  assert.match(ducks.ashoreWalks, /Dells Scenic Park.*Wisconsin River.*Dell Creek.*Lake Delton/i);
+  assert.match(ducks.duration, /1 hour/);
+  assert.match(ducks.comfort, /leave wheelchairs at the dock/i);
+  assert.match(ducks.comfort, /sit without assistance/i);
+  assert.match(ducks.comfort, /dispatchers assist with loading and unloading/i);
 
   const jetBoat = BOAT_TOUR_FIT_GUIDE.find((entry) => entry.id === "jet-boat-adventures");
   assert.ok(jetBoat);
   assert.match(jetBoat.splashThrill, /jet boat/i);
   assert.match(jetBoat.ashoreWalks, /Upper Dells jet boat \(~75 min\).*Witches Gulch/i);
-  assert.match(jetBoat.ashoreWalks, /Lower Dells jet boat \(~50 min\).*no shore walks/i);
+  assert.match(jetBoat.ashoreWalks, /Lower Dells jet boat \(~50 min\).*separate river adventure/i);
   assert.match(jetBoat.duration, /50 minutes on Lower Dells/i);
   assert.match(jetBoat.duration, /75 minutes on Upper Dells/i);
   assert.match(jetBoat.comfort, /ages 4\+/i);
   assert.match(jetBoat.comfort, /age 3 and younger are not permitted/i);
+  assert.match(jetBoat.comfort, /2022 rider guide/i);
+  assert.match(jetBoat.comfort, /Confirm current rider restrictions/i);
   assert.equal(/40-inch/i.test(jetBoat.comfort), false);
 
   // Replaced earlier unassisted-transfer assertion because official Dells Boat Tours accessibility guidance states
   // wheelchairs stay at the dock, passengers must sit without assistance, and dispatchers assist with loading/unloading.
   assert.match(
     boatToursSource,
-    /Need zero stairs vs\. a 1-hour ride\?[\s\S]*?Lower Dells Scenic Cruise[\s\S]*?wheelchairs must remain at the\s+dock[\s\S]*?sit without assistance[\s\S]*?dispatchers assist with loading and unloading[\s\S]*?steep ladder-style\s+steps to\s+board/,
+    /Comparing time and boarding needs\?[\s\S]*?Lower Dells Scenic Cruise and Original Wisconsin Ducks[\s\S]*?wheelchairs must remain at the dock[\s\S]*?sit without assistance[\s\S]*?dispatchers assist with\s+loading and unloading[\s\S]*?rather than assuming either trip is step-free/,
   );
   assert.equal(/transfer.*without assistance|transfer.*unassisted/i.test(boatToursSource), false);
+  // Operator pages support routes/durations and independent seating with assisted loading, not
+  // universal dry, smooth, stair-free, all-ages or extra parking/drying-time promises.
+  for (const source of [boatToursSource, firstTimeSource]) {
+    assert.equal(/mostly dry|Smooth boat ride|zero canyon stairs|steep ladder|all-ages|2\.5 hours|20–30 extra/i.test(source), false);
+  }
 
   for (const entry of BOAT_TOUR_FIT_GUIDE) {
     assert.ok(entry.ashoreWalks.length > 10);
