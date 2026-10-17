@@ -4,7 +4,7 @@ This worker continuously researches, improves, tests, reviews, and prepares upda
 
 ## Configured Portfolio & Rotation Order
 
-The worker rotates across 10 configured sites (`DEFAULT_SITE_ROTATION_ORDER`) on a 2-hour (`autoDiscoverIntervalMinutes: 120`) cycle when the active queue is empty:
+The worker rotates across 10 configured sites (`DEFAULT_SITE_ROTATION_ORDER`) on a 6-hour (`autoDiscoverIntervalMinutes: 360`) cycle when the active queue is empty:
 
 | Order | Site ID | Name | Domain | Repository | Directory | Vercel Project |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -43,7 +43,7 @@ Private repositories connected to Vercel (`cruisepromenade`, `socializor`, `eauc
 ## Automatic Task Discovery & PR Merge Reconciliation
 
 - **Automatic `ready -> done` Reconciliation (`reconcileReadyTask`)**: On each tick, before checking whether the queue is empty, the worker inspects any `ready` task's PR. Once the PR is merged or closed, the worker automatically marks the task `done`, records `mergedSha`, and closes the corresponding queue issue on `erichroeseler123-bot/destinations-cc`.
-- **Automatic Task Discovery (`discoverNextTaskIfEmpty` & `selectNextRotationSite`)**: When no open issue is in `new`, `running`, `review`, or `ready` status and at least `autoDiscoverIntervalMinutes` (`120` minutes) have elapsed since `rotation.lastCreatedAt`, the worker selects the next eligible site in rotation (`skip`ping busy/stalled sites and already-dispatched task keys/hashes) and creates the next scoped GitHub issue automatically.
+- **Automatic Task Discovery (`discoverNextTaskIfEmpty` & `selectNextRotationSite`)**: When no open issue is in `new`, `running`, `review`, or `ready` status and at least `autoDiscoverIntervalMinutes` (`360` minutes / 6 hours) have elapsed since `rotation.lastCreatedAt`, the worker selects the next eligible site in rotation (`skip`ping busy/stalled sites and already-dispatched task keys/hashes) and creates the next scoped GitHub issue automatically.
 - **Multi-Pass Discovery Backlog (`DEFAULT_SITE_DISCOVERY_BACKLOG`)**: Each site has verified, file-specific UX, mobile usability (`320px`/`375px`), accessibility (WCAG 2.2), Core Web Vitals (CLS/LCP), conversion clarity, and technical SEO improvements. Pass 0 completes across all eligible sites before advancing to `followUps` (Pass 1).
 
 ## Safeguards & Verification

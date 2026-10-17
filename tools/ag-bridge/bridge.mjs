@@ -778,7 +778,7 @@ export class Bridge {
     });
     if (hasActiveWork) return null;
     const rotation = this.loadRotation();
-    const minIntervalMs = (this.config.autoDiscoverIntervalMinutes ?? 120) * 60000;
+    const minIntervalMs = (this.config.autoDiscoverIntervalMinutes ?? 360) * 60000;
     if (!rotation.forceNext && rotation.lastCreatedAt && (Date.now() - Number(rotation.lastCreatedAt)) < minIntervalMs) {
       return null;
     }
@@ -892,7 +892,13 @@ export class Bridge {
     }
     const summary = summarizePortfolioState(this.state, this.config);
     const rotation = this.loadRotation();
-    const heartbeat = { time: new Date().toISOString(), sites: Object.keys(this.config.sites), rotation, summary, tickErrors, tasks: this.state };
+    const intervalMinutes = this.config.autoDiscoverIntervalMinutes ?? 360;
+    const schedule = {
+      intervalMinutes,
+      lastCreatedAt: rotation.lastCreatedAt ? new Date(Number(rotation.lastCreatedAt)).toISOString() : null,
+      nextScheduledDiscoveryAt: rotation.lastCreatedAt ? new Date(Number(rotation.lastCreatedAt) + intervalMinutes * 60000).toISOString() : null
+    };
+    const heartbeat = { time: new Date().toISOString(), sites: Object.keys(this.config.sites), schedule, rotation, summary, tickErrors, tasks: this.state };
     fs.writeFileSync(path.join(this.home, 'heartbeat.json'), JSON.stringify(heartbeat, null, 2));
     return heartbeat;
   }
@@ -977,6 +983,7 @@ async function main() {
       }
     }
     try {
+      bridge.config = readJsonFile(path.join(root, 'config.json'), bridge.config);
       await bridge.tick();
       console.log(`${new Date().toISOString()} Queue checked.`);
       appendWorkerLog(home, 'Queue checked.');

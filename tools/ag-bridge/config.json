@@ -11,7 +11,7 @@
   "recoveryVersion": "resilience-v7",
   "reviewTimeoutMinutes": 60,
   "autoDiscoverWhenEmpty": true,
-  "autoDiscoverIntervalMinutes": 120,
+  "autoDiscoverIntervalMinutes": 360,
   "sites": {
     "jfd": {
       "name": "Juneau Flight Deck",

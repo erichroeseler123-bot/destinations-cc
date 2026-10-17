@@ -573,3 +573,28 @@ test('review stage waits for pending Vercel statuses and blocks on failing Verce
   assert.equal(h.b.state[1].status, 'ready');
   assert.ok(h.notes.some(n => n.includes('Ready for owner review')));
 });
+test('configured auto-discovery schedule defaults to 6 hours (360 minutes) and records nextScheduledDiscoveryAt in heartbeat', async t => {
+  assert.equal(config.autoDiscoverIntervalMinutes, 360);
+  const h = harness(t);
+  const lastCreatedAt = Date.now() - 3 * 3600 * 1000;
+  fs.writeFileSync(h.b.rotationFile, JSON.stringify({
+    lastSite: 'dells',
+    lastCreatedAt,
+    lastIssue: 181,
+    dispatchedKeys: ['cruisepromenade-mobile-nav-accessibility']
+  }));
+  let createdNext = null;
+  const origApi = h.b.api.bind(h.b);
+  h.b.api = async (endpoint, method = 'GET', data) => {
+    if (endpoint === `repos/${config.queueRepo}/issues` && method === 'POST') {
+      createdNext = data;
+      return { number: 184, title: data.title, body: data.body, user: { login: config.trustedAuthors[0] } };
+    }
+    return origApi(endpoint, method, data);
+  };
+  h.b.all = async () => [];
+  const hbBefore = await h.b.tick();
+  assert.equal(createdNext, null, 'Must not dispatch new task after only 3 hours when interval is 6 hours (360m)');
+  assert.equal(hbBefore.schedule.intervalMinutes, 360);
+  assert.equal(hbBefore.schedule.nextScheduledDiscoveryAt, new Date(lastCreatedAt + 360 * 60000).toISOString());
+});
