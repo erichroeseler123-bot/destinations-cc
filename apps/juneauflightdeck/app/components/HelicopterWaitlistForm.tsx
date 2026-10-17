@@ -530,6 +530,7 @@ ${shareUrl}`;
                 fontSize: "0.82rem",
               }}
               onClick={() => {
+                setCopyFeedback("");
                 setStatus("idle");
                 setFormData((prev) => ({ ...prev, name: "", email: "", phone: "", notes: "" }));
               }}
