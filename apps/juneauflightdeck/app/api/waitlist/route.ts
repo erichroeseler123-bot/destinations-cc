@@ -182,8 +182,6 @@ export async function POST(request: Request) {
         ? 649
         : normalizedTourType === "ice_trek"
         ? 599
-        : normalizedTourType === "flightseeing"
-        ? 299
         : 449;
 
     const entry: WaitlistEntry = {

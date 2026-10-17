@@ -327,8 +327,6 @@ export default function DispatchDashboardPage() {
                               ? 649
                               : entry.tourType === "ice_trek"
                               ? 599
-                              : entry.tourType === "flightseeing"
-                              ? 299
                               : 449)
                         ).toLocaleString()}
                       </small>

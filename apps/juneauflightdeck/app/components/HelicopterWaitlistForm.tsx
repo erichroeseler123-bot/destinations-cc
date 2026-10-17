@@ -24,7 +24,7 @@ export interface TourOption {
   value: string;
   label: string;
   operator?: string;
-  category: "glacier_landing" | "dog_sledding" | "ice_trek" | "flightseeing" | "any";
+  category: "glacier_landing" | "dog_sledding" | "ice_trek" | "any";
   highlight?: string;
 }
 
@@ -78,12 +78,6 @@ export const TOUR_OPTIONS: TourOption[] = [
     label: "Any Glacier Ice Trek / Climb (NorthStar Trekking)",
     category: "ice_trek",
   },
-  {
-    value: "flightseeing",
-    label: "Scenic Glacier Flightseeing (No Ice Landing — Shortest Port Window)",
-    category: "flightseeing",
-    highlight: "Pure aerial icefield views with zero walking on snow or ice (3.5–4.0h dock-to-dock)",
-  },
 ];
 
 export default function HelicopterWaitlistForm({
@@ -136,10 +130,7 @@ export default function HelicopterWaitlistForm({
         TOUR_OPTIONS.find((t) => t.category.toLowerCase() === normalized) ||
         (normalized.includes("landing") ? TOUR_OPTIONS.find((t) => t.value === "temsco-mendenhall-glacier-walk") : null) ||
         (normalized.includes("dog") ? TOUR_OPTIONS.find((t) => t.value === "temsco-glacier-dog-sledding") : null) ||
-        (normalized.includes("trek") ? TOUR_OPTIONS.find((t) => t.value === "northstar-glacier-ice-trek") : null) ||
-        (normalized.includes("flight") || normalized.includes("scenic")
-          ? TOUR_OPTIONS.find((t) => t.value === "flightseeing")
-          : null);
+        (normalized.includes("trek") ? TOUR_OPTIONS.find((t) => t.value === "northstar-glacier-ice-trek") : null);
 
       if (matchedTour) {
         setPreselectedTour(matchedTour);
@@ -266,8 +257,6 @@ export default function HelicopterWaitlistForm({
           ? 649
           : formData.tourType.includes("trek")
           ? 599
-          : formData.tourType === "flightseeing"
-          ? 299
           : 449;
       const parsedParty = parseInt(String(formData.partySize), 10) || 2;
       sendJfdTelemetry("waitlist_submitted", {

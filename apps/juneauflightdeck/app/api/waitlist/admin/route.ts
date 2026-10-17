@@ -275,8 +275,6 @@ export async function GET(request: Request) {
           ? 649
           : curr.tourType === "ice_trek"
           ? 599
-          : curr.tourType === "flightseeing"
-          ? 299
           : 449;
       return acc + (curr.estimatedValue || curr.partySize * perSeat);
     }, 0);
