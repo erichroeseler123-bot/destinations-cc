@@ -27,7 +27,7 @@ const faq = [
   {
     question: "Do first-time visitors need to do both a Duck tour and a scenic boat tour?",
     answer:
-      "No. Upper Dells scenic cruises (~2 hours) are the only route with ashore canyon walks at both Witches Gulch and Stand Rock, Lower Dells scenic cruises (~1 hour) stay seated on calmer water with zero canyon stairs (though wheelchairs must be left at the dock and passengers must transfer and sit without assistance), Original Wisconsin Ducks (~1 hour) splash from forest trails into the river without shore hikes (boarding uses steep ladder steps), and jet boats (ages 4+) offer either a ~50-minute Lower Dells nonstop splash run or a ~75-minute Upper Dells run with a Witches Gulch walk. Use the 60-Second Fit Guide on the boat tours page to pick one format that fits your group.",
+      "No. Upper Dells scenic cruises (~2 hours) are the only route with ashore canyon walks at both Witches Gulch and Stand Rock, Lower Dells scenic cruises (~1 hour) stay seated on calmer water with zero canyon stairs (though wheelchairs must be left at the dock and passengers must sit without assistance, with dispatchers assisting with loading and unloading), Original Wisconsin Ducks (~1 hour) splash from forest trails into the river without shore hikes (boarding uses steep ladder steps), and jet boats (ages 4+) offer either a ~50-minute Lower Dells nonstop splash run or a ~75-minute Upper Dells run with a Witches Gulch walk. Use the 60-Second Fit Guide on the boat tours page to pick one format that fits your group.",
   },
   {
     question: "What if it rains in Wisconsin Dells?",
@@ -61,7 +61,7 @@ export default function Page() {
           },
           {
             title: "2. Choose Ducks or a scenic boat tour—do not automatically stack both",
-            body: "Upper Dells scenic tours (~2 hours) are the only cruise with ashore canyon walks at both Witches Gulch and Stand Rock; Lower Dells scenic cruises (~1 hour) offer calm seated bluff views with zero canyon stairs (passengers using wheelchairs must leave them at the dock and transfer/sit unassisted); Original Wisconsin Ducks (~1 hour) splash from forest trails into the river with zero shore hikes (note the steep ladder steps to board); and Jet Boat Adventures (ages 4+) trade calm narration for high-speed wet spins on either a ~50-minute Lower Dells run (no shore stop) or a ~75-minute Upper Dells run (includes Witches Gulch).",
+            body: "Upper Dells scenic tours (~2 hours) are the only cruise with ashore canyon walks at both Witches Gulch and Stand Rock; Lower Dells scenic cruises (~1 hour) offer calm seated bluff views with zero canyon stairs (passengers using wheelchairs must leave them at the dock and sit without assistance, with dispatchers helping load and unload); Original Wisconsin Ducks (~1 hour) splash from forest trails into the river with zero shore hikes (note the steep ladder steps to board); and Jet Boat Adventures (ages 4+) trade calm narration for high-speed wet spins on either a ~50-minute Lower Dells run (no shore stop) or a ~75-minute Upper Dells run (includes Witches Gulch).",
             href: "/boat-tours#fit-guide",
             cta: "Open 60-Second Fit Guide",
           },

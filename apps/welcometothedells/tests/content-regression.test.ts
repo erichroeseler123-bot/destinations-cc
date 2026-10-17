@@ -155,6 +155,9 @@ test("/boat-tours and /first-time include the 60-Second Fit Guide comparing asho
   assert.match(upperDells.ashoreWalks, /Stand Rock/);
   assert.match(upperDells.splashThrill, /Calm scenic cruise/i);
   assert.match(upperDells.comfort, /leave wheelchairs at the dock/i);
+  assert.match(upperDells.comfort, /sit without assistance/i);
+  assert.match(upperDells.comfort, /dispatchers/i);
+  assert.equal(/transfer.*without assistance|transfer.*unassisted/i.test(upperDells.comfort), false);
 
   const lowerDells = BOAT_TOUR_FIT_GUIDE.find((entry) => entry.id === "lower-dells-scenic");
   assert.ok(lowerDells);
@@ -162,6 +165,8 @@ test("/boat-tours and /first-time include the 60-Second Fit Guide comparing asho
   assert.match(lowerDells.splashThrill, /Calm scenic cruise/i);
   assert.match(lowerDells.comfort, /leave wheelchairs at the dock/i);
   assert.match(lowerDells.comfort, /sit without assistance/i);
+  assert.match(lowerDells.comfort, /dispatchers assist with loading and unloading/i);
+  assert.equal(/transfer.*without assistance|transfer.*unassisted/i.test(lowerDells.comfort), false);
 
   const ducks = BOAT_TOUR_FIT_GUIDE.find((entry) => entry.id === "original-wisconsin-ducks");
   assert.ok(ducks);
@@ -179,10 +184,13 @@ test("/boat-tours and /first-time include the 60-Second Fit Guide comparing asho
   assert.match(jetBoat.comfort, /age 3 and younger are not permitted/i);
   assert.equal(/40-inch/i.test(jetBoat.comfort), false);
 
+  // Replaced earlier unassisted-transfer assertion because official Dells Boat Tours accessibility guidance states
+  // wheelchairs stay at the dock, passengers must sit without assistance, and dispatchers assist with loading/unloading.
   assert.match(
     boatToursSource,
-    /Need zero stairs vs\. a 1-hour ride\?[\s\S]*?Lower Dells Scenic Cruise[\s\S]*?wheelchairs must remain at the\s+dock[\s\S]*?steep ladder-style steps to board/,
+    /Need zero stairs vs\. a 1-hour ride\?[\s\S]*?Lower Dells Scenic Cruise[\s\S]*?wheelchairs must remain at the\s+dock[\s\S]*?sit without assistance[\s\S]*?dispatchers assist with loading and unloading[\s\S]*?steep ladder-style\s+steps to\s+board/,
   );
+  assert.equal(/transfer.*without assistance|transfer.*unassisted/i.test(boatToursSource), false);
 
   for (const entry of BOAT_TOUR_FIT_GUIDE) {
     assert.ok(entry.ashoreWalks.length > 10);
@@ -198,4 +206,8 @@ test("/boat-tours and /first-time include the 60-Second Fit Guide comparing asho
   assert.match(firstTimeSource, /75-minute Upper Dells/);
   assert.match(firstTimeSource, /50-minute Lower Dells/);
   assert.match(firstTimeSource, /60-Second Fit Guide/);
+  assert.match(firstTimeSource, /wheelchairs must be left at the dock/i);
+  assert.match(firstTimeSource, /sit without assistance/i);
+  assert.match(firstTimeSource, /dispatchers assisting with loading and unloading/i);
+  assert.equal(/transfer.*without assistance|transfer.*unassisted/i.test(firstTimeSource), false);
 });

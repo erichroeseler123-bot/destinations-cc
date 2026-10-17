@@ -73,7 +73,7 @@ export const BOAT_TOUR_FIT_GUIDE: RiverFitComparison[] = [
       "Calm scenic cruise — dry, relaxed double-decker riverboat above the Kilbourn Dam with open upper and covered lower decks.",
     duration: "~2 hours total (budget 2.5 hours with downtown parking and boarding).",
     comfort:
-      "Smooth boat ride for kids and seniors, but shore stops include narrow canyon steps at Witches Gulch and a steep incline at Stand Rock (strollers remain on the boat during walks, and wheelchair users must leave wheelchairs at the dock and be able to transfer and sit without assistance).",
+      "Smooth boat ride for kids and seniors, but shore stops include narrow canyon steps at Witches Gulch and a steep incline at Stand Rock (strollers remain on the boat during walks, and wheelchair users must leave wheelchairs at the dock and sit without assistance, with dispatchers available to help load and unload).",
     href: "/out/wisconsin-dells/classic-upper",
     cta: "Check Upper Dells tours",
   },
@@ -88,7 +88,7 @@ export const BOAT_TOUR_FIT_GUIDE: RiverFitComparison[] = [
       "Calm scenic cruise — dry, gentle sightseeing on wider river channels without dock transfers.",
     duration: "~1 hour total (easy to fit before lunch or a downtown Broadway walk).",
     comfort:
-      "Board once and stay seated with zero canyon stairs or trail bounce, though passengers using wheelchairs must leave wheelchairs at the dock and be able to transfer onto the boat and sit without assistance.",
+      "Board once and stay seated with zero canyon stairs or trail bounce, though passengers using wheelchairs must leave wheelchairs at the dock and sit without assistance (dispatchers assist with loading and unloading).",
     href: "/out/wisconsin-dells/classic-upper",
     cta: "Check scenic tour times",
   },
@@ -197,8 +197,9 @@ export default function Page() {
             <strong>Need zero stairs vs. a 1-hour ride?</strong>
             <span>
               For zero canyon stairs, pick the 1-hour Lower Dells Scenic Cruise (note: wheelchairs must remain at the
-              dock and guests must transfer and sit unassisted). Original Wisconsin Ducks also run ~1 hour with no shore
-              walks, but require climbing steep ladder-style steps to board.
+              dock and guests must sit without assistance, while dispatchers assist with loading and unloading).
+              Original Wisconsin Ducks also run ~1 hour with no shore walks, but require climbing steep ladder-style
+              steps to board.
             </span>
           </div>
           <div>
