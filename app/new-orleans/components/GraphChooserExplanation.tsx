@@ -120,10 +120,14 @@ export default function GraphChooserExplanation() {
     };
 
     planner.addEventListener("click", onClick);
+    let previousAnswersRaw: string | null | undefined;
     const readRecommendation = () => {
       try {
         setSlug(sessionStorage.getItem(CHOOSER_RECOMMENDATION));
         const rawAnswers = sessionStorage.getItem(CHOOSER_ANSWERS);
+        // A stable stored value must not create a new state object on every poll.
+        // Slug-only live reranks still update above without replacing unchanged answers.
+        if (rawAnswers === previousAnswersRaw) return;
         if (rawAnswers) {
           const parsed = JSON.parse(rawAnswers) as unknown;
           if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
@@ -132,6 +136,7 @@ export default function GraphChooserExplanation() {
         } else {
           setAnswers({});
         }
+        previousAnswersRaw = rawAnswers;
       } catch {
         setSlug(null);
       }
