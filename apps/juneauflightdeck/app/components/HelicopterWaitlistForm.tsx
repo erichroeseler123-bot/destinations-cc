@@ -116,6 +116,7 @@ export default function HelicopterWaitlistForm({
   const [submissionId, setSubmissionId] = useState("");
   const [copiedRollCall, setCopiedRollCall] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState("");
 
   // Read URL search parameters on mount
   useEffect(() => {
@@ -298,7 +299,9 @@ ${shareUrl}`;
 
   const copyToClipboard = async (text: string, type: "rollcall" | "link") => {
     try {
+      setCopyFeedback("");
       await navigator.clipboard.writeText(text);
+      setCopyFeedback(type === "rollcall" ? "Roll call post copied." : "Share link copied.");
       if (type === "rollcall") {
         setCopiedRollCall(true);
         setTimeout(() => setCopiedRollCall(false), 3000);
@@ -511,7 +514,7 @@ ${shareUrl}`;
             aria-atomic="true"
             style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clipPath: "inset(50%)", whiteSpace: "nowrap", border: 0 }}
           >
-            {copiedRollCall ? "Roll call post copied." : copiedLink ? "Share link copied." : ""}
+            {copyFeedback}
           </p>
 
           <div className="text-center pt-2" style={{ textAlign: "center" }}>
