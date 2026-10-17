@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { Bridge, MARKER, parseTask, allowedFile, findingsForHead, parseAgent, run, refreshWorker, validateWindowsCheckout, classifyBlocker, computeTaskHash, summarizePortfolioState, selectNextRotationSite, DEFAULT_SITE_DISCOVERY_BACKLOG, readJsonFile, acquireWorkerLock, isWorkerPidAlive } from './bridge.mjs';
+import { Bridge, MARKER, parseTask, allowedFile, findingsForHead, parseAgent, run, refreshWorker, validateWindowsCheckout, classifyBlocker, computeTaskHash, summarizePortfolioState, selectNextRotationSite, DEFAULT_SITE_DISCOVERY_BACKLOG, readJsonFile, acquireWorkerLock, isWorkerPidAlive, computePollDelaySeconds, isRateLimitError, buildAgentCliArgs, shouldSkipInstallCheck, writeDepsStamp } from './bridge.mjs';
 import { createHash } from 'node:crypto';
 import { summarizeCheckLog } from './bridge.mjs';
 
@@ -596,5 +596,56 @@ test('configured auto-discovery schedule defaults to 6 hours (360 minutes) and r
   const hbBefore = await h.b.tick();
   assert.equal(createdNext, null, 'Must not dispatch new task after only 3 hours when interval is 6 hours (360m)');
   assert.equal(hbBefore.schedule.intervalMinutes, 360);
+  assert.equal(hbBefore.schedule.idlePollSeconds, 300);
+  assert.equal(hbBefore.schedule.activePollSeconds, 60);
   assert.equal(hbBefore.schedule.nextScheduledDiscoveryAt, new Date(lastCreatedAt + 360 * 60000).toISOString());
+});
+test('computePollDelaySeconds uses 5-minute idle polling, 60-second active polling, and exponential backoff on errors and rate limits', () => {
+  assert.equal(config.pollSeconds, 300);
+  assert.equal(config.idlePollSeconds, 300);
+  assert.equal(config.activePollSeconds, 60);
+  assert.equal(computePollDelaySeconds(config, { hasActiveWork: false, consecutiveErrors: 0 }), 300);
+  assert.equal(computePollDelaySeconds(config, { hasActiveWork: true, consecutiveErrors: 0 }), 60);
+  assert.equal(computePollDelaySeconds(config, { hasActiveWork: false, consecutiveErrors: 1 }), 600);
+  assert.equal(computePollDelaySeconds(config, { hasActiveWork: false, consecutiveErrors: 2 }), 1200);
+  assert.equal(computePollDelaySeconds(config, { hasActiveWork: false, consecutiveErrors: 3 }), 1800);
+  assert.equal(computePollDelaySeconds(config, { hasActiveWork: true, consecutiveErrors: 1, rateLimited: true }), 600);
+  assert.equal(isRateLimitError(new Error('HTTP 403: API rate limit exceeded')), true);
+  assert.equal(classifyBlocker(new Error('HTTP 429: too many requests')).category, 'rate_limited');
+});
+test('buildAgentCliArgs and agent() disable slash-command expansion, tier audit tasks to flash, and inject branch-modified files on follow-up turns', async t => {
+  const auditArgs = buildAgentCliArgs(config, { mode: 'audit' });
+  assert.ok(auditArgs.includes('--disable-slash-commands'));
+  assert.ok(auditArgs.includes('--model'));
+  assert.equal(auditArgs[auditArgs.indexOf('--model') + 1], 'gemini-3.8-flash-high');
+  const codeArgs = buildAgentCliArgs(config, { mode: 'code' });
+  assert.ok(codeArgs.includes('--disable-slash-commands'));
+  assert.ok(!codeArgs.includes('--model'), 'Quality-critical code tasks must preserve the default primary model');
+
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'bridge-followup-')); t.after(() => fs.rmSync(home, { recursive: true, force: true }));
+  let capturedArgs = [], capturedInput = '';
+  const command = async (exe, args, options = {}) => {
+    if (exe === 'git' && args[0] === 'ls-files') return 'apps/juneauflightdeck/app/page.tsx\0';
+    if (exe === 'git' && args[0] === 'diff') return 'apps/juneauflightdeck/app/page.tsx\0';
+    capturedArgs = args;
+    capturedInput = options.input ?? '';
+    return JSON.stringify({ event: 'result', result: { status: 'SUCCESS', response: 'Done AG_BRIDGE_OK' } });
+  };
+  const b = new Bridge(config, home, command);
+  await b.agent(home, 174, { site: 'jfd', mode: 'code', instructions: 'Fix review finding' }, config.sites.jfd, ['apps/juneauflightdeck/app/page.tsx:10\n[P1] Fix label'], { baseSha: '1234567890abcdef', sha: 'fedcba0987654321' });
+  assert.ok(capturedArgs.includes('--disable-slash-commands'));
+  assert.ok(capturedInput.includes('Branch files already modified relative to base (1234567890)'));
+  assert.ok(capturedInput.includes('- apps/juneauflightdeck/app/page.tsx'));
+});
+test('shouldSkipInstallCheck and writeDepsStamp skip redundant npm ci / npm install when lockfiles and node_modules/.bin are unchanged', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bridge-deps-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  fs.writeFileSync(path.join(dir, 'package.json'), '{"name":"test","version":"1.0.0"}');
+  fs.writeFileSync(path.join(dir, 'package-lock.json'), '{"lockfileVersion":3}');
+  assert.equal(shouldSkipInstallCheck('npm', ['ci', '--ignore-scripts'], dir, config), false);
+  fs.mkdirSync(path.join(dir, 'node_modules', '.bin'), { recursive: true });
+  writeDepsStamp('npm', ['ci', '--ignore-scripts'], dir);
+  assert.equal(shouldSkipInstallCheck('npm', ['ci', '--ignore-scripts'], dir, config), true);
+  assert.equal(shouldSkipInstallCheck('npm', ['run', 'build'], dir, config), false);
+  fs.writeFileSync(path.join(dir, 'package-lock.json'), '{"lockfileVersion":3,"updated":true}');
+  assert.equal(shouldSkipInstallCheck('npm', ['ci', '--ignore-scripts'], dir, config), false);
 });
