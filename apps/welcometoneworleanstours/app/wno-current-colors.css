@@ -86,6 +86,29 @@ main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-ri
   color: var(--wno-now-ink) !important;
 }
 
+/*
+ * Restore ivory headings only on opaque dark chooser panels/cards (surfacePanel, #171419,
+ * #0d0b0f, #151515). Intentionally exclude the outer <section class="... bg-[#111014]">
+ * wrapper at app/new-orleans/help-me-choose/page.tsx:53 ("The best tour is the one that
+ * fits your day."), because WNO globals.css overrides that outer section to translucent
+ * rgba(255, 255, 255, 0.16) over the light parchment main background, requiring dark
+ * --wno-now-ink text for contrast.
+ */
+main [data-wno-surface="chooser"]:has(#guided-planner) div[class*="bg-[#171419]"] h2,
+main [data-wno-surface="chooser"]:has(#guided-planner) div[class*="bg-[#171419]"] h3,
+main [data-wno-surface="chooser"] #guided-planner [class*="surfacePanel"] h2,
+main [data-wno-surface="chooser"] #guided-planner [class*="surfacePanel"] h3,
+main [data-wno-surface="chooser"] #guided-planner [class*="surfacePanel"] h4,
+main [data-wno-surface="chooser"] #guided-planner section[class*="bg-[#0d0b0f]"] h2,
+main [data-wno-surface="chooser"] #guided-planner section[class*="bg-[#0d0b0f]"] h3,
+main [data-wno-surface="chooser"] #guided-planner section[class*="bg-[#0d0b0f]"] h4,
+main [data-wno-surface="chooser"] #experience-types section[class*="bg-[#151515]"] h1,
+main [data-wno-surface="chooser"] #experience-types section[class*="bg-[#151515]"] h2,
+main [data-wno-surface="chooser"] #experience-types section[class*="bg-[#151515]"] h3 {
+  color: var(--nola-ivory, #fdfbf7) !important;
+  -webkit-text-fill-color: var(--nola-ivory, #fdfbf7) !important;
+}
+
 main [class*="productCardMedia"],
 main [class*="productCardImageShade"] {
   background: transparent !important;
