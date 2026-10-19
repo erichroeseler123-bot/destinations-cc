@@ -86,6 +86,8 @@ main:not([data-wno-surface="ghost-riders"]):not(:has([data-wno-surface="ghost-ri
   color: var(--wno-now-ink) !important;
 }
 
+main [data-wno-surface="chooser"]:has(#guided-planner) div[class*="bg-[#171419]"] h2,
+main [data-wno-surface="chooser"]:has(#guided-planner) div[class*="bg-[#171419]"] h3,
 main [data-wno-surface="chooser"] #guided-planner [class*="surfacePanel"] h2,
 main [data-wno-surface="chooser"] #guided-planner [class*="surfacePanel"] h3,
 main [data-wno-surface="chooser"] #guided-planner [class*="surfacePanel"] h4,
