@@ -205,3 +205,17 @@ div[class*="drawerPanel"] nav a:hover,
 div[class*="drawerPanel"] nav a:focus-visible {
   color: var(--wno-now-coral) !important;
 }
+
+
+/*
+ * The active WNO tour-detail route renders the shared dark detail surface. Its module
+ * styles use ivory headings, but the light internal-page rule above has higher reach
+ * and previously forced those headings to --wno-now-ink. The host-specific surface
+ * hook keeps this correction off DCC and off WNO's light internal pages.
+ */
+[data-wno-surface="tour-detail-dark"] main#main-content h1,
+[data-wno-surface="tour-detail-dark"] main#main-content h2,
+[data-wno-surface="tour-detail-dark"] main#main-content h3 {
+  color: var(--nola-ivory, #fdfbf7) !important;
+  -webkit-text-fill-color: var(--nola-ivory, #fdfbf7) !important;
+}
