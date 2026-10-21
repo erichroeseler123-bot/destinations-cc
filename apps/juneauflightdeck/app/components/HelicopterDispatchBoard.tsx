@@ -108,7 +108,7 @@ export default function HelicopterDispatchBoard({
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ color: 'var(--ice)', fontWeight: 800 }}>✓</span>
-            <span><strong>Operator comparisons:</strong> TEMSCO, Coastal &amp; NorthStar</span>
+            <span><strong>Operator comparisons:</strong> {isSkagway ? 'Skagway glacier flight options' : 'TEMSCO, Coastal & NorthStar'}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ color: '#86efac', fontWeight: 800 }}>✓</span>
@@ -139,15 +139,17 @@ export default function HelicopterDispatchBoard({
               <div style={{ color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 800, marginBottom: 4 }}>
                 01 · SELECTION
               </div>
-              <h2 className="jfd-compact-card-title">Compare All 3 Operators</h2>
+              <h2 className="jfd-compact-card-title">{isSkagway ? 'Compare Skagway Flights' : 'Compare All 3 Operators'}</h2>
               <p className="jfd-compact-card-body">
-                Direct access to TEMSCO, Coastal, and NorthStar. Compare glacier walkabouts, dog sledding, and ice treks side-by-side.
+                {isSkagway
+                  ? 'Compare Skagway glacier landings and dog sledding flights side-by-side before choosing your booking channel.'
+                  : 'Direct access to TEMSCO, Coastal, and NorthStar. Compare glacier walkabouts, dog sledding, and ice treks side-by-side.'}
               </p>
             </div>
             <Link
               href="#operators"
               className="jfd-compact-card-action"
-              aria-label="View operator specs for Juneau helicopter companies"
+              aria-label={isSkagway ? 'View operator specs for Skagway helicopter companies' : 'View operator specs for Juneau helicopter companies'}
             >
               View operator specs &rarr;
             </Link>
@@ -185,7 +187,7 @@ export default function HelicopterDispatchBoard({
               </p>
             </div>
             <Link
-              href={isSkagway ? '/skagway/helicopter' : '/juneau/what-to-do-if-helicopter-tour-canceled'}
+              href={isSkagway ? '#weather-mechanics' : '/juneau/what-to-do-if-helicopter-tour-canceled'}
               className="jfd-compact-card-action"
               aria-label="Backup options"
             >
@@ -409,23 +411,25 @@ export default function HelicopterDispatchBoard({
         </div>
       </section>
 
-      <section className="jfd-advantage-section" style={{ maxWidth: 'var(--content)', margin: '0 auto 40px', padding: '0 20px' }}>
-        <div className="jfd-section-head">
-          <h2>Why book with Juneau Flight Deck?</h2>
-          <p>Make the right choice before you reach checkout.</p>
-        </div>
-        <div className="jfd-steps-grid">
-          {BOOKING_BENEFITS.map((benefit) => (
-            <article className="jfd-step-card" key={benefit.title}>
-              <h3 className="jfd-step-title">{benefit.title}</h3>
-              <p className="jfd-step-desc">{benefit.description}</p>
-              <Link href={benefit.href}>{benefit.label} →</Link>
-            </article>
-          ))}
-        </div>
-        <p style={{ lineHeight: 1.6, marginTop: 24 }}>{BOOKING_ROLES}</p>
-        <Link href="/about">More about booking with us →</Link>
-      </section>
+      {!isSkagway && (
+        <section className="jfd-advantage-section" style={{ maxWidth: 'var(--content)', margin: '0 auto 40px', padding: '0 20px' }}>
+          <div className="jfd-section-head">
+            <h2>Why book with Juneau Flight Deck?</h2>
+            <p>Make the right choice before you reach checkout.</p>
+          </div>
+          <div className="jfd-steps-grid">
+            {BOOKING_BENEFITS.map((benefit) => (
+              <article className="jfd-step-card" key={benefit.title}>
+                <h3 className="jfd-step-title">{benefit.title}</h3>
+                <p className="jfd-step-desc">{benefit.description}</p>
+                <Link href={benefit.href}>{benefit.label} →</Link>
+              </article>
+            ))}
+          </div>
+          <p style={{ lineHeight: 1.6, marginTop: 24 }}>{BOOKING_ROLES}</p>
+          <Link href="/about">More about booking with us →</Link>
+        </section>
+      )}
 
       {/* 4. How It Works (3 Short Steps) */}
       <section id="how-it-works" className="jfd-steps-section">
