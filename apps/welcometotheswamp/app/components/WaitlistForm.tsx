@@ -31,7 +31,7 @@ export default function WaitlistForm() {
     } catch (e) { if (pending.current === controller) setError(e instanceof Error && e.name !== "AbortError" ? e.message : "The request timed out. It may have reached us; avoid submitting again immediately."); }
     finally { clearTimeout(timeout); if (pending.current === controller) { setBusy(false); pending.current = null; } }
   }
-  if (saved) return <section className={styles.form} role="status"><h2>Your tour request is saved</h2><p>Reference: <strong>{saved.submissionId}</strong></p><p>Automated opening alerts are not active. This is not a booking, seat hold, or promise of contact.</p><p><a href={saved.unsubscribeUrl}>Withdraw this request</a>. Keep this private link if you want to remove your request later.</p><p><a href="/#next-boat">Check departures now →</a> · <a href="/tools">Plan the rest of your day →</a></p></section>;
+  if (saved) return <section className={styles.form} role="status"><h2>Your tour request is saved</h2><p>Reference: <strong>{saved.submissionId}</strong></p><p>Automated opening alerts are not active. This is not a booking, seat hold, or promise of contact.</p><p><a href={saved.unsubscribeUrl}>Withdraw this request</a>. Keep this private link if you want to withdraw your request later.</p><p><a href="/#next-boat">Check departures now →</a> · <a href="/tools">Plan the rest of your day →</a></p></section>;
   return <form onSubmit={submit} className={styles.form} aria-label="Swamp tour availability request">
     {storageReady !== true && <p role="status">{storageReady === null ? "Checking request service…" : "Requests are temporarily unavailable. Please check departures directly and try again later."}</p>}
     <div className={styles.fields}>
