@@ -160,15 +160,15 @@ export default function HelicopterDispatchBoard({
               </div>
               <h2 className="jfd-compact-card-title">Check Pickup &amp; Port Timing</h2>
               <p className="jfd-compact-card-body">
-                Mountain ridge cams and pass weather signal groundings hours early. We track conditions so you aren&apos;t surprised at lift time.
+                Review operator meeting points, airport shuttle transfers, and return buffers alongside your ship&apos;s confirmed arrival and all-aboard times.
               </p>
             </div>
             <Link
-              href="#weather-mechanics"
+              href={isSkagway ? '/skagway/helicopter' : '/juneau/port-to-heliport-logistics'}
               className="jfd-compact-card-action"
-              aria-label="Weather realities for Southeast Alaska glacier flights"
+              aria-label="Review pickup and port-to-heliport timing guidance"
             >
-              Weather realities &rarr;
+              Port-to-heliport timing &rarr;
             </Link>
           </div>
 
@@ -178,10 +178,10 @@ export default function HelicopterDispatchBoard({
                 03 · CONTINGENCY
               </div>
               <h2 className="jfd-compact-card-title">
-                Proactive Alternative Backup
+                Weather Backup Planning
               </h2>
               <p className="jfd-compact-card-body">
-                If weather deteriorates, we start securing alternative activities before your tour is even canceled, beating the dock rush.
+                If weather cancels your flight, explore available alternatives that fit your remaining port time. Backup activities require a separate booking and depend on availability.
               </p>
             </div>
             <Link
@@ -463,6 +463,7 @@ export default function HelicopterDispatchBoard({
 
       {/* 4b. Weather Contingency Summary */}
       <section
+        id="weather-mechanics"
         style={{
           width: 'min(calc(100% - 32px), var(--content))',
           margin: '0 auto 48px',
