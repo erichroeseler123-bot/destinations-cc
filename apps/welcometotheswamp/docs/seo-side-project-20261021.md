@@ -77,4 +77,4 @@ Google says there is no special AI markup, required chunking format or ideal pag
 
 ## Release evidence
 
-To be filled after exact-source build, preview, browser and custom-domain verification. Keep the earlier family-decision release intact unless a specific regression is established. No outreach was sent.
+Local production build, snapshot/source parity, independent fact dates and existing family matching tests passed. Preview 990dc5944354cac7a631a60956be63ea78fdcd4f passed browser checks for SSR, canonical, snapshot download, 1280/375/320 widths, age/height matching, booking destinations, transportation links and no same-site API POSTs. Mobile caption refinement follows that check. Final exact-head preview and production custom-domain evidence are recorded in PR #196. No outreach was sent.
