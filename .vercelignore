@@ -2,5 +2,4 @@ data/sources/geonames/
 .open-next/
 .wrangler/
 legacy_vault/
-tests/
 scratch/
