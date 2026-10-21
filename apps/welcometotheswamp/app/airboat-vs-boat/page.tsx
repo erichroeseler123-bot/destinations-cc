@@ -138,13 +138,14 @@ export default function AirboatVsCoveredBoatPage() {
         <p className="eyebrow">Before you book</p>
         <article className="info-card">
           <h2>Boat type is only half the decision.</h2>
+          <p className="muted">For specific age, height and transport distinctions, use the <Link href="/with-kids#published-rules">six-product published-rules snapshot</Link>. Its sourced records show what is known and what still needs confirmation.</p>
           <p className="muted">
             Check the exact operator's current age and boarding rules, total excursion duration, meeting point or transportation, weather policy, cancellation terms, and accessibility details. Those can matter more than the boat label once you narrow the ride style.
           </p>
           <div className="cta-row">
             <Link className="button" href="/plan?intent=compare&topic=swamp-tours&subtype=airboat-vs-boat&context=first-time">See the right shortlist →</Link>
             <Link className="button-secondary" href="/transportation">Compare pickup and transportation</Link>
-            <Link className="button-secondary" href="/with-kids">Planning with kids?</Link>
+            <Link className="button-secondary" href="/with-kids">Compare product-level child rules</Link>
           </div>
         </article>
       </section>
@@ -163,3 +164,4 @@ export default function AirboatVsCoveredBoatPage() {
     </main>
   );
 }
+
