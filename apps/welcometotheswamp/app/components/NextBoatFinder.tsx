@@ -149,19 +149,30 @@ export default function NextBoatFinder() {
       : customDate;
 
   const totalTravelers = adults + childrenAges.length;
+  const hasChildUnder2 = childrenAges.some((age) => age < 2);
   const hasChildUnder5 = childrenAges.some((age) => age < 5);
 
   const boatRecommendationText =
     boatType === "small_airboat"
-      ? hasChildUnder5
-        ? "Small Airboat selected (small airboats require Min Age 5; switch to Large Airboat or Any Airboat for younger children)"
+      ? hasChildUnder2
+        ? "Small Airboat selected (connected airboat options require Min Age 2; small airboats require Min Age 5)"
+        : hasChildUnder5
+        ? "Small Airboat selected (small airboats require Min Age 5; switch to Large Airboat or Any Airboat for ages 2–4)"
         : totalTravelers > 10
         ? "Small Airboat selected (small airboat options fit up to 10 passengers; switch to Large Airboat or Any Airboat for larger groups)"
         : "Small Airboat (6–9 passengers, Min Age 5)"
       : boatType === "large_airboat"
-      ? "Large Airboat (15–30 passengers)"
+      ? hasChildUnder2
+        ? "Large Airboat selected (connected large airboat options require Min Age 2)"
+        : totalTravelers > 25
+        ? "Large Airboat selected (connected large airboat options fit up to 25 passengers)"
+        : "Large Airboat (15–30 passengers, Min Age 2)"
+      : hasChildUnder2
+      ? "Any Airboat (connected airboat options require Min Age 2; no matching airboat departures for children under age 2)"
       : hasChildUnder5
-      ? "Any Airboat (matching Large Airboat options for children under age 5)"
+      ? "Any Airboat (matching Large Airboat options for children ages 2–4)"
+      : totalTravelers > 25
+      ? "Any Airboat (connected airboat options fit up to 25 passengers)"
       : totalTravelers > 10
       ? "Any Airboat (matching Large Airboat options for groups over 10)"
       : "Any Airboat (Small or Large Airboat)";
@@ -549,8 +560,8 @@ export default function NextBoatFinder() {
       )}
 
       {/* SEARCH RESULTS DISPLAY */}
-      <div role="status" aria-live="polite">
-      {isSearching && <p>Checking departures for your current choices…</p>}
+      <div aria-live="polite" aria-atomic="false">
+      {isSearching && <p role="status">Checking departures for your current choices…</p>}
       {searchResponse && (
         <div style={{ marginTop: "2rem", borderTop: "1px solid #333", paddingTop: "1.5rem" }}>
           {/* STATE BANNER */}
