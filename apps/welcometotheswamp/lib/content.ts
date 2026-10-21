@@ -1,4 +1,7 @@
 export const NAV_ITEMS = [
+  { href: "/waitlist", label: "Waitlist" },
+  { href: "/tools", label: "Planning Tools" },
+  { href: "/weather-backups", label: "Weather Backups" },
   { href: "/airboat-vs-boat", label: "Airboat vs Boat" },
   { href: "/with-kids", label: "With Kids" },
   { href: "/best-time", label: "Best Time" },
@@ -181,3 +184,4 @@ export const PAGE_SUMMARIES = {
       "Shortlist page for comparing the strongest current swamp-tour fits after narrowing down the right lane.",
   },
 } as const;
+

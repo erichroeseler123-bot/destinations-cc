@@ -20,12 +20,9 @@ export async function GET(request: Request) {
     // 1. Authorization check
     const authHeader = request.headers.get("authorization");
     const cronSecret = (process.env.CRON_SECRET || "").trim();
-    const isVercelCron = Boolean(request.headers.get("x-vercel-cron"));
-
-    if (cronSecret && !isVercelCron) {
-      if (authHeader !== `Bearer ${cronSecret}`) {
-        return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-      }
+    // A caller-supplied x-vercel-cron header is not authorization.
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
     // 2. Expire past travel dates (safe hygiene)
@@ -80,25 +77,20 @@ export async function GET(request: Request) {
     }
 
     let alertsSent = 0;
-    const dispatchedList: Array<{ submissionId: string; departureId: string; email: string }> = [];
+    const dispatchedList: Array<{ submissionId: string; departureId: string }> = [];
 
     // 5. Evaluate each travel date
     for (const [travelDate, submissions] of dateGroups.entries()) {
-      // Find candidate departures for this date
-      const searchRes = await searchNextAirboatDepartures({
-        travelDate,
-        adults: 2, // baseline
-        childrenAges: [],
-        transportation: "either",
-        boatType: "any",
-      });
-
-      if (!searchRes.allDepartures || searchRes.allDepartures.length === 0) {
-        continue;
-      }
-
-      // Check each submission against departures
+      // Live capacity checks are party-specific. Reuse only identical searches.
+      const cache = new Map<string, Awaited<ReturnType<typeof searchNextAirboatDepartures>>>();
       for (const sub of submissions) {
+        const key = JSON.stringify([sub.adults, sub.childrenAges, sub.transportation, sub.boatType]);
+        let searchRes = cache.get(key);
+        if (!searchRes) {
+          searchRes = await searchNextAirboatDepartures({ travelDate, adults: sub.adults, childrenAges: sub.childrenAges, transportation: sub.transportation, boatType: sub.boatType });
+          cache.set(key, searchRes);
+        }
+        if (!searchRes.allDepartures?.length) continue;
         // Strict deduplication: If subscriber was already alerted for this requested date, skip
         const alreadyNotifiedForDate = await hasBeenNotifiedForDate(sub.id, travelDate);
         if (alreadyNotifiedForDate) {
@@ -114,7 +106,6 @@ export async function GET(request: Request) {
               dispatchedList.push({
                 submissionId: sub.id,
                 departureId: dep.id,
-                email: sub.email,
               });
               // Send only the earliest match per subscriber
               break;
@@ -139,3 +130,4 @@ export async function GET(request: Request) {
     );
   }
 }
+

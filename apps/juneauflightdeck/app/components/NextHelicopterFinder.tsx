@@ -43,6 +43,7 @@ export default function NextHelicopterFinder() {
       <button type="submit" disabled={loading || !date}>{loading ? "Checking calendars…" : "Find next departure"}</button>
     </form>
     <p className={styles.note}>Ready time starts one hour ahead as a planning estimate. Adjust it for your location and travel plans. Listed starts may be pickup times; check the operator’s meeting instructions, children’s ages, weight rules, and seats for your party before paying.</p>
+    <p><a href="/helicopter-waitlist" style={{color:"#b9eaff"}}>Join the helicopter waitlist</a> · <a href="/tools#day-plan" style={{color:"#b9eaff"}}>Plan your pickup and return timing</a></p>
     <div aria-live="polite" aria-busy={loading}>
       {loading && <p role="status">Checking the operators’ departure calendars…</p>}
       {error && <p role="alert">{error}</p>}

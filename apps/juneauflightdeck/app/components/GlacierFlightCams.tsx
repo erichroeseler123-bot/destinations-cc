@@ -240,7 +240,7 @@ export default function GlacierFlightCams() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
           gap: 20,
           marginBottom: 28,
         }}

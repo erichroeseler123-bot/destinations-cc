@@ -15,6 +15,10 @@ export function evaluateDepartureMatch(
 ): AlertMatchResult {
   const totalParty = submission.adults + submission.childrenCount;
 
+  if (departure.availabilityType !== "live_inventory" || departure.checkedForPartySize !== totalParty || departure.travelDate !== submission.travelDate) {
+    return { matches: false, reason: "No live inventory check for this party and date." };
+  }
+
   // 1. Availability check
   if (!departure.available) {
     return { matches: false, reason: "Departure is not available." };
@@ -86,3 +90,4 @@ export function findMatchingDepartures(
 ): TourDeparture[] {
   return departures.filter((dep) => evaluateDepartureMatch(submission, dep).matches);
 }
+

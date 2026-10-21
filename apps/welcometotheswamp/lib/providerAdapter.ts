@@ -5,6 +5,8 @@
  */
 
 export interface TourDeparture {
+  checkedForPartySize?: number;
+  travelDate?: string;
   id: string;
   provider: "viator" | "getyourguide" | "direct_operator";
   productCode: string;
@@ -155,3 +157,4 @@ export const CURATED_SWAMP_CATALOG: CuratedSwampTour[] = [
     bookingUrl: "https://www.viator.com/tours/New-Orleans/Airboat-Swamp-Tour-at-Jean-Lafitte-Historical-Park/d675-2244P1",
   },
 ];
+

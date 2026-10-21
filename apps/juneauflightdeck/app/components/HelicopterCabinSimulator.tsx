@@ -135,7 +135,7 @@ export default function HelicopterCabinSimulator() {
           />
 
           {/* FRONT ROW: S1, S2, Pilot */}
-          <div style={{ display: "flex", justifyContent: "center", gap: 14, marginBottom: 28 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 14, marginBottom: 28 }}>
             {/* Seat 1 */}
             {passengers[0] ? (
               <button
@@ -311,7 +311,7 @@ export default function HelicopterCabinSimulator() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 190px), 1fr))",
           gap: 12,
           marginBottom: 24,
         }}
@@ -499,7 +499,7 @@ export default function HelicopterCabinSimulator() {
           }}
         >
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", minWidth: 0, maxWidth: "100%", alignItems: "center", gap: 10 }}>
               <label style={{ fontSize: "0.82rem", fontWeight: 800, color: "var(--text)" }}>
                 Select Seat to Adjust:
               </label>
@@ -507,6 +507,8 @@ export default function HelicopterCabinSimulator() {
                 value={selectedSeatId}
                 onChange={(e) => setSelectedSeatId(Number(e.target.value))}
                 style={{
+                  maxWidth: "100%",
+                  minWidth: 0,
                   padding: "6px 12px",
                   background: "#030f19",
                   border: "1px solid var(--line)",
@@ -561,6 +563,7 @@ export default function HelicopterCabinSimulator() {
               onChange={(e) => handleWeightChange(selectedSeatId, Number(e.target.value))}
               style={{
                 flex: 1,
+                minWidth: 0,
                 accentColor: selectedPassenger?.weightLbs >= SURCHARGE_THRESHOLD_LBS ? "#f59e0b" : "#38bdf8",
                 cursor: "pointer",
               }}
