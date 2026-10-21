@@ -129,18 +129,29 @@ async function ServerLocationSnapshot({ lat, lng, dccEndpoints }: { lat: number;
                 {endpoints.map((ep: any, idx: number) => {
                   const data = ep.payload || {};
                   const claims = Array.isArray(data.claims) ? data.claims : [];
+                  const rawState = Array.isArray(data.state) ? data.state : [];
                   const legalName = claims.find((c: any) => c.predicate === "legal_name")?.value || ep.name || "Direct Operator";
                   const authClaim = claims.find((c: any) => c.predicate === "operating_authority");
                   const auth = authClaim?.value || "CO PUC LL-03577";
                   const authEvidence = authClaim?.evidence?.[0]?.pointer || "https://puc.colorado.gov/transportation";
                   const actions = Array.isArray(data.actions) ? data.actions : [];
                   const endpointUrl = ep.endpointUrl || "https://gosno.co/.well-known/dcc";
+                  const asOf = ep.asOf || data.as_of || rawState.find((s: any) => s?.as_of)?.as_of || "—";
+                  const freshUntil = ep.freshUntil || data.fresh_until || rawState.find((s: any) => s?.fresh_until)?.fresh_until || null;
+                  const freshUntilMs = freshUntil ? new Date(freshUntil).getTime() : Number.NaN;
+                  const isVerifiedFresh =
+                    Number.isFinite(freshUntilMs) &&
+                    freshUntilMs > Date.now() &&
+                    ep.isFresh !== false &&
+                    ep.status !== "stale" &&
+                    ep.status !== "unavailable" &&
+                    ep.available !== false;
 
                   return (
                     <div key={endpointUrl || idx} className="rounded-2xl border border-white/10 bg-black/30 p-5 space-y-4">
                       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/8 pb-3">
                         <div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <h4 className="text-lg font-bold text-white">{legalName}</h4>
                             <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-cyan-200">
                               Direct Machine Endpoint
@@ -154,11 +165,18 @@ async function ServerLocationSnapshot({ lat, lng, dccEndpoints }: { lat: number;
                             </a>
                           </p>
                         </div>
-                        <div className="text-right">
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-bold text-emerald-300">
-                            <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
-                            Operational · Verified Fresh
-                          </span>
+                        <div className="text-left sm:text-right">
+                          {isVerifiedFresh ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-bold text-emerald-300">
+                              <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
+                              Operational · Verified Fresh
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-bold text-amber-200">
+                              <span className="h-2 w-2 rounded-full bg-amber-400"></span>
+                              Snapshot cached · See live feed below
+                            </span>
+                          )}
                           {ep.matchedRegion ? (
                             <p className="mt-1 text-[10px] text-white/40">Region: {ep.matchedRegion}</p>
                           ) : null}
@@ -174,11 +192,11 @@ async function ServerLocationSnapshot({ lat, lng, dccEndpoints }: { lat: number;
                         </div>
                         <div>
                           <span className="text-[10px] uppercase tracking-wider text-white/40 block">As Of</span>
-                          <span className="font-mono text-white/70">{ep.asOf || data.as_of || "—"}</span>
+                          <span className="font-mono text-white/70">{asOf}</span>
                         </div>
                         <div>
                           <span className="text-[10px] uppercase tracking-wider text-white/40 block">Fresh Until</span>
-                          <span className="font-mono text-white/70">{ep.freshUntil || data.fresh_until || "—"}</span>
+                          <span className="font-mono text-white/70">{freshUntil || "—"}</span>
                         </div>
                       </div>
 

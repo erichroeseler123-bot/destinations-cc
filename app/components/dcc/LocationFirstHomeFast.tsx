@@ -137,7 +137,12 @@ export default function LocationFirstHomeFast() {
             <span className="text-xs font-bold uppercase tracking-wider text-white/50 block mb-2">
               Explore Live Data For Any Coordinate or Venue:
             </span>
-            <form onSubmit={search} className="flex flex-col gap-3 sm:flex-row">
+            <form
+              role="search"
+              aria-label="Coordinate and venue search"
+              onSubmit={search}
+              className="flex flex-col gap-3 sm:flex-row"
+            >
               <label className="sr-only" htmlFor={locationSearchInputId}>Open a location</label>
               <input
                 id={locationSearchInputId}
@@ -164,18 +169,31 @@ export default function LocationFirstHomeFast() {
               <button type="button" onClick={() => openLocation(58.29890, -134.40530)} className="rounded-full border border-white/15 bg-white/[0.03] px-3.5 py-1.5 text-xs font-bold text-white/80 transition hover:border-cyan-400 hover:text-white">🚢 Juneau Cruise Port, AK</button>
             </div>
 
-            {results.length > 1 ? (
-              <div className="mt-3 grid max-w-4xl gap-2 rounded-2xl border border-white/15 bg-black/80 p-3 shadow-2xl">
-                {results.map((result) => (
-                  <button key={result.id} type="button" onClick={() => openLocation(result.lat, result.lng)} className="rounded-xl px-4 py-3 text-left transition hover:bg-white/[0.1] border border-white/5">
-                    <strong className="block text-sm text-white">{result.name}</strong>
-                    <span className="mt-0.5 block text-xs text-white/50">{result.displayName}</span>
-                  </button>
-                ))}
-              </div>
-            ) : null}
+            <div aria-live="polite" aria-atomic="true">
+              {results.length > 1 ? (
+                <div
+                  role="region"
+                  aria-label="Matching locations"
+                  className="mt-3 grid max-w-4xl gap-2 rounded-2xl border border-white/15 bg-black/80 p-3 shadow-2xl"
+                >
+                  <p className="px-2 pt-1 text-xs font-bold uppercase tracking-[0.12em] text-cyan-200/80">
+                    {results.length} matching locations found — select a coordinate node:
+                  </p>
+                  {results.map((result) => (
+                    <button key={result.id} type="button" onClick={() => openLocation(result.lat, result.lng)} className="rounded-xl px-4 py-3 text-left transition hover:bg-white/[0.1] border border-white/5">
+                      <strong className="block text-sm text-white">{result.name}</strong>
+                      <span className="mt-0.5 block text-xs text-white/50">{result.displayName}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
 
-            {message ? <p className="mt-4 text-sm text-amber-300">{message}</p> : null}
+              {message ? (
+                <p role="status" className="mt-4 text-sm text-amber-300">
+                  {message}
+                </p>
+              ) : null}
+            </div>
           </div>
         </div>
       </section>
@@ -288,7 +306,7 @@ export default function LocationFirstHomeFast() {
             <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-6 flex flex-col justify-between">
               <div>
                 <span className="text-3xl">🎸</span>
-                <h4 className="text-lg font-black text-white mt-3">Red Rocks Concert Amphitheatre</h4>
+                <h3 className="text-lg font-black text-white mt-3">Red Rocks Concert Amphitheatre</h3>
                 <p className="text-xs text-white/60 mt-2 leading-relaxed">
                   Real-time concertgoer intelligence: tracking high-elevation wind gusts, thunderstorm lightning holds, sunset times, and parking EV stations.
                 </p>
@@ -305,7 +323,7 @@ export default function LocationFirstHomeFast() {
             <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-6 flex flex-col justify-between">
               <div>
                 <span className="text-3xl">🎿</span>
-                <h4 className="text-lg font-black text-white mt-3">Breckenridge & I-70 Corridor</h4>
+                <h3 className="text-lg font-black text-white mt-3">Breckenridge & I-70 Corridor</h3>
                 <p className="text-xs text-white/60 mt-2 leading-relaxed">
                   Severe winter weather transit intelligence: monitoring mountain pass snow depths, freezing temperatures, and traction law alerts.
                 </p>
@@ -322,7 +340,7 @@ export default function LocationFirstHomeFast() {
             <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-6 flex flex-col justify-between">
               <div>
                 <span className="text-3xl">🌊</span>
-                <h4 className="text-lg font-black text-white mt-3">Clear Creek Whitewater Rafting</h4>
+                <h3 className="text-lg font-black text-white mt-3">Clear Creek Whitewater Rafting</h3>
                 <p className="text-xs text-white/60 mt-2 leading-relaxed">
                   Live river & water recreation intelligence: verified NOAA NWPS river gauge heights and flow volume in cubic feet per second for outfitters.
                 </p>
