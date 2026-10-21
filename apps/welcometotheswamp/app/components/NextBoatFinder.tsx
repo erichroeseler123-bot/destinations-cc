@@ -148,6 +148,39 @@ export default function NextBoatFinder() {
       ? tomorrowDate
       : customDate;
 
+  const totalTravelers = adults + childrenAges.length;
+  const hasChildUnder5 = childrenAges.some((age) => age < 5);
+
+  const boatRecommendationText =
+    boatType === "small_airboat"
+      ? hasChildUnder5
+        ? "Small Airboat selected (small airboats require Min Age 5; switch to Large Airboat or Any Airboat for younger children)"
+        : totalTravelers > 10
+        ? "Small Airboat selected (small airboat options fit up to 10 passengers; switch to Large Airboat or Any Airboat for larger groups)"
+        : "Small Airboat (6–9 passengers, Min Age 5)"
+      : boatType === "large_airboat"
+      ? "Large Airboat (15–30 passengers)"
+      : hasChildUnder5
+      ? "Any Airboat (matching Large Airboat options for children under age 5)"
+      : totalTravelers > 10
+      ? "Any Airboat (matching Large Airboat options for groups over 10)"
+      : "Any Airboat (Small or Large Airboat)";
+
+  const pickupRecommendationText =
+    transportation === "hotel_pickup"
+      ? "French Quarter / Hotel Pickup"
+      : transportation === "self_drive"
+      ? "Self-Drive (Meet at Dock)"
+      : "Either Hotel Pickup or Self-Drive";
+
+  const partySummaryText = `${totalTravelers} ${totalTravelers === 1 ? "traveler" : "travelers"} (${adults} ${
+    adults === 1 ? "adult" : "adults"
+  }${
+    childrenAges.length > 0
+      ? `, ${childrenAges.length} ${childrenAges.length === 1 ? "child" : "children"} ages ${childrenAges.join(", ")}`
+      : ""
+  })${activeDate ? ` on ${activeDate}` : ""}`;
+
   useEffect(() => {
     if (!planReady) return;
     try {
@@ -462,6 +495,30 @@ export default function NextBoatFinder() {
           </div>
         </div>
 
+        {/* MATCHED RECOMMENDATION SUMMARY REGION */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          style={{
+            padding: "0.75rem 0.9rem",
+            borderRadius: "0.5rem",
+            background: "#0c0a09",
+            border: "1px solid #44403c",
+            fontSize: "0.85rem",
+            lineHeight: 1.45,
+            color: "#d6d3d1",
+            maxWidth: "100%",
+            boxSizing: "border-box",
+            overflowWrap: "anywhere",
+          }}
+        >
+          <strong style={{ color: "#fbbf24" }}>Matched recommendation summary: </strong>
+          <span>
+            {boatRecommendationText} • {pickupRecommendationText} • {partySummaryText}.
+          </span>
+        </div>
+
         <div style={{ display: "flex", gap: "1rem", marginTop: "0.5rem" }}>
           <button
             type="submit"
@@ -492,8 +549,8 @@ export default function NextBoatFinder() {
       )}
 
       {/* SEARCH RESULTS DISPLAY */}
-      <div aria-live="polite">
-      {isSearching && <p role="status">Checking departures for your current choices…</p>}
+      <div role="status" aria-live="polite">
+      {isSearching && <p>Checking departures for your current choices…</p>}
       {searchResponse && (
         <div style={{ marginTop: "2rem", borderTop: "1px solid #333", paddingTop: "1.5rem" }}>
           {/* STATE BANNER */}
@@ -773,5 +830,3 @@ export default function NextBoatFinder() {
     </section>
   );
 }
-
-

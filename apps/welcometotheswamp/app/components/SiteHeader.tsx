@@ -10,7 +10,12 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <div className="site-header-top">
-        <Link href="/" className="brand-block" aria-label="Welcome to the Swamp home">
+        <Link
+          href="/"
+          className="brand-block"
+          aria-label="Welcome to the Swamp home"
+          aria-current={pathname === "/" ? "page" : undefined}
+        >
           <span className="brand-kicker">New Orleans swamp guide</span>
           <span className="brand-name">Welcome to the Swamp</span>
         </Link>
@@ -19,9 +24,9 @@ export function SiteHeader() {
           Swamp tours made easy
         </div>
       </div>
-      <nav className="nav-links" aria-label="Primary">
+      <nav className="nav-links" aria-label="Primary navigation">
         {NAV_ITEMS.map((item) => {
-          const active = pathname === item.href;
+          const active = pathname === item.href || Boolean(pathname?.startsWith(`${item.href}/`));
           return (
             <Link
               key={item.href}
