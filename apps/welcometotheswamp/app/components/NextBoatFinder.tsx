@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useId } from "react";
+import React, { useState, useEffect, useId, useRef } from "react";
+import { FINDER_PLAN_KEY, readFinderPlan } from "../../lib/finderPlan";
 import {
   getTodayNewOrleansDate,
   getTomorrowNewOrleansDate,
@@ -20,6 +21,10 @@ export default function NextBoatFinder() {
   const [childrenAges, setChildrenAges] = useState<number[]>([]);
   const [transportation, setTransportation] = useState<"hotel_pickup" | "self_drive" | "either">("hotel_pickup");
   const [boatType, setBoatType] = useState<"small_airboat" | "large_airboat" | "any">("any");
+  const [planReady, setPlanReady] = useState(false);
+  const requestVersion = useRef(0);
+  const searchController = useRef<AbortController | null>(null);
+  const verificationController = useRef<AbortController | null>(null);
 
   const [isSearching, setIsSearching] = useState(false);
   const [searchResponse, setSearchResponse] = useState<SearchResponse | null>(null);
@@ -31,11 +36,34 @@ export default function NextBoatFinder() {
     Record<string, { text: string; isLive: boolean; note?: string }>
   >({});
 
+  const clearResults = () => {
+    requestVersion.current += 1;
+    searchController.current?.abort();
+    verificationController.current?.abort();
+    setIsSearching(false);
+    setSearchResponse(null);
+    setSearchError(null);
+    setVerifiedBadges({});
+    setVerifyingDepId(null);
+  };
+
+  useEffect(() => () => {
+    requestVersion.current += 1;
+    searchController.current?.abort();
+    verificationController.current?.abort();
+  }, []);
+
   const handleVerifyDeparture = async (dep: TourDeparture) => {
+    verificationController.current?.abort();
+    const controller = new AbortController();
+    verificationController.current = controller;
+    const version = requestVersion.current;
+    const timeout = setTimeout(() => controller.abort(), 20000);
     setVerifyingDepId(dep.id);
     try {
       const res = await fetch("/api/availability/confirm", {
         method: "POST",
+        signal: controller.signal,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           provider: dep.provider,
@@ -48,7 +76,8 @@ export default function NextBoatFinder() {
         }),
       });
       const data = await res.json();
-      if (data.ok) {
+      if (version !== requestVersion.current || controller.signal.aborted) return;
+      if (res.ok && data.ok) {
         setVerifiedBadges((prev) => ({
           ...prev,
           [dep.id]: {
@@ -57,11 +86,18 @@ export default function NextBoatFinder() {
             note: data.message,
           },
         }));
-      }
+      } else throw new Error("Seat check unavailable");
     } catch {
-      // ignore
+      if (version === requestVersion.current && verificationController.current === controller) {
+        setVerifiedBadges((prev) => ({ ...prev, [dep.id]: {
+          text: "Seat check unavailable",
+          isLive: false,
+          note: "Please retry or confirm availability directly at checkout.",
+        } }));
+      }
     } finally {
-      setVerifyingDepId(null);
+      clearTimeout(timeout);
+      if (version === requestVersion.current && verificationController.current === controller) setVerifyingDepId(null);
     }
   };
 
@@ -71,6 +107,21 @@ export default function NextBoatFinder() {
     setTodayDate(today);
     setTomorrowDate(tomorrow);
     setCustomDate(today);
+    try {
+      const saved = readFinderPlan(sessionStorage.getItem(FINDER_PLAN_KEY), today);
+      if (saved) {
+        setSelectedDateMode(saved.travelDate === today ? "today" : saved.travelDate === tomorrow ? "tomorrow" : "custom");
+        setCustomDate(saved.travelDate);
+        setAdults(saved.adults);
+        setChildrenCount(saved.childrenAges.length);
+        setChildrenAges(saved.childrenAges);
+        setTransportation(saved.transportation);
+        setBoatType(saved.boatType);
+      }
+    } catch {
+      // Storage may be disabled; the finder remains usable without persistence.
+    }
+    setPlanReady(true);
   }, []);
 
   const handleChildrenCountChange = (count: number) => {
@@ -97,14 +148,31 @@ export default function NextBoatFinder() {
       ? tomorrowDate
       : customDate;
 
+  useEffect(() => {
+    if (!planReady) return;
+    try {
+      sessionStorage.setItem(FINDER_PLAN_KEY, JSON.stringify({
+        version: 1, travelDate: activeDate, adults, childrenAges, transportation, boatType,
+      }));
+    } catch {
+      // Private browsing/storage limits must not prevent searching.
+    }
+  }, [planReady, activeDate, adults, childrenAges, transportation, boatType]);
+
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    clearResults();
+    const version = requestVersion.current;
+    const controller = new AbortController();
+    searchController.current = controller;
+    const timeout = setTimeout(() => controller.abort(), 20000);
     setIsSearching(true);
     setSearchError(null);
 
     try {
       const res = await fetch("/api/search", {
         method: "POST",
+        signal: controller.signal,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           travelDate: activeDate,
@@ -116,15 +184,21 @@ export default function NextBoatFinder() {
       });
 
       const data = await res.json();
+      if (version !== requestVersion.current || controller.signal.aborted) return;
       if (!res.ok || !data.ok) {
         throw new Error(data.error || "Failed to search availability.");
       }
 
       setSearchResponse(data.data);
     } catch (err: any) {
-      setSearchError(err?.message || "Search failed.");
+      if (version === requestVersion.current) {
+        setSearchError(controller.signal.aborted
+          ? "The search took too long. Please try again with the choices shown above."
+          : err?.message || "Search failed. Please try again.");
+      }
     } finally {
-      setIsSearching(false);
+      clearTimeout(timeout);
+      if (version === requestVersion.current) setIsSearching(false);
     }
   };
 
@@ -167,7 +241,7 @@ export default function NextBoatFinder() {
         </p>
       </div>
 
-      <form onSubmit={handleSearch} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <form onSubmit={handleSearch} onChangeCapture={clearResults} aria-busy={isSearching} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
         {/* WHEN SELECTOR */}
         <div>
           <label id={`${fieldId}-when-label`} style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.5rem" }}>
@@ -177,7 +251,7 @@ export default function NextBoatFinder() {
             <button
               type="button"
               aria-pressed={selectedDateMode === "today"}
-              onClick={() => setSelectedDateMode("today")}
+              onClick={() => { clearResults(); setSelectedDateMode("today"); }}
               style={{
                 padding: "0.75rem 0.5rem",
                 borderRadius: "0.5rem",
@@ -195,7 +269,7 @@ export default function NextBoatFinder() {
             <button
               type="button"
               aria-pressed={selectedDateMode === "tomorrow"}
-              onClick={() => setSelectedDateMode("tomorrow")}
+              onClick={() => { clearResults(); setSelectedDateMode("tomorrow"); }}
               style={{
                 padding: "0.75rem 0.5rem",
                 borderRadius: "0.5rem",
@@ -213,7 +287,7 @@ export default function NextBoatFinder() {
             <button
               type="button"
               aria-pressed={selectedDateMode === "custom"}
-              onClick={() => setSelectedDateMode("custom")}
+              onClick={() => { clearResults(); setSelectedDateMode("custom"); }}
               style={{
                 padding: "0.75rem 0.5rem",
                 borderRadius: "0.5rem",
@@ -391,7 +465,7 @@ export default function NextBoatFinder() {
         <div style={{ display: "flex", gap: "1rem", marginTop: "0.5rem" }}>
           <button
             type="submit"
-            disabled={isSearching}
+            disabled={isSearching || !planReady || !activeDate}
             style={{
               flex: "1",
               padding: "0.9rem 1.5rem",
@@ -419,6 +493,7 @@ export default function NextBoatFinder() {
 
       {/* SEARCH RESULTS DISPLAY */}
       <div aria-live="polite">
+      {isSearching && <p role="status">Checking departures for your current choices…</p>}
       {searchResponse && (
         <div style={{ marginTop: "2rem", borderTop: "1px solid #333", paddingTop: "1.5rem" }}>
           {/* STATE BANNER */}
@@ -609,7 +684,10 @@ export default function NextBoatFinder() {
                     borderRadius: "0.5rem",
                     textDecoration: "none",
                     boxShadow: "0 4px 14px rgba(251, 191, 36, 0.3)",
-                    whiteSpace: "nowrap"
+                    whiteSpace: "normal",
+                    maxWidth: "100%",
+                    boxSizing: "border-box",
+                    overflowWrap: "anywhere"
                   }}
                 >
                   {searchResponse.winningDeparture.bookingUrl.includes("/checkout") || searchResponse.winningDeparture.bookingUrl.includes("/book") || searchResponse.winningDeparture.bookingUrl.includes("fareharbor.com/embeds/book")
@@ -695,4 +773,5 @@ export default function NextBoatFinder() {
     </section>
   );
 }
+
 
