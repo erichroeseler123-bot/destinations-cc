@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import HelicopterWaitlistForm from "../components/HelicopterWaitlistForm";
+import ExcursionPortBufferSolver from "../components/ExcursionPortBufferSolver";
+import CrossPortBackup from "../components/CrossPortBackup";
 import { ALASKA_CRUISE_FLEET } from "../../lib/alaskaCruiseFleet";
 
 export const metadata: Metadata = {
-  title: "Helicopter Tour Availability Watch & Waitlist | Juneau Flight Deck",
+  title: "Helicopter Tour Availability Check & Request | Juneau Flight Deck",
   description:
-    "Put our daily 10:00 AM seat scanner on your cruise port date. Automated monitoring of TEMSCO, Coastal, and NorthStar glacier helicopter flights with direct operator booking links.",
+    "Compare and book Juneau excursions, and submit your ship, port date, tour preference, and party size for a helicopter availability request. We perform daily availability checks across TEMSCO, Coastal, and NorthStar.",
   alternates: { canonical: "https://juneauflightdeck.com/helicopter-waitlist" },
   openGraph: {
-    title: "Helicopter Tour Availability Watch | Juneau Flight Deck",
+    title: "Helicopter Tour Availability Check | Juneau Flight Deck",
     description:
-      "Daily seat drop monitoring for Juneau & Skagway helicopter glacier tours. Direct operator booking and concierge dispatch alerts.",
+      "Daily availability checks for Juneau & Skagway helicopter glacier tours. Direct operator booking links and excursion coordination.",
     url: "https://juneauflightdeck.com/helicopter-waitlist",
   },
 };
@@ -25,7 +27,7 @@ const waitlistFaqSchema = {
       name: "When do sold-out Juneau helicopter seats usually open up?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Seats drop back into live inventory when cruise lines reach contractual cutoff deadlines (typically 30, 14, and 7 days prior to sailing) and return unsold block allocations to operators. Cancellations and aircraft weight rebalances also open seats daily at 10:00 AM AKDT.",
+        text: "Seats can reopen when cruise line group blocks are adjusted, when other travelers change plans or cancel, or when dispatchers finalize aircraft weight and balance manifests. We conduct daily availability checks across local operator schedules to find matching openings.",
       },
     },
     {
@@ -33,7 +35,7 @@ const waitlistFaqSchema = {
       name: "Can I monitor both Juneau and Skagway for glacier dog sledding?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes. Many Alaska cruise sailings visit both Juneau and Skagway. TEMSCO operates dog sledding camps on both Herbert Glacier (Juneau) and Denver Glacier (Skagway). Our waitlist form allows you to scan both port dates simultaneously.",
+        text: "Yes. Many Alaska cruise sailings visit both Juneau and Skagway. TEMSCO operates dog sledding camps on both Herbert Glacier (Juneau) and Denver Glacier (Skagway). Our form allows you to submit availability requests for both port dates.",
       },
     },
     {
@@ -47,6 +49,33 @@ const waitlistFaqSchema = {
   ],
 };
 
+const waitlistServiceSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Juneau Helicopter Sold-Out Tour Waitlist & Availability Assistance",
+  serviceType: "Helicopter Excursion Availability Assistance",
+  provider: {
+    "@type": "Organization",
+    name: "Juneau Flight Deck",
+    url: "https://juneauflightdeck.com",
+    logo: "https://juneauflightdeck.com/images/jfd-logo.png",
+  },
+  areaServed: {
+    "@type": "City",
+    name: "Juneau",
+    addressRegion: "Alaska",
+    addressCountry: "US",
+  },
+  description:
+    "Helps Alaska cruise passengers compare and book open seats, or request availability checks for sold-out Juneau helicopter and glacier dog sledding tours across local Part 135 operators (TEMSCO, Coastal, NorthStar) with cruise ship port timing guidance.",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+    description: "Free availability check and notification service for Alaska cruise travelers.",
+  },
+};
+
 export default function Page() {
   // Group ships by cruise line
   const shipsByLine = ALASKA_CRUISE_FLEET.reduce((acc, ship) => {
@@ -57,20 +86,37 @@ export default function Page() {
   }, {} as Record<string, typeof ALASKA_CRUISE_FLEET>);
 
   return (
-    <main id="main-content" className="jfd-root waitlist-page-container">
+    <main
+      id="main-content"
+      className="jfd-root waitlist-page-container"
+      style={{ overflowX: "clip" }}
+    >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(waitlistServiceSchema) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(waitlistFaqSchema) }}
       />
 
-      <div className="site-shell" style={{ maxWidth: 960, margin: "0 auto", padding: "44px 20px 80px" }}>
+      <div
+        className="site-shell"
+        style={{
+          maxWidth: 960,
+          width: "100%",
+          margin: "0 auto",
+          padding: "clamp(28px, 5vw, 44px) clamp(12px, 4vw, 20px) 80px",
+          boxSizing: "border-box",
+        }}
+      >
         <div style={{ textAlign: "center", marginBottom: 36 }}>
           <p className="eyebrow" style={{ color: "var(--accent, #f0b35b)", marginBottom: 8 }}>
             Cruise Logistics &amp; Excursion Planning
           </p>
           <h1
             style={{
-              fontSize: "clamp(2rem, 4.5vw, 2.85rem)",
+              fontSize: "clamp(1.75rem, 4.5vw, 2.85rem)",
               fontWeight: 900,
               lineHeight: 1.15,
               color: "#ffffff",
@@ -82,7 +128,7 @@ export default function Page() {
           </h1>
           <p
             style={{
-              fontSize: "1.05rem",
+              fontSize: "1.02rem",
               lineHeight: 1.6,
               color: "rgba(228, 239, 246, 0.9)",
               maxWidth: 760,
@@ -91,36 +137,65 @@ export default function Page() {
           >
             Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
           </p>
-          <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap", marginBottom: 8 }}>
+          <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap", marginBottom: 8 }}>
             <Link
               href="/helicopter"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                padding: "10px 20px",
+                justifyContent: "center",
+                padding: "10px 16px",
                 borderRadius: 8,
                 background: "var(--accent, #f0b35b)",
                 color: "#04101d",
                 fontWeight: 800,
                 textDecoration: "none",
-                fontSize: "0.9rem",
+                fontSize: "0.88rem",
+                maxWidth: "100%",
+                boxSizing: "border-box",
+                textAlign: "center",
               }}
             >
               Compare &amp; Book Open Tours →
+            </Link>
+            <Link
+              href="/juneau-helicopter-tour-weight-limits-and-seating"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "10px 16px",
+                borderRadius: 8,
+                background: "rgba(14, 165, 233, 0.15)",
+                border: "1px solid rgba(56, 189, 248, 0.4)",
+                color: "#38bdf8",
+                fontWeight: 700,
+                textDecoration: "none",
+                fontSize: "0.88rem",
+                maxWidth: "100%",
+                boxSizing: "border-box",
+                textAlign: "center",
+              }}
+            >
+              Seat Math &amp; Weight Simulator ✈️
             </Link>
             <Link
               href="/temsco-vs-coastal-vs-northstar-juneau"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                padding: "10px 18px",
+                justifyContent: "center",
+                padding: "10px 16px",
                 borderRadius: 8,
                 background: "rgba(255, 255, 255, 0.08)",
                 border: "1px solid rgba(255, 255, 255, 0.2)",
                 color: "#ffffff",
                 fontWeight: 700,
                 textDecoration: "none",
-                fontSize: "0.9rem",
+                fontSize: "0.88rem",
+                maxWidth: "100%",
+                boxSizing: "border-box",
+                textAlign: "center",
               }}
             >
               Operator Specs
@@ -130,20 +205,29 @@ export default function Page() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                padding: "10px 18px",
+                justifyContent: "center",
+                padding: "10px 16px",
                 borderRadius: 8,
                 background: "rgba(255, 255, 255, 0.08)",
                 border: "1px solid rgba(255, 255, 255, 0.2)",
                 color: "var(--ice, #9ed9ff)",
                 fontWeight: 700,
                 textDecoration: "none",
-                fontSize: "0.9rem",
+                fontSize: "0.88rem",
+                maxWidth: "100%",
+                boxSizing: "border-box",
+                textAlign: "center",
               }}
             >
-              10 AM Seat Drop Alerts ↓
+              Daily Availability Check ↓
             </a>
           </div>
         </div>
+
+        {/* Dynamic Shore Excursion Port Buffer Calculator */}
+        <section style={{ marginBottom: 40, minWidth: 0 }}>
+          <ExcursionPortBufferSolver />
+        </section>
 
         {/* 1. Cruise Port Timing & Fleet Directory Section (Top priority) */}
         <section
@@ -151,8 +235,9 @@ export default function Page() {
             background: "rgba(3, 14, 23, 0.8)",
             border: "1px solid var(--line)",
             borderRadius: "var(--radius-lg, 16px)",
-            padding: "32px 28px",
+            padding: "clamp(20px, 4vw, 32px) clamp(14px, 4vw, 28px)",
             marginBottom: 44,
+            boxSizing: "border-box",
           }}
           aria-labelledby="fleet-directory-heading"
         >
@@ -162,7 +247,7 @@ export default function Page() {
             </span>
             <h2
               id="fleet-directory-heading"
-              style={{ fontSize: "1.5rem", fontWeight: 800, color: "#ffffff", margin: "6px 0 10px" }}
+              style={{ fontSize: "clamp(1.25rem, 3.5vw, 1.5rem)", fontWeight: 800, color: "#ffffff", margin: "6px 0 10px" }}
             >
               Select Your Alaska Cruise Ship for Port Hours &amp; Berth Guidance
             </h2>
@@ -171,18 +256,25 @@ export default function Page() {
             </p>
 
             {/* Quick Port Timing Rules */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12, marginBottom: 20 }}>
-              <div style={{ background: "rgba(6, 21, 33, 0.6)", border: "1px solid var(--line)", borderRadius: 8, padding: "12px 14px" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))",
+                gap: 12,
+                marginBottom: 20,
+              }}
+            >
+              <div style={{ background: "rgba(6, 21, 33, 0.6)", border: "1px solid var(--line)", borderRadius: 8, padding: "12px 14px", minWidth: 0 }}>
                 <span style={{ fontSize: "0.75rem", color: "var(--accent)", fontWeight: 700, display: "block" }}>DOWNTOWN BERTHS</span>
                 <strong style={{ fontSize: "0.85rem", color: "#ffffff" }}>Franklin, CT &amp; Marine Park</strong>
                 <span style={{ fontSize: "0.75rem", color: "var(--muted)", display: "block", marginTop: 2 }}>15-min shuttle to airport heliports</span>
               </div>
-              <div style={{ background: "rgba(6, 21, 33, 0.6)", border: "1px solid var(--line)", borderRadius: 8, padding: "12px 14px" }}>
+              <div style={{ background: "rgba(6, 21, 33, 0.6)", border: "1px solid var(--line)", borderRadius: 8, padding: "12px 14px", minWidth: 0 }}>
                 <span style={{ fontSize: "0.75rem", color: "var(--accent)", fontWeight: 700, display: "block" }}>SOUTH BERTH</span>
                 <strong style={{ fontSize: "0.85rem", color: "#ffffff" }}>AJ Dock (AJD)</strong>
                 <span style={{ fontSize: "0.75rem", color: "var(--muted)", display: "block", marginTop: 2 }}>20-min shuttle from south security gate</span>
               </div>
-              <div style={{ background: "rgba(6, 21, 33, 0.6)", border: "1px solid var(--line)", borderRadius: 8, padding: "12px 14px" }}>
+              <div style={{ background: "rgba(6, 21, 33, 0.6)", border: "1px solid var(--line)", borderRadius: 8, padding: "12px 14px", minWidth: 0 }}>
                 <span style={{ fontSize: "0.75rem", color: "#86efac", fontWeight: 700, display: "block" }}>SAFETY BUFFER</span>
                 <strong style={{ fontSize: "0.85rem", color: "#ffffff" }}>90–120 Minutes</strong>
                 <span style={{ fontSize: "0.75rem", color: "var(--muted)", display: "block", marginTop: 2 }}>Scheduled return prior to all-aboard</span>
@@ -192,7 +284,7 @@ export default function Page() {
 
           <div style={{ display: "grid", gap: 20 }}>
             {Object.entries(shipsByLine).map(([line, ships]) => (
-              <div key={line} style={{ borderTop: "1px solid rgba(151, 211, 255, 0.12)", paddingTop: 14 }}>
+              <div key={line} style={{ borderTop: "1px solid rgba(151, 211, 255, 0.12)", paddingTop: 14, minWidth: 0 }}>
                 <h3 style={{ fontSize: "0.92rem", fontWeight: 700, color: "var(--ice, #9ed9ff)", marginBottom: 8 }}>
                   ⚓ {line}
                 </h3>
@@ -203,6 +295,7 @@ export default function Page() {
                       href={`/helicopter-waitlist/${ship.slug}`}
                       style={{
                         display: "inline-flex",
+                        flexWrap: "wrap",
                         alignItems: "center",
                         gap: 6,
                         padding: "6px 12px",
@@ -213,6 +306,8 @@ export default function Page() {
                         borderRadius: 8,
                         textDecoration: "none",
                         transition: "all 0.15s ease",
+                        maxWidth: "100%",
+                        boxSizing: "border-box",
                       }}
                     >
                       <span style={{ fontWeight: 600 }}>{ship.shipName}</span>
@@ -227,17 +322,22 @@ export default function Page() {
           </div>
         </section>
 
+        {/* Cross-Port Backup Funnel */}
+        <section style={{ marginBottom: 40, minWidth: 0 }}>
+          <CrossPortBackup currentPort="Juneau" desiredTourType="dogsled" />
+        </section>
+
         {/* 2. Primary Waitlist Intake Form */}
-        <section id="waitlist-form" style={{ marginBottom: 48 }}>
+        <section id="waitlist-form" style={{ marginBottom: 48, minWidth: 0 }}>
           <div style={{ textAlign: "center", marginBottom: 24 }}>
             <span style={{ fontSize: "0.75rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--accent, #f0b35b)" }}>
               Step 2 · Availability Watch
             </span>
-            <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#ffffff", margin: "6px 0 8px" }}>
-              Can&apos;t Find an Open Seat? Join the 10:00 AM Seat Drop Watch
+            <h2 style={{ fontSize: "clamp(1.3rem, 3.8vw, 1.5rem)", fontWeight: 800, color: "#ffffff", margin: "6px 0 8px" }}>
+              Can&apos;t Find an Open Seat? Request a Daily Availability Check
             </h2>
             <p style={{ fontSize: "0.95rem", color: "var(--muted)", maxWidth: 680, margin: "0 auto", lineHeight: 1.5 }}>
-              If your desired tour or departure time is fully booked through your cruise line, submit your port date below. Our automated scanner monitors operator cancellations daily at 10:00 AM AKDT.
+              If your desired tour or departure time is fully booked through your cruise line, submit your port date below. We perform a daily availability check across local helicopter operators (TEMSCO, Coastal, NorthStar) and send direct booking links if seats open.
             </p>
           </div>
           <HelicopterWaitlistForm />
@@ -249,22 +349,22 @@ export default function Page() {
             borderTop: "1px solid var(--line)",
             paddingTop: 32,
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))",
             gap: 20,
           }}
         >
-          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20 }}>
+          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20, minWidth: 0 }}>
             <h3 style={{ fontSize: "1rem", color: "#ffffff", margin: "0 0 8px" }}>
               <Link href="/juneau-helicopter-tour-sold-out" style={{ color: "var(--ice, #9ed9ff)", textDecoration: "none" }}>
                 Sold-Out Seats Guide &rarr;
               </Link>
             </h3>
             <p style={{ fontSize: "0.85rem", color: "var(--muted)", margin: 0, lineHeight: 1.5 }}>
-              How cruise line block allocations expire and why prime glacier seats reappear 7 to 30 days before sailing.
+              How independent operator capacity differs from cruise line blocks and how to check for reopened seats.
             </p>
           </div>
 
-          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20 }}>
+          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20, minWidth: 0 }}>
             <h3 style={{ fontSize: "1rem", color: "#ffffff", margin: "0 0 8px" }}>
               <Link href="/temsco-vs-coastal-vs-northstar-juneau" style={{ color: "var(--ice, #9ed9ff)", textDecoration: "none" }}>
                 Operator Comparison &rarr;
@@ -275,7 +375,7 @@ export default function Page() {
             </p>
           </div>
 
-          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20 }}>
+          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20, minWidth: 0 }}>
             <h3 style={{ fontSize: "1rem", color: "#ffffff", margin: "0 0 8px" }}>
               <Link href="/juneau-helicopter-tour-weight-limits-and-seating" style={{ color: "var(--ice, #9ed9ff)", textDecoration: "none" }}>
                 Weight Limits &amp; 6th Seat Math &rarr;
@@ -286,7 +386,7 @@ export default function Page() {
             </p>
           </div>
 
-          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20 }}>
+          <div style={{ background: "rgba(6, 21, 33, 0.5)", border: "1px solid var(--line)", borderRadius: 12, padding: 20, minWidth: 0 }}>
             <h3 style={{ fontSize: "1rem", color: "#ffffff", margin: "0 0 8px" }}>
               <Link href="/skagway/helicopter" style={{ color: "var(--ice, #9ed9ff)", textDecoration: "none" }}>
                 Skagway Helicopter Tours &rarr;

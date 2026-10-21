@@ -9,15 +9,15 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "420-Friendly Colorado Airport Transportation | DEN & COS",
+  title: "420 Airport Pickup Denver | Private DEN 420 Transportation",
   description:
-    "Private Colorado airport transportation for adults 21+ from DEN and COS, with Denver, Colorado Springs, and mountain destinations plus optional lawful dispensary-stop planning when practical.",
-  alternates: { canonical: "/" },
-  robots: { index: true, follow: true, },
+    "Private 420 airport pickup from Denver International Airport (DEN). Curbside pickup at Terminal Level 5, direct private AWD transportation, and an optional 21+ dispensary stop before drop-off.",
+  alternates: { canonical: "https://420friendlyairportpickup.com/" },
+  robots: { index: true, follow: true },
   openGraph: {
-    title: "420-Friendly Colorado Airport Transportation | DEN & COS",
+    title: "420 Airport Pickup Denver | Private DEN 420 Transportation",
     description:
-      "Private airport transportation from Denver International Airport and Colorado Springs Airport with optional lawful 21+ retail-stop planning when practical.",
+      "Private 420 airport pickup from Denver International Airport (DEN). Curbside pickup at Terminal Level 5, direct private AWD transportation, and an optional 21+ dispensary stop before drop-off.",
     url: "https://420friendlyairportpickup.com/",
     type: "website",
   },

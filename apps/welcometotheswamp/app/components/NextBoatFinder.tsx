@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useId, useRef } from "react";
+import { FINDER_PLAN_KEY, readFinderPlan } from "../../lib/finderPlan";
 import {
   getTodayNewOrleansDate,
   getTomorrowNewOrleansDate,
@@ -9,6 +10,7 @@ import type { TourDeparture } from "../../lib/providerAdapter";
 import type { SearchResponse } from "../../lib/searchEngine";
 
 export default function NextBoatFinder() {
+  const fieldId = useId();
   const [todayDate, setTodayDate] = useState("");
   const [tomorrowDate, setTomorrowDate] = useState("");
   const [selectedDateMode, setSelectedDateMode] = useState<"today" | "tomorrow" | "custom">("today");
@@ -19,23 +21,85 @@ export default function NextBoatFinder() {
   const [childrenAges, setChildrenAges] = useState<number[]>([]);
   const [transportation, setTransportation] = useState<"hotel_pickup" | "self_drive" | "either">("hotel_pickup");
   const [boatType, setBoatType] = useState<"small_airboat" | "large_airboat" | "any">("any");
+  const [planReady, setPlanReady] = useState(false);
+  const requestVersion = useRef(0);
+  const searchController = useRef<AbortController | null>(null);
+  const verificationController = useRef<AbortController | null>(null);
 
   const [isSearching, setIsSearching] = useState(false);
   const [searchResponse, setSearchResponse] = useState<SearchResponse | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
 
-  // Waitlist Enrollment State
-  const [showWaitlist, setShowWaitlist] = useState(false);
-  const [waitlistEmail, setWaitlistEmail] = useState("");
-  const [waitlistName, setWaitlistName] = useState("");
-  const [waitlistWindow, setWaitlistWindow] = useState<"any" | "morning" | "afternoon">("any");
-  const [waitlistSubmitting, setWaitlistSubmitting] = useState(false);
-  const [waitlistSuccess, setWaitlistSuccess] = useState<{
-    submissionId: string;
-    message: string;
-    unsubscribeUrl: string;
-  } | null>(null);
-  const [waitlistError, setWaitlistError] = useState<string | null>(null);
+  // Interactive Live Seat Verification State
+  const [verifyingDepId, setVerifyingDepId] = useState<string | null>(null);
+  const [verifiedBadges, setVerifiedBadges] = useState<
+    Record<string, { text: string; isLive: boolean; note?: string }>
+  >({});
+
+  const clearResults = () => {
+    requestVersion.current += 1;
+    searchController.current?.abort();
+    verificationController.current?.abort();
+    setIsSearching(false);
+    setSearchResponse(null);
+    setSearchError(null);
+    setVerifiedBadges({});
+    setVerifyingDepId(null);
+  };
+
+  useEffect(() => () => {
+    requestVersion.current += 1;
+    searchController.current?.abort();
+    verificationController.current?.abort();
+  }, []);
+
+  const handleVerifyDeparture = async (dep: TourDeparture) => {
+    verificationController.current?.abort();
+    const controller = new AbortController();
+    verificationController.current = controller;
+    const version = requestVersion.current;
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    setVerifyingDepId(dep.id);
+    try {
+      const res = await fetch("/api/availability/confirm", {
+        method: "POST",
+        signal: controller.signal,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: dep.provider,
+          productCode: dep.productCode,
+          optionCode: dep.optionCode,
+          travelDate: activeDate,
+          departureTime: dep.departureTime,
+          adults,
+          childrenAges,
+        }),
+      });
+      const data = await res.json();
+      if (version !== requestVersion.current || controller.signal.aborted) return;
+      if (res.ok && data.ok) {
+        setVerifiedBadges((prev) => ({
+          ...prev,
+          [dep.id]: {
+            text: data.statusText,
+            isLive: data.availabilityType === "live_inventory",
+            note: data.message,
+          },
+        }));
+      } else throw new Error("Seat check unavailable");
+    } catch {
+      if (version === requestVersion.current && verificationController.current === controller) {
+        setVerifiedBadges((prev) => ({ ...prev, [dep.id]: {
+          text: "Seat check unavailable",
+          isLive: false,
+          note: "Please retry or confirm availability directly at checkout.",
+        } }));
+      }
+    } finally {
+      clearTimeout(timeout);
+      if (version === requestVersion.current && verificationController.current === controller) setVerifyingDepId(null);
+    }
+  };
 
   useEffect(() => {
     const today = getTodayNewOrleansDate();
@@ -43,6 +107,21 @@ export default function NextBoatFinder() {
     setTodayDate(today);
     setTomorrowDate(tomorrow);
     setCustomDate(today);
+    try {
+      const saved = readFinderPlan(sessionStorage.getItem(FINDER_PLAN_KEY), today);
+      if (saved) {
+        setSelectedDateMode(saved.travelDate === today ? "today" : saved.travelDate === tomorrow ? "tomorrow" : "custom");
+        setCustomDate(saved.travelDate);
+        setAdults(saved.adults);
+        setChildrenCount(saved.childrenAges.length);
+        setChildrenAges(saved.childrenAges);
+        setTransportation(saved.transportation);
+        setBoatType(saved.boatType);
+      }
+    } catch {
+      // Storage may be disabled; the finder remains usable without persistence.
+    }
+    setPlanReady(true);
   }, []);
 
   const handleChildrenCountChange = (count: number) => {
@@ -69,15 +148,31 @@ export default function NextBoatFinder() {
       ? tomorrowDate
       : customDate;
 
+  useEffect(() => {
+    if (!planReady) return;
+    try {
+      sessionStorage.setItem(FINDER_PLAN_KEY, JSON.stringify({
+        version: 1, travelDate: activeDate, adults, childrenAges, transportation, boatType,
+      }));
+    } catch {
+      // Private browsing/storage limits must not prevent searching.
+    }
+  }, [planReady, activeDate, adults, childrenAges, transportation, boatType]);
+
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    clearResults();
+    const version = requestVersion.current;
+    const controller = new AbortController();
+    searchController.current = controller;
+    const timeout = setTimeout(() => controller.abort(), 20000);
     setIsSearching(true);
     setSearchError(null);
-    setWaitlistSuccess(null);
 
     try {
       const res = await fetch("/api/search", {
         method: "POST",
+        signal: controller.signal,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           travelDate: activeDate,
@@ -89,57 +184,21 @@ export default function NextBoatFinder() {
       });
 
       const data = await res.json();
+      if (version !== requestVersion.current || controller.signal.aborted) return;
       if (!res.ok || !data.ok) {
         throw new Error(data.error || "Failed to search availability.");
       }
 
       setSearchResponse(data.data);
-      if (data.data.state === "NO_MATCH") {
-        setShowWaitlist(true);
-      }
     } catch (err: any) {
-      setSearchError(err?.message || "Search failed.");
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const handleEnrollWaitlist = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setWaitlistSubmitting(true);
-    setWaitlistError(null);
-
-    try {
-      const res = await fetch("/api/waitlist/enroll", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: waitlistEmail,
-          name: waitlistName,
-          travelDate: activeDate,
-          adults,
-          childrenCount,
-          childrenAges,
-          transportation,
-          boatType,
-          timeWindow: waitlistWindow,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Failed to enroll.");
+      if (version === requestVersion.current) {
+        setSearchError(controller.signal.aborted
+          ? "The search took too long. Please try again with the choices shown above."
+          : err?.message || "Search failed. Please try again.");
       }
-
-      setWaitlistSuccess({
-        submissionId: data.submissionId,
-        message: data.message,
-        unsubscribeUrl: data.unsubscribeUrl,
-      });
-    } catch (err: any) {
-      setWaitlistError(err?.message || "Enrollment failed.");
     } finally {
-      setWaitlistSubmitting(false);
+      clearTimeout(timeout);
+      if (version === requestVersion.current) setIsSearching(false);
     }
   };
 
@@ -164,7 +223,7 @@ export default function NextBoatFinder() {
           letterSpacing: "0.15em",
           margin: "0 0 0.5rem 0"
         }}>
-          Real-Time Departure Check • New Orleans
+          How do I find the next airboat departure?
         </p>
         <h2 style={{
           fontSize: "clamp(1.35rem, 5vw, 1.85rem)",
@@ -175,23 +234,24 @@ export default function NextBoatFinder() {
           wordBreak: "normal",
           overflowWrap: "break-word"
         }}>
-          Find the Next Available Airboat Tour
+          Compare and Book New Orleans Swamp & Airboat Tours
         </h2>
         <p style={{ color: "#a8a29e", fontSize: "0.95rem", margin: "0.5rem 0 0 0" }}>
-          Check connected departures for your exact party and see what you can actually book right now.
+          Find upcoming departures that fit your group, transportation needs, and schedule—all in one place.
         </p>
       </div>
 
-      <form onSubmit={handleSearch} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <form onSubmit={handleSearch} onChangeCapture={clearResults} aria-busy={isSearching} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
         {/* WHEN SELECTOR */}
         <div>
-          <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.5rem" }}>
+          <label id={`${fieldId}-when-label`} style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.5rem" }}>
             1. When are you going? (New Orleans Time)
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0.5rem" }}>
+          <div role="group" aria-labelledby={`${fieldId}-when-label`} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0.5rem" }}>
             <button
               type="button"
-              onClick={() => setSelectedDateMode("today")}
+              aria-pressed={selectedDateMode === "today"}
+              onClick={() => { clearResults(); setSelectedDateMode("today"); }}
               style={{
                 padding: "0.75rem 0.5rem",
                 borderRadius: "0.5rem",
@@ -208,7 +268,8 @@ export default function NextBoatFinder() {
             </button>
             <button
               type="button"
-              onClick={() => setSelectedDateMode("tomorrow")}
+              aria-pressed={selectedDateMode === "tomorrow"}
+              onClick={() => { clearResults(); setSelectedDateMode("tomorrow"); }}
               style={{
                 padding: "0.75rem 0.5rem",
                 borderRadius: "0.5rem",
@@ -225,7 +286,8 @@ export default function NextBoatFinder() {
             </button>
             <button
               type="button"
-              onClick={() => setSelectedDateMode("custom")}
+              aria-pressed={selectedDateMode === "custom"}
+              onClick={() => { clearResults(); setSelectedDateMode("custom"); }}
               style={{
                 padding: "0.75rem 0.5rem",
                 borderRadius: "0.5rem",
@@ -245,6 +307,7 @@ export default function NextBoatFinder() {
             <div style={{ marginTop: "0.5rem" }}>
               <input
                 type="date"
+                aria-label="Tour date (New Orleans time)"
                 value={customDate}
                 min={todayDate}
                 onChange={(e) => setCustomDate(e.target.value)}
@@ -266,10 +329,11 @@ export default function NextBoatFinder() {
           <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.5rem" }}>
             2. Who is in your group?
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "1rem" }}>
             <div>
-              <span style={{ fontSize: "0.8rem", color: "#a8a29e" }}>Adults (Age 13+)</span>
+              <label htmlFor={`${fieldId}-adults`} style={{ fontSize: "0.8rem", color: "#a8a29e" }}>Adults (Age 13+)</label>
               <select
+                id={`${fieldId}-adults`}
                 value={adults}
                 onChange={(e) => setAdults(parseInt(e.target.value, 10))}
                 style={{
@@ -288,8 +352,9 @@ export default function NextBoatFinder() {
               </select>
             </div>
             <div>
-              <span style={{ fontSize: "0.8rem", color: "#a8a29e" }}>Children (Age 0–12)</span>
+              <label htmlFor={`${fieldId}-children`} style={{ fontSize: "0.8rem", color: "#a8a29e" }}>Children (Age 0–12)</label>
               <select
+                id={`${fieldId}-children`}
                 value={childrenCount}
                 onChange={(e) => handleChildrenCountChange(parseInt(e.target.value, 10))}
                 style={{
@@ -324,8 +389,9 @@ export default function NextBoatFinder() {
               <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
                 {childrenAges.map((age, idx) => (
                   <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                    <span style={{ fontSize: "0.8rem", color: "#d6d3d1" }}>Child {idx + 1}:</span>
+                    <label htmlFor={`${fieldId}-child-age-${idx}`} style={{ fontSize: "0.8rem", color: "#d6d3d1" }}>Child {idx + 1}:</label>
                     <select
+                      id={`${fieldId}-child-age-${idx}`}
                       value={age}
                       onChange={(e) => handleChildAgeChange(idx, parseInt(e.target.value, 10))}
                       style={{
@@ -351,10 +417,11 @@ export default function NextBoatFinder() {
         {/* LOGISTICS & BOAT PREFERENCE */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
           <div>
-            <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.25rem" }}>
+            <label htmlFor={`${fieldId}-transportation`} style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.25rem" }}>
               3. Transportation
             </label>
             <select
+              id={`${fieldId}-transportation`}
               value={transportation}
               onChange={(e) => setTransportation(e.target.value as any)}
               style={{
@@ -372,10 +439,11 @@ export default function NextBoatFinder() {
             </select>
           </div>
           <div>
-            <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.25rem" }}>
+            <label htmlFor={`${fieldId}-boat-type`} style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, color: "#d6d3d1", marginBottom: "0.25rem" }}>
               4. Boat Size Preference
             </label>
             <select
+              id={`${fieldId}-boat-type`}
               value={boatType}
               onChange={(e) => setBoatType(e.target.value as any)}
               style={{
@@ -397,9 +465,9 @@ export default function NextBoatFinder() {
         <div style={{ display: "flex", gap: "1rem", marginTop: "0.5rem" }}>
           <button
             type="submit"
-            disabled={isSearching}
+            disabled={isSearching || !planReady || !activeDate}
             style={{
-              flex: "2",
+              flex: "1",
               padding: "0.9rem 1.5rem",
               background: "#fbbf24",
               color: "#0c0a09",
@@ -413,34 +481,19 @@ export default function NextBoatFinder() {
           >
             {isSearching ? "Checking Live Departures..." : "Find Next Available Departure"}
           </button>
-          <button
-            type="button"
-            onClick={() => setShowWaitlist(!showWaitlist)}
-            style={{
-              flex: "1",
-              padding: "0.9rem 1rem",
-              background: "transparent",
-              color: "#fbbf24",
-              fontWeight: 700,
-              fontSize: "0.95rem",
-              borderRadius: "0.5rem",
-              border: "1px solid #fbbf24",
-              cursor: "pointer"
-            }}
-          >
-            {showWaitlist ? "Hide Opening List" : "Alert Me When Seats Open"}
-          </button>
         </div>
       </form>
 
       {/* SEARCH ERROR */}
       {searchError && (
-        <div style={{ marginTop: "1.5rem", padding: "1rem", background: "#450a0a", borderRadius: "0.5rem", border: "1px solid #ef4444" }}>
+        <div role="alert" style={{ marginTop: "1.5rem", padding: "1rem", background: "#450a0a", borderRadius: "0.5rem", border: "1px solid #ef4444" }}>
           <p style={{ color: "#fca5a5", margin: 0, fontWeight: 600 }}>{searchError}</p>
         </div>
       )}
 
       {/* SEARCH RESULTS DISPLAY */}
+      <div aria-live="polite">
+      {isSearching && <p role="status">Checking departures for your current choices…</p>}
       {searchResponse && (
         <div style={{ marginTop: "2rem", borderTop: "1px solid #333", paddingTop: "1.5rem" }}>
           {/* STATE BANNER */}
@@ -465,11 +518,8 @@ export default function NextBoatFinder() {
               <h3 style={{ color: "#fbbf24", margin: "0 0 0.5rem 0", fontSize: "1.1rem" }}>
                 No matching departures found
               </h3>
-              <p style={{ color: "#d6d3d1", fontSize: "0.9rem", margin: "0 0 1rem 0" }}>
-                All connected options for your group ({searchResponse.totalGroupSize} travelers) on {searchResponse.travelDate} are either booked, past cutoff deadlines, or do not fit vessel age requirements.
-              </p>
-              <p style={{ color: "#fbbf24", fontSize: "0.85rem", fontWeight: 600, margin: 0 }}>
-                You can enroll below to be notified if schedules or inventory open up.
+              <p style={{ color: "#d6d3d1", fontSize: "0.9rem", margin: 0 }}>
+                All connected options for your group ({searchResponse.totalGroupSize} travelers) on {searchResponse.travelDate} are either booked, past cutoff deadlines, or do not fit vessel age requirements. Try adjusting your party size, date, or transportation choice.
               </p>
             </div>
           )}
@@ -514,13 +564,41 @@ export default function NextBoatFinder() {
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.5rem" }}>
                 <div>
-                  {searchResponse.winningDeparture.availabilityType === "live_inventory" ? (
-                    <span style={{ background: "#059669", color: "#ffffff", padding: "0.25rem 0.65rem", borderRadius: "0.25rem", fontSize: "0.75rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                      Live Availability Checked
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.35rem" }}>
+                    <span style={{
+                      background: (verifiedBadges[searchResponse.winningDeparture.id]?.isLive ?? (searchResponse.winningDeparture.availabilityType === "live_inventory")) ? "#065f46" : "#292524",
+                      color: (verifiedBadges[searchResponse.winningDeparture.id]?.isLive ?? (searchResponse.winningDeparture.availabilityType === "live_inventory")) ? "#6ee7b7" : "#fcd34d",
+                      border: (verifiedBadges[searchResponse.winningDeparture.id]?.isLive ?? (searchResponse.winningDeparture.availabilityType === "live_inventory")) ? "1px solid #10b981" : "1px solid #78716c",
+                      padding: "0.25rem 0.65rem",
+                      borderRadius: "0.25rem",
+                      fontSize: "0.75rem",
+                      fontWeight: 800,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em"
+                    }}>
+                      {verifiedBadges[searchResponse.winningDeparture.id]?.text || searchResponse.winningDeparture.availabilityStatusText}
                     </span>
-                  ) : (
-                    <span style={{ background: "#d97706", color: "#ffffff", padding: "0.25rem 0.65rem", borderRadius: "0.25rem", fontSize: "0.75rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                      Next Scheduled Departure
+                    <button
+                      type="button"
+                      onClick={() => handleVerifyDeparture(searchResponse.winningDeparture!)}
+                      disabled={verifyingDepId === searchResponse.winningDeparture.id}
+                      style={{
+                        background: "#292524",
+                        border: "1px solid #78716c",
+                        color: "#fbbf24",
+                        fontSize: "0.7rem",
+                        fontWeight: 700,
+                        padding: "0.2rem 0.55rem",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {verifyingDepId === searchResponse.winningDeparture.id ? "Checking Seats..." : "Check Seats & Booking Options"}
+                    </button>
+                  </div>
+                  {verifiedBadges[searchResponse.winningDeparture.id]?.note && (
+                    <span style={{ display: "block", fontSize: "0.75rem", color: "#a8a29e", marginBottom: "0.35rem" }}>
+                      ℹ️ {verifiedBadges[searchResponse.winningDeparture.id]?.note}
                     </span>
                   )}
                   <h3 style={{ fontSize: "1.5rem", fontWeight: 900, color: "#fff", margin: "0.5rem 0 0.25rem 0" }}>
@@ -535,8 +613,8 @@ export default function NextBoatFinder() {
                   <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "#10b981" }}>
                     ${searchResponse.winningDeparture.totalPrice}
                   </div>
-                  <span style={{ display: "block", fontSize: "0.72rem", color: "#a8a29e", marginTop: "2px" }}>
-                    ${searchResponse.winningDeparture.pricePerAdult}/person base • + 3% card fee & taxes at checkout
+                  <span style={{ display: "block", fontSize: "0.75rem", color: "#a8a29e", marginTop: "2px" }}>
+                    ${searchResponse.winningDeparture.pricePerAdult}/person base • Booking fees may apply; confirm total at checkout
                   </span>
                 </div>
               </div>
@@ -555,8 +633,11 @@ export default function NextBoatFinder() {
                   </div>
                 ) : (
                   <div>
-                    <strong style={{ color: "#d6d3d1" }}>Self-Drive Dock Arrival:</strong>
+                    <strong style={{ color: "#d6d3d1" }}>Self-Drive Check-In:</strong>
                     <p style={{ margin: "2px 0 0 0", color: "#fbbf24" }}>Arrive 30 min prior ({searchResponse.winningDeparture.dockArrivalTimeDisplay})</p>
+                    <span style={{ display: "block", fontSize: "0.75rem", color: "#a8a29e", marginTop: "2px" }}>
+                      Meeting location: Operators use multiple launch locations. Confirm your exact dock address and directions in your booking confirmation.
+                    </span>
                   </div>
                 )}
                 <div>
@@ -567,37 +648,51 @@ export default function NextBoatFinder() {
                 </div>
               </div>
 
-              <div style={{ marginTop: "1.25rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
-                <div style={{ fontSize: "0.82rem", color: "#d6d3d1" }}>
-                  {searchResponse.winningDeparture.availabilityType === "live_inventory" ? (
-                    <span>
-                      <strong style={{ color: "#34d399" }}>Seats available for group of {searchResponse.totalGroupSize} when checked</strong> · Subject to checkout availability
-                    </span>
-                  ) : (
-                    <span>
-                      <strong style={{ color: "#fbbf24" }}>Next scheduled departure: {searchResponse.winningDeparture.departureTimeDisplay}</strong> · Eligibility confirmed for {searchResponse.totalGroupSize} · Confirm open seats with operator
-                    </span>
-                  )}
+              {/* PROMINENT BOOKING SECTION */}
+              <div style={{
+                marginTop: "1.25rem",
+                padding: "1rem",
+                background: "#1c1917",
+                borderRadius: "0.5rem",
+                border: "1px solid #333",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: "1rem"
+              }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: "0.95rem", fontWeight: 800, color: "#ffffff" }}>
+                    Choose your tour here and complete your reservation through the checkout shown.
+                  </p>
+                  <span style={{ fontSize: "0.78rem", color: "#a8a29e", marginTop: "2px", display: "block" }}>
+                    {searchResponse.winningDeparture.availabilityStatusText}
+                  </span>
+                  <p style={{ margin: "6px 0 0 0", fontSize: "0.78rem", color: "#fcd34d" }}>
+                    Important: You will re-select your date, departure time, and passenger count on the operator's checkout screen.
+                  </p>
                 </div>
                 <a
                   href={searchResponse.winningDeparture.bookingUrl}
-                  target={searchResponse.winningDeparture.bookingUrl.includes("welcometotheswamp.com") ? undefined : "_blank"}
-                  rel={searchResponse.winningDeparture.bookingUrl.includes("welcometotheswamp.com") ? undefined : "noopener noreferrer"}
+                  target={searchResponse.winningDeparture.bookingUrl.includes("welcometotheswamp.com/tours/") ? undefined : "_blank"}
+                  rel={searchResponse.winningDeparture.bookingUrl.includes("welcometotheswamp.com/tours/") ? undefined : "noopener noreferrer"}
                   style={{
-                    padding: "0.75rem 1.5rem",
-                    background: searchResponse.winningDeparture.availabilityType === "live_inventory" ? "#10b981" : "#fbbf24",
+                    padding: "0.85rem 1.75rem",
+                    background: "#fbbf24",
                     color: "#0c0a09",
-                    fontWeight: 800,
+                    fontWeight: 900,
                     borderRadius: "0.5rem",
                     textDecoration: "none",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.3)"
+                    boxShadow: "0 4px 14px rgba(251, 191, 36, 0.3)",
+                    whiteSpace: "normal",
+                    maxWidth: "100%",
+                    boxSizing: "border-box",
+                    overflowWrap: "anywhere"
                   }}
                 >
-                  {searchResponse.winningDeparture.bookingUrl.includes("welcometotheswamp.com/tours/")
-                    ? "View Tour & Check Seats →"
-                    : searchResponse.winningDeparture.availabilityType === "live_inventory"
-                    ? "Book Live Seats →"
-                    : "Check Seats on Operator Checkout →"}
+                  {searchResponse.winningDeparture.bookingUrl.includes("/checkout") || searchResponse.winningDeparture.bookingUrl.includes("/book") || searchResponse.winningDeparture.bookingUrl.includes("fareharbor.com/embeds/book")
+                    ? "Continue to Checkout →"
+                    : "View Tour & Booking Options →"}
                 </a>
               </div>
             </div>
@@ -606,30 +701,65 @@ export default function NextBoatFinder() {
           {/* OTHER DEPARTURES */}
           {searchResponse.allDepartures.length > 1 && (
             <div>
-              <h4 style={{ fontSize: "1rem", color: "#d6d3d1", marginBottom: "0.75rem" }}>
+              <h4 style={{ fontSize: "1rem", color: "#d6d3d1", marginBottom: "0.25rem" }}>
                 Later Departures Today:
               </h4>
+              <p style={{ fontSize: "0.78rem", color: "#a8a29e", margin: "0 0 0.75rem 0" }}>
+                Departures link directly to operator checkout, where you will re-select your date, time, and passenger count.
+              </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                 {searchResponse.allDepartures.slice(1).map((dep) => (
                   <div key={dep.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#0c0a09", padding: "0.75rem 1rem", borderRadius: "0.5rem", border: "1px solid #333", flexWrap: "wrap", gap: "0.5rem" }}>
                     <div>
                       <strong style={{ color: "#fff" }}>{dep.departureTimeDisplay}</strong>
-                      <span style={{ marginLeft: "0.5rem", background: dep.availabilityType === "live_inventory" ? "#064e3b" : "#451a03", color: dep.availabilityType === "live_inventory" ? "#6ee7b7" : "#fcd34d", padding: "0.15rem 0.4rem", borderRadius: "3px", fontSize: "0.7rem", fontWeight: 700 }}>
-                        {dep.availabilityType === "live_inventory" ? "Live" : "Scheduled"}
+                      <span style={{
+                        marginLeft: "0.5rem",
+                        background: (verifiedBadges[dep.id]?.isLive ?? (dep.availabilityType === "live_inventory")) ? "#064e3b" : "#292524",
+                        color: (verifiedBadges[dep.id]?.isLive ?? (dep.availabilityType === "live_inventory")) ? "#6ee7b7" : "#fcd34d",
+                        border: (verifiedBadges[dep.id]?.isLive ?? (dep.availabilityType === "live_inventory")) ? "1px solid #10b981" : "1px solid #78716c",
+                        padding: "0.15rem 0.45rem",
+                        borderRadius: "3px",
+                        fontSize: "0.7rem",
+                        fontWeight: 700
+                      }}>
+                        {verifiedBadges[dep.id]?.text || dep.availabilityStatusText}
                       </span>
+                      <button
+                        type="button"
+                        onClick={() => handleVerifyDeparture(dep)}
+                        disabled={verifyingDepId === dep.id}
+                        style={{
+                          marginLeft: "0.5rem",
+                          background: "#292524",
+                          border: "1px solid #78716c",
+                          color: "#fbbf24",
+                          fontSize: "0.65rem",
+                          fontWeight: 700,
+                          padding: "0.15rem 0.4rem",
+                          borderRadius: "3px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {verifyingDepId === dep.id ? "Checking..." : "Check Seats & Booking Options"}
+                      </button>
                       <span style={{ marginLeft: "0.5rem", color: "#a8a29e", fontSize: "0.85rem" }}>
                         {dep.operatorName} ({dep.transportation === "hotel_pickup" ? "With Pickup" : "Self-Drive"})
                       </span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                      <span style={{ color: "#10b981", fontWeight: 700 }}>${dep.totalPrice} base</span>
+                      <div style={{ textAlign: "right" }}>
+                        <span style={{ color: "#10b981", fontWeight: 700 }}>${dep.totalPrice} base</span>
+                        <span style={{ display: "block", fontSize: "0.68rem", color: "#a8a29e" }}>Fees may apply</span>
+                      </div>
                       <a
                         href={dep.bookingUrl}
-                        target={dep.bookingUrl.includes("welcometotheswamp.com") ? undefined : "_blank"}
-                        rel={dep.bookingUrl.includes("welcometotheswamp.com") ? undefined : "noopener noreferrer"}
-                        style={{ padding: "0.4rem 0.8rem", background: dep.availabilityType === "live_inventory" ? "#10b981" : "#fbbf24", color: "#0c0a09", textDecoration: "none", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 700 }}
+                        target={dep.bookingUrl.includes("welcometotheswamp.com/tours/") ? undefined : "_blank"}
+                        rel={dep.bookingUrl.includes("welcometotheswamp.com/tours/") ? undefined : "noopener noreferrer"}
+                        style={{ padding: "0.45rem 0.9rem", background: "#fbbf24", color: "#0c0a09", textDecoration: "none", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 800 }}
                       >
-                        {dep.bookingUrl.includes("welcometotheswamp.com/tours/") ? "View Tour →" : "Check Seats →"}
+                        {dep.bookingUrl.includes("/checkout") || dep.bookingUrl.includes("/book") || dep.bookingUrl.includes("fareharbor.com/embeds/book")
+                          ? "Continue to Checkout →"
+                          : "View Tour & Booking Options →"}
                       </a>
                     </div>
                   </div>
@@ -639,123 +769,9 @@ export default function NextBoatFinder() {
           )}
         </div>
       )}
-
-      {/* WAITLIST / OPENING LIST ENROLLMENT FORM */}
-      {showWaitlist && (
-        <div style={{
-          marginTop: "2rem",
-          background: "#0c0a09",
-          border: "1px solid #44403c",
-          borderRadius: "0.75rem",
-          padding: "1.5rem"
-        }}>
-          <h3 style={{ margin: "0 0 0.5rem 0", color: "#fbbf24", fontSize: "1.25rem" }}>
-            Alert Me When Seats Open (Opening List)
-          </h3>
-          <p style={{ fontSize: "0.85rem", color: "#a8a29e", lineHeight: "1.5", margin: "0 0 1.25rem 0" }}>
-            Enroll in the opening list. <strong>Automated real-time seat alerts are currently inactive;</strong> we will record your requested date ({activeDate}) and party size ({adults + childrenCount}) and notify you if scheduling or inventory opens.
-          </p>
-
-          {waitlistSuccess ? (
-            <div style={{ padding: "1rem", background: "#064e3b", borderRadius: "0.5rem", border: "1px solid #10b981" }}>
-              <h4 style={{ color: "#6ee7b7", margin: "0 0 0.5rem 0" }}>✓ Enrollment Confirmed</h4>
-              <p style={{ color: "#d1fae5", fontSize: "0.9rem", margin: "0 0 0.75rem 0" }}>{waitlistSuccess.message}</p>
-              <p style={{ color: "#a7f3d0", fontSize: "0.8rem", margin: 0 }}>
-                Submission ID: <code>{waitlistSuccess.submissionId}</code>. You can cancel anytime using your{" "}
-                <a href={waitlistSuccess.unsubscribeUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#fff", textDecoration: "underline" }}>
-                  one-click unsubscribe link
-                </a>.
-              </p>
-            </div>
-          ) : (
-            <form onSubmit={handleEnrollWaitlist} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                <div>
-                  <label style={{ display: "block", fontSize: "0.8rem", color: "#d6d3d1", marginBottom: "0.25rem" }}>
-                    Your Email (Required)
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={waitlistEmail}
-                    onChange={(e) => setWaitlistEmail(e.target.value)}
-                    placeholder="name@example.com"
-                    style={{
-                      width: "100%",
-                      padding: "0.6rem",
-                      borderRadius: "0.5rem",
-                      background: "#1c1917",
-                      border: "1px solid #444",
-                      color: "#fff"
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: "block", fontSize: "0.8rem", color: "#d6d3d1", marginBottom: "0.25rem" }}>
-                    Your Name (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={waitlistName}
-                    onChange={(e) => setWaitlistName(e.target.value)}
-                    placeholder="Family or Traveler Name"
-                    style={{
-                      width: "100%",
-                      padding: "0.6rem",
-                      borderRadius: "0.5rem",
-                      background: "#1c1917",
-                      border: "1px solid #444",
-                      color: "#fff"
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: "0.8rem", color: "#d6d3d1", marginBottom: "0.25rem" }}>
-                  Preferred Time of Day:
-                </label>
-                <div style={{ display: "flex", gap: "1rem" }}>
-                  {(["any", "morning", "afternoon"] as const).map((win) => (
-                    <label key={win} style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.85rem", color: "#e7e5e4", cursor: "pointer" }}>
-                      <input
-                        type="radio"
-                        name="timeWindow"
-                        value={win}
-                        checked={waitlistWindow === win}
-                        onChange={() => setWaitlistWindow(win)}
-                      />
-                      {win === "any" ? "Any Time" : win === "morning" ? "Morning (Before Noon)" : "Afternoon (Noon or Later)"}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {waitlistError && (
-                <p style={{ color: "#ef4444", fontSize: "0.85rem", margin: 0 }}>{waitlistError}</p>
-              )}
-
-              <button
-                type="submit"
-                disabled={waitlistSubmitting}
-                style={{
-                  padding: "0.75rem 1.25rem",
-                  background: "#44403c",
-                  color: "#fbbf24",
-                  fontWeight: 700,
-                  fontSize: "0.95rem",
-                  borderRadius: "0.5rem",
-                  border: "1px solid #fbbf24",
-                  cursor: waitlistSubmitting ? "not-allowed" : "pointer",
-                  alignSelf: "flex-start"
-                }}
-              >
-                {waitlistSubmitting ? "Enrolling..." : "Enroll in Opening List"}
-              </button>
-            </form>
-          )}
-        </div>
-      )}
+      </div>
     </section>
   );
 }
+
+

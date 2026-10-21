@@ -3,15 +3,15 @@ import Link from "next/link";
 import { buildAirportPickupCheckoutHref } from "@/lib/bookingLinks";
 
 export const metadata: Metadata = {
-  title: "420 Airport Pickup Denver | Private DEN Airport Transportation",
+  title: "Denver Airport Pickup Guide: Terminal Levels & Private Car Service | DEN",
   description:
-    "Private airport pickup and transportation service from Denver International Airport (DEN) to Denver metro, Boulder, and Colorado mountain ski resorts. Reliable curbside pickup at Level 5 Island 2, flat-rate pricing, 1-6 passenger AWD SUVs, and optional 21+ dispensary stop.",
+    "Complete Denver International Airport (DEN) pickup guide. Learn Level 4 personal pickup vs. Level 5 Island 2 commercial car service, flight tracking, flat-rate AWD transfers, and optional dispensary stops.",
   alternates: { canonical: "https://420friendlyairportpickup.com/denver-airport-pickup" },
   robots: { index: true, follow: true },
   openGraph: {
-    title: "420 Airport Pickup Denver | Private DEN Airport Transportation",
+    title: "Denver Airport Pickup Guide: Terminal Levels & Private Car Service | DEN",
     description:
-      "Private DEN airport pickup and pre-arranged transportation to Denver metro, Boulder, and Colorado mountain ski resorts with professional drivers and optional 21+ retail stop.",
+      "Complete Denver International Airport (DEN) passenger pickup guide. Terminal Level 4 personal pickup vs. Level 5 Island 2 commercial livery, flight tracking, and pre-arranged private car service.",
     url: "https://420friendlyairportpickup.com/denver-airport-pickup",
     type: "website",
   },
@@ -99,7 +99,7 @@ export default function DenverAirportPickupPage() {
             name: "How do I meet my private driver at DEN airport?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Your private chauffeur tracks your flight status in real time. Once you land and claim your bags at Jeppesen Terminal Level 5 baggage claim, step outside through the designated door onto Level 5, cross the first roadway to Island 2 (Commercial Livery / Limousine), and your driver will pull curbside to assist with luggage and board your private vehicle.",
+              text: "Provide your flight number when reserving so your driver can monitor flight arrival status. Once you land and claim your bags at Jeppesen Terminal Level 5 baggage claim, step outside through the designated door onto Level 5, cross the first roadway to Island 2 (Commercial Livery / Limousine), and your driver will pull curbside to assist with luggage and board your private vehicle.",
             },
           },
           {
@@ -172,7 +172,7 @@ export default function DenverAirportPickupPage() {
               <strong>Where Driver Meets You</strong>
               <p className="muted">
                 Jeppesen Terminal Level 5 (Commercial Ground Transportation Level), Island 2 for Pre-Arranged Liveries
-                and Limousines. Driver tracks flight radar and coordinates curbside pickup via phone/text.
+                and Limousines. Driver monitors flight arrival status and coordinates curbside pickup via phone/text.
               </p>
             </div>
             <div className="trust-item">
@@ -318,8 +318,8 @@ export default function DenverAirportPickupPage() {
             </h4>
             <ol style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 8, color: "var(--copy)", lineHeight: 1.6 }}>
               <li>
-                <strong>Real-Time Flight Radar:</strong> Our dispatch team monitors your incoming flight. If your flight is
-                early or delayed, your pickup schedule automatically adjusts without penalty.
+                <strong>Flight Arrival Monitoring:</strong> Provide your flight details at booking so dispatch can monitor
+                arrival status. Pickup coordination adjusts to your flight's actual landing time.
               </li>
               <li>
                 <strong>Driver Contact Upon Touchdown:</strong> As soon as your aircraft touches down, your chauffeur sends

@@ -2,18 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import HelicopterWaitlistForm from "../components/HelicopterWaitlistForm";
-import SeatScannerTicker from "../components/SeatScannerTicker";
 import LiveSeatDropsBadge from "../components/LiveSeatDropsBadge";
 
 export const metadata: Metadata = {
-  title: "Juneau Helicopter Dog Sledding on Glacier | 24/7 Seat Scanner & Waitlist",
+  title: "Juneau Helicopter Dog Sledding on Glacier | Availability Check & Booking",
   description:
-    "The ultimate Alaska cruise excursion: fly by helicopter to a glacier dog sled camp on Herbert or Norris Glacier. Sold out on your ship? Our automated 24/7 scanner grabs cancellations risk-free.",
+    "Fly by helicopter to a glacier dog sled camp on Herbert or Norris Glacier. Sold out on your ship? Submit your port date, ship, and party size for a daily availability check.",
   alternates: { canonical: "https://juneauflightdeck.com/juneau-dogsled-helicopter-tours" },
   openGraph: {
-    title: "Juneau Helicopter Dog Sledding on Glacier | Priority Seat Watch",
+    title: "Juneau Helicopter Dog Sledding on Glacier | Availability Check",
     description:
-      "Fly to a remote glacier camp and mush with Alaskan huskies. 24/7 cancellation scanner and waitlist for sold-out cruise dates.",
+      "Fly to a remote glacier camp and mush with Alaskan huskies. Daily availability checks and request coordination for sold-out cruise dates.",
     url: "https://juneauflightdeck.com/juneau-dogsled-helicopter-tours",
     type: "website",
   },
@@ -33,10 +32,10 @@ const dogSledFaqJsonLd = {
     },
     {
       "@type": "Question",
-      name: "How does the Juneau Flight Deck seat scanner help if dog sledding is sold out?",
+      name: "How does the Juneau Flight Deck availability request help if dog sledding is sold out?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Because cruise travelers frequently change itineraries or cancel trips, dog sledding slots open up as schedules change. Our automated monitor polls operator booking engines daily at 10:00 AM. When an opening is detected on your cruise date, we alert you immediately via email with a direct booking link so you can secure seats with the operator.",
+        text: "Because cruise travelers frequently change itineraries or cancel trips, dog sledding slots open up as schedules change. When you submit your cruise date, party size, and ship details, our team conducts daily availability checks across local operators and sends direct booking links when seats become open.",
       },
     },
     {
@@ -75,8 +74,6 @@ export default function JuneauDogSleddingPage() {
       />
 
       <div className="site-shell max-w-5xl mx-auto px-4">
-        <SeatScannerTicker />
-
         <div className="text-center max-w-3xl mx-auto mb-10">
           <p className="eyebrow">The Crown Jewel of Alaska Shore Excursions</p>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white mb-4">
@@ -85,8 +82,7 @@ export default function JuneauDogSleddingPage() {
           <p className="text-lg md:text-xl text-slate-300 leading-relaxed">
             Fly by helicopter across the Juneau Icefield to an authentic snowfield dog camp. 
             Mush with real Alaskan sled dogs and Iditarod veterans. 
-            Sold out on your ship? Our <strong>24/7 seat scanner</strong> monitors fleet cancellations 
-            and locks in open spots risk-free under operator 48-hour cancellation rules.
+            Sold out on your ship? Submit an availability request and our local team will perform daily schedule checks across Juneau operators to alert you if matching seats open.
           </p>
         </div>
 
@@ -153,7 +149,7 @@ export default function JuneauDogSleddingPage() {
               Dog sled camps operate mid-May through August across Herbert Glacier (TEMSCO from $659, Coastal from $709) and Norris Glacier (NorthStar from $739). Daily capacity is strictly regulated by the US Forest Service. Check real-time dates below via our official Viator partner search or operator direct booking.
             </p>
             <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--ice, #9ed9ff)", fontWeight: 600 }}>
-              Sold out on your ship? Register below for daily 10:00 AM seat drop alerts to claim cancellation releases.
+              Sold out on your ship? Register below for our daily availability check across local helicopter operators.
             </p>
           </div>
 
@@ -200,7 +196,7 @@ export default function JuneauDogSleddingPage() {
               href="#waitlist-form"
               style={{ fontSize: "0.78rem", color: "var(--accent, #f0b35b)", fontWeight: 700, textDecoration: "none" }}
             >
-              Sold out? Join Seat Drop Watch &darr;
+              Sold out? Daily Availability Check &darr;
             </a>
           </div>
         </div>
@@ -330,7 +326,7 @@ export default function JuneauDogSleddingPage() {
             <div className="faq-item">
               <h3>What if the dogsled tour is completely booked and no cancellations occur?</h3>
               <p>
-                If our scanner cannot find a dog sledding seat for your date, you can opt to have your waitlist switch to a Classic Glacier Landing (which walks on ice and has 3x higher seat turnover) so you never miss out on seeing the Juneau Icefield.
+                If a dog sledding seat cannot be found for your date, you can opt to have your availability request check for a Classic Glacier Landing (which walks on ice and has broader daily capacity) so you never miss out on seeing the Juneau Icefield.
               </p>
             </div>
           </div>

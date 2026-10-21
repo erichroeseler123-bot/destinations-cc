@@ -335,7 +335,7 @@ export default function OperatorComparisonPage() {
           Understanding physical demands and ice duration prevents mismatches. Juneau helicopter excursions fall into three distinct activity tiers. <em>Note: While most treks and walkabouts land on Mendenhall Glacier, pilots and lead guides evaluate weather, cloud ceilings, and ice safety daily—landing locations may adjust to alternate icefield zones (such as Lemon Creek or Herbert Glacier) when necessary.</em>
         </p>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "18px", marginBottom: "16px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: "18px", marginBottom: "16px" }}>
           <div style={{ background: "#0c121e", border: "1px solid #1e293b", borderRadius: "10px", padding: "18px" }}>
             <h3 style={{ fontSize: "1.05rem", color: "#93c5fd", margin: "0 0 6px" }}>
               Tier 1: Standard Glacier Landing (20–30 min)
@@ -395,7 +395,7 @@ export default function OperatorComparisonPage() {
           <strong>All three Juneau helicopter operators offer glacier dog sledding excursions</strong> during the snow season (mid-May to mid-to-late August). Each operator flies to a dedicated summer alpine snowfield camp (camp locations are approximate and relocated seasonally based on high-altitude snow conditions):
         </p>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(290px, 1fr))", gap: 16, marginBottom: 18 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 290px), 1fr))", gap: 16, marginBottom: 18 }}>
           {/* TEMSCO DOG SLED */}
           <div style={{ background: "#0c121e", border: "1px solid #1e293b", borderRadius: "10px", padding: "18px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
@@ -601,7 +601,7 @@ export default function OperatorComparisonPage() {
         <h2 style={{ fontSize: "1.5rem", color: "#ffffff", margin: "6px 0 14px" }}>
           Cruise Timing, Bases &amp; Pickup Logistics: Which Fits Your Port Day?
         </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 18 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 16, marginBottom: 18 }}>
           <div style={{ background: "#0c121e", border: "1px solid #1e293b", borderRadius: 8, padding: "16px" }}>
             <h3 style={{ fontSize: "1rem", color: "#93c5fd", margin: "0 0 8px" }}>
               Provider-Specific Pickup &amp; Meeting Points
@@ -651,7 +651,7 @@ export default function OperatorComparisonPage() {
         <h2 style={{ fontSize: "1.5rem", color: "#ffffff", margin: "6px 0 14px" }}>
           Cancellation &amp; Weather Terms: What Happens If Plans Change or Fog Rolls In?
         </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16, marginBottom: 18 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: 16, marginBottom: 18 }}>
           <div style={{ background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.3)", borderRadius: 8, padding: "16px" }}>
             <h3 style={{ fontSize: "1rem", color: "#6ee7b7", margin: "0 0 6px" }}>
               ✓ 100% Weather Refund Guarantee
@@ -888,7 +888,7 @@ export default function OperatorComparisonPage() {
         <p style={{ fontSize: "0.88rem", color: "var(--muted, #94a3b8)", lineHeight: 1.5, margin: "0 0 16px" }}>
           Need to drill down between two specific companies? Explore our dedicated head-to-head comparisons answering specific trade-offs:
         </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 16 }}>
           <Link
             href="/temsco-vs-northstar-juneau"
             style={{ textDecoration: "none", background: "#0c121e", border: "1px solid #1e293b", borderRadius: 8, padding: "16px", display: "block" }}

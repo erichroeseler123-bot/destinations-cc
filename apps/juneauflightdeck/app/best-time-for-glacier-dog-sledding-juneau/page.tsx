@@ -226,7 +226,7 @@ export default function BestTimeDogSleddingPage() {
           Looking for Dog Sledding Openings?
         </h2>
         <p style={{ color: "var(--muted)", marginBottom: "20px" }}>
-          Our scanner sweeps operator fleet schedules daily at 10:00 AM as cancellations and group blocks process. Submit your details below to receive availability alerts.
+          Submit your ship, port date, tour preference, and party size below for a helicopter availability request. We perform daily availability checks across local operator schedules and alert you by email if matching seats become open.
         </p>
         <HelicopterWaitlistForm />
       </section>

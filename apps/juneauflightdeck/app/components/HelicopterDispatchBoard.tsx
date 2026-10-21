@@ -81,7 +81,7 @@ export default function HelicopterDispatchBoard({
             href="/helicopter-waitlist"
             className="jfd-hero-btn-secondary"
           >
-            Sold-Out Availability Alerts
+            Sold-Out Tour Waitlist
           </Link>
         </div>
 
@@ -502,7 +502,7 @@ export default function HelicopterDispatchBoard({
           <Link
             href="/juneau/what-to-do-if-helicopter-tour-canceled"
             className="button button-secondary"
-            style={{ fontSize: '0.85rem', padding: '10px 18px', whiteSpace: 'nowrap' }}
+            style={{ fontSize: '0.85rem', padding: '10px 18px' }}
           >
             Weather Cancellation Guide &rarr;
           </Link>
@@ -548,7 +548,7 @@ export default function HelicopterDispatchBoard({
               Compare tours or ask our team for help with your port-day plans.
             </p>
           </div>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
             <Link href="/helicopter" className="button button-primary">
               Browse Glacier Flights
             </Link>

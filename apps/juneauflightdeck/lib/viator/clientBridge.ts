@@ -91,6 +91,7 @@ export async function fetchViatorProductReviews(
 export interface UseViatorJuneauProductsReturn {
   products: ViatorJuneauProduct[];
   loading: boolean;
+  isSettled: boolean;
   error: Error | null;
   selectedDate: string | null;
   passengerCount: number;
@@ -115,13 +116,18 @@ export function useViatorJuneauProducts({
   autoFetch = true,
 }: UseViatorProductsOptions = {}): UseViatorJuneauProductsReturn {
   const baseData = initialData || DEFAULT_FALLBACK_RESPONSE;
+  const filterKey = `${date || ""}|${passengerCount}|${tourType || "all"}`;
   const initialProducts =
     tourType && tourType !== "all"
       ? baseData.products.filter((p) => p.tourType === tourType)
       : baseData.products;
 
   const [products, setProducts] = useState<ViatorJuneauProduct[]>(initialProducts);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loadingState, setLoadingState] = useState<boolean>(autoFetch);
+  const [resolvedFilterKey, setResolvedFilterKey] = useState<string | null>(
+    autoFetch ? null : filterKey
+  );
+  const [errorFilterKey, setErrorFilterKey] = useState<string | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [isLive, setIsLive] = useState<boolean>(baseData.isLive ?? false);
   const [status, setStatus] = useState<ViatorJuneauProductsResponse["status"]>(
@@ -144,7 +150,6 @@ export function useViatorJuneauProducts({
     baseData.waitlistHref || "/helicopter-waitlist"
   );
 
-
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const loadData = useCallback(async () => {
@@ -154,8 +159,9 @@ export function useViatorJuneauProducts({
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    setLoading(true);
+    setLoadingState(true);
     setError(null);
+    setErrorFilterKey(null);
 
     try {
       const response = await fetchViatorJuneauProducts({
@@ -165,6 +171,10 @@ export function useViatorJuneauProducts({
         signal: controller.signal,
       });
 
+      if (controller.signal.aborted) {
+        return;
+      }
+
       setProducts(response.products);
       setIsLive(response.isLive);
       setStatus(response.status);
@@ -173,14 +183,19 @@ export function useViatorJuneauProducts({
       setSignals(response.signals);
       setBrowseHref(response.browseHref);
       if (response.waitlistHref) setWaitlistHref(response.waitlistHref);
+      setResolvedFilterKey(filterKey);
     } catch (err: any) {
-      if (err.name !== "AbortError") {
+      if (err.name !== "AbortError" && !controller.signal.aborted) {
         setError(err instanceof Error ? err : new Error(String(err)));
+        setErrorFilterKey(filterKey);
+        setResolvedFilterKey(null);
       }
     } finally {
-      setLoading(false);
+      if (abortControllerRef.current === controller) {
+        setLoadingState(false);
+      }
     }
-  }, [date, passengerCount, tourType]);
+  }, [date, passengerCount, tourType, filterKey]);
 
   useEffect(() => {
     if (autoFetch) {
@@ -193,10 +208,17 @@ export function useViatorJuneauProducts({
     };
   }, [loadData, autoFetch]);
 
+  const activeError = errorFilterKey === filterKey ? error : null;
+  const loading =
+    loadingState ||
+    (autoFetch && resolvedFilterKey !== filterKey && errorFilterKey !== filterKey);
+  const isSettled = !loading && !activeError && resolvedFilterKey === filterKey;
+
   return {
     products,
     loading,
-    error,
+    isSettled,
+    error: activeError,
     selectedDate: date,
     passengerCount,
     isLive,

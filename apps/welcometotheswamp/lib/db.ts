@@ -88,6 +88,25 @@ export async function ensureDbTables(): Promise<void> {
     CREATE INDEX IF NOT EXISTS wts_waitlist_token_idx 
     ON wts_waitlist_submissions(unsubscribe_token);
   `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS wts_waitlist_notifications (
+      id text PRIMARY KEY,
+      submission_id text NOT NULL REFERENCES wts_waitlist_submissions(id) ON DELETE CASCADE,
+      departure_id text NOT NULL,
+      travel_date text NOT NULL,
+      recipient_email text NOT NULL,
+      operator_name text NOT NULL,
+      departure_time text NOT NULL,
+      notified_at timestamptz NOT NULL DEFAULT now(),
+      status text NOT NULL DEFAULT 'sent'
+    );
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS wts_notifications_dedup_idx
+    ON wts_waitlist_notifications(submission_id, departure_id);
+  `;
 }
 
 /**
@@ -224,4 +243,136 @@ export async function unsubscribeByToken(token: string): Promise<{ success: bool
   `;
 
   return { success: true, submission: entry };
+}
+
+export interface WaitlistNotification {
+  id: string;
+  submissionId: string;
+  departureId: string;
+  travelDate: string;
+  recipientEmail: string;
+  operatorName: string;
+  departureTime: string;
+  notifiedAt: string;
+  status: string;
+}
+
+/**
+ * Fetches all currently enrolled, unexpired waitlist submissions.
+ * Optionally filters by specific travelDate.
+ */
+export async function getActiveWaitlistSubmissions(travelDate?: string): Promise<WaitlistSubmission[]> {
+  const sql = getDb();
+  if (!sql) return [];
+  await ensureDbTables();
+
+  const rows = travelDate
+    ? await sql`
+        SELECT raw_entry, expires_at 
+        FROM wts_waitlist_submissions 
+        WHERE status = 'enrolled' AND travel_date = ${travelDate} AND expires_at > now()
+        ORDER BY created_at ASC;
+      `
+    : await sql`
+        SELECT raw_entry, expires_at 
+        FROM wts_waitlist_submissions 
+        WHERE status = 'enrolled' AND expires_at > now()
+        ORDER BY created_at ASC;
+      `;
+
+  return rows.map((r) => r.raw_entry as WaitlistSubmission);
+}
+
+/**
+ * Checks if a submission has already been notified about a specific departure.
+ */
+export async function hasBeenNotified(submissionId: string, departureId: string): Promise<boolean> {
+  const sql = getDb();
+  if (!sql) return false;
+  await ensureDbTables();
+
+  const rows = await sql`
+    SELECT id 
+    FROM wts_waitlist_notifications 
+    WHERE submission_id = ${submissionId} AND departure_id = ${departureId}
+    LIMIT 1;
+  `;
+  return rows.length > 0;
+}
+
+/**
+ * Checks if a submission has already received any notification for their requested travel date.
+ */
+export async function hasBeenNotifiedForDate(submissionId: string, travelDate: string): Promise<boolean> {
+  const sql = getDb();
+  if (!sql) return false;
+  await ensureDbTables();
+
+  const rows = await sql`
+    SELECT id 
+    FROM wts_waitlist_notifications 
+    WHERE submission_id = ${submissionId} AND travel_date = ${travelDate}
+    LIMIT 1;
+  `;
+  return rows.length > 0;
+}
+
+/**
+ * Durably records that an alert notification was sent.
+ */
+export async function recordNotification(input: {
+  submissionId: string;
+  departureId: string;
+  travelDate: string;
+  recipientEmail: string;
+  operatorName: string;
+  departureTime: string;
+  status?: string;
+}): Promise<WaitlistNotification> {
+  const sql = getDb();
+  if (!sql) {
+    throw new Error("Database unavailable for recording notification.");
+  }
+  await ensureDbTables();
+
+  const id = `WTS-NOTIF-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const status = input.status || "sent";
+
+  await sql`
+    INSERT INTO wts_waitlist_notifications (
+      id, submission_id, departure_id, travel_date, recipient_email, operator_name, departure_time, status
+    ) VALUES (
+      ${id}, ${input.submissionId}, ${input.departureId}, ${input.travelDate}, ${input.recipientEmail}, ${input.operatorName}, ${input.departureTime}, ${status}
+    );
+  `;
+
+  return {
+    id,
+    submissionId: input.submissionId,
+    departureId: input.departureId,
+    travelDate: input.travelDate,
+    recipientEmail: input.recipientEmail,
+    operatorName: input.operatorName,
+    departureTime: input.departureTime,
+    notifiedAt: new Date().toISOString(),
+    status,
+  };
+}
+
+/**
+ * Auto-expires past travel requests where expires_at has passed.
+ */
+export async function expireOutdatedWaitlistSubmissions(): Promise<number> {
+  const sql = getDb();
+  if (!sql) return 0;
+  await ensureDbTables();
+
+  const result = await sql`
+    UPDATE wts_waitlist_submissions 
+    SET status = 'expired' 
+    WHERE status = 'enrolled' AND expires_at <= now()
+    RETURNING id;
+  `;
+
+  return result.length;
 }

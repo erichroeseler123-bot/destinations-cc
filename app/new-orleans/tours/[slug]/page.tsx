@@ -145,7 +145,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
   const secondBestFit = bestFit?.[1] || "Groups who want a curated New Orleans experience";
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} data-tour-detail-surface="dark">
       <JsonLd
         data={{
           "@context": "https://schema.org",

@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "420 Friendly Airport Pickup Denver | Private DEN Transportation",
   description:
     "Private 420-friendly airport pickup from Denver International Airport for adults 21+, with an optional lawful dispensary stop when practical and direct drop-off after the stop.",
-  alternates: { canonical: "/denver-airport-420-friendly-pickup" },
+  alternates: { canonical: "https://420friendlyairportpickup.com/denver-airport-420-friendly-pickup" },
   robots: { index: true, follow: true },
   openGraph: {
     title: "420 Friendly Airport Pickup Denver | Private DEN Transportation",

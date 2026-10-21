@@ -46,7 +46,7 @@ export default function ViatorFeaturedTours({
   const [reviewsLoading, setReviewsLoading] = useState<boolean>(false);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
 
-  const { products, loading, error, isLive, status, snapshotTimestamp, attribution, browseHref } =
+  const { products, loading, isSettled, error, isLive, status, snapshotTimestamp, attribution, browseHref } =
     useViatorJuneauProducts({
       date: dateFilter || undefined,
       passengerCount,
@@ -183,6 +183,7 @@ export default function ViatorFeaturedTours({
                 return (
                   <button
                     key={tab.value}
+                    type="button"
                     role="tab"
                     aria-selected={active}
                     onClick={() => setSelectedTab(tab.value)}
@@ -320,6 +321,29 @@ export default function ViatorFeaturedTours({
             </div>
           </div>
 
+          <div
+            aria-live="polite"
+            style={{
+              position: "absolute",
+              width: 1,
+              height: 1,
+              padding: 0,
+              margin: -1,
+              overflow: "hidden",
+              clip: "rect(0, 0, 0, 0)",
+              whiteSpace: "nowrap",
+              border: 0,
+            }}
+          >
+            {loading
+              ? "Loading Juneau excursions..."
+              : error
+                ? "Unable to load live Viator inventory for the selected filters."
+                : isSettled
+                  ? `Showing ${products.length} Juneau excursion${products.length === 1 ? "" : "s"} for ${passengerCount} ${passengerCount === 1 ? "guest" : "guests"}${dateFilter ? ` on ${dateFilter}` : ""}.`
+                  : ""}
+          </div>
+
           {/* Honest Availability Disclaimer */}
           <p
             style={{
@@ -339,7 +363,7 @@ export default function ViatorFeaturedTours({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))",
             gap: 24,
           }}
         >
@@ -384,7 +408,7 @@ export default function ViatorFeaturedTours({
       )}
 
       {/* Schedule Availability Notice Banner */}
-      {!loading && !isLive && products.length > 0 && (
+      {isSettled && !isLive && products.length > 0 && (
         <div
           style={{
             display: "flex",
@@ -402,9 +426,9 @@ export default function ViatorFeaturedTours({
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: "1rem" }}>🔔</span>
+            <span style={{ fontSize: "1rem" }}>🚁</span>
             <span>
-              <strong>Operator Flight Scheduling:</strong> Live online booking inventory is currently unavailable through the direct API feed. Explore verified operator flight profiles below and select <em>Get Availability Alert</em> to monitor openings on your cruise date.
+              <strong>Direct Operator Flight Inventory:</strong> Compare verified Juneau operator flight profiles below. Live real-time departure times, passenger space, and instant bookings are verified and confirmed directly on the official reservation calendar.
             </span>
           </div>
           <Link
@@ -416,17 +440,17 @@ export default function ViatorFeaturedTours({
               whiteSpace: "nowrap",
             }}
           >
-            General Flight Alert &rarr;
+            Waitlist Seat Alerts &rarr;
           </Link>
         </div>
       )}
 
       {/* Product Cards Grid */}
-      {!loading && products.length > 0 && (
+      {isSettled && products.length > 0 && (
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))",
             gap: 24,
           }}
         >
@@ -443,7 +467,7 @@ export default function ViatorFeaturedTours({
       )}
 
       {/* Off-Season / Seasonally Unavailable Notice with Priority Waitlist CTA */}
-      {!loading && products.length === 0 && !error && (
+      {isSettled && products.length === 0 && (
         <div
           style={{
             background: "linear-gradient(180deg, rgba(8, 28, 42, 0.95) 0%, rgba(5, 18, 28, 0.98) 100%)",

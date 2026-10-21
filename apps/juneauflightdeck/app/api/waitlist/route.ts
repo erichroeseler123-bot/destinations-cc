@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { saveWaitlistEntry, type WaitlistEntry } from "../../../lib/waitlistStore";
+import { saveWaitlistEntry, normalizeTourPreference, type WaitlistEntry } from "../../../lib/waitlistStore";
 import { dispatchWaitlistIntakeNotification } from "../../../lib/notificationDispatcher";
 
 export const dynamic = "force-dynamic";
@@ -41,6 +41,8 @@ export async function POST(request: Request) {
       portCity = "juneau",
       tourType = "any",
       partySize = 2,
+      allowSplitParty = false,
+      preferredOperator,
       bookingMode = "instant_alert",
       notes,
     } = body;
@@ -172,8 +174,11 @@ export async function POST(request: Request) {
     const randomSuffix = Math.floor(10000 + Math.random() * 90000);
     const submissionId = `JFD-SCAN-${Date.now().toString(36).toUpperCase()}-${randomSuffix}`;
 
+    const { tourType: normalizedTourType, preferredOperator: normalizedPreferredOp } =
+      normalizeTourPreference(tourType, preferredOperator);
+
     const perSeat =
-      tourType === "dog_sledding" ? 649 : tourType === "ice_trek" ? 599 : 449;
+      normalizedTourType === "dog_sledding" ? 649 : normalizedTourType === "ice_trek" ? 599 : 449;
 
     const entry: WaitlistEntry = {
       id: submissionId,
@@ -188,8 +193,10 @@ export async function POST(request: Request) {
       skagwayDate: resolvedSkagwayDate,
       dateVerification: "passenger_supplied",
       portCity: normalizedPortCity,
-      tourType: tourType || "any",
+      tourType: normalizedTourType,
+      preferredOperator: normalizedPreferredOp !== "any" ? normalizedPreferredOp : undefined,
       partySize: parsedPartySize,
+      allowSplitParty: Boolean(allowSplitParty ?? body.allow_split_party ?? false),
       bookingMode: normalizedMode,
       notes: notes ? String(notes).trim() : undefined,
       status: isTest ? "test_excluded" : "active_scanning",
@@ -216,8 +223,8 @@ export async function POST(request: Request) {
       isTest: entry.isTest,
       message:
         entry.bookingMode === "concierge_dispatch"
-          ? "Concierge Dispatch Alert activated! Our 10:00 AM daily sweep will monitor operator drops. If seats open, dispatch will alert you via email and personal coordination with direct flight checkout."
-          : "Daily 10:00 AM Seat Drop Alert activated! Our automated daily sweep monitors operator cancellations. When seats open, you will receive an email alert with direct operator checkout links.",
+          ? "Concierge availability request received. We conduct daily availability checks across local operator schedules and alert you via email if matching seats become open."
+          : "Helicopter availability request received. We conduct daily availability checks across local operator schedules and email you direct booking links if matching seats open.",
       details: {
         portDate: entry.portDate,
         juneauDate: entry.juneauDate,

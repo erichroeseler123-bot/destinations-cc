@@ -50,7 +50,7 @@ export default function SiteFooter() {
             </h4>
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "8px" }} className="site-footer-links">
               <li>
-                <Link href="/helicopter-waitlist">Helicopter Availability Watch</Link>
+                <Link href="/helicopter-waitlist">Helicopter Tour Waitlist</Link>
               </li>
               <li>
                 <Link href="/helicopter">Juneau Helicopter Tours</Link>

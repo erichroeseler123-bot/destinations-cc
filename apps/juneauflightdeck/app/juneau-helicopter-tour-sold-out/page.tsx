@@ -32,15 +32,15 @@ const faqSchema = {
       name: "Do seats open up on sold-out Juneau helicopter tours?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes, frequently. When cruise lines reach contractual cutoff dates (typically 14 to 30 days prior to sailing), unsold seats are released back into the open inventory. Additionally, ship schedule changes, guest cancellations, and aircraft re-configurations regularly create new seat openings.",
+        text: "Yes, seats can open up. Capacity can shift when cruise line block allocations are adjusted, when other travelers change plans or cancel, or when dispatchers finalize aircraft weight and balance manifests.",
       },
     },
     {
       "@type": "Question",
-      name: "How does Juneau Flight Deck's Availability Watch work?",
+      name: "How can you check if helicopter seats have opened back up?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Our automated scanner sweeps operator fleet schedules daily at 10:00 AM when cancellation desks process updates. When matching seats open up on your port date within penalty-free cancellation windows, travelers receive automated alerts with direct booking options or coordination assistance.",
+        text: "Independent operator availability often differs from cruise line allotments because cruise lines only contract specific blocks. You can check operator schedules directly or submit your ship details so our local team can help check for matching openings.",
       },
     },
   ],
@@ -82,20 +82,20 @@ export default function SoldOutGuidePage() {
         Juneau Helicopter Tours Sold Out? Don&apos;t Panic.
       </h1>
       <p style={{ fontSize: "1.08rem", lineHeight: 1.6, color: "var(--ice)", marginBottom: "16px" }}>
-        Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, availability alerts for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
+        Juneau Flight Deck helps Alaska cruise passengers compare and book helicopter, glacier, dog-sledding, and whale-watching excursions. We provide operator comparisons and cruise-port timing guidance, waitlists for sold-out tours, and alternatives when weather disrupts plans. Tours are operated by the named local providers.
       </p>
       <p style={{ fontSize: "1rem", lineHeight: 1.6, color: "var(--muted)", marginBottom: "24px" }}>
-        Glacier walkabouts and helicopter dog sledding are the first excursions to sell out in Alaska. But in Southeast Alaska aviation, <strong>&ldquo;Sold Out&rdquo; rarely means zero chance of flying.</strong>
+        Glacier walkabouts and helicopter dog sledding are the first excursions to fill up in Alaska. If your cruise excursion desk says sold out, <strong>independent operator availability may differ from your cruise line&apos;s block</strong>, though peak summer dates can still reach full capacity across all operators.
       </p>
       <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "32px" }}>
         <Link href="/helicopter" className="primary-cta" style={{ fontSize: "0.9rem", padding: "10px 18px" }}>
-          Check Live Open Tours →
+          Compare Independent Operators →
         </Link>
         <Link href="/temsco-vs-coastal-vs-northstar-juneau" className="button button-secondary" style={{ fontSize: "0.9rem", padding: "10px 18px" }}>
-          Compare Operators
+          Compare TEMSCO vs Coastal vs NorthStar
         </Link>
-        <Link href="/helicopter-waitlist" className="button button-secondary" style={{ fontSize: "0.9rem", padding: "10px 18px" }}>
-          Set Ship Availability Alert
+        <Link href="#waitlist-form" className="button button-secondary" style={{ fontSize: "0.9rem", padding: "10px 18px" }}>
+          Request Availability Check
         </Link>
       </div>
 
@@ -110,38 +110,37 @@ export default function SoldOutGuidePage() {
         }}
       >
         <div style={{ color: "var(--accent)", fontSize: "0.8rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px" }}>
-          Inside the Industry
+          Inside the Port Logistics
         </div>
         <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--text)", margin: "0 0 14px" }}>
-          Why Sold-Out Seats Reappear 7 to 30 Days Before Port Day
+          Why does your cruise ship say sold out when independent seats might still exist?
         </h2>
         <p style={{ lineHeight: 1.65, color: "var(--muted)", margin: "0 0 16px" }}>
-          The cruise lines hold enormous blocks of helicopter seats with all three FAA Part 135 operators (TEMSCO, Coastal, and NorthStar) months before the season starts. Here is what happens behind the scenes:
+          Cruise lines negotiate dedicated seat blocks with Juneau&apos;s three FAA Part 135 operators (TEMSCO, Coastal, and NorthStar) well in advance. When the cruise allotment sells out, the ship&apos;s shore excursion desk marks the tour unavailable. However:
         </p>
-
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "16px", marginTop: "20px" }}>
           <div style={{ background: "rgba(3, 14, 23, 0.6)", border: "1px solid var(--line)", borderRadius: "var(--radius-sm)", padding: "18px" }}>
-            <h3 style={{ color: "var(--ice)", fontSize: "1rem", margin: "0 0 8px" }}>1. Cruise Line Block Drops</h3>
+            <h3 style={{ color: "var(--ice)", fontSize: "1rem", margin: "0 0 8px" }}>Independent Seat Allocations</h3>
             <p style={{ fontSize: "0.88rem", lineHeight: 1.5, color: "var(--muted)", margin: 0 }}>
-              Cruise lines have contractual release deadlines (often 30, 14, or 7 days out). Any seat they fail to sell gets handed back to the local operator for open public sale.
+              Operators hold back independent seats for direct booking and partner distribution. These slots do not show on the cruise line app.
             </p>
           </div>
           <div style={{ background: "rgba(3, 14, 23, 0.6)", border: "1px solid var(--line)", borderRadius: "var(--radius-sm)", padding: "18px" }}>
-            <h3 style={{ color: "var(--ice)", fontSize: "1rem", margin: "0 0 8px" }}>2. Ship Itinerary Shifts</h3>
+            <h3 style={{ color: "var(--ice)", fontSize: "1rem", margin: "0 0 8px" }}>Cruise Block Adjustments</h3>
             <p style={{ fontSize: "0.88rem", lineHeight: 1.5, color: "var(--muted)", margin: 0 }}>
-              Ships frequently modify arrival hours or swap port schedules due to tides or weather. When their port window shifts, groups cancel their bookings, instantly opening up flights.
+              Cruise lines reserve specific group blocks. As ship manifests finalize or group space is released back, operators may open additional capacity for public booking.
             </p>
           </div>
           <div style={{ background: "rgba(3, 14, 23, 0.6)", border: "1px solid var(--line)", borderRadius: "var(--radius-sm)", padding: "18px" }}>
-            <h3 style={{ color: "var(--ice)", fontSize: "1rem", margin: "0 0 8px" }}>3. Aircraft Weight Manifests</h3>
+            <h3 style={{ color: "var(--ice)", fontSize: "1rem", margin: "0 0 8px" }}>Manifest &amp; Weight Adjustments</h3>
             <p style={{ fontSize: "0.88rem", lineHeight: 1.5, color: "var(--muted)", margin: 0 }}>
-              Helicopters operate under strict FAA weight limits. When passenger weights balance out favorably, dispatchers often release a 5th or 6th seat that was previously locked by the booking engine.
+              Aircraft fly under strict FAA weight limits. When passenger weights balance favorably, dispatchers can occasionally open additional seats on scheduled departures.
             </p>
           </div>
         </div>
       </section>
 
-      {/* How Juneau Flight Deck Helps */}
+      {/* How to Handle a Sold Out Tour */}
       <section
         style={{
           background: "rgba(3, 14, 23, 0.7)",
@@ -152,30 +151,34 @@ export default function SoldOutGuidePage() {
         }}
       >
         <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--text)", margin: "0 0 12px" }}>
-          How Our Availability Watch Puts You First in Line
+          What should you do if your ship&apos;s helicopter tour is full?
         </h2>
         <p style={{ lineHeight: 1.6, color: "var(--muted)", margin: "0 0 20px" }}>
-          You shouldn&apos;t have to spend your vacation constantly refreshing websites on sluggish ship Wi-Fi. Our automated monitors and local team do the work for you:
+          Follow these practical steps to check independent options safely without jeopardizing your ship schedule:
         </p>
 
         <ol style={{ paddingLeft: "20px", lineHeight: 1.8, color: "var(--text)", margin: "0 0 24px" }}>
           <li>
-            <strong>You Submit Your Parameters:</strong> Port date, cruise ship, group size, and accepted tour styles.
+            <strong>Check the Three Local FAA Operators:</strong> Compare TEMSCO, Coastal, and NorthStar directly or via partner availability to see if independent departures remain open.
           </li>
           <li>
-            <strong>Daily Automated Sweeps:</strong> We sweep operator fleet schedules every morning at 10:00 AM as cancellation desks process itinerary adjustments and group block drops.
+            <strong>Plan for a Safe Port Buffer:</strong> As a planning recommendation, choose a flight departure that returns to the heliport at least 90 to 120 minutes before your ship&apos;s published all-aboard time. Docks and heliports are roughly 15–20 minutes apart, giving you a comfortable margin for shuttle transit and dock security.
           </li>
           <li>
-            <strong>Cancellation Window Tracking:</strong> We monitor matching openings within penalty-free cancellation windows so you can decide risk-free.
+            <strong>Understand Weather Refund Policies by Channel:</strong> Southeast Alaska weather changes quickly. Under FAA Visual Flight Rules (VFR), pilots will ground flights if cloud ceilings or visibility drop below safe operational minimums. If the operator cancels due to weather:
+            <ul style={{ marginTop: "6px", marginBottom: "6px", paddingLeft: "20px", color: "var(--muted)", fontSize: "0.92rem" }}>
+              <li><strong>Direct Operator Bookings (TEMSCO, Coastal, NorthStar):</strong> All three primary Juneau helicopter operators provide a 100% full refund when flights are canceled due to weather.</li>
+              <li><strong>Partner Channels (Viator):</strong> If the operator cancels for weather, you are entitled to a full refund through the platform. For voluntary cancellations initiated by the traveler, Viator offers free cancellation up to 24 hours prior to departure on most tours. Always review the specific terms on your booking confirmation.</li>
+            </ul>
           </li>
           <li>
-            <strong>Automated Notification &amp; Booking:</strong> You receive an alert with direct links to book immediately with the flight operator or through our official Viator partner checkout.
+            <strong>Have a Shore Backup Plan:</strong> If morning flights are grounded by weather, have a ready alternative near the docks, such as the Mount Roberts Tramway or Auke Bay whale watching.
           </li>
         </ol>
 
         <div style={{ padding: "14px 18px", background: "rgba(240, 179, 91, 0.12)", border: "1px solid rgba(240, 179, 91, 0.35)", borderRadius: "var(--radius-sm)" }}>
           <p style={{ margin: 0, fontSize: "0.92rem", color: "var(--accent-strong)", fontWeight: 700 }}>
-            Standard Operator Protection: Whether booking directly with the operator or via Viator partner checkout, flights grounded by weather are eligible for a 100% refund under standard operator terms.
+            Timing note: Local operators run regular shuttles between the cruise piers and their flight bases. Always tell the operator your ship name and berth so they can align pickup and drop-off times.
           </p>
         </div>
       </section>
@@ -183,10 +186,10 @@ export default function SoldOutGuidePage() {
       {/* Direct Intake Form */}
       <section id="waitlist-form" style={{ marginTop: "20px" }}>
         <h2 style={{ fontSize: "1.6rem", fontWeight: 900, color: "var(--text)", marginBottom: "8px" }}>
-          Request an Availability Watch
+          Check Independent Availability for Your Port Date
         </h2>
         <p style={{ color: "var(--muted)", marginBottom: "24px" }}>
-          Tell us your ship schedule and party details below. Our team reviews matching availability and will reach out as soon as seats open up.
+          Tell us your ship schedule and party details below. We review open independent operator capacity and will contact you directly with matching options.
         </p>
         <HelicopterWaitlistForm />
       </section>

@@ -24,6 +24,7 @@ export interface TourDeparture {
   totalPrice: number;
   currency: string;
   availabilityType: "live_inventory" | "scheduled_departure";
+  availabilityStatusText: string; // e.g. "Live availability checked 10:15 AM CT" or "Scheduled departure—confirm seats"
   available: boolean;
   bookingUrl: string;
   checkedAt: string;
@@ -82,7 +83,7 @@ export const CURATED_SWAMP_CATALOG: CuratedSwampTour[] = [
     pricePerChild: 85,
     dockDriveMinutes: 35,
     pickupLeadMinutes: 0,
-    bookingCutoffMinutes: 60,
+    bookingCutoffMinutes: 120,
     bookingUrl: "https://welcometotheswamp.com/tours/airboat-tour",
   },
   {

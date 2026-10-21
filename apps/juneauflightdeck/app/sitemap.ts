@@ -12,6 +12,8 @@ const coreHighIntentRoutes = [
   { path: "/juneau-dogsled-helicopter-tours", changeFrequency: "daily" as const, priority: 0.9 },
   { path: "/best-time-for-glacier-dog-sledding-juneau", changeFrequency: "weekly" as const, priority: 0.85 },
   { path: "/juneau-helicopter-tour-weight-limits-and-seating", changeFrequency: "weekly" as const, priority: 0.85 },
+  { path: "/tools", changeFrequency: "daily" as const, priority: 0.9 },
+  { path: "/juneau-glacier-flight-weather", changeFrequency: "daily" as const, priority: 0.9 },
   { path: "/juneau/cruise-excursions-vs-independent", changeFrequency: "weekly" as const, priority: 0.85 },
   { path: "/juneau/what-to-do-if-helicopter-tour-canceled", changeFrequency: "weekly" as const, priority: 0.85 },
   { path: "/juneau-whale-watching-tours", changeFrequency: "weekly" as const, priority: 0.8 },

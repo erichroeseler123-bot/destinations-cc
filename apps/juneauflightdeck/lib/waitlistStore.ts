@@ -8,7 +8,7 @@ import {
   buildFareHarborDirectBookingUrl,
   JUNEAU_OPERATORS,
 } from "./fareharborRange";
-import { dispatchSeatDropNotification } from "./notificationDispatcher";
+import { dispatchSeatDropNotification, getNotificationsDir } from "./notificationDispatcher";
 
 export interface ScannedProduct {
   key: string;
@@ -99,6 +99,51 @@ export type WaitlistStatus =
   | "cancelled"         // Passenger declined or expired
   | "test_excluded";    // Test/synthetic request excluded from active scanning and business metrics
 
+export function normalizeTourPreference(
+  rawTourType?: string,
+  rawOperator?: string
+): {
+  tourType: "any" | "glacier_landing" | "dog_sledding" | "ice_trek" | "flightseeing";
+  preferredOperator: "temsco" | "coastal" | "northstar" | "any";
+} {
+  const lower = (rawTourType || "").toLowerCase().trim();
+  let operator: "temsco" | "coastal" | "northstar" | "any" = (rawOperator as any) || "any";
+
+  if (lower === "temsco-mendenhall-glacier-walk") {
+    return { tourType: "glacier_landing", preferredOperator: "temsco" };
+  }
+  if (lower === "temsco-glacier-dog-sledding") {
+    return { tourType: "dog_sledding", preferredOperator: "temsco" };
+  }
+  if (lower === "coastal-icefield-landing") {
+    return { tourType: "glacier_landing", preferredOperator: "coastal" };
+  }
+  if (lower === "northstar-glacier-ice-trek") {
+    return { tourType: "ice_trek", preferredOperator: "northstar" };
+  }
+  if (lower.includes("dog")) {
+    return { tourType: "dog_sledding", preferredOperator: operator };
+  }
+  if (lower.includes("landing") || lower.includes("walk")) {
+    return { tourType: "glacier_landing", preferredOperator: operator };
+  }
+  if (lower.includes("trek") || lower.includes("climb")) {
+    return { tourType: "ice_trek", preferredOperator: operator };
+  }
+  if (lower.includes("flight") || lower.includes("scenic")) {
+    return { tourType: "flightseeing", preferredOperator: operator };
+  }
+  if (
+    lower === "glacier_landing" ||
+    lower === "dog_sledding" ||
+    lower === "ice_trek" ||
+    lower === "flightseeing"
+  ) {
+    return { tourType: lower as any, preferredOperator: operator };
+  }
+  return { tourType: "any", preferredOperator: operator };
+}
+
 export interface WaitlistEntry {
   id: string;
   createdAt: string;
@@ -114,6 +159,9 @@ export interface WaitlistEntry {
   portCity: "juneau" | "skagway" | "either";
   tourType: "any" | "glacier_landing" | "dog_sledding" | "ice_trek" | "flightseeing";
   partySize: number;
+  allowSplitParty?: boolean;
+  partialAlertsCount?: number;
+  lastPartialAlertAt?: string;
   notes?: string;
   preferredOperator?: "temsco" | "coastal" | "northstar" | "any";
   bookingMode: "instant_alert" | "concierge_dispatch" | "priority_hold" | "sms_alert";
@@ -326,6 +374,11 @@ export async function getAllWaitlistEntries(): Promise<WaitlistEntry[]> {
   return [...inMemoryStore].sort((a, b) => a.portDate.localeCompare(b.portDate));
 }
 
+export async function getWaitlistEntryById(id: string): Promise<WaitlistEntry | null> {
+  const all = await getAllWaitlistEntries();
+  return all.find((e) => e.id === id) || null;
+}
+
 export async function saveWaitlistEntry(entry: WaitlistEntry): Promise<void> {
   const sql = getDb();
   if (sql) {
@@ -437,13 +490,14 @@ export interface SweepResult {
 export async function execute10AmDailySweep(options?: {
   includeTests?: boolean;
   testMatch?: boolean;
+  testSplitMatch?: boolean;
 }): Promise<SweepResult> {
   const all = await getAllWaitlistEntries();
   const today = getTodayAlaskaDate();
 
   // Strictly exclude expired watch dates (dates in the past) and test entries unless explicitly requested for verification
   const activeEntries = all.filter((e) => {
-    const isTestAllowed = Boolean(options?.includeTests || options?.testMatch);
+    const isTestAllowed = Boolean(options?.includeTests || options?.testMatch || options?.testSplitMatch);
     if (e.isTest && !isTestAllowed) return false;
     const isScanningStatus = e.status === "active_scanning" || (e.isTest && isTestAllowed && e.status === "test_excluded");
     if (!isScanningStatus) return false;
@@ -482,15 +536,19 @@ export async function execute10AmDailySweep(options?: {
         (entry.portCity === "skagway" && product.port === "skagway");
       if (!wantsPort) return false;
 
+      const { tourType: normalizedTour, preferredOperator: normalizedOp } =
+        normalizeTourPreference(entry.tourType, entry.preferredOperator);
+
       const wantsTour =
-        entry.tourType === "any" || entry.tourType === product.tourType;
+        normalizedTour === "any" || normalizedTour === product.tourType;
       if (!wantsTour) return false;
 
       // Operator preference check
-      if (entry.preferredOperator && entry.preferredOperator !== "any") {
+      const effectiveOp = normalizedOp !== "any" ? normalizedOp : entry.preferredOperator;
+      if (effectiveOp && effectiveOp !== "any") {
         const matchesOp = product.operator
           .toLowerCase()
-          .includes(entry.preferredOperator.toLowerCase());
+          .includes(effectiveOp.toLowerCase());
         if (!matchesOp) return false;
       }
 
@@ -547,16 +605,19 @@ export async function execute10AmDailySweep(options?: {
         };
         accessFailures.push(failureReport);
         operatorReports.push(failureReport);
-        console.error(
-          `[DailySweep] Access failure for ${product.operator} (${product.companyShortname} item ${product.itemPk}): ${fetchResult.error}`
-        );
-        continue;
+        if (!options?.testMatch && !options?.testSplitMatch) {
+          continue;
+        }
       }
 
-      const openSlots = filterOpenAvailabilities(fetchResult.availabilities, 1);
+      const openSlots = fetchResult.success ? filterOpenAvailabilities(fetchResult.availabilities, 1) : [];
 
       // In controlled test sweeps, synthesize a test departure for marked test requests if operator has 0 openings
-      if (options?.testMatch && candidateEntries.some((e) => e.isTest) && openSlots.length === 0) {
+      if (
+        (options?.testMatch || options?.testSplitMatch) &&
+        candidateEntries.some((e) => e.isTest) &&
+        openSlots.length === 0
+      ) {
         const testCandidate = candidateEntries.find((e) => e.isTest);
         if (testCandidate) {
           const targetDate =
@@ -564,11 +625,15 @@ export async function execute10AmDailySweep(options?: {
               ? testCandidate.juneauDate || (testCandidate.portCity === "juneau" ? testCandidate.portDate : undefined)
               : testCandidate.skagwayDate || (testCandidate.portCity === "skagway" ? testCandidate.portDate : undefined);
           if (targetDate) {
+            const isSplitTest = Boolean(options.testSplitMatch);
+            const syntheticPk = isSplitTest ? 999901 : 999902;
+            const syntheticStart = isSplitTest ? `${targetDate}T13:30:00-08:00` : `${targetDate}T10:30:00-08:00`;
+            const syntheticCapacity = isSplitTest ? 2 : Math.max(testCandidate.partySize, 4);
             openSlots.push({
-              pk: 999901,
-              start_at: `${targetDate}T13:30:00-08:00`,
+              pk: syntheticPk,
+              start_at: syntheticStart,
               end_at: `${targetDate}T15:45:00-08:00`,
-              capacity: Math.max(testCandidate.partySize, 4),
+              capacity: syntheticCapacity,
               spots_total: 6,
               item: {
                 pk: product.itemPk,
@@ -603,10 +668,18 @@ export async function execute10AmDailySweep(options?: {
               ? entry.juneauDate || (entry.portCity === "juneau" ? entry.portDate : undefined)
               : entry.skagwayDate || (entry.portCity === "skagway" ? entry.portDate : undefined);
 
-          return targetDate === slotDate && entry.partySize <= slot.capacity;
+          if (targetDate !== slotDate) return false;
+
+          const isFullMatch = entry.partySize <= slot.capacity;
+          const isSplitMatch = Boolean(entry.allowSplitParty && slot.capacity >= 1 && entry.partySize > 1);
+
+          return isFullMatch || isSplitMatch;
         });
 
         for (const entry of matchingEntries) {
+          const isFullMatch = entry.partySize <= slot.capacity;
+          const isSplitMatch = Boolean(entry.allowSplitParty && !isFullMatch && slot.capacity >= 1);
+
           const slotTime = new Date(slot.start_at).toLocaleTimeString("en-US", {
             hour: "numeric",
             minute: "2-digit",
@@ -636,6 +709,8 @@ export async function execute10AmDailySweep(options?: {
             checkoutUrl,
             cancellationPolicy: product.cancellationPolicy,
             isTest: entry.isTest,
+            isSplitMatch,
+            seatsAvailable: slot.capacity,
           });
 
           if (!notification) {
@@ -644,9 +719,17 @@ export async function execute10AmDailySweep(options?: {
           }
 
           // Accurate lifecycle transition:
-          // ONLY transition to contact_pending if the alert was actually DELIVERED to the traveler (or marked test).
-          // Simulated or failed deliveries must NEVER stop active scanning for real customers!
-          if (notification.status === "delivered" || entry.isTest) {
+          // If this is a split-party match (e.g. 2 seats found for party of 4), the group still needs the remaining seats,
+          // or may evaluate alternative slots. Keep status as 'active_scanning' so subsequent sweeps continue.
+          // ONLY transition to contact_pending if the FULL party was satisfied and delivered (or marked test).
+          if (isSplitMatch) {
+            entry.status = "active_scanning";
+            entry.partialAlertsCount = (entry.partialAlertsCount || 0) + 1;
+            entry.lastPartialAlertAt = notification.dispatchedAt;
+            console.log(
+              `[DailySweep] Split-party match (${slot.capacity}/${entry.partySize} seats) for ${entry.id}; preserving active_scanning status so scans continue.`
+            );
+          } else if (notification.status === "delivered" || entry.isTest) {
             entry.status = "contact_pending";
           } else {
             console.log(
@@ -662,7 +745,7 @@ export async function execute10AmDailySweep(options?: {
           entry.cancellationPolicyNotes = product.cancellationPolicy;
           entry.notificationDispatchedAt = notification.dispatchedAt;
           entry.notificationDeliveryId = notification.deliveryId;
-          entry.dispatchAlertNotes = `Opening detected for ${product.name} on ${slotDate} (${slotTime}). Delivery status: ${notification.status}. Operator hold: not_held.`;
+          entry.dispatchAlertNotes = `${isSplitMatch ? `Split-party opening (${slot.capacity} seats for party of ${entry.partySize})` : "Opening"} detected for ${product.name} on ${slotDate} (${slotTime}). Delivery status: ${notification.status}. Operator hold: not_held.`;
 
           await saveWaitlistEntry(entry);
 
@@ -746,6 +829,28 @@ export async function purgeTestWaitlistEntries(): Promise<{
   inMemoryStore = inMemoryStore.filter(
     (e) => !e.isTest && e.status !== "test_excluded" && e.email !== "ops-test@juneauflightdeck.com"
   );
+
+  // Also clean test notifications from disk
+  try {
+    const dir = getNotificationsDir();
+    const files = await fs.readdir(dir).catch(() => []);
+    for (const f of files) {
+      if (f.endsWith(".json")) {
+        const filePath = path.join(dir, f);
+        const raw = await fs.readFile(filePath, "utf8");
+        const parsed = JSON.parse(raw);
+        if (
+          parsed.isTest ||
+          parsed.recipientEmail?.includes("test") ||
+          parsed.recipientEmail === "ops-test@juneauflightdeck.com"
+        ) {
+          await fs.unlink(filePath).catch(() => {});
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
 
   return { deletedSubmissions, deletedNotifications };
 }

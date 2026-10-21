@@ -16,9 +16,9 @@ const siteJsonLd = buildNetworkEntityGraph({
   description: SITE_CONFIG.mission,
   relationshipToDcc: "parentOrganization",
   service: {
-    name: "Next available New Orleans airboat swamp tour dispatch",
+    name: "New Orleans airboat departure finder and schedule comparison",
     description:
-      "Real-time dispatch engine monitoring live airboat departures across New Orleans swamp operators with French Quarter hotel pickup.",
+      "Find the next scheduled airboat departure matching your date, group, transportation, and booking cutoffs. Confirm open seats at checkout. Requests can be saved; automated seat-opening alerts are currently inactive.",
     areaServed: [
       { "@type": "City", name: "New Orleans" },
       { "@type": "AdministrativeArea", name: "Louisiana" },
@@ -27,14 +27,14 @@ const siteJsonLd = buildNetworkEntityGraph({
 });
 
 export const metadata: Metadata = {
-  title: "Next Available Airboat Swamp Tours in New Orleans | Welcome to the Swamp",
+  title: "Next Scheduled Airboat Swamp Tours in New Orleans | Welcome to the Swamp",
   description:
-    "Looking for a New Orleans swamp tour? Skip sold-out boats. Check today's NEXT AVAILABLE AIRBOAT departures with French Quarter hotel pickup. Live seat availability updated daily.",
+    "Find the next scheduled airboat departure matching your date, group, transportation, and booking cutoffs. Confirm open seats at checkout. Requests can be saved; automated seat-opening alerts are currently inactive.",
   alternates: { canonical: `${SITE_CONFIG.url}/` },
   openGraph: {
-    title: "Next Available Airboat Swamp Tours in New Orleans | Live Departures",
+    title: "Next Scheduled Airboat Swamp Tours in New Orleans | Welcome to the Swamp",
     description:
-      "Looking for a New Orleans swamp tour? Skip sold-out boats. Check today's next open departures with hotel pickup.",
+      "Find the next scheduled airboat departure matching your date, group, transportation, and booking cutoffs. Confirm open seats at checkout.",
     url: `${SITE_CONFIG.url}/`,
     type: "website",
   },

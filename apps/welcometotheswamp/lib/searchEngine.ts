@@ -77,40 +77,7 @@ async function checkViatorLive(params: SearchParams): Promise<ProviderCheckResul
     }
 
     const data = await res.json();
-    const departures: TourDeparture[] = [];
-
-    if (data.available && Array.isArray(data.bookableItems)) {
-      for (const item of data.bookableItems) {
-        if (!item.available || !item.startTime) continue;
-
-        const timeStr = item.startTime;
-        const total = item.price?.pricing?.totalPrice || item.totalPrice?.price?.recommendedRetailPrice || 190;
-        
-        departures.push({
-          id: `viator-112604P2-${timeStr}`,
-          provider: "viator",
-          productCode: "112604P2",
-          optionCode: item.productOptionCode || "DEFAULT",
-          operatorName: "Airboat Adventures",
-          title: "New Orleans Airboat Tour (Viator Partner Feed)",
-          boatType: "large_airboat",
-          transportation: "self_drive",
-          departureTime: timeStr,
-          departureTimeDisplay: formatTimeNewOrleans(timeStr),
-          dockArrivalTimeDisplay: formatTimeNewOrleans(computeDockArrivalTime(timeStr, 30)),
-          minChildAge: 2,
-          maxPartySize: 20,
-          pricePerAdult: Math.round(total / (params.adults + params.childrenAges.length)),
-          pricePerChild: Math.round(total / (params.adults + params.childrenAges.length)),
-          totalPrice: total,
-          currency: "USD",
-          availabilityType: "live_inventory",
-          available: true,
-          bookingUrl: "https://www.viator.com/tours/New-Orleans/New-Orleans-Airboat-Tour/d675-112604P2",
-          checkedAt: new Date().toISOString(),
-        });
-      }
-    }
+    const departures = parseViatorAvailability(data, params);
 
     return {
       providerName: "Viator",
@@ -128,12 +95,69 @@ async function checkViatorLive(params: SearchParams): Promise<ProviderCheckResul
 }
 
 /**
+ * Parses a verified Viator partner availability response (v2).
+ * Strictly attaches live_inventory badge with timestamp only when
+ * available is true and bookableItems confirm the party size and time.
+ */
+export function parseViatorAvailability(
+  data: any,
+  params: SearchParams,
+  nowIso: string = new Date().toISOString()
+): TourDeparture[] {
+  const departures: TourDeparture[] = [];
+  const totalGroup = Math.max(1, params.adults + params.childrenAges.length);
+
+  if (data?.available && Array.isArray(data.bookableItems)) {
+    for (const item of data.bookableItems) {
+      if (!item.available || !item.startTime) continue;
+
+      const timeStr = item.startTime;
+      const total =
+        item.price?.pricing?.totalPrice ??
+        item.totalPrice?.price?.recommendedRetailPrice ??
+        item.totalPrice?.price?.partnerNetPrice ??
+        190;
+
+      departures.push({
+        id: `viator-112604P2-${timeStr}`,
+        provider: "viator",
+        productCode: "112604P2",
+        optionCode: item.productOptionCode || "DEFAULT",
+        operatorName: "Airboat Adventures",
+        title: "New Orleans Airboat Tour (Viator Partner Feed)",
+        boatType: "large_airboat",
+        transportation: "self_drive",
+        departureTime: timeStr,
+        departureTimeDisplay: formatTimeNewOrleans(timeStr),
+        dockArrivalTimeDisplay: formatTimeNewOrleans(computeDockArrivalTime(timeStr, 30)),
+        minChildAge: 2,
+        maxPartySize: 20,
+        pricePerAdult: Math.round(total / totalGroup),
+        pricePerChild: Math.round(total / totalGroup),
+        totalPrice: total,
+        currency: "USD",
+        availabilityType: "live_inventory",
+        availabilityStatusText: `Live availability checked ${formatTimeNewOrleans(nowIso)} CT for group of ${totalGroup}`,
+        available: true,
+        bookingUrl: "https://www.viator.com/tours/New-Orleans/New-Orleans-Airboat-Tour/d675-112604P2",
+        checkedAt: nowIso,
+      });
+    }
+  }
+
+  return departures;
+}
+
+/**
  * Checks connected local Louisiana swamp tour operators.
  * Evaluates current day schedule cutoffs and age eligibility.
  */
-async function checkDirectOperators(params: SearchParams): Promise<ProviderCheckResult> {
+async function checkDirectOperators(
+  params: SearchParams,
+  currentTimeOverride?: string
+): Promise<ProviderCheckResult> {
   const isToday = params.travelDate === getTodayNewOrleansDate();
-  const currentCtTime = getCurrentNewOrleansTime(); // "HH:MM:SS"
+  const currentCtTime = currentTimeOverride || getCurrentNewOrleansTime(); // "HH:MM:SS"
   const departures: TourDeparture[] = [];
 
   const totalParty = params.adults + params.childrenAges.length;
@@ -216,6 +240,7 @@ async function checkDirectOperators(params: SearchParams): Promise<ProviderCheck
         totalPrice: groupTotal,
         currency: "USD",
         availabilityType: "scheduled_departure",
+        availabilityStatusText: "Scheduled departure—confirm seats",
         available: true,
         bookingUrl: tour.bookingUrl,
         checkedAt: new Date().toISOString(),
@@ -253,7 +278,8 @@ function computePickupWindow(departureTime: string, leadMinutes: number): string
  * the honest 4-state response: AVAILABLE, PARTIAL, NO_MATCH, or UNCHECKED.
  */
 export async function searchNextAirboatDepartures(
-  params: SearchParams
+  params: SearchParams,
+  currentTimeOverride?: string
 ): Promise<SearchResponse> {
   const checkedAt = new Date().toISOString();
   const totalGroupSize = params.adults + params.childrenAges.length;
@@ -261,7 +287,7 @@ export async function searchNextAirboatDepartures(
   // Run provider checks in parallel
   const [viatorResult, directResult] = await Promise.all([
     checkViatorLive(params),
-    checkDirectOperators(params),
+    checkDirectOperators(params, currentTimeOverride),
   ]);
 
   const providerStatuses = [

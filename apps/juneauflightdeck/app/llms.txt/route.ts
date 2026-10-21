@@ -48,6 +48,7 @@ ${ships}
 - [Terms](https://juneauflightdeck.com/terms)
 - [Privacy](https://juneauflightdeck.com/privacy-policy)
 - [Machine description](https://juneauflightdeck.com/agent.json)
+- [Canonical DCC truth record](https://www.destinationcommandcenter.com/api/public/truth-feed?id=juneau-flight-deck)
 `;
   return new Response(content, {
     headers: {
