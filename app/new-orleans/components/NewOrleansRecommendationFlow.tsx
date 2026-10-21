@@ -549,8 +549,8 @@ export default function NewOrleansRecommendationFlow() {
           tabIndex={-1}
           className={
             result
-              ? `mt-3 text-3xl uppercase tracking-wide text-[var(--nola-ivory)] focus:outline-none md:text-4xl ${visualStyles.accentFont}`
-              : `mt-3 text-center text-2xl text-[var(--nola-ivory)] focus:outline-none md:text-3xl ${visualStyles.accentFont}`
+              ? `mt-3 text-3xl uppercase tracking-wide text-[var(--nola-ivory)] focus:outline focus:outline-2 focus:outline-offset-4 focus:outline-[var(--nola-gold)] md:text-4xl ${visualStyles.accentFont}`
+              : `mt-3 text-center text-2xl text-[var(--nola-ivory)] focus:outline focus:outline-2 focus:outline-offset-4 focus:outline-[var(--nola-gold)] md:text-3xl ${visualStyles.accentFont}`
           }
         >
           {result ? "Our top picks for your group" : currentQuestion.title}
