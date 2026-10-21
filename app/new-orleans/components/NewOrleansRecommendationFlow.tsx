@@ -511,10 +511,10 @@ export default function NewOrleansRecommendationFlow() {
     return (
       <div className={`${visualStyles.surfacePanel} mt-8 p-6 md:p-10`}>
         <div className="text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]">Your concierge recommendation</p>
+          <p role="status" aria-live="polite" className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--nola-gold)]">Your concierge recommendation</p>
           <h3 className={`mt-3 text-3xl uppercase tracking-wide text-[var(--nola-ivory)] md:text-4xl ${visualStyles.accentFont}`}>Our top picks for your group</h3>
           <p className="mt-2 text-sm text-[var(--nola-text-muted)]">Verified options matching your party size, timing, and transportation needs.</p>
-          <button onClick={restart} className="mt-4 text-xs font-bold uppercase tracking-widest text-[var(--nola-text-muted)] hover:text-[var(--nola-gold)]">Start over</button>
+          <button type="button" onClick={restart} className="mt-4 text-xs font-bold uppercase tracking-widest text-[var(--nola-text-muted)] hover:text-[var(--nola-gold)]">Start over</button>
         </div>
 
         {result.isNoFit || !result.primary ? (
@@ -522,7 +522,7 @@ export default function NewOrleansRecommendationFlow() {
             <h4 className="text-2xl font-bold text-[var(--nola-ivory)]">Let’s narrow it another way.</h4>
             <p className="mt-4 text-sm leading-6 text-[var(--nola-text-muted)]">None of the 21 curated experiences is a strong enough fit for that exact combination. Change an answer or let our local team help with your timing and group.</p>
             <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-              <button onClick={restart} className="border border-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)]">Adjust answers</button>
+              <button type="button" onClick={restart} className="border border-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-gold)]">Adjust answers</button>
               <Link href="/contact" data-wno-event="chooser_concierge_fallback_clicked" className="bg-[var(--nola-gold)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--nola-bg-black)]">Get Tour Planning Help</Link>
             </div>
           </div>
@@ -580,20 +580,22 @@ export default function NewOrleansRecommendationFlow() {
             <span key={step} className={`h-[3px] ${index === stepIndex ? "w-8 bg-[var(--nola-gold)]" : answers[step] ? "w-4 bg-[var(--nola-gold-muted)]" : "w-4 bg-[var(--nola-border)]"}`} />
           ))}
         </div>
-        <p className="text-center text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">Question {stepIndex + 1} of {STEPS.length}</p>
+        <p role="status" aria-live="polite" className="text-center text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--nola-gold)]">Question {stepIndex + 1} of {STEPS.length}</p>
         <h3 className={`mt-3 text-center text-2xl text-[var(--nola-ivory)] md:text-3xl ${visualStyles.accentFont}`}>{currentQuestion.title}</h3>
         <div className="mt-8 space-y-3">
           {currentQuestion.options.map((option) => (
             <button
               key={option}
+              type="button"
+              aria-pressed={answers[currentStepId] === option}
               onClick={() => handleSelect(option)}
-              className="w-full border border-[var(--nola-border)] bg-[var(--nola-bg-charcoal)] px-5 py-4 text-left text-sm text-[var(--nola-ivory)] transition hover:border-[var(--nola-gold)] hover:text-[var(--nola-gold)]"
+              className={`w-full border ${answers[currentStepId] === option ? "border-[var(--nola-gold)]" : "border-[var(--nola-border)]"} bg-[var(--nola-bg-charcoal)] px-5 py-4 text-left text-sm text-[var(--nola-ivory)] transition hover:border-[var(--nola-gold)] hover:text-[var(--nola-gold)]`}
             >
               {option}
             </button>
           ))}
         </div>
-        {stepIndex > 0 && <button onClick={back} className="mt-6 text-xs font-bold uppercase tracking-widest text-[var(--nola-text-muted)] hover:text-[var(--nola-gold)]">← Back</button>}
+        {stepIndex > 0 && <button type="button" onClick={back} className="mt-6 text-xs font-bold uppercase tracking-widest text-[var(--nola-text-muted)] hover:text-[var(--nola-gold)]">← Back</button>}
       </div>
     </div>
   );
