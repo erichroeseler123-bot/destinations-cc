@@ -319,6 +319,11 @@ export const DEFAULT_SITE_DISCOVERY_BACKLOG = {
         key: 'cruisepromenade-hero-sample-context-clarity',
         title: 'Cruise Promenade: align sample St. Thomas port-day timeline with all-aboard buffer math and direct ship planner handoff',
         instructions: 'In `src/app/page.tsx` and `tests/cruise-fleet-seo.test.ts`, improve visitor decision clarity and port-window planning trust on the homepage: (1) Clearly label the hero port-day board (`.cp-hero-card`) as an illustrative sample port-day timeline and ensure its displayed ship window, activity times, and all-aboard buffer math are internally consistent with the linked sample itinerary (`ST_THOMAS_SAMPLE_DAY_URL`); (2) Replace ambiguous sample CTA labels (`Book this too`, `Join them`) with clear visitor actions (`Preview sample port day`, `Load my ship & sailing date` linking directly to `/planner` / `#find-sailing`) and expose an accessible region label while preserving clean `320px` and `375px` mobile layout and keeping all existing tests passing.'
+      },
+      {
+        key: 'cruisepromenade-planner-filter-status-and-port-directory-a11y',
+        title: 'Cruise Promenade: accessible live status for sailing finder and keyboard-friendly port directory cards',
+        instructions: 'In `src/components/cruise-sailing-finder.tsx`, `src/app/ports/page.tsx`, and `tests/cruise-fleet-seo.test.ts`, improve sailing search feedback and port directory usability: (1) Ensure sailing selector status updates and filtered port counts expose `role="status"` and `aria-live="polite"` so assistive technology announces matching sailings and port calls; (2) Ensure port directory cards and filter links on `/ports` preserve clear focus indicators, semantic headings, and zero horizontal overflow at `320px` and `375px` viewports without inventing schedule or pricing claims. Keep `npm run typecheck`, `npm run test`, and `npm run build` passing.'
       }
     ]
   },
@@ -331,6 +336,11 @@ export const DEFAULT_SITE_DISCOVERY_BACKLOG = {
         key: 'wta-three-port-signature-comparison-guide',
         title: 'Welcome to Alaska Tours: Juneau vs Skagway vs Ketchikan signature excursion comparison to help cruisers avoid duplicate bookings',
         instructions: 'In `app/page.tsx` and `app/ports/page.tsx`, help multi-port Alaska cruise visitors decide faster which excursion to book in each port without duplicating experiences: (1) Add a clear, scannable "What Each Alaska Port Does Best (So You Don\'t Book the Same Tour Twice)" decision comparison covering Juneau (humpback whale watching, Mendenhall Glacier & icefield helicopter landings), Skagway (White Pass & Yukon Route rail, Klondike summit & sled-dog camps), and Ketchikan (Misty Fjords floatplanes, Bering Sea crab boat & totem parks), with direct 1-click links into each port\'s filtered `/plan` shortlist and `/ports/[slug]` guide; (2) Ensure semantic table/card structure, `0` horizontal overflow at `320px` and `375px`, and keep `npm run test` and `npm run build` passing.'
+      },
+      {
+        key: 'wta-tours-filter-live-count-and-reset-ux',
+        title: 'Welcome to Alaska Tours: accessible tour filter result announcements and one-tap filter reset',
+        instructions: 'In `app/tours/page.tsx` (or its active tour catalog filter component under `app/`) and `tests/`, improve tour browsing and empty/filtered state recovery: (1) Announce updated tour counts when port or category filters change via `role="status"` and `aria-live="polite"`; (2) Provide a clear one-tap filter reset control when narrow filters are active, preserving existing tour pricing, descriptions, and checkout paths, with zero horizontal overflow at `320px` and `375px`. Keep `npm run test` and `npm run build` passing.'
       }
     ]
   },
@@ -343,43 +353,132 @@ export const DEFAULT_SITE_DISCOVERY_BACKLOG = {
         key: 'dells-boat-vs-duck-decision-matrix',
         title: 'Welcome to the Dells: Upper vs Lower Dells Boat & Duck Tour decision matrix for faster trip planning',
         instructions: 'In `apps/welcometothedells/app/boat-tours/page.tsx`, `apps/welcometothedells/app/first-time/page.tsx`, and `apps/welcometothedells/tests/content-regression.test.ts`, help visitors choose the right Wisconsin River experience faster with practical local details competitors omit: (1) Add a scannable "Upper Dells vs. Lower Dells vs. Original Wisconsin Ducks: 60-Second Fit Guide" comparison section on `/boat-tours` (and a concise summary link on `/first-time`) comparing ashore canyon walks (Witches Gulch & Stand Rock on Upper Dells), splash/thrill level (calm scenic cruise vs. land-to-water Duck vs. jet boat), typical duration, and kid/senior/mobility comfort; (2) Preserve all existing DCC attribution links, exclude hotel/waterpark promotions per content rules, ensure zero horizontal overflow at `320px` and `375px`, and keep `apps/welcometothedells/tests/content-regression.test.ts` and `apps/welcometothedells/tests/sitemap-regression.test.ts` passing.'
+      },
+      {
+        key: 'dells-rainy-day-and-tonight-filter-navigation-a11y',
+        title: 'Welcome to the Dells: accessible decision-page navigation landmarks and mobile card ergonomics',
+        instructions: 'In `apps/welcometothedells/app/components/DellsDecisionPage.tsx`, `apps/welcometothedells/app/rainy-day/page.tsx`, and `apps/welcometothedells/tests/content-regression.test.ts`, improve decision-page navigation semantics and mobile readability: (1) Ensure decision-page breadcrumb/related-guide navigation exposes an explicit `aria-label` and `aria-current="page"` where applicable; (2) Ensure cards and action links on `/rainy-day` and shared `DellsDecisionPage` layouts wrap cleanly at `320px` and `375px` with zero horizontal overflow while preserving all existing factual copy and DCC attribution links. Keep `npm run typecheck`, `npm run test`, and `npm run build` passing.'
       }
     ]
   },
   brinkberry: {
     key: 'brinkberry-empty-state-filter-summary',
     title: 'Brinkberry: weekend quick-toggle, one-tap empty-state filter recovery, and visible event source verification details',
-    instructions: 'In `api/home.js` and `test/home-controls-aria.test.mjs`, help visitors find local events faster and recover from narrow filters without dead ends: (1) Add a `This Weekend` (`data-time="weekend"`, `type="button"`, `aria-pressed="false"`) button directly to `#quickTimeToggle` alongside `Tonight` and `Next 48 Hours` (synchronizing `active` class and `aria-pressed` with `#timeWindows` in `initControls()`) so visitors planning their weekend do not have to open the hidden `#advancedFiltersDrawer`; (2) Add `role="status"` and `aria-live="polite"` to `#status`, and in the `!S.events.length` empty state inside `renderFeed()`, add a one-tap `Show All Categories & Reset Filters` button (`type="button"`) whenever `S.category`, `S.mode`, `S.sourceFilter !== "all"`, or sub-filters are active; (3) In `openDetail(id)`, render `e.sourceQualityTooltip` as visible helper text next to `Source Verification` so mobile and keyboard visitors can see how an event was verified without relying on hover-only `title` attributes. Keep `npm run test` passing.'
+    instructions: 'In `api/home.js` and `test/home-controls-aria.test.mjs`, help visitors find local events faster and recover from narrow filters without dead ends: (1) Add a `This Weekend` (`data-time="weekend"`, `type="button"`, `aria-pressed="false"`) button directly to `#quickTimeToggle` alongside `Tonight` and `Next 48 Hours` (synchronizing `active` class and `aria-pressed` with `#timeWindows` in `initControls()`) so visitors planning their weekend do not have to open the hidden `#advancedFiltersDrawer`; (2) Add `role="status"` and `aria-live="polite"` to `#status`, and in the `!S.events.length` empty state inside `renderFeed()`, add a one-tap `Show All Categories & Reset Filters` button (`type="button"`) whenever `S.category`, `S.mode`, `S.sourceFilter !== "all"`, or sub-filters are active; (3) In `openDetail(id)`, render `e.sourceQualityTooltip` as visible helper text next to `Source Verification` so mobile and keyboard visitors can see how an event was verified without relying on hover-only `title` attributes. Keep `npm run test` passing.',
+    followUps: [
+      {
+        key: 'brinkberry-detail-modal-keyboard-escape-and-active-filter-summary',
+        title: 'Brinkberry: accessible event detail modal Escape/focus handling and active filter summary pills',
+        instructions: 'In `api/home.js` and `test/home-controls-aria.test.mjs`, improve keyboard accessibility and filter transparency on the Brinkberry event feed: (1) Ensure the event detail modal (`#detailModal` / `openDetail` / `closeDetail`) exposes `role="dialog"`, `aria-modal="true"`, and `aria-labelledby`, closes cleanly on `Escape`, and returns focus to the triggering control; (2) Ensure the advanced filters drawer toggle (`#moreFiltersBtn`) synchronizes `aria-expanded` with `#advancedFiltersDrawer` open/closed state and keeps `320px` and `375px` viewports free of horizontal overflow. Keep `npm run test` passing.'
+      },
+      {
+        key: 'brinkberry-category-pill-aria-pressed-and-search-clear',
+        title: 'Brinkberry: synchronized aria-pressed state on category pills and one-tap city search clear control',
+        instructions: 'In `api/home.js` and `test/home-controls-aria.test.mjs`, make switching categories and locations faster on mobile and keyboard: (1) Ensure category filter buttons in `#cats` expose `type="button"` and synchronize `aria-pressed="true"` / `"false"` when selected or reset; (2) Ensure the feed list container exposes a clear landmark/region label and maintains zero horizontal overflow at `320px` and `375px` viewports. Keep `npm run test` passing.'
+      }
+    ]
   },
   swamp: {
     key: 'swamp-comparison-table-caption-mobile',
     title: 'Welcome to the Swamp: accurate FareHarbor vs GetYourGuide booking labels and 60-second Airboat vs Covered Boat fit guide',
-    instructions: 'In `apps/welcometotheswamp/app/plan/page.tsx`, `apps/welcometotheswamp/app/page.tsx`, and `apps/welcometotheswamp/app/globals.css`, make tour selection faster and eliminate booking-provider confusion: (1) In `apps/welcometotheswamp/app/plan/page.tsx`, update the hero primary CTA label and the two lower `PlanCard` eyebrows (`GetYourGuide / airboat` and `GetYourGuide / covered boat`) so that when `fhAirboat && asn` / `fhBoat && asn` resolve to FareHarbor direct booking URLs, the visible text accurately identifies FareHarbor (`Book direct via FareHarbor`, `FareHarbor / airboat`, `FareHarbor / covered boat`) while falling back to GetYourGuide labels only when GetYourGuide URLs are used—preserving every `href`, `asn`, `flow`, `ref`, and `data-warm-transfer-click` attribute byte-for-byte; (2) In `apps/welcometotheswamp/app/page.tsx` and `apps/welcometotheswamp/app/globals.css`, add a descriptive `<caption>` and `scope="col"` / `scope="row"` headers to the boat comparison `<table>` and surface key visitor decision facts (minimum child age 5+ & headset ear protection on airboats vs. all-ages shaded canopy on covered bayou boats, plus hotel pickup vs. self-drive timing) with zero horizontal overflow at `320px` and `375px`. Keep `npm run typecheck` and `npm run build` passing.'
+    instructions: 'In `apps/welcometotheswamp/app/plan/page.tsx`, `apps/welcometotheswamp/app/page.tsx`, and `apps/welcometotheswamp/app/globals.css`, make tour selection faster and eliminate booking-provider confusion: (1) In `apps/welcometotheswamp/app/plan/page.tsx`, update the hero primary CTA label and the two lower `PlanCard` eyebrows (`GetYourGuide / airboat` and `GetYourGuide / covered boat`) so that when `fhAirboat && asn` / `fhBoat && asn` resolve to FareHarbor direct booking URLs, the visible text accurately identifies FareHarbor (`Book direct via FareHarbor`, `FareHarbor / airboat`, `FareHarbor / covered boat`) while falling back to GetYourGuide labels only when GetYourGuide URLs are used—preserving every `href`, `asn`, `flow`, `ref`, and `data-warm-transfer-click` attribute byte-for-byte; (2) In `apps/welcometotheswamp/app/page.tsx` and `apps/welcometotheswamp/app/globals.css`, add a descriptive `<caption>` and `scope="col"` / `scope="row"` headers to the boat comparison `<table>` and surface key visitor decision facts (minimum child age 5+ & headset ear protection on airboats vs. all-ages shaded canopy on covered bayou boats, plus hotel pickup vs. self-drive timing) with zero horizontal overflow at `320px` and `375px`. Keep `npm run typecheck` and `npm run build` passing.',
+    followUps: [
+      {
+        key: 'swamp-header-aria-current-and-finder-live-status',
+        title: 'Welcome to the Swamp: active route aria-current in SiteHeader and accessible NextBoatFinder status announcements',
+        instructions: 'In `apps/welcometotheswamp/app/components/SiteHeader.tsx` and `apps/welcometotheswamp/app/components/NextBoatFinder.tsx`, improve navigation semantics and assistive feedback for the boat finder: (1) Ensure `SiteHeader` exposes `aria-label="Primary navigation"` on `<nav>` and marks the active route link with `aria-current="page"`; (2) In `NextBoatFinder.tsx`, ensure the matched recommendation summary region uses `role="status"` and `aria-live="polite"` so screen readers announce updated boat style/pickup recommendations when visitors change toggles, while preserving all existing booking URLs, query parameters, and zero horizontal overflow at `320px` and `375px`. Keep `npm run typecheck` and `npm run build` passing.'
+      },
+      {
+        key: 'swamp-faq-disclosure-semantics-and-plan-summary-a11y',
+        title: 'Welcome to the Swamp: accessible FAQ disclosures and mobile touch-target comfort on plan and home pages',
+        instructions: 'In `apps/welcometotheswamp/app/page.tsx`, `apps/welcometotheswamp/app/plan/page.tsx`, and `apps/welcometotheswamp/app/globals.css`, improve keyboard navigation and mobile tap comfort: (1) Ensure interactive filter buttons and plan-card CTAs expose explicit `type="button"` (for buttons) and visible `:focus-visible` outlines with comfortable mobile touch targets; (2) Ensure all section landmarks and comparison tables preserve semantic headings and zero horizontal overflow at `320px` and `375px` without altering any pricing, age, pickup, or booking partner URLs. Keep `npm run typecheck` and `npm run build` passing.'
+      }
+    ]
   },
   wno: {
     key: 'wno-category-jump-nav-table-a11y',
     title: 'Welcome to New Orleans Tours: preserve 7-step tour chooser shortlist on Back navigation and surface pickup tradeoffs',
-    instructions: 'In `app/new-orleans/components/NewOrleansRecommendationFlow.tsx` and `app/new-orleans/page.tsx`, help visitors find and compare the right New Orleans tour faster without losing their progress: (1) In `app/new-orleans/components/NewOrleansRecommendationFlow.tsx`, persist completed chooser inputs in `sessionStorage` (`wno_chooser_answers`) inside `completeChooser()` and restore the completed 3-tour recommendation shortlist on mount when returning via browser `Back` from a tour detail page (unless inbound DCC context overrides it), and clear `wno_chooser_answers` when the visitor clicks `Start over` / `Adjust answers`; (2) Pass `result.secondary.cautionReasons` and `result.tertiary.cautionReasons` (instead of empty `cautions={[]}`) to the secondary and tertiary `RecommendationCard` components so visitors who need hotel pickup immediately see if an alternative requires meeting at the departure point; (3) In `app/new-orleans/page.tsx`, ensure the category jump-link bar exposes `<nav aria-label="Tour categories">` and comparison tables include descriptive `<caption>` and `scope="col"` / `scope="row"` headers with zero horizontal overflow at `320px` and `375px`. Keep `npm run typecheck`, `npm run test:wno`, and `npm run build:wno` passing.'
+    instructions: 'In `app/new-orleans/components/NewOrleansRecommendationFlow.tsx` and `app/new-orleans/page.tsx`, help visitors find and compare the right New Orleans tour faster without losing their progress: (1) In `app/new-orleans/components/NewOrleansRecommendationFlow.tsx`, persist completed chooser inputs in `sessionStorage` (`wno_chooser_answers`) inside `completeChooser()` and restore the completed 3-tour recommendation shortlist on mount when returning via browser `Back` from a tour detail page (unless inbound DCC context overrides it), and clear `wno_chooser_answers` when the visitor clicks `Start over` / `Adjust answers`; (2) Pass `result.secondary.cautionReasons` and `result.tertiary.cautionReasons` (instead of empty `cautions={[]}`) to the secondary and tertiary `RecommendationCard` components so visitors who need hotel pickup immediately see if an alternative requires meeting at the departure point; (3) In `app/new-orleans/page.tsx`, ensure the category jump-link bar exposes `<nav aria-label="Tour categories">` and comparison tables include descriptive `<caption>` and `scope="col"` / `scope="row"` headers with zero horizontal overflow at `320px` and `375px`. Keep `npm run typecheck`, `npm run test:wno`, and `npm run build:wno` passing.',
+    followUps: [
+      {
+        key: 'wno-chooser-step-progress-live-region-and-keyboard-focus',
+        title: 'Welcome to New Orleans Tours: accessible step progress announcements and fieldset semantics in the 7-step tour chooser',
+        instructions: 'In `app/new-orleans/components/NewOrleansRecommendationFlow.tsx`, improve keyboard and screen-reader usability across the 7-step tour chooser: (1) Announce current step progress and completed recommendation status via `role="status"` and `aria-live="polite"`; (2) Ensure option buttons expose explicit `type="button"` and `aria-pressed` states so keyboard and screen-reader users can tell which option is selected before advancing, while preserving dark-surface heading contrast, `sessionStorage` persistence, and zero horizontal overflow at `320px` and `375px`. Keep `npm run typecheck`, `npm run test:wno`, and `npm run build:wno` passing.'
+      },
+      {
+        key: 'wno-category-page-breadcrumb-and-comparison-card-a11y',
+        title: 'Welcome to New Orleans Tours: accessible breadcrumb landmarks and mobile card ergonomics across category pages',
+        instructions: 'In `app/new-orleans/page.tsx` and `app/new-orleans/components/`, improve navigation clarity and mobile layout ergonomics: (1) Ensure navigation bars and category jump links expose clear `aria-label` landmarks and visible `:focus-visible` styles; (2) Ensure tour comparison cards and CTA buttons wrap cleanly at `320px` and `375px` with zero horizontal overflow and without changing any tour prices, durations, pickup claims, or booking URLs. Keep `npm run typecheck`, `npm run test:wno`, and `npm run build:wno` passing.'
+      }
+    ]
   },
   jfd: {
     key: 'jfd-faq-disclosure-waitlist-form-a11y',
     title: 'Juneau Flight Deck: cruise-port helicopter comparison guide, weather-backup clarity, and accessible waitlist form',
-    instructions: 'In `apps/juneauflightdeck/app/page.tsx`, `apps/juneauflightdeck/app/components/HelicopterWaitlistForm.tsx`, and `apps/juneauflightdeck/app/helicopter-waitlist/page.tsx`, help cruise visitors choose the right Juneau helicopter excursion faster and book or join the waitlist with confidence: (1) In `apps/juneauflightdeck/app/page.tsx`, add a scannable "Compare Juneau Helicopter Experiences (Dock-to-Dock Fit Guide)" section comparing Icefield Glacier Walk, Glacier Dog Sledding, and Scenic Flightseeing across total port-window time required (including shuttle transfer buffer), activity level, weight-policy transparency, and weather-cancellation backup options with direct links to `/juneau/what-to-do-if-helicopter-tour-canceled` and `/helicopter-waitlist`; (2) In `HelicopterWaitlistForm.tsx` and `helicopter-waitlist/page.tsx`, group the notification mode radio options (`name="bookingMode"`) inside a semantic `<fieldset>` with `<legend>`, add `role="status" aria-live="polite"` to `.waitlist-success-banner`, associate helper descriptions for `#portDate`, `#skagwayDate`, and `#phone` via `aria-describedby`, and add `autoComplete` (`name`, `email`, `tel`) with zero horizontal overflow at `320px` and `375px`. Keep `npm run typecheck` and `npm run build` passing.'
+    instructions: 'In `apps/juneauflightdeck/app/page.tsx`, `apps/juneauflightdeck/app/components/HelicopterWaitlistForm.tsx`, and `apps/juneauflightdeck/app/helicopter-waitlist/page.tsx`, help cruise visitors choose the right Juneau helicopter excursion faster and book or join the waitlist with confidence: (1) In `apps/juneauflightdeck/app/page.tsx`, add a scannable "Compare Juneau Helicopter Experiences (Dock-to-Dock Fit Guide)" section comparing Icefield Glacier Walk, Glacier Dog Sledding, and Scenic Flightseeing across total port-window time required (including shuttle transfer buffer), activity level, weight-policy transparency, and weather-cancellation backup options with direct links to `/juneau/what-to-do-if-helicopter-tour-canceled` and `/helicopter-waitlist`; (2) In `HelicopterWaitlistForm.tsx` and `helicopter-waitlist/page.tsx`, group the notification mode radio options (`name="bookingMode"`) inside a semantic `<fieldset>` with `<legend>`, add `role="status" aria-live="polite"` to `.waitlist-success-banner`, associate helper descriptions for `#portDate`, `#skagwayDate`, and `#phone` via `aria-describedby`, and add `autoComplete` (`name`, `email`, `tel`) with zero horizontal overflow at `320px` and `375px`. Keep `npm run typecheck` and `npm run build` passing.',
+    followUps: [
+      {
+        key: 'jfd-header-aria-current-and-operator-table-caption',
+        title: 'Juneau Flight Deck: active route aria-current in SiteHeader and accessible operator comparison table caption',
+        instructions: 'In `apps/juneauflightdeck/app/components/SiteHeader.tsx` and `apps/juneauflightdeck/app/components/HelicopterDispatchBoard.tsx`, improve navigation semantics and table accessibility: (1) In `SiteHeader.tsx`, ensure the primary `<nav>` exposes `aria-label="Primary navigation"` and active route links include `aria-current="page"`; (2) In `HelicopterDispatchBoard.tsx`, add an accessible `<caption>` (or `aria-label`) to `.jfd-table` and ensure operator comparison rows and buttons wrap cleanly with zero horizontal overflow at `320px` and `375px` without altering any operator prices, FareHarbor/Viator URLs, or booking role descriptions. Keep `npm run typecheck` and `npm run build` passing.'
+      },
+      {
+        key: 'jfd-viator-tour-filter-live-status-and-focus-styles',
+        title: 'Juneau Flight Deck: accessible live filter status and button semantics in ViatorFeaturedTours',
+        instructions: 'In `apps/juneauflightdeck/app/components/ViatorFeaturedTours.tsx`, improve assistive feedback and keyboard usability when cruise passengers filter Juneau and Skagway helicopter tours: (1) Ensure all filter and sort controls use explicit `type="button"` and `aria-pressed` (where toggleable), and announce the updated visible tour count via a `role="status"` + `aria-live="polite"` element; (2) Preserve all existing Viator/FareHarbor links, pricing disclosures, and clean `320px`/`375px` mobile layout. Keep `npm run typecheck` and `npm run build` passing.'
+      }
+    ]
   },
   oddjobs: {
     key: 'oddjobs-header-aria-current-mobile-cards',
     title: 'Eau Claire Odd Jobs: 60-second photo-text estimate guide, seasonal job scope matcher, and active navigation semantics',
-    instructions: 'In `src/app/page.tsx`, `src/components/Header.tsx`, and `src/components/Footer.tsx`, make requesting a local quote easier and provide practical Chippewa Valley homeowner guidance competitors omit: (1) In `src/app/page.tsx`, add a visitor-visible "Get a Fast Photo-Text Estimate in 3 Steps" & "Quick Job Fit Guide" section explaining the three details to text for the fastest response (1–2 photos of the yard/items, neighborhood in Eau Claire/Altoona/Chippewa Falls, and preferred timeframe) and clearly listing common jobs handled vs. specialized licensed trades not handled, without inventing prices or guarantees; (2) In `src/components/Header.tsx` and `src/components/Footer.tsx`, ensure primary navigation links expose `aria-current="page"` on the active route inside `<nav aria-label="Primary navigation">`, mobile controls use explicit `type="button"` with at least `44px` touch target height, and `320px`/`375px` viewports have zero horizontal overflow. Keep `npm run build` passing.'
+    instructions: 'In `src/app/page.tsx`, `src/components/Header.tsx`, and `src/components/Footer.tsx`, make requesting a local quote easier and provide practical Chippewa Valley homeowner guidance competitors omit: (1) In `src/app/page.tsx`, add a visitor-visible "Get a Fast Photo-Text Estimate in 3 Steps" & "Quick Job Fit Guide" section explaining the three details to text for the fastest response (1–2 photos of the yard/items, neighborhood in Eau Claire/Altoona/Chippewa Falls, and preferred timeframe) and clearly listing common jobs handled vs. specialized licensed trades not handled, without inventing prices or guarantees; (2) In `src/components/Header.tsx` and `src/components/Footer.tsx`, ensure primary navigation links expose `aria-current="page"` on the active route inside `<nav aria-label="Primary navigation">`, mobile controls use explicit `type="button"` with at least `44px` touch target height, and `320px`/`375px` viewports have zero horizontal overflow. Keep `npm run build` passing.',
+    followUps: [
+      {
+        key: 'oddjobs-service-area-navigation-and-contact-form-a11y',
+        title: 'Eau Claire Odd Jobs: accessible contact request form labels, live submission status, and mobile tap ergonomics',
+        instructions: 'In `src/app/page.tsx`, `src/components/Header.tsx`, and `src/components/Footer.tsx` (and any contact/estimate form component under `src/`), improve form accessibility and mobile usability: (1) Ensure all interactive form inputs have explicit `<label>` associations, appropriate `autoComplete` attributes (`name`, `tel`, `email`), and `role="status"` + `aria-live="polite"` on copy/submission feedback banners; (2) Ensure footer and header navigation landmarks use distinct `aria-label` values (`Primary navigation`, `Footer navigation`) and maintain zero horizontal overflow at `320px` and `375px` without inventing prices or service guarantees. Keep `npm run build` passing.'
+      },
+      {
+        key: 'oddjobs-faq-accordion-semantics-and-focus-visibility',
+        title: 'Eau Claire Odd Jobs: semantic FAQ disclosures and high-visibility keyboard focus indicators',
+        instructions: 'In `src/app/page.tsx` and `src/app/globals.css`, improve keyboard navigation and homeowner FAQ scannability: (1) Ensure FAQ items and job-category cards expose clear heading hierarchy and keyboard-accessible focus rings (`:focus-visible`); (2) Ensure all CTA buttons and phone/text links maintain comfortable `44px` minimum tap targets and zero horizontal overflow at `320px` and `375px` without modifying existing business facts or phone numbers. Keep `npm run build` passing.'
+      }
+    ]
   },
   dcc: {
     key: 'dcc-hub-nav-search-semantics',
     title: 'Destination Command Center: truthful snapshot freshness badges, accessible coordinate search status, and go/backup decision clarity',
-    instructions: 'In `app/location/[lat]/[lng]/page.tsx` and `app/components/dcc/LocationFirstHomeFast.tsx`, improve live condition truthfulness, visitor decision clarity, and search accessibility: (1) In `app/location/[lat]/[lng]/page.tsx`, update `ServerLocationSnapshot` so it compares `freshUntil` against current time before rendering `Verified Fresh` (showing an honest `Snapshot cached · See live feed below` status when `freshUntil` has passed) so visitors never see contradictory stale vs. live weather/alert badges; (2) In `app/components/dcc/LocationFirstHomeFast.tsx`, add `role="search"` and `aria-label="Coordinate and venue search"` to the location search `<form>`, announce multi-location disambiguation results and status/error messages via an `aria-live="polite"` container, and fix the heading hierarchy in the "Live Production Demonstrations" section from `<h4>` to `<h3>` under the `<h2>` section heading while preserving clean `320px` and `375px` mobile layout. Keep `npm run typecheck`, `npm run test:dcc`, and `npm run build` passing.'
+    instructions: 'In `app/location/[lat]/[lng]/page.tsx` and `app/components/dcc/LocationFirstHomeFast.tsx`, improve live condition truthfulness, visitor decision clarity, and search accessibility: (1) In `app/location/[lat]/[lng]/page.tsx`, update `ServerLocationSnapshot` so it compares `freshUntil` against current time before rendering `Verified Fresh` (showing an honest `Snapshot cached · See live feed below` status when `freshUntil` has passed) so visitors never see contradictory stale vs. live weather/alert badges; (2) In `app/components/dcc/LocationFirstHomeFast.tsx`, add `role="search"` and `aria-label="Coordinate and venue search"` to the location search `<form>`, announce multi-location disambiguation results and status/error messages via an `aria-live="polite"` container, and fix the heading hierarchy in the "Live Production Demonstrations" section from `<h4>` to `<h3>` under the `<h2>` section heading while preserving clean `320px` and `375px` mobile layout. Keep `npm run typecheck`, `npm run test:dcc`, and `npm run build` passing.',
+    followUps: [
+      {
+        key: 'dcc-preset-corridor-aria-current-and-keyboard-shortcuts',
+        title: 'Destination Command Center: accessible preset corridor selector states and satellite handoff link clarity',
+        instructions: 'In `app/components/dcc/LocationFirstHomeFast.tsx` and `app/page.tsx`, improve keyboard accessibility and corridor navigation clarity on Destination Command Center: (1) Ensure preset destination/corridor quick-select buttons expose explicit `type="button"` and `aria-pressed` (when active) inside a labeled control group; (2) Ensure satellite handoff links and live condition cards maintain semantic heading order, visible `:focus-visible` states, and zero horizontal overflow at `320px` and `375px` without altering coordinate data or satellite truth linkage. Keep `npm run typecheck`, `npm run test:dcc`, and `npm run build` passing.'
+      },
+      {
+        key: 'dcc-location-snapshot-landmarks-and-mobile-grid-wrap',
+        title: 'Destination Command Center: labeled region landmarks and 320px mobile overflow guards on location snapshot pages',
+        instructions: 'In `app/location/[lat]/[lng]/page.tsx` and `app/components/dcc/LocationFirstHomeFast.tsx`, improve screen-reader landmark navigation and narrow-viewport resilience: (1) Ensure the server snapshot summary and live condition sections expose descriptive `aria-label` or `aria-labelledby` region landmarks; (2) Ensure long coordinate strings, telemetry badges, and action buttons wrap cleanly at `320px` and `375px` with zero horizontal overflow. Keep `npm run typecheck`, `npm run test:dcc`, and `npm run build` passing.'
+      }
+    ]
   },
   socializor: {
     key: 'socializor-bottom-nav-aria-current-empty-reset',
     title: 'Socializor: truthful zero-match search recovery without false empty-radius claims and accessible bottom navigation',
-    instructions: 'In `src/components/NearbyGrid.tsx` and `src/components/BottomNavigation.tsx`, fix misleading zero-match search copy and improve navigation usability: (1) In `src/components/NearbyGrid.tsx`, when zero profiles match and `filters.searchQuery.trim()` or `filters.onlyDirectChat` is active, render a truthful filtered empty state (`No matches for this search` / `No direct-chat profiles match right now`) with a prominent one-tap `Clear Search Filter` button (`type="button"`) that clears the search/direct-chat filter and restores nearby cards without falsely claiming `No one nearby right now` or forcing a 30-mile radius expansion, while keeping the genuine unfiltered location-empty state distinct; (2) In `src/components/BottomNavigation.tsx`, add `aria-label="Primary navigation"` on the bottom `<nav>`, and `type="button"` + `aria-current={currentTab === ... ? "page" : undefined}` on each bottom tab button while keeping `320px` and `375px` mobile layout clean and `npm run build` passing.'
+    instructions: 'In `src/components/NearbyGrid.tsx` and `src/components/BottomNavigation.tsx`, fix misleading zero-match search copy and improve navigation usability: (1) In `src/components/NearbyGrid.tsx`, when zero profiles match and `filters.searchQuery.trim()` or `filters.onlyDirectChat` is active, render a truthful filtered empty state (`No matches for this search` / `No direct-chat profiles match right now`) with a prominent one-tap `Clear Search Filter` button (`type="button"`) that clears the search/direct-chat filter and restores nearby cards without falsely claiming `No one nearby right now` or forcing a 30-mile radius expansion, while keeping the genuine unfiltered location-empty state distinct; (2) In `src/components/BottomNavigation.tsx`, add `aria-label="Primary navigation"` on the bottom `<nav>`, and `type="button"` + `aria-current={currentTab === ... ? "page" : undefined}` on each bottom tab button while keeping `320px` and `375px` mobile layout clean and `npm run build` passing.',
+    followUps: [
+      {
+        key: 'socializor-filter-bar-aria-live-and-radius-button-semantics',
+        title: 'Socializor: accessible filter bar status announcements and explicit button semantics on NearbyGrid controls',
+        instructions: 'In `src/components/NearbyGrid.tsx` (and any filter bar component under `src/components/`), improve assistive feedback and keyboard interaction when filtering nearby profiles: (1) Ensure all filter toggle buttons, radius selectors, and refresh controls include explicit `type="button"` and `aria-pressed` (for toggle controls); (2) Announce visible profile count and freshness state changes via a `role="status"` + `aria-live="polite"` region while preserving clean `320px` and `375px` mobile layout and keeping `npm run build` passing.'
+      },
+      {
+        key: 'socializor-profile-card-keyboard-focus-and-dialog-a11y',
+        title: 'Socializor: keyboard-accessible profile card actions and modal dialog semantics',
+        instructions: 'In `src/components/NearbyGrid.tsx` and `src/components/BottomNavigation.tsx` (and profile modal/card components under `src/components/`), improve keyboard navigation and mobile ergonomics: (1) Ensure interactive profile card actions and modal close buttons expose explicit `type="button"`, accessible labels, and visible `:focus-visible` outlines; (2) Ensure `320px` and `375px` viewports have zero horizontal overflow and keep `npm run build` passing.'
+      }
+    ]
   }
 };
 
@@ -427,6 +526,31 @@ export function selectNextRotationSite(config, state = {}, rotation = {}) {
         title: spec.title,
         mode,
         instructions: spec.instructions
+      };
+      return {
+        site: candidate,
+        ...taskSpec,
+        task: taskSpec
+      };
+    }
+  }
+  for (let cycle = maxPass; cycle < maxPass + 100; cycle++) {
+    for (let offset = 1; offset <= order.length; offset++) {
+      const candidate = order[(lastIdx + offset + order.length) % order.length];
+      if (busySites.has(candidate)) continue;
+      const specs = getSiteDiscoverySpecs(config, candidate);
+      if (!specs.length) continue;
+      const baseSpec = specs[cycle % specs.length];
+      const key = `${candidate}-cycle-${cycle + 1}`;
+      const mode = baseSpec.mode ?? 'code';
+      const instructions = `${baseSpec.instructions}\n\nCycle ${cycle + 1} progressive refinement: inspect the current branch state of the target files above and deliver the next unaddressed accessibility, keyboard focus, aria-live status, or 320px/375px mobile layout polish within ${config.sites?.[candidate]?.allowedPaths?.join(', ') || 'allowed paths'} while keeping all existing checks passing.`;
+      const hash = computeTaskHash({ site: candidate, mode, instructions });
+      if (dispatchedKeys.has(key) || existingTaskHashes.has(hash)) continue;
+      const taskSpec = {
+        key,
+        title: `${baseSpec.title} (Cycle ${cycle + 1})`,
+        mode,
+        instructions
       };
       return {
         site: candidate,
@@ -679,11 +803,13 @@ export class Bridge {
     await this.comment(issue, `${site.name}: changes pushed for review. ${entry.url}\nIndependent checks passed. Waiting for Codex; this is not a production completion claim.`);
   }
   async reconcileReadyTask(issueNumber, site, entry) {
-    if (entry?.status !== 'ready' || !entry?.pr || !site?.repo) return false;
+    if (!['ready', 'blocked', 'review'].includes(entry?.status) || !entry?.pr || !site?.repo) return false;
     try {
       const pr = await this.api(`repos/${site.repo}/pulls/${entry.pr}`);
-      if (pr && (pr.merged || pr.state !== 'open')) {
+      if (pr && (pr.merged || (entry.status === 'ready' && pr.state !== 'open'))) {
         entry.status = 'done';
+        entry.stalled = false;
+        entry.blocker = null;
         if (pr.merge_commit_sha) entry.mergedSha = pr.merge_commit_sha;
         this.save();
         try {
@@ -975,17 +1101,37 @@ export class Bridge {
       const task = parseTask(issue, this.config);
       if (task) parsed.push({ issue, task });
     }
-    // Reconcile any ready tasks whose PRs have already been merged or closed before checking if the queue is empty.
+    // Reconcile any ready/blocked tasks whose PRs have already been merged or whose GitHub issues were closed externally before checking if the queue is empty.
     const readyIntervalMs = Math.max(60000, Number(this.config.idlePollSeconds ?? this.config.pollSeconds ?? 300) * 1000);
+    const openIssueNumbers = new Set(issues.map(i => Number(i.number)));
     for (const { issue, task } of parsed) {
       const entry = this.state[issue.number];
-      if (entry?.status === 'ready') {
+      if (entry?.status === 'ready' || (entry?.status === 'blocked' && entry?.pr)) {
         const lastChecked = this.lastReadyCheckByIssue.get(issue.number) ?? 0;
         if (Date.now() - lastChecked >= readyIntervalMs) {
           this.lastReadyCheckByIssue.set(issue.number, Date.now());
           await this.reconcileReadyTask(issue.number, this.config.sites[task.site], entry);
         }
       }
+    }
+    for (const [issueKey, entry] of Object.entries(this.state ?? {})) {
+      const issueNumber = Number(issueKey);
+      if (!Number.isInteger(issueNumber) || !entry || typeof entry !== 'object' || entry.status === 'done' || openIssueNumbers.has(issueNumber)) continue;
+      const lastChecked = this.lastReadyCheckByIssue.get(issueNumber) ?? 0;
+      if (Date.now() - lastChecked < readyIntervalMs) continue;
+      this.lastReadyCheckByIssue.set(issueNumber, Date.now());
+      if (entry.pr && this.config.sites?.[entry.site]) {
+        if (await this.reconcileReadyTask(issueNumber, this.config.sites[entry.site], entry)) continue;
+      }
+      try {
+        const remoteIssue = await this.api(`repos/${this.config.queueRepo}/issues/${issueNumber}`);
+        if (remoteIssue?.state === 'closed') {
+          entry.status = 'done';
+          entry.stalled = false;
+          entry.blocker = null;
+          this.save();
+        }
+      } catch {}
     }
     try {
       const discovered = await this.discoverNextTaskIfEmpty(parsed);

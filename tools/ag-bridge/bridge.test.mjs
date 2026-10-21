@@ -649,3 +649,87 @@ test('shouldSkipInstallCheck and writeDepsStamp skip redundant npm ci / npm inst
   fs.writeFileSync(path.join(dir, 'package-lock.json'), '{"lockfileVersion":3,"updated":true}');
   assert.equal(shouldSkipInstallCheck('npm', ['ci', '--ignore-scripts'], dir, config), false);
 });
+test('selectNextRotationSite continues across all 10 sites after initial 13 keys and falls back to cycle tasks when static passes are exhausted', () => {
+  const initial13Keys = [
+    'cruisepromenade-mobile-nav-accessibility',
+    'wta-port-nav-aria-current-filter-live',
+    'dells-category-filter-aria-mobile',
+    'brinkberry-empty-state-filter-summary',
+    'swamp-comparison-table-caption-mobile',
+    'wno-category-jump-nav-table-a11y',
+    'jfd-faq-disclosure-waitlist-form-a11y',
+    'oddjobs-header-aria-current-mobile-cards',
+    'dcc-hub-nav-search-semantics',
+    'socializor-bottom-nav-aria-current-empty-reset',
+    'cruisepromenade-hero-sample-context-clarity',
+    'wta-three-port-signature-comparison-guide',
+    'dells-boat-vs-duck-decision-matrix'
+  ];
+  const nextAfterDells = selectNextRotationSite(config, {}, { lastSite: 'dells', dispatchedKeys: initial13Keys });
+  assert.ok(nextAfterDells, 'Expected next site task after initial 13 keys');
+  assert.equal(nextAfterDells.site, 'brinkberry');
+  assert.equal(nextAfterDells.key, 'brinkberry-detail-modal-keyboard-escape-and-active-filter-summary');
+
+  const allStaticKeys = [];
+  for (const spec of Object.values(DEFAULT_SITE_DISCOVERY_BACKLOG)) {
+    allStaticKeys.push(spec.key);
+    for (const f of (spec.followUps ?? [])) allStaticKeys.push(f.key);
+  }
+  const cycleCandidate = selectNextRotationSite(config, {}, { lastSite: 'socializor', dispatchedKeys: allStaticKeys });
+  assert.ok(cycleCandidate, 'Expected cycle fallback when all static backlog keys are dispatched');
+  assert.equal(cycleCandidate.site, 'cruisepromenade');
+  assert.equal(cycleCandidate.key, 'cruisepromenade-cycle-4');
+});
+test('tick reconciles externally closed blocked or ready issues to done before running auto-discovery', async t => {
+  const h = harness(t);
+  h.b.config = { ...config, autoDiscoverWhenEmpty: true, autoDiscoverIntervalMinutes: 360 };
+  h.b.state[169] = {
+    status: 'blocked',
+    site: 'brinkberry',
+    mode: 'code',
+    stalled: true,
+    blocker: { category: 'unclassified', retryable: false }
+  };
+  fs.writeFileSync(h.b.stateFile, JSON.stringify(h.b.state));
+  fs.writeFileSync(h.b.rotationFile, JSON.stringify({
+    lastSite: 'dells',
+    lastCreatedAt: Date.now() - 7 * 3600 * 1000,
+    lastIssue: 181,
+    dispatchedKeys: [
+      'cruisepromenade-mobile-nav-accessibility',
+      'wta-port-nav-aria-current-filter-live',
+      'dells-category-filter-aria-mobile',
+      'brinkberry-empty-state-filter-summary',
+      'swamp-comparison-table-caption-mobile',
+      'wno-category-jump-nav-table-a11y',
+      'jfd-faq-disclosure-waitlist-form-a11y',
+      'oddjobs-header-aria-current-mobile-cards',
+      'dcc-hub-nav-search-semantics',
+      'socializor-bottom-nav-aria-current-empty-reset',
+      'cruisepromenade-hero-sample-context-clarity',
+      'wta-three-port-signature-comparison-guide',
+      'dells-boat-vs-duck-decision-matrix'
+    ]
+  }));
+  let createdNext = null;
+  const origApi = h.b.api.bind(h.b);
+  h.b.api = async (endpoint, method = 'GET', data) => {
+    if (endpoint === `repos/${config.queueRepo}/issues/169` && method === 'GET') {
+      return { number: 169, state: 'closed' };
+    }
+    if (endpoint === `repos/${config.queueRepo}/issues` && method === 'POST') {
+      createdNext = data;
+      return { number: 191, title: data.title, body: data.body, user: { login: config.trustedAuthors[0] } };
+    }
+    return origApi(endpoint, method, data);
+  };
+  h.b.all = async (endpoint) => {
+    if (endpoint.includes('/issues?state=open')) return [];
+    return [];
+  };
+  await h.b.tick();
+  assert.equal(h.b.state[169].status, 'done');
+  assert.equal(h.b.state[169].stalled, false);
+  assert.ok(createdNext, 'Expected brinkberry follow-up task to be discovered once closed issue 169 is reconciled');
+  assert.match(createdNext.title, /^Brinkberry:/);
+});
