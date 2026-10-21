@@ -290,7 +290,7 @@ function createInMemoryTestDb(): DccDb {
         const cutoffMs = params[0] ? new Date(params[0]).getTime() : Infinity;
         const removed: Record<string, any>[] = [];
         for (let i = sessions.length - 1; i >= 0; i--) {
-          if (new Date(sessions[i].expires_at).getTime() < cutoffMs) {
+          if (new Date(sessions[i].expires_at).getTime() <= cutoffMs) {
             removed.push(sessions[i]);
             sessions.splice(i, 1);
           }
@@ -356,18 +356,36 @@ function createInMemoryTestDb(): DccDb {
           }
           return formatResult(matched, CONTEXT_COLS, options);
         }
-        // Expiration cleanup update: SET status=$1, updated_at=$2 WHERE status=$3 AND expires_at < $4 RETURNING context_id
-        const [nextStatus, updatedAt, curStatus, cutoffParam] = params;
+        // Expiration cleanup update: SET status=$1 WHERE status=$2 AND expires_at <= $3 RETURNING context_id
+        const nextStatus = params[0];
+        const curStatus = params[params.length - 2];
+        const cutoffParam = params[params.length - 1];
         const cutoffMs = new Date(cutoffParam).getTime();
         const updated: Record<string, any>[] = [];
         for (const c of contexts) {
-          if (c.status === curStatus && new Date(c.expires_at).getTime() < cutoffMs) {
+          if (c.status === curStatus && new Date(c.expires_at).getTime() <= cutoffMs) {
             c.status = nextStatus;
-            c.updated_at = updatedAt;
             updated.push({ context_id: c.context_id });
           }
         }
         return formatResult(updated, ["context_id"], options);
+      }
+
+      if (qLower.startsWith("delete from")) {
+        // Purge cleanup delete: DELETE FROM dcc_contexts WHERE status=$1 AND expires_at <= $2 RETURNING context_id
+        const [reqStatus, cutoffParam] = params;
+        const cutoffMs = cutoffParam ? new Date(cutoffParam).getTime() : Infinity;
+        const purged: Record<string, any>[] = [];
+        for (let i = contexts.length - 1; i >= 0; i--) {
+          if (
+            contexts[i].status === reqStatus &&
+            new Date(contexts[i].expires_at).getTime() <= cutoffMs
+          ) {
+            purged.push({ context_id: contexts[i].context_id });
+            contexts.splice(i, 1);
+          }
+        }
+        return formatResult(purged, ["context_id"], options);
       }
 
       if (qLower.startsWith("select")) {
@@ -496,7 +514,7 @@ export function getDb(): DccDb | null {
 
   const connectionString = resolveDatabaseUrl();
   if (!connectionString) {
-    if (process.env.NODE_TEST_CONTEXT) {
+    if (process.env.DCC_ISOLATED_TEST_DB === "1") {
       cachedDb = createInMemoryTestDb();
       return cachedDb;
     }
@@ -510,5 +528,5 @@ export function getDb(): DccDb | null {
 }
 
 export function hasDb() {
-  return Boolean(resolveDatabaseUrl() || process.env.NODE_TEST_CONTEXT);
+  return Boolean(resolveDatabaseUrl() || process.env.DCC_ISOLATED_TEST_DB === "1");
 }
