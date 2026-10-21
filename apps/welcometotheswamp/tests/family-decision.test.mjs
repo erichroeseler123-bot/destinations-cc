@@ -26,6 +26,7 @@ r=matchFamily({...base,childAges:[],ride:'either',pickup:'either',shortestHeight
 const fact=FAMILY_TOURS[0].facts.minAge;assert.equal(effectiveStatus(fact,'2026-11-21'),'stale');assert.equal(effectiveStatus(fact,'2026-12-01'),'stale');assert.equal(effectiveStatus(fact,'2026-10-20'),'unclear');
 for(const status of ['unknown','unclear','conflicting','stale'])assert.equal(trustedValue({...FAMILY_TOURS[0],facts:{minAge:{...fact,status,value:0}}},'minAge',today),null);
 assert.equal(trustedValue(FAMILY_TOURS[0],'minHeight',today),null);
+assert.throws(()=>validateEditorialData([{...FAMILY_TOURS[0],facts:{minAge:{...fact,value:-1}}}]));
 assert.throws(()=>validateEditorialData([{...FAMILY_TOURS[0],facts:{minAge:{...fact,sourceUrl:null}}}]));assert.throws(()=>validateEditorialData([{...FAMILY_TOURS[0],facts:{minAge:{...fact,status:'unknown'}}}]));assert.throws(()=>validateEditorialData([{...FAMILY_TOURS[0],facts:{minAge:{...fact,checkedOn:'2026-02-30'}}}]));
 r=matchFamily({...base,travelDate:'2027-06-15'},'2027-06-01');assert.equal(r.shortlist.length,0);
 console.log('Family profiles, age/height, pickup, boarding, timing, cap, invalid inputs, unknown/stale evidence and editorial validation passed.');

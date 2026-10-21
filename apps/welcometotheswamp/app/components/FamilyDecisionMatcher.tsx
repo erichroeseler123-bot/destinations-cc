@@ -16,7 +16,7 @@ export default function FamilyDecisionMatcher({initialAsOf}:{initialAsOf:string}
   function submit(e:React.FormEvent<HTMLFormElement>){e.preventDefault();setSubmitted({...answers,childAges:[...answers.childAges]});requestAnimationFrame(()=>resultRef.current?.focus());}
   const summary=`${answers.adults} traveler(s) aged 18+${answers.childAges.length?`; younger travelers aged ${answers.childAges.join(", ")}`:""}; ${answers.travelDate}; ${answers.pickup==="either"?"flexible city meeting point":answers.pickup==="hotel"?"hotel pickup needed":"central meeting point preferred"}${answers.earliest?`; available ${answers.earliest}–${answers.returnBy} local time`:""}.`;
   return <section className={styles.panel} id="family-matcher" aria-labelledby="matcher-title">
-    <p className={styles.eyebrow}>Refine the comparison</p><h2 id="matcher-title">Find your strongest potential options</h2><p>Four questions narrow the six products below. No account, contact details, or live inventory check. Your answers are not saved or sent to an operator.</p>
+    <p className={styles.eyebrow}>Refine the comparison</p><h2 id="matcher-title">Find your strongest potential options</h2><p>Four questions narrow the six products in this guide. No account, contact details, or live inventory check. Your answers are not saved or sent to an operator.</p>
     <form onSubmit={submit} aria-label="Family swamp tour matcher">
       <fieldset><legend>1. Who is going?</legend><div className={styles.fields}>
         <label>Travelers aged 18+<input required type="number" min={1} max={50} step={1} value={Number.isFinite(answers.adults)?answers.adults:""} onChange={e=>update("adults",e.target.value===""?NaN:Number(e.target.value))}/></label>

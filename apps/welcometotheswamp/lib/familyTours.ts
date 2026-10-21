@@ -102,10 +102,11 @@ export function validateEditorialData(tours: FamilyTour[]) {
   for (const t of tours) {
     if (ids.has(t.id)) throw new Error("Duplicate product ID"); ids.add(t.id);
     if (!t.name || !t.bookingInstruction || !t.officialUrl.startsWith("https://") || !t.bookingUrl.startsWith("https://")) throw new Error("Missing product identity or destination");
-    for (const f of Object.values(t.facts)) {
+    for (const [key, f] of Object.entries(t.facts)) {
       if (!["verified","unclear","conflicting","stale","unknown"].includes(f.status) || !f.text || !f.appliesTo) throw new Error("Facts require a valid status and product scope");
       if (f.status === "verified" && (f.value == null || (typeof f.value === "number" && !Number.isFinite(f.value)) || !f.sourceUrl?.startsWith("https://") || !f.checkedOn || !/^\d{4}-\d{2}-\d{2}$/.test(f.checkedOn) || new Date(f.checkedOn + "T12:00:00Z").toISOString().slice(0,10) !== f.checkedOn)) throw new Error("Verified facts require a value, source and real review date");
       if (f.status === "unknown" && f.value !== null) throw new Error("Unknown facts cannot assert a value");
+      if (f.status === "verified" && ["minAge","minHeight","capacity","onWater","totalMinutes"].includes(key) && (typeof f.value !== "number" || !Number.isInteger(f.value) || f.value < (key === "minAge" ? 0 : 1))) throw new Error("Numeric decision rules require nonnegative ages or positive whole units");
     }
   }
 }
