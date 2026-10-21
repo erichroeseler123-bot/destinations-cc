@@ -1,0 +1,841 @@
+{
+  "title": "New Orleans swamp tour published rules: six-product snapshot",
+  "compilationSnapshotDate": "2026-10-21",
+  "compiledBy": "Welcome to the Swamp",
+  "citationUrl": "https://welcometotheswamp.com/with-kids#published-rules",
+  "methodology": "Original compilation of operator-published product information. Six selected products from five operator brands; not a market census, firsthand tour research, an accessibility assessment or a live inventory check. Each fact retains its own source, product scope, verification status and checkedOn date. Missing information means not verified in this compilation, not that the operator has no rule.",
+  "limitations": [
+    "Published rates are reference amounts, not final quotes.",
+    "Transport coverage, participation requirements, seats, vessel assignment and return timing need operator confirmation.",
+    "Counts describe the captured snapshot, not future policies or the whole market.",
+    "Updating this compilation date must not refresh individual fact review dates."
+  ],
+  "counts": {
+    "products": 6,
+    "operatorBrands": 5,
+    "allAges": 1,
+    "minimumAge": 2,
+    "minimumHeight": 2,
+    "noVerifiedAgeOrHeight": 1,
+    "hotelTransportOptions": 5,
+    "centralTransport": 1
+  },
+  "products": [
+    {
+      "id": "ce-original",
+      "operator": "Cajun Encounters",
+      "name": "Original Swamp Tour",
+      "officialUrl": "https://www.cajunencounters.com/tours/swamp-tour-new-orleans",
+      "bookingUrl": "https://book.singenuity.com/461/activity/details/2141/rates",
+      "bookingInstruction": "Select Original Swamp Tour and add transportation if needed.",
+      "facts": {
+        "minAge": {
+          "category": "restrictions",
+          "value": 0,
+          "text": "All ages welcome on the Original tour.",
+          "sourceUrl": "https://www.cajunencounters.com/tours/swamp-tour-new-orleans",
+          "appliesTo": "Original public tour",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "minHeight": {
+          "category": "restrictions",
+          "value": null,
+          "text": "No verified height rule in this record. This does not establish that none applies.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "boarding": {
+          "category": "restrictions",
+          "value": null,
+          "text": "Boarding assistance and mobility requirements need confirmation.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "weight": {
+          "category": "restrictions",
+          "value": null,
+          "text": "Weight limits or related charges have not been verified.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "bathroom": {
+          "category": "experience",
+          "value": null,
+          "text": "Onboard bathroom access has not been verified.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "capacity": {
+          "category": "experience",
+          "value": 22,
+          "text": "Up to 22 guests per boat.",
+          "sourceUrl": "https://www.cajunencounters.com/tours/swamp-tour-new-orleans",
+          "appliesTo": "Original tour",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "shade": {
+          "category": "experience",
+          "value": true,
+          "text": "Covered boat.",
+          "sourceUrl": "https://www.cajunencounters.com/tours/swamp-tour-new-orleans",
+          "appliesTo": "Original tour",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "pickupWindow": {
+          "category": "pickup",
+          "value": null,
+          "text": "Exact pickup window and return location need confirmation for your booking.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "totalMinutes": {
+          "category": "timing",
+          "value": 300,
+          "text": "Allow approximately 4–5 hours with transportation.",
+          "sourceUrl": "https://www.cajunencounters.com/tours/swamp-tour-new-orleans",
+          "appliesTo": "Original with transport",
+          "qualification": "An estimate, not a guaranteed return time.",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "cancellation": {
+          "category": "terms",
+          "value": null,
+          "text": "Current cancellation and weather terms need confirmation in the selected booking channel.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "ride": {
+          "category": "experience",
+          "value": "calm",
+          "text": "Covered flat-bottom boat; wildlife-focused ride.",
+          "sourceUrl": "https://www.cajunencounters.com/tours/swamp-tour-new-orleans",
+          "appliesTo": "Original tour",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "pickup": {
+          "category": "pickup",
+          "value": "hotel_addon",
+          "text": "Paid transport option from select French Quarter hotels and downtown visitor centers.",
+          "sourceUrl": "https://www.cajunencounters.com/tours/swamp-tour-new-orleans",
+          "appliesTo": "Original with transport",
+          "qualification": "Your exact pickup point must be confirmed.",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "onWater": {
+          "category": "timing",
+          "value": 120,
+          "text": "About 2 hours on the water.",
+          "sourceUrl": "https://www.cajunencounters.com/tours/swamp-tour-new-orleans",
+          "appliesTo": "Original tour",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "price": {
+          "category": "pricing",
+          "value": "from",
+          "text": "Published from $39.99 per person; transportation costs extra. Child rates and final total need confirmation.",
+          "sourceUrl": "https://www.cajunencounters.com/tours/swamp-tour-new-orleans",
+          "appliesTo": "Original tour",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        }
+      }
+    },
+    {
+      "id": "ce-vip",
+      "operator": "Cajun Encounters",
+      "name": "VIP Small-Boat Swamp Tour",
+      "officialUrl": "https://www.cajunencounters.com/tours/vip-swamp-tour",
+      "bookingUrl": "https://book.singenuity.com/461/activity/details/3154/rates",
+      "bookingInstruction": "Select the public VIP tour. Ask separately about a private charter.",
+      "facts": {
+        "minAge": {
+          "category": "restrictions",
+          "value": 13,
+          "text": "Public VIP tour: ages 13+. Private bookings have different rules.",
+          "sourceUrl": "https://www.cajunencounters.com/tours/vip-swamp-tour",
+          "appliesTo": "Public VIP departure only",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "minHeight": {
+          "category": "restrictions",
+          "value": null,
+          "text": "No verified height rule in this record. This does not establish that none applies.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "boarding": {
+          "category": "restrictions",
+          "value": null,
+          "text": "Boarding assistance and mobility requirements need confirmation.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "weight": {
+          "category": "restrictions",
+          "value": null,
+          "text": "Weight limits or related charges have not been verified.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "bathroom": {
+          "category": "experience",
+          "value": null,
+          "text": "Onboard bathroom access has not been verified.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "capacity": {
+          "category": "experience",
+          "value": 12,
+          "text": "Operator lists 10–12 guests; confirm the assigned boat for a large party.",
+          "sourceUrl": "https://www.cajunencounters.com/tours/vip-swamp-tour",
+          "appliesTo": "Public VIP tour",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "shade": {
+          "category": "experience",
+          "value": null,
+          "text": "Shade and rain protection need confirmation.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "pickupWindow": {
+          "category": "pickup",
+          "value": null,
+          "text": "Exact pickup window and return location need confirmation for your booking.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "totalMinutes": {
+          "category": "timing",
+          "value": 300,
+          "text": "Allow approximately 4–5 hours with transportation.",
+          "sourceUrl": "https://www.cajunencounters.com/tours/swamp-tour-new-orleans",
+          "appliesTo": "VIP with transport",
+          "qualification": "An estimate, not a guaranteed return time.",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "cancellation": {
+          "category": "terms",
+          "value": null,
+          "text": "Current cancellation and weather terms need confirmation in the selected booking channel.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "ride": {
+          "category": "experience",
+          "value": "calm",
+          "text": "Small flat-bottom boat; smaller-group wildlife experience.",
+          "sourceUrl": "https://www.cajunencounters.com/tours/vip-swamp-tour",
+          "appliesTo": "Public VIP tour",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "pickup": {
+          "category": "pickup",
+          "value": "hotel_addon",
+          "text": "Transportation add-on from select hotels and downtown visitor centers.",
+          "sourceUrl": "https://www.cajunencounters.com/tours/vip-swamp-tour",
+          "appliesTo": "VIP with transport",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "onWater": {
+          "category": "timing",
+          "value": 120,
+          "text": "About 2 hours on the water.",
+          "sourceUrl": "https://www.cajunencounters.com/tours/swamp-tour-new-orleans",
+          "appliesTo": "VIP tour",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "price": {
+          "category": "pricing",
+          "value": "from",
+          "text": "Published from $99.99 per person; transportation costs extra.",
+          "sourceUrl": "https://www.cajunencounters.com/tours/vip-swamp-tour",
+          "appliesTo": "Public VIP tour",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        }
+      }
+    },
+    {
+      "id": "aa-pontoon",
+      "operator": "Airboat Adventures",
+      "name": "Pontoon Boat Swamp Tour",
+      "officialUrl": "https://airboatadventures.com/swamp-tours/",
+      "bookingUrl": "https://airboatadventures.com/swamp-tours/",
+      "bookingInstruction": "Choose Book Pontoon Boat, then select hotel pickup if required.",
+      "facts": {
+        "minAge": {
+          "category": "restrictions",
+          "value": null,
+          "text": "Minimum age not independently verified; ask the operator.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "minHeight": {
+          "category": "restrictions",
+          "value": null,
+          "text": "No verified height rule in this record. This does not establish that none applies.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "boarding": {
+          "category": "restrictions",
+          "value": null,
+          "text": "Boarding assistance and mobility requirements need confirmation.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "weight": {
+          "category": "restrictions",
+          "value": null,
+          "text": "Weight limits or related charges have not been verified.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "bathroom": {
+          "category": "experience",
+          "value": null,
+          "text": "Onboard bathroom access has not been verified.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "capacity": {
+          "category": "experience",
+          "value": null,
+          "text": "Exact vessel capacity needs confirmation.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "shade": {
+          "category": "experience",
+          "value": null,
+          "text": "Shade and rain protection need confirmation.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "pickupWindow": {
+          "category": "pickup",
+          "value": "lead",
+          "text": "Pickup begins 75 minutes before the scheduled tour; confirm your meeting instructions.",
+          "sourceUrl": "https://airboatadventures.com/swamp-tours/",
+          "appliesTo": "Hotel transportation",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "totalMinutes": {
+          "category": "timing",
+          "value": null,
+          "text": "Total pickup-to-return time has not been verified.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "cancellation": {
+          "category": "terms",
+          "value": null,
+          "text": "Current cancellation and weather terms need confirmation in the selected booking channel.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "ride": {
+          "category": "experience",
+          "value": "calm",
+          "text": "Leisurely flat-bottom boat tour.",
+          "sourceUrl": "https://airboatadventures.com/swamp-tours/",
+          "appliesTo": "Pontoon tour",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "pickup": {
+          "category": "pickup",
+          "value": "hotel_addon",
+          "text": "Hotel transport must be selected. Residential and Airbnb pickup is excluded.",
+          "sourceUrl": "https://airboatadventures.com/swamp-tours/",
+          "appliesTo": "Pontoon with transport",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "onWater": {
+          "category": "timing",
+          "value": 90,
+          "text": "Published pontoon duration: 1 hour 30 minutes.",
+          "sourceUrl": "https://airboatadventures.com/swamp-tours/",
+          "appliesTo": "Pontoon tour",
+          "qualification": "The page also includes general airboat copy; use the pontoon-specific duration.",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "price": {
+          "category": "pricing",
+          "value": "bands",
+          "text": "Published from $35 ages 13+, $15 ages 5–12, and free ages 0–4. Round-trip transport is listed at $30 per person; confirm infant transport charges.",
+          "sourceUrl": "https://airboatadventures.com/swamp-tours/",
+          "appliesTo": "Pontoon tour",
+          "qualification": "Pricing categories alone do not establish all participation rules.",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        }
+      }
+    },
+    {
+      "id": "ltc-large-pickup",
+      "operator": "Louisiana Tour Company",
+      "name": "Airboat Swamp Tour — Large Boat — Pickup",
+      "officialUrl": "https://louisianaswamp.com/swamp-tours/airboat-swamp-tour/",
+      "bookingUrl": "https://louisianaswamp.com/swamp-tours/airboat-swamp-tour/",
+      "bookingInstruction": "Use the operator’s Book Now link and choose Large Boat — Pickup, not Drive Out.",
+      "facts": {
+        "minAge": {
+          "category": "restrictions",
+          "value": null,
+          "text": "Minimum age not independently verified; ask the operator.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "minHeight": {
+          "category": "restrictions",
+          "value": 48,
+          "text": "Minimum height: 48 inches.",
+          "sourceUrl": "https://louisianaswamp.com/swamp-tours/airboat-swamp-tour/",
+          "appliesTo": "Large airboat",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "boarding": {
+          "category": "restrictions",
+          "value": null,
+          "text": "Boarding assistance and mobility requirements need confirmation.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "weight": {
+          "category": "restrictions",
+          "value": null,
+          "text": "Weight limits or related charges have not been verified.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "bathroom": {
+          "category": "experience",
+          "value": null,
+          "text": "Onboard bathroom access has not been verified.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "capacity": {
+          "category": "experience",
+          "value": 16,
+          "text": "Published large-boat capacity: 16 passengers.",
+          "sourceUrl": "https://louisianaswamp.com/swamp-tours/airboat-swamp-tour/",
+          "appliesTo": "Large airboat",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "shade": {
+          "category": "experience",
+          "value": null,
+          "text": "Shade and rain protection need confirmation.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "pickupWindow": {
+          "category": "pickup",
+          "value": "windows",
+          "text": "Published pickup windows: 8–8:30 AM, 10:20–10:50 AM, 12:30–1 PM, and 3–3:30 PM. Confirm the window for your selected departure.",
+          "sourceUrl": "https://louisianaswamp.com/swamp-tours/airboat-swamp-tour/",
+          "appliesTo": "Pickup variants",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "totalMinutes": {
+          "category": "timing",
+          "value": 240,
+          "text": "Approximately 4 hours including round-trip drive.",
+          "sourceUrl": "https://louisianaswamp.com/swamp-tours/airboat-swamp-tour/",
+          "appliesTo": "Large Boat — Pickup",
+          "qualification": "Return time is approximate.",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "cancellation": {
+          "category": "terms",
+          "value": null,
+          "text": "Current cancellation and weather terms need confirmation in the selected booking channel.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "ride": {
+          "category": "experience",
+          "value": "thrill",
+          "text": "Airboat with faster sections and stops.",
+          "sourceUrl": "https://louisianaswamp.com/swamp-tours/airboat-swamp-tour/",
+          "appliesTo": "Large airboat",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "pickup": {
+          "category": "pickup",
+          "value": "hotel_included",
+          "text": "Pickup package; some locations are outside the pickup zone.",
+          "sourceUrl": "https://louisianaswamp.com/swamp-tours/airboat-swamp-tour/",
+          "appliesTo": "Large Boat — Pickup",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "onWater": {
+          "category": "timing",
+          "value": 90,
+          "text": "About 1.5 hours on the tour.",
+          "sourceUrl": "https://louisianaswamp.com/swamp-tours/airboat-swamp-tour/",
+          "appliesTo": "Large airboat",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "price": {
+          "category": "pricing",
+          "value": "bands",
+          "text": "Pickup variant: published $90 ages 18+, $86 ages 17 and under. Drive-out variant lists $65 / $61. Final total needs confirmation.",
+          "sourceUrl": "https://louisianaswamp.com/swamp-tours/airboat-swamp-tour/",
+          "appliesTo": "Large-boat variants",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        }
+      }
+    },
+    {
+      "id": "gray-large",
+      "operator": "Gray Line New Orleans",
+      "name": "Large Airboat Swamp Adventure Tour",
+      "officialUrl": "https://www.graylineneworleans.com/swamp-tours/large-airboat-swamp-adventure/",
+      "bookingUrl": "https://fareharbor.com/embeds/book/neworleanssteamboatcompany/items/562175/calendar/?ref=https%3A%2F%2Fwww.graylineneworleans.com",
+      "bookingInstruction": "This package departs from 400 Toulouse Street. It is not hotel pickup.",
+      "facts": {
+        "minAge": {
+          "category": "restrictions",
+          "value": 5,
+          "text": "Minimum age five; children cannot sit on laps.",
+          "sourceUrl": "https://www.graylineneworleans.com/swamp-tours/large-airboat-swamp-adventure/",
+          "appliesTo": "Large Airboat Swamp Adventure",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "minHeight": {
+          "category": "restrictions",
+          "value": null,
+          "text": "No verified height rule in this record. This does not establish that none applies.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "boarding": {
+          "category": "restrictions",
+          "value": "independent",
+          "text": "Not wheelchair or stroller accessible; passengers must board without staff assistance. Other participation restrictions are listed by the operator.",
+          "sourceUrl": "https://www.graylineneworleans.com/swamp-tours/large-airboat-swamp-adventure/",
+          "appliesTo": "Large Airboat Swamp Adventure",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "weight": {
+          "category": "restrictions",
+          "value": null,
+          "text": "Weight limits or related charges have not been verified.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "bathroom": {
+          "category": "experience",
+          "value": null,
+          "text": "Onboard bathroom access has not been verified.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "capacity": {
+          "category": "experience",
+          "value": 27,
+          "text": "Published boat range: 15–27 passengers; assigned vessel needs confirmation.",
+          "sourceUrl": "https://www.graylineneworleans.com/swamp-tours/large-airboat-swamp-adventure/",
+          "appliesTo": "Large Airboat Swamp Adventure",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "shade": {
+          "category": "experience",
+          "value": null,
+          "text": "Shade and rain protection need confirmation.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "pickupWindow": {
+          "category": "pickup",
+          "value": "checkin",
+          "text": "Present your voucher at the Lighthouse Ticket Office 15 minutes before departure.",
+          "sourceUrl": "https://www.graylineneworleans.com/swamp-tours/large-airboat-swamp-adventure/",
+          "appliesTo": "400 Toulouse St departure",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "totalMinutes": {
+          "category": "timing",
+          "value": 225,
+          "text": "Published excursion duration: 3 hours 45 minutes; add travel to and from the meeting point.",
+          "sourceUrl": "https://www.graylineneworleans.com/swamp-tours/large-airboat-swamp-adventure/",
+          "appliesTo": "Central departure",
+          "qualification": "Not a door-to-door or guaranteed return time.",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "cancellation": {
+          "category": "terms",
+          "value": "nonrefundable",
+          "text": "Published bookings are non-refundable; weather may change, shorten, or postpone the tour.",
+          "sourceUrl": "https://www.graylineneworleans.com/swamp-tours/large-airboat-swamp-adventure/",
+          "appliesTo": "Official product page",
+          "qualification": "Read the terms displayed in your selected checkout before paying.",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "ride": {
+          "category": "experience",
+          "value": "thrill",
+          "text": "Faster airboat experience.",
+          "sourceUrl": "https://www.graylineneworleans.com/swamp-tours/large-airboat-swamp-adventure/",
+          "appliesTo": "Large Airboat Swamp Adventure",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "pickup": {
+          "category": "pickup",
+          "value": "central_included",
+          "text": "Round-trip transportation from 400 Toulouse St, New Orleans; reach this central meeting point yourself.",
+          "sourceUrl": "https://www.graylineneworleans.com/swamp-tours/large-airboat-swamp-adventure/",
+          "appliesTo": "Large Airboat Swamp Adventure",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "price": {
+          "category": "pricing",
+          "value": "bands",
+          "text": "Published $90 ages 13+ and 5–12; $81 seniors 65+. Food, drinks, and gratuity excluded.",
+          "sourceUrl": "https://www.graylineneworleans.com/swamp-tours/large-airboat-swamp-adventure/",
+          "appliesTo": "Large Airboat Swamp Adventure",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        }
+      }
+    },
+    {
+      "id": "big-easy-small",
+      "operator": "Big Easy Swamp Adventures",
+      "name": "Small Airboat — Hotel Pickup",
+      "officialUrl": "https://bigeasyswampadventures.com/reserve-online/",
+      "bookingUrl": "https://bigeasyswampadventures.com/reserve-online/",
+      "bookingInstruction": "Select Small Boat and Hotel Pickup. Call 504-621-3858 for same/next-day requests.",
+      "facts": {
+        "minAge": {
+          "category": "restrictions",
+          "value": null,
+          "text": "Minimum age not independently verified; ask the operator.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "minHeight": {
+          "category": "restrictions",
+          "value": 48,
+          "text": "Airboat minimum height: 48 inches.",
+          "sourceUrl": "https://bigeasyswampadventures.com/reserve-online/",
+          "appliesTo": "Airboat tours",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "boarding": {
+          "category": "restrictions",
+          "value": null,
+          "text": "Boarding assistance and mobility requirements need confirmation.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "weight": {
+          "category": "restrictions",
+          "value": null,
+          "text": "Weight limits or related charges have not been verified.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "bathroom": {
+          "category": "experience",
+          "value": null,
+          "text": "Onboard bathroom access has not been verified.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "capacity": {
+          "category": "experience",
+          "value": 13,
+          "text": "Small boats listed as 6, 8, 10, or 13 passengers; confirm the assigned boat.",
+          "sourceUrl": "https://bigeasyswampadventures.com/reserve-online/",
+          "appliesTo": "Small-boat variants",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "shade": {
+          "category": "experience",
+          "value": null,
+          "text": "Shade and rain protection need confirmation.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "pickupWindow": {
+          "category": "pickup",
+          "value": null,
+          "text": "Exact pickup window and return location need confirmation for your booking.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "totalMinutes": {
+          "category": "timing",
+          "value": null,
+          "text": "Total pickup-to-return time has not been verified.",
+          "status": "unknown",
+          "checkedOn": null,
+          "sourceUrl": null,
+          "appliesTo": "Selected product"
+        },
+        "cancellation": {
+          "category": "terms",
+          "value": "notice",
+          "text": "Airboat cancellations require 24 hours’ notice. Confirm refund details; the five-day rule on the page applies to the separate booze cruise.",
+          "sourceUrl": "https://bigeasyswampadventures.com/reserve-online/",
+          "appliesTo": "Airboat tour",
+          "qualification": "Your booking channel’s displayed terms control.",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "ride": {
+          "category": "experience",
+          "value": "thrill",
+          "text": "Small-airboat format.",
+          "sourceUrl": "https://bigeasyswampadventures.com/reserve-online/",
+          "appliesTo": "Small Boat — Hotel Pickup",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "pickup": {
+          "category": "pickup",
+          "value": "hotel_included",
+          "text": "Hotel-pickup variant; downtown hotel coverage is published. Confirm your hotel.",
+          "sourceUrl": "https://bigeasyswampadventures.com/reserve-online/",
+          "appliesTo": "Small Boat — Hotel Pickup",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "price": {
+          "category": "pricing",
+          "value": "bands",
+          "text": "Published small boat: $115 hotel pickup or $105 drive out per person. Child rates need confirmation.",
+          "sourceUrl": "https://bigeasyswampadventures.com/reserve-online/",
+          "appliesTo": "Small-boat variants",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        },
+        "booking": {
+          "category": "pickup",
+          "value": "phone_soon",
+          "text": "Same-day and next-day reservations are by phone only: 504-621-3858.",
+          "sourceUrl": "https://bigeasyswampadventures.com/reserve-online/",
+          "appliesTo": "All reservation types",
+          "checkedOn": "2026-10-21",
+          "status": "verified"
+        }
+      }
+    }
+  ]
+}
