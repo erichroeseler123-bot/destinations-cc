@@ -164,11 +164,11 @@ export default function HelicopterDispatchBoard({
               </p>
             </div>
             <Link
-              href={isSkagway ? '/skagway/helicopter' : '/juneau/port-to-heliport-logistics'}
+              href="#how-it-works"
               className="jfd-compact-card-action"
-              aria-label="Review pickup and port-to-heliport timing guidance"
+              aria-label="Review how pickup and port timing works"
             >
-              Port-to-heliport timing &rarr;
+              How pickup &amp; timing works &rarr;
             </Link>
           </div>
 
@@ -428,7 +428,7 @@ export default function HelicopterDispatchBoard({
       </section>
 
       {/* 4. How It Works (3 Short Steps) */}
-      <section className="jfd-steps-section">
+      <section id="how-it-works" className="jfd-steps-section">
         <div className="jfd-section-head">
           <h2>How It Works</h2>
           <p>Compare experiences, plan your port day, and choose your booking channel.</p>
