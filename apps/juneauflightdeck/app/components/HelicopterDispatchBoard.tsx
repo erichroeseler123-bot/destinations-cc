@@ -108,7 +108,7 @@ export default function HelicopterDispatchBoard({
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ color: 'var(--ice)', fontWeight: 800 }}>✓</span>
-            <span><strong>Operator comparisons:</strong> {isSkagway ? 'Skagway glacier flight options' : 'TEMSCO, Coastal & NorthStar'}</span>
+            <span><strong>Operator comparisons:</strong> TEMSCO, Coastal &amp; NorthStar</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <span style={{ color: '#86efac', fontWeight: 800 }}>✓</span>
@@ -139,17 +139,15 @@ export default function HelicopterDispatchBoard({
               <div style={{ color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 800, marginBottom: 4 }}>
                 01 · SELECTION
               </div>
-              <h2 className="jfd-compact-card-title">{isSkagway ? 'Compare Skagway Flights' : 'Compare All 3 Operators'}</h2>
+              <h2 className="jfd-compact-card-title">Compare All 3 Operators</h2>
               <p className="jfd-compact-card-body">
-                {isSkagway
-                  ? 'Compare Skagway glacier landings and dog sledding flights side-by-side before choosing your booking channel.'
-                  : 'Direct access to TEMSCO, Coastal, and NorthStar. Compare glacier walkabouts, dog sledding, and ice treks side-by-side.'}
+                Direct access to TEMSCO, Coastal, and NorthStar. Compare glacier walkabouts, dog sledding, and ice treks side-by-side.
               </p>
             </div>
             <Link
               href="#operators"
               className="jfd-compact-card-action"
-              aria-label={isSkagway ? 'View operator specs for Skagway helicopter companies' : 'View operator specs for Juneau helicopter companies'}
+              aria-label="View operator specs for Juneau helicopter companies"
             >
               View operator specs &rarr;
             </Link>
@@ -180,14 +178,14 @@ export default function HelicopterDispatchBoard({
                 03 · CONTINGENCY
               </div>
               <h2 className="jfd-compact-card-title">
-                Weather Backup Planning
+                Proactive Alternative Backup
               </h2>
               <p className="jfd-compact-card-body">
-                If weather cancels your flight, explore available alternatives that fit your remaining port time. Backup activities require a separate booking and depend on availability.
+                If weather deteriorates, we start securing alternative activities before your tour is even canceled, beating the dock rush.
               </p>
             </div>
             <Link
-              href={isSkagway ? '#weather-mechanics' : '/juneau/what-to-do-if-helicopter-tour-canceled'}
+              href={isSkagway ? '/skagway/helicopter' : '/juneau/what-to-do-if-helicopter-tour-canceled'}
               className="jfd-compact-card-action"
               aria-label="Backup options"
             >
