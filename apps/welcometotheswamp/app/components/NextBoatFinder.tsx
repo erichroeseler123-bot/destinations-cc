@@ -492,6 +492,7 @@ export default function NextBoatFinder() {
       )}
 
       {/* SEARCH RESULTS DISPLAY */}
+      <p style={{color:"#fcd34d",lineHeight:1.6}}><a href="/waitlist" style={{color:"inherit",textDecoration:"underline"}}>Save a waitlist request</a> · <a href="/tools" style={{color:"inherit",textDecoration:"underline"}}>Plan your pickup and return timing</a></p>
       <div aria-live="polite">
       {isSearching && <p role="status">Checking departures for your current choices…</p>}
       {searchResponse && (
@@ -773,5 +774,6 @@ export default function NextBoatFinder() {
     </section>
   );
 }
+
 
 

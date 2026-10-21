@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
+  { href: "/tools", label: "Planning Tools" },
   { href: "/helicopter", label: "Book Tours" },
   { href: "/temsco-vs-coastal-vs-northstar-juneau", label: "Compare Operators" },
   { href: "/helicopter-waitlist", label: "Ship Port Timing" },

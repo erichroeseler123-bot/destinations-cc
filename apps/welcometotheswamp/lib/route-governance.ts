@@ -14,6 +14,9 @@ export type RouteGovernanceEntry = {
 };
 
 const WTS_ROUTE_GOVERNANCE: readonly RouteGovernanceEntry[] = [
+  { path: "/waitlist", publishState: "indexable", networkRole: "utility", handoffPolicy: "none" },
+  { path: "/tools", publishState: "indexable", networkRole: "utility", handoffPolicy: "none" },
+  { path: "/weather-backups", publishState: "indexable", networkRole: "satellite", handoffPolicy: "outbound_only" },
   {
     path: "/",
     publishState: "promoted",
@@ -207,3 +210,4 @@ export function getWtsRouteGovernanceEntries(): readonly RouteGovernanceEntry[] 
 export function isWtsIndexableRoutePath(pathname: string): boolean {
   return WTS_INDEXABLE_ROUTE_PATHS.includes(pathname);
 }
+

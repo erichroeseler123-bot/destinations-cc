@@ -137,6 +137,8 @@ export function parseViatorAvailability(
         totalPrice: total,
         currency: "USD",
         availabilityType: "live_inventory",
+        checkedForPartySize: totalGroup,
+        travelDate: params.travelDate,
         availabilityStatusText: `Live availability checked ${formatTimeNewOrleans(nowIso)} CT for group of ${totalGroup}`,
         available: true,
         bookingUrl: "https://www.viator.com/tours/New-Orleans/New-Orleans-Airboat-Tour/d675-112604P2",
@@ -372,3 +374,4 @@ export async function searchNextAirboatDepartures(
     checkedAt,
   };
 }
+

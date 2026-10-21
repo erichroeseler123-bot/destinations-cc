@@ -1,3 +1,5 @@
+import { TourFeatureLinks } from "@/app/components/tour-tools/TourPlanningKit";
+import { TOOLKIT_CONFIG } from "@/lib/toolkitConfig";
 import { SITE_DESCRIPTION } from "@/lib/sitePositioning";
 import type { Metadata } from "next";
 import HelicopterDispatchBoard from "./components/HelicopterDispatchBoard";
@@ -30,6 +32,7 @@ export default function HomePage() {
   return (
     <main id="main-content">
       <NextHelicopterFinder />
+      <TourFeatureLinks config={TOOLKIT_CONFIG} />
       <HelicopterDispatchBoard
         portSlug="juneau"
         sourcePage="/"

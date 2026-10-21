@@ -1,0 +1,4 @@
+import type { Metadata } from "next";
+import WaitlistForm from "../components/WaitlistForm";
+export const metadata: Metadata = { title: "Swamp Tour Waitlist & Availability Requests", description: "Save your swamp tour date, party size, children’s ages, pickup preference, and boat choice in one availability request.", alternates: { canonical: "https://welcometotheswamp.com/waitlist" } };
+export default function WaitlistPage() { return <main style={{ maxWidth: 900, margin: "32px auto", padding: "0 18px" }}><p className="eyebrow">Keep your group’s preferences together</p><h1>Swamp tour waitlist & availability requests</h1><p>Save the date and tour your party is looking for. A request does not book or hold seats. Automated seat-opening emails are currently inactive.</p><WaitlistForm /></main>; }

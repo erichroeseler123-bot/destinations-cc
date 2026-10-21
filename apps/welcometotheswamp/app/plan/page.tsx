@@ -14,7 +14,7 @@ import { getWtsLiveProductLinks } from "@/lib/liveProductLinks";
 import { inferLaneFromTransfer, parseWarmTransfer } from "@/lib/warmTransfer";
 import { SITE_CONFIG } from "@/app/site-config";
 
-export const pageIntent = "wts_storefront_plan";
+const pageIntent = "wts_storefront_plan";
 
 export const metadata: Metadata = {
   title: "Book a New Orleans swamp tour | Welcome to the Swamp",
@@ -584,3 +584,4 @@ export default async function SwampPlanPage({
     </main>
   );
 }
+

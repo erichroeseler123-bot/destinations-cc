@@ -1,3 +1,5 @@
+import TourPlanningKit from "@/app/components/tour-tools/TourPlanningKit";
+import { TOOLKIT_CONFIG } from "@/lib/toolkitConfig";
 import type { Metadata } from "next";
 import Link from "next/link";
 import HelicopterCabinSimulator from "../components/HelicopterCabinSimulator";
@@ -158,6 +160,8 @@ export default function ToolsDashboardPage() {
           </a>
         </div>
       </div>
+
+      <TourPlanningKit config={TOOLKIT_CONFIG} />
 
       {/* Tool 1: Helicopter Cabin Weight & Balance Simulator */}
       <section id="weight-simulator" style={{ scrollMarginTop: 80, marginBottom: 50 }}>

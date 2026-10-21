@@ -1,3 +1,5 @@
+import { TourFeatureLinks } from "@/app/components/tour-tools/TourPlanningKit";
+import { TOOLKIT_CONFIG } from "@/lib/toolkitConfig";
 import type { Metadata } from "next";
 import JsonLd from "@/app/components/JsonLd";
 import { buildBreadcrumbJsonLd, buildWebPageJsonLd } from "@/lib/jsonld";
@@ -5,7 +7,7 @@ import NextBoatFinder from "@/app/components/NextBoatFinder";
 import { SwampStorefrontPage } from "./StorefrontHomePage";
 import { swampStorefrontConfig } from "./pageConfig";
 
-export const pageIntent = "wts_storefront_home";
+const pageIntent = "wts_storefront_home";
 
 export const metadata: Metadata = {
   title: swampStorefrontConfig.metadata.title,
@@ -128,6 +130,8 @@ export default function HomePage() {
         <NextBoatFinder />
       </div>
 
+      <TourFeatureLinks config={TOOLKIT_CONFIG} />
+
       {/* DISCOVERY / HOW TO FIND NEXT DEPARTURE ANSWER SECTION */}
       <section className="border-t border-stone-800 bg-stone-900 px-6 py-12 text-stone-100">
         <div className="mx-auto max-w-4xl">
@@ -228,3 +232,4 @@ export default function HomePage() {
     </>
   );
 }
+

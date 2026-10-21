@@ -24,22 +24,57 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/app/components/PartnerAnalyticsScript": ["../../lib/getyourguide/PartnerAnalyticsScript"],
-      "@/app/components/ActivitiesWidget": ["../../app/components/ActivitiesWidget"],
-      "@/app/components/AvailabilityWidget": ["../../app/components/AvailabilityWidget"],
-      "@/app/components/DccPortfolioBridge": ["../../app/components/DccPortfolioBridge"],
-      "@/app/components/network/types": ["../../app/components/network/types"],
-      "@/lib/dcc/networkEntityJsonLd": ["../../lib/dcc/networkEntityJsonLd"],
-      "@/lib/liveProductLinks": ["../../lib/liveProductLinks"],
-      "@/lib/getyourguide/*": ["../../lib/getyourguide/*"],
-      "@/lib/dcc/*": ["../../lib/dcc/*"],
-      "@/lib/wta/*": ["../../lib/wta/*"],
-      "@/lib/db/*": ["../../lib/db/*"],
-      "@/lib/redis": ["../../lib/redis"],
-      "@/lib/route-governance": ["../../lib/route-governance"],
-      "@/data/*": ["../../data/*"],
-      "@/src/*": ["../../src/*"],
-      "@/*": ["./*"]
+      "@/app/components/PartnerAnalyticsScript": [
+        "../../lib/getyourguide/PartnerAnalyticsScript"
+      ],
+      "@/app/components/ActivitiesWidget": [
+        "../../app/components/ActivitiesWidget"
+      ],
+      "@/app/components/AvailabilityWidget": [
+        "../../app/components/AvailabilityWidget"
+      ],
+      "@/app/components/DccPortfolioBridge": [
+        "../../app/components/DccPortfolioBridge"
+      ],
+      "@/app/components/network/types": [
+        "../../app/components/network/types"
+      ],
+      "@/lib/dcc/networkEntityJsonLd": [
+        "../../lib/dcc/networkEntityJsonLd"
+      ],
+      "@/lib/liveProductLinks": [
+        "../../lib/liveProductLinks"
+      ],
+      "@/lib/getyourguide/*": [
+        "../../lib/getyourguide/*"
+      ],
+      "@/lib/dcc/*": [
+        "../../lib/dcc/*"
+      ],
+      "@/lib/wta/*": [
+        "../../lib/wta/*"
+      ],
+      "@/lib/db/*": [
+        "../../lib/db/*"
+      ],
+      "@/lib/redis": [
+        "../../lib/redis"
+      ],
+      "@/lib/route-governance": [
+        "../../lib/route-governance"
+      ],
+      "@/data/*": [
+        "../../data/*"
+      ],
+      "@/src/*": [
+        "../../src/*"
+      ],
+      "@/*": [
+        "./*"
+      ],
+      "@/app/components/tour-tools/*": [
+        "../../app/components/tour-tools/*"
+      ]
     },
     "noImplicitAny": false
   },
