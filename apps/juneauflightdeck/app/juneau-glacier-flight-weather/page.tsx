@@ -33,7 +33,7 @@ const weatherFaqSchema = {
       name: "What are the FAA weather minimums for Juneau helicopter tours?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Under FAA Part 135 Visual Flight Rules (VFR), commercial tour helicopters cannot fly into clouds. Pilots must maintain a minimum of 1,000 feet of clearance beneath cloud ceilings and at least 3 statute miles of forward flight visibility along the entire route.",
+        text: "There is no single 1,000-foot-and-3-mile rule for every point of a Juneau helicopter tour. Applicable VFR minima depend on airspace, altitude, time of day, and the operator's FAA-approved specifications. Part 135.207 requires sufficient visual surface reference for VFR helicopter control. Only the pilot and operator can make the go/no-go decision.",
       },
     },
     {
@@ -41,7 +41,7 @@ const weatherFaqSchema = {
       name: "What happens if my Juneau helicopter tour is canceled due to weather?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "All licensed Juneau helicopter operators (TEMSCO, Coastal, NorthStar) provide 100% full refunds or rebooking options if a flight is canceled due to adverse weather or cloud ceilings.",
+        text: "The current direct-booking pages for TEMSCO, Coastal, and NorthStar state that an operator-canceled weather flight is refunded or, for NorthStar, first offered rebooking and then refunded if rebooking is not possible. A third-party reservation is governed by the terms attached to that booking.",
       },
     },
   ],
@@ -127,8 +127,9 @@ export default function GlacierFlightWeatherPage() {
               margin: 0,
             }}
           >
-            See exactly what helicopter dispatchers see before your excursion. Live mountain pass camera feeds
-            from Pedersen Hill, Juneau Tram, and Spuhn Island to track cloud decks, mountain fog, and VFR flight clearance.
+            Review near-real-time FAA weather-camera images for additional context on cloud decks
+            and mountain fog. These images are supplemental information—not a flight-status feed—and
+            only the operator can make the go/no-go decision.
           </p>
         </header>
 
@@ -175,24 +176,31 @@ export default function GlacierFlightWeatherPage() {
                 2. FAA Visual Flight Rules (VFR) Minima
               </h3>
               <p style={{ margin: 0 }}>
-                Under federal law (FAA Part 135), commercial passenger helicopters cannot operate under instrument guidance (IFR)
-                into remote glacier landing sites. Dispatchers require Visual Flight Rules: continuous ground reference,
-                at least 1,000 feet of separation beneath cloud decks, and 3 miles visibility. If the cloud deck dips below
-                the pass ridge, safety rules require dispatchers to hold or cancel flights.
+                Applicable VFR minima vary by airspace, altitude, time of day, and the operator&apos;s
+                FAA-approved specifications. Part 135.207 requires enough visual surface reference
+                to control a helicopter operating under VFR. A camera image cannot establish legal
+                flight conditions by itself; the pilot and operator make the operational decision.
+                See <a href="https://www.ecfr.gov/current/title-14/chapter-I/subchapter-G/part-135/subpart-D/section-135.205" target="_blank" rel="noopener noreferrer">14 CFR 135.205</a>
+                {" "}and <a href="https://www.ecfr.gov/current/title-14/chapter-I/subchapter-G/part-135/subpart-D/section-135.207" target="_blank" rel="noopener noreferrer">14 CFR 135.207</a>.
               </p>
             </div>
 
             <div>
               <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "#e2e8f0", margin: "0 0 8px" }}>
-                3. The 100% Weather Refund Rule
+                3. Weather-Cancellation Terms
               </h3>
               <p style={{ margin: 0 }}>
-                All reputable flight operators (TEMSCO Helicopters, Coastal Helicopters, NorthStar Trekking) operate with strict safety-first protocols.
-                If dispatch cancels your flight due to cloud cover or wind shear, you are <strong>100% refunded</strong> automatically.
-                No operator will ever fly into unsafe mountain margins.
+                TEMSCO and Coastal currently publish a full refund when they cancel for weather.
+                NorthStar publishes rebooking first and a full refund if rebooking is not possible.
+                Those statements are for direct operator terms; a marketplace booking is controlled
+                by the cancellation terms on its own confirmation.
               </p>
             </div>
           </div>
+          <p style={{ margin: "24px 0 0", fontSize: ".78rem", color: "var(--muted)" }}>
+            Sources checked October 23, 2026: FAA weather-camera guidance, current eCFR Part 135,
+            and the operators&apos; published tour or FAQ pages.
+          </p>
         </section>
 
         {/* Cross-Port Backup Router */}
