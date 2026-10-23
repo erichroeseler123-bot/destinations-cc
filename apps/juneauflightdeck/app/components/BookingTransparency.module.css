@@ -1,7 +1,10 @@
 .section {
   max-width: 1120px;
   margin: 72px auto;
-  padding: 0 20px;
+  padding: 48px;
+  border: 1px solid rgba(151, 211, 255, .22);
+  border-radius: 22px;
+  background: #f4f8fa;
   color: #11293d;
 }
 
@@ -240,8 +243,8 @@
 
 @media (max-width: 520px) {
   .section {
-    margin: 52px auto;
-    padding: 0 14px;
+    margin: 52px 12px;
+    padding: 28px 14px;
   }
 
   .card,
