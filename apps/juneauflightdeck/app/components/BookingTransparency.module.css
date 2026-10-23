@@ -105,6 +105,67 @@
   background: #eaf4f5;
 }
 
+.sources {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  gap: 48px;
+  margin-top: 18px;
+  padding: 30px 34px;
+  border: 1px solid #bfd4db;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.sources h3 {
+  margin: 0 0 10px;
+  color: #0b2638;
+  font-size: 1.35rem;
+}
+
+.sources p {
+  margin: 0 0 10px;
+  color: #405869;
+  line-height: 1.6;
+}
+
+.sources span {
+  color: #176878;
+  font-size: .78rem;
+  font-weight: 800;
+}
+
+.sources ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sources li {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #d8e3e8;
+}
+
+.sources li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.sources a {
+  display: block;
+  color: #0b5264;
+  font-weight: 800;
+  text-underline-offset: 3px;
+}
+
+.sources small {
+  display: block;
+  margin-top: 3px;
+  color: #526674;
+  line-height: 1.4;
+}
+
 .checklistLabel {
   margin: 0 0 8px;
   color: #176878;
@@ -214,7 +275,8 @@
 
 @media (max-width: 850px) {
   .heading,
-  .checklist {
+  .checklist,
+  .sources {
     grid-template-columns: 1fr;
     gap: 18px;
   }
@@ -249,6 +311,7 @@
 
   .card,
   .checklist,
+  .sources,
   .disclosure {
     padding: 24px 20px;
   }

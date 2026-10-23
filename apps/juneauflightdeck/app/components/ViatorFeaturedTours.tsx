@@ -13,6 +13,7 @@ import type {
   ViatorProductReviewsResponse,
   ViatorTravelerReview,
 } from "@/lib/viator/types";
+import { addPortDateListener, buildDatedOperatorUrl, readSharedPortDate, sharePortDate } from "@/lib/portDate";
 
 interface ViatorFeaturedToursProps {
   initialDate?: string | null;
@@ -39,6 +40,12 @@ export default function ViatorFeaturedTours({
   const [selectedTab, setSelectedTab] = useState<"all" | "glacier_landing" | "dog_sledding" | "ice_trek">("all");
   const [dateFilter, setDateFilter] = useState<string>(initialDate || "");
   const [passengerCount, setPassengerCount] = useState<number>(2);
+
+  React.useEffect(() => {
+    const sharedDate = readSharedPortDate();
+    if (sharedDate) setDateFilter(sharedDate);
+    return addPortDateListener(setDateFilter);
+  }, []);
 
   // Review modal state (client-fetched on demand; never in SSR HTML)
   const [activeReviewProduct, setActiveReviewProduct] = useState<ViatorJuneauProduct | null>(null);
@@ -240,7 +247,10 @@ export default function ViatorFeaturedTours({
                 value={dateFilter}
                 min="2027-05-01"
                 max="2027-09-30"
-                onChange={(e) => setDateFilter(e.target.value)}
+                onChange={(e) => {
+                  setDateFilter(e.target.value);
+                  sharePortDate(e.target.value);
+                }}
                 style={{
                   background: "transparent",
                   border: "none",
@@ -255,7 +265,10 @@ export default function ViatorFeaturedTours({
               {dateFilter && (
                 <button
                   type="button"
-                  onClick={() => setDateFilter("")}
+                  onClick={() => {
+                    setDateFilter("");
+                    sharePortDate("");
+                  }}
                   aria-label="Clear date filter"
                   style={{
                     background: "transparent",
@@ -854,7 +867,9 @@ export function TourCard({
     selectedDate,
     passengerCount
   );
-  const primaryBookingUrl = product.directOperatorHref || finalBookingUrl;
+  const primaryBookingUrl = product.directOperatorHref
+    ? buildDatedOperatorUrl(product.directOperatorHref, selectedDate)
+    : finalBookingUrl;
   const categoryLabel =
     product.tourType === "dog_sledding"
       ? "Glacier dog sledding"
@@ -1008,7 +1023,7 @@ export function TourCard({
           flex: 1,
         }}
       >
-        {/* Rating and Reviews or Operator Credential */}
+        {/* Rating and Reviews or source status */}
         <div
           style={{
             display: "flex",
@@ -1057,7 +1072,7 @@ export function TourCard({
                   textTransform: "uppercase",
                 }}
               >
-                🛡️ Part 135 Certified Operator
+                ✓ Operator-published details
               </span>
             </div>
           )}
@@ -1126,6 +1141,11 @@ export function TourCard({
 
         {/* Price & Primary Checkout Options */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {product.priceDisclaimer && (
+            <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.73rem", lineHeight: 1.45 }}>
+              {product.priceDisclaimer}
+            </p>
+          )}
           <div
             style={{
               display: "flex",
@@ -1197,6 +1217,17 @@ export function TourCard({
             <span style={{ fontSize: "0.76rem", color: "var(--ice, #9ed9ff)", fontWeight: 700 }}>
               ↗ Exact tour or operator booking calendar
             </span>
+
+            {product.operatorSourceHref && (
+              <a
+                href={product.operatorSourceHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: "0.73rem", color: "var(--muted)", textUnderlineOffset: 3 }}
+              >
+                Source: {product.operatorSourceLabel || "operator page"} · checked Oct. 23, 2026
+              </a>
+            )}
 
             <Link
               href={`/helicopter-waitlist?tour=${encodeURIComponent(product.productCode)}${selectedDate ? `&date=${encodeURIComponent(selectedDate)}` : ""}`}

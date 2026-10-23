@@ -6,6 +6,7 @@ import {
   type AlaskaShipData,
 } from "../../lib/alaskaCruiseFleet";
 import { sendJfdTelemetry } from "./DccNetworkBridge";
+import { addPortDateListener, readSharedPortDate, sharePortDate } from "@/lib/portDate";
 
 const CRUISE_LINES = [
   "Princess Cruises",
@@ -123,9 +124,9 @@ export default function HelicopterWaitlistForm({
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const shipParam = params.get("ship");
-    const dateParam = params.get("date");
     const modeParam = params.get("mode");
     const tourParam = params.get("tour");
+    const sharedDate = readSharedPortDate();
 
     if (tourParam) {
       const normalized = tourParam.toLowerCase().trim();
@@ -164,13 +165,17 @@ export default function HelicopterWaitlistForm({
       }
     }
 
-    if (dateParam) {
-      setFormData((prev) => ({ ...prev, portDate: dateParam }));
+    if (sharedDate) {
+      setFormData((prev) => ({ ...prev, portDate: sharedDate }));
     }
 
     if (modeParam === "concierge" || modeParam === "concierge_dispatch") {
       setFormData((prev) => ({ ...prev, bookingMode: "concierge_dispatch" }));
     }
+
+    return addPortDateListener((date) => {
+      setFormData((prev) => ({ ...prev, portDate: date }));
+    });
   }, []);
 
   const handleShipSelect = (shipName: string) => {
@@ -869,7 +874,10 @@ ${shareUrl}`;
                 required
                 aria-describedby="portDate-description"
                 value={formData.portDate}
-                onChange={(e) => setFormData({ ...formData, portDate: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, portDate: e.target.value });
+                  sharePortDate(e.target.value);
+                }}
               />
               <span
                 id="portDate-description"
