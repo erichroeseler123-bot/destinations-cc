@@ -9,6 +9,8 @@ export interface ViatorJuneauProduct {
   priceFrom: number | null;
   currency: string;
   priceDisclaimer?: string;
+  operatorSourceHref?: string;
+  operatorSourceLabel?: string;
   imageUrl: string | null;
   imageAlt: string;
   imageSource: "SUPPLIER_PROVIDED" | "LOCAL_AUTHORITY";
