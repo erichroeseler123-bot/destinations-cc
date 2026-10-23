@@ -3,6 +3,7 @@ import { TOOLKIT_CONFIG } from "@/lib/toolkitConfig";
 import { SITE_DESCRIPTION } from "@/lib/sitePositioning";
 import type { Metadata } from "next";
 import BookingTransparency from "./components/BookingTransparency";
+import HomeHero from "./components/HomeHero";
 import HelicopterDispatchBoard from "./components/HelicopterDispatchBoard";
 import NextHelicopterFinder from "./components/NextHelicopterFinder";
 import TourSavingsCalculator from "./components/TourSavingsCalculator";
@@ -33,6 +34,7 @@ const CP =
 export default function HomePage() {
   return (
     <main id="main-content">
+      <HomeHero />
       <TourSavingsCalculator />
       <BookingTransparency />
       <NextHelicopterFinder />
