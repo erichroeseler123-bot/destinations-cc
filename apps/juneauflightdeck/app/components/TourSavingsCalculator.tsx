@@ -1,20 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { AVERAGE_LISTED_SAVINGS_CENTS, PRICE_COMPARISONS, SAVINGS_CHECKED_DATE, formatDollars, readPriceCents } from "@/lib/tourSavings";
+import { SAVINGS_CHECKED_DATE, SAVINGS_OPTIONS, averageSavingsCents, formatDollars, getComparisons, readPriceCents, type SavingsMode } from "@/lib/tourSavings";
 import styles from "./TourSavingsCalculator.module.css";
 
 export default function TourSavingsCalculator() {
   const [travelers, setTravelers] = useState(4);
-  const [mode, setMode] = useState("average");
+  const [mode, setMode] = useState<SavingsMode>("all");
   const [cruisePrice, setCruisePrice] = useState("");
   const [directPrice, setDirectPrice] = useState("");
   const cruiseCents = readPriceCents(cruisePrice);
   const directCents = readPriceCents(directPrice);
   const custom = mode === "custom";
+  const comparisons = getComparisons(mode);
+  const tourScope = mode === "all"
+    ? "Juneau helicopter glacier walks, treks, and dog-sled tours"
+    : mode === "glacier-walk"
+      ? "Juneau helicopter glacier walks"
+      : mode === "glacier-trek"
+        ? "Juneau helicopter glacier treks"
+        : "Juneau helicopter dog-sled tours";
   const perPerson = custom
     ? cruiseCents !== null && directCents !== null ? cruiseCents - directCents : null
-    : AVERAGE_LISTED_SAVINGS_CENTS;
+    : averageSavingsCents(comparisons);
   const higher = perPerson !== null && perPerson < 0;
 
   return <section className={styles.panel} aria-labelledby="tour-savings-title">
@@ -31,9 +39,8 @@ export default function TourSavingsCalculator() {
     <div className={styles.calculator}>
       <div className={styles.controls}>
         <label>Compare using
-          <select value={mode} onChange={event => setMode(event.target.value)}>
-            <option value="average">Average published helicopter-tour prices</option>
-            <option value="custom">My checkout prices</option>
+          <select value={mode} onChange={event => setMode(event.target.value as SavingsMode)}>
+            {SAVINGS_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
           </select>
         </label>
         <label>Travelers
@@ -51,7 +58,7 @@ export default function TourSavingsCalculator() {
         </label>
       </div>}
       <div className={styles.result} role="status" aria-live="polite" aria-atomic="true">
-        <p>{custom ? higher ? "This option costs more per person" : "Your price difference per person" : "Average helicopter-tour savings per person"}</p>
+        <p>{custom ? higher ? "This option costs more per person" : "Your price difference per person" : "Average savings per person for this tour type"}</p>
         <div className={styles.equation}>
           <strong>{perPerson === null ? "—" : formatDollars(Math.abs(perPerson))}</strong>
           <span>× {travelers} {travelers === 1 ? "traveler" : "travelers"}</span>
@@ -61,17 +68,17 @@ export default function TourSavingsCalculator() {
       </div>
       <p className={styles.note}>{custom
         ? "Use final per-person totals for the same tour, date, age category, and inclusions. Include taxes, booking fees, transfers, and any surcharges. Booking terms and return-to-ship protections vary."
-        : `Based on three published adult helicopter-tour starting-price comparisons, checked ${SAVINGS_CHECKED_DATE}. Operator taxes and booking fees reduce these savings. Prices, inclusions, and booking protections vary; this is not a quote for your sailing.`}</p>
-      <details className={styles.sources}>
+        : `Based on ${comparisons.length} published adult ${comparisons.length === 1 ? "price comparison" : "price comparisons"} for ${tourScope}, checked ${SAVINGS_CHECKED_DATE}. Operator taxes and booking fees reduce these savings. Prices, inclusions, and booking protections vary; this is not a quote for your sailing.`}</p>
+      {!custom && <details className={styles.sources}>
         <summary>See the prices behind the average</summary>
-        <p>Checked {SAVINGS_CHECKED_DATE}. Equal-weight average of the three differences below, rounded to the nearest cent before multiplying by your group size. These are comparable experience types; the same operator or departure is not confirmed by the cruise listings.</p>
-        <ul>{PRICE_COMPARISONS.map(comparison => <li key={comparison.cruiseLine}>
+        <p>Checked {SAVINGS_CHECKED_DATE}. Equal-weight average of the {comparisons.length === 1 ? "difference" : `${comparisons.length} differences`} below, rounded to the nearest cent before multiplying by your group size. These are comparable experience types; the same operator or departure is not confirmed by the cruise listings.</p>
+        <ul>{comparisons.map(comparison => <li key={`${comparison.category}-${comparison.cruiseLine}`}>
           <strong>{comparison.title}</strong><br />
           <a href={comparison.cruiseUrl} target="_blank" rel="noopener noreferrer">{comparison.cruiseLine}: from {formatDollars(comparison.cruiseCents)} ↗</a>
           {" · "}<a href={comparison.operatorUrl} target="_blank" rel="noopener noreferrer">{comparison.operator}: from {formatDollars(comparison.operatorCents)} before fees ↗</a>
         </li>)}</ul>
         <p>Compare final checkout totals and your ship’s schedule before reserving. A published price does not confirm seats. Children’s rates and cruise excursion credits may change your comparison.</p>
-      </details>
+      </details>}
     </div>
   </section>;
 }
