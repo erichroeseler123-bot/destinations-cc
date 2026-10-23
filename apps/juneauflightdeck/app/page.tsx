@@ -4,6 +4,7 @@ import { SITE_DESCRIPTION } from "@/lib/sitePositioning";
 import type { Metadata } from "next";
 import HelicopterDispatchBoard from "./components/HelicopterDispatchBoard";
 import NextHelicopterFinder from "./components/NextHelicopterFinder";
+import TourSavingsCalculator from "./components/TourSavingsCalculator";
 
 export const metadata: Metadata = {
   title: {
@@ -31,6 +32,7 @@ const CP =
 export default function HomePage() {
   return (
     <main id="main-content">
+      <TourSavingsCalculator />
       <NextHelicopterFinder />
       <TourFeatureLinks config={TOOLKIT_CONFIG} />
       <HelicopterDispatchBoard
