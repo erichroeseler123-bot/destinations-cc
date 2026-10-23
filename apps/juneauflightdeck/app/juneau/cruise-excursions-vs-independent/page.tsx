@@ -5,14 +5,14 @@ import HelicopterWaitlistForm from "../../components/HelicopterWaitlistForm";
 export const metadata: Metadata = {
   title: "Booking Independent vs. Cruise Ship Helicopter Tours in Juneau | Full Guide",
   description:
-    "Is it safe to book a Juneau helicopter tour independently? Debunking the ship-leave-behind myth, comparing prices ($80-$150 savings), operator fleets, and 100% weather refund guarantees.",
+    "Compare independent and cruise-line Juneau helicopter bookings using current prices, operator terms, pickup details, and realistic return-to-ship planning.",
   alternates: {
     canonical: "https://juneauflightdeck.com/juneau/cruise-excursions-vs-independent",
   },
   openGraph: {
     title: "Cruise Ship Excursion Desk vs. Independent Helicopter Booking in Juneau",
     description:
-      "Save $80-$150 per person on the exact same helicopters. Learn about pier pickups, 90-120 minute ship return buffers, and our 24/7 seat scanner.",
+      "Compare current checkout totals, pickup instructions, cancellation policies, and return-to-ship protections before choosing a Juneau helicopter tour.",
     url: "https://juneauflightdeck.com/juneau/cruise-excursions-vs-independent",
     type: "article",
   },
@@ -27,7 +27,7 @@ const vsShipFaqJsonLd = {
       name: "Will my cruise ship wait if an independent helicopter tour is delayed?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "In practice, local FAA helicopter operators (TEMSCO, Coastal, NorthStar) design every flight schedule specifically around cruise ship port calls. Because heliports are only 15 to 20 minutes from the docks, tours return with a mandatory 90 to 120-minute safety buffer prior to all-aboard time. Over 40+ years of commercial operations in Juneau, independent helicopter operators have maintained a 100% on-time ship return record.",
+        text: "Do not assume the ship will wait for an independently booked tour. Confirm the operator's pickup and return plan, build a practical buffer before your ship's all-aboard time, and look for an explicit return-to-ship policy on the exact listing. Viator's Worry-free policy applies only to marked products and has eligibility requirements.",
       },
     },
     {
@@ -35,7 +35,7 @@ const vsShipFaqJsonLd = {
       name: "Do cruise ships use different helicopter companies than independent travelers?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "No. There are only three commercial helicopter tour operators in Juneau (TEMSCO, Coastal Helicopters, and NorthStar Trekking). The cruise lines do not own or fly helicopters; they contract directly with these same local companies and resell their seats at a 25% to 40% markup.",
+        text: "Cruise lines and independent channels may sell excursions operated by the same named local providers, including TEMSCO, Coastal Helicopters, and NorthStar Trekking. Do not assume two listings are identical: compare the operator, duration, glacier, transfers, cancellation terms, and final checkout total.",
       },
     },
     {
@@ -51,7 +51,7 @@ const vsShipFaqJsonLd = {
       name: "Why does the cruise excursion desk tell guests independent tours are risky?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Shore excursions are one of the most profitable revenue streams for cruise lines. By promoting exclusivity and fear of missing the ship, cruise lines protect their 30% to 50% commission margins. Booking direct or through specialized services like Juneau Flight Deck provides identical safety standards, lower rates, and access to waitlists when ship blocks are full.",
+        text: "Cruise-line bookings and independent bookings are different contracts. A cruise line may offer simpler onboard support, while an independent listing may offer a different price, schedule, or cancellation policy. Compare the exact written terms instead of relying on a general claim from either channel.",
       },
     },
   ],
@@ -73,18 +73,17 @@ export default function CruiseExcursionsVsIndependentPage() {
           </h1>
           <p className="text-lg text-slate-300 leading-relaxed">
             The honest truth about Juneau helicopter excursions: fleet safety, pricing markups, 
-            dock pickups, and the &ldquo;miss the ship&rdquo; fear myth.
+            pickup details, cancellation terms, and return-to-ship planning.
           </p>
         </div>
 
         {/* The Core Truth Highlight */}
         <div className="p-6 md:p-8 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 mb-10">
-          <h2 className="text-xl font-bold text-white mb-2">The #1 Fact Most Cruise Passengers Don&apos;t Know</h2>
+          <h2 className="text-xl font-bold text-white mb-2">The Key Comparison Most Cruise Passengers Miss</h2>
           <p className="text-sm md:text-base leading-relaxed text-amber-100">
-            Cruise ships do not own helicopters, maintain landing pads, or hire pilots in Alaska. 
-            When you purchase a helicopter tour through Princess, Holland America, Royal Caribbean, or NCL, 
-            <strong> you are placed on the exact same helicopter operated by TEMSCO, Coastal, or NorthStar</strong>. 
-            The only difference is that the cruise line adds a $80 to $150 per-person markup to your bill.
+            Cruise and independent channels may list tours from the same named Juneau operators.
+            That does not prove the products are identical. Compare the exact operator, glacier,
+            duration, transfer, cancellation policy, return protection, and final checkout total.
           </p>
         </div>
 
@@ -103,38 +102,38 @@ export default function CruiseExcursionsVsIndependentPage() {
               <tbody>
                 <tr>
                   <td><strong>Glacier Landing Price</strong></td>
-                  <td>$480 – $650 / person</td>
-                  <td><strong className="text-emerald-400">$389 – $479 / person</strong></td>
+                  <td>Varies by line, sailing, and age category</td>
+                  <td><strong className="text-emerald-400">Use the dated operator checkout total</strong></td>
                 </tr>
                 <tr>
                   <td><strong>Glacier Dog Sledding Price</strong></td>
-                  <td>$749 – $899 / person</td>
-                  <td><strong className="text-emerald-400">$629 – $699 / person</strong></td>
+                  <td>Varies by line, sailing, and age category</td>
+                  <td><strong className="text-emerald-400">Use the dated operator checkout total</strong></td>
                 </tr>
                 <tr>
                   <td><strong>Who Actually Flies the Tour?</strong></td>
-                  <td>TEMSCO / Coastal Helicopters</td>
-                  <td>Identical TEMSCO / Coastal Helicopters</td>
+                  <td>Named supplier on the cruise listing</td>
+                  <td>Named supplier on the operator listing</td>
                 </tr>
                 <tr>
                   <td><strong>When Seats Show Sold Out</strong></td>
                   <td>Marked &ldquo;SOLD OUT&rdquo; — no waitlist</td>
-                  <td><strong className="text-amber-400">24/7 scanner captures cancellations</strong></td>
+                  <td><strong className="text-amber-400">Check other operator calendars or request an alert</strong></td>
                 </tr>
                 <tr>
                   <td><strong>Pier Pickup &amp; Return</strong></td>
-                  <td>Dockside shuttle to heliport</td>
-                  <td>Identical dockside shuttle to heliport</td>
+                  <td>Follow the cruise voucher</td>
+                  <td>Follow the operator confirmation</td>
                 </tr>
                 <tr>
                   <td><strong>Port Return Buffer</strong></td>
                   <td>Varies by group size</td>
-                  <td>Scheduled 90 to 120-minute safety buffer</td>
+                  <td>Choose a departure with a practical buffer</td>
                 </tr>
                 <tr>
                   <td><strong>Weather Cancellation</strong></td>
-                  <td>Ship onboard credit or delayed refund</td>
-                  <td>100% full refund direct to your card</td>
+                  <td>Controlled by the cruise-line terms</td>
+                  <td>Controlled by the operator or marketplace terms</td>
                 </tr>
                 <tr>
                   <td><strong>Ship Itinerary Change / Missed Port</strong></td>
@@ -149,21 +148,27 @@ export default function CruiseExcursionsVsIndependentPage() {
         {/* Debunking the Myth */}
         <section className="section-block p-6 md:p-8 mb-10">
           <h2 className="text-2xl font-bold text-white mb-4">
-            Debunking the &ldquo;Will the Ship Leave Without Me?&rdquo; Myth
+            Planning Honestly for &ldquo;Will the Ship Leave Without Me?&rdquo;
           </h2>
           <div className="space-y-4 text-slate-300 text-sm md:text-base leading-relaxed">
             <p>
-              Cruise directors often deliver port briefings emphasizing that &ldquo;only ship-sponsored excursions guarantee the ship will wait if you&apos;re late.&rdquo; While technically true that a ship might hold lines for its own bus, this ignores the geographic reality of Juneau:
+              A ship may choose to hold for a delayed ship-sponsored group, but travelers should
+              not assume it will wait for an independent booking. Use written terms and a realistic
+              timing plan:
             </p>
             <ul className="list-disc pl-6 space-y-2 text-slate-200">
               <li>
-                <strong>Close Proximity:</strong> Juneau International Airport heliports are only 8.5 miles from the cruise docks. The shuttle drive takes 15 to 20 minutes along Egan Drive, an open multi-lane highway with virtually no congestion.
+                <strong>Confirm the transfer:</strong> Meeting points and transfer times vary by
+                operator and dock. Use the pickup instructions on your confirmation.
               </li>
               <li>
-                <strong>Strict 90-120 Minute Buffer:</strong> We never schedule tours that return right before all-aboard time. Every flight schedule is booked to have you back in town with at least 1.5 to 2 hours of free time to explore downtown, shop, or walk right onto the ship.
+                <strong>Build your own buffer:</strong> Calculate from all-aboard time, not scheduled
+                departure, and include the return shuttle and dock-security time.
               </li>
               <li>
-                <strong>Zero Missed Ships in 40+ Years:</strong> Local Juneau operators live and die by their reputation with cruise passengers. Over decades of flying millions of cruise guests, an independent helicopter tour in Juneau has never caused a passenger to miss their ship departure.
+                <strong>Read the exact protection:</strong> A marketplace guarantee applies only
+                when the listing expressly includes it and you meet its conditions. It is not a
+                universal protection for every independent tour.
               </li>
             </ul>
           </div>
@@ -175,10 +180,10 @@ export default function CruiseExcursionsVsIndependentPage() {
             What to Do When the Cruise Excursion Shows Sold Out
           </h2>
           <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
-            Cruise lines are only allocated a portion of each operator&apos;s total daily flight seats. 
-            When the ship desk says a tour is full, independent seats or dropped cancellation blocks 
-            often remain open directly with the operators. 
-            Our 24/7 scanner monitors these openings in real-time.
+            A cruise line, direct operator, and marketplace can display different inventory.
+            A ship listing marked sold out therefore does not prove every Juneau operator calendar
+            is sold out. Check the exact direct calendars for your date, or request an availability
+            alert. A seat exists only when a booking provider confirms it.
           </p>
 
           <HelicopterWaitlistForm compact={true} defaultPort="juneau" />
@@ -197,7 +202,9 @@ export default function CruiseExcursionsVsIndependentPage() {
             <div className="faq-item">
               <h3>What if my cruise ship arrives an hour late?</h3>
               <p>
-                Local helicopter dispatchers monitor maritime AIS vessel tracking for all incoming cruise ships into Juneau. If your ship is delayed entering Gastineau Channel, the operator automatically adjusts your pickup and flight departure time to match your new ashore window.
+                Contact the booking provider or operator immediately. Whether the departure can be
+                moved—and whether a refund applies—depends on available capacity and the terms on
+                your confirmation. Do not assume the time changes automatically.
               </p>
             </div>
           </div>

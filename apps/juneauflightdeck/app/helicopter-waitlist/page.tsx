@@ -43,7 +43,7 @@ const waitlistFaqSchema = {
       name: "What happens if a helicopter tour is grounded due to mountain weather?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "All Part 135 helicopter operators in Juneau and Skagway provide a 100% full refund if a flight cannot proceed due to weather conditions. Additionally, Juneau Flight Deck provides same-day backup coordination to help you pivot to marine tours like Auke Bay whale watching.",
+        text: "Current direct-booking terms for the named Juneau operators state that an operator-canceled weather flight is refunded or, for NorthStar, first offered rebooking and then refunded if rebooking is not possible. Third-party booking terms may differ. Juneau Flight Deck can also show non-flight backup options, but availability is not guaranteed.",
       },
     },
   ],
