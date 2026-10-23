@@ -14,6 +14,8 @@ import { getSportsTeam, getTeamsByVenue } from "@/src/data/sports-teams-config";
 import { getSportsVenue, getSportsVenueSlugs } from "@/src/data/sports-venues-config";
 import { buildMapsSearchUrl, buildOfficialSearchUrl, type PageAction } from "@/src/lib/page-actions";
 import { buildBreadcrumbJsonLd, buildPlaceJsonLd } from "@/lib/dcc/jsonld";
+import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
+import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 
 type Params = { slug: string };
 
@@ -123,15 +125,20 @@ export default async function VenuePage({ params }: { params: Promise<Params> })
         <PageActionBar title={`Useful actions for ${venue.name}`} actions={actionBarActions} />
 
         {slug === "red-rocks-amphitheatre" ? (
-          <section className="grid gap-6 lg:grid-cols-2">
-            <LivePulseBlock
-              entityType="venue"
-              entitySlug="red-rocks-amphitheatre"
-              title="Red Rocks Live Pulse"
-              target="entity"
-            />
-            <LivePulseShareCard />
-          </section>
+          <>
+            {getTravelReferenceNodeById("red-rocks") ? (
+              <TravelReferenceExperience node={getTravelReferenceNodeById("red-rocks")!} embedded />
+            ) : null}
+            <section className="grid gap-6 lg:grid-cols-2">
+              <LivePulseBlock
+                entityType="venue"
+                entitySlug="red-rocks-amphitheatre"
+                title="Red Rocks Live Pulse"
+                target="entity"
+              />
+              <LivePulseShareCard />
+            </section>
+          </>
         ) : null}
 
         {decisionPage ? <DecisionEngineTemplate page={decisionPage} /> : null}

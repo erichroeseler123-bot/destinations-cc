@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import DenseLocationView from "@/app/components/dcc/DenseLocationView";
 import ExtendedLocationPanels from "@/app/components/dcc/ExtendedLocationPanels";
+import CoordinateReferenceBridge from "@/app/components/dcc/CoordinateReferenceBridge";
 import { logDiscoveryRequest } from "@/lib/dcc/discoveryTelemetry";
 import { canonicalCoordinate, getDiscoverableLocation, isIndexableCoordinate } from "@/lib/dcc/locationDiscovery";
 import { readLocationIntelligence } from "@/lib/dcc/locationIntelligence";
@@ -67,7 +68,7 @@ async function ServerLocationSnapshot({ lat, lng, dccEndpoints }: { lat: number;
     return (
       <section className="border-b border-white/10 bg-[#070b10] text-white">
         <div className="mx-auto max-w-7xl px-5 py-6 sm:px-8">
-          <p className="text-sm leading-6 text-white/55">Live public sources are temporarily unavailable. The coordinate remains canonical and the live panels below will retry independently.</p>
+          <p className="text-sm leading-6 text-amber-200/90 font-semibold">Live public sources are temporarily unavailable or unverified (not an all-clear). The coordinate remains canonical and the live panels below will retry independently.</p>
         </div>
       </section>
     );
@@ -81,7 +82,12 @@ async function ServerLocationSnapshot({ lat, lng, dccEndpoints }: { lat: number;
   const earthquakes = intelligence.hazards?.earthquakes || [];
   const naturalEvents = intelligence.hazards?.naturalEvents || [];
   const gauges = intelligence.water?.nearbyGauges || [];
-  const activeSources = (intelligence.sources || []).filter((source: any) => source.available);
+  const sourcesList = intelligence.sources || [];
+  const activeSources = sourcesList.filter((source: any) => source.available);
+  const nwsSource = sourcesList.find((source: any) => source.provider === "nws");
+  const usgsSource = sourcesList.find((source: any) => source.provider === "usgs-earthquakes");
+  const eonetSource = sourcesList.find((source: any) => source.provider === "nasa-eonet");
+  const nwpsSource = sourcesList.find((source: any) => source.provider === "noaa-nwps");
 
   return (
     <section className="border-b border-white/10 bg-[#070b10] text-white">
@@ -90,24 +96,34 @@ async function ServerLocationSnapshot({ lat, lng, dccEndpoints }: { lat: number;
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200/70">Server-rendered coordinate brief</p>
               <h2 className="mt-2 text-2xl font-black tracking-[-0.03em] sm:text-3xl">Public context available before JavaScript</h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-white/50">Current conditions, official hazards and nearby public signals are rendered into the page itself. The live panels below refresh and expand this snapshot.</p>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-white/50">Current conditions, official hazards and nearby public signals are rendered into the page itself. Weather observations do not establish venue operating status, road restrictions, or activity safety.</p>
             </div>
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-white/40">{activeSources.length} active public source{activeSources.length === 1 ? "" : "s"}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-white/40">{activeSources.length} of {sourcesList.length} core public source{sourcesList.length === 1 ? "" : "s"} available</p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
-            <SnapshotMetric label="Temperature" value={weather?.temperature_2m != null ? `${cToF(weather.temperature_2m)}°F` : "Unavailable"} detail={weather?.description || null} />
+            <SnapshotMetric label="Temperature" value={weather?.temperature_2m != null ? `${cToF(weather.temperature_2m)}°F` : "Unavailable"} detail={weather?.description || "Source unverified"} />
             <SnapshotMetric label="Feels like" value={weather?.apparent_temperature != null ? `${cToF(weather.apparent_temperature)}°F` : "Unavailable"} />
             <SnapshotMetric label="Wind" value={weather?.wind_speed_10m != null ? `${kmToMiles(weather.wind_speed_10m)} mph` : "Unavailable"} detail={weather?.wind_gusts_10m != null ? `Gusts ${kmToMiles(weather.wind_gusts_10m)} mph` : null} />
             <SnapshotMetric label="Humidity" value={weather?.relative_humidity_2m != null ? `${Math.round(weather.relative_humidity_2m)}%` : "Unavailable"} />
             <SnapshotMetric label="Air quality" value={air?.us_aqi != null ? `AQI ${Math.round(air.us_aqi)}` : "Unavailable"} />
-            <SnapshotMetric label="Official alerts" value={String(alerts.length)} detail={alerts.length ? "Active mapped alerts for this coordinate" : "No active mapped alert returned"} />
+            <SnapshotMetric
+              label="Official NWS alerts"
+              value={nwsSource?.available ? String(alerts.length) : "Unverified"}
+              detail={
+                !nwsSource?.available
+                  ? "NWS feed unavailable or outside U.S. jurisdiction (not an all-clear)"
+                  : alerts.length
+                  ? "Active NWS weather alerts for this coordinate"
+                  : "0 NWS weather alerts at check time (does not confirm venue/road status)"
+              }
+            />
           </div>
 
           <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <SnapshotMetric label="Nearby earthquakes" value={String(earthquakes.length)} detail="Recent mapped seismic events in the configured relevance window" />
-            <SnapshotMetric label="Natural events" value={String(naturalEvents.length)} detail="Mapped public natural-event signals" />
-            <SnapshotMetric label="Water gauges" value={String(gauges.length)} detail="Nearby mapped public gauge stations" />
+            <SnapshotMetric label="Nearby earthquakes" value={usgsSource?.available ? String(earthquakes.length) : "Unverified"} detail={usgsSource?.available ? "USGS 500 km / 7-day seismic window" : "USGS feed unavailable"} />
+            <SnapshotMetric label="Natural events" value={eonetSource?.available ? String(naturalEvents.length) : "Unverified"} detail={eonetSource?.available ? "NASA EONET open natural-event signals" : "EONET feed unavailable"} />
+            <SnapshotMetric label="Water gauges" value={nwpsSource?.available ? String(gauges.length) : "Unverified"} detail={nwpsSource?.available ? "Nearby NOAA NWPS river gauge stations" : "NOAA NWPS unavailable / outside coverage"} />
             <SnapshotMetric label="Elevation" value={intelligence.identity?.elevationM != null ? `${Math.round(intelligence.identity.elevationM * 3.28084).toLocaleString()} ft` : "Unavailable"} detail={intelligence.identity?.timezone || null} />
           </div>
 
@@ -453,6 +469,9 @@ export default async function CoordinateLocationPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
+      <div className="bg-[#070b10] pb-6">
+        <CoordinateReferenceBridge lat={lat} lng={lng} />
+      </div>
       <ServerLocationSnapshot lat={lat} lng={lng} dccEndpoints={dccEndpoints} />
       <DenseLocationView lat={lat} lng={lng} knownName={known?.name || null} />
       <ExtendedLocationPanels lat={lat} lng={lng} />

@@ -12,6 +12,19 @@ const COORDINATE_NATIVE_PUBLIC_PATHS = [
   "/",
   "/about",
   "/developers",
+  "/widget",
+  "/pricing",
+  "/juneau",
+  "/ports",
+  "/ports/juneau",
+  "/red-rocks",
+  "/venues",
+  "/venues/red-rocks-amphitheatre",
+  "/routes/denver-breckenridge",
+  "/routes/denver-red-rocks",
+  "/transportation/colorado",
+  "/regions/colorado",
+  "/cities/denver",
 ] as const;
 
 const INDEXABLE_SURFACE_SET = new Set<string>([

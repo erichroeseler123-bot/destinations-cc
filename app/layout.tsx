@@ -213,7 +213,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <PartnerAnalyticsScript />
       </head>
       <body className={`${headingFont.variable} ${accentFont.variable} ${sansFont.variable} ${monoFont.variable} ${isWtonotShell ? "bg-[#151515] text-[#fdfbf7]" : ""}`}>
-        {isWtonotShell || isLfseShell || isSomersetShell || isHomepage || isSpecialistHost || isEmbedRoute ? (
+        {isWtonotShell || isLfseShell || isSomersetShell || isSpecialistHost || isEmbedRoute ? (
           <>
             <a href="#main-content" className="dcc-skip-link">
               Skip to main content
@@ -228,7 +228,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <SiteHeader />
             <div id="main-content" className="dcc-site-shell">
               <div className="dcc-site-shell__inner">
-                <SiteBreadcrumbs />
+                {!isHomepage ? <SiteBreadcrumbs /> : null}
                 {children}
               </div>
             </div>

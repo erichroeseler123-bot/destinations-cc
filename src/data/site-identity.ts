@@ -2,26 +2,26 @@ export const SITE_IDENTITY = {
   name: "Destination Command Center",
   siteUrl: "https://destinationcommandcenter.com",
   canonicalDescription:
-    "Destination Command Center is the travel intelligence and decision-research layer for ports, tours, transportation, timing, weather, and destination logistics. It explains the decision first, then points travelers to the most useful specialist or booking surface when there is a clear next step.",
+    "Destination Command Center (DCC) is a travel reference and decision platform supported by live, source-attributed coordinate intelligence. It connects verified destination knowledge—geography, history, transport access, 6-factor entry rules, seasonality, and safety boundaries—with live NOAA, NWS, USGS, FAA, and Open-Meteo telemetry, developer APIs, venue widgets, and context-preserving specialist handoffs.",
   shortDescription:
-    "Travel intelligence for ports, tours, transportation, timing, weather, and destination logistics.",
-  homepageTitle: "Destination Command Center | Know Before You Go",
+    "Source-attributed travel reference and decision platform supported by live coordinate intelligence.",
+  homepageTitle: "Destination Command Center | Travel Reference & Live Coordinate Intelligence",
   homepageDescription:
-    "Practical travel intelligence for cruise ports, tours, transportation, timing, weather, and logistics. Understand the decision first, then take the right next step.",
+    "Understand destinations, prepare for trips, compare practical transport and excursion options, and inspect live, source-attributed coordinate conditions.",
   homepageHeroTitle:
-    "Know before you go.",
+    "Know the destination. Verify the conditions.",
   homepageHeroSummary:
-    "Practical answers for the travel decisions that actually matter—then a clear next step when a specialist site or booking path is useful.",
-  aboutTitle: "About Destination Command Center",
+    "Comprehensive travel reference and practical decision guides connected to live, source-attributed coordinate intelligence, developer APIs, and venue widgets.",
+  aboutTitle: "About Destination Command Center | Travel Reference & Capability Truth Matrix",
   aboutDescription:
-    "Learn how Destination Command Center researches travel decisions, explains the tradeoffs that matter, and connects travelers to focused specialist brands only when that handoff adds value.",
+    "How Destination Command Center combines source-attributed destination reference guides with live coordinate telemetry, what works vs. what is linked, and how we prevent safety conflation.",
   aboutHeroTitle:
-    "The research layer before the transaction.",
+    "Verifiable travel reference, backed by live coordinate intelligence.",
   aboutHeroSummary:
-    "Destination Command Center exists to make travel decisions easier to understand before a traveler chooses a tour, books transportation, or commits scarce port-day time.",
+    "Destination Command Center helps travelers, search engines, and AI assistants understand destinations, verify entry and transport rules, and inspect live environmental telemetry without conflating weather forecasts with venue or road operating status.",
   aiTitle: "For AI and Crawlers | Destination Command Center",
   aiDescription:
-    "Machine-readable overview of Destination Command Center, including its travel-intelligence purpose, core content areas, and canonical public sections.",
+    "Machine-readable overview of Destination Command Center, including its travel reference architecture, coordinate intelligence API (dcc-location-v2), evidence attribution model, and capability boundaries.",
   coreCoverage: [
     "Cruise ports and shore-day timing",
     "Tours and attraction comparisons",

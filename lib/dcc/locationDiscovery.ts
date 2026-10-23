@@ -13,6 +13,8 @@ export const DISCOVERABLE_LOCATIONS: readonly DiscoverableLocation[] = [
   { name: "Big Sky, Montana", lat: 45.2618, lng: -111.308, type: "resort", qualityScore: 95 },
   { name: "New Orleans, Louisiana", lat: 29.9511, lng: -90.0715, type: "city", qualityScore: 100 },
   { name: "Juneau, Alaska", lat: 58.3019, lng: -134.4197, type: "port", qualityScore: 100 },
+  { name: "Juneau Cruise Port, Alaska", lat: 58.2989, lng: -134.4053, type: "port", qualityScore: 100 },
+  { name: "Eisenhower-Johnson Memorial Tunnel, Colorado", lat: 39.6779, lng: -105.9056, type: "venue", qualityScore: 95 },
   { name: "Wisconsin Dells, Wisconsin", lat: 43.6275, lng: -89.7709, type: "city", qualityScore: 90 },
   { name: "Charlotte Amalie, St. Thomas", lat: 18.3419, lng: -64.9307, type: "port", qualityScore: 100 },
   { name: "Christiansted, St. Croix", lat: 17.7466, lng: -64.7032, type: "city", qualityScore: 95 },

@@ -48,12 +48,14 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   return {
-    title: "Destination Command Center | The Open Booking Layer for Tours and Experiences",
-    description: "DCC connects two layers: live public destination intelligence by coordinates (weather, hazards, water, transit) and an authorized open connectivity (OCTO) standard for direct operator tourism commerce.",
+    title: "Destination Command Center | Travel Reference, Trip Preparation & Live Coordinate Intelligence",
+    description:
+      "Trusted travel reference and decision platform supported by live, source-attributed coordinate intelligence. Explore destination guides for Juneau, Red Rocks, and the Denver–Breckenridge corridor, or query any coordinate via our web view, embeddable venue widget, and JSON API.",
     alternates: { canonical: "/" },
     openGraph: {
-      title: "Destination Command Center",
-      description: "The open booking layer for tours and experiences.",
+      title: "Destination Command Center | Travel Reference & Live Coordinate Intelligence",
+      description:
+        "Understand destinations, prepare for trips, compare practical transport and excursion options, and inspect live, source-attributed coordinate telemetry.",
       url: "https://destinationcommandcenter.com",
       type: "website",
     },

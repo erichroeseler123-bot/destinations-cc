@@ -134,23 +134,81 @@ export async function readNearbyInfrastructure({ lat, lng }: Coordinate) {
   });
 }
 
-export async function readAviationWeather(coordinate: Coordinate, infrastructure: any[]) {
+export async function readAviationWeather(coordinate: Coordinate, infrastructure: any[] = []) {
   return source("aviationweather-gov", "Aviation observations and forecasts: NOAA/NWS Aviation Weather Center", async () => {
-    const airports = infrastructure
+    const osmAirports = infrastructure
       .filter((item) => item?.kind === "airport" && item?.icao && item.distanceKm <= 120)
       .slice(0, 4);
-    if (!airports.length) throw new Error("no nearby ICAO-tagged aerodromes");
-    const ids = airports.map((item) => item.icao).join(",");
-    const [metars, tafs] = await Promise.all([
-      readJson(`https://aviationweather.gov/api/data/metar?ids=${encodeURIComponent(ids)}&format=json`, 120).catch(() => []),
-      readJson(`https://aviationweather.gov/api/data/taf?ids=${encodeURIComponent(ids)}&format=json`, 600).catch(() => []),
-    ]);
-    const metarList = Array.isArray(metars) ? metars : [];
+
+    if (osmAirports.length > 0) {
+      const ids = osmAirports.map((item) => item.icao).join(",");
+      const [metars, tafs] = await Promise.all([
+        readJson(`https://aviationweather.gov/api/data/metar?ids=${encodeURIComponent(ids)}&format=json`, 120).catch(() => []),
+        readJson(`https://aviationweather.gov/api/data/taf?ids=${encodeURIComponent(ids)}&format=json`, 600).catch(() => []),
+      ]);
+      const metarList = Array.isArray(metars) ? metars : [];
+      const tafList = Array.isArray(tafs) ? tafs : [];
+      return osmAirports.map((airport) => {
+        const metar = metarList.find((row: any) => row?.icaoId === airport.icao || row?.stationId === airport.icao) || null;
+        const taf = tafList.find((row: any) => row?.icaoId === airport.icao || row?.stationId === airport.icao) || null;
+        return { airport, metar, taf };
+      });
+    }
+
+    // Fallback: query NOAA/NWS Aviation Weather Center directly by bounding box (~75km radius)
+    // so airports outside the 5km Overpass radius (e.g., PAJN 13km from Downtown Juneau) still resolve.
+    const latDelta = 0.65;
+    const lngDelta = Math.min(2.0, 0.65 / Math.max(0.25, Math.cos((coordinate.lat * Math.PI) / 180)));
+    const bbox = [
+      (coordinate.lat - latDelta).toFixed(4),
+      (coordinate.lng - lngDelta).toFixed(4),
+      (coordinate.lat + latDelta).toFixed(4),
+      (coordinate.lng + lngDelta).toFixed(4),
+    ].join(",");
+    const bboxMetars = await readJson(
+      `https://aviationweather.gov/api/data/metar?bbox=${encodeURIComponent(bbox)}&format=json`,
+      120,
+    ).catch(() => []);
+    const metarList = (Array.isArray(bboxMetars) ? bboxMetars : [])
+      .map((row: any) => {
+        const lat = Number(row?.lat);
+        const lng = Number(row?.lon);
+        const distanceKm =
+          Number.isFinite(lat) && Number.isFinite(lng)
+            ? Math.round(haversineKm(coordinate, { lat, lng }) * 10) / 10
+            : Infinity;
+        return { row, lat, lng, distanceKm };
+      })
+      .filter((entry) => entry.row?.icaoId && entry.distanceKm <= 120)
+      .sort((a, b) => a.distanceKm - b.distanceKm)
+      .slice(0, 4);
+
+    if (!metarList.length) throw new Error("no nearby ICAO-tagged aerodromes within 120 km");
+
+    const ids = metarList.map((entry) => entry.row.icaoId).join(",");
+    const tafs = await readJson(
+      `https://aviationweather.gov/api/data/taf?ids=${encodeURIComponent(ids)}&format=json`,
+      600,
+    ).catch(() => []);
     const tafList = Array.isArray(tafs) ? tafs : [];
-    return airports.map((airport) => {
-      const metar = metarList.find((row: any) => row?.icaoId === airport.icao || row?.stationId === airport.icao) || null;
-      const taf = tafList.find((row: any) => row?.icaoId === airport.icao || row?.stationId === airport.icao) || null;
-      return { airport, metar, taf };
+
+    return metarList.map(({ row, lat, lng, distanceKm }) => {
+      const icao = row.icaoId;
+      const taf = tafList.find((t: any) => t?.icaoId === icao || t?.stationId === icao) || null;
+      return {
+        airport: {
+          id: `icao/${icao}`,
+          kind: "airport",
+          name: row.name || icao,
+          lat,
+          lng,
+          distanceKm,
+          icao,
+          iata: null,
+        },
+        metar: row,
+        taf,
+      };
     });
   });
 }
@@ -251,9 +309,9 @@ export async function readNdbc(coordinate: Coordinate) {
 }
 
 export async function readExtendedCoordinateFeeds(coordinate: Coordinate) {
-  const infrastructure = await readNearbyInfrastructure(coordinate);
-  const [aviation, coops, ndbc] = await Promise.all([
-    readAviationWeather(coordinate, infrastructure.data || []),
+  const [infrastructure, aviation, coops, ndbc] = await Promise.all([
+    readNearbyInfrastructure(coordinate),
+    readAviationWeather(coordinate, []),
     readCoops(coordinate),
     readNdbc(coordinate),
   ]);

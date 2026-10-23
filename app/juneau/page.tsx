@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import JsonLd from "@/app/components/dcc/JsonLd";
+import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
+import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -17,17 +19,17 @@ import {
 
 const PAGE_PATH = "/juneau";
 
-export const dynamic = "force-static";
+export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Juneau Shore Excursions | Cruise-Safe Decision Hub",
+  title: "Juneau, Alaska Travel Reference, Port Logistics & Shore Excursion Guide | Destination Command Center",
   description:
-    "Choose the strongest Juneau port-day move: helicopter glacier flight first when the day supports it, whale watching or Mendenhall when weather, timing, or comfort changes the plan.",
+    "Comprehensive Juneau travel reference combining history, geography, air/ferry/cruise access, 6-factor entry rules, live NOAA/NWS/FAA conditions, operational safety boundaries, and shore excursion decisions.",
   alternates: { canonical: PAGE_PATH },
   openGraph: {
-    title: "Juneau Shore Excursions | Cruise-Safe Decision Hub",
+    title: "Juneau, Alaska Travel Reference & Port Decision Hub | Destination Command Center",
     description:
-      "A DCC decision hub for Juneau helicopter, whale watching, Mendenhall, weather backup, and short port-call planning.",
+      "Source-attributed Juneau travel reference with live NOAA tides, NWS alerts, PAJN aviation weather, entry dependency rules, and excursion planning.",
     url: PAGE_PATH,
     type: "website",
   },
@@ -153,12 +155,14 @@ function DecisionCard({ card, featured = false }: { card: JuneauDecisionCard; fe
 
 export default function JuneauCommercialHubPage() {
   const [primaryCard, ...secondaryCards] = juneauDecisionCards;
+  const juneauReference = getTravelReferenceNodeById("juneau");
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#041018] text-white">
       <JsonLdGraph />
+      {juneauReference ? <TravelReferenceExperience node={juneauReference} embedded /> : null}
 
-      <section className="relative border-b border-white/10 bg-[radial-gradient(circle_at_20%_12%,rgba(34,211,238,0.18),transparent_30%),radial-gradient(circle_at_72%_18%,rgba(245,179,75,0.16),transparent_28%),linear-gradient(180deg,#06131e,#031018)]">
+      <section className="relative border-b border-t border-white/10 bg-[radial-gradient(circle_at_20%_12%,rgba(34,211,238,0.18),transparent_30%),radial-gradient(circle_at_72%_18%,rgba(245,179,75,0.16),transparent_28%),linear-gradient(180deg,#06131e,#031018)]">
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#041018] to-transparent" />
         <div className="relative mx-auto grid max-w-7xl gap-8 px-6 py-14 md:grid-cols-[1.05fr_0.95fr] md:py-20">
           <div className="flex flex-col justify-center">

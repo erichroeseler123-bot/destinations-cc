@@ -2,12 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import DecisionEngineTemplate from "@/app/components/dcc/DecisionEngineTemplate";
+import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
 import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
+import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getSurface, hasSurfaceEntity } from "@/lib/dcc/surfaces/getSurface";
 import {
   getDecisionEnginePageByPath,
   listDecisionEnginePagesByPrefix,
 } from "@/src/data/decision-engine-pages";
+
+export const revalidate = 300;
 
 type Params = { slug: string };
 
@@ -32,7 +36,7 @@ export async function generateMetadata({
   if (!page) return { title: "Route Guide" };
 
   return {
-    title: page.title,
+    title: `${page.title} | Destination Command Center`,
     description: page.hero.summary,
     alternates: { canonical: page.canonicalPath },
   };
@@ -56,14 +60,28 @@ export default async function RouteDecisionPage({
   const page = surface?.modules.decision?.page || getDecisionEnginePageByPath(`/routes/${slug}`);
   if (!page) notFound();
 
+  const referenceNode =
+    slug === "denver-breckenridge"
+      ? getTravelReferenceNodeById("denver-breckenridge")
+      : slug === "denver-red-rocks"
+        ? getTravelReferenceNodeById("red-rocks")
+        : null;
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
+      {referenceNode ? <TravelReferenceExperience node={referenceNode} embedded /> : null}
       <div className="mx-auto max-w-6xl px-6 py-14 space-y-8">
         <DecisionEngineTemplate page={page} />
         {slug === "denver-red-rocks" ? <RideOptionsCard venueSlug="red-rocks-amphitheatre" sourcePage="/routes/denver-red-rocks" /> : null}
-        <footer className="text-sm text-zinc-400">
+        <footer className="flex flex-wrap gap-6 text-sm text-zinc-400">
           <Link href="/cities/denver" className="hover:text-zinc-200">
             Open Denver decision engine →
+          </Link>
+          <Link href="/transportation/colorado" className="hover:text-zinc-200">
+            Open Colorado transportation hub →
+          </Link>
+          <Link href="/regions/colorado" className="hover:text-zinc-200">
+            Open Colorado region guide →
           </Link>
         </footer>
       </div>
