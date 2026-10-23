@@ -32,7 +32,7 @@ export default function TourSavingsCalculator() {
       <div className={styles.controls}>
         <label>Compare using
           <select value={mode} onChange={event => setMode(event.target.value)}>
-            <option value="average">Average published starting prices</option>
+            <option value="average">Average published helicopter-tour prices</option>
             <option value="custom">My checkout prices</option>
           </select>
         </label>
@@ -51,7 +51,7 @@ export default function TourSavingsCalculator() {
         </label>
       </div>}
       <div className={styles.result} role="status" aria-live="polite" aria-atomic="true">
-        <p>{custom ? higher ? "This option costs more per person" : "Your price difference per person" : "Average listed-price savings per person"}</p>
+        <p>{custom ? higher ? "This option costs more per person" : "Your price difference per person" : "Average helicopter-tour savings per person"}</p>
         <div className={styles.equation}>
           <strong>{perPerson === null ? "—" : formatDollars(Math.abs(perPerson))}</strong>
           <span>× {travelers} {travelers === 1 ? "traveler" : "travelers"}</span>
@@ -61,7 +61,7 @@ export default function TourSavingsCalculator() {
       </div>
       <p className={styles.note}>{custom
         ? "Use final per-person totals for the same tour, date, age category, and inclusions. Include taxes, booking fees, transfers, and any surcharges. Booking terms and return-to-ship protections vary."
-        : `Based on three published adult starting-price comparisons, checked ${SAVINGS_CHECKED_DATE}. Operator taxes and booking fees reduce these savings. Prices, inclusions, and booking protections vary; this is not a quote for your sailing.`}</p>
+        : `Based on three published adult helicopter-tour starting-price comparisons, checked ${SAVINGS_CHECKED_DATE}. Operator taxes and booking fees reduce these savings. Prices, inclusions, and booking protections vary; this is not a quote for your sailing.`}</p>
       <details className={styles.sources}>
         <summary>See the prices behind the average</summary>
         <p>Checked {SAVINGS_CHECKED_DATE}. Equal-weight average of the three differences below, rounded to the nearest cent before multiplying by your group size. These are comparable experience types; the same operator or departure is not confirmed by the cruise listings.</p>
