@@ -2,6 +2,7 @@ import { TourFeatureLinks } from "@/app/components/tour-tools/TourPlanningKit";
 import { TOOLKIT_CONFIG } from "@/lib/toolkitConfig";
 import { SITE_DESCRIPTION } from "@/lib/sitePositioning";
 import type { Metadata } from "next";
+import BookingTransparency from "./components/BookingTransparency";
 import HelicopterDispatchBoard from "./components/HelicopterDispatchBoard";
 import NextHelicopterFinder from "./components/NextHelicopterFinder";
 import TourSavingsCalculator from "./components/TourSavingsCalculator";
@@ -33,6 +34,7 @@ export default function HomePage() {
   return (
     <main id="main-content">
       <TourSavingsCalculator />
+      <BookingTransparency />
       <NextHelicopterFinder />
       <TourFeatureLinks config={TOOLKIT_CONFIG} />
       <HelicopterDispatchBoard
