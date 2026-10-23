@@ -13,15 +13,20 @@ type FooterLink = {
 };
 
 const ENGINE_LINKS: FooterLink[] = [
-  { href: "/ask", label: "Ask DCC" },
-  { href: "/signals", label: "Live Signals" },
-  { href: "/ports", label: "Ports" },
-  { href: "/guides", label: "Decision Guides" },
+  { href: "/juneau", label: "Juneau Reference" },
+  { href: "/red-rocks", label: "Red Rocks Reference" },
+  { href: "/routes/denver-breckenridge", label: "Denver–Breckenridge Corridor" },
+  { href: "/ports", label: "Cruise Ports" },
+  { href: "/venues", label: "Venues" },
+  { href: "/transportation/colorado", label: "Colorado Transit" },
 ];
 
 const SYSTEM_LINKS: FooterLink[] = [
-  { href: "/alerts", label: "Alerts & Trends" },
-  { href: "/api/public/network-feed", label: "Public Network Feed" },
+  { href: "/about", label: "About & Capability Matrix" },
+  { href: "/widget", label: "Venue Widget" },
+  { href: "/pricing", label: "Commercial Pricing" },
+  { href: "/developers", label: "Coordinate API" },
+  { href: "/scope.json", label: "Scope Contract" },
   { href: "/agent.json", label: "Agent Manifest" },
   { href: "/llms.txt", label: "LLM Guidance" },
 ];

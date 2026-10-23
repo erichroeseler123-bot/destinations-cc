@@ -26,6 +26,8 @@ import { headers } from "next/headers";
 import LfsTrustStrip from "@/components/LfsTrustStrip";
 import DccNetworkStrip from "@/components/DccNetworkStrip";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
+import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
+import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 
 const BASE_URL = "https://destinationcommandcenter.com";
 
@@ -419,6 +421,9 @@ export default async function PortPage({
         }}
       />
       <PortAuthorityTemplate port={port} config={config} />
+      {port.slug === "juneau" && getTravelReferenceNodeById("juneau") ? (
+        <TravelReferenceExperience node={getTravelReferenceNodeById("juneau")!} embedded />
+      ) : null}
       <section className="max-w-6xl mx-auto px-6 pb-10">
         <AirportLinksSection
           title={`Airports that affect ${port.name} planning`}

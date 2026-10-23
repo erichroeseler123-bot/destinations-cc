@@ -6,6 +6,7 @@ import { normalizeGaugeStatuses, readHydroMarine } from "@/lib/dcc/hydroMarine";
 import { readExtendedCoordinateFeeds } from "@/lib/dcc/extendedCoordinateFeeds";
 import { readApplicableDccEndpoints } from "@/lib/dcc/endpointRegistry";
 import { DccLocationProductService } from "@/lib/octo/locationProductService";
+import { resolveTravelReferenceForCoordinate } from "@/lib/dcc/travelReference";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -188,6 +189,55 @@ export async function GET(request: NextRequest, context: RouteContext) {
       ...(extended.sources || []),
     ];
 
+    const refMatch = resolveTravelReferenceForCoordinate(lat, lng);
+    const travelReference = refMatch
+      ? {
+          available: true,
+          distanceKm: refMatch.distanceKm,
+          matchType: refMatch.matchType,
+          matchedAnchorLabel: refMatch.matchedAnchorLabel,
+          id: refMatch.primaryNode.id,
+          name: refMatch.primaryNode.title,
+          canonicalPath: refMatch.primaryNode.canonicalPath,
+          aliases: refMatch.primaryNode.aliasPaths,
+          placeType: refMatch.primaryNode.placeType,
+          lastReviewedAt: refMatch.primaryNode.lastReviewedAt,
+          heroSummary: refMatch.primaryNode.heroSummary,
+          operationalBoundaries: refMatch.primaryNode.operationalBoundaries,
+          entryDependencies: {
+            whyCoordinatesCannotAnswerEntry: refMatch.primaryNode.beforeYouGo.whyCoordinatesCannotAnswerEntry,
+            factors: [
+              "nationality",
+              "passportAndDocuments",
+              "residenceContext",
+              "routingAndTransit",
+              "tripPurpose",
+              "dateAndValidityRule",
+            ],
+            scenarioCount: refMatch.primaryNode.beforeYouGo.entryScenarios.length,
+          },
+          specialistHandoffs: refMatch.primaryNode.specialistHandoffs.options.map((h) => ({
+            id: h.id,
+            name: h.partnerName,
+            baseUrl: h.baseUrl,
+            integrationMode: h.integrationMode,
+            supportedParams: h.supportedContextParams,
+          })),
+          connectedPlaces: refMatch.primaryNode.relationships,
+          evidenceCount: refMatch.primaryNode.evidenceRegistry.length,
+          adjacentReferences: refMatch.relatedNodes.map((r) => ({
+            id: r.id,
+            name: r.title,
+            canonicalPath: r.canonicalPath,
+          })),
+        }
+      : {
+          available: false,
+          reason: "Outside curated DCC destination reference nodes; raw coordinate telemetry only.",
+          safetyBoundary:
+            "Weather telemetry alone does not establish venue operating status, road traction restrictions, cruise docking feasibility, or activity safety.",
+        };
+
     const payload = {
       ok: true,
       schema: "dcc-location-v2",
@@ -196,7 +246,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       coordinate: { lat, lng, precision_decimals: 5 },
       location: {
         id: `coordinate:${canonicalLat}:${canonicalLng}`,
-        name: "Coordinate location",
+        name: refMatch ? `${refMatch.primaryNode.title} (${canonicalLat}, ${canonicalLng})` : "Coordinate location",
         displayName: `${canonicalLat}, ${canonicalLng}`,
         lat,
         lng,
@@ -208,11 +258,14 @@ export async function GET(request: NextRequest, context: RouteContext) {
         api: canonicalApi,
         absolutePage: `${origin}${canonicalPage}`,
         absoluteApi: `${origin}${canonicalApi}`,
+        destinationReference: refMatch ? `${origin}${refMatch.primaryNode.canonicalPath}` : null,
       },
       checkedAt: intelligence.checkedAt,
       dccEndpoints,
+      travelReference,
       modules: {
         dccEndpoints,
+        travelReference,
         identity: intelligence.identity,
         now,
         conditions,
@@ -239,6 +292,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       coastal: extended.coastal || { coops: [], ndbc: [] },
       sources,
       discovery: {
+        scope: `${origin}/scope.json`,
         agent: `${origin}/agent.json`,
         llms: `${origin}/llms.txt`,
         openapi: `${origin}/openapi.json`,
@@ -260,8 +314,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
         trafficRequiresEfficientRegionalPublicCoverage: true,
         browserCoreFirst: true,
         fullMachineContractByDefaultForDirectRequests: true,
+        weatherDoesNotEstablishVenueOrRoadStatus: true,
+        missingDataNeverImpliesAllClear: true,
+        entryRequirementsRequireTravelerContextNotCoordinates: true,
         interpretation:
-          "DCC assembles current public machine-readable context for this coordinate. Missing modules indicate unavailable mapped coverage, not proof that a real-world phenomenon is absent.",
+          "DCC assembles current public machine-readable context and linked travel reference guidance for this coordinate. Missing modules or unavailable sources indicate unmapped or unreachable coverage—never proof that a hazard is absent or that a venue, road, or activity is safe.",
       },
     };
 

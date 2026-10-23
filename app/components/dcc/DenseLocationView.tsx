@@ -563,24 +563,45 @@ export default function DenseLocationView({ lat, lng, knownName = null }: Props)
               </Section>
             ) : null}
 
-            <Section eyebrow="Official alerts" title={alerts.length ? `${alerts.length} active public alert${alerts.length === 1 ? "" : "s"}` : "No mapped NWS alerts at this point"}>
-              {alerts.length ? (
-                <div className="space-y-3">
-                  {alerts.map((alert: any) => (
-                    <article key={alert.id || alert.headline} className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.055] p-5">
-                      <div className="flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-[0.12em] text-amber-100/60">
-                        <span>{alert.event || "Alert"}</span><span>·</span><span>{alert.severity || "Severity unknown"}</span>{alert.expires ? <><span>·</span><span>Expires {formatTime(alert.expires)}</span></> : null}
-                      </div>
-                      <h3 className="mt-2 font-black text-amber-50">{alert.headline || alert.event}</h3>
-                      {alert.areaDesc ? <p className="mt-2 text-xs leading-5 text-amber-50/55">{alert.areaDesc}</p> : null}
-                      {alert.instruction ? <p className="mt-3 text-sm leading-6 text-amber-50/70">{alert.instruction}</p> : null}
-                    </article>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm leading-6 text-white/42">For U.S. coordinates, DCC checks the National Weather Service point-alert service. Outside mapped coverage, this section will remain quiet rather than inventing a result.</p>
-              )}
-            </Section>
+            {(() => {
+              const nwsSource = sources.find((s) => s.provider === "nws");
+              const nwsAvailable = nwsSource ? nwsSource.available : Boolean(nws);
+              return (
+                <Section
+                  eyebrow="Official alerts & safety boundary"
+                  title={
+                    alerts.length
+                      ? `${alerts.length} active public NWS alert${alerts.length === 1 ? "" : "s"}`
+                      : nwsAvailable
+                        ? "0 active NWS weather alerts (does not establish venue or road status)"
+                        : "NWS alert coverage unavailable / unverified (not an all-clear)"
+                  }
+                >
+                  {alerts.length ? (
+                    <div className="space-y-3">
+                      {alerts.map((alert: any) => (
+                        <article key={alert.id || alert.headline} className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.055] p-5">
+                          <div className="flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-[0.12em] text-amber-100/60">
+                            <span>{alert.event || "Alert"}</span><span>·</span><span>{alert.severity || "Severity unknown"}</span>{alert.expires ? <><span>·</span><span>Expires {formatTime(alert.expires)}</span></> : null}
+                          </div>
+                          <h3 className="mt-2 font-black text-amber-50">{alert.headline || alert.event}</h3>
+                          {alert.areaDesc ? <p className="mt-2 text-xs leading-5 text-amber-50/55">{alert.areaDesc}</p> : null}
+                          {alert.instruction ? <p className="mt-3 text-sm leading-6 text-amber-50/70">{alert.instruction}</p> : null}
+                        </article>
+                      ))}
+                    </div>
+                  ) : !nwsAvailable ? (
+                    <div className="rounded-2xl border border-amber-400/25 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100">
+                      <strong>Unverified Alert Coverage:</strong> The U.S. National Weather Service alert feed did not return coverage for this coordinate ({nwsSource?.error || "outside U.S. NWS jurisdiction or upstream unreachable"}). Missing or unavailable alert data is <strong>never</strong> an &ldquo;all-clear.&rdquo; Check your local national meteorological service and official civil defense authorities.
+                    </div>
+                  ) : (
+                    <p className="text-sm leading-6 text-white/50">
+                      NWS point-alert check completed with 0 active public weather warnings at this coordinate. <strong>Important:</strong> 0 weather alerts does not mean a venue is open, a trail is passable, or a highway has no traction restrictions. Always verify venue lightning holds, park closures, and DOT road rules directly with the operating authority.
+                    </p>
+                  )}
+                </Section>
+              );
+            })()}
 
             {(naturalEvents.length || earthquakes.length) ? (
               <Section eyebrow="Earth · fire · severe events" title="Natural-hazard context around the coordinate">
@@ -677,9 +698,12 @@ export default function DenseLocationView({ lat, lng, knownName = null }: Props)
                   <div key={source.provider} className="rounded-2xl border border-white/8 bg-black/20 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-black">{source.provider}</p>
-                      <span className={`rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wider ${source.available ? "bg-emerald-300/10 text-emerald-200" : "bg-white/[0.06] text-white/35"}`}>{source.available ? "live" : "not mapped"}</span>
+                      <span className={`rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-wider ${source.available ? "bg-emerald-300/10 text-emerald-200" : "bg-amber-300/10 text-amber-200/80"}`}>{source.available ? "live" : "unavailable / unmapped"}</span>
                     </div>
                     <p className="mt-2 text-xs leading-5 text-white/42">{source.attribution}</p>
+                    {!source.available && source.error ? (
+                      <p className="mt-1.5 text-[11px] text-amber-200/75">Reason: {source.error}</p>
+                    ) : null}
                     {source.checkedAt ? <p className="mt-2 text-[10px] text-white/28">Checked {checked(source.checkedAt)}</p> : null}
                   </div>
                 ))}

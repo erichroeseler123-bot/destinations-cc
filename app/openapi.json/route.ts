@@ -263,13 +263,20 @@ export async function GET() {
                 api: { type: "string" },
                 absolutePage: { type: "string", format: "uri" },
                 absoluteApi: { type: "string", format: "uri" },
+                destinationReference: { type: ["string", "null"], format: "uri" },
               },
             },
             checkedAt: { type: "string", format: "date-time" },
+            travelReference: {
+              type: "object",
+              additionalProperties: true,
+              description: "Connected curated destination reference metadata, entry dependency summary, operational safety boundaries, and specialist handoffs when within a curated DCC corridor.",
+            },
             modules: {
               type: "object",
               required: ["identity", "now", "conditions", "hazards", "water", "official"],
               properties: {
+                travelReference: { type: "object", additionalProperties: true },
                 identity: { type: "object", additionalProperties: true },
                 now: {
                   type: "object",

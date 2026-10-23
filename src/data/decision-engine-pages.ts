@@ -673,6 +673,143 @@ const pages: DecisionEnginePage[] = [
       ],
     },
   },
+  {
+    id: "route-denver-breckenridge",
+    canonicalPath: "/routes/denver-breckenridge",
+    nodeType: "route",
+    title: "Denver–Breckenridge I-70 Mountain Corridor Reference + Decision Guide",
+    hero: {
+      eyebrow: "DCC Mountain Corridor Reference",
+      summary:
+        "Comprehensive travel reference and decision guide for the Denver/DEN to Breckenridge I-70 and CO-9 corridor: elevation climbs to 11,158 ft, statutory CDOT Passenger Vehicle Traction Law (CO Rev Stat § 42-4-106), Bustang/Pegasus/Snowstang public transit, rental AWD pitfalls, and live mountain coordinate telemetry.",
+      imageHint: "I-70 Continental Divide corridor climbing to Eisenhower-Johnson Memorial Tunnel and Summit County",
+      quickLinks: [
+        { label: "Breckenridge coordinate (39.48170, -106.03840)", href: "/location/39.48170/-106.03840" },
+        { label: "Eisenhower Tunnel coordinate (39.67790, -105.90560)", href: "/location/39.67790/-105.90560" },
+        { label: "Colorado transportation hub", href: "/transportation/colorado" },
+        { label: "Denver city node", href: "/cities/denver" },
+      ],
+    },
+    quickFacts: [
+      { label: "Corridor route", value: "I-70 West (MM 259 Morrison to MM 203 Frisco) + CO-9 South (9.5 mi)" },
+      { label: "Peak elevation", value: "11,158 ft at Eisenhower–Johnson Memorial Tunnel (9,600 ft in Breckenridge)" },
+      { label: "Statutory baseline", value: "CDOT Traction Law mandatory Sept 1 – May 31 (I-70 MM 133–259)" },
+      { label: "Public transit", value: "CDOT Bustang West, Pegasus shuttle vans, seasonal Snowstang + Summit Stage" },
+      { label: "Operational boundary", value: "Modeled snowfall does not replace official CDOT COtrip traction/closure status" },
+      { label: "Best action", value: "Verify tire compliance or book mountain shuttle before leaving DEN" },
+    ],
+    whyThisPlaceMatters:
+      "The I-70 West mountain corridor is the single point of failure for Colorado ski and alpine trips. Standard airport rental sedans routinely lack compliant winter tread and get stranded on the 7% grade approaching the Eisenhower Tunnel.",
+    whenToGo: {
+      bestMonths: "Sept 1 – May 31 requires mandatory winter traction readiness; July–Sept offers peak high-alpine summer access",
+      bestDays: "Midweek departures and pre-05:45 AM weekend departures avoid Floyd Hill and tunnel metering bottlenecks",
+      bestWeather: "Clear Continental Divide windows; upslope and Pacific troughs can drop visibility and trigger safety holds in minutes",
+      crowdPatterns:
+        "Eastbound Sunday afternoon return waves (1:30 PM – 6:30 PM) regularly double travel times through Silverthorne, EJMT, and Idaho Springs.",
+      seasonalDifferences:
+        "Winter and spring bring statutory traction laws and avalanche mitigation holds; summer brings afternoon convective thunderstorms above treeline.",
+    },
+    howToGetThere: [
+      "Scheduled Airport Shuttles & Transfers (GoSno / Epic Mountain Express / Summit Express) from DEN Level 5 using winter-equipped AWD/4WD fleets.",
+      "Public Transit: RTD A-Line from DEN to Denver Union Station, CDOT Bustang West Line or Pegasus to Frisco Transit Center, and free Summit Stage bus to Breckenridge.",
+      "Self-Drive via I-70 West & CO-9 South: Only with verified 4WD/AWD or 3PMSF/M+S tires with at least 3/16-inch tread depth.",
+      "Always check official CDOT COtrip.org before departing Denver or Frisco for active Code 15 / Code 16 restrictions and tunnel holds.",
+    ],
+    whatToDo: [
+      {
+        title: "Verify CDOT Traction & Chain Law compliance",
+        description:
+          "Confirm your vehicle meets CO Rev Stat § 42-4-106 requirements between Dotsero and Morrison (Sept 1 – May 31).",
+        href: "/transportation/colorado",
+      },
+      {
+        title: "Compare public transit vs. scheduled mountain transfer",
+        description:
+          "Evaluate Denver Union Station + Bustang/Pegasus + Summit Stage against direct DEN Level 5 mountain shuttles.",
+        href: "/transportation/colorado",
+      },
+      {
+        title: "Inspect live Breckenridge & Eisenhower Tunnel telemetry",
+        description:
+          "Compare live Denver, EJMT divide, and Breckenridge base coordinate weather and NWS winter alerts.",
+        href: "/location/39.48170/-106.03840",
+      },
+    ],
+    nearbyThings: [
+      { label: "Colorado transportation directory", href: "/transportation/colorado" },
+      { label: "Idaho Springs corridor node", href: "/regions/colorado/idaho-springs" },
+      { label: "Red Rocks travel reference", href: "/red-rocks" },
+      { label: "Denver city guide", href: "/cities/denver" },
+    ],
+    insiderTips: [
+      "Rental car reservations for 'AWD SUV' at DEN do not guarantee legal 3/16-inch winter tread; inspect the tire sidewall for 3PMSF or M+S before leaving the garage.",
+      "Once in Breckenridge, you do not need a car: Free Ride town buses and the BreckConnect Gondola connect town and peaks for $0.",
+      "Hazmat trucks are routed over US-6 Loveland Pass (11,990 ft) at the top of the hour; heavy snow closures on Loveland Pass force hourly hazmat holds inside the Eisenhower Tunnel.",
+    ],
+    commonMistakes: [
+      {
+        mistake: "Assuming a dry forecast in Denver means dry pavement at the Continental Divide.",
+        avoid: "Check both the Eisenhower Tunnel (39.67790, -105.90560) and Breckenridge (39.48170, -106.03840) coordinates plus official CDOT COtrip cameras.",
+      },
+      {
+        mistake: "Driving west on I-70 between 06:30 AM and 09:30 AM on Saturday or returning eastbound between 1:30 PM and 6:30 PM on Sunday.",
+        avoid: "Depart Denver before 05:45 AM or take public/scheduled mountain transit.",
+      },
+      {
+        mistake: "Mistaking modeled Open-Meteo snow depth for resort base depth or highway passability.",
+        avoid: "Use modeled weather for atmospheric trends, CDOT COtrip for highway status, and Breckenridge Ski Resort for official snow stakes and lift status.",
+      },
+    ],
+    localIntel: [
+      "I-70 climbs nearly 6,000 vertical feet between Denver and the Eisenhower–Johnson Memorial Tunnel.",
+      "Summit Stage provides free year-round regional bus connections between Frisco, Breckenridge, Keystone, Copper Mountain, Silverthorne, and Dillon.",
+      "GoSno publishes a live machine-readable DCC operator endpoint (https://gosno.co/.well-known/dcc) covering this corridor.",
+    ],
+    relatedExperiences: [
+      { label: "Colorado transportation hub", href: "/transportation/colorado", graphLinked: true },
+      { label: "Colorado regional guide", href: "/regions/colorado", graphLinked: true },
+      { label: "Denver to Red Rocks route guide", href: "/routes/denver-red-rocks", graphLinked: true },
+    ],
+    authorityActions: [
+      { label: "Open Breckenridge coordinate telemetry", href: "/location/39.48170/-106.03840", kind: "internal" },
+      { label: "Open Eisenhower Tunnel coordinate telemetry", href: "/location/39.67790/-105.90560", kind: "internal" },
+      { label: "Open Colorado transportation directory", href: "/transportation/colorado", kind: "internal" },
+    ],
+    executionCtas: [
+      { label: "Compare Colorado transfer options", href: "/transportation/colorado", kind: "internal" },
+      { label: "Open GoSno mountain shuttle handoff", href: "https://gosno.co", kind: "external" },
+    ],
+    faq: [
+      {
+        q: "When is the Colorado I-70 Passenger Vehicle Traction Law in effect?",
+        a: "By Colorado statute (CO Rev Stat § 42-4-106), the Passenger Vehicle Traction Law is always active on I-70 between Dotsero (MM 133) and Morrison (MM 259) from September 1 through May 31, and can also be activated during any storm outside those dates.",
+      },
+      {
+        q: "Can I reach Breckenridge from Denver Airport without renting a car?",
+        a: "Yes. You can book a direct door-to-door mountain shuttle from DEN Level 5 (GoSno, Epic Mountain Express, Summit Express) or take the RTD A-Line to Denver Union Station, CDOT Bustang/Pegasus to Frisco Transit Center, and the free Summit Stage bus to Breckenridge.",
+      },
+      {
+        q: "Does DCC's snowfall telemetry tell me if I-70 or Loveland Pass is open?",
+        a: "No. DCC aggregates Open-Meteo snowfall models and NWS winter alerts for meteorological context, but only CDOT COtrip.org (or dialing 511) provides authoritative live highway closures, tunnel holds, and Code 15/16 traction and chain enforcement.",
+      },
+      {
+        q: "Do I need a car once I arrive in Breckenridge?",
+        a: "Usually no. Breckenridge operates the free BreckConnect Gondola and Free Ride town buses, and Summit Stage connects neighboring Summit County towns and resorts free of charge.",
+      },
+    ],
+    freshness: {
+      updatedAt: "2026-10-23",
+      refreshIntervalDays: 14,
+      evidence: [
+        {
+          title: "CDOT I-70 Traction Law & COtrip Traveller Information",
+          source: "Colorado Department of Transportation (CDOT)",
+          href: "https://www.codot.gov/travel/winter-driving/tractionlaw",
+          note: "Statutory Sept 1 – May 31 I-70 MM 133–259 traction law and live COtrip corridor links verified.",
+        },
+      ],
+    },
+  },
 ];
 
 export const DECISION_ENGINE_PAGES: DecisionEnginePage[] = pages.map((entry) =>
