@@ -14,8 +14,8 @@ const bookingFacts = [
   },
   {
     number: "03",
-    title: "A stated Back-to-Ship Guarantee creates accountability",
-    text: "For a product expressly marked “Worry-Free Shore Excursion,” Viator’s terms say it will arrange transportation to the next port if the supplier fails to return you in time through no fault of your own. That published promise is part of the booking agreement, and consumer-protection law prohibits advertising benefits that are not provided. Coverage requires correct ship details, at least a two-hour buffer between the tour’s end and the ship’s departure, and contacting Viator directly; Viator’s stated limit is $1,000 per person.",
+    title: "A Back-to-Ship Guarantee must be explicit",
+    text: "This is not a blanket law covering every independent tour. Viator's current terms create a contractual policy only for products marked “Worry-free Shore Excursion.” Eligibility requires correct ship details, at least two hours between the tour end and ship departure, no traveler-caused delay, and contacting Viator before arranging travel. The stated next-port transport limit is $1,000 per person.",
   },
   {
     number: "04",
@@ -30,6 +30,29 @@ const checks = [
   "Your ship’s port date and all-aboard deadline",
   "Final price including taxes, fees, and surcharges",
   "Cancellation, weather-refund, and return-to-ship terms",
+] as const;
+
+const primarySources = [
+  {
+    label: "Viator Terms of Use — Worry-free Shore Excursions, §20",
+    href: "https://www.viator.com/support/termsAndConditions",
+    note: "Return-to-ship eligibility and $1,000 next-port limit",
+  },
+  {
+    label: "TEMSCO Juneau tour pages",
+    href: "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
+    note: "Duration, transfers, weight surcharge, and weather refund",
+  },
+  {
+    label: "Coastal Helicopters FAQ",
+    href: "https://coastalhelicopters.com/faq/",
+    note: "Cancellation tiers, weather refund, cruise disruption, and return support",
+  },
+  {
+    label: "NorthStar Trekking FAQ",
+    href: "https://northstartrekking.com/faqs/",
+    note: "Customer cancellation and seating policies",
+  },
 ] as const;
 
 export default function BookingTransparency() {
@@ -68,6 +91,27 @@ export default function BookingTransparency() {
         </div>
         <ul>
           {checks.map((check) => <li key={check}>{check}</li>)}
+        </ul>
+      </div>
+
+      <div className={styles.sources}>
+        <div>
+          <p className={styles.checklistLabel}>Source-of-truth standard</p>
+          <h3>Claims should be traceable, dated, and narrow.</h3>
+          <p>
+            We use operator pages and current booking terms as primary sources. “Starting at”
+            prices are snapshots, not quotes; checkout controls. When channels disagree, we show
+            the disagreement instead of guessing.
+          </p>
+          <span>Primary sources last checked October 23, 2026.</span>
+        </div>
+        <ul>
+          {primarySources.map((source) => (
+            <li key={source.href}>
+              <a href={source.href} target="_blank" rel="noopener noreferrer">{source.label}</a>
+              <small>{source.note}</small>
+            </li>
+          ))}
         </ul>
       </div>
 
