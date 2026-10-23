@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { juneauClock, juneauDate, type DepartureResponse } from "@/lib/nextDepartures";
+import { addPortDateListener, readSharedPortDate, sharePortDate } from "@/lib/portDate";
 import styles from "./NextHelicopterFinder.module.css";
 
 export default function NextHelicopterFinder() {
@@ -14,8 +15,9 @@ export default function NextHelicopterFinder() {
   const pending = useRef<AbortController | null>(null);
   useEffect(() => {
     const ready = new Date(Date.now() + 60 * 60000);
-    setDate(juneauDate(ready)); setAfter(juneauClock(ready));
-    return () => pending.current?.abort();
+    setDate(readSharedPortDate() || juneauDate(ready)); setAfter(juneauClock(ready));
+    const removeDateListener = addPortDateListener(setDate);
+    return () => { removeDateListener(); pending.current?.abort(); };
   }, []);
   function clearResult() { pending.current?.abort(); pending.current = null; setLoading(false); setResult(null); setError(""); }
   async function search(event: React.FormEvent<HTMLFormElement>) {
@@ -37,7 +39,7 @@ export default function NextHelicopterFinder() {
     <h2 id="next-helicopter-title">Find the next helicopter tour out</h2>
     <p>Compare upcoming starts from TEMSCO, Coastal, and NorthStar booking calendars. All times are local to Juneau.</p>
     <form onSubmit={search} className={styles.form}>
-      <label>Tour date<input required type="date" value={date} min={juneauDate()} onChange={e => { clearResult(); setDate(e.target.value); }} /></label>
+      <label>Tour date<input required type="date" value={date} min={juneauDate()} onChange={e => { clearResult(); setDate(e.target.value); sharePortDate(e.target.value); }} /></label>
       <label>Travelers<select value={travelers} onChange={e => { clearResult(); setTravelers(e.target.value); }}>{Array.from({ length: 20 }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}</select></label>
       <label>Ready for pickup / check-in after<input required type="time" value={after} onChange={e => { clearResult(); setAfter(e.target.value); }} /></label>
       <button type="submit" disabled={loading || !date}>{loading ? "Checking calendars…" : "Find next departure"}</button>
