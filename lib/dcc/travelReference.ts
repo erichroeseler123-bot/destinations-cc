@@ -532,7 +532,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           officialRequirementSummary:
             "No international border is crossed on direct flights between Seattle/Anchorage and Juneau, so TSA domestic identification rules (REAL ID or passport) apply.",
           dccPracticalExplanation:
-            "Even if flying domestically to Juneau, bring a valid U.S. Passport Book or Passport Card if there is any chance you will take a regional ferry or excursion that enters British Columbia or the Yukon.",
+            "If your trip may enter Canada, check the requirements for your nationality and residence status before departure. U.S. citizens should carry appropriate citizenship documents; a passport book also supports international air travel. U.S. lawful permanent residents should carry a valid passport from their country of nationality (or an equivalent acceptable travel document) plus a valid Green Card or equivalent proof of U.S. permanent residence.",
           officialLinks: [
             {
               label: "TSA Acceptable Identification at Checkpoints",
@@ -579,16 +579,16 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           scenarioLabel: "International Nationals & One-Way Vancouver–Alaska Cruise / Air-Sea Travelers",
           dependencies: {
             nationality: "Non-U.S. / Non-Canadian Nationals (Visa-Exempt vs. Visa-Required) & One-Way Vancouver Route Passengers",
-            passportAndDocuments: "Valid Passport Book + U.S. ESTA (or B1/B2 Visa) for U.S. entry; for Canada: Canadian eTA is required ONLY for visa-exempt foreign nationals arriving/transiting by AIR (e.g., flying into YVR), whereas sea/land entry (cruise calls at Victoria/Vancouver or Yukon rail/bus excursions) requires a valid passport for visa-exempt nationals or a Canadian Temporary Resident Visa (TRV) for visa-required nationals. (U.S. citizens and U.S. Lawful Permanent Residents are exempt from Canadian eTA.)",
+            passportAndDocuments: "Valid passport and applicable U.S. entry documents for your nationality and status. For Canada, most visa-exempt foreign nationals need an eTA for air arrival/transit, but not land/sea entry. Eligible citizens of select visa-required countries may also use an eTA for air travel if they meet IRCC conditions; that air-only eligibility does not replace a visitor visa for cruise, rail, bus or car entry. U.S. citizens and lawful permanent residents are exempt from Canadian eTA requirements. U.S. permanent residents carry their nationality passport (or an equivalent acceptable travel document) plus a valid Green Card or equivalent proof of status.",
             residenceContext: "International arrival or open-jaw U.S.–Canada air/sea itinerary",
             routingAndTransit: "Air arrival into Vancouver (YVR) vs. sea arrival at Victoria/Vancouver cruise ports or land excursions into British Columbia / Yukon",
             tripPurpose: "Tourism / Transit",
-            dateAndValidityRule: "Applicable U.S. (ESTA/Visa) and Canadian (eTA for air arrival, or TRV for visa-required nationals) authorizations must be approved before embarkation.",
+            dateAndValidityRule: "Obtain applicable U.S. and Canadian authorizations before travel. Canadian eTA eligibility depends on nationality, residence/status, prior visa history and air routing; use the official IRCC checker and separately check any Canadian cruise or land entry.",
           },
           officialRequirementSummary:
             "Because Alaska cruises transit both U.S. ports (Juneau, Ketchikan, Skagway) and Canadian ports (Vancouver or Victoria), non-U.S. travelers must satisfy entry rules for BOTH countries—but Canadian document rules depend strictly on mode of entry (air vs. land/sea) and nationality.",
           dccPracticalExplanation:
-            "Do not overgeneralize the Canadian eTA: (1) U.S. citizens and U.S. Green Card holders never need a Canadian eTA; (2) Visa-exempt foreign nationals (e.g., UK, EU, Australia) need a Canadian eTA ONLY if flying into or through a Canadian airport (such as flying into Vancouver to board a one-way cruise)—they do NOT need an eTA when entering Canada solely by cruise ship (sea) or on a Skagway/Juneau land excursion into the Yukon/BC, where a valid passport suffices; (3) Visa-required foreign nationals need a Canadian Temporary Resident Visa (TRV) for air, sea, OR land entry.",
+            "Do not overgeneralize the Canadian eTA: (1) U.S. citizens and U.S. lawful permanent residents are exempt; permanent residents carry a valid nationality passport (or an equivalent acceptable travel document) plus a Green Card or equivalent valid proof of U.S. status. (2) Most visa-exempt foreign nationals need an eTA ONLY if flying into or through a Canadian airport; eTA is not required for their land/sea entry. (3) Eligible citizens of select visa-required countries may apply for an eTA for air travel if they meet IRCC conditions, including qualifying Canadian or U.S. visa history. This exception does not cover arrival by cruise ship, car, bus or train, for which a visitor visa remains required unless another exemption applies. Check each border crossing in your itinerary using the official IRCC tool.",
           officialLinks: [
             {
               label: "Official U.S. ESTA Application & Visa Waiver Info",
@@ -600,10 +600,28 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
               label: "Government of Canada — Electronic Travel Authorization (eTA) Eligibility by Mode",
               url: "https://www.canada.ca/en/immigration-refugees-citizenship/services/visit-canada/eta.html",
               issuingOrganization: "Immigration, Refugees and Citizenship Canada (IRCC)",
-              note: "Official IRCC rules showing eTA applies to air arrival/transit for visa-exempt foreign nationals, not land/sea arrival.",
+              note: "Official IRCC eTA eligibility, exemptions and air-entry requirements; land/sea requirements differ.",
+            },
+            {
+              label: "IRCC — Check Whether You Need a Visa or eTA",
+              url: "https://www.canada.ca/en/immigration-refugees-citizenship/services/visit-canada/check-visa-eta.html",
+              issuingOrganization: "Immigration, Refugees and Citizenship Canada (IRCC)",
+              note: "Check nationality, residence status and travel mode for your actual itinerary.",
+            },
+            {
+              label: "IRCC — Air-Only eTA Eligibility for Select Visa-Required Countries",
+              url: "https://www.canada.ca/en/immigration-refugees-citizenship/services/visit-canada/eta/eligibility/eta-x.html",
+              issuingOrganization: "Immigration, Refugees and Citizenship Canada (IRCC)",
+              note: "Eligibility conditions and the separate visitor-visa requirement for cruise and land entry.",
+            },
+            {
+              label: "IRCC — Documents for U.S. Lawful Permanent Residents",
+              url: "https://www.ircc.canada.ca/english/helpcentre/answer.asp?qnum=1053&top=23",
+              issuingOrganization: "Immigration, Refugees and Citizenship Canada (IRCC)",
+              note: "Nationality passport or equivalent travel document plus valid proof of U.S. permanent residence.",
             },
           ],
-          citationIds: ["jun-cbp-whti", "jun-cbsa-entry"],
+          citationIds: ["jun-cbp-whti", "jun-cbsa-entry", "jun-ircc-eta-air-exception", "jun-ircc-us-permanent-resident"],
         },
       ],
       safetyHealthAndEmergency: [
@@ -845,6 +863,32 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
       },
     ],
     evidenceRegistry: [
+      {
+        id: "jun-ircc-eta-air-exception",
+        claimSummary: "Conditional air-only eTA eligibility for citizens of select visa-required countries; separate visitor-visa rules for land and sea entry.",
+        sourceTitle: "IRCC — Citizens from Some Visa-Required Countries",
+        sourceUrl: "https://www.canada.ca/en/immigration-refugees-citizenship/services/visit-canada/eta/eligibility/eta-x.html",
+        issuingOrganization: "Immigration, Refugees and Citizenship Canada (IRCC)",
+        authorityType: "official_rule",
+        integrationStatus: "linked_official_resource",
+        geographicScope: "Canadian airports and land/sea ports of entry",
+        applicableTravelerContext: "Travelers from select visa-required countries considering air arrival plus Canadian cruise or land crossings",
+        publishedOrUpdatedDate: null,
+        lastCheckedAt: "2026-10-23",
+      },
+      {
+        id: "jun-ircc-us-permanent-resident",
+        claimSummary: "U.S. lawful permanent residents are eTA-exempt and carry their nationality passport or equivalent travel document plus valid proof of U.S. status.",
+        sourceTitle: "IRCC — U.S. Lawful Permanent Resident Travel Documents",
+        sourceUrl: "https://www.ircc.canada.ca/english/helpcentre/answer.asp?qnum=1053&top=23",
+        issuingOrganization: "Immigration, Refugees and Citizenship Canada (IRCC)",
+        authorityType: "official_rule",
+        integrationStatus: "linked_official_resource",
+        geographicScope: "Canada, all travel modes",
+        applicableTravelerContext: "U.S. lawful permanent residents visiting Canada",
+        publishedOrUpdatedDate: "2026-09-28",
+        lastCheckedAt: "2026-10-23",
+      },
       {
         id: "jun-cbj-harbors",
         claimSummary: "Cruise dock locations (AS, CTF, Franklin, AJ Dock), harbor basin rules, and municipal port management.",
