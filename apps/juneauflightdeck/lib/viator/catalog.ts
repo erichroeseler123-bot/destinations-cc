@@ -3,7 +3,7 @@ import type { ViatorJuneauProduct, ViatorJuneauProductsResponse } from "./types"
 /**
  * Verified operator experience catalog for Juneau glacier helicopter flights.
  * Reflects genuine operator products, published direct base pricing, operating seasons,
- * and certified Part 135 flight operations for TEMSCO, Coastal, and NorthStar.
+ * and operator-published policies for TEMSCO, Coastal, and NorthStar.
  *
  * All photography utilizes verified, approved local Alaska assets (public domain / CC BY-SA).
  */
@@ -22,15 +22,17 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     priceFrom: 409,
     currency: "USD",
     priceDisclaimer:
-      "The linked TEMSCO calendar currently displays a $409 starting price. Confirm the final total and terms before payment.",
+      "The linked 2027 TEMSCO calendar displayed a $409 starting price when checked October 23, 2026. The operator's general tour page may show a different season; checkout controls.",
+    operatorSourceHref: "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
+    operatorSourceLabel: "TEMSCO tour details",
     imageUrl: null,
     imageAlt: "Helicopter landing on Mendenhall Glacier blue ice near Juneau, Alaska",
     imageSource: "LOCAL_AUTHORITY",
     supplierName: "TEMSCO Helicopters",
     rating: null,
     reviewCount: null,
-    badges: ["Signature Mendenhall Landing", "Part 135 Certified", "All Ages (2+)"],
-    cancellationPolicy: "48h customer cutoff · 100% refund if grounded for weather or ship delays",
+    badges: ["Signature Mendenhall Landing", "All Ages", "Guided Glacier Walk"],
+    cancellationPolicy: "Operator weather cancellation: full refund · customer-change terms at checkout",
     bookHref:
       "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+Helicopters&pid=P00058396&mcid=42383&medium=api",
     directOperatorHref:
@@ -52,15 +54,17 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     priceFrom: 699,
     currency: "USD",
     priceDisclaimer:
-      "The linked TEMSCO calendar currently displays a $699 starting price. Confirm seasonal dates, final total, and terms before payment.",
+      "The linked 2027 TEMSCO calendar displayed a $699 starting price when checked October 23, 2026. The operator's general tour page may show a different season; checkout controls.",
+    operatorSourceHref: "https://temscoair.com/juneau-helicopter-tours/dog-sled/",
+    operatorSourceLabel: "TEMSCO tour details",
     imageUrl: "/images/tours/temsco-glacier-dog-sledding.jpg",
     imageAlt: "Alaskan husky dog sled team and musher on a Juneau glacier snowfield",
     imageSource: "LOCAL_AUTHORITY",
     supplierName: "TEMSCO Helicopters",
     rating: null,
     reviewCount: null,
-    badges: ["Mendenhall Glacier Snow Camp", "Part 135 Certified", "Iditarod Mushers"],
-    cancellationPolicy: "48h customer cutoff · 100% refund if grounded for weather or ship delays",
+    badges: ["Mendenhall Glacier Snow Camp", "Seasonal Snow Camp", "Dog Sledding"],
+    cancellationPolicy: "Operator weather cancellation: full refund · customer-change terms at checkout",
     bookHref:
       "https://www.viator.com/searchResults/all?text=Juneau+TEMSCO+dog+sledding&pid=P00058396&mcid=42383&medium=api",
     directOperatorHref:
@@ -83,14 +87,16 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     currency: "USD",
     priceDisclaimer:
       "Published direct operator rate from $429 base. Confirm the final total and terms on the booking page.",
+    operatorSourceHref: "https://coastalhelicopters.com/tours/icefield-excursion/",
+    operatorSourceLabel: "Coastal tour details",
     imageUrl: "/images/tours/coastal-icefield-landing.jpg",
     imageAlt: "Aerial view of Juneau Icefield and glacier icefalls",
     imageSource: "LOCAL_AUTHORITY",
     supplierName: "Coastal Helicopters",
     rating: null,
     reviewCount: null,
-    badges: ["Herbert Glacier Landing", "Part 135 Certified", "Scenic Flightseeing"],
-    cancellationPolicy: "7-day customer cutoff · 100% refund if grounded for weather or ship delays",
+    badges: ["Herbert Glacier Landing", "Scenic Flightseeing", "Guided Walkabout"],
+    cancellationPolicy: "Customer: 7+ days full refund · operator weather cancellation: full refund",
     bookHref:
       "https://www.viator.com/searchResults/all?text=Juneau+Coastal+Helicopters&pid=P00058396&mcid=42383&medium=api",
     directOperatorHref:
@@ -113,14 +119,16 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     currency: "USD",
     priceDisclaimer:
       "Published direct operator rate from $709 base. Confirm seasonal dates, weight rules, final total, and terms on the booking page.",
+    operatorSourceHref: "https://coastalhelicopters.com/tours/dog-sled-tours/",
+    operatorSourceLabel: "Coastal tour details",
     imageUrl: null,
     imageAlt: "Coastal Helicopters dog sledding excursion on Herbert Glacier snowfield",
     imageSource: "LOCAL_AUTHORITY",
     supplierName: "Coastal Helicopters",
     rating: null,
     reviewCount: null,
-    badges: ["Herbert Glacier Camp", "Part 135 Certified", "Seasonal: May–Aug"],
-    cancellationPolicy: "7-day customer cutoff · 100% refund if grounded for weather or ship delays",
+    badges: ["Herbert Glacier Camp", "Seasonal: May–Aug", "Dog Sledding"],
+    cancellationPolicy: "Customer: 7+ days full refund · operator weather cancellation: full refund",
     bookHref:
       "https://www.viator.com/searchResults/all?text=Juneau+Coastal+dog+sledding&pid=P00058396&mcid=42383&medium=api",
     directOperatorHref:
@@ -143,14 +151,16 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     currency: "USD",
     priceDisclaimer:
       "Published direct operator rate from $499 base. Confirm the final total and terms on the booking page.",
+    operatorSourceHref: "https://northstartrekking.com/adventures/helicopter-glacier-walkabout/",
+    operatorSourceLabel: "NorthStar tour details",
     imageUrl: null,
     imageAlt: "NorthStar Helicopter Glacier Walkabout on Mendenhall Glacier ice",
     imageSource: "LOCAL_AUTHORITY",
     supplierName: "NorthStar Trekking",
     rating: null,
     reviewCount: null,
-    badges: ["Full 1 Hour on Ice", "Part 135 Certified", "Crampons & Poles Provided"],
-    cancellationPolicy: "48h customer cutoff · 100% refund if grounded for weather or ship delays",
+    badges: ["Full 1 Hour on Ice", "Crampons & Poles Provided", "Active Adventure"],
+    cancellationPolicy: "Customer: >24h refund minus 10% · operator cancellation: reschedule or full refund",
     bookHref:
       "https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Glacier+Walkabout&pid=P00058396&mcid=42383&medium=api",
     directOperatorHref:
@@ -173,14 +183,16 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     currency: "USD",
     priceDisclaimer:
       "Published direct operator rate from $549 base. Confirm the final total and terms on the booking page.",
+    operatorSourceHref: "https://northstartrekking.com/adventures/helicopter-glacier-trek/",
+    operatorSourceLabel: "NorthStar tour details",
     imageUrl: "/images/tours/northstar-glacier-ice-trek.jpg",
     imageAlt: "Guided mountaineering exploration of deep glacier ice terrain in Juneau",
     imageSource: "LOCAL_AUTHORITY",
     supplierName: "NorthStar Trekking",
     rating: null,
     reviewCount: null,
-    badges: ["2 Hours on Ice", "Part 135 Certified", "Technical Crampons"],
-    cancellationPolicy: "48h customer cutoff · 100% refund if grounded for weather or ship delays",
+    badges: ["2 Hours on Ice", "Technical Crampons", "Guided Trek"],
+    cancellationPolicy: "Customer: >24h refund minus 10% · operator cancellation: reschedule or full refund",
     bookHref:
       "https://www.viator.com/searchResults/all?text=Juneau+NorthStar+Trekking&pid=P00058396&mcid=42383&medium=api",
     directOperatorHref:
@@ -203,14 +215,16 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     currency: "USD",
     priceDisclaimer:
       "Published direct operator rate from $739 base. Confirm seasonal dates, final total, and terms on the booking page.",
+    operatorSourceHref: "https://northstartrekking.com/adventures/juneau-glacier-dog-sled-adventure/",
+    operatorSourceLabel: "NorthStar tour details",
     imageUrl: null,
     imageAlt: "NorthStar Helicopter Glacier Dogsled Adventure on Norris Glacier",
     imageSource: "LOCAL_AUTHORITY",
     supplierName: "NorthStar Trekking",
     rating: null,
     reviewCount: null,
-    badges: ["Norris Glacier Camp", "Part 135 Certified", "Ages 2+ Welcome"],
-    cancellationPolicy: "48h customer cutoff · 100% refund if grounded for weather or ship delays",
+    badges: ["Norris Glacier Camp", "Seasonal Snow Camp", "Dog Sledding"],
+    cancellationPolicy: "Customer: >24h refund minus 10% · operator cancellation: reschedule or full refund",
     bookHref:
       "https://www.viator.com/searchResults/all?text=Juneau+NorthStar+dog+sledding&pid=P00058396&mcid=42383&medium=api",
     directOperatorHref:
