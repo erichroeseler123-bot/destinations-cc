@@ -7,7 +7,7 @@ import type { ViatorJuneauProduct, ViatorJuneauProductsResponse } from "./types"
  *
  * All photography utilizes verified, approved local Alaska assets (public domain / CC BY-SA).
  */
-export const SNAPSHOT_TIMESTAMP = "2026-10-07T12:00:00.000Z";
+export const SNAPSHOT_TIMESTAMP = "2026-10-23T12:00:00.000Z";
 
 export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
   {
@@ -18,12 +18,12 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
       "Fly over Juneau's coastal rainforest and rugged granite spires before landing directly on the ancient blue ice of Mendenhall Glacier for a 20-25 minute guided walk with provided traction overboots.",
     durationMinutes: 135,
     durationLabel: "2 hr 15 min",
-    priceLabel: "From $409 base / person",
-    priceFrom: 409,
+    priceLabel: "From $449 base / person",
+    priceFrom: 449,
     currency: "USD",
     priceDisclaimer:
-      "Direct operator rate from $409 base (~$442 at checkout with local tax & booking fee). Part 135 FAA certified.",
-    imageUrl: "/images/tours/temsco-mendenhall-glacier-walk.jpg",
+      "Published direct operator rate from $449 base. Confirm the final total and terms on the booking page.",
+    imageUrl: null,
     imageAlt: "Helicopter landing on Mendenhall Glacier blue ice near Juneau, Alaska",
     imageSource: "LOCAL_AUTHORITY",
     supplierName: "TEMSCO Helicopters",
@@ -48,11 +48,11 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
       "Fly over the Juneau Icefield to an authentic high-altitude dog sled camp on Herbert Glacier snowfields. Meet racing huskies and mushers and ride across alpine snow (operates mid-May through late August).",
     durationMinutes: 165,
     durationLabel: "2 hr 45 min",
-    priceLabel: "From $659 base / person",
-    priceFrom: 659,
+    priceLabel: "From $759 base / person",
+    priceFrom: 759,
     currency: "USD",
     priceDisclaimer:
-      "Direct operator rate from $659 base (~$712 at checkout with local tax & booking fee). Seasonal: May–Aug.",
+      "Published direct operator rate from $759 base. Confirm seasonal dates, final total, and terms on the booking page.",
     imageUrl: "/images/tours/temsco-glacier-dog-sledding.jpg",
     imageAlt: "Alaskan husky dog sled team and musher on Juneau glacier snowfield",
     imageSource: "LOCAL_AUTHORITY",
@@ -82,7 +82,7 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     priceFrom: 429,
     currency: "USD",
     priceDisclaimer:
-      "Direct operator published rate from $429 base (~$463 at checkout with local tax & fee). Part 135 FAA certified.",
+      "Published direct operator rate from $429 base. Confirm the final total and terms on the booking page.",
     imageUrl: "/images/tours/coastal-icefield-landing.jpg",
     imageAlt: "Aerial view of Juneau Icefield and glacier icefalls",
     imageSource: "LOCAL_AUTHORITY",
@@ -112,8 +112,8 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     priceFrom: 709,
     currency: "USD",
     priceDisclaimer:
-      "Direct operator published rate from $709 base (~$766 at checkout with local tax & fee). Seasonal: mid-May to mid-August.",
-    imageUrl: "/images/tours/temsco-glacier-dog-sledding.jpg",
+      "Published direct operator rate from $709 base. Confirm seasonal dates, weight rules, final total, and terms on the booking page.",
+    imageUrl: null,
     imageAlt: "Coastal Helicopters dog sledding excursion on Herbert Glacier snowfield",
     imageSource: "LOCAL_AUTHORITY",
     supplierName: "Coastal Helicopters",
@@ -142,8 +142,8 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     priceFrom: 499,
     currency: "USD",
     priceDisclaimer:
-      "Direct operator published rate from $499 base (~$539 at checkout with local tax & fee). FareHarbor item 116029.",
-    imageUrl: "/images/tours/northstar-glacier-ice-trek.jpg",
+      "Published direct operator rate from $499 base. Confirm the final total and terms on the booking page.",
+    imageUrl: null,
     imageAlt: "NorthStar Helicopter Glacier Walkabout on Mendenhall Glacier ice",
     imageSource: "LOCAL_AUTHORITY",
     supplierName: "NorthStar Trekking",
@@ -172,7 +172,7 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     priceFrom: 549,
     currency: "USD",
     priceDisclaimer:
-      "Direct operator published rate from $549 base (~$593 at checkout with local tax & fee). FareHarbor item 116035.",
+      "Published direct operator rate from $549 base. Confirm the final total and terms on the booking page.",
     imageUrl: "/images/tours/northstar-glacier-ice-trek.jpg",
     imageAlt: "Guided mountaineering exploration of deep glacier ice terrain in Juneau",
     imageSource: "LOCAL_AUTHORITY",
@@ -202,8 +202,8 @@ export const VERIFIED_FALLBACK_SNAPSHOT: ViatorJuneauProduct[] = [
     priceFrom: 739,
     currency: "USD",
     priceDisclaimer:
-      "Direct operator published rate from $739 base (~$798 at checkout with local tax & fee). FareHarbor item 115991.",
-    imageUrl: "/images/tours/temsco-glacier-dog-sledding.jpg",
+      "Published direct operator rate from $739 base. Confirm seasonal dates, final total, and terms on the booking page.",
+    imageUrl: null,
     imageAlt: "NorthStar Helicopter Glacier Dogsled Adventure on Norris Glacier",
     imageSource: "LOCAL_AUTHORITY",
     supplierName: "NorthStar Trekking",
