@@ -796,7 +796,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             "Best when you want to compare helicopter icefield landings and whale-watching departures that fit your exact ship call window.",
           noPurchaseRequiredNote:
             "Carries your selected date and party size into the Juneau Flight Deck planner. No purchase is required to compare routes.",
-          baseUrl: "https://juneauflightdeck.com/best-excursions-in-juneau",
+          baseUrl: "https://juneauflightdeck.com/helicopter",
           supportedContextParams: ["date", "partySize", "shipOrPort"],
           defaultParams: {
             source_surface: "dcc_juneau_reference",
@@ -814,7 +814,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             "Best when deciding whether to do your glacier flight in Juneau vs. the White Pass railway in Skagway or floatplanes in Ketchikan.",
           noPurchaseRequiredNote:
             "Forwards your travel date and party context so you can compare multi-port tradeoffs.",
-          baseUrl: "https://welcometoalaskatours.com/juneau-shore-excursions",
+          baseUrl: "https://welcometoalaskatours.com/ports/juneau",
           supportedContextParams: ["date", "partySize", "shipOrPort"],
           defaultParams: {
             source_surface: "dcc_juneau_reference",
