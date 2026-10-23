@@ -14,8 +14,8 @@ const bookingFacts = [
   },
   {
     number: "03",
-    title: "Return-to-ship protection is not automatic",
-    text: "If you book through your cruise line, its excursion policy applies. If you book independently, do not assume the ship will wait. Only rely on a return-to-ship guarantee when the exact product terms include one, and always leave a realistic buffer before your ship’s all-aboard time.",
+    title: "A stated Back-to-Ship Guarantee creates accountability",
+    text: "For a product expressly marked “Worry-Free Shore Excursion,” Viator’s terms say it will arrange transportation to the next port if the supplier fails to return you in time through no fault of your own. That published promise is part of the booking agreement, and consumer-protection law prohibits advertising benefits that are not provided. Coverage requires correct ship details, at least a two-hour buffer between the tour’s end and the ship’s departure, and contacting Viator directly; Viator’s stated limit is $1,000 per person.",
   },
   {
     number: "04",
