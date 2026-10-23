@@ -854,6 +854,13 @@ export function TourCard({
     selectedDate,
     passengerCount
   );
+  const primaryBookingUrl = product.directOperatorHref || finalBookingUrl;
+  const categoryLabel =
+    product.tourType === "dog_sledding"
+      ? "Glacier dog sledding"
+      : product.tourType === "ice_trek"
+        ? "Guided glacier trek"
+        : "Glacier landing";
 
   return (
     <article
@@ -899,29 +906,41 @@ export function TourCard({
               alignItems: "center",
               justifyContent: "center",
               padding: "24px",
-              background: "linear-gradient(135deg, #0d2238 0%, #061521 100%)",
+              background:
+                product.tourType === "dog_sledding"
+                  ? "radial-gradient(circle at 72% 25%, rgba(151, 211, 255, 0.28), transparent 28%), linear-gradient(145deg, #174a68 0%, #0a2639 52%, #061521 100%)"
+                  : "radial-gradient(circle at 72% 25%, rgba(240, 179, 91, 0.22), transparent 28%), linear-gradient(145deg, #174a68 0%, #0a2639 52%, #061521 100%)",
               color: "#97d3ff",
               textAlign: "center",
             }}
           >
-            <svg
-              width="40"
-              height="40"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#60a5fa"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ opacity: 0.8, marginBottom: 8 }}
+            <span
+              aria-hidden="true"
+              style={{
+                fontSize: "2.2rem",
+                lineHeight: 1,
+                marginBottom: 14,
+                filter: "drop-shadow(0 5px 10px rgba(0,0,0,.35))",
+              }}
             >
-              <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" />
-            </svg>
-            <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#f8fafc" }}>
+              {product.tourType === "dog_sledding" ? "❄" : "🚁"}
+            </span>
+            <span
+              style={{
+                fontSize: "0.72rem",
+                fontWeight: 900,
+                color: "#ffd28a",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+              }}
+            >
               {product.supplierName || "Juneau Flight Operator"}
             </span>
-            <span style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: 4 }}>
-              Photo unavailable
+            <span style={{ fontSize: "1.12rem", color: "#ffffff", fontWeight: 900, marginTop: 7 }}>
+              {categoryLabel}
+            </span>
+            <span style={{ fontSize: "0.74rem", color: "#c6dcea", marginTop: 7 }}>
+              Operator profile
             </span>
           </div>
         )}
@@ -1092,12 +1111,12 @@ export function TourCard({
           {product.durationLabel && (
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span>⏱</span>
-              <span>{product.durationLabel} flight &amp; experience (Safe dock-return buffer included)</span>
+              <span>{product.durationLabel} tour duration · add your ship-return buffer</span>
             </div>
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--ice, #9ed9ff)" }}>
             <span>🚐</span>
-            <span>Port shuttle included from all cruise docks (Franklin, AJ, Marine Park)</span>
+            <span>Confirm pickup point and transfer details before payment</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#86efac" }}>
             <span>✓</span>
@@ -1134,10 +1153,10 @@ export function TourCard({
             </div>
 
             <a
-              href={finalBookingUrl}
+              href={primaryBookingUrl}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`Check availability for ${product.title} on Viator`}
+              aria-label={`Check availability for ${product.title} with ${product.supplierName || "the operator"}`}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -1156,14 +1175,14 @@ export function TourCard({
             >
               <span>
                 {selectedDate
-                  ? `Check ${selectedDate.slice(5)} on Viator`
-                  : (product.isLive ? "Book on Viator" : "Check Viator Dates")}
+                  ? `Check ${selectedDate.slice(5)} with operator`
+                  : "Check operator dates"}
               </span>
               <span>&rarr;</span>
             </a>
           </div>
 
-          {/* Secondary Direct Operator Booking & Availability Watch */}
+          {/* Exact-link note and availability watch */}
           <div
             style={{
               display: "flex",
@@ -1175,29 +1194,9 @@ export function TourCard({
               borderTop: "1px dashed var(--line, rgba(151, 211, 255, 0.15))",
             }}
           >
-            {product.directOperatorHref ? (
-              <a
-                href={product.directOperatorHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={`Book directly with ${product.supplierName || 'operator'} on FareHarbor`}
-                style={{
-                  fontSize: "0.76rem",
-                  color: "var(--ice, #9ed9ff)",
-                  fontWeight: 700,
-                  textDecoration: "none",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 4,
-                }}
-              >
-                <span>🏢 {product.directOperatorName || "Direct Operator (FareHarbor)"} ↗</span>
-              </a>
-            ) : (
-              <span style={{ fontSize: "0.76rem", color: "var(--muted)" }}>
-                Verified Part 135 Operator
-              </span>
-            )}
+            <span style={{ fontSize: "0.76rem", color: "var(--ice, #9ed9ff)", fontWeight: 700 }}>
+              ↗ Exact tour or operator booking calendar
+            </span>
 
             <Link
               href={`/helicopter-waitlist?tour=${encodeURIComponent(product.productCode)}${selectedDate ? `&date=${encodeURIComponent(selectedDate)}` : ""}`}
