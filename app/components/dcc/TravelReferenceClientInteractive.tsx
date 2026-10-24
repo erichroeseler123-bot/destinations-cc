@@ -254,24 +254,35 @@ export function SpecialistHandoffInteractive({
   );
 
   function buildHandoffUrl(option: SpecialistHandoffOption): string {
-    const params = new URLSearchParams();
-    for (const [k, v] of Object.entries(option.queryDefaults)) {
-      params.set(k, v);
+    const isInternal = option.baseUrl.startsWith("/");
+    const url = new URL(
+      option.baseUrl,
+      isInternal ? "https://www.destinationcommandcenter.com" : undefined,
+    );
+
+    for (const [k, v] of Object.entries(option.defaultParams)) {
+      url.searchParams.set(k, v);
     }
-    if (config.contextControls.supportsDate && travelDate) {
-      params.set("date", travelDate);
+
+    if (travelDate && option.supportedContextParams.includes("date")) {
+      url.searchParams.set("date", travelDate);
     }
-    if (config.contextControls.supportsPartySize && partySize) {
-      params.set("party_size", partySize);
-      params.set("travelers", partySize);
-      params.set("passengerCount", partySize);
+    if (partySize && option.supportedContextParams.includes("partySize")) {
+      url.searchParams.set("travelers", partySize);
+      url.searchParams.set("party_size", partySize);
+      url.searchParams.set("passengerCount", partySize);
     }
-    if (config.contextControls.customSelectorParam && customChoice) {
-      params.set(config.contextControls.customSelectorParam, customChoice);
+    if (customChoice && config.contextControls.customSelectorParam) {
+      if (
+        option.supportedContextParams.includes("shipOrPort") ||
+        option.supportedContextParams.includes("pickupHub") ||
+        option.supportedContextParams.includes("direction")
+      ) {
+        url.searchParams.set(config.contextControls.customSelectorParam, customChoice);
+      }
     }
-    const qs = params.toString();
-    if (!qs) return option.baseUrl;
-    return `${option.baseUrl}${option.baseUrl.includes("?") ? "&" : "?"}${qs}`;
+
+    return isInternal ? `${url.pathname}${url.search}` : url.toString();
   }
 
   return (
