@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ApprovalPanel } from "@/app/components/dcc/earthos/ApprovalPanel";
 import { ContextualAlert } from "@/app/components/dcc/earthos/ContextualAlert";
 import { PublishMissionButton } from "@/app/components/dcc/earthos/PublishMissionButton";
+import { verifyEarthOSAuthorization } from "@/lib/dcc/earthos/auth";
 import { getWorkflowMission } from "@/lib/dcc/earthos/workflows/service";
 import { formatDuration, formatRelativeTime, statusTone } from "@/app/components/dcc/earthos/dashboardUtils";
 
@@ -31,6 +32,28 @@ export default async function MissionDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const auth = await verifyEarthOSAuthorization();
+  if (!auth.authorized || auth.actor === "vercel:cron") {
+    return (
+      <main
+        className="flex min-h-screen items-center justify-center bg-zinc-950 px-6 py-16 text-white"
+        data-earthos-auth-gate="unauthorized"
+      >
+        <div className="w-full max-w-md rounded-3xl border border-white/12 bg-zinc-900/90 p-8 shadow-2xl">
+          <div className="text-[11px] font-black uppercase tracking-[0.24em] text-[#f5c66c]">
+            EarthOS Mission Control · 401 Unauthorized
+          </div>
+          <h1 className="mt-3 text-3xl font-black tracking-tight">
+            Operator Authentication Required
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-zinc-400">
+            Sign in with an authorized EarthOS operator key to view mission details.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   const { id } = await params;
   const mission = await getWorkflowMission(id);
 

@@ -54,7 +54,10 @@ export async function POST(req: NextRequest) {
   const formData = await req.formData();
   const key = String(formData.get("key") || "");
   const nextPathRaw = String(formData.get("next") || "/admin/argo-waitlist");
-  const nextPath = nextPathRaw.startsWith("/admin") ? nextPathRaw : "/admin/argo-waitlist";
+  const nextPath =
+    nextPathRaw.startsWith("/admin") || nextPathRaw.startsWith("/internal/dashboard")
+      ? nextPathRaw
+      : "/admin/argo-waitlist";
 
   const redirectUrl = new URL(nextPath, req.url);
   if (!isValidAdminAccessKey(key)) {
@@ -70,7 +73,7 @@ export async function POST(req: NextRequest) {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    path: "/admin",
+    path: "/",
     maxAge: adminSessionMaxAgeSeconds(),
   });
   return res;

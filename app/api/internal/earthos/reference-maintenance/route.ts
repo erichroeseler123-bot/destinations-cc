@@ -5,6 +5,7 @@ import {
 } from "@/lib/dcc/earthos/auth";
 import {
   applyReferenceMaintenanceCorrection,
+  getReferenceMaintenanceOperationalSnapshot,
   runScheduledReferenceMaintenanceDetection,
   verifyAndCloseReferenceMaintenanceTask,
   type SourceReviewAttestation,
@@ -19,10 +20,30 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await runScheduledReferenceMaintenanceDetection();
+    const url = new URL(request.url);
+    if (url.searchParams.get("mode") === "state") {
+      if (auth.actor === "vercel:cron" || auth.method === "cron_secret") {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "scheduled_detection_cannot_read_private_state_snapshot",
+          },
+          { status: 403 },
+        );
+      }
+      const snapshot = await getReferenceMaintenanceOperationalSnapshot();
+      return NextResponse.json({
+        ok: true,
+        actor: auth.actor,
+        snapshot,
+      });
+    }
+
+    const result = await runScheduledReferenceMaintenanceDetection({
+      actor: auth.actor || "vercel:cron",
+    });
     return NextResponse.json({
       ok: true,
-      actor: auth.actor,
       ...result,
     });
   } catch (error) {
@@ -42,6 +63,16 @@ export async function POST(request: Request) {
     return buildEarthOSUnauthorizedResponse(auth);
   }
 
+  if (auth.actor === "vercel:cron" || auth.method === "cron_secret") {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "scheduled_detection_cannot_mutate_or_approve",
+      },
+      { status: 403 },
+    );
+  }
+
   try {
     const body = (await request.json().catch(() => ({}))) as {
       action?: "detect" | "apply" | "verify";
@@ -53,14 +84,23 @@ export async function POST(request: Request) {
     };
 
     const action = body.action || "detect";
-    const actor = body.operator || auth.actor || "earthos-operator";
+    const actor = (body.operator || auth.actor || "earthos-operator").trim();
+
+    if (/^(vercel:cron|cron|scheduled-detector|system:cron)$/i.test(actor) && action !== "detect") {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "scheduled_detection_cannot_mutate_or_approve",
+        },
+        { status: 403 },
+      );
+    }
 
     if (action === "detect") {
-      const result = await runScheduledReferenceMaintenanceDetection();
+      const result = await runScheduledReferenceMaintenanceDetection({ actor });
       return NextResponse.json({
         ok: true,
         action: "detect",
-        actor,
         ...result,
       });
     }

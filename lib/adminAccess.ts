@@ -5,7 +5,12 @@ const ADMIN_SESSION_VERSION = "v1";
 const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 12;
 
 function adminAccessKey() {
-  return process.env.ADMIN_ACCESS_KEY?.trim() || "";
+  return (
+    process.env.ADMIN_ACCESS_KEY?.trim() ||
+    process.env.EARTHOS_ADMIN_KEY?.trim() ||
+    process.env.INTERNAL_API_SECRET?.trim() ||
+    ""
+  );
 }
 
 function sha256(input: string) {
@@ -17,8 +22,14 @@ export function isAdminAccessConfigured() {
 }
 
 export function isValidAdminAccessKey(input: string | null | undefined) {
-  const expected = adminAccessKey();
-  return Boolean(expected) && input === expected;
+  const candidate = input?.trim() || "";
+  if (!candidate) return false;
+  const configuredKeys = [
+    process.env.ADMIN_ACCESS_KEY?.trim(),
+    process.env.EARTHOS_ADMIN_KEY?.trim(),
+    process.env.INTERNAL_API_SECRET?.trim(),
+  ].filter((val): val is string => Boolean(val));
+  return configuredKeys.includes(candidate);
 }
 
 function sessionSigningSecret() {

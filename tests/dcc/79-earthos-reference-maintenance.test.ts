@@ -15,15 +15,25 @@ import { GET as getWorkflowsRoute } from "@/app/api/internal/workflows/route";
 import { POST as launchWorkflowRoute } from "@/app/api/internal/workflows/launch/route";
 import {
   GET as getScheduledReferenceMaintenanceRoute,
+  POST as postReferenceMaintenanceRoute,
 } from "@/app/api/internal/earthos/reference-maintenance/route";
-import { launchMissionAction } from "@/app/internal/dashboard/actions";
+import {
+  applyReferenceCorrectionAction,
+  launchMissionAction,
+  runReferenceDetectionAction,
+  verifyReferenceTaskAction,
+} from "@/app/internal/dashboard/actions";
+import { renderEarthOSDashboardPage } from "@/app/internal/dashboard/page";
 import {
   launchWorkflowMission,
   signalWorkflowMission,
 } from "@/lib/dcc/earthos/workflows/service";
 import { listEarthOSAuditEvents } from "@/lib/dcc/earthos/auditLog";
 import { getDurableGovernanceRecordService } from "@/lib/dcc/earthos/governanceRecords";
-import { resetEarthosSchemaEnsuredForTests } from "@/lib/dcc/earthos/ensureEarthosSchema";
+import {
+  resetEarthosSchemaEnsuredForTests,
+  runRepeatableEarthosMigration,
+} from "@/lib/dcc/earthos/ensureEarthosSchema";
 import {
   applyReferenceMaintenanceCorrection,
   clearPublishedReferenceNodeOverride,
@@ -83,7 +93,7 @@ async function startLocalDestinationReferenceServer(): Promise<{
   };
 }
 
-test("EarthOS workflow routes, scheduled maintenance endpoint, and dashboard actions enforce authentication", async () => {
+test("EarthOS workflow routes, scheduled maintenance endpoint, and dashboard actions enforce authentication and correction permissions", async () => {
   const prevAdminKey = process.env.ADMIN_ACCESS_KEY;
   const prevInternalSecret = process.env.INTERNAL_API_SECRET;
   const prevCronSecret = process.env.CRON_SECRET;
@@ -100,14 +110,42 @@ test("EarthOS workflow routes, scheduled maintenance endpoint, and dashboard act
     assert.equal(unauthBody.ok, false);
     assert.equal(unauthBody.error, "earthos_unauthorized");
 
-    // 2. Unauthenticated GET /api/internal/earthos/reference-maintenance -> 401
+    // 2. Unauthenticated GET /api/internal/earthos/reference-maintenance (and ?mode=state) -> 401
     const unauthCronReq = new Request(
       "https://www.destinationcommandcenter.com/api/internal/earthos/reference-maintenance",
     );
     const unauthCronRes = await getScheduledReferenceMaintenanceRoute(unauthCronReq);
     assert.equal(unauthCronRes.status, 401);
 
-    // 3. Unauthenticated POST /api/internal/workflows/launch -> 401
+    const unauthStateReq = new Request(
+      "https://www.destinationcommandcenter.com/api/internal/earthos/reference-maintenance?mode=state",
+    );
+    const unauthStateRes = await getScheduledReferenceMaintenanceRoute(unauthStateReq);
+    assert.equal(unauthStateRes.status, 401);
+
+    // 3. Unauthenticated POST /api/internal/earthos/reference-maintenance (apply / verify) -> 401
+    const unauthApplyReq = new Request(
+      "https://www.destinationcommandcenter.com/api/internal/earthos/reference-maintenance",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "apply",
+          taskId: "ref_task_juneau_fake",
+          approved: true,
+        }),
+      },
+    );
+    const unauthApplyRes = await postReferenceMaintenanceRoute(unauthApplyReq);
+    assert.equal(unauthApplyRes.status, 401);
+
+    // 4. Unauthenticated EarthOS dashboard render -> returns 401 Auth Gate, never leaks private records
+    const unauthDashboardTree = await renderEarthOSDashboardPage();
+    const unauthDashboardHtml = renderToStaticMarkup(unauthDashboardTree);
+    assert.match(unauthDashboardHtml, /data-earthos-auth-gate="unauthorized"/);
+    assert.doesNotMatch(unauthDashboardHtml, /data-earthos-reference-maintenance="panel"/);
+
+    // 5. Unauthenticated POST /api/internal/workflows/launch -> 401
     const unauthLaunchReq = new Request(
       "https://www.destinationcommandcenter.com/api/internal/workflows/launch",
       {
@@ -124,7 +162,7 @@ test("EarthOS workflow routes, scheduled maintenance endpoint, and dashboard act
     const unauthLaunchRes = await launchWorkflowRoute(unauthLaunchReq);
     assert.equal(unauthLaunchRes.status, 401);
 
-    // 4. Unauthenticated server action -> earthos_unauthorized
+    // 6. Unauthenticated server actions -> earthos_unauthorized
     const unauthAction = await launchMissionAction({
       entity: "alaska",
       region: "Juneau",
@@ -136,7 +174,21 @@ test("EarthOS workflow routes, scheduled maintenance endpoint, and dashboard act
       assert.equal(unauthAction.error, "earthos_unauthorized");
     }
 
-    // 5. Authenticated with Admin Session Cookie -> 200
+    const unauthDetectAction = await runReferenceDetectionAction();
+    assert.equal(unauthDetectAction.ok, false);
+
+    const unauthApplyAction = await applyReferenceCorrectionAction({
+      taskId: "ref_task_juneau_fake",
+      approved: true,
+    });
+    assert.equal(unauthApplyAction.ok, false);
+
+    const unauthVerifyAction = await verifyReferenceTaskAction({
+      taskId: "ref_task_juneau_fake",
+    });
+    assert.equal(unauthVerifyAction.ok, false);
+
+    // 7. Authenticated with Admin Session Cookie -> 200
     const sessionCookieVal = buildAdminSessionValue();
     assert.ok(sessionCookieVal.length > 10);
     const sessionReq = new Request("https://www.destinationcommandcenter.com/api/internal/workflows", {
@@ -150,7 +202,7 @@ test("EarthOS workflow routes, scheduled maintenance endpoint, and dashboard act
     assert.equal(sessionData.ok, true);
     assert.ok(Array.isArray(sessionData.missions));
 
-    // 6. Authenticated with Vercel CRON_SECRET Bearer token -> authorized as vercel:cron
+    // 8. Scheduled detection (CRON_SECRET) can run GET detection, but CANNOT read state snapshot or approve/apply corrections
     const cronCheck = await verifyEarthOSAuthorization(
       new Request("https://www.destinationcommandcenter.com/api/internal/earthos/reference-maintenance", {
         headers: { authorization: "Bearer test-cron-secret-earthos-79" },
@@ -158,6 +210,55 @@ test("EarthOS workflow routes, scheduled maintenance endpoint, and dashboard act
     );
     assert.equal(cronCheck.authorized, true);
     assert.equal(cronCheck.actor, "vercel:cron");
+
+    const cronPostReq = new Request(
+      "https://www.destinationcommandcenter.com/api/internal/earthos/reference-maintenance",
+      {
+        method: "POST",
+        headers: {
+          authorization: "Bearer test-cron-secret-earthos-79",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "apply",
+          taskId: "ref_task_juneau_fake",
+          approved: true,
+        }),
+      },
+    );
+    const cronPostRes = await postReferenceMaintenanceRoute(cronPostReq);
+    assert.equal(cronPostRes.status, 403);
+    const cronPostBody = await cronPostRes.json();
+    assert.equal(cronPostBody.ok, false);
+    assert.match(String(cronPostBody.error), /scheduled_detection_cannot_mutate_or_approve/);
+
+    const cronStateReq = new Request(
+      "https://www.destinationcommandcenter.com/api/internal/earthos/reference-maintenance?mode=state",
+      {
+        headers: { authorization: "Bearer test-cron-secret-earthos-79" },
+      },
+    );
+    const cronStateRes = await getScheduledReferenceMaintenanceRoute(cronStateReq);
+    assert.equal(cronStateRes.status, 403);
+
+    await assert.rejects(
+      () =>
+        applyReferenceMaintenanceCorrection({
+          taskId: "ref_task_juneau_fake",
+          approved: true,
+          operator: "vercel:cron",
+        }),
+      /Scheduled detection cannot approve or apply its own reference corrections/,
+    );
+
+    await assert.rejects(
+      () =>
+        verifyAndCloseReferenceMaintenanceTask({
+          taskId: "ref_task_juneau_fake",
+          verifiedBy: "vercel:cron",
+        }),
+      /Scheduled detection cannot verify or close its own reference maintenance tasks/,
+    );
   } finally {
     if (prevAdminKey === undefined) delete process.env.ADMIN_ACCESS_KEY;
     else process.env.ADMIN_ACCESS_KEY = prevAdminKey;
@@ -697,3 +798,73 @@ test("Real cross-process execution against Neon Postgres: scheduled detection, p
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });
+
+test("Environment isolation, audit-preserving cleanup, repeatable migration, and EarthOS dashboard UI distinction", async () => {
+  const prevAdminKey = process.env.ADMIN_ACCESS_KEY;
+  const prevScope = process.env.DCC_ENVIRONMENT_SCOPE;
+  process.env.ADMIN_ACCESS_KEY = "test-admin-key-isolation-79";
+
+  try {
+    // 1. Repeatable migration is idempotent and records checksum + executionCount
+    const mig1 = await runRepeatableEarthosMigration();
+    const mig2 = await runRepeatableEarthosMigration();
+    assert.equal(mig1.migrationId, "0003_earthos_reference_maintenance");
+    assert.equal(mig1.checksum, mig2.checksum);
+    assert.ok(mig2.executionCount >= mig1.executionCount);
+
+    // 2. Deliberately broken Juneau override in nonprod never affects production scope
+    process.env.DCC_ENVIRONMENT_SCOPE = "nonprod";
+    await setPublishedReferenceNodeOverride(
+      {
+        nodeId: "juneau",
+        updatedAt: new Date().toISOString(),
+        appliedTaskId: null,
+        appliedBy: "regression-seed",
+        specialistHandoffBaseUrls: {
+          "handoff-juneau-flight-deck": "https://juneauflightdeck.com/best-excursions-in-juneau",
+        },
+      },
+      "nonprod",
+    );
+
+    const nonprodJuneau = await getPublishedTravelReferenceNodeById("juneau");
+    assert.equal(
+      nonprodJuneau.specialistHandoffs.options[0].baseUrl,
+      "https://juneauflightdeck.com/best-excursions-in-juneau",
+    );
+
+    process.env.DCC_ENVIRONMENT_SCOPE = "production";
+    const prodJuneau = await getPublishedTravelReferenceNodeById("juneau");
+    assert.equal(
+      prodJuneau.specialistHandoffs.options[0].baseUrl,
+      "https://juneauflightdeck.com/helicopter",
+      "Production scope must never read nonprod test overrides or broken Juneau test URLs",
+    );
+
+    // 3. Clean up nonprod override and verify audit history is preserved
+    process.env.DCC_ENVIRONMENT_SCOPE = "nonprod";
+    await clearPublishedReferenceNodeOverride("juneau", "nonprod");
+    const restoredNonprodJuneau = await getPublishedTravelReferenceNodeById("juneau");
+    assert.equal(
+      restoredNonprodJuneau.specialistHandoffs.options[0].baseUrl,
+      "https://juneauflightdeck.com/helicopter",
+    );
+
+    // 4. Authenticated EarthOS dashboard renders ReferenceMaintenancePanel and distinguishes healthy state
+    const authDashboardTree = await renderEarthOSDashboardPage({
+      explicitAuthToken: "test-admin-key-isolation-79",
+    });
+    const authDashboardHtml = renderToStaticMarkup(authDashboardTree);
+    assert.match(authDashboardHtml, /data-earthos-auth-gate="authorized"/);
+    assert.match(authDashboardHtml, /data-earthos-reference-maintenance="panel"/);
+    assert.match(authDashboardHtml, /Traveler Evidence &amp; Specialist Handoff Governance/);
+    assert.match(authDashboardHtml, /0 8 \* \* \* UTC/);
+  } finally {
+    await clearPublishedReferenceNodeOverride("juneau", "nonprod");
+    if (prevAdminKey === undefined) delete process.env.ADMIN_ACCESS_KEY;
+    else process.env.ADMIN_ACCESS_KEY = prevAdminKey;
+    if (prevScope === undefined) delete process.env.DCC_ENVIRONMENT_SCOPE;
+    else process.env.DCC_ENVIRONMENT_SCOPE = prevScope;
+  }
+});
+

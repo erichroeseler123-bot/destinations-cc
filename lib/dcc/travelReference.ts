@@ -3332,11 +3332,39 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
   },
 };
 
+export type EarthosEnvironmentScope = "production" | "nonprod";
+
+export function resolveEarthosEnvironmentScope(): EarthosEnvironmentScope {
+  const explicit = (
+    process.env.DCC_EARTHOS_ENV ||
+    process.env.DCC_ENVIRONMENT_SCOPE ||
+    ""
+  )
+    .trim()
+    .toLowerCase();
+  if (explicit === "production") return "production";
+  if (
+    explicit === "nonprod" ||
+    explicit === "preview" ||
+    explicit === "development" ||
+    explicit === "test"
+  ) {
+    return "nonprod";
+  }
+  if (process.env.VERCEL_ENV?.trim().toLowerCase() === "production") {
+    return "production";
+  }
+  return "nonprod";
+}
+
 export type PublishedReferenceNodeOverride = {
   nodeId: TravelReferenceNode["id"];
+  environmentScope?: EarthosEnvironmentScope;
   updatedAt: string;
   appliedTaskId: string | null;
   appliedBy: string;
+  clearedAt?: string;
+  clearedBy?: string;
   lastReviewedAt?: string;
   specialistHandoffBaseUrls?: Record<string, string>;
   evidenceReviews?: Record<
@@ -3352,19 +3380,36 @@ export type PublishedReferenceNodeOverride = {
   relationshipHrefs?: Record<string, string>;
 };
 
-export function buildReferenceOverrideFindingId(nodeId: TravelReferenceNode["id"]): string {
+export function buildReferenceOverrideFindingId(
+  nodeId: TravelReferenceNode["id"],
+  scope: EarthosEnvironmentScope = resolveEarthosEnvironmentScope(),
+): string {
+  return `control-map:travel-reference-override:${scope}:${nodeId}`;
+}
+
+export function buildLegacyReferenceOverrideFindingId(nodeId: TravelReferenceNode["id"]): string {
   return `control-map:travel-reference-override:${nodeId}`;
 }
 
+const DISALLOWED_PRODUCTION_TEST_URLS = new Set([
+  "https://juneauflightdeck.com/juneau-helicopters",
+  "https://juneauflightdeck.com/best-excursions-in-juneau",
+  "https://welcometoalaskatours.com/juneau/cruise-port",
+  "https://welcometoalaskatours.com/juneau-shore-excursions",
+  "/juneau-helicopters",
+  "/juneau/cruise-port",
+]);
+
 export async function readPublishedReferenceNodeOverrideFromDb(
   id: TravelReferenceNode["id"],
+  scope: EarthosEnvironmentScope = resolveEarthosEnvironmentScope(),
 ): Promise<PublishedReferenceNodeOverride | null> {
   const db = await getRequiredEarthosDb();
 
   const rows = await db
     .select()
     .from(earthosControlMapFindings)
-    .where(eq(earthosControlMapFindings.findingId, buildReferenceOverrideFindingId(id)))
+    .where(eq(earthosControlMapFindings.findingId, buildReferenceOverrideFindingId(id, scope)))
     .limit(1);
 
   const row = rows[0];
@@ -3372,7 +3417,21 @@ export async function readPublishedReferenceNodeOverrideFromDb(
     return null;
   }
 
-  return row.metadata as unknown as PublishedReferenceNodeOverride;
+  const override = row.metadata as unknown as PublishedReferenceNodeOverride;
+  if (scope === "production") {
+    if (override.environmentScope !== "production") {
+      return null;
+    }
+    if (/seed|test|regression/i.test(override.appliedBy || "")) {
+      return null;
+    }
+    const handoffUrls = Object.values(override.specialistHandoffBaseUrls || {});
+    if (handoffUrls.some((u) => DISALLOWED_PRODUCTION_TEST_URLS.has(u.trim()))) {
+      return null;
+    }
+  }
+
+  return override;
 }
 
 export function applyPublishedReferenceNodeOverride(

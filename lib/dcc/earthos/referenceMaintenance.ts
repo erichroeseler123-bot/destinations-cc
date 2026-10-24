@@ -18,10 +18,13 @@ import {
   signalWorkflowMission,
 } from "@/lib/dcc/earthos/workflows/service";
 import {
+  buildLegacyReferenceOverrideFindingId,
   buildReferenceOverrideFindingId,
   getAllPublishedTravelReferenceNodes,
   getPublishedTravelReferenceNodeById,
   readPublishedReferenceNodeOverrideFromDb,
+  resolveEarthosEnvironmentScope,
+  type EarthosEnvironmentScope,
   type PublishedReferenceNodeOverride,
   type TravelReferenceNode,
 } from "@/lib/dcc/travelReference";
@@ -105,6 +108,7 @@ export type ReferenceMaintenanceTask = {
   findingId: string;
   nodeId: TravelReferenceNode["id"];
   canonicalPath: string;
+  environmentScope?: EarthosEnvironmentScope;
   status: "open" | "remediated_pending_recheck" | "closed" | "rejected";
   severity: "watch" | "blocked" | "critical";
   createdAt: string;
@@ -321,11 +325,16 @@ export async function defaultDeployedPageFetcher(url: string): Promise<DeployedP
 
 export async function setPublishedReferenceNodeOverride(
   override: PublishedReferenceNodeOverride,
+  scope: EarthosEnvironmentScope = override.environmentScope || resolveEarthosEnvironmentScope(),
 ): Promise<void> {
   const db = await getRequiredEarthosDb();
-  const findingId = buildReferenceOverrideFindingId(override.nodeId);
+  const scopedOverride: PublishedReferenceNodeOverride = {
+    ...override,
+    environmentScope: scope,
+  };
+  const findingId = buildReferenceOverrideFindingId(override.nodeId, scope);
   const updatedAt = new Date(override.updatedAt || new Date().toISOString());
-  const summary = `Published reference override for ${override.nodeId} applied by ${override.appliedBy || "system"}${override.appliedTaskId ? ` (task ${override.appliedTaskId})` : ""}.`;
+  const summary = `Published reference override (${scope}) for ${override.nodeId} applied by ${override.appliedBy || "system"}${override.appliedTaskId ? ` (task ${override.appliedTaskId})` : ""}.`;
 
   await db
     .insert(earthosControlMapFindings)
@@ -335,7 +344,7 @@ export async function setPublishedReferenceNodeOverride(
       severity: "info",
       owner: "earthos-reference-override",
       note: summary,
-      metadata: override as unknown as Record<string, unknown>,
+      metadata: scopedOverride as unknown as Record<string, unknown>,
       updatedAt,
     })
     .onConflictDoUpdate({
@@ -345,7 +354,7 @@ export async function setPublishedReferenceNodeOverride(
         severity: "info",
         owner: "earthos-reference-override",
         note: summary,
-        metadata: override as unknown as Record<string, unknown>,
+        metadata: scopedOverride as unknown as Record<string, unknown>,
         updatedAt,
       },
     });
@@ -363,38 +372,108 @@ export async function setPublishedReferenceNodeOverride(
     approvedAt: updatedAt,
     approvedBy: override.appliedBy,
     controlSurface: `/${override.nodeId}`,
-    metadata: override as unknown as Record<string, unknown>,
+    metadata: scopedOverride as unknown as Record<string, unknown>,
   });
 }
 
 export async function getPublishedReferenceNodeOverride(
   nodeId: TravelReferenceNode["id"],
+  scope: EarthosEnvironmentScope = resolveEarthosEnvironmentScope(),
 ): Promise<PublishedReferenceNodeOverride | null> {
-  return readPublishedReferenceNodeOverrideFromDb(nodeId);
+  return readPublishedReferenceNodeOverrideFromDb(nodeId, scope);
+}
+
+async function clearOverrideFindingRowPreservingHistory(
+  row: typeof earthosControlMapFindings.$inferSelect,
+  clearedBy: string,
+): Promise<void> {
+  if (row.status === "cleared") return;
+  const db = await getRequiredEarthosDb();
+  const now = new Date();
+  const existingMeta = (row.metadata || {}) as Record<string, unknown>;
+  const nodeSlug = String(existingMeta.nodeId || row.findingId.split(":").pop() || "unknown");
+  const nextMeta = {
+    ...existingMeta,
+    clearedAt: now.toISOString(),
+    clearedBy,
+  };
+  const summary = `Cleared published reference override ${row.findingId} while preserving audit history (by ${clearedBy}).`;
+
+  await db
+    .update(earthosControlMapFindings)
+    .set({
+      status: "cleared",
+      note: summary,
+      metadata: nextMeta,
+      updatedAt: now,
+    })
+    .where(eq(earthosControlMapFindings.findingId, row.findingId));
+
+  await db.insert(earthosControlMapFindingHistory).values({
+    findingId: row.findingId,
+    event: "reference_override_cleared",
+    status: "cleared",
+    severity: "info",
+    owner: "earthos-reference-override",
+    nodeSlug,
+    corridor: nodeSlug,
+    recordedAt: now,
+    summary,
+    approvedAt: now,
+    approvedBy: clearedBy,
+    controlSurface: `/${nodeSlug}`,
+    metadata: nextMeta,
+  });
 }
 
 export async function clearPublishedReferenceNodeOverride(
   nodeId: TravelReferenceNode["id"],
+  options?: {
+    clearedBy?: string;
+    scope?: EarthosEnvironmentScope;
+  },
 ): Promise<void> {
   const db = await getRequiredEarthosDb();
-  await db
-    .delete(earthosControlMapFindings)
-    .where(eq(earthosControlMapFindings.findingId, buildReferenceOverrideFindingId(nodeId)));
+  const scope = options?.scope || resolveEarthosEnvironmentScope();
+  const clearedBy = options?.clearedBy || "earthos-operator-cleanup";
+  const targetIds = [
+    buildReferenceOverrideFindingId(nodeId, scope),
+    ...(scope === "nonprod" ? [buildLegacyReferenceOverrideFindingId(nodeId)] : []),
+  ];
+
+  for (const findingId of targetIds) {
+    const rows = await db
+      .select()
+      .from(earthosControlMapFindings)
+      .where(eq(earthosControlMapFindings.findingId, findingId))
+      .limit(1);
+    if (rows[0]) {
+      await clearOverrideFindingRowPreservingHistory(rows[0], clearedBy);
+    }
+  }
 }
 
 export async function clearReferenceMaintenanceStore(
   nodeId?: TravelReferenceNode["id"],
+  options?: {
+    clearedBy?: string;
+    scope?: EarthosEnvironmentScope;
+  },
 ): Promise<void> {
   const db = await getRequiredEarthosDb();
   if (nodeId) {
-    await db
-      .delete(earthosControlMapFindings)
-      .where(eq(earthosControlMapFindings.findingId, buildReferenceOverrideFindingId(nodeId)));
+    await clearPublishedReferenceNodeOverride(nodeId, options);
     return;
   }
-  await db
-    .delete(earthosControlMapFindings)
+  const clearedBy = options?.clearedBy || "earthos-operator-cleanup";
+  const rows = await db
+    .select()
+    .from(earthosControlMapFindings)
     .where(eq(earthosControlMapFindings.owner, "earthos-reference-override"));
+
+  for (const row of rows) {
+    await clearOverrideFindingRowPreservingHistory(row, clearedBy);
+  }
 }
 
 export async function detectReferenceMaintenanceIssues(options: {
@@ -564,11 +643,18 @@ function parseTaskFromFindingRow(
   if (!meta || typeof meta.taskId !== "string" || !Array.isArray(meta.issues)) {
     return null;
   }
+  const inferredScope: EarthosEnvironmentScope =
+    meta.environmentScope === "production" ||
+    row.findingId.startsWith("control-map:travel-reference:production:")
+      ? "production"
+      : "nonprod";
+
   return {
     taskId: meta.taskId,
     findingId: row.findingId,
     nodeId: meta.nodeId as TravelReferenceNode["id"],
     canonicalPath: meta.canonicalPath || `/${meta.nodeId}`,
+    environmentScope: inferredScope,
     status: (row.status as ReferenceMaintenanceTask["status"]) || meta.status || "open",
     severity: (row.severity as ReferenceMaintenanceTask["severity"]) || meta.severity || "watch",
     createdAt: meta.createdAt || row.createdAt.toISOString(),
@@ -596,9 +682,10 @@ export async function recordReferenceMaintenanceTask(
   // Ensure DB is available before creating any task records
   await getRequiredEarthosDb();
 
+  const scope = resolveEarthosEnvironmentScope();
   const now = new Date().toISOString();
   const taskId = `ref_task_${nodeId}_${randomUUID().slice(0, 8)}`;
-  const findingId = `control-map:travel-reference:${nodeId}:${taskId}`;
+  const findingId = `control-map:travel-reference:${scope}:${nodeId}:${taskId}`;
   const canonicalPath = nodeIssues[0].canonicalPath;
   const highestSeverity = nodeIssues.some((i) => i.severity === "critical")
     ? "critical"
@@ -623,6 +710,7 @@ export async function recordReferenceMaintenanceTask(
       taskId,
       nodeId,
       canonicalPath,
+      environmentScope: scope,
       issues: nodeIssues,
     },
     expectedRole: "verified_travel_reference",
@@ -643,6 +731,7 @@ export async function recordReferenceMaintenanceTask(
     proposedChangesJson: {
       taskId,
       nodeId,
+      environmentScope: scope,
       remappings: nodeIssues.map((issue) => ({
         targetId: issue.targetId,
         kind: issue.kind,
@@ -681,6 +770,7 @@ export async function recordReferenceMaintenanceTask(
     findingId,
     nodeId,
     canonicalPath,
+    environmentScope: scope,
     status: "open",
     severity: highestSeverity,
     createdAt: now,
@@ -710,6 +800,7 @@ export async function recordReferenceMaintenanceTask(
     metadata: {
       taskId,
       findingId,
+      environmentScope: scope,
       missionId: mission.id,
       driftEventId: task.driftEventId,
       packetId: task.packetId,
@@ -743,6 +834,7 @@ export async function listReferenceMaintenanceTasks(options: {
   nodeId?: TravelReferenceNode["id"];
   status?: ReferenceMaintenanceTask["status"];
   limit?: number;
+  environmentScope?: EarthosEnvironmentScope | "all";
 } = {}): Promise<ReferenceMaintenanceTask[]> {
   const db = await getRequiredEarthosDb();
   const rows = await db
@@ -756,7 +848,12 @@ export async function listReferenceMaintenanceTasks(options: {
     .map(parseTaskFromFindingRow)
     .filter((t): t is ReferenceMaintenanceTask => t !== null);
 
+  const targetScope = options.environmentScope || resolveEarthosEnvironmentScope();
+
   return tasks.filter((task) => {
+    if (targetScope !== "all" && (task.environmentScope || "nonprod") !== targetScope) {
+      return false;
+    }
     if (options.nodeId && task.nodeId !== options.nodeId) return false;
     if (options.status && task.status !== options.status) return false;
     return true;
@@ -825,6 +922,16 @@ export async function applyReferenceMaintenanceCorrection(options: {
   remediatedNode: TravelReferenceNode;
   unreviewedStaleCitationIds: string[];
 }> {
+  const operatorNormalized = (options.operator || "").trim();
+  if (!operatorNormalized) {
+    throw new Error("An authenticated operator identifier is required to approve or reject a reference correction.");
+  }
+  if (/^(vercel:cron|cron|scheduled-detector|system:cron)$/i.test(operatorNormalized)) {
+    throw new Error(
+      "Scheduled detection cannot approve or apply its own reference corrections; an authorized operator is required.",
+    );
+  }
+
   const task = await getReferenceMaintenanceTask(options.taskId);
   if (!task) {
     throw new Error(`Reference maintenance task ${options.taskId} not found in durable backend.`);
@@ -873,9 +980,11 @@ export async function applyReferenceMaintenanceCorrection(options: {
 
   // Clone and apply corrections to targetNode
   const remediatedNode: TravelReferenceNode = structuredClone(baseTargetNode);
-  const existingOverride = await readPublishedReferenceNodeOverrideFromDb(task.nodeId);
+  const taskScope = task.environmentScope || resolveEarthosEnvironmentScope();
+  const existingOverride = await readPublishedReferenceNodeOverrideFromDb(task.nodeId, taskScope);
   const nextOverride: PublishedReferenceNodeOverride = {
     nodeId: task.nodeId,
+    environmentScope: taskScope,
     updatedAt: now,
     appliedTaskId: task.taskId,
     appliedBy: options.operator,
@@ -900,7 +1009,9 @@ export async function applyReferenceMaintenanceCorrection(options: {
         const suppliedReview = options.sourceReviews?.find((r) => r.citationId === issue.targetId);
         const validation = validateSourceReviewAttestation(suppliedReview, citation.sourceUrl);
         if (!validation.valid || !suppliedReview) {
-          // Do NOT bump lastCheckedAt without a verified source review attestation!
+          // Do NOT bump lastCheckedAt without a verified source review attestation—even if caller mutated targetNode!
+          citation.lastCheckedAt = issue.observedValue;
+          delete nextOverride.evidenceReviews![issue.targetId];
           unreviewedStaleCitationIds.push(issue.targetId);
         } else {
           const checkedDate = suppliedReview.reviewedAt.slice(0, 10);
@@ -939,7 +1050,7 @@ export async function applyReferenceMaintenanceCorrection(options: {
   }
 
   // Persist approved override in the durable Postgres backend before marking task remediated
-  await setPublishedReferenceNodeOverride(nextOverride);
+  await setPublishedReferenceNodeOverride(nextOverride, taskScope);
 
   // Explicitly approve and apply packet + signal mission
   await governance.markPacketApproved(task.packetId, options.operator, now);
@@ -1006,6 +1117,16 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
   deployedBaseUrl?: string;
   fetchDeployedPage?: DeployedPageFetchFn;
 }): Promise<ReferenceMaintenanceTask> {
+  const verifiedByNormalized = (options.verifiedBy || "").trim();
+  if (
+    !verifiedByNormalized ||
+    /^(vercel:cron|cron|scheduled-detector|system:cron)$/i.test(verifiedByNormalized)
+  ) {
+    throw new Error(
+      "Scheduled detection cannot verify or close its own reference maintenance tasks; an authorized operator is required.",
+    );
+  }
+
   const task = await getReferenceMaintenanceTask(options.taskId);
   if (!task) {
     throw new Error(`Reference maintenance task ${options.taskId} not found in durable backend.`);
@@ -1325,26 +1446,101 @@ export async function runReferenceMaintenanceLoop(options: {
   };
 }
 
+export type ReferenceMaintenanceScanRecord = {
+  findingId: string;
+  environmentScope: EarthosEnvironmentScope;
+  checkedAt: string;
+  actor: string;
+  invocationType: "scheduled_cron" | "manual_authenticated";
+  scannedNodeIds: Array<TravelReferenceNode["id"]>;
+  detectedIssueCount: number;
+  recordedTaskIds: string[];
+  existingOpenTaskIds: string[];
+  status: "healthy" | "issues_detected";
+};
+
+export type DestinationReferenceHealthSummary = {
+  nodeId: TravelReferenceNode["id"];
+  title: string;
+  canonicalPath: string;
+  lastReviewedAt: string;
+  evidenceCount: number;
+  specialistHandoffCount: number;
+  openTaskCount: number;
+  pendingRecheckCount: number;
+  closedTaskCount: number;
+  healthStatus: "healthy" | "failed_check" | "pending_recheck";
+  evidenceCitations: Array<{
+    id: string;
+    sourceTitle: string;
+    issuingOrganization: string;
+    sourceUrl: string;
+    lastCheckedAt: string;
+    verificationNote?: string;
+  }>;
+  specialistHandoffs: Array<{
+    id: string;
+    partnerName: string;
+    baseUrl: string;
+  }>;
+};
+
+export type ReferenceMaintenanceOperationalSnapshot = {
+  environmentScope: EarthosEnvironmentScope;
+  cronSchedule: string;
+  cronEndpointPath: string;
+  latestScan: ReferenceMaintenanceScanRecord | null;
+  scheduledCronInvocationCount: number;
+  manualInvocationCount: number;
+  recentScanHistory: Array<{
+    eventSequence: number;
+    checkedAt: string;
+    actor: string;
+    invocationType: "scheduled_cron" | "manual_authenticated";
+    detectedIssueCount: number;
+    status: "healthy" | "issues_detected";
+    summary: string;
+  }>;
+  destinations: DestinationReferenceHealthSummary[];
+  tasks: ReferenceMaintenanceTask[];
+};
+
+export function buildReferenceScanFindingId(
+  scope: EarthosEnvironmentScope = resolveEarthosEnvironmentScope(),
+): string {
+  return `control-map:travel-reference-scan:${scope}:latest`;
+}
+
 /**
  * Scheduled detection entrypoint invoked by Vercel Cron (/api/internal/earthos/reference-maintenance)
  * or authenticated operator sweeps. Evaluates all published TravelReferenceNodes using real HTTP probes
- * and records durable maintenance tasks in Neon Postgres for any node with detected issues.
+ * and records durable maintenance tasks and a durable scan execution record in Neon Postgres.
  */
 export async function runScheduledReferenceMaintenanceDetection(options: {
   now?: Date;
   maxEvidenceAgeDays?: number;
   probeUrl?: UrlProbeFn;
   nodes?: TravelReferenceNode[];
+  actor?: string;
 } = {}): Promise<{
   checkedAt: string;
+  actor: string;
+  invocationType: "scheduled_cron" | "manual_authenticated";
+  environmentScope: EarthosEnvironmentScope;
+  scanFindingId: string;
   scannedNodeIds: Array<TravelReferenceNode["id"]>;
   detectedIssueCount: number;
   issues: ReferenceMaintenanceIssue[];
   recordedTasks: ReferenceMaintenanceTask[];
   existingOpenTasks: ReferenceMaintenanceTask[];
 }> {
+  const db = await getRequiredEarthosDb();
+  const scope = resolveEarthosEnvironmentScope();
   const now = options.now || new Date();
   const checkedAt = now.toISOString();
+  const actor = (options.actor || "vercel:cron").trim();
+  const invocationType: "scheduled_cron" | "manual_authenticated" =
+    actor === "vercel:cron" ? "scheduled_cron" : "manual_authenticated";
   const nodes = options.nodes || (await getAllPublishedTravelReferenceNodes());
   const issues = await detectReferenceMaintenanceIssues({
     nodes,
@@ -1353,7 +1549,10 @@ export async function runScheduledReferenceMaintenanceDetection(options: {
     probeUrl: options.probeUrl,
   });
 
-  const openTasks = await listReferenceMaintenanceTasks({ status: "open" });
+  const openTasks = await listReferenceMaintenanceTasks({
+    status: "open",
+    environmentScope: scope,
+  });
   const recordedTasks: ReferenceMaintenanceTask[] = [];
   const existingOpenTasks: ReferenceMaintenanceTask[] = [];
 
@@ -1387,6 +1586,74 @@ export async function runScheduledReferenceMaintenanceDetection(options: {
     }
   }
 
+  const scanFindingId = buildReferenceScanFindingId(scope);
+  const scanStatus: "healthy" | "issues_detected" =
+    issues.length === 0 ? "healthy" : "issues_detected";
+  const scanRecord: ReferenceMaintenanceScanRecord = {
+    findingId: scanFindingId,
+    environmentScope: scope,
+    checkedAt,
+    actor,
+    invocationType,
+    scannedNodeIds: nodes.map((n) => n.id),
+    detectedIssueCount: issues.length,
+    recordedTaskIds: recordedTasks.map((t) => t.taskId),
+    existingOpenTaskIds: existingOpenTasks.map((t) => t.taskId),
+    status: scanStatus,
+  };
+  const scanSummary = `Reference maintenance detection pass (${invocationType} by ${actor} in ${scope}) checked ${nodes.length} node(s): ${issues.length} issue(s) found, ${recordedTasks.length} new task(s) persisted, ${existingOpenTasks.length} existing open task(s).`;
+
+  await db
+    .insert(earthosControlMapFindings)
+    .values({
+      findingId: scanFindingId,
+      status: scanStatus,
+      severity: issues.some((i) => i.severity === "critical")
+        ? "critical"
+        : issues.length > 0
+          ? "watch"
+          : "info",
+      owner: "earthos-reference-scan",
+      note: scanSummary,
+      metadata: scanRecord as unknown as Record<string, unknown>,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: earthosControlMapFindings.findingId,
+      set: {
+        status: scanStatus,
+        severity: issues.some((i) => i.severity === "critical")
+          ? "critical"
+          : issues.length > 0
+            ? "watch"
+            : "info",
+        owner: "earthos-reference-scan",
+        note: scanSummary,
+        metadata: scanRecord as unknown as Record<string, unknown>,
+        updatedAt: now,
+      },
+    });
+
+  await db.insert(earthosControlMapFindingHistory).values({
+    findingId: scanFindingId,
+    event: "reference_detection_pass_executed",
+    status: scanStatus,
+    severity: issues.some((i) => i.severity === "critical")
+      ? "critical"
+      : issues.length > 0
+        ? "watch"
+        : "info",
+    owner: "earthos-reference-scan",
+    nodeSlug: "travel-reference-network",
+    corridor: "travel-reference-network",
+    recordedAt: now,
+    summary: scanSummary,
+    approvedAt: now,
+    approvedBy: actor,
+    controlSurface: "/api/internal/earthos/reference-maintenance",
+    metadata: scanRecord as unknown as Record<string, unknown>,
+  });
+
   appendEarthOSAuditEvent({
     eventType: "reference_drift_detected",
     entity: "earthos",
@@ -1396,18 +1663,16 @@ export async function runScheduledReferenceMaintenanceDetection(options: {
       : issues.length > 0
         ? "watch"
         : "info",
-    summary: `Scheduled reference maintenance scan checked ${nodes.length} node(s): ${issues.length} issue(s) found, ${recordedTasks.length} new task(s) persisted, ${existingOpenTasks.length} existing open task(s).`,
-    metadata: {
-      checkedAt,
-      scannedNodeIds: nodes.map((n) => n.id),
-      detectedIssueCount: issues.length,
-      recordedTaskIds: recordedTasks.map((t) => t.taskId),
-      existingOpenTaskIds: existingOpenTasks.map((t) => t.taskId),
-    },
+    summary: scanSummary,
+    metadata: scanRecord as unknown as Record<string, unknown>,
   });
 
   return {
     checkedAt,
+    actor,
+    invocationType,
+    environmentScope: scope,
+    scanFindingId,
     scannedNodeIds: nodes.map((n) => n.id),
     detectedIssueCount: issues.length,
     issues,
@@ -1415,3 +1680,120 @@ export async function runScheduledReferenceMaintenanceDetection(options: {
     existingOpenTasks,
   };
 }
+
+export async function getReferenceMaintenanceOperationalSnapshot(options: {
+  environmentScope?: EarthosEnvironmentScope;
+  taskLimit?: number;
+} = {}): Promise<ReferenceMaintenanceOperationalSnapshot> {
+  const db = await getRequiredEarthosDb();
+  const scope = options.environmentScope || resolveEarthosEnvironmentScope();
+  const scanFindingId = buildReferenceScanFindingId(scope);
+
+  const [scanRowList, scanHistoryRows, publishedNodes, tasks] = await Promise.all([
+    db
+      .select()
+      .from(earthosControlMapFindings)
+      .where(eq(earthosControlMapFindings.findingId, scanFindingId))
+      .limit(1),
+    db
+      .select()
+      .from(earthosControlMapFindingHistory)
+      .where(
+        and(
+          eq(earthosControlMapFindingHistory.findingId, scanFindingId),
+          eq(earthosControlMapFindingHistory.event, "reference_detection_pass_executed"),
+        ),
+      )
+      .orderBy(desc(earthosControlMapFindingHistory.eventSequence))
+      .limit(25),
+    getAllPublishedTravelReferenceNodes(),
+    listReferenceMaintenanceTasks({
+      environmentScope: scope,
+      limit: options.taskLimit || 50,
+    }),
+  ]);
+
+  const latestScan = scanRowList[0]?.metadata
+    ? (scanRowList[0].metadata as unknown as ReferenceMaintenanceScanRecord)
+    : null;
+
+  const recentScanHistory = scanHistoryRows.map((row) => {
+    const meta = (row.metadata || {}) as Partial<ReferenceMaintenanceScanRecord>;
+    const actor = row.approvedBy || meta.actor || "unknown";
+    const invocationType: "scheduled_cron" | "manual_authenticated" =
+      meta.invocationType || (actor === "vercel:cron" ? "scheduled_cron" : "manual_authenticated");
+    return {
+      eventSequence: row.eventSequence,
+      checkedAt: meta.checkedAt || row.recordedAt.toISOString(),
+      actor,
+      invocationType,
+      detectedIssueCount: Number(meta.detectedIssueCount || 0),
+      status: (row.status === "issues_detected" ? "issues_detected" : "healthy") as
+        | "healthy"
+        | "issues_detected",
+      summary: row.summary,
+    };
+  });
+
+  const scheduledCronInvocationCount = recentScanHistory.filter(
+    (h) => h.invocationType === "scheduled_cron",
+  ).length;
+  const manualInvocationCount = recentScanHistory.filter(
+    (h) => h.invocationType === "manual_authenticated",
+  ).length;
+
+  const destinations: DestinationReferenceHealthSummary[] = publishedNodes.map((node) => {
+    const nodeTasks = tasks.filter((t) => t.nodeId === node.id);
+    const openTaskCount = nodeTasks.filter((t) => t.status === "open").length;
+    const pendingRecheckCount = nodeTasks.filter(
+      (t) => t.status === "remediated_pending_recheck",
+    ).length;
+    const closedTaskCount = nodeTasks.filter((t) => t.status === "closed").length;
+
+    const healthStatus: DestinationReferenceHealthSummary["healthStatus"] =
+      openTaskCount > 0
+        ? "failed_check"
+        : pendingRecheckCount > 0
+          ? "pending_recheck"
+          : "healthy";
+
+    return {
+      nodeId: node.id,
+      title: node.title,
+      canonicalPath: node.canonicalPath,
+      lastReviewedAt: node.lastReviewedAt,
+      evidenceCount: node.evidenceRegistry.length,
+      specialistHandoffCount: node.specialistHandoffs.options.length,
+      openTaskCount,
+      pendingRecheckCount,
+      closedTaskCount,
+      healthStatus,
+      evidenceCitations: node.evidenceRegistry.map((cit) => ({
+        id: cit.id,
+        sourceTitle: cit.sourceTitle,
+        issuingOrganization: cit.issuingOrganization,
+        sourceUrl: cit.sourceUrl,
+        lastCheckedAt: cit.lastCheckedAt,
+        verificationNote: cit.verificationNote,
+      })),
+      specialistHandoffs: node.specialistHandoffs.options.map((opt) => ({
+        id: opt.id,
+        partnerName: opt.partnerName,
+        baseUrl: opt.baseUrl,
+      })),
+    };
+  });
+
+  return {
+    environmentScope: scope,
+    cronSchedule: "0 8 * * *",
+    cronEndpointPath: "/api/internal/earthos/reference-maintenance",
+    latestScan,
+    scheduledCronInvocationCount,
+    manualInvocationCount,
+    recentScanHistory,
+    destinations,
+    tasks,
+  };
+}
+

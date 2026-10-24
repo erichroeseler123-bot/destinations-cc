@@ -46,6 +46,7 @@
     "dcc:verify:deployed": "node --import tsx --env-file=.env.test.local scripts/dcc/verify-deployed-staging-live.ts",
     "dcc:preflight": "node --import tsx --env-file=.env.test.local scripts/dcc/preflight-audit.ts",
     "dcc:audit:prod": "node --import tsx scripts/dcc/production-migration-audit.ts",
+    "db:migrate:earthos": "node --import tsx --env-file-if-exists=.env.local scripts/db/migrate-earthos.ts",
     "dcc:cleanup:sessions": "node --import tsx --env-file=.env.test.local scripts/dcc/cleanup-expired-sessions.ts",
     "check": "npm run lint && npm run typecheck",
     "ports:build": "node scripts/import-ports-tsv.mjs && node scripts/ports-generate.mjs",

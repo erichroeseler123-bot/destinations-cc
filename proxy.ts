@@ -423,19 +423,44 @@ function checkInternalApiAuthorization(request: NextRequest): {
   if (isValidAdminSession(adminSession)) {
     return { authorized: true };
   }
-  const adminKeyHeader = request.headers.get("x-admin-access-key")?.trim() || "";
+  const adminKeyHeader =
+    request.headers.get("x-admin-access-key")?.trim() ||
+    request.headers.get("x-earthos-admin-key")?.trim() ||
+    "";
   const bearerSecret = readBearerToken(request);
   if (isValidAdminAccessKey(adminKeyHeader) || isValidAdminAccessKey(bearerSecret)) {
     return { authorized: true };
   }
 
-  // 3. EarthOS API key or internal secret header / Bearer fallback
+  // 3. EarthOS API / Admin key
   const earthosKey = process.env.EARTHOS_API_KEY?.trim();
+  const earthosAdminKey = process.env.EARTHOS_ADMIN_KEY?.trim();
   const earthosHeader = request.headers.get("x-earthos-api-key")?.trim() || "";
   if (earthosKey && (earthosKey === earthosHeader || earthosKey === bearerSecret)) {
     return { authorized: true };
   }
+  if (earthosAdminKey && (earthosAdminKey === adminKeyHeader || earthosAdminKey === bearerSecret)) {
+    return { authorized: true };
+  }
 
+  // 4. Vercel CRON_SECRET (allowed strictly for GET /api/internal/earthos/reference-maintenance detection)
+  const cronSecret = process.env.CRON_SECRET?.trim();
+  if (cronSecret && bearerSecret === cronSecret) {
+    if (
+      request.method.toUpperCase() === "GET" &&
+      request.nextUrl.pathname === "/api/internal/earthos/reference-maintenance" &&
+      request.nextUrl.searchParams.get("mode") !== "state"
+    ) {
+      return { authorized: true };
+    }
+    return {
+      authorized: false,
+      statusCode: 403,
+      error: "scheduled_detection_cannot_mutate_or_approve",
+    };
+  }
+
+  // 5. Internal secret header / Bearer fallback
   const internalSecret = process.env.INTERNAL_API_SECRET?.trim();
   if (!internalSecret)
     return {
@@ -702,6 +727,60 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
   if (request.nextUrl.pathname.startsWith("/dashboard/")) {
     const relativePath = request.nextUrl.pathname.slice(11);
     return NextResponse.redirect(new URL(`/internal/dashboard/${relativePath}${request.nextUrl.search}`, request.url), 307);
+  }
+
+  if (
+    request.nextUrl.pathname === "/internal/dashboard" ||
+    request.nextUrl.pathname.startsWith("/internal/dashboard/")
+  ) {
+    const isServerActionPost =
+      request.method.toUpperCase() === "POST" && request.headers.has("next-action");
+    if (!isServerActionPost) {
+      const auth = checkInternalApiAuthorization(request);
+      if (!auth.authorized) {
+        const safeNext = request.nextUrl.pathname.startsWith("/internal/dashboard")
+          ? request.nextUrl.pathname
+          : "/internal/dashboard";
+        const unlockHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>EarthOS Mission Control — Operator Unlock Required</title>
+  <style>
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background: #09090b; color: #fafafa; display: flex; min-height: 100vh; align-items: center; justify-content: center; }
+    .card { max-width: 440px; width: 100%; margin: 24px; padding: 32px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.12); background: rgba(24,24,27,0.92); box-shadow: 0 24px 60px rgba(0,0,0,0.5); }
+    .kicker { font-size: 11px; font-weight: 800; letter-spacing: 0.24em; text-transform: uppercase; color: #f5c66c; }
+    h1 { margin: 12px 0 8px; font-size: 26px; font-weight: 900; letter-spacing: -0.02em; }
+    p { margin: 0 0 20px; font-size: 14px; line-height: 1.6; color: #a1a1aa; }
+    input[type="password"] { box-sizing: border-box; width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff; font-size: 14px; margin-bottom: 12px; }
+    button { width: 100%; padding: 12px 16px; border-radius: 9999px; border: none; background: linear-gradient(180deg, #f5c66c, #21c6da); color: #120f0b; font-size: 13px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <main class="card" data-earthos-auth-gate="unauthorized">
+    <div class="kicker">EarthOS Mission Control · 401 Unauthorized</div>
+    <h1>Operator Authentication Required</h1>
+    <p>Private maintenance records, evidence reviews, and correction controls require an authorized EarthOS operator session.</p>
+    <form action="/admin/unlock" method="post">
+      <input type="hidden" name="next" value="${safeNext}" />
+      <input type="password" name="key" required placeholder="Enter operator access key" autocomplete="current-password" />
+      <button type="submit">Unlock EarthOS Mission Control</button>
+    </form>
+  </main>
+</body>
+</html>`;
+        return new NextResponse(unlockHtml, {
+          status: auth.statusCode || 401,
+          headers: {
+            "content-type": "text/html; charset=utf-8",
+            "x-robots-tag": "noindex, nofollow",
+            "cache-control": "no-store",
+          },
+        });
+      }
+    }
   }
 
   const somersetResponse = handleSomersetHost(request);

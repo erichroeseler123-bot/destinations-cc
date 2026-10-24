@@ -33,7 +33,12 @@ type PanelState =
   | { tone: "error"; message: string };
 
 export function LaunchMissionPanel() {
-  const router = useRouter();
+  let router: ReturnType<typeof useRouter> | null = null;
+  try {
+    router = useRouter();
+  } catch {
+    router = null;
+  }
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState<LaunchMissionInput>({
     entity: "gosno",
@@ -66,8 +71,12 @@ export function LaunchMissionPanel() {
       }
 
       startTransition(() => {
-        router.push(`/internal/dashboard/missions/${result.data.id}`);
-        router.refresh();
+        if (router) {
+          router.push(`/internal/dashboard/missions/${result.data.id}`);
+          router.refresh();
+        } else if (typeof window !== "undefined") {
+          window.location.assign(`/internal/dashboard/missions/${result.data.id}`);
+        }
       });
     } catch (error) {
       setPanelState({

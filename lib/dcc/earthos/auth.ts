@@ -11,7 +11,14 @@ import { verifyServiceRequestHeaders } from "@/lib/dcc/auth/hmac-service-auth";
 export type EarthOSAuthResult = {
   authorized: boolean;
   actor: string | null;
-  method: "admin_session" | "admin_access_key" | "internal_secret" | "earthos_api_key" | "hmac_service" | null;
+  method:
+    | "admin_session"
+    | "admin_access_key"
+    | "internal_secret"
+    | "earthos_api_key"
+    | "cron_secret"
+    | "hmac_service"
+    | null;
   statusCode: 200 | 401 | 403 | 429;
   error?: string;
 };
@@ -70,7 +77,10 @@ export async function verifyEarthOSAuthorization(
         statusCode: 200,
       };
     }
-    if (matchesConfiguredSecret(explicitToken, process.env.EARTHOS_API_KEY)) {
+    if (
+      matchesConfiguredSecret(explicitToken, process.env.EARTHOS_API_KEY) ||
+      matchesConfiguredSecret(explicitToken, process.env.EARTHOS_ADMIN_KEY)
+    ) {
       return {
         authorized: true,
         actor: "earthos:api-key",
@@ -109,26 +119,52 @@ export async function verifyEarthOSAuthorization(
     }
 
     const internalSecretHeader = reqHeaders.get("x-internal-secret");
-    const adminKeyHeader = reqHeaders.get("x-admin-access-key");
+    const adminKeyHeader = reqHeaders.get("x-admin-access-key") || reqHeaders.get("x-earthos-admin-key");
     const earthosKeyHeader = reqHeaders.get("x-earthos-api-key");
     const bearer = readBearerToken(reqHeaders.get("authorization"));
 
     if (
       matchesConfiguredSecret(internalSecretHeader, process.env.INTERNAL_API_SECRET) ||
-      matchesConfiguredSecret(bearer, process.env.INTERNAL_API_SECRET) ||
-      matchesConfiguredSecret(bearer, process.env.CRON_SECRET)
+      matchesConfiguredSecret(bearer, process.env.INTERNAL_API_SECRET)
     ) {
       return {
         authorized: true,
-        actor: matchesConfiguredSecret(bearer, process.env.CRON_SECRET) ? "vercel:cron" : "internal:secret",
+        actor: "internal:secret",
         method: "internal_secret",
+        statusCode: 200,
+      };
+    }
+
+    if (matchesConfiguredSecret(bearer, process.env.CRON_SECRET)) {
+      const method = (request.method || "GET").toUpperCase();
+      let pathname = "";
+      try {
+        pathname = new URL(request.url).pathname;
+      } catch {
+        pathname = "";
+      }
+      if (method !== "GET" || (pathname && pathname !== "/api/internal/earthos/reference-maintenance")) {
+        return {
+          authorized: false,
+          actor: "vercel:cron",
+          method: "cron_secret",
+          statusCode: 403,
+          error: "scheduled_detection_cannot_mutate_or_approve",
+        };
+      }
+      return {
+        authorized: true,
+        actor: "vercel:cron",
+        method: "cron_secret",
         statusCode: 200,
       };
     }
 
     if (
       matchesConfiguredSecret(earthosKeyHeader, process.env.EARTHOS_API_KEY) ||
-      matchesConfiguredSecret(bearer, process.env.EARTHOS_API_KEY)
+      matchesConfiguredSecret(bearer, process.env.EARTHOS_API_KEY) ||
+      matchesConfiguredSecret(adminKeyHeader, process.env.EARTHOS_ADMIN_KEY) ||
+      matchesConfiguredSecret(bearer, process.env.EARTHOS_ADMIN_KEY)
     ) {
       return {
         authorized: true,
@@ -177,7 +213,7 @@ export async function verifyEarthOSAuthorization(
   try {
     const hdrs = await nextHeaders();
     const internalSecretHeader = hdrs.get("x-internal-secret");
-    const adminKeyHeader = hdrs.get("x-admin-access-key");
+    const adminKeyHeader = hdrs.get("x-admin-access-key") || hdrs.get("x-earthos-admin-key");
     const earthosKeyHeader = hdrs.get("x-earthos-api-key");
     const bearer = readBearerToken(hdrs.get("authorization"));
 
@@ -195,7 +231,9 @@ export async function verifyEarthOSAuthorization(
 
     if (
       matchesConfiguredSecret(earthosKeyHeader, process.env.EARTHOS_API_KEY) ||
-      matchesConfiguredSecret(bearer, process.env.EARTHOS_API_KEY)
+      matchesConfiguredSecret(bearer, process.env.EARTHOS_API_KEY) ||
+      matchesConfiguredSecret(adminKeyHeader, process.env.EARTHOS_ADMIN_KEY) ||
+      matchesConfiguredSecret(bearer, process.env.EARTHOS_ADMIN_KEY)
     ) {
       return {
         authorized: true,
