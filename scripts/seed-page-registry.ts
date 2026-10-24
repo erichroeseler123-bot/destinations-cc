@@ -68,6 +68,12 @@ function inferOwner(system: SeededRoute["system"], routePath: string): PageOwner
   if (routePath.startsWith("/book") || routePath.startsWith("/checkout") || routePath.startsWith("/pay-balance")) {
     if (!routePath.startsWith("/checkout/octo")) return "parr";
   }
+  if (routePath === "/somerset-wi" || routePath.startsWith("/somerset-wi/")) {
+    return "somerset";
+  }
+  if (routePath === "/shuttleya" || routePath.startsWith("/shuttleya/")) {
+    return "shuttleya";
+  }
   if (
     routePath === "/helicopter" ||
     routePath.startsWith("/juneau-flight-deck") ||

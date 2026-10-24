@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import { pageRegistry } from "@/data/page-registry";
 import { getDb, hasDb } from "@/lib/db/client";
 import {
@@ -17,6 +19,9 @@ import {
 } from "@/lib/dcc/earthos/workflows/service";
 import {
   getAllTravelReferenceNodes,
+  getReferenceMaintenanceStoreFilePath,
+  getTravelReferenceNodeById,
+  type PublishedReferenceNodeOverride,
   type TravelReferenceNode,
 } from "@/lib/dcc/travelReference";
 
@@ -39,6 +44,31 @@ export type ReferenceMaintenanceIssue = {
   detectedAt: string;
 };
 
+/**
+ * Explicit source review attestation required before any stale evidence citation
+ * can have its lastCheckedAt timestamp updated. Refreshing a timestamp without
+ * an upstream source review is rejected.
+ */
+export type SourceReviewAttestation = {
+  citationId: string;
+  reviewedSourceUrl: string;
+  httpStatusCode: number;
+  verifiedClaimMatchesSource: boolean;
+  reviewerNotes: string;
+  reviewedBy: string;
+  reviewedAt: string;
+  publishedOrUpdatedDate?: string | null;
+};
+
+export type ReferenceContentAssertion = {
+  targetId: string;
+  kind: ReferenceIssueKind;
+  oldValueAbsentFromPublishedNode: boolean;
+  correctedValuePresentInPublishedNode: boolean;
+  publishedValue: string;
+  sourceReviewVerified: boolean;
+};
+
 export type ReferenceVerificationEvidence = {
   verifiedAt: string;
   verifiedBy: string;
@@ -57,6 +87,7 @@ export type ReferenceVerificationEvidence = {
     correctedValue: string;
     status: "verified_clean";
   }>;
+  contentAssertions: ReferenceContentAssertion[];
   probeResults: Array<{
     url: string;
     ok: boolean;
@@ -79,6 +110,7 @@ export type ReferenceMaintenanceTask = {
   driftEventId: string;
   packetId: string;
   issues: ReferenceMaintenanceIssue[];
+  sourceReviews: SourceReviewAttestation[];
   verificationEvidence: ReferenceVerificationEvidence | null;
 };
 
@@ -92,7 +124,7 @@ export type UrlProbeFn = (url: string) => Promise<UrlProbeResult>;
 
 /**
  * Canonical specialist handoff endpoint map.
- * Explicitly maps known broken/retired specialist URLs (such as the Juneau links caught during PR #218)
+ * Explicitly maps known broken/retired specialist URLs (such as the Juneau links caught during publication)
  * to their verified live routes, and validates allowed paths on DCC specialist domains.
  */
 export const KNOWN_BROKEN_SPECIALIST_URLS: Record<
@@ -155,14 +187,105 @@ const VALID_SPECIALIST_HOST_PATHS: Record<string, Set<string>> = {
   "www.saveonthestrip.com": new Set(["/", "/shows", "/tours", "/deals"]),
 };
 
-function getTaskStore(): Map<string, ReferenceMaintenanceTask> {
+type DiskReferenceMaintenanceState = {
+  tasks: Record<string, ReferenceMaintenanceTask>;
+  nodeOverrides: Record<string, PublishedReferenceNodeOverride>;
+};
+
+function getGlobalMemoryState(): {
+  tasks: Map<string, ReferenceMaintenanceTask>;
+  nodeOverrides: Map<string, PublishedReferenceNodeOverride>;
+  loadedFromPath: string | null;
+} {
   const globalStore = globalThis as typeof globalThis & {
     __dccReferenceMaintenanceTasks?: Map<string, ReferenceMaintenanceTask>;
+    __dccPublishedReferenceOverrides?: Map<string, PublishedReferenceNodeOverride>;
+    __dccReferenceMaintenanceStorePath?: string | null;
   };
-  if (!globalStore.__dccReferenceMaintenanceTasks) {
+
+  const currentFilePath = getReferenceMaintenanceStoreFilePath();
+
+  if (
+    !globalStore.__dccReferenceMaintenanceTasks ||
+    !globalStore.__dccPublishedReferenceOverrides ||
+    globalStore.__dccReferenceMaintenanceStorePath !== currentFilePath
+  ) {
     globalStore.__dccReferenceMaintenanceTasks = new Map<string, ReferenceMaintenanceTask>();
+    globalStore.__dccPublishedReferenceOverrides = new Map<string, PublishedReferenceNodeOverride>();
+    globalStore.__dccReferenceMaintenanceStorePath = currentFilePath;
+
+    if (currentFilePath && fs.existsSync(currentFilePath)) {
+      try {
+        const parsed = JSON.parse(
+          fs.readFileSync(currentFilePath, "utf8"),
+        ) as Partial<DiskReferenceMaintenanceState>;
+        if (parsed.tasks) {
+          for (const [id, task] of Object.entries(parsed.tasks)) {
+            globalStore.__dccReferenceMaintenanceTasks.set(id, {
+              ...task,
+              sourceReviews: task.sourceReviews || [],
+            });
+          }
+        }
+        if (parsed.nodeOverrides) {
+          for (const [nodeId, override] of Object.entries(parsed.nodeOverrides)) {
+            globalStore.__dccPublishedReferenceOverrides.set(nodeId, override);
+          }
+        }
+      } catch {
+        // ignore malformed state file
+      }
+    }
   }
-  return globalStore.__dccReferenceMaintenanceTasks;
+
+  return {
+    tasks: globalStore.__dccReferenceMaintenanceTasks,
+    nodeOverrides: globalStore.__dccPublishedReferenceOverrides,
+    loadedFromPath: currentFilePath,
+  };
+}
+
+function flushReferenceMaintenanceStateToDisk() {
+  const globalStore = globalThis as typeof globalThis & {
+    __dccReferenceMaintenanceTasks?: Map<string, ReferenceMaintenanceTask>;
+    __dccPublishedReferenceOverrides?: Map<string, PublishedReferenceNodeOverride>;
+  };
+  const filePath = getReferenceMaintenanceStoreFilePath();
+  if (!filePath || !globalStore.__dccReferenceMaintenanceTasks || !globalStore.__dccPublishedReferenceOverrides) {
+    return;
+  }
+
+  const serialized: DiskReferenceMaintenanceState = {
+    tasks: Object.fromEntries(globalStore.__dccReferenceMaintenanceTasks.entries()),
+    nodeOverrides: Object.fromEntries(globalStore.__dccPublishedReferenceOverrides.entries()),
+  };
+
+  try {
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, JSON.stringify(serialized, null, 2), "utf8");
+  } catch {
+    // best-effort disk write
+  }
+}
+
+export function setPublishedReferenceNodeOverride(override: PublishedReferenceNodeOverride): void {
+  const state = getGlobalMemoryState();
+  state.nodeOverrides.set(override.nodeId, override);
+  flushReferenceMaintenanceStateToDisk();
+}
+
+export function clearReferenceMaintenanceStore(): void {
+  const state = getGlobalMemoryState();
+  state.tasks.clear();
+  state.nodeOverrides.clear();
+  const filePath = getReferenceMaintenanceStoreFilePath();
+  if (filePath && fs.existsSync(filePath)) {
+    try {
+      fs.unlinkSync(filePath);
+    } catch {
+      // ignore
+    }
+  }
 }
 
 function matchesInternalRoute(href: string): { valid: boolean; killed: boolean } {
@@ -343,6 +466,7 @@ async function persistControlMapFindingToDb(task: ReferenceMaintenanceTask, even
           driftEventId: task.driftEventId,
           packetId: task.packetId,
           issueCount: task.issues.length,
+          sourceReviews: task.sourceReviews,
           verificationEvidence: task.verificationEvidence,
         },
         updatedAt: new Date(task.updatedAt),
@@ -361,6 +485,7 @@ async function persistControlMapFindingToDb(task: ReferenceMaintenanceTask, even
             driftEventId: task.driftEventId,
             packetId: task.packetId,
             issueCount: task.issues.length,
+            sourceReviews: task.sourceReviews,
             verificationEvidence: task.verificationEvidence,
           },
           updatedAt: new Date(task.updatedAt),
@@ -383,6 +508,7 @@ async function persistControlMapFindingToDb(task: ReferenceMaintenanceTask, even
       metadata: {
         taskId: task.taskId,
         issues: task.issues,
+        sourceReviews: task.sourceReviews,
         verificationEvidence: task.verificationEvidence,
       },
     });
@@ -487,10 +613,13 @@ export async function recordReferenceMaintenanceTask(
     driftEventId: driftEvent?.id || `drift_${taskId}`,
     packetId: packet?.id || `packet_${taskId}`,
     issues: nodeIssues,
+    sourceReviews: [],
     verificationEvidence: null,
   };
 
-  getTaskStore().set(taskId, task);
+  const state = getGlobalMemoryState();
+  state.tasks.set(taskId, task);
+  flushReferenceMaintenanceStateToDisk();
 
   appendEarthOSAuditEvent({
     eventType: "reference_drift_detected",
@@ -518,30 +647,84 @@ export async function recordReferenceMaintenanceTask(
 }
 
 export function getReferenceMaintenanceTask(taskId: string): ReferenceMaintenanceTask | null {
-  return getTaskStore().get(taskId) || null;
+  return getGlobalMemoryState().tasks.get(taskId) || null;
 }
 
 export function listReferenceMaintenanceTasks(): ReferenceMaintenanceTask[] {
-  return [...getTaskStore().values()].sort(
+  return [...getGlobalMemoryState().tasks.values()].sort(
     (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
   );
 }
 
+function validateSourceReviewAttestation(
+  review: SourceReviewAttestation | undefined,
+  expectedCitationSourceUrl: string,
+): { valid: boolean; reason?: string } {
+  if (!review) {
+    return {
+      valid: false,
+      reason: "Missing SourceReviewAttestation; refreshing a timestamp without source review is prohibited.",
+    };
+  }
+  if (!review.verifiedClaimMatchesSource) {
+    return {
+      valid: false,
+      reason: `Source review for ${review.citationId} did not confirm that the claim matches the upstream source.`,
+    };
+  }
+  if (review.httpStatusCode < 200 || review.httpStatusCode >= 400) {
+    return {
+      valid: false,
+      reason: `Source review for ${review.citationId} recorded unhealthy HTTP status ${review.httpStatusCode}.`,
+    };
+  }
+  if (review.reviewedSourceUrl.trim() !== expectedCitationSourceUrl.trim()) {
+    return {
+      valid: false,
+      reason: `Source review URL (${review.reviewedSourceUrl}) does not match citation sourceUrl (${expectedCitationSourceUrl}).`,
+    };
+  }
+  if (!review.reviewerNotes || review.reviewerNotes.trim().length < 10) {
+    return {
+      valid: false,
+      reason: `Source review for ${review.citationId} requires substantive reviewerNotes (>= 10 chars).`,
+    };
+  }
+  if (!review.reviewedBy || !review.reviewedBy.trim()) {
+    return {
+      valid: false,
+      reason: `Source review for ${review.citationId} requires a non-empty reviewedBy identifier.`,
+    };
+  }
+  const reviewedMs = new Date(review.reviewedAt).getTime();
+  if (!Number.isFinite(reviewedMs)) {
+    return {
+      valid: false,
+      reason: `Source review for ${review.citationId} has an invalid reviewedAt timestamp (${review.reviewedAt}).`,
+    };
+  }
+  return { valid: true };
+}
+
 export async function applyReferenceMaintenanceCorrection(options: {
   taskId: string;
-  targetNode: TravelReferenceNode;
+  targetNode?: TravelReferenceNode;
   approved: boolean;
   operator: string;
+  sourceReviews?: SourceReviewAttestation[];
 }): Promise<{
   applied: boolean;
   task: ReferenceMaintenanceTask;
   remediatedNode: TravelReferenceNode;
+  unreviewedStaleCitationIds: string[];
 }> {
-  const task = getTaskStore().get(options.taskId);
+  const state = getGlobalMemoryState();
+  const task = state.tasks.get(options.taskId);
   if (!task) {
     throw new Error(`Reference maintenance task ${options.taskId} not found.`);
   }
 
+  const baseTargetNode = options.targetNode || getTravelReferenceNodeById(task.nodeId);
   const now = new Date().toISOString();
   const governance = getDurableGovernanceRecordService();
 
@@ -553,7 +736,8 @@ export async function applyReferenceMaintenanceCorrection(options: {
 
     task.status = "rejected";
     task.updatedAt = now;
-    getTaskStore().set(task.taskId, task);
+    state.tasks.set(task.taskId, task);
+    flushReferenceMaintenanceStateToDisk();
 
     appendEarthOSAuditEvent({
       eventType: "reference_remediation_rejected",
@@ -577,8 +761,76 @@ export async function applyReferenceMaintenanceCorrection(options: {
     return {
       applied: false,
       task,
-      remediatedNode: options.targetNode,
+      remediatedNode: baseTargetNode,
+      unreviewedStaleCitationIds: [],
     };
+  }
+
+  // Clone and apply corrections to targetNode
+  const remediatedNode: TravelReferenceNode = structuredClone(baseTargetNode);
+  const existingOverride = state.nodeOverrides.get(task.nodeId);
+  const nextOverride: PublishedReferenceNodeOverride = {
+    nodeId: task.nodeId,
+    updatedAt: now,
+    appliedTaskId: task.taskId,
+    appliedBy: options.operator,
+    specialistHandoffBaseUrls: { ...(existingOverride?.specialistHandoffBaseUrls || {}) },
+    evidenceReviews: { ...(existingOverride?.evidenceReviews || {}) },
+    relationshipHrefs: { ...(existingOverride?.relationshipHrefs || {}) },
+  };
+
+  const acceptedSourceReviews: SourceReviewAttestation[] = [...(task.sourceReviews || [])];
+  const unreviewedStaleCitationIds: string[] = [];
+
+  for (const issue of task.issues) {
+    if (issue.kind === "broken_specialist_link") {
+      const option = remediatedNode.specialistHandoffs.options.find((opt) => opt.id === issue.targetId);
+      if (option) {
+        option.baseUrl = issue.recommendedValue;
+        nextOverride.specialistHandoffBaseUrls![issue.targetId] = issue.recommendedValue;
+      }
+    } else if (issue.kind === "stale_evidence_source") {
+      const citation = remediatedNode.evidenceRegistry.find((cit) => cit.id === issue.targetId);
+      if (citation) {
+        const suppliedReview = options.sourceReviews?.find((r) => r.citationId === issue.targetId);
+        const validation = validateSourceReviewAttestation(suppliedReview, citation.sourceUrl);
+        if (!validation.valid || !suppliedReview) {
+          // Do NOT bump lastCheckedAt without a verified source review attestation!
+          unreviewedStaleCitationIds.push(issue.targetId);
+        } else {
+          const checkedDate = suppliedReview.reviewedAt.slice(0, 10);
+          citation.lastCheckedAt = checkedDate;
+          citation.verificationNote = suppliedReview.reviewerNotes;
+          if (suppliedReview.publishedOrUpdatedDate !== undefined) {
+            citation.publishedOrUpdatedDate = suppliedReview.publishedOrUpdatedDate;
+          }
+          nextOverride.evidenceReviews![issue.targetId] = {
+            lastCheckedAt: checkedDate,
+            publishedOrUpdatedDate: suppliedReview.publishedOrUpdatedDate,
+            verificationNote: suppliedReview.reviewerNotes,
+            reviewedBy: suppliedReview.reviewedBy,
+            reviewedSourceUrl: suppliedReview.reviewedSourceUrl,
+          };
+          const existingIdx = acceptedSourceReviews.findIndex((r) => r.citationId === issue.targetId);
+          if (existingIdx >= 0) {
+            acceptedSourceReviews[existingIdx] = suppliedReview;
+          } else {
+            acceptedSourceReviews.push(suppliedReview);
+          }
+        }
+      }
+    } else if (issue.kind === "broken_internal_relationship") {
+      const rel = remediatedNode.relationships.find((r) => r.id === issue.targetId);
+      if (rel) {
+        rel.href = issue.recommendedValue;
+        nextOverride.relationshipHrefs![issue.targetId] = issue.recommendedValue;
+      }
+    }
+  }
+
+  if (unreviewedStaleCitationIds.length === 0) {
+    remediatedNode.lastReviewedAt = now.slice(0, 10);
+    nextOverride.lastReviewedAt = now.slice(0, 10);
   }
 
   // Explicitly approve and apply packet + signal mission
@@ -588,7 +840,11 @@ export async function applyReferenceMaintenanceCorrection(options: {
     {
       appliedBy: options.operator,
       appliedAt: now,
-      remediatedIssueIds: task.issues.map((i) => i.issueId),
+      remediatedIssueIds: task.issues
+        .filter((i) => !unreviewedStaleCitationIds.includes(i.targetId))
+        .map((i) => i.issueId),
+      unreviewedStaleCitationIds,
+      sourceReviews: acceptedSourceReviews,
     },
     now,
   );
@@ -598,45 +854,26 @@ export async function applyReferenceMaintenanceCorrection(options: {
     operator: options.operator,
   });
 
-  // Clone and apply corrections to targetNode
-  const remediatedNode: TravelReferenceNode = structuredClone(options.targetNode);
-
-  for (const issue of task.issues) {
-    if (issue.kind === "broken_specialist_link") {
-      const option = remediatedNode.specialistHandoffs.options.find((opt) => opt.id === issue.targetId);
-      if (option) {
-        option.baseUrl = issue.recommendedValue;
-      }
-    } else if (issue.kind === "stale_evidence_source") {
-      const citation = remediatedNode.evidenceRegistry.find((cit) => cit.id === issue.targetId);
-      if (citation) {
-        citation.lastCheckedAt = issue.recommendedValue;
-      }
-    } else if (issue.kind === "broken_internal_relationship") {
-      const rel = remediatedNode.relationships.find((r) => r.id === issue.targetId);
-      if (rel) {
-        rel.href = issue.recommendedValue;
-      }
-    }
-  }
-
-  remediatedNode.lastReviewedAt = now.slice(0, 10);
-
+  task.sourceReviews = acceptedSourceReviews;
   task.status = "remediated_pending_recheck";
   task.updatedAt = now;
-  getTaskStore().set(task.taskId, task);
+  state.tasks.set(task.taskId, task);
+  state.nodeOverrides.set(task.nodeId, nextOverride);
+  flushReferenceMaintenanceStateToDisk();
 
   appendEarthOSAuditEvent({
     eventType: "reference_remediation_applied",
     entity: "earthos",
     corridorId: task.nodeId,
-    severity: "info",
-    summary: `Applied ${task.issues.length} reference correction(s) for task ${task.taskId} on ${task.canonicalPath}.`,
+    severity: unreviewedStaleCitationIds.length > 0 ? "watch" : "info",
+    summary: `Applied reference correction(s) for task ${task.taskId} on ${task.canonicalPath} (unreviewedStaleCitations=${unreviewedStaleCitationIds.length}).`,
     metadata: {
       taskId: task.taskId,
       operator: options.operator,
       packetId: task.packetId,
       missionId: task.missionId,
+      unreviewedStaleCitationIds,
+      sourceReviews: acceptedSourceReviews,
     },
   });
 
@@ -644,18 +881,20 @@ export async function applyReferenceMaintenanceCorrection(options: {
     applied: true,
     task,
     remediatedNode,
+    unreviewedStaleCitationIds,
   };
 }
 
 export async function verifyAndCloseReferenceMaintenanceTask(options: {
   taskId: string;
-  remediatedNode: TravelReferenceNode;
+  remediatedNode?: TravelReferenceNode;
   verifiedBy: string;
   now?: Date;
   maxEvidenceAgeDays?: number;
   probeUrl?: UrlProbeFn;
 }): Promise<ReferenceMaintenanceTask> {
-  const task = getTaskStore().get(options.taskId);
+  const state = getGlobalMemoryState();
+  const task = state.tasks.get(options.taskId);
   if (!task) {
     throw new Error(`Reference maintenance task ${options.taskId} not found.`);
   }
@@ -669,16 +908,126 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
   const verifiedAt = now.toISOString();
   const probeUrl = options.probeUrl || defaultSpecialistUrlProbe;
 
-  // Recheck the remediated node
+  // Always inspect the live published destination node resolved by getTravelReferenceNodeById(task.nodeId)
+  // unless an explicit candidate node was provided for comparison, in which case we verify both.
+  const publishedNode = getTravelReferenceNodeById(task.nodeId);
+  const nodeUnderTest = options.remediatedNode || publishedNode;
+
+  const contentAssertions: ReferenceContentAssertion[] = [];
+  const contentFailures: string[] = [];
+
+  for (const issue of task.issues) {
+    if (issue.kind === "broken_specialist_link") {
+      const publishedOption = publishedNode.specialistHandoffs.options.find(
+        (opt) => opt.id === issue.targetId,
+      );
+      const candidateOption = nodeUnderTest.specialistHandoffs.options.find(
+        (opt) => opt.id === issue.targetId,
+      );
+      const actualUrl = (candidateOption?.baseUrl || "").trim();
+      const publishedUrl = (publishedOption?.baseUrl || "").trim();
+      const oldUrlStillInNode = nodeUnderTest.specialistHandoffs.options.some(
+        (opt) => opt.baseUrl.trim() === issue.observedValue.trim(),
+      );
+      const correctedPresent =
+        actualUrl === issue.recommendedValue.trim() &&
+        publishedUrl === issue.recommendedValue.trim() &&
+        ! KNOWN_BROKEN_SPECIALIST_URLS[actualUrl];
+
+      contentAssertions.push({
+        targetId: issue.targetId,
+        kind: issue.kind,
+        oldValueAbsentFromPublishedNode: !oldUrlStillInNode && actualUrl !== issue.observedValue.trim(),
+        correctedValuePresentInPublishedNode: correctedPresent,
+        publishedValue: publishedUrl,
+        sourceReviewVerified: true,
+      });
+
+      if (oldUrlStillInNode || !correctedPresent) {
+        contentFailures.push(
+          `Broken specialist link ${issue.targetId} was not replaced in published destination content (observed='${publishedUrl}', expected='${issue.recommendedValue}').`,
+        );
+      }
+    } else if (issue.kind === "stale_evidence_source") {
+      const publishedCitation = publishedNode.evidenceRegistry.find((c) => c.id === issue.targetId);
+      const candidateCitation = nodeUnderTest.evidenceRegistry.find((c) => c.id === issue.targetId);
+      const attestation = (task.sourceReviews || []).find((r) => r.citationId === issue.targetId);
+      const attestationCheck = validateSourceReviewAttestation(
+        attestation,
+        publishedCitation?.sourceUrl || candidateCitation?.sourceUrl || "",
+      );
+
+      const publishedCheckedAt = publishedCitation?.lastCheckedAt || "";
+      const candidateCheckedAt = candidateCitation?.lastCheckedAt || "";
+      const oldDateReplaced =
+        publishedCheckedAt !== issue.observedValue && candidateCheckedAt !== issue.observedValue;
+      const noteMatches =
+        Boolean(attestation) &&
+        publishedCitation?.verificationNote === attestation?.reviewerNotes &&
+        candidateCitation?.verificationNote === attestation?.reviewerNotes;
+
+      contentAssertions.push({
+        targetId: issue.targetId,
+        kind: issue.kind,
+        oldValueAbsentFromPublishedNode: oldDateReplaced,
+        correctedValuePresentInPublishedNode: oldDateReplaced && noteMatches,
+        publishedValue: publishedCheckedAt,
+        sourceReviewVerified: attestationCheck.valid,
+      });
+
+      if (!attestationCheck.valid) {
+        contentFailures.push(
+          `Stale evidence source ${issue.targetId} cannot be closed without source review: ${attestationCheck.reason}`,
+        );
+      } else if (!oldDateReplaced || !noteMatches) {
+        contentFailures.push(
+          `Stale evidence source ${issue.targetId} review did not reach published destination content.`,
+        );
+      }
+    } else if (issue.kind === "broken_internal_relationship") {
+      const publishedRel = publishedNode.relationships.find((r) => r.id === issue.targetId);
+      const candidateRel = nodeUnderTest.relationships.find((r) => r.id === issue.targetId);
+      const publishedHref = (publishedRel?.href || "").trim();
+      const candidateHref = (candidateRel?.href || "").trim();
+      const routeValid = matchesInternalRoute(publishedHref).valid;
+      const correctedPresent =
+        publishedHref === issue.recommendedValue.trim() &&
+        candidateHref === issue.recommendedValue.trim() &&
+        routeValid;
+
+      contentAssertions.push({
+        targetId: issue.targetId,
+        kind: issue.kind,
+        oldValueAbsentFromPublishedNode: publishedHref !== issue.observedValue.trim(),
+        correctedValuePresentInPublishedNode: correctedPresent,
+        publishedValue: publishedHref,
+        sourceReviewVerified: true,
+      });
+
+      if (!correctedPresent) {
+        contentFailures.push(
+          `Broken internal relationship ${issue.targetId} was not repaired in published destination content (observed='${publishedHref}', expected='${issue.recommendedValue}').`,
+        );
+      }
+    }
+  }
+
+  if (contentFailures.length > 0) {
+    throw new Error(
+      `Content verification failed for task ${task.taskId}: ${contentFailures.join(" | ")}`,
+    );
+  }
+
+  // Recheck the remediated node for any remaining or newly introduced issues
   const remainingIssues = await detectReferenceMaintenanceIssues({
-    nodes: [options.remediatedNode],
+    nodes: [nodeUnderTest],
     now,
     maxEvidenceAgeDays: options.maxEvidenceAgeDays,
     probeUrl,
   });
 
   const probeResults: Array<{ url: string; ok: boolean; statusCode: number }> = [];
-  for (const handoff of options.remediatedNode.specialistHandoffs.options) {
+  for (const handoff of nodeUnderTest.specialistHandoffs.options) {
     const res = await probeUrl(handoff.baseUrl);
     probeResults.push({
       url: handoff.baseUrl,
@@ -687,11 +1036,17 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
     });
   }
 
-  const routeCheck = matchesInternalRoute(options.remediatedNode.canonicalPath);
+  const routeCheck = matchesInternalRoute(nodeUnderTest.canonicalPath);
   const recheckPassed =
     remainingIssues.length === 0 &&
     routeCheck.valid &&
-    probeResults.every((p) => p.ok);
+    probeResults.every((p) => p.ok) &&
+    contentAssertions.every(
+      (a) =>
+        a.oldValueAbsentFromPublishedNode &&
+        a.correctedValuePresentInPublishedNode &&
+        a.sourceReviewVerified,
+    );
 
   if (!recheckPassed) {
     throw new Error(
@@ -702,7 +1057,7 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
   const evidence: ReferenceVerificationEvidence = {
     verifiedAt,
     verifiedBy: options.verifiedBy,
-    publicCanonicalPath: options.remediatedNode.canonicalPath,
+    publicCanonicalPath: nodeUnderTest.canonicalPath,
     publicRouteRegistered: routeCheck.valid,
     recheckPassed: true,
     remainingIssueCount: 0,
@@ -717,6 +1072,7 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
       correctedValue: issue.recommendedValue,
       status: "verified_clean",
     })),
+    contentAssertions,
     probeResults,
   };
 
@@ -733,14 +1089,15 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
   task.closedAt = verifiedAt;
   task.closedBy = options.verifiedBy;
   task.verificationEvidence = evidence;
-  getTaskStore().set(task.taskId, task);
+  state.tasks.set(task.taskId, task);
+  flushReferenceMaintenanceStateToDisk();
 
   appendEarthOSAuditEvent({
     eventType: "reference_maintenance_task_closed",
     entity: "earthos",
     corridorId: task.nodeId,
     severity: "info",
-    summary: `Closed maintenance task ${task.taskId} for ${task.canonicalPath} with verified evidence (0 remaining issues).`,
+    summary: `Closed maintenance task ${task.taskId} for ${task.canonicalPath} with verified content assertions and 0 remaining issues.`,
     metadata: {
       taskId: task.taskId,
       findingId: task.findingId,
@@ -754,7 +1111,7 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
   await persistControlMapFindingToDb(
     task,
     "reference_maintenance_task_closed",
-    `Closed task ${task.taskId} after public page & specialist handoff recheck passed.`,
+    `Closed task ${task.taskId} after published destination content & specialist handoff recheck passed.`,
   );
 
   return task;
@@ -763,6 +1120,7 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
 export async function runReferenceMaintenanceLoop(options: {
   targetNode: TravelReferenceNode;
   operator: string;
+  sourceReviews?: SourceReviewAttestation[];
   now?: Date;
   maxEvidenceAgeDays?: number;
   probeUrl?: UrlProbeFn;
@@ -789,6 +1147,7 @@ export async function runReferenceMaintenanceLoop(options: {
     targetNode: options.targetNode,
     approved: true,
     operator: options.operator,
+    sourceReviews: options.sourceReviews,
   });
 
   const closedTask = await verifyAndCloseReferenceMaintenanceTask({

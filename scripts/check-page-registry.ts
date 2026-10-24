@@ -8,7 +8,7 @@ const APP_SYSTEMS = [
   {
     system: "main",
     root: path.join(ROOT, "app"),
-    owners: new Set<PageOwner>(["dcc", "parr", "internal", "wta"]),
+    owners: new Set<PageOwner>(["dcc", "parr", "internal", "wta", "somerset", "shuttleya", "wno"]),
   },
   {
     system: "wts",

@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 export type AuthorityType =
   | "official_rule"
   | "observation"
@@ -3328,21 +3331,129 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
   },
 };
 
+export type PublishedReferenceNodeOverride = {
+  nodeId: TravelReferenceNode["id"];
+  updatedAt: string;
+  appliedTaskId: string | null;
+  appliedBy: string;
+  lastReviewedAt?: string;
+  specialistHandoffBaseUrls?: Record<string, string>;
+  evidenceReviews?: Record<
+    string,
+    {
+      lastCheckedAt: string;
+      publishedOrUpdatedDate?: string | null;
+      verificationNote?: string;
+      reviewedBy: string;
+      reviewedSourceUrl: string;
+    }
+  >;
+  relationshipHrefs?: Record<string, string>;
+};
+
+export function getReferenceMaintenanceStoreFilePath(): string | null {
+  const customDir = process.env.DCC_EARTHOS_STATE_DIR?.trim();
+  if (customDir) {
+    return path.resolve(customDir, "reference-maintenance-store.json");
+  }
+  return null;
+}
+
+function readPublishedReferenceNodeOverride(
+  id: TravelReferenceNode["id"],
+): PublishedReferenceNodeOverride | null {
+  const filePath = getReferenceMaintenanceStoreFilePath();
+  if (filePath && fs.existsSync(filePath)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(filePath, "utf8")) as {
+        nodeOverrides?: Record<string, PublishedReferenceNodeOverride>;
+      };
+      if (parsed.nodeOverrides?.[id]) {
+        return parsed.nodeOverrides[id];
+      }
+    } catch {
+      // fall back to in-memory override map if file read fails
+    }
+  }
+
+  const globalOverrides = (
+    globalThis as typeof globalThis & {
+      __dccPublishedReferenceOverrides?: Map<string, PublishedReferenceNodeOverride>;
+    }
+  ).__dccPublishedReferenceOverrides;
+
+  return globalOverrides?.get(id) || null;
+}
+
+function applyPublishedReferenceNodeOverride(
+  baseNode: TravelReferenceNode,
+  override: PublishedReferenceNodeOverride | null,
+): TravelReferenceNode {
+  if (!override) return baseNode;
+  const cloned: TravelReferenceNode = structuredClone(baseNode);
+
+  if (override.lastReviewedAt) {
+    cloned.lastReviewedAt = override.lastReviewedAt;
+  }
+
+  if (override.specialistHandoffBaseUrls) {
+    for (const [handoffId, baseUrl] of Object.entries(override.specialistHandoffBaseUrls)) {
+      const option = cloned.specialistHandoffs.options.find((opt) => opt.id === handoffId);
+      if (option) {
+        option.baseUrl = baseUrl;
+      }
+    }
+  }
+
+  if (override.evidenceReviews) {
+    for (const [citationId, review] of Object.entries(override.evidenceReviews)) {
+      const citation = cloned.evidenceRegistry.find((cit) => cit.id === citationId);
+      if (citation) {
+        citation.lastCheckedAt = review.lastCheckedAt;
+        if (review.publishedOrUpdatedDate !== undefined) {
+          citation.publishedOrUpdatedDate = review.publishedOrUpdatedDate;
+        }
+        if (review.verificationNote) {
+          citation.verificationNote = review.verificationNote;
+        }
+      }
+    }
+  }
+
+  if (override.relationshipHrefs) {
+    for (const [relId, href] of Object.entries(override.relationshipHrefs)) {
+      const rel = cloned.relationships.find((r) => r.id === relId);
+      if (rel) {
+        rel.href = href;
+      }
+    }
+  }
+
+  return cloned;
+}
+
+export function getBaseTravelReferenceNodeById(id: TravelReferenceNode["id"]): TravelReferenceNode {
+  return TRAVEL_REFERENCE_NODES[id];
+}
+
+export function getTravelReferenceNodeById(id: TravelReferenceNode["id"]): TravelReferenceNode {
+  return applyPublishedReferenceNodeOverride(
+    TRAVEL_REFERENCE_NODES[id],
+    readPublishedReferenceNodeOverride(id),
+  );
+}
+
 export function getAllTravelReferenceNodes(): TravelReferenceNode[] {
   return [
-    TRAVEL_REFERENCE_NODES.juneau,
-    TRAVEL_REFERENCE_NODES["red-rocks"],
-    TRAVEL_REFERENCE_NODES["denver-breckenridge"],
-    TRAVEL_REFERENCE_NODES["new-orleans"],
-    TRAVEL_REFERENCE_NODES["las-vegas"],
+    getTravelReferenceNodeById("juneau"),
+    getTravelReferenceNodeById("red-rocks"),
+    getTravelReferenceNodeById("denver-breckenridge"),
+    getTravelReferenceNodeById("new-orleans"),
+    getTravelReferenceNodeById("las-vegas"),
   ];
 }
 
 export const listTravelReferenceNodes = getAllTravelReferenceNodes;
-
-export function getTravelReferenceNodeById(id: TravelReferenceNode["id"]): TravelReferenceNode {
-  return TRAVEL_REFERENCE_NODES[id];
-}
 
 function haversineDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const toRad = (deg: number) => (deg * Math.PI) / 180;

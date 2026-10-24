@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import type {
   LaunchMissionInput,
   MissionPublication,
@@ -313,17 +315,55 @@ function seedMissions(): RuntimeMission[] {
   ];
 }
 
+function getWorkflowStoreFilePath(): string | null {
+  const customDir = process.env.DCC_EARTHOS_STATE_DIR?.trim();
+  if (customDir) {
+    return path.join(customDir, "workflow-runtime-store.json");
+  }
+  return null;
+}
+
+function readDiskWorkflowStore(): WorkflowRuntimeStore | null {
+  const filePath = getWorkflowStoreFilePath();
+  if (!filePath || !fs.existsSync(filePath)) return null;
+  try {
+    const raw = fs.readFileSync(filePath, "utf8");
+    const parsed = JSON.parse(raw) as WorkflowRuntimeStore;
+    if (parsed && Array.isArray(parsed.missions) && Array.isArray(parsed.publications)) {
+      return parsed;
+    }
+  } catch {
+    // ignore corrupt disk store
+  }
+  return null;
+}
+
+function flushDiskWorkflowStore(store: WorkflowRuntimeStore): void {
+  const filePath = getWorkflowStoreFilePath();
+  if (!filePath) return;
+  try {
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, JSON.stringify(store, null, 2), "utf8");
+  } catch {
+    // read-only filesystem fallback
+  }
+}
+
 function getRuntimeStore(): WorkflowRuntimeStore {
   const globalStore = globalThis as typeof globalThis & {
     __earthosWorkflowStore?: WorkflowRuntimeStore;
+    __earthosWorkflowStoreDir?: string | null;
   };
 
-  if (!globalStore.__earthosWorkflowStore) {
-    globalStore.__earthosWorkflowStore = {
+  const currentDir = getWorkflowStoreFilePath();
+  if (!globalStore.__earthosWorkflowStore || globalStore.__earthosWorkflowStoreDir !== currentDir) {
+    const diskStore = readDiskWorkflowStore();
+    globalStore.__earthosWorkflowStore = diskStore || {
       version: 1,
       missions: seedMissions(),
       publications: [],
     };
+    globalStore.__earthosWorkflowStoreDir = currentDir;
   }
 
   return globalStore.__earthosWorkflowStore;
@@ -340,6 +380,7 @@ export function findRuntimeMission(id: string): RuntimeMission | null {
 export function writeRuntimeMissions(missions: RuntimeMission[]): void {
   const store = getRuntimeStore();
   store.missions = missions;
+  flushDiskWorkflowStore(store);
 }
 
 export function updateRuntimeMission(
@@ -351,6 +392,7 @@ export function updateRuntimeMission(
   if (index === -1) return null;
 
   store.missions[index] = updater(store.missions[index]);
+  flushDiskWorkflowStore(store);
   return store.missions[index];
 }
 
@@ -359,9 +401,11 @@ export function upsertRuntimeMission(mission: RuntimeMission): RuntimeMission {
   const index = store.missions.findIndex((candidate) => candidate.id === mission.id);
   if (index === -1) {
     store.missions = [mission, ...store.missions];
+    flushDiskWorkflowStore(store);
     return mission;
   }
   store.missions[index] = mission;
+  flushDiskWorkflowStore(store);
   return store.missions[index];
 }
 
@@ -421,6 +465,7 @@ export function appendRuntimeMission(input: LaunchMissionInput): RuntimeMission 
 
   const store = getRuntimeStore();
   store.missions = [mission, ...store.missions];
+  flushDiskWorkflowStore(store);
   return mission;
 }
 
@@ -442,10 +487,12 @@ export function upsertMissionPublication(publication: MissionPublication): Missi
 
   if (index === -1) {
     store.publications = [publication, ...store.publications];
+    flushDiskWorkflowStore(store);
     return publication;
   }
 
   store.publications[index] = publication;
+  flushDiskWorkflowStore(store);
   return store.publications[index];
 }
 

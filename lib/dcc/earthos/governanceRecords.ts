@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import { desc, eq } from "drizzle-orm";
 import { getDb, hasDb } from "@/lib/db/client";
 import {
@@ -455,9 +457,40 @@ function createDbGovernanceRecordsStore(): GovernanceRecordsStore | null {
   };
 }
 
-export function createMemoryGovernanceRecordsStore(): GovernanceRecordsStore {
+export function createMemoryGovernanceRecordsStore(persistFilePath?: string): GovernanceRecordsStore {
   const driftEvents: GovernanceDriftEvent[] = [];
   const packets: GovernanceReconciliationPacket[] = [];
+
+  if (persistFilePath && fs.existsSync(persistFilePath)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(persistFilePath, "utf8")) as {
+        driftEvents?: GovernanceDriftEvent[];
+        packets?: GovernanceReconciliationPacket[];
+      };
+      if (Array.isArray(parsed.driftEvents)) {
+        driftEvents.push(...parsed.driftEvents);
+      }
+      if (Array.isArray(parsed.packets)) {
+        packets.push(...parsed.packets);
+      }
+    } catch {
+      // ignore corrupted local state file
+    }
+  }
+
+  function flushToDisk() {
+    if (!persistFilePath) return;
+    try {
+      fs.mkdirSync(path.dirname(persistFilePath), { recursive: true });
+      fs.writeFileSync(
+        persistFilePath,
+        JSON.stringify({ driftEvents, packets }, null, 2),
+        "utf8",
+      );
+    } catch {
+      // best-effort local disk persistence
+    }
+  }
 
   return {
     async appendDriftEvent(event) {
@@ -467,6 +500,7 @@ export function createMemoryGovernanceRecordsStore(): GovernanceRecordsStore {
       } else {
         driftEvents.push(event);
       }
+      flushToDisk();
       return event;
     },
     async listRecentDriftEvents(limit = 25) {
@@ -484,6 +518,7 @@ export function createMemoryGovernanceRecordsStore(): GovernanceRecordsStore {
         ...target.evidenceJson,
         resolutionEvidence,
       };
+      flushToDisk();
       return target;
     },
     async createReconciliationPacket(packet) {
@@ -493,6 +528,7 @@ export function createMemoryGovernanceRecordsStore(): GovernanceRecordsStore {
       } else {
         packets.push(packet);
       }
+      flushToDisk();
       return packet;
     },
     async listRecentReconciliationPackets(limit = 25) {
@@ -506,6 +542,7 @@ export function createMemoryGovernanceRecordsStore(): GovernanceRecordsStore {
       packet.status = "approved";
       packet.approvedAt = approvedAt;
       packet.approvedBy = approvedBy;
+      flushToDisk();
       return packet;
     },
     async markPacketApplied(id, resultJson, appliedAt) {
@@ -514,17 +551,27 @@ export function createMemoryGovernanceRecordsStore(): GovernanceRecordsStore {
       packet.status = "applied";
       packet.appliedAt = appliedAt;
       packet.resultJson = resultJson;
+      flushToDisk();
       return packet;
     },
   };
 }
 
 function getSingletonMemoryGovernanceStore(): GovernanceRecordsStore {
+  const stateDir = process.env.DCC_EARTHOS_STATE_DIR?.trim();
+  const persistFilePath = stateDir
+    ? path.resolve(stateDir, "governance-records.json")
+    : undefined;
   const globalStore = globalThis as typeof globalThis & {
     __dccDurableGovernanceStore?: GovernanceRecordsStore;
+    __dccDurableGovernanceStorePath?: string;
   };
-  if (!globalStore.__dccDurableGovernanceStore) {
-    globalStore.__dccDurableGovernanceStore = createMemoryGovernanceRecordsStore();
+  if (
+    !globalStore.__dccDurableGovernanceStore ||
+    globalStore.__dccDurableGovernanceStorePath !== persistFilePath
+  ) {
+    globalStore.__dccDurableGovernanceStore = createMemoryGovernanceRecordsStore(persistFilePath);
+    globalStore.__dccDurableGovernanceStorePath = persistFilePath;
   }
   return globalStore.__dccDurableGovernanceStore;
 }

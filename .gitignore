@@ -22,3 +22,4 @@ scratch/chrome/
 scratch/*.mjs
 vercel_output*.txt
 dev.pid
+data/dcc/earthos/
