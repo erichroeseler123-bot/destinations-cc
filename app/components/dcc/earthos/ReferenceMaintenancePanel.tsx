@@ -237,6 +237,13 @@ export function ReferenceMaintenancePanel({
             <span className="rounded-full border border-white/15 bg-white/5 px-3 py-0.5 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-300">
               Scope: {snapshot.environmentScope}
             </span>
+            <span
+              className="rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-0.5 font-mono text-[11px] font-bold text-cyan-200"
+              data-database-name={snapshot.databaseIdentity.databaseName}
+              data-database-isolated={String(snapshot.databaseIdentity.isIsolatedFromProduction)}
+            >
+              DB: {snapshot.databaseIdentity.databaseName}
+            </span>
           </div>
           <h2 className="text-2xl font-black tracking-tight text-white md:text-3xl">
             Traveler Evidence &amp; Specialist Handoff Governance
@@ -449,6 +456,12 @@ export function ReferenceMaintenancePanel({
                               Note: {cit.verificationNote}
                             </div>
                           ) : null}
+                          {cit.upstreamContentSha256 ? (
+                            <div className="mt-1 font-mono text-[10px] text-emerald-300">
+                              Upstream SHA-256: {cit.upstreamContentSha256.slice(0, 16)}… · Matched terms:{" "}
+                              {(cit.matchedClaimTerms || []).join(", ")}
+                            </div>
+                          ) : null}
                         </div>
                       ))}
                     </div>
@@ -476,6 +489,11 @@ export function ReferenceMaintenancePanel({
                           >
                             {h.baseUrl}
                           </a>
+                          {h.expectedProductMarkers && h.expectedProductMarkers.length > 0 ? (
+                            <div className="mt-1 text-[10px] text-zinc-400">
+                              Verified product markers: {h.expectedProductMarkers.join(", ")}
+                            </div>
+                          ) : null}
                         </div>
                       ))}
                     </div>

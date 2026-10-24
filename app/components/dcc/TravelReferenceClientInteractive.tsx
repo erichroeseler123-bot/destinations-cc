@@ -2,13 +2,14 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
-import type {
-  AuthorityType,
-  EntryScenarioRule,
-  EvidenceCitation,
-  IntegrationStatus,
-  SpecialistHandoffOption,
-  TravelReferenceNode,
+import {
+  buildContextPreservingHandoffUrl,
+  type AuthorityType,
+  type EntryScenarioRule,
+  type EvidenceCitation,
+  type IntegrationStatus,
+  type SpecialistHandoffOption,
+  type TravelReferenceNode,
 } from "@/lib/dcc/travelReference";
 
 const AUTHORITY_BADGE_MAP: Record<
@@ -254,34 +255,12 @@ export function SpecialistHandoffInteractive({
   );
 
   function buildHandoffUrl(option: SpecialistHandoffOption): string {
-    const isInternal = option.baseUrl.startsWith("/");
-    const url = new URL(
-      option.baseUrl,
-      isInternal ? "https://www.destinationcommandcenter.com" : undefined,
-    );
-
-    for (const [k, v] of Object.entries(option.defaultParams)) {
-      url.searchParams.set(k, v);
-    }
-
-    if (travelDate && option.supportedContextParams.includes("date")) {
-      url.searchParams.set("date", travelDate);
-    }
-    if (partySize && option.supportedContextParams.includes("partySize")) {
-      url.searchParams.set("travelers", partySize);
-      url.searchParams.set("party_size", partySize);
-    }
-    if (customChoice && config.contextControls.customSelectorParam) {
-      if (
-        option.supportedContextParams.includes("shipOrPort") ||
-        option.supportedContextParams.includes("pickupHub") ||
-        option.supportedContextParams.includes("direction")
-      ) {
-        url.searchParams.set(config.contextControls.customSelectorParam, customChoice);
-      }
-    }
-
-    return isInternal ? `${url.pathname}${url.search}` : url.toString();
+    return buildContextPreservingHandoffUrl(option, {
+      travelDate,
+      partySize,
+      customChoice,
+      customSelectorParam: config.contextControls.customSelectorParam,
+    });
   }
 
   return (

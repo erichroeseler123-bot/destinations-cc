@@ -28,6 +28,10 @@ export type EvidenceCitation = {
   publishedOrUpdatedDate: string | null;
   lastCheckedAt: string;
   verificationNote?: string;
+  expectedSourceTerms?: string[];
+  upstreamContentSha256?: string;
+  matchedClaimTerms?: string[];
+  verifiedSourceExcerpt?: string;
 };
 
 export type EntryScenarioRule = {
@@ -117,7 +121,49 @@ export type SpecialistHandoffOption = {
   baseUrl: string;
   supportedContextParams: Array<"date" | "partySize" | "shipOrPort" | "pickupHub" | "direction">;
   defaultParams: Record<string, string>;
+  expectedProductMarkers?: string[];
 };
+
+export type HandoffContextInput = {
+  travelDate?: string;
+  partySize?: string;
+  customChoice?: string;
+  customSelectorParam?: string;
+  baseOrigin?: string;
+};
+
+export function buildContextPreservingHandoffUrl(
+  option: SpecialistHandoffOption,
+  context: HandoffContextInput = {},
+): string {
+  const isInternal = option.baseUrl.startsWith("/");
+  const origin = context.baseOrigin || "https://www.destinationcommandcenter.com";
+  const url = new URL(option.baseUrl, isInternal ? origin : undefined);
+
+  for (const [k, v] of Object.entries(option.defaultParams)) {
+    url.searchParams.set(k, v);
+  }
+
+  if (context.travelDate && option.supportedContextParams.includes("date")) {
+    url.searchParams.set("date", context.travelDate);
+  }
+  if (context.partySize && option.supportedContextParams.includes("partySize")) {
+    url.searchParams.set("travelers", context.partySize);
+    url.searchParams.set("party_size", context.partySize);
+    url.searchParams.set("passengerCount", context.partySize);
+  }
+  if (context.customChoice && context.customSelectorParam) {
+    if (
+      option.supportedContextParams.includes("shipOrPort") ||
+      option.supportedContextParams.includes("pickupHub") ||
+      option.supportedContextParams.includes("direction")
+    ) {
+      url.searchParams.set(context.customSelectorParam, context.customChoice);
+    }
+  }
+
+  return isInternal && !context.baseOrigin ? `${url.pathname}${url.search}` : url.toString();
+}
 
 export type RelatedPlaceLink = {
   id: string;
@@ -811,6 +857,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             source_surface: "dcc_juneau_reference",
             destination: "juneau",
           },
+          expectedProductMarkers: ["Juneau", "Helicopter", "Glacier"],
         },
         {
           id: "handoff-welcome-to-alaska",
@@ -829,6 +876,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             source_surface: "dcc_juneau_reference",
             port: "juneau",
           },
+          expectedProductMarkers: ["Juneau", "Excursions", "Whale"],
         },
       ],
     },
@@ -884,6 +932,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Travelers from select visa-required countries considering air arrival plus Canadian cruise or land crossings",
         publishedOrUpdatedDate: null,
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["eTA", "visa", "Canada", "air"],
       },
       {
         id: "jun-ircc-us-permanent-resident",
@@ -897,6 +946,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "U.S. lawful permanent residents visiting Canada",
         publishedOrUpdatedDate: "2026-09-28",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["permanent resident", "United States", "passport"],
       },
       {
         id: "jun-cbj-harbors",
@@ -910,6 +960,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Cruise ship passengers and marine harbor users",
         publishedOrUpdatedDate: "2026-01-15",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Juneau", "Harbors", "Cruise"],
       },
       {
         id: "jun-usfs-mendenhall",
@@ -923,6 +974,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All visitors to Mendenhall Glacier, Nugget Falls, and Steep Creek",
         publishedOrUpdatedDate: "2026-04-01",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Forest Service", "Tongass", "USDA"],
       },
       {
         id: "jun-cbp-whti",
@@ -936,6 +988,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "U.S. citizens and international travelers on Alaska cruises or cross-border excursions",
         publishedOrUpdatedDate: "2025-11-10",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Western Hemisphere Travel Initiative", "CBP", "cruise"],
       },
       {
         id: "jun-cbsa-entry",
@@ -949,6 +1002,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All travelers whose Alaska cruise or shore excursion enters Canadian jurisdiction",
         publishedOrUpdatedDate: "2026-02-01",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Canada Border Services Agency", "identification", "Canada"],
       },
       {
         id: "jun-amhs-official",
@@ -962,6 +1016,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Independent ferry travelers and vehicle passengers",
         publishedOrUpdatedDate: "2026-03-01",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Alaska Marine Highway", "ferry", "Alaska"],
       },
       {
         id: "jun-capital-transit",
@@ -975,6 +1030,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Independent travelers using municipal bus transit",
         publishedOrUpdatedDate: "2026-01-01",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Capital Transit", "Juneau", "Bus"],
       },
       {
         id: "jun-airport-official",
@@ -988,6 +1044,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Air travelers and airport-based helicopter tour guests",
         publishedOrUpdatedDate: "2026-01-10",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Juneau International Airport", "Airport", "Juneau"],
       },
       {
         id: "jun-shi-heritage",
@@ -1001,6 +1058,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All visitors exploring Juneau's cultural and historical context",
         publishedOrUpdatedDate: null,
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Sealaska Heritage", "Tlingit", "Haida"],
       },
       {
         id: "jun-bartlett-hospital",
@@ -1014,6 +1072,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All travelers requiring urgent or emergency medical care",
         publishedOrUpdatedDate: null,
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Bartlett Regional Hospital", "Juneau", "Hospital"],
       },
       {
         id: "jun-nws-live",
@@ -1027,6 +1086,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All travelers checking current warnings and 3-day forecasts",
         publishedOrUpdatedDate: "Live / Continuous",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["weather.gov", "status"],
       },
       {
         id: "jun-noaa-tides",
@@ -1040,6 +1100,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Marine excursion passengers and limited-mobility dock users",
         publishedOrUpdatedDate: "Live / Continuous",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["9452210", "Juneau", "NOAA"],
       },
       {
         id: "jun-noaa-aviation",
@@ -1053,6 +1114,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Air travelers and flightseeing passengers assessing ceiling/visibility",
         publishedOrUpdatedDate: "Live / Continuous",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Aviation Weather", "NOAA"],
       },
     ],
   },
@@ -1276,7 +1338,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             "Red Rocks is an open-air venue with no roof over the seating bowl. Concerts are rain-or-shine, but severe lightning, high winds, or hail within the venue safety radius can trigger an official delay or temporary evacuation to vehicles.",
           travelerAction:
             "Understand two critical facts: (1) An NWS thunderstorm forecast on DCC does NOT mean a show is delayed—only Red Rocks management issues holds via venue screens, PA announcements, and official social channels; (2) If you arrived by rideshare and a temporary vehicle-shelter hold is called, follow staff instructions to sheltered concourse/tunnel areas.",
-          officialUrl: "https://www.redrocksonline.com/plan-your-visit/safety-and-medical/",
+          officialUrl: "https://www.redrocksonline.com/plan-your-visit/faq/",
           officialUrlLabel: "Red Rocks Official Safety, Weather & Medical Policy",
           citationIds: ["rr-safety-medical", "rr-nws-live"],
         },
@@ -1306,7 +1368,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             "During ticketed events, Red Rocks staffs two dedicated First Aid stations: one at the Lower South Ramp (Stage Right) and one at the Upper Plaza (Top of the Bowl). The closest Level I trauma and emergency hospital is CommonSpirit St. Anthony Hospital in Lakewood (11600 W 2nd Pl, Lakewood, CO 80228; ~7.5 miles northeast via CO-470/US-6).",
           travelerAction:
             "Inside the venue, alert any uniformed guest services or security staff member or go to Upper Plaza / Stage Right First Aid. Outside venue gates or during daytime park hours, dial 911 (Jefferson County / West Metro Fire Rescue).",
-          officialUrl: "https://www.redrocksonline.com/plan-your-visit/safety-and-medical/",
+          officialUrl: "https://www.redrocksonline.com/plan-your-visit/faq/",
           officialUrlLabel: "Red Rocks Safety & Medical Locations",
           citationIds: ["rr-safety-medical"],
         },
@@ -1327,7 +1389,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             "On concert and ticketed event days, the Amphitheatre seating bowl and Visitor Center close to non-ticketed daytime visitors in the early afternoon (exact cutoff varies by event load-in and matinee schedule—often around 2:00 PM, and sometimes earlier) for soundcheck and security sweeps. Surrounding Red Rocks Park hiking trails and park roads generally remain open during standard park hours (1 hour before sunrise to 1 hour after sunset), though parking lots and traffic patterns transition to event operations.",
           dccInterpretation:
             "Do not assume either that the entire mountain park closes at 2:00 PM or that the seating bowl stays open all afternoon: if you want to enter the Amphitheatre bowl or Visitor Center without an event ticket, arrive in the morning (ideally before 12:00 PM) and verify the exact daily amphitheatre closure time on the official Red Rocks calendar before driving out.",
-          officialUrl: "https://www.redrocksonline.com/plan-your-visit/hours-directions-maps/",
+          officialUrl: "https://www.redrocksonline.com/plan-your-visit/what-to-expect/",
           officialUrlLabel: "Red Rocks Official Daily Hours & Event Closure Schedule",
           citationIds: ["rr-hours-closures"],
         },
@@ -1384,7 +1446,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           whyNotAutomated:
             "While Red Rocks Park trails remain open (1 hour before sunrise to 1 hour after sunset), the Amphitheatre seating bowl and Visitor Center close early on event days at times that vary by production load-in and matinee schedules.",
           officialSourceLabel: "Red Rocks Official Hours & Calendar",
-          officialSourceUrl: "https://www.redrocksonline.com/plan-your-visit/hours-directions-maps/",
+          officialSourceUrl: "https://www.redrocksonline.com/plan-your-visit/what-to-expect/",
         },
       ],
     },
@@ -1416,12 +1478,13 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             "Best when you want to lock in round-trip concert transportation without risking post-show rideshare surge or long lower-lot walks.",
           noPurchaseRequiredNote:
             "Carries your date, party size, and pickup hub preference into Party at Red Rocks. Comparing schedules requires no purchase.",
-          baseUrl: "https://www.partyatredrocks.com/shuttles",
+          baseUrl: "https://www.partyatredrocks.com/red-rocks/shuttle",
           supportedContextParams: ["date", "partySize", "pickupHub"],
           defaultParams: {
             source_surface: "dcc_red_rocks_reference",
             venue: "red-rocks-amphitheatre",
           },
+          expectedProductMarkers: ["Red Rocks", "Shuttle", "$59"],
         },
         {
           id: "handoff-dcc-denver-red-rocks-route",
@@ -1438,6 +1501,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           defaultParams: {
             source_surface: "dcc_red_rocks_reference",
           },
+          expectedProductMarkers: ["Red Rocks", "Denver", "Shuttle"],
         },
       ],
     },
@@ -1500,6 +1564,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All ticketed concert and event attendees",
         publishedOrUpdatedDate: "2026-03-01",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Permitted", "Prohibited", "Red Rocks"],
       },
       {
         id: "rr-parking-getting-here",
@@ -1513,12 +1578,13 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Drivers, shuttle passengers, and rideshare users",
         publishedOrUpdatedDate: "2026-03-01",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Getting Here", "Parking", "Red Rocks"],
       },
       {
         id: "rr-hours-closures",
         claimSummary: "Park trail/road hours (1 hour before sunrise to 1 hour after sunset) vs. event-day early afternoon closure of the Amphitheatre seating bowl and Visitor Center.",
-        sourceTitle: "Red Rocks Park & Amphitheatre — Hours, Directions & Maps",
-        sourceUrl: "https://www.redrocksonline.com/plan-your-visit/hours-directions-maps/",
+        sourceTitle: "Red Rocks Park & Amphitheatre — What To Expect & Park Hours",
+        sourceUrl: "https://www.redrocksonline.com/plan-your-visit/what-to-expect/",
         issuingOrganization: "City and County of Denver — Arts & Venues (Red Rocks)",
         authorityType: "official_rule",
         integrationStatus: "linked_official_resource",
@@ -1526,6 +1592,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Daytime park visitors, hikers, and sightseers",
         publishedOrUpdatedDate: "2026-03-01",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["What To Expect", "Red Rocks", "Visitor"],
       },
       {
         id: "rr-accessibility",
@@ -1539,12 +1606,13 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Visitors with disabilities or limited mobility",
         publishedOrUpdatedDate: "2026-03-01",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Accessibility", "ADA", "Red Rocks"],
       },
       {
         id: "rr-safety-medical",
         claimSummary: "Rain-or-shine policy, severe weather shelter instructions, and First Aid stations at Upper Plaza and Stage Right.",
-        sourceTitle: "Red Rocks Park & Amphitheatre — Safety & Medical",
-        sourceUrl: "https://www.redrocksonline.com/plan-your-visit/safety-and-medical/",
+        sourceTitle: "Red Rocks Park & Amphitheatre — FAQ, Weather & Medical",
+        sourceUrl: "https://www.redrocksonline.com/plan-your-visit/faq/",
         issuingOrganization: "City and County of Denver — Arts & Venues (Red Rocks)",
         authorityType: "official_rule",
         integrationStatus: "linked_official_resource",
@@ -1552,6 +1620,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All event attendees",
         publishedOrUpdatedDate: "2026-03-01",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["FAQ", "Red Rocks"],
       },
       {
         id: "rr-denver-mountain-parks",
@@ -1565,6 +1634,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Visitors exploring Red Rocks history, geology, and trails",
         publishedOrUpdatedDate: null,
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Mountain Parks", "Denver", "Red Rocks"],
       },
       {
         id: "rr-rtd-denver",
@@ -1578,6 +1648,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Travelers evaluating public transit options to Red Rocks",
         publishedOrUpdatedDate: "2026-01-15",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["RTD", "Denver"],
       },
       {
         id: "rr-cdc-altitude",
@@ -1591,6 +1662,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Visitors arriving from low-elevation cities",
         publishedOrUpdatedDate: "2024-05-01",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["High-Elevation", "Altitude", "CDC"],
       },
       {
         id: "rr-nws-live",
@@ -1604,6 +1676,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All Red Rocks visitors checking current and 72-hour weather",
         publishedOrUpdatedDate: "Live / Continuous",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["weather.gov", "status"],
       },
     ],
   },
@@ -1707,8 +1780,8 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             "Allow at least 45–60 minutes between scheduled domestic flight touchdown at DEN and shuttle departure to account for the automated train to Jeppesen Terminal and oversized ski/snowboard baggage claim.",
             "On return flights out of DEN during winter weekends, depart Breckenridge at least 4 to 4.5 hours before your flight's scheduled takeoff.",
           ],
-          officialResourceUrl: "https://www.flydenver.com/parking-and-transportation/to-and-from/mountain-carriers/",
-          officialResourceLabel: "DEN Airport Official Mountain Carriers Directory",
+          officialResourceUrl: "https://www.codot.gov/travel/i70mountain",
+          officialResourceLabel: "CDOT I-70 Mountain Corridor & Carrier Guide",
           citationIds: ["db-den-mountain-carriers", "db-gosno-feed"],
         },
         {
@@ -1724,7 +1797,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             "Bustang/Pegasus do NOT pick up directly at DEN Airport; you must take the RTD A-Line train from DEN to Denver Union Station first.",
             "Pegasus 11-passenger vans require advance seat reservations and have more compact luggage bays than full-size Bustang coaches.",
           ],
-          officialResourceUrl: "https://ridebustang.com/",
+          officialResourceUrl: "https://www.codot.gov/travel/bustang",
           officialResourceLabel: "CDOT Bustang & Pegasus Official Schedules & Fares",
           citationIds: ["db-cdot-bustang"],
         },
@@ -1757,7 +1830,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           practicalConstraints: [
             "Evening service frequency tapers after 10:30 PM–11:30 PM; verify the last bus time if dining in Frisco or Silverthorne.",
           ],
-          officialResourceUrl: "https://www.summitcountyco.gov/586/Summit-Stage",
+          officialResourceUrl: "https://www.summitcountyco.gov/services/transit_summit_stage/index.php",
           officialResourceLabel: "Summit Stage & Breck Free Ride Official Schedules",
           citationIds: ["db-summit-stage"],
         },
@@ -2001,13 +2074,14 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             "Best when you want to bypass I-70 rental car traction-law liability and Breckenridge overnight parking costs.",
           noPurchaseRequiredNote:
             "Forwards your selected date, party size, and pickup origin to GoSno. Reference information on this page requires no purchase.",
-          baseUrl: "https://gosno.co/denver-to-breckenridge-shuttle",
+          baseUrl: "https://gosno.co/breckenridge",
           supportedContextParams: ["date", "partySize", "direction"],
           defaultParams: {
             route: "denver-breckenridge",
             dropoff: "breckenridge",
             source_surface: "dcc_denver_breckenridge_reference",
           },
+          expectedProductMarkers: ["Breckenridge", "Denver", "GoSno"],
         },
         {
           id: "handoff-colorado-transport-hub",
@@ -2024,6 +2098,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           defaultParams: {
             source_surface: "dcc_denver_breckenridge_reference",
           },
+          expectedProductMarkers: ["Colorado", "Transportation", "Breckenridge"],
         },
       ],
     },
@@ -2086,6 +2161,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All passenger and commercial vehicles traveling I-70 West of Morrison",
         publishedOrUpdatedDate: "2025-09-01",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Traction Law", "I-70", "tread", "chains"],
       },
       {
         id: "db-cdot-express-lanes",
@@ -2099,12 +2175,13 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All motorists traveling between Denver and Summit County",
         publishedOrUpdatedDate: "2025-11-15",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["I-70", "Mountain Corridor", "Colorado"],
       },
       {
         id: "db-cdot-bustang",
         claimSummary: "Bustang West Line and Pegasus Express van service from Denver Union Station to Frisco Transfer Center.",
-        sourceTitle: "CDOT RideBustang — West Line & Pegasus Schedules",
-        sourceUrl: "https://ridebustang.com/",
+        sourceTitle: "CDOT Bustang — West Line & Pegasus Schedules",
+        sourceUrl: "https://www.codot.gov/travel/bustang",
         issuingOrganization: "Colorado Department of Transportation (CDOT)",
         authorityType: "official_resource_link",
         integrationStatus: "linked_official_resource",
@@ -2112,12 +2189,13 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Transit travelers connecting from Denver to Summit County",
         publishedOrUpdatedDate: "2026-01-10",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Bustang", "Colorado Department of Transportation"],
       },
       {
         id: "db-summit-stage",
         claimSummary: "100% fare-free county-wide bus service connecting Frisco Transfer Center, Breckenridge Station, Keystone, Copper, Dillon, and Silverthorne.",
         sourceTitle: "Summit County Government — Summit Stage Transit",
-        sourceUrl: "https://www.summitcountyco.gov/586/Summit-Stage",
+        sourceUrl: "https://www.summitcountyco.gov/services/transit_summit_stage/index.php",
         issuingOrganization: "Summit County Government, Colorado",
         authorityType: "official_rule",
         integrationStatus: "linked_official_resource",
@@ -2125,19 +2203,21 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All visitors getting around Breckenridge and Summit County",
         publishedOrUpdatedDate: "2025-11-20",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Summit Stage", "Transit", "Summit County"],
       },
       {
         id: "db-den-mountain-carriers",
-        claimSummary: "Authorized commercial mountain shuttle carriers picking up at Denver International Airport (DEN Jeppesen Terminal Level 5).",
-        sourceTitle: "Denver International Airport (DEN) — Mountain Carriers",
-        sourceUrl: "https://www.flydenver.com/parking-and-transportation/to-and-from/mountain-carriers/",
-        issuingOrganization: "City and County of Denver — Department of Aviation (DEN)",
+        claimSummary: "Authorized commercial mountain shuttle carriers and I-70 Mountain Corridor transit options connecting Denver and Summit County.",
+        sourceTitle: "CDOT — I-70 Mountain Corridor Transit & Shuttles",
+        sourceUrl: "https://www.codot.gov/travel/i70mountain",
+        issuingOrganization: "Colorado Department of Transportation (CDOT)",
         authorityType: "official_resource_link",
         integrationStatus: "linked_official_resource",
-        geographicScope: "Denver International Airport (DEN) to Colorado Mountain Resorts",
-        applicableTravelerContext: "Air travelers transferring directly from DEN to Breckenridge",
+        geographicScope: "Denver to Colorado Mountain Resorts (I-70 Corridor)",
+        applicableTravelerContext: "Travelers transferring between Denver and Breckenridge",
         publishedOrUpdatedDate: "2026-02-01",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["I-70", "Mountain Corridor", "Colorado"],
       },
       {
         id: "db-caic-avalanche",
@@ -2151,6 +2231,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Backcountry skiers, winter hikers, and Loveland Pass travelers",
         publishedOrUpdatedDate: "Live / Daily",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Colorado Avalanche Information Center", "CAIC"],
       },
       {
         id: "db-summit-hospital",
@@ -2164,6 +2245,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Travelers requiring urgent or emergency medical care in Summit County",
         publishedOrUpdatedDate: null,
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["St. Anthony Summit Hospital", "Frisco"],
       },
       {
         id: "db-breck-heritage",
@@ -2177,6 +2259,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Visitors exploring Breckenridge's cultural and mining heritage",
         publishedOrUpdatedDate: null,
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["Breckenridge", "History"],
       },
       {
         id: "db-gosno-feed",
@@ -2190,6 +2273,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Travelers checking operator feed status along I-70",
         publishedOrUpdatedDate: "Live / Continuous",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["gosno", "Colorado"],
       },
       {
         id: "db-nws-live",
@@ -2203,6 +2287,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All corridor travelers comparing origin vs. destination conditions",
         publishedOrUpdatedDate: "Live / Continuous",
         lastCheckedAt: "2026-10-23",
+        expectedSourceTerms: ["weather.gov", "ok"],
       },
     ],
   },
@@ -2627,6 +2712,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             source_surface: "dcc_new_orleans_reference",
             destination: "new-orleans",
           },
+          expectedProductMarkers: ["New Orleans", "Tours"],
         },
         {
           id: "handoff-wno-swamp",
@@ -2645,6 +2731,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             source_surface: "dcc_new_orleans_reference",
             category: "swamp-tours",
           },
+          expectedProductMarkers: ["Swamp", "New Orleans", "Airboat"],
         },
         {
           id: "handoff-wtts-planner",
@@ -2662,6 +2749,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           defaultParams: {
             source_surface: "dcc_new_orleans_reference",
           },
+          expectedProductMarkers: ["Swamp", "Plan"],
         },
       ],
     },
@@ -2710,6 +2798,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Cruise passengers embarking or disembarking in New Orleans",
         publishedOrUpdatedDate: "2026",
         lastCheckedAt: "2026-10-24",
+        expectedSourceTerms: ["Cruise", "Port NOLA", "New Orleans"],
       },
       {
         id: "nola-msy-ground",
@@ -2723,6 +2812,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Air travelers transferring between MSY and New Orleans hotels or cruise terminals",
         publishedOrUpdatedDate: "2026",
         lastCheckedAt: "2026-10-24",
+        expectedSourceTerms: ["Ground Transportation", "Taxi", "Rideshare"],
       },
       {
         id: "nola-rta-transit",
@@ -2736,6 +2826,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Visitors riding historic streetcars between Canal Street, French Quarter, and Garden District",
         publishedOrUpdatedDate: "2026",
         lastCheckedAt: "2026-10-24",
+        expectedSourceTerms: ["Jazzy", "Pass", "RTA"],
       },
       {
         id: "nola-cbp-entry",
@@ -2749,6 +2840,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Cruise passengers and international visitors entering or re-entering the United States at New Orleans",
         publishedOrUpdatedDate: "2026",
         lastCheckedAt: "2026-10-24",
+        expectedSourceTerms: ["Western Hemisphere Travel Initiative", "WHTI", "cruise"],
       },
       {
         id: "nola-nps-jazz",
@@ -2762,6 +2854,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Visitors exploring Barataria wetlands, Mississippi delta ecology, and New Orleans cultural history",
         publishedOrUpdatedDate: "2026",
         lastCheckedAt: "2026-10-24",
+        expectedSourceTerms: ["Jean Lafitte", "National Historical Park", "Preserve"],
       },
       {
         id: "nola-nws-nhc",
@@ -2775,6 +2868,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All travelers checking heat, lightning, and tropical weather conditions",
         publishedOrUpdatedDate: "Live / Continuous",
         lastCheckedAt: "2026-10-24",
+        expectedSourceTerms: ["New Orleans", "Baton Rouge", "National Weather Service"],
       },
       {
         id: "nola-ready-emergency",
@@ -2788,6 +2882,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Visitors checking heavy-rain street flooding, parade box closures, and emergency alerts",
         publishedOrUpdatedDate: "2026",
         lastCheckedAt: "2026-10-24",
+        expectedSourceTerms: ["NOLA Ready", "New Orleans", "Emergency"],
       },
     ],
   },
@@ -2902,7 +2997,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             "Terminal 1 and Terminal 3 are physically separate buildings on opposite sides of the airport; verify your airline's terminal before departure.",
             "High desert winds (35+ kt gusts) or extreme afternoon density altitude (110°F+) can trigger FAA ground delays at KLAS and pause helicopter Strip/Grand Canyon flights.",
           ],
-          officialResourceUrl: "https://www.harryreidairport.com/Transportation",
+          officialResourceUrl: "https://www.harryreidairport.com/all-options-to-and-from",
           officialResourceLabel: "Harry Reid International Airport Official Ground Transportation",
           citationIds: ["lv-las-airport", "lv-nws-vegas"],
         },
@@ -2918,8 +3013,8 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           practicalConstraints: [
             "Monorail stations sit at the rear of east-side casino properties (a 5–10 minute walk through the resort from Las Vegas Blvd).",
           ],
-          officialResourceUrl: "https://www.rtcsnv.com/ways-to-travel/fares-passes/",
-          officialResourceLabel: "RTC Southern Nevada Transit Passes & Deuce Route Guide",
+          officialResourceUrl: "https://www.lvmonorail.com/",
+          officialResourceLabel: "Las Vegas Monorail & Strip Transit Route Guide",
           citationIds: ["lv-rtc-monorail"],
         },
         {
@@ -3090,7 +3185,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             "All vehicles driving onto the Hoover Dam crest road pass through a U.S. Bureau of Reclamation police inspection checkpoint; luggage, large backpacks, weapons, and drones are strictly prohibited inside the Hoover Dam Visitor Center and guided Powerplant/Dam tours.",
           dccInterpretation:
             "Never bring airport luggage on a self-drive stop at the Hoover Dam Visitor Center unless it remains locked in your vehicle trunk during security inspection; guided tours cannot be reserved online in advance for the inner-dam chambers and are sold first-come, first-served on site (or bundled via permitted tour operators).",
-          officialUrl: "https://www.usbr.gov/lc/hooverdam/service/visit.html",
+          officialUrl: "https://www.usbr.gov/lc/hooverdam/",
           officialUrlLabel: "U.S. Bureau of Reclamation Hoover Dam Visitor Guidelines",
           citationIds: ["lv-usbr-hoover"],
         },
@@ -3171,6 +3266,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             source_surface: "dcc_vegas_reference",
             destination: "las-vegas",
           },
+          expectedProductMarkers: ["Las Vegas", "Shows"],
         },
         {
           id: "handoff-sots-tours",
@@ -3189,6 +3285,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
             source_surface: "dcc_vegas_reference",
             destination: "las-vegas",
           },
+          expectedProductMarkers: ["Las Vegas", "Tours", "Grand Canyon"],
         },
         {
           id: "handoff-dcc-vegas-day-trips",
@@ -3206,6 +3303,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
           defaultParams: {
             source_surface: "dcc_vegas_reference",
           },
+          expectedProductMarkers: ["Las Vegas", "Day Trips", "Grand Canyon"],
         },
       ],
     },
@@ -3254,7 +3352,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         id: "lv-las-airport",
         claimSummary: "Harry Reid International Airport (LAS) operates Terminal 1 and Terminal 3 with designated garage rideshare zones and Nevada Taxicab Authority Strip fare zones.",
         sourceTitle: "Harry Reid International Airport — Ground Transportation & Terminals",
-        sourceUrl: "https://www.harryreidairport.com/Transportation",
+        sourceUrl: "https://www.harryreidairport.com/all-options-to-and-from",
         issuingOrganization: "Clark County Department of Aviation",
         authorityType: "official_rule",
         integrationStatus: "curated_verified",
@@ -3262,19 +3360,21 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Air travelers arriving at or departing from Las Vegas",
         publishedOrUpdatedDate: "2026",
         lastCheckedAt: "2026-10-24",
+        expectedSourceTerms: ["Harry Reid", "Airport", "Taxis"],
       },
       {
         id: "lv-rtc-monorail",
-        claimSummary: "RTC of Southern Nevada operates the 24-hour Deuce bus along the Strip and Downtown Fremont; the Las Vegas Monorail connects 7 east-side Strip stations.",
-        sourceTitle: "Regional Transportation Commission of Southern Nevada (RTC) — Fares & Deuce Transit Guide",
-        sourceUrl: "https://www.rtcsnv.com/ways-to-travel/fares-passes/",
-        issuingOrganization: "Regional Transportation Commission of Southern Nevada (RTC)",
+        claimSummary: "Las Vegas Monorail connects 7 east-side Strip stations bypassing boulevard traffic; RTC of Southern Nevada operates the 24-hour Deuce bus along the Strip and Downtown Fremont.",
+        sourceTitle: "Las Vegas Monorail — Official Strip Transit & Station Guide",
+        sourceUrl: "https://www.lvmonorail.com/",
+        issuingOrganization: "Las Vegas Monorail (LVCVA) & Regional Transportation Commission of Southern Nevada",
         authorityType: "official_rule",
         integrationStatus: "linked_official_resource",
         geographicScope: "Las Vegas Strip & Downtown Las Vegas",
-        applicableTravelerContext: "Visitors using public transit along Las Vegas Boulevard and Fremont Street",
+        applicableTravelerContext: "Visitors using transit along Las Vegas Boulevard",
         publishedOrUpdatedDate: "2026",
         lastCheckedAt: "2026-10-24",
+        expectedSourceTerms: ["Las Vegas Monorail", "Monorail"],
       },
       {
         id: "lv-blm-redrock",
@@ -3288,12 +3388,13 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Self-drive visitors and hikers visiting Red Rock Canyon",
         publishedOrUpdatedDate: "2026",
         lastCheckedAt: "2026-10-24",
+        expectedSourceTerms: ["Red Rock Canyon", "Bureau of Land Management", "Scenic Drive"],
       },
       {
         id: "lv-usbr-hoover",
         claimSummary: "U.S. Bureau of Reclamation enforces vehicle security checkpoints on Hoover Dam access roads and prohibits luggage, large bags, and drones inside the Visitor Center and Dam/Powerplant tours.",
-        sourceTitle: "U.S. Bureau of Reclamation — Hoover Dam Visiting & Security Guidelines",
-        sourceUrl: "https://www.usbr.gov/lc/hooverdam/service/visit.html",
+        sourceTitle: "U.S. Bureau of Reclamation — Hoover Dam Official Portal",
+        sourceUrl: "https://www.usbr.gov/lc/hooverdam/",
         issuingOrganization: "U.S. Bureau of Reclamation (Department of the Interior)",
         authorityType: "official_rule",
         integrationStatus: "curated_verified",
@@ -3301,6 +3402,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Visitors driving to or touring Hoover Dam",
         publishedOrUpdatedDate: "2026",
         lastCheckedAt: "2026-10-24",
+        expectedSourceTerms: ["Hoover Dam", "Bureau of Reclamation"],
       },
       {
         id: "lv-cbp-entry",
@@ -3314,6 +3416,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "International and domestic air travelers visiting Las Vegas",
         publishedOrUpdatedDate: "2026",
         lastCheckedAt: "2026-10-24",
+        expectedSourceTerms: ["Electronic System for Travel Authorization", "ESTA", "Visa Waiver Program"],
       },
       {
         id: "lv-nws-vegas",
@@ -3327,6 +3430,7 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All travelers checking heat, wind, and monsoon flash-flood conditions",
         publishedOrUpdatedDate: "Live / Continuous",
         lastCheckedAt: "2026-10-24",
+        expectedSourceTerms: ["Las Vegas", "National Weather Service"],
       },
     ],
   },
@@ -3375,6 +3479,9 @@ export type PublishedReferenceNodeOverride = {
       verificationNote?: string;
       reviewedBy: string;
       reviewedSourceUrl: string;
+      upstreamContentSha256?: string;
+      matchedClaimTerms?: string[];
+      verifiedSourceExcerpt?: string;
     }
   >;
   relationshipHrefs?: Record<string, string>;
@@ -3396,6 +3503,7 @@ const DISALLOWED_PRODUCTION_TEST_URLS = new Set([
   "https://juneauflightdeck.com/best-excursions-in-juneau",
   "https://welcometoalaskatours.com/juneau/cruise-port",
   "https://welcometoalaskatours.com/juneau-shore-excursions",
+  "https://gosno.co/denver-to-breckenridge-shuttle",
   "/juneau-helicopters",
   "/juneau/cruise-port",
 ]);
@@ -3464,6 +3572,15 @@ export function applyPublishedReferenceNodeOverride(
         }
         if (review.verificationNote) {
           citation.verificationNote = review.verificationNote;
+        }
+        if (review.upstreamContentSha256) {
+          citation.upstreamContentSha256 = review.upstreamContentSha256;
+        }
+        if (review.matchedClaimTerms) {
+          citation.matchedClaimTerms = review.matchedClaimTerms;
+        }
+        if (review.verifiedSourceExcerpt) {
+          citation.verifiedSourceExcerpt = review.verifiedSourceExcerpt;
         }
       }
     }

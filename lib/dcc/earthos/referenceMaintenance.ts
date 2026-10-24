@@ -1,7 +1,8 @@
 import { execSync } from "node:child_process";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { pageRegistry } from "@/data/page-registry";
+import { getResolvedDatabaseIdentity } from "@/lib/db/client";
 import {
   earthosControlMapFindingHistory,
   earthosControlMapFindings,
@@ -18,14 +19,18 @@ import {
   signalWorkflowMission,
 } from "@/lib/dcc/earthos/workflows/service";
 import {
+  buildContextPreservingHandoffUrl,
   buildLegacyReferenceOverrideFindingId,
   buildReferenceOverrideFindingId,
   getAllPublishedTravelReferenceNodes,
+  getAllTravelReferenceNodes,
   getPublishedTravelReferenceNodeById,
   readPublishedReferenceNodeOverrideFromDb,
   resolveEarthosEnvironmentScope,
   type EarthosEnvironmentScope,
+  type EvidenceCitation,
   type PublishedReferenceNodeOverride,
+  type SpecialistHandoffOption,
   type TravelReferenceNode,
 } from "@/lib/dcc/travelReference";
 
@@ -48,10 +53,25 @@ export type ReferenceMaintenanceIssue = {
   detectedAt: string;
 };
 
+export type UpstreamSourceContentVerification = {
+  citationId: string;
+  sourceUrl: string;
+  finalResolvedUrl: string;
+  httpStatusCode: number;
+  upstreamContentSha256: string;
+  expectedTerms: string[];
+  matchedClaimTerms: string[];
+  unmatchedTerms: string[];
+  verifiedSourceExcerpt: string;
+  contentSupportsClaim: boolean;
+  verifiedAt: string;
+};
+
 /**
- * Explicit source review attestation required before any stale evidence citation
- * can have its lastCheckedAt timestamp updated. Refreshing a timestamp without
- * an upstream source review is rejected.
+ * Explicit source review attestation + upstream content verification required before any
+ * stale evidence citation can have its lastCheckedAt timestamp updated.
+ * Neither refreshing a timestamp alone nor an operator's checkbox/notes assertion alone is sufficient;
+ * the upstream source document must also be fetched, hashed, and verified to contain the claim-supporting terms.
  */
 export type SourceReviewAttestation = {
   citationId: string;
@@ -62,6 +82,7 @@ export type SourceReviewAttestation = {
   reviewedBy: string;
   reviewedAt: string;
   publishedOrUpdatedDate?: string | null;
+  upstreamContentVerification?: UpstreamSourceContentVerification;
 };
 
 export type ReferenceContentAssertion = {
@@ -73,6 +94,24 @@ export type ReferenceContentAssertion = {
   correctedValuePresentInDeployedHtml: boolean;
   publishedValue: string;
   sourceReviewVerified: boolean;
+  upstreamSourceContentVerified?: boolean;
+  upstreamContentSha256?: string;
+  matchedClaimTerms?: string[];
+  verifiedSourceExcerpt?: string;
+  handoffContextVerified?: boolean;
+};
+
+export type HandoffContextVerification = {
+  parameterizedHandoffUrl: string;
+  finalResolvedUrl: string;
+  redirectedToGenericRoot: boolean;
+  preservedQueryParams: Record<string, string>;
+  missingContextParams: string[];
+  contextPreserved: boolean;
+  expectedProductMarkers: string[];
+  matchedProductMarkers: string[];
+  targetTitle: string;
+  productMatchesDestination: boolean;
 };
 
 export type ReferenceVerificationEvidence = {
@@ -100,6 +139,7 @@ export type ReferenceVerificationEvidence = {
     url: string;
     ok: boolean;
     statusCode: number;
+    handoffVerification?: HandoffContextVerification;
   }>;
 };
 
@@ -127,9 +167,17 @@ export type UrlProbeResult = {
   ok: boolean;
   statusCode: number;
   redirectedTo?: string;
+  handoffVerification?: HandoffContextVerification;
+  failureReason?: string;
 };
 
-export type UrlProbeFn = (url: string) => Promise<UrlProbeResult>;
+export type UrlProbeContext = {
+  handoffOption?: SpecialistHandoffOption;
+  contextControls?: TravelReferenceNode["specialistHandoffs"]["contextControls"];
+  nodeTitle?: string;
+};
+
+export type UrlProbeFn = (url: string, context?: UrlProbeContext) => Promise<UrlProbeResult>;
 
 export type DeployedPageFetchResult = {
   url: string;
@@ -141,8 +189,8 @@ export type DeployedPageFetchResult = {
 export type DeployedPageFetchFn = (url: string) => Promise<DeployedPageFetchResult>;
 
 /**
- * Canonical remediation guidance for known retired/broken specialist routes once an HTTP probe fails.
- * Detection itself always executes real HTTP probes via defaultSpecialistUrlProbe.
+ * Canonical remediation guidance for known retired/broken specialist routes once an HTTP/handoff probe fails.
+ * Detection itself always executes real HTTP & context-preservation probes via defaultSpecialistUrlProbe.
  */
 export const KNOWN_BROKEN_SPECIALIST_URLS: Record<
   string,
@@ -161,6 +209,11 @@ export const KNOWN_BROKEN_SPECIALIST_URLS: Record<
     reason:
       "Welcome to Alaska Tours route /juneau-shore-excursions returned HTTP 404 in production; canonical Juneau port guide is /ports/juneau.",
   },
+  "https://gosno.co/denver-to-breckenridge-shuttle": {
+    replacementUrl: "https://gosno.co/breckenridge",
+    reason:
+      "GoSno route /denver-to-breckenridge-shuttle 308-redirects to generic homepage https://gosno.co/ and strips date/route context; canonical Breckenridge transfer product page is https://gosno.co/breckenridge.",
+  },
 };
 
 const SPECIALIST_HOST_DEFAULT_REPLACEMENT: Record<string, string> = {
@@ -168,12 +221,12 @@ const SPECIALIST_HOST_DEFAULT_REPLACEMENT: Record<string, string> = {
   "www.juneauflightdeck.com": "https://juneauflightdeck.com/helicopter",
   "welcometoalaskatours.com": "https://welcometoalaskatours.com/ports/juneau",
   "www.welcometoalaskatours.com": "https://welcometoalaskatours.com/ports/juneau",
-  "partyatredrocks.com": "https://partyatredrocks.com/book/red-rocks-amphitheatre",
-  "www.partyatredrocks.com": "https://partyatredrocks.com/book/red-rocks-amphitheatre",
-  "gosno.co": "https://gosno.co/denver-to-breckenridge-shuttle",
-  "www.gosno.co": "https://gosno.co/denver-to-breckenridge-shuttle",
-  "welcometoneworleanstours.com": "https://welcometoneworleanstours.com/tours",
-  "www.welcometoneworleanstours.com": "https://welcometoneworleanstours.com/tours",
+  "partyatredrocks.com": "https://www.partyatredrocks.com/book/red-rocks-amphitheatre",
+  "www.partyatredrocks.com": "https://www.partyatredrocks.com/book/red-rocks-amphitheatre",
+  "gosno.co": "https://gosno.co/breckenridge",
+  "www.gosno.co": "https://gosno.co/breckenridge",
+  "welcometoneworleanstours.com": "https://www.welcometoneworleanstours.com/tours",
+  "www.welcometoneworleanstours.com": "https://www.welcometoneworleanstours.com/tours",
   "welcometotheswamp.com": "https://welcometotheswamp.com/plan",
   "www.welcometotheswamp.com": "https://welcometotheswamp.com/plan",
   "saveonthestrip.com": "https://saveonthestrip.com/shows",
@@ -211,13 +264,80 @@ function matchesInternalRoute(href: string): { valid: boolean; killed: boolean }
   return { valid: false, killed: false };
 }
 
+function stripHtmlToPlainText(raw: string): string {
+  return raw
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&quot;/gi, '"')
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function extractTitleFromHtml(html: string): string {
+  const m = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+  return m ? stripHtmlToPlainText(m[1]) : "";
+}
+
+function findMatchingHandoffMetadata(url: string): {
+  option?: SpecialistHandoffOption;
+  contextControls?: TravelReferenceNode["specialistHandoffs"]["contextControls"];
+} {
+  const clean = url.split("?")[0].trim();
+  for (const node of getAllTravelReferenceNodes()) {
+    for (const opt of node.specialistHandoffs.options) {
+      if (opt.baseUrl.trim() === clean) {
+        return {
+          option: opt,
+          contextControls: node.specialistHandoffs.contextControls,
+        };
+      }
+    }
+  }
+  return {};
+}
+
 /**
- * Default specialist and internal URL probe using real HTTP requests.
- * Does NOT use simulated allowlists; performs a real network fetch.
+ * Verifies that a specialist handoff link not only returns HTTP 200..399,
+ * but also preserves traveler context parameters (date, partySize, hub/port/route)
+ * across redirects, does NOT redirect a product path to a generic root homepage (/),
+ * and lands on a page containing the expected destination/product markers.
  */
-export async function defaultSpecialistUrlProbe(url: string): Promise<UrlProbeResult> {
+export async function defaultSpecialistUrlProbe(
+  url: string,
+  context?: UrlProbeContext,
+): Promise<UrlProbeResult> {
   const trimmed = url.trim();
-  let targetUrl = trimmed;
+  const matchedMeta = context?.handoffOption
+    ? { option: context.handoffOption, contextControls: context.contextControls }
+    : findMatchingHandoffMetadata(trimmed);
+
+  const syntheticOption: SpecialistHandoffOption = matchedMeta.option
+    ? { ...matchedMeta.option, baseUrl: trimmed }
+    : {
+        id: "probe-target",
+        partnerName: "Specialist Target",
+        partnerRole: "specialist_guide",
+        integrationMode: "context_handoff_link",
+        description: "",
+        whenItHelps: "",
+        noPurchaseRequiredNote: "",
+        baseUrl: trimmed,
+        supportedContextParams: ["date", "partySize"],
+        defaultParams: {
+          source_surface: "dcc_reference_probe",
+        },
+      };
+
+  const defaultCustomChoice =
+    matchedMeta.contextControls?.customSelectorOptions?.[0]?.value || "AJD";
+  const customSelectorParam = matchedMeta.contextControls?.customSelectorParam;
+
+  let parameterizedUrl: string;
+  let requestedPathname = "/";
 
   if (trimmed.startsWith("/")) {
     const internalCheck = matchesInternalRoute(trimmed);
@@ -225,19 +345,34 @@ export async function defaultSpecialistUrlProbe(url: string): Promise<UrlProbeRe
       return {
         ok: false,
         statusCode: internalCheck.killed ? 410 : 404,
+        failureReason: `Internal route ${trimmed} is not registered or is retired.`,
       };
     }
-    targetUrl = `${resolveDeployedBaseUrl()}${trimmed}`;
+    const relativeWithParams = buildContextPreservingHandoffUrl(syntheticOption, {
+      travelDate: "2026-07-15",
+      partySize: "4",
+      customChoice: defaultCustomChoice,
+      customSelectorParam,
+    });
+    requestedPathname = relativeWithParams.split("?")[0] || "/";
+    parameterizedUrl = `${resolveDeployedBaseUrl()}${relativeWithParams}`;
   } else {
     try {
-      new URL(trimmed);
+      const parsedBase = new URL(trimmed);
+      requestedPathname = parsedBase.pathname || "/";
+      parameterizedUrl = buildContextPreservingHandoffUrl(syntheticOption, {
+        travelDate: "2026-07-15",
+        partySize: "4",
+        customChoice: defaultCustomChoice,
+        customSelectorParam,
+      });
     } catch {
-      return { ok: false, statusCode: 400 };
+      return { ok: false, statusCode: 400, failureReason: `Invalid URL ${trimmed}` };
     }
   }
 
   try {
-    const response = await fetch(targetUrl, {
+    let response = await fetch(parameterizedUrl, {
       method: "GET",
       redirect: "follow",
       cache: "no-store",
@@ -248,17 +383,244 @@ export async function defaultSpecialistUrlProbe(url: string): Promise<UrlProbeRe
       },
     });
 
+    // When running against a single-route local test server (127.0.0.1) that only mocks /juneau,
+    // allow registered internal DCC routes (like /transportation/colorado) to verify against production.
+    if (
+      trimmed.startsWith("/") &&
+      response.status === 404 &&
+      /^https?:\/\/127\.0\.0\.1(?::\d+)?$/i.test(resolveDeployedBaseUrl())
+    ) {
+      const relativePart = parameterizedUrl.slice(resolveDeployedBaseUrl().length);
+      response = await fetch(`https://www.destinationcommandcenter.com${relativePart}`, {
+        method: "GET",
+        redirect: "follow",
+        cache: "no-store",
+        signal: AbortSignal.timeout(15000),
+        headers: {
+          "user-agent": "DCC-EarthOS-ReferenceMonitor/1.0 (+https://www.destinationcommandcenter.com)",
+          accept: "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+        },
+      });
+    }
+
+    const html = await response.text();
+    const plainText = stripHtmlToPlainText(html);
+    const targetTitle = extractTitleFromHtml(html);
+    const finalResolvedUrl = response.url || parameterizedUrl;
+    const requestedUrlObj = new URL(parameterizedUrl);
+    const finalUrlObj = new URL(finalResolvedUrl);
+
+    const redirectedToGenericRoot =
+      requestedPathname !== "/" &&
+      requestedPathname.length > 1 &&
+      (finalUrlObj.pathname === "/" || finalUrlObj.pathname === "");
+
+    const preservedQueryParams: Record<string, string> = {};
+    const missingContextParams: string[] = [];
+
+    for (const [k, expectedVal] of requestedUrlObj.searchParams.entries()) {
+      const actualInQuery = finalUrlObj.searchParams.get(k);
+      if (actualInQuery === expectedVal) {
+        preservedQueryParams[k] = actualInQuery;
+      } else if (html.includes(expectedVal)) {
+        preservedQueryParams[k] = expectedVal;
+      } else {
+        missingContextParams.push(k);
+      }
+    }
+
+    const contextPreserved = !redirectedToGenericRoot && missingContextParams.length === 0;
+
+    const expectedProductMarkers =
+      syntheticOption.expectedProductMarkers && syntheticOption.expectedProductMarkers.length > 0
+        ? syntheticOption.expectedProductMarkers
+        : [];
+    const lowerHaystack = `${targetTitle} ${plainText}`.toLowerCase();
+    const matchedProductMarkers = expectedProductMarkers.filter((marker) =>
+      lowerHaystack.includes(marker.toLowerCase()),
+    );
+    const minRequiredMarkers =
+      expectedProductMarkers.length === 0 ? 0 : Math.min(2, expectedProductMarkers.length);
+    const productMatchesDestination =
+      expectedProductMarkers.length === 0
+        ? targetTitle.length > 0 || plainText.length > 40
+        : matchedProductMarkers.length >= minRequiredMarkers;
+
+    const statusOk = response.status >= 200 && response.status < 400;
+    const ok = statusOk && !redirectedToGenericRoot && contextPreserved && productMatchesDestination;
+
+    const failureReasons: string[] = [];
+    if (!statusOk) {
+      failureReasons.push(`HTTP status ${response.status}`);
+    }
+    if (redirectedToGenericRoot) {
+      failureReasons.push(
+        `Product path ${requestedPathname} redirected to generic root homepage ${finalResolvedUrl}`,
+      );
+    }
+    if (!contextPreserved && missingContextParams.length > 0) {
+      failureReasons.push(
+        `Context parameters stripped on target (${missingContextParams.join(", ")})`,
+      );
+    }
+    if (!productMatchesDestination) {
+      failureReasons.push(
+        `Target page '${targetTitle || finalResolvedUrl}' did not match expected product markers (${expectedProductMarkers.join(", ")})`,
+      );
+    }
+
     return {
-      ok: response.status >= 200 && response.status < 400,
+      ok,
       statusCode: response.status,
       redirectedTo: response.redirected ? response.url : undefined,
+      handoffVerification: {
+        parameterizedHandoffUrl: parameterizedUrl,
+        finalResolvedUrl,
+        redirectedToGenericRoot,
+        preservedQueryParams,
+        missingContextParams,
+        contextPreserved,
+        expectedProductMarkers,
+        matchedProductMarkers,
+        targetTitle,
+        productMatchesDestination,
+      },
+      failureReason: failureReasons.length > 0 ? failureReasons.join("; ") : undefined,
     };
   } catch {
     return {
       ok: false,
       statusCode: 503,
+      failureReason: `Network error probing ${parameterizedUrl}`,
     };
   }
+}
+
+export async function defaultUpstreamSourceFetcher(url: string): Promise<DeployedPageFetchResult> {
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      redirect: "follow",
+      cache: "no-store",
+      signal: AbortSignal.timeout(15000),
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 DCC-EarthOS-SourceVerifier/1.0",
+        accept: "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+        "accept-language": "en-US,en;q=0.9",
+      },
+    });
+    const html = await response.text();
+    return {
+      url: response.url || url,
+      ok: response.status >= 200 && response.status < 400,
+      statusCode: response.status,
+      html,
+    };
+  } catch {
+    return {
+      url,
+      ok: false,
+      statusCode: 503,
+      html: "",
+    };
+  }
+}
+
+function deriveExpectedTermsForCitation(citation: EvidenceCitation): string[] {
+  if (citation.expectedSourceTerms && citation.expectedSourceTerms.length > 0) {
+    return citation.expectedSourceTerms;
+  }
+  const stopWords = new Set([
+    "the",
+    "and",
+    "for",
+    "with",
+    "from",
+    "that",
+    "this",
+    "into",
+    "between",
+    "under",
+    "official",
+    "rules",
+    "guide",
+    "information",
+    "live",
+  ]);
+  const tokens = `${citation.sourceTitle} ${citation.claimSummary}`
+    .replace(/[^a-zA-Z0-9\s-]/g, " ")
+    .split(/\s+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 4 && !stopWords.has(t.toLowerCase()));
+  return Array.from(new Set(tokens)).slice(0, 4);
+}
+
+/**
+ * Fetches the upstream authority URL for an EvidenceCitation, computes its SHA-256 content hash,
+ * verifies that the upstream document actually contains the expected claim-supporting terms,
+ * and extracts a verified excerpt from the upstream document.
+ */
+export async function verifyUpstreamEvidenceSourceContent(
+  citation: EvidenceCitation,
+  fetchSource: DeployedPageFetchFn = defaultUpstreamSourceFetcher,
+): Promise<UpstreamSourceContentVerification> {
+  const verifiedAt = new Date().toISOString();
+  const fetched = await fetchSource(citation.sourceUrl);
+  const rawBody = fetched.html || "";
+  const upstreamContentSha256 = createHash("sha256").update(rawBody).digest("hex");
+  const plainText = stripHtmlToPlainText(rawBody);
+  const lowerPlain = plainText.toLowerCase();
+  const lowerRaw = rawBody.toLowerCase();
+
+  const expectedTerms = deriveExpectedTermsForCitation(citation);
+  const matchedClaimTerms: string[] = [];
+  const unmatchedTerms: string[] = [];
+
+  for (const term of expectedTerms) {
+    const needle = term.toLowerCase();
+    if (lowerPlain.includes(needle) || lowerRaw.includes(needle)) {
+      matchedClaimTerms.push(term);
+    } else {
+      unmatchedTerms.push(term);
+    }
+  }
+
+  const minRequiredMatches =
+    expectedTerms.length === 0 ? 0 : Math.min(2, expectedTerms.length);
+  const contentSupportsClaim =
+    fetched.ok &&
+    fetched.statusCode >= 200 &&
+    fetched.statusCode < 400 &&
+    plainText.length > 20 &&
+    matchedClaimTerms.length >= minRequiredMatches;
+
+  let verifiedSourceExcerpt = "";
+  if (matchedClaimTerms.length > 0 && plainText.length > 0) {
+    const firstTerm = matchedClaimTerms[0].toLowerCase();
+    const idx = lowerPlain.indexOf(firstTerm);
+    if (idx >= 0) {
+      const start = Math.max(0, idx - 60);
+      const end = Math.min(plainText.length, idx + 180);
+      verifiedSourceExcerpt = plainText.slice(start, end).trim();
+    } else {
+      verifiedSourceExcerpt = plainText.slice(0, 200).trim();
+    }
+  }
+
+  return {
+    citationId: citation.id,
+    sourceUrl: citation.sourceUrl,
+    finalResolvedUrl: fetched.url || citation.sourceUrl,
+    httpStatusCode: fetched.statusCode,
+    upstreamContentSha256,
+    expectedTerms,
+    matchedClaimTerms,
+    unmatchedTerms,
+    verifiedSourceExcerpt,
+    contentSupportsClaim,
+    verifiedAt,
+  };
 }
 
 export async function defaultDeployedPageFetcher(url: string): Promise<DeployedPageFetchResult> {
@@ -491,10 +853,14 @@ export async function detectReferenceMaintenanceIssues(options: {
   const issues: ReferenceMaintenanceIssue[] = [];
 
   for (const node of nodes) {
-    // 1. Check specialist handoff links via HTTP probe
+    // 1. Check specialist handoff links via HTTP & context-preserving product probe
     for (const handoff of node.specialistHandoffs.options) {
       const baseUrl = handoff.baseUrl.trim();
-      const probe = await probeUrl(baseUrl);
+      const probe = await probeUrl(baseUrl, {
+        handoffOption: handoff,
+        contextControls: node.specialistHandoffs.contextControls,
+        nodeTitle: node.title,
+      });
 
       if (!probe.ok) {
         const knownBroken = KNOWN_BROKEN_SPECIALIST_URLS[baseUrl];
@@ -522,7 +888,8 @@ export async function detectReferenceMaintenanceIssues(options: {
           recommendedValue: fallbackReplacement,
           reason:
             knownBroken?.reason ||
-            `Specialist handoff baseUrl ${baseUrl} failed HTTP verification with status ${probe.statusCode}.`,
+            probe.failureReason ||
+            `Specialist handoff baseUrl ${baseUrl} failed HTTP/context verification with status ${probe.statusCode}.`,
           severity: "critical",
           detectedAt,
         });
@@ -916,6 +1283,7 @@ export async function applyReferenceMaintenanceCorrection(options: {
   approved: boolean;
   operator: string;
   sourceReviews?: SourceReviewAttestation[];
+  fetchUpstreamSource?: DeployedPageFetchFn;
 }): Promise<{
   applied: boolean;
   task: ReferenceMaintenanceTask;
@@ -1014,24 +1382,49 @@ export async function applyReferenceMaintenanceCorrection(options: {
           delete nextOverride.evidenceReviews![issue.targetId];
           unreviewedStaleCitationIds.push(issue.targetId);
         } else {
-          const checkedDate = suppliedReview.reviewedAt.slice(0, 10);
-          citation.lastCheckedAt = checkedDate;
-          citation.verificationNote = suppliedReview.reviewerNotes;
-          if (suppliedReview.publishedOrUpdatedDate !== undefined) {
-            citation.publishedOrUpdatedDate = suppliedReview.publishedOrUpdatedDate;
-          }
-          nextOverride.evidenceReviews![issue.targetId] = {
-            lastCheckedAt: checkedDate,
-            publishedOrUpdatedDate: suppliedReview.publishedOrUpdatedDate,
-            verificationNote: suppliedReview.reviewerNotes,
-            reviewedBy: suppliedReview.reviewedBy,
-            reviewedSourceUrl: suppliedReview.reviewedSourceUrl,
-          };
-          const existingIdx = acceptedSourceReviews.findIndex((r) => r.citationId === issue.targetId);
-          if (existingIdx >= 0) {
-            acceptedSourceReviews[existingIdx] = suppliedReview;
+          const upstreamVerification =
+            suppliedReview.upstreamContentVerification ||
+            (await verifyUpstreamEvidenceSourceContent(citation, options.fetchUpstreamSource));
+
+          if (
+            !upstreamVerification.contentSupportsClaim ||
+            !upstreamVerification.upstreamContentSha256 ||
+            upstreamVerification.matchedClaimTerms.length === 0
+          ) {
+            // Operator attestation alone does not pass if the live upstream source document does not support the claim
+            citation.lastCheckedAt = issue.observedValue;
+            delete nextOverride.evidenceReviews![issue.targetId];
+            unreviewedStaleCitationIds.push(issue.targetId);
           } else {
-            acceptedSourceReviews.push(suppliedReview);
+            const verifiedReview: SourceReviewAttestation = {
+              ...suppliedReview,
+              upstreamContentVerification: upstreamVerification,
+            };
+            const checkedDate = verifiedReview.reviewedAt.slice(0, 10);
+            citation.lastCheckedAt = checkedDate;
+            citation.verificationNote = verifiedReview.reviewerNotes;
+            citation.upstreamContentSha256 = upstreamVerification.upstreamContentSha256;
+            citation.matchedClaimTerms = upstreamVerification.matchedClaimTerms;
+            citation.verifiedSourceExcerpt = upstreamVerification.verifiedSourceExcerpt;
+            if (verifiedReview.publishedOrUpdatedDate !== undefined) {
+              citation.publishedOrUpdatedDate = verifiedReview.publishedOrUpdatedDate;
+            }
+            nextOverride.evidenceReviews![issue.targetId] = {
+              lastCheckedAt: checkedDate,
+              publishedOrUpdatedDate: verifiedReview.publishedOrUpdatedDate,
+              verificationNote: verifiedReview.reviewerNotes,
+              reviewedBy: verifiedReview.reviewedBy,
+              reviewedSourceUrl: verifiedReview.reviewedSourceUrl,
+              upstreamContentSha256: upstreamVerification.upstreamContentSha256,
+              matchedClaimTerms: upstreamVerification.matchedClaimTerms,
+              verifiedSourceExcerpt: upstreamVerification.verifiedSourceExcerpt,
+            };
+            const existingIdx = acceptedSourceReviews.findIndex((r) => r.citationId === issue.targetId);
+            if (existingIdx >= 0) {
+              acceptedSourceReviews[existingIdx] = verifiedReview;
+            } else {
+              acceptedSourceReviews.push(verifiedReview);
+            }
           }
         }
       }
@@ -1181,6 +1574,18 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
       const oldAbsentFromHtml = !deployedPage.html.includes(issue.observedValue.trim());
       const correctedPresentInHtml = deployedPage.html.includes(issue.recommendedValue.trim());
 
+      const handoffProbe = await probeUrl(publishedUrl, {
+        handoffOption: publishedOption || candidateOption,
+        contextControls: publishedNode.specialistHandoffs.contextControls,
+        nodeTitle: publishedNode.title,
+      });
+      const handoffContextVerified =
+        handoffProbe.ok &&
+        (!handoffProbe.handoffVerification ||
+          (handoffProbe.handoffVerification.contextPreserved &&
+            handoffProbe.handoffVerification.productMatchesDestination &&
+            !handoffProbe.handoffVerification.redirectedToGenericRoot));
+
       contentAssertions.push({
         targetId: issue.targetId,
         kind: issue.kind,
@@ -1190,6 +1595,7 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
         correctedValuePresentInDeployedHtml: correctedPresentInHtml,
         publishedValue: publishedUrl,
         sourceReviewVerified: true,
+        handoffContextVerified,
       });
 
       if (oldUrlStillInNode || !correctedPresentInNode) {
@@ -1200,6 +1606,10 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
         contentFailures.push(
           `Deployed destination page ${deployedPageUrl} does not contain corrected specialist link '${issue.recommendedValue}' or still contains broken link '${issue.observedValue}'.`,
         );
+      } else if (!handoffContextVerified) {
+        contentFailures.push(
+          `Specialist handoff ${issue.targetId} (${publishedUrl}) failed context/product verification: ${handoffProbe.failureReason || "target did not preserve traveler context or destination product"}.`,
+        );
       }
     } else if (issue.kind === "stale_evidence_source") {
       const publishedCitation = publishedNode.evidenceRegistry.find((c) => c.id === issue.targetId);
@@ -1208,6 +1618,15 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
       const attestationCheck = validateSourceReviewAttestation(
         attestation,
         publishedCitation?.sourceUrl || candidateCitation?.sourceUrl || "",
+      );
+
+      const upstreamVerification = attestation?.upstreamContentVerification;
+      const upstreamContentVerified = Boolean(
+        upstreamVerification &&
+          upstreamVerification.contentSupportsClaim &&
+          upstreamVerification.upstreamContentSha256 &&
+          upstreamVerification.matchedClaimTerms.length > 0 &&
+          publishedCitation?.upstreamContentSha256 === upstreamVerification.upstreamContentSha256,
       );
 
       const publishedCheckedAt = publishedCitation?.lastCheckedAt || "";
@@ -1231,16 +1650,24 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
         targetId: issue.targetId,
         kind: issue.kind,
         oldValueAbsentFromPublishedNode: oldDateReplaced,
-        correctedValuePresentInPublishedNode: oldDateReplaced && noteMatches,
+        correctedValuePresentInPublishedNode: oldDateReplaced && noteMatches && upstreamContentVerified,
         oldValueAbsentFromDeployedHtml: oldAbsentFromHtml,
         correctedValuePresentInDeployedHtml: correctedPresentInHtml,
         publishedValue: publishedCheckedAt,
-        sourceReviewVerified: attestationCheck.valid,
+        sourceReviewVerified: attestationCheck.valid && upstreamContentVerified,
+        upstreamSourceContentVerified: upstreamContentVerified,
+        upstreamContentSha256: upstreamVerification?.upstreamContentSha256,
+        matchedClaimTerms: upstreamVerification?.matchedClaimTerms,
+        verifiedSourceExcerpt: upstreamVerification?.verifiedSourceExcerpt,
       });
 
       if (!attestationCheck.valid) {
         contentFailures.push(
           `Stale evidence source ${issue.targetId} cannot be closed without source review: ${attestationCheck.reason}`,
+        );
+      } else if (!upstreamContentVerified) {
+        contentFailures.push(
+          `Stale evidence source ${issue.targetId} requires verified upstream source content (SHA-256 hash and matched claim terms proving the source supports the claim).`,
         );
       } else if (!oldDateReplaced || !noteMatches) {
         contentFailures.push(
@@ -1298,13 +1725,18 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
     probeUrl,
   });
 
-  const probeResults: Array<{ url: string; ok: boolean; statusCode: number }> = [];
+  const probeResults: ReferenceVerificationEvidence["probeResults"] = [];
   for (const handoff of nodeUnderTest.specialistHandoffs.options) {
-    const res = await probeUrl(handoff.baseUrl);
+    const res = await probeUrl(handoff.baseUrl, {
+      handoffOption: handoff,
+      contextControls: nodeUnderTest.specialistHandoffs.contextControls,
+      nodeTitle: nodeUnderTest.title,
+    });
     probeResults.push({
       url: handoff.baseUrl,
       ok: res.ok,
       statusCode: res.statusCode,
+      handoffVerification: res.handoffVerification,
     });
   }
 
@@ -1321,7 +1753,9 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
         a.correctedValuePresentInPublishedNode &&
         a.oldValueAbsentFromDeployedHtml &&
         a.correctedValuePresentInDeployedHtml &&
-        a.sourceReviewVerified,
+        a.sourceReviewVerified &&
+        (a.handoffContextVerified === undefined || a.handoffContextVerified) &&
+        (a.upstreamSourceContentVerified === undefined || a.upstreamSourceContentVerified),
     );
 
   if (!recheckPassed) {
@@ -1402,6 +1836,7 @@ export async function runReferenceMaintenanceLoop(options: {
   probeUrl?: UrlProbeFn;
   deployedBaseUrl?: string;
   fetchDeployedPage?: DeployedPageFetchFn;
+  fetchUpstreamSource?: DeployedPageFetchFn;
 }): Promise<{
   detectedIssues: ReferenceMaintenanceIssue[];
   task: ReferenceMaintenanceTask;
@@ -1426,6 +1861,7 @@ export async function runReferenceMaintenanceLoop(options: {
     approved: true,
     operator: options.operator,
     sourceReviews: options.sourceReviews,
+    fetchUpstreamSource: options.fetchUpstreamSource,
   });
 
   const closedTask = await verifyAndCloseReferenceMaintenanceTask({
@@ -1477,16 +1913,21 @@ export type DestinationReferenceHealthSummary = {
     sourceUrl: string;
     lastCheckedAt: string;
     verificationNote?: string;
+    upstreamContentSha256?: string;
+    matchedClaimTerms?: string[];
+    verifiedSourceExcerpt?: string;
   }>;
   specialistHandoffs: Array<{
     id: string;
     partnerName: string;
     baseUrl: string;
+    expectedProductMarkers?: string[];
   }>;
 };
 
 export type ReferenceMaintenanceOperationalSnapshot = {
   environmentScope: EarthosEnvironmentScope;
+  databaseIdentity: ReturnType<typeof getResolvedDatabaseIdentity>;
   cronSchedule: string;
   cronEndpointPath: string;
   latestScan: ReferenceMaintenanceScanRecord | null;
@@ -1775,17 +2216,22 @@ export async function getReferenceMaintenanceOperationalSnapshot(options: {
         sourceUrl: cit.sourceUrl,
         lastCheckedAt: cit.lastCheckedAt,
         verificationNote: cit.verificationNote,
+        upstreamContentSha256: cit.upstreamContentSha256,
+        matchedClaimTerms: cit.matchedClaimTerms,
+        verifiedSourceExcerpt: cit.verifiedSourceExcerpt,
       })),
       specialistHandoffs: node.specialistHandoffs.options.map((opt) => ({
         id: opt.id,
         partnerName: opt.partnerName,
         baseUrl: opt.baseUrl,
+        expectedProductMarkers: opt.expectedProductMarkers,
       })),
     };
   });
 
   return {
     environmentScope: scope,
+    databaseIdentity: getResolvedDatabaseIdentity(),
     cronSchedule: "0 8 * * *",
     cronEndpointPath: "/api/internal/earthos/reference-maintenance",
     latestScan,

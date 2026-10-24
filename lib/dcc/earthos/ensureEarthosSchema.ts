@@ -233,6 +233,33 @@ export async function runRepeatableEarthosMigration(): Promise<{
   await db.execute(sql`CREATE INDEX IF NOT EXISTS governance_findings_history_packet_idx ON governance_findings_history (packet_id);`);
   await db.execute(sql`CREATE INDEX IF NOT EXISTS governance_findings_history_event_type_idx ON governance_findings_history (event_type);`);
 
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS octo_normalized_products (
+      id text PRIMARY KEY,
+      supplier_connection_id text NOT NULL,
+      supplier_product_reference text NOT NULL,
+      title text NOT NULL,
+      description text,
+      destination_slug text,
+      destination_name text,
+      country text,
+      location_name text,
+      latitude numeric,
+      longitude numeric,
+      default_currency text NOT NULL DEFAULT 'USD',
+      duration_minutes integer,
+      meeting_point text,
+      cancellation_policy text,
+      capabilities jsonb NOT NULL DEFAULT '[]'::jsonb,
+      options jsonb NOT NULL DEFAULT '[]'::jsonb,
+      pricing_from integer,
+      image_url text,
+      source_freshness timestamptz,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+  `);
+
   const migrationRecord = await db.execute(sql`
     INSERT INTO earthos_schema_migrations (migration_id, checksum, first_applied_at, last_applied_at, execution_count)
     VALUES (${EARTHOS_MIGRATION_ID}, ${checksum}, now(), now(), 1)

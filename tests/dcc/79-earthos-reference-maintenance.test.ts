@@ -29,6 +29,7 @@ import {
   signalWorkflowMission,
 } from "@/lib/dcc/earthos/workflows/service";
 import { listEarthOSAuditEvents } from "@/lib/dcc/earthos/auditLog";
+import { getResolvedDatabaseIdentity } from "@/lib/db/client";
 import { getDurableGovernanceRecordService } from "@/lib/dcc/earthos/governanceRecords";
 import {
   resetEarthosSchemaEnsuredForTests,
@@ -859,6 +860,8 @@ test("Environment isolation, audit-preserving cleanup, repeatable migration, and
     assert.match(authDashboardHtml, /data-earthos-reference-maintenance="panel"/);
     assert.match(authDashboardHtml, /Traveler Evidence &amp; Specialist Handoff Governance/);
     assert.match(authDashboardHtml, /0 8 \* \* \* UTC/);
+    assert.match(authDashboardHtml, /data-database-name="neondb_nonprod"/);
+    assert.match(authDashboardHtml, /data-database-isolated="true"/);
   } finally {
     await clearPublishedReferenceNodeOverride("juneau", "nonprod");
     if (prevAdminKey === undefined) delete process.env.ADMIN_ACCESS_KEY;
@@ -867,4 +870,165 @@ test("Environment isolation, audit-preserving cleanup, repeatable migration, and
     else process.env.DCC_ENVIRONMENT_SCOPE = prevScope;
   }
 });
+
+test("Physical database separation, upstream source content verification (attestation alone fails), and context-preserving product handoff verification", async () => {
+  const server = await startLocalDestinationReferenceServer();
+  const now = new Date("2026-10-24T12:00:00.000Z");
+
+  try {
+    // 1. Physical database separation: non-production resolves to neondb_nonprod (physically isolated from neondb)
+    const dbIdentity = getResolvedDatabaseIdentity();
+    assert.equal(dbIdentity.databaseName, "neondb_nonprod");
+    assert.equal(dbIdentity.isIsolatedFromProduction, true);
+    assert.equal(dbIdentity.productionTarget, false);
+
+    // 2. Source review attestation alone MUST FAIL when upstream source content does not support the claim
+    const juneauSnapshot = structuredClone(getBaseTravelReferenceNodeById("juneau"));
+    const targetCitation = juneauSnapshot.evidenceRegistry[0];
+    targetCitation.lastCheckedAt = "2025-01-15";
+
+    const staleIssues = await detectReferenceMaintenanceIssues({
+      nodes: [juneauSnapshot],
+      now,
+    });
+    assert.equal(staleIssues.length, 1);
+    assert.equal(staleIssues[0].kind, "stale_evidence_source");
+
+    const taskWithFakeSource = await recordReferenceMaintenanceTask("juneau", staleIssues);
+    const rejectedAttestationApply = await applyReferenceMaintenanceCorrection({
+      taskId: taskWithFakeSource.taskId,
+      targetNode: juneauSnapshot,
+      approved: true,
+      operator: "qa-operator",
+      // Operator checked the box and wrote notes, BUT the upstream source document does NOT contain the claim terms:
+      fetchUpstreamSource: async (url) => ({
+        url,
+        ok: true,
+        statusCode: 200,
+        html: "<html><head><title>Unrelated Park Notice</title></head><body>Generic placeholder page with no relevant authority terms.</body></html>",
+      }),
+      sourceReviews: [
+        {
+          citationId: targetCitation.id,
+          reviewedSourceUrl: targetCitation.sourceUrl,
+          httpStatusCode: 200,
+          verifiedClaimMatchesSource: true,
+          reviewerNotes: "I checked the box and wrote notes claiming the source matches.",
+          reviewedBy: "qa-operator",
+          reviewedAt: "2026-10-24T12:00:00.000Z",
+        },
+      ],
+    });
+
+    assert.deepEqual(
+      rejectedAttestationApply.unreviewedStaleCitationIds,
+      [targetCitation.id],
+      "Operator attestation alone must be rejected when upstream source content does not contain expected claim terms",
+    );
+    assert.equal(
+      rejectedAttestationApply.remediatedNode.evidenceRegistry[0].lastCheckedAt,
+      "2025-01-15",
+      "Stale citation timestamp must remain unchanged when upstream source content verification fails",
+    );
+
+    await assert.rejects(
+      () =>
+        verifyAndCloseReferenceMaintenanceTask({
+          taskId: taskWithFakeSource.taskId,
+          remediatedNode: rejectedAttestationApply.remediatedNode,
+          verifiedBy: "qa-operator",
+          now,
+          deployedBaseUrl: server.baseUrl,
+        }),
+      /cannot be closed without source review|requires verified upstream source content/i,
+    );
+
+    // Now verify against the REAL upstream authority document -> succeeds and records SHA-256 + matched terms + excerpt
+    const verifiedApply = await applyReferenceMaintenanceCorrection({
+      taskId: taskWithFakeSource.taskId,
+      targetNode: juneauSnapshot,
+      approved: true,
+      operator: "qa-operator",
+      sourceReviews: [
+        {
+          citationId: targetCitation.id,
+          reviewedSourceUrl: targetCitation.sourceUrl,
+          httpStatusCode: 200,
+          verifiedClaimMatchesSource: true,
+          reviewerNotes:
+            "Verified official CBJ Marine Passenger Fee and port schedule authority document.",
+          reviewedBy: "qa-operator",
+          reviewedAt: "2026-10-24T12:00:00.000Z",
+        },
+      ],
+    });
+    assert.equal(verifiedApply.unreviewedStaleCitationIds.length, 0);
+    assert.ok(verifiedApply.remediatedNode.evidenceRegistry[0].upstreamContentSha256);
+    assert.ok(
+      (verifiedApply.remediatedNode.evidenceRegistry[0].matchedClaimTerms?.length || 0) > 0,
+    );
+    assert.ok(verifiedApply.remediatedNode.evidenceRegistry[0].verifiedSourceExcerpt);
+
+    const closedTask = await verifyAndCloseReferenceMaintenanceTask({
+      taskId: taskWithFakeSource.taskId,
+      remediatedNode: verifiedApply.remediatedNode,
+      verifiedBy: "qa-operator",
+      now,
+      deployedBaseUrl: server.baseUrl,
+    });
+    assert.equal(closedTask.status, "closed");
+    const citAssertion = closedTask.verificationEvidence?.contentAssertions.find(
+      (a) => a.targetId === targetCitation.id,
+    );
+    assert.ok(citAssertion);
+    assert.equal(citAssertion.upstreamSourceContentVerified, true);
+    assert.ok(citAssertion.upstreamContentSha256);
+    assert.ok((citAssertion.matchedClaimTerms?.length || 0) > 0);
+
+    // 3. Working HTTP 200 link that redirects to generic root or strips context MUST FAIL handoff verification
+    const breckNode = getBaseTravelReferenceNodeById("denver-breckenridge");
+    const gosnoOption = structuredClone(breckNode.specialistHandoffs.options[0]);
+
+    // Old URL /denver-to-breckenridge-shuttle returns HTTP 200 after 308-redirecting to https://gosno.co/ and stripping params
+    const strippedRedirectProbe = await defaultSpecialistUrlProbe(
+      "https://gosno.co/denver-to-breckenridge-shuttle",
+      {
+        handoffOption: {
+          ...gosnoOption,
+          baseUrl: "https://gosno.co/denver-to-breckenridge-shuttle",
+        },
+        contextControls: breckNode.specialistHandoffs.contextControls,
+        nodeTitle: breckNode.title,
+      },
+    );
+    assert.equal(
+      strippedRedirectProbe.statusCode,
+      200,
+      "Redirected root page responds with HTTP 200",
+    );
+    assert.equal(
+      strippedRedirectProbe.ok,
+      false,
+      "Probe must reject HTTP 200 handoff when it redirects a product path to generic root or strips context params",
+    );
+    assert.equal(strippedRedirectProbe.handoffVerification?.redirectedToGenericRoot, true);
+    assert.equal(strippedRedirectProbe.handoffVerification?.contextPreserved, false);
+
+    // Canonical Breckenridge product URL https://gosno.co/breckenridge preserves context params and lands on Breckenridge product
+    const validProductProbe = await defaultSpecialistUrlProbe("https://gosno.co/breckenridge", {
+      handoffOption: gosnoOption,
+      contextControls: breckNode.specialistHandoffs.contextControls,
+      nodeTitle: breckNode.title,
+    });
+    assert.equal(validProductProbe.statusCode, 200);
+    assert.equal(validProductProbe.ok, true);
+    assert.equal(validProductProbe.handoffVerification?.redirectedToGenericRoot, false);
+    assert.equal(validProductProbe.handoffVerification?.contextPreserved, true);
+    assert.equal(validProductProbe.handoffVerification?.productMatchesDestination, true);
+  } finally {
+    await server.close();
+    await clearPublishedReferenceNodeOverride("juneau");
+  }
+});
+
 

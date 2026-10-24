@@ -13,13 +13,99 @@ export function hasConfiguredDatabaseUrl() {
   return Boolean(resolveDatabaseUrl());
 }
 
-function resolveDatabaseUrl() {
-  return (
-    process.env.DCC_DATABASE_URL ||
+export type DatabaseIdentitySummary = {
+  hostPrefix: string;
+  databaseName: string;
+  targetEnvironment: "production" | "nonprod";
+  productionTarget: boolean;
+  isIsolatedFromProduction: boolean;
+};
+
+export function isProductionDatabaseTarget(): boolean {
+  const explicitTarget = (
+    process.env.DCC_TARGET_DB ||
+    process.env.DCC_EARTHOS_ENV ||
+    process.env.DCC_ENVIRONMENT_SCOPE ||
+    ""
+  )
+    .trim()
+    .toLowerCase();
+  if (explicitTarget === "production") return true;
+  if (
+    explicitTarget === "nonprod" ||
+    explicitTarget === "preview" ||
+    explicitTarget === "development" ||
+    explicitTarget === "test"
+  ) {
+    return false;
+  }
+  return process.env.VERCEL_ENV?.trim().toLowerCase() === "production";
+}
+
+export function resolveDatabaseUrl(): string {
+  const isProdTarget = isProductionDatabaseTarget();
+  const raw = (
+    (isProdTarget
+      ? process.env.DCC_PRODUCTION_DATABASE_URL || process.env.DCC_DATABASE_URL
+      : process.env.DCC_NONPROD_DATABASE_URL || process.env.DCC_DATABASE_URL) ||
     process.env.DATABASE_URL ||
     process.env.POSTGRES_URL ||
     ""
   ).trim();
+
+  if (!raw) return "";
+
+  try {
+    const parsed = new URL(raw);
+    const currentDb = parsed.pathname.replace(/^\//, "");
+    if (!isProdTarget && currentDb === "neondb") {
+      parsed.pathname = "/neondb_nonprod";
+      return parsed.toString();
+    }
+    if (isProdTarget && currentDb === "neondb_nonprod") {
+      parsed.pathname = "/neondb";
+      return parsed.toString();
+    }
+    return parsed.toString();
+  } catch {
+    return raw;
+  }
+}
+
+export function getResolvedDatabaseIdentity(): DatabaseIdentitySummary {
+  const resolved = resolveDatabaseUrl();
+  const productionTarget = isProductionDatabaseTarget();
+  const targetEnvironment: "production" | "nonprod" = productionTarget
+    ? "production"
+    : "nonprod";
+  if (!resolved) {
+    return {
+      hostPrefix: "unconfigured",
+      databaseName: "unconfigured",
+      targetEnvironment,
+      productionTarget,
+      isIsolatedFromProduction: false,
+    };
+  }
+  try {
+    const parsed = new URL(resolved);
+    const databaseName = parsed.pathname.replace(/^\//, "") || "unknown";
+    return {
+      hostPrefix: parsed.hostname.split(".")[0] || "unknown",
+      databaseName,
+      targetEnvironment,
+      productionTarget,
+      isIsolatedFromProduction: databaseName === "neondb_nonprod",
+    };
+  } catch {
+    return {
+      hostPrefix: "invalid-url",
+      databaseName: "unknown",
+      targetEnvironment,
+      productionTarget,
+      isIsolatedFromProduction: false,
+    };
+  }
 }
 
 const CONTEXT_COLS = [
