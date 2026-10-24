@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { pageRegistry } from "@/data/page-registry";
@@ -278,10 +279,42 @@ export async function defaultDeployedPageFetcher(url: string): Promise<DeployedP
   });
 
   const html = await response.text();
+  const isVercelSsoGate =
+    url.includes(".vercel.app") &&
+    (response.status === 401 ||
+      response.status === 403 ||
+      (html.includes("data-dpl-id=") && html.includes('class="') && html.includes('dash"')));
+
+  if (isVercelSsoGate) {
+    try {
+      const parsed = new URL(url);
+      const npxCmd = process.platform === "win32" ? "npx.cmd" : "npx";
+      const pathWithQuery = `${parsed.pathname}${parsed.search}`;
+      const cliHtml = execSync(
+        `${npxCmd} vercel curl ${pathWithQuery} --deployment ${parsed.origin}`,
+        {
+          encoding: "utf8",
+          maxBuffer: 25 * 1024 * 1024,
+          stdio: ["ignore", "pipe", "ignore"],
+        },
+      );
+      if (cliHtml && cliHtml.length > 0 && !cliHtml.includes(' dash"')) {
+        return {
+          url,
+          ok: true,
+          statusCode: 200,
+          html: cliHtml,
+        };
+      }
+    } catch {
+      // Fall through and return raw response if vercel curl is unavailable
+    }
+  }
+
   return {
     url: response.url || url,
-    ok: response.status >= 200 && response.status < 400,
-    statusCode: response.status,
+    ok: response.status >= 200 && response.status < 400 && !isVercelSsoGate,
+    statusCode: isVercelSsoGate ? 401 : response.status,
     html,
   };
 }
