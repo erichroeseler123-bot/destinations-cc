@@ -2,12 +2,13 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { desc, eq } from "drizzle-orm";
-import { getDb, hasDb } from "@/lib/db/client";
+import { getDb, hasConfiguredDatabaseUrl } from "@/lib/db/client";
 import {
   governanceDriftEvents,
   governanceFindingsHistory,
   governanceReconciliationPackets,
 } from "@/lib/db/schema";
+import { getRequiredEarthosDb } from "@/lib/dcc/earthos/ensureEarthosSchema";
 
 export type GovernanceRecordStatus = "open" | "acknowledged" | "resolved" | "proposed" | "approved" | "applied" | "rejected";
 export type GovernanceRecordSeverity = "info" | "watch" | "blocked" | "critical";
@@ -265,194 +266,166 @@ function buildPacket(input: NewGovernanceReconciliationPacket): GovernanceReconc
 }
 
 function createDbGovernanceRecordsStore(): GovernanceRecordsStore | null {
-  if (!hasDb()) return null;
+  if (!hasConfiguredDatabaseUrl()) return null;
   const db = getDb();
   if (!db) return null;
 
   return {
     async appendDriftEvent(event) {
-      try {
-        await db.insert(governanceDriftEvents).values({
-          id: event.id,
-          createdAt: new Date(event.createdAt),
-          sourceSurface: event.sourceSurface,
-          affectedSurface: event.affectedSurface,
-          corridorId: event.corridorId,
-          eventType: event.eventType,
-          severity: event.severity,
-          status: event.status,
+      await db.insert(governanceDriftEvents).values({
+        id: event.id,
+        createdAt: new Date(event.createdAt),
+        sourceSurface: event.sourceSurface,
+        affectedSurface: event.affectedSurface,
+        corridorId: event.corridorId,
+        eventType: event.eventType,
+        severity: event.severity,
+        status: event.status,
+        findingId: event.findingId,
+        summary: event.summary,
+        evidenceJson: event.evidenceJson,
+        expectedRole: event.expectedRole,
+        observedRole: event.observedRole,
+        continuityState: event.continuityState,
+        machineInterpretationRisk: event.machineInterpretationRisk,
+        resolvedAt: event.resolvedAt ? new Date(event.resolvedAt) : null,
+        resolvedBy: event.resolvedBy,
+      });
+
+      if (event.findingId) {
+        await db.insert(governanceFindingsHistory).values({
           findingId: event.findingId,
+          driftEventId: event.id,
+          eventType: event.eventType,
+          status: event.status,
           summary: event.summary,
-          evidenceJson: event.evidenceJson,
-          expectedRole: event.expectedRole,
-          observedRole: event.observedRole,
-          continuityState: event.continuityState,
-          machineInterpretationRisk: event.machineInterpretationRisk,
-          resolvedAt: event.resolvedAt ? new Date(event.resolvedAt) : null,
-          resolvedBy: event.resolvedBy,
+          metadata: {
+            sourceSurface: event.sourceSurface,
+            affectedSurface: event.affectedSurface,
+            corridorId: event.corridorId,
+            machineInterpretationRisk: event.machineInterpretationRisk,
+          },
+          recordedAt: new Date(event.createdAt),
         });
-
-        if (event.findingId) {
-          await db.insert(governanceFindingsHistory).values({
-            findingId: event.findingId,
-            driftEventId: event.id,
-            eventType: event.eventType,
-            status: event.status,
-            summary: event.summary,
-            metadata: {
-              sourceSurface: event.sourceSurface,
-              affectedSurface: event.affectedSurface,
-              corridorId: event.corridorId,
-              machineInterpretationRisk: event.machineInterpretationRisk,
-            },
-            recordedAt: new Date(event.createdAt),
-          });
-        }
-
-        return event;
-      } catch {
-        return null;
       }
+
+      return event;
     },
 
     async listRecentDriftEvents(limit = 25) {
-      try {
-        const rows = await db
-          .select()
-          .from(governanceDriftEvents)
-          .orderBy(desc(governanceDriftEvents.createdAt))
-          .limit(limit);
+      const rows = await db
+        .select()
+        .from(governanceDriftEvents)
+        .orderBy(desc(governanceDriftEvents.createdAt))
+        .limit(limit);
 
-        return rows.map(normalizeDriftRow);
-      } catch {
-        return null;
-      }
+      return rows.map(normalizeDriftRow);
     },
 
     async resolveDriftEvent(id, resolvedBy, resolutionEvidence = {}, resolvedAt = new Date().toISOString()) {
-      try {
-        const [existing] = await db
-          .select()
-          .from(governanceDriftEvents)
-          .where(eq(governanceDriftEvents.id, id))
-          .limit(1);
+      const [existing] = await db
+        .select()
+        .from(governanceDriftEvents)
+        .where(eq(governanceDriftEvents.id, id))
+        .limit(1);
 
-        if (!existing) return null;
+      if (!existing) return null;
 
-        const nextEvidence = {
-          ...(existing.evidenceJson || {}),
-          resolutionEvidence,
-        };
+      const nextEvidence = {
+        ...(existing.evidenceJson || {}),
+        resolutionEvidence,
+      };
 
-        const [row] = await db
-          .update(governanceDriftEvents)
-          .set({
-            status: "resolved",
-            resolvedAt: new Date(resolvedAt),
-            resolvedBy,
-            evidenceJson: nextEvidence,
-          })
-          .where(eq(governanceDriftEvents.id, id))
-          .returning();
+      const [row] = await db
+        .update(governanceDriftEvents)
+        .set({
+          status: "resolved",
+          resolvedAt: new Date(resolvedAt),
+          resolvedBy,
+          evidenceJson: nextEvidence,
+        })
+        .where(eq(governanceDriftEvents.id, id))
+        .returning();
 
-        if (existing.findingId) {
-          await db.insert(governanceFindingsHistory).values({
-            findingId: existing.findingId,
-            driftEventId: existing.id,
-            eventType: "drift_resolved",
-            status: "resolved",
-            summary: `Resolved drift event ${existing.id}`,
-            metadata: resolutionEvidence,
-            recordedAt: new Date(resolvedAt),
-            recordedBy: resolvedBy,
-          });
-        }
-
-        return row ? normalizeDriftRow(row) : null;
-      } catch {
-        return null;
+      if (existing.findingId) {
+        await db.insert(governanceFindingsHistory).values({
+          findingId: existing.findingId,
+          driftEventId: existing.id,
+          eventType: "drift_resolved",
+          status: "resolved",
+          summary: `Resolved drift event ${existing.id}`,
+          metadata: resolutionEvidence,
+          recordedAt: new Date(resolvedAt),
+          recordedBy: resolvedBy,
+        });
       }
+
+      return row ? normalizeDriftRow(row) : null;
     },
 
     async createReconciliationPacket(packet) {
-      try {
-        await db.insert(governanceReconciliationPackets).values({
-          id: packet.id,
-          createdAt: new Date(packet.createdAt),
-          packetType: packet.packetType,
-          status: packet.status,
-          proposedChangesJson: packet.proposedChangesJson,
-          affectedRoutesJson: packet.affectedRoutesJson,
-          affectedSurfacesJson: packet.affectedSurfacesJson,
-          reason: packet.reason,
-          approvalRequired: packet.approvalRequired,
-          approvedAt: packet.approvedAt ? new Date(packet.approvedAt) : null,
-          approvedBy: packet.approvedBy,
-          appliedAt: packet.appliedAt ? new Date(packet.appliedAt) : null,
-          resultJson: packet.resultJson,
-        });
-        return packet;
-      } catch {
-        return null;
-      }
+      await db.insert(governanceReconciliationPackets).values({
+        id: packet.id,
+        createdAt: new Date(packet.createdAt),
+        packetType: packet.packetType,
+        status: packet.status,
+        proposedChangesJson: packet.proposedChangesJson,
+        affectedRoutesJson: packet.affectedRoutesJson,
+        affectedSurfacesJson: packet.affectedSurfacesJson,
+        reason: packet.reason,
+        approvalRequired: packet.approvalRequired,
+        approvedAt: packet.approvedAt ? new Date(packet.approvedAt) : null,
+        approvedBy: packet.approvedBy,
+        appliedAt: packet.appliedAt ? new Date(packet.appliedAt) : null,
+        resultJson: packet.resultJson,
+      });
+      return packet;
     },
 
     async listRecentReconciliationPackets(limit = 25) {
-      try {
-        const rows = await db
-          .select()
-          .from(governanceReconciliationPackets)
-          .orderBy(desc(governanceReconciliationPackets.createdAt))
-          .limit(limit);
+      const rows = await db
+        .select()
+        .from(governanceReconciliationPackets)
+        .orderBy(desc(governanceReconciliationPackets.createdAt))
+        .limit(limit);
 
-        return rows.map(normalizePacketRow);
-      } catch {
-        return null;
-      }
+      return rows.map(normalizePacketRow);
     },
 
     async markPacketApproved(id, approvedBy, approvedAt) {
-      try {
-        const [row] = await db
-          .update(governanceReconciliationPackets)
-          .set({
-            status: "approved",
-            approvedAt: new Date(approvedAt),
-            approvedBy,
-          })
-          .where(eq(governanceReconciliationPackets.id, id))
-          .returning();
+      const [row] = await db
+        .update(governanceReconciliationPackets)
+        .set({
+          status: "approved",
+          approvedAt: new Date(approvedAt),
+          approvedBy,
+        })
+        .where(eq(governanceReconciliationPackets.id, id))
+        .returning();
 
-        return row ? normalizePacketRow(row) : null;
-      } catch {
-        return null;
-      }
+      return row ? normalizePacketRow(row) : null;
     },
 
     async markPacketApplied(id, resultJson, appliedAt) {
-      try {
-        const [existing] = await db
-          .select()
-          .from(governanceReconciliationPackets)
-          .where(eq(governanceReconciliationPackets.id, id))
-          .limit(1);
+      const [existing] = await db
+        .select()
+        .from(governanceReconciliationPackets)
+        .where(eq(governanceReconciliationPackets.id, id))
+        .limit(1);
 
-        if (!existing || (existing.approvalRequired && !existing.approvedAt)) return null;
+      if (!existing || (existing.approvalRequired && !existing.approvedAt)) return null;
 
-        const [row] = await db
-          .update(governanceReconciliationPackets)
-          .set({
-            status: "applied",
-            appliedAt: new Date(appliedAt),
-            resultJson,
-          })
-          .where(eq(governanceReconciliationPackets.id, id))
-          .returning();
+      const [row] = await db
+        .update(governanceReconciliationPackets)
+        .set({
+          status: "applied",
+          appliedAt: new Date(appliedAt),
+          resultJson,
+        })
+        .where(eq(governanceReconciliationPackets.id, id))
+        .returning();
 
-        return row ? normalizePacketRow(row) : null;
-      } catch {
-        return null;
-      }
+      return row ? normalizePacketRow(row) : null;
     },
   };
 }
@@ -557,90 +530,91 @@ export function createMemoryGovernanceRecordsStore(persistFilePath?: string): Go
   };
 }
 
-function getSingletonMemoryGovernanceStore(): GovernanceRecordsStore {
-  const stateDir = process.env.DCC_EARTHOS_STATE_DIR?.trim();
-  const persistFilePath = stateDir
-    ? path.resolve(stateDir, "governance-records.json")
-    : undefined;
-  const globalStore = globalThis as typeof globalThis & {
-    __dccDurableGovernanceStore?: GovernanceRecordsStore;
-    __dccDurableGovernanceStorePath?: string;
-  };
-  if (
-    !globalStore.__dccDurableGovernanceStore ||
-    globalStore.__dccDurableGovernanceStorePath !== persistFilePath
-  ) {
-    globalStore.__dccDurableGovernanceStore = createMemoryGovernanceRecordsStore(persistFilePath);
-    globalStore.__dccDurableGovernanceStorePath = persistFilePath;
-  }
-  return globalStore.__dccDurableGovernanceStore;
-}
-
 export function createDurableGovernanceRecordsStore(): GovernanceRecordsStore {
-  const fallback = getSingletonMemoryGovernanceStore();
   return {
     async appendDriftEvent(event) {
-      await fallback.appendDriftEvent(event);
+      await getRequiredEarthosDb();
       const dbStore = createDbGovernanceRecordsStore();
-      if (dbStore) {
-        const dbResult = await dbStore.appendDriftEvent(event);
-        if (dbResult) return dbResult;
+      if (!dbStore) {
+        throw new Error("Durable governance persistence failed: database store unavailable.");
       }
-      return event;
+      const result = await dbStore.appendDriftEvent(event);
+      if (!result) {
+        throw new Error(`Durable governance persistence failed to append drift event ${event.id}.`);
+      }
+      return result;
     },
     async listRecentDriftEvents(limit = 25) {
+      await getRequiredEarthosDb();
       const dbStore = createDbGovernanceRecordsStore();
-      if (dbStore) {
-        const dbEvents = await dbStore.listRecentDriftEvents(limit);
-        if (dbEvents && dbEvents.length > 0) return dbEvents;
+      if (!dbStore) {
+        throw new Error("Durable governance persistence failed: database store unavailable.");
       }
-      return fallback.listRecentDriftEvents(limit);
+      const events = await dbStore.listRecentDriftEvents(limit);
+      if (!events) {
+        throw new Error("Durable governance persistence failed to list drift events.");
+      }
+      return events;
     },
     async resolveDriftEvent(id, resolvedBy, resolutionEvidence = {}, resolvedAt = new Date().toISOString()) {
-      const fallbackResolved = fallback.resolveDriftEvent
-        ? await fallback.resolveDriftEvent(id, resolvedBy, resolutionEvidence, resolvedAt)
-        : null;
+      await getRequiredEarthosDb();
       const dbStore = createDbGovernanceRecordsStore();
-      if (dbStore?.resolveDriftEvent) {
-        const dbResolved = await dbStore.resolveDriftEvent(id, resolvedBy, resolutionEvidence, resolvedAt);
-        if (dbResolved) return dbResolved;
+      if (!dbStore || !dbStore.resolveDriftEvent) {
+        throw new Error("Durable governance persistence failed: database store unavailable.");
       }
-      return fallbackResolved;
+      const resolved = await dbStore.resolveDriftEvent(id, resolvedBy, resolutionEvidence, resolvedAt);
+      if (!resolved) {
+        throw new Error(`Durable governance persistence failed to resolve drift event ${id}.`);
+      }
+      return resolved;
     },
     async createReconciliationPacket(packet) {
-      await fallback.createReconciliationPacket(packet);
+      await getRequiredEarthosDb();
       const dbStore = createDbGovernanceRecordsStore();
-      if (dbStore) {
-        const dbResult = await dbStore.createReconciliationPacket(packet);
-        if (dbResult) return dbResult;
+      if (!dbStore) {
+        throw new Error("Durable governance persistence failed: database store unavailable.");
       }
-      return packet;
+      const result = await dbStore.createReconciliationPacket(packet);
+      if (!result) {
+        throw new Error(`Durable governance persistence failed to create reconciliation packet ${packet.id}.`);
+      }
+      return result;
     },
     async listRecentReconciliationPackets(limit = 25) {
+      await getRequiredEarthosDb();
       const dbStore = createDbGovernanceRecordsStore();
-      if (dbStore) {
-        const dbPackets = await dbStore.listRecentReconciliationPackets(limit);
-        if (dbPackets && dbPackets.length > 0) return dbPackets;
+      if (!dbStore) {
+        throw new Error("Durable governance persistence failed: database store unavailable.");
       }
-      return fallback.listRecentReconciliationPackets(limit);
+      const packets = await dbStore.listRecentReconciliationPackets(limit);
+      if (!packets) {
+        throw new Error("Durable governance persistence failed to list reconciliation packets.");
+      }
+      return packets;
     },
     async markPacketApproved(id, approvedBy, approvedAt) {
-      const fallbackApproved = await fallback.markPacketApproved(id, approvedBy, approvedAt);
+      await getRequiredEarthosDb();
       const dbStore = createDbGovernanceRecordsStore();
-      if (dbStore) {
-        const dbApproved = await dbStore.markPacketApproved(id, approvedBy, approvedAt);
-        if (dbApproved) return dbApproved;
+      if (!dbStore) {
+        throw new Error("Durable governance persistence failed: database store unavailable.");
       }
-      return fallbackApproved;
+      const approved = await dbStore.markPacketApproved(id, approvedBy, approvedAt);
+      if (!approved) {
+        throw new Error(`Durable governance persistence failed to approve packet ${id}.`);
+      }
+      return approved;
     },
     async markPacketApplied(id, resultJson, appliedAt) {
-      const fallbackApplied = await fallback.markPacketApplied(id, resultJson, appliedAt);
+      await getRequiredEarthosDb();
       const dbStore = createDbGovernanceRecordsStore();
-      if (dbStore) {
-        const dbApplied = await dbStore.markPacketApplied(id, resultJson, appliedAt);
-        if (dbApplied) return dbApplied;
+      if (!dbStore) {
+        throw new Error("Durable governance persistence failed: database store unavailable.");
       }
-      return fallbackApplied;
+      const applied = await dbStore.markPacketApplied(id, resultJson, appliedAt);
+      if (!applied) {
+        throw new Error(`Durable governance persistence failed to mark packet ${id} applied.`);
+      }
+      return applied;
     },
   };
 }

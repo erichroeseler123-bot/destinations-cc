@@ -862,6 +862,8 @@ export default async function TravelReferenceExperience({
           {node.evidenceRegistry.map((cite) => (
             <article
               key={cite.id}
+              data-citation-id={cite.id}
+              data-last-checked={cite.lastCheckedAt}
               className="rounded-2xl border border-white/10 bg-zinc-950/90 p-4 space-y-2.5 text-xs"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -873,6 +875,12 @@ export default async function TravelReferenceExperience({
                 <strong className="text-zinc-100">Supported Facts:</strong>{" "}
                 {cite.claimSummary}
               </p>
+              {cite.verificationNote ? (
+                <p className="text-[11px] text-emerald-300/90 leading-relaxed">
+                  <strong className="text-emerald-200">Source Review Note:</strong>{" "}
+                  {cite.verificationNote}
+                </p>
+              ) : null}
               <dl className="grid grid-cols-2 gap-2 text-[11px] text-zinc-400 pt-1">
                 <div>
                   <dt className="font-semibold text-zinc-300">Issuing Authority</dt>

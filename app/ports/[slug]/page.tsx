@@ -27,7 +27,7 @@ import LfsTrustStrip from "@/components/LfsTrustStrip";
 import DccNetworkStrip from "@/components/DccNetworkStrip";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
-import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
+import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 
 const BASE_URL = "https://destinationcommandcenter.com";
 
@@ -394,6 +394,10 @@ export default async function PortPage({
       })
     : null;
   const decisionPage = surface?.modules.decision?.page || getDecisionEnginePageByPath(`/ports/${port.slug}`);
+  const portReferenceNode =
+    port.slug === "juneau" || port.slug === "new-orleans"
+      ? await getPublishedTravelReferenceNodeById(port.slug)
+      : null;
 
   return (
     <>
@@ -421,8 +425,8 @@ export default async function PortPage({
         }}
       />
       <PortAuthorityTemplate port={port} config={config} />
-      {(port.slug === "juneau" || port.slug === "new-orleans") && getTravelReferenceNodeById(port.slug) ? (
-        <TravelReferenceExperience node={getTravelReferenceNodeById(port.slug)!} embedded />
+      {portReferenceNode ? (
+        <TravelReferenceExperience node={portReferenceNode} embedded />
       ) : null}
       <section className="max-w-6xl mx-auto px-6 pb-10">
         <AirportLinksSection

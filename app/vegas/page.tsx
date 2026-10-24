@@ -10,11 +10,13 @@ import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExper
 import ViatorTourGrid from "@/app/components/dcc/ViatorTourGrid";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 import { ticketmasterAdapter } from "@/lib/dcc/providers/adapters/ticketmaster";
-import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
+import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getCityAdventureLane } from "@/src/data/city-adventure-lanes";
 import { CITY_AUTHORITY_CONFIG } from "@/src/data/city-authority-config";
 import { getCityMoneyLane } from "@/src/data/city-money-lanes";
 import { getTeamsByCity } from "@/src/data/sports-teams-config";
+
+export const dynamic = "force-dynamic";
 
 const PAGE_URL = "https://destinationcommandcenter.com/vegas";
 const VEGAS = CITY_AUTHORITY_CONFIG["las-vegas"];
@@ -163,7 +165,7 @@ export default async function VegasPage() {
     { label: "Las Vegas nightlife experiences", query: "las vegas nightlife experience" },
   ];
 
-  const vegasReference = getTravelReferenceNodeById("las-vegas");
+  const vegasReference = await getPublishedTravelReferenceNodeById("las-vegas");
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">

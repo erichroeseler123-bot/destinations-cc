@@ -1,12 +1,14 @@
 import React from "react";
 import Link from "next/link";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
-import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
+import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import visualStyles from "./components/newOrleansVisual.module.css";
 import NewOrleansRecommendationFlow from "./components/NewOrleansRecommendationFlow";
 import LiveIntelligencePanel from "./components/LiveIntelligencePanel";
 import DailyBriefSignup from "./components/DailyBriefSignup";
 import { STOREFRONT_PRODUCTS } from "./tours/pageConfig";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "New Orleans, Louisiana Travel Reference, Port Logistics & Bayou Guide | Destination Command Center",
@@ -45,9 +47,9 @@ const guideCards = [
   { href: "/guides", title: "Plan by trip type", copy: "Families, couples, first timers, and cruise visitors." },
 ];
 
-export default function NewOrleansHomePage() {
+export default async function NewOrleansHomePage() {
   const productBySlug = (slug: string) => STOREFRONT_PRODUCTS.find((product) => product.slug === slug);
-  const nolaReference = getTravelReferenceNodeById("new-orleans");
+  const nolaReference = await getPublishedTravelReferenceNodeById("new-orleans");
 
   return (
     <div className="bg-[var(--nola-bg-charcoal)] text-[var(--nola-ivory)] font-sans overflow-hidden">

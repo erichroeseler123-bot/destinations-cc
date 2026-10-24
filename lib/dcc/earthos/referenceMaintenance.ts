@@ -1,13 +1,12 @@
 import { randomUUID } from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { pageRegistry } from "@/data/page-registry";
-import { getDb, hasDb } from "@/lib/db/client";
 import {
   earthosControlMapFindingHistory,
   earthosControlMapFindings,
 } from "@/lib/db/schema";
 import { appendEarthOSAuditEvent } from "@/lib/dcc/earthos/auditLog";
+import { getRequiredEarthosDb } from "@/lib/dcc/earthos/ensureEarthosSchema";
 import {
   getDurableGovernanceRecordService,
   type GovernanceDriftEvent,
@@ -18,9 +17,10 @@ import {
   signalWorkflowMission,
 } from "@/lib/dcc/earthos/workflows/service";
 import {
-  getAllTravelReferenceNodes,
-  getReferenceMaintenanceStoreFilePath,
-  getTravelReferenceNodeById,
+  buildReferenceOverrideFindingId,
+  getAllPublishedTravelReferenceNodes,
+  getPublishedTravelReferenceNodeById,
+  readPublishedReferenceNodeOverrideFromDb,
   type PublishedReferenceNodeOverride,
   type TravelReferenceNode,
 } from "@/lib/dcc/travelReference";
@@ -65,6 +65,8 @@ export type ReferenceContentAssertion = {
   kind: ReferenceIssueKind;
   oldValueAbsentFromPublishedNode: boolean;
   correctedValuePresentInPublishedNode: boolean;
+  oldValueAbsentFromDeployedHtml: boolean;
+  correctedValuePresentInDeployedHtml: boolean;
   publishedValue: string;
   sourceReviewVerified: boolean;
 };
@@ -73,6 +75,8 @@ export type ReferenceVerificationEvidence = {
   verifiedAt: string;
   verifiedBy: string;
   publicCanonicalPath: string;
+  deployedPageUrl: string;
+  deployedPageStatusCode: number;
   publicRouteRegistered: boolean;
   recheckPassed: boolean;
   remainingIssueCount: number;
@@ -122,10 +126,18 @@ export type UrlProbeResult = {
 
 export type UrlProbeFn = (url: string) => Promise<UrlProbeResult>;
 
+export type DeployedPageFetchResult = {
+  url: string;
+  ok: boolean;
+  statusCode: number;
+  html: string;
+};
+
+export type DeployedPageFetchFn = (url: string) => Promise<DeployedPageFetchResult>;
+
 /**
- * Canonical specialist handoff endpoint map.
- * Explicitly maps known broken/retired specialist URLs (such as the Juneau links caught during publication)
- * to their verified live routes, and validates allowed paths on DCC specialist domains.
+ * Canonical remediation guidance for known retired/broken specialist routes once an HTTP probe fails.
+ * Detection itself always executes real HTTP probes via defaultSpecialistUrlProbe.
  */
 export const KNOWN_BROKEN_SPECIALIST_URLS: Record<
   string,
@@ -146,146 +158,31 @@ export const KNOWN_BROKEN_SPECIALIST_URLS: Record<
   },
 };
 
-const VALID_SPECIALIST_HOST_PATHS: Record<string, Set<string>> = {
-  "juneauflightdeck.com": new Set(["/", "/helicopter"]),
-  "www.juneauflightdeck.com": new Set(["/", "/helicopter"]),
-  "welcometoalaskatours.com": new Set(["/", "/ports/juneau", "/ports/skagway", "/ports/ketchikan"]),
-  "www.welcometoalaskatours.com": new Set(["/", "/ports/juneau", "/ports/skagway", "/ports/ketchikan"]),
-  "partyatredrocks.com": new Set([
-    "/",
-    "/book",
-    "/book/red-rocks-amphitheatre",
-    "/book/red-rocks-amphitheatre/custom/shared",
-    "/shuttles",
-  ]),
-  "www.partyatredrocks.com": new Set([
-    "/",
-    "/book",
-    "/book/red-rocks-amphitheatre",
-    "/book/red-rocks-amphitheatre/custom/shared",
-    "/shuttles",
-  ]),
-  "gosno.co": new Set([
-    "/",
-    "/breckenridge",
-    "/denver-to-breckenridge-shuttle",
-    "/shuttles",
-    "/.well-known/dcc",
-  ]),
-  "www.gosno.co": new Set([
-    "/",
-    "/breckenridge",
-    "/denver-to-breckenridge-shuttle",
-    "/shuttles",
-    "/.well-known/dcc",
-  ]),
-  "welcometoneworleanstours.com": new Set(["/", "/tours", "/swamp-tours"]),
-  "www.welcometoneworleanstours.com": new Set(["/", "/tours", "/swamp-tours"]),
-  "welcometotheswamp.com": new Set(["/", "/plan", "/tours", "/airboat-vs-boat"]),
-  "www.welcometotheswamp.com": new Set(["/", "/plan", "/tours", "/airboat-vs-boat"]),
-  "saveonthestrip.com": new Set(["/", "/shows", "/tours", "/deals"]),
-  "www.saveonthestrip.com": new Set(["/", "/shows", "/tours", "/deals"]),
+const SPECIALIST_HOST_DEFAULT_REPLACEMENT: Record<string, string> = {
+  "juneauflightdeck.com": "https://juneauflightdeck.com/helicopter",
+  "www.juneauflightdeck.com": "https://juneauflightdeck.com/helicopter",
+  "welcometoalaskatours.com": "https://welcometoalaskatours.com/ports/juneau",
+  "www.welcometoalaskatours.com": "https://welcometoalaskatours.com/ports/juneau",
+  "partyatredrocks.com": "https://partyatredrocks.com/book/red-rocks-amphitheatre",
+  "www.partyatredrocks.com": "https://partyatredrocks.com/book/red-rocks-amphitheatre",
+  "gosno.co": "https://gosno.co/denver-to-breckenridge-shuttle",
+  "www.gosno.co": "https://gosno.co/denver-to-breckenridge-shuttle",
+  "welcometoneworleanstours.com": "https://welcometoneworleanstours.com/tours",
+  "www.welcometoneworleanstours.com": "https://welcometoneworleanstours.com/tours",
+  "welcometotheswamp.com": "https://welcometotheswamp.com/plan",
+  "www.welcometotheswamp.com": "https://welcometotheswamp.com/plan",
+  "saveonthestrip.com": "https://saveonthestrip.com/shows",
+  "www.saveonthestrip.com": "https://saveonthestrip.com/shows",
 };
 
-type DiskReferenceMaintenanceState = {
-  tasks: Record<string, ReferenceMaintenanceTask>;
-  nodeOverrides: Record<string, PublishedReferenceNodeOverride>;
-};
-
-function getGlobalMemoryState(): {
-  tasks: Map<string, ReferenceMaintenanceTask>;
-  nodeOverrides: Map<string, PublishedReferenceNodeOverride>;
-  loadedFromPath: string | null;
-} {
-  const globalStore = globalThis as typeof globalThis & {
-    __dccReferenceMaintenanceTasks?: Map<string, ReferenceMaintenanceTask>;
-    __dccPublishedReferenceOverrides?: Map<string, PublishedReferenceNodeOverride>;
-    __dccReferenceMaintenanceStorePath?: string | null;
-  };
-
-  const currentFilePath = getReferenceMaintenanceStoreFilePath();
-
-  if (
-    !globalStore.__dccReferenceMaintenanceTasks ||
-    !globalStore.__dccPublishedReferenceOverrides ||
-    globalStore.__dccReferenceMaintenanceStorePath !== currentFilePath
-  ) {
-    globalStore.__dccReferenceMaintenanceTasks = new Map<string, ReferenceMaintenanceTask>();
-    globalStore.__dccPublishedReferenceOverrides = new Map<string, PublishedReferenceNodeOverride>();
-    globalStore.__dccReferenceMaintenanceStorePath = currentFilePath;
-
-    if (currentFilePath && fs.existsSync(currentFilePath)) {
-      try {
-        const parsed = JSON.parse(
-          fs.readFileSync(currentFilePath, "utf8"),
-        ) as Partial<DiskReferenceMaintenanceState>;
-        if (parsed.tasks) {
-          for (const [id, task] of Object.entries(parsed.tasks)) {
-            globalStore.__dccReferenceMaintenanceTasks.set(id, {
-              ...task,
-              sourceReviews: task.sourceReviews || [],
-            });
-          }
-        }
-        if (parsed.nodeOverrides) {
-          for (const [nodeId, override] of Object.entries(parsed.nodeOverrides)) {
-            globalStore.__dccPublishedReferenceOverrides.set(nodeId, override);
-          }
-        }
-      } catch {
-        // ignore malformed state file
-      }
-    }
-  }
-
-  return {
-    tasks: globalStore.__dccReferenceMaintenanceTasks,
-    nodeOverrides: globalStore.__dccPublishedReferenceOverrides,
-    loadedFromPath: currentFilePath,
-  };
-}
-
-function flushReferenceMaintenanceStateToDisk() {
-  const globalStore = globalThis as typeof globalThis & {
-    __dccReferenceMaintenanceTasks?: Map<string, ReferenceMaintenanceTask>;
-    __dccPublishedReferenceOverrides?: Map<string, PublishedReferenceNodeOverride>;
-  };
-  const filePath = getReferenceMaintenanceStoreFilePath();
-  if (!filePath || !globalStore.__dccReferenceMaintenanceTasks || !globalStore.__dccPublishedReferenceOverrides) {
-    return;
-  }
-
-  const serialized: DiskReferenceMaintenanceState = {
-    tasks: Object.fromEntries(globalStore.__dccReferenceMaintenanceTasks.entries()),
-    nodeOverrides: Object.fromEntries(globalStore.__dccPublishedReferenceOverrides.entries()),
-  };
-
-  try {
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, JSON.stringify(serialized, null, 2), "utf8");
-  } catch {
-    // best-effort disk write
-  }
-}
-
-export function setPublishedReferenceNodeOverride(override: PublishedReferenceNodeOverride): void {
-  const state = getGlobalMemoryState();
-  state.nodeOverrides.set(override.nodeId, override);
-  flushReferenceMaintenanceStateToDisk();
-}
-
-export function clearReferenceMaintenanceStore(): void {
-  const state = getGlobalMemoryState();
-  state.tasks.clear();
-  state.nodeOverrides.clear();
-  const filePath = getReferenceMaintenanceStoreFilePath();
-  if (filePath && fs.existsSync(filePath)) {
-    try {
-      fs.unlinkSync(filePath);
-    } catch {
-      // ignore
-    }
-  }
+export function resolveDeployedBaseUrl(explicitBaseUrl?: string): string {
+  const raw =
+    explicitBaseUrl ||
+    process.env.DCC_DEPLOYED_BASE_URL ||
+    process.env.DCC_PUBLIC_BASE_URL ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    "https://www.destinationcommandcenter.com";
+  return raw.trim().replace(/\/$/, "");
 }
 
 function matchesInternalRoute(href: string): { valid: boolean; killed: boolean } {
@@ -309,31 +206,162 @@ function matchesInternalRoute(href: string): { valid: boolean; killed: boolean }
   return { valid: false, killed: false };
 }
 
+/**
+ * Default specialist and internal URL probe using real HTTP requests.
+ * Does NOT use simulated allowlists; performs a real network fetch.
+ */
 export async function defaultSpecialistUrlProbe(url: string): Promise<UrlProbeResult> {
   const trimmed = url.trim();
-  if (KNOWN_BROKEN_SPECIALIST_URLS[trimmed]) {
-    return { ok: false, statusCode: 404 };
-  }
+  let targetUrl = trimmed;
+
   if (trimmed.startsWith("/")) {
     const internalCheck = matchesInternalRoute(trimmed);
+    if (!internalCheck.valid) {
+      return {
+        ok: false,
+        statusCode: internalCheck.killed ? 410 : 404,
+      };
+    }
+    targetUrl = `${resolveDeployedBaseUrl()}${trimmed}`;
+  } else {
+    try {
+      new URL(trimmed);
+    } catch {
+      return { ok: false, statusCode: 400 };
+    }
+  }
+
+  try {
+    const response = await fetch(targetUrl, {
+      method: "GET",
+      redirect: "follow",
+      cache: "no-store",
+      signal: AbortSignal.timeout(15000),
+      headers: {
+        "user-agent": "DCC-EarthOS-ReferenceMonitor/1.0 (+https://www.destinationcommandcenter.com)",
+        accept: "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+      },
+    });
+
     return {
-      ok: internalCheck.valid,
-      statusCode: internalCheck.valid ? 200 : internalCheck.killed ? 410 : 404,
+      ok: response.status >= 200 && response.status < 400,
+      statusCode: response.status,
+      redirectedTo: response.redirected ? response.url : undefined,
+    };
+  } catch {
+    return {
+      ok: false,
+      statusCode: 503,
     };
   }
-  let parsed: URL;
-  try {
-    parsed = new URL(trimmed);
-  } catch {
-    return { ok: false, statusCode: 400 };
+}
+
+export async function defaultDeployedPageFetcher(url: string): Promise<DeployedPageFetchResult> {
+  const headers: Record<string, string> = {
+    "user-agent": "DCC-EarthOS-DeployedVerifier/1.0 (+https://www.destinationcommandcenter.com)",
+    accept: "text/html,application/xhtml+xml",
+    "cache-control": "no-cache, no-store, must-revalidate",
+    pragma: "no-cache",
+  };
+
+  const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim();
+  if (bypassSecret) {
+    headers["x-vercel-protection-bypass"] = bypassSecret;
   }
 
-  const allowedPaths = VALID_SPECIALIST_HOST_PATHS[parsed.hostname.toLowerCase()];
-  if (allowedPaths && !allowedPaths.has(parsed.pathname)) {
-    return { ok: false, statusCode: 404 };
-  }
+  const response = await fetch(url, {
+    method: "GET",
+    redirect: "follow",
+    cache: "no-store",
+    signal: AbortSignal.timeout(20000),
+    headers,
+  });
 
-  return { ok: true, statusCode: 200 };
+  const html = await response.text();
+  return {
+    url: response.url || url,
+    ok: response.status >= 200 && response.status < 400,
+    statusCode: response.status,
+    html,
+  };
+}
+
+export async function setPublishedReferenceNodeOverride(
+  override: PublishedReferenceNodeOverride,
+): Promise<void> {
+  const db = await getRequiredEarthosDb();
+  const findingId = buildReferenceOverrideFindingId(override.nodeId);
+  const updatedAt = new Date(override.updatedAt || new Date().toISOString());
+  const summary = `Published reference override for ${override.nodeId} applied by ${override.appliedBy || "system"}${override.appliedTaskId ? ` (task ${override.appliedTaskId})` : ""}.`;
+
+  await db
+    .insert(earthosControlMapFindings)
+    .values({
+      findingId,
+      status: "applied",
+      severity: "info",
+      owner: "earthos-reference-override",
+      note: summary,
+      metadata: override as unknown as Record<string, unknown>,
+      updatedAt,
+    })
+    .onConflictDoUpdate({
+      target: earthosControlMapFindings.findingId,
+      set: {
+        status: "applied",
+        severity: "info",
+        owner: "earthos-reference-override",
+        note: summary,
+        metadata: override as unknown as Record<string, unknown>,
+        updatedAt,
+      },
+    });
+
+  await db.insert(earthosControlMapFindingHistory).values({
+    findingId,
+    event: "reference_override_applied",
+    status: "applied",
+    severity: "info",
+    owner: "earthos-reference-override",
+    nodeSlug: override.nodeId,
+    corridor: override.nodeId,
+    recordedAt: updatedAt,
+    summary,
+    approvedAt: updatedAt,
+    approvedBy: override.appliedBy,
+    controlSurface: `/${override.nodeId}`,
+    metadata: override as unknown as Record<string, unknown>,
+  });
+}
+
+export async function getPublishedReferenceNodeOverride(
+  nodeId: TravelReferenceNode["id"],
+): Promise<PublishedReferenceNodeOverride | null> {
+  return readPublishedReferenceNodeOverrideFromDb(nodeId);
+}
+
+export async function clearPublishedReferenceNodeOverride(
+  nodeId: TravelReferenceNode["id"],
+): Promise<void> {
+  const db = await getRequiredEarthosDb();
+  await db
+    .delete(earthosControlMapFindings)
+    .where(eq(earthosControlMapFindings.findingId, buildReferenceOverrideFindingId(nodeId)));
+}
+
+export async function clearReferenceMaintenanceStore(
+  nodeId?: TravelReferenceNode["id"],
+): Promise<void> {
+  const db = await getRequiredEarthosDb();
+  if (nodeId) {
+    await db
+      .delete(earthosControlMapFindings)
+      .where(eq(earthosControlMapFindings.findingId, buildReferenceOverrideFindingId(nodeId)));
+    return;
+  }
+  await db
+    .delete(earthosControlMapFindings)
+    .where(eq(earthosControlMapFindings.owner, "earthos-reference-override"));
 }
 
 export async function detectReferenceMaintenanceIssues(options: {
@@ -342,7 +370,7 @@ export async function detectReferenceMaintenanceIssues(options: {
   maxEvidenceAgeDays?: number;
   probeUrl?: UrlProbeFn;
 } = {}): Promise<ReferenceMaintenanceIssue[]> {
-  const nodes = options.nodes || getAllTravelReferenceNodes();
+  const nodes = options.nodes || (await getAllPublishedTravelReferenceNodes());
   const now = options.now || new Date();
   const maxAgeDays = options.maxEvidenceAgeDays ?? 30;
   const maxAgeMs = maxAgeDays * 24 * 60 * 60 * 1000;
@@ -351,21 +379,20 @@ export async function detectReferenceMaintenanceIssues(options: {
   const issues: ReferenceMaintenanceIssue[] = [];
 
   for (const node of nodes) {
-    // 1. Check specialist handoff links
+    // 1. Check specialist handoff links via HTTP probe
     for (const handoff of node.specialistHandoffs.options) {
       const baseUrl = handoff.baseUrl.trim();
-      const knownBroken = KNOWN_BROKEN_SPECIALIST_URLS[baseUrl];
       const probe = await probeUrl(baseUrl);
 
-      if (knownBroken || !probe.ok) {
+      if (!probe.ok) {
+        const knownBroken = KNOWN_BROKEN_SPECIALIST_URLS[baseUrl];
         let fallbackReplacement = knownBroken?.replacementUrl || baseUrl;
         if (!knownBroken) {
           try {
             const parsed = new URL(baseUrl);
-            const allowed = VALID_SPECIALIST_HOST_PATHS[parsed.hostname.toLowerCase()];
-            if (allowed && allowed.size > 0) {
-              const preferred = [...allowed].find((p) => p !== "/") || "/";
-              fallbackReplacement = `${parsed.origin}${preferred}`;
+            const hostReplacement = SPECIALIST_HOST_DEFAULT_REPLACEMENT[parsed.hostname.toLowerCase()];
+            if (hostReplacement) {
+              fallbackReplacement = hostReplacement;
             }
           } catch {
             // keep baseUrl if unparseable
@@ -383,7 +410,7 @@ export async function detectReferenceMaintenanceIssues(options: {
           recommendedValue: fallbackReplacement,
           reason:
             knownBroken?.reason ||
-            `Specialist handoff baseUrl ${baseUrl} failed verification with status ${probe.statusCode}.`,
+            `Specialist handoff baseUrl ${baseUrl} failed HTTP verification with status ${probe.statusCode}.`,
           severity: "critical",
           detectedAt,
         });
@@ -444,77 +471,84 @@ export async function detectReferenceMaintenanceIssues(options: {
   return issues;
 }
 
-async function persistControlMapFindingToDb(task: ReferenceMaintenanceTask, eventName: string, summary: string) {
-  if (!hasDb()) return;
-  const db = getDb();
-  if (!db) return;
+async function persistTaskFindingToDb(
+  task: ReferenceMaintenanceTask,
+  eventName: string,
+  summary: string,
+): Promise<void> {
+  const db = await getRequiredEarthosDb();
+  const taskPayload = task as unknown as Record<string, unknown>;
 
-  try {
-    await db
-      .insert(earthosControlMapFindings)
-      .values({
-        findingId: task.findingId,
+  await db
+    .insert(earthosControlMapFindings)
+    .values({
+      findingId: task.findingId,
+      status: task.status,
+      severity: task.severity,
+      owner: "earthos-reference-maintainer",
+      note: summary,
+      metadata: taskPayload,
+      updatedAt: new Date(task.updatedAt),
+    })
+    .onConflictDoUpdate({
+      target: earthosControlMapFindings.findingId,
+      set: {
         status: task.status,
         severity: task.severity,
         owner: "earthos-reference-maintainer",
         note: summary,
-        metadata: {
-          taskId: task.taskId,
-          nodeId: task.nodeId,
-          canonicalPath: task.canonicalPath,
-          missionId: task.missionId,
-          driftEventId: task.driftEventId,
-          packetId: task.packetId,
-          issueCount: task.issues.length,
-          sourceReviews: task.sourceReviews,
-          verificationEvidence: task.verificationEvidence,
-        },
+        metadata: taskPayload,
         updatedAt: new Date(task.updatedAt),
-      })
-      .onConflictDoUpdate({
-        target: earthosControlMapFindings.findingId,
-        set: {
-          status: task.status,
-          severity: task.severity,
-          note: summary,
-          metadata: {
-            taskId: task.taskId,
-            nodeId: task.nodeId,
-            canonicalPath: task.canonicalPath,
-            missionId: task.missionId,
-            driftEventId: task.driftEventId,
-            packetId: task.packetId,
-            issueCount: task.issues.length,
-            sourceReviews: task.sourceReviews,
-            verificationEvidence: task.verificationEvidence,
-          },
-          updatedAt: new Date(task.updatedAt),
-        },
-      });
-
-    await db.insert(earthosControlMapFindingHistory).values({
-      findingId: task.findingId,
-      event: eventName,
-      status: task.status,
-      severity: task.severity,
-      owner: "earthos-reference-maintainer",
-      nodeSlug: task.nodeId,
-      corridor: task.nodeId,
-      recordedAt: new Date(task.updatedAt),
-      summary,
-      approvedAt: task.closedAt ? new Date(task.closedAt) : null,
-      approvedBy: task.closedBy,
-      controlSurface: task.canonicalPath,
-      metadata: {
-        taskId: task.taskId,
-        issues: task.issues,
-        sourceReviews: task.sourceReviews,
-        verificationEvidence: task.verificationEvidence,
       },
     });
-  } catch {
-    // DB write is best-effort alongside durable governance & task store
+
+  await db.insert(earthosControlMapFindingHistory).values({
+    findingId: task.findingId,
+    event: eventName,
+    status: task.status,
+    severity: task.severity,
+    owner: "earthos-reference-maintainer",
+    nodeSlug: task.nodeId,
+    corridor: task.nodeId,
+    recordedAt: new Date(task.updatedAt),
+    summary,
+    approvedAt: task.closedAt ? new Date(task.closedAt) : null,
+    approvedBy: task.closedBy,
+    controlSurface: task.canonicalPath,
+    metadata: {
+      taskId: task.taskId,
+      issues: task.issues,
+      sourceReviews: task.sourceReviews,
+      verificationEvidence: task.verificationEvidence,
+    },
+  });
+}
+
+function parseTaskFromFindingRow(
+  row: typeof earthosControlMapFindings.$inferSelect,
+): ReferenceMaintenanceTask | null {
+  const meta = row.metadata as Partial<ReferenceMaintenanceTask> | null;
+  if (!meta || typeof meta.taskId !== "string" || !Array.isArray(meta.issues)) {
+    return null;
   }
+  return {
+    taskId: meta.taskId,
+    findingId: row.findingId,
+    nodeId: meta.nodeId as TravelReferenceNode["id"],
+    canonicalPath: meta.canonicalPath || `/${meta.nodeId}`,
+    status: (row.status as ReferenceMaintenanceTask["status"]) || meta.status || "open",
+    severity: (row.severity as ReferenceMaintenanceTask["severity"]) || meta.severity || "watch",
+    createdAt: meta.createdAt || row.createdAt.toISOString(),
+    updatedAt: meta.updatedAt || row.updatedAt.toISOString(),
+    closedAt: meta.closedAt ?? null,
+    closedBy: meta.closedBy ?? null,
+    missionId: meta.missionId || "",
+    driftEventId: meta.driftEventId || "",
+    packetId: meta.packetId || "",
+    issues: meta.issues,
+    sourceReviews: Array.isArray(meta.sourceReviews) ? meta.sourceReviews : [],
+    verificationEvidence: meta.verificationEvidence ?? null,
+  };
 }
 
 export async function recordReferenceMaintenanceTask(
@@ -525,6 +559,9 @@ export async function recordReferenceMaintenanceTask(
   if (nodeIssues.length === 0) {
     throw new Error(`No reference maintenance issues to record for node ${nodeId}.`);
   }
+
+  // Ensure DB is available before creating any task records
+  await getRequiredEarthosDb();
 
   const now = new Date().toISOString();
   const taskId = `ref_task_${nodeId}_${randomUUID().slice(0, 8)}`;
@@ -561,6 +598,10 @@ export async function recordReferenceMaintenanceTask(
     machineInterpretationRisk: highestSeverity === "critical" ? "high" : "medium",
   });
 
+  if (!driftEvent) {
+    throw new Error(`Failed to persist governance drift event for task ${taskId}.`);
+  }
+
   const packet: GovernanceReconciliationPacket | null = await governance.createReconciliationPacket({
     id: `packet_${taskId}`,
     createdAt: now,
@@ -581,6 +622,10 @@ export async function recordReferenceMaintenanceTask(
     reason: `Repair ${nodeIssues.length} broken/stale reference item(s) on ${canonicalPath}.`,
     approvalRequired: true,
   });
+
+  if (!packet) {
+    throw new Error(`Failed to persist governance reconciliation packet for task ${taskId}.`);
+  }
 
   const entityForMission =
     nodeId === "juneau"
@@ -610,16 +655,18 @@ export async function recordReferenceMaintenanceTask(
     closedAt: null,
     closedBy: null,
     missionId: mission.id,
-    driftEventId: driftEvent?.id || `drift_${taskId}`,
-    packetId: packet?.id || `packet_${taskId}`,
+    driftEventId: driftEvent.id,
+    packetId: packet.id,
     issues: nodeIssues,
     sourceReviews: [],
     verificationEvidence: null,
   };
 
-  const state = getGlobalMemoryState();
-  state.tasks.set(taskId, task);
-  flushReferenceMaintenanceStateToDisk();
+  await persistTaskFindingToDb(
+    task,
+    "reference_drift_detected",
+    `Opened maintenance task ${taskId} with ${nodeIssues.length} issue(s).`,
+  );
 
   appendEarthOSAuditEvent({
     eventType: "reference_drift_detected",
@@ -637,23 +684,50 @@ export async function recordReferenceMaintenanceTask(
     },
   });
 
-  await persistControlMapFindingToDb(
-    task,
-    "reference_drift_detected",
-    `Opened maintenance task ${taskId} with ${nodeIssues.length} issue(s).`,
-  );
-
   return task;
 }
 
-export function getReferenceMaintenanceTask(taskId: string): ReferenceMaintenanceTask | null {
-  return getGlobalMemoryState().tasks.get(taskId) || null;
+export async function getReferenceMaintenanceTask(
+  taskId: string,
+): Promise<ReferenceMaintenanceTask | null> {
+  const db = await getRequiredEarthosDb();
+  const rows = await db
+    .select()
+    .from(earthosControlMapFindings)
+    .where(
+      and(
+        eq(earthosControlMapFindings.owner, "earthos-reference-maintainer"),
+        sql`${earthosControlMapFindings.metadata}->>'taskId' = ${taskId}`,
+      ),
+    )
+    .limit(1);
+
+  if (!rows[0]) return null;
+  return parseTaskFromFindingRow(rows[0]);
 }
 
-export function listReferenceMaintenanceTasks(): ReferenceMaintenanceTask[] {
-  return [...getGlobalMemoryState().tasks.values()].sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-  );
+export async function listReferenceMaintenanceTasks(options: {
+  nodeId?: TravelReferenceNode["id"];
+  status?: ReferenceMaintenanceTask["status"];
+  limit?: number;
+} = {}): Promise<ReferenceMaintenanceTask[]> {
+  const db = await getRequiredEarthosDb();
+  const rows = await db
+    .select()
+    .from(earthosControlMapFindings)
+    .where(eq(earthosControlMapFindings.owner, "earthos-reference-maintainer"))
+    .orderBy(desc(earthosControlMapFindings.updatedAt))
+    .limit(options.limit || 100);
+
+  const tasks = rows
+    .map(parseTaskFromFindingRow)
+    .filter((t): t is ReferenceMaintenanceTask => t !== null);
+
+  return tasks.filter((task) => {
+    if (options.nodeId && task.nodeId !== options.nodeId) return false;
+    if (options.status && task.status !== options.status) return false;
+    return true;
+  });
 }
 
 function validateSourceReviewAttestation(
@@ -718,13 +792,13 @@ export async function applyReferenceMaintenanceCorrection(options: {
   remediatedNode: TravelReferenceNode;
   unreviewedStaleCitationIds: string[];
 }> {
-  const state = getGlobalMemoryState();
-  const task = state.tasks.get(options.taskId);
+  const task = await getReferenceMaintenanceTask(options.taskId);
   if (!task) {
-    throw new Error(`Reference maintenance task ${options.taskId} not found.`);
+    throw new Error(`Reference maintenance task ${options.taskId} not found in durable backend.`);
   }
 
-  const baseTargetNode = options.targetNode || getTravelReferenceNodeById(task.nodeId);
+  const baseTargetNode =
+    options.targetNode || (await getPublishedTravelReferenceNodeById(task.nodeId));
   const now = new Date().toISOString();
   const governance = getDurableGovernanceRecordService();
 
@@ -736,8 +810,12 @@ export async function applyReferenceMaintenanceCorrection(options: {
 
     task.status = "rejected";
     task.updatedAt = now;
-    state.tasks.set(task.taskId, task);
-    flushReferenceMaintenanceStateToDisk();
+
+    await persistTaskFindingToDb(
+      task,
+      "reference_remediation_rejected",
+      `Remediation rejected by ${options.operator}.`,
+    );
 
     appendEarthOSAuditEvent({
       eventType: "reference_remediation_rejected",
@@ -752,12 +830,6 @@ export async function applyReferenceMaintenanceCorrection(options: {
       },
     });
 
-    await persistControlMapFindingToDb(
-      task,
-      "reference_remediation_rejected",
-      `Remediation rejected by ${options.operator}.`,
-    );
-
     return {
       applied: false,
       task,
@@ -768,7 +840,7 @@ export async function applyReferenceMaintenanceCorrection(options: {
 
   // Clone and apply corrections to targetNode
   const remediatedNode: TravelReferenceNode = structuredClone(baseTargetNode);
-  const existingOverride = state.nodeOverrides.get(task.nodeId);
+  const existingOverride = await readPublishedReferenceNodeOverrideFromDb(task.nodeId);
   const nextOverride: PublishedReferenceNodeOverride = {
     nodeId: task.nodeId,
     updatedAt: now,
@@ -833,6 +905,9 @@ export async function applyReferenceMaintenanceCorrection(options: {
     nextOverride.lastReviewedAt = now.slice(0, 10);
   }
 
+  // Persist approved override in the durable Postgres backend before marking task remediated
+  await setPublishedReferenceNodeOverride(nextOverride);
+
   // Explicitly approve and apply packet + signal mission
   await governance.markPacketApproved(task.packetId, options.operator, now);
   await governance.markPacketApplied(
@@ -857,9 +932,12 @@ export async function applyReferenceMaintenanceCorrection(options: {
   task.sourceReviews = acceptedSourceReviews;
   task.status = "remediated_pending_recheck";
   task.updatedAt = now;
-  state.tasks.set(task.taskId, task);
-  state.nodeOverrides.set(task.nodeId, nextOverride);
-  flushReferenceMaintenanceStateToDisk();
+
+  await persistTaskFindingToDb(
+    task,
+    "reference_remediation_applied",
+    `Applied approved remediation for task ${task.taskId} by ${options.operator}.`,
+  );
 
   appendEarthOSAuditEvent({
     eventType: "reference_remediation_applied",
@@ -892,11 +970,12 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
   now?: Date;
   maxEvidenceAgeDays?: number;
   probeUrl?: UrlProbeFn;
+  deployedBaseUrl?: string;
+  fetchDeployedPage?: DeployedPageFetchFn;
 }): Promise<ReferenceMaintenanceTask> {
-  const state = getGlobalMemoryState();
-  const task = state.tasks.get(options.taskId);
+  const task = await getReferenceMaintenanceTask(options.taskId);
   if (!task) {
-    throw new Error(`Reference maintenance task ${options.taskId} not found.`);
+    throw new Error(`Reference maintenance task ${options.taskId} not found in durable backend.`);
   }
   if (task.status !== "remediated_pending_recheck") {
     throw new Error(
@@ -907,11 +986,22 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
   const now = options.now || new Date();
   const verifiedAt = now.toISOString();
   const probeUrl = options.probeUrl || defaultSpecialistUrlProbe;
+  const fetchDeployedPage = options.fetchDeployedPage || defaultDeployedPageFetcher;
 
-  // Always inspect the live published destination node resolved by getTravelReferenceNodeById(task.nodeId)
-  // unless an explicit candidate node was provided for comparison, in which case we verify both.
-  const publishedNode = getTravelReferenceNodeById(task.nodeId);
+  // 1. Read the published destination node from durable DB
+  const publishedNode = await getPublishedTravelReferenceNodeById(task.nodeId);
   const nodeUnderTest = options.remediatedNode || publishedNode;
+
+  // 2. Fetch the deployed destination page over HTTP and inspect its rendered HTML
+  const deployedBase = resolveDeployedBaseUrl(options.deployedBaseUrl);
+  const deployedPageUrl = `${deployedBase}${task.canonicalPath}`;
+  const deployedPage = await fetchDeployedPage(deployedPageUrl);
+
+  if (!deployedPage.ok || deployedPage.statusCode !== 200) {
+    throw new Error(
+      `Deployed destination page fetch failed for ${deployedPageUrl} with HTTP status ${deployedPage.statusCode}.`,
+    );
+  }
 
   const contentAssertions: ReferenceContentAssertion[] = [];
   const contentFailures: string[] = [];
@@ -929,23 +1019,32 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
       const oldUrlStillInNode = nodeUnderTest.specialistHandoffs.options.some(
         (opt) => opt.baseUrl.trim() === issue.observedValue.trim(),
       );
-      const correctedPresent =
+      const correctedPresentInNode =
         actualUrl === issue.recommendedValue.trim() &&
         publishedUrl === issue.recommendedValue.trim() &&
-        ! KNOWN_BROKEN_SPECIALIST_URLS[actualUrl];
+        !KNOWN_BROKEN_SPECIALIST_URLS[actualUrl];
+
+      const oldAbsentFromHtml = !deployedPage.html.includes(issue.observedValue.trim());
+      const correctedPresentInHtml = deployedPage.html.includes(issue.recommendedValue.trim());
 
       contentAssertions.push({
         targetId: issue.targetId,
         kind: issue.kind,
         oldValueAbsentFromPublishedNode: !oldUrlStillInNode && actualUrl !== issue.observedValue.trim(),
-        correctedValuePresentInPublishedNode: correctedPresent,
+        correctedValuePresentInPublishedNode: correctedPresentInNode,
+        oldValueAbsentFromDeployedHtml: oldAbsentFromHtml,
+        correctedValuePresentInDeployedHtml: correctedPresentInHtml,
         publishedValue: publishedUrl,
         sourceReviewVerified: true,
       });
 
-      if (oldUrlStillInNode || !correctedPresent) {
+      if (oldUrlStillInNode || !correctedPresentInNode) {
         contentFailures.push(
-          `Broken specialist link ${issue.targetId} was not replaced in published destination content (observed='${publishedUrl}', expected='${issue.recommendedValue}').`,
+          `Broken specialist link ${issue.targetId} was not replaced in published destination model (observed='${publishedUrl}', expected='${issue.recommendedValue}').`,
+        );
+      } else if (!oldAbsentFromHtml || !correctedPresentInHtml) {
+        contentFailures.push(
+          `Deployed destination page ${deployedPageUrl} does not contain corrected specialist link '${issue.recommendedValue}' or still contains broken link '${issue.observedValue}'.`,
         );
       }
     } else if (issue.kind === "stale_evidence_source") {
@@ -966,11 +1065,21 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
         publishedCitation?.verificationNote === attestation?.reviewerNotes &&
         candidateCitation?.verificationNote === attestation?.reviewerNotes;
 
+      const staleAttrSnippet = `data-citation-id="${issue.targetId}" data-last-checked="${issue.observedValue}"`;
+      const freshAttrSnippet = `data-citation-id="${issue.targetId}" data-last-checked="${publishedCheckedAt}"`;
+      const oldAbsentFromHtml = !deployedPage.html.includes(staleAttrSnippet);
+      const correctedPresentInHtml =
+        attestation !== undefined &&
+        deployedPage.html.includes(freshAttrSnippet) &&
+        deployedPage.html.includes(attestation.reviewerNotes);
+
       contentAssertions.push({
         targetId: issue.targetId,
         kind: issue.kind,
         oldValueAbsentFromPublishedNode: oldDateReplaced,
         correctedValuePresentInPublishedNode: oldDateReplaced && noteMatches,
+        oldValueAbsentFromDeployedHtml: oldAbsentFromHtml,
+        correctedValuePresentInDeployedHtml: correctedPresentInHtml,
         publishedValue: publishedCheckedAt,
         sourceReviewVerified: attestationCheck.valid,
       });
@@ -981,7 +1090,11 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
         );
       } else if (!oldDateReplaced || !noteMatches) {
         contentFailures.push(
-          `Stale evidence source ${issue.targetId} review did not reach published destination content.`,
+          `Stale evidence source ${issue.targetId} review did not reach published destination model.`,
+        );
+      } else if (!oldAbsentFromHtml || !correctedPresentInHtml) {
+        contentFailures.push(
+          `Deployed destination page ${deployedPageUrl} does not render updated evidence citation ${issue.targetId} (${freshAttrSnippet}) and source review note.`,
         );
       }
     } else if (issue.kind === "broken_internal_relationship") {
@@ -990,23 +1103,28 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
       const publishedHref = (publishedRel?.href || "").trim();
       const candidateHref = (candidateRel?.href || "").trim();
       const routeValid = matchesInternalRoute(publishedHref).valid;
-      const correctedPresent =
+      const correctedPresentInNode =
         publishedHref === issue.recommendedValue.trim() &&
         candidateHref === issue.recommendedValue.trim() &&
         routeValid;
+
+      const oldAbsentFromHtml = !deployedPage.html.includes(`href="${issue.observedValue.trim()}"`);
+      const correctedPresentInHtml = deployedPage.html.includes(issue.recommendedValue.trim());
 
       contentAssertions.push({
         targetId: issue.targetId,
         kind: issue.kind,
         oldValueAbsentFromPublishedNode: publishedHref !== issue.observedValue.trim(),
-        correctedValuePresentInPublishedNode: correctedPresent,
+        correctedValuePresentInPublishedNode: correctedPresentInNode,
+        oldValueAbsentFromDeployedHtml: oldAbsentFromHtml,
+        correctedValuePresentInDeployedHtml: correctedPresentInHtml,
         publishedValue: publishedHref,
         sourceReviewVerified: true,
       });
 
-      if (!correctedPresent) {
+      if (!correctedPresentInNode || !oldAbsentFromHtml || !correctedPresentInHtml) {
         contentFailures.push(
-          `Broken internal relationship ${issue.targetId} was not repaired in published destination content (observed='${publishedHref}', expected='${issue.recommendedValue}').`,
+          `Broken internal relationship ${issue.targetId} was not repaired in deployed destination page ${deployedPageUrl} (observed='${publishedHref}', expected='${issue.recommendedValue}').`,
         );
       }
     }
@@ -1040,17 +1158,21 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
   const recheckPassed =
     remainingIssues.length === 0 &&
     routeCheck.valid &&
+    deployedPage.ok &&
+    deployedPage.statusCode === 200 &&
     probeResults.every((p) => p.ok) &&
     contentAssertions.every(
       (a) =>
         a.oldValueAbsentFromPublishedNode &&
         a.correctedValuePresentInPublishedNode &&
+        a.oldValueAbsentFromDeployedHtml &&
+        a.correctedValuePresentInDeployedHtml &&
         a.sourceReviewVerified,
     );
 
   if (!recheckPassed) {
     throw new Error(
-      `Recheck failed for task ${task.taskId}: ${remainingIssues.length} remaining issue(s), routeValid=${routeCheck.valid}.`,
+      `Recheck failed for task ${task.taskId}: ${remainingIssues.length} remaining issue(s), routeValid=${routeCheck.valid}, deployedStatus=${deployedPage.statusCode}.`,
     );
   }
 
@@ -1058,6 +1180,8 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
     verifiedAt,
     verifiedBy: options.verifiedBy,
     publicCanonicalPath: nodeUnderTest.canonicalPath,
+    deployedPageUrl,
+    deployedPageStatusCode: deployedPage.statusCode,
     publicRouteRegistered: routeCheck.valid,
     recheckPassed: true,
     remainingIssueCount: 0,
@@ -1089,15 +1213,19 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
   task.closedAt = verifiedAt;
   task.closedBy = options.verifiedBy;
   task.verificationEvidence = evidence;
-  state.tasks.set(task.taskId, task);
-  flushReferenceMaintenanceStateToDisk();
+
+  await persistTaskFindingToDb(
+    task,
+    "reference_maintenance_task_closed",
+    `Closed task ${task.taskId} after deployed destination page (${deployedPageUrl}) and specialist handoff recheck passed.`,
+  );
 
   appendEarthOSAuditEvent({
     eventType: "reference_maintenance_task_closed",
     entity: "earthos",
     corridorId: task.nodeId,
     severity: "info",
-    summary: `Closed maintenance task ${task.taskId} for ${task.canonicalPath} with verified content assertions and 0 remaining issues.`,
+    summary: `Closed maintenance task ${task.taskId} for ${task.canonicalPath} after verifying deployed HTML at ${deployedPageUrl}.`,
     metadata: {
       taskId: task.taskId,
       findingId: task.findingId,
@@ -1107,12 +1235,6 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
       verificationEvidence: evidence,
     },
   });
-
-  await persistControlMapFindingToDb(
-    task,
-    "reference_maintenance_task_closed",
-    `Closed task ${task.taskId} after published destination content & specialist handoff recheck passed.`,
-  );
 
   return task;
 }
@@ -1124,6 +1246,8 @@ export async function runReferenceMaintenanceLoop(options: {
   now?: Date;
   maxEvidenceAgeDays?: number;
   probeUrl?: UrlProbeFn;
+  deployedBaseUrl?: string;
+  fetchDeployedPage?: DeployedPageFetchFn;
 }): Promise<{
   detectedIssues: ReferenceMaintenanceIssue[];
   task: ReferenceMaintenanceTask;
@@ -1157,11 +1281,104 @@ export async function runReferenceMaintenanceLoop(options: {
     now: options.now,
     maxEvidenceAgeDays: options.maxEvidenceAgeDays,
     probeUrl: options.probeUrl,
+    deployedBaseUrl: options.deployedBaseUrl,
+    fetchDeployedPage: options.fetchDeployedPage,
   });
 
   return {
     detectedIssues,
     task: closedTask,
     remediatedNode,
+  };
+}
+
+/**
+ * Scheduled detection entrypoint invoked by Vercel Cron (/api/internal/earthos/reference-maintenance)
+ * or authenticated operator sweeps. Evaluates all published TravelReferenceNodes using real HTTP probes
+ * and records durable maintenance tasks in Neon Postgres for any node with detected issues.
+ */
+export async function runScheduledReferenceMaintenanceDetection(options: {
+  now?: Date;
+  maxEvidenceAgeDays?: number;
+  probeUrl?: UrlProbeFn;
+  nodes?: TravelReferenceNode[];
+} = {}): Promise<{
+  checkedAt: string;
+  scannedNodeIds: Array<TravelReferenceNode["id"]>;
+  detectedIssueCount: number;
+  issues: ReferenceMaintenanceIssue[];
+  recordedTasks: ReferenceMaintenanceTask[];
+  existingOpenTasks: ReferenceMaintenanceTask[];
+}> {
+  const now = options.now || new Date();
+  const checkedAt = now.toISOString();
+  const nodes = options.nodes || (await getAllPublishedTravelReferenceNodes());
+  const issues = await detectReferenceMaintenanceIssues({
+    nodes,
+    now,
+    maxEvidenceAgeDays: options.maxEvidenceAgeDays,
+    probeUrl: options.probeUrl,
+  });
+
+  const openTasks = await listReferenceMaintenanceTasks({ status: "open" });
+  const recordedTasks: ReferenceMaintenanceTask[] = [];
+  const existingOpenTasks: ReferenceMaintenanceTask[] = [];
+
+  const issuesByNode = new Map<TravelReferenceNode["id"], ReferenceMaintenanceIssue[]>();
+  for (const issue of issues) {
+    const list = issuesByNode.get(issue.nodeId) || [];
+    list.push(issue);
+    issuesByNode.set(issue.nodeId, list);
+  }
+
+  for (const [nodeId, nodeIssues] of issuesByNode.entries()) {
+    const issueSignature = nodeIssues
+      .map((i) => `${i.issueId}:${i.observedValue}`)
+      .sort()
+      .join("|");
+
+    const matchingOpen = openTasks.find((t) => {
+      if (t.nodeId !== nodeId) return false;
+      const openSig = t.issues
+        .map((i) => `${i.issueId}:${i.observedValue}`)
+        .sort()
+        .join("|");
+      return openSig === issueSignature;
+    });
+
+    if (matchingOpen) {
+      existingOpenTasks.push(matchingOpen);
+    } else {
+      const created = await recordReferenceMaintenanceTask(nodeId, nodeIssues);
+      recordedTasks.push(created);
+    }
+  }
+
+  appendEarthOSAuditEvent({
+    eventType: "reference_drift_detected",
+    entity: "earthos",
+    corridorId: "travel-reference-network",
+    severity: issues.some((i) => i.severity === "critical")
+      ? "critical"
+      : issues.length > 0
+        ? "watch"
+        : "info",
+    summary: `Scheduled reference maintenance scan checked ${nodes.length} node(s): ${issues.length} issue(s) found, ${recordedTasks.length} new task(s) persisted, ${existingOpenTasks.length} existing open task(s).`,
+    metadata: {
+      checkedAt,
+      scannedNodeIds: nodes.map((n) => n.id),
+      detectedIssueCount: issues.length,
+      recordedTaskIds: recordedTasks.map((t) => t.taskId),
+      existingOpenTaskIds: existingOpenTasks.map((t) => t.taskId),
+    },
+  });
+
+  return {
+    checkedAt,
+    scannedNodeIds: nodes.map((n) => n.id),
+    detectedIssueCount: issues.length,
+    issues,
+    recordedTasks,
+    existingOpenTasks,
   };
 }

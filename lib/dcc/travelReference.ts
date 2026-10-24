@@ -1,5 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
+import { eq } from "drizzle-orm";
+import { earthosControlMapFindings } from "@/lib/db/schema";
+import { getRequiredEarthosDb } from "@/lib/dcc/earthos/ensureEarthosSchema";
 
 export type AuthorityType =
   | "official_rule"
@@ -3351,41 +3352,30 @@ export type PublishedReferenceNodeOverride = {
   relationshipHrefs?: Record<string, string>;
 };
 
-export function getReferenceMaintenanceStoreFilePath(): string | null {
-  const customDir = process.env.DCC_EARTHOS_STATE_DIR?.trim();
-  if (customDir) {
-    return path.resolve(customDir, "reference-maintenance-store.json");
-  }
-  return null;
+export function buildReferenceOverrideFindingId(nodeId: TravelReferenceNode["id"]): string {
+  return `control-map:travel-reference-override:${nodeId}`;
 }
 
-function readPublishedReferenceNodeOverride(
+export async function readPublishedReferenceNodeOverrideFromDb(
   id: TravelReferenceNode["id"],
-): PublishedReferenceNodeOverride | null {
-  const filePath = getReferenceMaintenanceStoreFilePath();
-  if (filePath && fs.existsSync(filePath)) {
-    try {
-      const parsed = JSON.parse(fs.readFileSync(filePath, "utf8")) as {
-        nodeOverrides?: Record<string, PublishedReferenceNodeOverride>;
-      };
-      if (parsed.nodeOverrides?.[id]) {
-        return parsed.nodeOverrides[id];
-      }
-    } catch {
-      // fall back to in-memory override map if file read fails
-    }
+): Promise<PublishedReferenceNodeOverride | null> {
+  const db = await getRequiredEarthosDb();
+
+  const rows = await db
+    .select()
+    .from(earthosControlMapFindings)
+    .where(eq(earthosControlMapFindings.findingId, buildReferenceOverrideFindingId(id)))
+    .limit(1);
+
+  const row = rows[0];
+  if (!row || row.status !== "applied" || !row.metadata) {
+    return null;
   }
 
-  const globalOverrides = (
-    globalThis as typeof globalThis & {
-      __dccPublishedReferenceOverrides?: Map<string, PublishedReferenceNodeOverride>;
-    }
-  ).__dccPublishedReferenceOverrides;
-
-  return globalOverrides?.get(id) || null;
+  return row.metadata as unknown as PublishedReferenceNodeOverride;
 }
 
-function applyPublishedReferenceNodeOverride(
+export function applyPublishedReferenceNodeOverride(
   baseNode: TravelReferenceNode,
   override: PublishedReferenceNodeOverride | null,
 ): TravelReferenceNode {
@@ -3437,20 +3427,34 @@ export function getBaseTravelReferenceNodeById(id: TravelReferenceNode["id"]): T
 }
 
 export function getTravelReferenceNodeById(id: TravelReferenceNode["id"]): TravelReferenceNode {
-  return applyPublishedReferenceNodeOverride(
-    TRAVEL_REFERENCE_NODES[id],
-    readPublishedReferenceNodeOverride(id),
-  );
+  return TRAVEL_REFERENCE_NODES[id];
+}
+
+export async function getPublishedTravelReferenceNodeById(
+  id: TravelReferenceNode["id"],
+): Promise<TravelReferenceNode> {
+  const override = await readPublishedReferenceNodeOverrideFromDb(id);
+  return applyPublishedReferenceNodeOverride(TRAVEL_REFERENCE_NODES[id], override);
 }
 
 export function getAllTravelReferenceNodes(): TravelReferenceNode[] {
   return [
-    getTravelReferenceNodeById("juneau"),
-    getTravelReferenceNodeById("red-rocks"),
-    getTravelReferenceNodeById("denver-breckenridge"),
-    getTravelReferenceNodeById("new-orleans"),
-    getTravelReferenceNodeById("las-vegas"),
+    TRAVEL_REFERENCE_NODES.juneau,
+    TRAVEL_REFERENCE_NODES["red-rocks"],
+    TRAVEL_REFERENCE_NODES["denver-breckenridge"],
+    TRAVEL_REFERENCE_NODES["new-orleans"],
+    TRAVEL_REFERENCE_NODES["las-vegas"],
   ];
+}
+
+export async function getAllPublishedTravelReferenceNodes(): Promise<TravelReferenceNode[]> {
+  return Promise.all([
+    getPublishedTravelReferenceNodeById("juneau"),
+    getPublishedTravelReferenceNodeById("red-rocks"),
+    getPublishedTravelReferenceNodeById("denver-breckenridge"),
+    getPublishedTravelReferenceNodeById("new-orleans"),
+    getPublishedTravelReferenceNodeById("las-vegas"),
+  ]);
 }
 
 export const listTravelReferenceNodes = getAllTravelReferenceNodes;

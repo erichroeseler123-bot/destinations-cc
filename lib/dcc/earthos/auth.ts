@@ -115,11 +115,12 @@ export async function verifyEarthOSAuthorization(
 
     if (
       matchesConfiguredSecret(internalSecretHeader, process.env.INTERNAL_API_SECRET) ||
-      matchesConfiguredSecret(bearer, process.env.INTERNAL_API_SECRET)
+      matchesConfiguredSecret(bearer, process.env.INTERNAL_API_SECRET) ||
+      matchesConfiguredSecret(bearer, process.env.CRON_SECRET)
     ) {
       return {
         authorized: true,
-        actor: "internal:secret",
+        actor: matchesConfiguredSecret(bearer, process.env.CRON_SECRET) ? "vercel:cron" : "internal:secret",
         method: "internal_secret",
         statusCode: 200,
       };

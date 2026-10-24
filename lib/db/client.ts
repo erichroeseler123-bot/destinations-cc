@@ -7,6 +7,11 @@ import { LIVE_CORRIDOR_CATALOG } from "@/lib/dcc/telemetry/corridorCatalog";
 export type DccDb = NeonHttpDatabase<typeof schema>;
 
 let cachedDb: DccDb | null | undefined;
+let cachedConnectionKey: string | undefined;
+
+export function hasConfiguredDatabaseUrl() {
+  return Boolean(resolveDatabaseUrl());
+}
 
 function resolveDatabaseUrl() {
   return (
@@ -510,9 +515,13 @@ function createInMemoryTestDb(): DccDb {
 }
 
 export function getDb(): DccDb | null {
-  if (cachedDb !== undefined) return cachedDb;
-
   const connectionString = resolveDatabaseUrl();
+  const key = `${connectionString}::${process.env.DCC_ISOLATED_TEST_DB || ""}`;
+  if (cachedDb !== undefined && cachedConnectionKey === key) {
+    return cachedDb;
+  }
+  cachedConnectionKey = key;
+
   if (!connectionString) {
     if (process.env.DCC_ISOLATED_TEST_DB === "1") {
       cachedDb = createInMemoryTestDb();

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import RedRocksAuthorityPage from "@/app/components/dcc/RedRocksAuthorityPage";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
-import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
+import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { PARR_OPERATOR } from "@/lib/parrOperator";
 import { getLocalFallbackImageSetForEntity } from "@/src/lib/media/source-local";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Red Rocks Amphitheatre & Park Travel Reference, Access & Concert Logistics | Destination Command Center",
@@ -28,9 +28,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RedRocksPage() {
+export default async function RedRocksPage() {
   const imageSet = getLocalFallbackImageSetForEntity("venue", "red-rocks-amphitheatre");
-  const redRocksReference = getTravelReferenceNodeById("red-rocks");
+  const redRocksReference = await getPublishedTravelReferenceNodeById("red-rocks");
 
   return (
     <div className="bg-[#060b12] text-white">

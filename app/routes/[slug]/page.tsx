@@ -4,14 +4,14 @@ import { notFound } from "next/navigation";
 import DecisionEngineTemplate from "@/app/components/dcc/DecisionEngineTemplate";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
 import RideOptionsCard from "@/app/components/transportation/RideOptionsCard";
-import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
+import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getSurface, hasSurfaceEntity } from "@/lib/dcc/surfaces/getSurface";
 import {
   getDecisionEnginePageByPath,
   listDecisionEnginePagesByPrefix,
 } from "@/src/data/decision-engine-pages";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 type Params = { slug: string };
 
@@ -62,9 +62,9 @@ export default async function RouteDecisionPage({
 
   const referenceNode =
     slug === "denver-breckenridge"
-      ? getTravelReferenceNodeById("denver-breckenridge")
+      ? await getPublishedTravelReferenceNodeById("denver-breckenridge")
       : slug === "denver-red-rocks"
-        ? getTravelReferenceNodeById("red-rocks")
+        ? await getPublishedTravelReferenceNodeById("red-rocks")
         : null;
 
   return (

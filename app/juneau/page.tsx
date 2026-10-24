@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import JsonLd from "@/app/components/dcc/JsonLd";
 import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
-import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
+import { getPublishedTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -19,7 +19,7 @@ import {
 
 const PAGE_PATH = "/juneau";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Juneau, Alaska Travel Reference, Port Logistics & Shore Excursion Guide | Destination Command Center",
@@ -153,9 +153,9 @@ function DecisionCard({ card, featured = false }: { card: JuneauDecisionCard; fe
   );
 }
 
-export default function JuneauCommercialHubPage() {
+export default async function JuneauCommercialHubPage() {
   const [primaryCard, ...secondaryCards] = juneauDecisionCards;
-  const juneauReference = getTravelReferenceNodeById("juneau");
+  const juneauReference = await getPublishedTravelReferenceNodeById("juneau");
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#041018] text-white">
