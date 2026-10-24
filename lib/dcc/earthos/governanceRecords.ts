@@ -83,6 +83,12 @@ export type NewGovernanceReconciliationPacket = Omit<
 export type GovernanceRecordsStore = {
   appendDriftEvent(event: GovernanceDriftEvent): Promise<GovernanceDriftEvent | null>;
   listRecentDriftEvents(limit?: number): Promise<GovernanceDriftEvent[] | null>;
+  resolveDriftEvent?(
+    id: string,
+    resolvedBy: string,
+    resolutionEvidence?: Record<string, unknown>,
+    resolvedAt?: string,
+  ): Promise<GovernanceDriftEvent | null>;
   createReconciliationPacket(packet: GovernanceReconciliationPacket): Promise<GovernanceReconciliationPacket | null>;
   listRecentReconciliationPackets(limit?: number): Promise<GovernanceReconciliationPacket[] | null>;
   markPacketApproved(id: string, approvedBy: string, approvedAt: string): Promise<GovernanceReconciliationPacket | null>;
@@ -321,6 +327,51 @@ function createDbGovernanceRecordsStore(): GovernanceRecordsStore | null {
       }
     },
 
+    async resolveDriftEvent(id, resolvedBy, resolutionEvidence = {}, resolvedAt = new Date().toISOString()) {
+      try {
+        const [existing] = await db
+          .select()
+          .from(governanceDriftEvents)
+          .where(eq(governanceDriftEvents.id, id))
+          .limit(1);
+
+        if (!existing) return null;
+
+        const nextEvidence = {
+          ...(existing.evidenceJson || {}),
+          resolutionEvidence,
+        };
+
+        const [row] = await db
+          .update(governanceDriftEvents)
+          .set({
+            status: "resolved",
+            resolvedAt: new Date(resolvedAt),
+            resolvedBy,
+            evidenceJson: nextEvidence,
+          })
+          .where(eq(governanceDriftEvents.id, id))
+          .returning();
+
+        if (existing.findingId) {
+          await db.insert(governanceFindingsHistory).values({
+            findingId: existing.findingId,
+            driftEventId: existing.id,
+            eventType: "drift_resolved",
+            status: "resolved",
+            summary: `Resolved drift event ${existing.id}`,
+            metadata: resolutionEvidence,
+            recordedAt: new Date(resolvedAt),
+            recordedBy: resolvedBy,
+          });
+        }
+
+        return row ? normalizeDriftRow(row) : null;
+      } catch {
+        return null;
+      }
+    },
+
     async createReconciliationPacket(packet) {
       try {
         await db.insert(governanceReconciliationPackets).values({
@@ -410,7 +461,12 @@ export function createMemoryGovernanceRecordsStore(): GovernanceRecordsStore {
 
   return {
     async appendDriftEvent(event) {
-      driftEvents.push(event);
+      const existingIdx = driftEvents.findIndex((candidate) => candidate.id === event.id);
+      if (existingIdx >= 0) {
+        driftEvents[existingIdx] = event;
+      } else {
+        driftEvents.push(event);
+      }
       return event;
     },
     async listRecentDriftEvents(limit = 25) {
@@ -418,8 +474,25 @@ export function createMemoryGovernanceRecordsStore(): GovernanceRecordsStore {
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, limit);
     },
+    async resolveDriftEvent(id, resolvedBy, resolutionEvidence = {}, resolvedAt = new Date().toISOString()) {
+      const target = driftEvents.find((candidate) => candidate.id === id);
+      if (!target) return null;
+      target.status = "resolved";
+      target.resolvedAt = resolvedAt;
+      target.resolvedBy = resolvedBy;
+      target.evidenceJson = {
+        ...target.evidenceJson,
+        resolutionEvidence,
+      };
+      return target;
+    },
     async createReconciliationPacket(packet) {
-      packets.push(packet);
+      const existingIdx = packets.findIndex((candidate) => candidate.id === packet.id);
+      if (existingIdx >= 0) {
+        packets[existingIdx] = packet;
+      } else {
+        packets.push(packet);
+      }
       return packet;
     },
     async listRecentReconciliationPackets(limit = 25) {
@@ -446,6 +519,85 @@ export function createMemoryGovernanceRecordsStore(): GovernanceRecordsStore {
   };
 }
 
+function getSingletonMemoryGovernanceStore(): GovernanceRecordsStore {
+  const globalStore = globalThis as typeof globalThis & {
+    __dccDurableGovernanceStore?: GovernanceRecordsStore;
+  };
+  if (!globalStore.__dccDurableGovernanceStore) {
+    globalStore.__dccDurableGovernanceStore = createMemoryGovernanceRecordsStore();
+  }
+  return globalStore.__dccDurableGovernanceStore;
+}
+
+export function createDurableGovernanceRecordsStore(): GovernanceRecordsStore {
+  const fallback = getSingletonMemoryGovernanceStore();
+  return {
+    async appendDriftEvent(event) {
+      await fallback.appendDriftEvent(event);
+      const dbStore = createDbGovernanceRecordsStore();
+      if (dbStore) {
+        const dbResult = await dbStore.appendDriftEvent(event);
+        if (dbResult) return dbResult;
+      }
+      return event;
+    },
+    async listRecentDriftEvents(limit = 25) {
+      const dbStore = createDbGovernanceRecordsStore();
+      if (dbStore) {
+        const dbEvents = await dbStore.listRecentDriftEvents(limit);
+        if (dbEvents && dbEvents.length > 0) return dbEvents;
+      }
+      return fallback.listRecentDriftEvents(limit);
+    },
+    async resolveDriftEvent(id, resolvedBy, resolutionEvidence = {}, resolvedAt = new Date().toISOString()) {
+      const fallbackResolved = fallback.resolveDriftEvent
+        ? await fallback.resolveDriftEvent(id, resolvedBy, resolutionEvidence, resolvedAt)
+        : null;
+      const dbStore = createDbGovernanceRecordsStore();
+      if (dbStore?.resolveDriftEvent) {
+        const dbResolved = await dbStore.resolveDriftEvent(id, resolvedBy, resolutionEvidence, resolvedAt);
+        if (dbResolved) return dbResolved;
+      }
+      return fallbackResolved;
+    },
+    async createReconciliationPacket(packet) {
+      await fallback.createReconciliationPacket(packet);
+      const dbStore = createDbGovernanceRecordsStore();
+      if (dbStore) {
+        const dbResult = await dbStore.createReconciliationPacket(packet);
+        if (dbResult) return dbResult;
+      }
+      return packet;
+    },
+    async listRecentReconciliationPackets(limit = 25) {
+      const dbStore = createDbGovernanceRecordsStore();
+      if (dbStore) {
+        const dbPackets = await dbStore.listRecentReconciliationPackets(limit);
+        if (dbPackets && dbPackets.length > 0) return dbPackets;
+      }
+      return fallback.listRecentReconciliationPackets(limit);
+    },
+    async markPacketApproved(id, approvedBy, approvedAt) {
+      const fallbackApproved = await fallback.markPacketApproved(id, approvedBy, approvedAt);
+      const dbStore = createDbGovernanceRecordsStore();
+      if (dbStore) {
+        const dbApproved = await dbStore.markPacketApproved(id, approvedBy, approvedAt);
+        if (dbApproved) return dbApproved;
+      }
+      return fallbackApproved;
+    },
+    async markPacketApplied(id, resultJson, appliedAt) {
+      const fallbackApplied = await fallback.markPacketApplied(id, resultJson, appliedAt);
+      const dbStore = createDbGovernanceRecordsStore();
+      if (dbStore) {
+        const dbApplied = await dbStore.markPacketApplied(id, resultJson, appliedAt);
+        if (dbApplied) return dbApplied;
+      }
+      return fallbackApplied;
+    },
+  };
+}
+
 export function createGovernanceRecordService(store: GovernanceRecordsStore | null) {
   return {
     async appendDriftEvent(input: NewGovernanceDriftEvent) {
@@ -455,6 +607,15 @@ export function createGovernanceRecordService(store: GovernanceRecordsStore | nu
     async listRecentDriftEvents(limit = 25) {
       if (!store) return null;
       return store.listRecentDriftEvents(limit);
+    },
+    async resolveDriftEvent(
+      id: string,
+      resolvedBy: string,
+      resolutionEvidence: Record<string, unknown> = {},
+      resolvedAt = new Date().toISOString(),
+    ) {
+      if (!store || !store.resolveDriftEvent) return null;
+      return store.resolveDriftEvent(id, resolvedBy, resolutionEvidence, resolvedAt);
     },
     async getDriftReport(limit = 100, now = new Date()) {
       if (!store) return null;
@@ -479,6 +640,10 @@ export function createGovernanceRecordService(store: GovernanceRecordsStore | nu
       return store.markPacketApplied(id, resultJson, appliedAt);
     },
   };
+}
+
+export function getDurableGovernanceRecordService() {
+  return createGovernanceRecordService(createDurableGovernanceRecordsStore());
 }
 
 function defaultService() {

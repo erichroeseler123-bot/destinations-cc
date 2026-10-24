@@ -1,13 +1,22 @@
 import { NextResponse } from "next/server";
+import {
+  buildEarthOSUnauthorizedResponse,
+  verifyEarthOSAuthorization,
+} from "@/lib/dcc/earthos/auth";
 import { publishWorkflowMission } from "@/lib/dcc/earthos/workflows/service";
 import type { MissionDetailResponse } from "@/lib/dcc/earthos/workflows/types";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
+  const auth = await verifyEarthOSAuthorization(request);
+  if (!auth.authorized) {
+    return buildEarthOSUnauthorizedResponse(auth);
+  }
+
   const { id } = await context.params;
   const mission = await publishWorkflowMission(id);
 

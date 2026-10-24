@@ -87,6 +87,11 @@ const DCC_RUNTIME_REDIRECTS = [
     permanent: true,
   },
   {
+    source: "/new-orleans/swamp-tours/airboat-vs-boat",
+    destination: "/new-orleans/compare/covered-swamp-boat-vs-airboat",
+    permanent: true,
+  },
+  {
     source: "/best-new-orleans-swamp-tour",
     destination: "/swamp-tours",
     permanent: true,

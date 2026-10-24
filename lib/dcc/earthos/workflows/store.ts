@@ -354,6 +354,17 @@ export function updateRuntimeMission(
   return store.missions[index];
 }
 
+export function upsertRuntimeMission(mission: RuntimeMission): RuntimeMission {
+  const store = getRuntimeStore();
+  const index = store.missions.findIndex((candidate) => candidate.id === mission.id);
+  if (index === -1) {
+    store.missions = [mission, ...store.missions];
+    return mission;
+  }
+  store.missions[index] = mission;
+  return store.missions[index];
+}
+
 export function appendRuntimeMission(input: LaunchMissionInput): RuntimeMission {
   const now = new Date().toISOString();
   const id = `mission_${input.entity}_${Date.now()}`;

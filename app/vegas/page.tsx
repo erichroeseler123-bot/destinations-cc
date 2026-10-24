@@ -6,9 +6,11 @@ import CitySportsSection from "@/app/components/dcc/CitySportsSection";
 import CityLiveEventsSection from "@/app/components/dcc/CityLiveEventsSection";
 import CityMoneyLaneSection from "@/app/components/dcc/CityMoneyLaneSection";
 import PoweredByViator from "@/app/components/dcc/PoweredByViator";
+import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
 import ViatorTourGrid from "@/app/components/dcc/ViatorTourGrid";
 import { getViatorActionForPlace } from "@/lib/dcc/internal/viatorAction";
 import { ticketmasterAdapter } from "@/lib/dcc/providers/adapters/ticketmaster";
+import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getCityAdventureLane } from "@/src/data/city-adventure-lanes";
 import { CITY_AUTHORITY_CONFIG } from "@/src/data/city-authority-config";
 import { getCityMoneyLane } from "@/src/data/city-money-lanes";
@@ -161,10 +163,13 @@ export default async function VegasPage() {
     { label: "Las Vegas nightlife experiences", query: "las vegas nightlife experience" },
   ];
 
+  const vegasReference = getTravelReferenceNodeById("las-vegas");
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <JsonLd />
       <div className="mx-auto max-w-6xl px-6 py-12 md:py-16 space-y-8 md:space-y-10">
+        <TravelReferenceExperience node={vegasReference} />
         <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(249,115,22,0.22),transparent_35%),linear-gradient(180deg,rgba(24,24,27,0.92),rgba(9,9,11,0.96))] p-6 md:p-8 shadow-[0_28px_80px_rgba(0,0,0,0.45)]">
           <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
             <div className="space-y-5">

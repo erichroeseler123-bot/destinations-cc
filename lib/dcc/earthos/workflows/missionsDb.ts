@@ -1,5 +1,3 @@
-import "server-only";
-
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { getDb, hasDb } from "@/lib/db/client";
 import { earthosMissions, earthosMissionSteps } from "@/lib/db/schema";

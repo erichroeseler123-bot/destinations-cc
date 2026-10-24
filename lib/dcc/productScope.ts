@@ -72,6 +72,22 @@ export const DCC_PRODUCT_SCOPE = {
         primaryCoordinate: "/location/39.48170/-106.03840",
         secondaryCoordinate: "/location/39.67790/-105.90560",
       },
+      {
+        id: "new-orleans",
+        name: "New Orleans, Louisiana & Port of New Orleans Cruise Corridor",
+        canonicalPath: "/new-orleans",
+        aliases: ["/ports/new-orleans", "/cities/new-orleans"],
+        primaryCoordinate: "/location/29.95110/-90.07150",
+        secondaryCoordinate: "/location/29.93950/-90.06170",
+      },
+      {
+        id: "las-vegas",
+        name: "Las Vegas Resort Corridor, Red Rock Canyon & Hoover Dam Basin",
+        canonicalPath: "/vegas",
+        aliases: ["/las-vegas-strip", "/red-rock-canyon", "/hoover-dam"],
+        primaryCoordinate: "/location/36.11470/-115.17280",
+        secondaryCoordinate: "/location/36.13580/-115.42750",
+      },
     ],
     epistemicAndSafetyRules: [
       "Weather conditions alone never establish venue operating status, lightning holds, highway traction restrictions, cruise docking feasibility, or activity safety.",
@@ -85,7 +101,16 @@ export const DCC_PRODUCT_SCOPE = {
       id: "travel-reference-and-decision-guides",
       description:
         "Curated, source-attributed travel reference and decision guides for destinations, ports, venues, and transit corridors connected bidirectionally to coordinate pages.",
-      canonicalPaths: ["/juneau", "/ports/juneau", "/red-rocks", "/venues/red-rocks-amphitheatre", "/routes/denver-breckenridge"],
+      canonicalPaths: [
+        "/juneau",
+        "/ports/juneau",
+        "/red-rocks",
+        "/venues/red-rocks-amphitheatre",
+        "/routes/denver-breckenridge",
+        "/new-orleans",
+        "/ports/new-orleans",
+        "/vegas",
+      ],
       status: "first_class_promoted_surface",
     },
     {

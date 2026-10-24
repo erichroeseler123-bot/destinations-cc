@@ -20,6 +20,7 @@ import {
   readRuntimeMissions,
   STALE_AFTER_MS,
   upsertMissionPublication,
+  upsertRuntimeMission,
   updateRuntimeMission,
 } from "@/lib/dcc/earthos/workflows/store";
 import {
@@ -109,12 +110,29 @@ function readRiskLevel(value: unknown): MissionRiskLevel | null {
   return value === "High" || value === "Watch" || value === "Normal" ? value : null;
 }
 
+function isMissionRejectedOrIncomplete(mission: RuntimeMission): boolean {
+  if (mission.status === "failed") return true;
+  if (isRecord(mission.result)) {
+    if (
+      mission.result.status === "Mission Rejected" ||
+      mission.result.dispatchStatus === "rejected" ||
+      (isRecord(mission.result.approval) && mission.result.approval.approved === false)
+    ) {
+      return true;
+    }
+  }
+  if (mission.steps.some((step) => step.status === "failed")) {
+    return true;
+  }
+  return false;
+}
+
 function buildHeadline(
   mission: RuntimeMission,
   riskLevel: MissionRiskLevel,
   recommendedAction: string,
 ): string {
-  if (mission.status === "failed") return "MISSION TERMINATED";
+  if (isMissionRejectedOrIncomplete(mission)) return "MISSION TERMINATED";
   if (mission.status === "completed") return "DISPATCH SUCCESSFUL";
   if (riskLevel === "High" && mission.entity === "alaska") return "PORT COMPRESSION DETECTED";
   if (riskLevel === "High" && mission.entity === "gosno") return "CONDITION PRESSURE DETECTED";
@@ -129,11 +147,12 @@ function normalizeMissionIntelligence(mission: RuntimeMission): MissionIntellige
   const payload = mission.payload;
   const synthesis = isRecord(result?.synthesis) ? result.synthesis : null;
   const dccContext = isRecord(result?.dccContext) ? result.dccContext : null;
+  const rejectedOrIncomplete = isMissionRejectedOrIncomplete(mission);
 
   const briefing =
     (synthesis && typeof synthesis.briefing === "string" ? synthesis.briefing : null) ||
     (isRecord(result) && typeof result.briefing === "string" ? result.briefing : null) ||
-    (mission.status === "failed" ? mission.error?.message || null : null) ||
+    (rejectedOrIncomplete ? mission.error?.message || "Mission rejected or terminated before dispatch." : null) ||
     null;
 
   const recommendedAction =
@@ -143,17 +162,17 @@ function normalizeMissionIntelligence(mission: RuntimeMission): MissionIntellige
     (isRecord(result) && typeof result.recommendedAction === "string"
       ? result.recommendedAction
       : null) ||
-    (mission.status === "completed"
-      ? "Dispatch complete"
-      : mission.status === "failed"
-        ? "Mission terminated"
+    (rejectedOrIncomplete
+      ? "Mission terminated"
+      : mission.status === "completed"
+        ? "Dispatch complete"
         : null) ||
     null;
 
   const riskLevel =
     (synthesis ? readRiskLevel(synthesis.riskLevel) : null) ||
     (isRecord(result) ? readRiskLevel(result.riskLevel) : null) ||
-    (mission.status === "failed"
+    (rejectedOrIncomplete
       ? "High"
       : mission.status === "completed"
         ? "Normal"
@@ -481,7 +500,10 @@ export async function signalWorkflowMission(
     return detail;
   }
 
-  const updated = updateRuntimeMission(id, (mission) => {
+  const existing = findRuntimeMission(id) || (await getDbRuntimeMission(id));
+  if (!existing) return null;
+
+  const applySignalUpdate = (mission: RuntimeMission): RuntimeMission => {
     const now = new Date().toISOString();
 
     if (event === "mission-cancel") {
@@ -503,6 +525,11 @@ export async function signalWorkflowMission(
         currentStep: mission.currentStep,
         updatedAt: now,
         waitingForEvent: null,
+        result: {
+          ...(mission.result || {}),
+          status: "Mission Cancelled",
+          dispatchStatus: "cancelled",
+        },
         error: {
           message: "Mission cancelled by operator.",
           step: mission.currentStep || undefined,
@@ -512,7 +539,10 @@ export async function signalWorkflowMission(
     }
 
     const approved = payload?.approved === true;
-    const rejected = payload?.approved === false;
+    const rejectionReason =
+      payload?.approved === false
+        ? "Dispatch rejected by operator."
+        : "Explicit approval (approved: true) is required to execute dispatch.";
     const approvalIndex = mission.steps.findIndex((step) => step.name === "erich-approval");
     const updatedSteps = [...mission.steps];
 
@@ -521,24 +551,75 @@ export async function signalWorkflowMission(
         ...updatedSteps[approvalIndex],
         status: approved ? "completed" : "failed",
         endedAt: now,
-        errorMessage: rejected ? "Dispatch rejected by operator." : null,
+        errorMessage: approved ? null : rejectionReason,
         output: {
           ...(updatedSteps[approvalIndex].output || {}),
           approved,
         },
       };
+    } else if (!approved) {
+      updatedSteps.push({
+        id: `step_approval_${id}`,
+        name: "erich-approval",
+        status: "failed",
+        startedAt: now,
+        endedAt: now,
+        retryCount: 0,
+        output: { approved: false },
+        errorMessage: rejectionReason,
+      });
     }
 
-    if (rejected) {
+    if (!approved) {
       return {
         ...mission,
         status: "failed" as const,
         currentStep: "erich-approval",
         updatedAt: now,
         waitingForEvent: null,
+        result: {
+          ...(mission.result || {}),
+          status: "Mission Rejected",
+          dispatchStatus: "rejected",
+        },
         error: {
-          message: "Dispatch rejected by operator.",
+          message: rejectionReason,
           step: "erich-approval",
+        },
+        steps: updatedSteps,
+      };
+    }
+
+    // Complete any prerequisite running scan/synthesis steps before dispatch
+    for (let i = 0; i < updatedSteps.length; i++) {
+      if (updatedSteps[i].status === "running") {
+        updatedSteps[i] = {
+          ...updatedSteps[i],
+          status: "completed",
+          endedAt: now,
+        };
+      }
+    }
+
+    // Refuse to mark completed if any prerequisite step failed
+    const failedPrerequisite = updatedSteps.find((step) => step.status === "failed");
+    if (failedPrerequisite) {
+      return {
+        ...mission,
+        status: "failed" as const,
+        currentStep: failedPrerequisite.name,
+        updatedAt: now,
+        waitingForEvent: null,
+        result: {
+          ...(mission.result || {}),
+          status: "Mission Failed",
+          dispatchStatus: "prerequisite_step_failed",
+        },
+        error: {
+          message:
+            failedPrerequisite.errorMessage ||
+            `Cannot complete dispatch because step ${failedPrerequisite.name} failed.`,
+          step: failedPrerequisite.name,
         },
         steps: updatedSteps,
       };
@@ -567,14 +648,15 @@ export async function signalWorkflowMission(
       waitingForEvent: null,
       result: {
         ...(mission.result || {}),
+        status: "Mission Success",
         dispatchStatus: "approved_and_executed",
       },
       error: null,
       steps: updatedSteps,
     };
-  });
+  };
 
-  if (!updated) return null;
+  const updated = upsertRuntimeMission(applySignalUpdate(existing));
   await persistMissionSnapshot(updated);
   const detail = normalizeMissionDetail(updated, new Date());
   detail.publication = await findMissionPublicationByMissionId(updated.id);

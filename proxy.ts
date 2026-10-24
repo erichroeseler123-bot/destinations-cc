@@ -8,6 +8,11 @@ import { getEdgeSignalMapForSubjects } from "@/lib/dcc/routing/edge-signals";
 import { isIndexableSurfacePath } from "@/src/data/indexable-surface";
 import { verifyServiceRequestHeaders } from "@/lib/dcc/auth/hmac-service-auth";
 import {
+  ADMIN_SESSION_COOKIE,
+  isValidAdminAccessKey,
+  isValidAdminSession,
+} from "@/lib/adminAccess";
+import {
   BRECKENRIDGE_SHARED_GO_PATH,
   JUNEAU_HELICOPTER_GO_PATH,
   JUNEAU_HELICOPTER_SIGNAL_SUBJECT_IDS,
@@ -413,7 +418,24 @@ function checkInternalApiAuthorization(request: NextRequest): {
     return { authorized: true };
   }
 
-  // 2. Legacy internal secret header / Bearer fallback
+  // 2. Admin session cookie or admin access key
+  const adminSession = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
+  if (isValidAdminSession(adminSession)) {
+    return { authorized: true };
+  }
+  const adminKeyHeader = request.headers.get("x-admin-access-key")?.trim() || "";
+  const bearerSecret = readBearerToken(request);
+  if (isValidAdminAccessKey(adminKeyHeader) || isValidAdminAccessKey(bearerSecret)) {
+    return { authorized: true };
+  }
+
+  // 3. EarthOS API key or internal secret header / Bearer fallback
+  const earthosKey = process.env.EARTHOS_API_KEY?.trim();
+  const earthosHeader = request.headers.get("x-earthos-api-key")?.trim() || "";
+  if (earthosKey && (earthosKey === earthosHeader || earthosKey === bearerSecret)) {
+    return { authorized: true };
+  }
+
   const internalSecret = process.env.INTERNAL_API_SECRET?.trim();
   if (!internalSecret)
     return {
@@ -422,7 +444,6 @@ function checkInternalApiAuthorization(request: NextRequest): {
       error: "Internal API unconfigured.",
     };
   const headerSecret = request.headers.get("x-internal-secret")?.trim() || "";
-  const bearerSecret = readBearerToken(request);
   if (internalSecret === headerSecret || internalSecret === bearerSecret) {
     return { authorized: true };
   }

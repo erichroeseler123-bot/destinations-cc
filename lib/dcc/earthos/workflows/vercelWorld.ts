@@ -29,12 +29,7 @@ type HookWithMetadata = Hook & {
   metadata?: Record<string, unknown>;
 };
 
-const PROJECT_ROOT = "/home/ewrewr12/destinations-cc";
-const PROJECT_CONFIG_PATH = join(PROJECT_ROOT, ".vercel", "project.json");
-const CLI_AUTH_PATHS = [
-  "/home/ewrewr12/.local/share/com.vercel.cli/auth.json",
-  "/home/erichroeseler123/.local/share/com.vercel.cli/auth.json",
-];
+const PROJECT_CONFIG_PATH = join(process.cwd(), ".vercel", "project.json");
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -61,9 +56,23 @@ function mapStepStatus(status: Step["status"]): RuntimeMissionStep["status"] {
   return "running";
 }
 
-function mapMissionStatus(run: WorkflowRun, hooks: HookWithMetadata[]): RuntimeMission["status"] {
-  if (run.status === "completed") return "completed";
+function isRejectedOutput(result: Record<string, unknown> | null): boolean {
+  if (!result) return false;
+  if (result.status === "Mission Rejected" || result.dispatchStatus === "rejected") return true;
+  if (isRecord(result.approval) && result.approval.approved === false) return true;
+  return false;
+}
+
+function mapMissionStatus(
+  run: WorkflowRun,
+  hooks: HookWithMetadata[],
+  result: Record<string, unknown> | null,
+  steps: RuntimeMissionStep[],
+): RuntimeMission["status"] {
   if (run.status === "failed" || run.status === "cancelled") return "failed";
+  if (isRejectedOutput(result)) return "failed";
+  if (steps.some((step) => step.status === "failed")) return "failed";
+  if (run.status === "completed") return "completed";
   if (hooks.length > 0) return "waiting";
   return "running";
 }
@@ -156,7 +165,8 @@ function normalizeRun(run: WorkflowRun, steps: Step[], hooks: HookWithMetadata[]
   const input = toPlainRecord(hydratedRun.input);
   const result = isRecord(hydratedRun.output) ? hydratedRun.output : null;
   const normalizedSteps = sortByNewest(hydratedSteps).map(normalizeStep);
-  const status = mapMissionStatus(hydratedRun, hydratedHooks);
+  const status = mapMissionStatus(hydratedRun, hydratedHooks, result, normalizedSteps);
+  const rejected = isRejectedOutput(result);
 
   return {
     id: hydratedRun.runId,
@@ -176,7 +186,12 @@ function normalizeRun(run: WorkflowRun, steps: Step[], hooks: HookWithMetadata[]
           message: hydratedRun.error.message,
           step: inferCurrentStep(normalizedSteps) || undefined,
         }
-      : null,
+      : rejected
+        ? {
+            message: "Dispatch rejected by operator.",
+            step: "erich-approval",
+          }
+        : null,
     steps: normalizedSteps,
   };
 }
@@ -193,12 +208,6 @@ async function tryReadJson<T>(filePath: string): Promise<T | null> {
 async function loadAuthToken(): Promise<string | undefined> {
   if (process.env.VERCEL_TOKEN) return process.env.VERCEL_TOKEN;
   if (process.env.WORKFLOW_VERCEL_TOKEN) return process.env.WORKFLOW_VERCEL_TOKEN;
-
-  for (const filePath of CLI_AUTH_PATHS) {
-    const data = await tryReadJson<{ token?: string }>(filePath);
-    if (data?.token) return data.token;
-  }
-
   return undefined;
 }
 

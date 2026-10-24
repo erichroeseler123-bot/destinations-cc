@@ -20,16 +20,33 @@ export type StoredEarthOSAuditEvent = EarthOSAuditEvent & {
 
 const auditLogPath = path.join(process.cwd(), "data/dcc/earthos/audit-log.jsonl");
 
-export function appendEarthOSAuditEvent(event: EarthOSAuditEvent) {
-  const entry = {
+function getMemoryAuditBuffer(): StoredEarthOSAuditEvent[] {
+  const globalStore = globalThis as typeof globalThis & {
+    __earthosAuditEvents?: StoredEarthOSAuditEvent[];
+  };
+  if (!globalStore.__earthosAuditEvents) {
+    globalStore.__earthosAuditEvents = [];
+  }
+  return globalStore.__earthosAuditEvents;
+}
+
+export function appendEarthOSAuditEvent(event: EarthOSAuditEvent): StoredEarthOSAuditEvent {
+  const entry: StoredEarthOSAuditEvent = {
     version: "earthos-audit.v1",
     recordedAt: new Date().toISOString(),
     ...event,
     metadata: event.metadata || {},
   };
 
-  mkdirSync(path.dirname(auditLogPath), { recursive: true });
-  appendFileSync(auditLogPath, `${JSON.stringify(entry)}\n`);
+  const buffer = getMemoryAuditBuffer();
+  buffer.unshift(entry);
+
+  try {
+    mkdirSync(path.dirname(auditLogPath), { recursive: true });
+    appendFileSync(auditLogPath, `${JSON.stringify(entry)}\n`);
+  } catch {
+    // Read-only filesystem fallback: entry remains durable in memory buffer
+  }
 
   return entry;
 }
@@ -57,23 +74,50 @@ function normalizeAuditEntry(value: unknown): StoredEarthOSAuditEvent | null {
   };
 }
 
-export function listEarthOSAuditEvents(options: { recoveryMissionId?: string; limit?: number } = {}) {
-  if (!existsSync(auditLogPath)) return [];
+export function listEarthOSAuditEvents(
+  options: { recoveryMissionId?: string; corridorId?: string; eventType?: string; limit?: number } = {},
+): StoredEarthOSAuditEvent[] {
+  const diskEvents: StoredEarthOSAuditEvent[] = [];
+  try {
+    if (existsSync(auditLogPath)) {
+      const parsed = readFileSync(auditLogPath, "utf8")
+        .split("\n")
+        .filter(Boolean)
+        .map((line) => {
+          try {
+            return normalizeAuditEntry(JSON.parse(line));
+          } catch {
+            return null;
+          }
+        })
+        .filter((entry): entry is StoredEarthOSAuditEvent => Boolean(entry));
+      diskEvents.push(...parsed);
+    }
+  } catch {
+    // Ignore filesystem read errors and rely on memory buffer
+  }
 
-  const events = readFileSync(auditLogPath, "utf8")
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => {
-      try {
-        return normalizeAuditEntry(JSON.parse(line));
-      } catch {
-        return null;
-      }
-    })
-    .filter((entry): entry is StoredEarthOSAuditEvent => Boolean(entry))
+  const combined = [...getMemoryAuditBuffer(), ...diskEvents];
+  const deduped = new Map<string, StoredEarthOSAuditEvent>();
+  for (const item of combined) {
+    const key = `${item.recordedAt}:${item.eventType}:${item.summary}`;
+    if (!deduped.has(key)) {
+      deduped.set(key, item);
+    }
+  }
+
+  const events = [...deduped.values()]
     .filter((entry) => {
-      if (!options.recoveryMissionId) return true;
-      return entry.metadata.recoveryMissionId === options.recoveryMissionId;
+      if (options.recoveryMissionId && entry.metadata.recoveryMissionId !== options.recoveryMissionId) {
+        return false;
+      }
+      if (options.corridorId && entry.corridorId !== options.corridorId) {
+        return false;
+      }
+      if (options.eventType && entry.eventType !== options.eventType) {
+        return false;
+      }
+      return true;
     })
     .sort((a, b) => b.recordedAt.localeCompare(a.recordedAt));
 

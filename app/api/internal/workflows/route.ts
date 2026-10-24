@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import {
+  buildEarthOSUnauthorizedResponse,
+  verifyEarthOSAuthorization,
+} from "@/lib/dcc/earthos/auth";
 import { listWorkflowMissions } from "@/lib/dcc/earthos/workflows/service";
 import type { MissionListResponse } from "@/lib/dcc/earthos/workflows/types";
 
@@ -12,6 +16,11 @@ function parseLimit(value: string | null): number | null {
 }
 
 export async function GET(request: Request) {
+  const auth = await verifyEarthOSAuthorization(request);
+  if (!auth.authorized) {
+    return buildEarthOSUnauthorizedResponse(auth);
+  }
+
   const { searchParams } = new URL(request.url);
 
   const payload: MissionListResponse = {

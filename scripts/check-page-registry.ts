@@ -8,7 +8,7 @@ const APP_SYSTEMS = [
   {
     system: "main",
     root: path.join(ROOT, "app"),
-    owners: new Set<PageOwner>(["dcc", "parr", "internal"]),
+    owners: new Set<PageOwner>(["dcc", "parr", "internal", "wta"]),
   },
   {
     system: "wts",
@@ -106,6 +106,10 @@ function main() {
       if (existsInAnySystem) {
         push(findings, "warn", "registry.kill_still_live", `Route ${entry.path} for owner ${entry.owner} is marked kill but still exists live.`);
       }
+      continue;
+    }
+
+    if (entry.status === "redirect_pending" && entry.handoffTarget) {
       continue;
     }
 

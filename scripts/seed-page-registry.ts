@@ -57,9 +57,31 @@ function walkPages(dir: string, out: string[]) {
 
 function inferOwner(system: SeededRoute["system"], routePath: string): PageOwner {
   if (system === "wts") return "wts";
-  if (routePath.startsWith("/admin") || routePath.startsWith("/internal")) return "internal";
-  if (routePath.startsWith("/book") || routePath.startsWith("/checkout") || routePath.startsWith("/pay-balance")) return "parr";
+  if (
+    routePath.startsWith("/admin") ||
+    routePath.startsWith("/internal") ||
+    routePath.startsWith("/new-orleans/admin") ||
+    routePath === "/new-orleans/guides/internal-qa"
+  ) {
+    return "internal";
+  }
+  if (routePath.startsWith("/book") || routePath.startsWith("/checkout") || routePath.startsWith("/pay-balance")) {
+    if (!routePath.startsWith("/checkout/octo")) return "parr";
+  }
+  if (
+    routePath === "/helicopter" ||
+    routePath.startsWith("/juneau-flight-deck") ||
+    routePath === "/juneau/helicopter" ||
+    routePath === "/juneau/helicopter-waitlist" ||
+    routePath.startsWith("/juneau/helicopter-watch")
+  ) {
+    return "wta";
+  }
   return "dcc";
+}
+
+function ownerToSystem(owner: PageOwner): SeededRoute["system"] {
+  return owner === "wts" ? "wts" : "main";
 }
 
 function inferLayer(owner: PageOwner, routePath: string): PageLayer {
@@ -201,12 +223,13 @@ export function getPageRegistryByLayer(layer: PageLayer) {
 
 function main() {
   const existing = [...pageRegistry];
-  const seen = new Set(existing.map((entry) => entry.path));
+  const seen = new Set(existing.map((entry) => `${ownerToSystem(entry.owner)}:${entry.path}`));
   const additions: PageRegistryEntry[] = [];
 
   for (const route of collectRoutes()) {
-    if (seen.has(route.path)) continue;
-    seen.add(route.path);
+    const key = `${route.system}:${route.path}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
     additions.push(toEntry(route));
   }
 

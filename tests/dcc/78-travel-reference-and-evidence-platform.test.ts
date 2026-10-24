@@ -15,11 +15,11 @@ import { GET as getOpenApiJson } from "@/app/openapi.json/route";
 import { INDEXABLE_SURFACE_PATHS } from "@/src/data/indexable-surface";
 import { getDecisionEnginePageByPath } from "@/src/data/decision-engine-pages";
 
-test("1. Three flagship destination reference nodes have complete evidence, 6-factor entry dependencies, and safety boundaries", () => {
+test("1. Five flagship destination reference nodes have complete evidence, 6-factor entry dependencies, and safety boundaries", () => {
   const nodes = listTravelReferenceNodes();
-  assert.equal(nodes.length, 3);
+  assert.equal(nodes.length, 5);
 
-  for (const id of ["juneau", "red-rocks", "denver-breckenridge"] as const) {
+  for (const id of ["juneau", "red-rocks", "denver-breckenridge", "new-orleans", "las-vegas"] as const) {
     const node = getTravelReferenceNodeById(id);
     assert.ok(node, `Expected reference node for ${id}`);
     assert.ok(node.overviewAndContext.geographyAndTopography.length >= 2);
@@ -71,6 +71,18 @@ test("2. Coordinate-to-reference resolution connects flagship coordinates and re
 
   const tunnelMatch = resolveTravelReferenceForCoordinate(39.6779, -105.9056);
   assert.equal(tunnelMatch?.primaryNode.id, "denver-breckenridge");
+
+  const nolaMatch = resolveTravelReferenceForCoordinate(29.9511, -90.0715);
+  assert.equal(nolaMatch?.primaryNode.id, "new-orleans");
+
+  const nolaPortMatch = resolveTravelReferenceForCoordinate(29.9395, -90.0617);
+  assert.equal(nolaPortMatch?.primaryNode.id, "new-orleans");
+
+  const vegasMatch = resolveTravelReferenceForCoordinate(36.1147, -115.1728);
+  assert.equal(vegasMatch?.primaryNode.id, "las-vegas");
+
+  const redRockCanyonMatch = resolveTravelReferenceForCoordinate(36.1358, -115.4275);
+  assert.equal(redRockCanyonMatch?.primaryNode.id, "las-vegas");
 
   const oceanMatch = resolveTravelReferenceForCoordinate(0, 0);
   assert.equal(oceanMatch, null);

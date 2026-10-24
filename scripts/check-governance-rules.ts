@@ -37,6 +37,10 @@ function walkFiles(dir: string, out: string[]) {
   }
 }
 
+function toPosix(value: string) {
+  return value.split(path.sep).join("/");
+}
+
 function findReferences(target: string, predicate?: (filePath: string) => boolean) {
   const hits: string[] = [];
   const files: string[] = [];
@@ -45,7 +49,7 @@ function findReferences(target: string, predicate?: (filePath: string) => boolea
   }
 
   for (const filePath of files) {
-    const relative = path.relative(ROOT, filePath);
+    const relative = toPosix(path.relative(ROOT, filePath));
     if (relative === "data/page-registry.ts" || relative === "data/cleanup-queue.ts" || relative === "data/redirect-map.ts") {
       continue;
     }

@@ -92,10 +92,15 @@ function objectLiteralToSample(node: ts.ObjectLiteralExpression): Record<string,
   return out;
 }
 
+function toPosix(value: string) {
+  return value.split(path.sep).join("/");
+}
+
 function main() {
   const findings: Finding[] = [];
 
   for (const filePath of TARGET_FILES) {
+    const relativePath = toPosix(path.relative(ROOT, filePath));
     const sourceText = fs.readFileSync(filePath, "utf8");
     const sourceFile = ts.createSourceFile(filePath, sourceText, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 
@@ -105,7 +110,7 @@ function main() {
         if (!firstArg || !ts.isObjectLiteralExpression(firstArg)) {
           findings.push({
             code: "fixtures.non_literal_event_payload",
-            message: `${path.relative(ROOT, filePath)} contains appendSatelliteEvent call without an inline object literal; validator cannot prove fixture shape.`,
+            message: `${relativePath} contains appendSatelliteEvent call without an inline object literal; validator cannot prove fixture shape.`,
           });
         } else {
           const sample = objectLiteralToSample(firstArg);
@@ -113,7 +118,7 @@ function main() {
           if (!parsed.success) {
             findings.push({
               code: "fixtures.invalid_satellite_event",
-              message: `${path.relative(ROOT, filePath)} has appendSatelliteEvent fixture that does not satisfy SatelliteEventPayloadSchema: ${parsed.error.issues.map((issue) => issue.path.join(".") || "<root>").join(", ")}.`,
+              message: `${relativePath} has appendSatelliteEvent fixture that does not satisfy SatelliteEventPayloadSchema: ${parsed.error.issues.map((issue) => issue.path.join(".") || "<root>").join(", ")}.`,
             });
           }
         }
@@ -127,7 +132,7 @@ function main() {
 
   const summary = {
     ok: findings.length === 0,
-    files: TARGET_FILES.map((filePath) => path.relative(ROOT, filePath)),
+    files: TARGET_FILES.map((filePath) => toPosix(path.relative(ROOT, filePath))),
     findings,
   };
 

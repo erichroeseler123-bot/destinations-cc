@@ -421,8 +421,8 @@ export default async function PortPage({
         }}
       />
       <PortAuthorityTemplate port={port} config={config} />
-      {port.slug === "juneau" && getTravelReferenceNodeById("juneau") ? (
-        <TravelReferenceExperience node={getTravelReferenceNodeById("juneau")!} embedded />
+      {(port.slug === "juneau" || port.slug === "new-orleans") && getTravelReferenceNodeById(port.slug) ? (
+        <TravelReferenceExperience node={getTravelReferenceNodeById(port.slug)!} embedded />
       ) : null}
       <section className="max-w-6xl mx-auto px-6 pb-10">
         <AirportLinksSection

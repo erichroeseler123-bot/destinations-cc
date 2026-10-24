@@ -1,5 +1,3 @@
-import "server-only";
-
 import { desc, eq } from "drizzle-orm";
 import { getDb, hasDb } from "@/lib/db/client";
 import { earthosPublications } from "@/lib/db/schema";

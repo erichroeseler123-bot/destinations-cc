@@ -1,5 +1,7 @@
 import React from "react";
 import Link from "next/link";
+import TravelReferenceExperience from "@/app/components/dcc/TravelReferenceExperience";
+import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import visualStyles from "./components/newOrleansVisual.module.css";
 import NewOrleansRecommendationFlow from "./components/NewOrleansRecommendationFlow";
 import LiveIntelligencePanel from "./components/LiveIntelligencePanel";
@@ -7,13 +9,13 @@ import DailyBriefSignup from "./components/DailyBriefSignup";
 import { STOREFRONT_PRODUCTS } from "./tours/pageConfig";
 
 export const metadata = {
-  title: "New Orleans Tours, Swamp Tours & River Cruises",
+  title: "New Orleans, Louisiana Travel Reference, Port Logistics & Bayou Guide | Destination Command Center",
   description:
-    "Handpicked New Orleans tours and experiences for your group. Tell us what kind of day you want and we’ll narrow the city down to the experiences that fit.",
+    "Comprehensive New Orleans travel reference combining French Quarter & river port geography, MSY airport & streetcar logistics, Port NOLA WHTI entry rules, live NWS/NOAA conditions, and bayou/plantation specialist handoffs.",
   openGraph: {
-    title: "Welcome to New Orleans Tours | Local Planning Help",
+    title: "New Orleans Travel Reference & Local Planning Hub | Destination Command Center",
     description:
-      "Find the right New Orleans experience for your group with curated recommendations, timely local context, and direct booking when you’re ready.",
+      "Source-attributed New Orleans travel reference with live NWS weather, Mississippi River conditions, MSY aviation telemetry, and curated tour handoffs.",
   },
 };
 
@@ -45,9 +47,13 @@ const guideCards = [
 
 export default function NewOrleansHomePage() {
   const productBySlug = (slug: string) => STOREFRONT_PRODUCTS.find((product) => product.slug === slug);
+  const nolaReference = getTravelReferenceNodeById("new-orleans");
 
   return (
     <div className="bg-[var(--nola-bg-charcoal)] text-[var(--nola-ivory)] font-sans overflow-hidden">
+      <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
+        <TravelReferenceExperience node={nolaReference} />
+      </div>
       <section className={visualStyles.homeHero}>
         <div className={visualStyles.homeHeroBackground} aria-hidden="true" />
         <div className={visualStyles.homeHeroOverlay} aria-hidden="true" />

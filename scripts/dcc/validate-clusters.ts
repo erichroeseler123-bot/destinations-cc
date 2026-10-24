@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pageRegistry } from "@/data/page-registry";
 import { buildParrSharedRedRocksUrl } from "@/lib/dcc/contracts/dccParrBridge";
+import { RED_ROCKS_CORRIDOR } from "@/lib/dcc/corridors/redRocks";
 
 const ROOT = process.cwd();
 const CANONICAL_SHARED_URL = "https://www.partyatredrocks.com/book/red-rocks-amphitheatre/custom/shared";
@@ -36,8 +37,8 @@ const RED_ROCKS_CLUSTER = {
       alias: "rr-transportation",
       role: "hub",
       expectedRegistryTarget: CANONICAL_SHARED_URL,
-      requiredUrlCtas: ["primary", "notice-primary"],
-      requiredTelemetryCtas: ["notice-primary"],
+      requiredUrlCtas: ["primary", "entry-ready-primary"],
+      requiredTelemetryCtas: ["entry-ready-primary"],
       minParrCtaLinks: 1,
       requireHubFallback: false,
     },
@@ -133,7 +134,7 @@ function validateBridge(config: ClusterPageConfig, findings: Finding[]) {
     if (url.searchParams.get("cta") !== cta) {
       push(findings, "error", "cluster.bridge_cta", `${config.route} cta=${cta} did not preserve the expected CTA label.`);
     }
-    for (const forbidden of ["source", "source_page", "sourcePage", "intent", "topic", "subtype", "product"]) {
+    for (const forbidden of RED_ROCKS_CORRIDOR.handoff.forbiddenLegacyParams) {
       if (url.searchParams.has(forbidden)) {
         push(findings, "error", "cluster.bridge_forbidden_param", `${config.route} cta=${cta} leaked forbidden param ${forbidden}.`);
       }
@@ -166,11 +167,13 @@ function validatePageFile(config: ClusterPageConfig, findings: Finding[]) {
     push(findings, "error", "cluster.raw_booking_anchor", `${config.file} still contains a raw booking anchor instead of ParrCtaLink.`);
   }
 
-  const builtUrlBlocks = [...content.matchAll(/buildParrSharedRedRocksUrl\((\{[\s\S]*?\})\)/g)].map((match) => match[1]);
+  const builtUrlBlocks = [
+    ...content.matchAll(/build(?:ParrSharedRedRocks|DccRedRocksSharedGo)Url\((\{[\s\S]*?\})\)/g),
+  ].map((match) => match[1]);
   for (const cta of config.requiredUrlCtas) {
     const hasCta = builtUrlBlocks.some((block) => block.includes(`cta: "${cta}"`));
     if (!hasCta) {
-      push(findings, "error", "cluster.cta_builder_missing", `${config.file} is missing buildParrSharedRedRocksUrl(... cta: "${cta}").`);
+      push(findings, "error", "cluster.cta_builder_missing", `${config.file} is missing Red Rocks shared URL builder (... cta: "${cta}").`);
     }
   }
 
@@ -245,8 +248,8 @@ function validateCruiseDecisionCluster(findings: Finding[]) {
   if (!satellite) {
     push(findings, "error", "cruise.registry_missing_satellite", "/cruises/fit is missing from pageRegistry.");
   } else {
-    if (satellite.layer !== "choose" || satellite.owner !== "dcc" || satellite.surface !== "authority") {
-      push(findings, "error", "cruise.registry_shape_satellite", "/cruises/fit must be a DCC choose authority surface.");
+    if (satellite.layer !== "choose" || satellite.owner !== "dcc" || (satellite.surface !== null && satellite.surface !== undefined)) {
+      push(findings, "error", "cruise.registry_shape_satellite", "/cruises/fit must be a DCC choose satellite surface without an authority claim.");
     }
     if (satellite.clusterRole !== "satellite") {
       push(findings, "error", "cruise.registry_role_satellite", "/cruises/fit must declare clusterRole=satellite.");

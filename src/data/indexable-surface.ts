@@ -25,6 +25,9 @@ const COORDINATE_NATIVE_PUBLIC_PATHS = [
   "/transportation/colorado",
   "/regions/colorado",
   "/cities/denver",
+  "/new-orleans",
+  "/ports/new-orleans",
+  "/vegas",
 ] as const;
 
 const INDEXABLE_SURFACE_SET = new Set<string>([

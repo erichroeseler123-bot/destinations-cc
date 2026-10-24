@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import {
+  buildEarthOSUnauthorizedResponse,
+  verifyEarthOSAuthorization,
+} from "@/lib/dcc/earthos/auth";
 import { launchWorkflowMission } from "@/lib/dcc/earthos/workflows/service";
 import type { MissionDetailResponse } from "@/lib/dcc/earthos/workflows/types";
 
@@ -13,6 +17,11 @@ const launchSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const auth = await verifyEarthOSAuthorization(request);
+  if (!auth.authorized) {
+    return buildEarthOSUnauthorizedResponse(auth);
+  }
+
   let body: z.infer<typeof launchSchema>;
 
   try {

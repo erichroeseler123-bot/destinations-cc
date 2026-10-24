@@ -134,11 +134,16 @@ export type RelatedPlaceLink = {
 };
 
 export type TravelReferenceNode = {
-  id: "juneau" | "red-rocks" | "denver-breckenridge";
+  id: "juneau" | "red-rocks" | "denver-breckenridge" | "new-orleans" | "las-vegas";
   slug: string;
   canonicalPath: string;
   aliasPaths: string[];
-  placeType: "coastal_capital_and_cruise_port" | "foothill_amphitheatre_and_park" | "alpine_interstate_corridor";
+  placeType:
+    | "coastal_capital_and_cruise_port"
+    | "foothill_amphitheatre_and_park"
+    | "alpine_interstate_corridor"
+    | "river_port_and_cultural_city"
+    | "desert_resort_and_canyon_gateway";
   title: string;
   subtitle: string;
   heroSummary: string;
@@ -2197,6 +2202,1130 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
       },
     ],
   },
+  "new-orleans": {
+    id: "new-orleans",
+    slug: "new-orleans",
+    canonicalPath: "/new-orleans",
+    aliasPaths: ["/cities/new-orleans", "/ports/new-orleans", "/location/29.95110/-90.07150"],
+    placeType: "river_port_and_cultural_city",
+    title: "New Orleans, Louisiana — Travel Reference, River Port Logistics & Bayou Corridor Guide",
+    subtitle:
+      "French Quarter & Mississippi River Crescent • Port NOLA Erato/Julia Cruise Terminals • Barataria Basin & River Road Corridors",
+    heroSummary:
+      "New Orleans sits inside a sharp crescent of the lower Mississippi River between Lake Pontchartrain and the Barataria estuarine wetlands. Because the historic French Quarter and Warehouse District are compact while swamp preserves, River Road plantations, and Louis Armstrong International Airport (MSY) require 30-to-65-minute corridor transfers, good trip planning separates walkable neighborhood blocks from half-day excursion commitments and accounts for Gulf heat, tropical storms, and cruise embarkation windows.",
+    primaryCoordinate: {
+      lat: 29.9511,
+      lng: -90.0715,
+      label: "French Quarter / Jackson Square & Riverfront Core",
+      canonicalLocationPath: "/location/29.95110/-90.07150",
+      canonicalApiPath: "/api/location/29.95110/-90.07150",
+    },
+    secondaryCoordinates: [
+      {
+        lat: 29.9395,
+        lng: -90.0617,
+        label: "Port of New Orleans — Erato Street & Julia Street Cruise Terminals",
+        elevationFt: 10,
+        canonicalLocationPath: "/location/29.93950/-90.06170",
+        canonicalApiPath: "/api/location/29.93950/-90.06170",
+        roleInPlace:
+          "Primary deep-draft cruise and riverboat embarkation corridor along the Warehouse District / Convention Center riverfront.",
+      },
+      {
+        lat: 29.9934,
+        lng: -90.258,
+        label: "Louis Armstrong New Orleans International Airport (MSY / KMSY)",
+        elevationFt: 4,
+        canonicalLocationPath: "/location/29.99340/-90.25800",
+        canonicalApiPath: "/api/location/29.99340/-90.25800",
+        roleInPlace:
+          "Primary commercial aviation gateway 11 miles west in Kenner; live METAR/TAF aviation observations and I-10 East transfer origin.",
+      },
+      {
+        lat: 29.7544,
+        lng: -90.1128,
+        label: "Jean Lafitte / Barataria Basin Swamp & Bayou Corridor",
+        elevationFt: 3,
+        canonicalLocationPath: "/location/29.75440/-90.11280",
+        canonicalApiPath: "/api/location/29.75440/-90.11280",
+        roleInPlace:
+          "Primary cypress-tupelo swamp and marsh boat-tour departure zone 35–45 minutes south across the Crescent City Connection.",
+      },
+    ],
+    lastReviewedAt: "2026-10-24",
+    coverageScopeStatement:
+      "Integrates live NWS New Orleans/Baton Rouge (LIX) warnings, NOAA/NWPS lower Mississippi River gauge telemetry, KMSY airport METAR/TAF aviation observations, and Open-Meteo atmospheric & air-quality models. Streetcar service modifications, Port NOLA berth schedules, and festival street closures link to official municipal and port authorities.",
+    atAGlance: [
+      {
+        label: "Geographic Setting",
+        value: "Mississippi River crescent (mile 95 AHP) between Lake Pontchartrain and Barataria Basin (-2 ft to +15 ft natural levee)",
+        authorityType: "observation",
+      },
+      {
+        label: "Air & Cruise Gateways",
+        value: "Louis Armstrong Intl Airport (MSY, 11 mi W) • Port NOLA Erato & Julia St Cruise Terminals",
+        authorityType: "official_rule",
+      },
+      {
+        label: "MSY Official Taxi Rule",
+        value: "$36 flat rate (1–2 passengers) between MSY and Downtown / French Quarter ($15/person for 3+)",
+        authorityType: "official_rule",
+      },
+      {
+        label: "Key Weather & Water Factors",
+        value: "May–Oct heat index & afternoon lightning • June–Nov Gulf tropical systems • Spring Mississippi River high water",
+        authorityType: "forecast",
+      },
+    ],
+    overviewAndContext: {
+      sectionTitle: "Overview, Geography, History & Cultural Context",
+      leadSummary:
+        "Founded in 1718 on the naturally elevated alluvial ridge of the Mississippi River (Choctaw/Chitimacha Bulbancha, 'place of many tongues'), New Orleans evolved through French, Spanish, African, Afro-Caribbean, and American periods into one of North America's most distinct architectural, musical, and culinary capitals.",
+      geographyAndTopography: [
+        "Natural Levee vs. Interior Bowl: Historic neighborhoods like the French Quarter (Vieux Carré), Faubourg Marigny, and the lower Garden District sit on the higher natural river levee (10–15 feet above sea level), while mid-city basins sit below sea level and rely on giant drainage canals and pump stations.",
+        "Three Distinct Excursion Corridors: (1) The walkable Riverfront / French Quarter / Warehouse District core; (2) The Barataria / Jean Lafitte cypress swamp and coastal marsh corridor 35–45 minutes south on the Westbank; and (3) The Great River Road historic plantation corridor 45–65 minutes upriver toward Wallace and Vacherie.",
+      ],
+      historyAndCulture: [
+        "Birthplace of Jazz & Living Street Culture: Congo Square (inside Armstrong Park) and New Orleans Jazz National Historical Park preserve the African, Creole, and brass-band roots that shaped jazz. Second-line parades, Mardi Gras krewes, and neighborhood music rooms on Frenchmen Street remain active year-round community traditions.",
+        "Creole, Cajun & River Port Heritage: New Orleans cuisine and architecture reflect three centuries of port trade across the Gulf and Caribbean, distinguishable from rural Acadiana (Cajun country) further west.",
+      ],
+      localContextWhatItMeans: [
+        "Do Not Rent a Car for a French Quarter Stay: Overnight hotel parking in the French Quarter and CBD routinely costs $40–$55+ per night and narrow historic streets frequently close for pedestrian zones or parades. Use streetcars, walking, and hotel-pickup shuttles for swamp or plantation days.",
+        "Covered Swamp Boat vs. Airboat Is a Real Group Decision: Covered pontoon boats offer shade, conversation-level narration, and no minimum height restrictions for young children or seniors, whereas high-speed airboats use aviation ear protection, run deeper into shallow marsh channels, and enforce strict minimum age/height and pregnancy safety rules.",
+      ],
+      citationIds: ["nola-nps-jazz", "nola-port-cruise", "nola-rta-transit"],
+    },
+    gettingThereAndAround: {
+      sectionTitle: "Getting There & Getting Around: MSY Airport, Port NOLA, Streetcars & Bayou Transfers",
+      leadSummary:
+        "Most visitors arrive via Louis Armstrong New Orleans International Airport (MSY) or embark/disembark at the Port of New Orleans (Erato/Julia Street terminals). Within the historic core, walking and RTA streetcars handle short hops, while swamp and plantation excursions require dedicated highway transfers.",
+      modes: [
+        {
+          id: "nola-mode-air-msy",
+          modeName: "Louis Armstrong New Orleans International Airport (MSY) Transfers",
+          category: "air",
+          operatorOrAuthority: "New Orleans Aviation Board (NOAB) & City of New Orleans Taxicab Bureau",
+          routeOrCoverage: "MSY North Terminal (Kenner) ↔ French Quarter / CBD / Cruise Terminals via I-10 East (11–14 miles, 20–35 min off-peak)",
+          scheduleAndStatusIntegration: "live_integrated",
+          whatWorksInPractice:
+            "City ordinance sets a mandatory flat taxi rate of $36 for 1–2 passengers ($15 per passenger for 3–5 passengers) from MSY Baggage Claim Door 7 to anywhere in the French Quarter, CBD, or Erato/Julia cruise terminals west of Elysian Fields. Rideshare (Uber/Lyft) picks up outside Level 1 Baggage Claim Doors 7–11.",
+          practicalConstraints: [
+            "I-10 East bottlenecks heavily between Williams Blvd, Causeway Blvd, and the Claiborne/Poydras exits during weekday rush hours (7:30–9:00 AM, 4:00–6:30 PM) and on cruise embarkation mornings.",
+            "Public transit option: RTA Airport Express Bus (Route E1 / 202) runs between MSY and the Downtown Walk-Up / Main Library hub for $1.25–$1.50, taking ~45 minutes.",
+          ],
+          officialResourceUrl: "https://flymsy.com/ground-transportation/",
+          officialResourceLabel: "FlyMSY Official Ground Transportation & Flat Taxi Rates",
+          citationIds: ["nola-msy-ground"],
+        },
+        {
+          id: "nola-mode-cruise-port",
+          modeName: "Port of New Orleans (Erato Street & Julia Street Cruise Terminals)",
+          category: "marine_port",
+          operatorOrAuthority: "Port of New Orleans (Port NOLA)",
+          routeOrCoverage: "Erato Street Terminal (Carnival) & Julia Street Terminal (Norwegian, Royal Caribbean, Disney, American Cruise Lines) along Port of New Orleans Place",
+          scheduleAndStatusIntegration: "curated_with_official_link",
+          whatWorksInPractice:
+            "Both cruise terminals sit directly beside the Convention Center and Warehouse District, roughly 1 mile upriver from Canal Street and Jackson Square. Debarking cruise passengers with afternoon flights out of MSY can book half-day city or swamp excursions that include luggage hold and airport drop-off.",
+          practicalConstraints: [
+            "Do not try to walk from the French Quarter to the Julia/Erato cruise terminals with rolling luggage in summer heat; cobblestone crossings and railroad tracks along Convention Center Blvd require a short taxi or transfer.",
+            "Lower Mississippi River high-water stages in spring can alter ship air-draft clearances under the Crescent City Connection and affect riverboat docking gates.",
+          ],
+          officialResourceUrl: "https://portnola.com/cruise",
+          officialResourceLabel: "Port NOLA Official Cruise Terminal & Parking Guide",
+          citationIds: ["nola-port-cruise"],
+        },
+        {
+          id: "nola-mode-rta-streetcar",
+          modeName: "RTA Historic Streetcars (St. Charles, Canal, Riverfront & Rampart) & Algiers Ferry",
+          category: "public_transit",
+          operatorOrAuthority: "New Orleans Regional Transit Authority (RTA)",
+          routeOrCoverage: "St. Charles Line (Canal St ↔ Garden District ↔ Uptown/Carrollton), Canal Street Line (Riverfront ↔ Cemeteries/City Park), Riverfront Line (French Market ↔ Convention Center)",
+          scheduleAndStatusIntegration: "curated_with_official_link",
+          whatWorksInPractice:
+            "A 1-Day Jazzy Pass ($3.00 via the Le Pass app) covers unlimited streetcar and bus rides. The St. Charles Streetcar is the classic scenic link from Canal Street through the Warehouse District and Garden District.",
+          practicalConstraints: [
+            "Streetcars share lanes or neutral grounds and stop completely whenever Mardi Gras parades, second lines, or track maintenance occur; check RTA service alerts before relying on them for timed tour check-ins.",
+          ],
+          officialResourceUrl: "https://www.norta.com/ride-with-us/how-to-pay/jazzy-passes",
+          officialResourceLabel: "New Orleans RTA Streetcar Maps & Jazzy Pass Fares",
+          citationIds: ["nola-rta-transit"],
+        },
+        {
+          id: "nola-mode-swamp-plantation-shuttles",
+          modeName: "Hotel-Pickup Shuttles for Barataria Swamps & River Road Plantations",
+          category: "shuttle_transfer",
+          operatorOrAuthority: "Permitted Louisiana Tour & Charter Operators",
+          routeOrCoverage: "French Quarter / CBD Pickup Zones ↔ Jean Lafitte / Lafitte (LA-45 South, 35–45 min) & Wallace / Vacherie Plantations (I-10 / LA-18 / LA-3127, 50–65 min)",
+          scheduleAndStatusIntegration: "curated_with_official_link",
+          whatWorksInPractice:
+            "Because narrow French Quarter streets prohibit full-size motorcoaches inside residential blocks, hotel-pickup shuttles collect guests at perimeter avenues (Canal St, Decatur St, Rampart St, Poydras St, Tchoupitoulas St) 60–90 minutes before boat or plantation tour time.",
+          practicalConstraints: [
+            "Rideshare (Uber/Lyft) will drop you off at rural swamp docks in Lafitte or plantations in Wallace/Vacherie, but return drivers are frequently unavailable in those rural parishes—always book round-trip shuttle transport or drive yourself.",
+          ],
+          officialResourceUrl: "https://www.nps.gov/jela/planyourvisit/directions.htm",
+          officialResourceLabel: "NPS Jean Lafitte Barataria Preserve Directions",
+          citationIds: ["nola-nps-jazz"],
+        },
+      ],
+      keyDecisionTakeaway:
+        "Use the $36 flat-rate taxi or rideshare from MSY into town, walk or use the $3 RTA Jazzy Pass between the French Quarter and Garden District, and always book round-trip shuttle pickup (never one-way rideshare) for Barataria swamp or River Road plantation excursions.",
+    },
+    beforeYouGo: {
+      sectionTitle: "Before You Go: Entry Rules, Heat & Tropical Safety, Health & Emergency Information",
+      leadSummary:
+        "New Orleans is a domestic U.S. destination in Louisiana, but it is also a major international air arrival port (MSY) and Western Caribbean closed-loop/open-loop cruise homeport (Port NOLA). Entry requirements depend on traveler nationality, passport status, and whether your itinerary includes international sea ports.",
+      whyCoordinatesCannotAnswerEntry:
+        "Coordinates (29.95110, -90.07150) identify New Orleans in Louisiana, USA, but cannot determine whether a cruise passenger qualifies for U.S. CBP closed-loop Western Hemisphere Travel Initiative (WHTI) birth-certificate rules versus requiring a valid passport book or ESTA.",
+      entryScenarios: [
+        {
+          id: "nola-entry-us-domestic",
+          scenarioLabel: "U.S. Citizens & Lawful Permanent Residents (Domestic Air/Road Arrival)",
+          dependencies: {
+            nationality: "United States Citizen or U.S. Lawful Permanent Resident",
+            passportAndDocuments: "REAL ID-compliant state driver's license, U.S. Passport, or DHS Trusted Traveler card for TSA airport checkpoints",
+            residenceContext: "Domestic travel within the United States",
+            routingAndTransit: "Direct domestic flight to MSY, Amtrak (Sunset Limited / Crescent / City of New Orleans), or interstate highway arrival",
+            tripPurpose: "Tourism, business, or pre-cruise stay",
+            dateAndValidityRule: "ID must be valid through date of domestic return flight",
+          },
+          officialRequirementSummary:
+            "No passport or visa is required for domestic travel to New Orleans, though TSA requires REAL ID-compliant identification or an acceptable federal alternative (such as a U.S. passport) at airport security checkpoints.",
+          dccPracticalExplanation:
+            "If you are only visiting the city, bayous, and plantations, a REAL ID driver's license is sufficient. If you are boarding a cruise at Port NOLA, see the WHTI cruise rules below.",
+          officialLinks: [
+            {
+              label: "TSA REAL ID Identification Requirements",
+              url: "https://www.tsa.gov/real-id",
+              issuingOrganization: "U.S. Transportation Security Administration (TSA)",
+              note: "Official domestic air travel ID rules.",
+            },
+          ],
+          citationIds: ["nola-cbp-entry"],
+        },
+        {
+          id: "nola-entry-cruise-whti",
+          scenarioLabel: "Port NOLA Western Caribbean & Mexico Cruise Passengers (Closed-Loop vs. Passport)",
+          dependencies: {
+            nationality: "U.S. Citizens vs. Foreign Nationals embarking at Port of New Orleans",
+            passportAndDocuments: "U.S. Passport Book (strongly recommended) or WHTI-compliant proof of citizenship + government photo ID for eligible U.S. citizens on closed-loop sailings",
+            residenceContext: "Applies to all passengers embarking at Erato Street or Julia Street Cruise Terminals",
+            routingAndTransit: "Closed-loop cruise beginning and ending at Port of New Orleans vs. open-loop or emergency air return from Mexico/Central America",
+            tripPurpose: "International cruise embarkation",
+            dateAndValidityRule: "Passports should have at least 6 months validity beyond cruise completion",
+          },
+          officialRequirementSummary:
+            "Under U.S. CBP Western Hemisphere Travel Initiative (WHTI) rules, U.S. citizens on a closed-loop cruise that begins and ends at the same U.S. port (New Orleans) may re-enter the U.S. with an original/certified U.S. birth certificate and government-issued photo ID, unless a specific foreign port or cruise line requires a passport book. However, a valid U.S. Passport Book is required if you must fly back to the U.S. from a foreign port in an emergency.",
+          dccPracticalExplanation:
+            "Non-U.S. citizens embarking at Port NOLA must carry a valid passport and multiple-entry U.S. visa or valid ESTA (plus any visas required by Cozumel, Costa Maya, Roatán, or Belize) so they can legally re-enter the United States upon disembarkation in New Orleans.",
+          officialLinks: [
+            {
+              label: "U.S. CBP Western Hemisphere Travel Initiative (WHTI) Cruise Rules",
+              url: "https://www.cbp.gov/travel/us-citizens/western-hemisphere-travel-initiative",
+              issuingOrganization: "U.S. Customs and Border Protection (CBP)",
+              note: "Official CBP documentary requirements for land and sea travel.",
+            },
+          ],
+          citationIds: ["nola-cbp-entry", "nola-port-cruise"],
+        },
+        {
+          id: "nola-entry-international-visitor",
+          scenarioLabel: "International Visitors Arriving by Air or Sea",
+          dependencies: {
+            nationality: "Visa Waiver Program (VWP) nationals, Canadian citizens, or visa-required nationals",
+            passportAndDocuments: "Valid machine-readable e-Passport + approved ESTA (for VWP nationals) or B-1/B-2 visitor visa",
+            residenceContext: "Non-U.S. residents",
+            routingAndTransit: "International arrival or domestic connection via U.S. port of entry",
+            tripPurpose: "Tourism or conference attendance (up to 90 days under VWP)",
+            dateAndValidityRule: "Apply for ESTA at least 72 hours prior to departure",
+          },
+          officialRequirementSummary:
+            "International travelers from Visa Waiver Program countries must hold an approved ESTA before boarding air or sea carriers to the United States; other foreign nationals require a valid U.S. nonimmigrant visa.",
+          dccPracticalExplanation:
+            "Ensure your ESTA or U.S. visa remains valid through your entire stay, especially if combining a New Orleans stay with a Western Caribbean cruise that re-enters U.S. customs at Port NOLA.",
+          officialLinks: [
+            {
+              label: "Official U.S. CBP ESTA Application Portal",
+              url: "https://esta.cbp.dhs.gov/",
+              issuingOrganization: "U.S. Customs and Border Protection (CBP)",
+              note: "Official government ESTA portal ($21 fee).",
+            },
+          ],
+          citationIds: ["nola-cbp-entry"],
+        },
+      ],
+      safetyHealthAndEmergency: [
+        {
+          id: "nola-safety-heat-lightning",
+          category: "health_guidance",
+          title: "Subtropical Heat Index, Humidity & Bayou Lightning Safety",
+          issuingAuthority: "National Weather Service (NWS New Orleans/Baton Rouge) & CDC",
+          authorityType: "official_rule",
+          integrationStatus: "live_integrated",
+          summary:
+            "From May through September, New Orleans heat indices routinely exceed 100°F–108°F (38°C–42°C) with high dew points, and afternoon convective thunderstorms produce dangerous cloud-to-ground lightning over open bayous and the Mississippi River.",
+          travelerAction:
+            "Book walking tours, cemetery visits, and open-air airboat tours for the first morning departure (8:00–10:00 AM). Carry electrolyte water and choose shaded covered swamp boats or indoor museum/historic-home blocks during peak afternoon heat.",
+          officialUrl: "https://www.weather.gov/lix/",
+          officialUrlLabel: "NWS New Orleans/Baton Rouge Active Advisories",
+          citationIds: ["nola-nws-nhc"],
+        },
+        {
+          id: "nola-safety-tropical-street-flood",
+          category: "official_advisory",
+          title: "Tropical Cyclone Season (June–November) & Heavy-Rain Street Flooding",
+          issuingAuthority: "NOLA Ready (New Orleans Office of Homeland Security & Emergency Preparedness)",
+          authorityType: "official_rule",
+          integrationStatus: "linked_official_resource",
+          summary:
+            "Intense Gulf downpours (2+ inches per hour) can temporarily overwhelm municipal drainage pumps, causing localized street and underpass flooding in Mid-City, Broadmoor, and low-lying intersections even outside hurricane events.",
+          travelerAction:
+            "Never drive or walk through standing water under highway overpasses. Text NOLAREADY to 77295 or check ready.nola.gov during heavy rain or tropical watches.",
+          officialUrl: "https://ready.nola.gov/",
+          officialUrlLabel: "NOLA Ready Official Emergency & Street Flood Alerts",
+          citationIds: ["nola-ready-emergency", "nola-nws-nhc"],
+        },
+        {
+          id: "nola-emergency-medical",
+          category: "emergency_services",
+          title: "Emergency Services & Level I Trauma Care (University Medical Center)",
+          issuingAuthority: "City of New Orleans EMS & University Medical Center New Orleans",
+          authorityType: "official_resource_link",
+          integrationStatus: "linked_official_resource",
+          summary:
+            "Dial 911 for police, fire, or medical emergencies. University Medical Center New Orleans (2000 Canal St, 1.5 miles from the French Quarter) is the region's Level I Trauma Center; Touro Infirmary serves Uptown/Garden District.",
+          travelerAction:
+            "In crowded festival corridors (Bourbon St, Frenchmen St, Mardi Gras routes), identify cross-street corners when calling 911 and stay on well-lit main thoroughfares after dark.",
+          officialUrl: "https://ready.nola.gov/home/",
+          officialUrlLabel: "City of New Orleans Public Safety Resources",
+          citationIds: ["nola-ready-emergency"],
+        },
+      ],
+    },
+    timingSeasonalityAndAccess: {
+      sectionTitle: "Timing, Seasonality, Accessibility & Festival Constraints",
+      leadSummary:
+        "New Orleans operates on a distinct seasonal rhythm shaped by Mardi Gras, Spring festival weekends (Jazz Fest, French Quarter Fest), summer Gulf weather, and autumn culinary/music months.",
+      items: [
+        {
+          id: "nola-season-spring-fall",
+          category: "seasonality",
+          title: "Peak Festival Windows (Feb–May & Oct–Nov) vs. Summer Subtropical Season (June–Sept)",
+          windowOrScope: "Mardi Gras, French Quarter Fest & Jazz Fest (Spring) • Oct–Nov Cool Season • June–Sept Heat/Storm Season",
+          authorityType: "observation",
+          factualBasis:
+            "Spring (March–May) and Fall (October–November) offer comfortable 68°F–82°F temperatures and active alligator basking in the bayous, but coincide with peak hotel compression. Summer brings lower room rates and high alligator activity, paired with afternoon thunderstorms.",
+          dccInterpretation:
+            "In winter (December–February), when water temperatures drop below ~65°F, wild alligators enter brumation (dormancy) unless a warm sunny afternoon draws them onto banks—winter swamp tours remain scenic for cypress moss and birding, but wildlife expectations should be calibrated honestly.",
+          citationIds: ["nola-nps-jazz", "nola-nws-nhc"],
+        },
+        {
+          id: "nola-timing-excursion-windows",
+          category: "timing_window",
+          title: "Half-Day Swamp vs. Full-Day Plantation + Swamp Combo Timing",
+          windowOrScope: "8:30 AM Morning Pickup Wave vs. 12:15 PM Afternoon Pickup Wave",
+          authorityType: "editorial_recommendation",
+          factualBasis:
+            "A standalone Barataria swamp tour with hotel pickup takes ~3.75 to 4 hours door-to-door. A single River Road plantation tour (Oak Alley, Laura, or Whitney) takes ~4.5 to 5.5 hours. Combining both a plantation and a swamp tour requires an 8.5-to-9.5-hour full-day loop.",
+          dccInterpretation:
+            "If you have an evening jazz cruise (boarding at 6:00 PM at Toulouse St Wharf) or a 7:00 PM French Quarter dinner reservation, take the morning swamp or morning plantation departure so you are back at your hotel by 1:30–2:30 PM.",
+          citationIds: ["nola-nps-jazz"],
+        },
+        {
+          id: "nola-accessibility",
+          category: "accessibility",
+          title: "French Quarter Slate Sidewalks, Covered Swamp Boats vs. Airboats & Steamboat Ramps",
+          windowOrScope: "Vieux Carré Historic District, Toulouse Street Wharf & Barataria Docks",
+          authorityType: "official_rule",
+          factualBasis:
+            "Historic French Quarter banquettes (sidewalks) feature narrow passages and uneven 19th-century flagstone. At the swamp docks, covered tour boats feature flat gangway boarding and accessible seating, whereas small high-speed airboats require stepping over raised gunwales.",
+          dccInterpretation:
+            "Travelers using wheelchairs, walkers, or traveling with infants/toddlers under 48 inches tall or pregnant guests should book covered pontoon swamp boats and the Steamboat Natchez / Paddlewheeler Creole Queen (which have elevator/ramp access), rather than high-speed airboats.",
+          officialUrl: "https://www.nps.gov/jela/planyourvisit/accessibility.htm",
+          officialUrlLabel: "NPS Jean Lafitte Accessibility Information",
+          citationIds: ["nola-nps-jazz"],
+        },
+        {
+          id: "nola-closures-parades",
+          category: "closure_or_restriction",
+          title: "Mardi Gras & Festival Perimeter Closures",
+          windowOrScope: "Two Weeks Preceding Fat Tuesday, French Quarter Fest (April), Jazz Fest (Late April/Early May)",
+          authorityType: "official_rule",
+          factualBasis:
+            "During Mardi Gras parade rolls along St. Charles Avenue and Canal Street, the City of New Orleans closes cross-corridor vehicle traffic for hours before and after each krewe procession, and French Quarter vehicle entry is restricted to permitted residents/guests.",
+          dccInterpretation:
+            "During Carnival week, allow an extra 45–60 minutes to reach perimeter tour pickup zones on Rampart or Tchoupitoulas Street, and verify whether your hotel sits inside the St. Charles parade box.",
+          officialUrl: "https://ready.nola.gov/mardi-gras/",
+          officialUrlLabel: "NOLA Ready Official Parade Route & Closure Tracker",
+          citationIds: ["nola-ready-emergency"],
+        },
+      ],
+    },
+    operationalBoundaries: {
+      headline: "Live Conditions vs. Marine Coast Guard, Bayou Captain & Streetcar Dispatch Authority",
+      weatherVsOperationsExplanation:
+        "DCC integrates live NWS New Orleans/Baton Rouge weather warnings, NOAA lower Mississippi River stages, KMSY aviation METAR/TAF reports, and Open-Meteo atmospheric models. However, weather data on this page does NOT establish whether a Barataria airboat captain has called a lightning hold, whether the USCG has restricted Mississippi River vessel traffic for fog/high water, or whether RTA streetcars are detoured.",
+      missingOrExpiredDataRule:
+        "If any upstream NOAA, NWS, or aviation feed is unreachable or expired, DCC displays 'Unavailable / Unverified'—never '0 alerts' or 'All Clear'.",
+      whatIsLiveIntegrated: [
+        "U.S. National Weather Service (NWS LIX) active warnings, heat advisories, tropical statements, and point forecasts",
+        "NOAA NWPS lower Mississippi River gauge observations when reported within corridor radius",
+        "NOAA/NWS Aviation Weather Center live METAR & TAF for Louis Armstrong International Airport (KMSY)",
+        "Open-Meteo current weather, 12-hour/3-day forecast, and EPA/CAMS Air Quality Index",
+      ],
+      whatRequiresOfficialExternalCheck: [
+        {
+          capability: "Swamp Airboat & Riverboat Lightning / Fog Holds",
+          whyNotAutomated:
+            "USCG-licensed captains suspend bayou departures and Mississippi riverboat sailings dynamically based on localized lightning within 10 miles or dense river fog.",
+          officialSourceLabel: "Confirm directly with your booked operator or Welcome to New Orleans Tours",
+          officialSourceUrl: "https://www.welcometoneworleanstours.com/tours",
+        },
+        {
+          capability: "RTA Streetcar Detours & Parade Box Street Closures",
+          whyNotAutomated:
+            "NOPD and RTA adjust streetcar turnbacks and parade barricades in real time as crowds and krewes move.",
+          officialSourceLabel: "NORTA Service Alerts & NOLA Ready Traffic Map",
+          officialSourceUrl: "https://www.norta.com",
+        },
+      ],
+    },
+    specialistHandoffs: {
+      sectionTitle: "Specialist Guides & Context-Preserving New Orleans Handoffs",
+      leadSummary:
+        "Use the reference sections above to decide between covered swamp boats vs. airboats, Oak Alley vs. Whitney Plantation, or morning vs. evening river cruises. When ready, carry your trip dates and group size into DCC's verified New Orleans specialist guides.",
+      contextControls: {
+        supportsDate: true,
+        supportsPartySize: true,
+        customSelectorLabel: "Primary Experience Focus",
+        customSelectorParam: "focus",
+        customSelectorOptions: [
+          { value: "swamp_bayou", label: "Swamp & Bayou (Covered Boat vs. Airboat)" },
+          { value: "plantation_history", label: "River Road Plantations (Whitney / Oak Alley / Laura)" },
+          { value: "riverboat_jazz", label: "Mississippi Riverboat & Evening Jazz Cruise" },
+          { value: "french_quarter_food", label: "French Quarter History, Food & Cocktail Walks" },
+        ],
+      },
+      options: [
+        {
+          id: "handoff-wno-tours",
+          partnerName: "Welcome to New Orleans Tours",
+          partnerRole: "specialist_guide",
+          integrationMode: "context_handoff_link",
+          description:
+            "Curated New Orleans storefront and local concierge guide comparing swamp boats, plantations, steamboat jazz cruises, and French Quarter walking tours with clear pickup-window rules.",
+          whenItHelps:
+            "Best when comparing full-day city/plantation combos, steamboat cruises, or multi-generational group options.",
+          noPurchaseRequiredNote:
+            "Carries your date and party size into the Welcome to New Orleans Tours catalog. Reference guidance remains complete without booking.",
+          baseUrl: "https://www.welcometoneworleanstours.com/tours",
+          supportedContextParams: ["date", "partySize"],
+          defaultParams: {
+            source_surface: "dcc_new_orleans_reference",
+            destination: "new-orleans",
+          },
+        },
+        {
+          id: "handoff-wno-swamp",
+          partnerName: "New Orleans Swamp & Airboat Specialist Guide",
+          partnerRole: "excursion_specialist",
+          integrationMode: "context_handoff_link",
+          description:
+            "Focused comparison of Barataria and Jean Lafitte covered pontoon boats versus small and large high-speed airboats, including hotel shuttle pickup timing.",
+          whenItHelps:
+            "Best when deciding between shaded covered boats (all ages) and high-speed airboats (minimum height/age rules).",
+          noPurchaseRequiredNote:
+            "Passes your travel window and party size directly into the swamp comparison view.",
+          baseUrl: "https://www.welcometoneworleanstours.com/swamp-tours",
+          supportedContextParams: ["date", "partySize"],
+          defaultParams: {
+            source_surface: "dcc_new_orleans_reference",
+            category: "swamp-tours",
+          },
+        },
+        {
+          id: "handoff-wtts-planner",
+          partnerName: "Welcome to the Swamp — Bayou Format Planner",
+          partnerRole: "excursion_specialist",
+          integrationMode: "context_handoff_link",
+          description:
+            "Dedicated swamp-vessel decision tool covering boat size, noise level, shade, wildlife viewing distance, and self-drive vs. hotel shuttle logistics.",
+          whenItHelps:
+            "Best when your group wants a dedicated breakdown of swamp ecosystems and vessel types before choosing a departure time.",
+          noPurchaseRequiredNote:
+            "No purchase required to use the bayou vessel comparison tool.",
+          baseUrl: "https://welcometotheswamp.com/plan",
+          supportedContextParams: ["date", "partySize"],
+          defaultParams: {
+            source_surface: "dcc_new_orleans_reference",
+          },
+        },
+      ],
+    },
+    relationships: [
+      {
+        id: "rel-nola-coord-primary",
+        label: "French Quarter / Jackson Square Coordinate (29.95110, -90.07150)",
+        relationship: "canonical_coordinate",
+        href: "/location/29.95110/-90.07150",
+        coordinate: { lat: 29.9511, lng: -90.0715 },
+        summary: "Canonical live telemetry page for Downtown New Orleans and the French Quarter river bend.",
+      },
+      {
+        id: "rel-nola-port",
+        label: "Port of New Orleans Cruise Hub",
+        relationship: "port",
+        href: "/ports/new-orleans",
+        coordinate: { lat: 29.9395, lng: -90.0617 },
+        summary: "DCC port reference for Erato Street and Julia Street cruise embarkation and pre/post-cruise logistics.",
+      },
+      {
+        id: "rel-nola-city-node",
+        label: "New Orleans City Node (/cities/new-orleans)",
+        relationship: "city",
+        href: "/cities/new-orleans",
+        summary: "DCC city index entry connecting New Orleans neighborhoods, sports venues, and regional corridors.",
+      },
+      {
+        id: "rel-nola-swamp-compare",
+        label: "Covered Swamp Boat vs. Airboat Comparison",
+        relationship: "route_corridor",
+        href: "/new-orleans/compare/covered-swamp-boat-vs-airboat",
+        summary: "Side-by-side operational comparison of Barataria covered boats vs. high-speed airboats.",
+      },
+    ],
+    evidenceRegistry: [
+      {
+        id: "nola-port-cruise",
+        claimSummary: "Port of New Orleans operates the Erato Street and Julia Street Cruise Terminals along the Mississippi River Warehouse District waterfront.",
+        sourceTitle: "Port of New Orleans (Port NOLA) — Cruise Information & Terminals",
+        sourceUrl: "https://portnola.com/cruise",
+        issuingOrganization: "Port of New Orleans (Board of Commissioners of the Port of New Orleans)",
+        authorityType: "official_rule",
+        integrationStatus: "linked_official_resource",
+        geographicScope: "Erato Street & Julia Street Cruise Terminals, New Orleans, LA",
+        applicableTravelerContext: "Cruise passengers embarking or disembarking in New Orleans",
+        publishedOrUpdatedDate: "2026",
+        lastCheckedAt: "2026-10-24",
+      },
+      {
+        id: "nola-msy-ground",
+        claimSummary: "City of New Orleans sets a regulated flat taxi fare of $36 for 1–2 passengers ($15/person for 3+) between MSY Airport and the French Quarter/CBD.",
+        sourceTitle: "Louis Armstrong New Orleans International Airport — Ground Transportation",
+        sourceUrl: "https://flymsy.com/ground-transportation/",
+        issuingOrganization: "New Orleans Aviation Board (NOAB) / City of New Orleans",
+        authorityType: "official_rule",
+        integrationStatus: "curated_verified",
+        geographicScope: "MSY Airport (Kenner) to New Orleans CBD, French Quarter, and Cruise Terminals",
+        applicableTravelerContext: "Air travelers transferring between MSY and New Orleans hotels or cruise terminals",
+        publishedOrUpdatedDate: "2026",
+        lastCheckedAt: "2026-10-24",
+      },
+      {
+        id: "nola-rta-transit",
+        claimSummary: "New Orleans Regional Transit Authority operates the St. Charles, Canal, Riverfront, and Rampart streetcar lines with $3.00 1-day Jazzy Passes.",
+        sourceTitle: "New Orleans Regional Transit Authority (NORTA) — Fares, Passes & Schedules",
+        sourceUrl: "https://www.norta.com/ride-with-us/how-to-pay/jazzy-passes",
+        issuingOrganization: "New Orleans Regional Transit Authority (RTA)",
+        authorityType: "official_rule",
+        integrationStatus: "linked_official_resource",
+        geographicScope: "Orleans Parish streetcar and bus network",
+        applicableTravelerContext: "Visitors riding historic streetcars between Canal Street, French Quarter, and Garden District",
+        publishedOrUpdatedDate: "2026",
+        lastCheckedAt: "2026-10-24",
+      },
+      {
+        id: "nola-cbp-entry",
+        claimSummary: "U.S. CBP Western Hemisphere Travel Initiative (WHTI) governs closed-loop cruise document rules at Port NOLA and ESTA/visa requirements for international arrivals.",
+        sourceTitle: "U.S. Customs and Border Protection — Western Hemisphere Travel Initiative (WHTI)",
+        sourceUrl: "https://www.cbp.gov/travel/us-citizens/western-hemisphere-travel-initiative",
+        issuingOrganization: "U.S. Customs and Border Protection (DHS)",
+        authorityType: "official_rule",
+        integrationStatus: "curated_verified",
+        geographicScope: "U.S. Air and Sea Ports of Entry (MSY & Port NOLA)",
+        applicableTravelerContext: "Cruise passengers and international visitors entering or re-entering the United States at New Orleans",
+        publishedOrUpdatedDate: "2026",
+        lastCheckedAt: "2026-10-24",
+      },
+      {
+        id: "nola-nps-jazz",
+        claimSummary: "Jean Lafitte National Historical Park and Preserve (Barataria Preserve & French Quarter Visitor Center) and New Orleans Jazz National Historical Park provide official cultural, natural, and accessibility guidance.",
+        sourceTitle: "National Park Service — Jean Lafitte National Historical Park and Preserve",
+        sourceUrl: "https://www.nps.gov/jela/index.htm",
+        issuingOrganization: "U.S. National Park Service (Department of the Interior)",
+        authorityType: "official_resource_link",
+        integrationStatus: "curated_verified",
+        geographicScope: "French Quarter Visitor Center (419 Decatur St) & Barataria Preserve (Marrero, LA)",
+        applicableTravelerContext: "Visitors exploring Barataria wetlands, Mississippi delta ecology, and New Orleans cultural history",
+        publishedOrUpdatedDate: "2026",
+        lastCheckedAt: "2026-10-24",
+      },
+      {
+        id: "nola-nws-nhc",
+        claimSummary: "Live weather alerts, heat-index advisories, tropical cyclone warnings, and atmospheric forecasts for New Orleans (29.95110, -90.07150).",
+        sourceTitle: "National Weather Service New Orleans/Baton Rouge (LIX) & Open-Meteo API",
+        sourceUrl: "https://www.weather.gov/lix/",
+        issuingOrganization: "NOAA / National Weather Service & Open-Meteo",
+        authorityType: "forecast",
+        integrationStatus: "live_integrated",
+        geographicScope: "Southeast Louisiana, Lake Pontchartrain, and Barataria Basin",
+        applicableTravelerContext: "All travelers checking heat, lightning, and tropical weather conditions",
+        publishedOrUpdatedDate: "Live / Continuous",
+        lastCheckedAt: "2026-10-24",
+      },
+      {
+        id: "nola-ready-emergency",
+        claimSummary: "City of New Orleans Office of Homeland Security & Emergency Preparedness publishes official street-flooding alerts, tropical guidance, and parade traffic restrictions.",
+        sourceTitle: "NOLA Ready — City of New Orleans Emergency Preparedness",
+        sourceUrl: "https://ready.nola.gov/",
+        issuingOrganization: "City of New Orleans Office of Homeland Security & Emergency Preparedness (NOHSEP)",
+        authorityType: "official_rule",
+        integrationStatus: "linked_official_resource",
+        geographicScope: "City of New Orleans (Orleans Parish)",
+        applicableTravelerContext: "Visitors checking heavy-rain street flooding, parade box closures, and emergency alerts",
+        publishedOrUpdatedDate: "2026",
+        lastCheckedAt: "2026-10-24",
+      },
+    ],
+  },
+  "las-vegas": {
+    id: "las-vegas",
+    slug: "las-vegas",
+    canonicalPath: "/vegas",
+    aliasPaths: ["/cities/las-vegas", "/las-vegas-strip", "/location/36.11470/-115.17280"],
+    placeType: "desert_resort_and_canyon_gateway",
+    title: "Las Vegas, Nevada — Travel Reference, Strip & Desert Corridor Logistics Guide",
+    subtitle:
+      "Las Vegas Strip & Downtown Fremont • Harry Reid Airport (LAS) • Red Rock Canyon, Hoover Dam & Grand Canyon West Gateways",
+    heroSummary:
+      "Set in the Mojave Desert basin at 2,000–2,200 feet elevation and ringed by 11,900-foot Spring Mountains, Las Vegas combines a high-density 4.2-mile resort boulevard (the Las Vegas Strip), historic Downtown Fremont Street, and major federal public-land day-trip corridors (Red Rock Canyon, Hoover Dam/Lake Mead, and the Grand Canyon). Because resort blocks are deceptive in scale and desert temperatures swing from winter canyon winds to 110°F+ summer heat, smart trip planning pairs one timed desert excursion with one structured evening commitment.",
+    primaryCoordinate: {
+      lat: 36.1147,
+      lng: -115.1728,
+      label: "Las Vegas Strip Center (Bellagio / Flamingo Wash Corridor)",
+      canonicalLocationPath: "/location/36.11470/-115.17280",
+      canonicalApiPath: "/api/location/36.11470/-115.17280",
+    },
+    secondaryCoordinates: [
+      {
+        lat: 36.084,
+        lng: -115.1537,
+        label: "Harry Reid International Airport (LAS / KLAS)",
+        elevationFt: 2181,
+        canonicalLocationPath: "/location/36.08400/-115.15370",
+        canonicalApiPath: "/api/location/36.08400/-115.15370",
+        roleInPlace:
+          "Primary aviation gateway 3 miles south of center Strip; live KLAS METAR/TAF wind and density-altitude observations for commercial and helicopter flights.",
+      },
+      {
+        lat: 36.1358,
+        lng: -115.4275,
+        label: "Red Rock Canyon National Conservation Area (13-Mile Scenic Drive)",
+        elevationFt: 3700,
+        canonicalLocationPath: "/location/36.13580/-115.42750",
+        canonicalApiPath: "/api/location/36.13580/-115.42750",
+        roleInPlace:
+          "BLM Aztec Sandstone conservation area 17 miles west via Charleston Blvd (NV-159); subject to seasonal timed-entry reservations Oct 1 – May 31.",
+      },
+      {
+        lat: 36.0161,
+        lng: -114.7377,
+        label: "Hoover Dam & Black Canyon (US-93 / I-11 Corridor)",
+        elevationFt: 1232,
+        canonicalLocationPath: "/location/36.01610/-114.73770",
+        canonicalApiPath: "/location/36.01610/-114.73770",
+        roleInPlace:
+          "U.S. Bureau of Reclamation dam and Lake Mead National Recreation Area gateway 35 miles southeast on the Nevada–Arizona border.",
+      },
+    ],
+    lastReviewedAt: "2026-10-24",
+    coverageScopeStatement:
+      "Integrates live NWS Las Vegas (VEF) desert heat, wind, and flash-flood warnings, KLAS airport METAR/TAF aviation observations, USGS 500 km seismic telemetry, and Open-Meteo atmospheric & air-quality models. BLM Red Rock Canyon timed-entry reservations, Bureau of Reclamation Hoover Dam security rules, and RTC transit fares link to official federal and regional authorities.",
+    atAGlance: [
+      {
+        label: "Geographic Setting",
+        value: "Mojave Desert Las Vegas Valley (2,000–2,200 ft) bordered by Spring Mountains (11,916 ft) and Colorado River Black Canyon",
+        authorityType: "observation",
+      },
+      {
+        label: "Airport & Strip Scale",
+        value: "Harry Reid Intl (LAS) is 2–4 miles from Strip resorts, but walking between adjacent Strip casinos takes 15–25 minutes",
+        authorityType: "observation",
+      },
+      {
+        label: "Red Rock Timed Entry Rule",
+        value: "Mandatory Recreation.gov timed-entry reservation required Oct 1 – May 31 (8:00 AM – 5:00 PM) for the 13-mile Scenic Drive",
+        authorityType: "official_rule",
+      },
+      {
+        label: "Grand Canyon Rim Distance",
+        value: "Grand Canyon West (Hualapai Nation / Skywalk) is ~2.5 hrs drive (125 mi); NPS South Rim is ~4.5 hrs drive (280 mi) each way",
+        authorityType: "observation",
+      },
+    ],
+    overviewAndContext: {
+      sectionTitle: "Overview, Desert Geography, History & Corridor Scale",
+      leadSummary:
+        "Anchored by natural desert artesian springs on ancestral Nuwuvi (Southern Paiute) land, Las Vegas grew from a 1905 railroad town and 1931 Hoover Dam construction hub into the entertainment and convention capital of the Mojave Desert.",
+      geographyAndTopography: [
+        "Deceptive Boulevard Scale: Las Vegas Boulevard South ('The Strip', situated mostly in unincorporated Clark County / Paradise rather than the City of Las Vegas) stretches 4.2 miles from Mandalay Bay to The STRAT. Because mega-resorts sit hundreds of yards back from the curb and intersections use elevated pedestrian bridges, walking 'two resorts over' often equals 0.7 to 1.2 miles.",
+        "Three Distinct Day-Trip Directions: (1) West 25–30 minutes to Red Rock Canyon (3,700–4,800 ft) or 45 minutes to Mt. Charleston (7,500–8,500 ft alpine relief); (2) Southeast 40–45 minutes via I-11 to Hoover Dam and Lake Mead, continuing to Grand Canyon West (2.5 hours) or NPS South Rim (4.5 hours); and (3) Northeast 60 minutes via I-15 to Valley of Fire State Park.",
+      ],
+      historyAndCulture: [
+        "Hoover Dam, Mid-Century Neon & Modern Arena District: Downtown's Fremont Street, the Neon Museum, the Mob Museum, and the Atomic Museum document how federal water/power engineering and mid-century resort architecture shaped modern Southern Nevada.",
+        "Show Residencies & Sports Megaprojects: T-Mobile Arena, Allegiant Stadium, Sphere, and flagship resort theaters create synchronized 6:30–8:00 PM pre-show and 10:00–11:30 PM post-show traffic waves across the entire corridor.",
+      ],
+      localContextWhatItMeans: [
+        "Grand Canyon West vs. South Rim Is the #1 Day-Trip Distinction: Grand Canyon West (125 miles from Vegas, operated by the Hualapai Tribe) is the home of the glass Skywalk and helicopter canyon-floor landings, fitting a 7-to-9-hour day trip. Grand Canyon National Park's South Rim (280 miles from Vegas) requires a 13-to-15-hour round-trip coach day or a fixed-wing/helicopter air tour.",
+        "Rideshare Never Picks Up at the Front Valet Curb on the Strip: Every major Strip resort routes Uber and Lyft to a designated parking-garage level or back-of-house rideshare lounge, which can be a 7-to-12-minute indoor walk from the casino floor.",
+      ],
+      citationIds: ["lv-las-airport", "lv-blm-redrock", "lv-usbr-hoover"],
+    },
+    gettingThereAndAround: {
+      sectionTitle: "Getting There & Getting Around: LAS Airport Terminals, Strip Monorail/Deuce & Desert Transfers",
+      leadSummary:
+        "Harry Reid International Airport (LAS) sits immediately adjacent to the south end of the Strip, making airport arrival fast—provided you know whether your airline uses Terminal 1 or Terminal 3 and how Strip resort pickups work.",
+      modes: [
+        {
+          id: "lv-mode-air-las",
+          modeName: "Harry Reid International Airport (LAS) — Terminal 1 vs. Terminal 3 & Zone Taxis",
+          category: "air",
+          operatorOrAuthority: "Clark County Department of Aviation & Nevada Taxicab Authority",
+          routeOrCoverage: "LAS Terminal 1 (A/B/C/D Gates) & Terminal 3 (E Gates + International) ↔ Las Vegas Strip (2–6 miles, 10–25 min) & Downtown (9 miles)",
+          scheduleAndStatusIntegration: "live_integrated",
+          whatWorksInPractice:
+            "Nevada Taxicab Authority enforces fixed zone taxi fares from LAS to the Strip (Zone 1 South Strip, Zone 2 Mid-Strip, Zone 3 North Strip), eliminating route-padding concerns. Rideshare picks up on Level 2M of the Terminal 1 Parking Garage and Valet Level of the Terminal 3 Garage.",
+          practicalConstraints: [
+            "Terminal 1 and Terminal 3 are physically separate buildings on opposite sides of the airport; verify your airline's terminal before departure.",
+            "High desert winds (35+ kt gusts) or extreme afternoon density altitude (110°F+) can trigger FAA ground delays at KLAS and pause helicopter Strip/Grand Canyon flights.",
+          ],
+          officialResourceUrl: "https://www.harryreidairport.com/Transportation",
+          officialResourceLabel: "Harry Reid International Airport Official Ground Transportation",
+          citationIds: ["lv-las-airport", "lv-nws-vegas"],
+        },
+        {
+          id: "lv-mode-strip-transit",
+          modeName: "Las Vegas Monorail, RTC Deuce Bus & Resort Trams",
+          category: "public_transit",
+          operatorOrAuthority: "Las Vegas Monorail (LVCVA) & Regional Transportation Commission of Southern Nevada (RTC)",
+          routeOrCoverage: "East-side Strip Monorail (MGM Grand ↔ SAHARA, 7 stations) • RTC Deuce 24/7 Double-Decker Bus (South Strip Transit Terminal ↔ Strip ↔ Downtown Fremont)",
+          scheduleAndStatusIntegration: "curated_with_official_link",
+          whatWorksInPractice:
+            "The Las Vegas Monorail runs behind the east side of the Strip every 4–8 minutes (bypassing boulevard traffic completely), while free west-side resort trams connect Mandalay Bay–Luxor–Excalibur and Park MGM–Aria–Bellagio. The RTC Deuce bus is the only single-seat transit link running the full length of the Strip into Downtown Fremont.",
+          practicalConstraints: [
+            "Monorail stations sit at the rear of east-side casino properties (a 5–10 minute walk through the resort from Las Vegas Blvd).",
+          ],
+          officialResourceUrl: "https://www.rtcsnv.com/ways-to-travel/fares-passes/",
+          officialResourceLabel: "RTC Southern Nevada Transit Passes & Deuce Route Guide",
+          citationIds: ["lv-rtc-monorail"],
+        },
+        {
+          id: "lv-mode-canyon-dam-transfers",
+          modeName: "Red Rock Canyon, Hoover Dam & Grand Canyon Tour Transfers",
+          category: "shuttle_transfer",
+          operatorOrAuthority: "Permitted Commercial Tour Operators, BLM & U.S. Bureau of Reclamation",
+          routeOrCoverage: "Strip Resort Tour Bus Plazas ↔ Red Rock Canyon (17 mi W), Hoover Dam (35 mi SE), Valley of Fire (55 mi NE), Grand Canyon West (125 mi SE)",
+          scheduleAndStatusIntegration: "curated_with_official_link",
+          whatWorksInPractice:
+            "Guided day-trip coaches and small-group SUVs pick up at designated Strip resort tour lobbies between 6:00 AM and 8:00 AM, handling BLM/Hualapai/National Park entry permits and avoiding the need to reserve an individual timed-entry vehicle pass.",
+          practicalConstraints: [
+            "Self-driving to Red Rock Canyon's 13-mile Scenic Drive between October 1 and May 31 (8:00 AM – 5:00 PM) requires a mandatory timed-entry reservation on Recreation.gov; cell service inside Red Rock Canyon is weak, so download passes offline.",
+            "Rideshare (Uber/Lyft) should NEVER be used for one-way drop-offs at Red Rock Canyon or Valley of Fire because cell reception and return pickups at trailheads are unreliable.",
+          ],
+          officialResourceUrl: "https://www.blm.gov/programs/national-conservation-lands/nevada/red-rock-canyon",
+          officialResourceLabel: "BLM Red Rock Canyon Official Timed-Entry & Visitor Guide",
+          citationIds: ["lv-blm-redrock", "lv-usbr-hoover"],
+        },
+      ],
+      keyDecisionTakeaway:
+        "Use regulated flat-zone taxis or garage rideshare from LAS, combine east-side Monorail and west-side free trams to save steps on the Strip, and book guided round-trip transport (or a rental car with an offline Recreation.gov pass) rather than rideshare for Red Rock Canyon, Hoover Dam, or Valley of Fire.",
+    },
+    beforeYouGo: {
+      sectionTitle: "Before You Go: Entry Rules, Mojave Desert Heat & Monsoon Safety, Health & Emergency Information",
+      leadSummary:
+        "Las Vegas welcomes both domestic U.S. travelers and direct international arrivals via Harry Reid Airport Terminal 3. Outdoor desert safety—dehydration, extreme summer heat, and monsoon flash floods—requires year-round awareness.",
+      whyCoordinatesCannotAnswerEntry:
+        "Coordinates (36.11470, -115.17280) locate the Las Vegas Strip in Nevada, USA, but cannot determine a traveler's nationality, passport validity, ESTA status for Terminal 3 international arrivals, or age eligibility (21+ for Nevada gaming floors and nightclubs).",
+      entryScenarios: [
+        {
+          id: "lv-entry-us-domestic",
+          scenarioLabel: "U.S. Citizens & Lawful Permanent Residents (Domestic Arrival)",
+          dependencies: {
+            nationality: "United States Citizen or U.S. Lawful Permanent Resident",
+            passportAndDocuments: "REAL ID-compliant driver's license, state ID, or U.S. Passport for TSA checkpoints and 21+ casino/nightclub age verification",
+            residenceContext: "Domestic U.S. travel",
+            routingAndTransit: "Domestic flight to LAS or highway arrival via I-15 / I-11",
+            tripPurpose: "Tourism, conventions, or live events",
+            dateAndValidityRule: "Unexpired government photo ID required at all times for 21+ gaming and club entry",
+          },
+          officialRequirementSummary:
+            "No visa or passport is required for domestic U.S. arrivals, though TSA requires REAL ID-compliant identification (or a U.S. passport) at airport security checkpoints. Under Nevada Gaming Control Board regulations, guests must be 21+ with valid government photo ID to linger on casino gaming floors or enter nightclubs/dayclubs.",
+          dccPracticalExplanation:
+            "Even if you are over 40, Las Vegas dayclubs, nightclubs, and sportsbooks strictly scan physical, unexpired government photo IDs at the door—digital photos of an ID on your phone are not accepted.",
+          officialLinks: [
+            {
+              label: "TSA REAL ID Official Requirements",
+              url: "https://www.tsa.gov/real-id",
+              issuingOrganization: "U.S. Transportation Security Administration (TSA)",
+              note: "Official domestic air checkpoint identification requirements.",
+            },
+          ],
+          citationIds: ["lv-cbp-entry"],
+        },
+        {
+          id: "lv-entry-international-t3",
+          scenarioLabel: "International Visitors Arriving at LAS Terminal 3 or Connecting via U.S. Hubs",
+          dependencies: {
+            nationality: "Visa Waiver Program (VWP) citizens, Canadian citizens, or visa-required nationals",
+            passportAndDocuments: "Valid e-Passport + approved ESTA (for VWP citizens) or B-1/B-2 U.S. visitor visa",
+            residenceContext: "International residents",
+            routingAndTransit: "Direct international arrival into LAS Terminal 3 CBP facility or domestic connection",
+            tripPurpose: "Tourism, conference/trade show attendance (up to 90 days on ESTA)",
+            dateAndValidityRule: "ESTA must be approved at least 72 hours before boarding",
+          },
+          officialRequirementSummary:
+            "International travelers from Visa Waiver Program countries must hold an approved Electronic System for Travel Authorization (ESTA) and a valid machine-readable e-Passport; visa-required nationals must hold a valid U.S. nonimmigrant visa.",
+          dccPracticalExplanation:
+            "International visitors planning to visit Vegas nightclubs or bars should carry their physical passport (or a secondary government driver's license alongside a passport copy where accepted), as foreign national ID cards are often declined by venue scanners.",
+          officialLinks: [
+            {
+              label: "Official U.S. CBP ESTA Application Portal",
+              url: "https://esta.cbp.dhs.gov/",
+              issuingOrganization: "U.S. Customs and Border Protection (CBP)",
+              note: "Official U.S. Department of Homeland Security ESTA portal.",
+            },
+          ],
+          citationIds: ["lv-cbp-entry"],
+        },
+      ],
+      safetyHealthAndEmergency: [
+        {
+          id: "lv-safety-extreme-heat",
+          category: "health_guidance",
+          title: "Mojave Desert Extreme Heat (May–September) & Rapid Dehydration",
+          issuingAuthority: "National Weather Service Las Vegas (VEF) & Southern Nevada Health District",
+          authorityType: "official_rule",
+          integrationStatus: "live_integrated",
+          summary:
+            "Summer afternoon highs in the Las Vegas Valley regularly reach 105°F–117°F (41°C–47°C) with single-digit relative humidity, and lower-elevation canyons (Hoover Dam, Lake Mead, Valley of Fire) run 5°F–8°F hotter than the Strip.",
+          travelerAction:
+            "Because dry desert air evaporates sweat instantly, travelers lose 1–1.5 liters of water per hour outdoors without feeling damp. Schedule desert hikes or Hoover Dam walks before 9:30 AM in summer; Valley of Fire and Lake Mead close exposed trails completely from mid-May through September.",
+          officialUrl: "https://www.weather.gov/vef/",
+          officialUrlLabel: "NWS Las Vegas Active Heat & Weather Warnings",
+          citationIds: ["lv-nws-vegas", "lv-blm-redrock"],
+        },
+        {
+          id: "lv-safety-monsoon-flash-flood",
+          category: "official_advisory",
+          title: "Summer Monsoon Flash Flooding (July–September) in Desert Washes & Strip Channels",
+          issuingAuthority: "National Weather Service Las Vegas & Clark County Regional Flood Control District",
+          authorityType: "official_rule",
+          integrationStatus: "live_integrated",
+          summary:
+            "Summer monsoon thunderstorms over the Spring Mountains send fast-moving flash floods through desert slot canyons and down the Flamingo Wash directly beneath the center Strip (near Caesars, Bellagio, and The LINQ).",
+          travelerAction:
+            "Never enter desert washes or slot canyons when thunderstorms are forecast anywhere in the watershed, and avoid flooded low-water road crossings.",
+          officialUrl: "https://www.weather.gov/vef/",
+          officialUrlLabel: "NWS Las Vegas Flash Flood & Radar Portal",
+          citationIds: ["lv-nws-vegas"],
+        },
+        {
+          id: "lv-emergency-services",
+          category: "emergency_services",
+          title: "Emergency Services & Level I Trauma Care (UMC Southern Nevada)",
+          issuingAuthority: "Las Vegas Metropolitan Police Department (LVMPD) & University Medical Center of Southern Nevada",
+          authorityType: "official_resource_link",
+          integrationStatus: "linked_official_resource",
+          summary:
+            "Dial 911 for emergencies on the Strip, Downtown, or surrounding highways. University Medical Center (UMC, 1800 W Charleston Blvd) is Nevada's Level I Trauma Center and Burn Care facility; Sunrise Hospital serves the east side of the Strip.",
+          travelerAction:
+            "Inside large Strip casino complexes, notify resort security immediately alongside calling 911 so security can escort paramedics directly to the correct hotel tower elevator or floor.",
+          officialUrl: "https://www.umcsn.com/",
+          officialUrlLabel: "University Medical Center of Southern Nevada",
+          citationIds: ["lv-nws-vegas"],
+        },
+      ],
+    },
+    timingSeasonalityAndAccess: {
+      sectionTitle: "Timing, Seasonality, Accessibility & Federal Site Rules",
+      leadSummary:
+        "Las Vegas operates 365 days a year, but desert outdoor access, pool seasons, and major convention/sports weeks shift the practical rules of a trip.",
+      items: [
+        {
+          id: "lv-season-desert-vs-pool",
+          category: "seasonality",
+          title: "Prime Desert Hiking Season (Oct–April) vs. Pool & Dayclub Season (March–October)",
+          windowOrScope: "Oct–April (60°F–80°F Desert Hiking) • May–Sept (100°F–115°F Pool & Indoor Season)",
+          authorityType: "observation",
+          factualBasis:
+            "October through April offers ideal temperatures for Red Rock Canyon, Valley of Fire, and Hoover Dam walking tours, while many resort pool decks reduce hours or close non-heated pools between November and February.",
+          dccInterpretation:
+            "In winter (Dec–Feb), desert mornings at Red Rock Canyon or Grand Canyon West can drop into the 30s°F with brisk winds—pack a windproof layer even if you are staying on the Strip.",
+          citationIds: ["lv-blm-redrock", "lv-nws-vegas"],
+        },
+        {
+          id: "lv-closure-redrock-timed-entry",
+          category: "closure_or_restriction",
+          title: "Red Rock Canyon Mandatory Timed-Entry Season (October 1 – May 31)",
+          windowOrScope: "Daily 8:00 AM – 5:00 PM from October 1 through May 31",
+          authorityType: "official_rule",
+          factualBasis:
+            "The Bureau of Land Management requires a timed-entry reservation via Recreation.gov (in addition to the standard park entrance fee or America the Beautiful pass) for all personal vehicles entering the 13-mile Scenic Drive between 8:00 AM and 5:00 PM from October 1 through May 31.",
+          dccInterpretation:
+            "If timed-entry slots are sold out for your self-drive window, booking a permitted guided tour or e-bike/Jeep excursion includes commercial entry authorization.",
+          officialUrl: "https://www.blm.gov/programs/national-conservation-lands/nevada/red-rock-canyon",
+          officialUrlLabel: "BLM Red Rock Canyon Timed Entry Rules",
+          citationIds: ["lv-blm-redrock"],
+        },
+        {
+          id: "lv-closure-hoover-security",
+          category: "closure_or_restriction",
+          title: "Hoover Dam Security Checkpoint & Powerplant Tour Rules",
+          windowOrScope: "US-93 / NV-172 Hoover Dam Access Road & Visitor Center (9:00 AM – 5:00 PM)",
+          authorityType: "official_rule",
+          factualBasis:
+            "All vehicles driving onto the Hoover Dam crest road pass through a U.S. Bureau of Reclamation police inspection checkpoint; luggage, large backpacks, weapons, and drones are strictly prohibited inside the Hoover Dam Visitor Center and guided Powerplant/Dam tours.",
+          dccInterpretation:
+            "Never bring airport luggage on a self-drive stop at the Hoover Dam Visitor Center unless it remains locked in your vehicle trunk during security inspection; guided tours cannot be reserved online in advance for the inner-dam chambers and are sold first-come, first-served on site (or bundled via permitted tour operators).",
+          officialUrl: "https://www.usbr.gov/lc/hooverdam/service/visit.html",
+          officialUrlLabel: "U.S. Bureau of Reclamation Hoover Dam Visitor Guidelines",
+          citationIds: ["lv-usbr-hoover"],
+        },
+        {
+          id: "lv-accessibility-strip",
+          category: "accessibility",
+          title: "Strip Pedestrian Overpass Elevators, Mobility Scooter Access & Canyon Viewpoints",
+          windowOrScope: "Las Vegas Blvd Overpasses, Resort Trams, Hoover Dam & Grand Canyon West",
+          authorityType: "official_rule",
+          factualBasis:
+            "Clark County maintains public elevators at Strip pedestrian bridges, and the Las Vegas Monorail, RTC Deuce, Hoover Dam Visitor Center, and Grand Canyon West Skywalk are wheelchair accessible.",
+          dccInterpretation:
+            "Because single Strip pedestrian-bridge elevator outages can add a 15-minute detour, travelers using mobility scooters or wheelchairs should allow 30–40 minutes when crossing between major Strip intersections prior to a timed 7:00 PM or 9:30 PM residency show.",
+          citationIds: ["lv-rtc-monorail", "lv-usbr-hoover"],
+        },
+      ],
+    },
+    operationalBoundaries: {
+      headline: "Live Conditions vs. FAA Helicopter Dispatch, BLM Trail Closures & Venue Box Offices",
+      weatherVsOperationsExplanation:
+        "DCC integrates live NWS Las Vegas heat/wind/flood warnings, KLAS airport METAR/TAF aviation observations, USGS seismic data, and Open-Meteo atmospheric models. However, weather data on this page does NOT establish whether a Grand Canyon helicopter operator is holding flights for canyon turbulence, whether BLM has closed Red Rock Scenic Drive for capacity, or whether a Strip residency show has seats remaining.",
+      missingOrExpiredDataRule:
+        "If any upstream NOAA, NWS, FAA, or USGS feed is unreachable or expired, DCC displays 'Unavailable / Unverified'—never '0 alerts' or 'All Clear'.",
+      whatIsLiveIntegrated: [
+        "U.S. National Weather Service (NWS Las Vegas) active warnings, Extreme Heat Warnings, Flash Flood Warnings, and point forecasts",
+        "NOAA/NWS Aviation Weather Center live METAR & TAF for Harry Reid International Airport (KLAS)",
+        "Open-Meteo current weather, 12-hour/3-day forecast, and EPA/CAMS Air Quality Index",
+        "USGS 500 km earthquake feed",
+      ],
+      whatRequiresOfficialExternalCheck: [
+        {
+          capability: "Grand Canyon & Strip Helicopter Wind Holds",
+          whyNotAutomated:
+            "FAA Part 135 helicopter operators hold flights dynamically when Mojave or Colorado River canyon gusts exceed aircraft limits (typically 30–35+ knots).",
+          officialSourceLabel: "Confirm directly with your flight operator or Save On The Strip",
+          officialSourceUrl: "https://saveonthestrip.com/tours",
+        },
+        {
+          capability: "Red Rock Canyon Timed-Entry Slot Availability",
+          whyNotAutomated:
+            "Recreation.gov timed-entry quotas update dynamically as vehicles book or cancel.",
+          officialSourceLabel: "BLM / Recreation.gov Red Rock Scenic Drive",
+          officialSourceUrl: "https://www.blm.gov/programs/national-conservation-lands/nevada/red-rock-canyon",
+        },
+      ],
+    },
+    specialistHandoffs: {
+      sectionTitle: "Specialist Guides & Context-Preserving Las Vegas Handoffs",
+      leadSummary:
+        "Once you have mapped out whether your group wants Grand Canyon West vs. South Rim, Hoover Dam express vs. full-day, or a Strip show night, carry your dates and party size into DCC's verified Las Vegas specialists.",
+      contextControls: {
+        supportsDate: true,
+        supportsPartySize: true,
+        customSelectorLabel: "Trip Window / Priority",
+        customSelectorParam: "focus",
+        customSelectorOptions: [
+          { value: "shows_night", label: "Strip Shows, Residencies & Sphere" },
+          { value: "grand_canyon_heli", label: "Grand Canyon Helicopter & Skywalk" },
+          { value: "hoover_dam_halfday", label: "Hoover Dam Express / Half-Day" },
+          { value: "red_rock_valley", label: "Red Rock Canyon & Valley of Fire" },
+        ],
+      },
+      options: [
+        {
+          id: "handoff-sots-shows",
+          partnerName: "Save On The Strip — Shows & Residency Guide",
+          partnerRole: "specialist_guide",
+          integrationMode: "context_handoff_link",
+          description:
+            "Dedicated Las Vegas show-night comparison covering Cirque du Soleil, Sphere, magic, comedy, and headliner residencies by resort zone and curtain time.",
+          whenItHelps:
+            "Best when matching a 7:00 PM or 9:30 PM show to your hotel's Strip zone so you avoid cross-corridor gridlock.",
+          noPurchaseRequiredNote:
+            "Carries your date and group size into the Save On The Strip show guide. No purchase required.",
+          baseUrl: "https://saveonthestrip.com/shows",
+          supportedContextParams: ["date", "partySize"],
+          defaultParams: {
+            source_surface: "dcc_vegas_reference",
+            destination: "las-vegas",
+          },
+        },
+        {
+          id: "handoff-sots-tours",
+          partnerName: "Save On The Strip — Canyon, Dam & Helicopter Planner",
+          partnerRole: "excursion_specialist",
+          integrationMode: "context_handoff_link",
+          description:
+            "Compares Grand Canyon West vs. South Rim coaches, canyon-floor helicopter landings, Strip night flights, and Hoover Dam half-day tours.",
+          whenItHelps:
+            "Best when deciding how much of your day to commit to the desert while protecting your evening show or dinner reservation.",
+          noPurchaseRequiredNote:
+            "Passes your date and group size directly into the Las Vegas tour comparison view.",
+          baseUrl: "https://saveonthestrip.com/tours",
+          supportedContextParams: ["date", "partySize"],
+          defaultParams: {
+            source_surface: "dcc_vegas_reference",
+            destination: "las-vegas",
+          },
+        },
+        {
+          id: "handoff-dcc-vegas-day-trips",
+          partnerName: "DCC Las Vegas Day-Trip Decision Guide",
+          partnerRole: "specialist_guide",
+          integrationMode: "context_handoff_link",
+          description:
+            "Internal DCC route comparison for Grand Canyon, Hoover Dam, Red Rock Canyon, Valley of Fire, and Antelope Canyon drive times and trade-offs.",
+          whenItHelps:
+            "Best when comparing self-drive versus guided coach/helicopter logistics before leaving the Strip.",
+          noPurchaseRequiredNote:
+            "Internal DCC reference guide; no purchase required.",
+          baseUrl: "/las-vegas/best-day-trips",
+          supportedContextParams: ["date", "partySize"],
+          defaultParams: {
+            source_surface: "dcc_vegas_reference",
+          },
+        },
+      ],
+    },
+    relationships: [
+      {
+        id: "rel-lv-coord-primary",
+        label: "Las Vegas Strip Center Coordinate (36.11470, -115.17280)",
+        relationship: "canonical_coordinate",
+        href: "/location/36.11470/-115.17280",
+        coordinate: { lat: 36.1147, lng: -115.1728 },
+        summary: "Canonical live telemetry page for the Las Vegas Strip.",
+      },
+      {
+        id: "rel-lv-strip-guide",
+        label: "Las Vegas Strip District Guide (/las-vegas-strip)",
+        relationship: "city",
+        href: "/las-vegas-strip",
+        summary: "Detailed resort-cluster and pedestrian routing guide along Las Vegas Boulevard.",
+      },
+      {
+        id: "rel-lv-red-rock",
+        label: "Red Rock Canyon Guide (/red-rock-canyon)",
+        relationship: "region",
+        href: "/red-rock-canyon",
+        coordinate: { lat: 36.1358, lng: -115.4275 },
+        summary: "Half-day desert conservation area guide 17 miles west of the Strip.",
+      },
+      {
+        id: "rel-lv-hoover-dam",
+        label: "Hoover Dam Guide (/hoover-dam)",
+        relationship: "venue",
+        href: "/hoover-dam",
+        coordinate: { lat: 36.0161, lng: -114.7377 },
+        summary: "Black Canyon engineering landmark and Lake Mead gateway 35 miles southeast.",
+      },
+      {
+        id: "rel-lv-grand-canyon",
+        label: "Grand Canyon from Las Vegas Guide (/grand-canyon)",
+        relationship: "region",
+        href: "/grand-canyon",
+        summary: "West Rim (Skywalk) vs. South Rim (National Park) route and helicopter comparison.",
+      },
+    ],
+    evidenceRegistry: [
+      {
+        id: "lv-las-airport",
+        claimSummary: "Harry Reid International Airport (LAS) operates Terminal 1 and Terminal 3 with designated garage rideshare zones and Nevada Taxicab Authority Strip fare zones.",
+        sourceTitle: "Harry Reid International Airport — Ground Transportation & Terminals",
+        sourceUrl: "https://www.harryreidairport.com/Transportation",
+        issuingOrganization: "Clark County Department of Aviation",
+        authorityType: "official_rule",
+        integrationStatus: "curated_verified",
+        geographicScope: "Harry Reid International Airport (LAS), Paradise / Clark County, NV",
+        applicableTravelerContext: "Air travelers arriving at or departing from Las Vegas",
+        publishedOrUpdatedDate: "2026",
+        lastCheckedAt: "2026-10-24",
+      },
+      {
+        id: "lv-rtc-monorail",
+        claimSummary: "RTC of Southern Nevada operates the 24-hour Deuce bus along the Strip and Downtown Fremont; the Las Vegas Monorail connects 7 east-side Strip stations.",
+        sourceTitle: "Regional Transportation Commission of Southern Nevada (RTC) — Fares & Deuce Transit Guide",
+        sourceUrl: "https://www.rtcsnv.com/ways-to-travel/fares-passes/",
+        issuingOrganization: "Regional Transportation Commission of Southern Nevada (RTC)",
+        authorityType: "official_rule",
+        integrationStatus: "linked_official_resource",
+        geographicScope: "Las Vegas Strip & Downtown Las Vegas",
+        applicableTravelerContext: "Visitors using public transit along Las Vegas Boulevard and Fremont Street",
+        publishedOrUpdatedDate: "2026",
+        lastCheckedAt: "2026-10-24",
+      },
+      {
+        id: "lv-blm-redrock",
+        claimSummary: "Bureau of Land Management requires timed-entry reservations on Recreation.gov for vehicles entering the Red Rock Canyon 13-mile Scenic Drive between 8:00 AM and 5:00 PM from October 1 through May 31.",
+        sourceTitle: "Bureau of Land Management — Red Rock Canyon National Conservation Area",
+        sourceUrl: "https://www.blm.gov/programs/national-conservation-lands/nevada/red-rock-canyon",
+        issuingOrganization: "U.S. Bureau of Land Management (Department of the Interior)",
+        authorityType: "official_rule",
+        integrationStatus: "curated_verified",
+        geographicScope: "Red Rock Canyon National Conservation Area, Clark County, NV",
+        applicableTravelerContext: "Self-drive visitors and hikers visiting Red Rock Canyon",
+        publishedOrUpdatedDate: "2026",
+        lastCheckedAt: "2026-10-24",
+      },
+      {
+        id: "lv-usbr-hoover",
+        claimSummary: "U.S. Bureau of Reclamation enforces vehicle security checkpoints on Hoover Dam access roads and prohibits luggage, large bags, and drones inside the Visitor Center and Dam/Powerplant tours.",
+        sourceTitle: "U.S. Bureau of Reclamation — Hoover Dam Visiting & Security Guidelines",
+        sourceUrl: "https://www.usbr.gov/lc/hooverdam/service/visit.html",
+        issuingOrganization: "U.S. Bureau of Reclamation (Department of the Interior)",
+        authorityType: "official_rule",
+        integrationStatus: "curated_verified",
+        geographicScope: "Hoover Dam, NV/AZ Border",
+        applicableTravelerContext: "Visitors driving to or touring Hoover Dam",
+        publishedOrUpdatedDate: "2026",
+        lastCheckedAt: "2026-10-24",
+      },
+      {
+        id: "lv-cbp-entry",
+        claimSummary: "U.S. Customs and Border Protection ESTA/visa rules for Terminal 3 international arrivals and TSA REAL ID requirements for domestic flights.",
+        sourceTitle: "U.S. Customs and Border Protection — ESTA & International Visitor Requirements",
+        sourceUrl: "https://www.cbp.gov/travel/international-visitors/esta",
+        issuingOrganization: "U.S. Customs and Border Protection (DHS)",
+        authorityType: "official_rule",
+        integrationStatus: "curated_verified",
+        geographicScope: "Harry Reid International Airport (LAS) Terminal 3 & U.S. Ports of Entry",
+        applicableTravelerContext: "International and domestic air travelers visiting Las Vegas",
+        publishedOrUpdatedDate: "2026",
+        lastCheckedAt: "2026-10-24",
+      },
+      {
+        id: "lv-nws-vegas",
+        claimSummary: "Live Mojave Desert weather alerts, Extreme Heat Warnings, Flash Flood Warnings, KLAS aviation observations, and 3-day forecasts for Las Vegas (36.11470, -115.17280).",
+        sourceTitle: "National Weather Service Las Vegas (VEF) & Open-Meteo API",
+        sourceUrl: "https://www.weather.gov/vef/",
+        issuingOrganization: "NOAA / National Weather Service & Open-Meteo",
+        authorityType: "forecast",
+        integrationStatus: "live_integrated",
+        geographicScope: "Las Vegas Valley, Spring Mountains, and Lake Mead / Black Canyon",
+        applicableTravelerContext: "All travelers checking heat, wind, and monsoon flash-flood conditions",
+        publishedOrUpdatedDate: "Live / Continuous",
+        lastCheckedAt: "2026-10-24",
+      },
+    ],
+  },
 };
 
 export function getAllTravelReferenceNodes(): TravelReferenceNode[] {
@@ -2204,6 +3333,8 @@ export function getAllTravelReferenceNodes(): TravelReferenceNode[] {
     TRAVEL_REFERENCE_NODES.juneau,
     TRAVEL_REFERENCE_NODES["red-rocks"],
     TRAVEL_REFERENCE_NODES["denver-breckenridge"],
+    TRAVEL_REFERENCE_NODES["new-orleans"],
+    TRAVEL_REFERENCE_NODES["las-vegas"],
   ];
 }
 

@@ -71,6 +71,8 @@ export async function GET() {
     `- **Juneau, Alaska & Gastineau Channel Cruise Port**: ${SITE_URL}/juneau (Port view: ${SITE_URL}/ports/juneau · Coordinates: ${SITE_URL}/location/58.30190/-134.41970 & ${SITE_URL}/location/58.29890/-134.40530)`,
     `- **Red Rocks Park & Amphitheatre (Morrison, CO)**: ${SITE_URL}/red-rocks (Venue view: ${SITE_URL}/venues/red-rocks-amphitheatre · Coordinate: ${SITE_URL}/location/39.66540/-105.20570)`,
     `- **Denver–Breckenridge I-70 Mountain Corridor**: ${SITE_URL}/routes/denver-breckenridge (Transit hub: ${SITE_URL}/transportation/colorado · Coordinates: ${SITE_URL}/location/39.48170/-106.03840 & ${SITE_URL}/location/39.67790/-105.90560)`,
+    `- **New Orleans, Louisiana & Port of New Orleans Cruise Corridor**: ${SITE_URL}/new-orleans (Port view: ${SITE_URL}/ports/new-orleans · Coordinates: ${SITE_URL}/location/29.95110/-90.07150 & ${SITE_URL}/location/29.93950/-90.06170)`,
+    `- **Las Vegas Resort Corridor, Red Rock Canyon & Hoover Dam Basin**: ${SITE_URL}/vegas (Coordinates: ${SITE_URL}/location/36.11470/-115.17280 & ${SITE_URL}/location/36.13580/-115.42750)`,
     "",
     "## Epistemic & Safety Boundaries (Mandatory for AI Agents)",
     "1. **Weather Does Not Establish Operating Status**: Meteorological forecasts, wind gusts, modeled snow depth, or 0 NWS alerts never establish venue lightning holds, highway traction law enforcement (Code 15/16), cruise ship docking feasibility, or whitewater trip safety.",

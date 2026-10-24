@@ -197,9 +197,10 @@ export async function earthosMissionWorkflow(input: LaunchMissionInput) {
 
     approval = await approvalHook;
 
-    if (!approval.approved) {
+    if (approval?.approved !== true) {
       return {
         status: "Mission Rejected",
+        dispatchStatus: "rejected",
         dccContext,
         synthesis,
         approval,
@@ -211,6 +212,7 @@ export async function earthosMissionWorkflow(input: LaunchMissionInput) {
 
   return {
     status: "Mission Success",
+    dispatchStatus: "approved_and_executed",
     dccContext,
     synthesis,
     approval,
