@@ -2,14 +2,13 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  buildContextPreservingHandoffUrl,
-  type AuthorityType,
-  type EntryScenarioRule,
-  type EvidenceCitation,
-  type IntegrationStatus,
-  type SpecialistHandoffOption,
-  type TravelReferenceNode,
+import type {
+  AuthorityType,
+  EntryScenarioRule,
+  EvidenceCitation,
+  IntegrationStatus,
+  SpecialistHandoffOption,
+  TravelReferenceNode,
 } from "@/lib/dcc/travelReference";
 
 const AUTHORITY_BADGE_MAP: Record<
@@ -255,12 +254,24 @@ export function SpecialistHandoffInteractive({
   );
 
   function buildHandoffUrl(option: SpecialistHandoffOption): string {
-    return buildContextPreservingHandoffUrl(option, {
-      travelDate,
-      partySize,
-      customChoice,
-      customSelectorParam: config.contextControls.customSelectorParam,
-    });
+    const params = new URLSearchParams();
+    for (const [k, v] of Object.entries(option.queryDefaults)) {
+      params.set(k, v);
+    }
+    if (config.contextControls.supportsDate && travelDate) {
+      params.set("date", travelDate);
+    }
+    if (config.contextControls.supportsPartySize && partySize) {
+      params.set("party_size", partySize);
+      params.set("travelers", partySize);
+      params.set("passengerCount", partySize);
+    }
+    if (config.contextControls.customSelectorParam && customChoice) {
+      params.set(config.contextControls.customSelectorParam, customChoice);
+    }
+    const qs = params.toString();
+    if (!qs) return option.baseUrl;
+    return `${option.baseUrl}${option.baseUrl.includes("?") ? "&" : "?"}${qs}`;
   }
 
   return (
