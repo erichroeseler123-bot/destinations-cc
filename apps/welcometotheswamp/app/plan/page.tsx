@@ -217,12 +217,31 @@ function AvailabilityWidgetCard({
   );
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function SwampPlanPage({
   searchParams,
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const resolved = searchParams ? await searchParams : undefined;
+  const firstStr = (v: string | string[] | undefined) =>
+    Array.isArray(v) ? v[0] : v;
+  const defaultFutureDate = new Date(Date.now() + 30 * 86400000)
+    .toISOString()
+    .slice(0, 10);
+  const selectedDate =
+    firstStr(resolved?.date) ||
+    firstStr(resolved?.arrivalDate) ||
+    defaultFutureDate;
+  const selectedPartySize =
+    firstStr(resolved?.party_size) ||
+    firstStr(resolved?.travelers) ||
+    firstStr(resolved?.passengerCount) ||
+    firstStr(resolved?.passengers) ||
+    firstStr(resolved?.qty) ||
+    "2";
+
   const packet = parseWarmTransfer(resolved);
   const lane = inferLaneFromTransfer(packet);
   
@@ -239,30 +258,30 @@ export default async function SwampPlanPage({
 
   const gygAirboatHref = fhAirboat && asn
     ? (fhAirboat.itemId
-        ? `https://fareharbor.com/embeds/book/${fhAirboat.companyShortname}/items/${fhAirboat.itemId}/?asn=${asn}&flow=${fhAirboat.flowId || ""}&ref=wts-plan-airboat`
-        : `https://fareharbor.com/embeds/book/${fhAirboat.companyShortname}/?asn=${asn}&flow=${fhAirboat.flowId || ""}&ref=wts-plan-airboat`)
+        ? `https://fareharbor.com/embeds/book/${fhAirboat.companyShortname}/items/${fhAirboat.itemId}/?asn=${asn}&flow=${fhAirboat.flowId || ""}&ref=wts-plan-airboat&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`
+        : `https://fareharbor.com/embeds/book/${fhAirboat.companyShortname}/?asn=${asn}&flow=${fhAirboat.flowId || ""}&ref=wts-plan-airboat&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`)
     : buildWtsGetYourGuideSearchHref("airboat", "wts-plan-airboat");
 
   const gygBoatHref = fhBoat && asn
     ? (fhBoat.itemId
-        ? `https://fareharbor.com/embeds/book/${fhBoat.companyShortname}/items/${fhBoat.itemId}/?asn=${asn}&flow=${fhBoat.flowId || ""}&ref=wts-plan-covered-boat`
-        : `https://fareharbor.com/embeds/book/${fhBoat.companyShortname}/?asn=${asn}&flow=${fhBoat.flowId || ""}&ref=wts-plan-covered-boat`)
+        ? `https://fareharbor.com/embeds/book/${fhBoat.companyShortname}/items/${fhBoat.itemId}/?asn=${asn}&flow=${fhBoat.flowId || ""}&ref=wts-plan-covered-boat&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`
+        : `https://fareharbor.com/embeds/book/${fhBoat.companyShortname}/?asn=${asn}&flow=${fhBoat.flowId || ""}&ref=wts-plan-covered-boat&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`)
     : buildWtsGetYourGuideSearchHref("boat", "wts-plan-covered-boat");
 
   const heroBookingHref = fhAirboat && asn
     ? (fhAirboat.itemId
-        ? `https://fareharbor.com/embeds/book/${fhAirboat.companyShortname}/items/${fhAirboat.itemId}/?asn=${asn}&flow=${fhAirboat.flowId || ""}&ref=wts-hero-booking`
-        : `https://fareharbor.com/embeds/book/${fhAirboat.companyShortname}/?asn=${asn}&flow=${fhAirboat.flowId || ""}&ref=wts-hero-booking`)
+        ? `https://fareharbor.com/embeds/book/${fhAirboat.companyShortname}/items/${fhAirboat.itemId}/?asn=${asn}&flow=${fhAirboat.flowId || ""}&ref=wts-hero-booking&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`
+        : `https://fareharbor.com/embeds/book/${fhAirboat.companyShortname}/?asn=${asn}&flow=${fhAirboat.flowId || ""}&ref=wts-hero-booking&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`)
     : buildWtsGetYourGuideSearchHref("airboat", "wts-plan-airboat");
 
   const pickupHref = fhPickupProduct && asn
-    ? `https://fareharbor.com/embeds/book/${fhPickupProduct.companyShortname}/items/${fhPickupProduct.itemId}/?asn=${asn}&flow=${fhPickupProduct.flowId || ""}&ref=wts-plan-pickup`
+    ? `https://fareharbor.com/embeds/book/${fhPickupProduct.companyShortname}/items/${fhPickupProduct.itemId}/?asn=${asn}&flow=${fhPickupProduct.flowId || ""}&ref=wts-plan-pickup&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`
     : links.pickupHref;
 
   const gygBrowseHref = fhBoat && asn
     ? (fhBoat.itemId
-        ? `https://fareharbor.com/embeds/book/${fhBoat.companyShortname}/items/${fhBoat.itemId}/?asn=${asn}&flow=${fhBoat.flowId || ""}&ref=wts-plan-widget`
-        : `https://fareharbor.com/embeds/book/${fhBoat.companyShortname}/?asn=${asn}&flow=${fhBoat.flowId || ""}&ref=wts-plan-widget`)
+        ? `https://fareharbor.com/embeds/book/${fhBoat.companyShortname}/items/${fhBoat.itemId}/?asn=${asn}&flow=${fhBoat.flowId || ""}&ref=wts-plan-widget&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`
+        : `https://fareharbor.com/embeds/book/${fhBoat.companyShortname}/?asn=${asn}&flow=${fhBoat.flowId || ""}&ref=wts-plan-widget&date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}`)
     : buildWtsGetYourGuideSearchHref("boat", "wts-plan-widget");
 
   const airboatAvailabilityTourUrl = getWtsAvailabilityTourUrl("airboat");
@@ -330,6 +349,65 @@ export default async function SwampPlanPage({
       </section>
 
       <section className="wts-section" id="tours" aria-labelledby="wts-gyg-booking">
+        <form
+          method="get"
+          action="/plan"
+          style={{
+            marginBottom: "20px",
+            padding: "16px",
+            borderRadius: "14px",
+            border: "1px solid rgba(15, 143, 104, 0.35)",
+            background: "rgba(15, 143, 104, 0.08)",
+            display: "grid",
+            gap: "12px",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
+            <strong style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.1em", color: "#0f8f68" }}>
+              Active Swamp Tour Date &amp; Party Size
+            </strong>
+            <span style={{ fontSize: "12px", color: "#475569" }}>
+              Prefilled from your New Orleans trip context
+            </span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px", alignItems: "end" }}>
+            <div>
+              <label htmlFor="booking-context-date" style={{ display: "block", fontSize: "11px", fontWeight: 700, marginBottom: "4px" }}>
+                Swamp Tour Date
+              </label>
+              <input
+                id="booking-context-date"
+                type="date"
+                name="date"
+                defaultValue={selectedDate}
+                style={{ width: "100%", padding: "8px 10px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
+              />
+            </div>
+            <div>
+              <label htmlFor="booking-context-party-size" style={{ display: "block", fontSize: "11px", fontWeight: 700, marginBottom: "4px" }}>
+                Travelers / Party Size
+              </label>
+              <select
+                id="booking-context-party-size"
+                name="party_size"
+                defaultValue={selectedPartySize}
+                style={{ width: "100%", padding: "8px 10px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
+              >
+                {[1, 2, 3, 4, 5, 6, 8, 10, 12].map((num) => (
+                  <option key={num} value={String(num)}>
+                    {num} {num === 1 ? "Guest" : "Guests"}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <button type="submit" className="wts-button wts-button-primary" style={{ width: "100%" }}>
+                Apply Date &amp; Guests
+              </button>
+            </div>
+          </div>
+        </form>
+
         <div className="wts-hero-booking" aria-labelledby="wts-gyg-booking">
           <div className="wts-section-head">
             <p className="wts-eyebrow">{hasFhConfig ? "Book through FareHarbor" : "Book through GetYourGuide"}</p>

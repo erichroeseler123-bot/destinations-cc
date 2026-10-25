@@ -84,7 +84,32 @@ function JsonLd() {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
-export default function LasVegasBestDayTripsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function LasVegasBestDayTripsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const resolvedSearch = searchParams ? await searchParams : {};
+  const firstStr = (v: string | string[] | undefined) =>
+    Array.isArray(v) ? v[0] : v;
+  const defaultFutureDate = new Date(Date.now() + 30 * 86400000)
+    .toISOString()
+    .slice(0, 10);
+  const selectedDate =
+    firstStr(resolvedSearch.date) ||
+    firstStr(resolvedSearch.arrivalDate) ||
+    defaultFutureDate;
+  const selectedPartySize =
+    firstStr(resolvedSearch.party_size) ||
+    firstStr(resolvedSearch.travelers) ||
+    firstStr(resolvedSearch.passengerCount) ||
+    firstStr(resolvedSearch.passengers) ||
+    firstStr(resolvedSearch.qty) ||
+    "2";
+  const contextQuery = `?date=${encodeURIComponent(selectedDate)}&party_size=${encodeURIComponent(selectedPartySize)}&travelers=${encodeURIComponent(selectedPartySize)}&passengerCount=${encodeURIComponent(selectedPartySize)}&qty=${encodeURIComponent(selectedPartySize)}`;
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <JsonLd />
@@ -98,6 +123,66 @@ export default function LasVegasBestDayTripsPage() {
           </p>
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Last updated: March 2026</p>
         </header>
+
+        <form
+          method="get"
+          action="/las-vegas/best-day-trips"
+          className="rounded-2xl border border-cyan-500/30 bg-cyan-950/20 p-5 space-y-3"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-cyan-300">
+              Active Day-Trip Date &amp; Party Context
+            </span>
+            <span className="text-xs text-zinc-400">
+              Prefilled from your Las Vegas trip planner
+            </span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3 items-end">
+            <div>
+              <label
+                htmlFor="booking-context-date"
+                className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-300 mb-1"
+              >
+                Excursion Date
+              </label>
+              <input
+                id="booking-context-date"
+                type="date"
+                name="date"
+                defaultValue={selectedDate}
+                className="w-full rounded-lg border border-white/15 bg-zinc-950 px-3 py-2 text-xs md:text-sm text-white"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="booking-context-party-size"
+                className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-300 mb-1"
+              >
+                Travelers / Party Size
+              </label>
+              <select
+                id="booking-context-party-size"
+                name="party_size"
+                defaultValue={selectedPartySize}
+                className="w-full rounded-lg border border-white/15 bg-zinc-950 px-3 py-2 text-xs md:text-sm text-white"
+              >
+                {[1, 2, 3, 4, 5, 6, 8, 10, 12].map((num) => (
+                  <option key={num} value={String(num)}>
+                    {num} {num === 1 ? "Traveler" : "Travelers"}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <button
+                type="submit"
+                className="w-full rounded-lg border border-cyan-400/40 bg-cyan-500/20 px-4 py-2 text-xs md:text-sm font-bold text-cyan-100 hover:bg-cyan-500/30"
+              >
+                Apply Date &amp; Travelers
+              </button>
+            </div>
+          </div>
+        </form>
 
         <section className="grid gap-3 md:grid-cols-3">
           <article className="rounded-2xl border border-white/10 bg-white/5 p-5">
@@ -128,10 +213,10 @@ export default function LasVegasBestDayTripsPage() {
             <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
               <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Best supporting pages</div>
               <div className="mt-4 grid gap-3">
-                <Link href="/grand-canyon" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Grand Canyon guide</Link>
-                <Link href="/hoover-dam" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Hoover Dam guide</Link>
-                <Link href="/red-rock-canyon" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Red Rock Canyon guide</Link>
-                <Link href="/las-vegas/helicopter-tours" className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Helicopter tours from Las Vegas</Link>
+                <Link href={`/grand-canyon${contextQuery}`} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Grand Canyon guide ({selectedDate} • {selectedPartySize} travelers)</Link>
+                <Link href={`/hoover-dam${contextQuery}`} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Hoover Dam guide ({selectedDate} • {selectedPartySize} travelers)</Link>
+                <Link href={`/red-rock-canyon${contextQuery}`} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Red Rock Canyon guide ({selectedDate} • {selectedPartySize} travelers)</Link>
+                <Link href={`/las-vegas/helicopter-tours${contextQuery}`} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Helicopter tours from Las Vegas ({selectedDate} • {selectedPartySize} travelers)</Link>
               </div>
             </div>
           </div>

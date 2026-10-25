@@ -44,11 +44,24 @@ export async function generateMetadata({ params }: { params: Promise<{ categoryS
   return onWnoHost(await generateCategoryMetadata({ params: Promise.resolve({ categorySlug: resolved.categorySlug }) }));
 }
 
-export default async function WnoTopLevelPage({ params }: { params: Promise<{ categorySlug: string }> }) {
+export const dynamic = "force-dynamic";
+
+export default async function WnoTopLevelPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ categorySlug: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const resolved = await params;
   const SpecialPage = specialPages[resolved.categorySlug as keyof typeof specialPages];
   if (SpecialPage) return <SpecialPage />;
 
   if (!resolved.categorySlug) notFound();
-  return <CategoryPage params={Promise.resolve({ categorySlug: resolved.categorySlug })} />;
+  return (
+    <CategoryPage
+      params={Promise.resolve({ categorySlug: resolved.categorySlug })}
+      searchParams={searchParams}
+    />
+  );
 }

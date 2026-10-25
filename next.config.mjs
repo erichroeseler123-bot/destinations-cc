@@ -25,6 +25,18 @@ const nextConfig = {
       "./*.log",
       "./tsconfig.tsbuildinfo",
     ],
+    "/**": [
+      "./scratch/**/*",
+      "./apps/**/*",
+      "./assets/raw/**/*",
+      "./public/images/**/*",
+      "./data/memory/snapshots/**/*",
+      "./docs/**/*",
+      "./tests/**/*",
+      "./legacy_vault/**/*",
+      "./*.log",
+      "./tsconfig.tsbuildinfo",
+    ],
   },
   generateBuildId: async () => {
     return "build-" + Date.now();

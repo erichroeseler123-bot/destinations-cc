@@ -1014,21 +1014,174 @@ test("Physical database separation, upstream source content verification (attest
     assert.equal(strippedRedirectProbe.handoffVerification?.redirectedToGenericRoot, true);
     assert.equal(strippedRedirectProbe.handoffVerification?.contextPreserved, false);
 
-    // Canonical Breckenridge product URL https://gosno.co/breckenridge preserves context params and lands on Breckenridge product
+    // Canonical Breckenridge product URL https://gosno.co/breckenridge preserves context params and lands on Breckenridge product with prefilled form controls
     const validProductProbe = await defaultSpecialistUrlProbe("https://gosno.co/breckenridge", {
       handoffOption: gosnoOption,
       contextControls: breckNode.specialistHandoffs.contextControls,
       nodeTitle: breckNode.title,
+      nodeId: breckNode.id,
+      now,
     });
     assert.equal(validProductProbe.statusCode, 200);
     assert.equal(validProductProbe.ok, true);
     assert.equal(validProductProbe.handoffVerification?.redirectedToGenericRoot, false);
     assert.equal(validProductProbe.handoffVerification?.contextPreserved, true);
     assert.equal(validProductProbe.handoffVerification?.productMatchesDestination, true);
+    assert.equal(validProductProbe.handoffVerification?.bookingFormPrefilled, true);
+    assert.equal(validProductProbe.handoffVerification?.datePrefilledInForm, true);
+    assert.equal(validProductProbe.handoffVerification?.partySizePrefilledInForm, true);
   } finally {
     await server.close();
     await clearPublishedReferenceNodeOverride("juneau");
   }
 });
+
+test("Four follow-up proofs: (1) atomic cron deduplication, (2) PostgreSQL role ACL isolation, (3) contradiction detection in source verification, and (4) future-date booking form prefill", async () => {
+  const { neon } = await import("@neondatabase/serverless");
+  const {
+    runScheduledReferenceMaintenanceDetection,
+    verifyUpstreamEvidenceSourceContent,
+    verifyDestinationBookingFormPrefill,
+  } = await import("@/lib/dcc/earthos/referenceMaintenance");
+  const { computeFutureVerificationDate } = await import("@/lib/dcc/travelReference");
+  const now = new Date("2026-10-24T12:00:00.000Z");
+
+  // --- POINT 1: Atomic PostgreSQL lock prevents duplicate scheduled_cron runs seconds apart ---
+  const cronTime1 = new Date("2026-10-24T19:00:00.000Z");
+  const cronTime2 = new Date("2026-10-24T19:00:06.000Z"); // 6 seconds later in same 5-min window
+  const fastProbe = async (url: string) => ({
+    ok: true,
+    statusCode: 200,
+    finalUrl: url,
+  });
+
+  const firstCronRun = await runScheduledReferenceMaintenanceDetection({
+    actor: "vercel:cron",
+    now: cronTime1,
+    probeUrl: fastProbe,
+    cronCooldownSeconds: 180,
+  });
+  assert.equal(firstCronRun.invocationType, "scheduled_cron");
+  assert.equal(firstCronRun.deduplicated, false);
+
+  const duplicateCronRun = await runScheduledReferenceMaintenanceDetection({
+    actor: "vercel:cron",
+    now: cronTime2,
+    probeUrl: fastProbe,
+    cronCooldownSeconds: 180,
+  });
+  assert.equal(duplicateCronRun.invocationType, "scheduled_cron");
+  assert.equal(
+    duplicateCronRun.deduplicated,
+    true,
+    "Second scheduled_cron invocation 6 seconds later within the 180s window must be deduplicated by the atomic PostgreSQL lock",
+  );
+
+  // --- POINT 2: Credential-level PostgreSQL ACL isolation prevents nonprod credentials from connecting to production neondb ---
+  const dbIdentity = getResolvedDatabaseIdentity();
+  assert.equal(dbIdentity.databaseName, "neondb_nonprod");
+  assert.equal(dbIdentity.databaseRole, "dcc_nonprod_app");
+  assert.equal(dbIdentity.credentialLevelIsolation, true);
+  assert.equal(dbIdentity.sharedClusterEndpoint, true);
+
+  const nonprodConnStr = process.env.DCC_DATABASE_URL || process.env.DATABASE_URL || "";
+  assert.ok(nonprodConnStr.includes("dcc_nonprod_app"), "Local/test environment must use dcc_nonprod_app role");
+  const prodTargetWithNonprodCreds = nonprodConnStr.replace(/\/neondb_nonprod(\?|$)/, "/neondb$1");
+  const sqlProdAttempt = neon(prodTargetWithNonprodCreds);
+  await assert.rejects(
+    async () => {
+      await sqlProdAttempt`SELECT current_database(), current_user`;
+    },
+    /permission denied for database "neondb"/i,
+    "PostgreSQL ACL must reject dcc_nonprod_app when attempting to connect to production database neondb",
+  );
+
+  // --- POINT 3: Contradiction guard rejects upstream source that contains expected keywords while negating the claim ---
+  const juneauNode = getBaseTravelReferenceNodeById("juneau");
+  const cbjCitation = juneauNode.evidenceRegistry[0];
+  const contradictingSourceResult = await verifyUpstreamEvidenceSourceContent(
+    cbjCitation,
+    async (url) => ({
+      url,
+      ok: true,
+      statusCode: 200,
+      html: `<html><body>
+        <h1>City and Borough of Juneau Port Notice</h1>
+        <p>The Marine Passenger Fee of $5 in Juneau is no longer required and has been repealed for all cruise ship docks.</p>
+      </body></html>`,
+    }),
+  );
+  assert.ok(
+    contradictingSourceResult.matchedClaimTerms.length >= 2,
+    "Contradicting test page contains the expected keywords",
+  );
+  assert.equal(
+    contradictingSourceResult.contradictionDetected,
+    true,
+    "Verifier must flag contradiction phrases in the context window around matched keywords",
+  );
+  assert.equal(
+    contradictingSourceResult.contentSupportsClaim,
+    false,
+    "Keyword matches alone must not pass when surrounding sentence contradicts the claim",
+  );
+  assert.ok((contradictingSourceResult.contradictionReasons?.length || 0) > 0);
+
+  // --- POINT 4: Future dates & destination booking form prefill verification ---
+  const futureDefaultDate = computeFutureVerificationDate(now, "denver-breckenridge");
+  const futureJuneauDate = computeFutureVerificationDate(now, "juneau");
+  assert.equal(futureDefaultDate, "2026-11-23");
+  assert.equal(futureJuneauDate, "2027-06-15");
+  assert.ok(futureDefaultDate > "2026-10-24", "Default verification date must be strictly in the future");
+  assert.ok(futureJuneauDate > "2026-10-24", "Juneau verification date must be strictly in the future");
+
+  // 4a. Past date (e.g. 2026-07-15 on 2026-10-24) is explicitly rejected
+  const breckNode = getBaseTravelReferenceNodeById("denver-breckenridge");
+  const gosnoOption = breckNode.specialistHandoffs.options[0];
+  const pastDateProbe = await defaultSpecialistUrlProbe("https://gosno.co/breckenridge", {
+    handoffOption: gosnoOption,
+    contextControls: breckNode.specialistHandoffs.contextControls,
+    nodeTitle: breckNode.title,
+    nodeId: breckNode.id,
+    now,
+    sampleDate: "2026-07-15",
+    samplePartySize: "4",
+  });
+  assert.equal(pastDateProbe.ok, false, "Probe must reject past sampleDate 2026-07-15");
+  assert.match(String(pastDateProbe.failureReason), /past/i);
+
+  // 4b. Preserved URL parameters alone without form input/select/CTA binding must fail bookingFormPrefilled
+  const unprefilledHtmlCheck = verifyDestinationBookingFormPrefill({
+    html: `<html><body><h1>Breckenridge Shuttle</h1><form><input id="arrival-date" type="date" value="" /><select id="passenger-count"><option value="1" selected>1 Passenger</option></select></form></body></html>`,
+    finalUrl: "https://example.com/breckenridge?date=2026-11-23&party_size=4&passengerCount=4",
+    sampleDate: "2026-11-23",
+    samplePartySize: "4",
+  });
+  assert.equal(
+    unprefilledHtmlCheck.bookingFormPrefilled,
+    false,
+    "Preserved URL query parameters alone must not count as booking form prefill when form controls ignore them",
+  );
+  assert.equal(unprefilledHtmlCheck.prefillMechanism, "none");
+
+  // 4c. SSR form controls with bound date and partySize pass bookingFormPrefilled
+  const ssrFormHtmlCheck = verifyDestinationBookingFormPrefill({
+    html: `<html><body>
+      <input id="booking-context-date" type="date" name="date" value="2026-11-23" />
+      <select id="booking-context-party-size" name="party_size">
+        <option value="2">2 travelers</option>
+        <option value="4" selected>4 travelers</option>
+      </select>
+    </body></html>`,
+    finalUrl: "https://saveonthestrip.com/shows?date=2026-11-23&party_size=4",
+    sampleDate: "2026-11-23",
+    samplePartySize: "4",
+  });
+  assert.equal(ssrFormHtmlCheck.bookingFormPrefilled, true);
+  assert.equal(ssrFormHtmlCheck.datePrefilledInForm, true);
+  assert.equal(ssrFormHtmlCheck.partySizePrefilledInForm, true);
+  assert.equal(ssrFormHtmlCheck.prefillMechanism, "ssr_form_controls");
+});
+
 
 

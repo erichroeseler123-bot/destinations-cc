@@ -51,7 +51,31 @@ const sections = [
   { id: "Walking Tours", title: "Food, Cocktails & Ghosts", note: "Experience the Quarter on foot." },
 ];
 
-export default async function NewOrleansToursPage() {
+export const dynamic = "force-dynamic";
+
+export default async function NewOrleansToursPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+} = {}) {
+  const resolvedSearch = searchParams ? await searchParams : {};
+  const firstStr = (v: string | string[] | undefined) =>
+    Array.isArray(v) ? v[0] : v;
+  const defaultFutureDate = new Date(Date.now() + 30 * 86400000)
+    .toISOString()
+    .slice(0, 10);
+  const selectedDate =
+    firstStr(resolvedSearch.date) ||
+    firstStr(resolvedSearch.arrivalDate) ||
+    defaultFutureDate;
+  const selectedPartySize =
+    firstStr(resolvedSearch.party_size) ||
+    firstStr(resolvedSearch.travelers) ||
+    firstStr(resolvedSearch.passengerCount) ||
+    firstStr(resolvedSearch.passengers) ||
+    firstStr(resolvedSearch.qty) ||
+    "2";
+
   const requestHeaders = await headers();
   const hostHeader = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "";
   const host = hostHeader.split(":")[0];
@@ -92,6 +116,66 @@ export default async function NewOrleansToursPage() {
         />
 
         <div id="tour-collection" className="max-w-7xl mx-auto px-6 py-14 md:py-20 space-y-20 scroll-mt-24">
+          <form
+            method="get"
+            action={isWto ? "/tours" : NEW_ORLEANS_TOURS_PATH}
+            className="rounded-2xl border border-[#d4af37]/30 bg-[#141210] p-5 space-y-3"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">
+                Active Tour Date &amp; Party Size
+              </span>
+              <span className="text-xs text-[#9f9588]">
+                Prefilled from your New Orleans trip context
+              </span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3 items-end">
+              <div>
+                <label
+                  htmlFor="booking-context-date"
+                  className="block text-[11px] font-semibold uppercase tracking-wider text-[#e5dec9] mb-1"
+                >
+                  Preferred Tour Date
+                </label>
+                <input
+                  id="booking-context-date"
+                  type="date"
+                  name="date"
+                  defaultValue={selectedDate}
+                  className="w-full rounded-lg border border-[#d4af37]/30 bg-[#080708] px-3 py-2 text-xs md:text-sm text-[#fdfbf7]"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="booking-context-party-size"
+                  className="block text-[11px] font-semibold uppercase tracking-wider text-[#e5dec9] mb-1"
+                >
+                  Travelers / Party Size
+                </label>
+                <select
+                  id="booking-context-party-size"
+                  name="party_size"
+                  defaultValue={selectedPartySize}
+                  className="w-full rounded-lg border border-[#d4af37]/30 bg-[#080708] px-3 py-2 text-xs md:text-sm text-[#fdfbf7]"
+                >
+                  {[1, 2, 3, 4, 5, 6, 8, 10, 12].map((num) => (
+                    <option key={num} value={String(num)}>
+                      {num} {num === 1 ? "Guest" : "Guests"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <button
+                  type="submit"
+                  className="w-full rounded-lg border border-[#d4af37] bg-[#d4af37]/15 px-4 py-2 text-xs md:text-sm font-bold text-[#f7efe2] hover:bg-[#d4af37]/25"
+                >
+                  Update Availability Context
+                </button>
+              </div>
+            </div>
+          </form>
+
           {sections.map((section, sectionIndex) => {
             const sectionProducts = STOREFRONT_PRODUCTS.filter((p) => p.category === section.id);
             if (sectionProducts.length === 0) return null;

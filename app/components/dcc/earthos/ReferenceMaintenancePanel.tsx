@@ -240,9 +240,12 @@ export function ReferenceMaintenancePanel({
             <span
               className="rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-0.5 font-mono text-[11px] font-bold text-cyan-200"
               data-database-name={snapshot.databaseIdentity.databaseName}
+              data-database-role={snapshot.databaseIdentity.databaseRole}
               data-database-isolated={String(snapshot.databaseIdentity.isIsolatedFromProduction)}
+              data-credential-isolated={String(snapshot.databaseIdentity.credentialLevelIsolation)}
+              data-shared-cluster-endpoint={String(snapshot.databaseIdentity.sharedClusterEndpoint)}
             >
-              DB: {snapshot.databaseIdentity.databaseName}
+              DB: {snapshot.databaseIdentity.databaseName} ({snapshot.databaseIdentity.databaseRole})
             </span>
           </div>
           <h2 className="text-2xl font-black tracking-tight text-white md:text-3xl">
@@ -836,6 +839,61 @@ export function ReferenceMaintenancePanel({
             </div>
           )}
         </div>
+      </div>
+
+      {/* Traveler Factual-Error Reports Queue */}
+      <div
+        className="mt-6 rounded-2xl border border-white/10 bg-black/30 p-5"
+        data-earthos-factual-error-reports="queue"
+        data-open-factual-error-count={String(snapshot.openFactualErrorReportCount ?? 0)}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="text-xs font-black uppercase tracking-[0.2em] text-zinc-300">
+            Traveler Factual-Error Reports ({snapshot.factualErrorReports?.length || 0})
+          </div>
+          <span className="rounded-full border border-amber-300/30 bg-amber-400/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.14em] text-amber-100">
+            Open: {snapshot.openFactualErrorReportCount ?? 0}
+          </span>
+        </div>
+        {!snapshot.factualErrorReports || snapshot.factualErrorReports.length === 0 ? (
+          <div className="mt-3 text-xs text-zinc-500">
+            No traveler factual-error reports submitted in {snapshot.environmentScope} scope.
+          </div>
+        ) : (
+          <div className="mt-3 space-y-2.5">
+            {snapshot.factualErrorReports.slice(0, 12).map((rep) => (
+              <div
+                key={rep.reportId}
+                className="rounded-xl border border-white/10 bg-zinc-900/60 p-3.5 text-xs"
+                data-factual-error-report-id={rep.reportId}
+                data-factual-error-status={rep.status}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-mono font-bold text-white">
+                    {rep.reportId} · <code>{rep.pagePath}</code>
+                    {rep.citationId ? ` · [${rep.citationId}]` : ""}
+                  </span>
+                  <span className="rounded-full border border-amber-300/40 bg-amber-400/20 px-2 py-0.5 text-[10px] font-black uppercase text-amber-100">
+                    {rep.status} · {rep.notificationStatus}
+                  </span>
+                </div>
+                <div className="mt-1.5 font-semibold text-zinc-100">
+                  Disputed Claim: &ldquo;{rep.disputedClaim}&rdquo;
+                </div>
+                <div className="mt-1 text-zinc-300">{rep.explanation}</div>
+                {rep.sourceUrl ? (
+                  <div className="mt-1 text-[11px] text-cyan-300">
+                    Source URL: <code>{rep.sourceUrl}</code>
+                  </div>
+                ) : null}
+                <div className="mt-1 text-[11px] text-zinc-500">
+                  Submitted {new Date(rep.submittedAt).toLocaleString()}
+                  {rep.contactInfo ? ` · Contact: ${rep.contactInfo}` : ""}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

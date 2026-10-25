@@ -510,7 +510,14 @@ export function buildSatelliteTrackingParams(
   if (context.citySlug) params.set("city", context.citySlug);
   if (context.productSlug) params.set("product", context.productSlug);
   if (context.eventDate) params.set("date", context.eventDate);
-  if (context.quantity) params.set("qty", String(context.quantity));
+  if (context.quantity) {
+    const qtyStr = String(context.quantity);
+    params.set("qty", qtyStr);
+    params.set("party_size", qtyStr);
+    params.set("travelers", qtyStr);
+    params.set("passengerCount", qtyStr);
+    params.set("passengers", qtyStr);
+  }
   if (context.artist) params.set("artist", context.artist);
   if (context.event) params.set("event", context.event);
   if (context.cruiseShip) params.set("ship", context.cruiseShip);

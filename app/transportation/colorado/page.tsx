@@ -7,7 +7,7 @@ import { getColoradoTransferRecommendationActions } from "@/lib/dcc/handoffAnaly
 import { getTravelReferenceNodeById } from "@/lib/dcc/travelReference";
 import { getTransportEntriesByRegion } from "@/src/data/transport-directory";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Colorado Transportation & I-70 Mountain Corridor Reference | Destination Command Center",
@@ -39,7 +39,25 @@ const GROUPS = [
   },
 ];
 
-export default function ColoradoTransportationPage() {
+export default async function ColoradoTransportationPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const resolvedSearch = searchParams ? await searchParams : {};
+  const firstStr = (v: string | string[] | undefined) =>
+    Array.isArray(v) ? v[0] : v;
+  const dateParam = firstStr(resolvedSearch.date) || firstStr(resolvedSearch.arrivalDate);
+  const partyParam =
+    firstStr(resolvedSearch.party_size) ||
+    firstStr(resolvedSearch.travelers) ||
+    firstStr(resolvedSearch.passengerCount) ||
+    firstStr(resolvedSearch.passengers) ||
+    firstStr(resolvedSearch.qty);
+  const customChoiceParam =
+    firstStr(resolvedSearch.direction) ||
+    firstStr(resolvedSearch.pickup_hub);
+
   const actions = getColoradoTransferRecommendationActions();
   const entries = getTransportEntriesByRegion("Colorado");
   const bySlug = new Map(entries.map((entry) => [entry.slug, entry]));
@@ -90,9 +108,26 @@ export default function ColoradoTransportationPage() {
           </div>
         </section>
 
-        {corridorRef ? <TravelReferenceExperience node={corridorRef} embedded /> : null}
+        {corridorRef ? (
+          <TravelReferenceExperience
+            node={corridorRef}
+            embedded
+            initialContext={{
+              date: dateParam,
+              partySize: partyParam,
+              customChoice: customChoiceParam,
+            }}
+          />
+        ) : null}
 
-        <RideOptionsCard venueSlug="red-rocks-amphitheatre" sourcePage="/transportation/colorado" />
+        <RideOptionsCard
+          venueSlug="red-rocks-amphitheatre"
+          sourcePage="/transportation/colorado"
+          bookingContext={{
+            date: dateParam,
+            qty: partyParam,
+          }}
+        />
 
         <NextStepEngine
           title="Colorado Transfer Next Step"

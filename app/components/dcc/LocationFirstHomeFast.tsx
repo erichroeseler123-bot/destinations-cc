@@ -84,7 +84,7 @@ export default function LocationFirstHomeFast() {
 
   return (
     <main className="bg-[#070b10] text-white font-sans selection:bg-cyan-500 selection:text-black">
-      {/* Commercial Hero */}
+      {/* Destination Reference & Decision Engine Hero */}
       <section className="border-b border-white/10 bg-[radial-gradient(circle_at_20%_0%,rgba(34,211,238,0.15),transparent_35%),radial-gradient(circle_at_90%_10%,rgba(16,185,129,0.1),transparent_30%),#070b10]">
         <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-20">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -92,11 +92,11 @@ export default function LocationFirstHomeFast() {
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-[11px] font-black uppercase tracking-[0.24em] text-cyan-300">Destination Command Center</p>
                 <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cyan-200">
-                  Travel Reference + Coordinate Intelligence + Venue Widgets
+                  Attributable Destination Knowledge + Interactive Decision Engines + Coordinate Intelligence
                 </span>
               </div>
               <h1 className="mt-3 text-4xl font-black tracking-[-0.04em] sm:text-6xl lg:text-7xl max-w-4xl">
-                Trusted Travel Reference, Powered by Live Coordinate Intelligence.
+                What Is True, What Fits Your Trip, and How to Choose.
               </h1>
             </div>
             <button
@@ -110,32 +110,32 @@ export default function LocationFirstHomeFast() {
           </div>
 
           <p className="mt-5 max-w-3xl text-base leading-8 text-white/70 sm:text-xl">
-            Understand destinations, prepare for trips, verify entry and transport rules, and inspect live, source-attributed environmental telemetry (NOAA, NWS, USGS, FAA, Open-Meteo). Built for travelers, AI assistants, venues, and developers.
+            Check whether real-world travel options fit your schedule, change the assumptions, inspect claim-level evidence and freshness, and see current environmental telemetry (NOAA, NWS, USGS, FAA, Open-Meteo). Tour bookings are optional—book directly with operators, choose public or free alternatives, or buy nothing.
           </p>
 
-          {/* Primary Action Buttons: Travel Reference + Commercial Products */}
+          {/* Primary Action Buttons: Decision Engines & Reference Guides */}
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href="#featured-destinations"
+              href="/juneau#port-day-decision-engine"
               className="px-6 py-4 bg-gradient-to-r from-cyan-400 to-emerald-400 text-black font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl shadow-cyan-500/25 hover:brightness-110 transition flex items-center gap-2"
+            >
+              <span>Open Juneau Port-Day Decision Engine</span>
+              <span>→</span>
+            </Link>
+
+            <Link
+              href="#featured-destinations"
+              className="px-5 py-4 bg-white/10 text-white font-black text-sm uppercase tracking-wider rounded-2xl border border-white/15 hover:bg-white/15 transition flex items-center gap-2"
             >
               <span>Explore Destination Reference Guides</span>
               <span>↓</span>
             </Link>
 
             <Link
-              href="/widget"
+              href="/developers"
               className="px-5 py-4 bg-white/10 text-white font-black text-sm uppercase tracking-wider rounded-2xl border border-white/15 hover:bg-white/15 transition flex items-center gap-2"
             >
-              <span>Customize Venue Widget</span>
-              <span className="text-xs bg-cyan-400/20 text-cyan-200 px-2 py-0.5 rounded-full font-extrabold">$39/mo</span>
-            </Link>
-
-            <Link
-              href="/pricing"
-              className="px-5 py-4 bg-white/10 text-white font-black text-sm uppercase tracking-wider rounded-2xl border border-white/15 hover:bg-white/15 transition flex items-center gap-2"
-            >
-              <span>Commercial Pricing &amp; API</span>
+              <span>Coordinate JSON API &amp; OpenAPI Spec</span>
               <span>→</span>
             </Link>
           </div>
@@ -218,7 +218,7 @@ export default function LocationFirstHomeFast() {
                 Flagship Destination Reference Guides
               </h2>
               <p className="mt-3 text-base text-white/65 leading-7">
-                While any coordinate on Earth can be queried for live environmental signals, DCC&apos;s flagship destination references combine place-adapted geography, history, getting there &amp; around, 6-factor entry dependency modeling, operational safety boundaries, and full source attribution.
+                While any coordinate on Earth can be queried for live environmental signals, DCC&apos;s flagship destination references combine place-adapted geography, interactive decision engines, 6-factor entry dependency modeling, operational safety boundaries, and full source attribution.
               </p>
             </div>
             <Link
@@ -241,11 +241,11 @@ export default function LocationFirstHomeFast() {
                 </div>
                 <h3 className="mt-4 text-2xl font-black text-white">Juneau &amp; Gastineau Channel</h3>
                 <p className="mt-2.5 text-sm leading-6 text-white/70">
-                  Roadless state capital &amp; cruise port reference: Lingít Aani cultural context, JNU &amp; AMHS ferry access, 6-factor U.S./Canadian (CBSA/IRCC) cruise &amp; Skagway border dependencies, Mendenhall USFS rules, and live NOAA tide/PAJN ceiling telemetry.
+                  Roadless state capital &amp; cruise port decision engine: evaluate whether one or two activities fit your port window, adjust berth/shuttle/tender assumptions, compare public/free vs. direct operator options, and inspect claim-level evidence.
                 </p>
                 <ul className="mt-4 space-y-1.5 text-xs text-white/65">
+                  <li>• <strong>Decision Engine:</strong> Port window, dock transfer, check-in &amp; 90m return math</li>
                   <li>• <strong>Entry Rules:</strong> 6-factor nationality/passport/transit explorer</li>
-                  <li>• <strong>Live Feeds:</strong> NOAA CO-OPS 9452210 tides, FAA PAJN METAR, NWS</li>
                   <li>• <strong>Safety Boundary:</strong> Ceiling weather ≠ FAA Part 135 flight dispatch</li>
                 </ul>
               </div>
@@ -356,89 +356,89 @@ export default function LocationFirstHomeFast() {
         </div>
       </section>
 
-      {/* The 2 Core Products Section */}
+      {/* Why Travelers, Search Engines & AI Assistants Use DCC */}
       <section className="py-16 sm:py-24 px-5 sm:px-8 max-w-7xl mx-auto">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-xs font-black uppercase tracking-widest text-cyan-300">
-            Commercial Offerings
+            Decision Engine + Evidence Architecture
           </span>
           <h2 className="mt-2 text-3xl sm:text-5xl font-black text-white">
-            Built for Venues. Built for Builders.
+            Verifiable Decisions First. Optional Booking Second.
           </h2>
           <p className="mt-4 text-base text-white/70">
-            Choose the interface that matches your workflow: zero-code embeddable widget or sub-second JSON API.
+            DCC combines maintained destination facts, claim-level freshness policies, and inspectable timing calculations so you can verify whether options actually fit your trip before deciding whether or where to book.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Card 1: Widget */}
+          {/* Card 1: Interactive Decision Engine & Evidence */}
           <div className="rounded-3xl border border-cyan-500/30 bg-gradient-to-b from-cyan-950/20 to-black/40 p-8 flex flex-col justify-between backdrop-blur-xl relative overflow-hidden">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-black uppercase tracking-wider text-cyan-400 bg-cyan-400/10 px-3 py-1 rounded-full border border-cyan-400/30">
-                  Venue Product #1
+                  Primary Product · Traveler Decision Engine
                 </span>
-                <span className="text-sm font-bold text-white/60">$39/mo or $349/yr</span>
+                <span className="text-sm font-bold text-white/60">Public &amp; Commission-Neutral</span>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-black text-white">The &ldquo;Know Before You Go&rdquo; Widget</h3>
+              <h3 className="text-2xl sm:text-3xl font-black text-white">Check Constraints, Change Assumptions, Inspect Evidence</h3>
               <p className="mt-3 text-sm text-white/70 leading-6">
-                Drop a live weather, hourly forecast, NWS severe warning, and NOAA river level widget onto your Squarespace, WordPress, or custom site in under 60 seconds.
+                Evaluate real port windows, dock transfer friction, operator check-in cutoffs, mobility constraints, and return buffers. Compare public/free options alongside direct local operators and partner links without commercial bias.
               </p>
               <ul className="mt-6 space-y-2.5 text-xs text-white/80">
-                <li className="flex items-center gap-2">✓ <strong>100% Whitelabel:</strong> Matches your venue branding</li>
-                <li className="flex items-center gap-2">✓ <strong>Live River &amp; Flood Gauges:</strong> NOAA NWPS verified flow data</li>
-                <li className="flex items-center gap-2">✓ <strong>Official NWS Storm Alerts:</strong> Auto-populates active warnings</li>
-                <li className="flex items-center gap-2">✓ <strong>Cut Phone Calls:</strong> Answers weather &amp; condition questions automatically</li>
+                <li className="flex items-center gap-2">✓ <strong>Inspectable Math:</strong> Explicit transfer legs, check-in lead times, and local time zones</li>
+                <li className="flex items-center gap-2">✓ <strong>Claim-Level Freshness:</strong> Distinct observation, retrieval, and verification timestamps</li>
+                <li className="flex items-center gap-2">✓ <strong>Honest 180-Day Reviews:</strong> Dated third-party review summaries with strict minimum thresholds</li>
+                <li className="flex items-center gap-2">✓ <strong>Independent &amp; Free Options:</strong> Public trails, transit, and direct operators included</li>
               </ul>
             </div>
             <div className="mt-8 pt-6 border-t border-white/10 flex flex-wrap gap-3">
               <Link
-                href="/widget"
+                href="/juneau#port-day-decision-engine"
                 className="px-5 py-3 bg-cyan-400 text-black font-extrabold text-xs uppercase tracking-wider rounded-xl hover:bg-cyan-300 transition shadow-lg shadow-cyan-400/20"
               >
-                Launch Widget Configurator →
+                Try Juneau Port-Day Decision Engine →
               </Link>
               <Link
-                href="/pricing"
+                href="/about"
                 className="px-5 py-3 bg-white/10 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl hover:bg-white/15 transition border border-white/10"
               >
-                Pricing &amp; Licenses
+                Sources &amp; Methodology
               </Link>
             </div>
           </div>
 
-          {/* Card 2: API */}
+          {/* Card 2: API & Machine Distribution */}
           <div className="rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-emerald-950/20 to-black/40 p-8 flex flex-col justify-between backdrop-blur-xl relative overflow-hidden">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-black uppercase tracking-wider text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded-full border border-emerald-400/30">
-                  Developer Product #2
+                  Secondary Distribution · API &amp; Machine Contracts
                 </span>
-                <span className="text-sm font-bold text-white/60">Starts Free • $49/mo Builder</span>
+                <span className="text-sm font-bold text-white/60">JSON API · OpenAPI 3.1</span>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-black text-white">Coordinate Intelligence API</h3>
+              <h3 className="text-2xl sm:text-3xl font-black text-white">Coordinate &amp; Decision Intelligence API</h3>
               <p className="mt-3 text-sm text-white/70 leading-6">
-                Query any latitude and longitude on Earth to receive a unified, normalized JSON payload combining public environmental feeds and linked destination reference context.
+                Query any latitude and longitude on Earth to receive normalized environmental feeds alongside linked destination reference claims, freshness status, and decision-engine models.
               </p>
               <div className="mt-5 rounded-2xl bg-black/60 p-4 border border-white/10 font-mono text-xs text-emerald-300 overflow-x-auto">
-                <code>GET /api/location/39.66540/-105.20570</code>
+                <code>GET /api/location/58.30190/-134.41970</code>
                 <div className="mt-2 text-white/60 text-[11px]">
-                  Returns: weather, CAMS air quality, NWS alerts, NOAA gauges, USGS seismic, FAA METAR, travelReference.
+                  Returns: weather, CAMS air quality, NWS alerts, NOAA gauges, USGS seismic, FAA METAR, travelReference, claimFreshness, decisionEngine.
                 </div>
               </div>
             </div>
             <div className="mt-8 pt-6 border-t border-white/10 flex flex-wrap gap-3">
               <Link
-                href="/pricing"
+                href="/developers"
                 className="px-5 py-3 bg-emerald-400 text-black font-extrabold text-xs uppercase tracking-wider rounded-xl hover:bg-emerald-300 transition shadow-lg shadow-emerald-400/20"
               >
-                Get API Subscription →
+                Read Developer &amp; OpenAPI Docs →
               </Link>
               <Link
-                href="/developers"
+                href="/scope.json"
                 className="px-5 py-3 bg-white/10 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl hover:bg-white/15 transition border border-white/10"
               >
-                Read OpenAPI Spec
+                Inspect /scope.json Contract
               </Link>
             </div>
           </div>

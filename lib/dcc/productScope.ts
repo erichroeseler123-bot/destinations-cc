@@ -94,6 +94,9 @@ export const DCC_PRODUCT_SCOPE = {
       "Missing, out-of-scope, or expired upstream data must never appear as an all-clear (0 warnings).",
       "Entry requirements depend on 6 traveler factors (nationality, passport/document type, residence, transit routing, trip purpose, and dates) and cannot be answered by coordinates alone.",
       "Official rules, live observations, model forecasts, DCC interpretations, and editorial recommendations must remain explicitly labeled and distinguishable.",
+      "Every material claim maintains distinct observedAt, retrievedAt, and verifiedAt timestamps, a volatility-based freshness policy, and dependency tracking so expired or conflicted claims qualify dependent conclusions without corrupting unrelated facts.",
+      "Tour sales are an optional convenience presented after decision facts; commercial relationships carry zero weight in decision-engine rankings, and public/free/direct alternatives are always included where relevant.",
+      "Recent-review summaries use only dated third-party review text within a disclosed 180-day rolling window (minimum 3 reviews and 2 per theme); DCC never fabricates guest feedback from product titles or categories.",
     ],
   },
   secondaryProducts: [

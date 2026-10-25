@@ -1,6 +1,3 @@
-import { createHash } from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
 import { sql } from "drizzle-orm";
 import { getDb, hasConfiguredDatabaseUrl, type DccDb } from "@/lib/db/client";
 
@@ -42,29 +39,56 @@ export async function runRepeatableEarthosMigration(): Promise<{
     throw new Error("Failed to initialize durable database client for EarthOS persistence.");
   }
 
-  const migrationPath = path.resolve(
-    process.cwd(),
-    "drizzle",
-    `${EARTHOS_MIGRATION_ID}.sql`,
-  );
-  const rawSql = fs.existsSync(migrationPath)
-    ? fs.readFileSync(migrationPath, "utf8")
-    : EARTHOS_MIGRATION_ID;
-  const checksum = createHash("sha256").update(rawSql).digest("hex");
+  const getBuiltin = (process as unknown as {
+    getBuiltinModule?: (id: string) => unknown;
+  }).getBuiltinModule;
+  const nodeFs = getBuiltin
+    ? (getBuiltin("fs") as typeof import("node:fs"))
+    : undefined;
+  const nodePath = getBuiltin
+    ? (getBuiltin("path") as typeof import("node:path"))
+    : undefined;
+  const nodeCrypto = getBuiltin
+    ? (getBuiltin("crypto") as typeof import("node:crypto"))
+    : undefined;
 
-  await db.execute(sql`
+  const migrationPath = nodePath
+    ? nodePath.resolve(process.cwd(), "drizzle", `${EARTHOS_MIGRATION_ID}.sql`)
+    : `${EARTHOS_MIGRATION_ID}.sql`;
+  const rawSql =
+    nodeFs && nodeFs.existsSync(migrationPath)
+      ? nodeFs.readFileSync(migrationPath, "utf8")
+      : EARTHOS_MIGRATION_ID;
+  const checksum = nodeCrypto
+    ? nodeCrypto.createHash("sha256").update(rawSql).digest("hex")
+    : EARTHOS_MIGRATION_ID;
+
+  async function executeDdl(query: ReturnType<typeof sql>) {
+    try {
+      await db!.execute(query);
+    } catch (err: any) {
+      const code = err?.code || err?.cause?.code;
+      const msg = String(err?.message || err?.cause?.message || "");
+      if (code === "42501" || /must be owner of|permission denied for schema/i.test(msg)) {
+        return;
+      }
+      throw err;
+    }
+  }
+
+  await executeDdl(sql`
     DO $$ BEGIN
       CREATE TYPE earthos_mission_entity AS ENUM ('gosno', 'alaska', 'redrocks', 'earthos');
     EXCEPTION WHEN duplicate_object THEN null; END $$;
   `);
 
-  await db.execute(sql`
+  await executeDdl(sql`
     DO $$ BEGIN
       CREATE TYPE earthos_mission_status AS ENUM ('running', 'waiting', 'failed', 'completed');
     EXCEPTION WHEN duplicate_object THEN null; END $$;
   `);
 
-  await db.execute(sql`
+  await executeDdl(sql`
     CREATE TABLE IF NOT EXISTS earthos_schema_migrations (
       migration_id text PRIMARY KEY,
       checksum text NOT NULL,
@@ -74,7 +98,7 @@ export async function runRepeatableEarthosMigration(): Promise<{
     );
   `);
 
-  await db.execute(sql`
+  await executeDdl(sql`
     CREATE TABLE IF NOT EXISTS earthos_missions (
       mission_id text PRIMARY KEY,
       entity earthos_mission_entity NOT NULL,
@@ -95,13 +119,13 @@ export async function runRepeatableEarthosMigration(): Promise<{
     );
   `);
 
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS earthos_missions_entity_idx ON earthos_missions (entity);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS earthos_missions_status_idx ON earthos_missions (status);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS earthos_missions_updated_at_idx ON earthos_missions (updated_at);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS earthos_missions_waiting_event_idx ON earthos_missions (waiting_for_event);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS earthos_missions_entity_region_idx ON earthos_missions (entity, region);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS earthos_missions_entity_idx ON earthos_missions (entity);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS earthos_missions_status_idx ON earthos_missions (status);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS earthos_missions_updated_at_idx ON earthos_missions (updated_at);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS earthos_missions_waiting_event_idx ON earthos_missions (waiting_for_event);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS earthos_missions_entity_region_idx ON earthos_missions (entity, region);`);
 
-  await db.execute(sql`
+  await executeDdl(sql`
     CREATE TABLE IF NOT EXISTS earthos_mission_steps (
       step_id text PRIMARY KEY,
       mission_id text NOT NULL REFERENCES earthos_missions(mission_id) ON DELETE CASCADE,
@@ -116,10 +140,10 @@ export async function runRepeatableEarthosMigration(): Promise<{
     );
   `);
 
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS earthos_mission_steps_mission_id_idx ON earthos_mission_steps (mission_id);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS earthos_mission_steps_mission_status_idx ON earthos_mission_steps (mission_id, status);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS earthos_mission_steps_mission_id_idx ON earthos_mission_steps (mission_id);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS earthos_mission_steps_mission_status_idx ON earthos_mission_steps (mission_id, status);`);
 
-  await db.execute(sql`
+  await executeDdl(sql`
     CREATE TABLE IF NOT EXISTS earthos_control_map_findings (
       finding_id text PRIMARY KEY,
       status text NOT NULL,
@@ -132,12 +156,12 @@ export async function runRepeatableEarthosMigration(): Promise<{
     );
   `);
 
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_findings_status_idx ON earthos_control_map_findings (status);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_findings_severity_idx ON earthos_control_map_findings (severity);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_findings_updated_at_idx ON earthos_control_map_findings (updated_at);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_findings_owner_status_idx ON earthos_control_map_findings (owner, status);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_findings_status_idx ON earthos_control_map_findings (status);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_findings_severity_idx ON earthos_control_map_findings (severity);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_findings_updated_at_idx ON earthos_control_map_findings (updated_at);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_findings_owner_status_idx ON earthos_control_map_findings (owner, status);`);
 
-  await db.execute(sql`
+  await executeDdl(sql`
     CREATE TABLE IF NOT EXISTS earthos_control_map_finding_history (
       event_sequence bigserial PRIMARY KEY,
       finding_id text NOT NULL REFERENCES earthos_control_map_findings(finding_id) ON DELETE CASCADE,
@@ -157,12 +181,12 @@ export async function runRepeatableEarthosMigration(): Promise<{
     );
   `);
 
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_finding_history_finding_recorded_idx ON earthos_control_map_finding_history (finding_id, recorded_at);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_finding_history_event_idx ON earthos_control_map_finding_history (event);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_finding_history_recorded_at_idx ON earthos_control_map_finding_history (recorded_at);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_finding_history_corridor_idx ON earthos_control_map_finding_history (corridor);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_finding_history_finding_recorded_idx ON earthos_control_map_finding_history (finding_id, recorded_at);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_finding_history_event_idx ON earthos_control_map_finding_history (event);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_finding_history_recorded_at_idx ON earthos_control_map_finding_history (recorded_at);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS earthos_control_map_finding_history_corridor_idx ON earthos_control_map_finding_history (corridor);`);
 
-  await db.execute(sql`
+  await executeDdl(sql`
     CREATE TABLE IF NOT EXISTS governance_drift_events (
       id text PRIMARY KEY,
       created_at timestamptz NOT NULL DEFAULT now(),
@@ -184,13 +208,13 @@ export async function runRepeatableEarthosMigration(): Promise<{
     );
   `);
 
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS governance_drift_events_created_at_idx ON governance_drift_events (created_at);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS governance_drift_events_corridor_idx ON governance_drift_events (corridor_id);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS governance_drift_events_status_idx ON governance_drift_events (status);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS governance_drift_events_severity_idx ON governance_drift_events (severity);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS governance_drift_events_finding_idx ON governance_drift_events (finding_id);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS governance_drift_events_created_at_idx ON governance_drift_events (created_at);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS governance_drift_events_corridor_idx ON governance_drift_events (corridor_id);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS governance_drift_events_status_idx ON governance_drift_events (status);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS governance_drift_events_severity_idx ON governance_drift_events (severity);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS governance_drift_events_finding_idx ON governance_drift_events (finding_id);`);
 
-  await db.execute(sql`
+  await executeDdl(sql`
     CREATE TABLE IF NOT EXISTS governance_reconciliation_packets (
       id text PRIMARY KEY,
       created_at timestamptz NOT NULL DEFAULT now(),
@@ -208,12 +232,12 @@ export async function runRepeatableEarthosMigration(): Promise<{
     );
   `);
 
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS governance_reconciliation_packets_created_at_idx ON governance_reconciliation_packets (created_at);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS governance_reconciliation_packets_type_idx ON governance_reconciliation_packets (packet_type);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS governance_reconciliation_packets_status_idx ON governance_reconciliation_packets (status);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS governance_reconciliation_packets_approval_required_idx ON governance_reconciliation_packets (approval_required);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS governance_reconciliation_packets_created_at_idx ON governance_reconciliation_packets (created_at);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS governance_reconciliation_packets_type_idx ON governance_reconciliation_packets (packet_type);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS governance_reconciliation_packets_status_idx ON governance_reconciliation_packets (status);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS governance_reconciliation_packets_approval_required_idx ON governance_reconciliation_packets (approval_required);`);
 
-  await db.execute(sql`
+  await executeDdl(sql`
     CREATE TABLE IF NOT EXISTS governance_findings_history (
       id bigserial PRIMARY KEY,
       finding_id text NOT NULL,
@@ -228,12 +252,12 @@ export async function runRepeatableEarthosMigration(): Promise<{
     );
   `);
 
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS governance_findings_history_finding_recorded_idx ON governance_findings_history (finding_id, recorded_at);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS governance_findings_history_drift_event_idx ON governance_findings_history (drift_event_id);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS governance_findings_history_packet_idx ON governance_findings_history (packet_id);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS governance_findings_history_event_type_idx ON governance_findings_history (event_type);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS governance_findings_history_finding_recorded_idx ON governance_findings_history (finding_id, recorded_at);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS governance_findings_history_drift_event_idx ON governance_findings_history (drift_event_id);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS governance_findings_history_packet_idx ON governance_findings_history (packet_id);`);
+  await executeDdl(sql`CREATE INDEX IF NOT EXISTS governance_findings_history_event_type_idx ON governance_findings_history (event_type);`);
 
-  await db.execute(sql`
+  await executeDdl(sql`
     CREATE TABLE IF NOT EXISTS octo_normalized_products (
       id text PRIMARY KEY,
       supplier_connection_id text NOT NULL,

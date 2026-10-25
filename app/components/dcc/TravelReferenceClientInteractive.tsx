@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import type {
-  AuthorityType,
-  EntryScenarioRule,
-  EvidenceCitation,
-  IntegrationStatus,
-  SpecialistHandoffOption,
-  TravelReferenceNode,
+import {
+  computeFutureVerificationDate,
+  type AuthorityType,
+  type EntryScenarioRule,
+  type EvidenceCitation,
+  type IntegrationStatus,
+  type SpecialistHandoffOption,
+  type TravelReferenceNode,
 } from "@/lib/dcc/travelReference";
 
 const AUTHORITY_BADGE_MAP: Record<
@@ -19,6 +20,10 @@ const AUTHORITY_BADGE_MAP: Record<
     label: "Official Rule / Requirement",
     className: "border-emerald-500/40 bg-emerald-500/10 text-emerald-200",
   },
+  operator_provided: {
+    label: "Operator-Provided Specification",
+    className: "border-teal-500/40 bg-teal-500/10 text-teal-200",
+  },
   observation: {
     label: "Live Sensor Observation",
     className: "border-cyan-500/40 bg-cyan-500/10 text-cyan-200",
@@ -26,6 +31,10 @@ const AUTHORITY_BADGE_MAP: Record<
   forecast: {
     label: "Model Forecast",
     className: "border-sky-500/40 bg-sky-500/10 text-sky-200",
+  },
+  review_sentiment: {
+    label: "Third-Party Review Sentiment",
+    className: "border-purple-500/40 bg-purple-500/10 text-purple-200",
   },
   dcc_interpretation: {
     label: "DCC Practical Interpretation",
@@ -228,9 +237,13 @@ export function EntryDependencyExplorer({
                   const cite = evidenceMap[cid];
                   if (!cite) return null;
                   return (
-                    <span key={cid}>
-                      Issued by {cite.issuingOrganization} • Checked {cite.lastCheckedAt}
-                    </span>
+                    <a
+                      key={cid}
+                      href={`#cite-${cid}`}
+                      className="hover:text-cyan-300 underline decoration-white/20"
+                    >
+                      [{cid}] Issued by {cite.issuingOrganization} • Checked {cite.lastCheckedAt}
+                    </a>
                   );
                 })}
               </div>
@@ -244,14 +257,57 @@ export function EntryDependencyExplorer({
 
 export function SpecialistHandoffInteractive({
   config,
+  nodeId,
+  initialContext,
 }: {
   config: TravelReferenceNode["specialistHandoffs"];
+  nodeId?: string;
+  initialContext?: {
+    date?: string;
+    partySize?: string;
+    customChoice?: string;
+  };
 }) {
-  const [travelDate, setTravelDate] = useState<string>("");
-  const [partySize, setPartySize] = useState<string>("2");
-  const [customChoice, setCustomChoice] = useState<string>(
-    config.contextControls.customSelectorOptions?.[0]?.value || "",
+  const defaultFutureDate = useMemo(
+    () => computeFutureVerificationDate(new Date(), nodeId),
+    [nodeId],
   );
+  const [travelDate, setTravelDate] = useState<string>(
+    initialContext?.date || defaultFutureDate,
+  );
+  const [partySize, setPartySize] = useState<string>(
+    initialContext?.partySize || "2",
+  );
+  const [customChoice, setCustomChoice] = useState<string>(
+    initialContext?.customChoice ||
+      config.contextControls.customSelectorOptions?.[0]?.value ||
+      "",
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    const urlDate = sp.get("date") || sp.get("arrivalDate");
+    if (urlDate && /^\d{4}-\d{2}-\d{2}$/.test(urlDate)) {
+      setTravelDate(urlDate);
+    }
+    const urlParty =
+      sp.get("party_size") ||
+      sp.get("travelers") ||
+      sp.get("passengerCount") ||
+      sp.get("passengers") ||
+      sp.get("qty");
+    if (urlParty && /^\d+$/.test(urlParty)) {
+      setPartySize(urlParty);
+    }
+    const customParam = config.contextControls.customSelectorParam;
+    if (customParam) {
+      const urlCustom = sp.get(customParam);
+      if (urlCustom) {
+        setCustomChoice(urlCustom);
+      }
+    }
+  }, [config.contextControls.customSelectorParam]);
 
   function buildHandoffUrl(option: SpecialistHandoffOption): string {
     const isInternal = option.baseUrl.startsWith("/");
@@ -271,6 +327,8 @@ export function SpecialistHandoffInteractive({
       url.searchParams.set("travelers", partySize);
       url.searchParams.set("party_size", partySize);
       url.searchParams.set("passengerCount", partySize);
+      url.searchParams.set("passengers", partySize);
+      url.searchParams.set("qty", partySize);
     }
     if (customChoice && config.contextControls.customSelectorParam) {
       if (

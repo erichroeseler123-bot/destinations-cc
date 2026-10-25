@@ -1,8 +1,9 @@
-import { randomUUID } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 import { drizzle, type NeonHttpDatabase } from "drizzle-orm/neon-http";
 import * as schema from "@/lib/db/schema";
 import { LIVE_CORRIDOR_CATALOG } from "@/lib/dcc/telemetry/corridorCatalog";
+
+const randomUUID = () => globalThis.crypto.randomUUID();
 
 export type DccDb = NeonHttpDatabase<typeof schema>;
 
@@ -16,33 +17,71 @@ export function hasConfiguredDatabaseUrl() {
 export type DatabaseIdentitySummary = {
   hostPrefix: string;
   databaseName: string;
+  databaseRole: string;
+  sharedClusterEndpoint: boolean;
+  credentialLevelIsolation: boolean;
   targetEnvironment: "production" | "nonprod";
   productionTarget: boolean;
   isIsolatedFromProduction: boolean;
 };
 
 export function isProductionDatabaseTarget(): boolean {
-  const explicitTarget = (
+  const explicitDbTarget = (
     process.env.DCC_TARGET_DB ||
     process.env.DCC_EARTHOS_ENV ||
-    process.env.DCC_ENVIRONMENT_SCOPE ||
     ""
   )
     .trim()
     .toLowerCase();
-  if (explicitTarget === "production") return true;
+  if (explicitDbTarget === "production") return true;
   if (
-    explicitTarget === "nonprod" ||
-    explicitTarget === "preview" ||
-    explicitTarget === "development" ||
-    explicitTarget === "test"
+    explicitDbTarget === "nonprod" ||
+    explicitDbTarget === "preview" ||
+    explicitDbTarget === "development" ||
+    explicitDbTarget === "test"
   ) {
     return false;
   }
+
+  const candidateUrl = (
+    process.env.DCC_PRODUCTION_DATABASE_URL ||
+    process.env.DCC_NONPROD_DATABASE_URL ||
+    process.env.DCC_DATABASE_URL ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    ""
+  ).trim();
+  if (
+    !process.env.DCC_PRODUCTION_DATABASE_URL &&
+    (candidateUrl.includes("dcc_nonprod_app") || candidateUrl.includes("/neondb_nonprod"))
+  ) {
+    return false;
+  }
+
+  const explicitScope = (process.env.DCC_ENVIRONMENT_SCOPE || "").trim().toLowerCase();
+  if (
+    explicitScope === "nonprod" ||
+    explicitScope === "preview" ||
+    explicitScope === "development" ||
+    explicitScope === "test"
+  ) {
+    return false;
+  }
+  if (explicitScope === "production") return true;
+
   return process.env.VERCEL_ENV?.trim().toLowerCase() === "production";
 }
 
 export function resolveDatabaseUrl(): string {
+  const baseConfigured = (
+    process.env.DCC_DATABASE_URL ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    ""
+  ).trim();
+  if (!baseConfigured && !process.env.DCC_TARGET_DB) {
+    return "";
+  }
   const isProdTarget = isProductionDatabaseTarget();
   const raw = (
     (isProdTarget
@@ -58,11 +97,12 @@ export function resolveDatabaseUrl(): string {
   try {
     const parsed = new URL(raw);
     const currentDb = parsed.pathname.replace(/^\//, "");
+    const username = decodeURIComponent(parsed.username || "").toLowerCase();
     if (!isProdTarget && currentDb === "neondb") {
       parsed.pathname = "/neondb_nonprod";
       return parsed.toString();
     }
-    if (isProdTarget && currentDb === "neondb_nonprod") {
+    if (isProdTarget && currentDb === "neondb_nonprod" && !username.includes("nonprod")) {
       parsed.pathname = "/neondb";
       return parsed.toString();
     }
@@ -82,6 +122,9 @@ export function getResolvedDatabaseIdentity(): DatabaseIdentitySummary {
     return {
       hostPrefix: "unconfigured",
       databaseName: "unconfigured",
+      databaseRole: "unconfigured",
+      sharedClusterEndpoint: true,
+      credentialLevelIsolation: false,
       targetEnvironment,
       productionTarget,
       isIsolatedFromProduction: false,
@@ -90,17 +133,27 @@ export function getResolvedDatabaseIdentity(): DatabaseIdentitySummary {
   try {
     const parsed = new URL(resolved);
     const databaseName = parsed.pathname.replace(/^\//, "") || "unknown";
+    const databaseRole = decodeURIComponent(parsed.username || "unknown");
+    const credentialLevelIsolation =
+      databaseName === "neondb_nonprod" && databaseRole === "dcc_nonprod_app";
     return {
       hostPrefix: parsed.hostname.split(".")[0] || "unknown",
       databaseName,
+      databaseRole,
+      sharedClusterEndpoint: true,
+      credentialLevelIsolation,
       targetEnvironment,
       productionTarget,
-      isIsolatedFromProduction: databaseName === "neondb_nonprod",
+      isIsolatedFromProduction:
+        databaseName === "neondb_nonprod" && credentialLevelIsolation,
     };
   } catch {
     return {
       hostPrefix: "invalid-url",
       databaseName: "unknown",
+      databaseRole: "unknown",
+      sharedClusterEndpoint: true,
+      credentialLevelIsolation: false,
       targetEnvironment,
       productionTarget,
       isIsolatedFromProduction: false,

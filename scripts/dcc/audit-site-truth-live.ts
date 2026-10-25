@@ -135,21 +135,34 @@ async function auditSite(record: (typeof DCC_SITE_TRUTH)[number]) {
   };
 }
 
-const results = [];
-for (const record of DCC_SITE_TRUTH) {
-  results.push(await auditSite(record));
+async function main() {
+  const results = [];
+  for (const record of DCC_SITE_TRUTH) {
+    results.push(await auditSite(record));
+  }
+
+  const errors = findings.filter((finding) => finding.level === "error");
+  const warnings = findings.filter((finding) => finding.level === "warning");
+
+  console.log(
+    JSON.stringify(
+      {
+        audited_at: new Date().toISOString(),
+        sites: results,
+        errors,
+        warnings,
+      },
+      null,
+      2,
+    ),
+  );
+
+  if (errors.length > 0) {
+    process.exitCode = 1;
+  }
 }
 
-const errors = findings.filter((finding) => finding.level === "error");
-const warnings = findings.filter((finding) => finding.level === "warning");
-
-console.log(JSON.stringify({
-  audited_at: new Date().toISOString(),
-  sites: results,
-  errors,
-  warnings,
-}, null, 2));
-
-if (errors.length > 0) {
+main().catch((err) => {
+  console.error(err);
   process.exitCode = 1;
-}
+});

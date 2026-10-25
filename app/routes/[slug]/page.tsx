@@ -44,10 +44,27 @@ export async function generateMetadata({
 
 export default async function RouteDecisionPage({
   params,
+  searchParams,
 }: {
   params: Promise<Params>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug } = await params;
+  const resolvedSearch = searchParams ? await searchParams : {};
+  const firstStr = (v: string | string[] | undefined) =>
+    Array.isArray(v) ? v[0] : v;
+  const dateParam = firstStr(resolvedSearch.date) || firstStr(resolvedSearch.arrivalDate);
+  const partyParam =
+    firstStr(resolvedSearch.party_size) ||
+    firstStr(resolvedSearch.travelers) ||
+    firstStr(resolvedSearch.passengerCount) ||
+    firstStr(resolvedSearch.passengers) ||
+    firstStr(resolvedSearch.qty);
+  const customChoiceParam =
+    firstStr(resolvedSearch.pickup_hub) ||
+    firstStr(resolvedSearch.direction) ||
+    firstStr(resolvedSearch.port_context);
+
   const entityKey = `route:${slug}`;
   const surface =
     hasSurfaceEntity(entityKey) ?
@@ -69,10 +86,29 @@ export default async function RouteDecisionPage({
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
-      {referenceNode ? <TravelReferenceExperience node={referenceNode} embedded /> : null}
+      {referenceNode ? (
+        <TravelReferenceExperience
+          node={referenceNode}
+          embedded
+          initialContext={{
+            date: dateParam,
+            partySize: partyParam,
+            customChoice: customChoiceParam,
+          }}
+        />
+      ) : null}
       <div className="mx-auto max-w-6xl px-6 py-14 space-y-8">
         <DecisionEngineTemplate page={page} />
-        {slug === "denver-red-rocks" ? <RideOptionsCard venueSlug="red-rocks-amphitheatre" sourcePage="/routes/denver-red-rocks" /> : null}
+        {slug === "denver-red-rocks" ? (
+          <RideOptionsCard
+            venueSlug="red-rocks-amphitheatre"
+            sourcePage="/routes/denver-red-rocks"
+            bookingContext={{
+              date: dateParam,
+              qty: partyParam,
+            }}
+          />
+        ) : null}
         <footer className="flex flex-wrap gap-6 text-sm text-zinc-400">
           <Link href="/cities/denver" className="hover:text-zinc-200">
             Open Denver decision engine →

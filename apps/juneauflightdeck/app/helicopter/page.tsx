@@ -22,10 +22,37 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HelicopterPage() {
+export const dynamic = "force-dynamic";
+
+export default async function HelicopterPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const resolvedSearch = searchParams ? await searchParams : {};
+  const firstStr = (v: string | string[] | undefined) =>
+    Array.isArray(v) ? v[0] : v;
+  const dateParam = firstStr(resolvedSearch.date) || firstStr(resolvedSearch.arrivalDate) || null;
+  const rawParty =
+    firstStr(resolvedSearch.party_size) ||
+    firstStr(resolvedSearch.travelers) ||
+    firstStr(resolvedSearch.passengerCount) ||
+    firstStr(resolvedSearch.passengers) ||
+    firstStr(resolvedSearch.qty);
+  const parsedParty = rawParty ? Number(rawParty) : NaN;
+  const initialPassengerCount =
+    Number.isInteger(parsedParty) && parsedParty >= 1 && parsedParty <= 12
+      ? parsedParty
+      : null;
+
   return (
     <main id="main-content">
-      <HelicopterDispatchBoard portSlug="juneau" sourcePage="/helicopter" />
+      <HelicopterDispatchBoard
+        portSlug="juneau"
+        sourcePage="/helicopter"
+        initialDate={dateParam}
+        initialPassengerCount={initialPassengerCount}
+      />
     </main>
   );
 }

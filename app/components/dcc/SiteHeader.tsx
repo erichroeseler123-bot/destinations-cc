@@ -16,14 +16,12 @@ const PRIMARY_NAV_CONSOLE: NavItem[] = [
 ];
 
 const PRIMARY_NAV_PUBLIC: NavItem[] = [
-  { href: "/juneau", label: "JUNEAU" },
+  { href: "/juneau", label: "JUNEAU DECISION ENGINE" },
   { href: "/red-rocks", label: "RED ROCKS" },
   { href: "/routes/denver-breckenridge", label: "I-70 CORRIDOR" },
   { href: "/ports", label: "PORTS" },
-  { href: "/widget", label: "VENUE WIDGET" },
-  { href: "/pricing", label: "PRICING" },
   { href: "/developers", label: "API" },
-  { href: "/about", label: "ABOUT & EVIDENCE" },
+  { href: "/about", label: "SOURCES & METHODOLOGY" },
 ];
 
 export default function SiteHeader() {

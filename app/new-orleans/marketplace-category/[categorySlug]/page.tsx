@@ -178,8 +178,34 @@ function isLiveProduct(product: ReturnType<typeof getProductById>): product is L
   return Boolean(product && product.status === "live");
 }
 
-export default async function CategoryPage({ params }: { params: Promise<{ categorySlug: string }> }) {
+export const dynamic = "force-dynamic";
+
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ categorySlug: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const resolvedParams = await params;
+  const resolvedSearch = searchParams ? await searchParams : {};
+  const firstStr = (v: string | string[] | undefined) =>
+    Array.isArray(v) ? v[0] : v;
+  const defaultFutureDate = new Date(Date.now() + 30 * 86400000)
+    .toISOString()
+    .slice(0, 10);
+  const selectedDate =
+    firstStr(resolvedSearch.date) ||
+    firstStr(resolvedSearch.arrivalDate) ||
+    defaultFutureDate;
+  const selectedPartySize =
+    firstStr(resolvedSearch.party_size) ||
+    firstStr(resolvedSearch.travelers) ||
+    firstStr(resolvedSearch.passengerCount) ||
+    firstStr(resolvedSearch.passengers) ||
+    firstStr(resolvedSearch.qty) ||
+    "2";
+
   const record = getSeoPageBySlug(resolvedParams.categorySlug);
   if (!record || record.status === "draft" || record.variant !== "category") {
     notFound();
@@ -263,6 +289,66 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         <h2 className="mt-2 font-serif text-3xl text-[#f3dfb3] md:text-4xl">{copy.optionsTitle}</h2>
         <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[#9d9587]">{copy.optionsIntro}</p>
       </div>
+
+      <form
+        method="get"
+        action={`/${resolvedParams.categorySlug}`}
+        className="mx-auto mt-6 max-w-4xl border border-[#342b1d] bg-[#12110e] p-5 space-y-3"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#c9a86a]">
+            Active Tour Date &amp; Party Size
+          </span>
+          <span className="text-xs text-[#9d9587]">
+            Prefilled from your New Orleans trip context
+          </span>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3 items-end">
+          <div>
+            <label
+              htmlFor="booking-context-date"
+              className="block text-[11px] font-semibold uppercase tracking-wider text-[#eadfca] mb-1"
+            >
+              Preferred Date
+            </label>
+            <input
+              id="booking-context-date"
+              type="date"
+              name="date"
+              defaultValue={selectedDate}
+              className="w-full border border-[#342b1d] bg-[#0b0a09] px-3 py-2 text-xs md:text-sm text-[#f8f1e5]"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="booking-context-party-size"
+              className="block text-[11px] font-semibold uppercase tracking-wider text-[#eadfca] mb-1"
+            >
+              Travelers / Party Size
+            </label>
+            <select
+              id="booking-context-party-size"
+              name="party_size"
+              defaultValue={selectedPartySize}
+              className="w-full border border-[#342b1d] bg-[#0b0a09] px-3 py-2 text-xs md:text-sm text-[#f8f1e5]"
+            >
+              {[1, 2, 3, 4, 5, 6, 8, 10, 12].map((num) => (
+                <option key={num} value={String(num)}>
+                  {num} {num === 1 ? "Guest" : "Guests"}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <button
+              type="submit"
+              className="w-full bg-[#c9a86a] px-4 py-2 text-xs font-bold uppercase tracking-[0.15em] text-[#17130c] hover:bg-[#f3dfb3]"
+            >
+              Update Context
+            </button>
+          </div>
+        </div>
+      </form>
 
       {products.length > 0 ? (
         <div data-wno-options-grid className="mt-9 grid gap-6 md:grid-cols-2 xl:grid-cols-3">

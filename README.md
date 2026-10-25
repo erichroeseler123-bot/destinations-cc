@@ -1,38 +1,29 @@
 # Destination Command Center
 
-Destination Command Center (`destinations-cc`) is the main DCC web application and runtime repo.
+Destination Command Center (`destinations-cc`, `destinationcommandcenter.com`) aims to become the most trustworthy, useful source of destination information and practical travel decisions.
 
-It is not a generic travel site and not a booking marketplace.
+## Governing Product Direction (Supersedes Conversion-Funnel & Single-Affiliate Doctrines)
 
-It is the governed decision layer in the system:
-
-- `DCC` understands the situation
-- `DCC` reduces the mess to a decision
-- `DCC` routes the user to the right execution surface
-- downstream brands and operators fulfill the action
-
-The operating model is:
-
-`confusion -> decision -> guided action -> execution -> measurement`
+1. **Primary Product Is Understanding & Practical Decisions**: What is true, what matters for this traveler, what the options are, and how to choose between them.
+2. **Tour Sales Are an Optional Convenience**: Travelers must always be free to book directly, buy elsewhere, choose public or free alternatives, or purchase nothing. Commercial relationships carry zero weight (`commercialWeight: 0`) in recommendations or feasibility rankings.
+3. **APIs and Widgets Distribute Knowledge**: Coordinate APIs (`/api/location/{lat}/{lng}`), machine manifests (`/scope.json`, `/agent.json`, `/llms.txt`), and widgets remain useful secondary distribution products.
+4. **No Fabricated or Template-Synthesized Review Claims**: DCC does not collect first-party reviews. Recent-review summaries (`summarizeRecentReviews()`) use only actual third-party review text and publication dates within a disclosed rolling 180-day window (requiring $\ge 3$ eligible reviews and $\ge 2$ distinct reviews per theme). Planning notes are explicitly labeled `"Planning Advice"`.
+5. **Claim-Level Freshness & Dependency Qualification**: Every material claim tracks its issuing authority, supporting URL, source effective date, distinct `observedAt`, `retrievedAt`, and `verifiedAt` timestamps, volatility-based freshness policy, and `evidenceStatus`. When evidence expires, conflicts, or fails verification, dependent conclusions are explicitly qualified or withdrawn while unrelated supported facts remain intact. Failed upstream fetches never become `"0 warnings"` or an all-clear.
+6. **Inspectable Decision Engines**: Interactive tools (starting with the Juneau Port-Day Decision Engine on `/juneau` and `/ports/juneau`) use progressive traveler inputs, separate hard constraints from estimates/preferences, expose minute-by-minute time math and sensitivity (`whatInputChangeWouldAlterResult`), and include public/free/independent options alongside guided tours.
 
 ## Current Product Shape
 
-The public app exists to answer one hard question well:
+The public app exists to answer hard, constraint-bound travel questions with inspectable evidence:
 
-`What should the user actually do next?`
+`What fits my trip, what assumptions does that depend on, what is the supporting evidence, and what are my options (free, direct, or bookable)?`
 
 That means the repo combines:
 
 - a public Next.js 16 site at `destinationcommandcenter.com`
-- decision pages that compress messy real-world questions into a clear next move
-- internal APIs for live city, cruise, transport, telemetry, and handoff shaping
-- DCC graph, registry, and network export tooling
-- satellite bundle export and reconciliation jobs
-- telemetry that measures whether the recommendation actually worked
-
-The current implementation loop is:
-
-`understand -> narrow -> route -> execute -> measure`
+- interactive decision engines and source-attributed destination reference guides (`/juneau`, `/ports/juneau`, `/red-rocks`, `/routes/denver-breckenridge`, `/new-orleans`, `/vegas`)
+- coordinate-native public environmental and operational intelligence (`/location/{lat}/{lng}` and `/api/location/{lat}/{lng}`)
+- internal APIs for live city, cruise, transport, telemetry, and context-preserving handoff shaping
+- DCC graph, registry, EarthOS reference maintenance, and network export tooling
 
 ## Current Intake Reality
 

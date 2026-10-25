@@ -172,8 +172,12 @@ if (!levels) {
 
 const contract = getContract();
 const env = loadEnvValues();
-const example = parseEnvFile(path.join(root, ".env.example"));
-const missingFromExample = contract.variables.map((item) => item.name).filter((name) => !example.has(name));
+const examplePath = path.join(root, ".env.example");
+const hasExampleFile = fs.existsSync(examplePath);
+const example = parseEnvFile(examplePath);
+const missingFromExample = hasExampleFile
+  ? contract.variables.map((item) => item.name).filter((name) => !example.has(name))
+  : [];
 const missing = contract.variables.filter((item) => {
   if (!levels.has(item.requirement)) return false;
   const value = env.get(item.name);

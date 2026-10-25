@@ -16,6 +16,8 @@ export interface HelicopterDispatchBoardProps {
   headline?: string;
   subhead?: string;
   primaryCtaLabel?: string;
+  initialDate?: string | null;
+  initialPassengerCount?: number | null;
 }
 
 export default function HelicopterDispatchBoard({
@@ -24,6 +26,8 @@ export default function HelicopterDispatchBoard({
   headline,
   subhead,
   primaryCtaLabel,
+  initialDate = null,
+  initialPassengerCount = null,
 }: HelicopterDispatchBoardProps) {
   const isSkagway = portSlug === 'skagway';
   const showArrivalHero = sourcePage === '/' && !isSkagway;
@@ -121,6 +125,8 @@ export default function HelicopterDispatchBoard({
       {/* Featured Flights & Real-Time Filter Toolbar */}
       <div id="tours">
         <ViatorFeaturedTours
+          initialDate={initialDate}
+          initialPassengerCount={initialPassengerCount}
           showHeader={false}
           headline={isSkagway ? "Skagway Glacier Helicopter Options" : "Juneau Glacier Helicopter Flights & Landings"}
           subhead={

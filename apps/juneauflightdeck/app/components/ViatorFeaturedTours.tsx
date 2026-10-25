@@ -17,6 +17,7 @@ import { addPortDateListener, buildDatedOperatorUrl, readSharedPortDate, sharePo
 
 interface ViatorFeaturedToursProps {
   initialDate?: string | null;
+  initialPassengerCount?: number | null;
   headline?: string;
   subhead?: string;
   className?: string;
@@ -32,6 +33,7 @@ const FILTER_TABS: Array<{ label: string; value: "all" | "glacier_landing" | "do
 
 export default function ViatorFeaturedTours({
   initialDate = null,
+  initialPassengerCount = null,
   headline = "Juneau Helicopter Excursions via Viator",
   subhead = "Compare glacier flights and dog sledding camps. Confirm dates, party size, current prices, and terms on the selected booking page.",
   className = "",
@@ -39,11 +41,28 @@ export default function ViatorFeaturedTours({
 }: ViatorFeaturedToursProps) {
   const [selectedTab, setSelectedTab] = useState<"all" | "glacier_landing" | "dog_sledding" | "ice_trek">("all");
   const [dateFilter, setDateFilter] = useState<string>(initialDate || "");
-  const [passengerCount, setPassengerCount] = useState<number>(2);
+  const [passengerCount, setPassengerCount] = useState<number>(
+    initialPassengerCount && initialPassengerCount >= 1 && initialPassengerCount <= 12
+      ? initialPassengerCount
+      : 2,
+  );
 
   React.useEffect(() => {
     const sharedDate = readSharedPortDate();
     if (sharedDate) setDateFilter(sharedDate);
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      const rawParty =
+        sp.get("party_size") ||
+        sp.get("travelers") ||
+        sp.get("passengerCount") ||
+        sp.get("passengers") ||
+        sp.get("qty");
+      const parsed = rawParty ? Number(rawParty) : NaN;
+      if (Number.isInteger(parsed) && parsed >= 1 && parsed <= 12) {
+        setPassengerCount(parsed);
+      }
+    }
     return addPortDateListener(setDateFilter);
   }, []);
 

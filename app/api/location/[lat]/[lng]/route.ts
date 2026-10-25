@@ -6,7 +6,15 @@ import { normalizeGaugeStatuses, readHydroMarine } from "@/lib/dcc/hydroMarine";
 import { readExtendedCoordinateFeeds } from "@/lib/dcc/extendedCoordinateFeeds";
 import { readApplicableDccEndpoints } from "@/lib/dcc/endpointRegistry";
 import { DccLocationProductService } from "@/lib/octo/locationProductService";
-import { resolveTravelReferenceForCoordinate } from "@/lib/dcc/travelReference";
+import {
+  evaluateNodeClaimDependencies,
+  getPublishedTravelReferenceNodeById,
+  resolveTravelReferenceForCoordinate,
+} from "@/lib/dcc/travelReference";
+import {
+  evaluateJuneauPortDayScenario,
+  parseJuneauScenarioFromSearchParams,
+} from "@/lib/dcc/juneauPortDayEngine";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -190,22 +198,41 @@ export async function GET(request: NextRequest, context: RouteContext) {
     ];
 
     const refMatch = resolveTravelReferenceForCoordinate(lat, lng);
-    const travelReference = refMatch
+    const publishedPrimaryNode = refMatch
+      ? await getPublishedTravelReferenceNodeById(refMatch.primaryNode.id).catch(
+          () => refMatch.primaryNode,
+        )
+      : null;
+    const claimFreshness = publishedPrimaryNode
+      ? evaluateNodeClaimDependencies(publishedPrimaryNode)
+      : null;
+    const juneauDecisionEngine =
+      publishedPrimaryNode?.id === "juneau"
+        ? evaluateJuneauPortDayScenario(
+            parseJuneauScenarioFromSearchParams(request.nextUrl.searchParams),
+            { node: publishedPrimaryNode },
+          )
+        : null;
+
+    const travelReference = refMatch && publishedPrimaryNode
       ? {
           available: true,
           distanceKm: refMatch.distanceKm,
           matchType: refMatch.matchType,
           matchedAnchorLabel: refMatch.matchedAnchorLabel,
-          id: refMatch.primaryNode.id,
-          name: refMatch.primaryNode.title,
-          canonicalPath: refMatch.primaryNode.canonicalPath,
-          aliases: refMatch.primaryNode.aliasPaths,
-          placeType: refMatch.primaryNode.placeType,
-          lastReviewedAt: refMatch.primaryNode.lastReviewedAt,
-          heroSummary: refMatch.primaryNode.heroSummary,
-          operationalBoundaries: refMatch.primaryNode.operationalBoundaries,
+          id: publishedPrimaryNode.id,
+          name: publishedPrimaryNode.title,
+          canonicalPath: publishedPrimaryNode.canonicalPath,
+          aliases: publishedPrimaryNode.aliasPaths,
+          placeType: publishedPrimaryNode.placeType,
+          lastReviewedAt: publishedPrimaryNode.lastReviewedAt,
+          heroSummary: publishedPrimaryNode.heroSummary,
+          operationalBoundaries: publishedPrimaryNode.operationalBoundaries,
+          claimFreshness,
+          evidenceRegistry: publishedPrimaryNode.evidenceRegistry,
+          decisionEngine: juneauDecisionEngine,
           entryDependencies: {
-            whyCoordinatesCannotAnswerEntry: refMatch.primaryNode.beforeYouGo.whyCoordinatesCannotAnswerEntry,
+            whyCoordinatesCannotAnswerEntry: publishedPrimaryNode.beforeYouGo.whyCoordinatesCannotAnswerEntry,
             factors: [
               "nationality",
               "passportAndDocuments",
@@ -214,17 +241,17 @@ export async function GET(request: NextRequest, context: RouteContext) {
               "tripPurpose",
               "dateAndValidityRule",
             ],
-            scenarioCount: refMatch.primaryNode.beforeYouGo.entryScenarios.length,
+            scenarioCount: publishedPrimaryNode.beforeYouGo.entryScenarios.length,
           },
-          specialistHandoffs: refMatch.primaryNode.specialistHandoffs.options.map((h) => ({
+          specialistHandoffs: publishedPrimaryNode.specialistHandoffs.options.map((h) => ({
             id: h.id,
             name: h.partnerName,
             baseUrl: h.baseUrl,
             integrationMode: h.integrationMode,
             supportedParams: h.supportedContextParams,
           })),
-          connectedPlaces: refMatch.primaryNode.relationships,
-          evidenceCount: refMatch.primaryNode.evidenceRegistry.length,
+          connectedPlaces: publishedPrimaryNode.relationships,
+          evidenceCount: publishedPrimaryNode.evidenceRegistry.length,
           adjacentReferences: refMatch.relatedNodes.map((r) => ({
             id: r.id,
             name: r.title,
@@ -306,7 +333,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
         coordinateIsCanonicalKey: true,
         dynamicFactsMayChange: true,
         sourceSpecificCaching: true,
-        responseCacheSeconds: scope === "core" ? 120 : 60,
+        responseCacheSeconds: claimFreshness?.hasWithdrawnOrConflictedClaims
+          ? 0
+          : scope === "core"
+          ? 120
+          : 60,
         machineApiReverseGeocoding: false,
         marineRequiresLocalNonNullModelData: true,
         naturalEventRelevanceKm: NATURAL_EVENT_RELEVANCE_KM,
@@ -317,8 +348,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
         weatherDoesNotEstablishVenueOrRoadStatus: true,
         missingDataNeverImpliesAllClear: true,
         entryRequirementsRequireTravelerContextNotCoordinates: true,
+        commercialWeightZeroInDecisionEngine: true,
         interpretation:
-          "DCC assembles current public machine-readable context and linked travel reference guidance for this coordinate. Missing modules or unavailable sources indicate unmapped or unreachable coverage—never proof that a hazard is absent or that a venue, road, or activity is safe.",
+          "DCC assembles current public machine-readable context, claim-level freshness provenance, and decision-engine evaluations for this coordinate. Missing modules or unavailable sources indicate unmapped or unreachable coverage—never proof that a hazard is absent or that a venue, road, or activity is safe.",
       },
     };
 
@@ -335,7 +367,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return NextResponse.json(payload, {
       status: 200,
       headers: {
-        "Cache-Control": scope === "core"
+        "Cache-Control": claimFreshness?.hasWithdrawnOrConflictedClaims
+          ? "no-store, no-cache, must-revalidate"
+          : scope === "core"
           ? "public, max-age=30, s-maxage=120, stale-while-revalidate=300"
           : "public, max-age=15, s-maxage=60, stale-while-revalidate=240",
         "Access-Control-Allow-Origin": "*",

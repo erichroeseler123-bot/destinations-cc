@@ -73,11 +73,20 @@ function buildBookingHref(
   });
 }
 
-function buildVenueHref(parrVenuePath: string, venueSlug: string, sourcePage?: string) {
+function buildVenueHref(
+  parrVenuePath: string,
+  venueSlug: string,
+  sourcePage?: string,
+  bookingContext?: RideOptionsCardProps["bookingContext"],
+) {
   return buildParrHandoffHref(parrVenuePath, {
     sourceSlug: venueSlug,
     sourcePage,
     venueSlug,
+    event: bookingContext?.event,
+    artist: bookingContext?.artist,
+    eventDate: bookingContext?.date,
+    quantity: bookingContext?.qty,
     returnPath: sourcePage || `/transportation/venues/${venueSlug}`,
   });
 }
@@ -100,7 +109,12 @@ export default function RideOptionsCard({
     sourcePage,
     bookingContext,
   );
-  const venueHref = buildVenueHref(mapEntry.parrVenuePath, venueSlug, sourcePage);
+  const venueHref = buildVenueHref(
+    mapEntry.parrVenuePath,
+    venueSlug,
+    sourcePage,
+    bookingContext,
+  );
   const serviceCopy = buildServiceCopy(venueSlug);
   const status = transportEntry?.serviceStatus ?? "active";
   const trustBadges = transportEntry?.trustBadges ?? [];

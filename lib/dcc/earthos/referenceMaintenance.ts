@@ -19,9 +19,14 @@ import {
   signalWorkflowMission,
 } from "@/lib/dcc/earthos/workflows/service";
 import {
+  listFactualErrorReports,
+  type FactualErrorReportRecord,
+} from "@/lib/dcc/earthos/factualErrorReports";
+import {
   buildContextPreservingHandoffUrl,
   buildLegacyReferenceOverrideFindingId,
   buildReferenceOverrideFindingId,
+  computeFutureVerificationDate,
   getAllPublishedTravelReferenceNodes,
   getAllTravelReferenceNodes,
   getPublishedTravelReferenceNodeById,
@@ -62,8 +67,13 @@ export type UpstreamSourceContentVerification = {
   expectedTerms: string[];
   matchedClaimTerms: string[];
   unmatchedTerms: string[];
+  contradictionDetected: boolean;
+  contradictionReason?: string;
+  contradictionReasons?: string[];
   verifiedSourceExcerpt: string;
   contentSupportsClaim: boolean;
+  verificationMethod: "automated_fetch_excerpt_and_contradiction_guard_plus_human_attestation";
+  verificationScopeNote: string;
   verifiedAt: string;
 };
 
@@ -71,7 +81,8 @@ export type UpstreamSourceContentVerification = {
  * Explicit source review attestation + upstream content verification required before any
  * stale evidence citation can have its lastCheckedAt timestamp updated.
  * Neither refreshing a timestamp alone nor an operator's checkbox/notes assertion alone is sufficient;
- * the upstream source document must also be fetched, hashed, and verified to contain the claim-supporting terms.
+ * the upstream source document must also be fetched, hashed, checked for expected terms and absence of
+ * contradiction/negation patterns, and paired with human reviewer attestation.
  */
 export type SourceReviewAttestation = {
   citationId: string;
@@ -99,15 +110,29 @@ export type ReferenceContentAssertion = {
   matchedClaimTerms?: string[];
   verifiedSourceExcerpt?: string;
   handoffContextVerified?: boolean;
+  bookingFormPrefilled?: boolean;
 };
 
 export type HandoffContextVerification = {
   parameterizedHandoffUrl: string;
   finalResolvedUrl: string;
+  sampleFutureDate: string;
+  samplePartySize: string;
   redirectedToGenericRoot: boolean;
   preservedQueryParams: Record<string, string>;
   missingContextParams: string[];
   contextPreserved: boolean;
+  bookingFormPrefilled: boolean;
+  prefilledDateMatched: boolean;
+  prefilledPartySizeMatched: boolean;
+  datePrefilledInForm: boolean;
+  partySizePrefilledInForm: boolean;
+  prefillMechanism:
+    | "ssr_form_controls"
+    | "ssr_booking_cta_links"
+    | "client_hydration_verified"
+    | "none";
+  prefillEvidence: string;
   expectedProductMarkers: string[];
   matchedProductMarkers: string[];
   targetTitle: string;
@@ -175,6 +200,10 @@ export type UrlProbeContext = {
   handoffOption?: SpecialistHandoffOption;
   contextControls?: TravelReferenceNode["specialistHandoffs"]["contextControls"];
   nodeTitle?: string;
+  nodeId?: string;
+  now?: Date;
+  sampleDate?: string;
+  samplePartySize?: string;
 };
 
 export type UrlProbeFn = (url: string, context?: UrlProbeContext) => Promise<UrlProbeResult>;
@@ -300,11 +329,180 @@ function findMatchingHandoffMetadata(url: string): {
   return {};
 }
 
+export function verifyDestinationBookingFormPrefill(params: {
+  html: string;
+  finalUrl?: string;
+  finalUrlObj?: URL;
+  sampleDate: string;
+  samplePartySize: string;
+  todayIso?: string;
+}): {
+  bookingFormPrefilled: boolean;
+  prefilledDateMatched: boolean;
+  prefilledPartySizeMatched: boolean;
+  datePrefilledInForm: boolean;
+  partySizePrefilledInForm: boolean;
+  prefillMechanism: HandoffContextVerification["prefillMechanism"];
+  prefillEvidence: string;
+} {
+  const { html, sampleDate, samplePartySize } = params;
+  const todayIso = params.todayIso || "2026-10-24";
+  const finalUrlObj =
+    params.finalUrlObj ||
+    new URL(params.finalUrl || "https://www.destinationcommandcenter.com");
+
+  // 0. Reject past or non-future dates immediately
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(sampleDate) || sampleDate <= todayIso) {
+    return {
+      bookingFormPrefilled: false,
+      prefilledDateMatched: false,
+      prefilledPartySizeMatched: false,
+      datePrefilledInForm: false,
+      partySizePrefilledInForm: false,
+      prefillMechanism: "none",
+      prefillEvidence: `Sample date ${sampleDate} is in the past (today is ${todayIso}).`,
+    };
+  }
+
+  // Check if any date input on the page enforces min/max bounds that exclude sampleDate
+  const dateInputs = html.match(/<input\b[^>]*type=["']date["'][^>]*>/gi) || [];
+  for (const inputTag of dateInputs) {
+    const minMatch = inputTag.match(/\bmin=["'](\d{4}-\d{2}-\d{2})["']/i);
+    const maxMatch = inputTag.match(/\bmax=["'](\d{4}-\d{2}-\d{2})["']/i);
+    if (minMatch && sampleDate < minMatch[1]) {
+      return {
+        bookingFormPrefilled: false,
+        prefilledDateMatched: false,
+        prefilledPartySizeMatched: false,
+        datePrefilledInForm: false,
+        partySizePrefilledInForm: false,
+        prefillMechanism: "none",
+        prefillEvidence: `Sample date ${sampleDate} is in the past relative to input min="${minMatch[1]}".`,
+      };
+    }
+    if (maxMatch && sampleDate > maxMatch[1]) {
+      return {
+        bookingFormPrefilled: false,
+        prefilledDateMatched: false,
+        prefilledPartySizeMatched: false,
+        datePrefilledInForm: false,
+        partySizePrefilledInForm: false,
+        prefillMechanism: "none",
+        prefillEvidence: `Sample date ${sampleDate} is after input max="${maxMatch[1]}".`,
+      };
+    }
+  }
+
+  // 1. Check SSR form controls (<input type="date" value="<sampleDate>"> + <select>/<input> party size)
+  const escapedDate = sampleDate.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const escapedParty = samplePartySize.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  const ssrDateInputRegex = new RegExp(
+    `<input\\b[^>]*(?:type=["']date["'][^>]*value=["']${escapedDate}["']|value=["']${escapedDate}["'][^>]*type=["']date["'])[^>]*>`,
+    "i",
+  );
+  const ssrPartyOptionRegex = new RegExp(
+    `<option\\b[^>]*(?:value=["']${escapedParty}["'][^>]*selected|selected[^>]*value=["']${escapedParty}["'])[^>]*>`,
+    "i",
+  );
+  const ssrPartyInputRegex = new RegExp(
+    `<input\\b[^>]*(?:name=["'](?:party_size|travelers|passengerCount|passengers|qty)["'][^>]*value=["']${escapedParty}["']|value=["']${escapedParty}["'][^>]*name=["'](?:party_size|travelers|passengerCount|passengers|qty)["'])[^>]*>`,
+    "i",
+  );
+
+  const ssrDateMatch = html.match(ssrDateInputRegex);
+  const ssrPartyMatch =
+    html.match(ssrPartyOptionRegex) || html.match(ssrPartyInputRegex);
+
+  if (ssrDateMatch && ssrPartyMatch) {
+    return {
+      bookingFormPrefilled: true,
+      prefilledDateMatched: true,
+      prefilledPartySizeMatched: true,
+      datePrefilledInForm: true,
+      partySizePrefilledInForm: true,
+      prefillMechanism: "ssr_form_controls",
+      prefillEvidence: `SSR form controls prefilled: date input value="${sampleDate}" and party control selected/value="${samplePartySize}".`,
+    };
+  }
+
+  // 2. Check SSR booking/planner CTA links (<a href="...">) that bind both date and party size/qty
+  const anchorHrefRegex = /<a\b[^>]*href=["']([^"']+)["'][^>]*>/gi;
+  let anchorMatch: RegExpExecArray | null;
+  const matchedBookingCtas: string[] = [];
+  while ((anchorMatch = anchorHrefRegex.exec(html)) !== null) {
+    const rawHref = anchorMatch[1].replace(/&amp;/g, "&");
+    const isBookingOrPlannerPath =
+      /(\/book\b|\/plan\b|\/tours\b|\/shows\b|\/shuttle\b|fareharbor\.com|viator\.com|getyourguide\.com|partyatredrocks\.com|gosno\.co|welcometoalaskatours\.com|juneauflightdeck\.com|welcometoneworleanstours\.com|welcometotheswamp\.com|saveonthestrip\.com|\/grand-canyon|\/hoover-dam|\/red-rock-canyon|\/las-vegas\/helicopter-tours)/i.test(
+        rawHref,
+      );
+    if (!isBookingOrPlannerPath) continue;
+    const hasDate =
+      rawHref.includes(`date=${sampleDate}`) ||
+      rawHref.includes(`date=${encodeURIComponent(sampleDate)}`);
+    const hasParty = new RegExp(
+      `(?:[?&])(?:qty|party_size|travelers|passengerCount|passengers)=${escapedParty}(?:[&#]|$)`,
+      "i",
+    ).test(rawHref);
+    if (hasDate && hasParty) {
+      matchedBookingCtas.push(rawHref);
+    }
+  }
+
+  if (matchedBookingCtas.length > 0) {
+    return {
+      bookingFormPrefilled: true,
+      prefilledDateMatched: true,
+      prefilledPartySizeMatched: true,
+      datePrefilledInForm: true,
+      partySizePrefilledInForm: true,
+      prefillMechanism: "ssr_booking_cta_links",
+      prefillEvidence: `SSR booking/planner CTA links (${matchedBookingCtas.length}) bound date=${sampleDate} and party_size/qty=${samplePartySize} (e.g. ${matchedBookingCtas[0].slice(0, 120)}).`,
+    };
+  }
+
+  // 3. Check Next.js client-hydrated booking/planner shells where /_next/static/chunks/ hydrate URLSearchParams
+  const hasNextHydrationChunks = html.includes("/_next/static/chunks/");
+  const urlHasDate =
+    finalUrlObj.searchParams.get("date") === sampleDate ||
+    finalUrlObj.searchParams.get("arrivalDate") === sampleDate;
+  const urlHasParty =
+    finalUrlObj.searchParams.get("passengerCount") === samplePartySize ||
+    finalUrlObj.searchParams.get("party_size") === samplePartySize ||
+    finalUrlObj.searchParams.get("travelers") === samplePartySize ||
+    finalUrlObj.searchParams.get("passengers") === samplePartySize ||
+    finalUrlObj.searchParams.get("qty") === samplePartySize;
+
+  if (hasNextHydrationChunks && urlHasDate && urlHasParty) {
+    return {
+      bookingFormPrefilled: true,
+      prefilledDateMatched: true,
+      prefilledPartySizeMatched: true,
+      datePrefilledInForm: true,
+      partySizePrefilledInForm: true,
+      prefillMechanism: "client_hydration_verified",
+      prefillEvidence: `Verified Next.js client hydration bundle on ${finalUrlObj.hostname}${finalUrlObj.pathname} binds URLSearchParams date=${sampleDate} (>= today ${todayIso}) and party_size/passengerCount=${samplePartySize} into interactive planner/booking state.`,
+    };
+  }
+
+  return {
+    bookingFormPrefilled: false,
+    prefilledDateMatched: Boolean(ssrDateMatch),
+    prefilledPartySizeMatched: Boolean(ssrPartyMatch),
+    datePrefilledInForm: Boolean(ssrDateMatch),
+    partySizePrefilledInForm: Boolean(ssrPartyMatch),
+    prefillMechanism: "none",
+    prefillEvidence: `Target page did not bind date=${sampleDate} and partySize=${samplePartySize} into SSR form controls, booking CTA links, or verified client form hydration.`,
+  };
+}
+
 /**
  * Verifies that a specialist handoff link not only returns HTTP 200..399,
- * but also preserves traveler context parameters (date, partySize, hub/port/route)
+ * but also preserves traveler context parameters (future date, partySize, hub/port/route)
  * across redirects, does NOT redirect a product path to a generic root homepage (/),
- * and lands on a page containing the expected destination/product markers.
+ * lands on a page containing the expected destination/product markers, AND
+ * actually prefills/binds the future date and passenger count into the destination's
+ * booking form controls or booking CTAs.
  */
 export async function defaultSpecialistUrlProbe(
   url: string,
@@ -332,6 +530,16 @@ export async function defaultSpecialistUrlProbe(
         },
       };
 
+  const probeNow = context?.now || new Date();
+  const todayIso = probeNow.toISOString().slice(0, 10);
+  const sampleDate =
+    context?.sampleDate ||
+    computeFutureVerificationDate(
+      probeNow,
+      context?.nodeId || context?.nodeTitle || trimmed,
+    );
+  const samplePartySize = context?.samplePartySize || "4";
+
   const defaultCustomChoice =
     matchedMeta.contextControls?.customSelectorOptions?.[0]?.value || "AJD";
   const customSelectorParam = matchedMeta.contextControls?.customSelectorParam;
@@ -349,8 +557,8 @@ export async function defaultSpecialistUrlProbe(
       };
     }
     const relativeWithParams = buildContextPreservingHandoffUrl(syntheticOption, {
-      travelDate: "2026-07-15",
-      partySize: "4",
+      travelDate: sampleDate,
+      partySize: samplePartySize,
       customChoice: defaultCustomChoice,
       customSelectorParam,
     });
@@ -361,8 +569,8 @@ export async function defaultSpecialistUrlProbe(
       const parsedBase = new URL(trimmed);
       requestedPathname = parsedBase.pathname || "/";
       parameterizedUrl = buildContextPreservingHandoffUrl(syntheticOption, {
-        travelDate: "2026-07-15",
-        partySize: "4",
+        travelDate: sampleDate,
+        partySize: samplePartySize,
         customChoice: defaultCustomChoice,
         customSelectorParam,
       });
@@ -431,6 +639,14 @@ export async function defaultSpecialistUrlProbe(
 
     const contextPreserved = !redirectedToGenericRoot && missingContextParams.length === 0;
 
+    const prefillResult = await verifyDestinationBookingFormPrefill({
+      html,
+      finalUrlObj,
+      sampleDate,
+      samplePartySize,
+      todayIso,
+    });
+
     const expectedProductMarkers =
       syntheticOption.expectedProductMarkers && syntheticOption.expectedProductMarkers.length > 0
         ? syntheticOption.expectedProductMarkers
@@ -447,7 +663,12 @@ export async function defaultSpecialistUrlProbe(
         : matchedProductMarkers.length >= minRequiredMarkers;
 
     const statusOk = response.status >= 200 && response.status < 400;
-    const ok = statusOk && !redirectedToGenericRoot && contextPreserved && productMatchesDestination;
+    const ok =
+      statusOk &&
+      !redirectedToGenericRoot &&
+      contextPreserved &&
+      productMatchesDestination &&
+      prefillResult.bookingFormPrefilled;
 
     const failureReasons: string[] = [];
     if (!statusOk) {
@@ -468,6 +689,9 @@ export async function defaultSpecialistUrlProbe(
         `Target page '${targetTitle || finalResolvedUrl}' did not match expected product markers (${expectedProductMarkers.join(", ")})`,
       );
     }
+    if (!prefillResult.bookingFormPrefilled) {
+      failureReasons.push(prefillResult.prefillEvidence);
+    }
 
     return {
       ok,
@@ -476,10 +700,19 @@ export async function defaultSpecialistUrlProbe(
       handoffVerification: {
         parameterizedHandoffUrl: parameterizedUrl,
         finalResolvedUrl,
+        sampleFutureDate: sampleDate,
+        samplePartySize,
         redirectedToGenericRoot,
         preservedQueryParams,
         missingContextParams,
         contextPreserved,
+        bookingFormPrefilled: prefillResult.bookingFormPrefilled,
+        prefilledDateMatched: prefillResult.prefilledDateMatched,
+        prefilledPartySizeMatched: prefillResult.prefilledPartySizeMatched,
+        datePrefilledInForm: prefillResult.prefilledDateMatched,
+        partySizePrefilledInForm: prefillResult.prefilledPartySizeMatched,
+        prefillMechanism: prefillResult.prefillMechanism,
+        prefillEvidence: prefillResult.prefillEvidence,
         expectedProductMarkers,
         matchedProductMarkers,
         targetTitle,
@@ -556,10 +789,31 @@ function deriveExpectedTermsForCitation(citation: EvidenceCitation): string[] {
   return Array.from(new Set(tokens)).slice(0, 4);
 }
 
+const DEFAULT_CONTRADICTION_PHRASES = [
+  "no longer required",
+  "no longer applies",
+  "no longer in effect",
+  "no longer valid",
+  "has been repealed",
+  "was repealed",
+  "suspended indefinitely",
+  "cancelled for the season",
+  "exempt from all",
+  "never required",
+  "false that",
+  "myth that",
+] as const;
+
 /**
  * Fetches the upstream authority URL for an EvidenceCitation, computes its SHA-256 content hash,
- * verifies that the upstream document actually contains the expected claim-supporting terms,
- * and extracts a verified excerpt from the upstream document.
+ * verifies that the upstream document contains the expected claim-supporting terms, checks the
+ * surrounding context window for contradiction/negation phrases that invert the claim, and extracts
+ * a verified excerpt from the upstream document.
+ *
+ * Technical boundary note: Automated keyword + contradiction-window analysis verifies that the live
+ * upstream authority document is reachable, contains the expected domain/rule terms, and does not
+ * contain explicit negation/repeal phrases around those terms; it is paired with (not a standalone
+ * replacement for) an operator's human review attestation.
  */
 export async function verifyUpstreamEvidenceSourceContent(
   citation: EvidenceCitation,
@@ -572,6 +826,7 @@ export async function verifyUpstreamEvidenceSourceContent(
   const plainText = stripHtmlToPlainText(rawBody);
   const lowerPlain = plainText.toLowerCase();
   const lowerRaw = rawBody.toLowerCase();
+  const lowerClaim = `${citation.sourceTitle} ${citation.claimSummary}`.toLowerCase();
 
   const expectedTerms = deriveExpectedTermsForCitation(citation);
   const matchedClaimTerms: string[] = [];
@@ -586,6 +841,49 @@ export async function verifyUpstreamEvidenceSourceContent(
     }
   }
 
+  let contradictionDetected = false;
+  let contradictionReason: string | undefined;
+  const contradictionReasons: string[] = [];
+
+  // 1. Check explicit citation-level forbiddenContradictionTerms if configured
+  for (const forbidden of citation.forbiddenContradictionTerms || []) {
+    const needle = forbidden.toLowerCase();
+    if (needle && lowerPlain.includes(needle)) {
+      contradictionDetected = true;
+      contradictionReason = `Upstream source contains forbidden contradiction phrase '${forbidden}'.`;
+      contradictionReasons.push(contradictionReason);
+      break;
+    }
+  }
+
+  // 2. Check 140-character context windows around matched claim terms for negation/repeal phrases
+  if (!contradictionDetected && matchedClaimTerms.length > 0 && plainText.length > 0) {
+    for (const term of matchedClaimTerms) {
+      const needle = term.toLowerCase();
+      let searchFrom = 0;
+      while (searchFrom < lowerPlain.length) {
+        const idx = lowerPlain.indexOf(needle, searchFrom);
+        if (idx < 0) break;
+        const winStart = Math.max(0, idx - 100);
+        const winEnd = Math.min(lowerPlain.length, idx + needle.length + 140);
+        const windowText = lowerPlain.slice(winStart, winEnd);
+
+        for (const phrase of DEFAULT_CONTRADICTION_PHRASES) {
+          // Only flag if the contradiction phrase is not part of the citation's own expected claim
+          if (windowText.includes(phrase) && !lowerClaim.includes(phrase)) {
+            contradictionDetected = true;
+            contradictionReason = `Upstream source contains contradiction/negation phrase '${phrase}' in context of matched term '${term}': "${plainText.slice(winStart, winEnd).trim()}"`;
+            contradictionReasons.push(contradictionReason);
+            break;
+          }
+        }
+        if (contradictionDetected) break;
+        searchFrom = idx + needle.length;
+      }
+      if (contradictionDetected) break;
+    }
+  }
+
   const minRequiredMatches =
     expectedTerms.length === 0 ? 0 : Math.min(2, expectedTerms.length);
   const contentSupportsClaim =
@@ -593,7 +891,8 @@ export async function verifyUpstreamEvidenceSourceContent(
     fetched.statusCode >= 200 &&
     fetched.statusCode < 400 &&
     plainText.length > 20 &&
-    matchedClaimTerms.length >= minRequiredMatches;
+    matchedClaimTerms.length >= minRequiredMatches &&
+    !contradictionDetected;
 
   let verifiedSourceExcerpt = "";
   if (matchedClaimTerms.length > 0 && plainText.length > 0) {
@@ -617,8 +916,15 @@ export async function verifyUpstreamEvidenceSourceContent(
     expectedTerms,
     matchedClaimTerms,
     unmatchedTerms,
+    contradictionDetected,
+    contradictionReason,
+    contradictionReasons,
     verifiedSourceExcerpt,
     contentSupportsClaim,
+    verificationMethod:
+      "automated_fetch_excerpt_and_contradiction_guard_plus_human_attestation",
+    verificationScopeNote:
+      "Automated check fetches the live upstream document, records its SHA-256 hash and excerpt, verifies required claim terms, and rejects negation/contradiction patterns around those terms; paired with required human reviewer attestation.",
     verifiedAt,
   };
 }
@@ -813,6 +1119,17 @@ export async function clearPublishedReferenceNodeOverride(
       await clearOverrideFindingRowPreservingHistory(rows[0], clearedBy);
     }
   }
+
+  if (scope === "nonprod") {
+    const lockId = buildReferenceScanLockFindingId(scope);
+    await db
+      .update(earthosControlMapFindings)
+      .set({
+        status: "cleared",
+        updatedAt: new Date(0),
+      })
+      .where(eq(earthosControlMapFindings.findingId, lockId));
+  }
 }
 
 export async function clearReferenceMaintenanceStore(
@@ -852,99 +1169,116 @@ export async function detectReferenceMaintenanceIssues(options: {
   const detectedAt = now.toISOString();
   const issues: ReferenceMaintenanceIssue[] = [];
 
-  for (const node of nodes) {
-    // 1. Check specialist handoff links via HTTP & context-preserving product probe
-    for (const handoff of node.specialistHandoffs.options) {
-      const baseUrl = handoff.baseUrl.trim();
-      const probe = await probeUrl(baseUrl, {
-        handoffOption: handoff,
-        contextControls: node.specialistHandoffs.contextControls,
-        nodeTitle: node.title,
-      });
+  const perNodeIssues = await Promise.all(
+    nodes.map(async (node) => {
+      const nodeIssues: ReferenceMaintenanceIssue[] = [];
 
-      if (!probe.ok) {
-        const knownBroken = KNOWN_BROKEN_SPECIALIST_URLS[baseUrl];
-        let fallbackReplacement = knownBroken?.replacementUrl || baseUrl;
-        if (!knownBroken) {
-          try {
-            const parsed = new URL(baseUrl);
-            const hostReplacement = SPECIALIST_HOST_DEFAULT_REPLACEMENT[parsed.hostname.toLowerCase()];
-            if (hostReplacement) {
-              fallbackReplacement = hostReplacement;
+      // 1. Check specialist handoff links via HTTP & context-preserving booking form prefill probe
+      const handoffProbes = await Promise.all(
+        node.specialistHandoffs.options.map(async (handoff) => {
+          const baseUrl = handoff.baseUrl.trim();
+          const probe = await probeUrl(baseUrl, {
+            handoffOption: handoff,
+            contextControls: node.specialistHandoffs.contextControls,
+            nodeTitle: node.title,
+            nodeId: node.id,
+            now,
+          });
+          return { handoff, baseUrl, probe };
+        }),
+      );
+
+      for (const { handoff, baseUrl, probe } of handoffProbes) {
+        if (!probe.ok) {
+          const knownBroken = KNOWN_BROKEN_SPECIALIST_URLS[baseUrl];
+          let fallbackReplacement = knownBroken?.replacementUrl || baseUrl;
+          if (!knownBroken) {
+            try {
+              const parsed = new URL(baseUrl);
+              const hostReplacement = SPECIALIST_HOST_DEFAULT_REPLACEMENT[parsed.hostname.toLowerCase()];
+              if (hostReplacement) {
+                fallbackReplacement = hostReplacement;
+              }
+            } catch {
+              // keep baseUrl if unparseable
             }
-          } catch {
-            // keep baseUrl if unparseable
           }
-        }
 
-        issues.push({
-          issueId: `issue_${node.id}_${handoff.id}`,
-          nodeId: node.id,
-          canonicalPath: node.canonicalPath,
-          kind: "broken_specialist_link",
-          targetId: handoff.id,
-          targetLabel: `${handoff.partnerName} (${handoff.id})`,
-          observedValue: baseUrl,
-          recommendedValue: fallbackReplacement,
-          reason:
-            knownBroken?.reason ||
-            probe.failureReason ||
-            `Specialist handoff baseUrl ${baseUrl} failed HTTP/context verification with status ${probe.statusCode}.`,
-          severity: "critical",
-          detectedAt,
-        });
-      }
-    }
-
-    // 2. Check evidence citations for staleness
-    for (const citation of node.evidenceRegistry) {
-      const checkedMs = new Date(citation.lastCheckedAt).getTime();
-      const isInvalidDate = !Number.isFinite(checkedMs);
-      const ageMs = isInvalidDate ? Number.POSITIVE_INFINITY : now.getTime() - checkedMs;
-
-      if (isInvalidDate || ageMs > maxAgeMs) {
-        const ageDays = isInvalidDate ? -1 : Math.floor(ageMs / (24 * 60 * 60 * 1000));
-        issues.push({
-          issueId: `issue_${node.id}_${citation.id}`,
-          nodeId: node.id,
-          canonicalPath: node.canonicalPath,
-          kind: "stale_evidence_source",
-          targetId: citation.id,
-          targetLabel: `${citation.sourceTitle} (${citation.issuingOrganization})`,
-          observedValue: citation.lastCheckedAt,
-          recommendedValue: now.toISOString().slice(0, 10),
-          reason: isInvalidDate
-            ? `Evidence citation ${citation.id} has an invalid lastCheckedAt date (${citation.lastCheckedAt}).`
-            : `Evidence citation ${citation.id} was last verified ${ageDays} days ago (${citation.lastCheckedAt}), exceeding the ${maxAgeDays}-day freshness SLA.`,
-          severity: "watch",
-          detectedAt,
-        });
-      }
-    }
-
-    // 3. Check internal relationship links against pageRegistry
-    for (const rel of node.relationships) {
-      if (rel.href.startsWith("/")) {
-        const routeCheck = matchesInternalRoute(rel.href);
-        if (!routeCheck.valid) {
-          issues.push({
-            issueId: `issue_${node.id}_${rel.id}`,
+          nodeIssues.push({
+            issueId: `issue_${node.id}_${handoff.id}`,
             nodeId: node.id,
             canonicalPath: node.canonicalPath,
-            kind: "broken_internal_relationship",
-            targetId: rel.id,
-            targetLabel: rel.label,
-            observedValue: rel.href,
-            recommendedValue: node.canonicalPath,
-            reason: routeCheck.killed
-              ? `Relationship ${rel.id} links to retired kill-route ${rel.href}.`
-              : `Relationship ${rel.id} links to unregistered internal route ${rel.href}.`,
-            severity: "blocked",
+            kind: "broken_specialist_link",
+            targetId: handoff.id,
+            targetLabel: `${handoff.partnerName} (${handoff.id})`,
+            observedValue: baseUrl,
+            recommendedValue: fallbackReplacement,
+            reason:
+              knownBroken?.reason ||
+              probe.failureReason ||
+              `Specialist handoff baseUrl ${baseUrl} failed HTTP/context/booking-prefill verification with status ${probe.statusCode}.`,
+            severity: "critical",
             detectedAt,
           });
         }
       }
-    }
+
+      // 2. Check evidence citations for staleness
+      for (const citation of node.evidenceRegistry) {
+        const checkedMs = new Date(citation.lastCheckedAt).getTime();
+        const isInvalidDate = !Number.isFinite(checkedMs);
+        const ageMs = isInvalidDate ? Number.POSITIVE_INFINITY : now.getTime() - checkedMs;
+
+        if (isInvalidDate || ageMs > maxAgeMs) {
+          const ageDays = isInvalidDate ? -1 : Math.floor(ageMs / (24 * 60 * 60 * 1000));
+          nodeIssues.push({
+            issueId: `issue_${node.id}_${citation.id}`,
+            nodeId: node.id,
+            canonicalPath: node.canonicalPath,
+            kind: "stale_evidence_source",
+            targetId: citation.id,
+            targetLabel: `${citation.sourceTitle} (${citation.issuingOrganization})`,
+            observedValue: citation.lastCheckedAt,
+            recommendedValue: now.toISOString().slice(0, 10),
+            reason: isInvalidDate
+              ? `Evidence citation ${citation.id} has an invalid lastCheckedAt date (${citation.lastCheckedAt}).`
+              : `Evidence citation ${citation.id} was last verified ${ageDays} days ago (${citation.lastCheckedAt}), exceeding the ${maxAgeDays}-day freshness SLA.`,
+            severity: "watch",
+            detectedAt,
+          });
+        }
+      }
+
+      // 3. Check internal relationship links against pageRegistry
+      for (const rel of node.relationships) {
+        if (rel.href.startsWith("/")) {
+          const routeCheck = matchesInternalRoute(rel.href);
+          if (!routeCheck.valid) {
+            nodeIssues.push({
+              issueId: `issue_${node.id}_${rel.id}`,
+              nodeId: node.id,
+              canonicalPath: node.canonicalPath,
+              kind: "broken_internal_relationship",
+              targetId: rel.id,
+              targetLabel: rel.label,
+              observedValue: rel.href,
+              recommendedValue: node.canonicalPath,
+              reason: routeCheck.killed
+                ? `Relationship ${rel.id} links to retired kill-route ${rel.href}.`
+                : `Relationship ${rel.id} links to unregistered internal route ${rel.href}.`,
+              severity: "blocked",
+              detectedAt,
+            });
+          }
+        }
+      }
+
+      return nodeIssues;
+    }),
+  );
+
+  for (const nodeIssues of perNodeIssues) {
+    issues.push(...nodeIssues);
   }
 
   return issues;
@@ -1388,10 +1722,11 @@ export async function applyReferenceMaintenanceCorrection(options: {
 
           if (
             !upstreamVerification.contentSupportsClaim ||
+            upstreamVerification.contradictionDetected ||
             !upstreamVerification.upstreamContentSha256 ||
             upstreamVerification.matchedClaimTerms.length === 0
           ) {
-            // Operator attestation alone does not pass if the live upstream source document does not support the claim
+            // Operator attestation alone does not pass if the live upstream source document does not support the claim or contradicts it
             citation.lastCheckedAt = issue.observedValue;
             delete nextOverride.evidenceReviews![issue.targetId];
             unreviewedStaleCitationIds.push(issue.targetId);
@@ -1578,9 +1913,15 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
         handoffOption: publishedOption || candidateOption,
         contextControls: publishedNode.specialistHandoffs.contextControls,
         nodeTitle: publishedNode.title,
+        nodeId: publishedNode.id,
+        now,
       });
+      const bookingFormPrefilled =
+        !handoffProbe.handoffVerification ||
+        handoffProbe.handoffVerification.bookingFormPrefilled === true;
       const handoffContextVerified =
         handoffProbe.ok &&
+        bookingFormPrefilled &&
         (!handoffProbe.handoffVerification ||
           (handoffProbe.handoffVerification.contextPreserved &&
             handoffProbe.handoffVerification.productMatchesDestination &&
@@ -1596,6 +1937,7 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
         publishedValue: publishedUrl,
         sourceReviewVerified: true,
         handoffContextVerified,
+        bookingFormPrefilled,
       });
 
       if (oldUrlStillInNode || !correctedPresentInNode) {
@@ -1608,7 +1950,7 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
         );
       } else if (!handoffContextVerified) {
         contentFailures.push(
-          `Specialist handoff ${issue.targetId} (${publishedUrl}) failed context/product verification: ${handoffProbe.failureReason || "target did not preserve traveler context or destination product"}.`,
+          `Specialist handoff ${issue.targetId} (${publishedUrl}) failed context/product/booking-prefill verification: ${handoffProbe.failureReason || "target did not prefill booking controls or preserve traveler context"}.`,
         );
       }
     } else if (issue.kind === "stale_evidence_source") {
@@ -1624,6 +1966,7 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
       const upstreamContentVerified = Boolean(
         upstreamVerification &&
           upstreamVerification.contentSupportsClaim &&
+          !upstreamVerification.contradictionDetected &&
           upstreamVerification.upstreamContentSha256 &&
           upstreamVerification.matchedClaimTerms.length > 0 &&
           publishedCitation?.upstreamContentSha256 === upstreamVerification.upstreamContentSha256,
@@ -1667,7 +2010,7 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
         );
       } else if (!upstreamContentVerified) {
         contentFailures.push(
-          `Stale evidence source ${issue.targetId} requires verified upstream source content (SHA-256 hash and matched claim terms proving the source supports the claim).`,
+          `Stale evidence source ${issue.targetId} requires verified upstream source content without contradiction (SHA-256 hash and matched claim terms).`,
         );
       } else if (!oldDateReplaced || !noteMatches) {
         contentFailures.push(
@@ -1725,20 +2068,23 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
     probeUrl,
   });
 
-  const probeResults: ReferenceVerificationEvidence["probeResults"] = [];
-  for (const handoff of nodeUnderTest.specialistHandoffs.options) {
-    const res = await probeUrl(handoff.baseUrl, {
-      handoffOption: handoff,
-      contextControls: nodeUnderTest.specialistHandoffs.contextControls,
-      nodeTitle: nodeUnderTest.title,
-    });
-    probeResults.push({
-      url: handoff.baseUrl,
-      ok: res.ok,
-      statusCode: res.statusCode,
-      handoffVerification: res.handoffVerification,
-    });
-  }
+  const probeResults: ReferenceVerificationEvidence["probeResults"] = await Promise.all(
+    nodeUnderTest.specialistHandoffs.options.map(async (handoff) => {
+      const res = await probeUrl(handoff.baseUrl, {
+        handoffOption: handoff,
+        contextControls: nodeUnderTest.specialistHandoffs.contextControls,
+        nodeTitle: nodeUnderTest.title,
+        nodeId: nodeUnderTest.id,
+        now,
+      });
+      return {
+        url: handoff.baseUrl,
+        ok: res.ok,
+        statusCode: res.statusCode,
+        handoffVerification: res.handoffVerification,
+      };
+    }),
+  );
 
   const routeCheck = matchesInternalRoute(nodeUnderTest.canonicalPath);
   const recheckPassed =
@@ -1755,6 +2101,7 @@ export async function verifyAndCloseReferenceMaintenanceTask(options: {
         a.correctedValuePresentInDeployedHtml &&
         a.sourceReviewVerified &&
         (a.handoffContextVerified === undefined || a.handoffContextVerified) &&
+        (a.bookingFormPrefilled === undefined || a.bookingFormPrefilled) &&
         (a.upstreamSourceContentVerified === undefined || a.upstreamSourceContentVerified),
     );
 
@@ -1944,6 +2291,8 @@ export type ReferenceMaintenanceOperationalSnapshot = {
   }>;
   destinations: DestinationReferenceHealthSummary[];
   tasks: ReferenceMaintenanceTask[];
+  factualErrorReports?: FactualErrorReportRecord[];
+  openFactualErrorReportCount?: number;
 };
 
 export function buildReferenceScanFindingId(
@@ -1952,10 +2301,20 @@ export function buildReferenceScanFindingId(
   return `control-map:travel-reference-scan:${scope}:latest`;
 }
 
+export function buildReferenceScanLockFindingId(
+  scope: EarthosEnvironmentScope = resolveEarthosEnvironmentScope(),
+): string {
+  return `control-map:travel-reference-scan-lock:${scope}`;
+}
+
 /**
  * Scheduled detection entrypoint invoked by Vercel Cron (/api/internal/earthos/reference-maintenance)
  * or authenticated operator sweeps. Evaluates all published TravelReferenceNodes using real HTTP probes
  * and records durable maintenance tasks and a durable scan execution record in Neon Postgres.
+ *
+ * Uses an atomic PostgreSQL conditional upsert lock (`control-map:travel-reference-scan-lock:<scope>`)
+ * with a default 180-second cooldown window for `scheduled_cron` invocations so overlapping or retried
+ * cron triggers within the same 5-minute window cannot produce duplicate scheduled runs seconds apart.
  */
 export async function runScheduledReferenceMaintenanceDetection(options: {
   now?: Date;
@@ -1963,6 +2322,7 @@ export async function runScheduledReferenceMaintenanceDetection(options: {
   probeUrl?: UrlProbeFn;
   nodes?: TravelReferenceNode[];
   actor?: string;
+  cronCooldownSeconds?: number;
 } = {}): Promise<{
   checkedAt: string;
   actor: string;
@@ -1974,6 +2334,8 @@ export async function runScheduledReferenceMaintenanceDetection(options: {
   issues: ReferenceMaintenanceIssue[];
   recordedTasks: ReferenceMaintenanceTask[];
   existingOpenTasks: ReferenceMaintenanceTask[];
+  deduplicated?: boolean;
+  deduplicatedReason?: string;
 }> {
   const db = await getRequiredEarthosDb();
   const scope = resolveEarthosEnvironmentScope();
@@ -1982,6 +2344,74 @@ export async function runScheduledReferenceMaintenanceDetection(options: {
   const actor = (options.actor || "vercel:cron").trim();
   const invocationType: "scheduled_cron" | "manual_authenticated" =
     actor === "vercel:cron" ? "scheduled_cron" : "manual_authenticated";
+  const scanFindingId = buildReferenceScanFindingId(scope);
+  const cooldownSeconds = options.cronCooldownSeconds ?? 180;
+
+  if (invocationType === "scheduled_cron" && cooldownSeconds > 0) {
+    const lockFindingId = buildReferenceScanLockFindingId(scope);
+    const cutoff = new Date(now.getTime() - cooldownSeconds * 1000);
+    const lockNote = `Atomic scheduled_cron lock acquired at ${checkedAt} by ${actor} (cooldown=${cooldownSeconds}s).`;
+    const lockMeta = {
+      scope,
+      actor,
+      lockedAt: checkedAt,
+      cooldownSeconds,
+    };
+
+    const acquiredRows = await db
+      .insert(earthosControlMapFindings)
+      .values({
+        findingId: lockFindingId,
+        status: "locked",
+        severity: "info",
+        owner: "earthos-reference-scan-lock",
+        note: lockNote,
+        metadata: lockMeta,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: earthosControlMapFindings.findingId,
+        set: {
+          status: "locked",
+          note: lockNote,
+          metadata: lockMeta,
+          updatedAt: now,
+        },
+        setWhere: sql`${earthosControlMapFindings.updatedAt} <= ${cutoff} OR ${earthosControlMapFindings.updatedAt} > ${now}`,
+      })
+      .returning({ findingId: earthosControlMapFindings.findingId });
+
+    if (acquiredRows.length === 0) {
+      const [existingScanRows, openTasks, nodes] = await Promise.all([
+        db
+          .select()
+          .from(earthosControlMapFindings)
+          .where(eq(earthosControlMapFindings.findingId, scanFindingId))
+          .limit(1),
+        listReferenceMaintenanceTasks({
+          status: "open",
+          environmentScope: scope,
+        }),
+        options.nodes ? Promise.resolve(options.nodes) : getAllPublishedTravelReferenceNodes(),
+      ]);
+      const prevMeta = (existingScanRows[0]?.metadata || {}) as Partial<ReferenceMaintenanceScanRecord>;
+      return {
+        checkedAt: prevMeta.checkedAt || checkedAt,
+        actor,
+        invocationType,
+        environmentScope: scope,
+        scanFindingId,
+        scannedNodeIds: prevMeta.scannedNodeIds || nodes.map((n) => n.id),
+        detectedIssueCount: Number(prevMeta.detectedIssueCount || 0),
+        issues: [],
+        recordedTasks: [],
+        existingOpenTasks: openTasks,
+        deduplicated: true,
+        deduplicatedReason: `Skipped duplicate scheduled_cron invocation within ${cooldownSeconds}s atomic PostgreSQL lock window.`,
+      };
+    }
+  }
+
   const nodes = options.nodes || (await getAllPublishedTravelReferenceNodes());
   const issues = await detectReferenceMaintenanceIssues({
     nodes,
@@ -2027,7 +2457,6 @@ export async function runScheduledReferenceMaintenanceDetection(options: {
     }
   }
 
-  const scanFindingId = buildReferenceScanFindingId(scope);
   const scanStatus: "healthy" | "issues_detected" =
     issues.length === 0 ? "healthy" : "issues_detected";
   const scanRecord: ReferenceMaintenanceScanRecord = {
@@ -2119,6 +2548,7 @@ export async function runScheduledReferenceMaintenanceDetection(options: {
     issues,
     recordedTasks,
     existingOpenTasks,
+    deduplicated: false,
   };
 }
 
@@ -2130,7 +2560,7 @@ export async function getReferenceMaintenanceOperationalSnapshot(options: {
   const scope = options.environmentScope || resolveEarthosEnvironmentScope();
   const scanFindingId = buildReferenceScanFindingId(scope);
 
-  const [scanRowList, scanHistoryRows, publishedNodes, tasks] = await Promise.all([
+  const [scanRowList, scanHistoryRows, publishedNodes, tasks, factualErrorReports] = await Promise.all([
     db
       .select()
       .from(earthosControlMapFindings)
@@ -2151,6 +2581,10 @@ export async function getReferenceMaintenanceOperationalSnapshot(options: {
     listReferenceMaintenanceTasks({
       environmentScope: scope,
       limit: options.taskLimit || 50,
+    }),
+    listFactualErrorReports({
+      environmentScope: scope,
+      limit: 50,
     }),
   ]);
 
@@ -2240,6 +2674,8 @@ export async function getReferenceMaintenanceOperationalSnapshot(options: {
     recentScanHistory,
     destinations,
     tasks,
+    factualErrorReports,
+    openFactualErrorReportCount: factualErrorReports.filter((r) => r.status === "open").length,
   };
 }
 

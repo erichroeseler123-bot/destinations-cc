@@ -4,8 +4,10 @@ import { getRequiredEarthosDb } from "@/lib/dcc/earthos/ensureEarthosSchema";
 
 export type AuthorityType =
   | "official_rule"
+  | "operator_provided"
   | "observation"
   | "forecast"
+  | "review_sentiment"
   | "dcc_interpretation"
   | "editorial_recommendation"
   | "official_resource_link";
@@ -15,8 +17,45 @@ export type IntegrationStatus =
   | "curated_verified"
   | "linked_official_resource";
 
+export type ClaimFreshnessCategory =
+  | "live_condition"
+  | "operating_restriction"
+  | "pricing_and_booking_terms"
+  | "seasonal_schedule"
+  | "regulatory_entry_rule"
+  | "geography_and_history";
+
+export type ClaimEvidenceStatus =
+  | "current"
+  | "stale"
+  | "expired"
+  | "conflicted"
+  | "unavailable"
+  | "unverified";
+
+export type ClaimFreshnessPolicy = {
+  category: ClaimFreshnessCategory;
+  refreshIntervalHours: number;
+  staleAfterHours: number;
+  expireAfterHours: number;
+  errorConsequence:
+    | "high_safety_or_legal"
+    | "moderate_operational_or_schedule"
+    | "low_contextual";
+  policyRationale: string;
+};
+
+export type ClaimConflictDetail = {
+  conflictingSourceTitle: string;
+  conflictingSourceUrl?: string;
+  discrepancyExplanation: string;
+  resolutionStatus: "resolved_prefer_authority" | "unresolved";
+  resolutionExplanation: string;
+};
+
 export type EvidenceCitation = {
   id: string;
+  entityId?: string;
   claimSummary: string;
   sourceTitle: string;
   sourceUrl: string;
@@ -27,12 +66,448 @@ export type EvidenceCitation = {
   applicableTravelerContext: string;
   publishedOrUpdatedDate: string | null;
   lastCheckedAt: string;
+  observedAt?: string | null;
+  retrievedAt?: string | null;
+  verifiedAt?: string | null;
+  applicableDates?: string;
+  conditionsAndExceptions?: string;
+  limitations?: string;
+  freshnessCategory?: ClaimFreshnessCategory;
+  freshnessPolicy?: ClaimFreshnessPolicy;
+  evidenceStatusOverride?: ClaimEvidenceStatus;
+  conflictDetail?: ClaimConflictDetail | null;
   verificationNote?: string;
   expectedSourceTerms?: string[];
+  forbiddenContradictionTerms?: string[];
   upstreamContentSha256?: string;
   matchedClaimTerms?: string[];
   verifiedSourceExcerpt?: string;
 };
+
+export type EvaluatedCitationFreshness = {
+  citationId: string;
+  entityId: string;
+  claimSummary: string;
+  authorityType: AuthorityType;
+  integrationStatus: IntegrationStatus;
+  policy: ClaimFreshnessPolicy;
+  publishedOrUpdatedDate: string | null;
+  observedAt: string | null;
+  retrievedAt: string | null;
+  verifiedAt: string | null;
+  ageHours: number | null;
+  observationAgeMinutes: number | null;
+  evidenceStatus: ClaimEvidenceStatus;
+  canLabelAsLive: boolean;
+  qualifiesOrWithdrawsConclusions: boolean;
+  statusSummary: string;
+  limitations: string;
+  conflictDetail: ClaimConflictDetail | null;
+};
+
+export type DependentConclusionStatus = "supported" | "qualified" | "withdrawn";
+
+export type DependentConclusionAssessment = {
+  conclusionId: string;
+  conclusionKind: "transport_mode" | "entry_scenario" | "safety_item" | "seasonality_item" | "overview_claim";
+  label: string;
+  status: DependentConclusionStatus;
+  dependsOnCitationIds: string[];
+  supportingStatuses: Record<string, ClaimEvidenceStatus>;
+  qualificationOrWithdrawalReason: string | null;
+};
+
+export type NodeClaimDependencyReport = {
+  nodeId: string;
+  evaluatedAt: string;
+  citationFreshness: Record<string, EvaluatedCitationFreshness>;
+  byCitationId: Record<string, EvaluatedCitationFreshness>;
+  expiredOrConflictedCitationIds: string[];
+  transportModeQualificationById: Record<string, string>;
+  seasonalityQualificationById: Record<string, string>;
+  entryScenarioQualificationById: Record<string, string>;
+  safetyItemQualificationById: Record<string, string>;
+  conclusions: DependentConclusionAssessment[];
+  supportedCount: number;
+  qualifiedCount: number;
+  withdrawnCount: number;
+  hasWithdrawnOrConflictedClaims: boolean;
+  recommendedCacheControl: string;
+};
+
+const FRESHNESS_POLICY_BY_CATEGORY: Record<ClaimFreshnessCategory, ClaimFreshnessPolicy> = {
+  live_condition: {
+    category: "live_condition",
+    refreshIntervalHours: 0.25,
+    staleAfterHours: 1,
+    expireAfterHours: 3,
+    errorConsequence: "high_safety_or_legal",
+    policyRationale:
+      "Sensor observations and active weather/hydrology alerts change within minutes; observations older than 1 hour are stale and expire at 3 hours.",
+  },
+  operating_restriction: {
+    category: "operating_restriction",
+    refreshIntervalHours: 24,
+    staleAfterHours: 168,
+    expireAfterHours: 720,
+    errorConsequence: "high_safety_or_legal",
+    policyRationale:
+      "Statutory traction laws, park closures, and venue access rules require weekly verification and expire after 30 days without re-verification.",
+  },
+  pricing_and_booking_terms: {
+    category: "pricing_and_booking_terms",
+    refreshIntervalHours: 168,
+    staleAfterHours: 336,
+    expireAfterHours: 1080,
+    errorConsequence: "moderate_operational_or_schedule",
+    policyRationale:
+      "Indicative operator tariffs, transit fares, and cancellation terms can shift within a season; stale after 14 days, expires after 45 days.",
+  },
+  seasonal_schedule: {
+    category: "seasonal_schedule",
+    refreshIntervalHours: 336,
+    staleAfterHours: 720,
+    expireAfterHours: 2160,
+    errorConsequence: "moderate_operational_or_schedule",
+    policyRationale:
+      "Marine berth assignments, ferry timetables, and municipal bus schedules are published seasonally; stale after 30 days, expires after 90 days.",
+  },
+  regulatory_entry_rule: {
+    category: "regulatory_entry_rule",
+    refreshIntervalHours: 336,
+    staleAfterHours: 720,
+    expireAfterHours: 2160,
+    errorConsequence: "high_safety_or_legal",
+    policyRationale:
+      "Border admissibility and document statutes (CBP WHTI, CBSA, IRCC, TSA REAL ID) carry high boarding consequences; stale after 30 days, expires after 90 days.",
+  },
+  geography_and_history: {
+    category: "geography_and_history",
+    refreshIntervalHours: 2160,
+    staleAfterHours: 4320,
+    expireAfterHours: 8760,
+    errorConsequence: "low_contextual",
+    policyRationale:
+      "Physical geography, elevation, and historical/Indigenous context change slowly; reviewed semi-annually (180 days) and expires after 365 days.",
+  },
+};
+
+export function inferFreshnessCategory(citation: EvidenceCitation): ClaimFreshnessCategory {
+  if (citation.freshnessCategory) return citation.freshnessCategory;
+  if (
+    citation.authorityType === "observation" ||
+    citation.authorityType === "forecast" ||
+    citation.integrationStatus === "live_integrated"
+  ) {
+    return "live_condition";
+  }
+  const lower = `${citation.id} ${citation.sourceTitle} ${citation.claimSummary}`.toLowerCase();
+  if (
+    lower.includes("cbp") ||
+    lower.includes("cbsa") ||
+    lower.includes("ircc") ||
+    lower.includes("tsa") ||
+    lower.includes("passport") ||
+    lower.includes("whti") ||
+    lower.includes("eta")
+  ) {
+    return "regulatory_entry_rule";
+  }
+  if (
+    lower.includes("traction") ||
+    lower.includes("closure") ||
+    lower.includes("prohibited") ||
+    lower.includes("bag policy") ||
+    lower.includes("bear") ||
+    lower.includes("restriction") ||
+    lower.includes("advisory")
+  ) {
+    return "operating_restriction";
+  }
+  if (
+    lower.includes("price") ||
+    lower.includes("fare") ||
+    lower.includes("cancellation") ||
+    lower.includes("refund")
+  ) {
+    return "pricing_and_booking_terms";
+  }
+  if (
+    lower.includes("heritage") ||
+    lower.includes("history") ||
+    lower.includes("geology") ||
+    lower.includes("lingít") ||
+    lower.includes("tlingit")
+  ) {
+    return "geography_and_history";
+  }
+  return "seasonal_schedule";
+}
+
+export function getDefaultFreshnessPolicy(citation: EvidenceCitation): ClaimFreshnessPolicy {
+  if (citation.freshnessPolicy) return citation.freshnessPolicy;
+  return (
+    FRESHNESS_POLICY_BY_CATEGORY[inferFreshnessCategory(citation)] ??
+    FRESHNESS_POLICY_BY_CATEGORY.seasonal_schedule
+  );
+}
+
+export function evaluateCitationFreshness(
+  citation: EvidenceCitation,
+  now: Date = new Date(),
+): EvaluatedCitationFreshness {
+  const policy = getDefaultFreshnessPolicy(citation);
+  const retrievedAt = citation.retrievedAt ?? citation.lastCheckedAt ?? null;
+  const verifiedAt = citation.verifiedAt ?? citation.lastCheckedAt ?? null;
+  const hasExplicitObservation =
+    typeof citation.observedAt === "string" && citation.observedAt.trim().length > 0;
+  const observedAt = hasExplicitObservation
+    ? citation.observedAt!
+    : citation.integrationStatus === "live_integrated"
+      ? null
+      : citation.publishedOrUpdatedDate;
+
+  const referenceTimeStr =
+    policy.category === "live_condition" && hasExplicitObservation
+      ? observedAt
+      : verifiedAt || retrievedAt;
+
+  const effectiveStaleHours =
+    policy.category === "live_condition" && !hasExplicitObservation
+      ? 168
+      : policy.staleAfterHours;
+  const effectiveExpireHours =
+    policy.category === "live_condition" && !hasExplicitObservation
+      ? 336
+      : policy.expireAfterHours;
+
+  let ageHours: number | null = null;
+  let observationAgeMinutes: number | null = null;
+
+  if (referenceTimeStr) {
+    const parsed = new Date(
+      /^\d{4}-\d{2}-\d{2}$/.test(referenceTimeStr)
+        ? `${referenceTimeStr}T12:00:00.000Z`
+        : referenceTimeStr,
+    );
+    if (!Number.isNaN(parsed.getTime())) {
+      ageHours = Math.max(0, (now.getTime() - parsed.getTime()) / (1000 * 60 * 60));
+    }
+  }
+
+  if (observedAt) {
+    const parsedObs = new Date(
+      /^\d{4}-\d{2}-\d{2}$/.test(observedAt)
+        ? `${observedAt}T12:00:00.000Z`
+        : observedAt,
+    );
+    if (!Number.isNaN(parsedObs.getTime())) {
+      observationAgeMinutes = Math.max(0, Math.round((now.getTime() - parsedObs.getTime()) / (1000 * 60)));
+    }
+  }
+
+  let evidenceStatus: ClaimEvidenceStatus = "current";
+  if (citation.evidenceStatusOverride) {
+    evidenceStatus = citation.evidenceStatusOverride;
+  } else if (citation.conflictDetail && citation.conflictDetail.resolutionStatus === "unresolved") {
+    evidenceStatus = "conflicted";
+  } else if (!verifiedAt && !retrievedAt && !observedAt) {
+    evidenceStatus = "unverified";
+  } else if (ageHours === null) {
+    evidenceStatus = "unverified";
+  } else if (ageHours > effectiveExpireHours) {
+    evidenceStatus = "expired";
+  } else if (ageHours > effectiveStaleHours) {
+    evidenceStatus = "stale";
+  }
+
+  const canLabelAsLive =
+    citation.integrationStatus === "live_integrated" &&
+    hasExplicitObservation &&
+    observationAgeMinutes !== null &&
+    observationAgeMinutes <= policy.staleAfterHours * 60 &&
+    evidenceStatus === "current";
+
+  const defaultLimitations =
+    citation.limitations ||
+    (citation.integrationStatus === "live_integrated"
+      ? "Sensor/model feed reflects station conditions at observation time; does not establish operator dispatch, road restrictions, or venue holds."
+      : "Curated reference verified against the cited authority on the verification date; confirm real-time operational changes directly with the issuing authority.");
+
+  let statusSummary = `Verified current under ${policy.category.replace(/_/g, " ")} policy (max ${Math.round(policy.staleAfterHours / 24) || 1}d before stale).`;
+  if (evidenceStatus === "expired") {
+    statusSummary = `Evidence expired (${ageHours !== null ? Math.round(ageHours / 24) : "?"}d since last verification; policy expires at ${Math.round(policy.expireAfterHours / 24)}d). Dependent conclusions are withdrawn or qualified until re-verified.`;
+  } else if (evidenceStatus === "stale") {
+    statusSummary = `Evidence is stale (${ageHours !== null ? Math.round(ageHours / 24) : "?"}d since verification). Confirm directly with ${citation.issuingOrganization}.`;
+  } else if (evidenceStatus === "conflicted") {
+    statusSummary = `Source conflict detected: ${citation.conflictDetail?.discrepancyExplanation || "Conflicting upstream claims require resolution."}`;
+  } else if (evidenceStatus === "unavailable") {
+    statusSummary = `Upstream verification source is currently unavailable. Verification limitation — never treated as an all-clear.`;
+  } else if (evidenceStatus === "unverified") {
+    statusSummary = `Claim lacks a verified substantive review timestamp.`;
+  }
+
+  const qualifiesOrWithdrawsConclusions =
+    evidenceStatus === "expired" ||
+    evidenceStatus === "conflicted" ||
+    evidenceStatus === "unavailable";
+
+  return {
+    citationId: citation.id,
+    entityId: citation.entityId || citation.id,
+    claimSummary: citation.claimSummary,
+    authorityType: citation.authorityType,
+    integrationStatus: citation.integrationStatus,
+    policy,
+    publishedOrUpdatedDate: citation.publishedOrUpdatedDate,
+    observedAt,
+    retrievedAt,
+    verifiedAt,
+    ageHours: ageHours !== null ? Number(ageHours.toFixed(2)) : null,
+    observationAgeMinutes,
+    evidenceStatus,
+    canLabelAsLive,
+    qualifiesOrWithdrawsConclusions,
+    statusSummary,
+    limitations: defaultLimitations,
+    conflictDetail: citation.conflictDetail ?? null,
+  };
+}
+
+export function evaluateNodeClaimDependencies(
+  node: TravelReferenceNode,
+  now: Date = new Date(),
+): NodeClaimDependencyReport {
+  const citationFreshness: Record<string, EvaluatedCitationFreshness> = {};
+  for (const cit of node.evidenceRegistry) {
+    citationFreshness[cit.id] = evaluateCitationFreshness(cit, now);
+  }
+
+  function assessConclusion(
+    conclusionId: string,
+    conclusionKind: DependentConclusionAssessment["conclusionKind"],
+    label: string,
+    citationIds: string[],
+  ): DependentConclusionAssessment {
+    const supportingStatuses: Record<string, ClaimEvidenceStatus> = {};
+    const expiredOrConflicted: string[] = [];
+    const staleOrUnavailable: string[] = [];
+
+    for (const cid of citationIds) {
+      const evaluated = citationFreshness[cid];
+      const st: ClaimEvidenceStatus = evaluated ? evaluated.evidenceStatus : "unverified";
+      supportingStatuses[cid] = st;
+      if (st === "expired" || st === "conflicted") {
+        expiredOrConflicted.push(`${cid} (${st})`);
+      } else if (st === "stale" || st === "unavailable" || st === "unverified") {
+        staleOrUnavailable.push(`${cid} (${st})`);
+      }
+    }
+
+    if (expiredOrConflicted.length > 0) {
+      return {
+        conclusionId,
+        conclusionKind,
+        label,
+        status: "withdrawn",
+        dependsOnCitationIds: citationIds,
+        supportingStatuses,
+        qualificationOrWithdrawalReason: `Withdrawn pending re-verification because supporting evidence [${expiredOrConflicted.join(", ")}] is expired or conflicted. Verify directly with the issuing authority before relying on this rule.`,
+      };
+    }
+
+    if (staleOrUnavailable.length > 0) {
+      return {
+        conclusionId,
+        conclusionKind,
+        label,
+        status: "qualified",
+        dependsOnCitationIds: citationIds,
+        supportingStatuses,
+        qualificationOrWithdrawalReason: `Qualified: supporting evidence [${staleOrUnavailable.join(", ")}] is stale or temporarily unverifiable. Treat as a baseline estimate and confirm current rules directly.`,
+      };
+    }
+
+    return {
+      conclusionId,
+      conclusionKind,
+      label,
+      status: "supported",
+      dependsOnCitationIds: citationIds,
+      supportingStatuses,
+      qualificationOrWithdrawalReason: null,
+    };
+  }
+
+  const conclusions: DependentConclusionAssessment[] = [
+    assessConclusion(
+      `${node.id}-overview`,
+      "overview_claim",
+      node.overviewAndContext.sectionTitle,
+      node.overviewAndContext.citationIds,
+    ),
+    ...node.gettingThereAndAround.modes.map((m) =>
+      assessConclusion(m.id, "transport_mode", m.modeName, m.citationIds),
+    ),
+    ...node.beforeYouGo.entryScenarios.map((e) =>
+      assessConclusion(e.id, "entry_scenario", e.scenarioLabel, e.citationIds),
+    ),
+    ...node.beforeYouGo.safetyHealthAndEmergency.map((s) =>
+      assessConclusion(s.id, "safety_item", s.title, s.citationIds),
+    ),
+    ...node.timingSeasonalityAndAccess.items.map((t) =>
+      assessConclusion(t.id, "seasonality_item", t.title, t.citationIds),
+    ),
+  ];
+
+  const transportModeQualificationById: Record<string, string> = {};
+  const seasonalityQualificationById: Record<string, string> = {};
+  const entryScenarioQualificationById: Record<string, string> = {};
+  const safetyItemQualificationById: Record<string, string> = {};
+
+  for (const c of conclusions) {
+    if (!c.qualificationOrWithdrawalReason) continue;
+    if (c.conclusionKind === "transport_mode") {
+      transportModeQualificationById[c.conclusionId] = c.qualificationOrWithdrawalReason;
+    } else if (c.conclusionKind === "seasonality_item") {
+      seasonalityQualificationById[c.conclusionId] = c.qualificationOrWithdrawalReason;
+    } else if (c.conclusionKind === "entry_scenario") {
+      entryScenarioQualificationById[c.conclusionId] = c.qualificationOrWithdrawalReason;
+    } else if (c.conclusionKind === "safety_item") {
+      safetyItemQualificationById[c.conclusionId] = c.qualificationOrWithdrawalReason;
+    }
+  }
+
+  const expiredOrConflictedCitationIds = Object.values(citationFreshness)
+    .filter((c) => c.qualifiesOrWithdrawsConclusions)
+    .map((c) => c.citationId);
+
+  const supportedCount = conclusions.filter((c) => c.status === "supported").length;
+  const qualifiedCount = conclusions.filter((c) => c.status === "qualified").length;
+  const withdrawnCount = conclusions.filter((c) => c.status === "withdrawn").length;
+  const hasWithdrawnOrConflictedClaims =
+    withdrawnCount > 0 || expiredOrConflictedCitationIds.length > 0;
+
+  return {
+    nodeId: node.id,
+    evaluatedAt: now.toISOString(),
+    citationFreshness,
+    byCitationId: citationFreshness,
+    expiredOrConflictedCitationIds,
+    transportModeQualificationById,
+    seasonalityQualificationById,
+    entryScenarioQualificationById,
+    safetyItemQualificationById,
+    conclusions,
+    supportedCount,
+    qualifiedCount,
+    withdrawnCount,
+    hasWithdrawnOrConflictedClaims,
+    recommendedCacheControl: hasWithdrawnOrConflictedClaims
+      ? "no-store, no-cache, must-revalidate"
+      : "public, s-maxage=60, stale-while-revalidate=120",
+  };
+}
 
 export type EntryScenarioRule = {
   id: string;
@@ -132,6 +607,30 @@ export type HandoffContextInput = {
   baseOrigin?: string;
 };
 
+/**
+ * Computes a guaranteed future date (YYYY-MM-DD strictly after `now`) for handoff defaults
+ * and booking-form prefill verification.
+ * - For Juneau / Alaska cruise excursions (whose seasonal booking window is May 1 – Sep 30, 2027),
+ *   returns "2027-06-15" if that date is in the future relative to `now`, or `now + 30 days` otherwise.
+ * - For all other destinations, returns `now + 30 days`.
+ */
+export function computeFutureVerificationDate(
+  now: Date = new Date(),
+  nodeOrTargetHint?: string,
+): string {
+  const hint = (nodeOrTargetHint || "").toLowerCase();
+  const isAlaskaSeasonal =
+    hint === "juneau" ||
+    hint.includes("juneau") ||
+    hint.includes("alaska");
+  const todayIso = now.toISOString().slice(0, 10);
+  if (isAlaskaSeasonal && "2027-06-15" > todayIso) {
+    return "2027-06-15";
+  }
+  const futureMs = now.getTime() + 30 * 24 * 60 * 60 * 1000;
+  return new Date(futureMs).toISOString().slice(0, 10);
+}
+
 export function buildContextPreservingHandoffUrl(
   option: SpecialistHandoffOption,
   context: HandoffContextInput = {},
@@ -151,6 +650,8 @@ export function buildContextPreservingHandoffUrl(
     url.searchParams.set("travelers", context.partySize);
     url.searchParams.set("party_size", context.partySize);
     url.searchParams.set("passengerCount", context.partySize);
+    url.searchParams.set("passengers", context.partySize);
+    url.searchParams.set("qty", context.partySize);
   }
   if (context.customChoice && context.customSelectorParam) {
     if (
@@ -219,6 +720,7 @@ export type TravelReferenceNode = {
     label: string;
     value: string;
     authorityType: AuthorityType;
+    citationIds?: string[];
   }>;
   overviewAndContext: {
     sectionTitle: string;
@@ -921,7 +1423,38 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
     ],
     evidenceRegistry: [
       {
+        id: "jun-cbj-harbors",
+        entityId: "juneau:docks-and-harbors",
+        claimSummary: "Cruise dock locations (AS, CTF, Franklin, AJ Dock), harbor basin rules, and municipal port management.",
+        sourceTitle: "City and Borough of Juneau — Docks & Harbors Cruise Ship Information",
+        sourceUrl: "https://juneau.org/harbors",
+        issuingOrganization: "City and Borough of Juneau (CBJ Docks & Harbors)",
+        authorityType: "official_rule",
+        integrationStatus: "linked_official_resource",
+        geographicScope: "Gastineau Channel & Auke Bay Harbors, Juneau, AK",
+        applicableTravelerContext: "Cruise ship passengers and marine harbor users",
+        publishedOrUpdatedDate: "2026-01-15",
+        lastCheckedAt: "2026-10-23",
+        observedAt: "2026-01-15",
+        retrievedAt: "2026-10-23T08:00:00.000Z",
+        verifiedAt: "2026-10-23T08:15:00.000Z",
+        applicableDates: "May 1 – October 15 cruise season (berth assignments subject to day-of-port harbormaster updates)",
+        conditionsAndExceptions: "Ships assigned to AJ Dock (1.2 mi south) or Gastineau Channel anchorages require shuttle or tender transfers; day-of-port berth swaps occur during high winds.",
+        limitations: "Published seasonal berth schedules do not reflect day-of-arrival harbormaster reassignments.",
+        freshnessCategory: "seasonal_schedule",
+        conflictDetail: {
+          conflictingSourceTitle: "Generic Cruise Line 'Downtown Juneau' Port Summaries",
+          discrepancyExplanation:
+            "Cruise marketing brochures frequently label all Juneau berths as 'walkable downtown,' whereas CBJ Docks & Harbors geometry places AJ Dock 1.2 miles south of Marine Park along an industrial road.",
+          resolutionStatus: "resolved_prefer_authority",
+          resolutionExplanation:
+            "Resolved in favor of CBJ Docks & Harbors municipal port geometry: passengers berthed at AJ Dock should budget 15–20 minutes each way for the dock shuttle loop.",
+        },
+        expectedSourceTerms: ["Juneau", "Harbors", "Docks"],
+      },
+      {
         id: "jun-ircc-eta-air-exception",
+        entityId: "canada-federal:ircc-eta-air-only",
         claimSummary: "Conditional air-only eTA eligibility for citizens of select visa-required countries; separate visitor-visa rules for land and sea entry.",
         sourceTitle: "IRCC — Citizens from Some Visa-Required Countries",
         sourceUrl: "https://www.canada.ca/en/immigration-refugees-citizenship/services/visit-canada/eta/eligibility/eta-x.html",
@@ -932,10 +1465,14 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Travelers from select visa-required countries considering air arrival plus Canadian cruise or land crossings",
         publishedOrUpdatedDate: null,
         lastCheckedAt: "2026-10-23",
+        retrievedAt: "2026-10-23T08:00:00.000Z",
+        verifiedAt: "2026-10-23T08:35:00.000Z",
+        freshnessCategory: "regulatory_entry_rule",
         expectedSourceTerms: ["eTA", "visa", "Canada", "air"],
       },
       {
         id: "jun-ircc-us-permanent-resident",
+        entityId: "canada-federal:ircc-us-pr",
         claimSummary: "U.S. lawful permanent residents are eTA-exempt and carry their nationality passport or equivalent travel document plus valid proof of U.S. status.",
         sourceTitle: "IRCC — U.S. Lawful Permanent Resident Travel Documents",
         sourceUrl: "https://www.ircc.canada.ca/english/helpcentre/answer.asp?qnum=1053&top=23",
@@ -946,24 +1483,15 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "U.S. lawful permanent residents visiting Canada",
         publishedOrUpdatedDate: "2026-09-28",
         lastCheckedAt: "2026-10-23",
+        observedAt: "2026-09-28",
+        retrievedAt: "2026-10-23T08:00:00.000Z",
+        verifiedAt: "2026-10-23T08:40:00.000Z",
+        freshnessCategory: "regulatory_entry_rule",
         expectedSourceTerms: ["permanent resident", "United States", "passport"],
       },
       {
-        id: "jun-cbj-harbors",
-        claimSummary: "Cruise dock locations (AS, CTF, Franklin, AJ Dock), harbor basin rules, and municipal port management.",
-        sourceTitle: "City and Borough of Juneau — Docks & Harbors Cruise Ship Information",
-        sourceUrl: "https://juneau.org/harbors/cruise-ship-information",
-        issuingOrganization: "City and Borough of Juneau (CBJ Docks & Harbors)",
-        authorityType: "official_rule",
-        integrationStatus: "linked_official_resource",
-        geographicScope: "Gastineau Channel & Auke Bay Harbors, Juneau, AK",
-        applicableTravelerContext: "Cruise ship passengers and marine harbor users",
-        publishedOrUpdatedDate: "2026-01-15",
-        lastCheckedAt: "2026-10-23",
-        expectedSourceTerms: ["Juneau", "Harbors", "Cruise"],
-      },
-      {
         id: "jun-usfs-mendenhall",
+        entityId: "juneau:mendenhall-glacier-recreation-area",
         claimSummary: "Mendenhall Glacier Visitor Center operating hours, commercial shuttle caps, trail access, and Steep Creek bear safety rules.",
         sourceTitle: "Tongass National Forest — Mendenhall Glacier Visitor Center",
         sourceUrl: "https://www.fs.usda.gov/recarea/tongass/recarea/?recid=78952",
@@ -974,10 +1502,18 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All visitors to Mendenhall Glacier, Nugget Falls, and Steep Creek",
         publishedOrUpdatedDate: "2026-04-01",
         lastCheckedAt: "2026-10-23",
+        observedAt: "2026-04-01",
+        retrievedAt: "2026-10-23T08:00:00.000Z",
+        verifiedAt: "2026-10-23T08:20:00.000Z",
+        applicableDates: "May 1 – September 30 summer visitor season; winter hours October – April",
+        conditionsAndExceptions: "Food and flavored beverages are strictly prohibited on Steep Creek boardwalks during July–September salmon runs; USFS commercial visitor permit caps restrict commercial drop-offs.",
+        limitations: "Temporary bear-activity trail closures on Steep Creek and East Glacier Loop are posted on-site by USFS rangers without advance web notice.",
+        freshnessCategory: "operating_restriction",
         expectedSourceTerms: ["Forest Service", "Tongass", "USDA"],
       },
       {
         id: "jun-cbp-whti",
+        entityId: "us-federal:cbp-whti",
         claimSummary: "Western Hemisphere Travel Initiative (WHTI) document rules for closed-loop vs. open-loop cruises and land/sea re-entry.",
         sourceTitle: "U.S. CBP — Western Hemisphere Travel Initiative (WHTI)",
         sourceUrl: "https://www.cbp.gov/travel/us-citizens/western-hemisphere-travel-initiative",
@@ -988,10 +1524,17 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "U.S. citizens and international travelers on Alaska cruises or cross-border excursions",
         publishedOrUpdatedDate: "2025-11-10",
         lastCheckedAt: "2026-10-23",
+        observedAt: "2025-11-10",
+        retrievedAt: "2026-10-23T08:00:00.000Z",
+        verifiedAt: "2026-10-23T08:25:00.000Z",
+        applicableDates: "Year-round statutory requirement",
+        conditionsAndExceptions: "Closed-loop U.S. cruise birth-certificate exception applies only to U.S. citizens and does NOT cover international air return from Canada or cross-border White Pass Yukon rail excursions where carriers require a passport.",
+        freshnessCategory: "regulatory_entry_rule",
         expectedSourceTerms: ["Western Hemisphere Travel Initiative", "CBP", "cruise"],
       },
       {
         id: "jun-cbsa-entry",
+        entityId: "canada-federal:cbsa-entry",
         claimSummary: "Canadian admissibility and identification requirements for cruise port calls (Victoria/Vancouver) and Yukon highway/rail excursions.",
         sourceTitle: "Canada Border Services Agency — Travel and Identification Requirements",
         sourceUrl: "https://www.cbsa-asfc.gc.ca/travel-voyage/ivc-rnc-eng.html",
@@ -1002,10 +1545,15 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "All travelers whose Alaska cruise or shore excursion enters Canadian jurisdiction",
         publishedOrUpdatedDate: "2026-02-01",
         lastCheckedAt: "2026-10-23",
+        observedAt: "2026-02-01",
+        retrievedAt: "2026-10-23T08:00:00.000Z",
+        verifiedAt: "2026-10-23T08:30:00.000Z",
+        freshnessCategory: "regulatory_entry_rule",
         expectedSourceTerms: ["Canada Border Services Agency", "identification", "Canada"],
       },
       {
         id: "jun-amhs-official",
+        entityId: "juneau:amhs-auke-bay",
         claimSummary: "State ferry routes, Auke Bay terminal location (13.5 mi NW of downtown), and vehicle/foot check-in cutoffs.",
         sourceTitle: "Alaska Marine Highway System (AMHS) Official Portal",
         sourceUrl: "https://dot.alaska.gov/amhs/",
@@ -1016,25 +1564,45 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Independent ferry travelers and vehicle passengers",
         publishedOrUpdatedDate: "2026-03-01",
         lastCheckedAt: "2026-10-23",
+        observedAt: "2026-03-01",
+        retrievedAt: "2026-10-23T08:00:00.000Z",
+        verifiedAt: "2026-10-23T08:45:00.000Z",
+        freshnessCategory: "seasonal_schedule",
         expectedSourceTerms: ["Alaska Marine Highway", "ferry", "Alaska"],
       },
       {
         id: "jun-capital-transit",
-        claimSummary: "Municipal bus routes between Downtown Juneau, Mendenhall Valley, and Auke Bay, including the 1.5-mile walk gap to Mendenhall Visitor Center.",
-        sourceTitle: "Capital Transit — City and Borough of Juneau Public Transit",
-        sourceUrl: "https://juneaucapitaltransit.org/",
+        entityId: "juneau:capital-transit-bus",
+        claimSummary: "Capital Transit adult cash fare ($2.00 exact fare per ride) and Route 3/4 Mendenhall Valley service stopping at Mendenhall Loop Rd & Glacier Spur Rd (requiring a 1.5-mile walk each way to Mendenhall Visitor Center).",
+        sourceTitle: "Capital Transit — Fares, Passes & Mendenhall Valley Bus Routes",
+        sourceUrl: "https://juneaucapitaltransit.org/fares/",
         issuingOrganization: "City and Borough of Juneau — Capital Transit",
-        authorityType: "official_resource_link",
+        authorityType: "official_rule",
         integrationStatus: "linked_official_resource",
-        geographicScope: "City and Borough of Juneau Road System",
+        geographicScope: "City and Borough of Juneau Road System (Downtown Transit Center at 4th & Marine Way to Mendenhall Valley & Auke Bay)",
         applicableTravelerContext: "Independent travelers using municipal bus transit",
         publishedOrUpdatedDate: "2026-01-01",
         lastCheckedAt: "2026-10-23",
-        expectedSourceTerms: ["Capital Transit", "Juneau", "Bus"],
+        observedAt: "2026-01-01",
+        retrievedAt: "2026-10-23T08:00:00.000Z",
+        verifiedAt: "2026-10-23T08:50:00.000Z",
+        applicableDates: "Year-round municipal service (30-min to 60-min headways depending on day/hour)",
+        conditionsAndExceptions: "Exact $2.00 cash fare required per boarding (drivers do not make change). Municipal buses do not turn onto Glacier Spur Road.",
+        freshnessCategory: "seasonal_schedule",
+        conflictDetail: {
+          conflictingSourceTitle: "Unofficial Cruise Port DIY Blogs & Forum Summaries",
+          discrepancyExplanation:
+            "Several unofficial port blogs describe taking the $2 Capital Transit bus 'to Mendenhall Glacier' without disclosing that municipal buses do not enter Glacier Spur Road to the Visitor Center.",
+          resolutionStatus: "resolved_prefer_authority",
+          resolutionExplanation:
+            "Resolved in favor of Capital Transit's official route map and USFS Mendenhall access rules: the nearest municipal stop (Mendenhall Loop Rd & Glacier Spur Rd) requires a 1.5-mile (30–35 min) walk each way to reach the Visitor Center.",
+        },
+        expectedSourceTerms: ["Capital Transit", "Juneau", "Fare"],
       },
       {
         id: "jun-airport-official",
-        claimSummary: "Juneau International Airport (JNU) passenger services, ground transport, and Mendenhall Valley location.",
+        entityId: "juneau:jnu-airport",
+        claimSummary: "Juneau International Airport (JNU) passenger services, ground transport, and Mendenhall Valley heliport/terminal location (8.5 mi NW of downtown docks).",
         sourceTitle: "Juneau International Airport Official Website",
         sourceUrl: "https://juneau.org/airport",
         issuingOrganization: "City and Borough of Juneau",
@@ -1044,25 +1612,81 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         applicableTravelerContext: "Air travelers and airport-based helicopter tour guests",
         publishedOrUpdatedDate: "2026-01-10",
         lastCheckedAt: "2026-10-23",
+        observedAt: "2026-01-10",
+        retrievedAt: "2026-10-23T08:00:00.000Z",
+        verifiedAt: "2026-10-23T08:55:00.000Z",
+        freshnessCategory: "seasonal_schedule",
         expectedSourceTerms: ["Juneau International Airport", "Airport", "Juneau"],
       },
       {
+        id: "jun-operator-heli-icefield",
+        entityId: "juneau:part135-heli-operators",
+        claimSummary: "Published FAA Part 135 helicopter glacier tour parameters: 3.0–3.25 hr dock-to-dock duration (comprising ~40 min round-trip JNU shuttle, 30 min mandatory pre-flight safety briefing/overboot fitting, and ~115 min flight + glacier walk), May–September operating season, 250 lb weight-balance surcharge threshold, and 100% weather-cancellation refund.",
+        sourceTitle: "TEMSCO Helicopters — Mendenhall Glacier & Icefield Excursion Specifications",
+        sourceUrl: "https://temscoair.com/juneau-helicopter-tours/mendenhall-glacier/",
+        issuingOrganization: "TEMSCO Helicopters (FAA Part 135 Operator, JNU Airport)",
+        authorityType: "official_rule",
+        integrationStatus: "curated_verified",
+        geographicScope: "Juneau International Airport (JNU) Heliport & Juneau Icefield (Mendenhall / Herbert / Norris Glaciers)",
+        applicableTravelerContext: "Cruise and independent passengers booking helicopter glacier landings",
+        publishedOrUpdatedDate: "2026-04-15",
+        lastCheckedAt: "2026-10-23",
+        observedAt: "2026-04-15",
+        retrievedAt: "2026-10-23T09:00:00.000Z",
+        verifiedAt: "2026-10-23T09:10:00.000Z",
+        applicableDates: "May 1 – September 30 summer flightseeing season (closed October – April)",
+        conditionsAndExceptions: "Advertised 3.0–3.25 hr duration is dock-to-dock and already includes airport shuttle transfers and safety briefing; passengers exceeding 250 lbs fully clothed require a weight-balance seat surcharge; flights dispatch strictly under FAA Part 135 ceiling/visibility minimums.",
+        limitations: "Published base rates ($409–$549) and slot times do not establish real-time seat inventory on a specific ship date.",
+        freshnessCategory: "pricing_and_booking_terms",
+        expectedSourceTerms: ["Mendenhall", "Glacier", "Helicopter"],
+      },
+      {
+        id: "jun-operator-auke-bay-whale",
+        entityId: "juneau:auke-bay-whale-operators",
+        claimSummary: "Published Auke Bay whale watching excursion parameters: 3.5–3.75 hr dock-to-dock duration (comprising 50 min round-trip transfer between downtown Marine Park and Auke Bay Statter Harbor, 20 min dock check-in, and 135–150 min on-water viewing in Stephens Passage), April–October season, and heated cabin accessibility.",
+        sourceTitle: "Allen Marine Tours — Juneau Whale Watching & Mendenhall Excursion Specifications",
+        sourceUrl: "https://allenmarine.com/juneau/",
+        issuingOrganization: "Allen Marine Tours / Permitted Auke Bay Marine Operators",
+        authorityType: "official_rule",
+        integrationStatus: "curated_verified",
+        geographicScope: "Auke Bay (Statter Harbor), Stephens Passage & Favorite Channel, Juneau, AK",
+        applicableTravelerContext: "Cruise and independent travelers booking single whale watching or Whale + Mendenhall combination tours",
+        publishedOrUpdatedDate: "2026-04-10",
+        lastCheckedAt: "2026-10-23",
+        observedAt: "2026-04-10",
+        retrievedAt: "2026-10-23T09:05:00.000Z",
+        verifiedAt: "2026-10-23T09:15:00.000Z",
+        applicableDates: "April 15 – October 15 whale watching season",
+        conditionsAndExceptions: "Advertised 3.5–3.75 hr duration is dock-to-dock and includes the 25-min each-way motorcoach transfer between downtown and Auke Bay; extreme minus low tides at Statter Harbor increase boarding ramp slope.",
+        limitations: "Indicative rates ($169–$229 single; $219–$289 combo) vary by vessel size and date.",
+        freshnessCategory: "pricing_and_booking_terms",
+        expectedSourceTerms: ["Juneau", "Whale", "Mendenhall"],
+      },
+      {
         id: "jun-shi-heritage",
-        claimSummary: "Lingít (Tlingit), Haida, and Tsimshian cultural history of Dzantik'i Heeni (Juneau) and Northwest Coast arts.",
+        entityId: "juneau:sealaska-walter-soboleff-center",
+        claimSummary: "Sealaska Heritage Institute Walter Soboleff Center (105 S. Seward St, 0.2 mi from Marine Park): Lingít, Haida, and Tsimshian cultural exhibits, step-free wheelchair accessibility, and walk-up admission.",
         sourceTitle: "Sealaska Heritage Institute — Walter Soboleff Center",
         sourceUrl: "https://www.sealaskaheritage.org/",
         issuingOrganization: "Sealaska Heritage Institute",
         authorityType: "official_resource_link",
         integrationStatus: "linked_official_resource",
-        geographicScope: "Juneau & Southeast Alaska Indigenous Homelands",
-        applicableTravelerContext: "All visitors exploring Juneau's cultural and historical context",
-        publishedOrUpdatedDate: null,
+        geographicScope: "Downtown Juneau (Front & Seward Streets) & Southeast Alaska Indigenous Homelands",
+        applicableTravelerContext: "All visitors exploring Downtown Juneau cultural exhibits and step-free walk-off options",
+        publishedOrUpdatedDate: "2026-05-01",
         lastCheckedAt: "2026-10-23",
+        observedAt: "2026-05-01",
+        retrievedAt: "2026-10-23T08:00:00.000Z",
+        verifiedAt: "2026-10-23T08:55:00.000Z",
+        applicableDates: "Year-round (daily summer cruise season hours May–September; winter hours October–April)",
+        conditionsAndExceptions: "Step-free elevator and gallery access; walk-up admission ($10 adult) requires no advance reservation.",
+        freshnessCategory: "seasonal_schedule",
         expectedSourceTerms: ["Sealaska Heritage", "Tlingit", "Haida"],
       },
       {
         id: "jun-bartlett-hospital",
-        claimSummary: "Acute-care hospital and 24/7 emergency department serving Juneau and northern Southeast Alaska.",
+        entityId: "juneau:bartlett-regional-hospital",
+        claimSummary: "Acute-care hospital and 24/7 emergency department serving Juneau and northern Southeast Alaska (3260 Hospital Dr, 3.2 mi NW of downtown).",
         sourceTitle: "Bartlett Regional Hospital — Emergency Services",
         sourceUrl: "https://www.bartletthospital.org/",
         issuingOrganization: "Bartlett Regional Hospital (CBJ Enterprise)",
@@ -1070,12 +1694,17 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         integrationStatus: "linked_official_resource",
         geographicScope: "Juneau & Northern Southeast Alaska",
         applicableTravelerContext: "All travelers requiring urgent or emergency medical care",
-        publishedOrUpdatedDate: null,
+        publishedOrUpdatedDate: "2026-01-01",
         lastCheckedAt: "2026-10-23",
+        observedAt: "2026-01-01",
+        retrievedAt: "2026-10-23T08:00:00.000Z",
+        verifiedAt: "2026-10-23T08:55:00.000Z",
+        freshnessCategory: "geography_and_history",
         expectedSourceTerms: ["Bartlett Regional Hospital", "Juneau", "Hospital"],
       },
       {
         id: "jun-nws-live",
+        entityId: "juneau:nws-point-alerts",
         claimSummary: "Live point weather alerts, marine advisories, and Mendenhall flood watch feeds.",
         sourceTitle: "National Weather Service API (Juneau Forecast Office)",
         sourceUrl: "https://api.weather.gov",
@@ -1085,11 +1714,15 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         geographicScope: "Juneau & Inside Passage Coordinates",
         applicableTravelerContext: "All travelers checking current warnings and 3-day forecasts",
         publishedOrUpdatedDate: "Live / Continuous",
-        lastCheckedAt: "2026-10-23",
+        lastCheckedAt: "2026-10-25",
+        retrievedAt: "2026-10-25T12:00:00.000Z",
+        verifiedAt: "2026-10-25T12:00:00.000Z",
+        freshnessCategory: "live_condition",
         expectedSourceTerms: ["weather.gov", "status"],
       },
       {
         id: "jun-noaa-tides",
+        entityId: "juneau:noaa-coops-9452210",
         claimSummary: "Live Gastineau Channel tide height and high/low predictions (Station 9452210).",
         sourceTitle: "NOAA CO-OPS Tides & Currents API",
         sourceUrl: "https://tidesandcurrents.noaa.gov/stationhome.html?id=9452210",
@@ -1099,11 +1732,15 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         geographicScope: "Juneau Harbor / Gastineau Channel (125 km radius)",
         applicableTravelerContext: "Marine excursion passengers and limited-mobility dock users",
         publishedOrUpdatedDate: "Live / Continuous",
-        lastCheckedAt: "2026-10-23",
+        lastCheckedAt: "2026-10-25",
+        retrievedAt: "2026-10-25T12:00:00.000Z",
+        verifiedAt: "2026-10-25T12:00:00.000Z",
+        freshnessCategory: "live_condition",
         expectedSourceTerms: ["9452210", "Juneau", "NOAA"],
       },
       {
         id: "jun-noaa-aviation",
+        entityId: "juneau:noaa-aviation-pajn",
         claimSummary: "Live METAR surface observations and TAF terminal forecasts for PAJN (Juneau International Airport).",
         sourceTitle: "NOAA / NWS Aviation Weather Center API",
         sourceUrl: "https://aviationweather.gov/data/api/",
@@ -1113,7 +1750,10 @@ export const TRAVEL_REFERENCE_NODES: Record<TravelReferenceNode["id"], TravelRef
         geographicScope: "PAJN Airport & Mendenhall Valley",
         applicableTravelerContext: "Air travelers and flightseeing passengers assessing ceiling/visibility",
         publishedOrUpdatedDate: "Live / Continuous",
-        lastCheckedAt: "2026-10-23",
+        lastCheckedAt: "2026-10-25",
+        retrievedAt: "2026-10-25T12:00:00.000Z",
+        verifiedAt: "2026-10-25T12:00:00.000Z",
+        freshnessCategory: "live_condition",
         expectedSourceTerms: ["Aviation Weather", "NOAA"],
       },
     ],
@@ -3475,6 +4115,8 @@ export type PublishedReferenceNodeOverride = {
     string,
     {
       lastCheckedAt: string;
+      verifiedAt?: string;
+      retrievedAt?: string;
       publishedOrUpdatedDate?: string | null;
       verificationNote?: string;
       reviewedBy: string;
@@ -3482,6 +4124,8 @@ export type PublishedReferenceNodeOverride = {
       upstreamContentSha256?: string;
       matchedClaimTerms?: string[];
       verifiedSourceExcerpt?: string;
+      evidenceStatusOverride?: ClaimEvidenceStatus;
+      conflictDetail?: EvidenceCitation["conflictDetail"];
     }
   >;
   relationshipHrefs?: Record<string, string>;
@@ -3567,6 +4211,8 @@ export function applyPublishedReferenceNodeOverride(
       const citation = cloned.evidenceRegistry.find((cit) => cit.id === citationId);
       if (citation) {
         citation.lastCheckedAt = review.lastCheckedAt;
+        citation.verifiedAt = review.verifiedAt ?? review.lastCheckedAt;
+        citation.retrievedAt = review.retrievedAt ?? review.lastCheckedAt;
         if (review.publishedOrUpdatedDate !== undefined) {
           citation.publishedOrUpdatedDate = review.publishedOrUpdatedDate;
         }
@@ -3581,6 +4227,12 @@ export function applyPublishedReferenceNodeOverride(
         }
         if (review.verifiedSourceExcerpt) {
           citation.verifiedSourceExcerpt = review.verifiedSourceExcerpt;
+        }
+        if (review.evidenceStatusOverride !== undefined) {
+          citation.evidenceStatusOverride = review.evidenceStatusOverride;
+        }
+        if (review.conflictDetail !== undefined) {
+          citation.conflictDetail = review.conflictDetail;
         }
       }
     }

@@ -64,11 +64,20 @@ function buildTicketHref(show: Awaited<ReturnType<typeof getVegasShows>>[number]
   return url.pathname + url.search;
 }
 
+export const dynamic = "force-dynamic";
+
 type ShowsPageProps = {
   searchParams?: Promise<{
     genre?: string;
     venue?: string;
     q?: string;
+    date?: string;
+    arrivalDate?: string;
+    party_size?: string;
+    travelers?: string;
+    passengerCount?: string;
+    passengers?: string;
+    qty?: string;
   }>;
 };
 
@@ -100,6 +109,20 @@ function buildSearchHref(q: string) {
 
 export default async function ShowsPage({ searchParams }: ShowsPageProps) {
   const resolved = (await searchParams) || {};
+  const defaultFutureDate = new Date(Date.now() + 30 * 86400000)
+    .toISOString()
+    .slice(0, 10);
+  const selectedDate =
+    firstValue(resolved.date) ||
+    firstValue(resolved.arrivalDate) ||
+    defaultFutureDate;
+  const selectedPartySize =
+    firstValue(resolved.party_size) ||
+    firstValue(resolved.travelers) ||
+    firstValue(resolved.passengerCount) ||
+    firstValue(resolved.passengers) ||
+    firstValue(resolved.qty) ||
+    "2";
   const filters = {
     genre: firstValue(resolved.genre),
     venue: firstValue(resolved.venue),
@@ -165,6 +188,51 @@ export default async function ShowsPage({ searchParams }: ShowsPageProps) {
 
   return (
     <main style={{ display: "grid", gap: 20 }}>
+      <form
+        method="get"
+        action="/shows"
+        className="panel"
+        style={{ display: "grid", gap: 12 }}
+      >
+        <div className="eyebrow">Active Show Night &amp; Party Size</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, alignItems: "end" }}>
+          <div>
+            <label htmlFor="booking-context-date" style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
+              Show Date
+            </label>
+            <input
+              id="booking-context-date"
+              type="date"
+              name="date"
+              defaultValue={selectedDate}
+              style={{ width: "100%", padding: "8px 10px", borderRadius: 8 }}
+            />
+          </div>
+          <div>
+            <label htmlFor="booking-context-party-size" style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
+              Tickets / Party Size
+            </label>
+            <select
+              id="booking-context-party-size"
+              name="party_size"
+              defaultValue={selectedPartySize}
+              style={{ width: "100%", padding: "8px 10px", borderRadius: 8 }}
+            >
+              {[1, 2, 3, 4, 5, 6, 8, 10, 12].map((num) => (
+                <option key={num} value={String(num)}>
+                  {num} {num === 1 ? "Ticket" : "Tickets"}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <button type="submit" className="button button-primary" style={{ width: "100%" }}>
+              Apply Show Date &amp; Tickets
+            </button>
+          </div>
+        </div>
+      </form>
+
       <section className="hero hero-home">
         <div className="hero-grid">
           <div>

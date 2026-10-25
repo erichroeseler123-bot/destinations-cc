@@ -57,7 +57,7 @@ export default function ViatorTourGrid({
   description,
   products,
   fallbacks,
-  ctaLabel = "Book with DCC via Viator",
+  ctaLabel = "Compare on Viator (Optional Affiliate Link)",
   linkBuilder,
 }: ViatorTourGridProps) {
   const viatorPolicy = getViatorPolicy();
@@ -70,9 +70,10 @@ export default function ViatorTourGrid({
           imageUrl: product.image_url || null,
           rating:
             typeof product.rating === "number"
-              ? `${product.rating.toFixed(1)}${typeof product.review_count === "number" ? ` (${product.review_count.toLocaleString()} reviews)` : ""}`
-              : "Reviews on partner page",
+              ? `${product.rating.toFixed(1)} provider aggregate${typeof product.review_count === "number" ? ` (${product.review_count.toLocaleString()} lifetime provider count)` : ""}`
+              : "Check provider page for current reviews",
           duration: formatDuration(product.duration_minutes),
+          durationMinutes: product.duration_minutes,
           price: formatPrice(product.price_from, product.currency || "USD"),
           supplierName: product.supplier_name || null,
           itineraryType: product.itinerary_type || null,
@@ -80,7 +81,6 @@ export default function ViatorTourGrid({
           productOptionCount: product.product_option_count ?? null,
           productOptionTitles: product.product_option_titles || null,
           displayTags: product.display_tags || [],
-          merchandisingScore: product.merchandising_score ?? 0,
           href: buildProductHref(product),
           intentQuery: `${placeName} ${product.title}`.trim(),
           categoryLabel: product.title,
@@ -90,6 +90,7 @@ export default function ViatorTourGrid({
             durationMinutes: product.duration_minutes,
             rating: product.rating,
             reviewCount: product.review_count,
+            productCode: product.product_code,
           }),
         }))
       : fallbacks.slice(0, 6).map((item) => ({
@@ -99,6 +100,7 @@ export default function ViatorTourGrid({
           imageUrl: null,
           rating: "Live ratings on partner page",
           duration: "Check live duration",
+          durationMinutes: null,
           price: "See live price",
           supplierName: null,
           itineraryType: null,
@@ -106,7 +108,6 @@ export default function ViatorTourGrid({
           productOptionCount: null,
           productOptionTitles: null,
           displayTags: [],
-          merchandisingScore: 0,
           href: buildViatorSearchLink(item.query),
           intentQuery: item.query,
           categoryLabel: item.label,
@@ -117,9 +118,14 @@ export default function ViatorTourGrid({
     <section className="rounded-3xl border border-white/10 bg-white/[0.05] p-6 shadow-[0_16px_50px_rgba(0,0,0,0.35)]">
       <div className="space-y-4">
         <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">Live Viator Picks</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">
+            Optional Third-Party Tour Listings
+          </p>
           <h2 className="text-2xl font-bold md:text-3xl">{title}</h2>
           <p className="max-w-3xl text-zinc-300">{description}</p>
+          <p className="max-w-3xl text-xs text-zinc-400">
+            Commercial Disclosure: Tour links below connect to third-party partner inventory (Viator) and may earn an affiliate commission. Commercial relationships never determine DCC decision rankings—you are always free to book directly with local operators, use public transit, or choose free independent alternatives.
+          </p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -153,7 +159,7 @@ export default function ViatorTourGrid({
                     {card.shortDescription ? (
                       <p className="mt-2 text-sm text-zinc-300">{card.shortDescription}</p>
                     ) : null}
-                    <p className="mt-2 text-sm text-zinc-300">⭐ {card.rating}</p>
+                    <p className="mt-2 text-xs text-zinc-400">{card.rating}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-3 text-sm text-zinc-400">
@@ -165,7 +171,7 @@ export default function ViatorTourGrid({
                     <div className="flex flex-wrap gap-2 text-xs text-zinc-300">
                       {card.supplierName ? (
                         <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1">
-                          {card.supplierName}
+                          Operator: {card.supplierName}
                         </span>
                       ) : null}
                       {card.itineraryType ? (
@@ -196,17 +202,6 @@ export default function ViatorTourGrid({
                           {tag.label}
                         </span>
                       ))}
-                      {card.merchandisingScore > 0 ? (
-                        <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-emerald-100">
-                          Recommended by DCC
-                        </span>
-                      ) : null}
-                    </div>
-                  ) : card.merchandisingScore > 0 ? (
-                    <div className="flex flex-wrap gap-2 text-xs text-zinc-300">
-                      <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-emerald-100">
-                        Recommended by DCC
-                      </span>
                     </div>
                   ) : null}
 
@@ -217,7 +212,11 @@ export default function ViatorTourGrid({
                     </p>
                   ) : null}
 
-                  {card.takeaways ? <TravelerTakeaways summary={card.takeaways} compact /> : null}
+                  <TravelerTakeaways
+                    summary={card.takeaways}
+                    durationMinutes={card.durationMinutes}
+                    compact
+                  />
 
                   <a
                     href={href}
@@ -225,7 +224,7 @@ export default function ViatorTourGrid({
                     rel={href.startsWith("/tours/") ? undefined : "noopener noreferrer sponsored nofollow"}
                     className="inline-flex w-full items-center justify-center rounded-2xl bg-cyan-600 px-4 py-3 font-semibold text-white hover:bg-cyan-500"
                   >
-                    {href.startsWith("/tours/") ? "View tour details" : ctaLabel}
+                    {href.startsWith("/tours/") ? "Inspect details & recent reviews" : ctaLabel}
                   </a>
                   <p className="text-[11px] leading-5 text-zinc-500">
                     {viatorPolicy.travelerPhotoNotice}

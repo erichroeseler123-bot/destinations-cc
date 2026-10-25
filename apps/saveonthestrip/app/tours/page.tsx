@@ -122,7 +122,31 @@ function TourSection({
   );
 }
 
-export default async function ToursPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ToursPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+} = {}) {
+  const resolved = searchParams ? await searchParams : {};
+  const firstStr = (v: string | string[] | undefined) =>
+    Array.isArray(v) ? v[0] : v;
+  const defaultFutureDate = new Date(Date.now() + 30 * 86400000)
+    .toISOString()
+    .slice(0, 10);
+  const selectedDate =
+    firstStr(resolved.date) ||
+    firstStr(resolved.arrivalDate) ||
+    defaultFutureDate;
+  const selectedPartySize =
+    firstStr(resolved.party_size) ||
+    firstStr(resolved.travelers) ||
+    firstStr(resolved.passengerCount) ||
+    firstStr(resolved.passengers) ||
+    firstStr(resolved.qty) ||
+    "2";
+
   const photos = await getVegasPhotoLibrary();
   const [{ tours, companies, configured }, vegasImageSet] = await Promise.all([
     getVegasTours(),
@@ -166,6 +190,51 @@ export default async function ToursPage() {
 
   return (
     <main style={{ display: "grid", gap: 20 }}>
+      <form
+        method="get"
+        action="/tours"
+        className="panel"
+        style={{ display: "grid", gap: 12 }}
+      >
+        <div className="eyebrow">Active Tour Date &amp; Party Size</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, alignItems: "end" }}>
+          <div>
+            <label htmlFor="booking-context-date" style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
+              Tour Date
+            </label>
+            <input
+              id="booking-context-date"
+              type="date"
+              name="date"
+              defaultValue={selectedDate}
+              style={{ width: "100%", padding: "8px 10px", borderRadius: 8 }}
+            />
+          </div>
+          <div>
+            <label htmlFor="booking-context-party-size" style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
+              Travelers / Party Size
+            </label>
+            <select
+              id="booking-context-party-size"
+              name="party_size"
+              defaultValue={selectedPartySize}
+              style={{ width: "100%", padding: "8px 10px", borderRadius: 8 }}
+            >
+              {[1, 2, 3, 4, 5, 6, 8, 10, 12].map((num) => (
+                <option key={num} value={String(num)}>
+                  {num} {num === 1 ? "Guest" : "Guests"}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <button type="submit" className="button button-primary" style={{ width: "100%" }}>
+              Apply Date &amp; Guests
+            </button>
+          </div>
+        </div>
+      </form>
+
       <section className="hero hero-home">
         <div className="hero-grid">
           <div>

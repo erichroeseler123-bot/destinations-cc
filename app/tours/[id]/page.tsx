@@ -110,30 +110,44 @@ export default async function TourDetailPage({
   if (!tour) return notFound();
   const reviewCacheStatus = getProductCacheStatus(productDetail?.product_code || tour.product_code || null);
 
-  // --- 1. DATA CALCULATIONS ---
-  const rating = Number(productDetail?.rating ?? tour.rating ?? 4.8);
-  const reviews = Number(productDetail?.review_count ?? tour.review_count ?? 120);
+  // --- 1. DATA CALCULATIONS (No fabricated rating, review count, or reliability defaults) ---
+  const rawRating = productDetail?.rating ?? tour.rating;
+  const rating =
+    typeof rawRating === "number" && Number.isFinite(rawRating) && rawRating > 0
+      ? Number(rawRating)
+      : null;
+  const rawReviews = productDetail?.review_count ?? tour.review_count;
+  const reviews =
+    typeof rawReviews === "number" && Number.isFinite(rawReviews) && rawReviews >= 0
+      ? Number(rawReviews)
+      : null;
   const price = productDetail?.price_from ?? tour.price_from ?? null;
   const affiliateUrl = buildViatorLink(tour);
   const destinationTrail = buildDestinationTrail(productDetail, tour);
   const supplierImages = productDetail?.supplierImages?.slice(0, 6) || [];
   const travelerImages = productDetail?.travelerImages?.slice(0, 6) || [];
-  const takeaways = summarizeGuestFeedback({
-    title: productDetail?.title || tour.name,
-    description: productDetail?.overview || tour.description,
-    durationText: productDetail?.durationText || tour.duration,
-    rating,
-    reviewCount: reviews,
-  });
+  const resolvedProductCode = productDetail?.product_code || tour.product_code || String(tour.id);
+  const rawThirdPartyReviews = (productDetail?.reviews || []).map((r) => ({
+    reviewId: r.reviewId,
+    productCode: resolvedProductCode,
+    title: r.title,
+    text: r.text,
+    rating: r.rating,
+    publishedDate: r.publishedDate,
+    userName: r.userName,
+    source: "Viator",
+    providerVerified: false,
+  }));
+  const reviewCheckStatus =
+    productDetail?.reviews !== undefined
+      ? "checked_ok"
+      : ("unavailable" as const);
   const operatorRef = mergeOperatorRef(tour.operator);
   const operator = operatorRef?.slug ? getOperatorManifest(operatorRef.slug) : null;
   const operatorTourCount =
     operatorRef?.slug
       ? allTours.filter((candidate) => candidate.operator?.slug === operatorRef.slug).length
       : undefined;
-
-  // --- CHANGE #4: DCC Trust Score Logic ---
-  const trustScore = Math.round((rating * 15) + (Math.min(reviews, 500) / 20));
 
   // --- CHANGE #2: Dynamic Business Hours Logic ---
   let isBusinessHours = false;
@@ -167,8 +181,8 @@ export default async function TourDetailPage({
               image: productDetail?.image_url || tour.image_url || undefined,
               price,
               currency: productDetail?.currency || "USD",
-              rating,
-              reviewCount: reviews,
+              rating: rating ?? undefined,
+              reviewCount: reviews ?? undefined,
               touristTypes: ["First-time visitors", "Experience-focused travelers"],
               provider: operator
                 ? {
@@ -206,12 +220,12 @@ export default async function TourDetailPage({
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <span className="text-cyan-400 text-xs font-bold uppercase tracking-widest border border-cyan-400/30 px-2 py-1 rounded">
-                DCC Verified
+                Third-Party Activity Listing
               </span>
-              <span className="text-zinc-500 text-[10px] uppercase tracking-tighter">
-                Reliability: <span className="text-white font-bold">{trustScore}%</span>
+              <span className="text-zinc-400 text-[11px]">
+                Source: <span className="text-white font-semibold">{productDetailSource || "Catalog"}</span> · Optional convenience booking
               </span>
             </div>
           )}
@@ -223,12 +237,14 @@ export default async function TourDetailPage({
 
         <div className="grid gap-4 sm:min-w-[280px]">
           <div className={`rounded-2xl border p-5 ${isLfse ? "border-slate-200 bg-slate-50" : "border-cyan-500/20 bg-cyan-500/5"}`}>
-            <p className={`text-[11px] font-bold uppercase tracking-[0.2em] ${isLfse ? "text-slate-500" : "text-cyan-300"}`}>Price from</p>
+            <p className={`text-[11px] font-bold uppercase tracking-[0.2em] ${isLfse ? "text-slate-500" : "text-cyan-300"}`}>
+              {price !== null ? "Indicative price from" : "Live pricing"}
+            </p>
             <p className={`mt-2 text-3xl font-black ${isLfse ? "text-slate-900" : "text-white"}`}>
               {formatPrice(price, productDetail?.currency || "USD")}
             </p>
             <p className={`mt-2 text-sm ${isLfse ? "text-slate-500" : "text-zinc-400"}`}>
-              Final availability, date options, and live pricing are confirmed on the Viator booking page.
+              Indicative baseline only. Current availability, date options, and final pricing require a live check with the operator or booking provider.
             </p>
           </div>
           {tour.lat && tour.lng && tour.timezone ? (
@@ -244,9 +260,9 @@ export default async function TourDetailPage({
           <LfsTrustStrip />
           <DccNetworkStrip />
         </div>
-      ) : (
+      ) : rating !== null && reviews !== null && reviews > 0 ? (
         <TrustBadges reviews={reviews} rating={rating} />
-      )}
+      ) : null}
 
       {productDetail && (supplierImages.length > 0 || travelerImages.length > 0) ? (
         <section className="mb-16 mt-10 grid gap-6 lg:grid-cols-2">
@@ -302,7 +318,15 @@ export default async function TourDetailPage({
               `This experience is listed on DCC to help travelers compare timing, fit, and booking options in ${tour.city}.`}
           </p>
         </article>
-        {takeaways ? <TravelerTakeaways summary={takeaways} /> : null}
+        <TravelerTakeaways
+          productCode={resolvedProductCode}
+          reviews={rawThirdPartyReviews}
+          retrievedAt={reviewCacheStatus.updatedAt}
+          checkStatus={reviewCheckStatus}
+          title={productDetail?.title || tour.name}
+          description={productDetail?.overview || tour.description}
+          durationText={productDetail?.durationText || tour.duration}
+        />
       </section>
 
       {productDetail ? (
@@ -403,7 +427,7 @@ export default async function TourDetailPage({
         disclosure
         body={isLfse 
           ? "Use Last Frontier Shore Excursions to evaluate this experience quickly, then continue to Viator when you're ready to check availability and complete checkout."
-          : "Use DCC to evaluate this experience quickly, then continue to Viator when you're ready to check availability and complete checkout."
+          : "Use DCC to evaluate this experience against your trip constraints. Booking is optional: you can book directly with the operator, use Viator below, or choose an independent alternative."
         }
         className="mb-16"
       />
@@ -427,6 +451,9 @@ export default async function TourDetailPage({
         {productDetail?.reviews?.slice(0, 2).map((review) => (
           <div key={review.reviewId} className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/40 p-4 text-sm text-zinc-300">
             <p className="font-semibold text-white">{review.title || review.userName || "Traveler review"}</p>
+            {review.publishedDate ? (
+              <p className="text-xs text-zinc-500 mt-0.5">Published {review.publishedDate}</p>
+            ) : null}
             {review.text ? <p className="mt-2">{review.text}</p> : null}
           </div>
         ))}
@@ -459,26 +486,40 @@ export default async function TourDetailPage({
         </div>
       </section>
 
-      {/* STICKY CTA */}
+      {/* STICKY CTA — OPTIONAL BOOKING */}
       <div className="sticky bottom-4 bg-zinc-950/90 backdrop-blur-md border border-cyan-500/30 p-6 rounded-2xl shadow-2xl flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
         <div>
-          <p className="text-zinc-500 text-xs uppercase font-bold tracking-tight">Best rate found</p>
+          <p className="text-zinc-400 text-xs uppercase font-bold tracking-tight">
+            {price !== null ? "Indicative baseline rate" : "Optional partner booking"}
+          </p>
           <p className="text-3xl font-black text-white">{formatPrice(price, productDetail?.currency || "USD")}</p>
         </div>
 
-        <a
-          href={affiliateUrl}
-          target="_blank"
-          rel="noopener noreferrer sponsored nofollow"
-          className={`text-center text-white px-10 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 ${isLfse ? "bg-sky-600 hover:bg-sky-500 shadow-sky-600/20" : "bg-cyan-600 hover:bg-cyan-500 shadow-cyan-600/20"}`}
-        >
-          {isLfse 
-            ? (isBusinessHours ? "Book with Viator" : "Check Availability via Viator")
-            : (isBusinessHours ? "Book with DCC via Viator" : "Check Availability via Viator")
-          }
-        </a>
-        <p className="text-[11px] text-zinc-500 sm:max-w-sm">
-          Powered by Viator. {isLfse ? "Last Frontier Shore Excursions" : "DCC"} may earn a commission if you book through this partner link, at no extra cost to you.
+        <div className="flex flex-wrap gap-3 items-center">
+          {operator?.website ? (
+            <a
+              href={operator.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-center text-zinc-200 border border-zinc-700 hover:border-zinc-500 px-5 py-4 rounded-xl text-sm font-bold transition-all"
+            >
+              Operator Website ({operator.name}) ↗
+            </a>
+          ) : null}
+          <a
+            href={affiliateUrl}
+            target="_blank"
+            rel="noopener noreferrer sponsored nofollow"
+            className={`text-center text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg active:scale-95 ${isLfse ? "bg-sky-600 hover:bg-sky-500 shadow-sky-600/20" : "bg-cyan-600 hover:bg-cyan-500 shadow-cyan-600/20"}`}
+          >
+            {isLfse 
+              ? (isBusinessHours ? "Check Viator Availability" : "Check Availability via Viator")
+              : "Check Availability on Viator (Partner Link)"
+            }
+          </a>
+        </div>
+        <p className="text-[11px] text-zinc-400 sm:max-w-sm">
+          Booking is optional. You can book directly with the operator, choose an independent/public alternative, or use this Viator affiliate link ({isLfse ? "Last Frontier Shore Excursions" : "DCC"} may earn a commission at no extra cost to you).
         </p>
       </div>
 
